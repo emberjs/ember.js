@@ -18,27 +18,27 @@ Ember.View.reopen({
   },
 
   /**
-    Allows you to connect a unique view as the parent
-    view's `{{outlet}}`.
+    Manually fill any of a view's `{{outlet}}` areas with the
+    supplied view.
 
     Example
 
     ```javascript
-      var MyView = Ember.View.extend({
-        template: Ember.Handlebars.compile('Child view: {{outlet "main"}} ')
-      });
-      var myView = MyView.create();
-      myView.appendTo('body');
-      // The html for myView now looks like:
-      // <div id="ember228" class="ember-view">Child view: </div>
+    var MyView = Ember.View.extend({
+      template: Ember.Handlebars.compile('Child view: {{outlet "main"}} ')
+    });
+    var myView = MyView.create();
+    myView.appendTo('body');
+    // The html for myView now looks like:
+    // <div id="ember228" class="ember-view">Child view: </div>
 
-      myView.connectOutlet('main', Ember.View.extend({
-        template: Ember.Handlebars.compile('<h1>Foo</h1> ')
-      }));
-      // The html for myView now looks like:
-      // <div id="ember228" class="ember-view">Child view:
-      //   <div id="ember234" class="ember-view"><h1>Foo</h1> </div>
-      // </div>
+    myView.connectOutlet('main', Ember.View.extend({
+      template: Ember.Handlebars.compile('<h1>Foo</h1> ')
+    }));
+    // The html for myView now looks like:
+    // <div id="ember228" class="ember-view">Child view:
+    //   <div id="ember234" class="ember-view"><h1>Foo</h1> </div>
+    // </div>
     ```
     @method connectOutlet
     @param  {String} outletName A unique name for the outlet
@@ -87,30 +87,30 @@ Ember.View.reopen({
   },
 
   /**
-    Removes an outlet from the current view.
+    Removes an outlet from the view.
 
     Example
 
     ```javascript
-      var MyView = Ember.View.extend({
-        template: Ember.Handlebars.compile('Child view: {{outlet "main"}} ')
-      });
-      var myView = MyView.create();
-      myView.appendTo('body');
-      // myView's html:
-      // <div id="ember228" class="ember-view">Child view: </div>
+    var MyView = Ember.View.extend({
+      template: Ember.Handlebars.compile('Child view: {{outlet "main"}} ')
+    });
+    var myView = MyView.create();
+    myView.appendTo('body');
+    // myView's html:
+    // <div id="ember228" class="ember-view">Child view: </div>
 
-      myView.connectOutlet('main', Ember.View.extend({
-        template: Ember.Handlebars.compile('<h1>Foo</h1> ')
-      }));
-      // myView's html:
-      // <div id="ember228" class="ember-view">Child view:
-      //   <div id="ember234" class="ember-view"><h1>Foo</h1> </div>
-      // </div>
+    myView.connectOutlet('main', Ember.View.extend({
+      template: Ember.Handlebars.compile('<h1>Foo</h1> ')
+    }));
+    // myView's html:
+    // <div id="ember228" class="ember-view">Child view:
+    //   <div id="ember234" class="ember-view"><h1>Foo</h1> </div>
+    // </div>
 
-      myView.disconnectOutlet('main');
-      // myView's html:
-      // <div id="ember228" class="ember-view">Child view: </div>
+    myView.disconnectOutlet('main');
+    // myView's html:
+    // <div id="ember228" class="ember-view">Child view: </div>
     ```
 
     @method disconnectOutlet

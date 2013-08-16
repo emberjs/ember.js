@@ -10,23 +10,48 @@ require('ember-handlebars/helpers/view');
 Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
   /**
-    Renders the named template in the current context with the same-named
-    controller.
+    Calling ``{{render}}`` from within a template will insert another 
+    template that matches the provided name. The inserted template will
+    access its properties on its own controller (rather than the controller
+    of the parent template).
 
-    If a view class with the same name exists, the view class will be used.
+    If a view class with the same name exists, the view class also will be used.
+    
+    Note: A given controller may only be used *once* in your app in this manner.
+    A singleton instance of the controller will be created for you.
 
-    The optional second argument is a property path that will be bound
-    to the `model` property of the controller.
+    Example:
+
+    ```javascript
+    App.NavigationController = Ember.Controller.extned({
+      who: "world"
+    });
+    ```
+
+    ```handelbars
+    <!-- navigation.hbs -->
+    Hello, {{who}}.
+    ```
+
+    ```handelbars
+    <!-- applications.hbs -->
+    <h1>My great app</h1>
+    {{render navigaton}}
+    ```
+    
+    ```html
+    <h1>My great app</h1>
+    <div class='ember-view'>
+      Hello, world.
+    </div>
+    ```
+
+    Optionally you may provide a  second argument: a property path
+    that will be bound to the `model` property of the controller.
 
     If a `model` property path is specified, then a new instance of the
-    controller will be created.
-
-    If no `model` property path is provided, then the helper will use the
-    singleton instance of the controller. A given controller may only be used
-    one time in your app in this manner.
-
-    The default target for `{{action}}`s in the rendered template is the
-    controller.
+    controller will be created and `{{render}}` can be used multiple times
+    with the same name.
 
     @method render
     @for Ember.Handlebars.helpers

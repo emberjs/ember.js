@@ -104,11 +104,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     Given the following Handlebars template on the page
 
     ```handlebars
-    <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action 'anActionName'}}>
-        click me
-      </div>
-    </script>
+    <div {{action 'anActionName'}}>
+      click me
+    </div>
     ```
 
     And application code
