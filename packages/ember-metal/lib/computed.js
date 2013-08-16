@@ -476,7 +476,7 @@ function registerComputedWithProperties(name, macro) {
 
   Example
 
-```javascript
+  ```javascript
   var ToDoList = Ember.Object.extend({
     done: Ember.computed.empty('todos.length')
   });
@@ -552,8 +552,8 @@ registerComputed('none', function(dependentKey) {
 });
 
 /**
-  A computed property that returns the inverse of the original value
-  for the dependent property.
+  A computed property that returns the inverse boolean value
+  of the original value for the dependent property.
 
   Example
 
@@ -578,7 +578,8 @@ registerComputed('not', function(dependentKey) {
 });
 
 /**
-  A computed property that which convert the dependent propery to a boolean.
+  A computed property that converts the provided dependent property
+  into a boolean value.
 
   ```javascript
   var Hampster = Ember.Object.extend({
@@ -605,8 +606,9 @@ registerComputed('bool', function(dependentKey) {
 });
 
 /**
-  A computed property which matchs the original value for dependent property
-  against a given RegExp.
+  A computed property which matches the original value for the 
+  dependent property against a given RegExp, returning `true`
+  if they values matches the RegExp and `false` if it does not.
 
   Example
 
@@ -635,8 +637,8 @@ registerComputed('match', function(dependentKey, regexp) {
 });
 
 /**
-  A computed property that which returns true if dependent property is
-  equal to the given value.
+  A computed property that returns true if the provided dependent property
+  is equal to the given value.
 
   Example
 
@@ -664,8 +666,8 @@ registerComputed('equal', function(dependentKey, value) {
 });
 
 /**
-  A computed property that which returns true if dependent property is
-  greater than the given value.
+  A computed property that returns true if the provied dependent property
+  is greater than the provided value.
 
   Example
 
@@ -693,8 +695,8 @@ registerComputed('gt', function(dependentKey, value) {
 });
 
 /**
-  A computed property that which returns true if dependent property is
-  greater than or equal to the given value.
+  A computed property that returns true if the provided dependent property
+  is greater than or equal to the provided value.
 
   Example
 
@@ -722,8 +724,8 @@ registerComputed('gte', function(dependentKey, value) {
 });
 
 /**
-  A computed property that which returns true if dependent property is
-  less than the given value.
+  A computed property that returns true if the provided dependent property
+  is less than the provided value.
 
   Example
 
@@ -751,8 +753,8 @@ registerComputed('lt', function(dependentKey, value) {
 });
 
 /**
-  A computed property that which returns true if dependent property is
-  less than or equal to the given value.
+  A computed property that returns true if the provided dependent property
+  is less than or equal to the provided value.
 
   Example
 
@@ -780,8 +782,9 @@ registerComputed('lte', function(dependentKey, value) {
 });
 
 /**
-  A computed property that which performs a logical `and` on the
-  values of all the original values for dependent properties.
+  A computed property that performs a logical `and` on the
+  original values for the provided dependent properties.
+
 
   Example
 
@@ -814,7 +817,7 @@ registerComputedWithProperties('and', function(properties) {
 
 /**
   A computed property that which performs a logical `or` on the
-  values of all the original values for dependent properties.
+  original values for the provided dependent properties.
 
   Example
 
@@ -844,8 +847,8 @@ registerComputedWithProperties('or', function(properties) {
 });
 
 /**
-  A computed property that which returns the first truthy value
-  of a given list of dependent properties.
+  A computed property that returns the first truthy value
+  from a list of dependent properties.
 
   Example
 
@@ -875,8 +878,8 @@ registerComputedWithProperties('any', function(properties) {
 });
 
 /**
-  A computed property that which returns the first truthy value
-  of a given list of dependent properties.
+  A computed property that returns the array of values
+  for the provided dependent properties.
 
   Example
 
@@ -991,8 +994,9 @@ Ember.computed.oneWay = function(dependentKey) {
 
 
 /**
-  A computed property that which  acts like a standard getter
-  and setter, but defaults to the value from `defaultPath`.
+  A computed property that acts like a standard getter and setter,
+  but retruns the value at the provided `defaultPath` if the
+  property itself has not been set to a value
 
   Example
 
