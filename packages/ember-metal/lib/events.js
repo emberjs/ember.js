@@ -9,6 +9,7 @@ require('ember-metal/utils');
 var o_create = Ember.create,
     metaFor = Ember.meta,
     META_KEY = Ember.META_KEY,
+    a_slice = [].slice,
     /* listener flags */
     ONCE = 1, SUSPENDED = 2;
 
@@ -367,6 +368,31 @@ function listenersFor(obj, eventName) {
 
   return ret;
 }
+
+/**
+  Define a property as a function that should be executed when
+  a specified event or events are triggered.
+
+      var Job = Ember.Object.extend({
+        logCompleted: Ember.on('completed', function(){
+          console.log('Job completed!');
+        })
+      });
+      var job = Job.create();
+      Ember.sendEvent(job, 'completed'); // Logs "Job completed!"
+
+  @method on
+  @for Ember
+  @param {String} eventNames*
+  @param {Function} func
+  @return func
+*/
+Ember.on = function(){
+  var func = a_slice.call(arguments, -1)[0],
+      events = a_slice.call(arguments, 0, -1);
+  func.__ember_listens__ = events;
+  return func;
+};
 
 Ember.addListener = addListener;
 Ember.removeListener = removeListener;
