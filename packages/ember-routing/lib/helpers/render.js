@@ -53,11 +53,31 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     controller will be created and `{{render}}` can be used multiple times
     with the same name.
 
+   For example if you had this `author` template.
+
+   ```handlebars
+<div class="author">
+  Written by {{firstName}} {{lastName}}.
+  Total Posts: {{postCount}}
+</div>
+  ```
+
+  You could render it inside the `post` template using the `render` helper.
+
+  ```handlebars
+<div class="post">
+  <h1>{{title}}</h1>
+  <div>{{body}}</div>
+  {{render "author" author}}
+</div>
+   ```
+
     @method render
     @for Ember.Handlebars.helpers
     @param {String} name
     @param {Object?} contextString
     @param {Hash} options
+    @return {String} HTML string
   */
   Ember.Handlebars.registerHelper('render', function(name, contextString, options) {
     Ember.assert("You must pass a template to render", arguments.length >= 2);
