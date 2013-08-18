@@ -123,7 +123,26 @@ Ember.NativeArray = NativeArray;
 
 /**
   Creates an `Ember.NativeArray` from an Array like object.
-  Does not modify the original object.
+  Does not modify the original object. Ember.A is not needed if
+  `Ember.EXTEND_PROTOTYPES` is `true` (the default value). However,
+  it is recommended that you use Ember.A when creating addons for
+  ember or when you can not garentee that `Ember.EXTEND_PROTOTYPES`
+  will be `true`.
+
+  Example
+
+  ```js
+  var Pagination = Ember.CollectionView.extend({
+    tagName: 'ul',
+    classNames: ['pagination'],
+    init: function() {
+      this._super();
+      if (!this.get('content')) {
+        this.set('content', Ember.A([]));
+      }
+    }
+  });
+  ```
 
   @method A
   @for Ember
@@ -136,7 +155,17 @@ Ember.A = function(arr) {
 
 /**
   Activates the mixin on the Array.prototype if not already applied. Calling
-  this method more than once is safe.
+  this method more than once is safe. This will be called when ember is loaded
+  unless you have `Ember.EXTEND_PROTOTYPES` or `Ember.EXTEND_PROTOTYPES.Array`
+  set to `false`.
+
+  Example
+
+  ```js
+  if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Array) {
+    Ember.NativeArray.activate();
+  }
+  ```
 
   @method activate
   @for Ember.NativeArray
