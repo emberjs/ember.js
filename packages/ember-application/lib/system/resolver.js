@@ -243,9 +243,10 @@ Ember.DefaultResolver = Ember.Object.extend({
         factory = get(parsedName.root, className);
     if (factory) { return factory; }
   },
+
   /**
     Returns a human-readable description for a fullName. Used by the
-    Application namespace in assertions to assertions to describe the
+    Application namespace in assertions to describe the
     precise name of the class that Ember is looking for, rather than
     container keys.
 
