@@ -51,7 +51,13 @@ Ember.warn("The VIEW_PRESERVES_CONTEXT flag has been removed and the functionali
 Ember.TEMPLATES = {};
 
 /**
-  `Ember.CoreView` is
+  `Ember.CoreView` is an abstract class that exists to give view-like behavior
+  to both Ember's main view class `Ember.View` and other classes like 
+  `Ember._SimpleMetamorphView` that don't need the fully functionaltiy of
+  `Ember.View`.
+
+  Unless you have specific needs for `CoreView`, you will use `Ember.View`
+  in your applications. 
 
   @class CoreView
   @namespace Ember
@@ -275,7 +281,7 @@ var EMPTY_ARRAY = [];
 
   The default HTML tag name used for a view's DOM representation is `div`. This
   can be customized by setting the `tagName` property. The following view
-class:
+  class:
 
   ```javascript
   ParagraphView = Ember.View.extend({
@@ -2328,7 +2334,7 @@ Ember.View.reopenClass({
 
     Parse a path and return an object which holds the parsed properties.
 
-    For example a path like "content.isEnabled:enabled:disabled" wil return the
+    For example a path like "content.isEnabled:enabled:disabled" will return the
     following object:
 
     ```javascript
