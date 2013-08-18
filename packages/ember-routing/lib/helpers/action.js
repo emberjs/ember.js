@@ -160,7 +160,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ```
 
     If you need the default handler to trigger you should either register your
-    own event handler, or use event methods on your view class. See `Ember.View`
+    own event handler, or use event methods on your view class. See [Ember.View](/api/classes/Ember.View.html)
     'Responding to Browser Events' for more information.
 
     ### Specifying DOM event type

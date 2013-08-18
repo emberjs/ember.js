@@ -36,8 +36,8 @@ var get = Ember.get, set = Ember.set;
   ## Layout and LayoutName properties
 
   Because HTML `textarea` elements do not contain inner HTML the `layout` and
-  `layoutName` properties will not be applied. See `Ember.View`'s layout
-  section for more information.
+  `layoutName` properties will not be applied. See [Ember.View](/api/classes/Ember.View.html)'s
+  layout section for more information.
 
   ## HTML Attributes
 

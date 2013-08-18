@@ -416,7 +416,7 @@ Ember.Select = Ember.View.extend(
   prompt: null,
 
   /**
-    The path of the option labels. See `content`.
+    The path of the option labels. See [content](/api/classes/Ember.Select.html#property_content).
 
     @property optionLabelPath
     @type String
@@ -425,7 +425,7 @@ Ember.Select = Ember.View.extend(
   optionLabelPath: 'content',
 
   /**
-    The path of the option values. See `content`.
+    The path of the option values. See [content](/api/classes/Ember.Select.html#property_content).
 
     @property optionValuePath
     @type String

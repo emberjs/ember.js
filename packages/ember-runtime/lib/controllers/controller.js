@@ -15,8 +15,7 @@ var get = Ember.get;
 
   Within an `Ember.Router`-managed application single shared instaces of every
   Controller object in your application's namespace will be added to the
-  application's `Ember.Router` instance. See `Ember.Application#initialize`
-  for additional information.
+  application's `Ember.Router` instance.
 
   ## Views
 
@@ -31,8 +30,8 @@ var get = Ember.get;
 
   By default a controller will target your application's `Ember.Router`
   instance. Calls to `{{action}}` within the template of a controller's view
-  are forwarded to the router. See `Ember.Handlebars.helpers.action` for
-  additional information.
+  are forwarded to the router. See [Ember.Handlebars.helpers.action](/api/classes/Ember.Handlebars.helpers.html#method_action)
+  for additional information.
 
   @class ControllerMixin
   @namespace Ember

@@ -27,7 +27,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     '<div>someString</div>'.htmlSafe()
     ```
 
-    See `Ember.String.htmlSafe`.
+    See [Ember.String.htmlSafe](/api/classes/Ember.String.html#method_htmlSafe).
 
     @method htmlSafe
     @for String

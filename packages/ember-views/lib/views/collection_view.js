@@ -153,8 +153,8 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   ## Use in templates via the `{{collection}}` `Ember.Handlebars` helper
 
   `Ember.Handlebars` provides a helper specifically for adding
-  `CollectionView`s to templates. See `Ember.Handlebars.collection` for more
-  details
+  `CollectionView`s to templates. See [Ember.Handlebars.helpers.collection](/api/classes/Ember.Handlebars.helpers.html#method_collection)
+  for more details
 
   @class CollectionView
   @namespace Ember
