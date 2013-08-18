@@ -455,8 +455,8 @@ var EMPTY_ARRAY = [];
   will be removed.
 
   Both `classNames` and `classNameBindings` are concatenated properties. See
-  `Ember.Object` documentation for more information about concatenated
-  properties.
+  [Ember.Object](/api/classes/Ember.Object.html) documentation for more
+  information about concatenated properties.
 
   ## HTML Attributes
 
@@ -516,7 +516,7 @@ var EMPTY_ARRAY = [];
   Updates to the the property of an attribute binding will result in automatic
   update of the  HTML attribute in the view's rendered HTML representation.
 
-  `attributeBindings` is a concatenated property. See `Ember.Object`
+  `attributeBindings` is a concatenated property. See [Ember.Object](/api/classes/Ember.Object.html)
   documentation for more information about concatenated properties.
 
   ## Templates
@@ -667,7 +667,8 @@ var EMPTY_ARRAY = [];
   </div>
   ```
 
-  See `Handlebars.helpers.yield` for more information.
+  See [Ember.Handlebars.helpers.yield](/api/classes/Ember.Handlebars.helpers.html#method_yield)
+  for more information.
 
   ## Responding to Browser Events
 
@@ -764,7 +765,7 @@ var EMPTY_ARRAY = [];
 
   ### Handlebars `{{action}}` Helper
 
-  See `Handlebars.helpers.action`.
+  See [Handlebars.helpers.action](/api/classes/Ember.Handlebars.helpers.html#method_action).
 
   ### Event Names
 
@@ -819,8 +820,8 @@ var EMPTY_ARRAY = [];
   ## Handlebars `{{view}}` Helper
 
   Other `Ember.View` instances can be included as part of a view's template by
-  using the `{{view}}` Handlebars helper. See `Handlebars.helpers.view` for
-  additional information.
+  using the `{{view}}` Handlebars helper. See [Ember.Handlebars.helpers.view](/api/classes/Ember.Handlebars.helpers.html#method_view)
+  for additional information.
 
   @class View
   @namespace Ember

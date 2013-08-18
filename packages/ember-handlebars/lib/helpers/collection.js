@@ -13,8 +13,8 @@ var get = Ember.get, handlebarsGet = Ember.Handlebars.get, fmt = Ember.String.fm
 
 /**
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
-  `Ember.CollectionView` to a template. See `Ember.CollectionView` for
-  additional information on how a `CollectionView` functions.
+  `Ember.CollectionView` to a template. See [Ember.CollectionView](/api/classes/Ember.CollectionView.html)
+   for additional information on how a `CollectionView` functions.
 
   `{{collection}}`'s primary use is as a block helper with a `contentBinding`
   option pointing towards an `Ember.Array`-compatible object. An `Ember.View`
