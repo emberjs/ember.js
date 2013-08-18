@@ -88,6 +88,13 @@ Ember.HashLocation = Ember.Object.extend({
     return '#'+url;
   },
 
+  /**
+    @private
+
+    Cleans up the HashLocation event listener.
+
+    @method willDestroy
+  */
   willDestroy: function() {
     var guid = Ember.guidFor(this);
 
