@@ -20,8 +20,8 @@ Ember.DeferredMixin = Ember.Mixin.create({
     Add handlers to be called when the Deferred object is resolved or rejected.
 
     @method then
-    @param {Function} doneCallback a callback function to be called when done
-    @param {Function} failCallback a callback function to be called when failed
+    @param {Function} resolve a callback function to be called when done
+    @param {Function} reject  a callback function to be called when failed
   */
   then: function(resolve, reject) {
     var deferred, promise, entity;
