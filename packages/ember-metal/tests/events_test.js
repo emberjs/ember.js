@@ -211,3 +211,47 @@ test('while suspended, it should not be possible to add a duplicate listener', f
   equal(target.count, 2, 'should have invoked again');
   equal(Ember.meta(obj).listeners['event!'].length, 1, "a duplicate listener wasn't added");
 });
+
+test('a listener can be added as part of a mixin', function() {
+  var triggered = 0;
+  var MyMixin = Ember.Mixin.create({
+    foo1: Ember.on('bar', function() {
+      triggered++;
+    }),
+
+    foo2: Ember.on('bar', function() {
+      triggered++;
+    })
+  });
+
+  var obj = {};
+  MyMixin.apply(obj);
+
+  Ember.sendEvent(obj, 'bar');
+  equal(triggered, 2, 'should invoke listeners');
+});
+
+test('a listener added as part of a mixin may be overridden', function() {
+
+  var triggered = 0;
+  var FirstMixin = Ember.Mixin.create({
+    foo: Ember.on('bar', function() {
+      triggered++;
+    })
+  });
+  var SecondMixin = Ember.Mixin.create({
+    foo: Ember.on('baz', function() {
+      triggered++;
+    })
+  });
+
+  var obj = {};
+  FirstMixin.apply(obj);
+  SecondMixin.apply(obj);
+
+  Ember.sendEvent(obj, 'bar');
+  equal(triggered, 0, 'should not invoke from overriden property');
+
+  Ember.sendEvent(obj, 'baz');
+  equal(triggered, 1, 'should invoke from subclass property');
+});

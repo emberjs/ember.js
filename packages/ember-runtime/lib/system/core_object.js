@@ -19,6 +19,7 @@ var set = Ember.set, get = Ember.get,
     meta = Ember.meta,
     rewatch = Ember.rewatch,
     finishChains = Ember.finishChains,
+    sendEvent = Ember.sendEvent,
     destroy = Ember.destroy,
     schedule = Ember.run.schedule,
     Mixin = Ember.Mixin,
@@ -122,6 +123,7 @@ function makeCtor() {
     delete m.proto;
     finishChains(this);
     this.init.apply(this, arguments);
+    sendEvent(this, "didInit");
   };
 
   Class.toString = Mixin.prototype.toString;
