@@ -56,10 +56,10 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone;
   For example, you could implement the action
   `hello` for the `app-profile` component:
 
-  ```js
+  ```javascript
   App.AppProfileComponent = Ember.Component.extend({
     hello: function(name) {
-      console.log("Hello", name)
+      console.log("Hello", name);
     }
   });
   ```
