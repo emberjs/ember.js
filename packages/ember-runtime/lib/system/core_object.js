@@ -123,7 +123,13 @@ function makeCtor() {
     m.proto = proto;
     finishChains(this);
     this.init.apply(this, arguments);
-    sendEvent(this, "didInit");
+
+    // send "didInit" event
+    // Optimization: Only send the event if there may be a listener, because create
+    //               is a hot path and we are penalized by the JIT for accessing
+    //               meta after changing its shape.
+    var mayHaveDidInit = !!(m.listeners && m.listeners.didInit) || !!this.sendEvent;
+    if (mayHaveDidInit) sendEvent(this, 'didInit');
   };
 
   Class.toString = Mixin.prototype.toString;
