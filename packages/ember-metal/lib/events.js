@@ -238,7 +238,8 @@ function suspendListeners(obj, eventNames, target, method, callback) {
     target = null;
   }
 
-  var eventName, actions, i, l;
+  var suspendedActions = [],
+      eventName, actions, i, l;
 
   for (i=0, l=eventNames.length; i<l; i++) {
     eventName = eventNames[i];
@@ -247,13 +248,17 @@ function suspendListeners(obj, eventNames, target, method, callback) {
 
     if (actionIndex !== -1) {
       actions[actionIndex+2] |= SUSPENDED;
+      suspendedActions.push(actionIndex);
     }
   }
 
   function tryable() { return callback.call(target); }
 
   function finalizer() {
-    actions[actionIndex+2] &= ~SUSPENDED;
+    for (var i = 0, l = suspendedActions.length; i < l; i++) {
+      var actionIndex = suspendedActions[i];
+      actions[actionIndex+2] &= ~SUSPENDED;
+    }
   }
 
   return Ember.tryFinally(tryable, finalizer);
