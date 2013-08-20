@@ -200,7 +200,7 @@ test('while suspended, it should not be possible to add a duplicate listener', f
   Ember._suspendListener(obj, 'event!', target, target.method, callback);
 
   equal(target.count, 1, 'should invoke');
-  equal(Ember.meta(obj).listeners['event!'].length, 1, "a duplicate listener wasn't added");
+  equal(Ember.meta(obj).listeners['event!'].length, 3, "a duplicate listener wasn't added");
 
   // now test _suspendListeners...
 
@@ -209,7 +209,7 @@ test('while suspended, it should not be possible to add a duplicate listener', f
   Ember._suspendListeners(obj, ['event!'], target, target.method, callback);
 
   equal(target.count, 2, 'should have invoked again');
-  equal(Ember.meta(obj).listeners['event!'].length, 1, "a duplicate listener wasn't added");
+  equal(Ember.meta(obj).listeners['event!'].length, 3, "a duplicate listener wasn't added");
 });
 
 test('a listener can be added as part of a mixin', function() {
