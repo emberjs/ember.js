@@ -387,10 +387,10 @@ Ember.mixin = function(obj) {
   Note that Mixins are created with `Ember.Mixin.create`, not
   `Ember.Mixin.extend`.
 
-  Note that arrays defined as properties will be shared amongst objects that
-  implement the mixin.  If you want to define an array property in a mixin that
-  is not shared, you can define it either as a computed property or have it be
-  created on initialization of the object.
+  Note that mixins extend a constructor's prototype so arrays and object literals
+  defined as properties will be shared amongst objects that implement the mixin. 
+  If you want to define an property in a mixin that is not shared, you can define
+  it either as a computed property or have it be created on initialization of the object.
   
   ```javascript
   //filters array will be shared amongst any object implementing mixin
