@@ -254,6 +254,7 @@ function connectBindings(obj, m) {
         } else { // binding is string path
           binding = new Ember.Binding(to, binding);
         }
+        Ember.assert('Expected controller ' + obj + 'to have "needs" property for source controller in binding ' + binding._from, !binding._from || binding._from.split('.').length < 2 || binding._from.split('.')[0] !== 'controllers' || obj.needs.contains(binding._from.split('.')[1]));
         binding.connect(obj);
         obj[key] = binding;
       }
