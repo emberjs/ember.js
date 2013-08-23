@@ -42,11 +42,11 @@ module("Ember.Application – logging of generated classes", {
 function visit(path) {
   stop();
 
-  var promise = Ember.run(function() {
-    return new Ember.RSVP.Promise(function(resolve, reject) {
+  var promise = Ember.run(function(){
+    return new Ember.RSVP.Promise(function(resolve, reject){
       var router = App.__container__.lookup('router:main');
 
-      resolve(router.handleURL(path).then(function(value) {
+      resolve(router.handleURL(path).then(function(value){
         start();
         ok(true, 'visited: `' + path + '`');
         return value;

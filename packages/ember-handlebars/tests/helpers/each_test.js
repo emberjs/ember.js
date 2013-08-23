@@ -207,7 +207,10 @@ test("it supports itemController", function() {
     container: container
   };
 
+  container.register('controller:array', Ember.ArrayController.extend());
+
   view = Ember.View.create({
+    container: container,
     template: templateFor('{{#each view.people itemController="person"}}{{controllerName}}{{/each}}'),
     people: people,
     controller: parentController
@@ -255,9 +258,11 @@ test("itemController gets a parentController property", function() {
         company: 'Yapp'
       };
 
+  container.register('controller:array', Ember.ArrayController.extend());
   Ember.run(function() { view.destroy(); }); // destroy existing view
 
   view = Ember.View.create({
+    container: container,
     template: templateFor('{{#each view.people itemController="person"}}{{controllerName}}{{/each}}'),
     people: people,
     controller: parentController
@@ -278,9 +283,11 @@ test("it supports itemController when using a custom keyword", function() {
   });
 
   var container = new Ember.Container();
+  container.register('controller:array', Ember.ArrayController.extend());
 
   Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
+    container: container,
     template: templateFor('{{#each person in view.people itemController="person"}}{{person.controllerName}}{{/each}}'),
     people: people,
     controller: {

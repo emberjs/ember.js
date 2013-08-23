@@ -1,13 +1,78 @@
 var passedOptions;
 var Container = requireModule('container');
 
-var setProperties = function(object, properties) {
+var o_create = Object.create || (function(){
+  function F(){}
+
+  return function(o) {
+    if (arguments.length !== 1) {
+      throw new Error('Object.create implementation only accepts one parameter.');
+    }
+    F.prototype = o;
+    return new F();
+  };
+}());
+
+var guids = 0;
+
+function factory() {
+  var Klass = function(options) {
+    setProperties(this, options);
+    this._guid = guids++;
+  };
+
+  Klass.prototype.constructor = Klass;
+  Klass.prototype.destroy = function() {
+    this.isDestroyed = true;
+  };
+
+  Klass.prototype.toString = function() {
+    return "<Factory:" + this._guid + ">";
+  };
+
+  Klass.create = create;
+  Klass.extend = extend;
+  Klass.reopen = extend;
+
+  return Klass;
+
+  function create(options) {
+    passedOptions = options;
+    return new this.prototype.constructor(options);
+  }
+
+  function reopenClass(options) {
+    setProperties(this, options);
+  }
+
+  function extend (options) {
+    var Child = function(options) {
+      Klass.call(this, options);
+    };
+
+    var Parent = this;
+
+    Child.prototype = new Parent();
+    Child.prototype.constructor = Child;
+
+    setProperties(Child.prototype, options);
+
+    Child.create = create;
+    Child.extend = extend;
+    Child.reopen = extend;
+    Child.reopenClass = reopenClass;
+
+    return Child;
+  }
+}
+
+function setProperties(object, properties) {
   for (var key in properties) {
     if (properties.hasOwnProperty(key)) {
       object[key] = properties[key];
     }
   }
-};
+}
 
 var container;
 
@@ -25,23 +90,6 @@ module("Container (sub-containers)", {
     }
   }
 });
-
-function factory() {
-  var Klass = function(options) {
-    setProperties(this, options);
-  };
-
-  Klass.prototype.destroy = function() {
-    this.isDestroyed = true;
-  };
-
-  Klass.create = function(options) {
-    passedOptions = options;
-    return new Klass(options);
-  };
-
-  return Klass;
-}
 
 test("Singletons already found on the parent container will be found again on the sub-container", function() {
   var postController = container.lookup('controller:post');
