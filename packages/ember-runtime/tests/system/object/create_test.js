@@ -167,15 +167,15 @@ test("Calls all mixin inits if defined", function() {
   equal(completed, 2, 'should have called init for both mixins.');
 });
 
-test("Triggers didInit", function() {
+test("Triggers init", function() {
   var completed = false;
   var obj = Ember.Object.createWithMixins({
-    markAsCompleted: Ember.on("didInit", function(){
+    markAsCompleted: Ember.on("init", function(){
       completed = true;
     })
   });
 
-  ok(completed, 'should have triggered didInit which should have run markAsCompleted');
+  ok(completed, 'should have triggered init which should have run markAsCompleted');
 });
 
 test('creating an object with required properties', function() {

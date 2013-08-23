@@ -123,7 +123,7 @@ function makeCtor() {
     m.proto = proto;
     finishChains(this);
     this.init.apply(this, arguments);
-    sendEvent(this, "didInit");
+    sendEvent(this, "init");
   };
 
   Class.toString = Mixin.prototype.toString;
