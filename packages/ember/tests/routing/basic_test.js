@@ -32,8 +32,6 @@ function handleURLAborts(path) {
   });
 }
 
-
-
 function handleURLRejectsWith(path, expectedReason) {
   Ember.run(function() {
     router.handleURL(path).then(function(value) {
@@ -1881,6 +1879,7 @@ test("The template is not re-rendered when two routes present the exact same tem
   });
 
   App.SharedRoute = Ember.Route.extend({
+    viewName: 'shared',
     setupController: function(controller) {
       this.controllerFor('shared').set('message', "This is the " + this.routeName + " message");
     },
@@ -1890,10 +1889,12 @@ test("The template is not re-rendered when two routes present the exact same tem
     }
   });
 
-  App.FirstRoute = App.SharedRoute.extend();
+  App.FirstRoute  = App.SharedRoute.extend();
   App.SecondRoute = App.SharedRoute.extend();
-  App.ThirdRoute = App.SharedRoute.extend();
-  App.FourthRoute = App.SharedRoute.extend();
+  App.ThirdRoute  = App.SharedRoute.extend();
+  App.FourthRoute = App.SharedRoute.extend({
+    viewName: 'fourth'
+  });
 
   App.SharedController = Ember.Controller.extend();
 
@@ -1904,10 +1905,9 @@ test("The template is not re-rendered when two routes present the exact same tem
       insertionCount += 1;
     }
   });
-  App.FirstView = App.SharedView;
-  App.SecondView = App.SharedView;
-  App.ThirdView = App.SharedView;
-  App.FourthView = App.SharedView.extend(); // Extending, in essence, creates a different view
+
+  // Extending, in essence, creates a different view
+  App.FourthView = App.SharedView.extend();
 
   Ember.TEMPLATES.shared = Ember.Handlebars.compile(
     "<p>{{message}}</p>"
@@ -1918,7 +1918,7 @@ test("The template is not re-rendered when two routes present the exact same tem
   handleURL("/first");
 
   equal(Ember.$('p', '#qunit-fixture').text(), "This is the first message");
-  equal(insertionCount, 1);
+  equal(insertionCount, 1, 'expected one assertion');
 
   // Transition by URL
   handleURL("/second");
@@ -1928,7 +1928,11 @@ test("The template is not re-rendered when two routes present the exact same tem
 
   // Then transition directly by route name
   Ember.run(function() {
-    router.transitionTo('third');
+    router.transitionTo('third').then(function(value){
+      ok(true, 'expected transition');
+    }, function(reason) {
+      ok(false, 'unexpected transition failure: ', QUnit.jsDump.parse(reason));
+    });
   });
 
   equal(Ember.$('p', '#qunit-fixture').text(), "This is the third message");
@@ -1939,7 +1943,6 @@ test("The template is not re-rendered when two routes present the exact same tem
 
   equal(Ember.$('p', '#qunit-fixture').text(), "This is the fourth message");
   equal(insertionCount, 2, "view should have inserted a second time");
-
 });
 
 test("ApplicationRoute with model does not proxy the currentPath", function() {
