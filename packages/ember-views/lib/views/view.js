@@ -1972,14 +1972,6 @@ Ember.View = Ember.CoreView.extend(
 
     Ember.assert("Only arrays are allowed for 'classNames'", Ember.typeOf(this.classNames) === 'array');
     this.classNames = Ember.A(this.classNames.slice());
-
-    var viewController = get(this, 'viewController');
-    if (viewController) {
-      viewController = get(viewController);
-      if (viewController) {
-        set(viewController, 'view', this);
-      }
-    }
   },
 
   appendChild: function(view, options) {
