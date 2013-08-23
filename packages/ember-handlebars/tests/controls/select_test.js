@@ -25,7 +25,7 @@ function append() {
 }
 
 function selectedOptions() {
-  return select.get('childViews').mapProperty('selected');
+  return select.get('childViews').mapBy('selected');
 }
 
 test("has 'ember-view' and 'ember-select' CSS classes", function() {
