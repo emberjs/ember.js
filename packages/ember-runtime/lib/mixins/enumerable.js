@@ -308,7 +308,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @method mapProperty
     @param {String} key name of the property
     @return {Array} The mapped array.
-    @deprecated User `filterBy` instead Use `mapBy` instead
+    @deprecated Use `mapBy` instead
   */
 
   mapProperty: Ember.aliasMethod('mapBy'),
@@ -402,7 +402,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Array} filtered array
-    @deprecated User `filterBy` instead
+    @deprecated Use `filterBy` instead
   */
   filterProperty: Ember.aliasMethod('filterBy'),
 
@@ -433,7 +433,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Array} rejected array
-    @deprecated User `rejectBy` instead
+    @deprecated Use `rejectBy` instead
   */
   rejectProperty: Ember.aliasMethod('rejectBy'),
 
@@ -508,7 +508,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Object} found item or `undefined`
-    @deprecated User `findBy` instead
+    @deprecated Use `findBy` instead
   */
   findProperty: Ember.aliasMethod('findBy'),
 
