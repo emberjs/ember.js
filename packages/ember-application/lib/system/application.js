@@ -634,11 +634,20 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   ready: Ember.K,
 
   /**
+
+    @depercated Use 'Resolver' instead
     Set this to provide an alternate class to `Ember.DefaultResolver`
 
     @property resolver
   */
   resolver: null,
+
+  /**
+    Set this to provide an alternate class to `Ember.DefaultResolver`
+
+    @property resolver
+  */
+  Resolver: null,
 
   willDestroy: function() {
     Ember.BOOTED = false;
@@ -696,9 +705,9 @@ Ember.Application.reopenClass({
     Ember.Container.defaultContainer = new DeprecatedContainer(container);
 
     container.set = Ember.set;
-    container.normalize = normalize;
-    container.resolver = resolverFor(namespace);
-    container.describe = container.resolver.describe;
+    container.resolver  = resolverFor(namespace);
+    container.normalize = container.resolver.normalize;
+    container.describe  = container.resolver.describe;
     container.optionsForType('component', { singleton: false });
     container.optionsForType('view', { singleton: false });
     container.optionsForType('template', { instantiate: false });
@@ -739,8 +748,12 @@ Ember.Application.reopenClass({
   @return {*} the resolved value for a given lookup
 */
 function resolverFor(namespace) {
-  var resolverClass = namespace.get('resolver') || Ember.DefaultResolver;
-  var resolver = resolverClass.create({
+  if (namespace.get('resolver')) {
+    Ember.deprecate('Application.resolver is deprecated infavour of Application.Resolver', false);
+  }
+
+  var ResolverClass = namespace.get('resolver') || namespace.get('Resolver') || Ember.DefaultResolver;
+  var resolver = ResolverClass.create({
     namespace: namespace
   });
 
@@ -752,31 +765,16 @@ function resolverFor(namespace) {
     return resolver.lookupDescription(fullName);
   };
 
+  resolve.normalize = function(fullName) {
+    if (resolver.normalize) {
+      return resolver.normalize(fullName);
+    } else {
+      Ember.deprecate('The Resolver should now provide a \'normalize\' function', false);
+      return fullName;
+    }
+  };
+
   return resolve;
-}
-
-function normalize(fullName) {
-  var split = fullName.split(':', 2),
-      type = split[0],
-      name = split[1];
-
-  Ember.assert("Tried to normalize a container name without a colon (:) in it. You probably tried to lookup a name that did not contain a type, a colon, and a name. A proper lookup name would be `view:post`.", split.length === 2);
-
-  if (type !== 'template') {
-    var result = name;
-
-    if (result.indexOf('.') > -1) {
-      result = result.replace(/\.(.)/g, function(m) { return m.charAt(1).toUpperCase(); });
-    }
-
-    if (name.indexOf('_') > -1) {
-      result = result.replace(/_(.)/g, function(m) { return m.charAt(1).toUpperCase(); });
-    }
-
-    return type + ':' + result;
-  } else {
-    return fullName;
-  }
 }
 
 Ember.runLoadHooks('Ember.Application', Ember.Application);

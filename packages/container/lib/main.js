@@ -123,6 +123,7 @@ define("container",
       this.children = [];
 
       this.resolver = parent && parent.resolver || function() {};
+
       this.registry = new InheritingDict(parent && parent.registry);
       this.cache = new InheritingDict(parent && parent.cache);
       this.factoryCache = new InheritingDict(parent && parent.cache);
