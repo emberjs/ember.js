@@ -63,3 +63,53 @@ test('template with type text/x-raw-handlebars should be parsed', function() {
   // This won't even work with Ember templates
   equal(Ember.$.trim(Ember.TEMPLATES['funkyTemplate']({ name: 'Tobias' })), "Tobias");
 });
+
+test('duplicated default application templates should throw exception', function() {
+  Ember.$('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars">second</script>');
+
+  throws(function () {
+    Ember.Handlebars.bootstrap(Ember.$('#qunit-fixture'));
+  },
+  /Template named "[^"]+" already exists\./,
+  "duplicate templates should not be allowed");
+});
+
+test('default application template and id application template present should throw exception', function() {
+  Ember.$('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" id="application">second</script>');
+
+  throws(function () {
+    Ember.Handlebars.bootstrap(Ember.$('#qunit-fixture'));
+  },
+  /Template named "[^"]+" already exists\./,
+  "duplicate templates should not be allowed");
+});
+
+test('default application template and data-template-name application template present should throw exception', function() {
+  Ember.$('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" data-template-name="application">second</script>');
+
+  throws(function () {
+    Ember.Handlebars.bootstrap(Ember.$('#qunit-fixture'));
+  },
+  /Template named "[^"]+" already exists\./,
+  "duplicate templates should not be allowed");
+});
+
+test('duplicated template id should throw exception', function() {
+  Ember.$('#qunit-fixture').html('<script type="text/x-handlebars" id="funkyTemplate">first</script><script type="text/x-handlebars" id="funkyTemplate">second</script>');
+
+  throws(function () {
+    Ember.Handlebars.bootstrap(Ember.$('#qunit-fixture'));
+  },
+  /Template named "[^"]+" already exists\./,
+  "duplicate templates should not be allowed");
+});
+
+test('duplicated template data-template-name should throw exception', function() {
+  Ember.$('#qunit-fixture').html('<script type="text/x-handlebars" data-template-name="funkyTemplate">first</script><script type="text/x-handlebars" data-template-name="funkyTemplate">second</script>');
+
+  throws(function () {
+    Ember.Handlebars.bootstrap(Ember.$('#qunit-fixture'));
+  },
+  /Template named "[^"]+" already exists\./,
+  "duplicate templates should not be allowed");
+});
