@@ -57,6 +57,60 @@ testBoth('nested observers should fire in order', function(get,set) {
 
 });
 
+testBoth('removing an chain observer on change should not fail', function(get,set) {
+  var foo = { bar: 'bar' },
+    obj1 = { foo: foo }, obj2 = { foo: foo }, obj3 = { foo: foo }, obj4 = { foo: foo },
+    count1=0, count2=0, count3=0, count4=0;
+  function observer1() { count1++; }
+  function observer2() { count2++; }
+  function observer3() {
+    count3++;
+    Ember.removeObserver(obj1, 'foo.bar', observer1);
+    Ember.removeObserver(obj2, 'foo.bar', observer2);
+    Ember.removeObserver(obj4, 'foo.bar', observer4);
+  }
+  function observer4() { count4++; }
+
+  Ember.addObserver(obj1, 'foo.bar' , observer1);
+  Ember.addObserver(obj2, 'foo.bar' , observer2);
+  Ember.addObserver(obj3, 'foo.bar' , observer3);
+  Ember.addObserver(obj4, 'foo.bar' , observer4);
+
+  set(foo, 'bar', 'baz');
+
+  equal(count1, 1, 'observer1 fired');
+  equal(count2, 1, 'observer2 fired');
+  equal(count3, 1, 'observer3 fired');
+  equal(count4, 0, 'observer4 did not fire');
+});
+
+testBoth('removing an chain before observer on change should not fail', function(get,set) {
+  var foo = { bar: 'bar' },
+    obj1 = { foo: foo }, obj2 = { foo: foo }, obj3 = { foo: foo }, obj4 = { foo: foo },
+    count1=0, count2=0, count3=0, count4=0;
+  function observer1() { count1++; }
+  function observer2() { count2++; }
+  function observer3() {
+    count3++;
+    Ember.removeBeforeObserver(obj1, 'foo.bar', observer1);
+    Ember.removeBeforeObserver(obj2, 'foo.bar', observer2);
+    Ember.removeBeforeObserver(obj4, 'foo.bar', observer4);
+  }
+  function observer4() { count4++; }
+
+  Ember.addBeforeObserver(obj1, 'foo.bar' , observer1);
+  Ember.addBeforeObserver(obj2, 'foo.bar' , observer2);
+  Ember.addBeforeObserver(obj3, 'foo.bar' , observer3);
+  Ember.addBeforeObserver(obj4, 'foo.bar' , observer4);
+
+  set(foo, 'bar', 'baz');
+
+  equal(count1, 1, 'observer1 fired');
+  equal(count2, 1, 'observer2 fired');
+  equal(count3, 1, 'observer3 fired');
+  equal(count4, 0, 'observer4 did not fire');
+});
+
 testBoth('suspending an observer should not fire during callback', function(get,set) {
   var obj = {}, target, otherTarget;
 

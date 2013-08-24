@@ -125,6 +125,8 @@ var chainsWillChange = function(obj, keyName, m, arg) {
   nodes = nodes[keyName];
   if (!nodes) { return; }
 
+  nodes = nodes.slice();
+
   for(var i = 0, l = nodes.length; i < l; i++) {
     nodes[i].willChange(arg);
   }
@@ -138,8 +140,9 @@ var chainsDidChange = function(obj, keyName, m, arg) {
   nodes = nodes[keyName];
   if (!nodes) { return; }
 
-  // looping in reverse because the chainWatchers array can be modified inside didChange
-  for (var i = nodes.length - 1; i >= 0; i--) {
+  nodes = nodes.slice();
+
+  for(var i = 0, l = nodes.length; i < l; i++) {
     nodes[i].didChange(arg);
   }
 };
