@@ -2252,3 +2252,44 @@ test("Events can be handled by inherited event handlers", function() {
   router.send("baz");
 });
 
+test("currentRouteName is a property installed on ApplicationController that can be used in transitionTo", function() {
+
+  expect(24);
+
+  Router.map(function() {
+    this.resource("be", function() {
+      this.resource("excellent", function() {
+        this.resource("to", function() {
+          this.resource("each", function() {
+            this.route("other");
+          });
+        });
+      });
+    });
+  });
+
+  bootApplication();
+
+  var appController = router.container.lookup('controller:application');
+
+  function transitionAndCheck(path, expectedPath, expectedRouteName) {
+    if (path) { Ember.run(router, 'transitionTo', path); }
+    equal(appController.get('currentPath'), expectedPath);
+    equal(appController.get('currentRouteName'), expectedRouteName);
+  }
+
+  transitionAndCheck(null, 'index', 'index');
+  transitionAndCheck('/be', 'be.index', 'be.index');
+  transitionAndCheck('/be/excellent', 'be.excellent.index', 'excellent.index');
+  transitionAndCheck('/be/excellent/to', 'be.excellent.to.index', 'to.index');
+  transitionAndCheck('/be/excellent/to/each', 'be.excellent.to.each.index', 'each.index');
+  transitionAndCheck('/be/excellent/to/each/other', 'be.excellent.to.each.other', 'each.other');
+
+  transitionAndCheck('index', 'index', 'index');
+  transitionAndCheck('be', 'be.index', 'be.index');
+  transitionAndCheck('excellent', 'be.excellent.index', 'excellent.index');
+  transitionAndCheck('to.index', 'be.excellent.to.index', 'to.index');
+  transitionAndCheck('each', 'be.excellent.to.each.index', 'each.index');
+  transitionAndCheck('each.other', 'be.excellent.to.each.other', 'each.other');
+});
+
