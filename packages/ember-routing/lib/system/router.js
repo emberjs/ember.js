@@ -56,10 +56,12 @@ Ember.Router = Ember.Object.extend({
     var appController = this.container.lookup('controller:application'),
         path = Ember.Router._routePath(infos);
 
-    if (!('currentPath' in appController)) {
-      defineProperty(appController, 'currentPath');
-    }
+    if (!('currentPath' in appController)) { defineProperty(appController, 'currentPath'); }
     set(appController, 'currentPath', path);
+
+    if (!('currentRouteName' in appController)) { defineProperty(appController, 'currentRouteName'); }
+    set(appController, 'currentRouteName', infos[infos.length - 1].name);
+
     this.notifyPropertyChange('url');
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
