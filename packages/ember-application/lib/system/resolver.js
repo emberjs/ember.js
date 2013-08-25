@@ -39,7 +39,7 @@ var get = Ember.get,
 
   ```javascript
   App = Ember.Application.create({
-    resolver: Ember.DefaultResolver.extend({
+    Resolver: Ember.DefaultResolver.extend({
       resolveTemplate: function(parsedName) {
         var resolvedTemplate = this._super(parsedName);
         if (resolvedTemplate) { return resolvedTemplate; }
