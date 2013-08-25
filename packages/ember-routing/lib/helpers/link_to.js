@@ -41,13 +41,13 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     a supplied route by name.
 
     Instances of `LinkView` will most likely be created through
-    the `linkTo` Handlebars helper, but properties of this class
+    the `link-to` Handlebars helper, but properties of this class
     can be overridden to customize application-wide behavior.
 
     @class LinkView
     @namespace Ember
     @extends Ember.View
-    @see {Handlebars.helpers.linkTo}
+    @see {Handlebars.helpers.link-to}
   **/
   var LinkView = Ember.LinkView = Ember.View.extend({
     tagName: 'a',
@@ -114,7 +114,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     classNameBindings: ['active', 'loading', 'disabled'],
 
     /**
-      By default the `{{linkTo}}` helper responds to the `click` event. You
+      By default the `{{link-to}}` helper responds to the `click` event. You
       can override this globally by setting this property to your custom
       event name.
 
@@ -250,7 +250,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       if (get(this, '_isDisabled')) { return false; }
 
       if (get(this, 'loading')) {
-        Ember.Logger.warn("This linkTo is in an inactive loading state because at least one of its parameters' presently has a null/undefined value, or the provided route name is invalid.");
+        Ember.Logger.warn("This link-to is in an inactive loading state because at least one of its parameters' presently has a null/undefined value, or the provided route name is invalid.");
         return false;
       }
 
@@ -276,7 +276,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       }
       namedRoute = fullRouteName(router, namedRoute);
 
-      Ember.assert(fmt("The attempt to linkTo route '%@' failed. The router did not find '%@' in its possible routes: '%@'", [namedRoute, namedRoute, Ember.keys(router.router.recognizer.names).join("', '")]), router.hasRoute(namedRoute));
+      Ember.assert(fmt("The attempt to link-to route '%@' failed. The router did not find '%@' in its possible routes: '%@'", [namedRoute, namedRoute, Ember.keys(router.router.recognizer.names).join("', '")]), router.hasRoute(namedRoute));
 
       var resolvedContexts = resolvedPaths(this.parameters), paramsPresent = true;
       for (var i = 0, l = resolvedContexts.length; i < l; ++i) {
@@ -308,7 +308,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     }).property('routeArgs'),
 
     /**
-      The default href value to use while a linkTo is loading.
+      The default href value to use while a link-to is loading.
       Only applies when tagName is 'a'
 
       @property loadingHref
@@ -321,16 +321,16 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   LinkView.toString = function() { return "LinkView"; };
 
   /**
-    The `{{linkTo}}` helper renders a link to the supplied
+    The `{{link-to}}` helper renders a link to the supplied
     `routeName` passing an optionally supplied model to the
     route as its `model` context of the route. The block
-    for `{{linkTo}}` becomes the innerHTML of the rendered
+    for `{{link-to}}` becomes the innerHTML of the rendered
     element:
 
     ```handlebars
-    {{#linkTo 'photoGallery'}}
+    {{#link-to 'photoGallery'}}
       Great Hamster Photos
-    {{/linkTo}}
+    {{/link-to}}
     ```
 
     ```html
@@ -340,14 +340,14 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ```
 
     ### Supplying a tagName
-    By default `{{linkTo}}` renders an `<a>` element. This can
-    be overridden for a single use of `{{linkTo}}` by supplying
+    By default `{{link-to}}` renders an `<a>` element. This can
+    be overridden for a single use of `{{link-to}}` by supplying
     a `tagName` option:
 
     ```handlebars
-    {{#linkTo 'photoGallery' tagName="li"}}
+    {{#link-to 'photoGallery' tagName="li"}}
       Great Hamster Photos
-    {{/linkTo}}
+    {{/link-to}}
     ```
 
     ```html
@@ -360,23 +360,23 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     "Overriding Application-wide Defaults".
 
     ### Handling `href`
-    `{{linkTo}}` will use your application's Router to
+    `{{link-to}}` will use your application's Router to
     fill the element's `href` property with a url that
     matches the path to the supplied `routeName` for your
     routers's configured `Location` scheme, which defaults
     to Ember.HashLocation.
 
     ### Handling current route
-    `{{linkTo}}` will apply a CSS class name of 'active'
+    `{{link-to}}` will apply a CSS class name of 'active'
     when the application's current route matches
     the supplied routeName. For example, if the application's
     current route is 'photoGallery.recent' the following
-    use of `{{linkTo}}`:
+    use of `{{link-to}}`:
 
     ```handlebars
-    {{#linkTo 'photoGallery.recent'}}
+    {{#link-to 'photoGallery.recent'}}
       Great Hamster Photos from the last week
-    {{/linkTo}}
+    {{/link-to}}
     ```
 
     will result in
@@ -388,13 +388,13 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ```
 
     The CSS class name used for active classes can be customized
-    for a single use of `{{linkTo}}` by passing an `activeClass`
+    for a single use of `{{link-to}}` by passing an `activeClass`
     option:
 
     ```handlebars
-    {{#linkTo 'photoGallery.recent' activeClass="current-url"}}
+    {{#link-to 'photoGallery.recent' activeClass="current-url"}}
       Great Hamster Photos from the last week
-    {{/linkTo}}
+    {{/link-to}}
     ```
 
     ```html
@@ -418,9 +418,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ```
 
     ```handlebars
-    {{#linkTo 'photoGallery' aPhoto}}
+    {{#link-to 'photoGallery' aPhoto}}
       {{aPhoto.title}}
-    {{/linkTo}}
+    {{/link-to}}
     ```
 
     ```html
@@ -446,9 +446,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     This argument will become the model context of the linked route:
 
     ```handlebars
-    {{#linkTo 'photoGallery.comment' aPhoto comment}}
+    {{#link-to 'photoGallery.comment' aPhoto comment}}
       {{comment.body}}
-    {{/linkTo}}
+    {{/link-to}}
     ```
 
     ```html
@@ -458,7 +458,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ```
 
     ### Overriding Application-wide Defaults
-    ``{{linkTo}}`` creates an instance of Ember.LinkView
+    ``{{link-to}}`` creates an instance of Ember.LinkView
     for rendering. To override options for your entire
     application, reopen Ember.LinkView and supply the
     desired values:
@@ -479,13 +479,13 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     });
     ```
 
-    @method linkTo
+    @method link-to
     @for Ember.Handlebars.helpers
     @param {String} routeName
     @param {Object} [context]*
     @return {String} HTML string
   */
-  Ember.Handlebars.registerHelper('linkTo', function(name) {
+  Ember.Handlebars.registerHelper('link-to', function(name) {
     var options = [].slice.call(arguments, -1)[0],
         params = [].slice.call(arguments, 1, -1);
 
@@ -495,7 +495,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       if (Ember.ENV.HELPER_PARAM_LOOKUPS) {
         hash.namedRouteBinding = name;
       } else {
-        Ember.deprecate("You provided a quoteless destination route parameter of " + name + " to the linkTo helper. Soon, this will perform a property lookup, rather than be treated as a string. To get rid of this warning, wrap " + name + " in quotes. To opt in to this new behavior, set ENV.HELPER_PARAM_LOOKUPS = true");
+        Ember.deprecate("You provided a quoteless destination route parameter of " + name + " to the link-to helper. Soon, this will perform a property lookup, rather than be treated as a string. To get rid of this warning, wrap " + name + " in quotes. To opt in to this new behavior, set ENV.HELPER_PARAM_LOOKUPS = true");
         hash.namedRoute = name;
       }
     } else {
@@ -512,6 +512,17 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     return Ember.Handlebars.helpers.view.call(this, LinkView, options);
   });
+
+  /**
+    See `link-to`
+
+    @method linkTo
+    @for Ember.Handlebars.helpers
+    @param {String} routeName
+    @param {Object} [context]*
+    @return {String} HTML string
+  */
+  Ember.Handlebars.registerHelper('linkTo', Ember.Handlebars.helpers['link-to']);
 });
 
 
