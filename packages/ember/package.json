@@ -10,7 +10,6 @@
     "spade":                 "~> 1.0.0",
     "ember-runtime": "1.0.0-rc.8",
     "ember-views": "1.0.0-rc.8",
-    "ember-states": "1.0.0-rc.8",
     "ember-routing": "1.0.0-rc.8",
     "ember-handlebars": "1.0.0-rc.8"
   },
