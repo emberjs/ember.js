@@ -312,11 +312,11 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
 });
 
 /**
-  `bindAttr` allows you to create a binding between DOM element attributes and
+  `bind-attr` allows you to create a binding between DOM element attributes and
   Ember objects. For example:
 
   ```handlebars
-  <img {{bindAttr src="imageUrl" alt="imageTitle"}}>
+  <img {{bind-attr src="imageUrl" alt="imageTitle"}}>
   ```
 
   The above handlebars template will fill the `<img>`'s `src` attribute will
@@ -338,17 +338,17 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   <img src="http://lolcats.info/haz-a-funny" alt="A humorous image of a cat">
   ```
 
-  `bindAttr` cannot redeclare existing DOM element attributes. The use of `src`
-  in the following `bindAttr` example will be ignored and the hard coded value
+  `bind-attr` cannot redeclare existing DOM element attributes. The use of `src`
+  in the following `bind-attr` example will be ignored and the hard coded value
   of `src="/failwhale.gif"` will take precedence:
 
   ```handlebars
-  <img src="/failwhale.gif" {{bindAttr src="imageUrl" alt="imageTitle"}}>
+  <img src="/failwhale.gif" {{bind-attr src="imageUrl" alt="imageTitle"}}>
   ```
 
-  ### `bindAttr` and the `class` attribute
+  ### `bind-attr` and the `class` attribute
 
-  `bindAttr` supports a special syntax for handling a number of cases unique
+  `bind-attr` supports a special syntax for handling a number of cases unique
   to the `class` DOM element attribute. The `class` attribute combines
   multiple discreet values into a single attribute as a space-delimited
   list of strings. Each string can be:
@@ -357,7 +357,7 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   * a boolean return value of an object's property
   * a hard-coded value
 
-  A string return value works identically to other uses of `bindAttr`. The
+  A string return value works identically to other uses of `bind-attr`. The
   return value of the property will become the value of the attribute. For
   example, the following view and template:
 
@@ -370,7 +370,7 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   ```
 
   ```handlebars
-  <img {{bindAttr class="view.someProperty}}>
+  <img {{bind-attr class="view.someProperty}}>
   ```
 
   Result in the following rendered output:
@@ -392,7 +392,7 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   ```
 
   ```handlebars
-  <img {{bindAttr class="view.someBool:class-name-if-true"}}>
+  <img {{bind-attr class="view.someBool:class-name-if-true"}}>
   ```
 
   Result in the following rendered output:
@@ -406,14 +406,14 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   value changes:
 
   ```handlebars
-  <img {{bindAttr class="view.someBool:class-name-if-true:class-name-if-false"}}>
+  <img {{bind-attr class="view.someBool:class-name-if-true:class-name-if-false"}}>
   ```
 
   A hard-coded value can be used by prepending `:` to the desired
   class name: `:class-name-to-always-apply`.
 
   ```handlebars
-  <img {{bindAttr class=":class-name-to-always-apply"}}>
+  <img {{bind-attr class=":class-name-to-always-apply"}}>
   ```
 
   Results in the following rendered output:
@@ -426,19 +426,19 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   hard-coded value – can be combined in a single declaration:
 
   ```handlebars
-  <img {{bindAttr class=":class-name-to-always-apply view.someBool:class-name-if-true view.someProperty"}}>
+  <img {{bind-attr class=":class-name-to-always-apply view.someBool:class-name-if-true view.someProperty"}}>
   ```
 
-  @method bindAttr
+  @method bind-attr
   @for Ember.Handlebars.helpers
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('bindAttr', function(options) {
+EmberHandlebars.registerHelper('bind-attr', function(options) {
 
   var attrs = options.hash;
 
-  Ember.assert("You must specify at least one hash argument to bindAttr", !!Ember.keys(attrs).length);
+  Ember.assert("You must specify at least one hash argument to bind-attr", !!Ember.keys(attrs).length);
 
   var view = options.data.view;
   var ret = [];
@@ -500,7 +500,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     // When the observer fires, find the element using the
     // unique data id and update the attribute to the new value.
     // Note: don't add observer when path is 'this' or path
-    // is whole keyword e.g. {{#each x in list}} ... {{bindAttr attr="x"}}
+    // is whole keyword e.g. {{#each x in list}} ... {{bind-attr attr="x"}}
     if (path !== 'this' && !(normalized.isKeyword && normalized.path === '' )) {
       view.registerObserver(normalized.root, normalized.path, observer);
     }
@@ -519,6 +519,18 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   ret.push('data-bindattr-' + dataId + '="' + dataId + '"');
   return new EmberHandlebars.SafeString(ret.join(' '));
 });
+
+/**
+  See `bind-attr`
+
+  @method bindAttr
+  @for Ember.Handlebars.helpers
+  @deprecated
+  @param {Function} context
+  @param {Hash} options
+  @return {String} HTML string
+*/
+EmberHandlebars.registerHelper('bindAttr', EmberHandlebars.helpers['bind-attr']);
 
 /**
   @private
