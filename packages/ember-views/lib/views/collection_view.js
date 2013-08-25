@@ -150,12 +150,6 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   manipulated. Instead, add, remove, replace items from its `content` property.
   This will trigger appropriate changes to its rendered HTML.
 
-  ## Use in templates via the `{{collection}}` `Ember.Handlebars` helper
-
-  `Ember.Handlebars` provides a helper specifically for adding
-  `CollectionView`s to templates. See `Ember.Handlebars.collection` for more
-  details
-
   @class CollectionView
   @namespace Ember
   @extends Ember.ContainerView
