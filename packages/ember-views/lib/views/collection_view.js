@@ -297,18 +297,20 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
     @param {Number} added number of object added to content
   */
   arrayDidChange: function(content, start, removed, added) {
-    var itemViewClass = get(this, 'itemViewClass'),
-        addedViews = [], view, item, idx, len;
-
-    if ('string' === typeof itemViewClass) {
-      itemViewClass = get(itemViewClass) || this.container.lookupFactory('view:' + itemViewClass);
-    }
-
-    Ember.assert(fmt("itemViewClass must be a subclass of Ember.View, not %@", [itemViewClass]), Ember.View.detect(itemViewClass));
+    var addedViews = [], view, item, idx, len, itemViewClass,
+      emptyView;
 
     len = content ? get(content, 'length') : 0;
 
     if (len) {
+      itemViewClass = get(this, 'itemViewClass');
+
+      if ('string' === typeof itemViewClass) {
+        itemViewClass = get(itemViewClass) || itemViewClass;
+      }
+
+      Ember.assert(fmt("itemViewClass must be a subclass of Ember.View, not %@", [itemViewClass]), 'string' === typeof itemViewClass || Ember.View.detect(itemViewClass));
+
       for (idx = start; idx < start+added; idx++) {
         item = content.objectAt(idx);
 
@@ -320,21 +322,23 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
         addedViews.push(view);
       }
     } else {
-      var emptyView = get(this, 'emptyView');
+      emptyView = get(this, 'emptyView');
+
       if (!emptyView) { return; }
 
       if ('string' === typeof emptyView) {
-        emptyView = get(emptyView) || this.container.lookupFactory('view:' + emptyView);
+        emptyView = get(emptyView) || emptyView;
       }
-
-      var isClass = Ember.CoreView.detect(emptyView);
 
       emptyView = this.createChildView(emptyView);
       addedViews.push(emptyView);
       set(this, 'emptyView', emptyView);
 
-      if (isClass) { this._createdEmptyView = emptyView; }
+      if (Ember.CoreView.detect(emptyView)) {
+        this._createdEmptyView = emptyView;
+      }
     }
+
     this.replace(start, 0, addedViews);
   },
 
@@ -342,9 +346,11 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
     view = this._super(view, attrs);
 
     var itemTagName = get(view, 'tagName');
-    var tagName = (itemTagName === null || itemTagName === undefined) ? Ember.CollectionView.CONTAINER_MAP[get(this, 'tagName')] : itemTagName;
 
-    set(view, 'tagName', tagName);
+    if (itemTagName === null || itemTagName === undefined) {
+      itemTagName = Ember.CollectionView.CONTAINER_MAP[get(this, 'tagName')];
+      set(view, 'tagName', itemTagName);
+    }
 
     return view;
   }

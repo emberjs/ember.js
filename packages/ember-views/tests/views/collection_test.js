@@ -612,7 +612,7 @@ test("should lookup against the container if itemViewClass is given as a string"
         buf.push(get(this, 'content'));
       }
   });
-   
+
   var container = {
     lookupFactory: lookupFactory
   };
@@ -628,7 +628,7 @@ test("should lookup against the container if itemViewClass is given as a string"
   });
 
   equal(view.$('.ember-view').length, 4);
-  
+
   function lookupFactory(fullName) {
     equal(fullName, 'view:item');
 

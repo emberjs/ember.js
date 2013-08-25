@@ -2082,7 +2082,7 @@ Ember.View = Ember.CoreView.extend(
     act as a child of the parent.
 
     @method createChildView
-    @param {Class} viewClass
+    @param {Class|String} viewClass
     @param {Hash} [attrs] Attributes to add
     @return {Ember.View} new instance
   */
@@ -2093,11 +2093,11 @@ Ember.View = Ember.CoreView.extend(
 
     attrs = attrs || {};
     attrs._parentView = this;
-    attrs.container = this.container;
 
     if (Ember.CoreView.detect(view)) {
       attrs.templateData = attrs.templateData || get(this, 'templateData');
 
+      attrs.container = this.container;
       view = view.create(attrs);
 
       // don't set the property on a virtual view, as they are invisible to
@@ -2105,14 +2105,24 @@ Ember.View = Ember.CoreView.extend(
       if (view.viewName) {
         set(get(this, 'concreteView'), view.viewName, view);
       }
+    } else if ('string' === typeof view) {
+      var fullName = 'view:' + view;
+      var View = this.container.lookupFactory(fullName);
+
+      Ember.assert("Could not find view: '" + fullName + "'", !!View);
+
+      attrs.templateData = get(this, 'templateData');
+      view = View.create(attrs);
     } else {
       Ember.assert('You must pass instance or subclass of View', view.isView);
+      attrs.container = this.container;
+
+      if (!get(view, 'templateData')) {
+        attrs.templateData = get(this, 'templateData');
+      }
 
       Ember.setProperties(view, attrs);
 
-      if (!get(view, 'templateData')) {
-        set(view, 'templateData', get(this, 'templateData'));
-      }
     }
 
     return view;
