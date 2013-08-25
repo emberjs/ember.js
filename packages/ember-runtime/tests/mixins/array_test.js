@@ -439,7 +439,7 @@ testBoth("observers that contain @each in the path should fire only once the fir
 
   var obj = Ember.Object.createWithMixins({
     init: function() {
-      // Observer fires once when resources changes
+      // Observer does not fire on init
       set(this, 'resources', Ember.A());
     },
 
@@ -453,5 +453,5 @@ testBoth("observers that contain @each in the path should fire only once the fir
   // Observer fires third time when property on an object is changed
   set(get(obj, 'resources').objectAt(0), 'common', "BYE!");
 
-  equal(count, 3, "observers should only be called once");
+  equal(count, 2, "observers should only be called once");
 });
