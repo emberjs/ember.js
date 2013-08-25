@@ -301,16 +301,13 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
         addedViews = [], view, item, idx, len;
 
     if ('string' === typeof itemViewClass) {
-      var newItemViewClass = get(itemViewClass);
-      if (!newItemViewClass) {
-        newItemViewClass = this.container.lookupFactory('view:' + itemViewClass);
-      }
-      itemViewClass = newItemViewClass;
+      itemViewClass = get(itemViewClass) || this.container.lookupFactory('view:' + itemViewClass);
     }
 
     Ember.assert(fmt("itemViewClass must be a subclass of Ember.View, not %@", [itemViewClass]), Ember.View.detect(itemViewClass));
 
     len = content ? get(content, 'length') : 0;
+
     if (len) {
       for (idx = start; idx < start+added; idx++) {
         item = content.objectAt(idx);
@@ -327,11 +324,7 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
       if (!emptyView) { return; }
 
       if ('string' === typeof emptyView) {
-        var newEmptyView = get(emptyView);
-        if (!newEmptyView) {
-          newEmptyView = this.container.lookupFactory('view:' + emptyView);
-        }
-        emptyView = newEmptyView;
+        emptyView = get(emptyView) || this.container.lookupFactory('view:' + emptyView);
       }
 
       var isClass = Ember.CoreView.detect(emptyView);
