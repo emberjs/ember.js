@@ -630,7 +630,7 @@ test("should allow multiple contexts to be specified", function() {
   deepEqual(passedContexts, models, "the action was called with the passed contexts");
 });
 
-test("should allow multiple contexts to be specified", function() {
+test("should allow multiple contexts to be specified mixed with string args", function() {
   var passedParams,
       model = Ember.Object.create();
 
