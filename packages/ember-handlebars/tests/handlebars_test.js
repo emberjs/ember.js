@@ -529,41 +529,40 @@ test("Template updates correctly if a path is passed to the bind helper", functi
   equal(view.$('h1').text(), "$6", "updates when parent property changes");
 });
 
-// test("Template updates correctly if a path is passed to the bind helper and the context object is an Ember.ObjectController", function() {
-//   var templates;
+test("Template updates correctly if a path is passed to the bind helper and the context object is an Ember.ObjectController", function() {
+  container.register('template:menu', Ember.Handlebars.compile('<h1>{{bind "view.coffee.price"}}</h1>'));
 
-//   templates = Ember.Object.create({
-//     menu: Ember.Handlebars.compile('<h1>{{bind "coffee.price"}}</h1>')
-//   });
+  var controller = Ember.ObjectController.create();
 
-//   var controller = Ember.ObjectController.create();
-//   var realObject = Ember.Object.create({
-//     price: "$4"
-//   });
+  var realObject = Ember.Object.create({
+    price: "$4"
+  });
 
-//   set(controller, 'content', realObject);
+  set(controller, 'content', realObject);
 
-//   var view = Ember.View.create({
-//     templateName: 'menu',
-//     templates: templates,
+  view = Ember.View.create({
+    container: container,
+    templateName: 'menu',
 
-//     coffee: controller
-//   });
+    coffee: controller
+  });
 
-//   view.createElement();
+  appendView();
 
-//   equal(view.$('h1').text(), "$4", "precond - renders price");
+  equal(view.$('h1').text(), "$4", "precond - renders price");
 
-//   set(realObject, 'price', "$5");
+  Ember.run(function() {
+    set(realObject, 'price', "$5");
+  });
 
-//   equal(view.$('h1').text(), "$5", "updates when property is set on real object");
+  equal(view.$('h1').text(), "$5", "updates when property is set on real object");
 
-//   Ember.run(function() {
-//     set(controller, 'price', "$6" );
-//   });
+  Ember.run(function() {
+    set(controller, 'price', "$6" );
+  });
 
-//   equal(view.$('h1').text(), "$6", "updates when property is set on object controller");
-// });
+  equal(view.$('h1').text(), "$6", "updates when property is set on object controller");
+});
 
 test("should update the block when object passed to #if helper changes", function() {
   container.register('template:menu', Ember.Handlebars.compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
@@ -689,26 +688,6 @@ test("edge case: child conditional should not render children if parent conditio
 
   ok(!childCreated, 'child should not be created');
 });
-
-// test("Should insert a localized string if the {{loc}} helper is used", function() {
-//   Ember.stringsFor('en', {
-//     'Brazil': 'Brasilia'
-//   });
-
-//   templates = Ember.Object.create({
-//     'loc': Ember.Handlebars.compile('<h1>Country: {{loc "Brazil"}}')
-//   });
-
-//   var view = Ember.View.create({
-//     templateName: 'loc',
-//     templates: templates,
-
-//     country: 'Brazil'
-//   });
-
-//   view.createElement();
-//   equal(view.$('h1').text(), 'Country: Brasilia', "returns localized value");
-// });
 
 test("Template views return throw if their template cannot be found", function() {
   view = Ember.View.create({
@@ -2194,8 +2173,6 @@ test("bindings can be 'this', in which case they *are* the current context", fun
 // https://github.com/emberjs/ember.js/issues/120
 
 test("should not enter an infinite loop when binding an attribute in Handlebars", function() {
-  expect(0);
-
   var App;
 
   Ember.run(function() {
@@ -2221,9 +2198,8 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
 
   Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
-    // App.Link.create().appendTo('#qunit-fixture');
   });
-  // equal(view.$().attr('href'), 'test');
+  equal(parentView.$('a').attr('href'), 'test');
 
   Ember.run(function() {
     parentView.destroy();
