@@ -1,3 +1,4 @@
+require('ember-metal/enumerable_utils');
 require('ember-runtime/mixins/observable');
 require('ember-runtime/mixins/mutable_array');
 require('ember-runtime/mixins/copyable');
@@ -8,7 +9,7 @@ require('ember-runtime/mixins/copyable');
 */
 
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, replace = Ember.EnumerableUtils._replace;
 
 // Add Ember.Array to Array.prototype. Remove methods with native
 // implementations and supply some more optimized versions of generic methods
@@ -41,22 +42,7 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
     if (!objects || objects.length === 0) {
       this.splice(idx, amt);
     } else {
-      var args = [].concat(objects), chunk,
-          // https://code.google.com/p/chromium/issues/detail?id=56588
-          size = 62400, start = idx, ends = amt, count;
-
-      while (args.length) {
-        count = ends > size ? size : ends;
-        if (count <= 0) { count = 0; }
-
-        chunk = args.splice(0, size);
-        chunk = [start, count].concat(chunk);
-
-        start += size;
-        ends -= count;
-
-        this.splice.apply(this, chunk);
-      }
+      replace(this, idx, amt, objects);
     }
 
     this.arrayContentDidChange(idx, amt, len);

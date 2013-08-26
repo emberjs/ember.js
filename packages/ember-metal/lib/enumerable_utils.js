@@ -1,9 +1,10 @@
-var map, forEach, indexOf;
+var map, forEach, indexOf, splice;
 require('ember-metal/array');
 
 map     = Array.prototype.map     || Ember.ArrayPolyfills.map;
 forEach = Array.prototype.forEach || Ember.ArrayPolyfills.forEach;
 indexOf = Array.prototype.indexOf || Ember.ArrayPolyfills.indexOf;
+splice = Array.prototype.splice;
 
 var utils = Ember.EnumerableUtils = {
   map: function(obj, callback, thisArg) {
@@ -34,26 +35,31 @@ var utils = Ember.EnumerableUtils = {
     if (index !== -1) { array.splice(index, 1); }
   },
 
+  _replace: function(array, idx, amt, objects) {
+    var args = [].concat(objects), chunk, ret = [],
+        // https://code.google.com/p/chromium/issues/detail?id=56588
+        size = 60000, start = idx, ends = amt, count;
+
+    while (args.length) {
+      count = ends > size ? size : ends;
+      if (count <= 0) { count = 0; }
+
+      chunk = args.splice(0, size);
+      chunk = [start, count].concat(chunk);
+
+      start += size;
+      ends -= count;
+
+      ret = ret.concat(splice.apply(array, chunk));
+    }
+    return ret;
+  },
+
   replace: function(array, idx, amt, objects) {
     if (array.replace) {
       return array.replace(idx, amt, objects);
     } else {
-      var args = [].concat(objects), chunk,
-          // https://code.google.com/p/chromium/issues/detail?id=56588
-          size = 62400, start = idx, ends = amt, count;
-
-      while (args.length) {
-        count = ends > size ? size : ends;
-        if (count <= 0) { count = 0; }
-
-        chunk = args.splice(0, size);
-        chunk = [start, count].concat(chunk);
-
-        start += size;
-        ends -= count;
-
-        array.splice.apply(array, chunk);
-      }
+      return utils._replace(array, idx, amt, objects);
     }
   },
 
