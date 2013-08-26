@@ -299,6 +299,7 @@ EnumerableTests.reopenClass({
 Ember.EnumerableTests = EnumerableTests;
 Ember.EnumerableTests.ObserverClass = ObserverClass;
 
+require('ember-runtime/~tests/suites/enumerable/any');
 require('ember-runtime/~tests/suites/enumerable/compact');
 require('ember-runtime/~tests/suites/enumerable/contains');
 require('ember-runtime/~tests/suites/enumerable/every');
@@ -306,13 +307,12 @@ require('ember-runtime/~tests/suites/enumerable/filter');
 require('ember-runtime/~tests/suites/enumerable/find');
 require('ember-runtime/~tests/suites/enumerable/firstObject');
 require('ember-runtime/~tests/suites/enumerable/forEach');
-require('ember-runtime/~tests/suites/enumerable/mapProperty');
+require('ember-runtime/~tests/suites/enumerable/mapBy');
 require('ember-runtime/~tests/suites/enumerable/invoke');
 require('ember-runtime/~tests/suites/enumerable/lastObject');
 require('ember-runtime/~tests/suites/enumerable/map');
 require('ember-runtime/~tests/suites/enumerable/reduce');
 require('ember-runtime/~tests/suites/enumerable/reject');
-require('ember-runtime/~tests/suites/enumerable/some');
 require('ember-runtime/~tests/suites/enumerable/toArray');
 require('ember-runtime/~tests/suites/enumerable/uniq');
 require('ember-runtime/~tests/suites/enumerable/without');

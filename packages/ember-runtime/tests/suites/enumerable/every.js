@@ -32,10 +32,10 @@ suite.test('every should stop invoking when you return false', function() {
 });
 
 // ..........................................................
-// everyProperty()
+// everyBy()
 //
 
-suite.module('everyProperty');
+suite.module('everyBy');
 
 suite.test('should return true of every property matches', function() {
   var obj = this.newObject([
@@ -43,8 +43,8 @@ suite.test('should return true of every property matches', function() {
     Ember.Object.create({ foo: 'foo', bar: 'bar' })
   ]);
 
-  equal(obj.everyProperty('foo', 'foo'), true, 'everyProperty(foo)');
-  equal(obj.everyProperty('bar', 'bar'), false, 'everyProperty(bar)');
+  equal(obj.everyBy('foo', 'foo'), true, 'everyBy(foo)');
+  equal(obj.everyBy('bar', 'bar'), false, 'everyBy(bar)');
 });
 
 suite.test('should return true of every property is true', function() {
@@ -54,8 +54,8 @@ suite.test('should return true of every property is true', function() {
   ]);
 
   // different values - all eval to true
-  equal(obj.everyProperty('foo'), true, 'everyProperty(foo)');
-  equal(obj.everyProperty('bar'), false, 'everyProperty(bar)');
+  equal(obj.everyBy('foo'), true, 'everyBy(foo)');
+  equal(obj.everyBy('bar'), false, 'everyBy(bar)');
 });
 
 suite.test('should return true if every property matches null', function() {
@@ -64,8 +64,8 @@ suite.test('should return true if every property matches null', function() {
     Ember.Object.create({ foo: null, bar: null })
   ]);
 
-  equal(obj.everyProperty('foo', null), true, "everyProperty('foo', null)");
-  equal(obj.everyProperty('bar', null), false, "everyProperty('bar', null)");
+  equal(obj.everyBy('foo', null), true, "everyBy('foo', null)");
+  equal(obj.everyBy('bar', null), false, "everyBy('bar', null)");
 });
 
 suite.test('should return true if every property is undefined', function() {
@@ -74,6 +74,6 @@ suite.test('should return true if every property is undefined', function() {
     Ember.Object.create({ bar: undefined })
   ]);
 
-  equal(obj.everyProperty('foo', undefined), true, "everyProperty('foo', undefined)");
-  equal(obj.everyProperty('bar', undefined), false, "everyProperty('bar', undefined)");
+  equal(obj.everyBy('foo', undefined), true, "everyBy('foo', undefined)");
+  equal(obj.everyBy('bar', undefined), false, "everyBy('bar', undefined)");
 });

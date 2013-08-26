@@ -44,7 +44,9 @@ if (!('MANDATORY_SETTER' in Ember.ENV)) {
     falsy, an exception will be thrown.
 */
 Ember.assert = function(desc, test) {
-  Ember.Logger.assert(test, desc);
+  if (!test) {
+    Ember.Logger.assert(test, desc);
+  }
 
   if (Ember.testing && !test) {
     // when testing, ensure test failures when assertions fail

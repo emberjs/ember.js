@@ -56,10 +56,12 @@ Ember.Router = Ember.Object.extend({
     var appController = this.container.lookup('controller:application'),
         path = Ember.Router._routePath(infos);
 
-    if (!('currentPath' in appController)) {
-      defineProperty(appController, 'currentPath');
-    }
+    if (!('currentPath' in appController)) { defineProperty(appController, 'currentPath'); }
     set(appController, 'currentPath', path);
+
+    if (!('currentRouteName' in appController)) { defineProperty(appController, 'currentRouteName'); }
+    set(appController, 'currentRouteName', infos[infos.length - 1].name);
+
     this.notifyPropertyChange('url');
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
@@ -146,7 +148,7 @@ Ember.Router = Ember.Object.extend({
 
   _getHandlerFunction: function() {
     var seen = {}, container = this.container,
-        DefaultRoute = container.resolve('route:basic'),
+        DefaultRoute = container.lookupFactory('route:basic'),
         self = this;
 
     return function(name) {
@@ -278,11 +280,13 @@ Ember.Router = Ember.Object.extend({
 });
 
 Ember.Router.reopenClass({
+  router: null,
   map: function(callback) {
     var router = this.router;
     if (!router) {
-      router = this.router = new Router();
+      router = new Router();
       router.callbacks = [];
+      this.reopenClass({ router: router });
     }
 
     if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {

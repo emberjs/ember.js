@@ -579,3 +579,92 @@ test("when a collection view is emptied, deeply nested views elements are not re
     view.remove();
   });
 });
+
+test("should render the emptyView if content array is empty and emptyView is given as string", function() {
+  Ember.lookup = {
+    App: {
+      EmptyView: Ember.View.extend({
+      tagName: 'kbd',
+      render: function(buf) {
+        buf.push("THIS IS AN EMPTY VIEW");
+      }
+      })
+    }
+  };
+  view = Ember.CollectionView.create({
+    tagName: 'del',
+    content: Ember.A(),
+
+    emptyView: 'App.EmptyView'
+  });
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  ok(view.$().find('kbd:contains("THIS IS AN EMPTY VIEW")').length, "displays empty view");
+});
+
+test("should lookup against the container if itemViewClass is given as a string", function() {
+
+  var ItemView = Ember.View.extend({
+      render: function(buf) {
+        buf.push(get(this, 'content'));
+      }
+  });
+
+  var container = {
+    lookupFactory: lookupFactory
+  };
+
+  view = Ember.CollectionView.create({
+    container: container,
+    content: Ember.A([1, 2, 3, 4]),
+    itemViewClass: 'item'
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$('.ember-view').length, 4);
+
+  function lookupFactory(fullName) {
+    equal(fullName, 'view:item');
+
+    return ItemView;
+  }
+});
+
+test("should lookup against the container and render the emptyView if emptyView is given as string and content array is empty ", function() {
+  var EmptyView = Ember.View.extend({
+      tagName: 'kbd',
+      render: function(buf) {
+        buf.push("THIS IS AN EMPTY VIEW");
+      }
+  });
+
+  var container = {
+    lookupFactory: lookupFactory
+  };
+
+  view =  Ember.CollectionView.create({
+    container: container,
+    tagName: 'del',
+    content: Ember.A(),
+
+    emptyView: 'empty'
+  });
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  ok(view.$().find('kbd:contains("THIS IS AN EMPTY VIEW")').length, "displays empty view");
+
+  function lookupFactory(fullName) {
+    equal(fullName, 'view:empty');
+
+    return EmptyView;
+  }
+});

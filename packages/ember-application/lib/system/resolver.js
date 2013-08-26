@@ -39,7 +39,7 @@ var get = Ember.get,
 
   ```javascript
   App = Ember.Application.create({
-    resolver: Ember.DefaultResolver.extend({
+    Resolver: Ember.DefaultResolver.extend({
       resolveTemplate: function(parsedName) {
         var resolvedTemplate = this._super(parsedName);
         if (resolvedTemplate) { return resolvedTemplate; }
@@ -86,6 +86,32 @@ Ember.DefaultResolver = Ember.Object.extend({
     @property namespace
   */
   namespace: null,
+
+  normalize: function(fullName) {
+    var split = fullName.split(':', 2),
+        type = split[0],
+        name = split[1];
+
+    Ember.assert("Tried to normalize a container name without a colon (:) in it. You probably tried to lookup a name that did not contain a type, a colon, and a name. A proper lookup name would be `view:post`.", split.length === 2);
+
+    if (type !== 'template') {
+      var result = name;
+
+      if (result.indexOf('.') > -1) {
+        result = result.replace(/\.(.)/g, function(m) { return m.charAt(1).toUpperCase(); });
+      }
+
+      if (name.indexOf('_') > -1) {
+        result = result.replace(/_(.)/g, function(m) { return m.charAt(1).toUpperCase(); });
+      }
+
+      return type + ':' + result;
+    } else {
+      return fullName;
+    }
+  },
+
+
   /**
     This method is called via the container's resolver method.
     It parses the provided `fullName` and then looks up and

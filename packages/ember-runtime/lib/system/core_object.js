@@ -19,6 +19,7 @@ var set = Ember.set, get = Ember.get,
     meta = Ember.meta,
     rewatch = Ember.rewatch,
     finishChains = Ember.finishChains,
+    sendEvent = Ember.sendEvent,
     destroy = Ember.destroy,
     schedule = Ember.run.schedule,
     Mixin = Ember.Mixin,
@@ -49,7 +50,7 @@ function makeCtor() {
     }
     o_defineProperty(this, GUID_KEY, undefinedDescriptor);
     o_defineProperty(this, '_super', undefinedDescriptor);
-    var m = meta(this);
+    var m = meta(this), proto = m.proto;
     m.proto = this;
     if (initMixins) {
       // capture locally so we can clear the closed over variable
@@ -119,9 +120,10 @@ function makeCtor() {
       }
     }
     finishPartial(this, m);
-    delete m.proto;
+    m.proto = proto;
     finishChains(this);
     this.init.apply(this, arguments);
+    sendEvent(this, "init");
   };
 
   Class.toString = Mixin.prototype.toString;

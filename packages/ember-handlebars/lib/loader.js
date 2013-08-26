@@ -41,6 +41,11 @@ Ember.Handlebars.bootstrap = function(ctx) {
       templateName = script.attr('data-template-name') || script.attr('id') || 'application',
       template = compile(script.html());
 
+    // Check if template of same name already exists
+    if (Ember.TEMPLATES[templateName] !== undefined) {
+      throw new Error('Template named "' + templateName  + '" already exists.');
+    }
+
     // For templates which have a name, we save them and then remove them from the DOM
     Ember.TEMPLATES[templateName] = template;
 

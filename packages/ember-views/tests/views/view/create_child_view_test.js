@@ -16,7 +16,7 @@ module("Ember.View#createChildView", {
   teardown: function() {
     Ember.run(function() {
       view.destroy();
-      newView.destroy();
+      if(newView) { newView.destroy(); }
     });
   }
 });
@@ -65,5 +65,31 @@ test("should update a view instances attributes, including the _parentView and c
   equal(get(newView, 'foo'), 'baz', 'view did get custom attributes');
 
   deepEqual(newView, myView);
+});
+
+test("should create from string via container lookup", function() {
+  var ChildViewClass = Ember.View.extend(),
+  fullName = 'view:bro';
+
+  view.container.lookupFactory = function(viewName) {
+    equal(fullName, viewName);
+
+    return ChildViewClass.extend({
+      container: container
+    });
+  };
+
+  newView = view.createChildView('bro');
+
+  equal(newView.container,  container, 'expects to share container with parent');
+  equal(newView._parentView, view, 'expects to have the correct parent');
+});
+
+test("should assert when trying to create childView from string, but no such view is registered", function() {
+  view.container.lookupFactory = function() {};
+
+  expectAssertion(function(){
+    view.createChildView('bro');
+  });
 });
 

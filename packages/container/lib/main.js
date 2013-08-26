@@ -123,10 +123,16 @@ define("container",
       this.children = [];
 
       this.resolver = parent && parent.resolver || function() {};
+
       this.registry = new InheritingDict(parent && parent.registry);
       this.cache = new InheritingDict(parent && parent.cache);
+      this.factoryCache = new InheritingDict(parent && parent.cache);
       this.typeInjections = new InheritingDict(parent && parent.typeInjections);
       this.injections = {};
+
+      this.factoryTypeInjections = new InheritingDict(parent && parent.factoryTypeInjections);
+      this.factoryInjections = {};
+
       this._options = new InheritingDict(parent && parent._options);
       this._typeOptions = new InheritingDict(parent && parent._typeOptions);
     }
@@ -348,7 +354,7 @@ define("container",
 
         The default behaviour is for lookup to return a singleton instance.
         The singleton is scoped to the container, allowing multiple containers
-        to all have there own locally scoped singletons.
+        to all have their own locally scoped singletons.
 
         ```javascript
         var container = new Container();
@@ -430,7 +436,7 @@ define("container",
       },
 
       /**
-        Allow registerying options for all factories of a type.
+        Allow registering options for all factories of a type.
 
         ```javascript
         var container = new Container();
@@ -510,17 +516,7 @@ define("container",
       typeInjection: function(type, property, fullName) {
         if (this.parent) { illegalChildOperation('typeInjection'); }
 
-        var injections = this.typeInjections.get(type);
-
-        if (!injections) {
-          injections = [];
-          this.typeInjections.set(type, injections);
-        }
-
-        injections.push({
-          property: property,
-          fullName: fullName
-        });
+        addTypeInjection(this.typeInjections, type, property, fullName);
       },
 
       /*
@@ -541,7 +537,7 @@ define("container",
 
         container.register('source:main', Source);
         container.register('model:user', User);
-        container.register('model:post', PostController);
+        container.register('model:post', Post);
 
         // injecting one fullName on another fullName
         // eg. each user model gets a post model
@@ -574,8 +570,104 @@ define("container",
           return this.typeInjection(factoryName, property, injectionName);
         }
 
-        var injections = this.injections[factoryName] = this.injections[factoryName] || [];
-        injections.push({ property: property, fullName: injectionName });
+        addInjection(this.injections, factoryName, property, injectionName);
+      },
+
+
+      /*
+        @private
+
+        Used only via `factoryInjection`.
+
+        Provides a specialized form of injection, specifically enabling
+        all factory of one type to be injected with a reference to another
+        object.
+
+        For example, provided each factory of type `model` needed a `store`.
+        one would do the following:
+
+        ```javascript
+        var container = new Container();
+
+        container.registerFactory('model:user', User);
+        container.register('store:main', SomeStore);
+
+        container.factoryTypeInjection('model', 'store', 'store:main');
+
+        var store = container.lookup('store:main');
+        var UserFactory = container.lookupFactory('model:user');
+
+        UserFactory.store instanceof SomeStore; //=> true
+        ```
+
+        @method factoryTypeInjection
+        @param {String} type
+        @param {String} property
+        @param {String} fullName
+      */
+      factoryTypeInjection: function(type, property, fullName) {
+        if (this.parent) { illegalChildOperation('factoryTypeInjection'); }
+
+        addTypeInjection(this.factoryTypeInjections, type, property, fullName);
+      },
+
+      /*
+        Defines factory injection rules.
+
+        Similar to regular injection rules, but are run against factories, via
+        `Container#lookupFactory`.
+
+        These rules are used to inject objects onto factories when they
+        are looked up.
+
+        Two forms of injections are possible:
+
+        * Injecting one fullName on another fullName
+        * Injecting one fullName on a type
+
+        Example:
+
+        ```javascript
+        var container = new Container();
+
+        container.register('store:main', Store);
+        container.register('store:secondary', OtherStore);
+        container.register('model:user', User);
+        container.register('model:post', Post);
+
+        // injecting one fullName on another type
+        container.factoryInjection('model', 'store', 'store:main');
+
+        // injecting one fullName on another fullName
+        container.factoryInjection('model:post', 'secondaryStore', 'store:secondary');
+
+        var UserFactory = container.lookupFactory('model:user');
+        var PostFactory = container.lookupFactory('model:post');
+        var store = container.lookup('store:main');
+
+        UserFactory.store instanceof Store; //=> true
+        UserFactory.secondaryStore instanceof OtherStore; //=> false
+
+        PostFactory.store instanceof Store; //=> true
+        PostFactory.secondaryStore instanceof OtherStore; //=> true
+
+        // and both models share the same source instance
+        UserFactory.store === PostFactory.store; //=> true
+        ```
+
+        @method factoryInjection
+        @param {String} factoryName
+        @param {String} property
+        @param {String} injectionName
+      */
+      factoryInjection: function(factoryName, property, injectionName) {
+        if (this.parent) { illegalChildOperation('injection'); }
+
+        if (factoryName.indexOf(':') === -1) {
+          return this.factoryTypeInjection(factoryName, property, injectionName);
+        }
+
+        addInjection(this.factoryInjections, factoryName, property, injectionName);
       },
 
       /**
@@ -597,7 +689,7 @@ define("container",
           item.destroy();
         });
 
-        delete this.parent;
+        this.parent = undefined;
         this.isDestroyed = true;
       },
 
@@ -660,32 +752,76 @@ define("container",
 
     function factoryFor(container, fullName) {
       var name = container.normalize(fullName);
-      return container.resolve(name);
+      var factory = container.resolve(name);
+      var injectedFactory;
+      var cache = container.factoryCache;
+
+      if (!factory) { return; }
+
+      if (cache.has(fullName)) {
+        return cache.get(fullName);
+      }
+
+      if (typeof factory.extend !== 'function') {
+        // TODO: think about a 'safe' merge style extension
+        // for now just fallback to create time injection
+        return factory;
+      } else {
+        injectedFactory = factory.extend(injectionsFor(container, fullName));
+        injectedFactory.reopenClass(factoryInjectionsFor(container, fullName));
+
+        cache.set(fullName, injectedFactory);
+
+        return injectedFactory;
+      }
+    }
+
+    function injectionsFor(container ,fullName) {
+      var splitName = fullName.split(":"),
+        type = splitName[0],
+        injections = [];
+
+      injections = injections.concat(container.typeInjections.get(type) || []);
+      injections = injections.concat(container.injections[fullName] || []);
+
+      injections = buildInjections(container, injections);
+      injections._debugContainerKey = fullName;
+      injections.container = container;
+
+      return injections;
+    }
+
+    function factoryInjectionsFor(container, fullName) {
+      var splitName = fullName.split(":"),
+        type = splitName[0],
+        factoryInjections = [];
+
+      factoryInjections = factoryInjections.concat(container.factoryTypeInjections.get(type) || []);
+      factoryInjections = factoryInjections.concat(container.factoryInjections[fullName] || []);
+
+      factoryInjections = buildInjections(container, factoryInjections);
+      factoryInjections._debugContainerKey = fullName;
+
+      return factoryInjections;
     }
 
     function instantiate(container, fullName) {
       var factory = factoryFor(container, fullName);
-
-      var splitName = fullName.split(":"),
-          type = splitName[0],
-          value;
 
       if (option(container, fullName, 'instantiate') === false) {
         return factory;
       }
 
       if (factory) {
-        var injections = [];
-        injections = injections.concat(container.typeInjections.get(type) || []);
-        injections = injections.concat(container.injections[fullName] || []);
-
-        var hash = buildInjections(container, injections);
-        hash.container = container;
-        hash._debugContainerKey = fullName;
-
-        value = factory.create(hash);
-
-        return value;
+        if (typeof factory.extend === 'function') {
+          // assume the factory was extendable and is already injected
+          return factory.create();
+        } else {
+          // assume the factory was extendable
+          // to create time injections
+          // TODO: support new'ing for instantiation and merge injections for pure JS Functions
+          return factory.create(injectionsFor(container, fullName));
+        }
       }
     }
 
@@ -702,6 +838,25 @@ define("container",
         value.destroy();
       });
       container.cache.dict = {};
+    }
+
+    function addTypeInjection(rules, type, property, fullName) {
+      var injections = rules.get(type);
+
+      if (!injections) {
+        injections = [];
+        rules.set(type, injections);
+      }
+
+      injections.push({
+        property: property,
+        fullName: fullName
+      });
+    }
+
+    function addInjection(rules, factoryName, property, injectionName) {
+      var injections = rules[factoryName] = rules[factoryName] || [];
+      injections.push({ property: property, fullName: injectionName });
     }
 
     return Container;

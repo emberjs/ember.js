@@ -29,10 +29,10 @@ suite.test('should be the inverse of filter', function() {
 });
 
 // ..........................................................
-// rejectProperty()
+// rejectBy()
 //
 
-suite.module('rejectProperty');
+suite.module('rejectBy');
 
 suite.test('should reject based on object', function() {
   var obj, ary;
@@ -44,8 +44,8 @@ suite.test('should reject based on object', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectProperty('foo', 'foo'), [], 'rejectProperty(foo)');
-  deepEqual(obj.rejectProperty('bar', 'bar'), [ary[0]], 'rejectProperty(bar)');
+  deepEqual(obj.rejectBy('foo', 'foo'), [], 'rejectBy(foo)');
+  deepEqual(obj.rejectBy('bar', 'bar'), [ary[0]], 'rejectBy(bar)');
 });
 
 suite.test('should include in result if property is false', function() {
@@ -58,8 +58,8 @@ suite.test('should include in result if property is false', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectProperty('foo'), ary, 'rejectProperty(foo)');
-  deepEqual(obj.rejectProperty('bar'), [ary[1]], 'rejectProperty(bar)');
+  deepEqual(obj.rejectBy('foo'), ary, 'rejectBy(foo)');
+  deepEqual(obj.rejectBy('bar'), [ary[1]], 'rejectBy(bar)');
 });
 
 suite.test('should reject on second argument if provided', function() {
@@ -74,7 +74,7 @@ suite.test('should reject on second argument if provided', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectProperty('foo', 3), [ary[1], ary[2]], "rejectProperty('foo', 3)')");
+  deepEqual(obj.rejectBy('foo', 3), [ary[1], ary[2]], "rejectBy('foo', 3)')");
 });
 
 suite.test('should correctly reject null second argument', function() {
@@ -89,7 +89,7 @@ suite.test('should correctly reject null second argument', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectProperty('foo', null), [ary[0], ary[3]], "rejectProperty('foo', null)')");
+  deepEqual(obj.rejectBy('foo', null), [ary[0], ary[3]], "rejectBy('foo', null)')");
 });
 
 suite.test('should correctly reject undefined second argument', function() {
@@ -102,7 +102,7 @@ suite.test('should correctly reject undefined second argument', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectProperty('bar', undefined), [], "rejectProperty('bar', undefined)')");
+  deepEqual(obj.rejectBy('bar', undefined), [], "rejectBy('bar', undefined)')");
 });
 
 suite.test('should correctly reject explicit undefined second argument', function() {
@@ -119,7 +119,7 @@ suite.test('should correctly reject explicit undefined second argument', functio
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectProperty('foo', undefined), ary.slice(0, 2), "rejectProperty('foo', undefined)')");
+  deepEqual(obj.rejectBy('foo', undefined), ary.slice(0, 2), "rejectBy('foo', undefined)')");
 });
 
 suite.test('should match undefined, null, or false properties without second argument', function() {
@@ -140,5 +140,11 @@ suite.test('should match undefined, null, or false properties without second arg
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.rejectProperty('foo'), ary.slice(2), "rejectProperty('foo')')");
+  deepEqual(obj.rejectBy('foo'), ary.slice(2), "rejectBy('foo')')");
+});
+
+suite.test('should be aliased to rejectProperty', function() {
+  var ary =[];
+
+  equal(ary.rejectProperty, ary.rejectBy);
 });

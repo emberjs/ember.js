@@ -28,33 +28,28 @@ Ember.controllerFor = function(container, controllerName, lookupOptions) {
   @private
 */
 Ember.generateController = function(container, controllerName, context) {
-  var controller, DefaultController, fullName, instance;
+  var ControllerFactory, fullName, instance, name, factoryName, controllerType;
 
   if (context && Ember.isArray(context)) {
-    DefaultController = container.resolve('controller:array');
-    controller = DefaultController.extend({
-      isGenerated: true
-    });
+    controllerType = 'array';
   } else if (context) {
-    DefaultController = container.resolve('controller:object');
-    controller = DefaultController.extend({
-      isGenerated: true
-    });
+    controllerType = 'object';
   } else {
-    DefaultController = container.resolve('controller:basic');
-    controller = DefaultController.extend({
-      isGenerated: true
-    });
+    controllerType = 'basic';
   }
 
-  controller.toString = function() {
-    return "(generated " + controllerName + " controller)";
-  };
+  factoryName = 'controller:' + controllerType;
 
-  controller.isGenerated = true;
+  ControllerFactory = container.lookupFactory(factoryName).extend({
+    isGenerated: true,
+    toString: function() {
+      return "(generated " + controllerName + " controller)";
+    }
+  });
 
   fullName = 'controller:' + controllerName;
-  container.register(fullName, controller);
+
+  container.register(fullName, ControllerFactory);
 
   instance = container.lookup(fullName);
 

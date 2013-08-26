@@ -291,6 +291,7 @@ module('Ember.computed - dependentkey', {
     count = 0;
     Ember.defineProperty(obj, 'foo', Ember.computed(function(key, value) {
       count++;
+      Ember.get(this, 'bar');
       return 'bar '+count;
     }).property('bar'));
   },
@@ -298,12 +299,6 @@ module('Ember.computed - dependentkey', {
   teardown: function() {
     obj = count = null;
   }
-});
-
-test('should lazily watch dependent keys when watched itself', function () {
-  equal(Ember.isWatching(obj, 'bar'), false, 'precond not watching dependent key');
-  Ember.watch(obj, 'foo');
-  equal(Ember.isWatching(obj, 'bar'), true, 'lazily watching dependent key');
 });
 
 testBoth('should lazily watch dependent keys on set', function (get, set) {
@@ -331,9 +326,10 @@ testBoth('local dependent key should invalidate cache', function(get, set) {
 });
 
 testBoth('should invalidate multiple nested dependent keys', function(get, set) {
-
+  var count = 0;
   Ember.defineProperty(obj, 'bar', Ember.computed(function() {
     count++;
+    get(this, 'baz');
     return 'baz '+count;
   }).property('baz'));
 

@@ -361,6 +361,7 @@ module("Computed properties", {
       // depends on cached property which depends on another property...
       nestedIncCallCount: 0,
       nestedInc: Ember.computed(function(key, value) {
+        Ember.get(this, 'inc');
         return this.nestedIncCallCount++;
       }).property('inc'),
 
