@@ -1,7 +1,6 @@
-var map, forEach, indexOf, concat;
+var map, forEach, indexOf;
 require('ember-metal/array');
 
-concat  = Array.prototype.concat;
 map     = Array.prototype.map     || Ember.ArrayPolyfills.map;
 forEach = Array.prototype.forEach || Ember.ArrayPolyfills.forEach;
 indexOf = Array.prototype.indexOf || Ember.ArrayPolyfills.indexOf;
@@ -39,8 +38,22 @@ var utils = Ember.EnumerableUtils = {
     if (array.replace) {
       return array.replace(idx, amt, objects);
     } else {
-      var args = concat.apply([idx, amt], objects);
-      return array.splice.apply(array, args);
+      var args = [].concat(objects), chunk,
+          // https://code.google.com/p/chromium/issues/detail?id=56588
+          size = 62400, start = idx, ends = amt, count;
+
+      while (args.length) {
+        count = ends > size ? size : ends;
+        if (count <= 0) { count = 0; }
+
+        chunk = args.splice(0, size);
+        chunk = [start, count].concat(chunk);
+
+        start += size;
+        ends -= count;
+
+        array.splice.apply(array, chunk);
+      }
     }
   },
 

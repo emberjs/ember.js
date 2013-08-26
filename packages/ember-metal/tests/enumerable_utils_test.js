@@ -6,11 +6,11 @@ test('returns an array of objects that appear in both enumerables', function() {
   result = Ember.EnumerableUtils.intersection(a, b);
 
   deepEqual(result, [2,3]);
-
-
 });
 
 test("large replace", function() {
+  expect(0);
+
   // https://code.google.com/p/chromium/issues/detail?id=56588
   Ember.EnumerableUtils.replace([], 0, undefined, new Array(62401));   // max + 1 in Chrome  28.0.1500.71
   Ember.EnumerableUtils.replace([], 0, undefined, new Array(65535));   // max + 1 in Safari  6.0.5 (8536.30.1)

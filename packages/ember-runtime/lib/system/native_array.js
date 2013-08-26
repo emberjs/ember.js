@@ -30,7 +30,7 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
   // primitive for array support.
   replace: function(idx, amt, objects) {
 
-    if (this.isFrozen) throw Ember.FROZEN_ERROR ;
+    if (this.isFrozen) throw Ember.FROZEN_ERROR;
 
     // if we replaced exactly the same number of items, then pass only the
     // replaced range. Otherwise, pass the full remaining array length
@@ -39,14 +39,28 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
     this.arrayContentWillChange(idx, amt, len);
 
     if (!objects || objects.length === 0) {
-      this.splice(idx, amt) ;
+      this.splice(idx, amt);
     } else {
-      var args = [idx, amt].concat(objects) ;
-      this.splice.apply(this,args) ;
+      var args = [].concat(objects), chunk,
+          // https://code.google.com/p/chromium/issues/detail?id=56588
+          size = 62400, start = idx, ends = amt, count;
+
+      while (args.length) {
+        count = ends > size ? size : ends;
+        if (count <= 0) { count = 0; }
+
+        chunk = args.splice(0, size);
+        chunk = [start, count].concat(chunk);
+
+        start += size;
+        ends -= count;
+
+        this.splice.apply(this, chunk);
+      }
     }
 
     this.arrayContentDidChange(idx, amt, len);
-    return this ;
+    return this;
   },
 
   // If you ask for an unknown property, then try to collect the value
