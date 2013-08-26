@@ -21,6 +21,19 @@ var get = Ember.get, set = Ember.set;
   {{view Ember.TextField valueBinding="firstName"}}
   ```
 
+  You may also use the "dynamic tag" form of the helper, rather than the
+  `{{view}}` form. In fact [this is recommend](/blog/2013/04/21/ember-1-0-rc3.html#toc_new-input-and-textarea-helpers).
+
+    ```handlebars
+  {{ input value=firstName }}
+  ```
+
+  When using dynamic tags, you do not need to use a `Binding` suffix and
+  must leave out the quotation marks around the values. Ember will interpret
+  quoted strings as static strings in this context. See the
+  [Ember.Handlebars.helpers](/api/classes/Ember.Handlebars.helpers.html)'s
+  section for more information.
+
   ## Layout and LayoutName properties
 
   Because HTML `input` elements are self closing `layout` and `layoutName`

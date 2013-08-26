@@ -28,11 +28,24 @@ var get = Ember.get, set = Ember.set;
   Would result in the following HTML:
 
   ```html
-  <textarea class="ember-text-area"> 
-    written words
+  <textarea class="ember-text-area">
+    hello
   </textarea>
   ```
-  
+
+  You may also use the "dynamic tag" form of the helper, rather than the
+  `{{view}}` form. In fact [this is recommend](/blog/2013/04/21/ember-1-0-rc3.html#toc_new-input-and-textarea-helpers).
+
+  ```handlebars
+  {{ textarea value=writtenWords }}
+  ```
+
+  When using dynamic tags, you do not need to use a `Binding` suffix and
+  must leave out the quotation marks around the values. Ember will interpret
+  quoted strings as static strings in this context. See the
+  [Ember.Handlebars.helpers](/api/classes/Ember.Handlebars.helpers.html)'s
+  section for more information.
+
   ## Layout and LayoutName properties
 
   Because HTML `textarea` elements do not contain inner HTML the `layout` and
