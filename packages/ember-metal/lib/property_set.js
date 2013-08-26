@@ -10,7 +10,7 @@ var META_KEY = Ember.META_KEY,
 /**
   Sets the value of a property on an object, respecting computed properties
   and notifying observers and other listeners of the change. If the
-  property is not defined but the object implements the `unknownProperty`
+  property is not defined but the object implements the `setUnknownProperty`
   method then that will be invoked as well.
 
   If you plan to run on IE8 and older browsers then you should use this
@@ -20,7 +20,7 @@ var META_KEY = Ember.META_KEY,
 
   On all newer browsers, you only need to use this method to set
   properties if the property might not be defined on the object and you want
-  to respect the `unknownProperty` handler. Otherwise you can ignore this
+  to respect the `setUnknownProperty` handler. Otherwise you can ignore this
   method.
 
   @method set
