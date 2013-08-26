@@ -7,8 +7,29 @@ if (Ember.ENV.EXPERIMENTAL_CONTROL_HELPER) {
   var get = Ember.get, set = Ember.set;
 
   /**
+   `{{control}}` works like render, except it uses a new controller instance for every call, instead of reusing the singleton controller.
+
     The control helper is currently under development and is considered experimental.
     To enable it, set `ENV.EXPERIMENTAL_CONTROL_HELPER = true` before requiring Ember.
+
+   For example if you had this `author` template.
+
+   ```handlebars
+<div class="author">
+  Written by {{firstName}} {{lastName}}.
+  Total Posts: {{postCount}}
+</div>
+   ```
+
+   You could render it inside the `post` template using the `control` helper.
+
+   ```handlebars
+<div class="post">
+  <h1>{{title}}</h1>
+  <div>{{body}}</div>
+     {{control "author" author}}
+</div>
+   ```
 
     @method control
     @for Ember.Handlebars.helpers

@@ -277,7 +277,7 @@ EmberHandlebars.registerHelper('with', function(context, options) {
 
 
 /**
-  See `boundIf`
+  See [boundIf](/api/classes/Ember.Handlebars.helpers.html#method_boundIf)
 
   @method if
   @for Ember.Handlebars.helpers

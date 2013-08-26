@@ -24,8 +24,8 @@ var get = Ember.get, set = Ember.set;
   ## Layout and LayoutName properties
 
   Because HTML `input` elements are self closing `layout` and `layoutName`
-  properties will not be applied. See `Ember.View`'s layout section for more
-  information.
+  properties will not be applied. See [Ember.View](/api/classes/Ember.View.html)'s
+  layout section for more information.
 
   ## HTML Attributes
 
@@ -136,10 +136,28 @@ Ember.TextField = Ember.View.extend(Ember.TextSupport,
   */
   bubbles: false,
 
+  /**
+    The action to be sent when the user inserts a new line.
+
+    Called by the `Ember.TextSupport` mixin on keyUp if keycode matches 13.
+    Uses sendAction to send the `enter` action to the controller.
+
+    @method insertNewLine
+    @param {Event} event
+  */
   insertNewline: function(event) {
     sendAction('enter', this, event);
   },
 
+  /**
+    The action to be sent when the user presses a key. Enabled by setting
+    the `onEvent` property to `keyPress`.
+
+    Uses sendAction to send the `keyPress` action to the controller.
+
+    @method keyPress
+    @param {Event} event
+  */
   keyPress: function(event) {
     sendAction('keyPress', this, event);
   }

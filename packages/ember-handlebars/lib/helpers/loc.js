@@ -11,11 +11,11 @@ require('ember-handlebars/ext');
 
   ```html
   <script type="text/x-handlebars" data-template-name="home">
-    {{loc welcome}}
+    {{loc "welcome"}}
   </script>
   ```
 
-  Take note that `welcome` is a string and not an object
+  Take note that `"welcome"` is a string and not an object
   reference.
 
   @method loc

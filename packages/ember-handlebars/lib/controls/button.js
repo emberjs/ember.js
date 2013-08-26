@@ -1,13 +1,13 @@
 require('ember-runtime/mixins/target_action_support');
 
-/**
+/*
 @module ember
 @submodule ember-handlebars
 */
 
 var get = Ember.get, set = Ember.set;
 
-/**
+/*
   @class Button
   @namespace Ember
   @extends Ember.View
@@ -24,7 +24,7 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
 
   attributeBindings: ['type', 'disabled', 'href', 'tabindex'],
 
-  /**
+  /*
     @private
 
     Overrides `TargetActionSupport`'s `targetObject` computed
