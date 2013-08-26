@@ -39,6 +39,10 @@ function verifyDependencies(controller) {
   return satisfied;
 }
 
+/**
+  @class ControllerMixin
+  @namespace Ember
+*/
 Ember.ControllerMixin.reopen({
   concatenatedProperties: ['needs'],
 
@@ -84,5 +88,24 @@ Ember.ControllerMixin.reopen({
     return Ember.controllerFor(get(this, 'container'), controllerName);
   },
 
+  /**
+    Stores the instances of other controllers available from within
+    this controller. Any controller listed by name in the `needs` 
+    property will be accessible by name through this property.
+
+    ```javascript
+    App.CommentsController = Ember.ArrayController.extend({
+      needs: ['post'],
+      postTitle: function(){
+        var currentPost = this.get('controllers.post'); // instance of App.PostController
+        return currentPost.get('title');
+      }.property('controllers.post.title')
+    });
+    ```
+    
+    @see {Ember.ControllerMixin#needs}
+    @property {Object} controllers
+    @default null
+  */
   controllers: null
 });

@@ -525,7 +525,7 @@ test("Quoteless route param performs property lookup", function() {
   App.Router.map(function() {
     this.route('about');
   });
-  
+
   bootApplication();
 
   Ember.run(function() {

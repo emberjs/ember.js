@@ -381,7 +381,7 @@ Ember.mixin = function(obj) {
   // Mix mixins into classes by passing them as the first arguments to
   // .extend.
   App.CommentView = Ember.View.extend(App.Editable, {
-    template: Ember.Handlebars.compile('{{#if isEditing}}...{{else}}...{{/if}}')
+    template: Ember.Handlebars.compile('{{#if view.isEditing}}...{{else}}...{{/if}}')
   });
 
   commentView = App.CommentView.create();
@@ -390,6 +390,31 @@ Ember.mixin = function(obj) {
 
   Note that Mixins are created with `Ember.Mixin.create`, not
   `Ember.Mixin.extend`.
+
+  Note that mixins extend a constructor's prototype so arrays and object literals
+  defined as properties will be shared amongst objects that implement the mixin. 
+  If you want to define an property in a mixin that is not shared, you can define
+  it either as a computed property or have it be created on initialization of the object.
+  
+  ```javascript
+  //filters array will be shared amongst any object implementing mixin
+  App.Filterable = Ember.Mixin.create({
+    filters: Ember.A() 
+  });
+
+  //filters will be a separate  array for every object implementing the mixin
+  App.Filterable = Ember.Mixin.create({
+    filters: Ember.computed(function(){return Ember.A();}) 
+  });
+
+  //filters will be created as a separate array during the object's initialization
+  App.Filterable = Ember.Mixin.create({
+    init: function() {
+      this._super();
+      this.set("filters", Ember.A());
+    }
+  });
+  ```
 
   @class Mixin
   @namespace Ember

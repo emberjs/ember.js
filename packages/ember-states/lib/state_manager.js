@@ -147,7 +147,7 @@ Transition.prototype = {
 
     @method removeUnchangedContexts
     @param {Ember.StateManager} manager passed in to look up the last
-      context for a states
+      context for a state
   */
   removeUnchangedContexts: function(manager) {
     // Start from the beginning of the enter states. If the state was added
@@ -167,6 +167,17 @@ Transition.prototype = {
   }
 };
 
+
+/**
+  Sends the event to the currentState, if the event is not handled this method 
+  will proceed to call the parentState recursively until it encounters an 
+  event handler or reaches the top or root of the state path hierarchy.
+
+  @method sendRecursively
+  @param event
+  @param currentState
+  @param isUnhandledPass
+*/
 var sendRecursively = function(event, currentState, isUnhandledPass) {
   var log = this.enableLogging,
       eventName = isUnhandledPass ? 'unhandledEvent' : event,
@@ -211,6 +222,14 @@ var sendRecursively = function(event, currentState, isUnhandledPass) {
   }
 };
 
+/**
+  Send an event to the currentState.
+  
+  @method sendEvent
+  @param eventName
+  @param sendRecursiveArguments
+  @param isUnhandledPass
+*/
 var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   sendRecursiveArguments.unshift(eventName, get(this, 'currentState'), isUnhandledPass);
   return sendRecursively.apply(this, sendRecursiveArguments);
@@ -228,14 +247,14 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   define a `states` property that contains all the states:
 
   ```javascript
-  managerA = Ember.StateManager.create({
+  var managerA = Ember.StateManager.create({
     states: {
       stateOne: Ember.State.create(),
       stateTwo: Ember.State.create()
     }
-  })
+  });
 
-  managerA.get('states')
+  managerA.get('states');
   // {
   //   stateOne: Ember.State.create(),
   //   stateTwo: Ember.State.create()
@@ -247,12 +266,12 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   the `states` property for you.
 
   ```javascript
-  managerA = Ember.StateManager.create({
+  var managerA = Ember.StateManager.create({
     stateOne: Ember.State.create(),
     stateTwo: Ember.State.create()
-  })
+  });
 
-  managerA.get('states')
+  managerA.get('states');
   // {
   //   stateOne: Ember.State.create(),
   //   stateTwo: Ember.State.create()
@@ -266,25 +285,25 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   `initialState` property:
 
   ```javascript
-  managerA = Ember.StateManager.create({
+  var managerA = Ember.StateManager.create({
     start: Ember.State.create({})
-  })
+  });
 
-  managerA.get('currentState.name') // 'start'
+  managerA.get('currentState.name'); // 'start'
 
-  managerB = Ember.StateManager.create({
+  var managerB = Ember.StateManager.create({
     initialState: 'beginHere',
     beginHere: Ember.State.create({})
-  })
+  });
 
-  managerB.get('currentState.name') // 'beginHere'
+  managerB.get('currentState.name'); // 'beginHere'
   ```
 
   Because it is a property you may also provide a computed function if you wish
   to derive an `initialState` programmatically:
 
   ```javascript
-  managerC = Ember.StateManager.create({
+  var managerC = Ember.StateManager.create({
     initialState: function() {
       if (someLogic) {
         return 'active';
@@ -294,7 +313,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
     }.property(),
     active: Ember.State.create({}),
     passive: Ember.State.create({})
-  })
+  });
   ```
 
   ## Moving Between States
@@ -305,15 +324,15 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   Calling `transitionTo` transitions between states:
 
   ```javascript
-  robotManager = Ember.StateManager.create({
+  var robotManager = Ember.StateManager.create({
     initialState: 'poweredDown',
     poweredDown: Ember.State.create({}),
     poweredUp: Ember.State.create({})
-  })
+  });
 
-  robotManager.get('currentState.name') // 'poweredDown'
-  robotManager.transitionTo('poweredUp')
-  robotManager.get('currentState.name') // 'poweredUp'
+  robotManager.get('currentState.name'); // 'poweredDown'
+  robotManager.transitionTo('poweredUp');
+  robotManager.get('currentState.name'); // 'poweredUp'
   ```
 
   Before transitioning into a new state the existing `currentState` will have
@@ -325,7 +344,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   and an object representing the transition as its second argument.
 
   ```javascript
-  robotManager = Ember.StateManager.create({
+  var robotManager = Ember.StateManager.create({
     initialState: 'poweredDown',
     poweredDown: Ember.State.create({
       exit: function(stateManager) {
@@ -337,10 +356,10 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
         console.log("entering the poweredUp state. Destroy all humans.")
       }
     })
-  })
+  });
 
-  robotManager.get('currentState.name') // 'poweredDown'
-  robotManager.transitionTo('poweredUp')
+  robotManager.get('currentState.name'); // 'poweredDown'
+  robotManager.transitionTo('poweredUp');
 
   // will log
   // 'exiting the poweredDown state'
@@ -353,7 +372,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   StateManager's current state:
 
   ```javascript
-  robotManager = Ember.StateManager.create({
+  var robotManager = Ember.StateManager.create({
     initialState: 'poweredDown',
     poweredDown: Ember.State.create({
       exit: function(stateManager) {
@@ -365,17 +384,17 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
         console.log("entering the poweredUp state. Destroy all humans.")
       }
     })
-  })
+  });
 
-  robotManager.get('currentState.name') // 'poweredDown'
-  robotManager.transitionTo('poweredUp')
+  robotManager.get('currentState.name'); // 'poweredDown'
+  robotManager.transitionTo('poweredUp');
   // will log
   // 'exiting the poweredDown state'
   // 'entering the poweredUp state. Destroy all humans.'
-  robotManager.transitionTo('poweredUp') // no logging, no state change
+  robotManager.transitionTo('poweredUp'); // no logging, no state change
 
-  robotManager.transitionTo('someUnknownState') // silently fails
-  robotManager.get('currentState.name') // 'poweredUp'
+  robotManager.transitionTo('someUnknownState'); // silently fails
+  robotManager.get('currentState.name'); // 'poweredUp'
   ```
 
   Each state property may itself contain properties that are instances of
@@ -385,7 +404,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   full path to its currentState
 
   ```javascript
-  robotManager = Ember.StateManager.create({
+  var robotManager = Ember.StateManager.create({
     initialState: 'poweredDown',
     poweredDown: Ember.State.create({
       charging: Ember.State.create(),
@@ -395,21 +414,21 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
       mobile: Ember.State.create(),
       stationary: Ember.State.create()
     })
-  })
+  });
 
-  robotManager.get('currentState.name') // 'poweredDown'
+  robotManager.get('currentState.name'); // 'poweredDown'
 
-  robotManager.transitionTo('poweredUp')
-  robotManager.get('currentState.name') // 'poweredUp'
+  robotManager.transitionTo('poweredUp');
+  robotManager.get('currentState.name'); // 'poweredUp'
 
-  robotManager.transitionTo('mobile')
-  robotManager.get('currentState.name') // 'mobile'
+  robotManager.transitionTo('mobile');
+  robotManager.get('currentState.name'); // 'mobile'
 
   // transition via a state path
-  robotManager.transitionTo('poweredDown.charging')
-  robotManager.get('currentState.name') // 'charging'
+  robotManager.transitionTo('poweredDown.charging');
+  robotManager.get('currentState.name'); // 'charging'
 
-  robotManager.get('currentState.path') // 'poweredDown.charging'
+  robotManager.get('currentState.path'); // 'poweredDown.charging'
   ```
 
   Enter transition methods will be called for each state and nested child state
@@ -421,7 +440,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   in the hierarchy.
 
   ```javascript
-  robotManager = Ember.StateManager.create({
+  var robotManager = Ember.StateManager.create({
     initialState: 'poweredDown',
     poweredDown: Ember.State.create({
       enter: function() {},
@@ -457,16 +476,16 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
         exit: function() {}
       })
     })
-  })
+  });
 
 
-  robotManager.get('currentState.path') // 'poweredDown'
-  robotManager.transitionTo('charged')
+  robotManager.get('currentState.path'); // 'poweredDown'
+  robotManager.transitionTo('charged');
   // logs 'entered charged state'
   // but does *not* log  'exited poweredDown state'
-  robotManager.get('currentState.name') // 'charged
+  robotManager.get('currentState.name'); // 'charged
 
-  robotManager.transitionTo('poweredUp.mobile')
+  robotManager.transitionTo('poweredUp.mobile');
   // logs
   // 'exited charged state'
   // 'exited poweredDown state'
@@ -478,9 +497,9 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   `true` to receive console messages of state transitions.
 
   ```javascript
-  robotManager = Ember.StateManager.create({
+  var robotManager = Ember.StateManager.create({
     enableLogging: true
-  })
+  });
   ```
 
   ## Managing currentState with Actions
@@ -498,7 +517,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   argument.
 
   ```javascript
-  managerA = Ember.StateManager.create({
+  var managerA = Ember.StateManager.create({
     initialState: 'stateOne.substateOne.subsubstateOne',
     stateOne: Ember.State.create({
       substateOne: Ember.State.create({
@@ -508,18 +527,18 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
         subsubstateOne: Ember.State.create({})
       })
     })
-  })
+  });
 
-  managerA.get('currentState.name') // 'subsubstateOne'
-  managerA.send('anAction')
+  managerA.get('currentState.name'); // 'subsubstateOne'
+  managerA.send('anAction');
   // 'stateOne.substateOne.subsubstateOne' has no anAction method
   // so the 'anAction' method of 'stateOne.substateOne' is called
   // and logs "an action was called"
   // with managerA as the first argument
   // and no second argument
 
-  someObject = {}
-  managerA.send('anAction', someObject)
+  var someObject = {};
+  managerA.send('anAction', someObject);
   // the 'anAction' method of 'stateOne.substateOne' is called again
   // with managerA as the first argument and
   // someObject as the second argument.
@@ -532,7 +551,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   `unhandledEvent` method is not found, the StateManager will throw a new Ember.Error.
 
   ```javascript
-  managerB = Ember.StateManager.create({
+  var managerB = Ember.StateManager.create({
     initialState: 'stateOne.substateOne.subsubstateOne',
     stateOne: Ember.State.create({
       substateOne: Ember.State.create({
@@ -542,10 +561,10 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
         }
       })
     })
-  })
+  });
 
-  managerB.get('currentState.name') // 'subsubstateOne'
-  managerB.send('anAction')
+  managerB.get('currentState.name'); // 'subsubstateOne'
+  managerB.send('anAction');
   // neither `stateOne.substateOne.subsubstateOne` nor any of it's
   // parent states have a handler for `anAction`. `subsubstateOne`
   // also does not have a `unhandledEvent` method, but its parent
@@ -557,7 +576,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   It does not search in other portions of the hierarchy.
 
   ```javascript
-  managerC = Ember.StateManager.create({
+  var managerC = Ember.StateManager.create({
     initialState: 'stateOne.substateOne.subsubstateOne',
     stateOne: Ember.State.create({
       substateOne: Ember.State.create({
@@ -570,10 +589,10 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
         // not a parent of the current state
       }
     })
-  })
+  });
 
-  managerC.get('currentState.name') // 'subsubstateOne'
-  managerC.send('anAction')
+  managerC.get('currentState.name'); // 'subsubstateOne'
+  managerC.send('anAction');
   // Error: <Ember.StateManager:ember132> could not
   // respond to event anAction in state stateOne.substateOne.subsubstateOne.
   ```
@@ -582,7 +601,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   StateManager.
 
   ```javascript
-  robotManager = Ember.StateManager.create({
+  var robotManager = Ember.StateManager.create({
     initialState: 'poweredDown.charging',
     poweredDown: Ember.State.create({
       charging: Ember.State.create({
@@ -602,46 +621,46 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
       },
       rampaging: Ember.State.create()
     })
-  })
+  });
 
-  robotManager.get('currentState.name') // 'charging'
-  robotManager.send('boot') // throws error, no boot action
+  robotManager.get('currentState.name'); // 'charging'
+  robotManager.send('boot'); // throws error, no boot action
                             // in current hierarchy
-  robotManager.get('currentState.name') // remains 'charging'
+  robotManager.get('currentState.name'); // remains 'charging'
 
-  robotManager.send('beginExtermination') // throws error, no beginExtermination
+  robotManager.send('beginExtermination'); // throws error, no beginExtermination
                                           // action in current hierarchy
-  robotManager.get('currentState.name')   // remains 'charging'
+  robotManager.get('currentState.name');   // remains 'charging'
 
-  robotManager.send('chargeComplete')
-  robotManager.get('currentState.name')   // 'charged'
+  robotManager.send('chargeComplete');
+  robotManager.get('currentState.name');   // 'charged'
 
-  robotManager.send('boot')
-  robotManager.get('currentState.name')   // 'poweredUp'
+  robotManager.send('boot');
+  robotManager.get('currentState.name');   // 'poweredUp'
 
-  robotManager.send('beginExtermination', allHumans)
-  robotManager.get('currentState.name')   // 'rampaging'
+  robotManager.send('beginExtermination', allHumans);
+  robotManager.get('currentState.name');   // 'rampaging'
   ```
 
   Transition actions can also be created using the `transitionTo` method of the `Ember.State` class. The
   following example StateManagers are equivalent:
 
   ```javascript
-  aManager = Ember.StateManager.create({
+  var aManager = Ember.StateManager.create({
     stateOne: Ember.State.create({
       changeToStateTwo: Ember.State.transitionTo('stateTwo')
     }),
     stateTwo: Ember.State.create({})
-  })
+  });
 
-  bManager = Ember.StateManager.create({
+  var bManager = Ember.StateManager.create({
     stateOne: Ember.State.create({
       changeToStateTwo: function(manager, context) {
         manager.transitionTo('stateTwo', context)
       }
     }),
     stateTwo: Ember.State.create({})
-  })
+  });
   ```
 
   @class StateManager
@@ -675,6 +694,13 @@ Ember.StateManager = Ember.State.extend({
     }
   },
 
+  /**
+    Return the stateMeta, a hash of possible states. If no items exist in the stateMeta hash
+    this method sets the stateMeta to an empty JavaScript object and returns that instead.
+
+    @method stateMetaFor
+    @param state
+  */
   stateMetaFor: function(state) {
     var meta = get(this, 'stateMeta'),
         stateMeta = meta.get(state);
@@ -687,10 +713,25 @@ Ember.StateManager = Ember.State.extend({
     return stateMeta;
   },
 
+  /**
+    Sets a key value pair on the stateMeta hash.
+
+    @method setStateMeta
+    @param state
+    @param key
+    @param value
+  */
   setStateMeta: function(state, key, value) {
     return set(this.stateMetaFor(state), key, value);
   },
 
+  /**
+    Returns the value of an item in the stateMeta hash at the given key.
+
+    @method getStateMeta
+    @param state
+    @param key
+  */
   getStateMeta: function(state, key) {
     return get(this.stateMetaFor(state), key);
   },
@@ -733,11 +774,27 @@ Ember.StateManager = Ember.State.extend({
   */
   errorOnUnhandledEvent: true,
 
+  /**
+    An alias to sendEvent method
+
+    @method send
+    @param event
+  */
   send: function(event) {
     var contexts = [].slice.call(arguments, 1);
     Ember.assert('Cannot send event "' + event + '" while currentState is ' + get(this, 'currentState'), get(this, 'currentState'));
     return sendEvent.call(this, event, contexts, false);
   },
+
+  /**
+    If errorOnUnhandledEvent is true this event with throw an Ember.Error
+    indicating that the no state could respond to the event passed through the
+    state machine.
+
+    @method unhandledEvent
+    @param manager
+    @param event
+  */
   unhandledEvent: function(manager, event) {
     if (get(this, 'errorOnUnhandledEvent')) {
       throw new Ember.Error(this.toString() + " could not respond to event " + event + " in state " + get(this, 'currentState.path') + ".");
@@ -750,15 +807,22 @@ Ember.StateManager = Ember.State.extend({
     Example:
 
     ```javascript
-    manager = Ember.StateManager.create({
+    var manager = Ember.StateManager.create({
       root: Ember.State.create({
         dashboard: Ember.State.create()
       })
     });
 
-    manager.getStateByPath(manager, "root.dashboard")
-
+    manager.getStateByPath(manager, "root.dashboard");
     // returns the dashboard state
+  
+    var aState = manager.getStateByPath(manager, "root.dashboard");
+
+    var path = aState.get('path');
+    // path is 'root.dashboard'
+
+    var name = aState.get('name');
+    // name is 'dashboard'
     ```
 
     @method getStateByPath
@@ -820,12 +884,28 @@ Ember.StateManager = Ember.State.extend({
     return result;
   },
 
+  /**
+    Alias for transitionTo.
+    This method applies a transitionTo to the arguments passed into this method. 
+
+    @method goToState
+  */
   goToState: function() {
     // not deprecating this yet so people don't constantly need to
     // make trivial changes for little reason.
     return this.transitionTo.apply(this, arguments);
   },
 
+  /**
+    Transition to another state within the state machine. If the path is empty returns
+    immediately. This method attempts to get a hash of the enter, exit and resolve states
+    from the existing state cache. Processes the raw state information based on the
+    passed in context. Creates a new transition object and triggers a new setupContext.
+
+    @method transitionTo
+    @param path
+    @param context
+  */
   transitionTo: function(path, context) {
     // XXX When is transitionTo called with no path
     if (Ember.isEmpty(path)) { return; }
@@ -845,6 +925,20 @@ Ember.StateManager = Ember.State.extend({
     this.triggerSetupContext(transition);
   },
 
+  /**
+    Allows you to transition to any other state in the state manager without
+    being constrained by the state hierarchy of the current state path.
+    This method will traverse the state path upwards through its parents until
+    it finds the specified state path. All the transitions are captured during the
+    traversal. 
+
+    Caches and returns hash of transitions, which contain the exitSates, enterStates and 
+    resolvedState
+
+    @method contextFreeTransition
+    @param currentState
+    @param path
+  */
   contextFreeTransition: function(currentState, path) {
     var cache = currentState.getPathsCache(this, path);
     if (cache) { return cache; }
@@ -943,6 +1037,13 @@ Ember.StateManager = Ember.State.extend({
     return transitions;
   },
 
+  /**
+    A trigger to setup the state contexts. Each state is setup with
+    an enterState.
+
+    @method triggerSetupContext
+    @param transitions
+  */
   triggerSetupContext: function(transitions) {
     var contexts = transitions.contexts,
         offset = transitions.enterStates.length - contexts.length,
@@ -956,6 +1057,13 @@ Ember.StateManager = Ember.State.extend({
     }, this);
   },
 
+  /**
+    Returns the state instance by name. If state is not found the parentState
+    is returned instead.
+
+    @method getState
+    @param name
+  */
   getState: function(name) {
     var state = get(this, name),
         parentState = get(this, 'parentState');
@@ -967,6 +1075,14 @@ Ember.StateManager = Ember.State.extend({
     }
   },
 
+  /**
+    Causes a transition from the exitState of one state to the enterState of another
+    state in the state machine. At the end of the transition the currentState is set
+    to the finalState of the transition passed into this method.
+
+    @method enterState
+    @param transition
+  */
   enterState: function(transition) {
     var log = this.enableLogging;
 

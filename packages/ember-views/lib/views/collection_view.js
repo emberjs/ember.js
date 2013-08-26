@@ -153,8 +153,8 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   ## Use in templates via the `{{collection}}` `Ember.Handlebars` helper
 
   `Ember.Handlebars` provides a helper specifically for adding
-  `CollectionView`s to templates. See `Ember.Handlebars.collection` for more
-  details
+  `CollectionView`s to templates. See [Ember.Handlebars.helpers.collection](/api/classes/Ember.Handlebars.helpers.html#method_collection)
+  for more details
 
   @class CollectionView
   @namespace Ember
@@ -199,12 +199,25 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
   */
   itemViewClass: Ember.View,
 
+  /**
+    Setup a CollectionView
+
+    @method init
+  */
   init: function() {
     var ret = this._super();
     this._contentDidChange();
     return ret;
   },
 
+  /**
+    @private
+
+    Invoked when the content property is about to change. Notifies observers that the
+    entire array content will change.
+
+    @method _contentWillChange
+  */
   _contentWillChange: Ember.beforeObserver(function() {
     var content = this.get('content');
 
@@ -235,10 +248,22 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
     this.arrayDidChange(content, 0, null, len);
   }, 'content'),
 
+  /**
+    @private
+
+    Ensure that the content implements Ember.Array
+
+    @method _assertArrayLike
+  */
   _assertArrayLike: function(content) {
     Ember.assert(fmt("an Ember.CollectionView's content must implement Ember.Array. You passed %@", [content]), Ember.Array.detect(content));
   },
 
+  /**
+    Removes the content and content observers.
+
+    @method destroy
+  */
   destroy: function() {
     if (!this._super()) { return; }
 
@@ -252,6 +277,19 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
     return this;
   },
 
+  /**
+    Called when a mutation to the underlying content array will occur.
+
+    This method will remove any views that are no longer in the underlying
+    content array.
+
+    Invokes whenever the content array itself will change.
+
+    @method arrayWillChange
+    @param {Array} content the managed collection of objects
+    @param {Number} start the index at which the changes will occurr
+    @param {Number} removed number of object to be removed from content
+  */
   arrayWillChange: function(content, start, removedCount) {
     // If the contents were empty before and this template collection has an
     // empty view remove it now.
@@ -342,6 +380,21 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
     this.replace(start, 0, addedViews);
   },
 
+  /**
+    Instantiates a view to be added to the childViews array during view
+    initialization. You generally will not call this method directly unless
+    you are overriding `createChildViews()`. Note that this method will
+    automatically configure the correct settings on the new view instance to
+    act as a child of the parent.
+
+    The tag name for the view will be set to the tagName of the viewClass
+    passed in.
+
+    @method createChildView
+    @param {Class} viewClass
+    @param {Hash} [attrs] Attributes to add
+    @return {Ember.View} new instance
+  */
   createChildView: function(view, attrs) {
     view = this._super(view, attrs);
 

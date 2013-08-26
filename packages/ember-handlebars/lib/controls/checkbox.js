@@ -39,8 +39,8 @@ var set = Ember.set, get = Ember.get;
   ## Layout and LayoutName properties
 
   Because HTML `input` elements are self closing `layout` and `layoutName`
-  properties will not be applied. See `Ember.View`'s layout section for more
-  information.
+  properties will not be applied. See [Ember.View](/api/classes/Ember.View.html)'s
+  layout section for more information.
 
   @class Checkbox
   @namespace Ember

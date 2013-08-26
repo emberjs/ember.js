@@ -65,13 +65,23 @@ var populateListeners = function(name) {
 };
 
 var time = (function() {
-	var perf = 'undefined' !== typeof window ? window.performance || {} : {};
-	var fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
-	// fn.bind will be available in all the browsers that support the advanced window.performance... ;-)
-	return fn ? fn.bind(perf) : function() { return +new Date(); };
+  var perf = 'undefined' !== typeof window ? window.performance || {} : {};
+  var fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
+  // fn.bind will be available in all the browsers that support the advanced window.performance... ;-)
+  return fn ? fn.bind(perf) : function() { return +new Date(); };
 })();
 
+/**
+  Notifies event's subscribers, calls `before` and `after` hooks.
 
+  @method instrument
+  @namespace Ember.Instrumentation
+
+  @param {String} [name] Namespaced event name.
+  @param {Object} payload
+  @param {Function} callback Function that you're instrumenting.
+  @param {Object} binding Context that instrument function is called with.
+*/
 Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
   var listeners = cache[name], timeName, ret;
 
@@ -120,6 +130,15 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
   return Ember.tryCatchFinally(tryable, catchable, finalizer);
 };
 
+/**
+  Subscribes to a particular event or instrumented block of code.
+
+  @method subscribe
+  @namespace Ember.Instrumentation
+
+  @param {String} [pattern] Namespaced event name.
+  @param {Object} [object] Before and After hooks.
+*/
 Ember.Instrumentation.subscribe = function(pattern, object) {
   var paths = pattern.split("."), path, regex = [];
 
@@ -147,6 +166,14 @@ Ember.Instrumentation.subscribe = function(pattern, object) {
   return subscriber;
 };
 
+/**
+  Unsubscribes from a particular event or instrumented block of code.
+
+  @method unsubscribe
+  @namespace Ember.Instrumentation
+
+  @param {Object} [subscriber]
+*/
 Ember.Instrumentation.unsubscribe = function(subscriber) {
   var index;
 
@@ -160,6 +187,12 @@ Ember.Instrumentation.unsubscribe = function(subscriber) {
   cache = {};
 };
 
+/**
+  Resets `Ember.Instrumentation` by flushing list of subscribers.
+
+  @method reset
+  @namespace Ember.Instrumentation
+*/
 Ember.Instrumentation.reset = function() {
   subscribers = [];
   cache = {};

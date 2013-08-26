@@ -9,6 +9,14 @@ var changeProperties = Ember.changeProperties,
   a single `beginPropertyChanges` and `endPropertyChanges` batch, so
   observers will be buffered.
 
+  ```javascript
+  anObject.setProperties({
+    firstName: "Stanley",
+    lastName: "Stuart",
+    age: "21"
+  })
+  ```
+
   @method setProperties
   @param self
   @param {Object} hash

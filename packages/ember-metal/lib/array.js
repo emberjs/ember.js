@@ -70,6 +70,12 @@ var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.index
   return -1;
 };
 
+/**
+  Array polyfills to support ES5 features in older browsers.
+
+  @namespace Ember
+  @property ArrayPolyfills
+*/
 Ember.ArrayPolyfills = {
   map: arrayMap,
   forEach: arrayForEach,
