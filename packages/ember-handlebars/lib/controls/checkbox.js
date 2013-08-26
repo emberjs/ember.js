@@ -40,7 +40,7 @@ var set = Ember.set, get = Ember.get;
   `{{view}}` form. In fact [this is recommend](/blog/2013/04/21/ember-1-0-rc3.html#toc_new-input-and-textarea-helpers).
 
   ```handlebars
-  {{ input type="checkbox" checked=receiveEmail }}
+  {{input type="checkbox" checked=receiveEmail}}
   ```
 
   When using dynamic tags, you do not need to use a `Binding` suffix and

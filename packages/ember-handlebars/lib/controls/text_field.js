@@ -25,7 +25,7 @@ var get = Ember.get, set = Ember.set;
   `{{view}}` form. In fact [this is recommend](/blog/2013/04/21/ember-1-0-rc3.html#toc_new-input-and-textarea-helpers).
 
     ```handlebars
-  {{ input value=firstName }}
+  {{input value=firstName}}
   ```
 
   When using dynamic tags, you do not need to use a `Binding` suffix and

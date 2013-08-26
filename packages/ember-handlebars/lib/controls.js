@@ -55,7 +55,7 @@ function normalizeHash(hash, hashTypes) {
   ```
 
   ```handlebars
-  {{ input value=firstName }}
+  {{input value=firstName}}
   ```
 
   ```html
