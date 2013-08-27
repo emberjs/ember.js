@@ -4,6 +4,7 @@
 */
 
 var get = Ember.get, set = Ember.set,
+    getProperties = Ember.getProperties,
     classify = Ember.String.classify,
     fmt = Ember.String.fmt,
     a_forEach = Ember.EnumerableUtils.forEach,
@@ -591,14 +592,14 @@ Ember.Route = Ember.Object.extend({
     @return {Object} the serialized parameters
   */
   serialize: function(model, params) {
-    if (params.length !== 1) { return; }
+    if (params.length < 1) { return; }
 
     var name = params[0], object = {};
 
-    if (/_id$/.test(name)) {
-      object[name] = get(model, 'id');
+    if (/_id$/.test(name) && params.length === 1) {
+      object[name] = get(model, "id");
     } else {
-      object[name] = model;
+      object = getProperties(model, params);
     }
 
     return object;
