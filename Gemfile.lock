@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/emberjs/ember-dev.git
-  revision: bc00ea0660b07744067f05d2e12354b183ae4cb1
+  revision: 2125b71141ac5ac8e8ae253d43e7596cc9a7b977
   branch: master
   specs:
     ember-dev (0.1)
@@ -38,7 +38,7 @@ GEM
       uuidtools (~> 2.1)
     colored (1.2)
     diff-lcs (1.2.4)
-    execjs (2.0.0)
+    execjs (2.0.1)
     ffi (1.9.0)
     grit (2.5.0)
       diff-lcs (~> 1.1)

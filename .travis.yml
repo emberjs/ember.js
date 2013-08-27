@@ -13,10 +13,6 @@ notifications:
         KpIzGa9OC5tZfN/RqJskLuP8QRvqNCLPyesY1E5GM7lTKYa92PM='
     on_success: change
     on_failure: always
-branches:
-  except:
-  - latest-builds
-  - release-builds
 env:
   global:
   - S3_BUCKET_NAME=builds.emberjs.com
