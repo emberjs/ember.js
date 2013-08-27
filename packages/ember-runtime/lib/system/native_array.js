@@ -1,3 +1,4 @@
+require('ember-metal/enumerable_utils');
 require('ember-runtime/mixins/observable');
 require('ember-runtime/mixins/mutable_array');
 require('ember-runtime/mixins/copyable');
@@ -8,7 +9,7 @@ require('ember-runtime/mixins/copyable');
 */
 
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, replace = Ember.EnumerableUtils._replace;
 
 // Add Ember.Array to Array.prototype. Remove methods with native
 // implementations and supply some more optimized versions of generic methods
@@ -30,7 +31,7 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
   // primitive for array support.
   replace: function(idx, amt, objects) {
 
-    if (this.isFrozen) throw Ember.FROZEN_ERROR ;
+    if (this.isFrozen) throw Ember.FROZEN_ERROR;
 
     // if we replaced exactly the same number of items, then pass only the
     // replaced range. Otherwise, pass the full remaining array length
@@ -39,14 +40,13 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
     this.arrayContentWillChange(idx, amt, len);
 
     if (!objects || objects.length === 0) {
-      this.splice(idx, amt) ;
+      this.splice(idx, amt);
     } else {
-      var args = [idx, amt].concat(objects) ;
-      this.splice.apply(this,args) ;
+      replace(this, idx, amt, objects);
     }
 
     this.arrayContentDidChange(idx, amt, len);
-    return this ;
+    return this;
   },
 
   // If you ask for an unknown property, then try to collect the value
