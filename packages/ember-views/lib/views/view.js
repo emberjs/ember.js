@@ -2094,6 +2094,10 @@ Ember.View = Ember.CoreView.extend(
     @return {Ember.View} new instance
   */
   createChildView: function(view, attrs) {
+    if (!view) {
+      throw new TypeError("createChildViews first argument must exist");
+    }
+
     if (view.isView && view._parentView === this && view.container === this.container) {
       return view;
     }
