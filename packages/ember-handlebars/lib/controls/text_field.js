@@ -10,38 +10,17 @@ require("ember-handlebars/controls/text_support");
 var get = Ember.get, set = Ember.set;
 
 /**
-  The `Ember.TextField` view class renders a text
-  [input](https://developer.mozilla.org/en/HTML/Element/Input) element. It
-  allows for binding Ember properties to the text field contents (`value`),
-  live-updating as the user inputs text.
 
-  Example:
+  The internal class used to create text inputs when the `{{input}}`
+  helper is used with `type` of `text`.
 
-  ```handlebars
-  {{view Ember.TextField valueBinding="firstName"}}
-  ```
+  See Handlebars.helpers.input for usage details.
 
   ## Layout and LayoutName properties
 
   Because HTML `input` elements are self closing `layout` and `layoutName`
   properties will not be applied. See [Ember.View](/api/classes/Ember.View.html)'s
   layout section for more information.
-
-  ## HTML Attributes
-
-  By default `Ember.TextField` provides support for `type`, `value`, `size`,
-  `pattern`, `placeholder`, `disabled`, `maxlength` and `tabindex` attributes
-  on a text field. If you need to support more attributes have a look at the
-  `attributeBindings` property in `Ember.View`'s HTML Attributes section.
-
-  To globally add support for additional attributes you can reopen
-  `Ember.TextField` or `Ember.TextSupport`.
-
-  ```javascript
-  Ember.TextSupport.reopen({
-    attributeBindings: ["required"]
-  })
-  ```
 
   @class TextField
   @namespace Ember
