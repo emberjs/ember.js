@@ -14,6 +14,7 @@ require('ember-metal/property_get');
 require('ember-metal/property_set');
 require('ember-metal/properties');
 require('ember-metal/property_events');
+require('ember-metal/get_properties');
 require('ember-metal/set_properties');
 require('ember-metal/chains');
 require('ember-metal/computed');
