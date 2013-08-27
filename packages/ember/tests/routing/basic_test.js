@@ -946,9 +946,6 @@ asyncTest("Events are triggered on the current state", function() {
 
   container.register('controller:home', Ember.Controller.extend());
 
-  //var controller = router._container.controller.home = Ember.Controller.create();
-  //controller.target = router;
-
   handleURL('/');
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
