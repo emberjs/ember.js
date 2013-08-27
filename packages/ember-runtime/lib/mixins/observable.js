@@ -3,7 +3,10 @@
 @submodule ember-runtime
 */
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get,
+    set = Ember.set,
+    slice = Array.prototype.slice,
+    getProperties = Ember.getProperties;
 
 /**
   ## Overview
@@ -133,15 +136,7 @@ Ember.Observable = Ember.Mixin.create({
     @return {Hash}
   */
   getProperties: function() {
-    var ret = {};
-    var propertyNames = arguments;
-    if (arguments.length === 1 && Ember.typeOf(arguments[0]) === 'array') {
-      propertyNames = arguments[0];
-    }
-    for(var i = 0; i < propertyNames.length; i++) {
-      ret[propertyNames[i]] = get(this, propertyNames[i]);
-    }
-    return ret;
+    return getProperties.apply(null, [this].concat(slice.call(arguments)));
   },
 
   /**
