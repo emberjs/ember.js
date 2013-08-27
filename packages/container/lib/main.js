@@ -285,6 +285,7 @@ define("container",
 
         this.registry.remove(normalizedName);
         this.cache.remove(normalizedName);
+        this.factoryCache.remove(normalizedName);
         this._options.remove(normalizedName);
       },
 
