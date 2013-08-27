@@ -1,3 +1,5 @@
+require('ember-runtime/system/tracked_array');
+
 require('ember-runtime/system/container');
 require('ember-runtime/system/application');
 require('ember-runtime/system/array_proxy');
