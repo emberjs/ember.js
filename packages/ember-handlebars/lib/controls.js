@@ -19,10 +19,35 @@ function normalizeHash(hash, hashTypes) {
 }
 
 /**
+
+  `TextField`, `TextArea` and `Checkbox` views have corresponding
+  handlebars helpers.
+
+  ```handlebars
+    {{view Ember.TextField valueBinding="name"}}
+    {{view Ember.Checkbox  checkedBinding="isActive"}}
+    {{view Ember.TextArea  valueBinding="name"}}
+  ```
+
+  can now also expressed as:
+
+  ```handlebars
+    {{input value=name}}
+    {{input type=checkbox checked=isActive}}
+    {{textarea value=name}}
+  ```
+
+  We recommend using the "dynamic tag" forms rather than the `{{view}}` forms because
+  they are equivalent to the static tags that we all know and love.
+
+  Note that when using dynamic tags, you do not need to use a `Binding` suffix and
+  must leave out the quotation marks around the values. Ember will interpret quoted
+  strings as static strings in this context.
+
   `{{input}}` inserts a new instance of either `Ember.TextField` or
   `Ember.Checkbox`, depending on the `type` option passed in. If no `type`
   is supplied it defaults to Ember.TextField.
-  
+
   ```javascript
   App.ApplicationController = Ember.Controller.extend({
     firstName: "Stanley"
@@ -30,9 +55,9 @@ function normalizeHash(hash, hashTypes) {
   ```
 
   ```handlebars
-  {{input value="firstName"}}
+  {{input value=firstName}}
   ```
-  
+
   ```html
   <input type="textfield" class="ember-text-field" value="Stanley" />
   ```
@@ -65,20 +90,20 @@ Ember.Handlebars.registerHelper('input', function(options) {
 
 /**
   `{{textarea}}` inserts a new instance of `Ember.TextArea` into the template.
-  
+
   ```javascript
   App.ApplicationController = Ember.Controller.extend({
-    writtenWords: "lorem ipsum dolor sit amet"
+    writtenWords: "hello"
   });
   ```
 
   ```handlebars
-  {{textarea value="writtenWords"}}
+  {{ textarea value=writtenWords }}
   ```
-  
+
   ```html
-  <textarea class="ember-text-area"> 
-    written words
+  <textarea class="ember-text-area">
+    hello
   </textarea>
   ```
 

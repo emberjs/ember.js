@@ -3,6 +3,8 @@ require('ember-handlebars/ext');
 /**
 @module ember
 @submodule ember-handlebars
+@deprecated use [/api/classes/Ember.Handlebars.helpers.html#method_partial](partial)
+  instead, which will work the same way.
 */
 
 /**
