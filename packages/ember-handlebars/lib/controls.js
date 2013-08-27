@@ -19,23 +19,119 @@ function normalizeHash(hash, hashTypes) {
 }
 
 /**
-  `{{input}}` inserts a new instance of either `Ember.TextField` or
-  `Ember.Checkbox`, depending on the `type` option passed in. If no `type`
-  is supplied it defaults to Ember.TextField.
+
+  The `{{input}}` helper inserts an HTML `<input>` tag into the template,
+  with a `type` value of either `text` or `checkbox`. If no `type` is provided,
+  `text` will be the default value applied. The attributes of `{{input}}`
+  match those of the native HTML tag as closely as possible for these two types.
+
+  ## Use as text field
+  An `{{input}}` with no `type` or a `type` of `text` will render an HTML text input.
+  The following HTML attributes can be set via the helper:
+    
+    * `value`
+    * `size`
+    * `name`
+    * `pattern`
+    * `placeholder`
+    * `disabled`
+    * `maxlength`
+    * `tabindex`
+
+  When set to a quoted string, these values will be directly applied to the HTML
+  element. When left unquoted, these values will be bound to a property on the
+  template's current rendering context (most typically a controller instance).
   
+  Unbound:
+
+  ```handlebars
+  {{input value="http://www.facebook.com"}}
+  ```
+
+  ```html
+  <input type="text" value="http://www.facebook.com"/>
+  ```
+
+  Bound:
+
   ```javascript
   App.ApplicationController = Ember.Controller.extend({
-    firstName: "Stanley"
+    firstName: "Stanley",
+    entryNotAllowed: true
+  });
+  ```
+  
+  ```handlebars
+  {{input type="text" value=firstName disabled=entryNotAllowed size="50"}}
+  ```
+
+  ```html
+  <input type="text" value="Stanley" disabled="disabled" size="50"/>
+  ```
+  
+  ### Extension
+  Internally, `{{input type="text"}}` creates an instance of `Ember.TextField`, passing
+  arguments from the helper to `Ember.TextField`'s `create` method. You can extend the
+  capablilties of text inputs in your applications by reopening this class. For example,
+  if you are deploying to browsers where the `required` attribute is used, you
+  can add this to the `TextField`'s `attributeBindings` property:
+
+  ```javascript
+  Ember.TextField.reopen({
+    attributeBindings: ['required']
+  });
+
+  ## Use as checkbox
+  An `{{input}}` with a `type` of `checkbox` will render an HTML checkbox input.
+  The following HTML attributes can be set via the helper:
+    
+    * `checked`
+    * `disabled`
+    * `tabindex`
+    * `indeterminate`
+    * `name`
+
+  When set to a quoted string, these values will be directly applied to the HTML
+  element. When left unquoted, these values will be bound to a property on the
+  template's current rendering context (most typically a controller instance).
+
+  Unbound:
+
+  ```handlebars
+  {{input type="checkbox" name="isAdmin"}}
+  ```
+
+  ```html
+  <input type="checkbox" name="isAdmin" />
+  ```
+
+  Bound:
+
+  ```javascript
+  App.ApplicationController = Ember.Controller.extend({
+    isAdmin: true
   });
   ```
 
   ```handlebars
-  {{input value="firstName"}}
+  {{input type="checkbox" checked=isAdmin }}
   ```
-  
+
   ```html
-  <input type="textfield" class="ember-text-field" value="Stanley" />
+  <input type="checkbox" checked="checked" />
   ```
+
+  ### Extension
+  Internally, `{{input type="checkbox"}}` creates an instance of `Ember.Checkbox`, passing
+  arguments from the helper to `Ember.Checkbox`'s `create` method. You can extend the
+  capablilties of checkbox inputs in your applications by reopening this class. For example,
+  if you wanted to add a css class to all checkboxes in your application:
+
+  ```javascript
+  Ember.Checkbox.reopen({
+    classNames: ['my-app-checkbox']
+  });
+
 
   @method input
   @for Ember.Handlebars.helpers
