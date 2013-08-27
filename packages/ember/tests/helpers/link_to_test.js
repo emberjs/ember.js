@@ -419,14 +419,16 @@ test("The {{linkTo}} helper accepts string/numeric arguments", function() {
   Router.map(function() {
     this.route('filter', { path: '/filters/:filter' });
     this.route('post',   { path: '/post/:post_id' });
+    this.route('repo',   { path: '/repo/:owner/:name' });
   });
 
   App.FilterController = Ember.Controller.extend({
     filter: "unpopular",
+    repo: Ember.Object.create({owner: 'ember', name: 'ember.js'}),
     post_id: 123
   });
 
-  Ember.TEMPLATES.filter = compile('<p>{{filter}}</p>{{#linkTo "filter" "unpopular" id="link"}}Unpopular{{/linkTo}}{{#linkTo "filter" filter id="path-link"}}Unpopular{{/linkTo}}{{#linkTo "post" post_id id="post-path-link"}}Post{{/linkTo}}{{#linkTo "post" 123 id="post-number-link"}}Post{{/linkTo}}');
+  Ember.TEMPLATES.filter = compile('<p>{{filter}}</p>{{#linkTo "filter" "unpopular" id="link"}}Unpopular{{/linkTo}}{{#linkTo "filter" filter id="path-link"}}Unpopular{{/linkTo}}{{#linkTo "post" post_id id="post-path-link"}}Post{{/linkTo}}{{#linkTo "post" 123 id="post-number-link"}}Post{{/linkTo}}{{#linkTo "repo" repo id="repo-object-link"}}Repo{{/linkTo}}');
 
   Ember.TEMPLATES.index = compile('');
 
@@ -438,6 +440,7 @@ test("The {{linkTo}} helper accepts string/numeric arguments", function() {
   equal(normalizeUrl(Ember.$('#path-link', '#qunit-fixture').attr('href')), "/filters/unpopular");
   equal(normalizeUrl(Ember.$('#post-path-link', '#qunit-fixture').attr('href')), "/post/123");
   equal(normalizeUrl(Ember.$('#post-number-link', '#qunit-fixture').attr('href')), "/post/123");
+  equal(normalizeUrl(Ember.$('#repo-object-link', '#qunit-fixture').attr('href')), "/repo/ember/ember.js");
 });
 
 test("The {{linkTo}} helper unwraps controllers", function() {
