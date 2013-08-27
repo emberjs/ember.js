@@ -917,9 +917,9 @@ testBoth('Ember.computed.any', function(get, set) {
   equal(get(obj, 'anyOf'), 'bar', 'is bar');
 });
 
-testBoth('Ember.computed.map', function(get, set) {
+testBoth('Ember.computed.collect', function(get, set) {
   var obj = { one: 'foo', two: 'bar', three: null };
-  Ember.defineProperty(obj, 'all', Ember.computed.map('one', 'two', 'three', 'four'));
+  Ember.defineProperty(obj, 'all', Ember.computed.collect('one', 'two', 'three', 'four'));
 
   deepEqual(get(obj, 'all'), ['foo', 'bar', null, null], 'have all of them');
 
