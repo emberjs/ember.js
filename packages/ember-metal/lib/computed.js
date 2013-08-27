@@ -99,6 +99,81 @@ function removeDependentKeys(desc, obj, keyName, meta) {
 //
 
 /**
+  A computed property transforms an objects function into a property.
+
+  By default the function backing the computed property will only be called
+  once and the result will be cached. You can specify various properties
+  that your computed property is dependent on. This will force the cached
+  result to be recomputed if the dependencies are modified.
+
+  In the following example we declare a computed property (by calling
+  `.property()` on the fullName function) and setup the properties
+  dependencies (depending on firstName and lastName). The fullName function
+  will be called once (regardless of how many times it is accessed) as long
+  as it's dependencies have not been changed. Once firstName or lastName are updated
+  any future calls (or anything bound) to fullName will incorporate the new
+  values.
+
+  ```javascript
+  Person = Ember.Object.extend({
+    // these will be supplied by `create`
+    firstName: null,
+    lastName: null,
+
+    fullName: function() {
+      var firstName = this.get('firstName');
+      var lastName = this.get('lastName');
+
+     return firstName + ' ' + lastName;
+    }.property('firstName', 'lastName')
+  });
+
+  var tom = Person.create({
+    firstName: "Tom",
+    lastName: "Dale"
+  });
+
+  tom.get('fullName') // "Tom Dale"
+  ```
+
+  You can also define what Ember should do when setting a computed property.
+  If you try to set a computed property, it will be invoked with the key and
+  value you want to set it to. You can also accept the previous value as the
+  third parameter.
+
+  ```javascript
+
+ Person = Ember.Object.extend({
+    // these will be supplied by `create`
+    firstName: null,
+    lastName: null,
+
+    fullName: function(key, value, oldValue) {
+      // getter
+      if (arguments.length === 1) {
+        var firstName = this.get('firstName');
+        var lastName = this.get('lastName');
+
+        return firstName + ' ' + lastName;
+
+      // setter
+      } else {
+        var name = value.split(" ");
+
+        this.set('firstName', name[0]);
+        this.set('lastName', name[1]);
+
+        return value;
+      }
+    }.property('firstName', 'lastName')
+  });
+
+  var person = Person.create();
+  person.set('fullName', "Peter Wagenet");
+  person.get('firstName') // Peter
+  person.get('lastName') // Wagenet
+  ```
+
   @class ComputedProperty
   @namespace Ember
   @extends Ember.Descriptor
@@ -117,7 +192,7 @@ ComputedProperty.prototype = new Ember.Descriptor();
 
 var ComputedPropertyPrototype = ComputedProperty.prototype;
 
-/*
+/**
   Properties are cacheable by default. Computed property will automatically
   cache the return value of your function until one of the dependent keys changes.
 
@@ -263,7 +338,33 @@ function finishChains(chainNodes)
   }
 }
 
-/* impl descriptor API */
+/**
+  Access the value of the function backing the computed property.
+  If this property has already been cached, return the cached result.
+  Otherwise, call the function passing the property name as an argument.
+
+  ```javascript
+  Person = Ember.Object.extend({
+    fullName: function(keyName) {
+      // the keyName parameter is 'fullName' in this case.
+
+      return this.get('firstName') + ' ' + this.get('lastName');
+    }.property('firstName', 'lastName')
+  });
+
+
+  var tom = Person.create({
+    firstName: "Tom",
+    lastName: "Dale"
+  });
+
+  tom.get('fullName') // "Tom Dale"
+  ```
+
+  @method get
+  @param {String} keyName The key being accessed.
+  @return {Object} The return value of the function backing the CP.
+*/
 ComputedPropertyPrototype.get = function(obj, keyName) {
   var ret, cache, meta, chainNodes;
   if (this._cacheable) {
@@ -280,7 +381,21 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   return ret;
 };
 
-/* impl descriptor API */
+/**
+  Set the value of a computed property. If the function that backs your
+  computed property does not accept arguments then the default action for
+  setting would be to define the property on the current object, and set
+  the value of the property to the value being set.
+
+  Generally speaking if you intend for your computed property to be set
+  your backing function should accept either two or three arguments.
+
+  @method set
+  @param {String} keyName The key being accessed.
+  @param {Object} newValue The new value being assigned.
+  @param {String} oldValue The old value being replaced.
+  @return {Object} The return value of the function backing the CP.
+*/
 ComputedPropertyPrototype.set = function(obj, keyName, value) {
   var cacheable = this._cacheable,
       func = this.func,
