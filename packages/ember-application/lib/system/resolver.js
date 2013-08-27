@@ -291,5 +291,9 @@ Ember.DefaultResolver = Ember.Object.extend({
     if (parsedName.type !== 'model') { description += classify(parsedName.type); }
 
     return description;
+  },
+
+  makeToString: function(factory, fullName) {
+    return factory.toString();
   }
 });
