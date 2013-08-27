@@ -712,6 +712,8 @@ Ember.Application.reopenClass({
     container.resolver  = resolverFor(namespace);
     container.normalize = container.resolver.normalize;
     container.describe  = container.resolver.describe;
+    container.makeToString = container.resolver.makeToString;
+
     container.optionsForType('component', { singleton: false });
     container.optionsForType('view', { singleton: false });
     container.optionsForType('template', { instantiate: false });
@@ -767,6 +769,10 @@ function resolverFor(namespace) {
 
   resolve.describe = function(fullName) {
     return resolver.lookupDescription(fullName);
+  };
+
+  resolve.makeToString = function(factory, fullName) {
+    return resolver.makeToString(factory, fullName);
   };
 
   resolve.normalize = function(fullName) {

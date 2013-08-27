@@ -350,6 +350,17 @@ define("container",
       },
 
       /**
+        @method makeToString
+
+        @param {any} factory
+        @param {string} fullNae
+        @return {function} toString function
+      */
+      makeToString: function(factory, fullName) {
+        return factory.toString();
+      }, 
+
+      /**
         Given a fullName return a corresponding instance.
 
         The default behaviour is for lookup to return a singleton instance.
@@ -767,8 +778,14 @@ define("container",
         // for now just fallback to create time injection
         return factory;
       } else {
-        injectedFactory = factory.extend(injectionsFor(container, fullName));
-        injectedFactory.reopenClass(factoryInjectionsFor(container, fullName));
+
+        var injections        = injectionsFor(container, fullName);
+        var factoryInjections = factoryInjectionsFor(container, fullName);
+
+        factoryInjections._toString = container.makeToString(factory, fullName);
+
+        injectedFactory = factory.extend(injections);
+        injectedFactory.reopenClass(factoryInjections);
 
         cache.set(fullName, injectedFactory);
 
