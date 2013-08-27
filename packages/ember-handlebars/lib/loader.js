@@ -69,18 +69,21 @@ function registerComponents(container) {
   }
 }
 
+
 function registerComponent(container, name) {
   Ember.assert("You provided a template named 'components/" + name + "', but custom components must include a '-'", name.match(/-/));
 
-  var className = name.replace(/-/g, '_');
-  var Component = container.lookupFactory('component:' + className) || container.lookupFactory('component:' + name);
-  var View = Component || Ember.Component.extend();
+  container.injection('component:' + name, 'layout', 'template:components/' + name);
 
-  View.reopen({
-    layoutName: 'components/' + name
-  });
+  var fullName = 'component:' + name;
+  var Component = container.lookupFactory(fullName);
 
-  Ember.Handlebars.helper(name, View);
+  if (!Component) {
+    container.register('component:' + name, Ember.Component);
+    Component = container.lookupFactory(fullName);
+  }
+
+  Ember.Handlebars.helper(name, Component);
 }
 
 /*
