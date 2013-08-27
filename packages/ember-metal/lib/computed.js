@@ -993,7 +993,7 @@ registerComputedWithProperties('any', function(properties) {
   @return {Ember.ComputedProperty} computed property which maps
   values of all passed properties in to an array.
 */
-registerComputedWithProperties('map', function(properties) {
+registerComputedWithProperties('collect', function(properties) {
   var res = [];
   for (var key in properties) {
     if (properties.hasOwnProperty(key)) {
@@ -1118,3 +1118,5 @@ Ember.computed.defaultTo = function(defaultPath) {
     return newValue != null ? newValue : get(this, defaultPath);
   });
 };
+
+
