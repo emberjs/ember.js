@@ -62,19 +62,31 @@ var handlebarsGet = Ember.Handlebars.get = function(root, path, options) {
       normalizedPath = normalizePath(root, path, data),
       value;
 
-  // In cases where the path begins with a keyword, change the
-  // root to the value represented by that keyword, and ensure
-  // the path is relative to it.
-  root = normalizedPath.root;
-  path = normalizedPath.path;
+  if (Ember.FEATURES.isEnabled("ember-handlebars-caps-lookup")) {
 
-  value = Ember.get(root, path);
+    // If the path starts with a capital letter, look it up on Ember.lookup,
+    // which defaults to the `window` object in browsers.
+    if (Ember.isGlobalPath(path)) {
+      value = Ember.get(Ember.lookup, path);
+    } else {
 
-  // If the path starts with a capital letter, look it up on Ember.lookup,
-  // which defaults to the `window` object in browsers.
-  if (value === undefined && root !== Ember.lookup && Ember.isGlobalPath(path)) {
-    value = Ember.get(Ember.lookup, path);
+      // In cases where the path begins with a keyword, change the
+      // root to the value represented by that keyword, and ensure
+      // the path is relative to it.
+      value = Ember.get(normalizedPath.root, normalizedPath.path);
+    }
+
+  } else {
+    root = normalizedPath.root;
+    path = normalizedPath.path;
+
+    value = Ember.get(root, path);
+
+    if (value === undefined && root !== Ember.lookup && Ember.isGlobalPath(path)) {
+      value = Ember.get(Ember.lookup, path);
+    }
   }
+
   return value;
 };
 

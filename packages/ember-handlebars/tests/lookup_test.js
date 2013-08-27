@@ -28,6 +28,17 @@ test("ID parameters should be looked up on the context", function() {
   deepEqual(params, ["Mr", "Tom", "Dale"]);
 });
 
+if (Ember.FEATURES.isEnabled("ember-handlebars-caps-lookup")) {
+  test("ID parameters that start with capital letters use Ember.lookup as their context", function() {
+    Ember.lookup.FOO = "BAR";
+
+    var context = { FOO: "BAZ" };
+
+    var params = Ember.Handlebars.resolveParams(context, ["FOO"], { types: ["ID"] });
+    deepEqual(params, ["BAR"]);
+  });
+}
+
 test("ID parameters can look up keywords", function() {
   var controller = {
     salutation: "Mr"
