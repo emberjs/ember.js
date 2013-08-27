@@ -789,6 +789,7 @@ define("router",
 
           // Don't overwrite contexts / update URL if this was a noop transition.
           if (!currentHandlerInfos || !currentHandlerInfos.length ||
+              !router.recognizer.hasRoute(currentHandlerInfos[currentHandlerInfos.length - 1].name) ||
               currentHandlerInfos.length !== matchPointResults.matchPoint) {
             finalizeTransition(transition, handlerInfos);
           }
