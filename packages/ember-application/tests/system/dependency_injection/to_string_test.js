@@ -50,5 +50,5 @@ test("with a custom resolver", function() {
   var peter = App.__container__.lookup('model:peter');
   var guid = Ember.guidFor(peter);
 
-  equal(peter.toString(), '<model:peter:' + guid + '>', 'expecting the model to be post');
+  equal(peter.toString(), '<model:peter:' + guid + '>', 'expecting the supermodel to be peter');
 });
