@@ -1,6 +1,5 @@
 var Router, App, AppView, templates, router, eventDispatcher, container, originalTemplates;
 var get = Ember.get, set = Ember.set;
-var oldParamFlagValue;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -18,9 +17,6 @@ function compile(template) {
 
 module("The {{linkTo}} helper", {
   setup: function() {
-    oldParamFlagValue = Ember.ENV.HELPER_PARAM_LOOKUPS;
-    Ember.ENV.HELPER_PARAM_LOOKUPS = true;
-
     Ember.run(function() {
       App = Ember.Application.create({
         name: "App",
@@ -55,7 +51,6 @@ module("The {{linkTo}} helper", {
   teardown: function() {
     Ember.run(function() { App.destroy(); });
     Ember.TEMPLATES = originalTemplates;
-    Ember.ENV.HELPER_PARAM_LOOKUPS = oldParamFlagValue;
   }
 });
 
@@ -250,9 +245,7 @@ test("The {{linkTo}} helper supports leaving off .index for nested routes", func
 
   bootApplication();
 
-  Ember.run(function() {
-    router.handleURL("/about/item");
-  });
+  Ember.run(router, 'handleURL', '/about/item');
 
   equal(normalizeUrl(Ember.$('#item a', '#qunit-fixture').attr('href')), '/about');
 });
@@ -416,7 +409,7 @@ test("The {{linkTo}} helper binds some anchor html tag common attributes", funct
   Ember.run(function() {
     router.handleURL("/");
   });
-  
+
   var link = Ember.$('#self-link', '#qunit-fixture');
   equal(link.attr('title'), 'title-attr', "The self-link contains title attribute");
   equal(link.attr('rel'), 'rel-attr', "The self-link contains rel attribute");
@@ -505,8 +498,6 @@ test("The {{linkTo}} helper doesn't change view context", function() {
 test("Quoteless route param performs property lookup", function() {
   Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#linkTo 'index' id='string-link'}}string{{/linkTo}}{{#linkTo foo id='path-link'}}path{{/linkTo}}{{#linkTo view.foo id='view-link'}}{{view.foo}}{{/linkTo}}");
 
-  Ember.ENV.HELPER_PARAM_LOOKUPS = true;
-
   function assertEquality(href) {
     equal(normalizeUrl(Ember.$('#string-link', '#qunit-fixture').attr('href')), '/');
     equal(normalizeUrl(Ember.$('#path-link', '#qunit-fixture').attr('href')), href);
@@ -528,9 +519,7 @@ test("Quoteless route param performs property lookup", function() {
 
   bootApplication();
 
-  Ember.run(function() {
-    router.handleURL("/");
-  });
+  Ember.run(router, 'handleURL', '/');
 
   assertEquality('/');
 
@@ -552,8 +541,6 @@ test("linkTo with null/undefined dynamic parameters are put in a loading state",
   Ember.Logger.warn = function() { warnCalled = true; };
   Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#linkTo destinationRoute routeContext loadingClass='i-am-loading' id='context-link'}}string{{/linkTo}}{{#linkTo secondRoute loadingClass='i-am-loading' id='static-link'}}string{{/linkTo}}");
 
-  Ember.ENV.HELPER_PARAM_LOOKUPS = true;
-
   var thing = Ember.Object.create({ id: 123 });
 
   App.IndexController = Ember.Controller.extend({
@@ -574,9 +561,7 @@ test("linkTo with null/undefined dynamic parameters are put in a loading state",
 
   bootApplication();
 
-  Ember.run(function() {
-    router.handleURL("/");
-  });
+  Ember.run(router, 'handleURL', '/');
 
   function assertLinkStatus($link, url) {
     if (url) {
@@ -602,23 +587,23 @@ test("linkTo with null/undefined dynamic parameters are put in a loading state",
   });
 
   // Set the destinationRoute (context is still null).
-  Ember.run(function() { controller.set('destinationRoute', 'thing'); });
+  Ember.run(controller, 'set', 'destinationRoute', 'thing');
   assertLinkStatus($contextLink);
 
   // Set the routeContext to an id
-  Ember.run(function() { controller.set('routeContext', '456'); });
+  Ember.run(controller, 'set', 'routeContext', '456');
   assertLinkStatus($contextLink, '/thing/456');
 
   // Test that 0 isn't interpreted as falsy.
-  Ember.run(function() { controller.set('routeContext', 0); });
+  Ember.run(controller, 'set', 'routeContext', 0);
   assertLinkStatus($contextLink, '/thing/0');
 
   // Set the routeContext to an object
-  Ember.run(function() { controller.set('routeContext', thing); });
+  Ember.run(controller, 'set', 'routeContext', thing);
   assertLinkStatus($contextLink, '/thing/123');
 
   // Set the destinationRoute back to null.
-  Ember.run(function() { controller.set('destinationRoute', null); });
+  Ember.run(controller, 'set', 'destinationRoute', null);
   assertLinkStatus($contextLink);
 
   Ember.run(function() {
@@ -627,11 +612,11 @@ test("linkTo with null/undefined dynamic parameters are put in a loading state",
     ok(warnCalled, "Logger.warn was called from clicking loading link");
   });
 
-  Ember.run(function() { controller.set('secondRoute', 'about'); });
+  Ember.run(controller, 'set', 'secondRoute', 'about');
   assertLinkStatus($staticLink, '/about');
 
   // Click the now-active link
-  Ember.run(function() { $staticLink.click(); });
+  Ember.run($staticLink, 'click');
 
   Ember.Logger.warn = oldWarn;
 });
@@ -643,16 +628,6 @@ test("The {{linkTo}} helper refreshes href element when one of params changes", 
 
   var post = Ember.Object.create({id: '1'}),
       secondPost = Ember.Object.create({id: '2'});
-
-  App.PostRoute = Ember.Route.extend({
-    model: function(params) {
-      return post;
-    },
-
-    serialize: function(post) {
-      return { post_id: post.get('id') };
-    }
-  });
 
   Ember.TEMPLATES.index = compile('{{#linkTo "post" post id="post"}}post{{/linkTo}}');
 
@@ -675,3 +650,33 @@ test("The {{linkTo}} helper refreshes href element when one of params changes", 
 
   equal(Ember.$('#post', '#qunit-fixture').attr('href'), '#', 'href attr becomes # when one of the arguments in nullified');
 });
+
+test("The {{linkTo}} helper's bound parameter functionality works as expected in conjunction with an ObjectProxy/Controller", function() {
+  Router.map(function() {
+    this.route('post', { path: '/posts/:post_id' });
+  });
+
+  var post = Ember.Object.create({id: '1'}),
+      secondPost = Ember.Object.create({id: '2'});
+
+  Ember.TEMPLATES = {
+    index: compile(''),
+    post:  compile('{{#linkTo "post" this id="self-link"}}selflink{{/linkTo}}')
+  };
+
+  App.PostController = Ember.ObjectController.extend();
+  var postController = container.lookup('controller:post');
+
+  bootApplication();
+
+  Ember.run(router, 'transitionTo', 'post', post);
+
+  var $link = Ember.$('#self-link', '#qunit-fixture');
+  equal(normalizeUrl($link.attr('href')), '/posts/1', 'self link renders post 1');
+
+  Ember.run(postController, 'set', 'content', secondPost);
+  var linkView = Ember.View.views['self-link'];
+
+  equal(normalizeUrl($link.attr('href')), '/posts/2', 'self link updated to post 2');
+});
+
