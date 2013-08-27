@@ -1,4 +1,5 @@
 require('ember-runtime/system/tracked_array');
+require('ember-runtime/system/subarray');
 
 require('ember-runtime/system/container');
 require('ember-runtime/system/application');
