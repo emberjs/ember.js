@@ -120,9 +120,9 @@ function makeCtor() {
       }
     }
     finishPartial(this, m);
+    this.init.apply(this, arguments);
     m.proto = proto;
     finishChains(this);
-    this.init.apply(this, arguments);
     sendEvent(this, "init");
   };
 

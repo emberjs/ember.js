@@ -43,18 +43,25 @@ test("should be able to insert views after the DOM representation is created", f
 
 test("should be able to observe properties that contain child views", function() {
   Ember.run(function() {
-    container = Ember.ContainerView.create({
+    var Container = Ember.ContainerView.extend({
       childViews: ['displayView'],
-      displayIsDisplayedBinding: 'displayView.isDisplayed',
+      displayIsDisplayed: Ember.computed.alias('displayView.isDisplayed'),
 
       displayView: Ember.View.extend({
         isDisplayed: true
       })
     });
 
+    container = Container.create();
     container.appendTo('#qunit-fixture');
   });
-  ok(container.get('displayIsDisplayed'), "can bind to child view");
+  equal(container.get('displayIsDisplayed'), true, "can bind to child view");
+
+  Ember.run(function () {
+    container.set('displayView.isDisplayed', false);
+  });
+
+  equal(container.get('displayIsDisplayed'), false, "can bind to child view");
 });
 
 test("childViews inherit their parents iocContainer, and retain the original container even when moved", function() {
