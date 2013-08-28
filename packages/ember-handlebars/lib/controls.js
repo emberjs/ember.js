@@ -198,7 +198,7 @@ Ember.Handlebars.registerHelper('input', function(options) {
 
   In the following example, the `writtenWords` property on `App.ApplicationController`
   will be updated live as the user types 'Lots of text that IS bound' into
-  the text area in their browser's window.
+  the text area of their browser's window.
 
   ```javascript
   App.ApplicationController = Ember.Controller.extend({
@@ -209,6 +209,8 @@ Ember.Handlebars.registerHelper('input', function(options) {
   ```handlebars
   {{textarea value=writtenWords}}
   ```
+
+   Would result in the following HTML:
 
   ```html
   <textarea class="ember-text-area">
@@ -234,12 +236,14 @@ Ember.Handlebars.registerHelper('input', function(options) {
   </div>
   ```
 
+  Would result in the following HTML:
+
   ```html
   <textarea class="ember-text-area">
     Lots of text that IS bound
   </textarea>
 
-  Would output, in real time, as you type it:
+  <-- the following div will be updated in real time as you type -->
 
   <div>
     Lots of text that IS bound
@@ -250,7 +254,7 @@ Ember.Handlebars.registerHelper('input', function(options) {
   properties are bound to eachother via `Ember.computed.alias`. Type into
   either text area box and they'll both stay in sync. Note that
   `Ember.computed.alias` costs more in terms of performance, so only use it when
-  your really binding in both direction:
+  your really binding in both directions:
 
   ```javascript
   App.ApplicationController = Ember.Controller.extend({
@@ -268,6 +272,8 @@ Ember.Handlebars.registerHelper('input', function(options) {
   <textarea id="ember1" class="ember-text-area">
     Lots of text that IS bound
   </textarea>
+
+  <-- both updated in real time -->
 
   <textarea id="ember2" class="ember-text-area">
     Lots of text that IS bound
