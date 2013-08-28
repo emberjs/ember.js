@@ -567,17 +567,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
         params = [].slice.call(arguments, 0, -1),
         hash = options.hash;
 
-    if (options.types[0] === "ID") {
-      if (Ember.ENV.HELPER_PARAM_LOOKUPS) {
-        hash.namedRouteBinding = name;
-      } else {
-        Ember.deprecate("You provided a quoteless destination route parameter of " + name + " to the link-to helper. Soon, this will perform a property lookup, rather than be treated as a string. To get rid of this warning, wrap " + name + " in quotes. To opt in to this new behavior, set ENV.HELPER_PARAM_LOOKUPS = true");
-        hash.namedRoute = name;
-      }
-    } else {
-      hash.namedRoute = name;
-    }
-
     hash.disabledBinding = hash.disabledWhen;
 
     hash.parameters = {
