@@ -1,4 +1,4 @@
-var originalLookup = Ember.lookup, lookup, Tobias;
+var originalLookup = Ember.lookup, lookup, Tobias, App, view;
 
 module("test Ember.Handlebars.bootstrap", {
   setup: function() {
@@ -7,6 +7,8 @@ module("test Ember.Handlebars.bootstrap", {
   teardown: function() {
     Ember.TEMPLATES = {};
     Ember.lookup = originalLookup;
+    if(App) { Ember.run(App, 'destroy'); }
+    if (view) { Ember.run(view, 'destroy'); }
   }
 });
 
@@ -112,4 +114,21 @@ test('duplicated template data-template-name should throw exception', function()
   },
   /Template named "[^"]+" already exists\./,
   "duplicate templates should not be allowed");
+});
+
+test('registerComponents initializer', function(){
+  Ember.TEMPLATES['components/x-apple'] = 'asdf';
+
+  App = Ember.run(Ember.Application, 'create');
+
+  ok(Ember.Handlebars.helpers['x-apple'], 'x-apple helper is present');
+  ok(App.__container__.has('component:x-apple'), 'the container is aware of x-apple');
+});
+
+test('registerComponents and ad-hoc components', function(){
+  Ember.TEMPLATES['components/x-apple'] = 'asdf';
+
+  App = Ember.run(Ember.Application, 'create');
+  view = App.__container__.lookup('component:x-apple');
+  equal(view.get('layoutName'), 'components/x-apple', 'has correct layout name');
 });
