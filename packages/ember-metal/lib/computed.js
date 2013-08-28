@@ -334,7 +334,7 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
 function finishChains(chainNodes)
 {
   for (var i=0, l=chainNodes.length; i<l; i++) {
-    chainNodes[i].didChange(true);
+    chainNodes[i].didChange(null);
   }
 }
 
@@ -699,7 +699,7 @@ registerComputed('bool', function(dependentKey) {
 });
 
 /**
-  A computed property which matches the original value for the 
+  A computed property which matches the original value for the
   dependent property against a given RegExp, returning `true`
   if they values matches the RegExp and `false` if it does not.
 

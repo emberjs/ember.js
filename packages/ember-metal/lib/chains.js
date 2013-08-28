@@ -1,7 +1,6 @@
 require('ember-metal/utils');
 require('ember-metal/property_get');
 require('ember-metal/array');
-require('ember-metal/property_events');
 require('ember-metal/watch_key');
 
 var metaFor = Ember.meta, // utils.js
@@ -11,8 +10,6 @@ var metaFor = Ember.meta, // utils.js
     warn = Ember.warn,
     watchKey = Ember.watchKey,
     unwatchKey = Ember.unwatchKey,
-    propertyWillChange = Ember.propertyWillChange,
-    propertyDidChange = Ember.propertyDidChange,
     FIRST_KEY = /^([^\.\*]+)/;
 
 function firstKey(path) {
@@ -246,42 +243,50 @@ ChainNodePrototype.unchain = function(key, path) {
 
 };
 
-ChainNodePrototype.willChange = function() {
+ChainNodePrototype.willChange = function(events) {
   var chains = this._chains;
   if (chains) {
     for(var key in chains) {
       if (!chains.hasOwnProperty(key)) { continue; }
-      chains[key].willChange();
+      chains[key].willChange(events);
     }
   }
 
-  if (this._parent) { this._parent.chainWillChange(this, this._key, 1); }
+  if (this._parent) { this._parent.chainWillChange(this, this._key, 1, events); }
 };
 
-ChainNodePrototype.chainWillChange = function(chain, path, depth) {
+ChainNodePrototype.chainWillChange = function(chain, path, depth, events) {
   if (this._key) { path = this._key + '.' + path; }
 
   if (this._parent) {
-    this._parent.chainWillChange(this, path, depth+1);
+    this._parent.chainWillChange(this, path, depth+1, events);
   } else {
-    if (depth > 1) { propertyWillChange(this.value(), path); }
+    if (depth > 1) {
+      events.push(this.value(), path);
+    }
     path = 'this.' + path;
-    if (this._paths[path] > 0) { propertyWillChange(this.value(), path); }
+    if (this._paths[path] > 0) {
+      events.push(this.value(), path);
+    }
   }
 };
 
-ChainNodePrototype.chainDidChange = function(chain, path, depth) {
+ChainNodePrototype.chainDidChange = function(chain, path, depth, events) {
   if (this._key) { path = this._key + '.' + path; }
   if (this._parent) {
-    this._parent.chainDidChange(this, path, depth+1);
+    this._parent.chainDidChange(this, path, depth+1, events);
   } else {
-    if (depth > 1) { propertyDidChange(this.value(), path); }
+    if (depth > 1) {
+      events.push(this.value(), path);
+    }
     path = 'this.' + path;
-    if (this._paths[path] > 0) { propertyDidChange(this.value(), path); }
+    if (this._paths[path] > 0) {
+      events.push(this.value(), path);
+    }
   }
 };
 
-ChainNodePrototype.didChange = function(suppressEvent) {
+ChainNodePrototype.didChange = function(events) {
   // invalidate my own value first.
   if (this._watching) {
     var obj = this._parent.value();
@@ -303,14 +308,15 @@ ChainNodePrototype.didChange = function(suppressEvent) {
   if (chains) {
     for(var key in chains) {
       if (!chains.hasOwnProperty(key)) { continue; }
-      chains[key].didChange(suppressEvent);
+      chains[key].didChange(events);
     }
   }
 
-  if (suppressEvent) { return; }
+  // if no events are passed in then we only care about the above wiring update
+  if (events === null) { return; }
 
   // and finally tell parent about my path changing...
-  if (this._parent) { this._parent.chainDidChange(this, this._key, 1); }
+  if (this._parent) { this._parent.chainDidChange(this, this._key, 1, events); }
 };
 
 Ember.finishChains = function(obj) {
@@ -319,6 +325,6 @@ Ember.finishChains = function(obj) {
     if (chains.value() !== obj) {
       m.chains = chains = chains.copy(obj);
     }
-    chains.didChange(true);
+    chains.didChange(null);
   }
 };
