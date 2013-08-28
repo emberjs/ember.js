@@ -125,10 +125,29 @@ test('registerComponents initializer', function(){
   ok(App.__container__.has('component:x-apple'), 'the container is aware of x-apple');
 });
 
-test('registerComponents and ad-hoc components', function(){
+test('registerComponents and generated components', function(){
   Ember.TEMPLATES['components/x-apple'] = 'asdf';
 
   App = Ember.run(Ember.Application, 'create');
   view = App.__container__.lookup('component:x-apple');
   equal(view.get('layoutName'), 'components/x-apple', 'has correct layout name');
+});
+
+test('registerComponents and non-geneated components', function(){
+  Ember.TEMPLATES['components/x-apple'] = 'asdf';
+
+  Ember.run(function(){
+    App = Ember.Application.create();
+
+    // currently Component code must be loaded before initializers
+    // this is mostly due to how they are bootstrapped. We will hopefully
+    // sort this out soon.
+    App.XAppleComponent = Ember.Component.extend({
+      isCorrect: true
+    });
+  });
+
+  view = App.__container__.lookup('component:x-apple');
+  equal(view.get('layoutName'), 'components/x-apple', 'has correct layout name');
+  ok(view.get('isCorrect'), 'ensure a non-generated component');
 });
