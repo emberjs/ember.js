@@ -284,7 +284,7 @@ test("The {{link-to}} helper defaults to bubbling", function() {
   var hidden = 0;
 
   App.AboutRoute = Ember.Route.extend({
-    events: {
+    actions: {
       hide: function() {
         hidden++;
       }
@@ -319,7 +319,7 @@ test("The {{link-to}} helper supports bubbles=false", function() {
   var hidden = 0;
 
   App.AboutRoute = Ember.Route.extend({
-    events: {
+    actions: {
       hide: function() {
         hidden++;
       }
