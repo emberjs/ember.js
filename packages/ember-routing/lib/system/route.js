@@ -18,7 +18,7 @@ var get = Ember.get, set = Ember.set,
   @namespace Ember
   @extends Ember.Object
 */
-Ember.Route = Ember.Object.extend({
+Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   /**
     @private
 
@@ -45,16 +45,16 @@ Ember.Route = Ember.Object.extend({
     These functions will be invoked when a matching `{{action}}` is triggered
     from within a template and the application's current route is this route.
 
-    Events can also be invoked from other parts of your application via `Route#send`
+    Actions can also be invoked from other parts of your application via `Route#send`
     or `Controller#send`.
 
-    The `events` hash will inherit event handlers from
-    the `events` hash defined on extended Route parent classes
+    The `actions` hash will inherit action handlers from
+    the `actions` hash defined on extended Route parent classes
     or mixins rather than just replace the entire hash, e.g.:
 
     ```js
     App.CanDisplayBanner = Ember.Mixin.create({
-      events: {
+      actions: {
         displayBanner: function(msg) {
           // ...
         }
@@ -62,7 +62,7 @@ Ember.Route = Ember.Object.extend({
     });
 
     App.WelcomeRoute = Ember.Route.extend(App.CanDisplayBanner, {
-      events: {
+      actions: {
         playMusic: function() {
           // ...
         }
@@ -70,36 +70,36 @@ Ember.Route = Ember.Object.extend({
     });
 
     // `WelcomeRoute`, when active, will be able to respond
-    // to both events, since the events hash is merged rather
+    // to both actions, since the actions hash is merged rather
     // then replaced when extending mixins / parent classes.
     this.send('displayBanner');
     this.send('playMusic');
     ```
 
     It is also possible to call `this._super()` from within an
-    event handler if it overrides a handle defined on a parent
+    action handler if it overrides a handle defined on a parent
     class or mixin.
 
-    Within a route's event handler, the value of the `this` context
+    Within a route's action handler, the value of the `this` context
     is the Route object.
 
     ## Bubbling
 
-    By default, an event will stop bubbling once a handler defined
-    on the `events` hash handles it. To continue bubbling the event,
+    By default, an action will stop bubbling once a handler defined
+    on the `actions` hash handles it. To continue bubbling the action,
     you must return `true` from the handler.
 
-    ## Built-in events
+    ## Built-in actions
 
-    There are a few built-in events pertaining to transitions that you
+    There are a few built-in actions pertaining to transitions that you
     can use to customize transition behavior: `willTransition` and
     `error`.
 
     ### `willTransition`
 
-    The `willTransition` event is fired at the beginning of any
+    The `willTransition` action is fired at the beginning of any
     attempted transition with a `Transition` object as the sole
-    argument. This event can be used for aborting, redirecting,
+    argument. This action can be used for aborting, redirecting,
     or decorating the transition from the currently active routes.
 
     A good example is preventing navigation when a form is
@@ -107,7 +107,7 @@ Ember.Route = Ember.Object.extend({
 
     ```js
     App.ContactFormRoute = Ember.Route.extend({
-      events: {
+      actions: {
         willTransition: function(transition) {
           if (this.controller.get('userHasEnteredData')) {
             this.controller.displayNavigationConfirm();
@@ -123,7 +123,7 @@ Ember.Route = Ember.Object.extend({
     Note that `willTransition` will not be fired for the
     redirecting `transitionTo`, since `willTransition` doesn't
     fire when there is already a transition underway. If you want
-    subsequent `willTransition` events to fire for the redirecting
+    subsequent `willTransition` actions to fire for the redirecting
     transition, you must first explicitly call
     `transition.abort()`.
 
@@ -131,7 +131,7 @@ Ember.Route = Ember.Object.extend({
 
     When attempting to transition into a route, any of the hooks
     may throw an error, or return a promise that rejects, at which
-    point an `error` event will be fired on the partially-entered
+    point an `error` action will be fired on the partially-entered
     routes, allowing for per-route error handling logic, or shared
     error handling logic defined on a parent route.
 
@@ -148,7 +148,7 @@ Ember.Route = Ember.Object.extend({
         return Ember.RSVP.reject("bad things!");
       },
 
-      events: {
+      actions: {
         error: function(error, transition) {
           // Assuming we got here due to the error in `beforeModel`,
           // we can expect that error === "bad things!",
@@ -166,14 +166,14 @@ Ember.Route = Ember.Object.extend({
     });
     ```
 
-    `error` events that bubble up all the way to `ApplicationRoute`
+    `error` actions that bubble up all the way to `ApplicationRoute`
     will fire a default error handler that logs the error. You can
     specify your own global default error handler by overriding the
     `error` handler on `ApplicationRoute`:
 
     ```js
     App.ApplicationRoute = Ember.Route.extend({
-      events: {
+      actions: {
         error: function(error, transition) {
           this.controllerFor('banner').displayError(error.message);
         }
@@ -184,9 +184,16 @@ Ember.Route = Ember.Object.extend({
     @see {Ember.Route#send}
     @see {Handlebars.helpers.action}
 
-    @property events
+    @property actions
     @type Hash
     @default null
+  */
+  actions: null,
+
+  /**
+    @deprecated
+
+    Please use `actions` instead.
   */
   events: null,
 
@@ -223,7 +230,7 @@ Ember.Route = Ember.Object.extend({
     });
 
     App.IndexRoute = Ember.Route.extend({
-      events: {
+      actions: {
         moveToSecret: function(context){
           if (authorized()){
             this.transitionTo('secret', context);
@@ -274,7 +281,8 @@ Ember.Route = Ember.Object.extend({
   },
 
   /**
-    Triggers and event on a parent route.
+    Sends an action to the router, which will delegate it to the currently
+    active route hierarchy per the bubbling rules explained under `actions`.
 
     Example
 
@@ -284,7 +292,7 @@ Ember.Route = Ember.Object.extend({
     });
 
     App.ApplicationRoute = Ember.Route.extend({
-      events: {
+      actions: {
         track: function(arg) {
           console.log(arg, 'was clicked');
         }
@@ -292,7 +300,7 @@ Ember.Route = Ember.Object.extend({
     });
 
     App.IndexRoute = Ember.Route.extend({
-      events: {
+      actions: {
         trackIfDebug: function(arg) {
           if (debug) {
             this.send('track', arg);
@@ -303,7 +311,7 @@ Ember.Route = Ember.Object.extend({
     ```
 
     @method send
-    @param {String} name the name of the event to trigger
+    @param {String} name the name of the action to trigger
     @param {...*} args
   */
   send: function() {
@@ -325,7 +333,7 @@ Ember.Route = Ember.Object.extend({
     }
 
     // Assign the route's controller so that it can more easily be
-    // referenced in event handlers
+    // referenced in action handlers
     this.controller = controller;
 
     if (this.setupControllers) {
@@ -897,7 +905,7 @@ Ember.Route = Ember.Object.extend({
 
     ```js
     App.ApplicationRoute = App.Route.extend({
-      events: {
+      actions: {
         showModal: function(evt) {
           this.render(evt.modalName, {
             outlet: 'modal',

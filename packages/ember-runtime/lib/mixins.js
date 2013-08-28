@@ -9,3 +9,4 @@ require('ember-runtime/mixins/observable');
 require('ember-runtime/mixins/target_action_support');
 require('ember-runtime/mixins/evented');
 require('ember-runtime/mixins/deferred');
+require('ember-runtime/mixins/action_handler');
