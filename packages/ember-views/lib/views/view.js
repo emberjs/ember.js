@@ -52,12 +52,12 @@ Ember.TEMPLATES = {};
 
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
-  to both Ember's main view class `Ember.View` and other classes like 
+  to both Ember's main view class `Ember.View` and other classes like
   `Ember._SimpleMetamorphView` that don't need the fully functionaltiy of
   `Ember.View`.
 
   Unless you have specific needs for `CoreView`, you will use `Ember.View`
-  in your applications. 
+  in your applications.
 
   @class CoreView
   @namespace Ember
@@ -65,7 +65,7 @@ Ember.TEMPLATES = {};
   @uses Ember.Evented
 */
 
-Ember.CoreView = Ember.Object.extend(Ember.Evented, {
+Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
   isView: true,
 
   states: states,
@@ -178,6 +178,18 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
       }
       return method.apply(this, args);
     }
+  },
+
+  deprecatedSendHandles: function(actionName) {
+    return !!this[actionName];
+  },
+
+  deprecatedSend: function(actionName) {
+    var args = [].slice.call(arguments, 1);
+    Ember.assert('' + this + " has the action " + actionName + " but it is not a function", typeof this[actionName] === 'function');
+    Ember.deprecate('Action handlers implemented directly on views are deprecated in favor of action handlers on an `actions` object', false);
+    this[actionName].apply(this, args);
+    return;
   },
 
   has: function(name) {

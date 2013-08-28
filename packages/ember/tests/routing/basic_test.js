@@ -99,8 +99,6 @@ test("The Homepage", function() {
 
   bootApplication();
 
-  handleURL('/');
-
   equal(currentPath, 'home');
   equal(Ember.$('h3:contains(Hours)', '#qunit-fixture').length, 1, "The home template was rendered");
 });
@@ -161,8 +159,6 @@ test("The Homepage register as activeView", function() {
 
   bootApplication();
 
-  handleURL('/');
-
   ok(router._lookupActiveView('home'), '`home` active view is connected');
 
   handleURL('/homepage');
@@ -184,8 +180,6 @@ test("The Homepage with explicit template name in renderTemplate", function() {
 
   bootApplication();
 
-  handleURL('/');
-
   equal(Ember.$('h3:contains(Megatroll)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
@@ -205,8 +199,6 @@ test("An alternate template will pull in an alternate controller", function() {
   });
 
   bootApplication();
-
-  handleURL('/');
 
   equal(Ember.$('h3:contains(Megatroll) + p:contains(Comes from homepage)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
@@ -228,8 +220,6 @@ test("The template will pull in an alternate controller via key/value", function
 
   bootApplication();
 
-  handleURL('/');
-
   equal(Ember.$('h3:contains(Megatroll) + p:contains(Comes from home.)', '#qunit-fixture').length, 1, "The homepage template was rendered from data from the HomeController");
 });
 
@@ -249,8 +239,6 @@ test("The Homepage with explicit template name in renderTemplate and controller"
   });
 
   bootApplication();
-
-  handleURL('/');
 
   equal(Ember.$('h3:contains(Megatroll) + p:contains(YES I AM HOME)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
@@ -274,8 +262,6 @@ test("Renders correct view with slash notation", function() {
 
   bootApplication();
 
-  handleURL('/');
-
   equal(Ember.$('p:contains(Home/Page)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
@@ -295,8 +281,6 @@ test('render does not replace templateName if user provided', function() {
   App.HomeRoute = Ember.Route.extend();
 
   bootApplication();
-
-  handleURL('/');
 
   equal(Ember.$('p', '#qunit-fixture').text(), "THIS IS THE REAL HOME", "The homepage template was rendered");
 });
@@ -323,8 +307,6 @@ test("The Homepage with a `setupController` hook", function() {
   bootApplication();
 
   container.register('controller:home', Ember.Controller.extend());
-
-  handleURL('/');
 
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
@@ -387,8 +369,6 @@ test("The Homepage with a `setupController` hook modifying other controllers", f
 
   container.register('controller:home', Ember.Controller.extend());
 
-  handleURL('/');
-
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
 
@@ -412,8 +392,6 @@ test("The Homepage with a computed context that does not get overridden", functi
   );
 
   bootApplication();
-
-  handleURL('/');
 
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the context intact");
 });
@@ -446,8 +424,6 @@ test("The Homepage getting its controller context via model", function() {
   bootApplication();
 
   container.register('controller:home', Ember.Controller.extend());
-
-  handleURL('/');
 
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
@@ -632,7 +608,7 @@ asyncTest("The Special page returning an error fires the error hook on SpecialRo
     setup: function() {
       throw 'Setup error';
     },
-    events: {
+    actions: {
       error: function(reason) {
         equal(reason, 'Setup error');
         start();
@@ -668,7 +644,7 @@ asyncTest("The Special page returning an error invokes SpecialRoute's error hand
     setup: function() {
       throw 'Setup error';
     },
-    events: {
+    actions: {
       error: function(reason) {
         equal(reason, 'Setup error', 'SpecialRoute#error received the error thrown from setup');
         start();
@@ -701,7 +677,7 @@ asyncTest("ApplicationRoute's default error handler can be overridden", function
   });
 
   App.ApplicationRoute = Ember.Route.extend({
-    events: {
+    actions: {
       error: function(reason) {
         equal(reason, 'Setup error', "error was correctly passed to custom ApplicationRoute handler");
         start();
@@ -885,7 +861,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
       return model;
     },
 
-    events: {
+    actions: {
       showStuff: function(obj) {
         stateIsNotCalled = false;
       }
@@ -897,10 +873,12 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   );
 
   var controller = Ember.Controller.extend({
-    showStuff: function(context) {
-      ok (stateIsNotCalled, "an event on the state is not triggered");
-      deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
-      start();
+    actions: {
+      showStuff: function(context) {
+        ok (stateIsNotCalled, "an event on the state is not triggered");
+        deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
+        start();
+      }
     }
   });
 
@@ -908,15 +886,13 @@ asyncTest("Events are triggered on the controller if a matching action name is i
 
   bootApplication();
 
-  handleURL('/');
-
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
   var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
 
-asyncTest("Events are triggered on the current state", function() {
+asyncTest("Events are triggered on the current state when defined in `actions` object", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -928,7 +904,7 @@ asyncTest("Events are triggered on the current state", function() {
       return model;
     },
 
-    events: {
+    actions: {
       showStuff: function(obj) {
         ok(this instanceof App.HomeRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
@@ -946,18 +922,13 @@ asyncTest("Events are triggered on the current state", function() {
 
   container.register('controller:home', Ember.Controller.extend());
 
-  //var controller = router._container.controller.home = Ember.Controller.create();
-  //controller.target = router;
-
-  handleURL('/');
-
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
   var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
 
-asyncTest("Events are triggered on the current state when routes are nested", function() {
+asyncTest("Events defined in `actions` object are triggered on the current state when routes are nested", function() {
   Router.map(function() {
     this.resource("root", { path: "/" }, function() {
       this.route("index", { path: "/" });
@@ -967,7 +938,7 @@ asyncTest("Events are triggered on the current state when routes are nested", fu
   var model = { name: "Tom Dale" };
 
   App.RootRoute = Ember.Route.extend({
-    events: {
+    actions: {
       showStuff: function(obj) {
         ok(this instanceof App.RootRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
@@ -995,6 +966,168 @@ asyncTest("Events are triggered on the current state when routes are nested", fu
   action.handler(event);
 });
 
+asyncTest("Events are triggered on the current state when defined in `events` object (DEPRECATED)", function() {
+  Ember.TESTING_DEPRECATION = true;
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  var model = { name: "Tom Dale" };
+
+  App.HomeRoute = Ember.Route.extend({
+    model: function() {
+      return model;
+    },
+
+    events: {
+      showStuff: function(obj) {
+        ok(this instanceof App.HomeRoute, "the handler is an App.HomeRoute");
+        // Using Ember.copy removes any private Ember vars which older IE would be confused by
+        deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
+        start();
+        Ember.TESTING_DEPRECATION = false;
+      }
+    }
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<a {{action showStuff content}}>{{name}}</a>"
+  );
+
+  bootApplication();
+
+  container.register('controller:home', Ember.Controller.extend());
+
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
+});
+
+asyncTest("Events defined in `events` object are triggered on the current state when routes are nested (DEPRECATED)", function() {
+  Ember.TESTING_DEPRECATION = true;
+  Router.map(function() {
+    this.resource("root", { path: "/" }, function() {
+      this.route("index", { path: "/" });
+    });
+  });
+
+  var model = { name: "Tom Dale" };
+
+  App.RootRoute = Ember.Route.extend({
+    events: {
+      showStuff: function(obj) {
+        ok(this instanceof App.RootRoute, "the handler is an App.HomeRoute");
+        // Using Ember.copy removes any private Ember vars which older IE would be confused by
+        deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
+        start();
+        Ember.TESTING_DEPRECATION = false;
+      }
+    }
+  });
+
+  App.RootIndexRoute = Ember.Route.extend({
+    model: function() {
+      return model;
+    }
+  });
+
+  Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
+    "<a {{action showStuff content}}>{{name}}</a>"
+  );
+
+  bootApplication();
+
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
+});
+
+test("Events can be handled by inherited event handlers", function() {
+
+  expect(4);
+
+  App.SuperRoute = Ember.Route.extend({
+    actions: {
+      foo: function() {
+        ok(true, 'foo');
+      },
+      bar: function(msg) {
+        equal(msg, "HELLO");
+      }
+    }
+  });
+
+  App.RouteMixin = Ember.Mixin.create({
+    actions: {
+      bar: function(msg) {
+        equal(msg, "HELLO");
+        this._super(msg);
+      }
+    }
+  });
+
+  App.IndexRoute = App.SuperRoute.extend(App.RouteMixin, {
+    actions: {
+      baz: function() {
+        ok(true, 'baz');
+      }
+    }
+  });
+
+  bootApplication();
+
+  router.send("foo");
+  router.send("bar", "HELLO");
+  router.send("baz");
+});
+
+asyncTest("Events are triggered on the controller if a matching action name is implemented as a method (DEPRECATED)", function() {
+  Ember.TESTING_DEPRECATION = true;
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  var model = { name: "Tom Dale" };
+  var stateIsNotCalled = true;
+
+  App.HomeRoute = Ember.Route.extend({
+    model: function() {
+      return model;
+    },
+
+    events: {
+      showStuff: function(obj) {
+        stateIsNotCalled = false;
+      }
+    }
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<a {{action showStuff content}}>{{name}}</a>"
+  );
+
+  var controller = Ember.Controller.extend({
+    showStuff: function(context) {
+      ok (stateIsNotCalled, "an event on the state is not triggered");
+      deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
+      start();
+      Ember.TESTING_DEPRECATION = false;
+    }
+  });
+
+  container.register('controller:home', controller);
+
+  bootApplication();
+
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
+});
+
+
 asyncTest("actions can be triggered with multiple arguments", function() {
   Router.map(function() {
     this.resource("root", { path: "/" }, function() {
@@ -1006,7 +1139,7 @@ asyncTest("actions can be triggered with multiple arguments", function() {
       model2 = { name: "Tom Dale" };
 
   App.RootRoute = Ember.Route.extend({
-    events: {
+    actions: {
       showStuff: function(obj1, obj2) {
         ok(this instanceof App.RootRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
@@ -1049,8 +1182,6 @@ test("transitioning multiple times in a single run loop only sets the URL once",
     urlSetCount++;
     set(this, 'path', path);
   };
-
-  handleURL('/');
 
   equal(urlSetCount, 0);
 
@@ -1126,8 +1257,6 @@ test("using replaceWith calls location.replaceURL if available", function() {
 
   bootApplication();
 
-  handleURL('/');
-
   equal(setCount, 0);
   equal(replaceCount, 0);
 
@@ -1158,8 +1287,6 @@ test("using replaceWith calls setURL if location.replaceURL is not defined", fun
   });
 
   bootApplication();
-
-  handleURL('/');
 
   equal(setCount, 0);
 
@@ -1373,7 +1500,7 @@ test("Transitioning from a parent event does not prevent currentPath from being 
   });
 
   App.FooRoute = Ember.Route.extend({
-    events: {
+    actions: {
       goToQux: function() {
         this.transitionTo('foo.qux');
       }
@@ -1510,8 +1637,6 @@ test("Rendering into specified template with slash notation", function() {
 
   bootApplication();
 
-  handleURL("/");
-
   equal(Ember.$('#qunit-fixture:contains(profile details!)').length, 1, "The templates were rendered");
 });
 
@@ -1535,7 +1660,7 @@ test("Parent route context change", function() {
   });
 
   App.PostsRoute = Ember.Route.extend({
-    events: {
+    actions: {
       showPost: function(context) {
         this.transitionTo('post', context);
       }
@@ -1547,7 +1672,7 @@ test("Parent route context change", function() {
       return {id: params.postId};
     },
 
-    events: {
+    actions: {
       editPost: function(context) {
         this.transitionTo('post.edit');
       }
@@ -1961,8 +2086,6 @@ test("ApplicationRoute with model does not proxy the currentPath", function() {
 
   bootApplication();
 
-  handleURL("/");
-
   equal(currentPath, 'index', 'currentPath is index');
   equal('currentPath' in model, false, 'should have defined currentPath on controller');
 });
@@ -2088,7 +2211,7 @@ test("Route supports clearing outlet explicitly", function() {
   });
 
   App.PostsRoute = Ember.Route.extend({
-    events: {
+    actions: {
       showModal: function() {
         this.render('postsModal', {
           into: 'application',
@@ -2102,7 +2225,7 @@ test("Route supports clearing outlet explicitly", function() {
   });
 
   App.PostsIndexRoute = Ember.Route.extend({
-    events: {
+    actions: {
       showExtra: function() {
         this.render('postsExtra', {
           into: 'posts/index'
@@ -2155,7 +2278,7 @@ test("Aborting/redirecting the transition in `willTransition` prevents LoadingRo
   var redirect = false;
 
   App.IndexRoute = Ember.Route.extend({
-    events: {
+    actions: {
       willTransition: function(transition) {
         ok(true, "willTransition was called");
         if (redirect) {
@@ -2213,12 +2336,12 @@ test("Aborting/redirecting the transition in `willTransition` prevents LoadingRo
   Ember.run(deferred.resolve);
 });
 
-test("Events can be handled by inherited event handlers", function() {
+test("Actions can be handled by inherited action handlers", function() {
 
   expect(4);
 
   App.SuperRoute = Ember.Route.extend({
-    events: {
+    actions: {
       foo: function() {
         ok(true, 'foo');
       },
@@ -2229,7 +2352,7 @@ test("Events can be handled by inherited event handlers", function() {
   });
 
   App.RouteMixin = Ember.Mixin.create({
-    events: {
+    actions: {
       bar: function(msg) {
         equal(msg, "HELLO");
         this._super(msg);
@@ -2238,7 +2361,7 @@ test("Events can be handled by inherited event handlers", function() {
   });
 
   App.IndexRoute = App.SuperRoute.extend(App.RouteMixin, {
-    events: {
+    actions: {
       baz: function() {
         ok(true, 'baz');
       }
