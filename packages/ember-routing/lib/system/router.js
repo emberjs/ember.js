@@ -300,7 +300,7 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
         return;
       }
     } else if (handler.events && handler.events[name]) {
-      Ember.deprecate('Action handlers contained in an `events` object are deprecated in favor of putting them in an `actions` object', false);
+      Ember.deprecate('Action handlers contained in an `events` object are deprecated in favor of putting them in an `actions` object (' + name + ' on ' + handler + ')', false);
       if (handler.events[name].apply(handler, args) === true) {
         eventWasHandled = true;
       } else {
