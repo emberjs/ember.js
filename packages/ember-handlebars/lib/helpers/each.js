@@ -185,7 +185,13 @@ GroupedEach.prototype = {
   },
 
   rerenderContainingView: function() {
-    Ember.run.scheduleOnce('render', this.containingView, 'rerender');
+    var self = this;
+    Ember.run.scheduleOnce('render', this, function() {
+      // It's possible it's been destroyed after we enqueued a re-render call.
+      if (!self.destroyed) {
+        self.containingView.rerender();
+      }
+    });
   },
 
   destroy: function() {
@@ -193,6 +199,7 @@ GroupedEach.prototype = {
     if (this.content) {
       this.removeArrayObservers();
     }
+    this.destroyed = true;
   }
 };
 

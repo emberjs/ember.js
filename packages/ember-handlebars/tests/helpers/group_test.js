@@ -114,6 +114,21 @@ test("#each with no content", function() {
   appendView();
 });
 
+test("#each's content can be changed right before a destroy", function() {
+  expect(0);
+
+  createGroupedView(
+    "{{#each numbers}}{{this}}{{/each}}",
+    {numbers: Ember.A([1,2,3])}
+  );
+  appendView();
+
+  Ember.run(function() {
+    view.set('context.numbers', Ember.A([3,2,1]));
+    view.destroy();
+  });
+});
+
 test("#each can be nested", function() {
   createGroupedView(
     "{{#each numbers}}{{this}}{{/each}}",
