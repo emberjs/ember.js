@@ -1002,7 +1002,7 @@ function normalizeOptions(route, name, template, options) {
   } else if (namedController = route.container.lookup('controller:' + name)) {
     controller = namedController;
   } else {
-    controller = route.routeName;
+    controller = route.controllerName || route.routeName;
   }
 
   if (typeof controller === 'string') {
