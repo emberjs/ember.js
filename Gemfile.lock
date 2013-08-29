@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/emberjs/ember-dev.git
-  revision: b49d4a9d810b8532a888081abf66c2c3f0aa5911
+  revision: 8ba4efd40d6524d3bd99b662043ac298b27178ea
   branch: master
   specs:
     ember-dev (0.1)
@@ -32,7 +32,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    aws-sdk (1.15.0)
+    aws-sdk (1.16.0)
       json (~> 1.4)
       nokogiri (< 1.6.0)
       uuidtools (~> 2.1)
