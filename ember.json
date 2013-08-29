@@ -26,7 +26,8 @@
         "handlebars",
         "ember-views",
         "ember-routing",
-        "ember-handlebars"
+        "ember-handlebars",
+        "jquery-extensions"
       ]
     }
   }
