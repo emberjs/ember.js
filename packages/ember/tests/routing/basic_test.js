@@ -81,6 +81,29 @@ module("Basic Routing", {
   }
 });
 
+test("warn on URLs not included in the route set", function () {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+
+  bootApplication();
+  
+  // it's tricky to use expectAssertion(fn) in a callback.
+  var oldAssert = Ember.assert;  
+  Ember.assert = function(message, test){
+    ok(true, test);
+    equal("The URL '/what-is-this-i-dont-even' did match any routes in your application", message);
+  };
+
+  Ember.run(function(){
+    router.handleURL("/what-is-this-i-dont-even");
+  });
+
+  Ember.assert = oldAssert;
+
+});
+
 test("The Homepage", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
