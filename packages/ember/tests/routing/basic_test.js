@@ -2416,3 +2416,23 @@ test("currentRouteName is a property installed on ApplicationController that can
   transitionAndCheck('each.other', 'be.excellent.to.each.other', 'each.other');
 });
 
+test("Route model hook finds the same model as a manual find", function() {
+  var Post;
+  App.Post = Ember.Object.extend();
+  App.Post.reopenClass({
+    find: function() {
+      Post = this;
+      return {};
+    }
+  });
+
+  Router.map(function() {
+    this.route('post', { path: '/post/:post_id' });
+  });
+
+  bootApplication();
+
+  handleURL('/post/1');
+
+  equal(App.Post, Post);
+});
