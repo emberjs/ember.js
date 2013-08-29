@@ -1,4 +1,4 @@
-var map = Ember.EnumerableUtils.map, get = Ember.get, set = Ember.set,
+var map = Ember.EnumerableUtils.map, a_forEach = Ember.ArrayPolyfills.forEach, get = Ember.get, set = Ember.set,
     obj, sorted, sortProps, items;
 
 module('Ember.computed.map', {
@@ -290,7 +290,7 @@ test("properties can be filtered by values", function() {
   deepEqual(a1s.mapProperty('name'), ['one', 'two'], "arrays computed by matching value respond to modified properties");
 });
 
-['uniq', 'union'].forEach(function (alias) {
+a_forEach.call(['uniq', 'union'], function (alias) {
   module('Ember.computed.' + alias, {
     setup: function() {
       Ember.run(function() {
