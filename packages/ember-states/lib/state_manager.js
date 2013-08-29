@@ -280,7 +280,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
 
   ## The Initial State
 
-  When created a StateManager instance will immediately enter into the state
+  When created, a StateManager instance will immediately enter into the state
   defined as its `start` property or the state referenced by name in its
   `initialState` property:
 
