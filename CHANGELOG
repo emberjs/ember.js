@@ -1,3 +1,32 @@
+*Ember 1.0.0-rc.8 (August 28, 2013)*
+
+* View, controller & route action handlers are now expected to be defined on an `actions` object.
+* registerBoundHelper won't treat quoted strings / numbers as paths
+* Array Computed Properties
+* Rename bindAttr to bind-attr.
+* Rename linkTo to link-To.
+* Improved default route.serialize behavior. It will now attempt to populate named properties with the corresponding property on the model.
+* Added Ember.getProperties
+* Smarter linkTo observers
+* Fix `Ember.EnumerableUtils#replace` to allow large size of array
+* rsvp.js refresh with RSVP#rethrow and promise#fail
+* Make sets during init behave the same as create(props)
+* Continue to make view creation container aware
+* Sync router.js - Closes #3153, #3180
+* Application#resolver -> Application#Resolver
+* The resolver now provides the normalization
+* Add currentRouteName to ApplicationController
+* Lookup itemViewClass and emptyView of collectionView if given as string
+* Change behavior around uncached computed properties.
+* Aliased xProperty methods in enumerable to xBy and aliased some and someProperty to any and anyBy respectively
+* Factory Injections
+* Support replaceURL on HashLocation
+* Assorted performance improvements
+* Add Ember.on, Function.prototype.on, init event
+* Fix some `{{yield}}` bugs
+* Improved `Route#controllerFor` to support `controllerName` and non-route lookups
+
+
 *Ember 1.0.0-rc.7 (August 14, 2013)*
 
 * correctly preserve a views container
