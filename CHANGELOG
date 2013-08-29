@@ -4,7 +4,7 @@
 * registerBoundHelper won't treat quoted strings / numbers as paths
 * Array Computed Properties
 * Rename bindAttr to bind-attr.
-* Rename linkTo to link-To.
+* Rename linkTo to link-to.
 * Improved default route.serialize behavior. It will now attempt to populate named properties with the corresponding property on the model.
 * Added Ember.getProperties
 * Smarter linkTo observers
