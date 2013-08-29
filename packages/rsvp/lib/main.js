@@ -54,6 +54,7 @@ define("rsvp/async",
     var browserGlobal = (typeof window !== 'undefined') ? window : {};
     var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
     var async;
+    var local = (typeof global !== 'undefined') ? global : this;
 
     // old node
     function useNextTick() {
@@ -104,7 +105,7 @@ define("rsvp/async",
 
     function useSetTimeout() {
       return function(callback, arg) {
-        global.setTimeout(function() {
+        local.setTimeout(function() {
           callback(arg);
         }, 1);
       };
