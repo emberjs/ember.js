@@ -30,6 +30,8 @@ Ember.SubArray.prototype = {
   /**
     Track that an item was added to the tracked array.
 
+    @method addItem
+
     @param {number} index The index of the item in the tracked array.
     @param {boolean} match `true` iff the item is included in the subarray.
 
@@ -80,6 +82,8 @@ Ember.SubArray.prototype = {
 
   /**
     Track that an item was removed from the tracked array.
+
+    @method removeItem
 
     @param {number} index The index of the item in the tracked array.
 

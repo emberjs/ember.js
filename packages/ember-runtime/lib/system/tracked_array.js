@@ -34,6 +34,10 @@ Ember.TrackedArray.prototype = {
 
   /**
     Track that `newItems` were added to the tracked array at `index`.
+
+    @method addItems
+    @param index
+    @param newItems
   */
   addItems: function (index, newItems) {
     var count = get(newItems, 'length'),
@@ -69,6 +73,10 @@ Ember.TrackedArray.prototype = {
 
   /**
     Track that `count` items were removed at `index`.
+
+    @method removeItems
+    @param index
+    @param count
   */
   removeItems: function (index, count) {
     var match = this._findArrayOperation(index),
@@ -102,7 +110,9 @@ Ember.TrackedArray.prototype = {
     - {string} operation The type of the operation.  One of
     `Ember.TrackedArray.{RETAIN, DELETE, INSERT}`
 
-    @param {function} callback 
+    @method apply
+
+    @param {function} callback
   */
   apply: function (callback) {
     var items = [],
@@ -122,6 +132,8 @@ Ember.TrackedArray.prototype = {
 
   /**
     Return an ArrayOperationMatch for the operation that contains the item at `index`.
+
+    @method _findArrayOperation
 
     @param {number} index the index of the item whose operation information
     should be returned.
@@ -267,7 +279,9 @@ function ArrayOperation (operation, count, items) {
 /**
   Internal data structure used to include information when looking up operations
   by item index.
- 
+
+  @method ArrayOperationMatch
+  @private
   @property {ArrayOperation} operation
   @property {number} index The index of `operation` in the array of operations.
   @property {boolean} split Whether or not the item index searched for would

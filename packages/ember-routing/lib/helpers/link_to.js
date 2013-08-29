@@ -109,6 +109,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       `title` attributes. It's discourage that you override these defaults,
       however you can push onto the array if needed.
 
+      @property attributeBindings
       @type Array | String
       @default ['href', 'title', 'rel']
      **/
@@ -118,6 +119,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       By default the `{{link-to}}` helper will bind to the `active`, `loading`, and
       `disabled` classes. It is discouraged to override these directly.
 
+      @property classNameBindings
       @type Array
       @default ['active', 'loading', 'disabled']
      **/
