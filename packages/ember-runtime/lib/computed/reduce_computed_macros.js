@@ -72,6 +72,8 @@ Ember.computed.filter = function(dependentKey, callback) {
       if (match) {
         array.insertAt(filterIndex, item);
       }
+
+      return array;
     },
 
     removedItem: function(array, item, changeMeta, instanceMeta) {
@@ -80,6 +82,8 @@ Ember.computed.filter = function(dependentKey, callback) {
       if (filterIndex > -1) {
         array.removeAt(filterIndex);
       }
+
+      return array;
     }
   };
 
