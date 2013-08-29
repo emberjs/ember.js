@@ -584,8 +584,10 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     });
     ```
 
-    The default `serialize` method inserts the model's `id` into the
-    route's dynamic segment (in this case, `:post_id`).
+    The default `serialize` method will insert the model's `id` into the
+    route's dynamic segment (in this case, `:post_id`) if the segment contains '_id'. 
+    If the route has multiple dynamic segments or does not contain '_id', `serialize`
+    will return `Ember.getProperties(model, params)`
 
     This method is called when `transitionTo` is called with a context
     in order to populate the URL.
