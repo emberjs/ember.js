@@ -108,7 +108,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
 
     forEach(sortProperties, function(propertyName) {
       if (result === 0) {
-        result = sortFunction(get(item1, propertyName), get(item2, propertyName));
+        result = sortFunction(get(item1, propertyName), get(item2, propertyName), propertyName);
         if ((result !== 0) && !sortAscending) {
           result = (-1) * result;
         }
