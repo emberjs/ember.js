@@ -1,13 +1,15 @@
 var map = Ember.EnumerableUtils.map, a_forEach = Ember.ArrayPolyfills.forEach, get = Ember.get, set = Ember.set,
-    obj, sorted, sortProps, items;
+    obj, sorted, sortProps, items, userFnCalls;
 
 module('Ember.computed.map', {
   setup: function() {
     Ember.run(function() {
+      userFnCalls = 0;
       obj = Ember.Object.createWithMixins({
         array: Ember.A([{ v: 1 }, { v: 3}, { v: 2 }, { v: 1 }]),
 
         mapped: Ember.computed.map('array.@each.v', function(item) {
+          ++userFnCalls;
           return item.v;
         }),
 
@@ -43,6 +45,23 @@ test("it maps simple properties", function() {
   });
 
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 5]);
+});
+
+test("it caches properly", function() {
+  var array = get(obj, 'array'),
+      mapped = get(obj, 'mapped');
+
+  equal(userFnCalls, 4, "precond - mapper called expected number of times");
+
+  Ember.run(function() {
+    array.addObject({v: 7});
+  });
+
+  equal(userFnCalls, 5, "precond - mapper called expected number of times");
+
+  get(obj, 'mapped');
+
+  equal(userFnCalls, 5, "Ember.computed.map caches properly");
 });
 
 test("it maps simple unshifted properties", function() {
@@ -153,9 +172,11 @@ test("it maps properties", function() {
 module('Ember.computed.filter', {
   setup: function() {
     Ember.run(function() {
+      userFnCalls = 0;
       obj = Ember.Object.createWithMixins({
         array: Ember.A([1, 2, 3, 4, 5, 6, 7, 8]),
         filtered: Ember.computed.filter('array', function(item) {
+          ++userFnCalls;
           return item % 2 === 0;
         })
       });
@@ -172,6 +193,23 @@ test("it filters according to the specified filter function", function() {
   var filtered = get(obj, 'filtered');
 
   deepEqual(filtered, [2,4,6,8], "Ember.computed.filter filters by the specified function");
+});
+
+test("it caches properly", function() {
+  var array = get(obj, 'array'),
+      filtered = get(obj, 'filtered');
+
+  equal(userFnCalls, 8, "precond - filter called expected number of times");
+
+  Ember.run(function() {
+    array.addObject(11);
+  });
+
+  equal(userFnCalls, 9, "precond - filter called expected number of times");
+
+  get(obj, 'filtered');
+
+  equal(userFnCalls, 9, "Ember.computed.filter caches properly");
 });
 
 test("it updates as the array is modified", function() {
