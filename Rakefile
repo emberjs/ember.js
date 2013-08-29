@@ -156,7 +156,7 @@ namespace :release do
   task :deploy => ['ember:release:deploy', 'starter_kit:deploy', 'website:deploy']
 end
 
-task :publish_build do
+task :publish_build => :dist do
   root = File.dirname(__FILE__) + '/dist/'
   EmberDev::Publish.to_s3({
     :access_key_id => ENV['S3_ACCESS_KEY_ID'],
