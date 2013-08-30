@@ -19,12 +19,16 @@ module("Backported accessors", {
   }
 });
 
+// Ember.ENV.ACCESSORS = null
+
 test("get does not warn on keys with dots in 0.9 mode", function() {
   Ember.ENV.ACCESSORS = null;
   var o = { 'foo.bar': 'baz' };
   Ember.get(o, 'foo.bar');
   equal(warnings.length, 0);
 });
+
+// Ember.ENV.ACCESSORS = "0.9-dotted-properties"
 
 test("get warns with dots in key name on the 0.9 mode with warnings", function() {
   Ember.ENV.ACCESSORS = '0.9-dotted-properties';
@@ -41,6 +45,55 @@ test("set warns with dots in key name on the 0.9 mode with warnings", function()
   equal(warnings.length, 1);
   matches(warnings[0], "The behavior of `set` has changed in Ember 1.0. It will no longer support keys with periods in them.");
 });
+
+// Ember.ENV.ACCESSORS = "1.0-no-warn"
+
+test("getPath doesn't warn on the 1.0-no-warn mode", function() {
+  Ember.ENV.ACCESSORS = '1.0-no-warn';
+  var o = { foo: {bar: 'baz'} };
+  equal(Ember.getPath(o, 'foo.bar'), 'baz');
+  equal(warnings.length, 0);
+});
+
+test("setPath doesn't warn on the 1.0-no-warn mode", function() {
+  Ember.ENV.ACCESSORS = '1.0-no-warn';
+  var o = { foo: {bar: 'baz'} };
+  Ember.setPath(o, 'foo.bar', 'qux');
+  equal(warnings.length, 0);
+});
+
+test("get follows paths on the 1.0-no-warn mode", function() {
+  Ember.ENV.ACCESSORS = '1.0-no-warn';
+  var o = { foo: {bar: 'baz'} };
+  equal(Ember.get(o, 'foo.bar'), 'baz');
+  equal(warnings.length, 0);
+});
+
+test("set follows paths on the 1.0-no-warn mode", function() {
+  Ember.ENV.ACCESSORS = '1.0-no-warn';
+  var o = { foo: {bar: 'baz'} };
+  Ember.set(o, 'foo.bar', 'qux');
+  equal(o.foo.bar, 'qux');
+  equal(warnings.length, 0);
+});
+
+test("trySetPath doesn't warn on the 1.0-no-warn mode", function() {
+  Ember.ENV.ACCESSORS = '1.0-no-warn';
+  var o = { foo: {bar: 'baz'} };
+  Ember.trySetPath(o, 'foo.bar', 'qux');
+  equal(o.foo.bar, 'qux');
+  equal(warnings.length, 0);
+});
+
+test("trySet exists and follows paths in 1.0-no-warn mode", function() {
+  Ember.ENV.ACCESSORS = '1.0-no-warn';
+  var o = { foo: {bar: 'baz'} };
+  Ember.trySet(o, 'foo.bar', 'qux');
+  equal(o.foo.bar, 'qux');
+  equal(warnings.length, 0);
+});
+
+// Ember.ENV.ACCESSORS = "1.0"
 
 test("getPath warns on the 1.0 mode", function() {
   Ember.ENV.ACCESSORS = '1.0';
@@ -82,7 +135,7 @@ test("trySetPath warns on the 1.0 mode", function() {
   matches(warnings[0], "DEPRECATION: trySetPath has been renamed to trySet");
 });
 
-test("trySet exists and follows paths", function() {
+test("trySet exists and follows paths in 1.0 mode", function() {
   Ember.ENV.ACCESSORS = '1.0';
   var o = { foo: {bar: 'baz'} };
   Ember.trySet(o, 'foo.bar', 'qux');

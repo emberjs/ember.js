@@ -21,14 +21,21 @@ module("Backported Ember.Handlebars.getPath", {
 
 test("get does not warn in 0.9 mode", function() {
   Ember.ENV.ACCESSORS = null;
-  var o = { 'foo.bar': 'baz' };
+  var o = { foo: { 'bar': 'baz' } };
+  Ember.Handlebars.getPath(o, 'foo.bar');
+  equal(warnings.length, 0);
+});
+
+test("doesn't warn in 1.0-no-warn mode", function() {
+  Ember.ENV.ACCESSORS = "1.0-no-warn";
+  var o = { foo: { 'bar': 'baz' } };
   Ember.Handlebars.getPath(o, 'foo.bar');
   equal(warnings.length, 0);
 });
 
 test("warns on usage in 1.0 mode", function() {
   Ember.ENV.ACCESSORS = "1.0";
-  var o = { 'foo.bar': 'baz' };
+  var o = { foo: { 'bar': 'baz' } };
   Ember.Handlebars.getPath(o, 'foo.bar');
   equal(warnings.length, 1);
   matches(warnings[0], "DEPRECATION: getPath is deprecated since get now supports paths");

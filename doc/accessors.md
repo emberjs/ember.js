@@ -7,6 +7,8 @@ allowed values:
  * `null` (the default) -- `get`, `set`, `getPath`, and `setPath` work per 0.9.8.1
  * `"0.9-dotted-properties"` -- `get` and `set` will warn if called with a property name
    containing a `.`
+ * `"1.0-no-warn"` -- `get` and `set` work with nested properties; `getPath`
+   and `setPath` do not emit deprecation warnings
  * `"1.0"` -- `get` and `set` work with nested properties; `getPath` and `setPath`
    emit deprecation warnings
 
@@ -45,3 +47,7 @@ pam.getPath('address.street');
 ```
 
 Simply change `getPath` to `get` and `setPath` to `set` in these cases.
+
+If your application is large and you can't change all `getPath` and `setPath`
+calls in one commit, you can alternate between `"1.0"` and `"1.0-no-warn"`
+to gradually eliminate deprecated usage.

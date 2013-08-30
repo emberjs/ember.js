@@ -22,8 +22,9 @@ var meta = Ember.meta;
 
 var get, set;
 
-var LEVEL_09_WITH_WARNINGS = '0.9-dotted-properties',
-    LEVEL_10               = '1.0';
+var LEVEL_09_WITH_WARNINGS    = '0.9-dotted-properties',
+    LEVEL_10_WITHOUT_WARNINGS = '1.0-no-warn',
+    LEVEL_10                  = '1.0';
 
 /** @private */
 get = function get(obj, keyName) {
@@ -32,10 +33,15 @@ get = function get(obj, keyName) {
     obj = Ember;
   }
 
-  if (Ember.ENV.ACCESSORS === LEVEL_09_WITH_WARNINGS) {
-    Ember.deprecate("The behavior of `get` has changed in Ember 1.0. It will no longer support keys with periods in them.", keyName.indexOf('.') === -1);
-  } else if (Ember.ENV.ACCESSORS === LEVEL_10 && keyName.indexOf('.') !== -1) {
+  var is10 = Ember.ENV.ACCESSORS === LEVEL_10 || Ember.ENV.ACCESSORS === LEVEL_10_WITHOUT_WARNINGS,
+      hasDot = keyName.indexOf('.') !== -1;
+
+  if (is10 && hasDot) {
     return getPathWithoutDeprecation(obj, keyName);
+  }
+
+  if (Ember.ENV.ACCESSORS === LEVEL_09_WITH_WARNINGS) {
+    Ember.deprecate("The behavior of `get` has changed in Ember 1.0. It will no longer support keys with periods in them.", !hasDot);
   }
 
   if (!obj) return undefined;
@@ -48,10 +54,15 @@ get = function get(obj, keyName) {
 
 /** @private */
 set = function set(obj, keyName, value) {
+  var is10 = Ember.ENV.ACCESSORS === LEVEL_10 || Ember.ENV.ACCESSORS === LEVEL_10_WITHOUT_WARNINGS,
+      hasDot = keyName.indexOf('.') !== -1;
+
+  if (is10 && hasDot) {
+    return setPath(obj, keyName, value);
+  }
+
   if (Ember.ENV.ACCESSORS === LEVEL_09_WITH_WARNINGS) {
     Ember.deprecate("The behavior of `set` has changed in Ember 1.0. It will no longer support keys with periods in them.", keyName.indexOf('.') === -1);
-  } else if (Ember.ENV.ACCESSORS === LEVEL_10 && keyName.indexOf('.') !== -1) {
-    return setPath(obj, keyName, value);
   }
 
   if (('object'===typeof obj) && !(keyName in obj)) {
@@ -79,31 +90,45 @@ if (!USE_ACCESSORS) {
 
     Ember.assert("You need to provide an object and key to `get`.", !!obj && keyName);
 
-    if (Ember.ENV.ACCESSORS === LEVEL_09_WITH_WARNINGS) {
-      Ember.deprecate("The behavior of `get` has changed in Ember 1.0. It will no longer support keys with periods in them.", keyName.indexOf('.') === -1);
-    } else if (Ember.ENV.ACCESSORS === LEVEL_10 && keyName.indexOf('.') !== -1) {
+    var is10 = Ember.ENV.ACCESSORS === LEVEL_10 || Ember.ENV.ACCESSORS === LEVEL_10_WITHOUT_WARNINGS,
+        hasDot = keyName.indexOf('.') !== -1;
+
+    if (is10 && hasDot) {
       return getPathWithoutDeprecation(obj, keyName);
     }
 
     if (!obj) return undefined;
     var desc = meta(obj, false).descs[keyName];
-    if (desc) return desc.get(obj, keyName);
-    else return o_get(obj, keyName);
+    if (desc) {
+      if (Ember.ENV.ACCESSORS === LEVEL_09_WITH_WARNINGS) {
+        Ember.deprecate("The behavior of `get` has changed in Ember 1.0. It will no longer support keys with periods in them.", !hasDot);
+      }
+      return desc.get(obj, keyName);
+    } else {
+      return o_get(obj, keyName);
+    }
   };
 
   /** @private */
   set = function(obj, keyName, value) {
     Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
 
-    if (Ember.ENV.ACCESSORS === LEVEL_09_WITH_WARNINGS) {
-      Ember.deprecate("The behavior of `set` has changed in Ember 1.0. It will no longer support keys with periods in them.", keyName.indexOf('.') === -1);
-    } else if (Ember.ENV.ACCESSORS === LEVEL_10 && keyName.indexOf('.') !== -1) {
+    var is10 = Ember.ENV.ACCESSORS === LEVEL_10 || Ember.ENV.ACCESSORS === LEVEL_10_WITHOUT_WARNINGS,
+        hasDot = keyName.indexOf('.') !== -1;
+
+    if (is10 && hasDot) {
       return setPath(obj, keyName, value);
     }
 
     var desc = meta(obj, false).descs[keyName];
-    if (desc) desc.set(obj, keyName, value);
-    else o_set(obj, keyName, value);
+    if (desc) {
+      if (Ember.ENV.ACCESSORS === LEVEL_09_WITH_WARNINGS) {
+        Ember.deprecate("The behavior of `set` has changed in Ember 1.0. It will no longer support keys with periods in them.", !hasDot);
+      }
+      desc.set(obj, keyName, value);
+    } else {
+      o_set(obj, keyName, value);
+    }
     return value;
   };
 
