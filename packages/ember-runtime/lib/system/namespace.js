@@ -57,6 +57,13 @@ Namespace.reopenClass({
   NAMESPACES_BY_ID: {},
   PROCESSED: false,
   processAll: processAllNamespaces,
+  _allowNamespaceProcessing: function(callback){
+    var wasBooted = Ember.BOOTED;
+    Ember.booted = false;
+    var result = callback();
+    Ember.BOOTED = wasBooted;
+    return result;
+  },
   byName: function(name) {
     if (!Ember.BOOTED) {
       processAllNamespaces();

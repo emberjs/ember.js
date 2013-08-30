@@ -772,7 +772,9 @@ function resolverFor(namespace) {
   };
 
   resolve.makeToString = function(factory, fullName) {
-    return resolver.makeToString(factory, fullName);
+    return Ember.Namespace._allowNamespaceProcessing(function(){
+      return resolver.makeToString(factory, fullName);
+    });
   };
 
   resolve.normalize = function(fullName) {
@@ -786,5 +788,6 @@ function resolverFor(namespace) {
 
   return resolve;
 }
+
 
 Ember.runLoadHooks('Ember.Application', Ember.Application);
