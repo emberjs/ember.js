@@ -567,9 +567,28 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   Ember.Handlebars.registerHelper('link-to', function(name) {
     var options = [].slice.call(arguments, -1)[0],
         params = [].slice.call(arguments, 0, -1),
+        linkTitle = [].slice.call(params, 0, 1)[0],
         hash = options.hash;
 
     hash.disabledBinding = hash.disabledWhen;
+
+    if(!options.fn) {
+      name = arguments[1];
+
+      if(options.types[0] === "ID") {
+        linkTitle = get(this, linkTitle);
+      }
+
+      if(options.types.length > 2) {
+        options.types = [].slice.call(options.types, 1);
+      }
+
+      options.fn = function() {
+        return linkTitle;
+      };
+
+      params = [].slice.call(params, 1);
+    }
 
     hash.parameters = {
       context: this,
