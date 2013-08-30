@@ -21,7 +21,16 @@ var o_create = Object.create || (function(){
   };
 }());
 
-module("Container");
+var originalModelInjections;
+
+module("Container", {
+  setup: function() {
+    originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
+  },
+  teardown: function() {
+    Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;
+  }
+});
 
 var guids = 0;
 
@@ -331,6 +340,8 @@ test("A failed lookup returns undefined", function() {
 });
 
 test("Injecting a failed lookup raises an error", function() {
+  Ember.MODEL_FACTORY_INJECTIONS = true;
+
   var container = new Container();
 
   var fooInstance = {};

@@ -35,7 +35,7 @@ test("default model utilizes the container to acquire the model factory", functi
   function lookupFactory(fullName) {
     equal(fullName, "model:post", "correct factory was looked up");
 
-    return Post.extend();
+    return Post;
   }
 
 });
