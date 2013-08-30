@@ -685,3 +685,28 @@ test("The {{link-to}} helper's bound parameter functionality works as expected i
 test("{{linkTo}} is aliased", function() {
   equal(Ember.Handlebars.helpers.linkTo, Ember.Handlebars.helpers['link-to']);
 });
+
+test("The {{link-to}} helper is active when a resource is active", function() {
+  Router.map(function() {
+    this.resource("about", function() {
+      this.route("item");
+    });
+  });
+
+  Ember.TEMPLATES.about = compile("<div id='about'>{{#link-to 'about' id='about-link'}}About{{/link-to}} {{#link-to 'about.item' id='item-link'}}Item{{/link-to}} {{outlet}}</div>");
+  Ember.TEMPLATES['about/item'] = compile("");
+  Ember.TEMPLATES['about/index'] = compile("");
+
+  bootApplication();
+
+  Ember.run(router, 'handleURL', '/about');
+
+  equal(Ember.$('#about-link.active', '#qunit-fixture').length, 1, "The about resource link is active");
+  equal(Ember.$('#item-link.active', '#qunit-fixture').length, 0, "The item route link is inactive");
+
+  Ember.run(router, 'handleURL', '/about/item');
+
+  equal(Ember.$('#about-link.active', '#qunit-fixture').length, 1, "The about resource link is active");
+  equal(Ember.$('#item-link.active', '#qunit-fixture').length, 1, "The item route link is active");
+
+});
