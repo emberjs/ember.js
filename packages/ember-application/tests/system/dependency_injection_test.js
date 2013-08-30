@@ -1,9 +1,12 @@
 var locator, originalLookup = Ember.lookup, lookup,
     application, set = Ember.set, get = Ember.get,
-    forEach = Ember.ArrayPolyfills.forEach;
+    forEach = Ember.ArrayPolyfills.forEach, originalModelInjections;
 
-module("Ember.Application Depedency Injection", {
+module("Ember.Application Dependency Injection", {
   setup: function() {
+    originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
+    Ember.MODEL_FACTORY_INJECTIONS = true;
+
     application = Ember.run(Ember.Application, 'create');
 
     application.Person              = Ember.Object.extend({});
@@ -26,6 +29,7 @@ module("Ember.Application Depedency Injection", {
     Ember.run(application, 'destroy');
     application = locator = null;
     Ember.lookup = originalLookup;
+    Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;
   }
 });
 
