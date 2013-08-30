@@ -1,5 +1,6 @@
 var set = Ember.set, get = Ember.get,
     resolve = Ember.RSVP.resolve,
+    rethrow = Ember.RSVP.rethrow,
     not = Ember.computed.not,
     or = Ember.computed.or;
 
@@ -7,14 +8,6 @@ var set = Ember.set, get = Ember.get,
   @module ember
   @submodule ember-runtime
  */
-
-function rethrow(reason) {
-  setTimeout(function(){
-    throw reason;
-  }, 0);
-
-  throw reason;
-}
 
 function installPromise(proxy, promise) {
   promise.then(function(value) {
@@ -25,7 +18,7 @@ function installPromise(proxy, promise) {
   }, function(reason) {
     set(proxy, 'isRejected', true);
     set(proxy, 'reason', reason);
-  }).then(null, rethrow);
+  }).fail(rethrow);
 }
 
 /**
@@ -50,7 +43,7 @@ function installPromise(proxy, promise) {
 
   ```javascript
   controller.get('isPending')   //=> true
-  controller.get('isResolved')  //=> false
+  controller.get('isSettled')  //=> false
   controller.get('isRejected')  //=> false
   controller.get('isFulfilled') //=> false
   ```
@@ -60,7 +53,7 @@ function installPromise(proxy, promise) {
 
   ```javascript
   controller.get('isPending')   //=> false
-  controller.get('isResolved')  //=> true
+  controller.get('isSettled')   //=> true
   controller.get('isRejected')  //=> false
   controller.get('isFulfilled') //=> true
   ```
@@ -94,8 +87,8 @@ function installPromise(proxy, promise) {
 */
 Ember.PromiseProxyMixin = Ember.Mixin.create({
   reason:    null,
-  isPending:   not('isResolved').readOnly(),
-  isResolved:  or('isRejected', 'isFulfilled').readOnly(),
+  isPending:  not('isSettled').readOnly(),
+  isSettled:  or('isRejected', 'isFulfilled').readOnly(),
   isRejected:  false,
   isFulfilled: false,
 
