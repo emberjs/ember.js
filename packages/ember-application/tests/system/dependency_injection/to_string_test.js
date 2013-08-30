@@ -1,7 +1,10 @@
-var originalLookup, App;
+var originalLookup, App, originalModelInjections;
 
-module("Ember.Application Depedency Injection – toString",{
+module("Ember.Application Dependency Injection – toString",{
   setup: function() {
+    originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
+    Ember.MODEL_FACTORY_INJECTIONS = true;
+
     originalLookup = Ember.lookup;
 
     Ember.run(function(){
@@ -12,11 +15,13 @@ module("Ember.Application Depedency Injection – toString",{
     });
 
     App.Post = Ember.Object.extend();
+
   },
 
   teardown: function() {
     Ember.lookup = originalLookup;
     Ember.run(App, 'destroy');
+    Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;
   }
 });
 

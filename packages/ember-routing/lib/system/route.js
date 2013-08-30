@@ -555,7 +555,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     if (!name && sawParams) { return params; }
     else if (!name) { return; }
 
-    var modelClass = this.container.lookupFactory('model:' + name).superclass;
+    var modelClass = this.container.lookupFactory('model:' + name);
     var namespace = get(this, 'router.namespace');
 
     Ember.assert("You used the dynamic segment " + name + "_id in your route, but " + namespace + "." + classify(name) + " did not exist and you did not override your route's `model` hook.", modelClass);
@@ -585,7 +585,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     ```
 
     The default `serialize` method will insert the model's `id` into the
-    route's dynamic segment (in this case, `:post_id`) if the segment contains '_id'. 
+    route's dynamic segment (in this case, `:post_id`) if the segment contains '_id'.
     If the route has multiple dynamic segments or does not contain '_id', `serialize`
     will return `Ember.getProperties(model, params)`
 
