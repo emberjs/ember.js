@@ -685,3 +685,52 @@ test("The {{link-to}} helper's bound parameter functionality works as expected i
 test("{{linkTo}} is aliased", function() {
   equal(Ember.Handlebars.helpers.linkTo, Ember.Handlebars.helpers['link-to']);
 });
+
+test("The {{link-to}} helper uses first argument as title if a block is not provided", function() {
+  Router.map(function() {
+    this.route("about");
+  });
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile('<h3>Home</h3>{{linkTo "About Page" "about" id="about-link"}}');
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('#about-link', '#qunit-fixture').attr('href'), '/about', "href attr rendered properly");
+  equal(Ember.$('#about-link', '#qunit-fixture').text(), 'About Page', "first argument is used as link title");
+});
+
+test("The {{link-to}} helper treats first argument as a bound path if it is not a quoted string", function() {
+  Router.map(function() {
+    this.resource("posts", function() {
+      this.route("show", { path: '/:post_id' });
+    });
+  });
+ 
+  var posts = Ember.A([
+    {id: 1, title: "post1"},
+    {id: 2, title: "post2"}
+  ]);
+ 
+  App.IndexController = Ember.Controller.extend();
+  var indexController = container.lookup('controller:index');
+ 
+  Ember.run(function() { indexController.set('posts', posts); });
+ 
+  Ember.TEMPLATES.index = Ember.Handlebars.compile('<h3>Home</h3><ul>{{#each posts}}<li class="post{{unbound id}}">{{linkTo title "posts.show" this}}</li>{{/each}}</ul>');
+ 
+  bootApplication();
+ 
+  Ember.run(function() { router.handleURL("/"); });
+ 
+  var titles = indexController.get('posts').mapProperty('title');
+ 
+  equal(Ember.$('li.post1 a', '#qunit-fixture').text(), titles[0]); 
+  equal(Ember.$('li.post2 a', '#qunit-fixture').text(), titles[1]);
+ 
+  equal(Ember.$('li.post1 a', '#qunit-fixture').attr('href'), '/posts/1');
+  equal(Ember.$('li.post2 a', '#qunit-fixture').attr('href'), '/posts/2');
+});
