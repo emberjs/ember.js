@@ -54,10 +54,15 @@ Ember.computed.map = function(dependentKey, callback) {
   return Ember.arrayComputed(dependentKey, options);
 };
 
-Ember.computed.mapProperty = function(dependentKey, propertyKey) {
+Ember.computed.mapBy = function(dependentKey, propertyKey) {
   var callback = function(item) { return get(item, propertyKey); };
   return Ember.computed.map(dependentKey + '.@each.' + propertyKey, callback);
 };
+
+/**
+  @deprecated Use `Ember.computed.mapBy` instead
+*/
+Ember.computed.mapProperty = Ember.computed.mapBy;
 
 Ember.computed.filter = function(dependentKey, callback) {
   var options = {
@@ -90,7 +95,7 @@ Ember.computed.filter = function(dependentKey, callback) {
   return Ember.arrayComputed(dependentKey, options);
 };
 
-Ember.computed.filterProperty = function(dependentKey, propertyKey, value) {
+Ember.computed.filterBy = function(dependentKey, propertyKey, value) {
   var callback;
 
   if (arguments.length === 2) {
@@ -105,6 +110,11 @@ Ember.computed.filterProperty = function(dependentKey, propertyKey, value) {
 
   return Ember.computed.filter(dependentKey + '.@each.' + propertyKey, callback);
 };
+
+/**
+  @deprecated Use `Ember.computed.filterBy` instead
+*/
+Ember.computed.filterProperty = Ember.computed.filterBy;
 
 Ember.computed.uniq = function() {
   var args = a_slice.call(arguments);
