@@ -55,7 +55,7 @@ test("fulfillment", function(){
   equal(get(proxy, 'content'),     undefined, 'expects the proxy to have no content');
   equal(get(proxy, 'reason'),      undefined, 'expects the proxy to have no reason');
   equal(get(proxy, 'isPending'),   true,  'expects the proxy to indicate that it is loading');
-  equal(get(proxy, 'isResolved'),  false, 'expects the proxy to indicate that it is not resolved');
+  equal(get(proxy, 'isSettled'),   false, 'expects the proxy to indicate that it is not settled');
   equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
   equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 
@@ -70,7 +70,7 @@ test("fulfillment", function(){
   equal(get(proxy, 'content'),     value, 'expects the proxy to have content');
   equal(get(proxy, 'reason'),      undefined, 'expects the proxy to still have no reason');
   equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is no longer loading');
-  equal(get(proxy, 'isResolved'),  true,  'expects the proxy to indicate that it is resolved');
+  equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
   equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
   equal(get(proxy, 'isFulfilled'), true,  'expects the proxy to indicate that it is fulfilled');
 
@@ -87,7 +87,7 @@ test("fulfillment", function(){
   equal(get(proxy, 'content'),     value, 'expects the proxy to have still have same content');
   equal(get(proxy, 'reason'),      undefined, 'expects the proxy still to have no reason');
   equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is no longer loading');
-  equal(get(proxy, 'isResolved'),  true,  'expects the proxy to indicate that it is resolved');
+  equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
   equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
   equal(get(proxy, 'isFulfilled'), true,  'expects the proxy to indicate that it is fulfilled');
 
@@ -113,7 +113,7 @@ test("rejection", function(){
   equal(get(proxy, 'content'),     undefined, 'expects the proxy to have no content');
   equal(get(proxy, 'reason'),      undefined, 'expects the proxy to have no reason');
   equal(get(proxy, 'isPending'),   true,  'expects the proxy to indicate that it is loading');
-  equal(get(proxy, 'isResolved'),  false, 'expects the proxy to indicate that it is not resolved');
+  equal(get(proxy, 'isSettled'),   false, 'expects the proxy to indicate that it is not settled');
   equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
   equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 
@@ -128,7 +128,7 @@ test("rejection", function(){
   equal(get(proxy, 'content'),     undefined, 'expects the proxy to have no content');
   equal(get(proxy, 'reason'),      reason, 'expects the proxy to have a reason');
   equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is not longer loading');
-  equal(get(proxy, 'isResolved'),  true,  'expects the proxy to indicate that it is resolved');
+  equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
   equal(get(proxy, 'isRejected'),  true, 'expects the proxy to indicate that it is  rejected');
   equal(get(proxy, 'isFulfilled'), false,  'expects the proxy to indicate that it is not fulfilled');
 
@@ -145,7 +145,7 @@ test("rejection", function(){
   equal(get(proxy, 'content'),     undefined, 'expects the proxy to have no content');
   equal(get(proxy, 'reason'),      reason, 'expects the proxy to have a reason');
   equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is not longer loading');
-  equal(get(proxy, 'isResolved'),  true,  'expects the proxy to indicate that it is resolved');
+  equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
   equal(get(proxy, 'isRejected'),  true, 'expects the proxy to indicate that it is  rejected');
   equal(get(proxy, 'isFulfilled'), false,  'expects the proxy to indicate that it is not fulfilled');
 });
