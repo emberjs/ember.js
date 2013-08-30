@@ -113,7 +113,7 @@ test("after first retrieval, array computed properties can observe properties on
     nestedNumbers.objectAt(0).set('v', 22);
   });
 
-  deepEqual(nestedNumbers.mapProperty('v'), [22, 2, 3, 4, 5, 6], 'nested numbers is updated');
+  deepEqual(nestedNumbers.mapBy('v'), [22, 2, 3, 4, 5, 6], 'nested numbers is updated');
   deepEqual(evenNestedNumbers, [2, 4, 6, 22], 'adds new number');
 });
 
