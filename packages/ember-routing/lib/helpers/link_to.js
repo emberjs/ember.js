@@ -206,7 +206,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       whenever the helpers
      */
     _paramsChanged: function() {
-      this.notifyPropertyChange('routeArgs');
+      this.notifyPropertyChange('resolvedParams');
     },
 
     /**
@@ -251,13 +251,14 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       var router = get(this, 'router'),
           routeArgs = get(this, 'routeArgs'),
           contexts = routeArgs.slice(1),
-          currentWhen = this.currentWhen || routeArgs[0],
+          resolvedParams = get(this, 'resolvedParams'),
+          currentWhen = this.currentWhen || resolvedParams[0],
           currentWithIndex = currentWhen + '.index',
           isActive = router.isActive.apply(router, [currentWhen].concat(contexts)) ||
                      router.isActive.apply(router, [currentWithIndex].concat(contexts));
 
       if (isActive) { return get(this, 'activeClass'); }
-    }).property('routeArgs', 'router.url'),
+    }).property('resolvedParams', 'routeArgs', 'router.url'),
 
     /**
       Accessed as a classname binding to apply the `LinkView`'s `loadingClass`
@@ -319,6 +320,23 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     /**
       @private
 
+      Computed property that returns the resolved parameters.
+
+      @property
+      @return {Array}
+     */
+    resolvedParams: Ember.computed(function() {
+      var parameters = this.parameters,
+          options = parameters.options,
+          types = options.types,
+          data = options.data;
+
+      return resolveParams(parameters.context, parameters.params, { types: types, data: data });
+    }).property(),
+
+    /**
+      @private
+
       Computed property that returns the current route name and
       any dynamic segments.
 
@@ -327,11 +345,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
      */
     routeArgs: Ember.computed(function() {
 
-      var parameters = this.parameters,
-          options = parameters.options,
-          types = options.types,
-          data = options.data,
-          resolvedParams = resolveParams(parameters.context, parameters.params, { types: types, data: data }),
+      var resolvedParams = get(this, 'resolvedParams').slice(0),
           router = get(this, 'router'),
           namedRoute = resolvedParams[0];
 
@@ -351,7 +365,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       }
 
       return resolvedParams;
-    }).property(),
+    }).property('resolvedParams'),
 
     /**
       Sets the element's `href` attribute to the url for
