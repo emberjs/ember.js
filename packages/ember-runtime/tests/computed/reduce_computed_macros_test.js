@@ -111,16 +111,16 @@ test("it maps unshifted objects with property observers", function() {
     set(cObj, 'v', 'd');
   });
 
-  deepEqual(array.mapProperty('v'), ['a', 'b', 'd'], "precond - unmapped array is correct");
+  deepEqual(array.mapBy('v'), ['a', 'b', 'd'], "precond - unmapped array is correct");
   deepEqual(get(obj, 'mapped'), ['A', 'B', 'D'], "properties unshifted in sequence are mapped correctly");
 });
 
-module('Ember.computed.mapProperty', {
+module('Ember.computed.mapBy', {
   setup: function() {
     Ember.run(function() {
       obj = Ember.Object.createWithMixins({
         array: Ember.A([{ v: 1 }, { v: 3}, { v: 2 }, { v: 1 }]),
-        mapped: Ember.computed.mapProperty('array', 'v')
+        mapped: Ember.computed.mapBy('array', 'v')
       });
     });
   },
@@ -209,7 +209,7 @@ test("it updates as the array is replaced", function() {
   deepEqual(filtered, [20,22,24], "computed array is updated when array is changed");
 });
 
-module('Ember.computed.filterProperty', {
+module('Ember.computed.filterBy', {
   setup: function() {
     obj = Ember.Object.createWithMixins({
       array: Ember.A([
@@ -218,9 +218,9 @@ module('Ember.computed.filterProperty', {
         {name: "three", a:1, b:true},
         {name: "four", b:true}
       ]),
-      a1s: Ember.computed.filterProperty('array', 'a', 1),
-      as: Ember.computed.filterProperty('array', 'a'),
-      bs: Ember.computed.filterProperty('array', 'b')
+      a1s: Ember.computed.filterBy('array', 'a', 1),
+      as: Ember.computed.filterBy('array', 'a'),
+      bs: Ember.computed.filterBy('array', 'b')
     });
   },
   teardown: function() {
@@ -235,8 +235,8 @@ test("properties can be filtered by truthiness", function() {
       as = get(obj, 'as'),
       bs = get(obj, 'bs');
 
-  deepEqual(as.mapProperty('name'), ['one', 'two', 'three'], "properties can be filtered by existence");
-  deepEqual(bs.mapProperty('name'), ['three', 'four'], "booleans can be filtered");
+  deepEqual(as.mapBy('name'), ['one', 'two', 'three'], "properties can be filtered by existence");
+  deepEqual(bs.mapBy('name'), ['three', 'four'], "booleans can be filtered");
 
   Ember.run(function() {
     set(array.objectAt(0), 'a', undefined);
@@ -245,49 +245,49 @@ test("properties can be filtered by truthiness", function() {
     set(array.objectAt(0), 'b', true);
     set(array.objectAt(3), 'b', false);
   });
-  deepEqual(as.mapProperty('name'), ['two', 'three', 'four'], "arrays computed by filter property respond to property changes");
-  deepEqual(bs.mapProperty('name'), ['one', 'three'], "arrays computed by filtered property respond to property changes");
+  deepEqual(as.mapBy('name'), ['two', 'three', 'four'], "arrays computed by filter property respond to property changes");
+  deepEqual(bs.mapBy('name'), ['one', 'three'], "arrays computed by filtered property respond to property changes");
 
   Ember.run(function() {
     array.pushObject({name:"five", a:6, b:true});
   });
-  deepEqual(as.mapProperty('name'), ['two', 'three', 'four', 'five'], "arrays computed by filter property respond to added objects");
-  deepEqual(bs.mapProperty('name'), ['one', 'three', 'five'], "arrays computed by filtered property respond to added objects");
+  deepEqual(as.mapBy('name'), ['two', 'three', 'four', 'five'], "arrays computed by filter property respond to added objects");
+  deepEqual(bs.mapBy('name'), ['one', 'three', 'five'], "arrays computed by filtered property respond to added objects");
 
   Ember.run(function() {
     array.popObject();
   });
-  deepEqual(as.mapProperty('name'), ['two', 'three', 'four'], "arrays computed by filter property respond to removed objects");
-  deepEqual(bs.mapProperty('name'), ['one', 'three'], "arrays computed by filtered property respond to removed objects");
+  deepEqual(as.mapBy('name'), ['two', 'three', 'four'], "arrays computed by filter property respond to removed objects");
+  deepEqual(bs.mapBy('name'), ['one', 'three'], "arrays computed by filtered property respond to removed objects");
 
   Ember.run(function() {
     set(obj, 'array', Ember.A([{name: "six", a:12, b:true}]));
   });
-  deepEqual(as.mapProperty('name'), ['six'], "arrays computed by filter property respond to array changes");
-  deepEqual(bs.mapProperty('name'), ['six'], "arrays computed by filtered property respond to array changes");
+  deepEqual(as.mapBy('name'), ['six'], "arrays computed by filter property respond to array changes");
+  deepEqual(bs.mapBy('name'), ['six'], "arrays computed by filtered property respond to array changes");
 });
 
 test("properties can be filtered by values", function() {
   var array = get(obj, 'array'),
       a1s = get(obj, 'a1s');
 
-  deepEqual(a1s.mapProperty('name'), ['one', 'three'], "properties can be filtered by matching value");
+  deepEqual(a1s.mapBy('name'), ['one', 'three'], "properties can be filtered by matching value");
 
   Ember.run(function() {
     array.pushObject({ name: "five", a:1 });
   });
-  deepEqual(a1s.mapProperty('name'), ['one', 'three', 'five'], "arrays computed by matching value respond to added objects");
+  deepEqual(a1s.mapBy('name'), ['one', 'three', 'five'], "arrays computed by matching value respond to added objects");
 
   Ember.run(function() {
     array.popObject();
   });
-  deepEqual(a1s.mapProperty('name'), ['one', 'three'], "arrays computed by matching value respond to removed objects");
+  deepEqual(a1s.mapBy('name'), ['one', 'three'], "arrays computed by matching value respond to removed objects");
 
   Ember.run(function() {
     set(array.objectAt(1), 'a', 1);
     set(array.objectAt(2), 'a', 2);
   });
-  deepEqual(a1s.mapProperty('name'), ['one', 'two'], "arrays computed by matching value respond to modified properties");
+  deepEqual(a1s.mapBy('name'), ['one', 'two'], "arrays computed by matching value respond to modified properties");
 });
 
 a_forEach.call(['uniq', 'union'], function (alias) {
@@ -494,7 +494,7 @@ function commonSortTests() {
       sorted = get(obj, 'sortedItems');
     });
 
-    deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "array is initially sorted");
+    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "array is initially sorted");
   });
 
   test("changing the dependent array updates the sorted array", function() {
@@ -502,7 +502,7 @@ function commonSortTests() {
       sorted = get(obj, 'sortedItems');
     });
 
-    deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
     Ember.run(function() {
       set(obj, 'items', Ember.A([{
@@ -516,7 +516,7 @@ function commonSortTests() {
       }]));
     });
 
-    deepEqual(sorted.mapProperty('fname'), ['Stannis', 'Ramsey', 'Roose', 'Theon'], "changing dependent array updates sorted array");
+    deepEqual(sorted.mapBy('fname'), ['Stannis', 'Ramsey', 'Roose', 'Theon'], "changing dependent array updates sorted array");
   });
 
   test("adding to the dependent array updates the sorted array", function() {
@@ -525,13 +525,13 @@ function commonSortTests() {
       items = get(obj, 'items');
     });
 
-    deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
     Ember.run(function() {
       items.pushObject({ fname: 'Tyrion', lname: 'Lannister' });
     });
 
-    deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb'], "Adding to the dependent array updates the sorted array");
+    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb'], "Adding to the dependent array updates the sorted array");
   });
 
   test("removing from the dependent array updates the sorted array", function() {
@@ -540,13 +540,13 @@ function commonSortTests() {
       items = get(obj, 'items');
     });
 
-    deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
     Ember.run(function() {
       items.popObject();
     });
 
-    deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Robb'], "Removing from the dependent array updates the sorted array");
+    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Robb'], "Removing from the dependent array updates the sorted array");
   });
 }
 
@@ -583,13 +583,13 @@ test("updating sort properties updates the sorted array", function() {
     sorted = get(obj, 'sortedItems');
   });
 
-  deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   Ember.run(function() {
     set(obj, 'itemSorting', Ember.A(['fname:desc']));
   });
 
-  deepEqual(sorted.mapProperty('fname'), ['Robb', 'Jaime', 'Cersei', 'Bran'], "after updating sort properties array is updated");
+  deepEqual(sorted.mapBy('fname'), ['Robb', 'Jaime', 'Cersei', 'Bran'], "after updating sort properties array is updated");
 });
 
 test("updating sort properties in place updates the sorted array", function() {
@@ -598,14 +598,14 @@ test("updating sort properties in place updates the sorted array", function() {
     sortProps = get(obj, 'itemSorting');
   });
 
-  deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
   
   Ember.run(function() {
     sortProps.clear();
     sortProps.pushObject('fname');
   });
 
-  deepEqual(sorted.mapProperty('fname'), ['Bran', 'Cersei', 'Jaime', 'Robb'], "after updating sort properties array is updated");
+  deepEqual(sorted.mapBy('fname'), ['Bran', 'Cersei', 'Jaime', 'Robb'], "after updating sort properties array is updated");
 });
 
 test("updating new sort properties in place updates the sorted array", function() {
@@ -613,13 +613,13 @@ test("updating new sort properties in place updates the sorted array", function(
     sorted = get(obj, 'sortedItems');
   });
 
-  deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   Ember.run(function() {
     set(obj, 'itemSorting', Ember.A(['age:desc', 'fname:asc']));
   });
 
-  deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Robb', 'Bran'], "precond - array is correct after item sorting is changed");
+  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Robb', 'Bran'], "precond - array is correct after item sorting is changed");
 
   Ember.run(function() {
     items = get(obj, 'items');
@@ -628,7 +628,7 @@ test("updating new sort properties in place updates the sorted array", function(
     set(cersei, 'age', 29); // how vain
   });
 
-  deepEqual(sorted.mapProperty('fname'), ['Jaime', 'Cersei', 'Robb', 'Bran'], "after updating sort properties array is updated");
+  deepEqual(sorted.mapBy('fname'), ['Jaime', 'Cersei', 'Robb', 'Bran'], "after updating sort properties array is updated");
 });
 
 test("sort direction defaults to ascending", function() {
@@ -636,13 +636,13 @@ test("sort direction defaults to ascending", function() {
     sorted = get(obj, 'sortedItems');
   });
 
-  deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   Ember.run(function() {
     set(obj, 'itemSorting', Ember.A(['fname']));
   });
 
-  deepEqual(sorted.mapProperty('fname'), ['Bran', 'Cersei', 'Jaime', 'Robb'], "sort direction defaults to ascending");
+  deepEqual(sorted.mapBy('fname'), ['Bran', 'Cersei', 'Jaime', 'Robb'], "sort direction defaults to ascending");
 });
 
 test("updating an item's sort properties updates the sorted array", function() {
@@ -655,13 +655,13 @@ test("updating an item's sort properties updates the sorted array", function() {
 
   tyrionInDisguise = items.objectAt(1);
 
-  deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   Ember.run(function() {
     set(tyrionInDisguise, 'fname', 'Tyrion');
   });
 
-  deepEqual(sorted.mapProperty('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], "updating an item's sort properties updates the sorted array");
+  deepEqual(sorted.mapBy('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], "updating an item's sort properties updates the sorted array");
 });
 
 
@@ -727,13 +727,13 @@ test("changing item properties specified via @each triggers a resort of the modi
 
   tyrionInDisguise = items.objectAt(1);
 
-  deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   Ember.run(function() {
     set(tyrionInDisguise, 'fname', 'Tyrion');
   });
 
-  deepEqual(sorted.mapProperty('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], "updating a specified property on an item resorts it");
+  deepEqual(sorted.mapBy('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], "updating a specified property on an item resorts it");
 });
 
 test("changing item properties not specified via @each does not trigger a resort", function() {
@@ -746,7 +746,7 @@ test("changing item properties not specified via @each does not trigger a resort
 
   cersei = items.objectAt(1);
 
-  deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
 
   Ember.run(function() {
     set(cersei, 'lname', 'Stark'); // plot twist! (possibly not canon)
@@ -755,7 +755,7 @@ test("changing item properties not specified via @each does not trigger a resort
   // The array has become unsorted.  If your sort function is sensitive to
   // properties, they *must* be specified as dependent item property keys or
   // we'll be doing binary searches on unsorted arrays.
-  deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "updating an unspecified property on an item does not resort it");
+  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "updating an unspecified property on an item does not resort it");
 });
 
 module('Ember.computed.max', {
@@ -878,13 +878,13 @@ module('Ember.arrayComputed - mixed sugar', {
           fname: "Bran", lname: "Stark", age: 8
         }]),
 
-        lannisters: Ember.computed.filterProperty('items', 'lname', 'Lannister'),
+        lannisters: Ember.computed.filterBy('items', 'lname', 'Lannister'),
         lannisterSorting: Ember.A(['fname']),
         sortedLannisters: Ember.computed.sort('lannisters', 'lannisterSorting'),
 
 
-        starks: Ember.computed.filterProperty('items', 'lname', 'Stark'),
-        starkAges: Ember.computed.mapProperty('starks', 'age'),
+        starks: Ember.computed.filterBy('items', 'lname', 'Stark'),
+        starkAges: Ember.computed.mapBy('starks', 'age'),
         oldestStarkAge: Ember.computed.max('starkAges')
       });
     });
@@ -902,7 +902,7 @@ test("filtering and sorting can be combined", function() {
     sorted = get(obj, 'sortedLannisters');
   });
 
-  deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Jaime'], "precond - array is initially filtered and sorted");
+  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime'], "precond - array is initially filtered and sorted");
 
   Ember.run(function() {
     items.pushObject({fname: 'Tywin',   lname: 'Lannister'});
@@ -910,7 +910,7 @@ test("filtering and sorting can be combined", function() {
     items.pushObject({fname: 'Gerion',  lname: 'Lannister'});
   });
 
-  deepEqual(sorted.mapProperty('fname'), ['Cersei', 'Gerion', 'Jaime', 'Tywin'], "updates propagate to array");
+  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Gerion', 'Jaime', 'Tywin'], "updates propagate to array");
 });
 
 test("filtering, sorting and reduce (max) can be combined", function() {
