@@ -28,7 +28,7 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone;
   ```html
   <!-- app-profile template -->
   <h1>{{person.title}}</h1>
-  <img {{bindAttr src=person.avatar}}>
+  <img {{bind-attr src=person.avatar}}>
   <p class='signature'>{{person.signature}}</p>
   ```
 
@@ -50,7 +50,7 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone;
   If you want to customize the component, in order to
   handle events or actions, you implement a subclass
   of `Ember.Component` named after the name of the
-  component. Note that `Component` needs to be appended to the name of 
+  component. Note that `Component` needs to be appended to the name of
   your subclass like `AppProfileComponent`.
 
   For example, you could implement the action
