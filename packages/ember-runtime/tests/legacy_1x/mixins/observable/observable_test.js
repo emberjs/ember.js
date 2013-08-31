@@ -273,10 +273,6 @@ test("should change normal properties and return this", function() {
 test("should call computed properties passing value and return this", function() {
   var ret = object.set("computed", "changed") ;
   equal(object._computed, "changed") ;
-
-  // DISABLED: this is no longer true with accessors
-  //equal(Ember.typeOf(object.computed), 'function') ;
-
   equal(ret, object) ;
 });
 
