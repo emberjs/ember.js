@@ -143,6 +143,8 @@ GroupedEach.prototype = {
   },
 
   addArrayObservers: function() {
+    if (!this.content) { return; }
+
     this.content.addArrayObserver(this, {
       willChange: 'contentArrayWillChange',
       didChange: 'contentArrayDidChange'
@@ -150,6 +152,8 @@ GroupedEach.prototype = {
   },
 
   removeArrayObservers: function() {
+    if (!this.content) { return; }
+
     this.content.removeArrayObserver(this, {
       willChange: 'contentArrayWillChange',
       didChange: 'contentArrayDidChange'
@@ -167,6 +171,8 @@ GroupedEach.prototype = {
   },
 
   render: function() {
+    if (!this.content) { return; }
+
     var content = this.content,
         contentLength = get(content, 'length'),
         data = this.options.data,
@@ -179,12 +185,21 @@ GroupedEach.prototype = {
   },
 
   rerenderContainingView: function() {
-    Ember.run.scheduleOnce('render', this.containingView, 'rerender');
+    var self = this;
+    Ember.run.scheduleOnce('render', this, function() {
+      // It's possible it's been destroyed after we enqueued a re-render call.
+      if (!self.destroyed) {
+        self.containingView.rerender();
+      }
+    });
   },
 
   destroy: function() {
     this.removeContentObservers();
-    this.removeArrayObservers();
+    if (this.content) {
+      this.removeArrayObservers();
+    }
+    this.destroyed = true;
   }
 };
 
