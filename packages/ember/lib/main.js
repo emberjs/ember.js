@@ -6,20 +6,20 @@ Ember
 @module ember
 */
 
-var defineProperty = Ember.platform.defineProperty;
-
-if (defineProperty && !defineProperty.isSimulated) {
-  defineProperty(Ember, 'StateManager', {
-    get: function() {
-      // Throwing rather than using Ember.assert to avoid this being stripped from builds
-      throw new Error("Ember.StateManager has been moved into a plugin: https://github.com/emberjs/ember-states");
-    }
-  });
-
-  defineProperty(Ember, 'State', {
-    get: function() {
-      // Throwing rather than using Ember.assert to avoid this being stripped from builds
-      throw new Error("Ember.State has been moved into a plugin: https://github.com/emberjs/ember-states");
-    }
-  });
+function throwWithMessage(msg) {
+  return function() {
+    throw new Error(msg);
+  };
 }
+
+function generateRemovedClass(className) {
+  var msg = " has been moved into a plugin: https://github.com/emberjs/ember-states";
+
+  return {
+    extend: throwWithMessage(className + msg),
+    create: throwWithMessage(className + msg)
+  };
+}
+
+Ember.StateManager = generateRemovedClass("Ember.StateManager");
+Ember.State = generateRemovedClass("Ember.State");
