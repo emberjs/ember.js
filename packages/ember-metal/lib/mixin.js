@@ -393,19 +393,19 @@ Ember.mixin = function(obj) {
   `Ember.Mixin.extend`.
 
   Note that mixins extend a constructor's prototype so arrays and object literals
-  defined as properties will be shared amongst objects that implement the mixin. 
+  defined as properties will be shared amongst objects that implement the mixin.
   If you want to define an property in a mixin that is not shared, you can define
   it either as a computed property or have it be created on initialization of the object.
-  
+
   ```javascript
   //filters array will be shared amongst any object implementing mixin
   App.Filterable = Ember.Mixin.create({
-    filters: Ember.A() 
+    filters: Ember.A()
   });
 
   //filters will be a separate  array for every object implementing the mixin
   App.Filterable = Ember.Mixin.create({
-    filters: Ember.computed(function(){return Ember.A();}) 
+    filters: Ember.computed(function(){return Ember.A();})
   });
 
   //filters will be created as a separate array during the object's initialization
@@ -652,6 +652,22 @@ Ember.aliasMethod = function(methodName) {
 //
 
 /**
+  Specify a method that observes property changes.
+
+  ```javascript
+  Ember.Object.extend({
+    valueObserver: Ember.observer(function() {
+      // Executes whenever the "value" property changes
+    }, 'value')
+  });
+  ```
+
+  In the future this method may become asynchronous. If you want to ensure
+  synchronous behavior, use `immediateObserver`.
+
+  Also available as `Function.prototype.observes` if prototype extensions are
+  enabled.
+
   @method observer
   @for Ember
   @param {Function} func
@@ -664,9 +680,23 @@ Ember.observer = function(func) {
   return func;
 };
 
-// If observers ever become asynchronous, Ember.immediateObserver
-// must remain synchronous.
 /**
+  Specify a method that observes property changes.
+
+  ```javascript
+  Ember.Object.extend({
+    valueObserver: Ember.immediateObserver(function() {
+      // Executes whenever the "value" property changes
+    }, 'value')
+  });
+  ```
+
+  In the future, `Ember.observer` may become asynchronous. In this event,
+  `Ember.immediateObserver` will maintain the synchronous behavior.
+
+  Also available as `Function.prototype.observesImmediately` if prototype extensions are
+  enabled.
+
   @method immediateObserver
   @for Ember
   @param {Function} func
@@ -694,23 +724,30 @@ Ember.immediateObserver = function() {
 
   ```javascript
   App.PersonView = Ember.View.extend({
+
     friends: [{ name: 'Tom' }, { name: 'Stefan' }, { name: 'Kris' }],
-    valueWillChange: function (obj, keyName) {
+
+    valueWillChange: Ember.beforeObserver(function(obj, keyName) {
       this.changingFrom = obj.get(keyName);
-    }.observesBefore('content.value'),
-    valueDidChange: function(obj, keyName) {
+    }, 'content.value'),
+
+    valueDidChange: Ember.observer(function(obj, keyName) {
         // only run if updating a value already in the DOM
         if (this.get('state') === 'inDOM') {
-            var color = obj.get(keyName) > this.changingFrom ? 'green' : 'red';
-            // logic
+          var color = obj.get(keyName) > this.changingFrom ? 'green' : 'red';
+          // logic
         }
-    }.observes('content.value'),
-    friendsDidChange: function(obj, keyName) {
+    }, 'content.value'),
+
+    friendsDidChange: Ember.observer(function(obj, keyName) {
       // some logic
       // obj.get(keyName) returns friends array
-    }.observes('friends.@each.name')
+    }, 'friends.@each.name')
   });
   ```
+
+  Also available as `Function.prototype.observesBefore` if prototype extensions are
+  enabled.
 
   @method beforeObserver
   @for Ember
