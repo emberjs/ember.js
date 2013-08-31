@@ -412,6 +412,9 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     return an enumerable that maps automatically to the named key on the
     member objects.
 
+    If you merely want to watch for any items being added or removed to the array,
+    use the `[]` property instead of `@each`.
+
     @property @each
   */
   '@each': Ember.computed(function() {

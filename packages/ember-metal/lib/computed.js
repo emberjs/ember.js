@@ -564,8 +564,8 @@ function registerComputedWithProperties(name, macro) {
   property is null, an empty string, empty array, or empty function.
 
   Note: When using `Ember.computed.empty` to watch an array make sure to
-  use the `array.length` or `array.@each` syntax so the computed can
-  subscribe to transitions from empty to non-empty states.
+  use the `array.length` syntax so the computed can subscribe to transitions
+  from empty to non-empty states.
 
   Example
 
