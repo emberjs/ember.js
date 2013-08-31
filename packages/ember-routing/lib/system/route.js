@@ -635,7 +635,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   /**
     Store property provides a hook for data persistence libraries to inject themselves.
 
-    By default, this store property provides the exat same functionality previously
+    By default, this store property provides the exact same functionality previously
     in the model hook.
 
     Currently, the required interface is:
