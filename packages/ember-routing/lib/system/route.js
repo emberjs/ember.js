@@ -618,12 +618,48 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     if (!name && sawParams) { return params; }
     else if (!name) { return; }
 
-    var modelClass = this.container.lookupFactory('model:' + name);
+    return this.findModel(name, value);
+  },
+
+  /**
+
+    @method findModel
+    @param {String} type the model type
+    @param {Object} value the value passed to find
+  */
+  findModel: function(){
+    var store = get(this, 'store');
+    return store.find.apply(store, arguments);
+  },
+
+  /**
+    Store property provides a hook for data persistence libraries to inject themselves.
+
+    By default, this store property provides the exat same functionality previously
+    in the model hook.
+
+    Currently, the required interface is:
+
+    `store.find(modelName, findArguments)`
+
+    @method store
+    @param {Object} store
+  */
+  store: Ember.computed(function(){
+    var container = this.container;
+    var routeName = this.routeName;
     var namespace = get(this, 'router.namespace');
 
-    Ember.assert("You used the dynamic segment " + name + "_id in your route "+ this.routeName + ", but " + namespace + "." + classify(name) + " did not exist and you did not override your route's `model` hook.", modelClass);
-    return modelClass.find(value);
-  },
+    return {
+      find: function(name, value) {
+        var modelClass = container.lookupFactory('model:' + name);
+
+        Ember.assert("You used the dynamic segment " + name + "_id in your route "+ routeName + ", but " + namespace + "." + classify(name) + " did not exist and you did not override your route's `model` hook.", modelClass);
+
+        return modelClass.find(value);
+      }
+    };
+  }),
 
   /**
     A hook you can implement to convert the route's model into parameters
