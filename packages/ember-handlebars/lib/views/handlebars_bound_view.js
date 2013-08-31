@@ -112,6 +112,10 @@ SimpleHandlebarsView.prototype = {
 
   update: function () {
     this.updateId = null;
+    // FIXME: Update should not be called on a view with a state of destroying
+    if(!this.morph){
+      return;
+    }
     this.morph.html(this.render());
   },
 
