@@ -23,6 +23,8 @@ function SimpleHandlebarsView(path, pathRoot, isEscaped, templateData) {
   this.morph = Metamorph();
   this.state = 'preRender';
   this.updateId = null;
+  this._parentView = null;
+  this.buffer = null;
 }
 
 Ember._SimpleHandlebarsView = SimpleHandlebarsView;
@@ -36,7 +38,11 @@ SimpleHandlebarsView.prototype = {
       Ember.run.cancel(this.updateId);
       this.updateId = null;
     }
+    if (this._parentView) {
+      this._parentView.removeChild(this);
+    }
     this.morph = null;
+    this.state = 'destroyed';
   },
 
   propertyWillChange: Ember.K,
@@ -91,7 +97,7 @@ SimpleHandlebarsView.prototype = {
   rerender: function() {
     switch(this.state) {
       case 'preRender':
-      case 'destroying':
+      case 'destroyed':
         break;
       case 'inBuffer':
         throw new Ember.Error("Something you did tried to replace an {{expression}} before it was inserted into the DOM.");

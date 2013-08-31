@@ -2067,6 +2067,21 @@ test("properties within an if statement should not fail on re-render", function(
   equal(view.$().text(), '');
 });
 
+test('should cleanup bound properties on rerender', function() {
+  view = Ember.View.create({
+    controller: Ember.Object.create({name: 'wycats'}),
+    template: Ember.Handlebars.compile('{{name}}')
+  });
+
+  appendView();
+
+  equal(view.$().text(), 'wycats', 'rendered binding');
+
+  Ember.run(view, 'rerender');
+
+  equal(view._childViews.length, 1);
+});
+
 test("views within an if statement should be sane on re-render", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile('{{#if view.display}}{{view Ember.TextField}}{{/if}}'),
