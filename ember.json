@@ -25,7 +25,6 @@
         "ember-runtime",
         "handlebars",
         "ember-views",
-        "ember-states",
         "ember-routing",
         "ember-handlebars"
       ]

@@ -28,7 +28,6 @@ testing_packages:
   - container
   - ember-metal
   - ember-runtime
-  - ember-states
   - ember-views
   - ember-handlebars
   - ember-routing
