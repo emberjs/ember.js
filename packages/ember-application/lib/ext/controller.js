@@ -27,6 +27,7 @@ function verifyDependencies(controller) {
     // if needs then initialize controllers proxy
     get(controller, 'controllers');
   }
+
   return satisfied;
 }
 
@@ -99,9 +100,11 @@ Ember.ControllerMixin.reopen({
     @default null
   */
   controllers: Ember.computed(function() {
+    var controller = this;
+
     return {
-      needs: get(this, 'needs'),
-      container: get(this, 'container'),
+      needs: get(controller, 'needs'),
+      container: get(controller, 'container'),
       unknownProperty: function(controllerName) {
         var needs = this.needs,
           dependency, i, l;
@@ -111,7 +114,10 @@ Ember.ControllerMixin.reopen({
             return this.container.lookup('controller:' + controllerName);
           }
         }
+
+        var errorMessage = Ember.inspect(controller) + '#needs does not include `' + controllerName + '`. To access the ' + controllerName + ' controller from ' + Ember.inspect(controller) + ', ' + Ember.inspect(controller) + ' should have a `needs` property that is an array of the controllers it has access to.';
+        throw new ReferenceError(errorMessage);
       }
     };
-  })
+  }).readOnly()
 });
