@@ -288,6 +288,28 @@ test("Renders correct view with slash notation", function() {
   equal(Ember.$('p:contains(Home/Page)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
+test("Renders the view given in viewClass", function() {
+  Ember.TEMPLATES['home'] = compile("<p>{{view.name}}</p>");
+
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      this.render({viewClass: 'homePage'});
+    }
+  });
+
+  App.HomePageView = Ember.View.extend({
+    name: "Home/Page"
+  });
+
+  bootApplication();
+
+  equal(Ember.$('p:contains(Home/Page)', '#qunit-fixture').length, 1, "The homepage view was rendered");
+});
+
 test('render does not replace templateName if user provided', function() {
   Router.map(function() {
     this.route("home", { path: "/" });
