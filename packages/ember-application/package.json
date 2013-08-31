@@ -7,7 +7,6 @@
   "version": "1.0.0-rc.8",
   "dependencies": {
     "ember-views": "1.0.0-rc.8",
-    "ember-states": "1.0.0-rc.8",
     "ember-routing": "1.0.0-rc.8"
   },
 

@@ -9,7 +9,6 @@
       "../packages/ember-debug/lib",
       "../packages/ember-metal/lib",
       "../packages/ember-runtime/lib",
-      "../packages/ember-states/lib",
       "../packages/ember-views/lib",
       "../packages/ember-handlebars/lib",
       "../packages/ember-routing/lib",

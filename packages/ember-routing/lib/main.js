@@ -13,6 +13,5 @@ Ember Routing
 
 @module ember
 @submodule ember-routing
-@requires ember-states
 @requires ember-views
 */

@@ -3,8 +3,8 @@ require 'ember-dev'
 distros = {
   "runtime"           => %w(ember-metal rsvp container ember-runtime),
   "template-compiler" => %w(ember-handlebars-compiler),
-  "data-deps"         => %w(ember-metal rsvp container ember-runtime ember-states),
-  "full"              => %w(ember-metal rsvp container ember-runtime ember-views metamorph handlebars ember-handlebars-compiler ember-handlebars ember-routing ember-application ember-states ember-extension-support)
+  "data-deps"         => %w(ember-metal rsvp container ember-runtime),
+  "full"              => %w(ember-metal rsvp container ember-runtime ember-views metamorph handlebars ember-handlebars-compiler ember-handlebars ember-routing ember-application ember-extension-support)
 }
 
 class AddMicroLoader < Rake::Pipeline::Filter
