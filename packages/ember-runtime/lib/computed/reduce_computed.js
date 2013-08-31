@@ -422,7 +422,9 @@ function ReduceComputedProperty(options) {
 
     forEach(cp._dependentKeys, function(dependentKey) {
       var dependentArray = get(this, dependentKey);
-      addItems.call(this, dependentArray, callbacks, cp, propertyName, meta);
+      if (dependentArray) {
+        addItems.call(this, dependentArray, callbacks, cp, propertyName, meta);
+      }
     }, this);
   };
 

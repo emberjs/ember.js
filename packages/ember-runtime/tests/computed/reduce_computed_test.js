@@ -67,6 +67,29 @@ test("array computed properties are instances of Ember.ComputedProperty", functi
   ok(Ember.arrayComputed({}) instanceof Ember.ComputedProperty);
 });
 
+test("when the dependent array is null or undefined, `addedItem` is not called and only the initial value is returned", function() {
+  obj = Ember.Object.createWithMixins({
+    numbers: null,
+    doubledNumbers: Ember.arrayComputed('numbers', {
+      addedItem: function (array, n) {
+        addCalls++;
+        array.pushObject(n * 2);
+        return array;
+      }
+    })
+  });
+
+  deepEqual(get(obj, 'doubledNumbers'), [], "When the dependent array is null, the initial value is returned");
+  equal(addCalls, 0,  "`addedItem` is not called when the dependent array is null");
+
+  Ember.run(function() {
+    set(obj, 'numbers', Ember.A([1,2]));
+  });
+
+  deepEqual(get(obj, 'doubledNumbers'), [2,4], "An initially null dependent array can still be set later");
+  equal(addCalls, 2, "`addedItem` is called when the dependent array is initially set");
+});
+
 test("on first retrieval, array computed properties are computed", function() {
   deepEqual(get(obj, 'evenNumbers'), [2,4,6], "array computed properties are correct on first invocation");
 });
