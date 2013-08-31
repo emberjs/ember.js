@@ -939,7 +939,11 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     var container = this.container,
         view = container.lookup('view:' + viewName),
-        template = container.lookup('template:' + templateName);
+        template = view ? view.get('template') : null;
+
+    if (!template) {
+      template = container.lookup('template:' + templateName);
+    }
 
     if (!view && !template) {
       Ember.assert("Could not find \"" + name + "\" template or view.", !namePassed);
