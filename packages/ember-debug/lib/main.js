@@ -150,3 +150,15 @@ Ember.deprecateFunc = function(message, func) {
     return func.apply(this, arguments);
   };
 };
+
+
+// Inform the developer about the Ember Inspector if not installed.
+if (!Ember.testing) {
+  if (typeof window !== 'undefined' && window.chrome && window.addEventListener) {
+    window.addEventListener("load", function() {
+      if (document.body && document.body.dataset && !document.body.dataset.emberExtension) {
+        Ember.debug('Install the Ember Inspector from https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi');
+      }
+    }, false);
+  }
+}
