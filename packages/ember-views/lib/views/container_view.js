@@ -249,7 +249,7 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
 
   length: Ember.computed(function () {
     return this._childViews.length;
-  }),
+  }).volatile(),
 
   /**
     @private
