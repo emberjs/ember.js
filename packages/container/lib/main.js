@@ -283,6 +283,7 @@ define("container",
 
         container.unregister('model:user')
         container.lookup('model:user') === undefined //=> true
+        ```
 
         @method unregister
         @param {String} fullName
