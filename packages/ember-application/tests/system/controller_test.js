@@ -71,3 +71,15 @@ test("raises if trying to get a controller that was not pre-defined in `needs`",
   }, /#needs does not include `baz`/,
   'should throw if no such controller was needed');
 });
+
+test("setting the controllers property directly, should not be possible", function(){
+  var controller = Ember.Controller.create();
+  var controllers = controller.get('controllers');
+
+  throws(function(){
+    controller.set('controllers', 'epic-self-troll');
+  }, /Cannot Set: controllers on:/,
+  'should raise when attempting to set to the controllers property');
+
+  equal(controller.get('controllers'), controllers, 'original controllers CP should have been unchanged');
+});

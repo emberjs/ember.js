@@ -119,5 +119,5 @@ Ember.ControllerMixin.reopen({
         throw new ReferenceError(errorMessage);
       }
     };
-  })
+  }).readOnly()
 });
