@@ -374,19 +374,18 @@ test("should call the cancel method when escape key is pressed", function() {
 });
 
 test("should send an action if one is defined when the return key is pressed", function() {
-  expect(3);
+  expect(2);
 
   var StubController = Ember.Object.extend({
     send: function(actionName, value, sender) {
       equal(actionName, 'didTriggerAction', "text field sent correct action name");
       equal(value, "textFieldValue", "text field sent its current value as first argument");
-      equal(sender, textField, "text field sent itself as second argument");
     }
   });
 
   textField.set('action', 'didTriggerAction');
   textField.set('value', "textFieldValue");
-  textField.set('controller', StubController.create());
+  textField.set('targetObject', StubController.create());
 
   Ember.run(function() { textField.append(); });
 
@@ -399,20 +398,19 @@ test("should send an action if one is defined when the return key is pressed", f
 });
 
 test("should send an action on keyPress if one is defined with onEvent=keyPress", function() {
-  expect(3);
+  expect(2);
 
   var StubController = Ember.Object.extend({
     send: function(actionName, value, sender) {
       equal(actionName, 'didTriggerAction', "text field sent correct action name");
       equal(value, "textFieldValue", "text field sent its current value as first argument");
-      equal(sender, textField, "text field sent itself as second argument");
     }
   });
 
   textField.set('action', 'didTriggerAction');
   textField.set('onEvent', 'keyPress');
   textField.set('value', "textFieldValue");
-  textField.set('controller', StubController.create());
+  textField.set('targetObject', StubController.create());
 
   Ember.run(function() { textField.append(); });
 

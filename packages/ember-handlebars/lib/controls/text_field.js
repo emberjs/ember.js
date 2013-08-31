@@ -27,7 +27,7 @@ var get = Ember.get, set = Ember.set;
   @extends Ember.View
   @uses Ember.TextSupport
 */
-Ember.TextField = Ember.View.extend(Ember.TextSupport,
+Ember.TextField = Ember.Component.extend(Ember.TextSupport,
   /** @scope Ember.TextField.prototype */ {
 
   classNames: ['ember-text-field'],
@@ -113,47 +113,28 @@ Ember.TextField = Ember.View.extend(Ember.TextSupport,
     @type Boolean
     @default false
   */
-  bubbles: false,
-
-  /**
-    The action to be sent when the user inserts a new line.
-
-    Called by the `Ember.TextSupport` mixin on keyUp if keycode matches 13.
-    Uses sendAction to send the `enter` action to the controller.
-
-    @method insertNewLine
-    @param {Event} event
-  */
-  insertNewline: function(event) {
-    sendAction('enter', this, event);
-  },
-
-  /**
-    The action to be sent when the user presses a key. Enabled by setting
-    the `onEvent` property to `keyPress`.
-
-    Uses sendAction to send the `keyPress` action to the controller.
-
-    @method keyPress
-    @param {Event} event
-  */
-  keyPress: function(event) {
-    sendAction('keyPress', this, event);
-  }
+  bubbles: false
 });
 
+// In principle, this shouldn't be necessary, but the legacy
+// sectionAction semantics for TextField are different from
+// the component semantics so this method normalizes them.
 function sendAction(eventName, view, event) {
-  var action = get(view, 'action'),
-      on = get(view, 'onEvent');
+  var action = get(view, eventName),
+      on = get(view, 'onEvent'),
+      value = get(view, 'value');
 
-  if (action && on === eventName) {
-    var controller = get(view, 'controller'),
-        value = get(view, 'value'),
-        bubbles = get(view, 'bubbles');
+  // back-compat support for keyPress as an event name even though
+  // it's also a method name that consumes the event (and therefore
+  // incompatible with sendAction semantics).
+  if (on === eventName || (on === 'keyPress' && eventName === 'key-press')) {
+    view.sendAction('action', value);
+  }
 
-    controller.send(action, value, view);
+  view.sendAction(eventName, value);
 
-    if (!bubbles) {
+  if (action || on === eventName) {
+    if(!get(view, 'bubbles')) {
       event.stopPropagation();
     }
   }
