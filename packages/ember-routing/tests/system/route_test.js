@@ -10,10 +10,10 @@ module("Ember.Route", {
   }
 });
 
-test("default model utilizes the container to acquire the model factory", function() {
+test("default store utilizes the container to acquire the model factory", function() {
   var Post, post;
 
-  expect(2);
+  expect(4);
 
   post = {};
 
@@ -31,6 +31,7 @@ test("default model utilizes the container to acquire the model factory", functi
   route.container = container;
 
   equal(route.model({ post_id: 1}), post);
+  equal(route.findModel('post', 1), post, '#findModel returns the correct post');
 
   function lookupFactory(fullName) {
     equal(fullName, "model:post", "correct factory was looked up");
@@ -38,6 +39,35 @@ test("default model utilizes the container to acquire the model factory", functi
     return Post;
   }
 
+});
+
+test("'store' can be injected by data persistence frameworks", function() {
+  expect(8);
+  Ember.run(route, 'destroy'); 
+
+  var container = new Ember.Container();
+  var post = {
+    id: 1
+  };
+
+  var Store = Ember.Object.extend({
+    find: function(type, value){
+      ok(true, 'injected model was called');
+      equal(type, 'post', 'correct type was called');
+      equal(value, 1, 'correct value was called');
+      return post;
+    }
+  });
+
+  container.register('route:index',  Ember.Route);
+  container.register('store:main', Store);
+
+  container.injection('route', 'store', 'store:main');
+
+  route = container.lookup('route:index');
+
+  equal(route.model({ post_id: 1}), post, '#model returns the correct post');
+  equal(route.findModel('post', 1), post, '#findModel returns the correct post');
 });
 
 module("Ember.Route interaction", {
