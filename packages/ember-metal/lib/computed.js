@@ -573,9 +573,9 @@ function registerComputedWithProperties(name, macro) {
   var ToDoList = Ember.Object.extend({
     done: Ember.computed.empty('todos.length')
   });
-  var todoList = ToDoList.create({todoList: ['Unit Test', 'Documentation', 'Release']});
+  var todoList = ToDoList.create({todos: ['Unit Test', 'Documentation', 'Release']});
   todoList.get('done'); // false
-  todoList.get('todoList').clear(); // []
+  todoList.get('todos').clear(); // []
   todoList.get('done'); // true
   ```
 
