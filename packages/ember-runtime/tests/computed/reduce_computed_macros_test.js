@@ -620,6 +620,44 @@ function commonSortTests() {
 
     deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Robb'], "Removing from the dependent array updates the sorted array");
   });
+
+  test("distinct items may be sort-equal, although their relative order will not be guaranteed", function() {
+    var jaime, jaimeInDisguise;
+
+    Ember.run(function() {
+      // We recreate jaime and "Cersei" here only for test stability: we want
+      // their guid-ordering to be deterministic
+      jaimeInDisguise = Ember.Object.create({
+        fname: 'Cersei', lname: 'Lannister', age: 34
+      });
+      jaime = Ember.Object.create({
+        fname: 'Jaime', lname: 'Lannister', age: 34
+      });
+      items = get(obj, 'items');
+
+      items.replace(0, 1, jaime);
+      items.replace(1, 1, jaimeInDisguise);
+      sorted = get(obj, 'sortedItems');
+    });
+
+    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+
+    Ember.run(function() {
+      // comparator will now return 0.
+      // Apparently it wasn't a very good disguise.
+      jaimeInDisguise.set('fname', 'Jaime');
+    });
+
+    deepEqual(sorted.mapBy('fname'), ['Jaime', 'Jaime', 'Bran', 'Robb'], "sorted array is updated");
+
+    Ember.run(function() {
+      // comparator will again return non-zero
+      jaimeInDisguise.set('fname', 'Cersei');
+    });
+
+
+    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "sorted array is updated");
+  });
 }
 
 module('Ember.computed.sort - sortProperties', {
@@ -802,13 +840,13 @@ module('Ember.computed.sort - sort function', {
     Ember.run(function() {
       obj = Ember.Object.createWithMixins({
         items: Ember.A([{
-          fname: "Jaime", lname: "Lannister"
+          fname: "Jaime", lname: "Lannister", age: 34
         }, {
-          fname: "Cersei", lname: "Lannister"
+          fname: "Cersei", lname: "Lannister", age: 34
         }, {
-          fname: "Robb", lname: "Stark"
+          fname: "Robb", lname: "Stark", age: 16
         }, {
-          fname: "Bran", lname: "Stark"
+          fname: "Bran", lname: "Stark", age: 8
         }]),
 
         sortedItems: Ember.computed.sort('items.@each.fname', sortByLnameFname)
