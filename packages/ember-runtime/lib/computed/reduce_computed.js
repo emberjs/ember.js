@@ -278,8 +278,6 @@ DependentArraysObserver.prototype = {
     Ember.run.once(this, 'flushChanges');
   },
 
-  // TODO: it probably makes more sense to remove the item during `willChange`
-  // and add it back (with the new value) during `didChange`
   flushChanges: function() {
     var changedItems = this.changedItems, key, c, changeMeta;
     for (key in changedItems) {

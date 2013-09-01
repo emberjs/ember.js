@@ -7,6 +7,7 @@ require('ember-runtime/computed/array_computed');
 
 var get = Ember.get,
     set = Ember.set,
+    guidFor = Ember.guidFor,
     a_slice = [].slice,
     forEach = Ember.EnumerableUtils.forEach,
     map = Ember.EnumerableUtils.map;
@@ -330,7 +331,7 @@ Ember.computed.uniq = function() {
     },
 
     addedItem: function(array, item, changeMeta, instanceMeta) {
-      var guid = Ember.guidFor(item);
+      var guid = guidFor(item);
 
       if (!instanceMeta.itemCounts[guid]) {
         instanceMeta.itemCounts[guid] = 1;
@@ -341,7 +342,7 @@ Ember.computed.uniq = function() {
       return array;
     },
     removedItem: function(array, item, _, instanceMeta) {
-      var guid = Ember.guidFor(item),
+      var guid = guidFor(item),
           itemCounts = instanceMeta.itemCounts;
 
       if (--itemCounts[guid] === 0) {
@@ -389,7 +390,7 @@ Ember.computed.union = Ember.computed.uniq;
 Ember.computed.intersect = function () {
   var getDependentKeyGuids = function (changeMeta) {
     return map(changeMeta.property._dependentKeys, function (dependentKey) {
-      return Ember.guidFor(dependentKey);
+      return guidFor(dependentKey);
     });
   };
 
@@ -400,9 +401,9 @@ Ember.computed.intersect = function () {
     },
 
     addedItem: function(array, item, changeMeta, instanceMeta) {
-      var itemGuid = Ember.guidFor(item),
+      var itemGuid = guidFor(item),
           dependentGuids = getDependentKeyGuids(changeMeta),
-          dependentGuid = Ember.guidFor(changeMeta.arrayChanged),
+          dependentGuid = guidFor(changeMeta.arrayChanged),
           numberOfDependentArrays = changeMeta.property._dependentKeys.length,
           itemCounts = instanceMeta.itemCounts;
 
@@ -417,9 +418,9 @@ Ember.computed.intersect = function () {
       return array;
     },
     removedItem: function(array, item, changeMeta, instanceMeta) {
-      var itemGuid = Ember.guidFor(item),
+      var itemGuid = guidFor(item),
           dependentGuids = getDependentKeyGuids(changeMeta),
-          dependentGuid = Ember.guidFor(changeMeta.arrayChanged),
+          dependentGuid = guidFor(changeMeta.arrayChanged),
           numberOfDependentArrays = changeMeta.property._dependentKeys.length,
           numberOfArraysItemAppearsIn,
           itemCounts = instanceMeta.itemCounts;
@@ -516,6 +517,9 @@ function binarySearch(array, item, low, high) {
   mid = low + Math.floor((high - low) / 2);
   midItem = array.objectAt(mid);
 
+  if (isProxyContent(item, midItem)) {
+    return mid;
+  }
   res = this.order(midItem, item);
 
   if (res < 0) {
@@ -525,6 +529,15 @@ function binarySearch(array, item, low, high) {
   }
 
   return mid;
+
+
+  function isProxyContent(searchItem, item) {
+    if (Ember.ObjectProxy.detectInstance(searchItem)) {
+      return guidFor(get(searchItem, 'content')) === guidFor(item);
+    }
+
+    return false;
+  }
 }
 
 /**
