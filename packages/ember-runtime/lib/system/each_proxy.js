@@ -67,7 +67,7 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
 
       guid = guidFor(item);
       indicies = objects[guid];
-      indicies[indexOf(indicies, loc)] = null;
+      indicies[indexOf.call(indicies, loc)] = null;
     }
   }
 }
