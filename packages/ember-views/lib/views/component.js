@@ -112,6 +112,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
       view.appendChild(Ember.View, {
         isVirtual: true,
         tagName: '',
+        _contextView: parentView,
         template: get(this, 'template'),
         context: get(parentView, 'context'),
         controller: get(parentView, 'controller'),

@@ -14,10 +14,11 @@ module("Support for {{yield}} helper (#307)", {
   },
   teardown: function() {
     Ember.run(function() {
+      Ember.TEMPLATES = {};
       if (view) {
         view.destroy();
-      }}
-    );
+      }
+    });
 
     Ember.lookup = originalLookup;
   }
@@ -306,4 +307,49 @@ test("yield should work for views even if _parentView is null", function() {
 
   equal(view.$().text(), "Layout: View Content");
 
+});
+
+module("Component {{yield}}", {
+  setup: function() {},
+  teardown: function() {
+    Ember.run(function() {
+      if (view) {
+        view.destroy();
+      }
+      delete Ember.Handlebars.helpers['inner-component'];
+      delete Ember.Handlebars.helpers['outer-component'];
+    });
+  }
+});
+
+test("yield with nested components (#3220)", function(){
+  var count = 0;
+  var InnerComponent = Ember.Component.extend({
+    layout: Ember.Handlebars.compile("{{yield}}"),
+    _yield: function (context, options) {
+      count++;
+      if (count > 1) throw new Error('is looping');
+      return this._super(context, options);
+    }
+  });
+
+  Ember.Handlebars.helper('inner-component', InnerComponent);
+
+  var OuterComponent = Ember.Component.extend({
+    layout: Ember.Handlebars.compile("{{#inner-component}}<span>{{yield}}</span>{{/inner-component}}")
+  });
+
+  Ember.Handlebars.helper('outer-component', OuterComponent);
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(
+      "{{#outer-component}}Hello world{{/outer-component}}"
+    )
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$('div > span').text(), "Hello world");
 });
