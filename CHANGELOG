@@ -1,3 +1,30 @@
+*Ember 1.0.0 (August 31, 2013)*
+
+* Fix nested `{{yield}}`
+* `ReduceComputed` groups changed properties.
+* Multiple fixes and improvements to the new Array Computed Properties
+* Adds the ability to specify view class for render
+* Restructure controller init, to minimize property lookups
+* Provide hook for persistence libraries to inject custom find behavior.
+* Sync router.js
+* Controller#controllers property should be readOnly
+* Invalid Controller#controllers accesses throw runtime exceptions
+* Inform about the Ember Inspector if not installed
+* Don't force a layout on registered components
+* Make TextField and TextArea components
+* Adds Function.prototype.observesImmediately
+* Move ember-states into a plugin: https://github.com/emberjs/ember-states
+* Update Backburner
+* Disabled model factory injections by default.
+* Fix bug where link-to wouldn't be active even if resource is active
+* Add Ember.PromiseProxyMixin
+* Some fixes to grouped each
+* Update to rsvp-2.0.2; fixes unit tests for RSVP#rethrow in IE 6,7,8
+* Rename computed array macros to match #3158
+* Consider `controllerName` in Ember.Route#render()
+* Allow a template explicitly set on a view to be used when rendering a route.
+
+
 *Ember 1.0.0-rc.8 (August 28, 2013)*
 
 * View, controller & route action handlers are now expected to be defined on an `actions` object.
