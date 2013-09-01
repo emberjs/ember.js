@@ -178,7 +178,7 @@ function chain(app, promise, fn) {
 * using your app.
 *
 * Example:
-* 
+*
 * ```
 * visit('posts/index').then(function() {
 *   // assert something
@@ -186,7 +186,7 @@ function chain(app, promise, fn) {
 * ```
 *
 * @method visit
-* @param {String} url the name of the route 
+* @param {String} url the name of the route
 * @returns {RSVP.Promise}
 */
 helper('visit', visit);
