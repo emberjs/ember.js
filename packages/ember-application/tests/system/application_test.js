@@ -92,8 +92,8 @@ var app;
 
 module("Ember.Application initialization", {
   teardown: function() {
-    Ember.TEMPLATES = {};
     Ember.run(app, 'destroy');
+    Ember.TEMPLATES = {};
   }
 });
 

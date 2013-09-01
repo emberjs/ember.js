@@ -66,6 +66,8 @@ module("Handlebars {{render}} helper", {
         view.destroy();
       }
     });
+
+    Ember.TEMPLATES = {};
   }
 });
 

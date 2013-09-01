@@ -1,4 +1,4 @@
-var Router, App, AppView, templates, router, eventDispatcher, container, originalTemplates;
+var Router, App, AppView, templates, router, eventDispatcher, container;
 var get = Ember.get, set = Ember.set;
 
 function bootApplication() {
@@ -31,7 +31,6 @@ module("The {{link-to}} helper", {
 
       Router = App.Router;
 
-      originalTemplates = Ember.$.extend({}, Ember.TEMPLATES);
       Ember.TEMPLATES.app = Ember.Handlebars.compile("{{outlet}}");
       Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#link-to 'about' id='about-link'}}About{{/link-to}}{{#link-to 'index' id='self-link'}}Self{{/link-to}}");
       Ember.TEMPLATES.about = Ember.Handlebars.compile("<h3>About</h3>{{#link-to 'index' id='home-link'}}Home{{/link-to}}{{#link-to 'about' id='self-link'}}Self{{/link-to}}");
@@ -50,7 +49,7 @@ module("The {{link-to}} helper", {
 
   teardown: function() {
     Ember.run(function() { App.destroy(); });
-    Ember.TEMPLATES = originalTemplates;
+    Ember.TEMPLATES = {};
   }
 });
 

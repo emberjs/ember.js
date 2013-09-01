@@ -1,4 +1,4 @@
-var App, originalTemplates, $fixture;
+var App, $fixture;
 
 function setupExample() {
   // setup templates
@@ -46,7 +46,6 @@ module("Homepage Example", {
       });
 
       App.LoadingRoute = Ember.Route.extend();
-      originalTemplates = Ember.$.extend({}, Ember.TEMPLATES);
     });
 
     $fixture = Ember.$('#qunit-fixture');
@@ -61,7 +60,7 @@ module("Homepage Example", {
       App.destroy();
       App = null;
 
-      Ember.TEMPLATES = originalTemplates;
+      Ember.TEMPLATES = {};
     });
   }
 });

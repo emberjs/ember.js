@@ -9,6 +9,7 @@ module("Ember.Application Depedency Injection", {
   },
 
   teardown: function() {
+    Ember.TEMPLATES = {};
     Ember.lookup = originalLookup;
     Ember.run(application, 'destroy');
   }
@@ -26,7 +27,7 @@ test('the default resolver can look things up in other namespaces', function() {
 test('the default resolver looks up templates in Ember.TEMPLATES', function() {
   function fooTemplate() {}
   function fooBarTemplate() {}
-  function fooBarBazTemplate() {} 
+  function fooBarBazTemplate() {}
 
   Ember.TEMPLATES['foo'] = fooTemplate;
   Ember.TEMPLATES['fooBar'] = fooBarTemplate;

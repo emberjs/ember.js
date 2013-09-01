@@ -1,4 +1,4 @@
-var Router, App, AppView, templates, router, container, originalTemplates;
+var Router, App, AppView, templates, router, container;
 var get = Ember.get, set = Ember.set;
 
 function bootApplication() {
@@ -63,7 +63,6 @@ module("Basic Routing", {
 
       container = App.__container__;
 
-      originalTemplates = Ember.$.extend({}, Ember.TEMPLATES);
       Ember.TEMPLATES.application = compile("{{outlet}}");
       Ember.TEMPLATES.home = compile("<h3>Hours</h3>");
       Ember.TEMPLATES.homepage = compile("<h3>Megatroll</h3><p>{{home}}</p>");
@@ -76,7 +75,7 @@ module("Basic Routing", {
       App.destroy();
       App = null;
 
-      Ember.TEMPLATES = originalTemplates;
+      Ember.TEMPLATES = {};
     });
   }
 });

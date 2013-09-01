@@ -1,9 +1,8 @@
-var App, container, originalTemplates;
+var App, container;
 var compile = Ember.Handlebars.compile;
 
 module("Application Lifecycle - Component Registration", {
   setup: function() {
-    originalTemplates = Ember.$.extend({}, Ember.TEMPLATES);
     Ember.TEMPLATES["components/expand-it"] = compile("<p>hello {{yield}}</p>");
     Ember.TEMPLATES.application = compile("Hello world {{#expand-it}}world{{/expand-it}}");
   },
@@ -12,7 +11,7 @@ module("Application Lifecycle - Component Registration", {
     Ember.run(function() {
       App.destroy();
       App = null;
-      Ember.TEMPLATES = originalTemplates;
+      Ember.TEMPLATES = {};
     });
   }
 });
