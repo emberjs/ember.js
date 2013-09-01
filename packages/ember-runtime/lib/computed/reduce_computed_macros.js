@@ -505,7 +505,7 @@ Ember.computed.setDiff = function (setAProperty, setBProperty) {
 };
 
 function binarySearch(array, item, low, high) {
-  var mid, midItem, res;
+  var mid, midItem, res, guidMid, guidItem;
 
   if (arguments.length < 4) { high = get(array, 'length'); }
   if (arguments.length < 3) { low = 0; }
@@ -517,10 +517,18 @@ function binarySearch(array, item, low, high) {
   mid = low + Math.floor((high - low) / 2);
   midItem = array.objectAt(mid);
 
-  if (isProxyContent(item, midItem)) {
+  guidMid = _guidFor(midItem);
+  guidItem = _guidFor(item);
+
+  if (guidMid === guidItem) {
     return mid;
   }
+
   res = this.order(midItem, item);
+  if (res === 0) {
+    res = guidMid < guidItem ? -1 : 1;
+  }
+
 
   if (res < 0) {
     return this.binarySearch(array, item, mid+1, high);
@@ -530,13 +538,11 @@ function binarySearch(array, item, low, high) {
 
   return mid;
 
-
-  function isProxyContent(searchItem, item) {
-    if (Ember.ObjectProxy.detectInstance(searchItem)) {
-      return guidFor(get(searchItem, 'content')) === guidFor(item);
+  function _guidFor(item) {
+    if (Ember.ObjectProxy.detectInstance(item)) {
+      return guidFor(get(item, 'content'));
     }
-
-    return false;
+    return guidFor(item);
   }
 }
 
