@@ -59,6 +59,27 @@ test("Classes under an Ember.Namespace are properly named", function() {
   equal(nsB.Foo.toString(), "NamespaceB.Foo", "Classes in new namespaces get the naming treatment");
 });
 
+test("before and after Ember.BOOTED", function(){
+  var App = Ember.Namespace.create();
+  App.Foo = Ember.Object.extend();
+
+  equal(App.Foo.toString(), 'App.Foo');
+
+  Ember.BOOTED = true;
+
+  App.Bar = Ember.Object.create()
+  App.Baz = Ember.Object.create()
+  App.Qux = Ember.Object.create()
+
+  equal(App.Bar.toString(), '');
+
+  Ember.Namespace._allowNamespaceProcessing(function(){
+    equal(App.Baz.toString(), 'App.Baz');
+  });
+
+  equal(App.Qux.toString(), '');
+});
+
 test("Classes under Ember are properly named", function() {
   equal(Ember.Array.toString(), "Ember.Array", "precond - existing classes are processed");
 

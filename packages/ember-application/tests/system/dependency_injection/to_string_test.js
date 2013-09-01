@@ -57,3 +57,20 @@ test("with a custom resolver", function() {
 
   equal(peter.toString(), '<model:peter:' + guid + '>', 'expecting the supermodel to be peter');
 });
+
+test("before and after Ember.BOOTED", function(){
+  App.FunController = Ember.Controller.extend();
+
+  var container = App.__container__;
+
+  equal(container.lookupFactory('controller:fun').toString(), 'App.FunController', 'fun controller correctly toStrings before Ember.BOOTED');
+  var wasBooted = Ember.BOOTED;
+
+  try {
+    Ember.BOOTED = true;
+    App.PartyController = Ember.Controller.extend();
+    equal(container.lookupFactory('controller:party').toString(), 'App.PartyController', 'party controller correctly toStrings after Ember.BOOTED');
+  } finally {
+    Ember.BOOTED = wasBooted;
+  }
+});
