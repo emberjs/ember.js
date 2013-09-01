@@ -287,7 +287,7 @@ Ember.Logger = {
 
    @method assert
    @for Ember.Logger
-   @param @param {Boolean} bool Value to test
+   @param {Boolean} bool Value to test
   */
   assert: consoleMethod('assert') || assertPolyfill
 };
