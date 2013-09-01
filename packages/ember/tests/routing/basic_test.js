@@ -88,9 +88,9 @@ test("warn on URLs not included in the route set", function () {
 
 
   bootApplication();
-  
+
   // it's tricky to use expectAssertion(fn) in a callback.
-  var oldAssert = Ember.assert;  
+  var oldAssert = Ember.assert;
   Ember.assert = function(message, test){
     ok(true, test);
     equal("The URL '/what-is-this-i-dont-even' did match any routes in your application", message);
@@ -288,7 +288,7 @@ test("Renders correct view with slash notation", function() {
   equal(Ember.$('p:contains(Home/Page)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
-test("Renders the view given in viewClass", function() {
+test("Renders the view given in the view option", function() {
   Ember.TEMPLATES['home'] = compile("<p>{{view.name}}</p>");
 
   Router.map(function() {
@@ -297,7 +297,7 @@ test("Renders the view given in viewClass", function() {
 
   App.HomeRoute = Ember.Route.extend({
     renderTemplate: function() {
-      this.render({viewClass: 'homePage'});
+      this.render({view: 'homePage'});
     }
   });
 
