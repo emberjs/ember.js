@@ -736,6 +736,41 @@ test("updating an item's sort properties updates the sorted array", function() {
   deepEqual(sorted.mapBy('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], "updating an item's sort properties updates the sorted array");
 });
 
+test("updating an item's sort properties does not error when binary search does a self compare (#3273)", function() {
+  var jaime, cersei;
+
+  Ember.run(function() {
+    jaime = Ember.Object.create({
+      name: 'Jaime',
+      status: 1
+    });
+    cersei = Ember.Object.create({
+      name: 'Cersei',
+      status: 2
+    });
+
+    obj = Ember.Object.createWithMixins({
+      people: Ember.A([jaime, cersei]),
+      sortProps: Ember.A(['status']),
+      sortedPeople: Ember.computed.sort('people', 'sortProps')
+    });
+  });
+
+  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei], "precond - array is initially sorted");
+
+  Ember.run(function() {
+    cersei.set('status', 3);
+  });
+
+  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei], "array is sorted correctly");
+
+  Ember.run(function() {
+    cersei.set('status', 2);
+  });
+
+  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei], "array is sorted correctly");
+});
+
 
 function sortByLnameFname(a, b) {
   var lna = get(a, 'lname'),
