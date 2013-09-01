@@ -207,22 +207,29 @@ DependentArraysObserver.prototype = {
         guid = guidFor(dependentArray),
         dependentKey = this.dependentKeysByGuid[guid],
         itemPropertyKeys = this.cp._itemPropertyKeys[dependentKey] || [],
+        item,
         itemIndex,
+        sliceIndex,
         observerContexts;
 
     observerContexts = this.removeTransformation(dependentKey, index, removedCount);
-    forEach(dependentArray.slice(index, index + removedCount), function (item, sliceIndex) {
-      itemIndex = index + sliceIndex;
 
-      forEach(itemPropertyKeys, function (propertyKey) {
-        removeBeforeObserver(item, propertyKey, this, observerContexts[sliceIndex].beforeObserver);
-        removeObserver(item, propertyKey, this, observerContexts[sliceIndex].observer);
-      }, this);
+
+    function removeObservers(propertyKey) {
+      removeBeforeObserver(item, propertyKey, this, observerContexts[sliceIndex].beforeObserver);
+      removeObserver(item, propertyKey, this, observerContexts[sliceIndex].observer);
+    }
+
+    for (sliceIndex = removedCount - 1; sliceIndex >= 0; --sliceIndex) {
+      itemIndex = index + sliceIndex;
+      item = dependentArray.objectAt(itemIndex);
+      
+      forEach(itemPropertyKeys, removeObservers, this);
 
       changeMeta = createChangeMeta(dependentArray, item, itemIndex, this.instanceMeta.propertyName, this.cp);
       this.setValue( removedItem.call(
         this.instanceMeta.context, this.getValue(), item, changeMeta, this.instanceMeta.sugarMeta));
-    }, this);
+    }
   },
 
   dependentArrayDidChange: function (dependentArray, index, removedCount, addedCount) {

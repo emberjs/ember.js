@@ -235,6 +235,40 @@ test("it updates as the array is modified", function() {
   deepEqual(filtered, [2,6,8,12], "objects removed from the dependent array are removed from the computed array");
 });
 
+test("the dependent array can be cleared one at a time", function() {
+  var array = get(obj, 'array'),
+      filtered = get(obj, 'filtered');
+
+  deepEqual(filtered, [2,4,6,8], "precond - filtered array is initially correct");
+
+  Ember.run(function() {
+    // clear 1-8 but in a random order
+    array.removeObject(3);
+    array.removeObject(1);
+    array.removeObject(2);
+    array.removeObject(4);
+    array.removeObject(8);
+    array.removeObject(6);
+    array.removeObject(5);
+    array.removeObject(7);
+  });
+
+  deepEqual(filtered, [], "filtered array cleared correctly");
+});
+
+test("the dependent array can be `clear`ed directly (#3272)", function() {
+  var array = get(obj, 'array'),
+      filtered = get(obj, 'filtered');
+
+  deepEqual(filtered, [2,4,6,8], "precond - filtered array is initially correct");
+
+  Ember.run(function() {
+    array.clear();
+  });
+
+  deepEqual(filtered, [], "filtered array cleared correctly");
+});
+
 test("it updates as the array is replaced", function() {
   var array = get(obj, 'array'),
       filtered = get(obj, 'filtered');
