@@ -7,7 +7,7 @@ Ember.onLoad('Ember.Handlebars', function() {
       handlebarsGet = Ember.Handlebars.get;
 
   function resolveParams(context, params, options) {
-    return resolvePaths(context, params, options).map(function(path, i) {
+    return map.call(resolvePaths(context, params, options), function(path, i) {
       if (null === path) {
         // Param was string/number, not a path, so just return raw string/number.
         return params[i];
