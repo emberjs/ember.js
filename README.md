@@ -131,6 +131,16 @@ minification, for which we recommend installing nodejs.  Alternatively
 you may have luck with another of the runtimes supported by
 [execjs](https://github.com/sstephenson/execjs).
 
+# Contribution
+
+1. Fork it
+1. Create your feature branch (`git checkout -b your-branch`)
+1. Commit your changes (`git commit -am 'Add new feature'`)
+1. Push to the branch (`git push origin your-branch`)
+1. Create new Pull Request
+
+We favor pull request with very small, single commits with a single purpose.
+
 # How to Run Unit Tests
 
 ## Setup
