@@ -261,17 +261,18 @@ DependentArraysObserver.prototype = {
   },
 
   itemPropertyWillChange: function (obj, keyName, array, index) {
-    var changeId = guidFor(obj)+":"+keyName;
+    var guid = guidFor(obj);
 
-    if (!this.changedItems[changeId]) {
-      this.changedItems[changeId] = {
+    if (!this.changedItems[guid]) {
+      this.changedItems[guid] = {
         array:          array,  
         index:          index,
         obj:            obj,
-        keyChanged:     keyName,
-        previousValue:  get(obj, keyName)
+        previousValues: {}
       };
     }
+
+    this.changedItems[guid].previousValues[keyName] = get(obj, keyName);
   },
 
   itemPropertyDidChange: function(obj, keyName, array, index) {
@@ -282,7 +283,7 @@ DependentArraysObserver.prototype = {
     var changedItems = this.changedItems, key, c, changeMeta;
     for (key in changedItems) {
       c = changedItems[key];
-      changeMeta = createChangeMeta(c.array, c.obj, c.index, this.instanceMeta.propertyName, this.cp, c.keyChanged, c.previousValue);
+      changeMeta = createChangeMeta(c.array, c.obj, c.index, this.instanceMeta.propertyName, this.cp, c.previousValues);
       this.setValue(
         this.callbacks.removedItem.call(this.instanceMeta.context, this.getValue(), c.obj, changeMeta, this.instanceMeta.sugarMeta));
       this.setValue(
@@ -292,18 +293,19 @@ DependentArraysObserver.prototype = {
   }
 };
 
-function createChangeMeta(dependentArray, item, index, propertyName, property, key, previousValue) {
+function createChangeMeta(dependentArray, item, index, propertyName, property, previousValues) {
   var meta = {
     arrayChanged: dependentArray,
     index: index,
     item: item,
     propertyName: propertyName,
-    property: property,
-    // previous value is only available for item property changes!
-    previousValue: previousValue
+    property: property
   };
 
-  if (key) { meta.keyChanged = key; }
+  if (previousValues) {
+    // previous values only available for item property changes
+    meta.previousValues = previousValues;
+  }
 
   return meta;
 }
@@ -601,15 +603,15 @@ ReduceComputedProperty.prototype.property = function () {
 
   For property changes triggered on an item property change (when
   depKey is something like `someArray.@each.someProperty`),
-  `changeMeta` may also contain the followng properties:
+  `changeMeta` will also contain the followng property:
 
-    - `keyChanged` the name of the property on the item that changed
-    - `previousValue` the previous value of item.get(keyChanged)
+    - `previousValues` an object whose keys are the properties that changed on
+    the item, and whose values are the item's previous values.
 
-  These properties are important because Ember coalesces item
-  property changes via Ember.run.once. This means that by the time
-  removedItem gets called, item has the new value, but you may need
-  the previous value (eg for sorting & filtering).
+  `previousValues` is important Ember coalesces item property changes via
+  Ember.run.once. This means that by the time removedItem gets called, item has
+  the new values, but you may need the previous value (eg for sorting &
+  filtering).
 
   `instanceMeta` - An object that can be used to store meta
   information needed for calculating your computed. For example a

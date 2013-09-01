@@ -109,15 +109,15 @@ ArrayComputedProperty.prototype.resetValue = function (array) {
 
   For property changes triggered on an item property change (when
   depKey is something like `someArray.@each.someProperty`),
-  `changeMeta` may also contain the followng properties:
+  `changeMeta` will also contain the followng property:
 
-    - `keyChanged` the name of the property on the item that changed
-    - `previousValue` the previous value of item.get(keyChanged)
+    - `previousValues` an object whose keys are the properties that changed on
+    the item, and whose values are the item's previous values.
 
-  These properties are important because Ember coalesces item
-  property changes via Ember.run.once. This means that by the time
-  removedItem gets called, item has the new value, but you may need
-  the previous value (eg for sorting & filtering).
+  `previousValues` is important Ember coalesces item property changes via
+  Ember.run.once. This means that by the time removedItem gets called, item has
+  the new values, but you may need the previous value (eg for sorting &
+  filtering).
 
   `instanceMeta` - An object that can be used to store meta
   information needed for calculating your computed. For example a
