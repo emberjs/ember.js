@@ -59,6 +59,8 @@ function ItemPropertyObserverContext (dependentArray, index, trackedArray) {
   this.trackedArray = trackedArray;
   this.beforeObserver = null;
   this.observer = null;
+
+  this.destroyed = false;
 }
 
 DependentArraysObserver.prototype = {
@@ -128,6 +130,7 @@ DependentArraysObserver.prototype = {
       if (operation === Ember.TrackedArray.DELETE) { return; }
 
       forEach(observerContexts, function (observerContext) {
+        observerContext.destroyed = true;
         beforeObserver = observerContext.beforeObserver;
         observer = observerContext.observer;
         item = observerContext.item;
@@ -152,11 +155,10 @@ DependentArraysObserver.prototype = {
     var dependentArrayObserver = this;
 
     observerContext.beforeObserver = function (obj, keyName) {
-      dependentArrayObserver.updateIndexes(observerContext.trackedArray, observerContext.dependentArray);
-      return dependentArrayObserver.itemPropertyWillChange(obj, keyName, observerContext.dependentArray, observerContext.index);
+      return dependentArrayObserver.itemPropertyWillChange(obj, keyName, observerContext.dependentArray, observerContext);
     };
     observerContext.observer = function (obj, keyName) {
-      return dependentArrayObserver.itemPropertyDidChange(obj, keyName, observerContext.dependentArray, observerContext.index);
+      return dependentArrayObserver.itemPropertyDidChange(obj, keyName, observerContext.dependentArray, observerContext);
     };
   },
 
@@ -214,8 +216,8 @@ DependentArraysObserver.prototype = {
 
     observerContexts = this.removeTransformation(dependentKey, index, removedCount);
 
-
     function removeObservers(propertyKey) {
+      observerContexts[sliceIndex].destroyed = true;
       removeBeforeObserver(item, propertyKey, this, observerContexts[sliceIndex].beforeObserver);
       removeObserver(item, propertyKey, this, observerContexts[sliceIndex].observer);
     }
@@ -260,30 +262,35 @@ DependentArraysObserver.prototype = {
     this.addTransformation(dependentKey, index, observerContexts);
   },
 
-  itemPropertyWillChange: function (obj, keyName, array, index) {
+  itemPropertyWillChange: function (obj, keyName, array, observerContext) {
     var guid = guidFor(obj);
 
     if (!this.changedItems[guid]) {
       this.changedItems[guid] = {
-        array:          array,
-        index:          index,
-        obj:            obj,
-        previousValues: {}
+        array:            array,
+        observerContext:  observerContext,
+        obj:              obj,
+        previousValues:   {}
       };
     }
 
     this.changedItems[guid].previousValues[keyName] = get(obj, keyName);
   },
 
-  itemPropertyDidChange: function(obj, keyName, array, index) {
+  itemPropertyDidChange: function(obj, keyName, array, observerContext) {
     Ember.run.once(this, 'flushChanges');
   },
 
   flushChanges: function() {
     var changedItems = this.changedItems, key, c, changeMeta;
+
     for (key in changedItems) {
       c = changedItems[key];
-      changeMeta = createChangeMeta(c.array, c.obj, c.index, this.instanceMeta.propertyName, this.cp, c.previousValues);
+      if (c.observerContext.destroyed) { continue; }
+
+      this.updateIndexes(c.observerContext.trackedArray, c.observerContext.dependentArray);
+
+      changeMeta = createChangeMeta(c.array, c.obj, c.observerContext.index, this.instanceMeta.propertyName, this.cp, c.previousValues);
       this.setValue(
         this.callbacks.removedItem.call(this.instanceMeta.context, this.getValue(), c.obj, changeMeta, this.instanceMeta.sugarMeta));
       this.setValue(
