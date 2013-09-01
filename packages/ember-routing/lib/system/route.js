@@ -969,8 +969,9 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
       name = this.routeName;
     }
 
+    options = options || {};
     name = name ? name.replace(/\//g, '.') : this.routeName;
-    var viewName = this.viewName || name;
+    var viewName = options.view || this.viewName || name;
     var templateName = this.templateName || name;
 
     var container = this.container,
