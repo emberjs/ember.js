@@ -116,7 +116,7 @@ namespace :release do
       min_gz = Zlib::Deflate.deflate(File.read("dist/ember.min.js")).bytes.count / 1024
 
       about.gsub!(/(\d+\.\d+\.\d+-rc(?:\.?\d+)?)/, Ember::VERSION)
-      about.gsub!(/minified \d+kb/, "minified #{min_gz}kb")
+      about.gsub!(/min \+ gzip \d+kb/, "min + gzip  #{min_gz}kb")
 
       open("tmp/website/source/about.html.erb", "w") { |f| f.write about }
     end
