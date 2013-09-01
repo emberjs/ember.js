@@ -61,3 +61,14 @@ test("The `arrangedContentDidChange` method is invoked after `content` is change
   proxy.set('content', Ember.A(['a', 'b']));
   equal(callCount, 1, "replacing the content array triggers the hook");
 });
+
+test("`arrangedContent` should be setup when `content` is set in `init` after `this._super()`.", function() {
+  var proxy = Ember.ArrayProxy.extend({
+    init: function() {
+      this._super();
+      this.set('content', Ember.A());
+    }
+  }).create();
+
+  ok(proxy.get('arrangedContent'), 'Arranged content should be set');
+});

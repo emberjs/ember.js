@@ -144,7 +144,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.Array
     this._setupContent();
   }, 'content'),
 
-  _setupContent: function() {
+  _setupContent: Ember.on('init', function() {
     var content = get(this, 'content');
 
     if (content) {
@@ -153,7 +153,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.Array
         didChange: 'contentArrayDidChange'
       });
     }
-  },
+  }),
 
   _arrangedContentWillChange: Ember.beforeObserver(function() {
     var arrangedContent = get(this, 'arrangedContent'),
@@ -177,7 +177,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.Array
     this.arrangedContentArrayDidChange(this, 0, undefined, len);
   }, 'arrangedContent'),
 
-  _setupArrangedContent: function() {
+  _setupArrangedContent: Ember.on('init', function() {
     var arrangedContent = get(this, 'arrangedContent');
 
     if (arrangedContent) {
@@ -186,7 +186,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.Array
         didChange: 'arrangedContentArrayDidChange'
       });
     }
-  },
+  }),
 
   _teardownArrangedContent: function() {
     var arrangedContent = get(this, 'arrangedContent');
@@ -314,12 +314,6 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.Array
 
   arrangedContentArrayDidChange: function(item, idx, removedCnt, addedCnt) {
     this.arrayContentDidChange(idx, removedCnt, addedCnt);
-  },
-
-  init: function() {
-    this._super();
-    this._setupContent();
-    this._setupArrangedContent();
   },
 
   willDestroy: function() {
