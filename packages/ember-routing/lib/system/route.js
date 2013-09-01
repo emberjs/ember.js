@@ -1124,6 +1124,11 @@ function setupView(view, container, options) {
     if (options.LOG_VIEW_LOOKUPS) {
       Ember.Logger.info("Rendering " + options.name + " with " + view, { fullName: 'view:' + options.name });
     }
+  } else if(options.viewClass && typeof options.viewClass === 'string') {
+    view = container.lookup('view:'+options.viewClass);
+    if (options.LOG_VIEW_LOOKUPS) {
+      Ember.Logger.info("Rendering " + options.name + " with " + view, { fullName: 'view:' + options.viewClass });
+    }
   } else {
     var defaultView = options.into ? 'view:default' : 'view:toplevel';
     view = container.lookup(defaultView);
