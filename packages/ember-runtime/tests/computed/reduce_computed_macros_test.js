@@ -1,5 +1,5 @@
 var map = Ember.EnumerableUtils.map, a_forEach = Ember.ArrayPolyfills.forEach, get = Ember.get, set = Ember.set, setProperties = Ember.setProperties,
-    obj, sorted, sortProps, items, userFnCalls;
+    obj, sorted, sortProps, items, userFnCalls, todos, filtered;
 
 module('Ember.computed.map', {
   setup: function() {
@@ -1098,4 +1098,65 @@ test("filtering, sorting and reduce (max) can be combined", function() {
   });
 
   equal(35, get(obj, 'oldestStarkAge'), "chain is updated correctly");
+});
+
+
+function todo(name, priority) {
+  return Ember.Object.create({name: name, priority: priority});
+}
+
+function priorityComparator(todoA, todoB) {
+  var pa = parseInt(get(todoA, 'priority'), 10),
+      pb = parseInt(get(todoB, 'priority'), 10);
+
+  return pa - pb;
+}
+
+function evenPriorities(todo) {
+  var p = parseInt(get(todo, 'priority'), 10);
+
+  return p % 2 === 0;
+}
+
+module('Ember.arrayComputed - chains', {
+  setup: function() {
+    obj = Ember.Object.createWithMixins({
+      todos: Ember.A([todo('E', 4), todo('D', 3), todo('C', 2), todo('B', 1), todo('A', 0)]),
+      sorted: Ember.computed.sort('todos.@each.priority', priorityComparator),
+      filtered: Ember.computed.filter('sorted.@each.priority', evenPriorities)
+    });
+  },
+  teardown: function() {
+    Ember.run(function() {
+      obj.destroy();
+    });
+  }
+});
+
+test("it can filter and sort when both depend on the same item property", function() {
+  filtered = get(obj, 'filtered');
+  sorted = get(obj, 'sorted');
+  todos = get(obj, 'todos');
+
+  deepEqual(todos.mapProperty('name'), ['E', 'D', 'C', 'B', 'A'], "precond - todos initially correct");
+  deepEqual(sorted.mapProperty('name'), ['A', 'B', 'C', 'D', 'E'], "precond - sorted initially correct");
+  deepEqual(filtered.mapProperty('name'), ['A', 'C', 'E'], "precond - filtered initially correct");
+
+  Ember.run(function() {
+    Ember.beginPropertyChanges();
+    // here we trigger several changes
+    //  A. D.priority 3 -> 6
+    //    1. updated sorted from item property change
+    //      a. remove D; reinsert D
+    //      b. update filtered from sorted change
+    //    2. update filtered from item property change
+    //
+    // If 1.b happens before 2 it should invalidate 2
+    todos.objectAt(1).set('priority', 6);
+    Ember.endPropertyChanges();
+  });
+
+  deepEqual(todos.mapProperty('name'), ['E', 'D', 'C', 'B', 'A'], "precond - todos remain correct");
+  deepEqual(sorted.mapProperty('name'), ['A', 'B', 'C', 'E', 'D'], "precond - sorted updated correctly");
+  deepEqual(filtered.mapProperty('name'), ['A', 'C', 'E', 'D'], "filtered updated correctly");
 });
