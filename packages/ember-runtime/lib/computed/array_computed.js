@@ -109,7 +109,7 @@ ArrayComputedProperty.prototype.resetValue = function (array) {
 
   For property changes triggered on an item property change (when
   depKey is something like `someArray.@each.someProperty`),
-  `changeMeta` will also contain the followng property:
+  `changeMeta` will also contain the following property:
 
     - `previousValues` an object whose keys are the properties that changed on
     the item, and whose values are the item's previous values.

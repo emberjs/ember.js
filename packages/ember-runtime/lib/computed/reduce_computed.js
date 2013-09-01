@@ -223,7 +223,7 @@ DependentArraysObserver.prototype = {
     for (sliceIndex = removedCount - 1; sliceIndex >= 0; --sliceIndex) {
       itemIndex = index + sliceIndex;
       item = dependentArray.objectAt(itemIndex);
-      
+
       forEach(itemPropertyKeys, removeObservers, this);
 
       changeMeta = createChangeMeta(dependentArray, item, itemIndex, this.instanceMeta.propertyName, this.cp);
@@ -243,8 +243,8 @@ DependentArraysObserver.prototype = {
 
     forEach(dependentArray.slice(index, index + addedCount), function (item, sliceIndex) {
       if (itemPropertyKeys) {
-        observerContext = 
-          observerContexts[sliceIndex] = 
+        observerContext =
+          observerContexts[sliceIndex] =
           this.createPropertyObserverContext(dependentArray, index + sliceIndex, this.trackedArraysByGuid[dependentKey]);
         forEach(itemPropertyKeys, function (propertyKey) {
           addBeforeObserver(item, propertyKey, this, observerContext.beforeObserver);
@@ -265,7 +265,7 @@ DependentArraysObserver.prototype = {
 
     if (!this.changedItems[guid]) {
       this.changedItems[guid] = {
-        array:          array,  
+        array:          array,
         index:          index,
         obj:            obj,
         previousValues: {}
@@ -603,7 +603,7 @@ ReduceComputedProperty.prototype.property = function () {
 
   For property changes triggered on an item property change (when
   depKey is something like `someArray.@each.someProperty`),
-  `changeMeta` will also contain the followng property:
+  `changeMeta` will also contain the following property:
 
     - `previousValues` an object whose keys are the properties that changed on
     the item, and whose values are the item's previous values.
