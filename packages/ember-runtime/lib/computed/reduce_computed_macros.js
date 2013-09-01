@@ -8,6 +8,7 @@ require('ember-runtime/computed/array_computed');
 var get = Ember.get,
     set = Ember.set,
     guidFor = Ember.guidFor,
+    merge = Ember.merge,
     a_slice = [].slice,
     forEach = Ember.EnumerableUtils.forEach,
     map = Ember.EnumerableUtils.map;
@@ -684,9 +685,8 @@ Ember.computed.sort = function (itemsKey, sortDefinition) {
     removedItem: function (array, item, changeMeta, instanceMeta) {
       var proxyProperties, index, searchItem;
 
-      if (changeMeta.keyChanged) {
-        proxyProperties = { content: item };
-        proxyProperties[changeMeta.keyChanged] = changeMeta.previousValue;
+      if (changeMeta.previousValues) {
+        proxyProperties = merge({ content: item }, changeMeta.previousValues);
 
         searchItem = Ember.ObjectProxy.create(proxyProperties);
      } else {

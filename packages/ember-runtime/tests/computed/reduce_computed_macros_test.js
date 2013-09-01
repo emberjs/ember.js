@@ -1,4 +1,4 @@
-var map = Ember.EnumerableUtils.map, a_forEach = Ember.ArrayPolyfills.forEach, get = Ember.get, set = Ember.set,
+var map = Ember.EnumerableUtils.map, a_forEach = Ember.ArrayPolyfills.forEach, get = Ember.get, set = Ember.set, setProperties = Ember.setProperties,
     obj, sorted, sortProps, items, userFnCalls;
 
 module('Ember.computed.map', {
@@ -772,6 +772,28 @@ test("updating an item's sort properties updates the sorted array", function() {
   });
 
   deepEqual(sorted.mapBy('fname'), ['Jaime', 'Tyrion', 'Bran', 'Robb'], "updating an item's sort properties updates the sorted array");
+});
+
+test("updating several of an item's sort properties updated the sorted array", function() {
+  var sansaInDisguise;
+
+  Ember.run(function() {
+    sorted = get(obj, 'sortedItems');
+    items = get(obj, 'items');
+  });
+
+  sansaInDisguise = items.objectAt(1);
+
+  deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
+
+  Ember.run(function() {
+    setProperties(sansaInDisguise, {
+      fname: 'Sansa',
+      lname: 'Stark'
+    });
+  });
+
+  deepEqual(sorted.mapBy('fname'), ['Jaime', 'Bran', 'Robb', 'Sansa'], "updating an item's sort properties updates the sorted array");
 });
 
 test("updating an item's sort properties does not error when binary search does a self compare (#3273)", function() {
