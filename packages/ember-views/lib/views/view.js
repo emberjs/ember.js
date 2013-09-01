@@ -571,9 +571,6 @@ var EMPTY_ARRAY = [];
   Using a value for `templateName` that does not have a Handlebars template
   with a matching `data-template-name` attribute will throw an error.
 
-  Assigning a value to both `template` and `templateName` properties will throw
-  an error.
-
   For views classes that may have a template later defined (e.g. as the block
   portion of a `{{view}}` Handlebars helper call in another template or in
   a subclass), you can provide a `defaultTemplate` property set to compiled
