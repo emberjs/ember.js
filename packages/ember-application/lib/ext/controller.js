@@ -5,10 +5,8 @@
 
 var get = Ember.get, set = Ember.set;
 
-function verifyNeedsDependencies(controller) {
-  var needs = get(controller, 'needs'),
-      container = get(controller, 'container'),
-      dependency, i, l;
+function verifyNeedsDependencies(controller, container, needs) {
+  var dependency, i, l;
 
   for (i=0, l=needs.length; i<l; i++) {
     dependency = needs[i];
@@ -16,18 +14,10 @@ function verifyNeedsDependencies(controller) {
       dependency = "controller:" + dependency;
     }
 
+    // Structure assert to still do verification but not string concat in production
     if (!container.has(dependency)) {
       Ember.assert(Ember.inspect(controller) + " needs " + dependency + " but it does not exist", false);
     }
-  }
-}
-
-function initilizeControllersProxy(controller) {
-  var length = get(controller, 'needs.length');
-
-  if (length > 0) {
-    // if needs then initialize controllers proxy
-    get(controller, 'controllers');
   }
 }
 
@@ -67,9 +57,15 @@ Ember.ControllerMixin.reopen({
   needs: [],
 
   init: function() {
-    // Structure asserts to still do verification but not string concat in production
-    verifyNeedsDependencies(this);
-    initilizeControllersProxy(this);
+    var needs = get(this, 'needs'),
+    length = get(needs, 'length');
+
+    if (length > 0) {
+      verifyNeedsDependencies(this, this.container, needs);
+
+      // if needs then initialize controllers proxy
+      get(this, 'controllers');
+    }
 
     this._super.apply(this, arguments);
   },
