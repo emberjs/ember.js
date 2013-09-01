@@ -8,7 +8,8 @@ require('ember-runtime/mixins/array');
 
 
 var set = Ember.set, get = Ember.get, guidFor = Ember.guidFor;
-var forEach = Ember.EnumerableUtils.forEach;
+var forEach = Ember.EnumerableUtils.forEach,
+    indexOf = Ember.EnumerableUtils.indexOf;
 
 var EachArray = Ember.Object.extend(Ember.Array, {
 
@@ -66,7 +67,7 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
 
       guid = guidFor(item);
       indicies = objects[guid];
-      indicies[indicies.indexOf(loc)] = null;
+      indicies[indexOf(indicies, loc)] = null;
     }
   }
 }
