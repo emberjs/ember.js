@@ -77,6 +77,7 @@ module("Basic Routing", {
 
       Ember.TEMPLATES = {};
     });
+    Ember.TESTING_DEPRECATION = false;
   }
 });
 
@@ -754,7 +755,7 @@ asyncTest("The Special page returning an error invokes SpecialRoute's error hand
   handleURLRejectsWith('/specials/1', 'Setup error');
 });
 
-asyncTest("ApplicationRoute's default error handler can be overridden", function() {
+function testOverridableErrorHandler(handlersName) {
   Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
@@ -773,14 +774,15 @@ asyncTest("ApplicationRoute's default error handler can be overridden", function
     }
   });
 
-  App.ApplicationRoute = Ember.Route.extend({
-    actions: {
-      error: function(reason) {
-        equal(reason, 'Setup error', "error was correctly passed to custom ApplicationRoute handler");
-        start();
-      }
+  var attrs = {};
+  attrs[handlersName] = {
+    error: function(reason) {
+      equal(reason, 'Setup error', "error was correctly passed to custom ApplicationRoute handler");
+      start();
     }
-  });
+  };
+
+  App.ApplicationRoute = Ember.Route.extend(attrs);
 
   App.SpecialRoute = Ember.Route.extend({
     setup: function() {
@@ -791,6 +793,15 @@ asyncTest("ApplicationRoute's default error handler can be overridden", function
   bootApplication();
 
   handleURLRejectsWith("/specials/1", "Setup error");
+}
+
+asyncTest("ApplicationRoute's default error handler can be overridden", function() {
+  testOverridableErrorHandler('actions');
+});
+
+asyncTest("ApplicationRoute's default error handler can be overridden (with DEPRECATED `events`)", function() {
+  Ember.TESTING_DEPRECATION = true;
+  testOverridableErrorHandler('events');
 });
 
 asyncTest("Moving from one page to another triggers the correct callbacks", function() {
@@ -1082,7 +1093,6 @@ asyncTest("Events are triggered on the current state when defined in `events` ob
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
         start();
-        Ember.TESTING_DEPRECATION = false;
       }
     }
   });
@@ -1118,7 +1128,6 @@ asyncTest("Events defined in `events` object are triggered on the current state 
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
         start();
-        Ember.TESTING_DEPRECATION = false;
       }
     }
   });
@@ -1210,7 +1219,6 @@ asyncTest("Events are triggered on the controller if a matching action name is i
       ok (stateIsNotCalled, "an event on the state is not triggered");
       deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
       start();
-      Ember.TESTING_DEPRECATION = false;
     }
   });
 
