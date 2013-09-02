@@ -85,7 +85,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   `content` property. The underlying data object of the selected `<option>` is
   stored in the `Element.Select`'s `value` property.
 
-  ### `content` as an array of Strings
+  ## The Content Property (array of strings)
 
   The simplest version of an `Ember.Select` takes an array of strings as its
   `content` property. The string will be used as both the `value` property and
@@ -141,7 +141,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   A user interacting with the rendered `<select>` to choose "Yehuda" would
   update the value of `selectedName` to "Yehuda".
 
-  ### `content` as an Array of Objects
+  ## The Content Property (array of Objects)
 
   An `Ember.Select` can also take an array of JavaScript or Ember objects as
   its `content` property.
@@ -255,7 +255,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   the newly selected `<option>`. In this case it is the first object
   in the `programmers`
 
-  ### Supplying a Prompt
+  ## Supplying a Prompt
 
   A `null` value for the `Ember.Select`'s `value` or `selection` property
   results in there being no `<option>` with a `selected` attribute:

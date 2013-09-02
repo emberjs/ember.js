@@ -1,4 +1,8 @@
 /**
+@module container
+*/
+
+/*
  Flag to enable/disable model factory injections (disabled by default)
  If model factory injections are enabled, models should not be
  accessed globally (only through `container.lookupFactory('model:modelName'))`);
@@ -86,7 +90,7 @@ define("container",
 
         @method has
         @param {String} key
-        @returns {Boolean}
+        @return {Boolean}
       */
       has: function(key) {
         var dict = this.dict;
@@ -213,7 +217,7 @@ define("container",
         to correctly inherit from the current container.
 
         @method child
-        @returns {Container}
+        @return {Container}
       */
       child: function() {
         var container = new Container(this);
@@ -327,7 +331,7 @@ define("container",
 
         @method resolve
         @param {String} fullName
-        @returns {Function} fullName's factory
+        @return {Function} fullName's factory
       */
       resolve: function(fullName) {
         return this.resolver(fullName) || this.registry.get(fullName);
@@ -497,7 +501,7 @@ define("container",
         this.optionsForType(type, options);
       },
 
-      /*
+      /**
         @private
 
         Used only via `injection`.
@@ -539,7 +543,7 @@ define("container",
         addTypeInjection(this.typeInjections, type, property, fullName);
       },
 
-      /*
+      /**
         Defines injection rules.
 
         These rules are used to inject dependencies onto objects when they
@@ -547,8 +551,8 @@ define("container",
 
         Two forms of injections are possible:
 
-        * Injecting one fullName on another fullName
-        * Injecting one fullName on a type
+      * Injecting one fullName on another fullName
+      * Injecting one fullName on a type
 
         Example:
 
@@ -594,7 +598,7 @@ define("container",
       },
 
 
-      /*
+      /**
         @private
 
         Used only via `factoryInjection`.
@@ -631,7 +635,7 @@ define("container",
         addTypeInjection(this.factoryTypeInjections, type, property, fullName);
       },
 
-      /*
+      /**
         Defines factory injection rules.
 
         Similar to regular injection rules, but are run against factories, via
@@ -642,8 +646,8 @@ define("container",
 
         Two forms of injections are possible:
 
-        * Injecting one fullName on another fullName
-        * Injecting one fullName on a type
+      * Injecting one fullName on another fullName
+      * Injecting one fullName on a type
 
         Example:
 

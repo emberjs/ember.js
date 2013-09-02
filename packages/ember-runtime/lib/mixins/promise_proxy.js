@@ -75,6 +75,7 @@ function installPromise(proxy, promise) {
 
   If the controller is backing a template, the attributes are 
   bindable from within that template
+
   ```handlebars
   {{#if isPending}}
     loading...
