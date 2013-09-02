@@ -83,6 +83,7 @@ module("Ember.View - handlebars integration", {
       view = null;
     }
     Ember.lookup = originalLookup;
+    Ember.TESTING_DEPRECATION = false;
   }
 });
 
@@ -1897,23 +1898,19 @@ test("should expose a view keyword", function() {
 test("Ember.Button targets should respect keywords", function() {
   Ember.TESTING_DEPRECATION = true;
 
-  try {
-    var templateString = '{{#with view.anObject}}{{view Ember.Button target="controller.foo"}}{{/with}}';
-    view = Ember.View.create({
-      template: Ember.Handlebars.compile(templateString),
-      anObject: {},
-      controller: {
-        foo: "bar"
-      }
-    });
+  var templateString = '{{#with view.anObject}}{{view Ember.Button target="controller.foo"}}{{/with}}';
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(templateString),
+    anObject: {},
+    controller: {
+      foo: "bar"
+    }
+  });
 
-    appendView();
+  appendView();
 
-    var button = view.get('childViews').objectAt(0);
-    equal(button.get('targetObject'), "bar", "resolves the target");
-  } finally {
-    Ember.TESTING_DEPRECATION = false;
-  }
+  var button = view.get('childViews').objectAt(0);
+  equal(button.get('targetObject'), "bar", "resolves the target");
 });
 
 test("should be able to explicitly set a view's context", function() {
