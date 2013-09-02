@@ -153,7 +153,7 @@ ArrayComputedProperty.prototype.resetValue = function (array) {
   @for Ember
   @param {String} [dependentKeys*]
   @param {Object} options
-  @returns {Ember.ComputedProperty}
+  @return {Ember.ComputedProperty}
 */
 Ember.arrayComputed = function (options) {
   var args;

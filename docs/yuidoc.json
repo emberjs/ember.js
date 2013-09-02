@@ -14,7 +14,11 @@
       "../packages/ember-routing/lib",
       "../packages/ember-application/lib",
       "../packages/ember-testing/lib",
-      "../packages/ember-handlebars-compiler/lib"
+      "../packages/ember-handlebars-compiler/lib",
+      "../packages/container/lib",
+      "../packages/rsvp/lib",
+      "../packages/metamorph/lib",
+      "../packages/loader/lib"
     ],
     "exclude": "vendor",
     "outdir":   "./build"

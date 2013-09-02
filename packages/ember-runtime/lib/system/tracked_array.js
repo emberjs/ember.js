@@ -104,14 +104,14 @@ Ember.TrackedArray.prototype = {
     items in the array.
 
     `callback` will be called for each operation and will be passed the following arguments:
-    - {array} items The items for the given operation
-    - {number} offset The computed offset of the items, ie the index in the
-    array of the first item for this operation.
-    - {string} operation The type of the operation.  One of
-    `Ember.TrackedArray.{RETAIN, DELETE, INSERT}`
+
+* {array} items The items for the given operation
+* {number} offset The computed offset of the items, ie the index in the
+array of the first item for this operation.
+* {string} operation The type of the operation.  One of `Ember.TrackedArray.{RETAIN, DELETE, INSERT}`
+*
 
     @method apply
-
     @param {function} callback
   */
   apply: function (callback) {

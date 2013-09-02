@@ -257,6 +257,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @deprecated
 
     Please use `actions` instead.
+    @method events
   */
   events: null,
 

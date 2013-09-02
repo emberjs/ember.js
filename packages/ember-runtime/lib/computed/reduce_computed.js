@@ -647,7 +647,7 @@ ReduceComputedProperty.prototype.property = function () {
   @for Ember
   @param {String} [dependentKeys*]
   @param {Object} options
-  @returns {Ember.ComputedProperty}
+  @return {Ember.ComputedProperty}
 */
 Ember.reduceComputed = function (options) {
   var args;

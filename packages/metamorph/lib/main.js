@@ -120,6 +120,14 @@ define("metamorph",
         range.insertNode(fragment);
       };
 
+      /**
+      * @public
+      * 
+      * Remove this object (including starting and ending
+      * placeholders).
+      *
+      * @method remove
+      */
       removeFunc = function() {
         // get a range for the current metamorph object including
         // the starting and ending placeholders.
@@ -160,7 +168,7 @@ define("metamorph",
       };
 
     } else {
-      /**
+      /*
        * This code is mostly taken from jQuery, with one exception. In jQuery's case, we
        * have some HTML and we need to figure out how to convert it into some nodes.
        *
@@ -214,12 +222,12 @@ define("metamorph",
         }
       };
 
-      /**
+      /*
        * Given a parent node and some HTML, generate a set of nodes. Return the first
        * node, which will allow us to traverse the rest using nextSibling.
        *
        * We need to do this because innerHTML in IE does not really parse the nodes.
-       **/
+       */
       var firstNodeFor = function(parentNode, html) {
         var arr = wrapMap[parentNode.tagName.toLowerCase()] || wrapMap._default;
         var depth = arr[0], start = arr[1], end = arr[2];
@@ -252,7 +260,7 @@ define("metamorph",
         return element;
       };
 
-      /**
+      /*
        * In some cases, Internet Explorer can create an anonymous node in
        * the hierarchy with no tagName. You can create this scenario via:
        *
@@ -262,7 +270,7 @@ define("metamorph",
        *
        * If our script markers are inside such a node, we need to find that
        * node and use *it* as the marker.
-       **/
+       */
       var realNode = function(start) {
         while (start.parentNode.tagName === "") {
           start = start.parentNode;
@@ -271,7 +279,7 @@ define("metamorph",
         return start;
       };
 
-      /**
+      /*
        * When automatically adding a tbody, Internet Explorer inserts the
        * tbody immediately before the first <tr>. Other browsers create it
        * before the first node, no matter what.
@@ -298,7 +306,8 @@ define("metamorph",
        *
        * This code reparents the first script tag by making it the tbody's
        * first child.
-       **/
+       *
+       */
       var fixParentage = function(start, end) {
         if (start.parentNode !== end.parentNode) {
           end.parentNode.insertBefore(start, end.parentNode.firstChild);
