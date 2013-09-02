@@ -204,6 +204,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
       This method is invoked by observers installed during `init` that fire
       whenever the helpers
+      @method _paramsChanged
      */
     _paramsChanged: function() {
       this.notifyPropertyChange('resolvedParams');

@@ -610,8 +610,8 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   /**
     @private
 
-    If the application has a router, use it to route to the current URL, and
     trigger a new call to `route` whenever the URL changes.
+    If the application has a router, use it to route to the current URL, and
 
     @method startRouting
     @property router {Ember.Router}
@@ -638,9 +638,9 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   ready: Ember.K,
 
   /**
-
     @deprecated Use 'Resolver' instead
     Set this to provide an alternate class to `Ember.DefaultResolver`
+
 
     @property resolver
   */

@@ -6,7 +6,7 @@ require("ember-handlebars/controls/select");
 
 /**
 @module ember
-@submodule ember-handlebars
+@submodule ember-handlebars-compiler
 */
 
 function normalizeHash(hash, hashTypes) {
@@ -29,30 +29,32 @@ function normalizeHash(hash, hashTypes) {
   An `{{input}}` with no `type` or a `type` of `text` will render an HTML text input.
   The following HTML attributes can be set via the helper:
 
-    * `value`
-    * `size`
-    * `name`
-    * `pattern`
-    * `placeholder`
-    * `disabled`
-    * `maxlength`
-    * `tabindex`
+* `value`
+* `size`
+* `name`
+* `pattern`
+* `placeholder`
+* `disabled`
+* `maxlength`
+* `tabindex`
+
 
   When set to a quoted string, these values will be directly applied to the HTML
   element. When left unquoted, these values will be bound to a property on the
   template's current rendering context (most typically a controller instance).
 
-  Unbound:
+  ## Unbound:
 
   ```handlebars
   {{input value="http://www.facebook.com"}}
   ```
 
+
   ```html
   <input type="text" value="http://www.facebook.com"/>
   ```
 
-  Bound:
+  ## Bound:
 
   ```javascript
   App.ApplicationController = Ember.Controller.extend({
@@ -61,15 +63,18 @@ function normalizeHash(hash, hashTypes) {
   });
   ```
 
+
   ```handlebars
   {{input type="text" value=firstName disabled=entryNotAllowed size="50"}}
   ```
+
 
   ```html
   <input type="text" value="Stanley" disabled="disabled" size="50"/>
   ```
 
-  ### Extension
+  ## Extension
+
   Internally, `{{input type="text"}}` creates an instance of `Ember.TextField`, passing
   arguments from the helper to `Ember.TextField`'s `create` method. You can extend the
   capablilties of text inputs in your applications by reopening this class. For example,
@@ -83,20 +88,21 @@ function normalizeHash(hash, hashTypes) {
   ```
 
   ## Use as checkbox
+
   An `{{input}}` with a `type` of `checkbox` will render an HTML checkbox input.
   The following HTML attributes can be set via the helper:
 
-    * `checked`
-    * `disabled`
-    * `tabindex`
-    * `indeterminate`
-    * `name`
+* `checked`
+* `disabled`
+* `tabindex`
+* `indeterminate`
+* `name`
 
   When set to a quoted string, these values will be directly applied to the HTML
   element. When left unquoted, these values will be bound to a property on the
   template's current rendering context (most typically a controller instance).
 
-  Unbound:
+  ## Unbound:
 
   ```handlebars
   {{input type="checkbox" name="isAdmin"}}
@@ -106,7 +112,7 @@ function normalizeHash(hash, hashTypes) {
   <input type="checkbox" name="isAdmin" />
   ```
 
-  Bound:
+  ## Bound:
 
   ```javascript
   App.ApplicationController = Ember.Controller.extend({
@@ -114,15 +120,18 @@ function normalizeHash(hash, hashTypes) {
   });
   ```
 
+
   ```handlebars
   {{input type="checkbox" checked=isAdmin }}
   ```
+
 
   ```html
   <input type="checkbox" checked="checked" />
   ```
 
-  ### Extension
+  ## Extension
+
   Internally, `{{input type="checkbox"}}` creates an instance of `Ember.Checkbox`, passing
   arguments from the helper to `Ember.Checkbox`'s `create` method. You can extend the
   capablilties of checkbox inputs in your applications by reopening this class. For example,
@@ -280,7 +289,7 @@ Ember.Handlebars.registerHelper('input', function(options) {
   </textarea>
   ```
 
-  ### Extension
+  ## Extension
 
   Internally, `{{textarea}}` creates an instance of `Ember.TextArea`, passing
   arguments from the helper to `Ember.TextArea`'s `create` method. You can

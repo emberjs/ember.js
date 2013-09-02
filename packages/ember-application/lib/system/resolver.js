@@ -13,11 +13,11 @@ var get = Ember.get,
   container lookups before consulting the container for registered
   items:
 
-  * templates are looked up on `Ember.TEMPLATES`
-  * other names are looked up on the application after converting
-    the name. For example, `controller:post` looks up
-    `App.PostController` by default.
-  * there are some nuances (see examples below)
+* templates are looked up on `Ember.TEMPLATES`
+* other names are looked up on the application after converting
+  the name. For example, `controller:post` looks up
+  `App.PostController` by default.
+* there are some nuances (see examples below)
 
   ### How Resolving Works
 

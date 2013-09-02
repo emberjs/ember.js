@@ -155,7 +155,6 @@ if (Handlebars.JavaScriptCompiler) {
 
 Ember.Handlebars.JavaScriptCompiler.prototype.namespace = "Ember.Handlebars";
 
-
 Ember.Handlebars.JavaScriptCompiler.prototype.initializeBuffer = function() {
   return "''";
 };
@@ -259,7 +258,7 @@ if (Handlebars.compile) {
 
     var template = Ember.Handlebars.template(templateSpec);
     template.isMethod = false; //Make sure we don't wrap templates with ._super
-      
+
     return template;
   };
 }
