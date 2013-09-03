@@ -590,6 +590,33 @@ test("The Specials Page defaults to looking models up via `find`", function() {
   equal(Ember.$('p', '#qunit-fixture').text(), "1", "The model was used to render the template");
 });
 
+
+test("The Specials Page returns an assertion if model is not defined", function(){
+  Router.map(function() {
+    this.route("home", { path: "/" });
+    this.resource("special", { path: "/specials/:special_menu_item_id" });
+  });
+
+  App.MenuItem = Ember.Object.extend();
+
+  App.SpecialRoute = Ember.Route.extend({
+    setupController: function(controller, model) {
+      set(controller, 'content', model);
+    }
+  });
+
+  Ember.TEMPLATES.special = Ember.Handlebars.compile(
+    "<p>{{content.id}}</p>"
+  );
+
+  bootApplication();
+  container.register('controller:special', Ember.Controller.extend());
+
+  expectAssertion(function(){
+    router.handleURL("/specials/1");
+  });
+});
+
 test("The Special Page returning a promise puts the app into a loading state until the promise is resolved", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
