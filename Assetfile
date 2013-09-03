@@ -56,6 +56,9 @@ distros.each do |name, modules|
 
     match "{#{name}.js,#{name}.prod.js}" do
       filter HandlebarsPrecompiler
+      if File.exists?("features.json")
+        filter EmberDefeatureify
+      end
       filter AddMicroLoader unless name == "ember-template-compiler"
     end
 
