@@ -244,8 +244,10 @@ Ember.Router = Ember.Object.extend({
 
     transitionPromise.then(function(route) {
       self._transitionCompleted(route);
-    }, function(error){
-      Ember.assert("The URL '" + error.message + "' did not match any routes in your application", error.name !== "UnrecognizedURLError");
+    }, function(error) {
+      if (error.name === "UnrecognizedURLError") {
+        Ember.assert("The URL '" + error.message + "' did not match any routes in your application");
+      }
     });
 
     // We want to return the configurable promise object
