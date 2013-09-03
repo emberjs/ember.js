@@ -113,7 +113,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
         isVirtual: true,
         tagName: '',
         _contextView: parentView,
-        template: get(this, 'template'),
+        template: template,
         context: get(parentView, 'context'),
         controller: get(parentView, 'controller'),
         templateData: { keywords: parentView.cloneKeywords() }
