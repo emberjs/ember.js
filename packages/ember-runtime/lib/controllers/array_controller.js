@@ -211,6 +211,7 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
     });
 
     subControllers[idx] = subController;
+    this.notifyPropertyChange('_subControllers');
 
     return subController;
   },
