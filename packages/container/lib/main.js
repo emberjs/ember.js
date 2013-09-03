@@ -1,5 +1,8 @@
 /**
-@module container
+@private
+Public api for the container is still in flux.
+The public api, specified on the application namespace should be considered the stable api.
+// @module container
 */
 
 /*
@@ -16,7 +19,7 @@ define("container",
    /**
      A safe and simple inheriting object.
 
-     @class InheritingDict
+     // @class InheritingDict
    */
     function InheritingDict(parent) {
       this.parent = parent;
@@ -127,7 +130,10 @@ define("container",
    /**
      A lightweight container that helps to assemble and decouple components.
 
-     @class Container
+     @private
+     Public api for the container is still in flux.
+     The public api, specified on the application namespace should be considered the stable api.
+     // @class Container
    */
     function Container(parent) {
       this.parent = parent;
