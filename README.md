@@ -131,6 +131,10 @@ minification, for which we recommend installing nodejs.  Alternatively
 you may have luck with another of the runtimes supported by
 [execjs](https://github.com/sstephenson/execjs).
 
+# Contribution
+
+[See](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md)
+
 # How to Run Unit Tests
 
 ## Setup

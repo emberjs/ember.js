@@ -34,6 +34,7 @@ module("the #each helper", {
       view = null;
     });
     Ember.lookup = originalLookup;
+    Ember.TESTING_DEPRECATION = false;
   }
 });
 
@@ -207,7 +208,10 @@ test("it supports itemController", function() {
     container: container
   };
 
+  container.register('controller:array', Ember.ArrayController.extend());
+
   view = Ember.View.create({
+    container: container,
     template: templateFor('{{#each view.people itemController="person"}}{{controllerName}}{{/each}}'),
     people: people,
     controller: parentController
@@ -255,9 +259,11 @@ test("itemController gets a parentController property", function() {
         company: 'Yapp'
       };
 
+  container.register('controller:array', Ember.ArrayController.extend());
   Ember.run(function() { view.destroy(); }); // destroy existing view
 
   view = Ember.View.create({
+    container: container,
     template: templateFor('{{#each view.people itemController="person"}}{{controllerName}}{{/each}}'),
     people: people,
     controller: parentController
@@ -278,9 +284,11 @@ test("it supports itemController when using a custom keyword", function() {
   });
 
   var container = new Ember.Container();
+  container.register('controller:array', Ember.ArrayController.extend());
 
   Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
+    container: container,
     template: templateFor('{{#each person in view.people itemController="person"}}{{person.controllerName}}{{/each}}'),
     people: people,
     controller: {
@@ -339,27 +347,23 @@ test("it supports {{itemViewClass=}}", function() {
 test("it supports {{itemViewClass=}} with tagName", function() {
   Ember.TESTING_DEPRECATION = true;
 
-  try {
-    Ember.run(function() { view.destroy(); }); // destroy existing view
-    view = Ember.View.create({
-        template: templateFor('{{each view.people itemViewClass="MyView" tagName="ul"}}'),
-        people: people
-    });
+  Ember.run(function() { view.destroy(); }); // destroy existing view
+  view = Ember.View.create({
+      template: templateFor('{{each view.people itemViewClass="MyView" tagName="ul"}}'),
+      people: people
+  });
 
-    append(view);
+  append(view);
 
-    var html = view.$().html();
+  var html = view.$().html();
 
-    // IE 8 (and prior?) adds the \r\n
-    html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
-    html = html.replace(/<div[^>]*><\/div>/ig, '').replace(/[\r\n]/g, '');
-    html = html.replace(/<li[^>]*/ig, '<li');
+  // IE 8 (and prior?) adds the \r\n
+  html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
+  html = html.replace(/<div[^>]*><\/div>/ig, '').replace(/[\r\n]/g, '');
+  html = html.replace(/<li[^>]*/ig, '<li');
 
-    // Use lowercase since IE 8 make tagnames uppercase
-    equal(html.toLowerCase(), "<ul><li>steve holt</li><li>annabelle</li></ul>");
-  } finally {
-    Ember.TESTING_DEPRECATION = false;
-  }
+  // Use lowercase since IE 8 make tagnames uppercase
+  equal(html.toLowerCase(), "<ul><li>steve holt</li><li>annabelle</li></ul>");
 });
 
 test("it supports {{itemViewClass=}} with in format", function() {

@@ -279,7 +279,7 @@ define("router",
         @param {Array[Object]} contexts
         @return {Object} a serialized parameter hash
       */
-      paramsForHandler: function(handlerName, callback) {
+      paramsForHandler: function(handlerName, contexts) {
         return paramsForHandler(this, handlerName, slice.call(arguments, 1));
       },
 
@@ -320,7 +320,7 @@ define("router",
 
               if (isParam(object)) {
                 var recogHandler = recogHandlers[i], name = recogHandler.names[0];
-                if (object.toString() !== this.currentParams[name]) { return false; }
+                if ("" + object !== this.currentParams[name]) { return false; }
               } else if (handlerInfo.context !== object) {
                 return false;
               }
@@ -333,7 +333,7 @@ define("router",
 
       trigger: function(name) {
         var args = slice.call(arguments);
-        trigger(this.currentHandlerInfos, false, args);
+        trigger(this, this.currentHandlerInfos, false, args);
       },
 
       /**
@@ -600,7 +600,7 @@ define("router",
       } catch(e) {
         if (!(e instanceof Router.TransitionAborted)) {
           // Trigger the `error` event starting from this failed handler.
-          trigger(currentHandlerInfos.concat(handlerInfo), true, ['error', e, transition]);
+          trigger(transition.router, currentHandlerInfos.concat(handlerInfo), true, ['error', e, transition]);
         }
 
         // Propagate the error so that the transition promise will reject.
@@ -702,7 +702,11 @@ define("router",
       return handlers;
     }
 
-    function trigger(handlerInfos, ignoreFailure, args) {
+    function trigger(router, handlerInfos, ignoreFailure, args) {
+      if (router.triggerEvent) {
+        router.triggerEvent(handlerInfos, ignoreFailure, args);
+        return;
+      }
 
       var name = args.shift();
 
@@ -772,7 +776,7 @@ define("router",
       // Fire 'willTransition' event on current handlers, but don't fire it
       // if a transition was already underway.
       if (!wasTransitioning) {
-        trigger(currentHandlerInfos, true, ['willTransition', transition]);
+        trigger(router, currentHandlerInfos, true, ['willTransition', transition]);
       }
 
       log(router, transition.sequence, "Beginning validation for transition to " + transition.targetName);
@@ -789,6 +793,7 @@ define("router",
 
           // Don't overwrite contexts / update URL if this was a noop transition.
           if (!currentHandlerInfos || !currentHandlerInfos.length ||
+              !router.recognizer.hasRoute(currentHandlerInfos[currentHandlerInfos.length - 1].name) ||
               currentHandlerInfos.length !== matchPointResults.matchPoint) {
             finalizeTransition(transition, handlerInfos);
           }
@@ -879,8 +884,6 @@ define("router",
 
       var params = paramsForHandler(router, handlerName, objects);
 
-      transition.providedModelsArray = [];
-      transition.providedContexts = {};
       router.currentParams = params;
 
       var urlMethod = transition.urlMethod;
@@ -937,8 +940,8 @@ define("router",
                            .then(handleAbort)
                            .then(afterModel)
                            .then(handleAbort)
-                           .then(proceed)
-                           .then(null, handleError);
+                           .then(null, handleError)
+                           .then(proceed);
 
       function handleAbort(result) {
         if (transition.isAborted) {
@@ -963,11 +966,7 @@ define("router",
 
         // An error was thrown / promise rejected, so fire an
         // `error` event from this handler info up to root.
-        trigger(handlerInfos.slice(0, index + 1), true, ['error', reason, transition]);
-
-        if (handler.error) {
-          handler.error(reason, transition);
-        }
+        trigger(router, handlerInfos.slice(0, index + 1), true, ['error', reason, transition]);
 
         // Propagate the original error.
         return RSVP.reject(reason);

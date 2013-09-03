@@ -66,6 +66,8 @@ module("Handlebars {{render}} helper", {
         view.destroy();
       }
     });
+
+    Ember.TEMPLATES = {};
   }
 });
 
@@ -223,7 +225,7 @@ test("{{render}} helper should not treat invocations with falsy contexts as cont
   var template = "<h1>HI</h1> {{render 'post' zero}} {{render 'post' nonexistent}}";
 
   view = Ember.View.create({
-    controller: Ember.Controller.createWithMixins({ 
+    controller: Ember.Controller.createWithMixins({
       container: container,
       zero: false
     }),
@@ -293,9 +295,10 @@ test("{{render}} helper should link child controllers to the parent controller",
   var template = '<h1>HI</h1>{{render "posts"}}';
   var controller = Ember.Controller.extend({
     container: container,
-
-    parentPlease: function() {
-      parentTriggered++;
+    actions: {
+      parentPlease: function() {
+        parentTriggered++;
+      }
     }
   });
 

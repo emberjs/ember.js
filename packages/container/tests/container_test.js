@@ -1,15 +1,36 @@
 var passedOptions;
 var Container = requireModule('container');
 
-var setProperties = function(object, properties) {
+function setProperties(object, properties) {
   for (var key in properties) {
     if (properties.hasOwnProperty(key)) {
       object[key] = properties[key];
     }
   }
-};
+}
 
-module("Container");
+var o_create = Object.create || (function(){
+  function F(){}
+
+  return function(o) {
+    if (arguments.length !== 1) {
+      throw new Error('Object.create implementation only accepts one parameter.');
+    }
+    F.prototype = o;
+    return new F();
+  };
+}());
+
+var originalModelInjections;
+
+module("Container", {
+  setup: function() {
+    originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
+  },
+  teardown: function() {
+    Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;
+  }
+});
 
 var guids = 0;
 
@@ -19,6 +40,7 @@ function factory() {
     this._guid = guids++;
   };
 
+  Klass.prototype.constructor = Klass;
   Klass.prototype.destroy = function() {
     this.isDestroyed = true;
   };
@@ -27,12 +49,42 @@ function factory() {
     return "<Factory:" + this._guid + ">";
   };
 
-  Klass.create = function(options) {
-    passedOptions = options;
-    return new Klass(options);
-  };
+  Klass.create = create;
+  Klass.extend = extend;
+  Klass.reopen = extend;
+  Klass.reopenClass = reopenClass;
 
   return Klass;
+
+  function create(options) {
+    passedOptions = options;
+    return new this.prototype.constructor(options);
+  }
+
+  function reopenClass(options) {
+    setProperties(this, options);
+  }
+
+  function extend(options) {
+    var Child = function(options) {
+      Klass.call(this, options);
+    };
+
+    var Parent = this;
+
+    Child.prototype = new Parent();
+    Child.prototype.constructor = Child;
+
+    setProperties(Child.prototype, options);
+
+    Child.create = create;
+    Child.extend = extend;
+    Child.reopen = extend;
+
+    Child.reopenClass = reopenClass;
+
+    return Child;
+  }
 }
 
 test("A registered factory returns the same instance each time", function() {
@@ -54,7 +106,66 @@ test("A registered factory is returned from lookupFactory", function() {
 
   container.register('controller:post', PostController);
 
-  equal(container.lookupFactory('controller:post'), PostController, "The factory is returned from lookupFactory");
+  var PostControllerFactory = container.lookupFactory('controller:post');
+
+  ok(PostControllerFactory, 'factory is returned');
+  ok(PostControllerFactory.create() instanceof  PostController, "The return of factory.create is an instance of PostController");
+});
+
+test("A registered factory is returned from lookupFactory is the same factory each time", function() {
+  var container = new Container();
+  var PostController = factory();
+
+  container.register('controller:post', PostController);
+
+  deepEqual(container.lookupFactory('controller:post'), container.lookupFactory('controller:post'), 'The return of lookupFactory is always the same');
+});
+
+test("A factory returned from lookupFactory has a debugkey", function(){
+  var container = new Container();
+  var PostController = factory();
+  var instance;
+
+  container.register('controller:post', PostController);
+  var PostFactory = container.lookupFactory('controller:post');
+
+  ok(!PostFactory.container, 'factory instance receives a container');
+  equal(PostFactory._debugContainerKey, 'controller:post', 'factory instance receives _debugContainerKey');
+});
+
+test("fallback for to create time injections if factory has no extend", function(){
+  var container = new Container();
+  var AppleController = factory();
+  var PostController = factory();
+
+  PostController.extend = undefined; // remove extend
+
+  var instance;
+
+  container.register('controller:apple', AppleController);
+  container.register('controller:post', PostController);
+  container.injection('controller:post', 'apple', 'controller:apple');
+
+  var postController = container.lookup('controller:post');
+
+  ok(postController.container, 'instance receives a container');
+  equal(postController.container, container, 'instance receives the correct container');
+  equal(postController._debugContainerKey, 'controller:post', 'instance receives _debugContainerKey');
+  ok(postController.apple instanceof AppleController, 'instance receives an apple of instance AppleController');
+});
+
+test("The descendants of a factory returned from lookupFactory have a container and debugkey", function(){
+  var container = new Container();
+  var PostController = factory();
+  var instance;
+
+  container.register('controller:post', PostController);
+  instance = container.lookupFactory('controller:post').create();
+
+  ok(instance.container, 'factory instance receives a container');
+  equal(instance._debugContainerKey, 'controller:post', 'factory instance receives _debugContainerKey');
+
+  ok(instance instanceof PostController, 'factory instance is instance of factory');
 });
 
 test("A registered factory returns a fresh instance if singleton: false is passed as an option", function() {
@@ -97,19 +208,19 @@ test("A Registered factory can be unregistered, and all cached instances are rem
 
   equal(container.has('controller:post'), true, "container is aware of the PostController");
 
-  ok(container.lookup("controller:post") instanceof PostController, 'lookup is correct instance');
+  ok(container.lookup('controller:post') instanceof PostController, "lookup is correct instance");
 
   container.unregister("controller:post");
 
   equal(container.has('controller:post'), false, "container is no-longer aware of the PostController");
-  equal(container.lookup("controller:post"), undefined, 'lookup no longer returns a controller');
+  equal(container.lookup('controller:post'), undefined, "lookup no longer returns a controller");
 
   // re-registration continues to work
   container.register('controller:post', PostController);
 
   equal(container.has('controller:post'), true, "container is aware of the PostController");
 
-  ok(container.lookup("controller:post") instanceof PostController, 'lookup is correct instance');
+  ok(container.lookup('controller:post') instanceof PostController, "lookup is correct instance");
 });
 
 test("A container lookup has access to the container", function() {
@@ -123,7 +234,7 @@ test("A container lookup has access to the container", function() {
   equal(postController.container, container);
 });
 
-test("A factory type with a registered injection receives the injection", function() {
+test("A factory type with a registered injection's instances receive that injection", function() {
   var container = new Container();
   var PostController = factory();
   var Store = factory();
@@ -152,11 +263,12 @@ test("An individual factory with a registered injection receives the injection",
   var postController = container.lookup('controller:post');
   var store = container.lookup('store:main');
 
-  deepEqual(passedOptions, {
-    store: store,
-    container: container,
-    _debugContainerKey: 'controller:post'
-  });
+  equal(store.container, container);
+  equal(store._debugContainerKey, 'store:main');
+
+  equal(postController.container, container);
+  equal(postController._debugContainerKey, 'controller:post');
+  equal(postController.store, store, 'has the correct store injected');
 });
 
 test("A factory with both type and individual injections", function() {
@@ -180,7 +292,28 @@ test("A factory with both type and individual injections", function() {
   equal(postController.router, router);
 });
 
-test("A non-singleton factory is never cached", function() {
+test("A factory with both type and individual factoryInjections", function() {
+  var container = new Container();
+  var PostController = factory();
+  var Store = factory();
+  var Router = factory();
+
+  container.register('controller:post', PostController);
+  container.register('store:main', Store);
+  container.register('router:main', Router);
+
+  container.factoryInjection('controller:post', 'store', 'store:main');
+  container.factoryTypeInjection('controller', 'router', 'router:main');
+
+  var PostControllerFactory = container.lookupFactory('controller:post');
+  var store = container.lookup('store:main');
+  var router = container.lookup('router:main');
+
+  equal(PostControllerFactory.store, store, 'PostControllerFactory has the instance of store');
+  equal(PostControllerFactory.router, router, 'PostControllerFactory has the route instance');
+});
+
+test("A non-singleton instance is never cached", function() {
   var container = new Container();
   var PostView = factory();
 
@@ -203,15 +336,23 @@ test("A non-instantiated property is not instantiated", function() {
 test("A failed lookup returns undefined", function() {
   var container = new Container();
 
-  equal(container.lookup("doesnot:exist"), undefined);
+  equal(container.lookup('doesnot:exist'), undefined);
 });
 
 test("Injecting a failed lookup raises an error", function() {
+  Ember.MODEL_FACTORY_INJECTIONS = true;
+
   var container = new Container();
-  var Foo = { create: function() { }};
+
+  var fooInstance = {};
+  var fooFactory  = {};
+
+  var Foo = {
+    create: function(args) { return fooInstance; },
+    extend: function(args) { return fooFactory;  }
+  };
 
   container.register('model:foo', Foo);
-
   container.injection('model:foo', 'store', 'store:main');
 
   throws(function() {
@@ -246,7 +387,7 @@ test("The container can take a hook to resolve factories lazily", function() {
   var container = new Container();
   var PostController = factory();
 
-  container.resolve = function(fullName) {
+  container.resolver = function(fullName) {
     if (fullName === 'controller:post') {
       return PostController;
     }
@@ -261,7 +402,7 @@ test("The container respect the resolver hook for `has`", function() {
   var container = new Container();
   var PostController = factory();
 
-  container.resolve = function(fullName) {
+  container.resolver = function(fullName) {
     if (fullName === 'controller:post') {
       return PostController;
     }
@@ -288,7 +429,7 @@ test("The container can get options that should be applied to all factories for 
   var container = new Container();
   var PostView = factory();
 
-  container.resolve = function(fullName) {
+  container.resolver = function(fullName) {
     if (fullName === 'view:post') {
       return PostView;
     }

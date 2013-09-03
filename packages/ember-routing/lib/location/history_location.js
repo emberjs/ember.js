@@ -48,6 +48,7 @@ Ember.HistoryLocation = Ember.Object.extend({
     Returns the current `location.pathname` without rootURL
 
     @method getURL
+    @return url {String}
   */
   getURL: function() {
     var rootURL = get(this, 'rootURL'),
@@ -102,6 +103,7 @@ Ember.HistoryLocation = Ember.Object.extend({
    from a private _historyState variable
 
    @method getState
+   @return state {Object}
   */
   getState: function() {
     return supportsHistoryState ? get(this, 'history').state : this._historyState;
@@ -181,6 +183,7 @@ Ember.HistoryLocation = Ember.Object.extend({
 
     @method formatURL
     @param url {String}
+    @return formatted url {String}
   */
   formatURL: function(url) {
     var rootURL = get(this, 'rootURL');
@@ -192,6 +195,13 @@ Ember.HistoryLocation = Ember.Object.extend({
     return rootURL + url;
   },
 
+  /**
+    @private
+
+    Cleans up the HistoryLocation event listener.
+
+    @method willDestroy
+  */
   willDestroy: function() {
     var guid = Ember.guidFor(this);
 

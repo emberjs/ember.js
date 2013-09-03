@@ -41,6 +41,11 @@ Ember.Handlebars.bootstrap = function(ctx) {
       templateName = script.attr('data-template-name') || script.attr('id') || 'application',
       template = compile(script.html());
 
+    // Check if template of same name already exists
+    if (Ember.TEMPLATES[templateName] !== undefined) {
+      throw new Error('Template named "' + templateName  + '" already exists.');
+    }
+
     // For templates which have a name, we save them and then remove them from the DOM
     Ember.TEMPLATES[templateName] = template;
 
@@ -64,18 +69,22 @@ function registerComponents(container) {
   }
 }
 
+
 function registerComponent(container, name) {
   Ember.assert("You provided a template named 'components/" + name + "', but custom components must include a '-'", name.match(/-/));
 
-  var className = name.replace(/-/g, '_');
-  var Component = container.lookupFactory('component:' + className) || container.lookupFactory('component:' + name);
-  var View = Component || Ember.Component.extend();
+  var fullName = 'component:' + name;
 
-  View.reopen({
-    layoutName: 'components/' + name
-  });
+  container.injection(fullName, 'layout', 'template:components/' + name);
 
-  Ember.Handlebars.helper(name, View);
+  var Component = container.lookupFactory(fullName);
+
+  if (!Component) {
+    container.register(fullName, Ember.Component);
+    Component = container.lookupFactory(fullName);
+  }
+
+  Ember.Handlebars.helper(name, Component);
 }
 
 /*

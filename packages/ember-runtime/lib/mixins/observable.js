@@ -3,7 +3,10 @@
 @submodule ember-runtime
 */
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get,
+    set = Ember.set,
+    slice = Array.prototype.slice,
+    getProperties = Ember.getProperties;
 
 /**
   ## Overview
@@ -133,15 +136,7 @@ Ember.Observable = Ember.Mixin.create({
     @return {Hash}
   */
   getProperties: function() {
-    var ret = {};
-    var propertyNames = arguments;
-    if (arguments.length === 1 && Ember.typeOf(arguments[0]) === 'array') {
-      propertyNames = arguments[0];
-    }
-    for(var i = 0; i < propertyNames.length; i++) {
-      ret[propertyNames[i]] = get(this, propertyNames[i]);
-    }
-    return ret;
+    return getProperties.apply(null, [this].concat(slice.call(arguments)));
   },
 
   /**
@@ -149,7 +144,7 @@ Ember.Observable = Ember.Mixin.create({
 
     This method is generally very similar to calling `object[key] = value` or
     `object.key = value`, except that it provides support for computed
-    properties, the `unknownProperty()` method and property observers.
+    properties, the `setUnknownProperty()` method and property observers.
 
     ### Computed Properties
 
@@ -163,9 +158,9 @@ Ember.Observable = Ember.Mixin.create({
     ### Unknown Properties
 
     If you try to set a value on a key that is undefined in the target
-    object, then the `unknownProperty()` handler will be called instead. This
+    object, then the `setUnknownProperty()` handler will be called instead. This
     gives you an opportunity to implement complex "virtual" properties that
-    are not predefined on the object. If `unknownProperty()` returns
+    are not predefined on the object. If `setUnknownProperty()` returns
     undefined, then `set()` will simply set the value on the object.
 
     ### Property Observers

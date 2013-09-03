@@ -5,6 +5,7 @@ module("ember-testing Helpers", {
     Ember.run(App, App.destroy);
     App.removeTestHelpers();
     App = null;
+    Ember.TEMPLATES = {};
   }
 });
 

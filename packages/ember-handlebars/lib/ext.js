@@ -255,61 +255,101 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
       numProperties = properties.length,
       options = arguments[arguments.length - 1],
       normalizedProperties = [],
+      types = options.types,
       data = options.data,
       hash = options.hash,
       view = data.view,
       currentContext = (options.contexts && options.contexts[0]) || this,
-      normalized,
-      pathRoot, path, prefixPathForDependentKeys = '',
-      loc, hashOption;
+      prefixPathForDependentKeys = '',
+      loc, len, hashOption,
+      boundOption, property,
+      normalizedValue = Ember._SimpleHandlebarsView.prototype.normalizedValue;
 
     Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !options.fn);
 
     // Detect bound options (e.g. countBinding="otherCount")
-    hash.boundOptions = {};
+    var boundOptions = hash.boundOptions = {};
     for (hashOption in hash) {
-      if (!hash.hasOwnProperty(hashOption)) { continue; }
-
-      if (Ember.IS_BINDING.test(hashOption) && typeof hash[hashOption] === 'string') {
+      if (Ember.IS_BINDING.test(hashOption)) {
         // Lop off 'Binding' suffix.
-        hash.boundOptions[hashOption.slice(0, -7)] = hash[hashOption];
+        boundOptions[hashOption.slice(0, -7)] = hash[hashOption];
       }
     }
 
     // Expose property names on data.properties object.
+    var watchedProperties = [];
     data.properties = [];
     for (loc = 0; loc < numProperties; ++loc) {
       data.properties.push(properties[loc]);
-      normalizedProperties.push(normalizePath(currentContext, properties[loc], data));
+      if (types[loc] === 'ID') {
+        var normalizedProp = normalizePath(currentContext, properties[loc], data);
+        normalizedProperties.push(normalizedProp);
+        watchedProperties.push(normalizedProp);
+      } else {
+        normalizedProperties.push(null);
+      }
     }
 
+    // Handle case when helper invocation is preceded by `unbound`, e.g.
+    // {{unbound myHelper foo}}
     if (data.isUnbound) {
       return evaluateUnboundHelper(this, fn, normalizedProperties, options);
     }
 
-    if (dependentKeys.length === 0) {
-      return evaluateMultiPropertyBoundHelper(currentContext, fn, normalizedProperties, options);
-    }
+    var bindView = new Ember._SimpleHandlebarsView(null, null, !options.hash.unescaped, options.data);
 
-    Ember.assert("Dependent keys can only be used with single-property helpers.", properties.length === 1);
-
-    normalized = normalizedProperties[0];
-
-    pathRoot = normalized.root;
-    path = normalized.path;
-
-    var bindView = new Ember._SimpleHandlebarsView(
-      path, pathRoot, !options.hash.unescaped, options.data
-    );
-
+    // Override SimpleHandlebarsView's method for generating the view's content.
     bindView.normalizedValue = function() {
-      var value = Ember._SimpleHandlebarsView.prototype.normalizedValue.call(bindView);
-      return fn.call(view, value, options);
+      var args = [], boundOption;
+
+      // Copy over bound hash options.
+      for (boundOption in boundOptions) {
+        if (!boundOptions.hasOwnProperty(boundOption)) { continue; }
+        property = normalizePath(currentContext, boundOptions[boundOption], data);
+        bindView.path = property.path;
+        bindView.pathRoot = property.root;
+        hash[boundOption] = normalizedValue.call(bindView);
+      }
+
+      for (loc = 0; loc < numProperties; ++loc) {
+        property = normalizedProperties[loc];
+        if (property) {
+          bindView.path = property.path;
+          bindView.pathRoot = property.root;
+          args.push(normalizedValue.call(bindView));
+        } else {
+          args.push(properties[loc]);
+        }
+      }
+      args.push(options);
+
+      // Run the supplied helper function.
+      return fn.apply(currentContext, args);
     };
 
     view.appendChild(bindView);
 
-    view.registerObserver(pathRoot, path, bindView, bindView.rerender);
+    // Assemble list of watched properties that'll re-render this helper.
+    for (boundOption in boundOptions) {
+      if (boundOptions.hasOwnProperty(boundOption)) {
+        watchedProperties.push(normalizePath(currentContext, boundOptions[boundOption], data));
+      }
+    }
+
+    // Observe each property.
+    for (loc = 0, len = watchedProperties.length; loc < len; ++loc) {
+      property = watchedProperties[loc];
+      view.registerObserver(property.root, property.path, bindView, bindView.rerender);
+    }
+
+    if (types[0] !== 'ID' || normalizedProperties.length === 0) {
+      return;
+    }
+
+    // Add dependent key observers to the first param
+    var normalized = normalizedProperties[0],
+        pathRoot = normalized.root,
+        path = normalized.path;
 
     if(!Ember.isEmpty(path)) {
       prefixPathForDependentKeys = path + '.';
@@ -322,68 +362,6 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
   helper._rawFunction = fn;
   Ember.Handlebars.registerHelper(name, helper);
 };
-
-/**
-  @private
-
-  Renders the unbound form of an otherwise bound helper function.
-
-  @method evaluateMultiPropertyBoundHelper
-  @param {Function} fn
-  @param {Object} context
-  @param {Array} normalizedProperties
-  @param {String} options
-*/
-function evaluateMultiPropertyBoundHelper(context, fn, normalizedProperties, options) {
-  var numProperties = normalizedProperties.length,
-      data = options.data,
-      view = data.view,
-      hash = options.hash,
-      boundOptions = hash.boundOptions,
-      watchedProperties,
-      boundOption, bindView, loc, property, len;
-
-  bindView = new Ember._SimpleHandlebarsView(null, null, !hash.unescaped, data);
-  bindView.normalizedValue = function() {
-    var args = [], boundOption;
-
-    // Copy over bound options.
-    for (boundOption in boundOptions) {
-      if (!boundOptions.hasOwnProperty(boundOption)) { continue; }
-      property = normalizePath(context, boundOptions[boundOption], data);
-      bindView.path = property.path;
-      bindView.pathRoot = property.root;
-      hash[boundOption] = Ember._SimpleHandlebarsView.prototype.normalizedValue.call(bindView);
-    }
-
-    for (loc = 0; loc < numProperties; ++loc) {
-      property = normalizedProperties[loc];
-      bindView.path = property.path;
-      bindView.pathRoot = property.root;
-      args.push(Ember._SimpleHandlebarsView.prototype.normalizedValue.call(bindView));
-    }
-    args.push(options);
-    return fn.apply(context, args);
-  };
-
-  view.appendChild(bindView);
-
-  // Assemble list of watched properties that'll re-render this helper.
-  watchedProperties = [];
-  for (boundOption in boundOptions) {
-    if (boundOptions.hasOwnProperty(boundOption)) {
-      watchedProperties.push(normalizePath(context, boundOptions[boundOption], data));
-    }
-  }
-  watchedProperties = watchedProperties.concat(normalizedProperties);
-
-  // Observe each property.
-  for (loc = 0, len = watchedProperties.length; loc < len; ++loc) {
-    property = watchedProperties[loc];
-    view.registerObserver(property.root, property.path, bindView, bindView.rerender);
-  }
-
-}
 
 /**
   @private

@@ -178,7 +178,7 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
     // impl super if needed...
     if (isMethod(value)) {
       value = giveMethodSuper(base, key, value, values, descs);
-    } else if ((concats && a_indexOf.call(concats, key) >= 0) || 
+    } else if ((concats && a_indexOf.call(concats, key) >= 0) ||
                 key === 'concatenatedProperties' ||
                 key === 'mergedProperties') {
       value = applyConcatenatedProperties(base, key, value, values);
@@ -208,6 +208,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
 
     if (props) {
       meta = Ember.meta(base);
+      if (base.willMergeMixin) { base.willMergeMixin(props); }
       concats = concatenatedMixinProperties('concatenatedProperties', props, values, base);
       mergings = concatenatedMixinProperties('mergedProperties', props, values, base);
 
@@ -284,26 +285,30 @@ function followAlias(obj, desc, m, descs, values) {
   return { desc: desc, value: value };
 }
 
-function updateObservers(obj, key, observer, observerKey, method) {
-  if ('function' !== typeof observer) { return; }
-
-  var paths = observer[observerKey];
+function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, updateMethod) {
+  var paths = observerOrListener[pathsKey];
 
   if (paths) {
     for (var i=0, l=paths.length; i<l; i++) {
-      Ember[method](obj, paths[i], null, key);
+      Ember[updateMethod](obj, paths[i], null, key);
     }
   }
 }
 
-function replaceObservers(obj, key, observer) {
-  var prevObserver = obj[key];
+function replaceObserversAndListeners(obj, key, observerOrListener) {
+  var prev = obj[key];
 
-  updateObservers(obj, key, prevObserver, '__ember_observesBefore__', 'removeBeforeObserver');
-  updateObservers(obj, key, prevObserver, '__ember_observes__', 'removeObserver');
+  if ('function' === typeof prev) {
+    updateObserversAndListeners(obj, key, prev, '__ember_observesBefore__', 'removeBeforeObserver');
+    updateObserversAndListeners(obj, key, prev, '__ember_observes__', 'removeObserver');
+    updateObserversAndListeners(obj, key, prev, '__ember_listens__', 'removeListener');
+  }
 
-  updateObservers(obj, key, observer, '__ember_observesBefore__', 'addBeforeObserver');
-  updateObservers(obj, key, observer, '__ember_observes__', 'addObserver');
+  if ('function' === typeof observerOrListener) {
+    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observesBefore__', 'addBeforeObserver');
+    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observes__', 'addObserver');
+    updateObserversAndListeners(obj, key, observerOrListener, '__ember_listens__', 'addListener');
+  }
 }
 
 function applyMixin(obj, mixins, partial) {
@@ -336,7 +341,7 @@ function applyMixin(obj, mixins, partial) {
 
     if (desc === undefined && value === undefined) { continue; }
 
-    replaceObservers(obj, key, value);
+    replaceObserversAndListeners(obj, key, value);
     detectBinding(obj, key, value, m);
     defineProperty(obj, key, desc, value, m);
   }
@@ -377,7 +382,7 @@ Ember.mixin = function(obj) {
   // Mix mixins into classes by passing them as the first arguments to
   // .extend.
   App.CommentView = Ember.View.extend(App.Editable, {
-    template: Ember.Handlebars.compile('{{#if isEditing}}...{{else}}...{{/if}}')
+    template: Ember.Handlebars.compile('{{#if view.isEditing}}...{{else}}...{{/if}}')
   });
 
   commentView = App.CommentView.create();
@@ -386,6 +391,31 @@ Ember.mixin = function(obj) {
 
   Note that Mixins are created with `Ember.Mixin.create`, not
   `Ember.Mixin.extend`.
+
+  Note that mixins extend a constructor's prototype so arrays and object literals
+  defined as properties will be shared amongst objects that implement the mixin.
+  If you want to define an property in a mixin that is not shared, you can define
+  it either as a computed property or have it be created on initialization of the object.
+
+  ```javascript
+  //filters array will be shared amongst any object implementing mixin
+  App.Filterable = Ember.Mixin.create({
+    filters: Ember.A()
+  });
+
+  //filters will be a separate  array for every object implementing the mixin
+  App.Filterable = Ember.Mixin.create({
+    filters: Ember.computed(function(){return Ember.A();})
+  });
+
+  //filters will be created as a separate array during the object's initialization
+  App.Filterable = Ember.Mixin.create({
+    init: function() {
+      this._super();
+      this.set("filters", Ember.A());
+    }
+  });
+  ```
 
   @class Mixin
   @namespace Ember
@@ -622,6 +652,22 @@ Ember.aliasMethod = function(methodName) {
 //
 
 /**
+  Specify a method that observes property changes.
+
+  ```javascript
+  Ember.Object.extend({
+    valueObserver: Ember.observer(function() {
+      // Executes whenever the "value" property changes
+    }, 'value')
+  });
+  ```
+
+  In the future this method may become asynchronous. If you want to ensure
+  synchronous behavior, use `immediateObserver`.
+
+  Also available as `Function.prototype.observes` if prototype extensions are
+  enabled.
+
   @method observer
   @for Ember
   @param {Function} func
@@ -634,9 +680,23 @@ Ember.observer = function(func) {
   return func;
 };
 
-// If observers ever become asynchronous, Ember.immediateObserver
-// must remain synchronous.
 /**
+  Specify a method that observes property changes.
+
+  ```javascript
+  Ember.Object.extend({
+    valueObserver: Ember.immediateObserver(function() {
+      // Executes whenever the "value" property changes
+    }, 'value')
+  });
+  ```
+
+  In the future, `Ember.observer` may become asynchronous. In this event,
+  `Ember.immediateObserver` will maintain the synchronous behavior.
+
+  Also available as `Function.prototype.observesImmediately` if prototype extensions are
+  enabled.
+
   @method immediateObserver
   @for Ember
   @param {Function} func
@@ -664,23 +724,30 @@ Ember.immediateObserver = function() {
 
   ```javascript
   App.PersonView = Ember.View.extend({
+
     friends: [{ name: 'Tom' }, { name: 'Stefan' }, { name: 'Kris' }],
-    valueWillChange: function (obj, keyName) {
+
+    valueWillChange: Ember.beforeObserver(function(obj, keyName) {
       this.changingFrom = obj.get(keyName);
-    }.observesBefore('content.value'),
-    valueDidChange: function(obj, keyName) {
+    }, 'content.value'),
+
+    valueDidChange: Ember.observer(function(obj, keyName) {
         // only run if updating a value already in the DOM
         if (this.get('state') === 'inDOM') {
-            var color = obj.get(keyName) > this.changingFrom ? 'green' : 'red';
-            // logic
+          var color = obj.get(keyName) > this.changingFrom ? 'green' : 'red';
+          // logic
         }
-    }.observes('content.value'),
-    friendsDidChange: function(obj, keyName) {
+    }, 'content.value'),
+
+    friendsDidChange: Ember.observer(function(obj, keyName) {
       // some logic
       // obj.get(keyName) returns friends array
-    }.observes('friends.@each.name')
+    }, 'friends.@each.name')
   });
   ```
+
+  Also available as `Function.prototype.observesBefore` if prototype extensions are
+  enabled.
 
   @method beforeObserver
   @for Ember

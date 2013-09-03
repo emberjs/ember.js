@@ -49,6 +49,19 @@ Ember.HashLocation = Ember.Object.extend({
   /**
     @private
 
+    Uses location.replace to update the url without a page reload
+    or history modification.
+
+    @method replaceURL
+    @param path {String}
+  */
+  replaceURL: function(path) {
+    get(this, 'location').replace('#' + path);
+  },
+
+  /**
+    @private
+
     Register a callback to be invoked when the hash changes. These
     callbacks will execute when the user presses the back or forward
     button, but not after `setURL` is invoked.
@@ -88,6 +101,13 @@ Ember.HashLocation = Ember.Object.extend({
     return '#'+url;
   },
 
+  /**
+    @private
+
+    Cleans up the HashLocation event listener.
+
+    @method willDestroy
+  */
   willDestroy: function() {
     var guid = Ember.guidFor(this);
 

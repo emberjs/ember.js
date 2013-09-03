@@ -1,4 +1,4 @@
-var Router, App, AppView, templates, router, container, originalTemplates;
+var Router, App, AppView, templates, router, container;
 var get = Ember.get, set = Ember.set;
 
 function bootApplication() {
@@ -32,8 +32,6 @@ function handleURLAborts(path) {
   });
 }
 
-
-
 function handleURLRejectsWith(path, expectedReason) {
   Ember.run(function() {
     router.handleURL(path).then(function(value) {
@@ -65,7 +63,6 @@ module("Basic Routing", {
 
       container = App.__container__;
 
-      originalTemplates = Ember.$.extend({}, Ember.TEMPLATES);
       Ember.TEMPLATES.application = compile("{{outlet}}");
       Ember.TEMPLATES.home = compile("<h3>Hours</h3>");
       Ember.TEMPLATES.homepage = compile("<h3>Megatroll</h3><p>{{home}}</p>");
@@ -78,9 +75,33 @@ module("Basic Routing", {
       App.destroy();
       App = null;
 
-      Ember.TEMPLATES = originalTemplates;
+      Ember.TEMPLATES = {};
     });
+    Ember.TESTING_DEPRECATION = false;
   }
+});
+
+test("warn on URLs not included in the route set", function () {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+
+  bootApplication();
+
+  // it's tricky to use expectAssertion(fn) in a callback.
+  var oldAssert = Ember.assert;
+  Ember.assert = function(message, test){
+    ok(true, test);
+    equal("The URL '/what-is-this-i-dont-even' did match any routes in your application", message);
+  };
+
+  Ember.run(function(){
+    router.handleURL("/what-is-this-i-dont-even");
+  });
+
+  Ember.assert = oldAssert;
+
 });
 
 test("The Homepage", function() {
@@ -100,8 +121,6 @@ test("The Homepage", function() {
   });
 
   bootApplication();
-
-  handleURL('/');
 
   equal(currentPath, 'home');
   equal(Ember.$('h3:contains(Hours)', '#qunit-fixture').length, 1, "The home template was rendered");
@@ -163,8 +182,6 @@ test("The Homepage register as activeView", function() {
 
   bootApplication();
 
-  handleURL('/');
-
   ok(router._lookupActiveView('home'), '`home` active view is connected');
 
   handleURL('/homepage');
@@ -186,8 +203,6 @@ test("The Homepage with explicit template name in renderTemplate", function() {
 
   bootApplication();
 
-  handleURL('/');
-
   equal(Ember.$('h3:contains(Megatroll)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
@@ -207,8 +222,6 @@ test("An alternate template will pull in an alternate controller", function() {
   });
 
   bootApplication();
-
-  handleURL('/');
 
   equal(Ember.$('h3:contains(Megatroll) + p:contains(Comes from homepage)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
@@ -230,8 +243,6 @@ test("The template will pull in an alternate controller via key/value", function
 
   bootApplication();
 
-  handleURL('/');
-
   equal(Ember.$('h3:contains(Megatroll) + p:contains(Comes from home.)', '#qunit-fixture').length, 1, "The homepage template was rendered from data from the HomeController");
 });
 
@@ -251,8 +262,6 @@ test("The Homepage with explicit template name in renderTemplate and controller"
   });
 
   bootApplication();
-
-  handleURL('/');
 
   equal(Ember.$('h3:contains(Megatroll) + p:contains(YES I AM HOME)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
@@ -276,9 +285,29 @@ test("Renders correct view with slash notation", function() {
 
   bootApplication();
 
-  handleURL('/');
-
   equal(Ember.$('p:contains(Home/Page)', '#qunit-fixture').length, 1, "The homepage template was rendered");
+});
+
+test("Renders the view given in the view option", function() {
+  Ember.TEMPLATES['home'] = compile("<p>{{view.name}}</p>");
+
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      this.render({view: 'homePage'});
+    }
+  });
+
+  App.HomePageView = Ember.View.extend({
+    name: "Home/Page"
+  });
+
+  bootApplication();
+
+  equal(Ember.$('p:contains(Home/Page)', '#qunit-fixture').length, 1, "The homepage view was rendered");
 });
 
 test('render does not replace templateName if user provided', function() {
@@ -298,7 +327,25 @@ test('render does not replace templateName if user provided', function() {
 
   bootApplication();
 
-  handleURL('/');
+  equal(Ember.$('p', '#qunit-fixture').text(), "THIS IS THE REAL HOME", "The homepage template was rendered");
+});
+
+test('render does not replace template if user provided', function () {
+  Router.map(function () {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeView = Ember.View.extend({
+    template: Ember.Handlebars.compile("<p>THIS IS THE REAL HOME</p>")
+  });
+  App.HomeController = Ember.Controller.extend();
+  App.HomeRoute = Ember.Route.extend();
+
+  bootApplication();
+
+  Ember.run(function () {
+    router.handleURL("/");
+  });
 
   equal(Ember.$('p', '#qunit-fixture').text(), "THIS IS THE REAL HOME", "The homepage template was rendered");
 });
@@ -325,8 +372,6 @@ test("The Homepage with a `setupController` hook", function() {
   bootApplication();
 
   container.register('controller:home', Ember.Controller.extend());
-
-  handleURL('/');
 
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
@@ -355,15 +400,48 @@ test("The route controller can be specified via controllerName", function() {
     this.route("home", { path: "/" });
   });
 
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<p>{{myValue}}</p>"
+  );
+
   App.HomeRoute = Ember.Route.extend({
     controllerName: 'myController'
   });
 
-  container.register('controller:myController', Ember.Controller.extend());
+  container.register('controller:myController', Ember.Controller.extend({
+    myValue: "foo"
+  }));
 
   bootApplication();
 
   deepEqual(container.lookup('route:home').controller, container.lookup('controller:myController'), "route controller is set by controllerName");
+  equal(Ember.$('p', '#qunit-fixture').text(), "foo", "The homepage template was rendered with data from the custom controller");
+});
+
+test("The route controller specified via controllerName is used in render", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  Ember.TEMPLATES.alternative_home = Ember.Handlebars.compile(
+    "<p>alternative home: {{myValue}}</p>"
+  );
+
+  App.HomeRoute = Ember.Route.extend({
+    controllerName: 'myController',
+    renderTemplate: function() {
+      this.render("alternative_home");
+    }
+  });
+
+  container.register('controller:myController', Ember.Controller.extend({
+    myValue: "foo"
+  }));
+
+  bootApplication();
+
+  deepEqual(container.lookup('route:home').controller, container.lookup('controller:myController'), "route controller is set by controllerName");
+  equal(Ember.$('p', '#qunit-fixture').text(), "alternative home: foo", "The homepage template was rendered with data from the custom controller");
 });
 
 test("The Homepage with a `setupController` hook modifying other controllers", function() {
@@ -389,8 +467,6 @@ test("The Homepage with a `setupController` hook modifying other controllers", f
 
   container.register('controller:home', Ember.Controller.extend());
 
-  handleURL('/');
-
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
 
@@ -414,8 +490,6 @@ test("The Homepage with a computed context that does not get overridden", functi
   );
 
   bootApplication();
-
-  handleURL('/');
 
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the context intact");
 });
@@ -448,8 +522,6 @@ test("The Homepage getting its controller context via model", function() {
   bootApplication();
 
   container.register('controller:home', Ember.Controller.extend());
-
-  handleURL('/');
 
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
@@ -634,7 +706,7 @@ asyncTest("The Special page returning an error fires the error hook on SpecialRo
     setup: function() {
       throw 'Setup error';
     },
-    events: {
+    actions: {
       error: function(reason) {
         equal(reason, 'Setup error');
         start();
@@ -670,7 +742,7 @@ asyncTest("The Special page returning an error invokes SpecialRoute's error hand
     setup: function() {
       throw 'Setup error';
     },
-    events: {
+    actions: {
       error: function(reason) {
         equal(reason, 'Setup error', 'SpecialRoute#error received the error thrown from setup');
         start();
@@ -683,7 +755,7 @@ asyncTest("The Special page returning an error invokes SpecialRoute's error hand
   handleURLRejectsWith('/specials/1', 'Setup error');
 });
 
-asyncTest("ApplicationRoute's default error handler can be overridden", function() {
+function testOverridableErrorHandler(handlersName) {
   Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
@@ -702,14 +774,15 @@ asyncTest("ApplicationRoute's default error handler can be overridden", function
     }
   });
 
-  App.ApplicationRoute = Ember.Route.extend({
-    events: {
-      error: function(reason) {
-        equal(reason, 'Setup error', "error was correctly passed to custom ApplicationRoute handler");
-        start();
-      }
+  var attrs = {};
+  attrs[handlersName] = {
+    error: function(reason) {
+      equal(reason, 'Setup error', "error was correctly passed to custom ApplicationRoute handler");
+      start();
     }
-  });
+  };
+
+  App.ApplicationRoute = Ember.Route.extend(attrs);
 
   App.SpecialRoute = Ember.Route.extend({
     setup: function() {
@@ -720,6 +793,15 @@ asyncTest("ApplicationRoute's default error handler can be overridden", function
   bootApplication();
 
   handleURLRejectsWith("/specials/1", "Setup error");
+}
+
+asyncTest("ApplicationRoute's default error handler can be overridden", function() {
+  testOverridableErrorHandler('actions');
+});
+
+asyncTest("ApplicationRoute's default error handler can be overridden (with DEPRECATED `events`)", function() {
+  Ember.TESTING_DEPRECATION = true;
+  testOverridableErrorHandler('events');
 });
 
 asyncTest("Moving from one page to another triggers the correct callbacks", function() {
@@ -887,7 +969,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
       return model;
     },
 
-    events: {
+    actions: {
       showStuff: function(obj) {
         stateIsNotCalled = false;
       }
@@ -899,10 +981,12 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   );
 
   var controller = Ember.Controller.extend({
-    showStuff: function(context) {
-      ok (stateIsNotCalled, "an event on the state is not triggered");
-      deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
-      start();
+    actions: {
+      showStuff: function(context) {
+        ok (stateIsNotCalled, "an event on the state is not triggered");
+        deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
+        start();
+      }
     }
   });
 
@@ -910,7 +994,41 @@ asyncTest("Events are triggered on the controller if a matching action name is i
 
   bootApplication();
 
-  handleURL('/');
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
+});
+
+asyncTest("Events are triggered on the current state when defined in `actions` object", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  var model = { name: "Tom Dale" };
+
+  App.HomeRoute = Ember.Route.extend({
+    model: function() {
+      return model;
+    },
+
+    actions: {
+      showStuff: function(obj) {
+        ok(this instanceof App.HomeRoute, "the handler is an App.HomeRoute");
+        // Using Ember.copy removes any private Ember vars which older IE would be confused by
+        deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
+        start();
+      }
+    }
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<a {{action showStuff content}}>{{name}}</a>"
+  );
+
+  bootApplication();
+
+  container.register('controller:home', Ember.Controller.extend());
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
   var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
@@ -918,7 +1036,46 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   action.handler(event);
 });
 
-asyncTest("Events are triggered on the current state", function() {
+asyncTest("Events defined in `actions` object are triggered on the current state when routes are nested", function() {
+  Router.map(function() {
+    this.resource("root", { path: "/" }, function() {
+      this.route("index", { path: "/" });
+    });
+  });
+
+  var model = { name: "Tom Dale" };
+
+  App.RootRoute = Ember.Route.extend({
+    actions: {
+      showStuff: function(obj) {
+        ok(this instanceof App.RootRoute, "the handler is an App.HomeRoute");
+        // Using Ember.copy removes any private Ember vars which older IE would be confused by
+        deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
+        start();
+      }
+    }
+  });
+
+  App.RootIndexRoute = Ember.Route.extend({
+    model: function() {
+      return model;
+    }
+  });
+
+  Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
+    "<a {{action showStuff content}}>{{name}}</a>"
+  );
+
+  bootApplication();
+
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
+});
+
+asyncTest("Events are triggered on the current state when defined in `events` object (DEPRECATED)", function() {
+  Ember.TESTING_DEPRECATION = true;
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -948,18 +1105,14 @@ asyncTest("Events are triggered on the current state", function() {
 
   container.register('controller:home', Ember.Controller.extend());
 
-  //var controller = router._container.controller.home = Ember.Controller.create();
-  //controller.target = router;
-
-  handleURL('/');
-
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
   var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
 
-asyncTest("Events are triggered on the current state when routes are nested", function() {
+asyncTest("Events defined in `events` object are triggered on the current state when routes are nested (DEPRECATED)", function() {
+  Ember.TESTING_DEPRECATION = true;
   Router.map(function() {
     this.resource("root", { path: "/" }, function() {
       this.route("index", { path: "/" });
@@ -997,6 +1150,89 @@ asyncTest("Events are triggered on the current state when routes are nested", fu
   action.handler(event);
 });
 
+test("Events can be handled by inherited event handlers", function() {
+
+  expect(4);
+
+  App.SuperRoute = Ember.Route.extend({
+    actions: {
+      foo: function() {
+        ok(true, 'foo');
+      },
+      bar: function(msg) {
+        equal(msg, "HELLO");
+      }
+    }
+  });
+
+  App.RouteMixin = Ember.Mixin.create({
+    actions: {
+      bar: function(msg) {
+        equal(msg, "HELLO");
+        this._super(msg);
+      }
+    }
+  });
+
+  App.IndexRoute = App.SuperRoute.extend(App.RouteMixin, {
+    actions: {
+      baz: function() {
+        ok(true, 'baz');
+      }
+    }
+  });
+
+  bootApplication();
+
+  router.send("foo");
+  router.send("bar", "HELLO");
+  router.send("baz");
+});
+
+asyncTest("Events are triggered on the controller if a matching action name is implemented as a method (DEPRECATED)", function() {
+  Ember.TESTING_DEPRECATION = true;
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  var model = { name: "Tom Dale" };
+  var stateIsNotCalled = true;
+
+  App.HomeRoute = Ember.Route.extend({
+    model: function() {
+      return model;
+    },
+
+    events: {
+      showStuff: function(obj) {
+        stateIsNotCalled = false;
+      }
+    }
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<a {{action showStuff content}}>{{name}}</a>"
+  );
+
+  var controller = Ember.Controller.extend({
+    showStuff: function(context) {
+      ok (stateIsNotCalled, "an event on the state is not triggered");
+      deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
+      start();
+    }
+  });
+
+  container.register('controller:home', controller);
+
+  bootApplication();
+
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
+});
+
+
 asyncTest("actions can be triggered with multiple arguments", function() {
   Router.map(function() {
     this.resource("root", { path: "/" }, function() {
@@ -1008,7 +1244,7 @@ asyncTest("actions can be triggered with multiple arguments", function() {
       model2 = { name: "Tom Dale" };
 
   App.RootRoute = Ember.Route.extend({
-    events: {
+    actions: {
       showStuff: function(obj1, obj2) {
         ok(this instanceof App.RootRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
@@ -1051,8 +1287,6 @@ test("transitioning multiple times in a single run loop only sets the URL once",
     urlSetCount++;
     set(this, 'path', path);
   };
-
-  handleURL('/');
 
   equal(urlSetCount, 0);
 
@@ -1128,8 +1362,6 @@ test("using replaceWith calls location.replaceURL if available", function() {
 
   bootApplication();
 
-  handleURL('/');
-
   equal(setCount, 0);
   equal(replaceCount, 0);
 
@@ -1160,8 +1392,6 @@ test("using replaceWith calls setURL if location.replaceURL is not defined", fun
   });
 
   bootApplication();
-
-  handleURL('/');
 
   equal(setCount, 0);
 
@@ -1375,7 +1605,7 @@ test("Transitioning from a parent event does not prevent currentPath from being 
   });
 
   App.FooRoute = Ember.Route.extend({
-    events: {
+    actions: {
       goToQux: function() {
         this.transitionTo('foo.qux');
       }
@@ -1512,8 +1742,6 @@ test("Rendering into specified template with slash notation", function() {
 
   bootApplication();
 
-  handleURL("/");
-
   equal(Ember.$('#qunit-fixture:contains(profile details!)').length, 1, "The templates were rendered");
 });
 
@@ -1537,7 +1765,7 @@ test("Parent route context change", function() {
   });
 
   App.PostsRoute = Ember.Route.extend({
-    events: {
+    actions: {
       showPost: function(context) {
         this.transitionTo('post', context);
       }
@@ -1549,7 +1777,7 @@ test("Parent route context change", function() {
       return {id: params.postId};
     },
 
-    events: {
+    actions: {
       editPost: function(context) {
         this.transitionTo('post.edit');
       }
@@ -1881,6 +2109,7 @@ test("The template is not re-rendered when two routes present the exact same tem
   });
 
   App.SharedRoute = Ember.Route.extend({
+    viewName: 'shared',
     setupController: function(controller) {
       this.controllerFor('shared').set('message', "This is the " + this.routeName + " message");
     },
@@ -1890,10 +2119,12 @@ test("The template is not re-rendered when two routes present the exact same tem
     }
   });
 
-  App.FirstRoute = App.SharedRoute.extend();
+  App.FirstRoute  = App.SharedRoute.extend();
   App.SecondRoute = App.SharedRoute.extend();
-  App.ThirdRoute = App.SharedRoute.extend();
-  App.FourthRoute = App.SharedRoute.extend();
+  App.ThirdRoute  = App.SharedRoute.extend();
+  App.FourthRoute = App.SharedRoute.extend({
+    viewName: 'fourth'
+  });
 
   App.SharedController = Ember.Controller.extend();
 
@@ -1904,10 +2135,9 @@ test("The template is not re-rendered when two routes present the exact same tem
       insertionCount += 1;
     }
   });
-  App.FirstView = App.SharedView;
-  App.SecondView = App.SharedView;
-  App.ThirdView = App.SharedView;
-  App.FourthView = App.SharedView.extend(); // Extending, in essence, creates a different view
+
+  // Extending, in essence, creates a different view
+  App.FourthView = App.SharedView.extend();
 
   Ember.TEMPLATES.shared = Ember.Handlebars.compile(
     "<p>{{message}}</p>"
@@ -1918,7 +2148,7 @@ test("The template is not re-rendered when two routes present the exact same tem
   handleURL("/first");
 
   equal(Ember.$('p', '#qunit-fixture').text(), "This is the first message");
-  equal(insertionCount, 1);
+  equal(insertionCount, 1, 'expected one assertion');
 
   // Transition by URL
   handleURL("/second");
@@ -1928,7 +2158,11 @@ test("The template is not re-rendered when two routes present the exact same tem
 
   // Then transition directly by route name
   Ember.run(function() {
-    router.transitionTo('third');
+    router.transitionTo('third').then(function(value){
+      ok(true, 'expected transition');
+    }, function(reason) {
+      ok(false, 'unexpected transition failure: ', QUnit.jsDump.parse(reason));
+    });
   });
 
   equal(Ember.$('p', '#qunit-fixture').text(), "This is the third message");
@@ -1939,7 +2173,6 @@ test("The template is not re-rendered when two routes present the exact same tem
 
   equal(Ember.$('p', '#qunit-fixture').text(), "This is the fourth message");
   equal(insertionCount, 2, "view should have inserted a second time");
-
 });
 
 test("ApplicationRoute with model does not proxy the currentPath", function() {
@@ -1957,8 +2190,6 @@ test("ApplicationRoute with model does not proxy the currentPath", function() {
   });
 
   bootApplication();
-
-  handleURL("/");
 
   equal(currentPath, 'index', 'currentPath is index');
   equal('currentPath' in model, false, 'should have defined currentPath on controller');
@@ -2085,7 +2316,7 @@ test("Route supports clearing outlet explicitly", function() {
   });
 
   App.PostsRoute = Ember.Route.extend({
-    events: {
+    actions: {
       showModal: function() {
         this.render('postsModal', {
           into: 'application',
@@ -2099,7 +2330,7 @@ test("Route supports clearing outlet explicitly", function() {
   });
 
   App.PostsIndexRoute = Ember.Route.extend({
-    events: {
+    actions: {
       showExtra: function() {
         this.render('postsExtra', {
           into: 'posts/index'
@@ -2152,7 +2383,7 @@ test("Aborting/redirecting the transition in `willTransition` prevents LoadingRo
   var redirect = false;
 
   App.IndexRoute = Ember.Route.extend({
-    events: {
+    actions: {
       willTransition: function(transition) {
         ok(true, "willTransition was called");
         if (redirect) {
@@ -2210,12 +2441,12 @@ test("Aborting/redirecting the transition in `willTransition` prevents LoadingRo
   Ember.run(deferred.resolve);
 });
 
-test("Events can be handled by inherited event handlers", function() {
+test("Actions can be handled by inherited action handlers", function() {
 
   expect(4);
 
   App.SuperRoute = Ember.Route.extend({
-    events: {
+    actions: {
       foo: function() {
         ok(true, 'foo');
       },
@@ -2226,7 +2457,7 @@ test("Events can be handled by inherited event handlers", function() {
   });
 
   App.RouteMixin = Ember.Mixin.create({
-    events: {
+    actions: {
       bar: function(msg) {
         equal(msg, "HELLO");
         this._super(msg);
@@ -2235,7 +2466,7 @@ test("Events can be handled by inherited event handlers", function() {
   });
 
   App.IndexRoute = App.SuperRoute.extend(App.RouteMixin, {
-    events: {
+    actions: {
       baz: function() {
         ok(true, 'baz');
       }
@@ -2249,3 +2480,64 @@ test("Events can be handled by inherited event handlers", function() {
   router.send("baz");
 });
 
+test("currentRouteName is a property installed on ApplicationController that can be used in transitionTo", function() {
+
+  expect(24);
+
+  Router.map(function() {
+    this.resource("be", function() {
+      this.resource("excellent", function() {
+        this.resource("to", function() {
+          this.resource("each", function() {
+            this.route("other");
+          });
+        });
+      });
+    });
+  });
+
+  bootApplication();
+
+  var appController = router.container.lookup('controller:application');
+
+  function transitionAndCheck(path, expectedPath, expectedRouteName) {
+    if (path) { Ember.run(router, 'transitionTo', path); }
+    equal(appController.get('currentPath'), expectedPath);
+    equal(appController.get('currentRouteName'), expectedRouteName);
+  }
+
+  transitionAndCheck(null, 'index', 'index');
+  transitionAndCheck('/be', 'be.index', 'be.index');
+  transitionAndCheck('/be/excellent', 'be.excellent.index', 'excellent.index');
+  transitionAndCheck('/be/excellent/to', 'be.excellent.to.index', 'to.index');
+  transitionAndCheck('/be/excellent/to/each', 'be.excellent.to.each.index', 'each.index');
+  transitionAndCheck('/be/excellent/to/each/other', 'be.excellent.to.each.other', 'each.other');
+
+  transitionAndCheck('index', 'index', 'index');
+  transitionAndCheck('be', 'be.index', 'be.index');
+  transitionAndCheck('excellent', 'be.excellent.index', 'excellent.index');
+  transitionAndCheck('to.index', 'be.excellent.to.index', 'to.index');
+  transitionAndCheck('each', 'be.excellent.to.each.index', 'each.index');
+  transitionAndCheck('each.other', 'be.excellent.to.each.other', 'each.other');
+});
+
+test("Route model hook finds the same model as a manual find", function() {
+  var Post;
+  App.Post = Ember.Object.extend();
+  App.Post.reopenClass({
+    find: function() {
+      Post = this;
+      return {};
+    }
+  });
+
+  Router.map(function() {
+    this.route('post', { path: '/post/:post_id' });
+  });
+
+  bootApplication();
+
+  handleURL('/post/1');
+
+  equal(App.Post, Post);
+});

@@ -7,12 +7,11 @@ require('ember-runtime/controllers/controller');
 */
 
 /**
-  `Ember.ObjectController` is part of Ember's Controller layer. A single shared
-  instance of each `Ember.ObjectController` subclass in your application's
-  namespace will be created at application initialization and be stored on your
-  application's `Ember.Router` instance.
+  `Ember.ObjectController` is part of Ember's Controller layer. It is intended
+  to wrap a single object, proxying unhandled attempts to `get` and `set` to the underlying
+  content object, and to forward unhandled action attempts to its `target`.
 
-  `Ember.ObjectController` derives its functionality from its superclass
+  `Ember.ObjectController` derives this functionality from its superclass
   `Ember.ObjectProxy` and the `Ember.ControllerMixin` mixin.
 
   @class ObjectController

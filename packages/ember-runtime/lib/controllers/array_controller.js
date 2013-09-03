@@ -181,28 +181,36 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
   },
 
   init: function() {
-    if (!this.get('content')) { Ember.defineProperty(this, 'content', undefined, Ember.A()); }
     this._super();
+
     this.set('_subControllers', Ember.A());
   },
+
+  content: Ember.computed(function () {
+    return Ember.A();
+  }),
 
   controllerAt: function(idx, object, controllerClass) {
     var container = get(this, 'container'),
         subControllers = get(this, '_subControllers'),
-        subController = subControllers[idx];
+        subController = subControllers[idx],
+        factory, fullName;
 
-    if (!subController) {
-      subController = container.lookup("controller:" + controllerClass, { singleton: false });
-      subControllers[idx] = subController;
-    }
+    if (subController) { return subController; }
 
-    if (!subController) {
+    fullName = "controller:" + controllerClass;
+
+    if (!container.has(fullName)) {
       throw new Error('Could not resolve itemController: "' + controllerClass + '"');
     }
 
-    subController.set('target', this);
-    subController.set('parentController', get(this, 'parentController') || this);
-    subController.set('content', object);
+    subController = container.lookupFactory(fullName).create({
+      target: this,
+      parentController: get(this, 'parentController') || this,
+      content: object
+    });
+
+    subControllers[idx] = subController;
 
     return subController;
   },

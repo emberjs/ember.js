@@ -32,7 +32,7 @@ var metaFor = Ember.meta,
   @param {String} keyName The property key (or path) that will change.
   @return {void}
 */
-var propertyWillChange = Ember.propertyWillChange = function(obj, keyName) {
+function propertyWillChange(obj, keyName) {
   var m = metaFor(obj, false),
       watching = m.watching[keyName] > 0 || keyName === 'length',
       proto = m.proto,
@@ -44,7 +44,8 @@ var propertyWillChange = Ember.propertyWillChange = function(obj, keyName) {
   dependentKeysWillChange(obj, keyName, m);
   chainsWillChange(obj, keyName, m);
   notifyBeforeObservers(obj, keyName);
-};
+}
+Ember.propertyWillChange = propertyWillChange;
 
 /**
   This function is called just after an object property has changed.
@@ -52,7 +53,7 @@ var propertyWillChange = Ember.propertyWillChange = function(obj, keyName) {
 
   Normally you will not need to call this method directly but if for some
   reason you can't directly watch a property you can invoke this method
-  manually along with `Ember.propertyWilLChange()` which you should call just
+  manually along with `Ember.propertyWillChange()` which you should call just
   before the property value changes.
 
   @method propertyDidChange
@@ -61,7 +62,7 @@ var propertyWillChange = Ember.propertyWillChange = function(obj, keyName) {
   @param {String} keyName The property key (or path) that will change.
   @return {void}
 */
-var propertyDidChange = Ember.propertyDidChange = function(obj, keyName) {
+function propertyDidChange(obj, keyName) {
   var m = metaFor(obj, false),
       watching = m.watching[keyName] > 0 || keyName === 'length',
       proto = m.proto,
@@ -74,9 +75,10 @@ var propertyDidChange = Ember.propertyDidChange = function(obj, keyName) {
   if (!watching && keyName !== 'length') { return; }
 
   dependentKeysDidChange(obj, keyName, m);
-  chainsDidChange(obj, keyName, m);
+  chainsDidChange(obj, keyName, m, false);
   notifyObservers(obj, keyName);
-};
+}
+Ember.propertyDidChange = propertyDidChange;
 
 var WILL_SEEN, DID_SEEN;
 
@@ -117,32 +119,47 @@ function iterDeps(method, obj, depKey, seen, meta) {
   }
 }
 
-var chainsWillChange = function(obj, keyName, m, arg) {
-  if (!m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
-
-  var nodes = m.chainWatchers;
-
-  nodes = nodes[keyName];
-  if (!nodes) { return; }
-
-  for(var i = 0, l = nodes.length; i < l; i++) {
-    nodes[i].willChange(arg);
+function chainsWillChange(obj, keyName, m) {
+  if (!(m.hasOwnProperty('chainWatchers') &&
+        m.chainWatchers[keyName])) {
+    return;
   }
-};
 
-var chainsDidChange = function(obj, keyName, m, arg) {
-  if (!m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
+  var nodes = m.chainWatchers[keyName],
+      events = [],
+      i, l;
 
-  var nodes = m.chainWatchers;
-
-  nodes = nodes[keyName];
-  if (!nodes) { return; }
-
-  // looping in reverse because the chainWatchers array can be modified inside didChange
-  for (var i = nodes.length - 1; i >= 0; i--) {
-    nodes[i].didChange(arg);
+  for(i = 0, l = nodes.length; i < l; i++) {
+    nodes[i].willChange(events);
   }
-};
+
+  for (i = 0, l = events.length; i < l; i += 2) {
+    propertyWillChange(events[i], events[i+1]);
+  }
+}
+
+function chainsDidChange(obj, keyName, m, suppressEvents) {
+  if (!(m.hasOwnProperty('chainWatchers') &&
+        m.chainWatchers[keyName])) {
+    return;
+  }
+
+  var nodes = m.chainWatchers[keyName],
+      events = suppressEvents ? null : [],
+      i, l;
+
+  for(i = 0, l = nodes.length; i < l; i++) {
+    nodes[i].didChange(events);
+  }
+
+  if (suppressEvents) {
+    return;
+  }
+
+  for (i = 0, l = events.length; i < l; i += 2) {
+    propertyDidChange(events[i], events[i+1]);
+  }
+}
 
 Ember.overrideChains = function(obj, keyName, m) {
   chainsDidChange(obj, keyName, m, true);
@@ -152,20 +169,24 @@ Ember.overrideChains = function(obj, keyName, m) {
   @method beginPropertyChanges
   @chainable
 */
-var beginPropertyChanges = Ember.beginPropertyChanges = function() {
+function beginPropertyChanges() {
   deferred++;
-};
+}
+
+Ember.beginPropertyChanges = beginPropertyChanges;
 
 /**
   @method endPropertyChanges
 */
-var endPropertyChanges = Ember.endPropertyChanges = function() {
+function endPropertyChanges() {
   deferred--;
   if (deferred<=0) {
     beforeObserverSet.clear();
     observerSet.flush();
   }
-};
+}
+
+Ember.endPropertyChanges = endPropertyChanges;
 
 /**
   Make a series of property changes together in an
@@ -187,7 +208,7 @@ Ember.changeProperties = function(cb, binding) {
   tryFinally(cb, endPropertyChanges, binding);
 };
 
-var notifyBeforeObservers = function(obj, keyName) {
+function notifyBeforeObservers(obj, keyName) {
   if (obj.isDestroying) { return; }
 
   var eventName = keyName + ':before', listeners, diff;
@@ -198,9 +219,9 @@ var notifyBeforeObservers = function(obj, keyName) {
   } else {
     sendEvent(obj, eventName, [obj, keyName]);
   }
-};
+}
 
-var notifyObservers = function(obj, keyName) {
+function notifyObservers(obj, keyName) {
   if (obj.isDestroying) { return; }
 
   var eventName = keyName + ':change', listeners;
@@ -210,4 +231,4 @@ var notifyObservers = function(obj, keyName) {
   } else {
     sendEvent(obj, eventName, [obj, keyName]);
   }
-};
+}

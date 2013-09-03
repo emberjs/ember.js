@@ -1,3 +1,201 @@
+*Ember 1.0.0 (August 31, 2013)*
+
+* Fix nested `{{yield}}`
+* `ReduceComputed` groups changed properties.
+* Multiple fixes and improvements to the new Array Computed Properties
+* Adds the ability to specify view class for render
+* Restructure controller init, to minimize property lookups
+* Provide hook for persistence libraries to inject custom find behavior.
+* Sync router.js
+* Controller#controllers property should be readOnly
+* Invalid Controller#controllers accesses throw runtime exceptions
+* Inform about the Ember Inspector if not installed
+* Don't force a layout on registered components
+* Make TextField and TextArea components
+* Adds Function.prototype.observesImmediately
+* Move ember-states into a plugin: https://github.com/emberjs/ember-states
+* Update Backburner
+* Disabled model factory injections by default.
+* Fix bug where link-to wouldn't be active even if resource is active
+* Add Ember.PromiseProxyMixin
+* Some fixes to grouped each
+* Update to rsvp-2.0.2; fixes unit tests for RSVP#rethrow in IE 6,7,8
+* Rename computed array macros to match #3158
+* Consider `controllerName` in Ember.Route#render()
+* Allow a template explicitly set on a view to be used when rendering a route.
+
+
+*Ember 1.0.0-rc.8 (August 28, 2013)*
+
+* View, controller & route action handlers are now expected to be defined on an `actions` object.
+* registerBoundHelper won't treat quoted strings / numbers as paths
+* Array Computed Properties
+* Rename bindAttr to bind-attr.
+* Rename linkTo to link-to.
+* Improved default route.serialize behavior. It will now attempt to populate named properties with the corresponding property on the model.
+* Added Ember.getProperties
+* Smarter linkTo observers
+* Fix `Ember.EnumerableUtils#replace` to allow large size of array
+* rsvp.js refresh with RSVP#rethrow and promise#fail
+* Make sets during init behave the same as create(props)
+* Continue to make view creation container aware
+* Sync router.js - Closes #3153, #3180
+* Application#resolver -> Application#Resolver
+* The resolver now provides the normalization
+* Add currentRouteName to ApplicationController
+* Lookup itemViewClass and emptyView of collectionView if given as string
+* Change behavior around uncached computed properties.
+* Aliased xProperty methods in enumerable to xBy and aliased some and someProperty to any and anyBy respectively
+* Factory Injections
+* Support replaceURL on HashLocation
+* Assorted performance improvements
+* Add Ember.on, Function.prototype.on, init event
+* Fix some `{{yield}}` bugs
+* Improved `Route#controllerFor` to support `controllerName` and non-route lookups
+
+
+*Ember 1.0.0-rc.7 (August 14, 2013)*
+
+* correctly preserve a views container
+* Reference to RSVP repo for documentation
+* Remove obsolete paragraph from ObjectController comments
+* Add rel attribute binding to linkTo helper
+* Add Ember.DataAdapter in ember-extension-support
+* Asserts that a target element is in the DOM on `appendTo` and `replaceIn`.
+* add Ember.create unit test, preventing parent object's pollute
+* Sync with router.js
+* fix #3094
+* View event handlers inside eventManager should be wrapped in run loop
+* fix #3093
+* Handlebars template properties should not be methods
+* Add assert that `this` is correct in deferReadiness and advanceReadiness. @stefanpenner / @lukemelia
+* Remove `previousObject` argument from `Ember.Enumerable#nextObject`
+* Remove `context` argument from `Ember.Enumerable#nextObject`
+* Fixed some docs for Ember.Route
+* Added the ability to send a context with actions in components
+* Fixed a typo in documentation for {{log}}
+* Added `mergedProperties` to ember-metal, Ember.Route's `events`
+* render helper: falsy contexts no longer treated as absent
+* Fix yield helper to only be craycray for components
+* Components should not be singleton (just like views)
+* Make methods on the router overridable. Denote private methods with _
+* router.js sync - don't overwrite URL's on noop transitions
+* adding docs for observers
+* Clearer messaging for  changes and removal of bad assert
+* Removed old-router
+* Clarified Ember.warn message for linkTo loading state
+* linkTo param of 0 should be treated as a url param
+* Aborts/redirects in willTransition don't enter LoadingRoute
+* Assertion if incrementProperty given non-numeric value
+* Add sendAction() to Ember.Component
+* {{yield}} view should be virtual
+* Remove warning about route rendering that was inaccurate and confusing
+* Fix {{template}} deprecation warnings in tests
+* Ember.controllerFor and Route#controllerFor no longer generate controllers
+* improve readability of some exceptions caught b
+* update release rakefile to work with the updated website
+* Clean up Handlebars helpers registered in tests
+* Better route assertions - Fixes #2003
+* Mixins don't technically extend Ember.Mixin
+* Docs and whitespace cleanup
+* Re-add Ember.Object.create docs and document createWithMixins
+* Revert "document the create method in for subclasses of Ember.Object"
+* router.js sync - simplified transition promise chain
+* Added a License to the gemspec - Fixes #3050
+* Only use valueNormalizer if one is present insideGroup. Fixes #2809
+* Remove unnecessary assertion for `Ember.inspect`
+* Fixed problem with dependentKeys on registerBoundHelper.
+* Should allow numbers in tagNames i.e. h1-6
+* [CVE-2013-4170] Fix for Potential XSS Exploit When Binding to User-Supplied Data
+* Update component_registration_test.js to use component vs. control
+* Fix test to normalize URL for IE7
+* Fix date assertion that returned by `Ember.inspect`
+* fix tests, isolate keywords in component, yield back controller and keywords in addition to context
+* Add some more tests to stress-test yield
+* Make yielded content look at the original context
+* Don't set context in Ember.controllerFor
+* Tweak htmlSafe docs
+* Improve error message for missing itemView
+* Improve assertion for non-Array passed to #each
+* Add Example for Ember.computed.alias
+* Remove unreferenced property `Ember.Comparable#isComparable`
+* Remove unused argument for `Ember.Array#objectAt`
+* Fix indeterminate checkbox that is set on insert
+* Add jQuery 1.9 to testing rake task
+* Support object with `Ember.String.fmt`
+* Add 'date', 'regexp' and 'error' supprot to `Ember.inspect`
+* Improve `Ember.inspect` for array
+* Fix replacement for `Ember.String.fmt` to be parsed as decimal digit
+* Upgrade to latest router.js
+* {{input}} helper doesn't override default type
+* Deprecate `template` in favor of `partial`
+* Document htmlSafe
+* upgrade RSVP
+* Expose `options` arg in `debugger` HB helper
+* Use the original arg length of wrapped CP funcs, still call the wrapper
+* Documentation for sendEvent and doc change in removeListeners
+* Fixed incorrect example of multi-arg registerBoundHelper
+* Support indeterminate property in checkboxes
+* Fix: didInsertElement was fired twice
+* upload prod builds to s3
+* Application#setupForTesting should set `Ember.testing = true`
+* remove un-needed context preservation
+* Don't push childViews if undefined/invalid (issue #2967)
+* keyEvent integration test helper to simulate keydown, keypress etc.
+* Add documentation to cover the `{{each}}` helper's `emptyViewClass` option.
+* Removes an unused Ember.get include
+* Improve Ember.Logger setup - Fixes #2962
+* Better documentation for Ember.run.throttle and debounce
+* Update Backburner.js
+* View helper learns about the container
+* Fix the jQuery patch code for ember-testing click in Firefox.
+* update ember-dev to give proper assertion test failures
+* [fixes #2947] container#unregister
+* Validate fullNames on resolve
+* Route#model by default now uses lookupFactory
+* add resolveModel to the default resolver
+* fix deprecation warning
+* ember-application test refactoring
+* Specify controller of a route via controllerName
+* Remove non ASCII character in handlebars assertion error message
+* .jshintrc: set browser:false
+* Throw exception on invalid arguments for pushObjects method (issue #2848)
+* {{linkTo}} bound contexts, loading class
+* Use released handlebars
+* Fixed bug in Ember.Application#reset that calls `startRouting` twice.
+* assert that item view exists in container and camelize lookup name
+* Remove property for compatibility
+* Created helpful error message when using @each on an array that does not return objects
+* Update Router.js: slashless handleURL, numeric/string params
+* Allows itemView option into the each/collection helper. If itemView exists and there is a controller container, then it will attempt to resolve the view via the container.
+* Add Ember.Route#disconnectOutlet, to allow for clearing a previously rendered outlet. Fixes #2002
+* remove duplication of testing for Ember.run.debounce
+* Update supported ruby version
+* Updated JSBin And JSFiddle links to point to working fiddle/bin
+* Document the container
+* Use Ember.isNone instead of Ember.none
+* Quoteless route param in linkTo performs lookup
+* Allow value of TextField to be 0
+* Fire mousedown & mouseup on clicks, plus focus for text fields.
+* Add a check for jQuery versions with a specific checkbox click bug.
+* warns when trying to get a falsy property
+* Updating new Ember.Component documentation to remove confusion
+* Stringify linkTo examples
+* Update router.js. Fixes #2897.
+* Added functionality to Router.map to allow it to be called multiple times without the map being overwritten. Allows routes to be added at runtime. One test with multiple cases also added.
+* Revert "Use Ember setter to set Ember.Route controller."
+* Calling router.map now appends the routes instead of replacing them
+* simplify history.state support check
+* Polyfill history.state for non-supporting browsers
+* Switch from unbind to off for router location events
+* Support grouping option for Ember.Select using optgroup
+* Update Handlebars version to 1.0.0
+* Show `beforeModel` and `afterModel` in API Route docs
+* update lock file
+* Add tests for #1866 - loc helper
+* add loc helper
+* document  ember-testing helpers
+
 *Ember 1.0.0-rc.6 (June 23, 2013)*
 
 * Refactored `Ember.Route`s teardown mechanism for rendered views. This fixes #2857, previously multiple outlets were not tore down.

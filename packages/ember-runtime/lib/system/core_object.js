@@ -19,6 +19,7 @@ var set = Ember.set, get = Ember.get,
     meta = Ember.meta,
     rewatch = Ember.rewatch,
     finishChains = Ember.finishChains,
+    sendEvent = Ember.sendEvent,
     destroy = Ember.destroy,
     schedule = Ember.run.schedule,
     Mixin = Ember.Mixin,
@@ -49,7 +50,7 @@ function makeCtor() {
     }
     o_defineProperty(this, GUID_KEY, undefinedDescriptor);
     o_defineProperty(this, '_super', undefinedDescriptor);
-    var m = meta(this);
+    var m = meta(this), proto = m.proto;
     m.proto = this;
     if (initMixins) {
       // capture locally so we can clear the closed over variable
@@ -89,6 +90,7 @@ function makeCtor() {
 
           Ember.assert("Ember.Object.create no longer supports defining computed properties.", !(value instanceof Ember.ComputedProperty));
           Ember.assert("Ember.Object.create no longer supports defining methods that call _super.", !(typeof value === 'function' && value.toString().indexOf('._super') !== -1));
+          Ember.assert("`actions` must be provided at extend time, not at create time, when Ember.ActionHandler is used (i.e. views, controllers & routes).", !((keyName === 'actions') && Ember.ActionHandler.detect(this)));
 
           if (concatenatedProperties && indexOf(concatenatedProperties, keyName) >= 0) {
             var baseValue = this[keyName];
@@ -119,9 +121,10 @@ function makeCtor() {
       }
     }
     finishPartial(this, m);
-    delete m.proto;
-    finishChains(this);
     this.init.apply(this, arguments);
+    m.proto = proto;
+    finishChains(this);
+    sendEvent(this, "init");
   };
 
   Class.toString = Mixin.prototype.toString;
@@ -472,12 +475,65 @@ var ClassMixin = Mixin.create({
     return new C();
   },
 
+  /**
+    
+    Augments a constructor's prototype with additional
+    properties and functions:
+    
+    ```javascript
+    MyObject = Ember.Object.extend({
+      name: 'an object'
+    });
+
+    o = MyObject.create();
+    o.get('name'); // 'an object'
+
+    MyObject.reopen({
+      say: function(msg){
+        console.log(msg);
+      }
+    })
+
+    o2 = MyObject.create();
+    o2.say("hello"); // logs "hello"
+
+    o.say("goodbye"); // logs "goodbye"
+    ```
+    
+    To add functions and properties to the constructor itself,
+    see `reopenClass`
+
+    @method reopen
+  */
   reopen: function() {
     this.willReopen();
     reopen.apply(this.PrototypeMixin, arguments);
     return this;
   },
 
+  /**
+    Augments a constructor's own properties and functions:
+    
+    ```javascript
+    MyObject = Ember.Object.extend({
+      name: 'an object'
+    });
+
+
+    MyObject.reopenClass({
+      canBuild: false
+    });
+    
+    MyObject.canBuild; // false
+    o = MyObject.create();
+    ```
+    
+    To add functions and properties to instances of
+    a constructor by extending the constructor's prototype
+    see `reopen`
+    
+    @method reopenClass
+  */  
   reopenClass: function() {
     reopen.apply(this.ClassMixin, arguments);
     applyMixin(this, arguments, false);

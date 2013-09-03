@@ -224,7 +224,7 @@ test("should register an event handler", function() {
   var eventHandlerWasCalled = false;
 
   var controller = Ember.Controller.extend({
-    edit: function() { eventHandlerWasCalled = true; }
+    actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
   view = Ember.View.create({
@@ -247,7 +247,7 @@ test("handles whitelisted modifier keys", function() {
   var eventHandlerWasCalled = false;
 
   var controller = Ember.Controller.extend({
-    edit: function() { eventHandlerWasCalled = true; }
+    actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
   view = Ember.View.create({
@@ -275,8 +275,10 @@ test("should be able to use action more than once for the same event within a vi
       originalEventHandlerWasCalled = false;
 
   var controller = Ember.Controller.extend({
-    edit: function() { editWasCalled = true; },
-    "delete": function() { deleteWasCalled = true; }
+    actions: {
+      edit: function() { editWasCalled = true; },
+      "delete": function() { deleteWasCalled = true; }
+    }
   }).create();
 
   view = Ember.View.create({
@@ -315,8 +317,10 @@ test("the event should not bubble if `bubbles=false` is passed", function() {
       originalEventHandlerWasCalled = false;
 
   var controller = Ember.Controller.extend({
-    edit: function() { editWasCalled = true; },
-    "delete": function() { deleteWasCalled = true; }
+    actions: {
+      edit: function() { editWasCalled = true; },
+      "delete": function() { deleteWasCalled = true; }
+    }
   }).create();
 
   view = Ember.View.create({
@@ -356,7 +360,7 @@ test("should work properly in an #each block", function() {
   var eventHandlerWasCalled = false;
 
   var controller = Ember.Controller.extend({
-    edit: function() { eventHandlerWasCalled = true; }
+    actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
   view = Ember.View.create({
@@ -376,7 +380,7 @@ test("should work properly in a #with block", function() {
   var eventHandlerWasCalled = false;
 
   var controller = Ember.Controller.extend({
-    edit: function() { eventHandlerWasCalled = true; }
+    actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
   view = Ember.View.create({
@@ -395,10 +399,10 @@ test("should work properly in a #with block", function() {
 test("should unregister event handlers on rerender", function() {
   var eventHandlerWasCalled = false;
 
-  view = Ember.View.create({
+  view = Ember.View.extend({
     template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>click me</a>'),
-    edit: function() { eventHandlerWasCalled = true; }
-  });
+    actions: { edit: function() { eventHandlerWasCalled = true; } }
+  }).create();
 
   appendView();
 
@@ -441,7 +445,7 @@ test("should properly capture events on child elements of a container with an ac
   var eventHandlerWasCalled = false;
 
   var controller = Ember.Controller.extend({
-    edit: function() { eventHandlerWasCalled = true; }
+    actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
   view = Ember.View.create({
@@ -461,7 +465,7 @@ test("should allow bubbling of events from action helper to original parent even
       originalEventHandlerWasCalled = false;
 
   var controller = Ember.Controller.extend({
-    edit: function() { eventHandlerWasCalled = true; }
+    actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
   view = Ember.View.create({
@@ -482,7 +486,7 @@ test("should not bubble an event from action helper to original parent event if 
       originalEventHandlerWasCalled = false;
 
   var controller = Ember.Controller.extend({
-    edit: function() { eventHandlerWasCalled = true; }
+    actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
   view = Ember.View.create({
@@ -525,9 +529,11 @@ test("should send the view, event and current Handlebars context to the action",
   var passedContext;
 
   var aTarget = Ember.Controller.extend({
-    edit: function(context) {
-      passedTarget = this;
-      passedContext = context;
+    actions: {
+      edit: function(context) {
+        passedTarget = this;
+        passedContext = context;
+      }
     }
   }).create();
 
@@ -549,10 +555,10 @@ test("should send the view, event and current Handlebars context to the action",
 test("should only trigger actions for the event they were registered on", function() {
   var editWasCalled = false;
 
-  view = Ember.View.create({
+  view = Ember.View.extend({
     template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>edit</a>'),
-    edit: function() { editWasCalled = true; }
-  });
+    actions: { edit: function() { editWasCalled = true; } }
+  }).create();
 
   appendView();
 
@@ -561,36 +567,15 @@ test("should only trigger actions for the event they were registered on", functi
   ok(!editWasCalled, "The action wasn't called");
 });
 
-test("should allow a context to be specified", function() {
-  var passedContext,
-      model = Ember.Object.create();
-
-  var controller = Ember.Controller.extend({
-    edit: function(context) {
-      passedContext = context;
-    }
-  }).create();
-
-  view = Ember.View.create({
-    controller: controller,
-    people: Ember.A([model]),
-    template: Ember.Handlebars.compile('{{#each person in view.people}}<button {{action edit person}}>edit</button>{{/each}}')
-  });
-
-  appendView();
-
-  view.$('button').trigger('click');
-
-  equal(passedContext, model, "the action was called with the passed context");
-});
-
 test("should unwrap controllers passed as a context", function() {
   var passedContext,
       model = Ember.Object.create(),
       controller = Ember.ObjectController.extend({
         model: model,
-        edit: function(context) {
-          passedContext = context;
+        actions: {
+          edit: function(context) {
+            passedContext = context;
+          }
         }
       }).create();
 
@@ -611,8 +596,10 @@ test("should allow multiple contexts to be specified", function() {
       models = [Ember.Object.create(), Ember.Object.create()];
 
   var controller = Ember.Controller.extend({
-    edit: function() {
-      passedContexts = [].slice.call(arguments);
+    actions: {
+      edit: function() {
+        passedContexts = [].slice.call(arguments);
+      }
     }
   }).create();
 
@@ -630,13 +617,15 @@ test("should allow multiple contexts to be specified", function() {
   deepEqual(passedContexts, models, "the action was called with the passed contexts");
 });
 
-test("should allow multiple contexts to be specified", function() {
+test("should allow multiple contexts to be specified mixed with string args", function() {
   var passedParams,
       model = Ember.Object.create();
 
   var controller = Ember.Controller.extend({
-    edit: function() {
-      passedParams = [].slice.call(arguments);
+    actions: {
+      edit: function() {
+        passedParams = [].slice.call(arguments);
+      }
     }
   }).create();
 
@@ -671,21 +660,13 @@ test("it does not trigger action with special clicks", function() {
     template: compile("<a {{action show href=true}}>Hi</a>")
   });
 
-  var controller = Ember.Controller.create({
-    target: {
-      urlForEvent: function(event, context) {
-        return "/foo/bar";
-      },
-
-      send: function(event, context) {
-        this[event](context);
-      },
-
+  var controller = Ember.Controller.extend({
+    actions: {
       show: function() {
         showCalled = true;
       }
     }
-  });
+  }).create();
 
   Ember.run(function() {
     view.set('controller', controller);
@@ -715,4 +696,41 @@ test("it does not trigger action with special clicks", function() {
   checkClick('which', undefined, true); // IE <9
 });
 
+module("Ember.Handlebars - action helper - deprecated invoking directly on target", {
+  setup: function() {
+    dispatcher = Ember.EventDispatcher.create();
+    dispatcher.setup();
+    Ember.TESTING_DEPRECATION = true;
+  },
+
+  teardown: function() {
+    Ember.run(function() {
+      dispatcher.destroy();
+      if (view) { view.destroy(); }
+    });
+    Ember.TESTING_DEPRECATION = false;
+  }
+});
+
+test("should invoke a handler defined directly on the target (DEPRECATED)", function() {
+  var eventHandlerWasCalled,
+      model = Ember.Object.create();
+
+  var controller = Ember.Controller.extend({
+    edit: function() {
+      eventHandlerWasCalled = true;
+    }
+  }).create();
+
+  view = Ember.View.create({
+    controller: controller,
+    template: Ember.Handlebars.compile('<button {{action edit}}>edit</button>')
+  });
+
+  appendView();
+
+  view.$('button').trigger('click');
+
+  ok(eventHandlerWasCalled, "the action was called");
+});
 

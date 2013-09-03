@@ -282,3 +282,46 @@ test("should observe dependent keys passed to registerBoundHelper", function() {
   }
 });
 
+test("shouldn't treat raw numbers as bound paths", function() {
+  Ember.Handlebars.helper('sum', function(a, b) {
+    return a + b;
+  });
+
+  view = Ember.View.create({
+    controller: Ember.Object.create({aNumber: 1}),
+    template: Ember.Handlebars.compile("{{sum aNumber 1}} {{sum 0 aNumber}} {{sum 5 6}}")
+  });
+
+  appendView();
+
+  equal(view.$().text(), '2 1 11', "helper output is correct");
+
+  Ember.run(view.controller, 'set', 'aNumber', 5);
+
+  equal(view.$().text(), '6 5 11', "helper still updates as expected");
+});
+
+test("shouldn't treat quoted strings as bound paths", function() {
+  var helperCount = 0;
+  Ember.Handlebars.helper('concat', function(a, b, opt) {
+    helperCount++;
+    return a + b;
+  });
+
+  view = Ember.View.create({
+    controller: Ember.Object.create({word: "jerkwater", loo: "unused"}),
+    template: Ember.Handlebars.compile("{{concat word 'loo'}} {{concat '' word}} {{concat 'will' \"didi\"}}")
+  });
+
+  appendView();
+
+  equal(view.$().text(), 'jerkwaterloo jerkwater willdidi', "helper output is correct");
+
+  Ember.run(view.controller, 'set', 'word', 'bird');
+  equal(view.$().text(), 'birdloo bird willdidi', "helper still updates as expected");
+
+  Ember.run(view.controller, 'set', 'loo', 'soup-de-doo');
+  equal(view.$().text(), 'birdloo bird willdidi', "helper still updates as expected");
+  equal(helperCount, 5, "changing controller property with same name as quoted string doesn't re-render helper");
+});
+

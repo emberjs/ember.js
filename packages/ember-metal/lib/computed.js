@@ -99,6 +99,81 @@ function removeDependentKeys(desc, obj, keyName, meta) {
 //
 
 /**
+  A computed property transforms an objects function into a property.
+
+  By default the function backing the computed property will only be called
+  once and the result will be cached. You can specify various properties
+  that your computed property is dependent on. This will force the cached
+  result to be recomputed if the dependencies are modified.
+
+  In the following example we declare a computed property (by calling
+  `.property()` on the fullName function) and setup the properties
+  dependencies (depending on firstName and lastName). The fullName function
+  will be called once (regardless of how many times it is accessed) as long
+  as it's dependencies have not been changed. Once firstName or lastName are updated
+  any future calls (or anything bound) to fullName will incorporate the new
+  values.
+
+  ```javascript
+  Person = Ember.Object.extend({
+    // these will be supplied by `create`
+    firstName: null,
+    lastName: null,
+
+    fullName: function() {
+      var firstName = this.get('firstName');
+      var lastName = this.get('lastName');
+
+     return firstName + ' ' + lastName;
+    }.property('firstName', 'lastName')
+  });
+
+  var tom = Person.create({
+    firstName: "Tom",
+    lastName: "Dale"
+  });
+
+  tom.get('fullName') // "Tom Dale"
+  ```
+
+  You can also define what Ember should do when setting a computed property.
+  If you try to set a computed property, it will be invoked with the key and
+  value you want to set it to. You can also accept the previous value as the
+  third parameter.
+
+  ```javascript
+
+ Person = Ember.Object.extend({
+    // these will be supplied by `create`
+    firstName: null,
+    lastName: null,
+
+    fullName: function(key, value, oldValue) {
+      // getter
+      if (arguments.length === 1) {
+        var firstName = this.get('firstName');
+        var lastName = this.get('lastName');
+
+        return firstName + ' ' + lastName;
+
+      // setter
+      } else {
+        var name = value.split(" ");
+
+        this.set('firstName', name[0]);
+        this.set('lastName', name[1]);
+
+        return value;
+      }
+    }.property('firstName', 'lastName')
+  });
+
+  var person = Person.create();
+  person.set('fullName', "Peter Wagenet");
+  person.get('firstName') // Peter
+  person.get('lastName') // Wagenet
+  ```
+
   @class ComputedProperty
   @namespace Ember
   @extends Ember.Descriptor
@@ -117,7 +192,7 @@ ComputedProperty.prototype = new Ember.Descriptor();
 
 var ComputedPropertyPrototype = ComputedProperty.prototype;
 
-/*
+/**
   Properties are cacheable by default. Computed property will automatically
   cache the return value of your function until one of the dependent keys changes.
 
@@ -244,25 +319,6 @@ ComputedPropertyPrototype.meta = function(meta) {
 };
 
 /* impl descriptor API */
-ComputedPropertyPrototype.willWatch = function(obj, keyName) {
-  // watch already creates meta for this instance
-  var meta = obj[META_KEY];
-  Ember.assert('watch should have setup meta to be writable', meta.source === obj);
-  if (!(keyName in meta.cache)) {
-    addDependentKeys(this, obj, keyName, meta);
-  }
-};
-
-ComputedPropertyPrototype.didUnwatch = function(obj, keyName) {
-  var meta = obj[META_KEY];
-  Ember.assert('unwatch should have setup meta to be writable', meta.source === obj);
-  if (!(keyName in meta.cache)) {
-    // unwatch already creates meta for this instance
-    removeDependentKeys(this, obj, keyName, meta);
-  }
-};
-
-/* impl descriptor API */
 ComputedPropertyPrototype.didChange = function(obj, keyName) {
   // _suspended is set via a CP.set to ensure we don't clear
   // the cached value set by the setter
@@ -270,31 +326,76 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
     var meta = metaFor(obj);
     if (keyName in meta.cache) {
       delete meta.cache[keyName];
-      if (!meta.watching[keyName]) {
-        removeDependentKeys(this, obj, keyName, meta);
-      }
+      removeDependentKeys(this, obj, keyName, meta);
     }
   }
 };
 
-/* impl descriptor API */
+function finishChains(chainNodes)
+{
+  for (var i=0, l=chainNodes.length; i<l; i++) {
+    chainNodes[i].didChange(null);
+  }
+}
+
+/**
+  Access the value of the function backing the computed property.
+  If this property has already been cached, return the cached result.
+  Otherwise, call the function passing the property name as an argument.
+
+  ```javascript
+  Person = Ember.Object.extend({
+    fullName: function(keyName) {
+      // the keyName parameter is 'fullName' in this case.
+
+      return this.get('firstName') + ' ' + this.get('lastName');
+    }.property('firstName', 'lastName')
+  });
+
+
+  var tom = Person.create({
+    firstName: "Tom",
+    lastName: "Dale"
+  });
+
+  tom.get('fullName') // "Tom Dale"
+  ```
+
+  @method get
+  @param {String} keyName The key being accessed.
+  @return {Object} The return value of the function backing the CP.
+*/
 ComputedPropertyPrototype.get = function(obj, keyName) {
-  var ret, cache, meta;
+  var ret, cache, meta, chainNodes;
   if (this._cacheable) {
     meta = metaFor(obj);
     cache = meta.cache;
     if (keyName in cache) { return cache[keyName]; }
     ret = cache[keyName] = this.func.call(obj, keyName);
-    if (!meta.watching[keyName]) {
-      addDependentKeys(this, obj, keyName, meta);
-    }
+    chainNodes = meta.chainWatchers && meta.chainWatchers[keyName];
+    if (chainNodes) { finishChains(chainNodes); }
+    addDependentKeys(this, obj, keyName, meta);
   } else {
     ret = this.func.call(obj, keyName);
   }
   return ret;
 };
 
-/* impl descriptor API */
+/**
+  Set the value of a computed property. If the function that backs your
+  computed property does not accept arguments then the default action for
+  setting would be to define the property on the current object, and set
+  the value of the property to the value being set.
+
+  Generally speaking if you intend for your computed property to be set
+  your backing function should accept either two or three arguments.
+
+  @method set
+  @param {String} keyName The key being accessed.
+  @param {Object} newValue The new value being assigned.
+  @param {String} oldValue The old value being replaced.
+  @return {Object} The return value of the function backing the CP.
+*/
 ComputedPropertyPrototype.set = function(obj, keyName, value) {
   var cacheable = this._cacheable,
       func = this.func,
@@ -346,7 +447,7 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
     }
 
     if (cacheable) {
-      if (!watched && !hadCachedValue) {
+      if (!hadCachedValue) {
         addDependentKeys(this, obj, keyName, meta);
       }
       cache[keyName] = ret;
@@ -359,19 +460,11 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
   return ret;
 };
 
-/* called when property is defined */
-ComputedPropertyPrototype.setup = function(obj, keyName) {
-  var meta = obj[META_KEY];
-  if (meta && meta.watching[keyName]) {
-    addDependentKeys(this, obj, keyName, metaFor(obj));
-  }
-};
-
 /* called before property is overridden */
 ComputedPropertyPrototype.teardown = function(obj, keyName) {
   var meta = metaFor(obj);
 
-  if (meta.watching[keyName] || keyName in meta.cache) {
+  if (keyName in meta.cache) {
     removeDependentKeys(this, obj, keyName, meta);
   }
 
@@ -467,6 +560,25 @@ function registerComputedWithProperties(name, macro) {
 }
 
 /**
+  A computed property that returns true of the value of the dependent
+  property is null, an empty string, empty array, or empty function.
+
+  Note: When using `Ember.computed.empty` to watch an array make sure to
+  use the `array.length` syntax so the computed can subscribe to transitions
+  from empty to non-empty states.
+
+  Example
+
+  ```javascript
+  var ToDoList = Ember.Object.extend({
+    done: Ember.computed.empty('todos.length')
+  });
+  var todoList = ToDoList.create({todos: ['Unit Test', 'Documentation', 'Release']});
+  todoList.get('done'); // false
+  todoList.get('todos').clear(); // []
+  todoList.get('done'); // true
+  ```
+
   @method computed.empty
   @for Ember
   @param {String} dependentKey
@@ -478,6 +590,21 @@ registerComputed('empty', function(dependentKey) {
 });
 
 /**
+  A computed property that returns true of the value of the dependent
+  property is NOT null, an empty string, empty array, or empty function.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    hasStuff: Ember.computed.notEmpty('backpack')
+  });
+  var hampster = Hampster.create({backpack: ['Food', 'Sleeping Bag', 'Tent']});
+  hampster.get('hasStuff'); // true
+  hampster.get('backpack').clear(); // []
+  hampster.get('hasStuff'); // false
+  ```
+
   @method computed.notEmpty
   @for Ember
   @param {String} dependentKey
@@ -489,6 +616,24 @@ registerComputed('notEmpty', function(dependentKey) {
 });
 
 /**
+  A computed property that returns true of the value of the dependent
+  property is null or undefined. This avoids errors from JSLint complaining
+  about use of ==, which can be technically confusing.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    isHungry: Ember.computed.none('food')
+  });
+  var hampster = Hampster.create();
+  hampster.get('isHungry'); // true
+  hampster.set('food', 'Banana');
+  hampster.get('isHungry'); // false
+  hampster.set('food', null);
+  hampster.get('isHungry'); // true
+  ```
+
   @method computed.none
   @for Ember
   @param {String} dependentKey
@@ -500,6 +645,21 @@ registerComputed('none', function(dependentKey) {
 });
 
 /**
+  A computed property that returns the inverse boolean value
+  of the original value for the dependent property.
+
+  Example
+
+  ```javascript
+  var User = Ember.Object.extend({
+    isAnonymous: Ember.computed.not('loggedIn')
+  });
+  var user = User.create({loggedIn: false});
+  user.get('isAnonymous'); // false
+  user.set('loggedIn', true);
+  user.get('isAnonymous'); // true
+  ```
+
   @method computed.not
   @for Ember
   @param {String} dependentKey
@@ -511,6 +671,23 @@ registerComputed('not', function(dependentKey) {
 });
 
 /**
+  A computed property that converts the provided dependent property
+  into a boolean value.
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    hasBananas: Ember.computed.bool('numBananas')
+  });
+  var hampster = Hampster.create();
+  hampster.get('hasBananas'); // false
+  hampster.set('numBananas', 0);
+  hampster.get('hasBananas'); // false
+  hampster.set('numBananas', 1);
+  hampster.get('hasBananas'); // true
+  hampster.set('numBananas', null);
+  hampster.get('hasBananas'); // false
+  ```
+
   @method computed.bool
   @for Ember
   @param {String} dependentKey
@@ -522,6 +699,24 @@ registerComputed('bool', function(dependentKey) {
 });
 
 /**
+  A computed property which matches the original value for the
+  dependent property against a given RegExp, returning `true`
+  if they values matches the RegExp and `false` if it does not.
+
+  Example
+
+  ```javascript
+  var User = Ember.Object.extend({
+    hasValidEmail: Ember.computed.match('email', /^.+@.+\..+$/)
+  });
+  var user = User.create({loggedIn: false});
+  user.get('hasValidEmail'); // false
+  user.set('email', '');
+  user.get('hasValidEmail'); // false
+  user.set('email', 'ember_hampster@example.com');
+  user.get('hasValidEmail'); // true
+  ```
+
   @method computed.match
   @for Ember
   @param {String} dependentKey
@@ -535,6 +730,23 @@ registerComputed('match', function(dependentKey, regexp) {
 });
 
 /**
+  A computed property that returns true if the provided dependent property
+  is equal to the given value.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    napTime: Ember.computed.equal('state', 'sleepy')
+  });
+  var hampster = Hampster.create();
+  hampster.get('napTime'); // false
+  hampster.set('state', 'sleepy');
+  hampster.get('napTime'); // false
+  hampster.set('state', 'hungry');
+  hampster.get('napTime'); // false
+  ```
+
   @method computed.equal
   @for Ember
   @param {String} dependentKey
@@ -547,6 +759,23 @@ registerComputed('equal', function(dependentKey, value) {
 });
 
 /**
+  A computed property that returns true if the provied dependent property
+  is greater than the provided value.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    hasTooManyBananas: Ember.computed.gt('numBananas', 10)
+  });
+  var hampster = Hampster.create();
+  hampster.get('hasTooManyBananas'); // false
+  hampster.set('numBananas', 3);
+  hampster.get('hasTooManyBananas'); // false
+  hampster.set('numBananas', 11);
+  hampster.get('hasTooManyBananas'); // true
+  ```
+
   @method computed.gt
   @for Ember
   @param {String} dependentKey
@@ -559,6 +788,23 @@ registerComputed('gt', function(dependentKey, value) {
 });
 
 /**
+  A computed property that returns true if the provided dependent property
+  is greater than or equal to the provided value.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    hasTooManyBananas: Ember.computed.gte('numBananas', 10)
+  });
+  var hampster = Hampster.create();
+  hampster.get('hasTooManyBananas'); // false
+  hampster.set('numBananas', 3);
+  hampster.get('hasTooManyBananas'); // false
+  hampster.set('numBananas', 10);
+  hampster.get('hasTooManyBananas'); // true
+  ```
+
   @method computed.gte
   @for Ember
   @param {String} dependentKey
@@ -571,6 +817,23 @@ registerComputed('gte', function(dependentKey, value) {
 });
 
 /**
+  A computed property that returns true if the provided dependent property
+  is less than the provided value.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    needsMoreBananas: Ember.computed.lt('numBananas', 3)
+  });
+  var hampster = Hampster.create();
+  hampster.get('needsMoreBananas'); // true
+  hampster.set('numBananas', 3);
+  hampster.get('needsMoreBananas'); // false
+  hampster.set('numBananas', 2);
+  hampster.get('needsMoreBananas'); // true
+  ```
+
   @method computed.lt
   @for Ember
   @param {String} dependentKey
@@ -583,6 +846,23 @@ registerComputed('lt', function(dependentKey, value) {
 });
 
 /**
+  A computed property that returns true if the provided dependent property
+  is less than or equal to the provided value.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    needsMoreBananas: Ember.computed.lte('numBananas', 3)
+  });
+  var hampster = Hampster.create();
+  hampster.get('needsMoreBananas'); // true
+  hampster.set('numBananas', 5);
+  hampster.get('needsMoreBananas'); // false
+  hampster.set('numBananas', 3);
+  hampster.get('needsMoreBananas'); // true
+  ```
+
   @method computed.lte
   @for Ember
   @param {String} dependentKey
@@ -595,10 +875,28 @@ registerComputed('lte', function(dependentKey, value) {
 });
 
 /**
+  A computed property that performs a logical `and` on the
+  original values for the provided dependent properties.
+
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    readyForCamp: Ember.computed.and('hasTent', 'hasBackpack')
+  });
+  var hampster = Hampster.create();
+  hampster.get('readyForCamp'); // false
+  hampster.set('hasTent', true);
+  hampster.get('readyForCamp'); // false
+  hampster.set('hasBackpack', true);
+  hampster.get('readyForCamp'); // true
+  ```
+
   @method computed.and
   @for Ember
   @param {String} dependentKey, [dependentKey...]
-  @return {Ember.ComputedProperty} computed property which peforms
+  @return {Ember.ComputedProperty} computed property which performs
   a logical `and` on the values of all the original values for properties.
 */
 registerComputedWithProperties('and', function(properties) {
@@ -611,10 +909,25 @@ registerComputedWithProperties('and', function(properties) {
 });
 
 /**
+  A computed property that which performs a logical `or` on the
+  original values for the provided dependent properties.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    readyForRain: Ember.computed.or('hasJacket', 'hasUmbrella')
+  });
+  var hampster = Hampster.create();
+  hampster.get('readyForRain'); // false
+  hampster.set('hasJacket', true);
+  hampster.get('readyForRain'); // true
+  ```
+
   @method computed.or
   @for Ember
   @param {String} dependentKey, [dependentKey...]
-  @return {Ember.ComputedProperty} computed property which peforms
+  @return {Ember.ComputedProperty} computed property which performs
   a logical `or` on the values of all the original values for properties.
 */
 registerComputedWithProperties('or', function(properties) {
@@ -627,6 +940,21 @@ registerComputedWithProperties('or', function(properties) {
 });
 
 /**
+  A computed property that returns the first truthy value
+  from a list of dependent properties.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    hasClothes: Ember.computed.any('hat', 'shirt')
+  });
+  var hampster = Hampster.create();
+  hampster.get('hasClothes'); // null
+  hampster.set('shirt', 'Hawaiian Shirt');
+  hampster.get('hasClothes'); // 'Hawaiian Shirt'
+  ```
+
   @method computed.any
   @for Ember
   @param {String} dependentKey, [dependentKey...]
@@ -643,13 +971,29 @@ registerComputedWithProperties('any', function(properties) {
 });
 
 /**
+  A computed property that returns the array of values
+  for the provided dependent properties.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    clothes: Ember.computed.map('hat', 'shirt')
+  });
+  var hampster = Hampster.create();
+  hampster.get('clothes'); // [null, null]
+  hampster.set('hat', 'Camp Hat');
+  hampster.set('shirt', 'Camp Shirt');
+  hampster.get('clothes'); // ['Camp Hat', 'Camp Shirt']
+  ```
+
   @method computed.map
   @for Ember
   @param {String} dependentKey, [dependentKey...]
   @return {Ember.ComputedProperty} computed property which maps
   values of all passed properties in to an array.
 */
-registerComputedWithProperties('map', function(properties) {
+registerComputedWithProperties('collect', function(properties) {
   var res = [];
   for (var key in properties) {
     if (properties.hasOwnProperty(key)) {
@@ -699,17 +1043,13 @@ Ember.computed.alias = function(dependentKey) {
 };
 
 /**
-  @method computed.oneWay
-  @for Ember
-  @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which creates an
-  one way computed property to the original value for property.
-
-  Where `computed.alias` aliases `get` and `set`, and allows for bidirectional 
+  Where `computed.alias` aliases `get` and `set`, and allows for bidirectional
   data flow, `computed.oneWay` only provides an aliased `get`. The `set` will
   not mutate the upstream property, rather causes the current property to
   become the value set. This causes the downstream property to permentantly
   diverge from the upstream property.
+
+  Example
 
   ```javascript
   User = Ember.Object.extend({
@@ -732,6 +1072,12 @@ Ember.computed.alias = function(dependentKey) {
   user.get('firstName');
   # 'Teddy'
   ```
+
+  @method computed.oneWay
+  @for Ember
+  @param {String} dependentKey
+  @return {Ember.ComputedProperty} computed property which creates an
+  one way computed property to the original value for property.
 */
 Ember.computed.oneWay = function(dependentKey) {
   return Ember.computed(dependentKey, function() {
@@ -741,6 +1087,23 @@ Ember.computed.oneWay = function(dependentKey) {
 
 
 /**
+  A computed property that acts like a standard getter and setter,
+  but retruns the value at the provided `defaultPath` if the
+  property itself has not been set to a value
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    wishList: Ember.computed.defaultTo('favoriteFood')
+  });
+  var hampster = Hampster.create({favoriteFood: 'Banana'});
+  hampster.get('wishList'); // 'Banana'
+  hampster.set('wishList', 'More Unit Tests');
+  hampster.get('wishList'); // 'More Unit Tests'
+  hampster.get('favoriteFood'); // 'Banana'
+  ```
+
   @method computed.defaultTo
   @for Ember
   @param {String} defaultPath
@@ -755,3 +1118,5 @@ Ember.computed.defaultTo = function(defaultPath) {
     return newValue != null ? newValue : get(this, defaultPath);
   });
 };
+
+

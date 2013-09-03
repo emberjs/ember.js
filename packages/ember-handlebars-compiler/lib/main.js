@@ -102,16 +102,7 @@ function makeBindings(options) {
   @param {String} dependentKeys*
 */
 Ember.Handlebars.helper = function(name, value) {
-  if (Ember.Component.detect(value)) {
-    Ember.assert("You tried to register a component named '" + name + "', but component names must include a '-'", name.match(/-/));
-
-    var proto = value.proto();
-    if (!proto.layoutName && !proto.templateName) {
-      value.reopen({
-        layoutName: 'components/' + name
-      });
-    }
-  }
+  Ember.assert("You tried to register a component named '" + name + "', but component names must include a '-'", !Ember.Component.detect(value) || name.match(/-/));
 
   if (Ember.View.detect(value)) {
     Ember.Handlebars.registerHelper(name, function(options) {
@@ -163,7 +154,6 @@ if (Handlebars.JavaScriptCompiler) {
 
 
 Ember.Handlebars.JavaScriptCompiler.prototype.namespace = "Ember.Handlebars";
-
 
 Ember.Handlebars.JavaScriptCompiler.prototype.initializeBuffer = function() {
   return "''";
@@ -268,7 +258,7 @@ if (Handlebars.compile) {
 
     var template = Ember.Handlebars.template(templateSpec);
     template.isMethod = false; //Make sure we don't wrap templates with ._super
-      
+
     return template;
   };
 }

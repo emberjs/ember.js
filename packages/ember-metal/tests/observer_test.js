@@ -28,6 +28,8 @@ testBoth('observer should fire when dependent property is modified', function(ge
     return get(this,'bar').toUpperCase();
   }).property('bar'));
 
+  get(obj, 'foo');
+
   var count = 0;
   Ember.addObserver(obj, 'foo', function() {
     equal(get(obj, 'foo'), 'BAZ', 'should have invoked after prop change');
@@ -53,6 +55,60 @@ testBoth('nested observers should fire in order', function(get,set) {
   equal(barCount, 1, 'barCount should have fired');
   equal(fooCount, 1, 'foo should have fired');
 
+});
+
+testBoth('removing an chain observer on change should not fail', function(get,set) {
+  var foo = { bar: 'bar' },
+    obj1 = { foo: foo }, obj2 = { foo: foo }, obj3 = { foo: foo }, obj4 = { foo: foo },
+    count1=0, count2=0, count3=0, count4=0;
+  function observer1() { count1++; }
+  function observer2() { count2++; }
+  function observer3() {
+    count3++;
+    Ember.removeObserver(obj1, 'foo.bar', observer1);
+    Ember.removeObserver(obj2, 'foo.bar', observer2);
+    Ember.removeObserver(obj4, 'foo.bar', observer4);
+  }
+  function observer4() { count4++; }
+
+  Ember.addObserver(obj1, 'foo.bar' , observer1);
+  Ember.addObserver(obj2, 'foo.bar' , observer2);
+  Ember.addObserver(obj3, 'foo.bar' , observer3);
+  Ember.addObserver(obj4, 'foo.bar' , observer4);
+
+  set(foo, 'bar', 'baz');
+
+  equal(count1, 1, 'observer1 fired');
+  equal(count2, 1, 'observer2 fired');
+  equal(count3, 1, 'observer3 fired');
+  equal(count4, 0, 'observer4 did not fire');
+});
+
+testBoth('removing an chain before observer on change should not fail', function(get,set) {
+  var foo = { bar: 'bar' },
+    obj1 = { foo: foo }, obj2 = { foo: foo }, obj3 = { foo: foo }, obj4 = { foo: foo },
+    count1=0, count2=0, count3=0, count4=0;
+  function observer1() { count1++; }
+  function observer2() { count2++; }
+  function observer3() {
+    count3++;
+    Ember.removeBeforeObserver(obj1, 'foo.bar', observer1);
+    Ember.removeBeforeObserver(obj2, 'foo.bar', observer2);
+    Ember.removeBeforeObserver(obj4, 'foo.bar', observer4);
+  }
+  function observer4() { count4++; }
+
+  Ember.addBeforeObserver(obj1, 'foo.bar' , observer1);
+  Ember.addBeforeObserver(obj2, 'foo.bar' , observer2);
+  Ember.addBeforeObserver(obj3, 'foo.bar' , observer3);
+  Ember.addBeforeObserver(obj4, 'foo.bar' , observer4);
+
+  set(foo, 'bar', 'baz');
+
+  equal(count1, 1, 'observer1 fired');
+  equal(count2, 1, 'observer2 fired');
+  equal(count3, 1, 'observer3 fired');
+  equal(count4, 0, 'observer4 did not fire');
 });
 
 testBoth('suspending an observer should not fire during callback', function(get,set) {
@@ -471,6 +527,8 @@ testBoth('observer should fire before dependent property is modified', function(
     return get(this,'bar').toUpperCase();
   }).property('bar'));
 
+  get(obj, 'foo');
+
   var count = 0;
   Ember.addBeforeObserver(obj, 'foo', function() {
     equal(get(obj, 'foo'), 'BAR', 'should have invoked after prop change');
@@ -573,6 +631,24 @@ module('Ember.addObserver - dependentkey with chained properties', {
     obj = count = null;
     Ember.lookup = originalLookup;
   }
+});
+
+
+testBoth('depending on a chain with a computed property', function (get, set){
+  Ember.defineProperty(obj, 'computed', Ember.computed(function () {
+    return {foo: 'bar'};
+  }));
+
+  var changed = 0;
+  Ember.addObserver(obj, 'computed.foo', function () {
+    changed++;
+  });
+
+  equal(undefined, Ember.cacheFor(obj, 'computed'), 'addObserver should not compute CP');
+
+  set(obj, 'computed.foo', 'baz');
+
+  equal(changed, 1, 'should fire observer');
 });
 
 testBoth('depending on a simple chain', function(get, set) {

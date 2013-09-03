@@ -54,6 +54,7 @@ define("rsvp/async",
     var browserGlobal = (typeof window !== 'undefined') ? window : {};
     var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
     var async;
+    var local = (typeof global !== 'undefined') ? global : this;
 
     // old node
     function useNextTick() {
@@ -104,7 +105,7 @@ define("rsvp/async",
 
     function useSetTimeout() {
       return function(callback, arg) {
-        setTimeout(function() {
+        local.setTimeout(function() {
           callback(arg);
         }, 1);
       };
@@ -487,6 +488,10 @@ define("rsvp/promise",
         });
 
         return thenPromise;
+      },
+
+      fail: function(fail) {
+        return this.then(null, fail);
       }
     };
 
@@ -589,19 +594,36 @@ define("rsvp/resolve",
 
     __exports__.resolve = resolve;
   });
+define("rsvp/rethrow",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    var local = (typeof global === "undefined") ? this : global;
+
+    function rethrow(reason) {
+      local.setTimeout(function() {
+        throw reason;
+      });
+      throw reason;
+    }
+
+
+    __exports__.rethrow = rethrow;
+  });
 define("rsvp",
-  ["rsvp/events","rsvp/promise","rsvp/node","rsvp/all","rsvp/hash","rsvp/defer","rsvp/config","rsvp/resolve","rsvp/reject","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __exports__) {
+  ["rsvp/events","rsvp/promise","rsvp/node","rsvp/all","rsvp/hash","rsvp/rethrow","rsvp/defer","rsvp/config","rsvp/resolve","rsvp/reject","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __exports__) {
     "use strict";
     var EventTarget = __dependency1__.EventTarget;
     var Promise = __dependency2__.Promise;
     var denodeify = __dependency3__.denodeify;
     var all = __dependency4__.all;
     var hash = __dependency5__.hash;
-    var defer = __dependency6__.defer;
-    var config = __dependency7__.config;
-    var resolve = __dependency8__.resolve;
-    var reject = __dependency9__.reject;
+    var rethrow = __dependency6__.rethrow;
+    var defer = __dependency7__.defer;
+    var config = __dependency8__.config;
+    var resolve = __dependency9__.resolve;
+    var reject = __dependency10__.reject;
 
     function configure(name, value) {
       config[name] = value;
@@ -612,6 +634,7 @@ define("rsvp",
     __exports__.EventTarget = EventTarget;
     __exports__.all = all;
     __exports__.hash = hash;
+    __exports__.rethrow = rethrow;
     __exports__.defer = defer;
     __exports__.denodeify = denodeify;
     __exports__.configure = configure;

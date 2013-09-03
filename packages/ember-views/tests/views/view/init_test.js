@@ -24,17 +24,6 @@ test("registers view in the global views hash using layerId for event targeted",
   equal(Ember.View.views[get(view, 'elementId')], view, 'registers view');
 });
 
-test("registers itself with a controller if the viewController property is set", function() {
-  lookup.TestApp = {};
-  lookup.TestApp.fooController = Ember.Object.create();
-
-  view = Ember.View.create({
-    viewController: 'TestApp.fooController'
-  });
-
-  equal(lookup.TestApp.fooController.get('view'), view, "sets the view property of the controller");
-});
-
 module("Ember.View.createWithMixins");
 
 test("should warn if a non-array is used for classNames", function() {

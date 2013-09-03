@@ -374,19 +374,18 @@ test("should call the cancel method when escape key is pressed", function() {
 });
 
 test("should send an action if one is defined when the return key is pressed", function() {
-  expect(3);
+  expect(2);
 
   var StubController = Ember.Object.extend({
     send: function(actionName, value, sender) {
       equal(actionName, 'didTriggerAction', "text field sent correct action name");
       equal(value, "textFieldValue", "text field sent its current value as first argument");
-      equal(sender, textField, "text field sent itself as second argument");
     }
   });
 
   textField.set('action', 'didTriggerAction');
   textField.set('value', "textFieldValue");
-  textField.set('controller', StubController.create());
+  textField.set('targetObject', StubController.create());
 
   Ember.run(function() { textField.append(); });
 
@@ -399,20 +398,19 @@ test("should send an action if one is defined when the return key is pressed", f
 });
 
 test("should send an action on keyPress if one is defined with onEvent=keyPress", function() {
-  expect(3);
+  expect(2);
 
   var StubController = Ember.Object.extend({
     send: function(actionName, value, sender) {
       equal(actionName, 'didTriggerAction', "text field sent correct action name");
       equal(value, "textFieldValue", "text field sent its current value as first argument");
-      equal(sender, textField, "text field sent itself as second argument");
     }
   });
 
   textField.set('action', 'didTriggerAction');
   textField.set('onEvent', 'keyPress');
   textField.set('value', "textFieldValue");
-  textField.set('controller', StubController.create());
+  textField.set('targetObject', StubController.create());
 
   Ember.run(function() { textField.append(); });
 
@@ -450,47 +448,3 @@ test("bubbling of handled actions can be enabled via bubbles property", function
   textField.trigger('keyUp', event);
   equal(stopPropagationCount, 1, "propagation was prevented if bubbles is false");
 });
-
-// test("listens for focus and blur events", function() {
-//   var focusCalled = 0;
-//   var blurCalled = 0;
-
-//   textField.focus = function() {
-//     focusCalled++;
-//   };
-//   textField.blur = function() {
-//     blurCalled++;
-//   };
-
-//   equal(focusCalled+blurCalled, 0, "precond - no callbacks called yet");
-
-//   textField.$().focus();
-//   equal(focusCalled, 1, "focus called after field receives focus");
-
-//   textField.$().blur();
-//   equal(blurCalled, 1, "blur alled after field blurs");
-// });
-
-// test("calls correct method for key events", function() {
-//   var insertNewlineCalled = 0;
-//   var cancelCalled = 0;
-
-//   textField.insertNewline = function() {
-//     insertNewlineCalled++;
-//     return true;
-//   };
-//   textField.cancel = function() {
-//     cancelCalled++;
-//     return true;
-//   };
-
-//   textField.$().focus();
-//   equal(insertNewlineCalled+cancelCalled, 0, "precond - no callbacks called yet");
-
-//   Ember.RootResponder.responder.keyup(new Ember.Event({ type: 'keyup', keyCode: 13 }));
-//   equal(insertNewlineCalled, 1, "calls insertNewline after hitting return");
-
-//   Ember.RootResponder.responder.keyup(new Ember.Event({ type: 'keyup', keyCode: 27 }));
-//   equal(cancelCalled, 1, "calls cancel after pressing escape key");
-// });
-

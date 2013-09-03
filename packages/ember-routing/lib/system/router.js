@@ -56,10 +56,12 @@ Ember.Router = Ember.Object.extend({
     var appController = this.container.lookup('controller:application'),
         path = Ember.Router._routePath(infos);
 
-    if (!('currentPath' in appController)) {
-      defineProperty(appController, 'currentPath');
-    }
+    if (!('currentPath' in appController)) { defineProperty(appController, 'currentPath'); }
     set(appController, 'currentPath', path);
+
+    if (!('currentRouteName' in appController)) { defineProperty(appController, 'currentRouteName'); }
+    set(appController, 'currentRouteName', infos[infos.length - 1].name);
+
     this.notifyPropertyChange('url');
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
@@ -146,7 +148,7 @@ Ember.Router = Ember.Object.extend({
 
   _getHandlerFunction: function() {
     var seen = {}, container = this.container,
-        DefaultRoute = container.resolve('route:basic'),
+        DefaultRoute = container.lookupFactory('route:basic'),
         self = this;
 
     return function(name) {
@@ -170,8 +172,12 @@ Ember.Router = Ember.Object.extend({
 
       if (name === 'application') {
         // Inject default `error` handler.
-        handler.events = handler.events || {};
-        handler.events.error = handler.events.error || Ember.Router._defaultErrorHandler;
+        // Note: `events` is deprecated, but we'll let the
+        // deprecation warnings be handled at event-handling time rather
+        // than duplicating that logic here.
+        var actions = handler._actions || handler.events;
+        if (!actions) { actions = handler._actions = {}; }
+        actions.error = actions.error || Ember.Router._defaultErrorHandler;
       }
 
       handler.routeName = name;
@@ -219,6 +225,7 @@ Ember.Router = Ember.Object.extend({
     if (passedName.charAt(0) === '/') {
       name = passedName;
     } else {
+
       if (!this.router.hasRoute(passedName)) {
         name = args[0] = passedName + '.index';
       } else {
@@ -237,6 +244,8 @@ Ember.Router = Ember.Object.extend({
 
     transitionPromise.then(function(route) {
       self._transitionCompleted(route);
+    }, function(error){
+      Ember.assert("The URL '" + error.message + "' did match any routes in your application", error.name !== "UnrecognizedURLError");
     });
 
     // We want to return the configurable promise object
@@ -277,12 +286,50 @@ Ember.Router = Ember.Object.extend({
   }
 });
 
+function triggerEvent(handlerInfos, ignoreFailure, args) {
+  var name = args.shift();
+
+  if (!handlerInfos) {
+    if (ignoreFailure) { return; }
+    throw new Error("Could not trigger event '" + name + "'. There are no active handlers");
+  }
+
+  var eventWasHandled = false;
+
+  for (var i=handlerInfos.length-1; i>=0; i--) {
+    var handlerInfo = handlerInfos[i],
+        handler = handlerInfo.handler;
+
+    if (handler._actions && handler._actions[name]) {
+      if (handler._actions[name].apply(handler, args) === true) {
+        eventWasHandled = true;
+      } else {
+        return;
+      }
+    } else if (handler.events && handler.events[name]) {
+      Ember.deprecate('Action handlers contained in an `events` object are deprecated in favor of putting them in an `actions` object (' + name + ' on ' + handler + ')', false);
+      if (handler.events[name].apply(handler, args) === true) {
+        eventWasHandled = true;
+      } else {
+        return;
+      }
+    }
+  }
+
+  if (!eventWasHandled && !ignoreFailure) {
+    throw new Error("Nothing handled the event '" + name + "'.");
+  }
+}
+
 Ember.Router.reopenClass({
+  router: null,
   map: function(callback) {
     var router = this.router;
     if (!router) {
-      router = this.router = new Router();
+      router = new Router();
       router.callbacks = [];
+      router.triggerEvent = triggerEvent;
+      this.reopenClass({ router: router });
     }
 
     if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {

@@ -6,6 +6,11 @@
 var get = Ember.get, set = Ember.set;
 
 /**
+
+  `{{yield}}` denotes an area of a template that will be rendered inside
+  of another template. It has two main uses:
+
+  ### Use with `layout`
   When used in a Handlebars template that is assigned to an `Ember.View`
   instance's `layout` property Ember will render the layout template first,
   inserting the view's own rendered output at the `{{yield}}` location.
@@ -48,7 +53,34 @@ var get = Ember.get, set = Ember.set;
   bView.appendTo('body');
 
   // throws
-  // Uncaught Error: assertion failed: You called yield in a template that was not a layout
+  // Uncaught Error: assertion failed:
+  // You called yield in a template that was not a layout
+  ```
+
+  ### Use with Ember.Component
+  When designing components `{{yield}}` is used to denote where, inside the component's
+  template, an optional block passed to the component should render:
+
+  ```handlebars
+  <!-- application.hbs -->
+  {{#labeled-textfield value=someProperty}}
+    First name:
+  {{/my-component}}
+  ```
+
+  ```handlebars
+  <!-- components/my-component.hbs -->
+  <label>
+    {{yield}} {{input value=value}}
+  </label>
+  ```
+
+  Result:
+
+  ```html
+  <label>
+    First name: <input type="text" />
+  <label>
   ```
 
   @method yield
@@ -57,25 +89,17 @@ var get = Ember.get, set = Ember.set;
   @return {String} HTML string
 */
 Ember.Handlebars.registerHelper('yield', function(options) {
-  var currentView = options.data.view, view = currentView;
+  var view = options.data.view;
 
   while (view && !get(view, 'layout')) {
-    view = get(view, 'parentView');
+    if (view._contextView) {
+      view = view._contextView;
+    } else {
+      view = get(view, 'parentView');
+    }
   }
 
   Ember.assert("You called yield in a template that was not a layout", !!view);
 
-  var template    = get(view, 'template'),
-    contextView   = get(view, '_viewForYield'),
-    keywords      = contextView.cloneKeywords();
-
-  currentView.appendChild(Ember.View, {
-    isVirtual:    true,
-    isYield:      true,
-    tagName:      '',
-    template:     template,
-    context:      get(contextView, 'context'),
-    controller:   get(contextView, 'controller'),
-    templateData: {keywords: keywords}
-  });
+  view._yield(this, options);
 });

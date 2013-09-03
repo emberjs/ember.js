@@ -4,7 +4,7 @@ module("Ember.Application Depedency Injection – customResolver",{
   setup: function() {
     function fallbackTemplate() { return "<h1>Fallback</h1>"; }
 
-    var resolver = Ember.DefaultResolver.extend({
+    var Resolver = Ember.DefaultResolver.extend({
       resolveTemplate: function(parsedName) {
         var resolvedTemplate = this._super(parsedName);
         if (resolvedTemplate) { return resolvedTemplate; }
@@ -14,7 +14,7 @@ module("Ember.Application Depedency Injection – customResolver",{
 
     application = Ember.run(function() {
       return Ember.Application.create({
-        resolver: resolver,
+        Resolver: Resolver,
         rootElement: '#qunit-fixture'
 
       });

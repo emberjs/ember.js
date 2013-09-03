@@ -28,7 +28,7 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone;
   ```html
   <!-- app-profile template -->
   <h1>{{person.title}}</h1>
-  <img {{bindAttr src=person.avatar}}>
+  <img {{bind-attr src=person.avatar}}>
   <p class='signature'>{{person.signature}}</p>
   ```
 
@@ -50,15 +50,16 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone;
   If you want to customize the component, in order to
   handle events or actions, you implement a subclass
   of `Ember.Component` named after the name of the
-  component.
+  component. Note that `Component` needs to be appended to the name of
+  your subclass like `AppProfileComponent`.
 
   For example, you could implement the action
   `hello` for the `app-profile` component:
 
-  ```js
+  ```javascript
   App.AppProfileComponent = Ember.Component.extend({
     hello: function(name) {
-      console.log("Hello", name)
+      console.log("Hello", name);
     }
   });
   ```
@@ -100,13 +101,37 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     };
   },
 
+  _yield: function(context, options) {
+    var view = options.data.view,
+        parentView = this._parentView,
+        template = get(this, 'template');
+
+    if (template) {
+      Ember.assert("A Component must have a parent view in order to yield.", parentView);
+
+      view.appendChild(Ember.View, {
+        isVirtual: true,
+        tagName: '',
+        _contextView: parentView,
+        template: template,
+        context: get(parentView, 'context'),
+        controller: get(parentView, 'controller'),
+        templateData: { keywords: parentView.cloneKeywords() }
+      });
+    }
+  },
+
+  /**
+    If the component is currently inserted into the DOM of a parent view, this
+    property will point to the controller of the parent view.
+
+    @property targetObject
+    @type Ember.Controller
+    @default null
+  */
   targetObject: Ember.computed(function(key) {
     var parentView = get(this, '_parentView');
     return parentView ? get(parentView, 'controller') : null;
-  }).property('_parentView'),
-
-  _viewForYield: Ember.computed(function(){
-    return get(this, '_parentView') || this;
   }).property('_parentView'),
 
   /**
@@ -140,7 +165,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     target's action method. Example:
 
     ```javascript
-    App.MyTree = Ember.Component.extend({
+    App.MyTreeComponent = Ember.Component.extend({
       click: function() {
         this.sendAction('didClickTreeNode', this.get('node'));
       }

@@ -2,7 +2,7 @@ require('ember-testing/test');
 
 /**
 * @module ember
-* @sub-module ember-testing
+* @submodule ember-testing
 */
 
 var get = Ember.get,
@@ -114,9 +114,8 @@ function wait(app, value) {
   return buildChainObject(app, promise);
 }
 
-/**
- Builds an object that contains
- all helper methods. This object will be
+/*
+ Builds an object that contains all helper methods. This object will be
  returned by helpers and then-promises.
 
  This allows us to chain helpers:
@@ -134,6 +133,13 @@ function wait(app, value) {
     equal(find('.comments'),length, 0);
   });
  ```
+
+ @method buildChainObject
+ @param {Ember.Application} app
+ @param {Ember.RSVP.Promise} promise
+ @return {Object} A new object with properties for each
+                  of app's helpers to be used for continued
+                  method chaining (using promises).
 */
 function buildChainObject(app, promise) {
   var helperName, obj = {};
@@ -147,6 +153,15 @@ function buildChainObject(app, promise) {
   return obj;
 }
 
+/*
+  Used in conjunction with buildChainObject to setup a
+  continued chain of method calls (with promises)
+
+  @method chain
+  @param {Ember.Application} app
+  @param {Ember.RSVP.Promise} promise
+  @param {Function} fn
+*/
 function chain(app, promise, fn) {
   return function() {
     var args = arguments, chainedPromise;
@@ -163,7 +178,7 @@ function chain(app, promise, fn) {
 * using your app.
 *
 * Example:
-* 
+*
 * ```
 * visit('posts/index').then(function() {
 *   // assert something
@@ -171,8 +186,8 @@ function chain(app, promise, fn) {
 * ```
 *
 * @method visit
-* @param {String} url the name of the route 
-* @returns {RSVP.Promise}
+* @param {String} url the name of the route
+* @return {RSVP.Promise}
 */
 helper('visit', visit);
 
@@ -190,7 +205,7 @@ helper('visit', visit);
 *
 * @method click
 * @param {String} selector jQuery selector for finding element on the DOM
-* @returns {RSVP.Promise}
+* @return {RSVP.Promise}
 */
 helper('click', click);
 
@@ -209,7 +224,7 @@ helper('click', click);
 * @param {String} selector jQuery selector for finding element on the DOM
 * @param {String} the type of key event, e.g. `keypress`, `keydown`, `keyup`
 * @param {Number} the keyCode of the simulated key event
-* @returns {RSVP.Promise}
+* @return {RSVP.Promise}
 */
 helper('keyEvent', keyEvent);
 
@@ -228,7 +243,7 @@ helper('keyEvent', keyEvent);
 * @param {String} selector jQuery selector finding an input element on the DOM
 * to fill text with
 * @param {String} text text to place inside the input element
-* @returns {RSVP.Promise}
+* @return {RSVP.Promise}
 */
 helper('fillIn', fillIn);
 
@@ -244,7 +259,7 @@ helper('fillIn', fillIn);
 *
 * @method find
 * @param {String} selector jQuery string selector for element lookup
-* @returns {Object} jQuery object representing the results of the query
+* @return {Object} jQuery object representing the results of the query
 */
 helper('find', find);
 
@@ -265,4 +280,29 @@ helper('find', find);
 * @throws {Error} throws error if jQuery object returned has a length of 0
 */
 helper('findWithAssert', findWithAssert);
+
+/**
+  Causes the run loop to process any pending events. This is used to ensure that
+  any async operations from other helpers (or your assertions) have been processed.
+
+  This is most often used as the return value for the helper functions (see 'click',
+  'fillIn','visit',etc).
+
+  Example:
+
+  ```
+  Ember.Test.registerHelper('loginUser', function(app, username, password) {
+    visit('secured/path/here')
+    .fillIn('#username', username)
+    .fillIn('#password', username)
+    .click('.submit')
+
+    return wait(app);
+  });
+
+  @method wait
+  @param {Object} value The value to be returned.
+  @return {RSVP.Promise}
+  ```
+*/
 helper('wait', wait);

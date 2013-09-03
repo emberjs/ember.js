@@ -28,12 +28,12 @@ testing_packages:
   - container
   - ember-metal
   - ember-runtime
-  - ember-states
   - ember-views
   - ember-handlebars
   - ember-routing
   - ember-application
   - ember
+  - ember-extension-support
   - ember-testing
 testing_additional_requires:
   - ember-debug

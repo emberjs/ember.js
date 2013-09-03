@@ -9,26 +9,12 @@ require("ember-handlebars/ext");
 var set = Ember.set, get = Ember.get;
 
 /**
-  The `Ember.Checkbox` view class renders a checkbox
-  [input](https://developer.mozilla.org/en/HTML/Element/Input) element. It
-  allows for binding an Ember property (`checked`) to the status of the
-  checkbox.
+  The internal class used to create text inputs when the `{{input}}`
+  helper is used with `type` of `checkbox`.
 
-  Example:
+  See Handlebars.helpers.input for usage details.
 
-  ```handlebars
-  {{view Ember.Checkbox checkedBinding="receiveEmail"}}
-  ```
-
-  You can add a `label` tag yourself in the template where the `Ember.Checkbox`
-  is being used.
-
-  ```handlebars
-  <label>
-    {{view Ember.Checkbox classNames="applicaton-specific-checkbox"}}
-    Some Title
-  </label>
-  ```
+  ## Direct manipulation of `checked`
 
   The `checked` attribute of an `Ember.Checkbox` object should always be set
   through the Ember object or by interacting with its rendered element
@@ -39,8 +25,8 @@ var set = Ember.set, get = Ember.get;
   ## Layout and LayoutName properties
 
   Because HTML `input` elements are self closing `layout` and `layoutName`
-  properties will not be applied. See `Ember.View`'s layout section for more
-  information.
+  properties will not be applied. See [Ember.View](/api/classes/Ember.View.html)'s
+  layout section for more information.
 
   @class Checkbox
   @namespace Ember

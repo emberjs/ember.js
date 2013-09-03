@@ -1,10 +1,11 @@
-var get = Ember.get, set = Ember.set, container, view;
+var get = Ember.get, set = Ember.set, container, view, otherContainer;
 
 module("ember-views/views/container_view_test", {
   teardown: function() {
     Ember.run(function() {
       container.destroy();
       if (view) { view.destroy(); }
+      if (otherContainer) { otherContainer.destroy(); }
     });
   }
 });
@@ -42,18 +43,51 @@ test("should be able to insert views after the DOM representation is created", f
 
 test("should be able to observe properties that contain child views", function() {
   Ember.run(function() {
-    container = Ember.ContainerView.create({
+    var Container = Ember.ContainerView.extend({
       childViews: ['displayView'],
-      displayIsDisplayedBinding: 'displayView.isDisplayed',
+      displayIsDisplayed: Ember.computed.alias('displayView.isDisplayed'),
 
       displayView: Ember.View.extend({
         isDisplayed: true
       })
     });
 
+    container = Container.create();
     container.appendTo('#qunit-fixture');
   });
-  ok(container.get('displayIsDisplayed'), "can bind to child view");
+  equal(container.get('displayIsDisplayed'), true, "can bind to child view");
+
+  Ember.run(function () {
+    container.set('displayView.isDisplayed', false);
+  });
+
+  equal(container.get('displayIsDisplayed'), false, "can bind to child view");
+});
+
+test("childViews inherit their parents iocContainer, and retain the original container even when moved", function() {
+  container = Ember.ContainerView.create({
+    container: {}
+  });
+
+  otherContainer = Ember.ContainerView.create({
+    container: {}
+  });
+
+  view = Ember.View.create();
+
+  container.pushObject(view);
+
+  equal(view.get('parentView'), container, "sets the parent view after the childView is appended");
+  equal(get(view, 'container'), container.container, "inherits its parentViews iocContainer");
+
+  container.removeObject(view);
+
+  equal(get(view, 'container'), container.container, "leaves existing iocContainer alone");
+
+  otherContainer.pushObject(view);
+
+  equal(view.get('parentView'), otherContainer, "sets the new parent view after the childView is appended");
+  equal(get(view, 'container'), container.container, "still inherits its original parentViews iocContainer");
 });
 
 test("should set the parentView property on views that are added to the child views array", function() {
@@ -135,6 +169,60 @@ test("should trigger parentViewDidChange when parentView is changed", function()
   Ember.run(function() {
     secondContainer.destroy();
   });
+});
+
+test("should be able to push initial views onto the ContainerView and have it behave", function() {
+  var Container = Ember.ContainerView.extend({
+    init: function () {
+      this._super();
+      this.pushObject(Ember.View.create({
+        name: 'A',
+        template: function () {
+          return 'A';
+        }
+      }));
+      this.pushObject(Ember.View.create({
+        name: 'B',
+        template: function () {
+          return 'B';
+        }
+      }));
+    },
+    lengthSquared: Ember.computed(function () {
+      return this.get('length') * this.get('length');
+    }).property('length'),
+
+    names: Ember.computed(function () {
+      return this.mapBy('name');
+    }).property('@each.name')
+  });
+
+  container = Container.create();
+
+  equal(container.get('lengthSquared'), 4);
+
+  deepEqual(container.get('names'), ['A','B']);
+
+  Ember.run(container, 'appendTo', '#qunit-fixture');
+
+  equal(container.$().text(), 'AB');
+
+  Ember.run(function () {
+    container.pushObject(Ember.View.create({
+      name: 'C',
+      template: function () {
+        return 'C';
+      }
+    }));
+  });
+
+  equal(container.get('lengthSquared'), 9);
+
+  deepEqual(container.get('names'), ['A','B','C']);
+
+  equal(container.$().text(), 'ABC');
+
+  Ember.run(container, 'destroy');
 });
 
 test("views that are removed from a ContainerView should have their child views cleared", function() {

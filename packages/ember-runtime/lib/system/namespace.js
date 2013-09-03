@@ -161,6 +161,8 @@ function classToString() {
 
   if (this[NAME_KEY]) {
     ret = this[NAME_KEY];
+  } else if (this._toString) {
+    ret = this._toString; 
   } else {
     var str = superClassString(this);
     if (str) {

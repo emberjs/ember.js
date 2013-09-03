@@ -6,8 +6,12 @@ module Ember
   # we might want to unify this with the ember version string,
   # but consistency?
   def rubygems_version_string
-    major, rc = VERSION.sub('-','.').scan(/(\d+\.\d+\.\d+\.rc)\.(\d+)/).first
+    if VERSION =~ /rc/
+      major, rc = VERSION.sub('-','.').scan(/(\d+\.\d+\.\d+\.rc)\.(\d+)/).first
 
-    "#{major}#{rc}"
+      "#{major}#{rc}"
+    else
+      VERSION
+    end
   end
 end

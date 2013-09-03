@@ -44,7 +44,9 @@ if (!('MANDATORY_SETTER' in Ember.ENV)) {
     falsy, an exception will be thrown.
 */
 Ember.assert = function(desc, test) {
-  Ember.Logger.assert(test, desc);
+  if (!test) {
+    Ember.Logger.assert(test, desc);
+  }
 
   if (Ember.testing && !test) {
     // when testing, ensure test failures when assertions fail
@@ -148,3 +150,15 @@ Ember.deprecateFunc = function(message, func) {
     return func.apply(this, arguments);
   };
 };
+
+
+// Inform the developer about the Ember Inspector if not installed.
+if (!Ember.testing) {
+  if (typeof window !== 'undefined' && window.chrome && window.addEventListener) {
+    window.addEventListener("load", function() {
+      if (document.body && document.body.dataset && !document.body.dataset.emberExtension) {
+        Ember.debug('For more advanced debugging, install the Ember Inspector from https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi');
+      }
+    }, false);
+  }
+}

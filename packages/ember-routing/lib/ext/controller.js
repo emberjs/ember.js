@@ -18,7 +18,7 @@ Ember.ControllerMixin.reopen({
     Optionally supply a model for the route in question. The model
     will be serialized into the URL using the `serialize` hook of
     the route:
-    
+
     ```javascript
       aController.transitionToRoute('blogPost', aPost);
     ```
@@ -45,6 +45,28 @@ Ember.ControllerMixin.reopen({
     return this.transitionToRoute.apply(this, arguments);
   },
 
+  /**
+    Alernative to `transitionToRoute`.  Transition the application into another route. The route may
+    be either a single route or route path:
+
+    ```javascript
+      aController.replaceRoute('blogPosts');
+      aController.replaceRoute('blogPosts.recentEntries');
+    ```
+
+    Optionally supply a model for the route in question. The model
+    will be serialized into the URL using the `serialize` hook of
+    the route:
+
+    ```javascript
+      aController.replaceRoute('blogPost', aPost);
+    ```
+
+    @param {String} name the name of the route
+    @param {...Object} models the
+    @for Ember.ControllerMixin
+    @method replaceRoute
+  */
   replaceRoute: function() {
     // target may be either another controller or a router
     var target = get(this, 'target'),

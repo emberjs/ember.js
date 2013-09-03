@@ -15,12 +15,12 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
     var binding;
 
     if (itemController) {
-      var controller = Ember.ArrayController.create();
-      set(controller, 'itemController', itemController);
-      set(controller, 'container', get(this, 'controller.container'));
-      set(controller, '_eachView', this);
-      set(controller, 'target', get(this, 'controller'));
-      set(controller, 'parentController', get(this, 'controller'));
+      var controller = get(this, 'controller.container').lookupFactory('controller:array').create({
+        parentController: get(this, 'controller'),
+        itemController: itemController,
+        target: get(this, 'controller'),
+        _eachView: this
+      });
 
       this.disableContentObservers(function() {
         set(this, 'content', controller);
@@ -143,6 +143,8 @@ GroupedEach.prototype = {
   },
 
   addArrayObservers: function() {
+    if (!this.content) { return; }
+
     this.content.addArrayObserver(this, {
       willChange: 'contentArrayWillChange',
       didChange: 'contentArrayDidChange'
@@ -150,6 +152,8 @@ GroupedEach.prototype = {
   },
 
   removeArrayObservers: function() {
+    if (!this.content) { return; }
+
     this.content.removeArrayObserver(this, {
       willChange: 'contentArrayWillChange',
       didChange: 'contentArrayDidChange'
@@ -167,6 +171,8 @@ GroupedEach.prototype = {
   },
 
   render: function() {
+    if (!this.content) { return; }
+
     var content = this.content,
         contentLength = get(content, 'length'),
         data = this.options.data,
@@ -179,12 +185,21 @@ GroupedEach.prototype = {
   },
 
   rerenderContainingView: function() {
-    Ember.run.scheduleOnce('render', this.containingView, 'rerender');
+    var self = this;
+    Ember.run.scheduleOnce('render', this, function() {
+      // It's possible it's been destroyed after we enqueued a re-render call.
+      if (!self.destroyed) {
+        self.containingView.rerender();
+      }
+    });
   },
 
   destroy: function() {
     this.removeContentObservers();
-    this.removeArrayObservers();
+    if (this.content) {
+      this.removeArrayObservers();
+    }
+    this.destroyed = true;
   }
 };
 
@@ -308,6 +323,49 @@ GroupedEach.prototype = {
   Each itemController will receive a reference to the current controller as
   a `parentController` property.
 
+  ### (Experimental) Grouped Each
+
+  When used in conjunction with the experimental [group helper](https://github.com/emberjs/group-helper),
+  you can inform Handlebars to re-render an entire group of items instead of
+  re-rendering them one at a time (in the event that they are changed en masse
+  or an item is added/removed).
+
+  ```handlebars
+  {{#group}}
+    {{#each people}}
+      {{firstName}} {{lastName}}
+    {{/each}}
+  {{/group}}
+  ```
+
+  This can be faster than the normal way that Handlebars re-renders items
+  in some cases.
+
+  If for some reason you have a group with more than one `#each`, you can make
+  one of the collections be updated in normal (non-grouped) fashion by setting
+  the option `groupedRows=true` (counter-intuitive, I know).
+
+  For example,
+
+  ```handlebars
+  {{dealershipName}}
+
+  {{#group}}
+    {{#each dealers}}
+      {{firstName}} {{lastName}}
+    {{/each}}
+
+    {{#each car in cars groupedRows=true}}
+      {{car.make}} {{car.model}} {{car.color}}
+    {{/each}}
+  {{/group}}
+  ```
+  Any change to `dealershipName` or the `dealers` collection will cause the
+  entire group to be re-rendered. However, changes to the `cars` collection
+  will be re-rendered individually (as normal).
+
+  Note that `group` behavior is also disabled by specifying an `itemViewClass`.
+
   @method each
   @for Ember.Handlebars.helpers
   @param [name] {String} name for item (used with `in`)
@@ -315,6 +373,7 @@ GroupedEach.prototype = {
   @param [options] {Object} Handlebars key/value pairs of options
   @param [options.itemViewClass] {String} a path to a view class used for each item
   @param [options.itemController] {String} name of a controller to be created for each item
+  @param [options.groupedRows] {boolean} enable normal item-by-item rendering when inside a `#group` helper
 */
 Ember.Handlebars.registerHelper('each', function(path, options) {
   if (arguments.length === 4) {

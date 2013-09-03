@@ -13,7 +13,9 @@ var get = Ember.get,
     removeBeforeObserver = Ember.removeBeforeObserver,
     removeObserver = Ember.removeObserver,
     propertyWillChange = Ember.propertyWillChange,
-    propertyDidChange = Ember.propertyDidChange;
+    propertyDidChange = Ember.propertyDidChange,
+    meta = Ember.meta,
+    defineProperty = Ember.defineProperty;
 
 function contentPropertyWillChange(content, contentKey) {
   var key = contentKey.slice(8); // remove "content."
@@ -131,27 +133,17 @@ Ember.ObjectProxy = Ember.Object.extend(/** @scope Ember.ObjectProxy.prototype *
   },
 
   setUnknownProperty: function (key, value) {
+    var m = meta(this);
+    if (m.proto === this) {
+      // if marked as prototype then just defineProperty
+      // rather than delegate
+      defineProperty(this, key, null, value);
+      return value;
+    }
+
     var content = get(this, 'content');
     Ember.assert(fmt("Cannot delegate set('%@', %@) to the 'content' property of object proxy %@: its 'content' is undefined.", [key, value, this]), content);
     return set(content, key, value);
   }
-});
 
-Ember.ObjectProxy.reopenClass({
-  create: function () {
-    var mixin, prototype, i, l, properties, keyName;
-    if (arguments.length) {
-      prototype = this.proto();
-      for (i = 0, l = arguments.length; i < l; i++) {
-        properties = arguments[i];
-        for (keyName in properties) {
-          if (!properties.hasOwnProperty(keyName) || keyName in prototype) { continue; }
-          if (!mixin) mixin = {};
-          mixin[keyName] = null;
-        }
-      }
-      if (mixin) this._initMixins([mixin]);
-    }
-    return this._super.apply(this, arguments);
-  }
 });

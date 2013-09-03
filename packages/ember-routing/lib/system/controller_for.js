@@ -5,43 +5,51 @@ var get = Ember.get;
 @submodule ember-routing
 */
 
+/**
+  
+  Finds a controller instance.
+
+  @for Ember
+  @method controllerFor
+  @private
+*/
 Ember.controllerFor = function(container, controllerName, lookupOptions) {
   return container.lookup('controller:' + controllerName, lookupOptions);
 };
-/*
+
+/**
   Generates a controller automatically if none was provided.
   The type of generated controller depends on the context.
   You can customize your generated controllers by defining
   `App.ObjectController` and `App.ArrayController`
+  
+  @for Ember
+  @method generateController
+  @private
 */
 Ember.generateController = function(container, controllerName, context) {
-  var controller, DefaultController, fullName, instance;
+  var ControllerFactory, fullName, instance, name, factoryName, controllerType;
 
   if (context && Ember.isArray(context)) {
-    DefaultController = container.resolve('controller:array');
-    controller = DefaultController.extend({
-      isGenerated: true
-    });
+    controllerType = 'array';
   } else if (context) {
-    DefaultController = container.resolve('controller:object');
-    controller = DefaultController.extend({
-      isGenerated: true
-    });
+    controllerType = 'object';
   } else {
-    DefaultController = container.resolve('controller:basic');
-    controller = DefaultController.extend({
-      isGenerated: true
-    });
+    controllerType = 'basic';
   }
 
-  controller.toString = function() {
-    return "(generated " + controllerName + " controller)";
-  };
+  factoryName = 'controller:' + controllerType;
 
-  controller.isGenerated = true;
+  ControllerFactory = container.lookupFactory(factoryName).extend({
+    isGenerated: true,
+    toString: function() {
+      return "(generated " + controllerName + " controller)";
+    }
+  });
 
   fullName = 'controller:' + controllerName;
-  container.register(fullName, controller);
+
+  container.register(fullName, ControllerFactory);
 
   instance = container.lookup(fullName);
 

@@ -1,3 +1,4 @@
+require('ember-metal/enumerable_utils');
 require('ember-runtime/mixins/observable');
 require('ember-runtime/mixins/mutable_array');
 require('ember-runtime/mixins/copyable');
@@ -8,7 +9,7 @@ require('ember-runtime/mixins/copyable');
 */
 
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, replace = Ember.EnumerableUtils._replace;
 
 // Add Ember.Array to Array.prototype. Remove methods with native
 // implementations and supply some more optimized versions of generic methods
@@ -30,7 +31,7 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
   // primitive for array support.
   replace: function(idx, amt, objects) {
 
-    if (this.isFrozen) throw Ember.FROZEN_ERROR ;
+    if (this.isFrozen) throw Ember.FROZEN_ERROR;
 
     // if we replaced exactly the same number of items, then pass only the
     // replaced range. Otherwise, pass the full remaining array length
@@ -39,14 +40,13 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
     this.arrayContentWillChange(idx, amt, len);
 
     if (!objects || objects.length === 0) {
-      this.splice(idx, amt) ;
+      this.splice(idx, amt);
     } else {
-      var args = [idx, amt].concat(objects) ;
-      this.splice.apply(this,args) ;
+      replace(this, idx, amt, objects);
     }
 
     this.arrayContentDidChange(idx, amt, len);
-    return this ;
+    return this;
   },
 
   // If you ask for an unknown property, then try to collect the value
@@ -123,7 +123,26 @@ Ember.NativeArray = NativeArray;
 
 /**
   Creates an `Ember.NativeArray` from an Array like object.
-  Does not modify the original object.
+  Does not modify the original object. Ember.A is not needed if
+  `Ember.EXTEND_PROTOTYPES` is `true` (the default value). However,
+  it is recommended that you use Ember.A when creating addons for
+  ember or when you can not garentee that `Ember.EXTEND_PROTOTYPES`
+  will be `true`.
+
+  Example
+
+  ```js
+  var Pagination = Ember.CollectionView.extend({
+    tagName: 'ul',
+    classNames: ['pagination'],
+    init: function() {
+      this._super();
+      if (!this.get('content')) {
+        this.set('content', Ember.A([]));
+      }
+    }
+  });
+  ```
 
   @method A
   @for Ember
@@ -136,7 +155,17 @@ Ember.A = function(arr) {
 
 /**
   Activates the mixin on the Array.prototype if not already applied. Calling
-  this method more than once is safe.
+  this method more than once is safe. This will be called when ember is loaded
+  unless you have `Ember.EXTEND_PROTOTYPES` or `Ember.EXTEND_PROTOTYPES.Array`
+  set to `false`.
+
+  Example
+
+  ```js
+  if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Array) {
+    Ember.NativeArray.activate();
+  }
+  ```
 
   @method activate
   @for Ember.NativeArray

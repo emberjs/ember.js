@@ -9,6 +9,7 @@ module("Ember.Application Depedency Injection", {
   },
 
   teardown: function() {
+    Ember.TEMPLATES = {};
     Ember.lookup = originalLookup;
     Ember.run(application, 'destroy');
   }
@@ -26,7 +27,7 @@ test('the default resolver can look things up in other namespaces', function() {
 test('the default resolver looks up templates in Ember.TEMPLATES', function() {
   function fooTemplate() {}
   function fooBarTemplate() {}
-  function fooBarBazTemplate() {} 
+  function fooBarBazTemplate() {}
 
   Ember.TEMPLATES['foo'] = fooTemplate;
   Ember.TEMPLATES['fooBar'] = fooBarTemplate;
@@ -38,23 +39,32 @@ test('the default resolver looks up templates in Ember.TEMPLATES', function() {
 });
 
 test('the default resolver looks up basic name as no prefix', function() {
-  equal(locator.lookup('controller:basic'), Ember.Controller);
+  ok(Ember.Controller.detect(locator.lookup('controller:basic')), 'locator looksup correct controller');
 });
+
+function detectEqual(first, second, message) {
+  ok(first.detect(second), message);
+}
 
 test('the default resolver looks up arbitrary types on the namespace', function() {
   application.FooManager = Ember.Object.extend({});
-  equal(locator.resolve('manager:foo'), application.FooManager, "looks up FooManager on application");
+
+  detectEqual(application.FooManager, locator.resolver('manager:foo'),"looks up FooManager on application");
 });
 
 test("the default resolver resolves models on the namespace", function() {
   application.Post = Ember.Object.extend({});
-  equal(locator.lookupFactory('model:post'), application.Post, "looks up Post model on application");
+
+  detectEqual(application.Post, locator.lookupFactory('model:post'), "looks up Post model on application");
 });
 
-test("the default resolver throws an error if the fullName to resolve is invalid", function() {
-  raises(function() { locator.resolve('');       }, TypeError, /Invalid fullName/ );
-  raises(function() { locator.resolve(':');      }, TypeError, /Invalid fullName/ );
-  raises(function() { locator.resolve('model');  }, TypeError, /Invalid fullName/ );
-  raises(function() { locator.resolve('model:'); }, TypeError, /Invalid fullName/ );
-  raises(function() { locator.resolve(':type');  }, TypeError, /Invalid fullName/ );
+test("the default resolver throws an error if the fullName to resolve is invalid", function(){
+  raises(function(){ locator.resolve(undefined);}, TypeError, /Invalid fullName/ );
+  raises(function(){ locator.resolve(null);     }, TypeError, /Invalid fullName/ );
+  raises(function(){ locator.resolve('');       }, TypeError, /Invalid fullName/ );
+  raises(function(){ locator.resolve('');       }, TypeError, /Invalid fullName/ );
+  raises(function(){ locator.resolve(':');      }, TypeError, /Invalid fullName/ );
+  raises(function(){ locator.resolve('model');  }, TypeError, /Invalid fullName/ );
+  raises(function(){ locator.resolve('model:'); }, TypeError, /Invalid fullName/ );
+  raises(function(){ locator.resolve(':type');  }, TypeError, /Invalid fullName/ );
 });

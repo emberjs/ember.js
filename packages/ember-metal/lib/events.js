@@ -9,6 +9,7 @@ require('ember-metal/utils');
 var o_create = Ember.create,
     metaFor = Ember.meta,
     META_KEY = Ember.META_KEY,
+    a_slice = [].slice,
     /* listener flags */
     ONCE = 1, SUSPENDED = 2;
 
@@ -23,7 +24,7 @@ var o_create = Ember.create,
       {
         listeners: {       // variable name: `listenerSet`
           "foo:changed": [ // variable name: `actions`
-            [target, method, flags]
+            target, method, flags
           ]
         }
       }
@@ -32,8 +33,8 @@ var o_create = Ember.create,
 
 function indexOf(array, target, method) {
   var index = -1;
-  for (var i = 0, l = array.length; i < l; i++) {
-    if (target === array[i][0] && method === array[i][1]) { index = i; break; }
+  for (var i = 0, l = array.length; i < l; i += 3) {
+    if (target === array[i] && method === array[i+1]) { index = i; break; }
   }
   return index;
 }
@@ -66,14 +67,14 @@ function actionsUnion(obj, eventName, otherActions) {
       actions = meta && meta.listeners && meta.listeners[eventName];
 
   if (!actions) { return; }
-  for (var i = actions.length - 1; i >= 0; i--) {
-    var target = actions[i][0],
-        method = actions[i][1],
-        flags = actions[i][2],
+  for (var i = actions.length - 3; i >= 0; i -= 3) {
+    var target = actions[i],
+        method = actions[i+1],
+        flags = actions[i+2],
         actionIndex = indexOf(otherActions, target, method);
 
     if (actionIndex === -1) {
-      otherActions.push([target, method, flags]);
+      otherActions.push(target, method, flags);
     }
   }
 }
@@ -84,16 +85,16 @@ function actionsDiff(obj, eventName, otherActions) {
       diffActions = [];
 
   if (!actions) { return; }
-  for (var i = actions.length - 1; i >= 0; i--) {
-    var target = actions[i][0],
-        method = actions[i][1],
-        flags = actions[i][2],
+  for (var i = actions.length - 3; i >= 0; i -= 3) {
+    var target = actions[i],
+        method = actions[i+1],
+        flags = actions[i+2],
         actionIndex = indexOf(otherActions, target, method);
 
     if (actionIndex !== -1) { continue; }
 
-    otherActions.push([target, method, flags]);
-    diffActions.push([target, method, flags]);
+    otherActions.push(target, method, flags);
+    diffActions.push(target, method, flags);
   }
 
   return diffActions;
@@ -126,7 +127,7 @@ function addListener(obj, eventName, target, method, once) {
 
   if (actionIndex !== -1) { return; }
 
-  actions.push([target, method, flags]);
+  actions.push(target, method, flags);
 
   if ('function' === typeof obj.didAddListener) {
     obj.didAddListener(eventName, target, method);
@@ -160,7 +161,7 @@ function removeListener(obj, eventName, target, method) {
     // action doesn't exist, give up silently
     if (actionIndex === -1) { return; }
 
-    actions.splice(actionIndex, 1);
+    actions.splice(actionIndex, 3);
 
     if ('function' === typeof obj.didRemoveListener) {
       obj.didRemoveListener(eventName, target, method);
@@ -174,8 +175,8 @@ function removeListener(obj, eventName, target, method) {
         actions = meta && meta.listeners && meta.listeners[eventName];
 
     if (!actions) { return; }
-    for (var i = actions.length - 1; i >= 0; i--) {
-      _removeListener(actions[i][0], actions[i][1]);
+    for (var i = actions.length - 3; i >= 0; i -= 3) {
+      _removeListener(actions[i], actions[i+1]);
     }
   }
 }
@@ -205,17 +206,14 @@ function suspendListener(obj, eventName, target, method, callback) {
   }
 
   var actions = actionsFor(obj, eventName),
-      actionIndex = indexOf(actions, target, method),
-      action;
+      actionIndex = indexOf(actions, target, method);
 
   if (actionIndex !== -1) {
-    action = actions[actionIndex].slice(); // copy it, otherwise we're modifying a shared object
-    action[2] |= SUSPENDED; // mark the action as suspended
-    actions[actionIndex] = action; // replace the shared object with our copy
+    actions[actionIndex+2] |= SUSPENDED; // mark the action as suspended
   }
 
   function tryable()   { return callback.call(target); }
-  function finalizer() { if (action) { action[2] &= ~SUSPENDED; } }
+  function finalizer() { if (actionIndex !== -1) { actions[actionIndex+2] &= ~SUSPENDED; } }
 
   return Ember.tryFinally(tryable, finalizer);
 }
@@ -241,7 +239,7 @@ function suspendListeners(obj, eventNames, target, method, callback) {
   }
 
   var suspendedActions = [],
-      eventName, actions, action, i, l;
+      eventName, actions, i, l;
 
   for (i=0, l=eventNames.length; i<l; i++) {
     eventName = eventNames[i];
@@ -249,18 +247,17 @@ function suspendListeners(obj, eventNames, target, method, callback) {
     var actionIndex = indexOf(actions, target, method);
 
     if (actionIndex !== -1) {
-      action = actions[actionIndex].slice();
-      action[2] |= SUSPENDED;
-      actions[actionIndex] = action;
-      suspendedActions.push(action);
+      actions[actionIndex+2] |= SUSPENDED;
+      suspendedActions.push(actionIndex);
     }
   }
 
   function tryable() { return callback.call(target); }
 
   function finalizer() {
-    for (i = 0, l = suspendedActions.length; i < l; i++) {
-      suspendedActions[i][2] &= ~SUSPENDED;
+    for (var i = 0, l = suspendedActions.length; i < l; i++) {
+      var actionIndex = suspendedActions[i];
+      actions[actionIndex+2] &= ~SUSPENDED;
     }
   }
 
@@ -314,10 +311,9 @@ function sendEvent(obj, eventName, params, actions) {
 
   if (!actions) { return; }
 
-  for (var i = actions.length - 1; i >= 0; i--) { // looping in reverse for once listeners
-    var action = actions[i];
-    if (!action) { continue; }
-    var target = action[0], method = action[1], flags = action[2];
+  for (var i = actions.length - 3; i >= 0; i -= 3) { // looping in reverse for once listeners
+    var target = actions[i], method = actions[i+1], flags = actions[i+2];
+    if (!method) { continue; }
     if (flags & SUSPENDED) { continue; }
     if (flags & ONCE) { removeListener(obj, eventName, target, method); }
     if (!target) { target = obj; }
@@ -359,14 +355,39 @@ function listenersFor(obj, eventName) {
 
   if (!actions) { return ret; }
 
-  for (var i = 0, l = actions.length; i < l; i++) {
-    var target = actions[i][0],
-        method = actions[i][1];
+  for (var i = 0, l = actions.length; i < l; i += 3) {
+    var target = actions[i],
+        method = actions[i+1];
     ret.push([target, method]);
   }
 
   return ret;
 }
+
+/**
+  Define a property as a function that should be executed when
+  a specified event or events are triggered.
+
+      var Job = Ember.Object.extend({
+        logCompleted: Ember.on('completed', function(){
+          console.log('Job completed!');
+        })
+      });
+      var job = Job.create();
+      Ember.sendEvent(job, 'completed'); // Logs "Job completed!"
+
+  @method on
+  @for Ember
+  @param {String} eventNames*
+  @param {Function} func
+  @return func
+*/
+Ember.on = function(){
+  var func = a_slice.call(arguments, -1)[0],
+      events = a_slice.call(arguments, 0, -1);
+  func.__ember_listens__ = events;
+  return func;
+};
 
 Ember.addListener = addListener;
 Ember.removeListener = removeListener;

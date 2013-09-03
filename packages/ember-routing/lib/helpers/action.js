@@ -104,11 +104,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     Given the following Handlebars template on the page
 
     ```handlebars
-    <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action anActionName}}>
-        click me
-      </div>
-    </script>
+    <div {{action 'anActionName'}}>
+      click me
+    </div>
     ```
 
     And application code
@@ -162,7 +160,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ```
 
     If you need the default handler to trigger you should either register your
-    own event handler, or use event methods on your view class. See `Ember.View`
+    own event handler, or use event methods on your view class. See [Ember.View](/api/classes/Ember.View.html)
     'Responding to Browser Events' for more information.
 
     ### Specifying DOM event type
@@ -172,7 +170,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action anActionName on="doubleClick"}}>
+      <div {{action 'anActionName' on="doubleClick"}}>
         click me
       </div>
     </script>
@@ -194,7 +192,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action anActionName allowedKeys="alt"}}>
+      <div {{action 'anActionName' allowedKeys="alt"}}>
         click me
       </div>
     </script>
@@ -216,7 +214,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action anActionName target="MyApplication.someObject"}}>
+      <div {{action 'anActionName' target="MyApplication.someObject"}}>
         click me
       </div>
     </script>
@@ -230,7 +228,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action aMethodNameThatIsMissing}}>
+      <div {{action 'aMethodNameThatIsMissing'}}>
         click me
       </div>
     </script>
@@ -261,7 +259,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
       {{#each person in people}}
-        <div {{action edit person}}>
+        <div {{action 'edit' person}}>
           click me
         </div>
       {{/each}}

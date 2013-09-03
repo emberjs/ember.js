@@ -70,7 +70,7 @@ Binding.prototype = {
     This copies the Binding so it can be connected to another object.
 
     @method copy
-    @return {Ember.Binding}
+    @return {Ember.Binding} `this`
   */
   copy: function () {
     var copy = new Binding(this._to, this._from);
@@ -278,7 +278,7 @@ function mixinProperties(to, from) {
 
 mixinProperties(Binding, {
 
-  /**
+  /*
     See `Ember.Binding.from`.
 
     @method from
@@ -289,7 +289,7 @@ mixinProperties(Binding, {
     return binding.from.apply(binding, arguments);
   },
 
-  /**
+  /*
     See `Ember.Binding.to`.
 
     @method to
@@ -314,6 +314,7 @@ mixinProperties(Binding, {
     @param {Boolean} [flag] (Optional) passing nothing here will make the
       binding `oneWay`. You can instead pass `false` to disable `oneWay`, making the
       binding two way again.
+    @return {Ember.Binding} `this`
   */
   oneWay: function(from, flag) {
     var C = this, binding = new C(null, from);
