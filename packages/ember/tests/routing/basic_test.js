@@ -93,7 +93,7 @@ test("warn on URLs not included in the route set", function () {
   var oldAssert = Ember.assert;
   Ember.assert = function(message, test){
     ok(true, test);
-    equal("The URL '/what-is-this-i-dont-even' did match any routes in your application", message);
+    equal("The URL '/what-is-this-i-dont-even' did not match any routes in your application", message);
   };
 
   Ember.run(function(){
