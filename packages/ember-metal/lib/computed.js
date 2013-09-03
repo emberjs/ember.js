@@ -655,9 +655,9 @@ registerComputed('none', function(dependentKey) {
     isAnonymous: Ember.computed.not('loggedIn')
   });
   var user = User.create({loggedIn: false});
-  user.get('isAnonymous'); // false
-  user.set('loggedIn', true);
   user.get('isAnonymous'); // true
+  user.set('loggedIn', true);
+  user.get('isAnonymous'); // false
   ```
 
   @method computed.not
