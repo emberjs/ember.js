@@ -22,4 +22,19 @@ function generateRemovedClass(className) {
 }
 
 Ember.StateManager = generateRemovedClass("Ember.StateManager");
+
+/**
+  This was exported to ember-states plugin for v 1.0.0 release. See: https://github.com/emberjs/ember-states
+  
+  @class StateManager
+  @namespace Ember
+*/
+
 Ember.State = generateRemovedClass("Ember.State");
+
+/**
+  This was exported to ember-states plugin for v 1.0.0 release. See: https://github.com/emberjs/ember-states
+  
+  @class State
+  @namespace Ember
+*/
