@@ -244,15 +244,18 @@ test("should register an event handler", function() {
 });
 
 test("handles whitelisted modifier keys", function() {
-  var eventHandlerWasCalled = false;
+  var eventHandlerWasCalled = false, shortcutHandlerWasCalled = false;
 
   var controller = Ember.Controller.extend({
-    actions: { edit: function() { eventHandlerWasCalled = true; } }
+    actions: {
+      edit: function() { eventHandlerWasCalled = true; },
+      shortcut: function() { shortcutHandlerWasCalled = true; }
+    }
   }).create();
 
   view = Ember.View.create({
     controller: controller,
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit" allowedKeys="alt"}}>click me</a>')
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" allowedKeys="alt"}}>click me</a> <div {{action "shortcut" allowedKeys="any"}}>click me too</div>')
   });
 
   appendView();
@@ -266,8 +269,13 @@ test("handles whitelisted modifier keys", function() {
   view.$('a').trigger(e);
 
   ok(eventHandlerWasCalled, "The event handler was called");
-});
 
+  e = Ember.$.Event('click');
+  e.ctrlKey = true;
+  view.$('div').trigger(e);
+
+  ok(shortcutHandlerWasCalled, "The \"any\" shortcut's event handler was called");
+});
 
 test("should be able to use action more than once for the same event within a view", function() {
   var editWasCalled = false,
