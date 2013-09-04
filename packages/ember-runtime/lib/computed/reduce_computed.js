@@ -661,7 +661,7 @@ Ember.reduceComputed = function (options) {
     throw new Error("Reduce Computed Property declared without an options hash");
   }
 
-  if (!options.initialValue) {
+  if (Ember.isNone(options.initialValue)) {
     throw new Error("Reduce Computed Property declared without an initial value");
   }
 
