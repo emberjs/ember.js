@@ -115,7 +115,7 @@ a test!
 4. Make the test pass.
 
 5. Commit your changes. If your pull request fixes an issue specify it in the commit message.
-Here's an example: `git commit -m "Close #52 - Fix controller and viewbindings"`
+Here's an example: `git commit -m "Close #52 – Fix controller and viewbindings"`
 
 6. Push to your fork and submit a pull request. Please provide us with some
 explanation of why you made the changes you made. For new features make sure to
