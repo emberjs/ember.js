@@ -709,3 +709,20 @@ test("The {{link-to}} helper is active when a resource is active", function() {
   equal(Ember.$('#item-link.active', '#qunit-fixture').length, 1, "The item route link is active");
 
 });
+
+test("The {{link-to}} helper warns when linking to an undefined or null object", function() {
+  Router.map(function() {
+    this.route("item", {path: "item/:item_id"});
+  });
+
+  App.ApplicationController = Ember.Controller.extend({
+    items: Ember.A([undefined])
+  });
+
+  Ember.TEMPLATES.application = compile("{{#each item in items}}{{#link-to 'item' item}}...{{/link-to}}{{/each}}");
+
+  expectAssertion(function(){
+    bootApplication();
+  }, 'You attempted to {{link-to "item" item}} but the variable `item` is undefined');
+});
+

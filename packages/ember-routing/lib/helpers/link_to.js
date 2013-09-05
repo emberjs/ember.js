@@ -193,8 +193,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           continue;
         }
 
-        var normalizedPath =
-          Ember.Handlebars.normalizePath(templateContext, path, helperParameters.options.data);
+        var normalizedPath = Ember.Handlebars.normalizePath(templateContext, path, helperParameters.options.data);
+        Ember.assert('You attempted to {{link-to "'+ helperParameters.params[0] + '" '+ helperParameters.params.slice(1,helperParameters.length).join(" ") +'}} but the variable `' + path +'` is ' + normalizedPath.root, normalizedPath.root);
         this.registerObserver(normalizedPath.root, normalizedPath.path, this, this._paramsChanged);
       }
     },
