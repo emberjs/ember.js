@@ -175,15 +175,14 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
     descs[key]  = value;
     values[key] = undefined;
   } else {
-    // impl super if needed...
-    if (isMethod(value)) {
-      value = giveMethodSuper(base, key, value, values, descs);
-    } else if ((concats && a_indexOf.call(concats, key) >= 0) ||
+    if ((concats && a_indexOf.call(concats, key) >= 0) ||
                 key === 'concatenatedProperties' ||
                 key === 'mergedProperties') {
       value = applyConcatenatedProperties(base, key, value, values);
     } else if ((mergings && a_indexOf.call(mergings, key) >= 0)) {
       value = applyMergedProperties(base, key, value, values);
+    } else if (isMethod(value)) {
+      value = giveMethodSuper(base, key, value, values, descs);
     }
 
     descs[key] = undefined;
