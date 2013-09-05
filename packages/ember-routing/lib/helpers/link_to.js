@@ -436,7 +436,44 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     To override this option for your entire application, see
     "Overriding Application-wide Defaults".
-
+    
+    ### Disabling the `link-to` heper
+    By default `{{link-to}}` is enabled. 
+    any passed value to `disabled` helper property will disable the `link-to` helper.
+     
+    static use: the `disabled` option:
+ 
+    ```handlebars
+    {{#link-to 'photoGallery' disabled=true}}
+      Great Hamster Photos
+    {{/link-to}}
+    ```
+     
+    dynamic use: the `disabledWhen` option:
+    
+    ```handlebars
+    {{#link-to 'photoGallery' disabledWhen=controller.someProperty}}
+      Great Hamster Photos
+    {{/link-to}}
+    ```
+    
+    any passed value to `disabled` will disable it except `undefined`.
+    to ensure that only `true` disable the `link-to` helper you can
+    override the global behaviour of `Ember.LinkView`.
+         
+    ```javascript  
+    Ember.LinkView.reopen({
+      disabled: Ember.computed(function(key, value) {
+        if (value !== undefined) { 
+          this.set('_isDisabled', value === true); 
+        }
+        return value === true ? get(this, 'disabledClass') : false;
+      })
+    });
+    ```
+     
+    see "Overriding Application-wide Defaults" for more.
+    
     ### Handling `href`
     `{{link-to}}` will use your application's Router to
     fill the element's `href` property with a url that
