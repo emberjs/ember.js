@@ -256,7 +256,10 @@ CoreObject.PrototypeMixin = Mixin.create({
     are also concatenated, in addition to `classNames`.
 
     This feature is available for you to use throughout the Ember object model,
-    although typical app developers are likely to use it infrequently.
+    although typical app developers are likely to use it infrequently. Since
+    it changes expectations about behavior of properties, you should properly
+    document its usage in each individual concatenated property (to not 
+    mislead your users to think they can override the property in a subclass).
 
     @property concatenatedProperties
     @type Array

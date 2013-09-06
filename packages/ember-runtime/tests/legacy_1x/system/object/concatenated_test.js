@@ -17,8 +17,9 @@
   module("Ember.Object Concatenated Properties", {
     setup: function() {
       klass = Ember.Object.extend({
-        concatenatedProperties: ['values'],
-        values: ['a', 'b', 'c']
+        concatenatedProperties: ['values', 'functions'],
+        values: ['a', 'b', 'c'],
+        functions: [Ember.K]
       });
     }
   });
@@ -77,6 +78,17 @@
     var values = get(obj, 'values'),
         expected = ['a', 'b', 'c', 'd', 'e', 'f'];
     deepEqual(values, expected, Ember.String.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
+  });
+
+  test("concatenates subclasses when the values are functions", function() {
+    var subKlass = klass.extend({
+      functions: Ember.K
+    });
+    var obj = subKlass.create();
+
+    var values = get(obj, 'functions'),
+        expected = [Ember.K, Ember.K];
+    deepEqual(values, expected, Ember.String.fmt("should concatenate functions property (expected: %@, got: %@)", [expected, values]));
   });
 
 
