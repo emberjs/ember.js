@@ -77,6 +77,27 @@ Ember.ENV = Ember.ENV || ENV;
 
 Ember.config = Ember.config || {};
 
+/**
+  Hash of enabled Canary features. Add to before creating your application.
+
+  @property FEATURES
+  @type Hash
+*/
+
+Ember.FEATURES = {};
+
+/**
+  Test that a feature is enabled. Parsed by Ember's build tools to leave
+  experimental features out of beta/stable builds.
+
+  @method isEnabled
+  @param {string} feature
+*/
+
+Ember.FEATURES.isEnabled = function(feature) {
+  return Ember.FEATURES[feature];
+};
+
 // ..........................................................
 // BOOTSTRAP
 //
