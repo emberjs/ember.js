@@ -249,7 +249,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
       Ember.debug('-------------------------------');
       Ember.libraries.each(function(name, version) {
         var spaces = new Array(maxNameLength - name.length + 1).join(" ");
-        Ember.debug([name, '.VERSION', spaces, ' : ', version].join(""));
+        Ember.debug([name, spaces, ' : ', version].join(""));
       });
       Ember.debug('-------------------------------');
     }
