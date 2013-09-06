@@ -209,10 +209,10 @@ test('enable log of libraries with an ENV var', function() {
     });
   });
 
-  equal(messages[1], "Ember.VERSION      : " + Ember.VERSION);
-  equal(messages[2], "Handlebars.VERSION : " + Handlebars.VERSION);
-  equal(messages[3], "jQuery.VERSION     : " + Ember.$().jquery);
-  equal(messages[4], "my-lib.VERSION     : " + "2.0.0a");
+  equal(messages[1], "Ember      : " + Ember.VERSION);
+  equal(messages[2], "Handlebars : " + Handlebars.VERSION);
+  equal(messages[3], "jQuery     : " + Ember.$().jquery);
+  equal(messages[4], "my-lib     : " + "2.0.0a");
 
   Ember.libraries.deRegister("my-lib");
   Ember.LOG_VERSION = false;
