@@ -70,4 +70,5 @@ Ember.TextField = Ember.Component.extend(Ember.TextSupport,
     @default null
   */
   pattern: null
+
 });
