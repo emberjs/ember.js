@@ -239,12 +239,18 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 
     this.scheduleInitialize();
 
-    if (Ember.LOG_VERSION) {
+    Ember.libraries.registerCoreLibrary('Handlebars', Ember.Handlebars.VERSION);
+    Ember.libraries.registerCoreLibrary('jQuery', Ember.$().jquery);
+
+    if ( Ember.LOG_VERSION ) {
       Ember.LOG_VERSION = false; // we only need to see this once per Application#init
+      var maxNameLength = Math.max.apply(this, Ember.A(Ember.libraries).mapBy("name.length"));
+
       Ember.debug('-------------------------------');
-      Ember.debug('Ember.VERSION : ' + Ember.VERSION);
-      Ember.debug('Handlebars.VERSION : ' + Ember.Handlebars.VERSION);
-      Ember.debug('jQuery.VERSION : ' + Ember.$().jquery);
+      Ember.libraries.each(function(name, version) {
+        var spaces = new Array(maxNameLength - name.length + 1).join(" ");
+        Ember.debug([name, '.VERSION', spaces, ' : ', version].join(""));
+      });
       Ember.debug('-------------------------------');
     }
   },
