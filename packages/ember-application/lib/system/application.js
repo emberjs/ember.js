@@ -394,9 +394,8 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     ```
 
     @method register
-    @param  type {String}
-    @param  name {String}
-    @param  factory {String}
+    @param  fullName {String} type:name (e.g., 'model:user')
+    @param  factory {Function} (e.g., App.Person)
     @param  options {String} (optional)
   **/
   register: function() {
