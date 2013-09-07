@@ -576,7 +576,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @for Ember.Handlebars.helpers
     @param {String} routeName
     @param {Object} [context]*
-    @param [options] {Object} Handlebars key/value pairs of options, you can over-ride any property of {{#crossLink "Ember.LinkView"}}{{/crossLink}}
+    @param [options] {Object} Handlebars key/value pairs of options, you can override any property of Ember.LinkView
     @return {String} HTML string
     @see {Ember.LinkView}
   */
