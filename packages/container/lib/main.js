@@ -421,7 +421,7 @@ define("container",
 
         var value = instantiate(this, fullName);
 
-        if (!value) { return; }
+        if (value === undefined) { return; }
 
         if (isSingleton(this, fullName) && options.singleton !== false) {
           this.cache.set(fullName, value);
@@ -747,7 +747,7 @@ define("container",
         injection = injections[i];
         lookup = container.lookup(injection.fullName);
 
-        if (lookup) {
+        if (lookup !== undefined) {
           hash[injection.property] = lookup;
         } else {
           throw new Error('Attempting to inject an unknown injection: `' + injection.fullName + '`');
@@ -779,13 +779,13 @@ define("container",
       var cache = container.factoryCache;
       var type = fullName.split(":")[0];
 
-      if (!factory) { return; }
+      if (factory === undefined) { return; }
 
       if (cache.has(fullName)) {
         return cache.get(fullName);
       }
 
-      if (typeof factory.extend !== 'function' || (!Ember.MODEL_FACTORY_INJECTIONS && type === 'model')) {
+      if (!factory || typeof factory.extend !== 'function' || (!Ember.MODEL_FACTORY_INJECTIONS && type === 'model')) {
         // TODO: think about a 'safe' merge style extension
         // for now just fallback to create time injection
         return factory;
