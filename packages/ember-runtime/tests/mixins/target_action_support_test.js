@@ -144,3 +144,16 @@ test("it should use the actionContext specified in the argument", function() {
   });
   ok(true === obj.triggerAction({actionContext: context}), "a valid target and action were specified");
 });
+
+test("it should use a null value specified in the actionContext argument", function() {
+  expect(2);
+  var obj = Ember.Object.createWithMixins(Ember.TargetActionSupport,{
+    target: Ember.Object.create({
+      anEvent: function(ctx) {
+        ok(null === ctx, "anEvent method was called with the expected context (null)");
+      }
+    }),
+    action: 'anEvent'
+  });
+  ok(true === obj.triggerAction({actionContext: null}), "a valid target and action were specified");
+});
