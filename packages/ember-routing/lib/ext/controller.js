@@ -46,7 +46,7 @@ Ember.ControllerMixin.reopen({
   },
 
   /**
-    Alernative to `transitionToRoute`.  Transition the application into another route. The route may
+    Alternative to `transitionToRoute`.  Transition the application into another route. The route may
     be either a single route or route path:
 
     ```javascript
