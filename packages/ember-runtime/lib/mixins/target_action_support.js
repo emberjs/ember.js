@@ -102,9 +102,13 @@ Ember.TargetActionSupport = Ember.Mixin.create({
   */
   triggerAction: function(opts) {
     opts = opts || {};
-    var action = opts['action'] || get(this, 'action'),
-        target = opts['target'] || get(this, 'targetObject'),
-        actionContext = opts['actionContext'] || get(this, 'actionContextObject') || this;
+    var action = opts.action || get(this, 'action'),
+        target = opts.target || get(this, 'targetObject'),
+        actionContext = opts.actionContext;
+
+    if (typeof actionContext === 'undefined') {
+      actionContext = get(this, 'actionContextObject') || this;
+    }
 
     if (target && action) {
       var ret;
