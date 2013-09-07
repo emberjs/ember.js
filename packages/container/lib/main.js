@@ -16,11 +16,7 @@ define("container",
   [],
   function() {
 
-   /**
-     A safe and simple inheriting object.
-
-     // @class InheritingDict
-   */
+    // A safe and simple inheriting object.
     function InheritingDict(parent) {
       this.parent = parent;
       this.dict = {};
@@ -127,14 +123,10 @@ define("container",
       }
     };
 
-   /**
-     A lightweight container that helps to assemble and decouple components.
 
-     @private
-     Public api for the container is still in flux.
-     The public api, specified on the application namespace should be considered the stable api.
-     // @class Container
-   */
+    // A lightweight container that helps to assemble and decouple components.
+    // Public api for the container is still in flux.
+    // The public api, specified on the application namespace should be considered the stable api.
     function Container(parent) {
       this.parent = parent;
       this.children = [];
