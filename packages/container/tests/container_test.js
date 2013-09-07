@@ -360,6 +360,17 @@ test("Injecting a failed lookup raises an error", function() {
   });
 });
 
+test("Injecting a falsy value does not raise an error", function() {
+  var container = new Container();
+  var ApplicationController = factory();
+
+  container.register('controller:application', ApplicationController);
+  container.register('user:current', null, { instantiate: false });
+  container.injection('controller:application', 'currentUser', 'user:current');
+
+  equal(container.lookup('controller:application').currentUser, null);
+});
+
 test("Destroying the container destroys any cached singletons", function() {
   var container = new Container();
   var PostController = factory();
