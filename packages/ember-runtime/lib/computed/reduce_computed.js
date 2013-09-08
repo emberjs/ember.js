@@ -5,6 +5,8 @@ var get = Ember.get,
     set = Ember.set,
     guidFor = Ember.guidFor,
     metaFor = Ember.meta,
+    propertyWillChange = Ember.propertyWillChange,
+    propertyDidChange = Ember.propertyDidChange,
     addBeforeObserver = Ember.addBeforeObserver,
     removeBeforeObserver = Ember.removeBeforeObserver,
     addObserver = Ember.addObserver,
@@ -65,7 +67,7 @@ function ItemPropertyObserverContext (dependentArray, index, trackedArray) {
 
 DependentArraysObserver.prototype = {
   setValue: function (newValue) {
-    this.instanceMeta.setValue(newValue);
+    this.instanceMeta.setValue(newValue, true);
   },
   getValue: function () {
     return this.instanceMeta.getValue();
@@ -360,11 +362,21 @@ ReduceComputedPropertyInstanceMeta.prototype = {
     }
   },
 
-  setValue: function(newValue) {
+  setValue: function(newValue, triggerObservers) {
     // This lets sugars force a recomputation, handy for very simple
     // implementations of eg max.
     if (newValue !== undefined) {
+      var fireObservers = triggerObservers && (newValue !== this.cache[this.propertyName]);
+
+      if (fireObservers) {
+        propertyWillChange(this.context, this.propertyName);
+      }
+
       this.cache[this.propertyName] = newValue;
+
+      if (fireObservers) {
+        propertyDidChange(this.context, this.propertyName);
+      }
     } else {
       delete this.cache[this.propertyName];
     }
@@ -629,6 +641,12 @@ ReduceComputedProperty.prototype.property = function () {
   value. It is acceptable to not return anything (ie return undefined)
   to invalidate the computation. This is generally not a good idea for
   arrayComputed but it's used in eg max and min.
+
+  Note that observers will be fired if either of these functions return a value
+  that differs from the accumulated value.  When returning an object that
+  mutates in response to array changes, for example an array that maps
+  everything from some other array (see `Ember.computed.map`), it is usually
+  important that the *same* array be returned to avoid accidentally triggering observers.
 
   Example
 

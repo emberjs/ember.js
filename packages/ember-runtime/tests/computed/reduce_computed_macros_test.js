@@ -1205,7 +1205,7 @@ test("it computes interdependent array computed properties", function() {
   equal(userFnCalls, 0, 'observer is not called on initialisation');
 
   var calls = 0;
-  Ember.addObserver(obj, 'max', function(){ calls++ });
+  Ember.addObserver(obj, 'max', function(){ calls++; });
 
   Ember.run(function() {
     obj.get('array').pushObject({ v: 5 });
