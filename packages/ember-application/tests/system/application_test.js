@@ -242,3 +242,25 @@ test('disable log version of libraries with an ENV var', function() {
 
   ok(!logged, 'library version logging skipped');
 });
+
+test("can resolve custom router", function(){
+  var CustomRouter = Ember.Router.extend();
+
+  var CustomResolver = Ember.DefaultResolver.extend({
+    resolveOther: function(parsedName){
+      if (parsedName.type === "router") {
+        return CustomRouter;
+      } else {
+        return this._super(parsedName);
+      }
+    }
+  });
+
+  app = Ember.run(function(){
+    return Ember.Application.create({
+      Resolver: CustomResolver
+    });
+  });
+
+  ok(app.__container__.lookup('router:main') instanceof CustomRouter, 'application resolved the correct router');
+});
