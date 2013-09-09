@@ -144,7 +144,7 @@ test("when the underlying array changes, old subcontainers are destroyed", funct
       cerseiController = subControllers[2];
 
   equal(!!jaimeController.isDestroying, false, "precond - nobody is destroyed yet");
-  equal(!!!!cerseiController.isDestroying, false, "precond - nobody is destroyed yet");
+  equal(!!cerseiController.isDestroying, false, "precond - nobody is destroyed yet");
 
   Ember.run(function() {
     arrayController.set('content', Ember.A());
