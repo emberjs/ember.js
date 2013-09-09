@@ -130,7 +130,7 @@ Ember.computed.min = function (dependentKey) {
 Ember.computed.map = function(dependentKey, callback) {
   var options = {
     addedItem: function(array, item, changeMeta, instanceMeta) {
-      var mapped = callback(item);
+      var mapped = callback.call(this, item);
       array.insertAt(changeMeta.index, mapped);
       return array;
     },
@@ -223,7 +223,7 @@ Ember.computed.filter = function(dependentKey, callback) {
     },
 
     addedItem: function(array, item, changeMeta, instanceMeta) {
-      var match = !!callback(item),
+      var match = !!callback.call(this, item),
           filterIndex = instanceMeta.filteredArrayIndexes.addItem(changeMeta.index, match);
 
       if (match) {
