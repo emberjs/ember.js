@@ -240,6 +240,53 @@ test("multiple array computed properties on the same object can observe dependen
   deepEqual(get(obj, 'evenNumbersMultiDep'), [2, 4, 6, 8, 12, 14], "evenNumbersMultiDep is updated");
 });
 
+if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
+  module('Ember.arryComputed - self chains', {
+    setup: function() {
+      var a = Ember.Object.create({ name: 'a' }),
+          b = Ember.Object.create({ name: 'b' });
+
+      obj = Ember.ArrayProxy.createWithMixins({
+        content: Ember.A([a, b]),
+        names: Ember.arrayComputed('@self.@each.name', {
+          addedItem: function (array, item, changeMeta, instanceMeta) {
+            var mapped = get(item, 'name');
+            array.insertAt(changeMeta.index, mapped);
+            return array;
+          },
+          removedItem: function(array, item, changeMeta, instanceMeta) {
+            array.removeAt(changeMeta.index, 1);
+            return array;
+          }
+        })
+      });
+    },
+    teardown: function() {
+      Ember.run(function() {
+        obj.destroy();
+      });
+    }
+  });
+
+  test("@self can be used to treat the object as the array itself", function() {
+    var names = get(obj, 'names');
+
+    deepEqual(names, ['a', 'b'], "precond - names is initially correct");
+
+    Ember.run(function() {
+      obj.objectAt(1).set('name', 'c');
+    });
+
+    deepEqual(names, ['a', 'c'], "@self can be used with item property observers");
+
+    Ember.run(function() {
+      obj.pushObject({ name: 'd' });
+    });
+
+    deepEqual(names, ['a', 'c', 'd'], "@self observes new items");
+  });
+
+}
 module('Ember.arrayComputed - changeMeta property observers', {
   setup: function() {
     callbackItems = [];
