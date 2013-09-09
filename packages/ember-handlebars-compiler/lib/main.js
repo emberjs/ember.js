@@ -173,7 +173,7 @@ Ember.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) 
   return "data.buffer.push("+string+");";
 };
 
-var prefix = "ember" + (+new Date()), incr = 1;
+var prefix = "ember_control_id_", incr = 1;
 
 /**
   @private
