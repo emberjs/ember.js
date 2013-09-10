@@ -576,7 +576,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ### Supplying an explicit dynamic segment value
     If you don't have a model object available to pass to `{{link-to}}`,
     an optional string or integer argument can be passed for routes whose
-    paths contain dynamic segments.  This argument will become the the value
+    paths contain dynamic segments. This argument will become the value
     of the dynamic segment:
 
     ```javascript
