@@ -224,6 +224,30 @@ test("modifying properties on dependent array items triggers observers exactly o
   deepEqual(evenNumbers, [4,6,8,10], 'sanity check - dependent arrays are updated');
 });
 
+test("modifying properties triggers dependent observers exactly once", function() {
+  var numbers = get(obj, 'numbers'),
+      evenNumbers = get(obj, 'evenNumbers');
+
+  var numbersCount = 0,
+      evenNumbersCount = 0;
+
+  Ember.addObserver(obj, 'numbers.@each', function() {
+    deepEqual(get(obj,'numbers'), [7,8,9,10,3,4,5,6], 'numbers sanity check');
+    numbersCount++;
+  });
+  Ember.addObserver(obj, 'evenNumbers.@each', function() {
+    deepEqual(get(obj,'evenNumbers'), [4,6,8,10], 'evenNumbers sanity check');
+    evenNumbersCount++;
+  });
+
+  Ember.run(function() {
+    numbers.replace(0,2,[7,8,9,10]);
+  });
+
+  equal(numbersCount, 1, 'should have invoked numbers observer just once');
+  equal(evenNumbersCount, 1, 'should have invoked evenNumbers observer just once');
+});
+
 test("multiple array computed properties on the same object can observe dependent arrays", function() {
   var numbers = get(obj, 'numbers'),
       otherNumbers = get(obj, 'otherNumbers');
