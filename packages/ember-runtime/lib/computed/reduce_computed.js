@@ -1,7 +1,7 @@
 require('ember-metal/computed');
 require('ember-runtime/mixins/array');
 
-var get = Ember.get,
+var e_get = Ember.get,
     set = Ember.set,
     guidFor = Ember.guidFor,
     metaFor = Ember.meta,
@@ -17,6 +17,16 @@ var get = Ember.get,
     // testing, but there's no particular reason why it should be disallowed.
     eachPropertyPattern = /^(.*)\.@each\.(.*)/,
     doubleEachPropertyPattern = /(.*\.@each){2,}/;
+
+function get(obj, key) {
+  if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
+    if (key === '@self') {
+      return obj;
+    }
+  }
+
+  return e_get(obj, key);
+}
 
 /*
   Tracks changes to dependent arrays, as well as to properties of items in
@@ -648,6 +658,37 @@ ReduceComputedProperty.prototype.property = function () {
       }
     });
   };
+  ```
+
+  Dependent keys may refer to `@self` to observe changes to the object itself,
+  which must be array-like, rather than a property of the object.  This is
+  mostly useful for array proxies, to ensure objects are retrieved via
+  `objectAtContent`.  This is how you could sort items by properties defined on an item controller.
+
+  Example
+
+  ```javascript
+  App.PeopleController = Ember.ArrayController.extend({
+    itemController: 'person',
+
+    sortedPeople: Ember.computed.sort('@self.@each.reversedName', function(personA, personB) {
+      // `reversedName` isn't defined on Person, but we have access to it via
+      // the item controller App.PersonController.  If we'd used
+      // `content.@each.reversedName` above, we would be getting the objects
+      // directly and not have access to `reversedName`.
+      //
+      var reversedNameA = get(personA, 'reversedName'),
+          reversedNameB = get(personB, 'reversedName');
+
+      return Ember.compare(reversedNameA, reversedNameB);
+    })
+  });
+
+  App.PersonController = Ember.ObjectController.extend({
+    reversedName: function () {
+      return reverse(get(this, 'name'));
+    }.property('name')
+  })
   ```
 
   @method reduceComputed
