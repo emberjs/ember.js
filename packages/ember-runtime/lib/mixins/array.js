@@ -201,6 +201,16 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
   },
 
   /**
+   Returns an `ArrayProxy` for the Array. Utility function for creating an
+   `ArrayProxy` whose `content` is this array.
+   @method proxy
+   @return {ArrayProxy}
+  */
+  proxy: function(){
+    return Ember.ArrayProxy.create({content: this});
+  },
+
+  /**
     Returns the index of the given object's last occurrence.
     If no `startAt` argument is given, the search starts from
     the last position. If it's negative, will count backward
