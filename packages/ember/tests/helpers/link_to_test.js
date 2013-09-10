@@ -15,6 +15,20 @@ function compile(template) {
   return Ember.Handlebars.compile(template);
 }
 
+function shouldNotBeActive(selector) {
+  checkActive(selector, false);
+}
+
+function shouldBeActive(selector) {
+  checkActive(selector, true);
+}
+
+function checkActive(selector, active) {
+  var classList = Ember.$(selector, '#qunit-fixture')[0].classList;
+  equal(classList.contains('active'), active, selector + " active should be " + active.toString());
+
+}
+
 module("The {{link-to}} helper", {
   setup: function() {
     Ember.run(function() {
@@ -442,9 +456,10 @@ test("The {{link-to}} helper accepts string/numeric arguments", function() {
 });
 
 test("The {{link-to}} helper unwraps controllers", function() {
-  // The serialize hook is called twice: once to generate the href for the
-  // link and once to generate the URL when the link is clicked.
-  expect(2);
+  // The serialize hook is called thrice: once to generate the href for the
+  // link, once to generate the URL when the link is clicked, and again
+  // when the URL changes to check if query params have been updated
+  expect(3);
 
   Router.map(function() {
     this.route('filter', { path: '/filters/:filter' });
@@ -651,6 +666,206 @@ test("The {{link-to}} helper refreshes href element when one of params changes",
 
   equal(Ember.$('#post', '#qunit-fixture').attr('href'), '#', 'href attr becomes # when one of the arguments in nullified');
 });
+
+if (Ember.FEATURES.isEnabled("query-params")) {
+  test("The {{linkTo}} helper supports query params", function() {
+    expect(66);
+
+    Router.map(function() {
+      this.route("about", {queryParams: ['section']});
+      this.resource("items", { queryParams: ['sort', 'direction'] });
+    });
+
+    Ember.TEMPLATES.about = Ember.Handlebars.compile("<h1>About</h1> {{#linkTo 'about' id='about-link'}}About{{/linkTo}} {{#linkTo 'about' section='intro' id='about-link-with-qp'}}Intro{{/linkTo}}{{#linkTo 'about' section=false id='about-clear-qp'}}Intro{{/linkTo}}{{#if isIntro}} <p>Here is the intro</p>{{/if}}");
+    Ember.TEMPLATES.items = Ember.Handlebars.compile("<h1>Items</h1> {{#linkTo 'about' id='about-link'}}About{{/linkTo}} {{#linkTo 'items' id='items-link' directionBinding=otherDirection}}Sort{{/linkTo}} {{#linkTo 'items' id='items-sort-link' sort='name'}}Sort Ascending{{/linkTo}} {{#linkTo 'items' id='items-clear-link' queryParams=false}}Clear Query Params{{/linkTo}}");
+
+    App.AboutRoute = Ember.Route.extend({
+      setupController: function(controller, context, queryParams) {
+        controller.set('isIntro', queryParams.section === 'intro');
+      }
+    });
+
+    App.ItemsRoute = Ember.Route.extend({
+      setupController: function (controller, context, queryParams) {
+        controller.set('currentDirection', queryParams.direction || 'asc');
+      }
+    });
+
+    var shouldNotHappen = function(error) {
+      console.error(error.stack);
+      ok(false, "this .then handler should not be called: " + error.message);
+    };
+
+    App.ItemsController = Ember.Controller.extend({
+        currentDirection: 'asc',
+        otherDirection: Ember.computed(function () {
+          if (get(this, 'currentDirection') === 'asc') {
+            return 'desc';
+          } else {
+            return 'asc';
+          }
+        }).property('currentDirection')
+    });
+
+    bootApplication();
+
+    Ember.run(function() {
+      router.handleURL("/about");
+    });
+
+    equal(Ember.$('h1:contains(About)', '#qunit-fixture').length, 1, "The about template was rendered");
+    equal(normalizeUrl(Ember.$('#about-link').attr('href')), '/about', "The about link points back at /about");
+    shouldBeActive('#about-link');
+    equal(normalizeUrl(Ember.$('#about-link-with-qp').attr('href')), '/about?section=intro', "The helper accepts query params");
+    shouldNotBeActive('#about-link-with-qp');
+    equal(normalizeUrl(Ember.$('#about-clear-qp').attr('href')), '/about', "Falsy query params work");
+    shouldBeActive('#about-clear-qp');
+
+
+    Ember.run(function() {
+      Ember.$('#about-link-with-qp', '#qunit-fixture').click();
+    });
+
+    equal(router.get('url'), "/about?section=intro", "Clicking linkTo updates the url");
+    equal(Ember.$('p', '#qunit-fixture').text(), "Here is the intro", "Query param is applied to controller");
+    equal(normalizeUrl(Ember.$('#about-link').attr('href')), '/about?section=intro', "The params have stuck");
+    shouldBeActive('#about-link');
+    equal(normalizeUrl(Ember.$('#about-link-with-qp').attr('href')), '/about?section=intro', "The helper accepts query params");
+    shouldBeActive('#about-link-with-qp');
+    equal(normalizeUrl(Ember.$('#about-clear-qp').attr('href')), '/about', "Falsy query params clear querystring");
+    shouldNotBeActive('#about-clear-qp');
+
+
+    Ember.run(function() {
+      router.transitionTo("/about");
+    });
+
+    equal(router.get('url'), "/about", "handleURL clears query params");
+
+    Ember.run(function() {
+      router.transitionTo("/items");
+    });
+
+    var controller = container.lookup('controller:items');
+
+    equal(controller.get('currentDirection'), 'asc', "Current direction is asc");
+    equal(controller.get('otherDirection'), 'desc', "Other direction is desc");
+
+    equal(Ember.$('h1:contains(Items)', '#qunit-fixture').length, 1, "The items template was rendered");
+    equal(normalizeUrl(Ember.$('#about-link').attr('href')), '/about', "The params have not stuck");
+    shouldNotBeActive('#about-link');
+    equal(normalizeUrl(Ember.$('#items-link').attr('href')), '/items?direction=desc', "Params can come from bindings");
+    shouldNotBeActive('#items-link');
+    equal(normalizeUrl(Ember.$('#items-clear-link').attr('href')), '/items', "Can clear query params");
+    shouldBeActive('#items-clear-link');
+
+    Ember.run(function() {
+      Ember.$('#items-link', '#qunit-fixture').click();
+    });
+
+    equal(router.get('url'), "/items?direction=desc", "Clicking linkTo should direct to the correct url");
+    equal(controller.get('currentDirection'), 'desc', "Current direction is desc");
+    equal(controller.get('otherDirection'), 'asc', "Other direction is asc");
+
+    equal(normalizeUrl(Ember.$('#items-sort-link').attr('href')), '/items?direction=desc&sort=name', "linkTo href correctly merges query parmas");
+    shouldNotBeActive('#items-sort-link');
+
+    equal(normalizeUrl(Ember.$('#items-clear-link').attr('href')), '/items', "Can clear query params");
+    shouldNotBeActive('#items-clear-link');
+
+    Ember.run(function() {
+      Ember.$('#items-sort-link', '#qunit-fixture').click();
+    });
+
+
+    equal(router.get('url'), "/items?sort=name&direction=desc", "The params should be merged correctly");
+    equal(controller.get('currentDirection'), 'desc', "Current direction is desc");
+    equal(controller.get('otherDirection'), 'asc', "Other direction is asc");
+
+    equal(normalizeUrl(Ember.$('#items-sort-link').attr('href')), "/items?sort=name&direction=desc", "linkTo href correctly merges query parmas");
+    shouldBeActive('#items-sort-link');
+
+    equal(normalizeUrl(Ember.$('#items-link').attr('href')), "/items?sort=name&direction=asc", "Params can come from bindings");
+    shouldNotBeActive('#items-link');
+
+    equal(normalizeUrl(Ember.$('#items-clear-link').attr('href')), '/items', "Can clear query params");
+    shouldNotBeActive('#items-clear-link');
+
+    Ember.run(function() {
+      controller.set('currentDirection', 'asc');
+    });
+
+    equal(controller.get('currentDirection'), 'asc', "Current direction is asc");
+    equal(controller.get('otherDirection'), 'desc', "Other direction is desc");
+
+    equal(normalizeUrl(Ember.$('#items-link').attr('href')), "/items?sort=name&direction=desc", "Params are updated when bindings change");
+    shouldBeActive('#items-link');
+    equal(normalizeUrl(Ember.$('#items-sort-link').attr('href')), '/items?sort=name&direction=desc', "linkTo href correctly merges query params when other params change");
+    shouldBeActive('#items-sort-link');
+
+    Ember.run(function() {
+      Ember.$('#items-sort-link', '#qunit-fixture').click();
+    });
+
+    equal(router.get('url'), '/items?sort=name&direction=desc', "Clicking the active link should preserve the url");
+    shouldBeActive('#items-sort-link');
+
+
+    var promise, next;
+
+    stop();
+
+    Ember.run(function () {
+      promise = router.transitionTo({queryParams: {sort: false}});
+    });
+
+    next = function () {
+      equal(router.get('url'), '/items?direction=desc', "Transitioning updates the url");
+
+      equal(controller.get('currentDirection'), 'desc', "Current direction is asc");
+      equal(controller.get('otherDirection'), 'asc', "Other direction is desc");
+
+      equal(normalizeUrl(Ember.$('#items-link').attr('href')), "/items?direction=asc", "Params are updated when transitioning");
+      shouldNotBeActive('#items-link');
+
+      equal(normalizeUrl(Ember.$('#items-sort-link').attr('href')), "/items?direction=desc&sort=name", "Params are updated when transitioning");
+      shouldNotBeActive('#items-sort-link');
+
+      return router.transitionTo({queryParams: {sort: 'name'}});
+    };
+
+    Ember.run(function () {
+      promise.then(next, shouldNotHappen);
+    });
+
+    next = function () {
+      equal(router.get('url'), '/items?sort=name&direction=desc', "Transitioning updates the url");
+
+      equal(controller.get('currentDirection'), 'desc', "Current direction is asc");
+      equal(controller.get('otherDirection'), 'asc', "Other direction is desc");
+
+      equal(normalizeUrl(Ember.$('#items-link').attr('href')), "/items?sort=name&direction=asc", "Params are updated when transitioning");
+      shouldNotBeActive('#items-link');
+
+      equal(normalizeUrl(Ember.$('#items-sort-link').attr('href')), "/items?sort=name&direction=desc", "Params are updated when transitioning");
+      shouldBeActive('#items-sort-link');
+
+
+      Ember.$('#items-clear-link', '#qunit-fixture').click();
+
+      equal(router.get('url'), '/items', "Link clears the query params");
+      equal(normalizeUrl(Ember.$('#items-clear-link').attr('href')), '/items', "Can clear query params");
+      shouldBeActive('#items-clear-link');
+
+
+      start();
+    };
+
+    Ember.run(function () {
+      promise.then(next, shouldNotHappen);
+    });
+  });
+}
 
 test("The {{link-to}} helper's bound parameter functionality works as expected in conjunction with an ObjectProxy/Controller", function() {
   Router.map(function() {

@@ -197,18 +197,39 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           Ember.Handlebars.normalizePath(templateContext, path, helperParameters.options.data);
         this.registerObserver(normalizedPath.root, normalizedPath.path, this, this._paramsChanged);
       }
+
+
+      if (Ember.FEATURES.isEnabled("query-params")) {
+        var queryParams = get(this, '_potentialQueryParams') || [];
+
+        for(i=0; i < queryParams.length; i++) {
+          this.registerObserver(this, queryParams[i], this, this._queryParamsChanged);
+        }
+      }
     },
 
     /**
       @private
 
       This method is invoked by observers installed during `init` that fire
-      whenever the helpers
+      whenever the params change
       @method _paramsChanged
      */
     _paramsChanged: function() {
       this.notifyPropertyChange('resolvedParams');
     },
+
+
+    /**
+      @private
+
+      This method is invoked by observers installed during `init` that fire
+      whenever the query params change
+     */
+    _queryParamsChanged: function (object, path) {
+      this.notifyPropertyChange('queryParams');
+    },
+
 
     /**
       @private
@@ -345,7 +366,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       @return {Array} An array with the route name and any dynamic segments
      */
     routeArgs: Ember.computed(function() {
-
       var resolvedParams = get(this, 'resolvedParams').slice(0),
           router = get(this, 'router'),
           namedRoute = resolvedParams[0];
@@ -365,8 +385,43 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
         }
       }
 
+      if (Ember.FEATURES.isEnabled("query-params")) {
+        var queryParams = get(this, 'queryParams');
+
+        if (queryParams || queryParams === false) { resolvedParams.push({queryParams: queryParams}); }
+      }
+
       return resolvedParams;
+    }).property('resolvedParams', 'queryParams', 'router.url'),
+
+
+    _potentialQueryParams: Ember.computed(function () {
+      var namedRoute = get(this, 'resolvedParams')[0];
+      if (!namedRoute) { return null; }
+      var router          = get(this, 'router');
+
+      namedRoute = fullRouteName(router, namedRoute);
+
+      return router.router.queryParamsForHandler(namedRoute);
     }).property('resolvedParams'),
+
+    queryParams: Ember.computed(function () {
+      var self              = this,
+        queryParams         = null,
+        allowedQueryParams  = get(this, '_potentialQueryParams');
+
+      if (!allowedQueryParams) { return null; }
+      allowedQueryParams.forEach(function (param) {
+        var value = get(self, param);
+        if (typeof value !== 'undefined') {
+          queryParams = queryParams || {};
+          queryParams[param] = value;
+        }
+      });
+
+
+      return queryParams;
+    }).property('_potentialQueryParams.[]'),
 
     /**
       Sets the element's `href` attribute to the url for
