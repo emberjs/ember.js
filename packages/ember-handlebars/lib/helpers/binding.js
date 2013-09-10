@@ -19,7 +19,7 @@ function exists(value) {
 
 // Binds a property into the DOM. This will create a hook in DOM that the
 // KVO system will look for and update if the property changes.
-function bind(property, options, preserveContext, shouldDisplay, valueNormalizer, childProperties) {
+helpers._bind = function(property, options, preserveContext, shouldDisplay, valueNormalizer, childProperties) {
   var data = options.data,
       fn = options.fn,
       inverse = options.inverse,
@@ -89,7 +89,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
     // be done with it.
     data.buffer.push(handlebarsGet(currentContext, property, options));
   }
-}
+};
 
 function simpleBind(property, options) {
   var data = options.data,
@@ -195,7 +195,7 @@ EmberHandlebars.registerHelper('bind', function(property, options) {
     return simpleBind.call(context, property, options);
   }
 
-  return bind.call(context, property, options, false, exists);
+  return helpers._bind.call(context, property, options, false, exists);
 });
 
 /**
@@ -229,7 +229,7 @@ EmberHandlebars.registerHelper('boundIf', function(property, fn) {
     }
   };
 
-  return bind.call(context, property, fn, true, func, func, ['isTruthy', 'length']);
+  return helpers._bind.call(context, property, fn, true, func, func, ['isTruthy', 'length']);
 });
 
 /**
@@ -267,7 +267,7 @@ EmberHandlebars.registerHelper('with', function(context, options) {
       Ember.bind(options.data.keywords, keywordName, contextPath);
     }
 
-    return bind.call(this, path, options, true, exists);
+    return helpers._bind.call(this, path, options, true, exists);
   } else {
     Ember.assert("You must pass exactly one argument to the with helper", arguments.length === 2);
     Ember.assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
