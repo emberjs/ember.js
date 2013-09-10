@@ -303,8 +303,10 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     @returns {Ember.Binding} this
   */
   transform: function(transform) {
-    var op = {warn: Ember.deprecate, '1.0': Ember.assert}[Ember.ENV.BINDING_TRANSFORMS] || Ember.K;
-    op("Binding transforms have been removed from Ember 1.0.");
+    var op = {warn: Ember.deprecate, '1.0': Ember.assert}[Ember.ENV.BINDING_TRANSFORMS] || Ember.K,
+        message = "Binding transforms have been removed from Ember 1.0. (" +
+                    this._from + " -> " + this._to + ")";
+    op(message);
 
     if ('function' === typeof transform) {
       transform = { to: transform };
