@@ -23,7 +23,7 @@ test("warns on usage of Binding#transform in warn level", function() {
   Ember.ENV.BINDING_TRANSFORMS = 'warn';
   new Ember.Binding('foo.value', 'bar.value').transform({ from: function() {}, to: function() {} });
   equal(warnings.length, 1);
-  matches(warnings[0], "Binding transforms have been removed from Ember 1.0.");
+  matches(warnings[0], "Binding transforms have been removed from Ember 1.0. (bar.value -> foo.value)");
 });
 
 test("throws on usage of Binding#transform in 1.0 level", function() {
