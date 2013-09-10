@@ -95,15 +95,15 @@ if (Ember.FEATURES.isEnabled("query-params")) {
     });
 
     App.IndexRoute = Ember.Route.extend({
-      beforeModel: function(transition, queryParams) {
+      beforeModel: function(queryParams, transition) {
         deepEqual(queryParams, {foo: 'bar', baz: true}, "beforeModel hook is called with query params");
       },
 
-      model: function(params, transition, queryParams) {
+      model: function(params, queryParams, transition) {
         deepEqual(queryParams, {foo: 'bar', baz: true}, "Model hook is called with query params");
       },
 
-      afterModel: function(resolvedModel, transition, queryParams) {
+      afterModel: function(resolvedModel, queryParams, transition) {
         deepEqual(queryParams, {foo: 'bar', baz: true}, "afterModel hook is called with query params");
       },
 
@@ -133,16 +133,16 @@ if (Ember.FEATURES.isEnabled("query-params")) {
     });
 
     App.SpecialRoute = Ember.Route.extend({
-      beforeModel: function (transition, queryParams) {
+      beforeModel: function (queryParams, transition) {
         deepEqual(queryParams, expectedQueryParams, "The query params are correct in the beforeModel hook");
       },
 
-      model: function(params, transition, queryParams) {
+      model: function(params, queryParams, transition) {
         deepEqual(queryParams, expectedQueryParams, "The query params are correct in the model hook");
         return {id: params.menu_item_id};
       },
 
-      afterModel: function (resolvedModel, transition, queryParams) {
+      afterModel: function (resolvedModel, queryParams, transition) {
         deepEqual(queryParams, expectedQueryParams, "The query params are correct in the beforeModel hook");
       },
 
@@ -215,16 +215,16 @@ if (Ember.FEATURES.isEnabled("query-params")) {
     });
 
     App.SpecialRoute = Ember.Route.extend({
-      beforeModel: function (transition, queryParams) {
+      beforeModel: function (queryParams, transition) {
         deepEqual(queryParams, expectedQueryParams, "The query params are correct in the beforeModel hook");
       },
 
-      model: function(params, transition, queryParams) {
+      model: function(params, queryParams, transition) {
         deepEqual(queryParams, expectedQueryParams, "The query params are correct in the model hook");
         return {id: params.menu_item_id};
       },
 
-      afterModel: function (resolvedModel, transition, queryParams) {
+      afterModel: function (resolvedModel, queryParams, transition) {
         deepEqual(queryParams, expectedQueryParams, "The query params are correct in the beforeModel hook");
       },
 
@@ -242,16 +242,16 @@ if (Ember.FEATURES.isEnabled("query-params")) {
     });
 
     App.OtherRoute = Ember.Route.extend({
-      beforeModel: function (transition, queryParams) {
+      beforeModel: function (queryParams, transition) {
         deepEqual(queryParams, expectedOtherQueryParams, "The query params are correct in the beforeModel hook");
       },
 
-      model: function(params, transition, queryParams) {
+      model: function(params, queryParams, transition) {
         deepEqual(queryParams, expectedOtherQueryParams, "The query params are correct in the model hook");
         return {id: params.menu_item_id};
       },
 
-      afterModel: function (resolvedModel, transition, queryParams) {
+      afterModel: function (resolvedModel, queryParams, transition) {
         deepEqual(queryParams, expectedOtherQueryParams, "The query params are correct in the beforeModel hook");
       },
 
