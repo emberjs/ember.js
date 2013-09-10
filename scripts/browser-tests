@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+full_path = File.expand_path('./tests/index.html')
+package   = ARGV[0]
+
+unless package
+  puts "Usage: scripts/browser_tests ember-[package]"
+  exit 1unless package
+end
+
+puts "open the following in your browser:\n  file://#{full_path}?package=#{package}\n"
