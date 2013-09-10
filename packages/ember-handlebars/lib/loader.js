@@ -58,6 +58,10 @@ function bootstrap() {
   Ember.Handlebars.bootstrap( Ember.$(document) );
 }
 
+/*
+Find templates in the global `Ember.TEMPLATES` object with a name that has the 'components' prefix and try
+to register them.
+*/
 function registerComponents(container) {
   var templates = Ember.TEMPLATES, match;
   if (!templates) { return; }
@@ -70,6 +74,9 @@ function registerComponents(container) {
 }
 
 
+/*
+Auto wire template to the corresponding Component by performing a Component lookup that matches the template's name.
+*/
 function registerComponent(container, name) {
   Ember.assert("You provided a template named 'components/" + name + "', but custom components must include a '-'", name.match(/-/));
 
