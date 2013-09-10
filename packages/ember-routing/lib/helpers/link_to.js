@@ -629,7 +629,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     {{/link-to}}
     ```
 
-    See {{#crossLink "Ember.LinkView"}}{{/crossLink}} for a
+    See [Ember.LinkView](/api/classes/Ember.LinkView.html) for a
     complete list of overrideable properties. Be sure to also
     check out inherited properties of `LinkView`.
 
@@ -680,7 +680,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   });
 
   /**
-    See `link-to`
+    See [link-to](/api/classes/Ember.Handlebars.helpers.html#method_link-to)
 
     @method linkTo
     @for Ember.Handlebars.helpers
