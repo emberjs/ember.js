@@ -121,7 +121,6 @@ function setPath(root, path, value, tolerant) {
 }
 
 Ember.set = set;
-Ember.setPath = Ember.deprecateFunc('setPath is deprecated since set now supports paths', Ember.set);
 
 /**
   Error-tolerant form of `Ember.set`. Will not blow up if any part of the
@@ -139,4 +138,3 @@ Ember.setPath = Ember.deprecateFunc('setPath is deprecated since set now support
 Ember.trySet = function(root, path, value) {
   return set(root, path, value, true);
 };
-Ember.trySetPath = Ember.deprecateFunc('trySetPath has been renamed to trySet', Ember.trySet);
