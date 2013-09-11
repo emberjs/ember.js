@@ -1200,8 +1200,15 @@ define("router",
 
         log(router, seq, handlerName + ": calling beforeModel hook");
 
-        var args = [transition, handlerInfo.queryParams],
-          p = handler.beforeModel && handler.beforeModel.apply(handler, args);
+        var args;
+
+        if (handlerInfo.queryParams) {
+          args = [handlerInfo.queryParams, transition];
+        } else {
+          args = [transition];
+        }
+
+        var p = handler.beforeModel && handler.beforeModel.apply(handler, args);
         return (p instanceof Transition) ? null : p;
       }
 
@@ -1221,8 +1228,15 @@ define("router",
 
         transition.resolvedModels[handlerInfo.name] = context;
 
-        var args= [context, transition, handlerInfo.queryParams],
-          p = handler.afterModel && handler.afterModel.apply(handler, args);
+        var args;
+
+        if (handlerInfo.queryParams) {
+          args = [context, handlerInfo.queryParams, transition];
+        } else {
+          args = [context, transition];
+        }
+
+        var p = handler.afterModel && handler.afterModel.apply(handler, args);
         return (p instanceof Transition) ? null : p;
       }
 
@@ -1265,7 +1279,11 @@ define("router",
         return typeof providedModel === 'function' ? providedModel() : providedModel;
       }
 
-      args = [handlerParams || {}, transition, handlerInfo.queryParams];
+      if (handlerInfo.queryParams) {
+        args = [handlerParams || {}, handlerInfo.queryParams, transition];
+      } else {
+        args = [handlerParams || {}, transition, handlerInfo.queryParams];
+      }
 
       return handler.model && handler.model.apply(handler, args);
     }
