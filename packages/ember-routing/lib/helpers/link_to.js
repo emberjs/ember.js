@@ -629,6 +629,41 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     {{/link-to}}
     ```
 
+    ### Query Params
+
+    The `link-to` helper supports query params. Just specify them as
+    key/value pairs. Remember, query parameters should be registered as
+    part of your route.
+
+    ```handlebars
+    {{#link-to 'posts' direction='asc'}}Sort{{/link-to}}
+    ```
+
+    The `link-to` helper takes into account query parameters when
+    determining its "active" state, and will set the class
+    appropriately. The active state is determined by calculating if
+    clicking on the link would generate the same url as the current
+    url.
+
+    By default, query params are "sticky". This means that if you are
+    on a url like `/posts?sort=name`, and you clicked
+    `{{#link-to 'posts' direction=desc}}`, the resulting url will be
+    `/posts?sort=name&direction=desc`. This is only true when
+    linking to a route in the currently active tree.
+
+    To clear query params, set is value to false e.g.
+
+    ```handlebars
+    {{#link-to 'posts' direction=false}}Clear{{/link-to}}
+    ```
+
+    It's also possible to clear all query params by passing false to
+    the `queryParams` property, e.g.
+
+    ```handlebars
+    {{#link-to 'posts' queryParams=false}}Sort{{/link-to}}
+    ```
+
     See [Ember.LinkView](/api/classes/Ember.LinkView.html) for a
     complete list of overrideable properties. Be sure to also
     check out inherited properties of `LinkView`.
