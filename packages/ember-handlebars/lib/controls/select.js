@@ -455,8 +455,9 @@ Ember.Select = Ember.View.extend(
   groupedContent: Ember.computed(function() {
     var groupPath = get(this, 'optionGroupPath');
     var groupedContent = Ember.A();
+    var content = get(this, 'content') || [];
 
-    forEach(get(this, 'content'), function(item) {
+    forEach(content, function(item) {
       var label = get(item, groupPath);
 
       if (get(groupedContent, 'lastObject.label') !== label) {
