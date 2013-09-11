@@ -65,12 +65,15 @@ distros.each do |name, modules|
     # Add debug to the main distro
     match "{#{name}.js,ember-debug.js}" do
       filter VersionInfo
+      filter EmberLicenseFilter
       concat ["ember-debug.js"], "#{name}.js" unless name == "ember-template-compiler"
       filter EmberStub if name == "ember-template-compiler"
     end
 
     # Strip dev code
     match "#{name}.prod.js" do
+      filter VersionInfo
+      filter EmberLicenseFilter
       filter(EmberStripDebugMessagesFilter) { ["#{name}.prod.js", "min/#{name}.js"] }
     end
 
