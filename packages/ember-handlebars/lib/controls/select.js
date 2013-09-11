@@ -346,7 +346,7 @@ Ember.Select = Ember.View.extend(
     The `disabled` attribute of the select element. Indicates whether
     the element is disabled from interactions.
 
-    @property multiple
+    @property disabled
     @type Boolean
     @default false
   */
