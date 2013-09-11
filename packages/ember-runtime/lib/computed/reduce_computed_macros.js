@@ -193,19 +193,21 @@ Ember.computed.mapProperty = Ember.computed.mapBy;
 
   - `item` is the current item in the iteration.
 
+  After the callback argument you can specify any extra dependent keys on the passed item.
+
   Example
 
   ```javascript
   App.Hampster = Ember.Object.extend({
     remainingChores: Ember.computed.filter('chores', function(chore) {
-      return !chore.done;
-    })
+      return !chore.get('done');
+    }, 'done')
   });
 
   var hampster = App.Hampster.create({chores: [
-    {name: 'cook', done: true},
-    {name: 'clean', done: true},
-    {name: 'write more unit tests', done: false}
+    Ember.Object.create({name: 'cook', done: true}),
+    Ember.Object.create({name: 'clean', done: true}),
+    Ember.Object.create({name: 'write more unit tests', done: false})
   ]});
   hampster.get('remainingChores'); // [{name: 'write more unit tests', done: false}]
   ```
@@ -214,9 +216,12 @@ Ember.computed.mapProperty = Ember.computed.mapBy;
   @for Ember
   @param {String} dependentKey
   @param {Function} callback
+  @param {String}? dependent keys
   @return {Ember.ComputedProperty} the filtered array
 */
 Ember.computed.filter = function(dependentKey, callback) {
+  var dependentKeys = [], keys;
+
   var options = {
     initialize: function (array, changeMeta, instanceMeta) {
       instanceMeta.filteredArrayIndexes = new Ember.SubArray();
@@ -244,7 +249,15 @@ Ember.computed.filter = function(dependentKey, callback) {
     }
   };
 
-  return Ember.arrayComputed(dependentKey, options);
+  if (arguments.length > 2) {
+    keys = a_slice.call(arguments, 2 - arguments.length);
+
+    forEach.call(keys, function(key){
+      dependentKeys.push(dependentKey+'.@each.'+key);
+    })
+  }
+
+  return Ember.arrayComputed.apply(this, dependentKeys.concat([options]));
 };
 
 /**
