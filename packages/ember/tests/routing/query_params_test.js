@@ -463,4 +463,18 @@ if (Ember.FEATURES.isEnabled("query-params")) {
     equal(historyLocation.getURL(), "/foo?bar=baz", "The query params are present");
   });
 
+  test("Hash location can handle urlencoded queryparams (issue #3390)", function() {
+    // Firefox automatically de-url-encodes the hash, however we need it to
+    // be URL encoded so that encoded data can be used in query params
+
+    var location = {
+      href: "http://example.com#/testing?url=http%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DkfVsfOSbJY0",
+      hash: "#/testing?url=http://www.youtube.com/watch?v=kfVsfOSbJY0"
+    };
+
+    var hashLocation = Ember.HashLocation.create({location: location});
+
+    equal(hashLocation.getURL(), "/testing?url=http%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DkfVsfOSbJY0", "The query params are still URL encoded");
+  });
+
 }
