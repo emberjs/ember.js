@@ -393,7 +393,19 @@ test("select with group observes its content", function() {
   });
   equal(labels.join(''), 'YehudaKeith');
 });
+test("select with group whose content is undefined doesn't breaks", function() {
+  
+		var content;
+  Ember.run(function() {
+    select.set('content', content),
+    select.set('optionGroupPath', 'organization');
+    select.set('optionLabelPath', 'content.firstName');
+  });
 
+  append();
+
+  equal(select.$('optgroup').length, 0);
+});
 test("selection uses the same array when multiple=true", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' },
       tom = { id: 2, firstName: 'Tom' },
