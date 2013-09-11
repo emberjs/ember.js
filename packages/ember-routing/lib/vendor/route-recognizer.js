@@ -402,7 +402,7 @@ define("route-recognizer",
         }
         for(var key in params) {
           if (params.hasOwnProperty(key)) {
-            if(!~allowedParams.indexOf(key)) {
+            if(allowedParams.indexOf(key) === -1) {
               throw 'Query param "' + key + '" is not specified as a valid param for this route';
             }
             var value = params[key];
@@ -435,7 +435,7 @@ define("route-recognizer",
             pathLen, i, l, queryStart, queryParams = {};
 
         queryStart = path.indexOf('?');
-        if (~queryStart) {
+        if (queryStart !== -1) {
           var queryString = path.substr(queryStart + 1, path.length);
           path = path.substr(0, queryStart);
           queryParams = this.parseQueryString(queryString);
