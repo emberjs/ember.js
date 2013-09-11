@@ -399,8 +399,10 @@ function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
   @for Ember.Handlebars
   @param {String} template spec
 */
-Ember.Handlebars.template = function(spec) {
-  var t = Handlebars.template(spec);
-  t.isTop = true;
-  return t;
-};
+Ember.Handlebars.template = (function(template) {
+  return function(spec) {
+    var t = template(spec);
+    t.isTop = true;
+    return t;
+  };
+})(Ember.Handlebars.template);
