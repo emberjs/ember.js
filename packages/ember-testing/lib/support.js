@@ -18,7 +18,7 @@ function testCheckboxClick(handler) {
     .css({ position: 'absolute', left: '-1000px', top: '-1000px' })
     .appendTo('body')
     .on('click', handler)
-    .click()
+    .trigger('click')
     .remove();
 }
 
