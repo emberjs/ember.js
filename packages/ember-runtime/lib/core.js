@@ -189,7 +189,7 @@ Ember.copy = function(obj, deep) {
   convert the object into a useful string description.
 
   It is a pretty simple implementation. If you want something more robust,
-  use something like JSDump: https://github.com/NV/jsDump
+  use something like JSDump: [https://github.com/NV/jsDump](https://github.com/NV/jsDump)
 
   @method inspect
   @for Ember
