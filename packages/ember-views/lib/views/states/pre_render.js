@@ -15,10 +15,18 @@ Ember.merge(preRender, {
     var viewCollection = view.viewHierarchyCollection();
 
     viewCollection.trigger('willInsertElement');
-    // after createElement, the view will be in the hasElement state.
+
     fn.call(view);
-    viewCollection.transitionTo('inDOM', false);
-    viewCollection.trigger('didInsertElement');
+
+    // We transition to `inDOM` if the element exists in the DOM
+    var element = view.get('element');
+    while (element = element.parentNode) {
+      if (element === document) {
+        viewCollection.transitionTo('inDOM', false);
+        viewCollection.trigger('didInsertElement');
+      }
+    }
+
   },
 
   renderToBufferIfNeeded: function(view, buffer) {
