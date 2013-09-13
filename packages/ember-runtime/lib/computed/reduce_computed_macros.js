@@ -217,13 +217,21 @@ Ember.computed.mapProperty = Ember.computed.mapBy;
   @return {Ember.ComputedProperty} the filtered array
 */
 Ember.computed.filter = function(dependentKey, callback) {
+
+  if (arguments.length < 2) {
+    throw new Error("Computed filter declared without a callback");
+  }
+  
+  var dependentKeys = a_slice.call(arguments, 0, -1);
+  callback = a_slice.call(arguments, -1)[0];
+  
   var options = {
     initialize: function (array, changeMeta, instanceMeta) {
       instanceMeta.filteredArrayIndexes = new Ember.SubArray();
     },
 
     addedItem: function(array, item, changeMeta, instanceMeta) {
-      var match = !!callback.call(this, item),
+      var match = !!callback(item),
           filterIndex = instanceMeta.filteredArrayIndexes.addItem(changeMeta.index, match);
 
       if (match) {
@@ -243,8 +251,10 @@ Ember.computed.filter = function(dependentKey, callback) {
       return array;
     }
   };
-
-  return Ember.arrayComputed(dependentKey, options);
+  
+  var args = dependentKeys;
+  args.push(options);
+  return Ember.arrayComputed.apply(this, args);
 };
 
 /**
