@@ -56,6 +56,17 @@ test("should remove previous elements when calling replaceIn()", function() {
 
 });
 
+test("should move the view to the inDOM state after replacing", function() {
+  Ember.$("#qunit-fixture").html('<div id="menu"></div>');
+  view = View.create();
+
+  Ember.run(function() {
+    view.replaceIn('#menu');
+  });
+
+  equal(view.currentState, Ember.View.states.inDOM, "the view is in the inDOM state");
+});
+
 module("Ember.View - replaceIn() in a view hierarchy", {
   setup: function() {
     View = Ember.ContainerView.extend({
