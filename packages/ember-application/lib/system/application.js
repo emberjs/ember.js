@@ -384,13 +384,15 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     ```javascript
     App = Ember.Application.create();
 
-    App.Person = Ember.Object.extend({});
-    App.Orange = Ember.Object.extend({});
-    App.Email  = Ember.Object.extend({});
+    App.Person  = Ember.Object.extend({});
+    App.Orange  = Ember.Object.extend({});
+    App.Email   = Ember.Object.extend({});
+    App.Session = Ember.Object.create({});
 
     App.register('model:user', App.Person, {singleton: false });
     App.register('fruit:favorite', App.Orange);
     App.register('communication:main', App.Email, {singleton: false});
+    App.register('session', App.Session, {instantiate: false});
     ```
 
     @method register
