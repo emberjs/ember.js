@@ -105,6 +105,7 @@ function normalizeHash(hash, hashTypes) {
 * `indeterminate`
 * `name`
 
+
   When set to a quoted string, these values will be directly applied to the HTML
   element. When left unquoted, these values will be bound to a property on the
   template's current rendering context (most typically a controller instance).
