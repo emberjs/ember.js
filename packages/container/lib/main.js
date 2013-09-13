@@ -260,6 +260,10 @@ define("container",
           throw new TypeError("malformed fullName, expected: `type:name` got: " + fullName + "");
         }
 
+        if (factory === undefined) {
+          throw new TypeError('Attempting to register an unknown factory: `' + fullName + '`');
+        }
+
         var normalizedName = this.normalize(fullName);
 
         if (this.cache.has(normalizedName)) {

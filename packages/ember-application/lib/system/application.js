@@ -452,7 +452,9 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     if (this.isDestroyed) { return; }
 
     // At this point, the App.Router must already be assigned
-    this.register('router:main', this.Router);
+    if (this.Router) {
+      this.register('router:main', this.Router);
+    }
 
     this.runInitializers();
     Ember.runLoadHooks('application', this);

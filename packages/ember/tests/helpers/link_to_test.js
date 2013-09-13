@@ -42,7 +42,7 @@ module("The {{link-to}} helper", {
 
       container = App.__container__;
 
-      container.register('view:app');
+      container.register('view:app', AppView);
       container.register('router:main', Router);
     });
   },
