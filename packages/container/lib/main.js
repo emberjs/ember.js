@@ -364,7 +364,7 @@ define("container",
         @method makeToString
 
         @param {any} factory
-        @param {string} fullNae
+        @param {string} fullName
         @return {function} toString function
       */
       makeToString: function(factory, fullName) {
