@@ -3,6 +3,7 @@
 * Add query params support to the ember router. You can now define which query params your routes respond to, use them in your route hooks to affect model loading or controller state, and transition query parameters with the link-to helper and the transitionTo method
 * Add a non-block form link-to helper. E.g {{link-to "About us" "about"}} will have "About us" as link text and will transition to the "about" route. Everything works as with the block form link-to.
 * Components and helpers registered on the container can be rendered in templates via their dasherized names. E.g. {{helper-name}} or {{component-name}}
+* Add Ember.computed.controller. This computed property generates a controller to decorate a model. It can be useful when dealing with hierarchical application states where global singleton controllers are not sufficient.
 
 *Ember 1.0.0 (August 31, 2013)*
 
