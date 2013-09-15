@@ -150,16 +150,15 @@ Ember.computed.map = function(dependentKey, callback) {
 
   ```javascript
   App.Person = Ember.Object.extend({
-    childAges: Ember.computed.mapBy('children', 'age'),
-    minChildAge: Ember.computed.min('childAges')
+    childAges: Ember.computed.mapBy('children', 'age')
   });
 
   var lordByron = App.Person.create({children: []});
-  lordByron.get('childAge'); // []
+  lordByron.get('childAges'); // []
   lordByron.get('children').pushObject({name: 'Augusta Ada Byron', age: 7});
-  lordByron.get('childAge'); // [7]
+  lordByron.get('childAges'); // [7]
   lordByron.get('children').pushObjects([{name: 'Allegra Byron', age: 5}, {name: 'Elizabeth Medora Leigh', age: 8}]);
-  lordByron.get('childAge'); // [7, 5, 8]
+  lordByron.get('childAges'); // [7, 5, 8]
   ```
 
   @method computed.mapBy
