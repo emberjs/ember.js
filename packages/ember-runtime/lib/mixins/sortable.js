@@ -153,6 +153,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
       content.sort(function(item1, item2) {
         return self.orderBy(item1, item2);
       });
+      this._lastSortAscending = get(this, 'sortAscending');
       forEach(content, function(item) {
         forEach(sortProperties, function(sortProperty) {
           Ember.addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
