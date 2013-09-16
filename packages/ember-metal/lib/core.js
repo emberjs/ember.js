@@ -90,12 +90,15 @@ Ember.FEATURES = {};
   Test that a feature is enabled. Parsed by Ember's build tools to leave
   experimental features out of beta/stable builds.
 
+  You can define an `ENV.ENABLE_ALL_FEATURES` config to force all features to
+  be enabled.
+
   @method isEnabled
   @param {string} feature
 */
 
 Ember.FEATURES.isEnabled = function(feature) {
-  return Ember.FEATURES[feature];
+  return Ember.ENV.ENABLE_ALL_FEATURES || Ember.FEATURES[feature];
 };
 
 // ..........................................................
