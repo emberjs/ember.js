@@ -239,6 +239,7 @@ function suspendListeners(obj, eventNames, target, method, callback) {
   }
 
   var suspendedActions = [],
+      actionsList = [],
       eventName, actions, i, l;
 
   for (i=0, l=eventNames.length; i<l; i++) {
@@ -249,6 +250,7 @@ function suspendListeners(obj, eventNames, target, method, callback) {
     if (actionIndex !== -1) {
       actions[actionIndex+2] |= SUSPENDED;
       suspendedActions.push(actionIndex);
+      actionsList.push(actions);
     }
   }
 
@@ -257,7 +259,7 @@ function suspendListeners(obj, eventNames, target, method, callback) {
   function finalizer() {
     for (var i = 0, l = suspendedActions.length; i < l; i++) {
       var actionIndex = suspendedActions[i];
-      actions[actionIndex+2] &= ~SUSPENDED;
+      actionsList[i][actionIndex+2] &= ~SUSPENDED;
     }
   }
 
