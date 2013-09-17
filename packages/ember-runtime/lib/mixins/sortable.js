@@ -30,6 +30,14 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
   songsController.get('firstObject');  // {trackNumber: 1, title: 'Dear Prudence'}
   ```
 
+  The template you need to reference the controller to display the sort order. 
+
+  ```handlebars
+  {{#each controller}}
+    {{trackNumber}} {{title}}
+  {{/each}}
+  ```
+
   If you add or remove the properties to sort by or change the sort direction the content
   sort order will be automatically updated.
 
