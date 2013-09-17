@@ -446,4 +446,21 @@ if (Ember.FEATURES.isEnabled("query-params")) {
 
     equal(editCount, 2, 'set up the edit route twice without failure');
   });
+
+  test("History location can handle queryparams", function() {
+    var location = {
+      pathname: "/foo",
+      search: "?bar=baz"
+    };
+
+    var history = {
+      pushState: Ember.K,
+      replaceState: Ember.K
+    };
+
+    var historyLocation = Ember.HistoryLocation.create({location: location, history: history});
+
+    equal(historyLocation.getURL(), "/foo?bar=baz", "The query params are present");
+  });
+
 }
