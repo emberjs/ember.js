@@ -168,6 +168,23 @@ test("it maps properties", function() {
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 5]);
 });
 
+test("it is observerable", function() {
+  var mapped = get(obj, 'mapped'),
+      calls = 0;
+
+  deepEqual(get(obj, 'mapped'), [1, 3, 2, 1]);
+
+  Ember.addObserver(obj, 'mapped.@each', function() {
+    calls++;
+  });
+
+  Ember.run(function() {
+    obj.get('array').pushObject({ v: 5 });
+  });
+
+  equal(calls, 1, 'Ember.computed.mapBy is observerable');
+});
+
 
 module('Ember.computed.filter', {
   setup: function() {
@@ -1100,7 +1117,6 @@ test("filtering, sorting and reduce (max) can be combined", function() {
   equal(35, get(obj, 'oldestStarkAge'), "chain is updated correctly");
 });
 
-
 function todo(name, priority) {
   return Ember.Object.create({name: name, priority: priority});
 }
@@ -1160,3 +1176,43 @@ test("it can filter and sort when both depend on the same item property", functi
   deepEqual(sorted.mapProperty('name'), ['A', 'B', 'C', 'E', 'D'], "precond - sorted updated correctly");
   deepEqual(filtered.mapProperty('name'), ['A', 'C', 'E', 'D'], "filtered updated correctly");
 });
+
+module('Chaining array and reduced CPs', {
+  setup: function() {
+    Ember.run(function() {
+      userFnCalls = 0;
+      obj = Ember.Object.createWithMixins({
+        array: Ember.A([{ v: 1 }, { v: 3}, { v: 2 }, { v: 1 }]),
+        mapped: Ember.computed.mapBy('array', 'v'),
+        max: Ember.computed.max('mapped'),
+        maxDidChange: Ember.observer(function(){
+          userFnCalls++;
+        },'max')
+      });
+    });
+  },
+  teardown: function() {
+    Ember.run(function() {
+      obj.destroy();
+    });
+  }
+});
+
+test("it computes interdependent array computed properties", function() {
+  var mapped = get(obj, 'mapped');
+
+  equal(get(obj, 'max'), 3, 'sanity - it properly computes the maximum value');
+  equal(userFnCalls, 0, 'observer is not called on initialisation');
+
+  var calls = 0;
+  Ember.addObserver(obj, 'max', function(){ calls++; });
+
+  Ember.run(function() {
+    obj.get('array').pushObject({ v: 5 });
+  });
+
+  equal(get(obj, 'max'), 5, 'maximum value is updated correctly');
+  equal(userFnCalls, 1, 'object defined observers fire');
+  equal(calls, 1, 'runtime created observers fire');
+});
+
