@@ -493,7 +493,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     To override this option for your entire application, see
     "Overriding Application-wide Defaults".
     
-    ### Disabling the `link-to` heper
+    ### Disabling the `link-to` helper
     By default `{{link-to}}` is enabled. 
     any passed value to `disabled` helper property will disable the `link-to` helper.
      
