@@ -1,3 +1,7 @@
+*Ember 1.2.0 (TBD)*
+
+* Add query params support to the ember router. You can now define which query params your routes respond to, use them in your route hooks to affect model loading or controller state, and transition query parameters with the link-to helper and the transitionTo method
+
 *Ember 1.0.0 (August 31, 2013)*
 
 * Fix nested `{{yield}}`
