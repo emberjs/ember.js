@@ -405,7 +405,7 @@ if (Ember.FEATURES.isEnabled("query-params")) {
     });
 
     App.PostsRoute = Ember.Route.extend({
-      events: {
+      actions: {
         sort: function(dir) {
           this.transitionTo({queryParams: {sort: dir}});
         }
@@ -417,7 +417,7 @@ if (Ember.FEATURES.isEnabled("query-params")) {
     });
 
     App.PostRoute = Ember.Route.extend({
-      events: {
+      actions: {
         editPost: function(context) {
           this.transitionTo('post.edit');
         }
