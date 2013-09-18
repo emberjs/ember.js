@@ -1,5 +1,5 @@
 var Router, App, AppView, templates, router, eventDispatcher, container;
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, map = Ember.ArrayPolyfills.map;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -952,6 +952,41 @@ test("The {{link-to}} helper is active when a resource is active", function() {
   equal(Ember.$('#about-link.active', '#qunit-fixture').length, 1, "The about resource link is active");
   equal(Ember.$('#item-link.active', '#qunit-fixture').length, 1, "The item route link is active");
 
+});
+
+test("The {{link-to}} helper works in an #each'd array of string route names", function() {
+  Router.map(function() {
+    this.route('foo');
+    this.route('bar');
+    this.route('rar');
+  });
+
+  App.IndexController = Ember.Controller.extend({
+    routeNames: Ember.A(['foo', 'bar', 'rar']),
+    route1: 'bar',
+    route2: 'foo'
+  });
+
+  Ember.TEMPLATES = {
+    index: compile('{{#each routeName in routeNames}}{{#link-to routeName}}{{routeName}}{{/link-to}}{{/each}}{{#each routeNames}}{{#link-to this}}{{this}}{{/link-to}}{{/each}}{{#link-to route1}}a{{/link-to}}{{#link-to route2}}b{{/link-to}}')
+  };
+
+  bootApplication();
+
+  var $links = Ember.$('a', '#qunit-fixture');
+
+  deepEqual(map.call($links,function(el) { return Ember.$(el).attr('href'); }), ["/foo", "/bar", "/rar", "/foo", "/bar", "/rar", "/bar", "/foo"]);
+
+  var indexController = container.lookup('controller:index');
+  Ember.run(indexController, 'set', 'route1', 'rar');
+
+  $links = Ember.$('a', '#qunit-fixture');
+  deepEqual(map.call($links, function(el) { return Ember.$(el).attr('href'); }), ["/foo", "/bar", "/rar", "/foo", "/bar", "/rar", "/rar", "/foo"]);
+
+  Ember.run(indexController.routeNames, 'shiftObject');
+
+  $links = Ember.$('a', '#qunit-fixture');
+  deepEqual(map.call($links, function(el) { return Ember.$(el).attr('href'); }), ["/bar", "/rar", "/bar", "/rar", "/rar", "/foo"]);
 });
 
 if (Ember.FEATURES.isEnabled('link-to-non-block')) {

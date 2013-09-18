@@ -91,16 +91,16 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
   }
 }
 
-function simpleBind(property, options) {
+function simpleBind(currentContext, property, options) {
   var data = options.data,
       view = data.view,
-      currentContext = this,
-      normalized, observer;
+      normalized, observer, pathRoot, output;
 
   normalized = normalizePath(currentContext, property, data);
+  pathRoot = normalized.root;
 
   // Set up observers for observable objects
-  if ('object' === typeof this) {
+  if (pathRoot && ('object' === typeof pathRoot)) {
     if (data.insideGroup) {
       observer = function() {
         Ember.run.once(view, 'rerender');
@@ -132,7 +132,8 @@ function simpleBind(property, options) {
   } else {
     // The object is not observable, so just render it out and
     // be done with it.
-    data.buffer.push(handlebarsGet(currentContext, property, options));
+    output = handlebarsGet(currentContext, property, options);
+    data.buffer.push((output === null || typeof output === 'undefined') ? '' : output);
   }
 }
 
@@ -217,10 +218,10 @@ Ember.Handlebars.resolveHelper = function(container, name) {
 EmberHandlebars.registerHelper('bind', function(property, options) {
   Ember.assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
 
-  var context = (options.contexts && options.contexts[0]) || this;
+  var context = (options.contexts && options.contexts.length) ? options.contexts[0] : this;
 
   if (!options.fn) {
-    return simpleBind.call(context, property, options);
+    return simpleBind(context, property, options);
   }
 
   return bind.call(context, property, options, false, exists);
@@ -245,7 +246,7 @@ EmberHandlebars.registerHelper('bind', function(property, options) {
   @return {String} HTML string
 */
 EmberHandlebars.registerHelper('boundIf', function(property, fn) {
-  var context = (fn.contexts && fn.contexts[0]) || this;
+  var context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : this;
   var func = function(result) {
     var truthy = result && get(result, 'isTruthy');
     if (typeof truthy === 'boolean') { return truthy; }

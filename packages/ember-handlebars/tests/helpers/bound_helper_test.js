@@ -325,3 +325,73 @@ test("shouldn't treat quoted strings as bound paths", function() {
   equal(helperCount, 5, "changing controller property with same name as quoted string doesn't re-render helper");
 });
 
+test("bound helpers can handle nulls in array (with primitives)", function() {
+  Ember.Handlebars.helper('reverse', function(val) {
+    return val ? val.split('').reverse().join('') : "NOPE";
+  });
+
+  view = Ember.View.create({
+    controller: Ember.Object.create({
+      things: Ember.A([ null, 0, undefined, false, "OMG" ])
+    }),
+    template: Ember.Handlebars.compile("{{#each things}}{{this}}|{{reverse this}} {{/each}}{{#each thing in things}}{{thing}}|{{reverse thing}} {{/each}}")
+  });
+
+  appendView();
+
+  equal(view.$().text(), '|NOPE 0|NOPE |NOPE false|NOPE OMG|GMO |NOPE 0|NOPE |NOPE false|NOPE OMG|GMO ', "helper output is correct");
+
+  Ember.run(function() {
+    view.controller.things.pushObject('blorg');
+    view.controller.things.shiftObject();
+  });
+
+  equal(view.$().text(), '0|NOPE |NOPE false|NOPE OMG|GMO blorg|grolb 0|NOPE |NOPE false|NOPE OMG|GMO blorg|grolb ', "helper output is still correct");
+});
+
+test("bound helpers can handle nulls in array (with objects)", function() {
+  Ember.Handlebars.helper('print-foo', function(val) {
+    return val ? Ember.get(val, 'foo') : "NOPE";
+  });
+
+  view = Ember.View.create({
+    controller: Ember.Object.create({
+      things: Ember.A([ null, { foo: 5 } ])
+    }),
+    template: Ember.Handlebars.compile("{{#each things}}{{foo}}|{{print-foo this}} {{/each}}{{#each thing in things}}{{thing.foo}}|{{print-foo thing}} {{/each}}")
+  });
+
+  appendView();
+
+  equal(view.$().text(), '|NOPE 5|5 |NOPE 5|5 ', "helper output is correct");
+
+  Ember.run(view.controller.things, 'pushObject', { foo: 6 });
+
+  equal(view.$().text(), '|NOPE 5|5 6|6 |NOPE 5|5 6|6 ', "helper output is correct");
+});
+
+test("bound helpers can handle `this` keyword when it's a non-object", function() {
+
+  Ember.Handlebars.helper("shout", function(value) {
+    return value + '!';
+  });
+
+  view = Ember.View.create({
+    controller: Ember.Object.create({
+      things: Ember.A(['alex'])
+    }),
+    template: Ember.Handlebars.compile("{{#each things}}{{debugger}}{{shout this}}{{/each}}")
+  });
+
+  appendView();
+
+  equal(view.$().text(), 'alex!', "helper output is correct");
+
+  Ember.run(view.controller.things, 'shiftObject');
+  equal(view.$().text(), '', "helper output is correct");
+
+  Ember.run(view.controller.things, 'pushObject', 'wallace');
+  equal(view.$().text(), 'wallace!', "helper output is correct");
+});
+
+
