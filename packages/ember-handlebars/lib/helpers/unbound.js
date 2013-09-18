@@ -41,6 +41,6 @@ Ember.Handlebars.registerHelper('unbound', function(property, fn) {
     return out;
   }
 
-  context = (fn.contexts && fn.contexts[0]) || this;
+  context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : this;
   return handlebarsGet(context, property, fn);
 });
