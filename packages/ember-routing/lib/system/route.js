@@ -281,8 +281,10 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
   /**
     Transition into another route. Optionally supply a model for the
-    route in question. The model will be serialized into the URL
-    using the `serialize` hook.
+    route in question. The model will be serialized into the URL using
+    the `serialize` hook. The final argument will be a object with the
+    key `queryParams`. This can be used to add query paramaters to the
+    URL.
 
     Example
 
@@ -297,7 +299,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
       actions: {
         moveToSecret: function(context){
           if (authorized()){
-            this.transitionTo('secret', context);
+            this.transitionTo('secret', context, {queryParams: {direction: 'asc'}});
           }
             this.transitionTo('fourOhFour');
         }
@@ -305,9 +307,29 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     });
     ```
 
+    By default, query params are "sticky". This means that if you are
+    on a url like `/posts?sort=name`, and you executed
+    `transitionTo({queryParams: {direction: 'desc'}})`, the resulting
+    url will be `/posts?sort=name&direction=desc`. This is only true
+    when linking to a route in the currently active tree.
+
+    To clear query params, set is value to false e.g.
+
+    ```javascript
+    transitionTo({queryParams: {direction: false}});
+    ```
+
+    To clear all query params, give the false value to the queryParams
+    property e.g.
+
+    ```javascript
+    transitionTo({queryParams: false});
+    ```
+
     @method transitionTo
     @param {String} name the name of the route
     @param {...Object} models
+    @param {Object} queryParams - An object with the key `queryParams`
   */
   transitionTo: function(name, context) {
     var router = this.router;
@@ -507,8 +529,9 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     ```
 
     @method beforeModel
+    @param {Object} [queryParams] the active query params for this
+    route. Only present when the route has `queryParams` specified.
     @param {Transition} transition
-    @param {Object} queryParams the active query params for this route
     @return {Promise} if the value returned from this hook is
       a promise, the transition will pause until the transition
       resolves. Otherwise, non-promise return values are not
@@ -541,8 +564,9 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @method afterModel
     @param {Object} resolvedModel the value returned from `model`,
       or its resolved value if it was a promise
+    @param {Object} [queryParams] the active query params for this
+    route. Only present when the route has `queryParams` specified.
     @param {Transition} transition
-    @param {Object} queryParams the active query params for this handler
     @return {Promise} if the value returned from this hook is
       a promise, the transition will pause until the transition
       resolves. Otherwise, non-promise return values are not
@@ -607,8 +631,9 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     @method model
     @param {Object} params the parameters extracted from the URL
+    @param {Object} [queryParams] the active query params for this
+    route. Only present when the route has `queryParams` specified.
     @param {Transition} transition
-    @param {Object} queryParams the query params for this route
     @return {Object|Promise} the model for this route. If
       a promise is returned, the transition will pause until
       the promise resolves, and the resolved value of the promise
@@ -758,7 +783,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     Example
     ```js
     App.PostRoute = Ember.Route.extend({
-      setupController: function(controller, model) {
+      setupController: function(controller, model, queryParams) {
         controller.set('model', model);
       }
     });
@@ -767,6 +792,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @method setupController
     @param {Controller} controller instance
     @param {Object} model
+    @param {Object} queryParams the active query params
   */
   setupController: function(controller, context) {
     if (controller && (context !== undefined)) {
@@ -822,7 +848,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     ```js
     App.PostRoute = Ember.Route.extend({
-      setupController: function(controller, post) {
+      setupController: function(controller, post, queryParams) {
         this._super(controller, post);
         this.generateController('posts', post);
       }
@@ -896,7 +922,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     ```js
     App.PostsRoute = Ember.Route.extend({
-      renderTemplate: function(controller, model) {
+      renderTemplate: function(controller, model, queryParams) {
         var favController = this.controllerFor('favoritePost');
 
         // Render the `favoritePost` template into
@@ -913,6 +939,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @method renderTemplate
     @param {Object} controller the route's controller
     @param {Object} model the route's model
+    @param {Object} queryParams the active query params
   */
   renderTemplate: function(controller, model) {
     this.render();
