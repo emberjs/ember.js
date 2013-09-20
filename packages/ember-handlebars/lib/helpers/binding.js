@@ -350,7 +350,7 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
 
   `bind-attr` supports a special syntax for handling a number of cases unique
   to the `class` DOM element attribute. The `class` attribute combines
-  multiple discreet values into a single attribute as a space-delimited
+  multiple discrete values into a single attribute as a space-delimited
   list of strings. Each string can be:
 
   * a string return value of an object's property.
