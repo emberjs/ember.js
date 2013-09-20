@@ -2441,6 +2441,47 @@ test("Aborting/redirecting the transition in `willTransition` prevents LoadingRo
   Ember.run(deferred.resolve);
 });
 
+if (Ember.FEATURES.isEnabled("ember-routing-didTransition-hook")) {
+  test("`didTransition` event fires on the router", function() {
+    expect(3);
+
+    Router.map(function(){
+      this.route("nork");
+    });
+
+    router = container.lookup('router:main');
+
+    router.one('didTransition', function(){
+      ok(true, 'didTransition fired on initial routing');
+    });
+
+    bootApplication();
+
+    router.one('didTransition', function(){
+      ok(true, 'didTransition fired on the router');
+      equal(router.get('url'), "/nork", 'The url property is updated by the time didTransition fires');
+    });
+
+    Ember.run(router, 'transitionTo', 'nork');
+  });
+  test("`didTransition` can be reopened", function() {
+    expect(1);
+
+    Router.map(function(){
+      this.route("nork");
+    });
+
+    Router.reopen({
+      didTransition: function(){
+        this._super.apply(this, arguments);
+        ok(true, 'reopened didTransition was called');
+      }
+    });
+
+    bootApplication();
+  });
+}
+
 test("Actions can be handled by inherited action handlers", function() {
 
   expect(4);
