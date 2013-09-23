@@ -23,7 +23,7 @@ Ember.ControllerMixin.reopen({
       aController.transitionToRoute('blogPost', aPost);
     ```
 
-    Multiple models will be applied last to first recusively up the
+    Multiple models will be applied last to first recursively up the
     resource tree.
 
     ```javascript
@@ -78,7 +78,7 @@ Ember.ControllerMixin.reopen({
       aController.replaceRoute('blogPost', aPost);
     ```
 
-    Multiple models will be applied last to first recusively up the
+    Multiple models will be applied last to first recursively up the
     resource tree.
 
     ```javascript
