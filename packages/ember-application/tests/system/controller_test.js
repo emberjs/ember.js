@@ -1,5 +1,15 @@
 module("Controller dependencies");
 
+test("If a controller specifies a dependency, but does not have a container it should error", function(){
+  var Controller = Ember.Controller.extend({
+    needs: 'posts'
+  });
+
+  expectAssertion(function(){
+    Controller.create();
+  }, /specifies `needs`, but does not have a container. Please ensure this controller was instantiated with a container./);
+});
+
 test("If a controller specifies a dependency, it is accessible", function() {
   var container = new Ember.Container();
 
