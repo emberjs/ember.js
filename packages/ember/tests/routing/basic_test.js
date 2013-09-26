@@ -2586,7 +2586,7 @@ test("Route model hook finds the same model as a manual find", function() {
 if (Ember.FEATURES.isEnabled("nested-apps")) {
   var InnerApp, OuterIndexView, InnerIndexView, innerContainer, innerClicks;
 
-  module("Nested Ember Apps", {
+  module("Ember.NestedApplicationView", {
     setup: function() {
       Ember.run(function() {
         App = Ember.Application.create({
@@ -2594,34 +2594,7 @@ if (Ember.FEATURES.isEnabled("nested-apps")) {
           rootElement: '#qunit-fixture'
         });
 
-        InnerApp = Ember.Application.extend({
-          name: "InnerApp"
-        });
-
-        App.deferReadiness();
-
-        App.Router.reopen({
-          location: 'none'
-        });
-
-        App.LoadingRoute = Ember.Route.extend();
-
-        OuterIndexView = Ember.View.extend({
-          templateName: "outer_index",
-          didInsertElement: function() {
-            this._app = InnerApp.create({
-              rootElement: this.$('.inner-root')[0]
-            });
-            innerContainer = this._app.__container__;
-            innerContainer.register('view:index', InnerIndexView);
-          },
-          willDestroyElement: function() {
-            this._app.destroy();
-          }
-        });
-
-        container = App.__container__;
-        container.register('view:index', OuterIndexView);
+        InnerApp = Ember.Application.extend();
 
         innerClicks = 0;
 
@@ -2632,8 +2605,28 @@ if (Ember.FEATURES.isEnabled("nested-apps")) {
           }
         });
 
-        // Ember.TEMPLATES.application = compile("{{outlet}}"); // Kris is POSITIVE this is generated. ;)
-        Ember.TEMPLATES.outer_index = compile("<div class='inner-root'></div>");
+        InnerApp.initializer({
+          name: "setupInnerIndexView",
+          initialize: function(innerContainer, application) {
+            innerContainer.register('view:index', InnerIndexView);
+          }
+        });
+
+        App.deferReadiness();
+
+        App.Router.reopen({
+          location: 'none'
+        });
+
+        App.LoadingRoute = Ember.Route.extend();
+
+        OuterIndexView = Ember.NestedApplicationView.extend({
+          NestedApplication: InnerApp
+        });
+
+        container = App.__container__;
+        container.register('view:index', OuterIndexView);
+
         Ember.TEMPLATES.inner_index = compile("I AM THE INNER<button class='inner'>BUTTON</button>");
       });
     },
