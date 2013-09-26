@@ -30,7 +30,7 @@ Ember.TextArea = Ember.Component.extend(Ember.TextSupport, {
   classNames: ['ember-text-area'],
 
   tagName: "textarea",
-  attributeBindings: ['rows', 'cols', 'name', 'readonly'],
+  attributeBindings: ['rows', 'cols', 'name'],
   rows: null,
   cols: null,
 
