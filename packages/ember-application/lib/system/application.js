@@ -366,7 +366,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     Call `advanceReadiness` after any asynchronous setup logic has completed.
     Each call to `deferReadiness` must be matched by a call to `advanceReadiness`
     or the application will never become ready and routing will not begin.
-    
+
     @method advanceReadiness
     @see {Ember.Application#deferReadiness}
   */
@@ -677,6 +677,25 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     this.constructor.initializer(options);
   }
 });
+
+if (Ember.FEATURES.isEnabled('nested-apps')) {
+  Ember.Application.reopen({
+    init: function() {
+      this._super();
+      this.set('childApps', Ember.A());
+    },
+    registerChildApp: function(childApp) {
+      this.get('childApps').pushObject(childApp);
+      this.get('eventDispatcher')._hasChildren = true;
+    },
+    unregisterChildApp: function(childApp) {
+      this.get('childApps').removeObject(childApp);
+      if (this.get('childApps.length') === 0) {
+        this.get('eventDispatcher')._hasChildren = false;
+      }
+    }
+  });
+}
 
 Ember.Application.reopenClass({
   concatenatedProperties: ['initializers'],

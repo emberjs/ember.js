@@ -158,8 +158,7 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
     rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
 
       if (Ember.FEATURES.isEnabled("nested-apps")) {
-        // we could skip this if we know there are no nested ember apps
-        if (closestRootElement(this) !== rootElement[0]) {
+        if (self._hasChildren && closestRootElement(this) !== rootElement[0]) {
           return;
         }
       }

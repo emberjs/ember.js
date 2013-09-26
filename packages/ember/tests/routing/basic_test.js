@@ -2649,6 +2649,7 @@ if (Ember.FEATURES.isEnabled("nested-apps")) {
     handleURL('/');
 
     equal(Ember.$('#qunit-fixture button.inner').length, 1, "Inner button was rendered");
+    ok(App.get('eventDispatcher')._hasChildren, "event dispatcher knows about nested apps");
   });
 
   test("event handlers on views in the InnerApp fire exactly once", function() {
