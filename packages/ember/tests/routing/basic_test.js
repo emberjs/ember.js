@@ -2582,3 +2582,149 @@ test("Route model hook finds the same model as a manual find", function() {
 
   equal(App.Post, Post);
 });
+
+var supportsHistoryOverride = null,
+    supportsHashChangeOverride = null;
+
+module('Ember.AutoLocation', {
+  setup: function() {
+    Ember.run(function() {
+      App = Ember.Application.create({
+        name: 'App',
+        rootElement: '#qunit-fixture'
+      });
+
+      App.Router.reopen({
+        location: 'auto'
+      });
+
+      Ember.AutoLocation.reopen({
+        supportsHistory: Ember.computed(function () {
+          if (supportsHistoryOverride !== null) {
+            return supportsHistoryOverride;
+          } else {
+            return this._super();
+          }
+        }).property('userAgent', 'history').volatile(),
+
+        supportsHashChange: Ember.computed(function () {
+          if (supportsHashChangeOverride !== null) {
+            return supportsHashChangeOverride;
+          } else {
+            return this._super();
+          }
+        }).property('window', 'document').volatile()
+      });
+
+    });
+  },
+
+  teardown: function () {
+    supportsHistoryOverride = null,
+    supportsHashChangeOverride = null;
+
+    if (App) {
+      Ember.run(function () {
+        App.destroy();
+        App = null;
+      });
+    }
+  }
+});
+
+test('Ember.AutoLocation detects history.pushState support', function () {
+  var window = get(Ember.AutoLocation, 'window'),
+      document = get(Ember.AutoLocation, 'document'),
+      userAgent = get(Ember.AutoLocation, 'userAgent');
+
+  // Mocking modern browser
+  set(Ember.AutoLocation, 'window', {
+    history: {
+      pushState: function () {}
+    }
+  });
+
+  equal(get(Ember.AutoLocation, 'supportsHistory'), true, 'supportsHistory is true if a history object and history.pushState exist');
+
+  // Mocking broken/partial support
+  set(Ember.AutoLocation, 'window', {
+    history: {}
+  });
+
+  equal(get(Ember.AutoLocation, 'supportsHistory'), false, 'supportsHistory is false if a history object exists but pushState does not');
+
+  // Mocking Android 2's (broken support)
+  set(Ember.AutoLocation, 'userAgent', 'Mozilla/5.0 (Linux; U; Android 2.2; fr-lu; HTC Legend Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1');
+  set(Ember.AutoLocation, 'window', {
+    history: {
+      pushState: function () {}
+    }
+  });
+
+  equal(get(Ember.AutoLocation, 'supportsHistory'), false, 'supportsHistory is false for Android 2\'s broken support');
+
+  // Revert
+  set(Ember.AutoLocation, 'window', window);
+  set(Ember.AutoLocation, 'document', document);
+  set(Ember.AutoLocation, 'userAgent', userAgent);
+});
+
+test('Ember.AutoLocation detects hashchange support', function () {
+  var window = get(Ember.AutoLocation, 'window'),
+      document = get(Ember.AutoLocation, 'document');
+
+  // Mocking browser that has support
+  set(Ember.AutoLocation, 'document', {});
+  set(Ember.AutoLocation, 'window', {
+    onhashchange: function () {}
+  });
+
+  equal(get(Ember.AutoLocation, 'supportsHashChange'), true, 'supportsHashChange is true if onhashchange in window exists');
+
+  // Mocking browser that doesn't have hashchange event
+  set(Ember.AutoLocation, 'document', {});
+  set(Ember.AutoLocation, 'window', {});
+
+  equal(get(Ember.AutoLocation, 'supportsHashChange'), false, 'supportsHashChange is false if onhashchange in window doesn\'t exist');
+
+  // Mocking IE8 Compatibility Mode
+  set(Ember.AutoLocation, 'window', {
+    onhashchange: function () {}
+  });
+  set(Ember.AutoLocation, 'document', {
+    documentMode: 7
+  });
+
+  equal(get(Ember.AutoLocation, 'supportsHashChange'), false, 'supportsHashChange is false if in IE8 Compatibility Mode');
+
+  // Revert
+  set(Ember.AutoLocation, 'window', window);
+  set(Ember.AutoLocation, 'document', document);
+});
+
+test('Ember.AutoLocation.create() returns the best supported Location class', function () {
+
+  // Modern browsers
+  supportsHistoryOverride = true;
+  supportsHashChangeOverride = true;
+  ok(Ember.AutoLocation.create() instanceof Ember.HistoryLocation, 'When supportsHistory and supportsHashChange are both true, returns an Ember.HistoryLocation instance');
+
+  // Unheard of, but what the hey
+  supportsHistoryOverride = true;
+  supportsHashChangeOverride = false;
+  ok(Ember.AutoLocation.create() instanceof Ember.HistoryLocation, 'When supportsHistory is true and supportsHashChange is false, returns an Ember.HistoryLocation instance');
+  
+  // Most older browsers (IE9/8, etc)
+  supportsHistoryOverride = false;
+  supportsHashChangeOverride = true;
+  ok(Ember.AutoLocation.create() instanceof Ember.HashLocation, 'When supportsHistory is false and supportsHashChange is true, returns an Ember.HashLocation instance');
+
+  // Super old or ghetto browser. No soup for you.
+  supportsHistoryOverride = false;
+  supportsHashChangeOverride = false;
+  ok(Ember.AutoLocation.create() instanceof Ember.NoneLocation, 'When supportsHistory and supportsHashChange are both false, returns an Ember.NoneLocation instance');
+
+  // Remove overrides
+  supportsHistoryOverride = null;
+  supportsHashChangeOverride = null;
+});
