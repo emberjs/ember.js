@@ -808,7 +808,7 @@ define("router",
       @private
 
       This function is called when transitioning from one URL to
-      another to determine which handlers are not longer active,
+      another to determine which handlers are no longer active,
       which handlers are newly active, and which handlers remain
       active but have their context changed.
 
@@ -1002,6 +1002,9 @@ define("router",
               currentHandlerInfos.length !== matchPointResults.matchPoint) {
             finalizeTransition(transition, handlerInfos);
           }
+
+          // currentHandlerInfos was updated in finalizeTransition
+          trigger(router, router.currentHandlerInfos, true, ['didTransition']);
 
           if (router.didTransition) {
             router.didTransition(handlerInfos);
