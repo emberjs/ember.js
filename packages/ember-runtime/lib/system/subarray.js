@@ -151,6 +151,7 @@ Ember.SubArray.prototype = {
       if (otherOp.type === op.type) {
         op.count += otherOp.count;
         this._operations.splice(index-1, 1);
+        --index;
       }
     }
 
@@ -161,5 +162,13 @@ Ember.SubArray.prototype = {
         this._operations.splice(index+1, 1);
       }
     }
+  },
+
+  toString: function () {
+    var str = "";
+    forEach(this._operations, function (operation) {
+      str += " " + operation.type + ":" + operation.count;
+    });
+    return str.substring(1);
   }
 };
