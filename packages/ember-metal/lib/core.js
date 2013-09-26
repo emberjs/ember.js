@@ -80,11 +80,13 @@ Ember.config = Ember.config || {};
 /**
   Hash of enabled Canary features. Add to before creating your application.
 
+  You can also define `ENV.FEATURES` if you need to enable features flagged at runtime.
+
   @property FEATURES
   @type Hash
 */
 
-Ember.FEATURES = {};
+Ember.FEATURES = Ember.ENV.FEATURES || {};
 
 /**
   Test that a feature is enabled. Parsed by Ember's build tools to leave
