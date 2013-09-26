@@ -1488,7 +1488,7 @@ Ember.View = Ember.CoreView.extend(
       Ember.assert("You tried to append to (" + target + ") but that isn't in the DOM", Ember.$(target).length > 0);
 
       // we will want to find a better way to keep this assert and allow nesting
-      Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", Ember.$(target).hasClass('ember-application') || !Ember.$(target).is('.ember-view') && !Ember.$(target).parents().is('.ember-view'));
+      Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", (Ember.FEATURES.isEnabled("nested-apps") && Ember.$(target).hasClass('ember-application')) || !Ember.$(target).is('.ember-view') && !Ember.$(target).parents().is('.ember-view'));
 
       this.$().appendTo(target);
     });

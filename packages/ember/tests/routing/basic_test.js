@@ -2583,87 +2583,88 @@ test("Route model hook finds the same model as a manual find", function() {
   equal(App.Post, Post);
 });
 
-var InnerApp, OuterIndexView, InnerIndexView, innerContainer, innerClicks;
+if (Ember.FEATURES.isEnabled("nested-apps")) {
+  var InnerApp, OuterIndexView, InnerIndexView, innerContainer, innerClicks;
 
-module("Nested Ember Apps", {
-  setup: function() {
-    Ember.run(function() {
-      App = Ember.Application.create({
-        name: "App",
-        rootElement: '#qunit-fixture'
+  module("Nested Ember Apps", {
+    setup: function() {
+      Ember.run(function() {
+        App = Ember.Application.create({
+          name: "App",
+          rootElement: '#qunit-fixture'
+        });
+
+        InnerApp = Ember.Application.extend({
+          name: "InnerApp"
+        });
+
+        App.deferReadiness();
+
+        App.Router.reopen({
+          location: 'none'
+        });
+
+        App.LoadingRoute = Ember.Route.extend();
+
+        OuterIndexView = Ember.View.extend({
+          templateName: "outer_index",
+          didInsertElement: function() {
+            this._app = InnerApp.create({
+              rootElement: this.$('.inner-root')[0]
+            });
+            innerContainer = this._app.__container__;
+            innerContainer.register('view:index', InnerIndexView);
+          },
+          willDestroyElement: function() {
+            this._app.destroy();
+          }
+        });
+
+        container = App.__container__;
+        container.register('view:index', OuterIndexView);
+
+        innerClicks = 0;
+
+        InnerIndexView = Ember.View.extend({
+          templateName: "inner_index",
+          click: function() {
+            innerClicks = innerClicks + 1;
+          }
+        });
+
+        // Ember.TEMPLATES.application = compile("{{outlet}}"); // Kris is POSITIVE this is generated. ;)
+        Ember.TEMPLATES.outer_index = compile("<div class='inner-root'></div>");
+        Ember.TEMPLATES.inner_index = compile("I AM THE INNER<button class='inner'>BUTTON</button>");
       });
+    },
 
-      InnerApp = Ember.Application.extend({
-        name: "InnerApp"
+    teardown: function() {
+      Ember.run(function() {
+        InnerApp = null;
+        App.destroy(); // App is an instance, InnerApp is not
+        App = null;
+
+        Ember.TEMPLATES = {};
       });
+      Ember.TESTING_DEPRECATION = false;
+    }
+  });
 
-      App.deferReadiness();
+  test("InnerApp's index view is rendered", function() {
+    bootApplication();
 
-      App.Router.reopen({
-        location: 'none'
-      });
+    handleURL('/');
 
-      App.LoadingRoute = Ember.Route.extend();
+    equal(Ember.$('#qunit-fixture button.inner').length, 1, "Inner button was rendered");
+  });
 
-      OuterIndexView = Ember.View.extend({
-        templateName: "outer_index",
-        didInsertElement: function() {
-          this._app = InnerApp.create({
-            rootElement: this.$('.inner-root')[0]
-          });
-          innerContainer = this._app.__container__;
-          innerContainer.register('view:index', InnerIndexView);
-        },
-        willDestroyElement: function() {
-          this._app.destroy();
-        }
-      });
+  test("event handlers on views in the InnerApp fire exactly once", function() {
+    bootApplication();
 
-      container = App.__container__;
-      container.register('view:index', OuterIndexView);
+    handleURL('/');
 
-      innerClicks = 0;
+    Ember.$('button.inner').trigger('click');
 
-      InnerIndexView = Ember.View.extend({
-        templateName: "inner_index",
-        click: function() {
-          innerClicks = innerClicks + 1;
-        }
-      });
-
-      // Ember.TEMPLATES.application = compile("{{outlet}}"); // Kris is POSITIVE this is generated. ;)
-      Ember.TEMPLATES.outer_index = compile("<div class='inner-root'></div>");
-      Ember.TEMPLATES.inner_index = compile("I AM THE INNER<button class='inner'>BUTTON</button>");
-    });
-  },
-
-  teardown: function() {
-    Ember.run(function() {
-      InnerApp = null;
-      App.destroy(); // App is an instance, InnerApp is not
-      App = null;
-
-      Ember.TEMPLATES = {};
-    });
-    Ember.TESTING_DEPRECATION = false;
-  }
-});
-
-test("InnerApp's index view is rendered", function() {
-  bootApplication();
-
-  handleURL('/');
-
-  equal(Ember.$('#qunit-fixture button.inner').length, 1, "Inner button was rendered");
-});
-
-test("event handlers on views in the InnerApp fire exactly once", function() {
-  bootApplication();
-
-  handleURL('/');
-
-  Ember.$('button.inner').trigger('click');
-
-  equal(innerClicks, 1, "inner view click handler was called one time");
-});
-
+    equal(innerClicks, 1, "inner view click handler was called one time");
+  });
+}
