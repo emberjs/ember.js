@@ -140,6 +140,19 @@ test("after first retrieval, array computed properties can observe properties on
   deepEqual(evenNestedNumbers, [2, 4, 6, 22], 'adds new number');
 });
 
+test("changes to array computed properties happen synchronously", function() {
+  var nestedNumbers = get(obj, 'nestedNumbers'),
+      evenNestedNumbers = get(obj, 'evenNestedNumbers');
+
+  deepEqual(evenNestedNumbers, [2, 4, 6], 'precond -- starts off with correct values');
+
+  Ember.run(function() {
+    nestedNumbers.objectAt(0).set('v', 22);
+    deepEqual(nestedNumbers.mapBy('v'), [22, 2, 3, 4, 5, 6], 'nested numbers is updated');
+    deepEqual(evenNestedNumbers, [2, 4, 6, 22], 'adds new number');
+  });
+});
+
 test("doubly nested item property keys (@each.foo.@each) are not supported", function() {
   Ember.run(function() {
     obj = Ember.Object.createWithMixins({

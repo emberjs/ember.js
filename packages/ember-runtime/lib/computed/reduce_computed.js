@@ -280,7 +280,7 @@ DependentArraysObserver.prototype = {
   },
 
   itemPropertyDidChange: function(obj, keyName, array, observerContext) {
-    Ember.run.once(this, 'flushChanges');
+    this.flushChanges();
   },
 
   flushChanges: function() {
@@ -561,7 +561,7 @@ ReduceComputedProperty.prototype.property = function () {
   If there are more than one arguments the first arguments are
   considered to be dependent property keys. The last argument is
   required to be an options object. The options object can have the
-  following four properties.
+  following four properties:
 
   `initialValue` - A value or function that will be used as the initial
   value for the computed. If this property is a function the result of calling
