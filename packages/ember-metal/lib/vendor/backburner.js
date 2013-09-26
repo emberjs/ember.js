@@ -262,7 +262,9 @@ define("backburner",
 
         try {
           currentInstance.flush();
-        } finally {
+        } 
+        catch(pseudoError){}
+        finally {
           this.currentInstance = null;
 
           if (this.instanceStack.length) {
@@ -297,7 +299,9 @@ define("backburner",
           } else {
             ret = method.call(target);
           }
-        } finally {
+        } 
+        catch(pseudoError){}
+        finally {
           if (!finallyAlreadyCalled) {
             finallyAlreadyCalled = true;
             this.end();
