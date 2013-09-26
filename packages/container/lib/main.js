@@ -268,6 +268,10 @@ define("container",
           fullName = type + ":" + name;
         }
 
+        if (factory === undefined) {
+          throw new TypeError('Attempting to register an unknown factory: `' + fullName + '`');
+        }
+
         var normalizedName = this.normalize(fullName);
 
         this.registry.set(normalizedName, factory);
