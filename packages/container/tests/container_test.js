@@ -456,3 +456,11 @@ test("The container can get options that should be applied to all factories for 
 
   ok(postView1 !== postView2, "The two lookups are different");
 });
+
+test("cannot register an `undefined` factory", function(){
+  var container = new Container();
+
+  throws(function(){
+    container.register('controller:apple', undefined);
+  }, '');
+});
