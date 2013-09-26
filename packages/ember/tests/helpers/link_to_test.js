@@ -865,6 +865,35 @@ if (Ember.FEATURES.isEnabled("query-params")) {
       promise.then(next, shouldNotHappen);
     });
   });
+
+
+
+  test("The {{linkTo}} can work without a route name if query params are supplied", function() {
+    expect(4);
+
+    Router.map(function() {
+      this.route("items", { queryParams: ['page'] });
+      this.route('about');
+    });
+
+    Ember.TEMPLATES.items = Ember.Handlebars.compile("<h1>Items</h1> {{#linkTo page=2 id='next-page'}}Next Page{{/linkTo}}");
+
+    bootApplication();
+
+    Ember.run(function() {
+      router.handleURL("/items");
+    });
+
+    equal(normalizeUrl(Ember.$('#next-page').attr('href')), '/items?page=2', "The link-to works without a routename");
+    shouldNotBeActive('#next-page');
+
+    Ember.run(function() {
+      Ember.$('#next-page', '#qunit-fixture').click();
+    });
+
+    equal(router.get('url'), "/items?page=2", "Clicking the link updates the url");
+    shouldBeActive('#next-page');
+  });
 }
 
 test("The {{link-to}} helper's bound parameter functionality works as expected in conjunction with an ObjectProxy/Controller", function() {
