@@ -7,11 +7,11 @@ module("Application Lifecycle", {
         rootElement: '#qunit-fixture'
       });
 
-      App.deferReadiness();
-
-      App.Router = Ember.Router.extend({
+      App.Router.extend({
         location: 'none'
       });
+
+      App.deferReadiness();
 
       container = App.__container__;
     });
