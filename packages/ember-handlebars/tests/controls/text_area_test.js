@@ -90,6 +90,24 @@ test("should become disabled if the disabled attribute is true", function() {
   ok(textArea.$().is(":not(:disabled)"));
 });
 
+test("should become readonly if the readonly attribute is true", function() {
+  textArea.set('readonly', true);
+  append();
+
+  ok(textArea.$().is(":read-only"));
+});
+
+test("should become readonly if the readonly attribute is true", function() {
+  append();
+  ok(textArea.$().is(":not(:read-only)"));
+
+  Ember.run(function() { textArea.set('readonly', true); });
+  ok(textArea.$().is(":read-only"));
+
+  Ember.run(function() { textArea.set('readonly', false); });
+  ok(textArea.$().is(":not(:read-only)"));
+});
+
 test("input value is updated when setting value property of view", function() {
   Ember.run(function() {
     set(textArea, 'value', 'foo');
