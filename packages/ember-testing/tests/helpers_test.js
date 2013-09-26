@@ -196,3 +196,59 @@ test("`click` triggers appropriate events in order", function() {
     equal(events.length, 5, 'fires click and change on checkboxes');
   });
 });
+
+if (Ember.FEATURES.isEnabled("ember-testing-wait-hooks")) {
+  test("`wait` respects registerWaiters", function() {
+    expect(2);
+
+    var counter=0;
+    function waiter() {
+      return ++counter > 2;
+    }
+
+    Ember.run(function() {
+      App = Ember.Application.create();
+      App.setupForTesting();
+    });
+
+    App.injectTestHelpers();
+
+    Ember.run(App, App.advanceReadiness);
+    Ember.Test.registerWaiter(waiter);
+
+    App.testHelpers.wait().then(function() {
+      equal(waiter(), true, 'should not resolve until our waiter is ready');
+      Ember.Test.unregisterWaiter(waiter);
+      equal(Ember.Test.waiters.length, 0, 'should not leave a waiter registered');
+    });
+  });
+
+  test("`wait` respects registerWaiters with optional context", function() {
+    expect(2);
+
+    var obj = {
+      counter: 0,
+      ready: function() {
+	return ++this.counter > 2;
+      }
+    };
+
+    Ember.run(function() {
+      App = Ember.Application.create();
+      App.setupForTesting();
+    });
+
+    App.injectTestHelpers();
+
+    Ember.run(App, App.advanceReadiness);
+    Ember.Test.registerWaiter(obj, obj.ready);
+
+    App.testHelpers.wait().then(function() {
+      equal(obj.ready(), true, 'should not resolve until our waiter is ready');
+      Ember.Test.unregisterWaiter(obj, obj.ready);
+      equal(Ember.Test.waiters.length, 0, 'should not leave a waiter registered');
+    });
+
+
+  });
+}
