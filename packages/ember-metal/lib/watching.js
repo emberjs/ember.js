@@ -86,7 +86,7 @@ Ember.rewatch = function(obj) {
 
   // make sure the object has its own guid.
   if (GUID_KEY in obj && !obj.hasOwnProperty(GUID_KEY)) {
-    generateGuid(obj, 'ember');
+    generateGuid(obj);
   }
 
   // make sure any chained watchers update.
