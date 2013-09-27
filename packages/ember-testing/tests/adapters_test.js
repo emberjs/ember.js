@@ -82,8 +82,8 @@ test("Concurrent wait calls are supported", function() {
   var task2 = wait();
 
   Ember.RSVP.all([task1, task2]).then(function(){
-    equal(asyncStartCalled, 2);
-    equal(asyncEndCalled,   2);
+    equal(asyncStartCalled, 1);
+    equal(asyncEndCalled,   1);
     Ember.Test.adapter = originalAdapter;
   });
 });

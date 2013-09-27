@@ -222,7 +222,7 @@ helper('fillIn', fillIn);
 * @param {String} selector jQuery string selector for element lookup
 * @return {Object} jQuery object representing the results of the query
 */
-helper('find', find);
+helper('find', find, { wait: false });
 
 /**
 *
@@ -240,7 +240,7 @@ helper('find', find);
 * @return {Object} jQuery object representing the results of the query
 * @throws {Error} throws error if jQuery object returned has a length of 0
 */
-helper('findWithAssert', findWithAssert);
+helper('findWithAssert', findWithAssert, { wait: false });
 
 /**
   Causes the run loop to process any pending events. This is used to ensure that

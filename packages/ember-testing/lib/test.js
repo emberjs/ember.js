@@ -5,7 +5,8 @@
 var slice = [].slice,
     helpers = {},
     originalMethods = {},
-    injectHelpersCallbacks = [];
+    injectHelpersCallbacks = [],
+    Router = requireModule('router');
 
 /**
   This is a container for an assortment of testing related functionality:
@@ -14,7 +15,7 @@ var slice = [].slice,
   * Register/Unregister additional test helpers.
   * Setup callbacks to be fired when the test helpers are injected into
     your application.
-  
+
   @class Test
   @namespace Ember
 */
@@ -220,7 +221,7 @@ function helper(app, name) {
       // wait for last helper's promise to resolve
       // and then execute
       run(function() {
-        lastPromise = lastPromise.then(function() {
+        lastPromise = resolve(lastPromise).then(function() {
           return fn.apply(app, args);
         });
       });
@@ -337,6 +338,13 @@ function protoWrap(proto, name, callback) {
   };
 }
 
+
+function resolve(val) {
+  return Ember.Test.promise(function(resolve) {
+    return resolve(val);
+  });
+}
+
 Ember.Test.Promise = function() {
   Ember.RSVP.Promise.apply(this, arguments);
   Ember.Test.lastPromise = this;
@@ -379,7 +387,7 @@ function isolate(fn, val) {
     return value;
   } else {
     run(function() {
-      lastPromise = lastPromise.then(function() {
+      lastPromise = resolve(lastPromise).then(function() {
         return value;
       });
     });
@@ -390,6 +398,9 @@ function isolate(fn, val) {
   Ember.Test.lastPromise = prevPromise;
 }
 
+
 function onerror(error) {
-  Ember.Test.adapter.exception(error);
+  if (!(error instanceof Router.TransitionAborted)) {
+    Ember.Test.adapter.exception(error);
+  }
 }
