@@ -5,9 +5,12 @@
 
 var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
-
 var appRegex = /\bember-application\b/;
 
+/**
+  This method is *significantly* faster than jQuery's `closest`.
+  It gets run for every mouse event, so speed is important here.
+*/
 function closestRootElement(target) {
   var node = target;
   while(node) {
