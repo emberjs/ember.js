@@ -363,10 +363,7 @@ Ember.Router.reopenClass({
   },
 
   _defaultErrorHandler: function(error, transition) {
-    Ember.Logger.error('Error while loading route:', error);
-
-    // Using setTimeout allows us to escape from the Promise's try/catch block
-    setTimeout(function() { throw error; });
+    Ember.Logger.assert(false, 'Error while loading route:');
   },
 
   _routePath: function(handlerInfos) {
