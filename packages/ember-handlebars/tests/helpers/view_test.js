@@ -85,3 +85,16 @@ test("View lookup - 'fu'", function() {
     return FuView;
   }
 });
+
+test("id bindings downgrade to one-time property lookup", function() {
+  view = Ember.View.extend({
+    template: Ember.Handlebars.compile("{{#view Ember.View id=view.meshuggah}}{{view.parentView.meshuggah}}{{/view}}"),
+    meshuggah: 'stengah'
+  }).create();
+
+  Ember.run(view, 'appendTo', '#qunit-fixture');
+
+  equal(Ember.$('#stengah').text(), 'stengah', "id binding performed property lookup");
+  Ember.run(view, 'set', 'meshuggah', 'omg');
+  equal(Ember.$('#stengah').text(), 'omg', "id didn't change");
+});

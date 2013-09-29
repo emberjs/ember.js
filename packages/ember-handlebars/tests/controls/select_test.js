@@ -394,7 +394,7 @@ test("select with group observes its content", function() {
   equal(labels.join(''), 'YehudaKeith');
 });
 test("select with group whose content is undefined doesn't breaks", function() {
-  
+
 		var content;
   Ember.run(function() {
     select.set('content', content),
@@ -767,18 +767,11 @@ test("upon content change with Array-like content, the DOM should reflect the se
   equal(selectEl.selectedIndex, 1, "The DOM reflects the correct selection");
 });
 
-test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding", function() {
+function testValueBinding(templateString) {
   view = Ember.View.create({
     collection: Ember.A([{name: 'Wes', value: 'w'}, {name: 'Gordon', value: 'g'}]),
     val: 'g',
-    template: Ember.Handlebars.compile(
-      '{{view Ember.Select viewName="select"' +
-      '    contentBinding="view.collection"' +
-      '    optionLabelPath="content.name"' +
-      '    optionValuePath="content.value"' +
-      '    prompt="Please wait..."' +
-      '    valueBinding="view.val"}}'
-    )
+    template: Ember.Handlebars.compile(templateString)
   });
 
   Ember.run(function() {
@@ -799,4 +792,26 @@ test("select element should correctly initialize and update selectedIndex and bo
   equal(view.get('val'), 'w', "Updated bound property is correct");
   equal(select.get('value'), 'w', "Updated selection is correct");
   equal(selectEl.selectedIndex, 1, "The DOM is updated to reflect the new selection");
+}
+
+test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding (old xBinding='' syntax)", function() {
+  testValueBinding(
+    '{{view Ember.Select viewName="select"' +
+    '    contentBinding="view.collection"' +
+    '    optionLabelPath="content.name"' +
+    '    optionValuePath="content.value"' +
+    '    prompt="Please wait..."' +
+    '    valueBinding="view.val"}}'
+  );
+});
+
+test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding (new quoteless binding shorthand)", function() {
+  testValueBinding(
+    '{{view Ember.Select viewName="select"' +
+    '    content=view.collection' +
+    '    optionLabelPath="content.name"' +
+    '    optionValuePath="content.value"' +
+    '    prompt="Please wait..."' +
+    '    value=view.val}}'
+  );
 });
