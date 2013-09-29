@@ -34,20 +34,6 @@ Ember.assert("Ember Handlebars requires Handlebars version 1.0.0, COMPILER_REVIS
 */
 Ember.Handlebars = objectCreate(Handlebars);
 
-function makeBindings(options) {
-  var hash = options.hash,
-      hashType = options.hashTypes;
-
-  for (var prop in hash) {
-    if (hashType[prop] === 'ID') {
-      hash[prop + 'Binding'] = hash[prop];
-      hashType[prop + 'Binding'] = 'STRING';
-      delete hash[prop];
-      delete hashType[prop];
-    }
-  }
-}
-
 /**
   Register a bound helper or custom view helper.
 
@@ -107,7 +93,6 @@ Ember.Handlebars.helper = function(name, value) {
   if (Ember.View.detect(value)) {
     Ember.Handlebars.registerHelper(name, function(options) {
       Ember.assert("You can only pass attributes (such as name=value) not bare values to a helper for a View", arguments.length < 2);
-      makeBindings(options);
       return Ember.Handlebars.helpers.view.call(this, value, options);
     });
   } else {
