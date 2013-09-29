@@ -13,6 +13,28 @@ var EmberHandlebars = Ember.Handlebars;
 var LOWERCASE_A_Z = /^[a-z]/;
 var VIEW_PREFIX = /^view\./;
 
+function makeBindings(thisContext, options) {
+  var hash = options.hash,
+      hashType = options.hashTypes;
+
+  for (var prop in hash) {
+    if (hashType[prop] === 'ID') {
+      hash[prop + 'Binding'] = hash[prop];
+      hashType[prop + 'Binding'] = 'STRING';
+      delete hash[prop];
+      delete hashType[prop];
+    }
+  }
+
+  if (hash.hasOwnProperty('idBinding')) {
+    // id can't be bound, so just perform one-time lookup.
+    hash.id = EmberHandlebars.get(thisContext, hash.idBinding, options);
+    hashType.id = 'STRING';
+    delete hash.idBinding;
+    delete hashType.idBinding;
+  }
+}
+
 EmberHandlebars.ViewHelper = Ember.Object.create({
 
   propertiesFromHTMLOptions: function(options) {
@@ -121,6 +143,8 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
     var data = options.data,
         fn = options.fn,
         newView;
+
+    makeBindings(thisContext, options);
 
     if ('string' === typeof path) {
 

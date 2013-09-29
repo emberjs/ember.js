@@ -100,7 +100,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   ```
 
   ```handlebars
-  {{view Ember.Select contentBinding="names"}}
+  {{view Ember.Select content=names}}
   ```
 
   Would result in the following HTML:
@@ -113,7 +113,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   ```
 
   You can control which `<option>` is selected through the `Ember.Select`'s
-  `value` property directly or as a binding:
+  `value` property:
 
   ```javascript
   App.ApplicationController = Ember.Controller.extend({
@@ -124,8 +124,8 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="names"
-         valueBinding="selectedName"
+         content=names
+         value=selectedName
   }}
   ```
 
@@ -166,7 +166,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="programmers"
+         content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"}}
   ```
@@ -181,8 +181,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   ```
 
   The `value` attribute of the selected `<option>` within an `Ember.Select`
-  can be bound to a property on another object by providing a
-  `valueBinding` option:
+  can be bound to a property on another object:
 
   ```javascript
   App.ApplicationController = Ember.Controller.extend({
@@ -198,10 +197,10 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="programmers"
+         content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
-         valueBinding="currentProgrammer.id"}}
+         value=currentProgrammer.id}}
   ```
 
   Would result in the following HTML with a selected option:
@@ -218,8 +217,8 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   to match the `value` property of the newly selected `<option>`.
 
   Alternatively, you can control selection through the underlying objects
-  used to render each object providing a `selectionBinding`. When the selected
-  `<option>` is changed, the property path provided to `selectionBinding`
+  used to render each object by binding the `selection` option. When the selected
+  `<option>` is changed, the property path provided to `selection`
   will be updated to match the content object of the rendered `<option>`
   element:
 
@@ -235,10 +234,10 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="programmers"
+         content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
-         selectionBinding="selectedPerson"}}
+         selection=selectedPerson}}
   ```
 
   Would result in the following HTML with a selected option:
@@ -251,7 +250,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   ```
 
   Interacting with the rendered element by selecting the first option
-  ('Yehuda') will update the `selectedPerson` to match the object of 
+  ('Yehuda') will update the `selectedPerson` to match the object of
   the newly selected `<option>`. In this case it is the first object
   in the `programmers`
 
@@ -272,8 +271,8 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ``` handlebars
   {{view Ember.Select
-         contentBinding="programmers"
-         valueBinding="selectedProgrammer"
+         content=programmers
+         value=selectedProgrammer
   }}
   ```
 
@@ -304,8 +303,8 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="programmers"
-         valueBinding="selectedProgrammer"
+         content=programmers
+         value=selectedProgrammer
          prompt="Please select a name"
   }}
   ```
@@ -329,7 +328,7 @@ Ember.Select = Ember.View.extend(
 
   tagName: 'select',
   classNames: ['ember-select'],
-  defaultTemplate: precompileTemplate('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#if view.optionGroupPath}}{{#each view.groupedContent}}{{view view.groupView contentBinding=this.content labelBinding=this.label}}{{/each}}{{else}}{{#each view.content}}{{view view.optionView contentBinding="this"}}{{/each}}{{/if}}'),
+  defaultTemplate: precompileTemplate('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#if view.optionGroupPath}}{{#each view.groupedContent}}{{view view.groupView content=content label=label}}{{/each}}{{else}}{{#each view.content}}{{view view.optionView content=this}}{{/each}}{{/if}}'),
   attributeBindings: ['multiple', 'disabled', 'tabindex', 'name'],
 
   /**
