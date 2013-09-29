@@ -1875,7 +1875,7 @@ test("Router accounts for rootURL on page load when using history location", fun
 
 test("HistoryLocation has the correct rootURL on initState and webkit doesn't fire popstate on page load", function() {
   expect(2);
-  var rootURL = window.location.pathname + 'app',
+  var rootURL = window.location.pathname,
       history,
       HistoryTestLocation;
 
