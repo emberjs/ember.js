@@ -52,7 +52,7 @@ Ember.TextSupport = Ember.Mixin.create({
     Options are:
 
     * `enter`: the user pressed enter
-    * `keypress`: the user pressed a key
+    * `keyPress`: the user pressed a key
 
     @property onEvent
     @type String
