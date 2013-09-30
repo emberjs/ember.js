@@ -139,7 +139,7 @@ function simpleBind(property, options) {
 /**
   @private
 
-  '_triageMustache' is used internally select between a binding and helper for
+  '_triageMustache' is used internally select between a binding, helper, or component for
   the given context. Until this point, it would be hard to determine if the
   mustache is a property reference or a regular helper reference. This triage
   helper resolves that.
@@ -149,18 +149,43 @@ function simpleBind(property, options) {
   @method _triageMustache
   @for Ember.Handlebars.helpers
   @param {String} property Property/helperID to triage
-  @param {Function} fn Context to provide for rendering
+  @param {Object} options hash of template/rendering options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('_triageMustache', function(property, fn) {
+EmberHandlebars.registerHelper('_triageMustache', function(property, options) {
   Ember.assert("You cannot pass more than one argument to the _triageMustache helper", arguments.length <= 2);
+
   if (helpers[property]) {
-    return helpers[property].call(this, fn);
+    return helpers[property].call(this, options);
   }
-  else {
-    return helpers.bind.apply(this, arguments);
+
+  if (Ember.FEATURES.isEnabled('container-renderables')) {
+
+    var helper = Ember.Handlebars.resolveHelper(options.data.view.container, property);
+    if (helper) {
+      return helper.call(this, options);
+    }
   }
+
+  return helpers.bind.call(this, property, options);
 });
+
+Ember.Handlebars.resolveHelper = function(container, name) {
+
+  if (!container || name.indexOf('-') === -1) {
+    return;
+  }
+
+  var helper = container.lookup('helper:' + name);
+  if (!helper) {
+    var Component = container.lookup('component-lookup:main').lookupFactory(name);
+    if (Component) {
+      helper = EmberHandlebars.makeViewHelper(Component);
+      container.register('helper:' + name, helper);
+    }
+  }
+  return helper;
+};
 
 /**
   @private
