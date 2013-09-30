@@ -5,7 +5,7 @@ package   = ARGV[0]
 
 unless package
   puts "Usage: scripts/browser_tests ember-[package]"
-  exit 1unless package
+  exit 1 unless package
 end
 
 puts "open the following in your browser:\n  file://#{full_path}?package=#{package}\n"
