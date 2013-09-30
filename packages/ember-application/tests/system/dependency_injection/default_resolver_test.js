@@ -58,6 +58,26 @@ test("the default resolver resolves models on the namespace", function() {
   detectEqual(application.Post, locator.lookupFactory('model:post'), "looks up Post model on application");
 });
 
+if (Ember.FEATURES.isEnabled('container-renderables')) {
+  test("the default resolver resolves helpers from Ember.Handlebars.helpers", function(){
+    function fooresolvertestHelper(){ return 'FOO'; }
+    function barBazResolverTestHelper(){ return 'BAZ'; }
+    Ember.Handlebars.registerHelper('fooresolvertest', fooresolvertestHelper);
+    Ember.Handlebars.registerHelper('bar-baz-resolver-test', barBazResolverTestHelper);
+    equal(fooresolvertestHelper, locator.lookup('helper:fooresolvertest'), "looks up fooresolvertestHelper helper");
+    equal(barBazResolverTestHelper, locator.lookup('helper:bar-baz-resolver-test'), "looks up barBazResolverTestHelper helper");
+  });
+
+  test("the default resolver resolves container-registered helpers", function(){
+    function gooresolvertestHelper(){ return 'GOO'; }
+    function gooGazResolverTestHelper(){ return 'GAZ'; }
+    application.register('helper:gooresolvertest', gooresolvertestHelper);
+    application.register('helper:goo-baz-resolver-test', gooGazResolverTestHelper);
+    equal(gooresolvertestHelper, locator.lookup('helper:gooresolvertest'), "looks up gooresolvertest helper");
+    equal(gooGazResolverTestHelper, locator.lookup('helper:goo-baz-resolver-test'), "looks up gooGazResolverTestHelper helper");
+  });
+}
+
 test("the default resolver throws an error if the fullName to resolve is invalid", function(){
   raises(function(){ locator.resolve(undefined);}, TypeError, /Invalid fullName/ );
   raises(function(){ locator.resolve(null);     }, TypeError, /Invalid fullName/ );
