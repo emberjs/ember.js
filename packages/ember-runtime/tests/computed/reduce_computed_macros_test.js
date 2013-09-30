@@ -1216,3 +1216,44 @@ test("it computes interdependent array computed properties", function() {
   equal(calls, 1, 'runtime created observers fire');
 });
 
+
+module('Ember.computed.flattenArray', {
+  setup: function() {
+    Ember.run(function() {
+      userFnCalls = 0;
+      obj = Ember.Object.createWithMixins({
+        array: Ember.A([ Ember.Object.create({ v: Ember.A([ 1 ]) }), Ember.Object.create({ v: Ember.A([ 2, 3 ])}), Ember.Object.create({ v: Ember.A([ 4, 5, 6 ]) }), Ember.Object.create({ v: Ember.A([]) }) ]),
+
+        flattened: Ember.computed.flattenArray( 'array', 'v' )
+      });
+    });
+  },
+  teardown: function() {
+    Ember.run(function() {
+      obj.destroy();
+    });
+  }
+});
+
+test("it flattens arrays", function() {
+  deepEqual(get(obj, 'flattened'), [1, 2, 3, 4, 5, 6]);
+
+  Ember.run(function() {
+    obj.get('array').pushObject(Ember.Object.create({ v: Ember.A([ 7, 8 ]) }));
+  });
+
+  deepEqual(get(obj, 'flattened'), [1, 2, 3, 4, 5, 6, 7, 8]);
+
+  Ember.run(function() {
+    obj.get('array').removeAt(2);
+  });
+
+  deepEqual(get(obj, 'flattened'), [1, 2, 3, 7, 8]);
+
+  Ember.run(function() {
+   obj.get('array.lastObject.v').insertAt( 1, 'foo' );
+  });
+
+  deepEqual(get(obj, 'flattened'), [1, 2, 3, 7, 'foo', 8]);
+
+});
