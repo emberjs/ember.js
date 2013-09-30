@@ -118,4 +118,25 @@ if (Ember.FEATURES.isEnabled('container-renderables')) {
 
     equal(Ember.$('#wrapper').text(), "machty hello  world", "The component is composed correctly");
   });
+
+  test("Component lookups should take place on components' subcontainers", function() {
+
+    expect(1);
+
+    Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#sally-rutherford}}{{mach-ty}}{{/sally-rutherford}}</div>");
+
+    boot(function() {
+      container.register('component:sally-rutherford', Ember.Component.extend({
+        init: function() {
+          this._super();
+          this.container = new Ember.Container(this.container);
+          this.container.register('component:mach-ty', Ember.Component.extend({
+            didInsertElement: function() {
+              ok(true, "mach-ty was rendered");
+            }
+          }));
+        }
+      }));
+    });
+  });
 }
