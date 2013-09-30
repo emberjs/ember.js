@@ -1,7 +1,9 @@
 Ember.ComponentLookup = Ember.Object.extend({
-  lookupFactory: function(name) {
-    var container = this.container,
-        fullName = 'component:' + name,
+  lookupFactory: function(name, container) {
+
+    container = container || this.container;
+
+    var fullName = 'component:' + name,
         templateFullName = 'template:components/' + name,
         templateRegistered = container && container.has(templateFullName);
 
