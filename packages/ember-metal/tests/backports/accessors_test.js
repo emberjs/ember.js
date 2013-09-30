@@ -69,12 +69,29 @@ test("get follows paths on the 1.0-no-warn mode", function() {
   equal(warnings.length, 0);
 });
 
+test("get follows global paths in 1.0-no-warn mode", function() {
+  Ember.ENV.ACCESSORS = '1.0-no-warn';
+  window.Foo = { bar: 'baz' };
+  equal(Ember.get('Foo.bar'), 'baz');
+  equal(warnings.length, 0);
+  delete window.Foo;
+});
+
 test("set follows paths on the 1.0-no-warn mode", function() {
   Ember.ENV.ACCESSORS = '1.0-no-warn';
   var o = { foo: {bar: 'baz'} };
   Ember.set(o, 'foo.bar', 'qux');
   equal(o.foo.bar, 'qux');
   equal(warnings.length, 0);
+});
+
+test("set follows global paths in 1.0 mode", function() {
+  Ember.ENV.ACCESSORS = '1.0-no-warn';
+  window.Foo = {};
+  Ember.set('Foo.bar', 'baz');
+  equal(window.Foo.bar, 'baz');
+  equal(warnings.length, 0);
+  delete window.Foo;
 });
 
 test("trySetPath doesn't warn on the 1.0-no-warn mode", function() {
@@ -118,12 +135,29 @@ test("get follows paths on the 1.0 mode", function() {
   equal(warnings.length, 0);
 });
 
+test("get follows global paths in 1.0 mode", function() {
+  Ember.ENV.ACCESSORS = '1.0';
+  window.Foo = { bar: 'baz' };
+  equal(Ember.get('Foo.bar'), 'baz');
+  equal(warnings.length, 0);
+  delete window.Foo;
+});
+
 test("set follows paths on the 1.0 mode", function() {
   Ember.ENV.ACCESSORS = '1.0';
   var o = { foo: {bar: 'baz'} };
   Ember.set(o, 'foo.bar', 'qux');
   equal(o.foo.bar, 'qux');
   equal(warnings.length, 0);
+});
+
+test("set follows global paths in 1.0 mode", function() {
+  Ember.ENV.ACCESSORS = '1.0';
+  window.Foo = {};
+  Ember.set('Foo.bar', 'baz');
+  equal(window.Foo.bar, 'baz');
+  equal(warnings.length, 0);
+  delete window.Foo;
 });
 
 test("trySetPath warns on the 1.0 mode", function() {
