@@ -117,7 +117,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     ```javascript
     AController = Ember.Controller.extend({
-      anActionName: function() {}
+      actions: {
+        anActionName: function() {}
+      }
     });
 
     AView = Ember.View.extend({
@@ -139,8 +141,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     </div>
     ```
 
-    Clicking "click me" will trigger the `anActionName` method of the
-    `AController`. In this case, no additional parameters will be passed.
+    Clicking "click me" will trigger the `anActionName` method in the `actions
+    hash of the `AController`. In this case, no additional parameters will be
+    passed.
 
     If you provide additional parameters to the helper:
 
