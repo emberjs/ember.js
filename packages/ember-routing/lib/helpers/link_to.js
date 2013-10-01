@@ -378,7 +378,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       @property href
     **/
     href: Ember.computed(function() {
-      if (get(this, 'tagName') !== 'a') { return false; }
+      if (get(this, 'tagName') !== 'a') { return; }
 
       var router = get(this, 'router'),
           routeArgs = get(this, 'routeArgs');
