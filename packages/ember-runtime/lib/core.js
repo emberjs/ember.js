@@ -268,16 +268,39 @@ Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
 Ember.keys = Object.keys;
 
 if (!Ember.keys || Ember.create.isSimulated) {
-  Ember.keys = function(obj) {
-    var ret = [];
-    for(var key in obj) {
-      // Prevents browsers that don't respect non-enumerability from
-      // copying internal Ember properties
-      if (key.substring(0,2) === '__') continue;
-      if (key === '_super') continue;
+  var prototypeProperties = [
+    'constructor',
+    'hasOwnProperty',
+    'isPrototypeOf',
+    'propertyIsEnumerable',
+    'valueOf',
+    'toLocaleString',
+    'toString'
+  ],
+  pushPropertyName = function(obj, array, key) {
+    // Prevents browsers that don't respect non-enumerability from
+    // copying internal Ember properties
+    if (key.substring(0,2) === '__') return;
+    if (key === '_super') return;
+    if (indexOf(array, key) >= 0) return;
+    if (!obj.hasOwnProperty(key)) return;
 
-      if (obj.hasOwnProperty(key)) { ret.push(key); }
+    array.push(key);
+  };
+
+  Ember.keys = function(obj) {
+    var ret = [], key;
+    for (key in obj) {
+      pushPropertyName(obj, ret, key);
     }
+
+    // IE8 doesn't enumerate property that named the same as prototype properties.
+    for (var i = 0, l = prototypeProperties.length; i < l; i++) {
+      key = prototypeProperties[i];
+
+      pushPropertyName(obj, ret, key);
+    }
+
     return ret;
   };
 }

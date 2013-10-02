@@ -70,7 +70,11 @@ function makeCtor() {
 
         Ember.assert("Ember.Object.create no longer supports mixing in other definitions, use createWithMixins instead.", !(properties instanceof Ember.Mixin));
 
-        for (var keyName in properties) {
+        if (Ember.typeOf(properties) !== 'object') { continue; }
+
+        var keyNames = Ember.keys(properties);
+        for (var j = 0, ll = keyNames.length; j < ll; j++) {
+          var keyName = keyNames[j];
           if (!properties.hasOwnProperty(keyName)) { continue; }
 
           var value = properties[keyName],
