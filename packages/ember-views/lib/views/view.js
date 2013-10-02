@@ -28,6 +28,7 @@ var childViewsProperty = Ember.computed(function() {
 }).property().cacheable();
 
 var VIEW_PRESERVES_CONTEXT = Ember.VIEW_PRESERVES_CONTEXT;
+if (VIEW_PRESERVES_CONTEXT !== 'warn' && VIEW_PRESERVES_CONTEXT !== true) { VIEW_PRESERVES_CONTEXT = false; }
 Ember.warn("The way that the {{view}} helper affects templates is about to change. Previously, templates inside child views would use the new view as the context. Soon, views will preserve their parent context when rendering their template. You can opt-in early to the new behavior by setting `ENV.VIEW_PRESERVES_CONTEXT = true`. For more information, see https://gist.github.com/2494968. You should update your templates as soon as possible; this default will change soon, and the option will be eliminated entirely before the 1.0 release.", VIEW_PRESERVES_CONTEXT);
 
 /**
@@ -557,13 +558,28 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     to be re-rendered.
   */
   _templateContext: Ember.computed(function(key, value) {
-    var parentView;
-
     if (arguments.length === 2) {
       return value;
     }
 
-    if (VIEW_PRESERVES_CONTEXT) {
+    var globalSetting = Ember.VIEW_PRESERVES_CONTEXT,
+        classPreference = this.constructor.preservesContext,
+        preservesContext,
+        parentView;
+
+    if (globalSetting === true) {
+      if (classPreference === false) {
+        throw new Error("Cannot override VIEW_PRESERVES_CONTEXT=true");
+      }
+      preservesContext = true;
+    } else if (globalSetting === 'warn') {
+      preservesContext = !!classPreference;
+      Ember.deprecate(this.constructor + " does not preserve context.", preservesContext);
+    } else {
+      preservesContext = !!classPreference;
+    }
+
+    if (preservesContext) {
       parentView = get(this, '_parentView');
       if (parentView) {
         return get(parentView, '_templateContext');
