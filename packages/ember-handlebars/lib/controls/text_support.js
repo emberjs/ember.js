@@ -95,7 +95,7 @@ Ember.TextSupport = Ember.Mixin.create({
     Called by the `Ember.TextSupport` mixin on keyUp if keycode matches 13.
     Uses sendAction to send the `enter` action to the controller.
 
-    @method insertNewLine
+    @method insertNewline
     @param {Event} event
   */
   insertNewline: function(event) {
