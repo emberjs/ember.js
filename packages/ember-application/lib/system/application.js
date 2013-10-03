@@ -569,10 +569,10 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
         container = this.__container__,
         graph = new Ember.DAG(),
         namespace = this,
-        i, initializer;
+        name, initializer;
 
-    for (i=0; i<initializers.length; i++) {
-      initializer = initializers[i];
+    for (name in initializers) {
+      initializer = initializers[name];
       graph.addEdges(initializer.name, initializer.initialize, initializer.before, initializer.after);
     }
 
@@ -677,16 +677,23 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 });
 
 Ember.Application.reopenClass({
-  concatenatedProperties: ['initializers'],
-  initializers: Ember.A(),
+  initializers: {},
   initializer: function(initializer) {
-    var initializers = get(this, 'initializers');
+    // If this is the first initializer being added to a subclass, we are going to reopen the class
+    // to make sure we have a new `initializers` object, which extends from the parent class' using
+    // prototypal inheritance. Without this, attempting to add initializers to the subclass would
+    // pollute the parent class as well as other subclasses.
+    if (this.superclass.initializers !== undefined && this.superclass.initializers === this.initializers) {
+      this.reopenClass({
+        initializers: Ember.create(this.initializers)
+      });
+    }
 
-    Ember.assert("The initializer '" + initializer.name + "' has already been registered", !Ember.A(initializers).findBy('name', initializers.name));
+    Ember.assert("The initializer '" + initializer.name + "' has already been registered", !this.initializers[initializer.name]);
     Ember.assert("An initializer cannot be registered with both a before and an after", !(initializer.before && initializer.after));
     Ember.assert("An initializer cannot be registered without an initialize function", Ember.canInvoke(initializer, 'initialize'));
 
-    initializers.push(initializer);
+    this.initializers[initializer.name] = initializer;
   },
 
   /**
