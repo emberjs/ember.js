@@ -2251,6 +2251,10 @@ Ember.View = Ember.CoreView.extend(
       target = null;
     }
 
+    if (!root || typeof root !== 'object') {
+      return;
+    }
+
     var view = this,
         stateCheckedObserver = function() {
           view.currentState.invokeObserver(this, observer);
