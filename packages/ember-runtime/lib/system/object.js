@@ -15,9 +15,9 @@ if (Ember.FEATURES.isEnabled("em-o")) {
 
     If you pass an instance of `Ember.Object` as the `properties` argument, the
     same object will be returned.
- 
+
     Example:
- 
+
     ```javascript
     var john1 = Ember.O({name: 'John'});
     //...has the same effect as:
@@ -25,7 +25,9 @@ if (Ember.FEATURES.isEnabled("em-o")) {
 
     console.log(john1 === Em.O(john1); //true
     ```
- 
+
+    @method O
+    @for Ember
     @param {Object} [properties]
     @returns Ember.Object
   */
