@@ -283,7 +283,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     Transition into another route. Optionally supply model(s) for the
     route in question. If multiple models are supplied they will be applied
     last to first recursively up the resource tree (see Multiple Models Example
-    below). The model(s) will be serialized into the URL using the appropriate 
+    below). The model(s) will be serialized into the URL using the appropriate
     route's `serialize` hook. See also 'replaceWith'.
 
     Simple Transition Example
@@ -340,7 +340,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
   /**
     Transition into another route while replacing the current URL, if possible.
-    This will replace the current history entry instead of adding a new one. 
+    This will replace the current history entry instead of adding a new one.
     Beside that, it is identical to `transitionTo` in all other respects. See
     'transitionTo' for additional information regarding multiple models.
 
@@ -449,15 +449,15 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   },
 
   /**
-    @deprecated
-
     A hook you can implement to optionally redirect to another route.
 
     If you call `this.transitionTo` from inside of this hook, this route
     will not be entered in favor of the other hook.
 
-    This hook is deprecated in favor of using the `afterModel` hook
-    for performing redirects after the model has resolved.
+    Note that this hook is called by the default implementation of
+    `afterModel`, so if you override `afterModel`, you must either
+    explicitly call `redirect` or just put your redirecting
+    `this.transitionTo()` call within `afterModel`.
 
     @method redirect
     @param {Object} model the model for this route
