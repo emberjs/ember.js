@@ -5,18 +5,10 @@ var forEach = Ember.EnumerableUtils.forEach, trackedArray,
 
 module('Ember.TrackedArray');
 
-function arrayOperationsString() {
-  var str = "";
-  forEach(trackedArray._content, function (mutation) {
-    str += " " + mutation.operation + ":" + mutation.count;
-  });
-  return str.substring(1);
-}
-
 test("operations for a tracked array of length n are initially retain:n", function() {
   trackedArray = new Ember.TrackedArray([1,2,3,4]);
 
-  equal("r:4", arrayOperationsString(), "initial mutation is retain n");
+  equal("r:4", trackedArray.toString(), "initial mutation is retain n");
 });
 
 test("inserts can split retains", function() {
@@ -24,11 +16,11 @@ test("inserts can split retains", function() {
 
   trackedArray.addItems(2, ['a']);
 
-  equal(arrayOperationsString(), "r:2 i:1 r:2", "inserts can split retains");
+  equal(trackedArray.toString(), "r:2 i:1 r:2", "inserts can split retains");
 
-  deepEqual(trackedArray._content[0].items, [1,2], "split retains have the right items");
-  deepEqual(trackedArray._content[1].items, ['a'], "inserts have the right items");
-  deepEqual(trackedArray._content[2].items, [3,4], "split retains have the right items");
+  deepEqual(trackedArray._operations[0].items, [1,2], "split retains have the right items");
+  deepEqual(trackedArray._operations[1].items, ['a'], "inserts have the right items");
+  deepEqual(trackedArray._operations[2].items, [3,4], "split retains have the right items");
 });
 
 test("inserts can expand (split/compose) inserts", function() {
@@ -37,9 +29,9 @@ test("inserts can expand (split/compose) inserts", function() {
   trackedArray.addItems(0, [1,2,3,4]);
   trackedArray.addItems(2, ['a']);
 
-  equal(arrayOperationsString(), "i:5", "inserts can expand inserts");
+  equal(trackedArray.toString(), "i:5", "inserts can expand inserts");
 
-  deepEqual(trackedArray._content[0].items, [1,2,'a',3,4], "expanded inserts have the right items");
+  deepEqual(trackedArray._operations[0].items, [1,2,'a',3,4], "expanded inserts have the right items");
 });
 
 test("inserts left of inserts compose", function() {
@@ -48,11 +40,11 @@ test("inserts left of inserts compose", function() {
   trackedArray.addItems(2, ['b']);
   trackedArray.addItems(2, ['a']);
 
-  equal(arrayOperationsString(), "r:2 i:2 r:2", "inserts left of inserts compose");
+  equal(trackedArray.toString(), "r:2 i:2 r:2", "inserts left of inserts compose");
 
-  deepEqual(trackedArray._content[0].items, [1,2], "split retains have the right items");
-  deepEqual(trackedArray._content[1].items, ['a', 'b'], "composed inserts have the right items");
-  deepEqual(trackedArray._content[2].items, [3,4], "split retains have the right items");
+  deepEqual(trackedArray._operations[0].items, [1,2], "split retains have the right items");
+  deepEqual(trackedArray._operations[1].items, ['a', 'b'], "composed inserts have the right items");
+  deepEqual(trackedArray._operations[2].items, [3,4], "split retains have the right items");
 });
 
 test("inserts right of inserts compose", function() {
@@ -61,11 +53,11 @@ test("inserts right of inserts compose", function() {
   trackedArray.addItems(2, ['a']);
   trackedArray.addItems(3, ['b']);
 
-  equal(arrayOperationsString(), "r:2 i:2 r:2", "inserts right of inserts compose");
+  equal(trackedArray.toString(), "r:2 i:2 r:2", "inserts right of inserts compose");
 
-  deepEqual(trackedArray._content[0].items, [1,2], "split retains have the right items");
-  deepEqual(trackedArray._content[1].items, ['a', 'b'], "composed inserts have the right items");
-  deepEqual(trackedArray._content[2].items, [3,4], "split retains have the right items");
+  deepEqual(trackedArray._operations[0].items, [1,2], "split retains have the right items");
+  deepEqual(trackedArray._operations[1].items, ['a', 'b'], "composed inserts have the right items");
+  deepEqual(trackedArray._operations[2].items, [3,4], "split retains have the right items");
 });
 
 test("deletes compose with several inserts and retains", function() {
@@ -78,7 +70,7 @@ test("deletes compose with several inserts and retains", function() {
   trackedArray.addItems(0, ['a']); // a1b2c3d4e i1r1i1r1i1r1i1r1i1
 
   trackedArray.removeItems(0, 9);
-  equal(arrayOperationsString(), "d:4", "deletes compose with several inserts and retains");
+  equal(trackedArray.toString(), "d:4", "deletes compose with several inserts and retains");
 });
 
 test("deletes compose with several inserts and retains and an adjacent delete", function() {
@@ -92,7 +84,7 @@ test("deletes compose with several inserts and retains and an adjacent delete", 
   trackedArray.addItems(0, ['a']); // a2b3c4d5e d1i1r1i1r1i1r1i1r1i1
 
   trackedArray.removeItems(0, 9);
-  equal(arrayOperationsString(), "d:5", "deletes compose with several inserts, retains, and a single prior delete");
+  equal(trackedArray.toString(), "d:5", "deletes compose with several inserts, retains, and a single prior delete");
 });
 
 test("deletes compose with several inserts and retains and can reduce the last one", function() {
@@ -105,16 +97,16 @@ test("deletes compose with several inserts and retains and can reduce the last o
   trackedArray.addItems(0, ['a']); // a1b2c3d4e i1r1i1r1i1r1i1r1i2
 
   trackedArray.removeItems(0, 9);
-  equal(arrayOperationsString(), "d:4 i:1", "deletes compose with several inserts and retains, reducing the last one");
-  deepEqual(trackedArray._content[1].items, ['f'], "last mutation's items is correct");
+  equal(trackedArray.toString(), "d:4 i:1", "deletes compose with several inserts and retains, reducing the last one");
+  deepEqual(trackedArray._operations[1].items, ['f'], "last mutation's items is correct");
 });
 
 test("deletes can split retains", function() {
   trackedArray = new Ember.TrackedArray([1,2,3,4]);
   trackedArray.removeItems(0, 2);
 
-  equal(arrayOperationsString(), "d:2 r:2", "deletes can split retains");
-  deepEqual(trackedArray._content[1].items, [3,4], "retains reduced by delete have the right items");
+  equal(trackedArray.toString(), "d:2 r:2", "deletes can split retains");
+  deepEqual(trackedArray._operations[1].items, [3,4], "retains reduced by delete have the right items");
 });
 
 test("deletes can split inserts", function() {
@@ -122,8 +114,8 @@ test("deletes can split inserts", function() {
   trackedArray.addItems(0, ['a','b','c']);
   trackedArray.removeItems(0, 1);
 
-  equal(arrayOperationsString(), "i:2", "deletes can split inserts");
-  deepEqual(trackedArray._content[0].items, ['b', 'c'], "inserts reduced by delete have the right items");
+  equal(trackedArray.toString(), "i:2", "deletes can split inserts");
+  deepEqual(trackedArray._operations[0].items, ['b', 'c'], "inserts reduced by delete have the right items");
 });
 
 test("deletes can reduce an insert or retain, compose with several mutations of different types and reduce the last mutation if it is non-delete", function() {
@@ -136,9 +128,9 @@ test("deletes can reduce an insert or retain, compose with several mutations of 
   trackedArray.addItems(0, ['a','a','a']); // aaa1b2c3d4ef i3r1i1r1i1r1i1r1i2
 
   trackedArray.removeItems(1, 10);
-  equal(arrayOperationsString(), "i:1 d:4 i:1", "deletes reduce an insert, compose with several inserts and retains, reducing the last one");
-  deepEqual(trackedArray._content[0].items, ['a'], "first reduced mutation's items is correct");
-  deepEqual(trackedArray._content[2].items, ['f'], "last reduced mutation's items is correct");
+  equal(trackedArray.toString(), "i:1 d:4 i:1", "deletes reduce an insert, compose with several inserts and retains, reducing the last one");
+  deepEqual(trackedArray._operations[0].items, ['a'], "first reduced mutation's items is correct");
+  deepEqual(trackedArray._operations[2].items, ['f'], "last reduced mutation's items is correct");
 });
 
 test("removeItems returns the removed items", function() {
@@ -154,7 +146,7 @@ test("apply invokes the callback with each group of items and the mutation's cal
   trackedArray.removeItems(4, 2);          // 12ab4
   trackedArray.addItems(1, ['d']);         // 1d2ab4 r1 i1 r1 i2 d1 r1
 
-  equal(arrayOperationsString(), "r:1 i:1 r:1 i:2 d:1 r:1", "precond - trackedArray is in expected state");
+  equal(trackedArray.toString(), "r:1 i:1 r:1 i:2 d:1 r:1", "precond - trackedArray is in expected state");
 
   trackedArray.apply(function (items, offset, operation) {
     switch (i++) {
@@ -193,5 +185,5 @@ test("apply invokes the callback with each group of items and the mutation's cal
   });
   equal(i, 6, "`apply` invoked callback right number of times");
 
-  equal(arrayOperationsString(), "r:6", "after `apply` operations become retain:n");
+  equal(trackedArray.toString(), "r:6", "after `apply` operations become retain:n");
 });
