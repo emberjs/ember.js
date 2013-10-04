@@ -368,7 +368,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   */
   replaceWith: function() {
     var router = this.router;
-    return this.router.replaceWith.apply(this.router, arguments);
+    return router.replaceWith.apply(router, arguments);
   },
 
   /**
