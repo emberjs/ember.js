@@ -1,3 +1,12 @@
+* Ember 1.1.0-beta.3 (October 04, 2013)*
+
+  * Remove Route#redirect soft deprecation
+  * [BUGFIX beta] link-to, bound helper issues with arrays of primitives
+  * [BUGFIX beta] Don't use incompatible array methods
+  * [BUGFIX release] `Ember.Object.extend` should allow any prorerty
+  * [BUGFIX release] Fix to return `undefined` for `href` of {{link-to}}
+  * [BUGFIX release] `Ember.keys` should return own property
+
 * Ember 1.1.0-beta.2 (September 27, 2013)*
 
   * Revert "[BUGFIX] Fix an issue with concatenatedProperties."

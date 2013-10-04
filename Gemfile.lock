@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/emberjs/ember-dev.git
-  revision: 0c0743979a05a81cecf82d90bfed660c5645f25d
+  revision: 779ca0f43046b2feb9c1118c2f5fbe42d9beaa09
   branch: master
   specs:
     ember-dev (0.1)
@@ -27,7 +27,7 @@ GIT
 PATH
   remote: .
   specs:
-    ember-source (1.0.0)
+    ember-source (1.1.0.pre.beta.3)
       handlebars-source (= 1.0.12)
 
 GEM
