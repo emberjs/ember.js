@@ -130,37 +130,3 @@ test("initializers can have multiple dependencies", function () {
   });
 });
 
-test("initializers set on Application subclasses should not be shared between apps", function(){
-  var firstInitializerRunCount = 0, secondInitializerRunCount = 0;
-  var FirstApp = Ember.Application.extend();
-  FirstApp.initializer({
-    name: 'first',
-    initialize: function(container) {
-      firstInitializerRunCount++;
-    }
-  });
-  var SecondApp = Ember.Application.extend();
-  SecondApp.initializer({
-    name: 'second',
-    initialize: function(container) {
-      secondInitializerRunCount++;
-    }
-  });
-  Ember.$('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
-  Ember.run(function() {
-    var firstApp = FirstApp.create({
-      router: false,
-      rootElement: '#qunit-fixture #first'
-    });
-  });
-  equal(firstInitializerRunCount, 1, 'first initializer only was run');
-  equal(secondInitializerRunCount, 0, 'first initializer only was run');
-  Ember.run(function() {
-    var secondApp = SecondApp.create({
-      router: false,
-      rootElement: '#qunit-fixture #second'
-    });
-  });
-  equal(firstInitializerRunCount, 1, 'second initializer only was run');
-  equal(secondInitializerRunCount, 1, 'second initializer only was run');
-});
