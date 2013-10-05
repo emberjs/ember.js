@@ -153,6 +153,76 @@ test("changes to array computed properties happen synchronously", function() {
   });
 });
 
+if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+  test("multiple dependent keys can be specified via brace expansion", function() {
+    var obj = Ember.Object.createWithMixins({
+          bar: Ember.A(),
+          baz: Ember.A(),
+          foo: Ember.reduceComputed({
+            initialValue: Ember.A(),
+            addedItem: function(array, item) { array.pushObject('a:' + item); return array; },
+            removedItem: function(array, item) { array.pushObject('r:' + item); return array; }
+          }).property('{bar,baz}')
+        });
+
+    deepEqual(get(obj, 'foo'), [], "initially empty");
+
+    get(obj, 'bar').pushObject(1);
+
+    deepEqual(get(obj, 'foo'), ['a:1'], "added item from brace-expanded dependency");
+
+    get(obj, 'baz').pushObject(2);
+
+    deepEqual(get(obj, 'foo'), ['a:1', 'a:2'], "added item from brace-expanded dependency");
+
+    get(obj, 'bar').popObject();
+
+    deepEqual(get(obj, 'foo'), ['a:1', 'a:2', 'r:1'], "removed item from brace-expanded dependency");
+
+    get(obj, 'baz').popObject();
+
+    deepEqual(get(obj, 'foo'), ['a:1', 'a:2', 'r:1', 'r:2'], "removed item from brace-expanded dependency");
+  });
+
+  test("multiple item property keys can be specified via brace expansion", function() {
+    var addedCalls = 0,
+        removedCalls = 0,
+        expected = Ember.A(),
+        item = { propA: 'A', propB: 'B', propC: 'C' },
+        obj = Ember.Object.createWithMixins({
+          bar: Ember.A([item]),
+          foo: Ember.reduceComputed({
+            initialValue: Ember.A(),
+            addedItem: function(array, item, changeMeta) {
+              array.pushObject('a:' + get(item, 'propA') + ':' + get(item, 'propB') + ':' + get(item, 'propC'));
+              return array;
+            },
+            removedItem: function(array, item, changeMeta) {
+              array.pushObject('r:' + get(item, 'propA') + ':' + get(item, 'propB') + ':' + get(item, 'propC'));
+              return array;
+            }
+          }).property('bar.@each.{propA,propB}')
+        });
+
+    expected.pushObjects(['a:A:B:C']);
+    deepEqual(get(obj, 'foo'), expected, "initially added dependent item");
+
+    set(item, 'propA', 'AA');
+
+    expected.pushObjects(['r:AA:B:C', 'a:AA:B:C']);
+    deepEqual(get(obj, 'foo'), expected, "observing item property key specified via brace expansion");
+
+    set(item, 'propB', 'BB');
+
+    expected.pushObjects(['r:AA:BB:C', 'a:AA:BB:C']);
+    deepEqual(get(obj, 'foo'), expected, "observing item property key specified via brace expansion");
+
+    set(item, 'propC', 'CC');
+
+    deepEqual(get(obj, 'foo'), expected, "not observing unspecified item properties");
+  });
+}
+
 test("doubly nested item property keys (@each.foo.@each) are not supported", function() {
   Ember.run(function() {
     obj = Ember.Object.createWithMixins({
