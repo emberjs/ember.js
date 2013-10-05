@@ -318,7 +318,7 @@ test("it supports {{itemView=}}", function() {
 
   Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
-    template: templateFor('{{each view.people itemView="AnItemView"}}'),
+    template: templateFor('{{each view.people itemView="anItemView"}}'),
     people: people,
     controller: {
       container: container
@@ -330,6 +330,33 @@ test("it supports {{itemView=}}", function() {
   append(view);
 
   assertText(view, "itemView:Steve HoltitemView:Annabelle");
+});
+
+
+test("it defers all normaization of itemView names to the resolver", function() {
+  var container = new Ember.Container();
+
+  var itemView = Ember.View.extend({
+    template: templateFor('itemView:{{name}}')
+  });
+
+  Ember.run(function() { view.destroy(); }); // destroy existing view
+  view = Ember.View.create({
+    template: templateFor('{{each view.people itemView="an-item-view"}}'),
+    people: people,
+    controller: {
+      container: container
+    }
+  });
+
+  container.register('view:an-item-view', itemView);
+  container.resolve = function(fullname) {
+    equal(fullname, "view:an-item-view", "leaves fullname untouched");
+    return Ember.Container.prototype.resolve.call(this, fullname);
+  };
+  append(view);
+
+  // assertText(view, "itemView:Steve HoltitemView:Annabelle");
 });
 
 test("it supports {{itemViewClass=}}", function() {
