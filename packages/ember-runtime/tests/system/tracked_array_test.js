@@ -11,6 +11,16 @@ test("operations for a tracked array of length n are initially retain:n", functi
   equal("r:4", trackedArray.toString(), "initial mutation is retain n");
 });
 
+test("insert zero items is a no-op", function() {
+  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+
+  trackedArray.addItems(2, []);
+
+  equal(trackedArray.toString(), "r:4", "insert:0 is a no-op");
+
+  deepEqual(trackedArray._operations[0].items, [1,2,3,4], "after a no-op, existing operation has right items");
+});
+
 test("inserts can split retains", function() {
   trackedArray = new Ember.TrackedArray([1,2,3,4]);
 
@@ -58,6 +68,16 @@ test("inserts right of inserts compose", function() {
   deepEqual(trackedArray._operations[0].items, [1,2], "split retains have the right items");
   deepEqual(trackedArray._operations[1].items, ['a', 'b'], "composed inserts have the right items");
   deepEqual(trackedArray._operations[2].items, [3,4], "split retains have the right items");
+});
+
+test("delete zero items is a no-op", function() {
+  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+
+  trackedArray.addItems(2, []);
+
+  equal(trackedArray.toString(), "r:4", "insert:0 is a no-op");
+
+  deepEqual(trackedArray._operations[0].items, [1,2,3,4], "after a no-op, existing operation has right items");
 });
 
 test("deletes compose with several inserts and retains", function() {
@@ -109,6 +129,22 @@ test("deletes can split retains", function() {
   deepEqual(trackedArray._operations[1].items, [3,4], "retains reduced by delete have the right items");
 });
 
+test("deletes can trim retains on the right", function() {
+  trackedArray = new Ember.TrackedArray([1,2,3]);
+  trackedArray.removeItems(2, 1);
+
+  equal(trackedArray.toString(), "r:2 d:1", "deletes can trim retains on the right");
+  deepEqual(trackedArray._operations[0].items, [1,2], "retains reduced by delete have the right items");
+});
+
+test("deletes can trim retains on the left", function() {
+  trackedArray = new Ember.TrackedArray([1,2,3]);
+  trackedArray.removeItems(0, 1);
+
+  equal(trackedArray.toString(), "d:1 r:2", "deletes can trim retains on the left");
+  deepEqual(trackedArray._operations[1].items, [2,3], "retains reduced by delete have the right items");
+});
+
 test("deletes can split inserts", function() {
   trackedArray = new Ember.TrackedArray([]);
   trackedArray.addItems(0, ['a','b','c']);
@@ -116,6 +152,34 @@ test("deletes can split inserts", function() {
 
   equal(trackedArray.toString(), "i:2", "deletes can split inserts");
   deepEqual(trackedArray._operations[0].items, ['b', 'c'], "inserts reduced by delete have the right items");
+});
+
+test("deletes can trim inserts on the right", function() {
+  trackedArray = new Ember.TrackedArray([]);
+  trackedArray.addItems(0, ['a','b','c']);
+  trackedArray.removeItems(2, 1);
+
+  equal(trackedArray.toString(), "i:2", "deletes can trim inserts on the right");
+  deepEqual(trackedArray._operations[0].items, ['a', 'b'], "inserts reduced by delete have the right items");
+});
+
+test("deletes can trim inserts on the left", function() {
+  trackedArray = new Ember.TrackedArray([]);
+  trackedArray.addItems(0, ['a','b','c']);
+  trackedArray.removeItems(0, 1);
+
+  equal(trackedArray.toString(), "i:2", "deletes can trim inserts on the right");
+  deepEqual(trackedArray._operations[0].items, ['b', 'c'], "inserts reduced by delete have the right items");
+});
+
+test("deletes can trim inserts on the left while composing with a delete on the left", function() {
+  trackedArray = new Ember.TrackedArray(['a']);
+  trackedArray.removeItems(0, 1);
+  trackedArray.addItems(0, ['b', 'c']);
+  trackedArray.removeItems(0, 1);
+
+  equal(trackedArray.toString(), "d:1 i:1", "deletes can trim inserts and compose with a delete on the left");
+  deepEqual(trackedArray._operations[1].items, ['c'], "inserts reduced by delete have the right items");
 });
 
 test("deletes can reduce an insert or retain, compose with several mutations of different types and reduce the last mutation if it is non-delete", function() {

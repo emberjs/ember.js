@@ -40,8 +40,10 @@ Ember.TrackedArray.prototype = {
     @param newItems
   */
   addItems: function (index, newItems) {
-    var count = get(newItems, 'length'),
-        match = this._findArrayOperation(index),
+    var count = get(newItems, 'length');
+    if (count < 1) { return; }
+
+    var match = this._findArrayOperation(index),
         arrayOperation = match.operation,
         arrayOperationIndex = match.index,
         arrayOperationRangeStart = match.rangeStart,
@@ -79,6 +81,8 @@ Ember.TrackedArray.prototype = {
     @param count
   */
   removeItems: function (index, count) {
+    if (count < 1) { return; }
+
     var match = this._findArrayOperation(index),
         arrayOperation = match.operation,
         arrayOperationIndex = match.index,
@@ -218,6 +222,7 @@ Ember.TrackedArray.prototype = {
         nextArrayOperation,
         nextOp,
         nextCount,
+        removeNewAndNextOp = false,
         removedItems = [];
 
     if (leftOp === DELETE) {
@@ -236,6 +241,7 @@ Ember.TrackedArray.prototype = {
       }
 
       if (nextCount > deletesToGo) {
+        // d:2 {r,i}:5  we reduce the retain or insert, but it stays
         removedItems = removedItems.concat(nextArrayOperation.items.splice(0, deletesToGo));
         nextArrayOperation.count -= deletesToGo;
 
@@ -247,20 +253,29 @@ Ember.TrackedArray.prototype = {
 
         deletesToGo = 0;
       } else {
+        if (nextCount === deletesToGo) {
+          // Handle edge case of d:2 i:2 in which case both operations go away
+          // during composition.
+          removeNewAndNextOp = true;
+        }
         removedItems = removedItems.concat(nextArrayOperation.items);
         deletesToGo -= nextCount;
       }
 
       if (nextOp === INSERT) {
+        // d:2 i:3 will result in delete going away
         arrayOperation.count -= nextCount;
       }
     }
 
     if (arrayOperation.count > 0) {
+      // compose our new delete with possibly several operations to the right of
+      // disparate types
       this._operations.splice(index+1, i-1-index);
     } else {
       // The delete operation can go away; it has merely reduced some other
-      // operation, as in D:3 I:4
+      // operation, as in d:3 i:4; it may also have eliminated that operation,
+      // as in d:3 i:3.
       this._operations.splice(index, removeNewAndNextOp ? 2 : 1);
     }
 
