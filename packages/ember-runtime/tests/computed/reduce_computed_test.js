@@ -355,3 +355,71 @@ test("changeMeta includes item and index", function() {
 
   deepEqual(callbackItems, expected, "items removed from the array had observers removed");
 });
+
+test("when initialValue is undefined, everything works as advertised", function() {
+  var chars = Ember.Object.createWithMixins({
+    letters: Ember.A(),
+    firstUpper: Ember.reduceComputed('letters', {
+      initialValue: undefined,
+
+      initialize: function(initialValue, changeMeta, instanceMeta) {
+        instanceMeta.matchingItems = Ember.A();
+        instanceMeta.subArray = new Ember.SubArray();
+        instanceMeta.firstMatch = function() {
+          return Ember.getWithDefault(instanceMeta.matchingItems, 'firstObject', initialValue);
+        };
+      },
+
+      addedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+        var filterIndex;
+        filterIndex = instanceMeta.subArray.addItem(changeMeta.index, item.toUpperCase() === item);
+        if (filterIndex > -1) {
+          instanceMeta.matchingItems.insertAt(filterIndex, item);
+        }
+        return instanceMeta.firstMatch();
+      },
+
+      removedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+        var filterIndex = instanceMeta.subArray.removeItem(changeMeta.index);
+        if (filterIndex > -1) {
+          instanceMeta.matchingItems.removeAt(filterIndex);
+        }
+        return instanceMeta.firstMatch();
+      }
+    })
+  });
+  equal(get(chars, 'firstUpper'), undefined, "initialValue is undefined");
+
+  get(chars, 'letters').pushObjects(['a', 'b', 'c']);
+
+  equal(get(chars, 'firstUpper'), undefined, "result is undefined when no matches are present");
+
+  get(chars, 'letters').pushObjects(['A', 'B', 'C']);
+
+  equal(get(chars, 'firstUpper'), 'A', "result is the first match when matching objects are present");
+
+  get(chars, 'letters').removeAt(3);
+
+  equal(get(chars, 'firstUpper'), 'B', "result is the next match when the first matching object is removed");
+});
+
+test("an error is thrown when a reduceComputed is defined without an initialValue property", function() {
+  var defineExploder = function() {
+    Ember.Object.createWithMixins({
+      collection: Ember.A(),
+      exploder: Ember.reduceComputed('collection', {
+        initialize: function(initialValue, changeMeta, instanceMeta) {},
+
+        addedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+          return item;
+        },
+
+        removedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+          return item;
+        }
+      })
+    });
+  };
+
+  throws(defineExploder, /declared\ without\ an\ initial\ value/, "an error is thrown when the reduceComputed is defined without an initialValue");
+});
