@@ -106,6 +106,13 @@ test("`removeItem` returns -1 if the item was not in the subarray", function() {
   equal(subarray.removeItem(1), -1, "`removeItem` returns -1 if the item is not in the subarray");
 });
 
+test("`removeItem` raises a sensible exception when there are no operations in the subarray", function() {
+  var subarrayExploder = function() {
+    subarray.removeItem(9);
+  };
+  throws(subarrayExploder, /never\ been\ added/, "`removeItem` raises a sensible exception when there are no operations in the subarray");
+});
+
 test("left composition does not confuse a subsequent right non-composition", function() {
   subarray.addItem(0, true);
   subarray.addItem(1, false);
