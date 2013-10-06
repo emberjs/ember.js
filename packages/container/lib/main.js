@@ -262,6 +262,10 @@ define("container",
 
         var normalizedName = this.normalize(fullName);
 
+        if (this.cache.has(normalizedName)) {
+          throw new Error('Cannot re-register: `' + fullName +'`, as it has already been looked up.');
+        }
+
         this.registry.set(normalizedName, factory);
         this._options.set(normalizedName, options || {});
       },
