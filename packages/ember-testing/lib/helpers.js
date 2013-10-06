@@ -8,6 +8,7 @@ require('ember-testing/test');
 var get = Ember.get,
     Test = Ember.Test,
     helper = Test.registerHelper,
+    asyncHelper = Test.registerAsyncHelper,
     countAsync = 0;
 
 Test.pendingAjaxRequests = 0;
@@ -67,8 +68,8 @@ function fillIn(app, selector, context, text) {
   }
   $el = findWithAssert(app, selector, context);
   Ember.run(function() {
-  });
     $el.val(text).change();
+  });
   return wait(app);
 }
 
@@ -150,7 +151,7 @@ function wait(app, value) {
 * @param {String} url the name of the route
 * @return {RSVP.Promise}
 */
-helper('visit', visit);
+asyncHelper('visit', visit);
 
 /**
 * Clicks an element and triggers any actions triggered by the element's `click`
@@ -168,7 +169,7 @@ helper('visit', visit);
 * @param {String} selector jQuery selector for finding element on the DOM
 * @return {RSVP.Promise}
 */
-helper('click', click);
+asyncHelper('click', click);
 
 /**
 * Simulates a key event, e.g. `keypress`, `keydown`, `keyup` with the desired keyCode
@@ -187,7 +188,7 @@ helper('click', click);
 * @param {Number} the keyCode of the simulated key event
 * @return {RSVP.Promise}
 */
-helper('keyEvent', keyEvent);
+asyncHelper('keyEvent', keyEvent);
 
 /**
 * Fills in an input element with some text.
@@ -206,7 +207,7 @@ helper('keyEvent', keyEvent);
 * @param {String} text text to place inside the input element
 * @return {RSVP.Promise}
 */
-helper('fillIn', fillIn);
+asyncHelper('fillIn', fillIn);
 
 /**
 * Finds an element in the context of the app's container element. A simple alias
@@ -222,7 +223,7 @@ helper('fillIn', fillIn);
 * @param {String} selector jQuery string selector for element lookup
 * @return {Object} jQuery object representing the results of the query
 */
-helper('find', find, { wait: false });
+helper('find', find);
 
 /**
 *
@@ -240,7 +241,7 @@ helper('find', find, { wait: false });
 * @return {Object} jQuery object representing the results of the query
 * @throws {Error} throws error if jQuery object returned has a length of 0
 */
-helper('findWithAssert', findWithAssert, { wait: false });
+helper('findWithAssert', findWithAssert);
 
 /**
   Causes the run loop to process any pending events. This is used to ensure that
@@ -252,13 +253,13 @@ helper('findWithAssert', findWithAssert, { wait: false });
   Example:
 
   ```
-  Ember.Test.registerHelper('loginUser', function(app, username, password) {
+  Ember.Test.registerAsyncHelper('loginUser', function(app, username, password) {
     visit('secured/path/here')
     .fillIn('#username', username)
     .fillIn('#password', username)
     .click('.submit')
 
-    return wait(app);
+    return wait();
   });
 
   @method wait
@@ -266,5 +267,5 @@ helper('findWithAssert', findWithAssert, { wait: false });
   @return {RSVP.Promise}
   ```
 */
-helper('wait', wait);
-helper('andThen', andThen);
+asyncHelper('wait', wait);
+asyncHelper('andThen', andThen);
