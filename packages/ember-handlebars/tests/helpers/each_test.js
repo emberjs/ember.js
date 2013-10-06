@@ -333,7 +333,7 @@ test("it supports {{itemView=}}", function() {
 });
 
 
-test("it defers all normaization of itemView names to the resolver", function() {
+test("it defers all normalization of itemView names to the resolver", function() {
   var container = new Ember.Container();
 
   var itemView = Ember.View.extend({
@@ -356,7 +356,6 @@ test("it defers all normaization of itemView names to the resolver", function() 
   };
   append(view);
 
-  // assertText(view, "itemView:Steve HoltitemView:Annabelle");
 });
 
 test("it supports {{itemViewClass=}}", function() {
