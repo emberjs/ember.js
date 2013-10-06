@@ -251,21 +251,13 @@ define("container",
         ```
 
         @method register
-        @param {String} type
-        @param {String} name
+        @param {String} fullName
         @param {Function} factory
         @param {Object} options
       */
-      register: function(type, name, factory, options) {
-        var fullName;
-
-        if (type.indexOf(':') !== -1) {
-          options = factory;
-          factory = name;
-          fullName = type;
-        } else {
-          Ember.deprecate('register("'+type +'", "'+ name+'") is now deprecated in-favour of register("'+type+':'+name+'");', false);
-          fullName = type + ":" + name;
+      register: function(fullName, factory, options) {
+        if (fullName.indexOf(':') === -1) {
+          throw new TypeError("malformed fullName, expected: `type:name` got: " + fullName + "");
         }
 
         if (factory === undefined) {
