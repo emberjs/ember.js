@@ -371,8 +371,6 @@ test("The Homepage with a `setupController` hook", function() {
 
   bootApplication();
 
-  container.register('controller:home', Ember.Controller.extend());
-
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
 
@@ -465,8 +463,6 @@ test("The Homepage with a `setupController` hook modifying other controllers", f
 
   bootApplication();
 
-  container.register('controller:home', Ember.Controller.extend());
-
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
 
@@ -520,8 +516,6 @@ test("The Homepage getting its controller context via model", function() {
   );
 
   bootApplication();
-
-  container.register('controller:home', Ember.Controller.extend());
 
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
@@ -1028,8 +1022,6 @@ asyncTest("Events are triggered on the current state when defined in `actions` o
 
   bootApplication();
 
-  container.register('controller:home', Ember.Controller.extend());
-
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
   var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
   var event = new Ember.$.Event("click");
@@ -1102,8 +1094,6 @@ asyncTest("Events are triggered on the current state when defined in `events` ob
   );
 
   bootApplication();
-
-  container.register('controller:home', Ember.Controller.extend());
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
   var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
