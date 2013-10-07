@@ -28,20 +28,12 @@ Ember.HashLocation = Ember.Object.extend({
     @method getURL
   */
   getURL: function() {
-    if (Ember.FEATURES.isEnabled("query-params")) {
-      // location.hash is not used because it is inconsistently
-      // URL-decoded between browsers.
-      var href = get(this, 'location').href,
-        hashIndex = href.indexOf('#');
-
-      if ( hashIndex === -1 ) {
-        return "";
-      } else {
-        return href.substr(hashIndex + 1);
-      }
-    }
-    // Default implementation without feature flag enabled
-    return get(this, 'location').hash.substr(1);
+    // #3263:
+    // Although location.hash is inconsistently URI-decoded between browsers,
+    // the same happens to location.href too.
+    // Instead we can just decode the hash property,
+    // and let pre-decoded strings through unaltered.
+    return decodeURIComponent(get(this, 'location').hash.substr(1));
   },
 
   /**
@@ -55,8 +47,9 @@ Ember.HashLocation = Ember.Object.extend({
     @param path {String}
   */
   setURL: function(path) {
-    get(this, 'location').hash = path;
-    set(this, 'lastSetURL', path);
+    var encodedPath = encodeURIComponent(path);
+    get(this, 'location').hash = encodedPath;
+    set(this, 'lastSetURL', encodedPath);
   },
 
   /**
@@ -69,7 +62,8 @@ Ember.HashLocation = Ember.Object.extend({
     @param path {String}
   */
   replaceURL: function(path) {
-    get(this, 'location').replace('#' + path);
+    var encodedPath = encodeURIComponent(path);
+    get(this, 'location').replace('#' + encodedPath);
   },
 
   /**
@@ -88,12 +82,14 @@ Ember.HashLocation = Ember.Object.extend({
 
     Ember.$(window).on('hashchange.ember-location-'+guid, function() {
       Ember.run(function() {
-        var path = location.hash.substr(1);
-        if (get(self, 'lastSetURL') === path) { return; }
+        // necessary to deal with encoding inconsistencies in location.hash
+        var path = decodeURIComponent(location.hash.substr(1)),
+            encodedPath = encodeURIComponent(path);
+        if (get(self, 'lastSetURL') === encodedPath) { return; }
 
         set(self, 'lastSetURL', null);
 
-        callback(path);
+        callback(encodedPath);
       });
     });
   },
@@ -111,7 +107,7 @@ Ember.HashLocation = Ember.Object.extend({
     @param url {String}
   */
   formatURL: function(url) {
-    return '#'+url;
+    return '#' + encodeURIComponent(url);
   },
 
   /**
