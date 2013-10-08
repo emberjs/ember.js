@@ -19,10 +19,17 @@ function makeBindings(thisContext, options) {
 
   for (var prop in hash) {
     if (hashType[prop] === 'ID') {
-      hash[prop + 'Binding'] = hash[prop];
-      hashType[prop + 'Binding'] = 'STRING';
-      delete hash[prop];
-      delete hashType[prop];
+
+      var value = hash[prop];
+
+      if (Ember.IS_BINDING.test(prop)) {
+        Ember.warn("You're attempting to render a view by passing " + prop + "=" + value + " to a view helper, but this syntax is ambiguous. You should either surround " + value + " in quotes or remove `Binding` from " + prop + ".");
+      } else {
+        hash[prop + 'Binding'] = value;
+        hashType[prop + 'Binding'] = 'STRING';
+        delete hash[prop];
+        delete hashType[prop];
+      }
     }
   }
 
