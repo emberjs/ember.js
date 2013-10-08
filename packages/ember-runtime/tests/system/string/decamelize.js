@@ -27,3 +27,10 @@ test("converts a camelized string into all lower case separated by underscores."
     deepEqual('innerHTML'.decamelize(), 'inner_html');
   }
 });
+
+test("decamelizes strings with numbers", function() {
+  deepEqual(Ember.String.decamelize('size160Url'), 'size160_url');
+  if (Ember.EXTEND_PROTOTYPES) {
+    deepEqual('size160Url'.decamelize(), 'size160_url');
+  }
+});
