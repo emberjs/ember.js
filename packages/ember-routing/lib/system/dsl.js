@@ -25,6 +25,8 @@ DSL.prototype = {
 
     if (callback) {
       var dsl = new DSL(name);
+      dsl.route('loading');
+      dsl.route('error', { path: "/_unused_dummy_error_path/:error" });
       callback.call(dsl);
       this.push(options.path, name, dsl.generate(), options.queryParams);
     } else {

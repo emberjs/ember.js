@@ -1,13 +1,9 @@
 var Router, App, AppView, templates, router, container;
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, compile = Ember.Handlebars.compile;
 
 function bootApplication() {
   router = container.lookup('router:main');
   Ember.run(App, 'advanceReadiness');
-}
-
-function compile(string) {
-  return Ember.Handlebars.compile(string);
 }
 
 function handleURL(path) {
@@ -771,6 +767,7 @@ function testOverridableErrorHandler(handlersName) {
   var attrs = {};
   attrs[handlersName] = {
     error: function(reason) {
+      ok(typeof this._super === 'function', "_super is available");
       equal(reason, 'Setup error', "error was correctly passed to custom ApplicationRoute handler");
       start();
     }
@@ -2359,76 +2356,6 @@ test("Route supports clearing outlet explicitly", function() {
   equal(Ember.$('div.posts-index:contains(postsIndex)', '#qunit-fixture').length, 0, "The posts/index template was removed");
   equal(Ember.$('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 0, "The posts/modal template was removed");
   equal(Ember.$('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 0, "The posts/extra template was removed");
-});
-
-test("Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered", function() {
-
-  expect(8);
-
-  Router.map(function() {
-    this.route("nork");
-    this.route("about");
-  });
-
-  var redirect = false;
-
-  App.IndexRoute = Ember.Route.extend({
-    actions: {
-      willTransition: function(transition) {
-        ok(true, "willTransition was called");
-        if (redirect) {
-          // router.js won't refire `willTransition` for this redirect
-          this.transitionTo('about');
-        } else {
-          transition.abort();
-        }
-      }
-    }
-  });
-
-  var deferred = null;
-
-  App.LoadingRoute = Ember.Route.extend({
-    activate: function() {
-      ok(deferred, "LoadingRoute should be entered at this time");
-    },
-    deactivate: function() {
-      ok(true, "LoadingRoute was exited");
-    }
-  });
-
-  App.NorkRoute = Ember.Route.extend({
-    activate: function() {
-      ok(true, "NorkRoute was entered");
-    }
-  });
-
-  App.AboutRoute = Ember.Route.extend({
-    activate: function() {
-      ok(true, "AboutRoute was entered");
-    },
-    model: function() {
-      if (deferred) { return deferred.promise; }
-    }
-  });
-
-  bootApplication();
-
-  // Attempted transitions out of index should abort.
-  Ember.run(router, 'transitionTo', 'nork');
-  Ember.run(router, 'handleURL', '/nork');
-
-  // Attempted transitions out of index should redirect to about
-  redirect = true;
-  Ember.run(router, 'transitionTo', 'nork');
-  Ember.run(router, 'transitionTo', 'index');
-
-  // Redirected transitions out of index to a route with a
-  // promise model should pause the transition and
-  // activate LoadingRoute
-  deferred = Ember.RSVP.defer();
-  Ember.run(router, 'transitionTo', 'nork');
-  Ember.run(deferred.resolve);
 });
 
 if (Ember.FEATURES.isEnabled("ember-routing-didTransition-hook")) {
