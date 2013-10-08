@@ -17,6 +17,8 @@ information.
 
 ## Upgrade Guide
 
+### For Applications
+
 First, ensure you don't have any properties that have dots in them. To do this,
 set `ENV.ACCESSORS` to `"0.9-dotted-properties"`. This will warn you if you do
 use `get` or `set` to access a property that has a dot in its name:
@@ -51,3 +53,25 @@ Simply change `getPath` to `get` and `setPath` to `set` in these cases.
 If your application is large and you can't change all `getPath` and `setPath`
 calls in one commit, you can alternate between `"1.0"` and `"1.0-no-warn"`
 to gradually eliminate deprecated usage.
+
+### For Libraries
+
+If you're writing a library that needs to be simultaneously compatible with Ember 0.9 and 1.0, you can use the following pattern:
+
+```js
+// MyLibrary
+(function() {
+  var get, set;
+
+  (function() {
+    var obj = { some: { key: 'value' } },
+        newAccessors = (Ember.get(obj, 'some.key') === 'value');
+    get = newAccessors ? Ember.get : Ember.getPath;
+    set = newAccessors ? Ember.set : Ember.setPath;
+  }());
+
+someObject = get(someOtherObject, 'foo.bar.baz');
+
+window.MyLibrary = ...;
+}());
+```
