@@ -729,20 +729,27 @@ test("The {{link-to}} helper works in an #each'd array of string route names", f
 
   bootApplication();
 
-  var $links = Ember.$('a', '#qunit-fixture');
+  function linksEqual($links, expected) {
+    equal($links.length, expected.length, "Has correct number of links");
 
-  deepEqual(map.call($links,function(el) { return Ember.$(el).attr('href'); }), ["/foo", "/bar", "/rar", "/foo", "/bar", "/rar", "/bar", "/foo"]);
+    var idx;
+    for (idx = 0; idx < $links.length; idx++) {
+      var href = Ember.$($links[idx]).attr('href');
+      // Old IE includes the whole hostname as well
+      equal(href.slice(-expected[idx].length), expected[idx], "Expected link to be '"+expected[idx]+"', but was '"+href+"'");
+    }
+  }
+
+  linksEqual(Ember.$('a', '#qunit-fixture'), ["/foo", "/bar", "/rar", "/foo", "/bar", "/rar", "/bar", "/foo"]);
 
   var indexController = container.lookup('controller:index');
   Ember.run(indexController, 'set', 'route1', 'rar');
 
-  $links = Ember.$('a', '#qunit-fixture');
-  deepEqual(map.call($links, function(el) { return Ember.$(el).attr('href'); }), ["/foo", "/bar", "/rar", "/foo", "/bar", "/rar", "/rar", "/foo"]);
+  linksEqual(Ember.$('a', '#qunit-fixture'), ["/foo", "/bar", "/rar", "/foo", "/bar", "/rar", "/rar", "/foo"]);
 
   Ember.run(indexController.routeNames, 'shiftObject');
 
-  $links = Ember.$('a', '#qunit-fixture');
-  deepEqual(map.call($links, function(el) { return Ember.$(el).attr('href'); }), ["/bar", "/rar", "/bar", "/rar", "/rar", "/foo"]);
+  linksEqual(Ember.$('a', '#qunit-fixture'), ["/bar", "/rar", "/bar", "/rar", "/rar", "/foo"]);
 });
 
 if (Ember.FEATURES.isEnabled('link-to-non-block')) {
