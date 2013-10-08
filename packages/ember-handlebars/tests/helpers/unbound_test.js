@@ -156,6 +156,30 @@ test("should be able to render an unbound helper invocation for helpers with dep
 });
 
 
+test("should be able to render an unbound helper invocation in #each helper", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(
+      [ "{{#each person in people}}",
+        "{{capitalize person.firstName}} {{unbound capitalize person.firstName}}",
+        "{{/each}}"].join("")),
+    context: {
+      people: Ember.A([
+        {
+          firstName: 'shooby',
+          lastName:  'taylor'
+        },
+        {
+          firstName: 'cindy',
+          lastName:  'taylor'
+        }
+    ])}
+  });
+  appendView(view);
+
+  equal(view.$().text(), "SHOOBY SHOOBYCINDY CINDY", "unbound rendered correctly");
+});
+
+
 test("should be able to render an unbound helper invocation with bound hash options", function() {
   try {
     Ember.Handlebars.registerBoundHelper('repeat', function(value) {
