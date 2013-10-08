@@ -32,7 +32,40 @@ destroy: function() {
 }
 ```
 
-If you do something more complicated with the `event`, you might have to move
-that data into the view or controller. In Ember 1.0, you will be able to pass
-it to the action, but this version of the action helper doesn't backport that
-behavior.
+If you do something more complicated with the `event`, you can use an event handler in the view. Thus,
+
+### Before
+
+```handlebars
+<button {{action save}} {{bindAttr data-foo-id="id"}}>
+```
+
+```javascript
+var MyView = Ember.View.extend({
+  id: function() { ... }.property(),
+
+  save: function(event) {
+    doSomethingWith( $(event.target).data('foo-id') );
+  }
+});
+```
+
+### After
+
+```handlebars
+<button {{bindAttr data-foo-id="id"}}>
+```
+
+```javascript
+var MyView = Ember.View.extend({
+  id: function() { ... }.property(),
+  
+  click: function(event) {
+    var $target = $(event.target);
+    if ($target.is('button[data-foo-id]')) {
+      doSomethingWith( $target.data('foo-id') );
+      return false;
+    }
+  }
+});
+```
