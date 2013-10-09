@@ -274,6 +274,32 @@ test("an error is thrown when a reduceComputed is defined without an initialValu
   throws(defineExploder, /declared\ without\ an\ initial\ value/, "an error is thrown when the reduceComputed is defined without an initialValue");
 });
 
+test("dependent arrays with multiple item properties are not double-counted", function() {
+  var obj = Ember.Object.extend({
+    items: Ember.A([{ foo: true }, { bar: false }, { bar: true }]),
+    countFooOrBar: Ember.reduceComputed({
+      initialValue: 0,
+      addedItem: function (acc) {
+        ++addCalls;
+        return acc;
+      },
+
+      removedItem: function (acc) {
+        ++removeCalls;
+        return acc;
+      }
+    }).property('items.@each.foo', 'items.@each.bar', 'items')
+  }).create();
+
+  equal(0, addCalls, "precond - no adds yet");
+  equal(0, removeCalls, "precond - no removes yet");
+
+  get(obj, 'countFooOrBar');
+
+  equal(3, addCalls, "all items added once");
+  equal(0, removeCalls, "no removes yet");
+});
+
 if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
   module('Ember.arryComputed - self chains', {
     setup: function() {
