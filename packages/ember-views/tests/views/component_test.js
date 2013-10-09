@@ -14,7 +14,7 @@ test("The controller (target of `action`) of an Ember.Component is itself", func
   strictEqual(control, control.get('controller'), "A control's controller is itself");
 });
 
-var component, controller, actionCounts, sendCount, actionContext;
+var component, controller, actionCounts, sendCount, actionContext, actionReturn = true;
 
 module("Ember.Component - Actions", {
   setup: function() {
@@ -28,6 +28,8 @@ module("Ember.Component - Actions", {
         actionCounts[actionName] = actionCounts[actionName] || 0;
         actionCounts[actionName]++;
         actionContext = context;
+
+        return actionReturn;
       }
     });
 
@@ -101,4 +103,14 @@ test("Calling sendAction on a component with a context", function() {
   component.sendAction('playing', testContext);
 
   strictEqual(actionContext, testContext, "context was sent with the action");
+});
+
+test("it should return false if the event does", function(){
+  actionReturn = false;
+
+  set(component, 'playing', "didStartPlaying");
+
+  var ret = component.sendAction('playing');
+
+  equal(ret, false, 'action return value was returned');
 });
