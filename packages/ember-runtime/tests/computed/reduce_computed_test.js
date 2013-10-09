@@ -1,5 +1,5 @@
-var obj, addCalls, removeCalls, map = Ember.EnumerableUtils.map, get = Ember.get, set = Ember.set, callbackItems;
 
+var obj, addCalls, removeCalls, map = Ember.EnumerableUtils.map, get = Ember.get, set = Ember.set, callbackItems;
 module('Ember.arrayComputed', {
   setup: function () {
     addCalls = removeCalls = 0;
@@ -253,6 +253,75 @@ test("multiple array computed properties on the same object can observe dependen
   deepEqual(get(obj, 'evenNumbersMultiDep'), [2, 4, 6, 8, 12, 14], "evenNumbersMultiDep is updated");
 });
 
+test("an error is thrown when a reduceComputed is defined without an initialValue property", function() {
+  var defineExploder = function() {
+    Ember.Object.createWithMixins({
+      collection: Ember.A(),
+      exploder: Ember.reduceComputed('collection', {
+        initialize: function(initialValue, changeMeta, instanceMeta) {},
+
+        addedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+          return item;
+        },
+
+        removedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+          return item;
+        }
+      })
+    });
+  };
+
+  throws(defineExploder, /declared\ without\ an\ initial\ value/, "an error is thrown when the reduceComputed is defined without an initialValue");
+});
+
+if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
+  module('Ember.arryComputed - self chains', {
+    setup: function() {
+      var a = Ember.Object.create({ name: 'a' }),
+          b = Ember.Object.create({ name: 'b' });
+
+      obj = Ember.ArrayProxy.createWithMixins({
+        content: Ember.A([a, b]),
+        names: Ember.arrayComputed('@self.@each.name', {
+          addedItem: function (array, item, changeMeta, instanceMeta) {
+            var mapped = get(item, 'name');
+            array.insertAt(changeMeta.index, mapped);
+            return array;
+          },
+          removedItem: function(array, item, changeMeta, instanceMeta) {
+            array.removeAt(changeMeta.index, 1);
+            return array;
+          }
+        })
+      });
+    },
+    teardown: function() {
+      Ember.run(function() {
+        obj.destroy();
+      });
+    }
+  });
+
+  test("@self can be used to treat the object as the array itself", function() {
+    var names = get(obj, 'names');
+
+    deepEqual(names, ['a', 'b'], "precond - names is initially correct");
+
+    Ember.run(function() {
+      obj.objectAt(1).set('name', 'c');
+    });
+
+    deepEqual(names, ['a', 'c'], "@self can be used with item property observers");
+
+    Ember.run(function() {
+      obj.pushObject({ name: 'd' });
+    });
+
+    deepEqual(names, ['a', 'c', 'd'], "@self observes new items");
+  });
+
+}
+
 module('Ember.arrayComputed - changeMeta property observers', {
   setup: function() {
     callbackItems = [];
@@ -401,25 +470,4 @@ test("when initialValue is undefined, everything works as advertised", function(
   get(chars, 'letters').removeAt(3);
 
   equal(get(chars, 'firstUpper'), 'B', "result is the next match when the first matching object is removed");
-});
-
-test("an error is thrown when a reduceComputed is defined without an initialValue property", function() {
-  var defineExploder = function() {
-    Ember.Object.createWithMixins({
-      collection: Ember.A(),
-      exploder: Ember.reduceComputed('collection', {
-        initialize: function(initialValue, changeMeta, instanceMeta) {},
-
-        addedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
-          return item;
-        },
-
-        removedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
-          return item;
-        }
-      })
-    });
-  };
-
-  throws(defineExploder, /declared\ without\ an\ initial\ value/, "an error is thrown when the reduceComputed is defined without an initialValue");
 });
