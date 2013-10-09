@@ -1,6 +1,8 @@
 require("ember-views/views/view");
 
-var get = Ember.get, set = Ember.set, isNone = Ember.isNone;
+var get = Ember.get, set = Ember.set, isNone = Ember.isNone,
+    a_slice = Array.prototype.slice;
+
 
 /**
 @module ember
@@ -191,8 +193,9 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     @param [action] {String} the action to trigger
     @param [context] {*} a context to send with the action
   */
-  sendAction: function(action, context) {
-    var actionName;
+  sendAction: function(action) {
+    var actionName,
+        contexts = a_slice.call(arguments, 1);
 
     // Send the default action
     if (action === undefined) {
@@ -208,7 +211,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
 
     this.triggerAction({
       action: actionName,
-      actionContext: context
+      actionContext: contexts
     });
   }
 });
