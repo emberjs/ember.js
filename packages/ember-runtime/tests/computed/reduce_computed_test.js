@@ -253,6 +253,27 @@ test("multiple array computed properties on the same object can observe dependen
   deepEqual(get(obj, 'evenNumbersMultiDep'), [2, 4, 6, 8, 12, 14], "evenNumbersMultiDep is updated");
 });
 
+test("an error is thrown when a reduceComputed is defined without an initialValue property", function() {
+  var defineExploder = function() {
+    Ember.Object.createWithMixins({
+      collection: Ember.A(),
+      exploder: Ember.reduceComputed('collection', {
+        initialize: function(initialValue, changeMeta, instanceMeta) {},
+
+        addedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+          return item;
+        },
+
+        removedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+          return item;
+        }
+      })
+    });
+  };
+
+  throws(defineExploder, /declared\ without\ an\ initial\ value/, "an error is thrown when the reduceComputed is defined without an initialValue");
+});
+
 if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
   module('Ember.arryComputed - self chains', {
     setup: function() {
@@ -448,25 +469,4 @@ test("when initialValue is undefined, everything works as advertised", function(
   get(chars, 'letters').removeAt(3);
 
   equal(get(chars, 'firstUpper'), 'B', "result is the next match when the first matching object is removed");
-});
-
-test("an error is thrown when a reduceComputed is defined without an initialValue property", function() {
-  var defineExploder = function() {
-    Ember.Object.createWithMixins({
-      collection: Ember.A(),
-      exploder: Ember.reduceComputed('collection', {
-        initialize: function(initialValue, changeMeta, instanceMeta) {},
-
-        addedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
-          return item;
-        },
-
-        removedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
-          return item;
-        }
-      })
-    });
-  };
-
-  throws(defineExploder, /declared\ without\ an\ initial\ value/, "an error is thrown when the reduceComputed is defined without an initialValue");
 });
