@@ -280,47 +280,45 @@ test("array observers can invoke `objectAt` without overwriting existing item co
   equal(tywinController.get('name'), "Tywin", "Array observers calling `objectAt` does not overwrite existing controllers' content");
 });
 
-if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
-  module('Ember.ArrayController - itemController with arrayComputed', {
-    setup: function() {
-      container = new Ember.Container();
+module('Ember.ArrayController - itemController with arrayComputed', {
+  setup: function() {
+    container = new Ember.Container();
 
-      cersei = Ember.Object.create({ name: 'Cersei' });
-      jaime = Ember.Object.create({ name: 'Jaime' });
-      lannisters = Ember.A([ jaime, cersei ]);
+    cersei = Ember.Object.create({ name: 'Cersei' });
+    jaime = Ember.Object.create({ name: 'Jaime' });
+    lannisters = Ember.A([ jaime, cersei ]);
 
-      controllerClass = Ember.ObjectController.extend({
-        title: Ember.computed(function () {
-          switch (get(this, 'name')) {
-            case 'Jaime':   return 'Kingsguard';
-            case 'Cersei':  return 'Queen';
-          }
-        }).property('name'),
-
-        toString: function() {
-          return "itemController for " + this.get('name');
+    controllerClass = Ember.ObjectController.extend({
+      title: Ember.computed(function () {
+        switch (get(this, 'name')) {
+          case 'Jaime':   return 'Kingsguard';
+          case 'Cersei':  return 'Queen';
         }
-      });
+      }).property('name'),
 
-      container.register("controller:Item", controllerClass);
-    },
-    teardown: function() {
-      Ember.run(function() {
-        container.destroy();
-      });
-    }
-  });
-
-  test("item controllers can be used to provide properties for array computed macros", function() {
-    createArrayController();
-
-    ok(Ember.compare(Ember.guidFor(cersei), Ember.guidFor(jaime)) < 0, "precond - guid tiebreaker would fail test");
-
-    arrayController.reopen({
-      sortProperties: Ember.A(['title']),
-      sorted: Ember.computed.sort('@self', 'sortProperties')
+      toString: function() {
+        return "itemController for " + this.get('name');
+      }
     });
 
-    deepEqual(arrayController.get('sorted').mapProperty('name'), ['Jaime', 'Cersei'], "ArrayController items can be sorted on itemController properties");
+    container.register("controller:Item", controllerClass);
+  },
+  teardown: function() {
+    Ember.run(function() {
+      container.destroy();
+    });
+  }
+});
+
+test("item controllers can be used to provide properties for array computed macros", function() {
+  createArrayController();
+
+  ok(Ember.compare(Ember.guidFor(cersei), Ember.guidFor(jaime)) < 0, "precond - guid tiebreaker would fail test");
+
+  arrayController.reopen({
+    sortProperties: Ember.A(['title']),
+    sorted: Ember.computed.sort('[]', 'sortProperties')
   });
-}
+
+  deepEqual(arrayController.get('sorted').mapProperty('name'), ['Jaime', 'Cersei'], "ArrayController items can be sorted on itemController properties");
+});
