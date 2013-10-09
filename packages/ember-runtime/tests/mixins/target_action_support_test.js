@@ -145,6 +145,22 @@ test("it should use the actionContext specified in the argument", function() {
   ok(true === obj.triggerAction({actionContext: context}), "a valid target and action were specified");
 });
 
+test("it should allow multiple arguments from actionContext", function() {
+  expect(3);
+  var param1 = 'someParam',
+      param2 = 'someOtherParam',
+      obj = Ember.Object.createWithMixins(Ember.TargetActionSupport,{
+    target: Ember.Object.create({
+      anEvent: function(first, second) {
+        ok(first === param1, "anEvent method was called with the expected first argument");
+        ok(second === param2, "anEvent method was called with the expected second argument");
+      }
+    }),
+    action: 'anEvent'
+  });
+  ok(true === obj.triggerAction({actionContext: [param1, param2]}), "a valid target and action were specified");
+});
+
 test("it should use a null value specified in the actionContext argument", function() {
   expect(2);
   var obj = Ember.Object.createWithMixins(Ember.TargetActionSupport,{

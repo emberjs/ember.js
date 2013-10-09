@@ -1,4 +1,5 @@
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set,
+    a_slice = Array.prototype.slice;
 
 module("Ember.Component");
 
@@ -14,20 +15,20 @@ test("The controller (target of `action`) of an Ember.Component is itself", func
   strictEqual(control, control.get('controller'), "A control's controller is itself");
 });
 
-var component, controller, actionCounts, sendCount, actionContext;
+var component, controller, actionCounts, sendCount, actionArguments;
 
 module("Ember.Component - Actions", {
   setup: function() {
     actionCounts = {};
     sendCount = 0;
-    actionContext = null;
+    actionArguments = null;
 
     controller = Ember.Object.create({
-      send: function(actionName, context) {
+      send: function(actionName) {
         sendCount++;
         actionCounts[actionName] = actionCounts[actionName] || 0;
         actionCounts[actionName]++;
-        actionContext = context;
+        actionArguments = a_slice.call(arguments, 1);
       }
     });
 
@@ -100,5 +101,16 @@ test("Calling sendAction on a component with a context", function() {
 
   component.sendAction('playing', testContext);
 
-  strictEqual(actionContext, testContext, "context was sent with the action");
+  deepEqual(actionArguments, [testContext], "context was sent with the action");
+});
+
+test("Calling sendAction on a component with multiple parameters", function() {
+  set(component, 'playing', "didStartPlaying");
+
+  var firstContext  = {song: 'She Broke My Ember'},
+      secondContext = {song: 'My Achey Breaky Ember'};
+
+  component.sendAction('playing', firstContext, secondContext);
+
+  deepEqual(actionArguments, [firstContext, secondContext], "arguments were sent to the action");
 });
