@@ -36,7 +36,16 @@ function click(app, selector, context) {
   if ($el.is(':input')) {
     var type = $el.prop('type');
     if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
-      Ember.run($el, 'focus');
+      Ember.run($el, function(){
+        // Firefox does not trigger the `focusin` event if the window
+        // does not have focus. If the document doesn't have focus just
+        // use trigger('focusin') instead.
+        if (!document.hasFocus || document.hasFocus()) {
+          this.focus();
+        } else {
+          this.trigger('focusin');
+        }
+      });
     }
   }
 
