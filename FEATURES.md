@@ -116,3 +116,11 @@ for a detailed explanation.
   Enables `{{#with}}` to take a `controller=` option for wrapping the context.
 
   Added in [#3722](https://github.com/emberjs/ember.js/pull/3722)
+* `ember-testing-remove-helpers`
+
+  Adds a callback queue (`onRemoveHelpers`) that fires upon `App.removeTestHelpers`. This
+  allows any custom cleanup from the `onInjectHelpers` callbacks to be done.
+
+  For example removing the handlers for `ajaxStart` and `ajaxStop`.
+
+  Added in [#3567](https://github.com/emberjs/ember.js/pull/3567)

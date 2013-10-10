@@ -24,6 +24,13 @@ Test.onInjectHelpers(function() {
   });
 });
 
+if (Ember.FEATURES.isEnabled("ember-testing-remove-helpers")) {
+  Test.onRemoveHelpers(function() {
+    Ember.$(document).off('ajaxStart');
+    Ember.$(document).off('ajaxStop');
+  });
+}
+
 function currentRouteName(app){
   var appController = app.__container__.lookup('controller:application');
 

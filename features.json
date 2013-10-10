@@ -10,5 +10,6 @@
   "ember-testing-simple-setup": null,
   "ember-testing-routing-helpers": null,
   "ember-testing-triggerEvent-helper": null,
-  "with-controller": null
+  "with-controller": null,
+  "ember-testing-remove-helpers": null
 }
