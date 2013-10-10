@@ -11,9 +11,8 @@ require("ember-handlebars/component_lookup");
 /**
   @private
 
-  Find templates stored in the head tag as script tags and make them available
-  to `Ember.CoreView` in the global `Ember.TEMPLATES` object. This will be run
-  as as jQuery DOM-ready callback.
+  Find templates stored in the document as script tags and make them available
+  via the container. This is run as part of application intialization.
 
   Script tags with `text/x-handlebars` will be compiled
   with Ember's Handlebars and are suitable for use as a view's template.
@@ -25,7 +24,7 @@ require("ember-handlebars/component_lookup");
   @static
   @param ctx
 */
-Ember.Handlebars.bootstrap = function(ctx) {
+Ember.Handlebars.bootstrap = function(ctx, container) {
   var selectors = 'script[type="text/x-handlebars"], script[type="text/x-raw-handlebars"]';
 
   Ember.$(selectors, ctx)
@@ -42,21 +41,29 @@ Ember.Handlebars.bootstrap = function(ctx) {
       templateName = script.attr('data-template-name') || script.attr('id') || 'application',
       template = compile(script.html());
 
-    // Check if template of same name already exists
-    if (Ember.TEMPLATES[templateName] !== undefined) {
-      throw new Error('Template named "' + templateName  + '" already exists.');
-    }
+    if (container) {
+      var fullName = 'template:' + templateName;
+      if (container.has(fullName)) {
+        throw new Error('Template named "' + templateName  + '" already registered.');
+      }
+      container.register(fullName, template);
+    } else {
+      // Check if template of same name already exists
+      if (Ember.TEMPLATES[templateName] !== undefined) {
+        throw new Error('Template named "' + templateName  + '" already exists.');
+      }
 
-    // For templates which have a name, we save them and then remove them from the DOM
-    Ember.TEMPLATES[templateName] = template;
+      // For templates which have a name, we save them and then remove them from the DOM
+      Ember.TEMPLATES[templateName] = template;
+    }
 
     // Remove script tag from DOM
     script.remove();
   });
 };
 
-function bootstrap() {
-  Ember.Handlebars.bootstrap( Ember.$(document) );
+function bootstrap(container) {
+  Ember.Handlebars.bootstrap(Ember.$(document), container);
 }
 
 function registerComponents(container) {
