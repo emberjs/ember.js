@@ -252,3 +252,56 @@ if (Ember.FEATURES.isEnabled("ember-testing-wait-hooks")) {
 
   });
 }
+
+module("ember-testing pendingAjaxRequests", {
+  setup: function(){
+    Ember.run(function(){
+      Ember.$(document).off('ajaxStart');
+      Ember.$(document).off('ajaxStop');
+    });
+
+    Ember.run(function() {
+      App = Ember.Application.create();
+      App.setupForTesting();
+    });
+
+    App.injectTestHelpers();
+  },
+
+  teardown: function() {
+    Ember.run(App, App.destroy);
+    App.removeTestHelpers();
+    App = null;
+    Ember.TEMPLATES = {};
+  }
+});
+
+test("pendingAjaxRequests is incremented on each document ajaxStart event", function() {
+  Ember.Test.pendingAjaxRequests = 0;
+
+  Ember.run(function(){
+    Ember.$(document).trigger('ajaxStart');
+  });
+
+  equal(Ember.Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
+});
+
+test("pendingAjaxRequests is decremented on each document ajaxStop event", function() {
+  Ember.Test.pendingAjaxRequests = 1;
+
+  Ember.run(function(){
+    Ember.$(document).trigger('ajaxStop');
+  });
+
+  equal(Ember.Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was decremented');
+});
+
+test("it should raise an assertion error if ajaxStop is called without pendingAjaxRequests", function() {
+  Ember.Test.pendingAjaxRequests = 0;
+
+  expectAssertion(function() {
+    Ember.run(function(){
+      Ember.$(document).trigger('ajaxStop');
+    });
+  });
+});
