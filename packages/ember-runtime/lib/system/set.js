@@ -139,7 +139,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     @return {Ember.Set} An empty Set
   */
   clear: function() {
-    if (this.isFrozen) { throw new Error(Ember.FROZEN_ERROR); }
+    if (this.isFrozen) { throw new Ember.Error(Ember.FROZEN_ERROR); }
 
     var len = get(this, 'length');
     if (len === 0) { return this; }
@@ -249,7 +249,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     @return {Object} The removed object from the set or null.
   */
   pop: function() {
-    if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
+    if (get(this, 'isFrozen')) throw new Ember.Error(Ember.FROZEN_ERROR);
     var obj = this.length > 0 ? this[this.length-1] : null;
     this.remove(obj);
     return obj;
@@ -366,7 +366,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
 
   // implements Ember.MutableEnumerable
   addObject: function(obj) {
-    if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
+    if (get(this, 'isFrozen')) throw new Ember.Error(Ember.FROZEN_ERROR);
     if (isNone(obj)) return this; // nothing to do
 
     var guid = guidFor(obj),
@@ -394,7 +394,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
 
   // implements Ember.MutableEnumerable
   removeObject: function(obj) {
-    if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
+    if (get(this, 'isFrozen')) throw new Ember.Error(Ember.FROZEN_ERROR);
     if (isNone(obj)) return this; // nothing to do
 
     var guid = guidFor(obj),

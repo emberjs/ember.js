@@ -471,7 +471,7 @@ Ember.computed.intersect = function () {
 */
 Ember.computed.setDiff = function (setAProperty, setBProperty) {
   if (arguments.length !== 2) {
-    throw new Error("setDiff requires exactly two dependent arrays.");
+    throw new Ember.Error("setDiff requires exactly two dependent arrays.");
   }
   return Ember.arrayComputed.call(null, setAProperty, setBProperty, {
     addedItem: function (array, item, changeMeta, instanceMeta) {

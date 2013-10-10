@@ -89,7 +89,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     @return this
   */
   insertAt: function(idx, object) {
-    if (idx > get(this, 'length')) throw new Error(OUT_OF_RANGE_EXCEPTION) ;
+    if (idx > get(this, 'length')) throw new Ember.Error(OUT_OF_RANGE_EXCEPTION) ;
     this.replace(idx, 0, [object]) ;
     return this ;
   },
@@ -117,7 +117,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     if ('number' === typeof start) {
 
       if ((start < 0) || (start >= get(this, 'length'))) {
-        throw new Error(OUT_OF_RANGE_EXCEPTION);
+        throw new Ember.Error(OUT_OF_RANGE_EXCEPTION);
       }
 
       // fast case
