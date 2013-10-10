@@ -50,7 +50,7 @@ Ember.assert = function(desc, test) {
 
   if (Ember.testing && !test) {
     // when testing, ensure test failures when assertions fail
-    throw new Error("Assertion Failed: " + desc);
+    throw new Ember.Error("Assertion Failed: " + desc);
   }
 };
 
@@ -102,7 +102,7 @@ Ember.deprecate = function(message, test) {
   if (arguments.length === 1) { test = false; }
   if (test) { return; }
 
-  if (Ember.ENV.RAISE_ON_DEPRECATION) { throw new Error(message); }
+  if (Ember.ENV.RAISE_ON_DEPRECATION) { throw new Ember.Error(message); }
 
   var error;
 

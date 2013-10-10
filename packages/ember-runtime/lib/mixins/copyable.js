@@ -54,7 +54,7 @@ Ember.Copyable = Ember.Mixin.create(/** @scope Ember.Copyable.prototype */ {
     if (Ember.Freezable && Ember.Freezable.detect(this)) {
       return get(this, 'isFrozen') ? this : this.copy().freeze();
     } else {
-      throw new Error(Ember.String.fmt("%@ does not support freezing", [this]));
+      throw new Ember.Error(Ember.String.fmt("%@ does not support freezing", [this]));
     }
   }
 });

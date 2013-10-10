@@ -546,7 +546,7 @@ ReduceComputedProperty.prototype.property = function () {
 
   forEach(a_slice.call(arguments), function (dependentKey) {
     if (doubleEachPropertyPattern.test(dependentKey)) {
-      throw new Error("Nested @each properties not supported: " + dependentKey);
+      throw new Ember.Error("Nested @each properties not supported: " + dependentKey);
     } else if (match = eachPropertyPattern.exec(dependentKey)) {
       dependentArrayKey = match[1];
       itemPropertyKey = match[2];
@@ -722,11 +722,11 @@ Ember.reduceComputed = function (options) {
   }
 
   if (typeof options !== "object") {
-    throw new Error("Reduce Computed Property declared without an options hash");
+    throw new Ember.Error("Reduce Computed Property declared without an options hash");
   }
 
   if (!('initialValue' in options)) {
-    throw new Error("Reduce Computed Property declared without an initial value");
+    throw new Ember.Error("Reduce Computed Property declared without an initial value");
   }
 
   var cp = new ReduceComputedProperty(options);

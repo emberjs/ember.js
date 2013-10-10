@@ -303,7 +303,7 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
 
   if (!handlerInfos) {
     if (ignoreFailure) { return; }
-    throw new Error("Could not trigger event '" + name + "'. There are no active handlers");
+    throw new Ember.Error("Could not trigger event '" + name + "'. There are no active handlers");
   }
 
   var eventWasHandled = false;
@@ -329,7 +329,7 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
   }
 
   if (!eventWasHandled && !ignoreFailure) {
-    throw new Error("Nothing handled the event '" + name + "'.");
+    throw new Ember.Error("Nothing handled the event '" + name + "'.");
   }
 }
 
