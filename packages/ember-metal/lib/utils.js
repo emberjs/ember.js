@@ -6,6 +6,14 @@ require('ember-metal/array');
 @module ember-metal
 */
 
+/**
+  @private
+  
+  Prefix used for guids through out Ember.
+  
+*/
+Ember.GUID_PREFIX = 'ember';
+
 
 var o_defineProperty = Ember.platform.defineProperty,
     o_create = Ember.create,
@@ -60,13 +68,13 @@ var GUID_DESC = {
   @return {String} the guid
 */
 Ember.generateGuid = function generateGuid(obj, prefix) {
-  if (!prefix) prefix = 'ember';
+  if (!prefix) prefix = Ember.GUID_PREFIX;
   var ret = (prefix + (uuid++));
   if (obj) {
     GUID_DESC.value = ret;
     o_defineProperty(obj, GUID_KEY, GUID_DESC);
   }
-  return ret ;
+  return ret;
 };
 
 /**

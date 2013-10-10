@@ -2215,7 +2215,10 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
   Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
   });
-  equal(parentView.$('a').attr('href'), 'test');
+
+  // Use match, since old IE appends the whole URL
+  var href = parentView.$('a').attr('href');
+  ok(href.match(/(^|\/)test$/), "Expected href to be 'test' but got '"+href+"'");
 
   Ember.run(function() {
     parentView.destroy();

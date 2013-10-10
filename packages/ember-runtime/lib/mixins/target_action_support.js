@@ -106,6 +106,13 @@ Ember.TargetActionSupport = Ember.Mixin.create({
         target = opts.target || get(this, 'targetObject'),
         actionContext = opts.actionContext;
 
+    function args(options, actionName) {
+      var ret = [];
+      if (actionName) { ret.push(actionName); }
+
+      return ret.concat(options);
+    }
+
     if (typeof actionContext === 'undefined') {
       actionContext = get(this, 'actionContextObject') || this;
     }
@@ -114,10 +121,10 @@ Ember.TargetActionSupport = Ember.Mixin.create({
       var ret;
 
       if (target.send) {
-        ret = target.send.apply(target, [action, actionContext]);
+        ret = target.send.apply(target, args(actionContext, action));
       } else {
         Ember.assert("The action '" + action + "' did not exist on " + target, typeof target[action] === 'function');
-        ret = target[action].apply(target, [actionContext]);
+        ret = target[action].apply(target, args(actionContext));
       }
 
       if (ret !== false) ret = true;

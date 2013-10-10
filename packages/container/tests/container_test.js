@@ -464,3 +464,31 @@ test("cannot register an `undefined` factory", function(){
     container.register('controller:apple', undefined);
   }, '');
 });
+
+test("can re-register a factory", function(){
+  var container = new Container(),
+    FirstApple = factory('first'),
+    SecondApple = factory('second');
+
+  container.register('controller:apple', FirstApple);
+  container.register('controller:apple', SecondApple);
+
+  ok(container.lookup('controller:apple') instanceof SecondApple);
+});
+
+test("cannot re-register a factory if has been looked up", function(){
+  var container = new Container(),
+    FirstApple = factory('first'),
+    SecondApple = factory('second');
+
+  container.register('controller:apple', FirstApple);
+  ok(container.lookup('controller:apple') instanceof FirstApple);
+
+  throws(function(){
+    container.register('controller:apple', SecondApple);
+  }, 'Cannot re-register: `controller:apple`, as it has already been looked up.');
+
+  ok(container.lookup('controller:apple') instanceof FirstApple);
+});
+
+

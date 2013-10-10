@@ -380,7 +380,7 @@ test("bound helpers can handle `this` keyword when it's a non-object", function(
     controller: Ember.Object.create({
       things: Ember.A(['alex'])
     }),
-    template: Ember.Handlebars.compile("{{#each things}}{{debugger}}{{shout this}}{{/each}}")
+    template: Ember.Handlebars.compile("{{#each things}}{{shout this}}{{/each}}")
   });
 
   appendView();

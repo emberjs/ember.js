@@ -1,6 +1,7 @@
 require('ember-handlebars-compiler');
 
-var slice = Array.prototype.slice;
+var slice = Array.prototype.slice,
+    originalTemplate = Ember.Handlebars.template;
 
 /**
   @private
@@ -472,10 +473,10 @@ function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
 
   @method template
   @for Ember.Handlebars
-  @param {String} template spec
+  @param {String} spec
 */
 Ember.Handlebars.template = function(spec) {
-  var t = Handlebars.template(spec);
+  var t = originalTemplate(spec);
   t.isTop = true;
   return t;
 };

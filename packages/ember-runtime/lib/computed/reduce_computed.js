@@ -178,14 +178,14 @@ DependentArraysObserver.prototype = {
     this.trackedArraysByGuid[dependentKey] = new Ember.TrackedArray(observerContexts);
   },
 
-  addTransformation: function (dependentKey, index, newItems) {
+  trackAdd: function (dependentKey, index, newItems) {
     var trackedArray = this.trackedArraysByGuid[dependentKey];
     if (trackedArray) {
       trackedArray.addItems(index, newItems);
     }
   },
 
-  removeTransformation: function (dependentKey, index, removedCount) {
+  trackRemove: function (dependentKey, index, removedCount) {
     var trackedArray = this.trackedArraysByGuid[dependentKey];
 
     if (trackedArray) {
@@ -226,7 +226,7 @@ DependentArraysObserver.prototype = {
         sliceIndex,
         observerContexts;
 
-    observerContexts = this.removeTransformation(dependentKey, index, removedCount);
+    observerContexts = this.trackRemove(dependentKey, index, removedCount);
 
     function removeObservers(propertyKey) {
       observerContexts[sliceIndex].destroyed = true;
@@ -271,7 +271,7 @@ DependentArraysObserver.prototype = {
         this.instanceMeta.context, this.getValue(), item, changeMeta, this.instanceMeta.sugarMeta));
     }, this);
 
-    this.addTransformation(dependentKey, index, observerContexts);
+    this.trackAdd(dependentKey, index, observerContexts);
   },
 
   itemPropertyWillChange: function (obj, keyName, array, observerContext) {
@@ -512,13 +512,11 @@ ReduceComputedProperty.prototype._instanceMeta = function (context, propertyName
 };
 
 ReduceComputedProperty.prototype.initialValue = function () {
-  switch (typeof this.options.initialValue) {
-    case 'undefined':
-      throw new Error("reduce computed properties require an initial value: did you forget to pass one to Ember.reduceComputed?");
-    case  'function':
-      return this.options.initialValue();
-    default:
-      return this.options.initialValue;
+  if (typeof this.options.initialValue === 'function') {
+    return this.options.initialValue();
+  }
+  else {
+    return this.options.initialValue;
   }
 };
 
@@ -541,7 +539,7 @@ ReduceComputedProperty.prototype.clearItemPropertyKeys = function (dependentArra
 ReduceComputedProperty.prototype.property = function () {
   var cp = this,
       args = a_slice.call(arguments),
-      propertyArgs = [],
+      propertyArgs = new Ember.Set(),
       match,
       dependentArrayKey,
       itemPropertyKey;
@@ -553,13 +551,13 @@ ReduceComputedProperty.prototype.property = function () {
       dependentArrayKey = match[1];
       itemPropertyKey = match[2];
       cp.itemPropertyKey(dependentArrayKey, itemPropertyKey);
-      propertyArgs.push(dependentArrayKey);
+      propertyArgs.add(dependentArrayKey);
     } else {
-      propertyArgs.push(dependentKey);
+      propertyArgs.add(dependentKey);
     }
   });
 
-  return ComputedProperty.prototype.property.apply(this, propertyArgs);
+  return ComputedProperty.prototype.property.apply(this, propertyArgs.toArray());
 };
 
 /**
@@ -727,7 +725,7 @@ Ember.reduceComputed = function (options) {
     throw new Error("Reduce Computed Property declared without an options hash");
   }
 
-  if (Ember.isNone(options.initialValue)) {
+  if (!('initialValue' in options)) {
     throw new Error("Reduce Computed Property declared without an initial value");
   }
 
