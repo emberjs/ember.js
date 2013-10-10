@@ -206,7 +206,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     // If no action name for that action could be found, just abort.
     if (actionName === undefined) { return; }
 
-    this.triggerAction({
+    return this.triggerAction({
       action: actionName,
       actionContext: context
     });
