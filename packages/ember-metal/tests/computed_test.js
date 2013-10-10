@@ -393,6 +393,30 @@ testBoth('redefining a property should undo old depenent keys', function(get ,se
   equal(get(obj, 'foo'), 'baz 3');
 });
 
+if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+  testBoth('can watch multiple dependent keys specified via brace expansion', function (get, set) {
+    Ember.defineProperty(obj, 'foo', Ember.computed(function(key, value) {
+      count++;
+      return 'foo '+count;
+    }).property('{bar,baz}'));
+
+    equal(get(obj, 'foo'), 'foo 1', "get once");
+    equal(get(obj, 'foo'), 'foo 1', "cached retrieve");
+
+    set(obj, 'bar', 'bar'); // invalidate foo
+
+    equal(get(obj, 'foo'), 'foo 2', "foo invalidated from bar");
+
+    set(obj, 'baz', 'baz'); // invalidate foo
+
+    equal(get(obj, 'foo'), 'foo 3', "foo invalidated from baz");
+
+    set(obj, 'quux', 'quux'); // do not invalidate foo
+
+    equal(get(obj, 'foo'), 'foo 3', "foo not invalidated by quux");
+  });
+}
+
 // ..........................................................
 // CHAINED DEPENDENT KEYS
 //

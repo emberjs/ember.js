@@ -1,6 +1,7 @@
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
+require('ember-metal/expand_properties');
 require('ember-metal/property_get');
 require('ember-metal/properties');
 require('ember-metal/watch_key');
@@ -13,6 +14,7 @@ require('ember-metal/watch_path');
 var metaFor = Ember.meta, // utils.js
     GUID_KEY = Ember.GUID_KEY, // utils.js
     META_KEY = Ember.META_KEY, // utils.js
+    expandProperties = Ember.expandProperties,
     removeChainWatcher = Ember.removeChainWatcher,
     watchKey = Ember.watchKey, // watch_key.js
     unwatchKey = Ember.unwatchKey,
@@ -41,15 +43,17 @@ function isKeyName(path) {
   @param obj
   @param {String} keyName
 */
-Ember.watch = function(obj, keyPath) {
+Ember.watch = function(obj, _keyPath) {
   // can't watch length on Array - it is special...
-  if (keyPath === 'length' && typeOf(obj) === 'array') { return; }
+  if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
-  if (isKeyName(keyPath)) {
-    watchKey(obj, keyPath);
-  } else {
-    watchPath(obj, keyPath);
-  }
+  expandProperties(_keyPath, function (keyPath) {
+    if (isKeyName(keyPath)) {
+      watchKey(obj, keyPath);
+    } else {
+      watchPath(obj, keyPath);
+    }
+  });
 };
 
 Ember.isWatching = function isWatching(obj, key) {
@@ -59,15 +63,17 @@ Ember.isWatching = function isWatching(obj, key) {
 
 Ember.watch.flushPending = Ember.flushPendingChains;
 
-Ember.unwatch = function(obj, keyPath) {
+Ember.unwatch = function(obj, _keyPath) {
   // can't watch length on Array - it is special...
-  if (keyPath === 'length' && typeOf(obj) === 'array') { return; }
+  if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
-  if (isKeyName(keyPath)) {
-    unwatchKey(obj, keyPath);
-  } else {
-    unwatchPath(obj, keyPath);
-  }
+  expandProperties(_keyPath, function (keyPath) {
+    if (isKeyName(keyPath)) {
+      unwatchKey(obj, keyPath);
+    } else {
+      unwatchPath(obj, keyPath);
+    }
+  });
 };
 
 /**

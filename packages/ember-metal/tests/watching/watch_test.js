@@ -25,6 +25,22 @@ function addListeners(obj, keyPath) {
   });
 }
 
+if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+  testBoth("watching multiple properties specified via brace expansion", function(get, set) {
+    var obj = { foo: null, bar: null, baz: null };
+
+    equal(Ember.isWatching(obj, 'foo'), false, "precond - not initially watching foo");
+    equal(Ember.isWatching(obj, 'bar'), false, "precond - not initially watching bar");
+    equal(Ember.isWatching(obj, 'baz'), false, "precond - not initially watching baz");
+
+    Ember.watch(obj, '{foo,bar,baz}');
+
+    equal(Ember.isWatching(obj, 'foo'), true, "watching foo from brace expansion");
+    equal(Ember.isWatching(obj, 'bar'), true, "watching bar from brace expansion");
+    equal(Ember.isWatching(obj, 'baz'), true, "watching baz from brace expansion");
+  });
+}
+
 testBoth('watching a computed property', function(get, set) {
 
   var obj = {};
