@@ -22,7 +22,7 @@
 
   @class Ember
   @static
-  @version 1.1.0-beta.3
+  @version 1.1.0-beta.4
 */
 
 if ('undefined' === typeof Ember) {
@@ -49,10 +49,10 @@ Ember.toString = function() { return "Ember"; };
 /**
   @property VERSION
   @type String
-  @default '1.1.0-beta.3'
+  @default '1.1.0-beta.4'
   @final
 */
-Ember.VERSION = '1.1.0-beta.3';
+Ember.VERSION = '1.1.0-beta.4';
 
 /**
   Standard environmental variables. You can define these in a global `ENV`

@@ -1,3 +1,22 @@
+* Ember 1.1.0-beta.4 (October 11, 2013)*
+
+  * Add tests for Application#injectTestHelpers.
+  * Add assertion upon too many ajaxStop's.
+  * [BUGFIX] Fix an issue with concatenatedProperties.
+  * [BUGFIX beta] Throw a sensible exception from SubArray.removeItem when not found.
+  * [BUGFIX beta] Fix evaluateUnboundHelper properties
+  * Use Ember.Error consistently.
+  * [BUGFIX beta] Make Component.sendAction behave the same as {{action}} helper.
+  * [BUGFIX beta] uniq reduceComputed dependent keys.
+  * Don't allow registration of undefined factories.
+  * Decamelize handles strings with numbers
+  * [BUGFIX beta] Allow a reduceComputed to have an undefined initialValue.
+  * disallow container registration if the corresponding singleton lookup has already occurred Conflicts: 	packages/container/tests/container_test.js
+  * [BUGFIX beta] Soft-deprecate mixed binding syntax in view helper
+  * Universalize {{view}} helper quoteless binding syntax, prevent id binding
+  * disallow container registration if the corresponding singleton lookup has already occurred
+  * [BUGFIX beta] Fix edge case in `TrackedArray`
+
 * Ember 1.1.0-beta.3 (October 04, 2013)*
 
   * Remove Route#redirect soft deprecation
