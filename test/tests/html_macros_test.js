@@ -1,9 +1,6 @@
-(function() {
-
-var registerMacro = HTMLBars.registerMacro,
-    removeMacro = HTMLBars.removeMacro,
-    compile = HTMLBars.compile,
-    HTMLElement = HTMLBars.HTMLElement;
+import { registerMacro, removeMacro } from "htmlbars/macros";
+import { compile } from "htmlbars/compiler";
+import { HTMLElement } from "htmlbars/ast";
 
 function equalHTML(fragment, html) {
   var div = document.createElement("div");
@@ -62,5 +59,3 @@ test("An HTML macro can transclude its children into a new node", function() {
 
   equalHTML(fragment, "<p>lorem <b>ipsum</b> dolor</p>");
 });
-
-})();

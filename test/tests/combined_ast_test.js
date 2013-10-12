@@ -1,15 +1,15 @@
-(function() {
-
-var preprocess = HTMLBars.preprocess;
+import { preprocess } from "htmlbars/parser";
+module AST from "handlebars/compiler/ast";
+import { HTMLElement, BlockElement } from "htmlbars/ast";
 
 module("HTML-based compiler (AST)");
 
 function id(string) {
-  return new Handlebars.AST.IdNode([string]);
+  return new AST.IdNode([{ part: string }]);
 }
 
 function hash(pairs) {
-  return pairs ? new Handlebars.AST.HashNode(pairs) : null;
+  return pairs ? new AST.HashNode(pairs) : undefined;
 }
 
 function mustache(string, pairs, raw) {
@@ -21,11 +21,11 @@ function mustache(string, pairs, raw) {
     params = [id(string)];
   }
 
-  return new Handlebars.AST.MustacheNode(params, hash(pairs), raw || false);
+  return new AST.MustacheNode(params, hash(pairs), raw || false);
 }
 
 function string(data) {
-  return new Handlebars.AST.StringNode(data);
+  return new AST.StringNode(data);
 }
 
 function element(tagName, attrs, children, helpers) {
@@ -34,11 +34,11 @@ function element(tagName, attrs, children, helpers) {
     attrs = [];
   }
 
-  return new HTMLBars.HTMLElement(tagName, attrs, children, helpers);
+  return new HTMLElement(tagName, attrs, children, helpers);
 }
 
 function block(helper, children) {
-  return new HTMLBars.BlockElement(helper, children);
+  return new BlockElement(helper, children);
 }
 
 test("a simple piece of content", function() {
@@ -130,5 +130,3 @@ test("Node helpers", function() {
     element('p', [['class', ['bar']]], ['Some content'], [mustache([id('action'), string('boom')])])
   ]);
 });
-
-})();

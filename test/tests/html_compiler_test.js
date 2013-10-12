@@ -1,8 +1,5 @@
-(function() {
-
-var removeHelper = HTMLBars.removeHelper,
-    compile = HTMLBars.compile,
-    registerHelper = HTMLBars.registerHelper;
+import { registerHelper, removeHelper } from "htmlbars/helpers";
+import { compile } from "htmlbars/compiler";
 
 function frag(element, string) {
   if (element instanceof DocumentFragment) {
@@ -64,7 +61,7 @@ function shouldBeVoid(tagName) {
   var tag = '<' + tagName + ' data-foo="bar">';
   var closing = '</' + tagName + '>';
   var extra = "<p>hello</p>";
-  var html = div.innerHTML;
+  html = div.innerHTML;
 
   QUnit.push((html === tag + extra) || (html === tag + closing + extra), html, tag + closing + extra, tagName + "should be a void element");
 }
@@ -263,10 +260,10 @@ test("RESOLVE hook receives escaping information", function() {
       equal(options.escaped, false);
     }
 
-    options.element.appendChild(document.createTextNode(parts[0]))
+    options.element.appendChild(document.createTextNode(parts[0]));
   });
 
-  compilesTo('<div>{{escaped}}-{{{unescaped}}</div>', '<div>escaped-unescaped</div>');
+  compilesTo('<div>{{escaped}}-{{{unescaped}}}</div>', '<div>escaped-unescaped</div>');
 });
 
 test("Helpers receive escaping information", function() {
@@ -277,10 +274,10 @@ test("Helpers receive escaping information", function() {
       equal(options.escaped, false);
     }
 
-    options.element.appendChild(document.createTextNode(path))
+    options.element.appendChild(document.createTextNode(path));
   });
 
-  compilesTo('<div>{{testing escaped}}-{{{testing unescaped}}</div>', '<div>escaped-unescaped</div>');
+  compilesTo('<div>{{testing escaped}}-{{{testing unescaped}}}</div>', '<div>escaped-unescaped</div>');
 });
 
 test("Attributes can use computed values", function() {
@@ -293,7 +290,7 @@ test("Attributes can use computed paths", function() {
 
 test("It is possible to override the resolution mechanism for attributes", function() {
   registerHelper('RESOLVE_IN_ATTR', function(parts, options) {
-    return 'http://google.com/' + this[parts[0]]
+    return 'http://google.com/' + this[parts[0]];
   });
 
   compilesTo('<a href="{{url}}">linky</a>', '<a href="http://google.com/linky.html">linky</a>', { url: 'linky.html' });
@@ -305,7 +302,7 @@ test("It is possible to use RESOLVE_IN_ATTR for data binding", function() {
   registerHelper('RESOLVE_IN_ATTR', function(parts, options) {
     callback = function() {
       options.rerender();
-    }
+    };
 
     return this[parts[0]];
   });
@@ -354,7 +351,7 @@ test("Attribute helpers can use the hash for data binding", function() {
   registerHelper('testing', function(path, options) {
     callback = function() {
       options.rerender();
-    }
+    };
 
     return this[path] ? options.hash.truthy : options.hash.falsy;
   });
@@ -389,7 +386,7 @@ test("It is possible to trigger a re-render of an attribute from a child resolut
   registerHelper('RESOLVE_IN_ATTR', function(path, options) {
     callback = function() {
       options.rerender();
-    }
+    };
 
     return this[path];
   });
@@ -409,7 +406,7 @@ test("Attribute runs can contain helpers", function() {
   registerHelper('RESOLVE_IN_ATTR', function(path, options) {
     callback = function() {
       options.rerender();
-    }
+    };
 
     return this[path];
   });
@@ -417,7 +414,7 @@ test("Attribute runs can contain helpers", function() {
   registerHelper('testing', function(path, options) {
     callback = function() {
       options.rerender();
-    }
+    };
 
     if (options.types[0] === 'id') {
       return this[path] + '.html';
@@ -555,7 +552,7 @@ test("Node helpers can be used for attribute bindings", function() {
     callback = function() {
       var value = context[path];
       element.setAttribute('href', value);
-    }
+    };
 
     callback();
   });
@@ -568,5 +565,3 @@ test("Node helpers can be used for attribute bindings", function() {
 
   equalHTML(fragment, '<a href="zippy.html">linky</a>');
 });
-
-})();
