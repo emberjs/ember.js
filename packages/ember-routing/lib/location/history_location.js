@@ -78,7 +78,7 @@ Ember.HistoryLocation = Ember.Object.extend({
     var state = this.getState();
     path = this.formatURL(path);
 
-    if (state && state.path !== path) {
+    if (!state || state.path !== path) {
       this.pushState(path);
     }
   },
@@ -95,15 +95,16 @@ Ember.HistoryLocation = Ember.Object.extend({
     var state = this.getState();
     path = this.formatURL(path);
 
-    if (state && state.path !== path) {
+    if (!state || state.path !== path) {
       this.replaceState(path);
     }
   },
 
   /**
-   Get the current `history.state`
-   Polyfill checks for native browser support and falls back to retrieving
-   from a private _historyState variable
+   Get the current `history.state`. Checks for if a polyfill is
+   required and if so fetches this._historyState. The state returned
+   from getState may be null if an iframe has changed a window's
+   history.
 
    @private
    @method getState
