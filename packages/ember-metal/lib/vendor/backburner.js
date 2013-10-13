@@ -390,7 +390,7 @@ define("backburner",
           }
         }
 
-        var executeAt = new Date() + parseInt(wait, 10);
+        var executeAt = (+new Date()) + parseInt(wait, 10);
 
         if (typeof method === 'string') {
           method = target[method];
