@@ -651,6 +651,35 @@ registerComputed('none', function(dependentKey) {
 });
 
 /**
+  A computed property that returns true of the value of the dependent
+  property is NEITHER null NOR undefined.  This avoids errors from JSLint
+  complaining about use of ==, which can be technically confusing.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    isHungry: Ember.computed.notNone('food')
+  });
+  var hampster = Hampster.create();
+  hampster.get('isHungry'); // false
+  hampster.set('food', 'Banana');
+  hampster.get('isHungry'); // true
+  hampster.set('food', null);
+  hampster.get('isHungry'); // false
+  ```
+
+  @method computed.notNone
+  @for Ember
+  @param {String} dependentKey
+  @return {Ember.ComputedProperty} computed property which returns true if
+  original value for property is not empty.
+*/
+registerComputed('notNone', function(dependentKey) {
+  return !Ember.isNone(get(this, dependentKey));
+});
+
+/**
   A computed property that returns the inverse boolean value
   of the original value for the dependent property.
 
