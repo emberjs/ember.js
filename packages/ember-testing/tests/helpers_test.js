@@ -277,6 +277,30 @@ if (Ember.FEATURES.isEnabled("ember-testing-wait-hooks")) {
     });
   });
 
+  test("`wait` waits for outstanding timers", function() {
+    expect(1);
+
+    var wait_done = false;
+
+    Ember.run(function() {
+      App = Ember.Application.create();
+      App.setupForTesting();
+    });
+
+    App.injectTestHelpers();
+
+    Ember.run(App, App.advanceReadiness);
+
+    Ember.run.later(this, function() {
+      wait_done = true;
+    }, 500);
+
+    App.testHelpers.wait().then(function() {
+      equal(wait_done, true, 'should wait for the timer to be fired.');
+    });
+  });
+
+
   test("`wait` respects registerWaiters with optional context", function() {
     expect(2);
 
