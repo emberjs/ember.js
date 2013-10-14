@@ -1,5 +1,11 @@
-import { registerHelper, removeHelper } from "htmlbars/helpers";
-import { compile } from "htmlbars/compiler";
+import { compileSpec } from "htmlbars/compiler";
+import { hydrate } from "htmlbars/runtime";
+
+function compile(string) {
+  var spec = compileSpec(string);
+  console.log(helpers);
+  return hydrate(spec, { helpers: helpers });
+}
 
 function frag(element, string) {
   if (element instanceof DocumentFragment) {
@@ -12,12 +18,15 @@ function frag(element, string) {
   return range.createContextualFragment(string);
 }
 
+var helpers;
+
+function registerHelper(name, callback) {
+  helpers[name] = callback;
+}
+
 module("HTML-based compiler (output)", {
-  teardown: function() {
-    removeHelper('testing');
-    removeHelper('testing2');
-    removeHelper('RESOLVE');
-    removeHelper('RESOLVE_IN_ATTR');
+  setup: function() {
+    helpers = {};
   }
 });
 

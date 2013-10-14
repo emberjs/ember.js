@@ -1,3 +1,4 @@
 {
-  "esnext": true
+  "esnext": true,
+  "boss": true
 }
