@@ -427,7 +427,7 @@ define("backburner",
       throttle: function(target, method /* , args, wait */) {
         var self = this,
             args = arguments,
-            wait = pop.call(args),
+            wait = parseInt(pop.call(args), 10),
             throttler;
 
         for (var i = 0, l = throttlers.length; i < l; i++) {
@@ -462,13 +462,14 @@ define("backburner",
             index,
             debouncee;
 
-        if (typeof immediate === "number") {
+        if (typeof immediate === "number" || typeof immediate === "string") {
           wait = immediate;
           immediate = false;
         } else {
           wait = pop.call(args);
         }
 
+        wait = parseInt(wait, 10);
         // Remove debouncee
         index = findDebouncee(target, method);
 
