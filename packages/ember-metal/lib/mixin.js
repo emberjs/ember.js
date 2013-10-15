@@ -654,9 +654,9 @@ Ember.aliasMethod = function(methodName) {
 
   ```javascript
   Ember.Object.extend({
-    valueObserver: Ember.observer(function() {
+    valueObserver: Ember.observer('value', function() {
       // Executes whenever the "value" property changes
-    }, 'value')
+    })
   });
   ```
 
@@ -668,12 +668,25 @@ Ember.aliasMethod = function(methodName) {
 
   @method observer
   @for Ember
-  @param {Function} func
   @param {String} propertyNames*
+  @param {Function} func
   @return func
 */
-Ember.observer = function(func) {
-  var paths = a_slice.call(arguments, 1);
+Ember.observer = function() {
+  var func  = a_slice.call(arguments, -1)[0];
+  var paths = a_slice.call(arguments, 0, -1);
+
+  if (typeof func !== "function") {
+    Ember.deprecate("Ember.observer should be called with the function as the last argument after the property names.");
+
+    func  = arguments[0];
+    paths = a_slice.call(arguments, 1);
+  }
+
+  if (typeof func !== "function") {
+    throw new Error("Ember.observer called without a function");
+  }
+
   func.__ember_observes__ = paths;
   return func;
 };
