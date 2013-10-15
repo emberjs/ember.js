@@ -57,9 +57,9 @@ test("changing sort order triggers observers", function() {
   var observer, changeCount = 0;
   observer = Ember.Object.createWithMixins({
     array: sortedArrayController,
-    arrangedDidChange: Ember.observer(function() {
+    arrangedDidChange: Ember.observer('array.[]', function() {
       changeCount++;
-    }, 'array.[]')
+    })
   });
 
   equal(changeCount, 0, 'precond - changeCount starts at 0');

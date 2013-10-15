@@ -86,11 +86,11 @@ test("deferred observing during bindings", function() {
 
     callCount: 0,
 
-    observer: Ember.observer(function() {
+    observer: Ember.observer('value1', 'value2', function() {
       equal(get(this, 'value1'), 'CHANGED', 'value1 when observer fires');
       equal(get(this, 'value2'), 'CHANGED', 'value2 when observer fires');
       this.callCount++;
-    }, 'value1', 'value2')
+    })
   });
 
   var root = { fromObject: fromObject, toObject: toObject };
@@ -166,9 +166,9 @@ module("chained binding", {
         input: 'second',
         output: 'second',
 
-        inputDidChange: Ember.observer(function() {
+        inputDidChange: Ember.observer("input", function() {
           set(this, "output", get(this, "input")) ;
-        }, "input")
+        })
       }) ;
 
       third = Ember.Object.create({ input: "third" }) ;

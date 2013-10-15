@@ -42,7 +42,7 @@ Ember.SelectOption = Ember.View.extend({
     }
   }).property('content', 'parentView.selection'),
 
-  labelPathDidChange: Ember.observer(function() {
+  labelPathDidChange: Ember.observer('parentView.optionLabelPath', function() {
     var labelPath = get(this, 'parentView.optionLabelPath');
 
     if (!labelPath) { return; }
@@ -50,9 +50,9 @@ Ember.SelectOption = Ember.View.extend({
     Ember.defineProperty(this, 'label', Ember.computed(function() {
       return get(this, labelPath);
     }).property(labelPath));
-  }, 'parentView.optionLabelPath'),
+  }),
 
-  valuePathDidChange: Ember.observer(function() {
+  valuePathDidChange: Ember.observer('parentView.optionValuePath', function() {
     var valuePath = get(this, 'parentView.optionValuePath');
 
     if (!valuePath) { return; }
@@ -60,7 +60,7 @@ Ember.SelectOption = Ember.View.extend({
     Ember.defineProperty(this, 'value', Ember.computed(function() {
       return get(this, valuePath);
     }).property(valuePath));
-  }, 'parentView.optionValuePath')
+  })
 });
 
 Ember.SelectOptgroup = Ember.CollectionView.extend({
@@ -489,7 +489,7 @@ Ember.Select = Ember.View.extend(
     }
   },
 
-  selectionDidChange: Ember.observer(function() {
+  selectionDidChange: Ember.observer('selection.@each', function() {
     var selection = get(this, 'selection');
     if (get(this, 'multiple')) {
       if (!isArray(selection)) {
@@ -500,9 +500,9 @@ Ember.Select = Ember.View.extend(
     } else {
       this._selectionDidChangeSingle();
     }
-  }, 'selection.@each'),
+  }),
 
-  valueDidChange: Ember.observer(function() {
+  valueDidChange: Ember.observer('value', function() {
     var content = get(this, 'content'),
         value = get(this, 'value'),
         valuePath = get(this, 'optionValuePath').replace(/^content\.?/, ''),
@@ -516,7 +516,7 @@ Ember.Select = Ember.View.extend(
 
       this.set('selection', selection);
     }
-  }, 'value'),
+  }),
 
 
   _triggerChange: function() {

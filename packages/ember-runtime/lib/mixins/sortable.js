@@ -183,12 +183,12 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     this._lastSortAscending = get(this, 'sortAscending');
   }, 'sortAscending'),
 
-  sortAscendingDidChange: Ember.observer(function() {
+  sortAscendingDidChange: Ember.observer('sortAscending', function() {
     if (get(this, 'sortAscending') !== this._lastSortAscending) {
       var arrangedContent = get(this, 'arrangedContent');
       arrangedContent.reverseObjects();
     }
-  }, 'sortAscending'),
+  }),
 
   contentArrayWillChange: function(array, idx, removedCount, addedCount) {
     var isSorted = get(this, 'isSorted');

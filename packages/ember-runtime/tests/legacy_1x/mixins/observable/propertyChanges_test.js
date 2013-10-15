@@ -28,20 +28,20 @@ module("object.propertyChanges", {
       foo  : 'fooValue',
       prop : 'propValue',
 
-      action: Ember.observer(function() {
+      action: Ember.observer('foo', function() {
         this.set('prop', 'changedPropValue');
-      }, 'foo'),
+      }),
 
       newFoo : 'newFooValue',
       newProp: 'newPropValue',
 
-      notifyAction: Ember.observer(function() {
+      notifyAction: Ember.observer('newFoo', function() {
         this.set('newProp', 'changedNewPropValue');
-      }, 'newFoo'),
+      }),
 
-      notifyAllAction: Ember.observer(function() {
+      notifyAllAction: Ember.observer('prop', function() {
         this.set('newFoo', 'changedNewFooValue');
-      }, 'prop'),
+      }),
 
       starProp: null,
       starObserver: function(target, key, value, rev) {

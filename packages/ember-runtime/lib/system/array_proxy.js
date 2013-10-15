@@ -136,13 +136,13 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.Array
 
     @method _contentDidChange
   */
-  _contentDidChange: Ember.observer(function() {
+  _contentDidChange: Ember.observer('content', function() {
     var content = get(this, 'content');
 
     Ember.assert("Can't set ArrayProxy's content to itself", content !== this);
 
     this._setupContent();
-  }, 'content'),
+  }),
 
   _setupContent: function() {
     var content = get(this, 'content');
@@ -165,7 +165,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.Array
     this._teardownArrangedContent(arrangedContent);
   }, 'arrangedContent'),
 
-  _arrangedContentDidChange: Ember.observer(function() {
+  _arrangedContentDidChange: Ember.observer('arrangedContent', function() {
     var arrangedContent = get(this, 'arrangedContent'),
         len = arrangedContent ? get(arrangedContent, 'length') : 0;
 
@@ -175,7 +175,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.Array
 
     this.arrangedContentDidChange(this);
     this.arrangedContentArrayDidChange(this, 0, undefined, len);
-  }, 'arrangedContent'),
+  }),
 
   _setupArrangedContent: function() {
     var arrangedContent = get(this, 'arrangedContent');

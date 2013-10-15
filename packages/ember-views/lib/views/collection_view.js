@@ -231,7 +231,7 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
 
     @method _contentDidChange
   */
-  _contentDidChange: Ember.observer(function() {
+  _contentDidChange: Ember.observer('content', function() {
     var content = get(this, 'content');
 
     if (content) {
@@ -241,7 +241,7 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
 
     var len = content ? get(content, 'length') : 0;
     this.arrayDidChange(content, 0, null, len);
-  }, 'content'),
+  }),
 
   /**
     @private

@@ -527,13 +527,13 @@ testBoth('local observers can be removed', function(get, set) {
   var barObserved = 0;
 
   var MyMixin = Ember.Mixin.create({
-    foo1: Ember.observer(function() {
+    foo1: Ember.observer('bar', function() {
       barObserved++;
-    }, 'bar'),
+    }),
 
-    foo2: Ember.observer(function() {
+    foo2: Ember.observer('bar', function() {
       barObserved++;
-    }, 'bar')
+    })
   });
 
   var obj = {};

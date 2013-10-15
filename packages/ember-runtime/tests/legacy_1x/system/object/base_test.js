@@ -76,17 +76,17 @@ module("Ember.Object observers", {
       prop1: null,
 
       // normal observer
-      observer: Ember.observer(function() {
+      observer: Ember.observer("prop1", function() {
         this._normal = true;
-      }, "prop1"),
+      }),
 
-      globalObserver: Ember.observer(function() {
+      globalObserver: Ember.observer("TestNamespace.obj.value", function() {
         this._global = true;
-      }, "TestNamespace.obj.value"),
+      }),
 
-      bothObserver: Ember.observer(function() {
+      bothObserver: Ember.observer("prop1", "TestNamespace.obj.value", function() {
         this._both = true;
-      }, "prop1", "TestNamespace.obj.value")
+      })
     });
 
   }
