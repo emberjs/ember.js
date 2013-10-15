@@ -677,7 +677,7 @@ Ember.observer = function() {
   var paths = a_slice.call(arguments, 0, -1);
 
   if (typeof func !== "function") {
-    Ember.deprecate("Ember.observer should be called with the function as the last argument after the property names.");
+    // revert to old, soft-deprecated argument ordering
 
     func  = arguments[0];
     paths = a_slice.call(arguments, 1);
@@ -771,7 +771,7 @@ Ember.beforeObserver = function() {
   var paths = a_slice.call(arguments, 0, -1);
 
   if (typeof func !== "function") {
-    Ember.deprecate("Ember.beforeObserver should be called with the function as the last argument after the property names.");
+    // revert to old, soft-deprecated argument ordering
 
     func  = arguments[0];
     paths = a_slice.call(arguments, 1);
