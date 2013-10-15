@@ -960,10 +960,10 @@ testBoth("immediate observers should fire synchronously", function(get, set) {
   // trigger deferred behavior
   Ember.run(function() {
     mixin = Ember.Mixin.create({
-      fooDidChange: Ember.immediateObserver(function() {
+      fooDidChange: Ember.immediateObserver('foo', function() {
         observerCalled++;
         equal(get(this, 'foo'), "barbaz", "newly set value is immediately available");
-      }, 'foo')
+      })
     });
 
     mixin.apply(obj);
@@ -986,7 +986,7 @@ testBoth("immediate observers should fire synchronously", function(get, set) {
 
 testBoth("immediate observers are for internal properties only", function(get, set) {
   expectAssertion(function() {
-    Ember.immediateObserver(Ember.K, 'foo.bar');
+    Ember.immediateObserver('foo.bar', Ember.K);
   }, 'Immediate observers must observe internal properties only, not properties on other objects.');
 });
 

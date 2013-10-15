@@ -315,12 +315,12 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
 
   currentView: null,
 
-  _currentViewWillChange: Ember.beforeObserver(function() {
+  _currentViewWillChange: Ember.beforeObserver('currentView', function() {
     var currentView = get(this, 'currentView');
     if (currentView) {
       currentView.destroy();
     }
-  }, 'currentView'),
+  }),
 
   _currentViewDidChange: Ember.observer('currentView', function() {
     var currentView = get(this, 'currentView');
