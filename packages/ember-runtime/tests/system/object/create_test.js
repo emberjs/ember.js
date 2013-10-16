@@ -104,6 +104,25 @@ test("property name is the same as own prototype property", function() {
   equal(MyClass.create().toString(), 'MyClass', "should inherit property from the arguments of `Ember.Object.create`");
 });
 
+test("inherits properties from passed in Ember.Object", function() {
+  var baseObj = Ember.Object.create({ foo: 'bar' }),
+      secondaryObj = Ember.Object.create(baseObj);
+
+  equal(secondaryObj.foo, baseObj.foo, "Em.O.create inherits properties from Ember.Object parameter");
+});
+
+test("throws if you try to pass anything other than an object or instance of Ember.Object", function(){
+  var expected = "Ember.Object.create will only accept an object or an instance of Ember.Object.";
+
+  expectAssertion(function() {
+    var o = Ember.Object.create("some-string");
+  }, expected);
+
+  expectAssertion(function() {
+    var o = Ember.Object.create(['foo','bar']);
+  }, expected);
+});
+
 module('Ember.Object.createWithMixins');
 
 test("Creates a new object that contains passed properties", function() {
