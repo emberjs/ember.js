@@ -1,6 +1,7 @@
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/array');
+require('ember-metal/error');
 
 /**
 @module ember-metal
@@ -444,7 +445,7 @@ var needsFinallyFix = (function() {
     try { }
     finally {
       count++;
-      throw new Error('needsFinallyFixTest');
+      throw new Ember.Error('needsFinallyFixTest');
     }
   } catch (e) {}
 
