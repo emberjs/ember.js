@@ -684,7 +684,7 @@ Ember.observer = function() {
   }
 
   if (typeof func !== "function") {
-    throw new Error("Ember.observer called without a function");
+    throw new Ember.Error("Ember.observer called without a function");
   }
 
   func.__ember_observes__ = paths;
@@ -778,7 +778,7 @@ Ember.beforeObserver = function() {
   }
 
   if (typeof func !== "function") {
-    throw new Error("Ember.beforeObserver called without a function");
+    throw new Ember.Error("Ember.beforeObserver called without a function");
   }
 
   func.__ember_observesBefore__ = paths;
