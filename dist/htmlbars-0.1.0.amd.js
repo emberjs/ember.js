@@ -587,12 +587,14 @@ define("htmlbars/compiler/pass2",
     };
 
     compiler2.attribute = function(name, child) {
-      var invokeRererender = call('el.setAttribute', string(name), call('child' + child, 'context', hash(['rerender:rerender'])));
+      this.output.push('dom.stream(function(stream) {');
+      var invokeRererender = call('stream.next', call('child' + child, 'context', hash(['rerender:rerender'])));
       var rerender = 'function rerender() { ' + invokeRererender + '}';
       var options = hash(['rerender:' + rerender, 'element:el', 'attrName:' + string(name)]);
       pushStack(this.stack, call('child' + child, 'context', options));
 
-      this.push(call('el.setAttribute', string(name), popStack(this.stack)));
+      this.push(call('dom.setAttribute', 'el', string(name), popStack(this.stack), hash(['stream:stream', 'context:context'])));
+      this.push('})');
     };
 
     compiler2.closeElement = function() {
@@ -1060,6 +1062,43 @@ define("htmlbars/runtime",
           return parts.reduce(function(current, part) {
             return current[part];
           }, context);
+        },
+
+        setAttribute: function(element, name, value, options) {
+          this.setAttr(element, name, options.stream.subscribe);
+
+          options.stream.next(value);
+        },
+
+        setAttr: function(element, name, subscribe) {
+          subscribe(function(value) {
+            element.setAttribute(name, value);
+          });
+        },
+
+        stream: function(callback) {
+          var subscriptions = [], lastValue, hasValue;
+
+          var stream = {
+            subscribe: function(next) {
+              subscriptions.push(next);
+              if (hasValue) next(lastValue);
+            },
+
+            next: function(value) {
+              lastValue = value;
+              hasValue = true;
+              notify();
+            }
+          };
+
+          function notify() {
+            subscriptions.forEach(function(subscription) {
+              subscription(lastValue);
+            });
+          }
+
+          callback(stream);
         },
 
         frag: function(element, string) {

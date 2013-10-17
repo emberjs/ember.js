@@ -33,7 +33,7 @@ function equalHTML(fragment, html) {
   var div = document.createElement("div");
   div.appendChild(fragment.cloneNode(true));
 
-  equal(div.innerHTML, html);
+  QUnit.push(div.innerHTML === html, div.innerHTML, html);
 }
 
 test("Simple content produces a document fragment", function() {
@@ -389,6 +389,26 @@ test("Attributes containing a helper is treated like a block", function() {
 });
 
 test("It is possible to trigger a re-render of an attribute from a child resolution", function() {
+  var callback;
+
+  registerHelper('RESOLVE_IN_ATTR', function(path, options) {
+    callback = function() {
+      options.rerender();
+    };
+
+    return this[path];
+  });
+
+  var context = { url: "example.com" };
+  var fragment = compilesTo('<a href="http://{{url}}/index.html">linky</a>', '<a href="http://example.com/index.html">linky</a>', context);
+
+  context.url = "www.example.com";
+  callback();
+
+  equalHTML(fragment, '<a href="http://www.example.com/index.html">linky</a>');
+});
+
+test("A child resolution can pass contextual information to the parent", function() {
   var callback;
 
   registerHelper('RESOLVE_IN_ATTR', function(path, options) {
