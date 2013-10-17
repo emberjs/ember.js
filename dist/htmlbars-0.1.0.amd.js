@@ -590,7 +590,7 @@ define("htmlbars/compiler/pass2",
       this.output.push('dom.stream(function(stream) {');
       var invokeRererender = call('stream.next', call('child' + child, 'context', hash(['rerender:rerender'])));
       var rerender = 'function rerender() { ' + invokeRererender + '}';
-      var options = hash(['rerender:' + rerender, 'element:el', 'attrName:' + string(name)]);
+      var options = hash(['rerender:' + rerender]);
       pushStack(this.stack, call('child' + child, 'context', options));
 
       this.push(call('dom.setAttribute', 'el', string(name), popStack(this.stack), hash(['stream:stream', 'context:context'])));
