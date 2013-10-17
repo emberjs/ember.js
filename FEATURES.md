@@ -72,7 +72,7 @@ Ember.FEATURES['link-to'] = true;
   Added in [#3224](https://github.com/emberjs/ember.js/pull/3224)
 * `ember-runtime-sortBy`
 
-  Adds `sortBy` to `Ember.Enumberable`. Allows sorting an enumerable by one or more
+  Adds `sortBy` to `Ember.Enumerable`. Allows sorting an enumerable by one or more
   properties.
 
   Added in [#3446](https://github.com/emberjs/ember.js/pull/3446)
