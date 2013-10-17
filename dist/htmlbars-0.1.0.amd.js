@@ -92,7 +92,7 @@ define("htmlbars/compiler",
     }
 
     __exports__.compile = compile;function compileSpec(string, options) {
-      var ast = preprocess(string);
+      var ast = preprocess(string, options);
       return compileAST(ast, options);
     }
 
@@ -731,10 +731,10 @@ define("htmlbars/html-parser/process-token",
       @token {Token} token the current token being built
       @child {Token|Mustache|Block} child the new token to insert into the AST
     */
-    function processToken(state, stack, token, child) {
+    function processToken(state, stack, token, child, macros) {
       // EOF
       if (child === undefined) { return; }
-      return handlers[child.type](child, currentElement(stack), stack, token, state);
+      return handlers[child.type](child, currentElement(stack), stack, token, state, macros);
     }
 
     __exports__.processToken = processToken;function currentElement(stack) {
@@ -790,12 +790,12 @@ define("htmlbars/html-parser/process-token",
         }
       },
 
-      EndTag: function(tag, current, stack) {
+      EndTag: function(tag, current, stack, token, state, macros) {
         if (current.tag !== tag.tagName) {
           throw new Error("Closing tag " + tag.tagName + " did not match last open tag " + current.tag);
         }
 
-        var value = config.processHTMLMacros(current);
+        var value = config.processHTMLMacros(current, macros);
         stack.pop();
 
         if (value === 'veto') { return; }
@@ -829,8 +829,10 @@ define("htmlbars/macros",
       delete htmlMacros[name];
     }
 
-    __exports__.removeMacro = removeMacro;function processHTMLMacros(element) {
+    __exports__.removeMacro = removeMacro;function processHTMLMacros(element, macros) {
       var mutated, newElement;
+
+      macros = macros || htmlMacros;
 
       for (var prop in htmlMacros) {
         var macro = htmlMacros[prop];
@@ -878,15 +880,16 @@ define("htmlbars/parser",
       }
     };
 
-    function preprocess(html) {
+    function preprocess(html, options) {
       var ast = Handlebars.parse(html);
-      return new HTMLProcessor().accept(ast);
+      return new HTMLProcessor(options || {}).accept(ast);
     }
 
-    __exports__.preprocess = preprocess;function HTMLProcessor() {
+    __exports__.preprocess = preprocess;function HTMLProcessor(options) {
       // document fragment
       this.elementStack = [new HTMLElement()];
       this.tokenizer = new Tokenizer('');
+      this.macros = options.macros;
     }
 
     // TODO: ES3 polyfill
@@ -944,7 +947,7 @@ define("htmlbars/parser",
 
     function process(compiler, token) {
       var tokenizer = compiler.tokenizer;
-      processToken(tokenizer.state, compiler.elementStack, tokenizer.token, token);
+      processToken(tokenizer.state, compiler.elementStack, tokenizer.token, token, compiler.macros);
     }
 
     function currentElement(processor) {

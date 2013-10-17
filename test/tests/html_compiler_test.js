@@ -3,7 +3,6 @@ import { hydrate } from "htmlbars/runtime";
 
 function compile(string) {
   var spec = compileSpec(string);
-  console.log(helpers);
   return hydrate(spec, { helpers: helpers });
 }
 
