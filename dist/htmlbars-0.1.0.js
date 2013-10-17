@@ -580,7 +580,7 @@ define("htmlbars/compiler/pass2",
       }, this);
 
       this.push("var element0, el");
-      this.push("var frag = element0 = document.createDocumentFragment()");
+      this.push("var frag = element0 = dom.createDocumentFragment()");
     };
 
     compiler2.postamble = function() {
@@ -636,7 +636,7 @@ define("htmlbars/compiler/pass2",
 
     compiler2.openElement = function(tagName) {
       var elRef = pushElement(this);
-      this.push("var " + elRef + " = el = " + call('document.createElement', string(tagName)));
+      this.push("var " + elRef + " = el = " + call('dom.createElement', string(tagName)));
     };
 
     compiler2.attribute = function(name, child) {
@@ -1026,11 +1026,13 @@ define("htmlbars/parser",
   });
 
 define("htmlbars/runtime", 
-  ["exports"],
-  function(__exports__) {
+  ["htmlbars/utils","exports"],
+  function(__dependency1__, __exports__) {
     "use strict";
-    function domHelpers(helpers) {
-      return {
+    var merge = __dependency1__.merge;
+
+    function domHelpers(helpers, extensions) {
+      var base = {
         // These methods are runtime for now. If they are too expensive,
         // I may inline them at compile-time.
         appendText: function(element, value) {
@@ -1068,7 +1070,14 @@ define("htmlbars/runtime",
         resolveContents: function(context, parts, element, escaped) {
           var helper = helpers.RESOLVE;
           if (helper) {
-            return helper.apply(context, [parts, { element: element, escaped: escaped }]);
+            var options = {
+              element: element,
+              escaped: escaped,
+              append: this.appendCallback(element),
+              dom: this
+            };
+
+            return helper.apply(context, [parts, options]);
           }
 
           return parts.reduce(function(current, part) {
@@ -1095,6 +1104,8 @@ define("htmlbars/runtime",
         resolveInAttr: function(context, parts, options) {
           var helper = helpers.RESOLVE_IN_ATTR;
 
+          options.dom = this;
+
           if (helper) {
             return helper.apply(context, [parts, options]);
           }
@@ -1107,19 +1118,42 @@ define("htmlbars/runtime",
         frag: function(element, string) {
           /*global DocumentFragment*/
           if (element instanceof DocumentFragment) {
-            element = document.createElement('div');
+            element = this.createElement('div');
           }
 
-          var range = document.createRange();
+          return this.createContextualFragment(element, string);
+        },
+
+        // overridable
+        appendCallback: function(element) {
+          return function(node) { element.appendChild(node); };
+        },
+
+        createElement: function() {
+          return document.createElement.apply(document, arguments);
+        },
+
+        createDocumentFragment: function() {
+          return document.createDocumentFragment.apply(document, arguments);
+        },
+
+        createContextualFragment: function(element, string) {
+          var range = this.createRange();
           range.setStart(element, 0);
           range.collapse(false);
           return range.createContextualFragment(string);
+        },
+
+        createRange: function() {
+          return document.createRange();
         }
       };
+
+      return extensions ? merge(extensions, base) : base;
     }
 
     __exports__.domHelpers = domHelpers;function hydrate(spec, options) {
-      return spec(domHelpers(options.helpers || {}));
+      return spec(domHelpers(options.helpers || {}, options.extensions || {}));
     }
 
     __exports__.hydrate = hydrate;
@@ -1134,6 +1168,7 @@ define("htmlbars/utils",
         if (options.hasOwnProperty(prop)) { continue; }
         options[prop] = defaults[prop];
       }
+      return options;
     }
 
     __exports__.merge = merge;
