@@ -49,10 +49,10 @@ Ember.toString = function() { return "Ember"; };
 /**
   @property VERSION
   @type String
-  @default '1.0.0'
+  @default 'VERSION_STRING_PLACEHOLDER'
   @final
 */
-Ember.VERSION = '1.0.0';
+Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
 
 /**
   Standard environmental variables. You can define these in a global `ENV`
