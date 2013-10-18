@@ -18,7 +18,8 @@ var e_get = Ember.get,
     // Here we explicitly don't allow `@each.foo`; it would require some special
     // testing, but there's no particular reason why it should be disallowed.
     eachPropertyPattern = /^(.*)\.@each\.(.*)/,
-    doubleEachPropertyPattern = /(.*\.@each){2,}/;
+    doubleEachPropertyPattern = /(.*\.@each){2,}/,
+    arrayBracketPattern = /\.\[\]$/;
 
 function get(obj, key) {
   if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
@@ -368,6 +369,15 @@ function reset(cp, propertyName) {
   }
 }
 
+function partiallyRecomputeFor(obj, dependentKey) {
+  if (arrayBracketPattern.test(dependentKey)) {
+    return false;
+  }
+
+  var value = get(obj, dependentKey);
+  return Ember.Array.detect(value);
+}
+
 function ReduceComputedPropertyInstanceMeta(context, propertyName, initialValue) {
   this.context = context;
   this.propertyName = propertyName;
@@ -447,6 +457,10 @@ function ReduceComputedProperty(options) {
     reset.call(this, cp, propertyName);
 
     forEach(cp._dependentKeys, function (dependentKey) {
+      if (Ember.FEATURES.isEnabled('reduceComputed-non-array-dependencies')) {
+        if (!partiallyRecomputeFor(this, dependentKey)) { return; }
+      }
+
       var dependentArray = get(this, dependentKey),
           previousDependentArray = meta.dependentArrays[dependentKey];
 
@@ -473,6 +487,10 @@ function ReduceComputedProperty(options) {
     }, this);
 
     forEach(cp._dependentKeys, function(dependentKey) {
+      if (Ember.FEATURES.isEnabled('reduceComputed-non-array-dependencies')) {
+        if (!partiallyRecomputeFor(this, dependentKey)) { return; }
+      }
+
       var dependentArray = get(this, dependentKey);
       if (dependentArray) {
         addItems.call(this, dependentArray, callbacks, cp, propertyName, meta);
@@ -721,6 +739,34 @@ ReduceComputedProperty.prototype.property = function () {
       return reverse(get(this, 'name'));
     }.property('name')
   })
+  ```
+
+  Dependent keys whose values are not arrays are treated as regular
+  dependencies: when they change, the computed property is completely
+  recalculated.  It is sometimes useful to have dependent arrays with similar
+  semantics.  Dependent keys which end in `.[]` do not use "one at a time"
+  semantics.  When an item is added or removed from such a dependency, the
+  computed property is completely recomputed.
+
+  Example
+
+  ```javascript
+  Ember.Object.extend({
+    // When `string` is changed, `computed` is completely recomputed.
+    string: 'a string',
+
+    // When an item is added to `array`, `addedItem` is called.
+    array: [],
+
+    // When an item is added to `anotherArray`, `computed` is completely
+    // recomputed.
+    anotherArray: [],
+
+    computed: Ember.reduceComputed('string', 'array', 'anotherArray.[]', {
+      addedItem: addedItemCallback,
+      removedItem: removedItemCallback
+    })
+  });
   ```
 
   @method reduceComputed
