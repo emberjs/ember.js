@@ -25,9 +25,9 @@ module("System:run_loop() - chained binding", {
       input: 'MyApp.second',
       output: 'MyApp.second',
 
-      inputDidChange: Ember.observer(function() {
+      inputDidChange: Ember.observer("input", function() {
         this.set("output", this.get("input")) ;
-      }, "input")
+      })
 
     }) ;
 

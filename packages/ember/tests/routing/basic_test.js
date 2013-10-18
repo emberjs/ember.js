@@ -111,9 +111,9 @@ test("The Homepage", function() {
   var currentPath;
 
   App.ApplicationController = Ember.Controller.extend({
-    currentPathDidChange: Ember.observer(function() {
+    currentPathDidChange: Ember.observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
-    }, 'currentPath')
+    })
   });
 
   bootApplication();
@@ -140,15 +140,15 @@ test("The Home page and the Camelot page with multiple Router.map calls", functi
   var currentPath;
 
   App.ApplicationController = Ember.Controller.extend({
-    currentPathDidChange: Ember.observer(function() {
+    currentPathDidChange: Ember.observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
-    }, 'currentPath')
+    })
   });
 
   App.CamelotController = Ember.Controller.extend({
-    currentPathDidChange: Ember.observer(function() {
+    currentPathDidChange: Ember.observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
-    }, 'currentPath')
+    })
   });
 
   bootApplication();
@@ -852,9 +852,9 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
   var currentPath;
 
   App.ApplicationController = Ember.Controller.extend({
-    currentPathDidChange: Ember.observer(function() {
+    currentPathDidChange: Ember.observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
-    }, 'currentPath')
+    })
   });
 
   var menuItem;
@@ -2171,9 +2171,9 @@ test("ApplicationRoute with model does not proxy the currentPath", function() {
   });
 
   App.ApplicationController = Ember.ObjectController.extend({
-    currentPathDidChange: Ember.observer(function() {
+    currentPathDidChange: Ember.observer('currentPath', function() {
       currentPath = get(this, 'currentPath');
-    }, 'currentPath')
+    })
   });
 
   bootApplication();

@@ -14,7 +14,7 @@ var testObserver = function(setup, teardown, key) {
 test("isWatching is true for regular local observers", function() {
   testObserver(function(obj, key, fn) {
     Ember.Mixin.create({
-      didChange: Ember.observer(fn, key)
+      didChange: Ember.observer(key, fn)
     }).apply(obj);
   }, function(obj, key, fn) {
     Ember.removeObserver(obj, key, obj, fn);

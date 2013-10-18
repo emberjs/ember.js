@@ -660,13 +660,13 @@ module("Observable objects & object properties ", {
         this.abnormal = 'changedValueObserved';
       },
 
-      testObserver: Ember.observer(function() {
+      testObserver: Ember.observer('normal', function() {
         this.abnormal = 'removedObserver';
-      }, 'normal'),
+      }),
 
-      testArrayObserver: Ember.observer(function() {
+      testArrayObserver: Ember.observer('normalArray.[]', function() {
         this.abnormal = 'notifiedObserver';
-      }, 'normalArray.[]')
+      })
 
     });
   }
