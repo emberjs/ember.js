@@ -58,6 +58,11 @@ function DependentArraysObserver(callbacks, cp, instanceMeta, context, propertyN
   // this to lazily recompute indexes for item property observers.
   this.trackedArraysByGuid = {};
 
+  // We suspend observers to ignore replacements from `reset` when totally
+  // recomputing.  Unfortunately we cannot properly suspend the observers
+  // because we only have the key; instead we make the observers no-ops
+  this.suspended = false;
+
   // This is used to coalesce item changes from property observers.
   this.changedItems = {};
 }
@@ -109,6 +114,13 @@ DependentArraysObserver.prototype = {
       willChange: 'dependentArrayWillChange',
       didChange: 'dependentArrayDidChange'
     });
+  },
+
+  suspendArrayObservers: function (callback, binding) {
+    var oldSuspended = this.suspended;
+    this.suspended = true;
+    callback.call(binding);
+    this.suspended = oldSuspended;
   },
 
   setupPropertyObservers: function (dependentKey, itemPropertyKeys) {
@@ -216,6 +228,8 @@ DependentArraysObserver.prototype = {
   },
 
   dependentArrayWillChange: function (dependentArray, index, removedCount, addedCount) {
+    if (this.suspended) { return; }
+
     var removedItem = this.callbacks.removedItem,
         changeMeta,
         guid = guidFor(dependentArray),
@@ -252,6 +266,8 @@ DependentArraysObserver.prototype = {
   },
 
   dependentArrayDidChange: function (dependentArray, index, removedCount, addedCount) {
+    if (this.suspended) { return; }
+
     var addedItem = this.callbacks.addedItem,
         guid = guidFor(dependentArray),
         dependentKey = this.dependentKeysByGuid[guid],
@@ -451,30 +467,32 @@ function ReduceComputedProperty(options) {
 
     reset.call(this, cp, propertyName);
 
-    forEach(cp._dependentKeys, function (dependentKey) {
-      var dependentArray = get(this, dependentKey),
-          previousDependentArray = meta.dependentArrays[dependentKey];
+    meta.dependentArraysObserver.suspendArrayObservers(function () {
+      forEach(cp._dependentKeys, function (dependentKey) {
+        var dependentArray = get(this, dependentKey),
+            previousDependentArray = meta.dependentArrays[dependentKey];
 
-      if (dependentArray === previousDependentArray) {
-        // The array may be the same, but our item property keys may have
-        // changed, so we set them up again.  We can't easily tell if they've
-        // changed: the array may be the same object, but with different
-        // contents.
-        if (cp._previousItemPropertyKeys[dependentKey]) {
-          delete cp._previousItemPropertyKeys[dependentKey];
-          meta.dependentArraysObserver.setupPropertyObservers(dependentKey, cp._itemPropertyKeys[dependentKey]);
-        }
-      } else {
-        meta.dependentArrays[dependentKey] = dependentArray;
+        if (dependentArray === previousDependentArray) {
+          // The array may be the same, but our item property keys may have
+          // changed, so we set them up again.  We can't easily tell if they've
+          // changed: the array may be the same object, but with different
+          // contents.
+          if (cp._previousItemPropertyKeys[dependentKey]) {
+            delete cp._previousItemPropertyKeys[dependentKey];
+            meta.dependentArraysObserver.setupPropertyObservers(dependentKey, cp._itemPropertyKeys[dependentKey]);
+          }
+        } else {
+          meta.dependentArrays[dependentKey] = dependentArray;
 
-        if (previousDependentArray) {
-          meta.dependentArraysObserver.teardownObservers(previousDependentArray, dependentKey);
-        }
+          if (previousDependentArray) {
+            meta.dependentArraysObserver.teardownObservers(previousDependentArray, dependentKey);
+          }
 
-        if (dependentArray) {
-          meta.dependentArraysObserver.setupObservers(dependentArray, dependentKey);
+          if (dependentArray) {
+            meta.dependentArraysObserver.setupObservers(dependentArray, dependentKey);
+          }
         }
-      }
+      }, this);
     }, this);
 
     forEach(cp._dependentKeys, function(dependentKey) {
