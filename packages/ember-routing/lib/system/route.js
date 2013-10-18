@@ -10,6 +10,45 @@ var get = Ember.get, set = Ember.set,
     a_forEach = Ember.EnumerableUtils.forEach,
     a_replace = Ember.EnumerableUtils.replace;
 
+var defaultActionHandlers = {
+
+  willResolveModel: function(transition, originRoute) {
+    this.router._scheduleLoadingEvent(transition, originRoute);
+  },
+
+  error: function(error, transition, originRoute) {
+
+    if (this !== originRoute) {
+      var childErrorRouteName = findChildRouteName(this, 'error');
+      if (childErrorRouteName) {
+        this.intermediateTransitionTo(childErrorRouteName, error);
+        return;
+      }
+    }
+
+    if (this.routeName === 'application') {
+      Ember.Logger.assert(false, 'Error while loading route: ' + Ember.inspect(error));
+    }
+
+    return true;
+  },
+
+  loading: function(transition, originRoute) {
+    if (this === originRoute) {
+      // This is the route with the error; just bubble
+      // so that the parent route can look up its child loading route.
+      return true;
+    }
+
+    var childLoadingRouteName = findChildRouteName(this, 'loading');
+    if (childLoadingRouteName) {
+      this.intermediateTransitionTo(childLoadingRouteName);
+    } else if (transition.pivotHandler !== this) {
+      return true;
+    }
+  }
+};
+
 /**
   The `Ember.Route` class is used to define individual routes. Refer to
   the [routing guide](http://emberjs.com/guides/routing/) for documentation.
@@ -19,6 +58,7 @@ var get = Ember.get, set = Ember.set,
   @extends Ember.Object
 */
 Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
+
   /**
     @private
 
@@ -253,13 +293,15 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   */
   actions: null,
 
+  _actions: defaultActionHandlers,
+
   /**
     @deprecated
 
     Please use `actions` instead.
     @method events
   */
-  events: null,
+  events: defaultActionHandlers,
 
   mergedProperties: ['events'],
 
@@ -336,6 +378,26 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   transitionTo: function(name, context) {
     var router = this.router;
     return router.transitionTo.apply(router, arguments);
+  },
+
+  /**
+    Perform a synchronous transition into another route with out attempting
+    to resolve promises, update the URL, or abort any currently active
+    asynchronous transitions (i.e. regular transitions caused by
+    `transitionTo` or URL changes).
+
+    This method is handy for performing intermediate transitions on the
+    way to a final destination route, and is called internally by the
+    default implementations of the `error` and `loading` handlers.
+
+    @method intermediateTransitionTo
+    @param {String} name the name of the route
+    @param {...Object} models the model(s) to be used while transitioning
+    to the route.
+   */
+  intermediateTransitionTo: function() {
+    var router = this.router;
+    router.intermediateTransitionTo.apply(router, arguments);
   },
 
   /**
@@ -1208,3 +1270,16 @@ function generateTopLevelTeardown(view) {
 function generateOutletTeardown(parentView, outlet) {
   return function() { parentView.disconnectOutlet(outlet); };
 }
+
+function findChildRouteName(route, name) {
+  var container = route.container;
+
+  var childName = route.routeName === 'application' ? name : route.routeName + '.' + name;
+
+  var hasChild = route.router.hasRoute(childName) &&
+                 (container.has('template:' + childName) ||
+                  container.has('route:' + childName));
+
+  return hasChild && childName;
+}
+
