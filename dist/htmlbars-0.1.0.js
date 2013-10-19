@@ -640,14 +640,12 @@ define("htmlbars/compiler/pass2",
     };
 
     compiler2.attribute = function(name, child) {
-      this.output.push('dom.stream(function(stream) {');
       var invokeSetAttribute = call(['el', 'setAttribute'], string(name), 'value');
       var setAttribute = 'function setAttribute(value) { ' + invokeSetAttribute + '}';
       var options = hash(['setAttribute:' + setAttribute]);
       pushStack(this.stack, call('child' + child, 'context', options));
 
-      this.push(call('dom.setAttribute', 'el', string(name), popStack(this.stack), hash(['stream:stream', 'context:context'])));
-      this.push('})');
+      this.push(call('dom.setAttribute', 'el', string(name), popStack(this.stack), hash(['context:context'])));
     };
 
     compiler2.closeElement = function() {
@@ -1163,45 +1161,20 @@ define("htmlbars/runtime",
         },
 
         setAttribute: function(element, name, value, options) {
-          this.setAttr(element, name, options.stream);
+          var callback;
 
-          options.stream.next(value);
+          this.setAttr(element, name, subscribe);
+          callback(value);
+
+          function subscribe(listener) {
+            callback = listener;
+          }
         },
 
-        setAttr: function(element, name, stream) {
-          var subscription = stream.subscribe(function(value) {
+        setAttr: function(element, name, subscribe) {
+          subscribe(function(value) {
             element.setAttribute(name, value);
           });
-
-          subscription.connect();
-        },
-
-        stream: function(callback) {
-          var subscriptions = [], lastValue, hasValue;
-
-          var stream = {
-            subscribe: function(next) {
-              subscriptions.push(next);
-              if (hasValue) next(lastValue);
-              return { connect: function() {} };
-            },
-
-            next: function(value) {
-              lastValue = value;
-              hasValue = true;
-              notify();
-            }
-          };
-
-          function notify() {
-            subscriptions.forEach(function(subscription) {
-              subscription(lastValue);
-            });
-          }
-
-          callback(stream);
-
-          return stream;
         },
 
         frag: function(element, string) {
