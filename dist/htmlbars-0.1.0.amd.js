@@ -1051,7 +1051,7 @@ define("htmlbars/runtime",
           var helper = helpers[name], position = buffer.length;
           args.push(options);
 
-          var stream = helper.apply(context, args);
+          var stream = this.throttle(helper.apply(context, args));
 
           buffer.push('');
 
@@ -1155,6 +1155,10 @@ define("htmlbars/runtime",
 
         createRange: function() {
           return document.createRange();
+        },
+
+        throttle: function(stream) {
+          return stream;
         }
       };
 
