@@ -1057,9 +1057,17 @@ define("htmlbars/runtime",
 
           buffer.push('');
 
+          // skip(stream, 1)
+          var skippedFirst = false;
+
           var subscription = stream.subscribe(function(next) {
             buffer[position] = next;
-            options.setAttribute(buffer.join(''));
+
+            if (skippedFirst) {
+              options.setAttribute(buffer.join(''));
+            } else {
+              skippedFirst = true;
+            }
           });
 
           subscription.connect();
@@ -1076,9 +1084,17 @@ define("htmlbars/runtime",
 
             var stream = helper.call(context, parts, options);
 
+            // skip(stream, 1)
+            var skippedFirst = false;
+
             var subscription = stream.subscribe(function(next) {
               buffer[position] = next;
-              options.setAttribute(buffer.join(''));
+
+              if (skippedFirst) {
+                options.setAttribute(buffer.join(''));
+              } else {
+                skippedFirst = true;
+              }
             });
 
             subscription.connect();
