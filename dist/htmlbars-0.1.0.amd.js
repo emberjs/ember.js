@@ -229,13 +229,13 @@ define("htmlbars/compiler/helpers",
 
       for (i=0; i<hashSize; i++) {
         keyName = popStack(stack);
-        hashPairs.push(keyName + ':' + popStack(stack));
-        hashTypes.push(keyName + ':' + popStack(stack));
+        hashPairs.unshift(keyName + ':' + popStack(stack));
+        hashTypes.unshift(keyName + ':' + popStack(stack));
       }
 
       for (i=0; i<size; i++) {
-        args.push(popStack(stack));
-        types.push(popStack(stack));
+        args.unshift(popStack(stack));
+        types.unshift(popStack(stack));
       }
 
       var programId = popStack(stack);
@@ -1057,10 +1057,12 @@ define("htmlbars/runtime",
 
           buffer.push('');
 
-          stream.subscribe(function(next) {
+          var subscription = stream.subscribe(function(next) {
             buffer[position] = next;
             options.setAttribute(buffer.join(''));
           });
+
+          subscription.connect();
         },
 
         resolveInAttr: function(context, parts, buffer, options) {
@@ -1074,10 +1076,12 @@ define("htmlbars/runtime",
 
             var stream = helper.call(context, parts, options);
 
-            stream.subscribe(function(next) {
+            var subscription = stream.subscribe(function(next) {
               buffer[position] = next;
               options.setAttribute(buffer.join(''));
             });
+
+            subscription.connect();
 
             return;
           }
@@ -1090,15 +1094,17 @@ define("htmlbars/runtime",
         },
 
         setAttribute: function(element, name, value, options) {
-          this.setAttr(element, name, options.stream.subscribe);
+          this.setAttr(element, name, options.stream);
 
           options.stream.next(value);
         },
 
-        setAttr: function(element, name, subscribe) {
-          subscribe(function(value) {
+        setAttr: function(element, name, stream) {
+          var subscription = stream.subscribe(function(value) {
             element.setAttribute(name, value);
           });
+
+          subscription.connect();
         },
 
         stream: function(callback) {
@@ -1108,6 +1114,7 @@ define("htmlbars/runtime",
             subscribe: function(next) {
               subscriptions.push(next);
               if (hasValue) next(lastValue);
+              return { connect: function() {} };
             },
 
             next: function(value) {

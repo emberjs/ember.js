@@ -300,6 +300,7 @@ function streamValue(value) {
   return {
     subscribe: function(callback) {
       callback(value);
+      return { connect: function() {} };
     }
   };
 }
@@ -311,6 +312,7 @@ function boundValue(valueGetter, binding) {
     subscribe: function(next) {
       subscription = next;
       callback();
+      return { connect: function() {} };
     }
   };
 
