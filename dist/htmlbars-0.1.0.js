@@ -165,7 +165,7 @@ define("htmlbars/compiler/attr",
     var hash = __dependency5__.hash;
     var quotedArray = __dependency5__.quotedArray;
 
-    function AttrCompiler() {};
+    function AttrCompiler() {}
 
     var attrCompiler = AttrCompiler.prototype;
 
@@ -178,49 +178,49 @@ define("htmlbars/compiler/attr",
       processOpcodes(this, opcodes);
       this.postamble();
 
+      /*jshint evil:true*/
       return new Function('context', 'options', this.output.join("\n"));
     };
 
     attrCompiler.preamble = function() {
-      this.push("var buffer = ''");
+      this.push("var buffer = []");
     };
 
     attrCompiler.postamble = function() {
-      this.push("return buffer");
+      this.push("return buffer.join('')");
     };
 
     attrCompiler.content = function(str) {
-      this.push("buffer += " + string(str));
+      this.push("buffer.push(" + string(str) +")");
     };
 
     attrCompiler.dynamic = function(parts, escaped) {
-      pushStack(this.stack, helper('resolveInAttr', 'context', quotedArray(parts), 'options'))
+      this.push(helper('resolveInAttr', 'context', quotedArray(parts), 'buffer', 'options'));
     };
 
     attrCompiler.ambiguous = function(string, escaped) {
-      pushStack(this.stack, helper('ambiguousAttr', 'context', quotedArray([string]), 'options'));
+      this.push(helper('ambiguousAttr', 'context', quotedArray([string]), 'buffer', 'options'));
     };
 
     attrCompiler.helper = function(name, size, escaped) {
       var prepared = prepareHelper(this.stack, size);
+      prepared.options.push('setAttribute:options.setAttribute');
 
-      prepared.options.push('rerender:options.rerender');
-
-      pushStack(this.stack, helper('helperAttr', 'context', string(name), prepared.args, hash(prepared.options)));
+      this.push(helper('helperAttr', 'context', string(name), prepared.args, 'buffer', hash(prepared.options)));
     };
 
     attrCompiler.appendText = function() {
-      this.push("buffer += " + popStack(this.stack));
-    }
+      // noop
+    };
 
     attrCompiler.program = function() {
       pushStack(this.stack, null);
-    }
+    };
 
     attrCompiler.id = function(parts) {
       pushStack(this.stack, string('id'));
       pushStack(this.stack, string(parts[0]));
-    }
+    };
 
     attrCompiler.literal = function(literal) {
       pushStack(this.stack, string(typeof literal));
@@ -228,7 +228,7 @@ define("htmlbars/compiler/attr",
     };
 
     attrCompiler.string = function(str) {
-      pushStack(this.stack, string(typeof literal));
+      pushStack(this.stack, string('string'));
       pushStack(this.stack, string(str));
     };
 
@@ -286,7 +286,7 @@ define("htmlbars/compiler/helpers",
         hashTypes.push(keyName + ':' + popStack(stack));
       }
 
-      for (var i=0; i<size; i++) {
+      for (i=0; i<size; i++) {
         args.push(popStack(stack));
         types.push(popStack(stack));
       }
@@ -641,9 +641,9 @@ define("htmlbars/compiler/pass2",
 
     compiler2.attribute = function(name, child) {
       this.output.push('dom.stream(function(stream) {');
-      var invokeRererender = call('stream.next', call('child' + child, 'context', hash(['rerender:rerender'])));
-      var rerender = 'function rerender() { ' + invokeRererender + '}';
-      var options = hash(['rerender:' + rerender]);
+      var invokeSetAttribute = call(['el', 'setAttribute'], string(name), 'value');
+      var setAttribute = 'function setAttribute(value) { ' + invokeSetAttribute + '}';
+      var options = hash(['setAttribute:' + setAttribute]);
       pushStack(this.stack, call('child' + child, 'context', options));
 
       this.push(call('dom.setAttribute', 'el', string(name), popStack(this.stack), hash(['stream:stream', 'context:context'])));
@@ -736,7 +736,11 @@ define("htmlbars/compiler/utils",
       });
     }
 
-    __exports__.processOpcodes = processOpcodes;function compileAST(ast, options) {
+    __exports__.processOpcodes = processOpcodes;function stream(string) {
+      return "dom.stream(function(stream) { return " + string + " })";
+    }
+
+    __exports__.stream = stream;function compileAST(ast, options) {
       // circular dependency hack
       var Compiler1 = requireModule('htmlbars/compiler/pass1').Compiler1;
       var Compiler2 = requireModule('htmlbars/compiler/pass2').Compiler2;
@@ -1087,34 +1091,55 @@ define("htmlbars/runtime",
           }, context);
         },
 
-        ambiguousAttr: function(context, string, options) {
+        ambiguousAttr: function(context, string, stream, buffer, options) {
           var helper;
 
           if (helper = helpers[string]) {
             throw new Error("helperAttr is not implemented yet");
           } else {
-            return this.resolveInAttr(context, [string], options);
+            return this.resolveInAttr(context, [string], stream, buffer, options);
           }
         },
 
-        helperAttr: function(context, name, args, options) {
-          var helper = helpers[name];
+        helperAttr: function(context, name, args, buffer, options) {
+          options.dom = this;
+          var helper = helpers[name], position = buffer.length;
           args.push(options);
-          return helper.apply(context, args);
+
+          var stream = helper.apply(context, args);
+
+          buffer.push('');
+
+          stream.subscribe(function(next) {
+            buffer[position] = next;
+            options.setAttribute(buffer.join(''));
+          });
         },
 
-        resolveInAttr: function(context, parts, options) {
+        resolveInAttr: function(context, parts, buffer, options) {
           var helper = helpers.RESOLVE_IN_ATTR;
 
           options.dom = this;
 
           if (helper) {
-            return helper.apply(context, [parts, options]);
+            var position = buffer.length;
+            buffer.push('');
+
+            var stream = helper.call(context, parts, options);
+
+            stream.subscribe(function(next) {
+              buffer[position] = next;
+              options.setAttribute(buffer.join(''));
+            });
+
+            return;
           }
 
-          return parts.reduce(function(current, part) {
+          var out = parts.reduce(function(current, part) {
             return current[part];
           }, context);
+
+          buffer.push(out);
         },
 
         setAttribute: function(element, name, value, options) {
@@ -1152,6 +1177,8 @@ define("htmlbars/runtime",
           }
 
           callback(stream);
+
+          return stream;
         },
 
         frag: function(element, string) {

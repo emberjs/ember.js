@@ -296,9 +296,34 @@ test("Attributes can use computed paths", function() {
   compilesTo('<a href="{{post.url}}">linky</a>', '<a href="linky.html">linky</a>', { post: { url: 'linky.html' }});
 });
 
+function streamValue(value) {
+  return {
+    subscribe: function(callback) {
+      callback(value);
+    }
+  };
+}
+
+function boundValue(valueGetter, binding) {
+  var subscription;
+
+  var stream = {
+    subscribe: function(next) {
+      subscription = next;
+      callback();
+    }
+  };
+
+  return stream;
+
+  function callback() {
+    subscription(valueGetter.call(binding, callback));
+  }
+}
+
 test("It is possible to override the resolution mechanism for attributes", function() {
   registerHelper('RESOLVE_IN_ATTR', function(parts, options) {
-    return 'http://google.com/' + this[parts[0]];
+    return streamValue('http://google.com/' + this[parts[0]]);
   });
 
   compilesTo('<a href="{{url}}">linky</a>', '<a href="http://google.com/linky.html">linky</a>', { url: 'linky.html' });
@@ -308,11 +333,10 @@ test("It is possible to use RESOLVE_IN_ATTR for data binding", function() {
   var callback;
 
   registerHelper('RESOLVE_IN_ATTR', function(parts, options) {
-    callback = function() {
-      options.rerender();
-    };
-
-    return this[parts[0]];
+    return boundValue(function(c) {
+      callback = c;
+      return this[parts[0]];
+    }, this);
   });
 
   var object = { url: 'linky.html' };
@@ -331,15 +355,15 @@ test("It is possible to use RESOLVE_IN_ATTR for data binding", function() {
 
 test("Attributes can be populated with helpers that generate a string", function() {
   registerHelper('testing', function(path, options) {
-    return this[path];
+    return streamValue(this[path]);
   });
 
   compilesTo('<a href="{{testing url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html'});
 });
 
-test("A helper can return a value for the attribute", function() {
+test("A helper can return a stream for the attribute", function() {
   registerHelper('testing', function(path, options) {
-    return this[path];
+    return streamValue(this[path]);
   });
 
   compilesTo('<a href="{{testing url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html'});
@@ -347,7 +371,7 @@ test("A helper can return a value for the attribute", function() {
 
 test("Attribute helpers take a hash", function() {
   registerHelper('testing', function(options) {
-    return this[options.hash.path];
+    return streamValue(this[options.hash.path]);
   });
 
   compilesTo('<a href="{{testing path=url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html' });
@@ -357,11 +381,10 @@ test("Attribute helpers can use the hash for data binding", function() {
   var callback;
 
   registerHelper('testing', function(path, options) {
-    callback = function() {
-      options.rerender();
-    };
-
-    return this[path] ? options.hash.truthy : options.hash.falsy;
+    return boundValue(function(c) {
+      callback = c;
+      return this[path] ? options.hash.truthy : options.hash.falsy;
+    }, this);
   });
 
   var object = { on: true };
@@ -382,7 +405,7 @@ test("Attributes containing a path is treated like a block", function() {
 
 test("Attributes containing a helper is treated like a block", function() {
   registerHelper('testing', function(number, options) {
-    return "example.com";
+    return streamValue("example.com");
   });
 
   compilesTo('<a href="http://{{testing 123}}/index.html">linky</a>', '<a href="http://example.com/index.html">linky</a>', { person: { url: 'example.com' } });
@@ -392,11 +415,10 @@ test("It is possible to trigger a re-render of an attribute from a child resolut
   var callback;
 
   registerHelper('RESOLVE_IN_ATTR', function(path, options) {
-    callback = function() {
-      options.rerender();
-    };
-
-    return this[path];
+    return boundValue(function(c) {
+      callback = c;
+      return this[path];
+    }, this);
   });
 
   var context = { url: "example.com" };
@@ -412,11 +434,10 @@ test("A child resolution can pass contextual information to the parent", functio
   var callback;
 
   registerHelper('RESOLVE_IN_ATTR', function(path, options) {
-    callback = function() {
-      options.rerender();
-    };
-
-    return this[path];
+    return boundValue(function(c) {
+      callback = c;
+      return this[path];
+    }, this);
   });
 
   var context = { url: "example.com" };
@@ -429,26 +450,25 @@ test("A child resolution can pass contextual information to the parent", functio
 });
 
 test("Attribute runs can contain helpers", function() {
-  var callback;
+  var callbacks = [];
 
   registerHelper('RESOLVE_IN_ATTR', function(path, options) {
-    callback = function() {
-      options.rerender();
-    };
-
-    return this[path];
+    return boundValue(function(c) {
+      callbacks.push(c);
+      return this[path];
+    }, this);
   });
 
   registerHelper('testing', function(path, options) {
-    callback = function() {
-      options.rerender();
-    };
+    return boundValue(function(c) {
+      callbacks.push(c);
 
-    if (options.types[0] === 'id') {
-      return this[path] + '.html';
-    } else {
-      return path;
-    }
+      if (options.types[0] === 'id') {
+        return this[path] + '.html';
+      } else {
+        return path;
+      }
+    }, this);
   });
 
   var context = { url: "example.com", path: 'index' };
@@ -456,13 +476,13 @@ test("Attribute runs can contain helpers", function() {
 
   context.url = "www.example.com";
   context.path = "yep";
-  callback();
+  callbacks.forEach(function(callback) { callback(); });
 
   equalHTML(fragment, '<a href="http://www.example.com/yep.html/linky">linky</a>');
 
   context.url = "nope.example.com";
   context.path = "nope";
-  callback();
+  callbacks.forEach(function(callback) { callback(); });
 
   equalHTML(fragment, '<a href="http://nope.example.com/nope.html/linky">linky</a>');
 });
