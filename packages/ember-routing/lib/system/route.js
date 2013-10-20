@@ -845,6 +845,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     instance would be used.
 
     Example
+    
     ```js
     App.PostRoute = Ember.Route.extend({
       setupController: function(controller, model) {
