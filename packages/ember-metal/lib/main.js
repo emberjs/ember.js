@@ -10,6 +10,8 @@ require('ember-metal/instrumentation');
 require('ember-metal/map');
 require('ember-metal/platform');
 require('ember-metal/utils');
+require('ember-metal/error');
+require('ember-metal/logger');
 require('ember-metal/property_get');
 require('ember-metal/property_set');
 require('ember-metal/properties');

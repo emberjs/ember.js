@@ -25,18 +25,20 @@ DSL.prototype = {
 
     if (callback) {
       var dsl = new DSL(name);
+      dsl.route('loading');
+      dsl.route('error', { path: "/_unused_dummy_error_path/:error" });
       callback.call(dsl);
-      this.push(options.path, name, dsl.generate());
+      this.push(options.path, name, dsl.generate(), options.queryParams);
     } else {
-      this.push(options.path, name);
+      this.push(options.path, name, null, options.queryParams);
     }
   },
 
-  push: function(url, name, callback) {
+  push: function(url, name, callback, queryParams) {
     var parts = name.split('.');
     if (url === "" || url === "/" || parts[parts.length-1] === "index") { this.explicitIndex = true; }
 
-    this.matches.push([url, name, callback]);
+    this.matches.push([url, name, callback, queryParams]);
   },
 
   route: function(name, options) {
@@ -52,7 +54,7 @@ DSL.prototype = {
       name = this.parent + "." + name;
     }
 
-    this.push(options.path, name);
+    this.push(options.path, name, null, options.queryParams);
   },
 
   generate: function() {
@@ -65,7 +67,12 @@ DSL.prototype = {
     return function(match) {
       for (var i=0, l=dslMatches.length; i<l; i++) {
         var dslMatch = dslMatches[i];
-        match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
+        var matchObj = match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
+        if (Ember.FEATURES.isEnabled("query-params")) {
+          if(dslMatch[3]) {
+            matchObj.withQueryParams.apply(matchObj, dslMatch[3]);
+          }
+        }
       }
     };
   }

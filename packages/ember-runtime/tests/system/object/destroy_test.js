@@ -22,7 +22,7 @@ test("should raise an exception when modifying watched properties on a destroyed
   if (Ember.platform.hasAccessors) {
     var obj = Ember.Object.createWithMixins({
       foo: "bar",
-      fooDidChange: Ember.observer(function() { }, 'foo')
+      fooDidChange: Ember.observer('foo', function() { })
     });
 
     Ember.run(function() {
@@ -40,9 +40,9 @@ test("should raise an exception when modifying watched properties on a destroyed
 test("observers should not fire after an object has been destroyed", function() {
   var count = 0;
   var obj = Ember.Object.createWithMixins({
-    fooDidChange: Ember.observer(function() {
+    fooDidChange: Ember.observer('foo', function() {
       count++;
-    }, 'foo')
+    })
   });
 
   obj.set('foo', 'bar');
@@ -70,12 +70,12 @@ test("destroyed objects should not see each others changes during teardown but a
     willDestroy: function () {
       this.set('isAlive', false);
     },
-    bDidChange: Ember.observer(function () {
+    bDidChange: Ember.observer('objs.b.isAlive', function () {
       shouldNotChange++;
-    }, 'objs.b.isAlive'),
-    cDidChange: Ember.observer(function () {
+    }),
+    cDidChange: Ember.observer('objs.c.isAlive', function () {
       shouldNotChange++;
-    }, 'objs.c.isAlive')
+    })
   });
 
   var B = Ember.Object.extend({
@@ -84,12 +84,12 @@ test("destroyed objects should not see each others changes during teardown but a
     willDestroy: function () {
       this.set('isAlive', false);
     },
-    aDidChange: Ember.observer(function () {
+    aDidChange: Ember.observer('objs.a.isAlive', function () {
       shouldNotChange++;
-    }, 'objs.a.isAlive'),
-    cDidChange: Ember.observer(function () {
+    }),
+    cDidChange: Ember.observer('objs.c.isAlive', function () {
       shouldNotChange++;
-    }, 'objs.c.isAlive')
+    })
   });
 
   var C = Ember.Object.extend({
@@ -98,19 +98,19 @@ test("destroyed objects should not see each others changes during teardown but a
     willDestroy: function () {
       this.set('isAlive', false);
     },
-    aDidChange: Ember.observer(function () {
+    aDidChange: Ember.observer('objs.a.isAlive', function () {
       shouldNotChange++;
-    }, 'objs.a.isAlive'),
-    bDidChange: Ember.observer(function () {
+    }),
+    bDidChange: Ember.observer('objs.b.isAlive', function () {
       shouldNotChange++;
-    }, 'objs.b.isAlive')
+    })
   });
 
   var LongLivedObject =  Ember.Object.extend({
     objs: objs,
-    isAliveDidChange: Ember.observer(function () {
+    isAliveDidChange: Ember.observer('objs.a.isAlive', function () {
       shouldChange++;
-    }, 'objs.a.isAlive')
+    })
   });
 
   objs.a = new A();

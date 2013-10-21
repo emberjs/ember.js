@@ -1185,9 +1185,9 @@ module('Chaining array and reduced CPs', {
         array: Ember.A([{ v: 1 }, { v: 3}, { v: 2 }, { v: 1 }]),
         mapped: Ember.computed.mapBy('array', 'v'),
         max: Ember.computed.max('mapped'),
-        maxDidChange: Ember.observer(function(){
+        maxDidChange: Ember.observer('max', function(){
           userFnCalls++;
-        },'max')
+        })
       });
     });
   },

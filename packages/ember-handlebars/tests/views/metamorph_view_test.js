@@ -169,9 +169,9 @@ test("replacing a Metamorph should invalidate childView elements", function() {
         this.get('element');
       },
 
-      elementDidChange: Ember.observer(function() {
+      elementDidChange: Ember.observer('element', function() {
         elementOnDidChange = this.get('element');
-      }, 'element'),
+      }),
 
       didInsertElement: function() {
         elementOnDidInsert = this.get('element');

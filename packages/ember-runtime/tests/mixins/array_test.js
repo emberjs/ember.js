@@ -110,9 +110,9 @@ test('should notify observers of []', function() {
 
   obj = DummyArray.createWithMixins({
     _count: 0,
-    enumerablePropertyDidChange: Ember.observer(function() {
+    enumerablePropertyDidChange: Ember.observer('[]', function() {
       this._count++;
-    }, '[]')
+    })
   });
 
   equal(obj._count, 0, 'should not have invoked yet');
@@ -132,9 +132,9 @@ module('notify observers of length', {
   setup: function() {
     obj = DummyArray.createWithMixins({
       _after: 0,
-      lengthDidChange: Ember.observer(function() {
+      lengthDidChange: Ember.observer('length', function() {
         this._after++;
-      }, 'length')
+      })
 
     });
 
@@ -443,9 +443,9 @@ testBoth("observers that contain @each in the path should fire only once the fir
       set(this, 'resources', Ember.A());
     },
 
-    commonDidChange: Ember.observer(function() {
+    commonDidChange: Ember.observer('resources.@each.common', function() {
       count++;
-    }, 'resources.@each.common')
+    })
   });
 
   // Observer fires second time when new object is added

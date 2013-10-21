@@ -120,9 +120,9 @@ test('should notify observers of []', function() {
     nextObject: function() {}, // avoid exceptions
 
     _count: 0,
-    enumerablePropertyDidChange: Ember.observer(function() {
+    enumerablePropertyDidChange: Ember.observer('[]', function() {
       this._count++;
-    }, '[]')
+    })
   });
 
   equal(obj._count, 0, 'should not have invoked yet');
@@ -140,9 +140,9 @@ module('notify observers of length', {
   setup: function() {
     obj = DummyEnum.createWithMixins({
       _after: 0,
-      lengthDidChange: Ember.observer(function() {
+      lengthDidChange: Ember.observer('length', function() {
         this._after++;
-      }, 'length')
+      })
 
     });
 

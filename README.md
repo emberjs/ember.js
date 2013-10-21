@@ -122,8 +122,9 @@ everything you need to get started.
 
 NOTE: Due to the rename, these instructions may be in flux
 
-1. Run `bundle install` to fetch the necessary ruby gems.
-2. Run `rake dist` to build Ember.js. Two builds will be placed in the `dist/` directory.
+1. Ensure that [Bundler](http://bundler.io/) is installed.
+2. Run `bundle install` to fetch the necessary ruby gems.
+3. Run `rake dist` to build Ember.js. Two builds will be placed in the `dist/` directory.
   * `ember.js` and `ember.min.js` - unminified and minified builds of Ember.js
 
 If you are building under Linux, you will need a JavaScript runtime for
@@ -133,7 +134,7 @@ you may have luck with another of the runtimes supported by
 
 # Contribution
 
-[See](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md)
+[See `CONTRIBUTING.md`](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md)
 
 # How to Run Unit Tests
 
