@@ -17,12 +17,13 @@ var defaultActionHandlers = {
   },
 
   error: function(error, transition, originRoute) {
-
-    if (this !== originRoute) {
-      var childErrorRouteName = findChildRouteName(this, 'error');
-      if (childErrorRouteName) {
-        this.intermediateTransitionTo(childErrorRouteName, error);
-        return;
+    if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
+      if (this !== originRoute) {
+        var childErrorRouteName = findChildRouteName(this, 'error');
+        if (childErrorRouteName) {
+          this.intermediateTransitionTo(childErrorRouteName, error);
+          return;
+        }
       }
     }
 
@@ -34,17 +35,19 @@ var defaultActionHandlers = {
   },
 
   loading: function(transition, originRoute) {
-    if (this === originRoute) {
-      // This is the route with the error; just bubble
-      // so that the parent route can look up its child loading route.
-      return true;
-    }
+    if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
+      if (this === originRoute) {
+        // This is the route with the error; just bubble
+        // so that the parent route can look up its child loading route.
+        return true;
+      }
 
-    var childLoadingRouteName = findChildRouteName(this, 'loading');
-    if (childLoadingRouteName) {
-      this.intermediateTransitionTo(childLoadingRouteName);
-    } else if (transition.pivotHandler !== this) {
-      return true;
+      var childLoadingRouteName = findChildRouteName(this, 'loading');
+      if (childLoadingRouteName) {
+        this.intermediateTransitionTo(childLoadingRouteName);
+      } else if (transition.pivotHandler !== this) {
+        return true;
+      }
     }
   }
 };

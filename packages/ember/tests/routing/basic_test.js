@@ -1,5 +1,8 @@
 var Router, App, AppView, templates, router, container;
-var get = Ember.get, set = Ember.set, compile = Ember.Handlebars.compile;
+var get = Ember.get,
+    set = Ember.set,
+    compile = Ember.Handlebars.compile,
+    forEach = Ember.EnumerableUtils.forEach;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -1287,7 +1290,8 @@ test("transitioning multiple times in a single run loop only sets the URL once",
 });
 
 test('navigating away triggers a url property change', function() {
-  var urlPropertyChangeCount = 0;
+
+  expect(3);
 
   Router.map(function() {
     this.route('root', { path: '/' });
@@ -1299,30 +1303,14 @@ test('navigating away triggers a url property change', function() {
 
   Ember.run(function() {
     Ember.addObserver(router, 'url', function() {
-      urlPropertyChangeCount++;
+      ok(true, "url change event was fired");
     });
   });
 
-  equal(urlPropertyChangeCount, 0);
-
-  var transition = handleURL("/");
-
-  Ember.run(function() {
-    transition.then(function() {
-      equal(urlPropertyChangeCount, 2);
-
-      // Trigger the callback that would otherwise be triggered
-      // when a user clicks the back or forward button.
-
-      return router.router.transitionTo('foo');
-    }).then(function(result) {
-      return router.router.transitionTo('bar');
-    }).then(function(result) {
-      equal(urlPropertyChangeCount, 4, 'triggered url property change');
-    });
+  forEach(['foo', 'bar', '/foo'], function(destination) {
+    Ember.run(router, 'transitionTo', destination);
   });
 });
-
 
 test("using replaceWith calls location.replaceURL if available", function() {
   var setCount = 0,
@@ -2182,26 +2170,15 @@ test("ApplicationRoute with model does not proxy the currentPath", function() {
   equal('currentPath' in model, false, 'should have defined currentPath on controller');
 });
 
-asyncTest("Promises encountered on app load put app into loading state until resolved", function() {
+test("Promises encountered on app load put app into loading state until resolved", function() {
 
   expect(2);
 
+  var deferred = Ember.RSVP.defer();
+
   App.IndexRoute = Ember.Route.extend({
     model: function() {
-
-      Ember.run.next(function() {
-        equal(Ember.$('p', '#qunit-fixture').text(), "LOADING", "The loading state is displaying.");
-      });
-
-      return new Ember.RSVP.Promise(function(resolve) {
-        setTimeout(function() {
-          Ember.run(function() {
-            resolve();
-          });
-          equal(Ember.$('p', '#qunit-fixture').text(), "INDEX", "The index route is display.");
-          start();
-        }, 20);
-      });
+      return deferred.promise;
     }
   });
 
@@ -2210,6 +2187,9 @@ asyncTest("Promises encountered on app load put app into loading state until res
 
   bootApplication();
 
+  equal(Ember.$('p', '#qunit-fixture').text(), "LOADING", "The loading state is displaying.");
+  Ember.run(deferred.resolve);
+  equal(Ember.$('p', '#qunit-fixture').text(), "INDEX", "The index route is display.");
 });
 
 test("Route should tear down multiple outlets", function() {
@@ -2357,6 +2337,78 @@ test("Route supports clearing outlet explicitly", function() {
   equal(Ember.$('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 0, "The posts/modal template was removed");
   equal(Ember.$('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 0, "The posts/extra template was removed");
 });
+
+if (!Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
+  test("Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered", function() {
+
+    expect(8);
+
+    Router.map(function() {
+      this.route("nork");
+      this.route("about");
+    });
+
+    var redirect = false;
+
+    App.IndexRoute = Ember.Route.extend({
+      actions: {
+        willTransition: function(transition) {
+          ok(true, "willTransition was called");
+          if (redirect) {
+            // router.js won't refire `willTransition` for this redirect
+            this.transitionTo('about');
+          } else {
+            transition.abort();
+          }
+        }
+      }
+    });
+
+    var deferred = null;
+
+    App.LoadingRoute = Ember.Route.extend({
+      activate: function() {
+        ok(deferred, "LoadingRoute should be entered at this time");
+      },
+      deactivate: function() {
+        ok(true, "LoadingRoute was exited");
+      }
+    });
+
+    App.NorkRoute = Ember.Route.extend({
+      activate: function() {
+        ok(true, "NorkRoute was entered");
+      }
+    });
+
+    App.AboutRoute = Ember.Route.extend({
+      activate: function() {
+        ok(true, "AboutRoute was entered");
+      },
+      model: function() {
+        if (deferred) { return deferred.promise; }
+      }
+    });
+
+    bootApplication();
+
+    // Attempted transitions out of index should abort.
+    Ember.run(router, 'transitionTo', 'nork');
+    Ember.run(router, 'handleURL', '/nork');
+
+    // Attempted transitions out of index should redirect to about
+    redirect = true;
+    Ember.run(router, 'transitionTo', 'nork');
+    Ember.run(router, 'transitionTo', 'index');
+
+    // Redirected transitions out of index to a route with a
+    // promise model should pause the transition and
+    // activate LoadingRoute
+    deferred = Ember.RSVP.defer();
+    Ember.run(router, 'transitionTo', 'nork');
+    Ember.run(deferred.resolve);
+  });
+}
 
 if (Ember.FEATURES.isEnabled("ember-routing-didTransition-hook")) {
   test("`didTransition` event fires on the router", function() {
