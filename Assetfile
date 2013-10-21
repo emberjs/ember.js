@@ -60,6 +60,7 @@ distros.each do |name, modules|
         filter EmberDefeatureify
       end
       filter AddMicroLoader unless name == "ember-template-compiler"
+      filter AddProjectVersionNumber
     end
 
     # Add debug to the main distro
