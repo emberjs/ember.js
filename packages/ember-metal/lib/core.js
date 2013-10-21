@@ -22,7 +22,7 @@
 
   @class Ember
   @static
-  @version 1.0.0
+  @version VERSION_STRING_PLACEHOLDER
 */
 
 if ('undefined' === typeof Ember) {
