@@ -222,13 +222,14 @@ DependentArraysObserver.prototype = {
         dependentKey = this.dependentKeysByGuid[guid],
         itemPropertyKeys = this.cp._itemPropertyKeys[dependentKey] || [],
         length = get(dependentArray, 'length'),
-        normalizedIndex = normalizeIndex(length, index, 1),
+        normalizedIndex = normalizeIndex(index, length, 0),
+        normalizedRemoveCount = normalizeRemoveCount(normalizedIndex, length, removedCount),
         item,
         itemIndex,
         sliceIndex,
         observerContexts;
 
-    observerContexts = this.trackRemove(dependentKey, normalizedIndex, removedCount);
+    observerContexts = this.trackRemove(dependentKey, normalizedIndex, normalizedRemoveCount);
 
     function removeObservers(propertyKey) {
       observerContexts[sliceIndex].destroyed = true;
@@ -236,7 +237,7 @@ DependentArraysObserver.prototype = {
       removeObserver(item, propertyKey, this, observerContexts[sliceIndex].observer);
     }
 
-    for (sliceIndex = removedCount - 1; sliceIndex >= 0; --sliceIndex) {
+    for (sliceIndex = normalizedRemoveCount - 1; sliceIndex >= 0; --sliceIndex) {
       itemIndex = normalizedIndex + sliceIndex;
       if (itemIndex >= length) { break; }
 
@@ -257,7 +258,7 @@ DependentArraysObserver.prototype = {
         observerContexts = new Array(addedCount),
         itemPropertyKeys = this.cp._itemPropertyKeys[dependentKey],
         length = get(dependentArray, 'length'),
-        normalizedIndex = normalizeIndex(length, index, addedCount),
+        normalizedIndex = normalizeIndex(index, length, addedCount),
         changeMeta,
         observerContext;
 
@@ -318,7 +319,7 @@ DependentArraysObserver.prototype = {
   }
 };
 
-function normalizeIndex(length, index, newItemsOffset) {
+function normalizeIndex(index, length, newItemsOffset) {
   if (index < 0) {
     return Math.max(0, length + index);
   } else if (index < length) {
@@ -326,6 +327,10 @@ function normalizeIndex(length, index, newItemsOffset) {
   } else /* index > length */ {
     return Math.min(length - newItemsOffset, index);
   }
+}
+
+function normalizeRemoveCount(index, length, removedCount) {
+  return Math.min(removedCount, length - index);
 }
 
 function createChangeMeta(dependentArray, item, index, propertyName, property, previousValues) {
