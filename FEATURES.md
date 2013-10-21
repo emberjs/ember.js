@@ -48,7 +48,7 @@ Ember.FEATURES['link-to'] = true;
 * `ember-routing-didTransition-hook`
 
   Add `didTransition` hook to the router that gets triggered for each route transition.
-  
+
   Added in [#3452](https://github.com/emberjs/ember.js/pull/3452).
 * `propertyBraceExpansion`
 
@@ -76,11 +76,6 @@ Ember.FEATURES['link-to'] = true;
   properties.
 
   Added in [#3446](https://github.com/emberjs/ember.js/pull/3446)
-* `em-o`
-
-  Adds `Em.O` function as a shorthand for `Ember.Object.create`.
-  
-  Added in [#3370](https://github.com/emberjs/ember.js/pull/3370)
 * `ember-testing-wait-hooks`
 
   Allows registration of additional functions that the `wait` testing helper
