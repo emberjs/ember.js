@@ -59,7 +59,7 @@ Ember.FEATURES['link-to'] = true;
   Added in [#3538](https://github.com/emberjs/ember.js/pull/3538).
 * `reduceComputedSelf`
 
-  Dependent keys may refer to `@self` to observe changes to the object itself,
+  Dependent keys may refer to `@this` to observe changes to the object itself,
   which must be array-like, rather than a property of the object.  This is
   mostly useful for array proxies.
 

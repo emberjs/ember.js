@@ -451,7 +451,7 @@ if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
 
       obj = Ember.ArrayProxy.createWithMixins({
         content: Ember.A([a, b]),
-        names: Ember.arrayComputed('@self.@each.name', {
+        names: Ember.arrayComputed('@this.@each.name', {
           addedItem: function (array, item, changeMeta, instanceMeta) {
             var mapped = get(item, 'name');
             array.insertAt(changeMeta.index, mapped);
@@ -471,7 +471,7 @@ if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
     }
   });
 
-  test("@self can be used to treat the object as the array itself", function() {
+  test("@this can be used to treat the object as the array itself", function() {
     var names = get(obj, 'names');
 
     deepEqual(names, ['a', 'b'], "precond - names is initially correct");
@@ -480,13 +480,13 @@ if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
       obj.objectAt(1).set('name', 'c');
     });
 
-    deepEqual(names, ['a', 'c'], "@self can be used with item property observers");
+    deepEqual(names, ['a', 'c'], "@this can be used with item property observers");
 
     Ember.run(function() {
       obj.pushObject({ name: 'd' });
     });
 
-    deepEqual(names, ['a', 'c', 'd'], "@self observes new items");
+    deepEqual(names, ['a', 'c', 'd'], "@this observes new items");
   });
 
 }

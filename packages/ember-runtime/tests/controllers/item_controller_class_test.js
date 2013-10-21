@@ -318,7 +318,7 @@ if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
 
     arrayController.reopen({
       sortProperties: Ember.A(['title']),
-      sorted: Ember.computed.sort('@self', 'sortProperties')
+      sorted: Ember.computed.sort('@this', 'sortProperties')
     });
 
     deepEqual(arrayController.get('sorted').mapProperty('name'), ['Jaime', 'Cersei'], "ArrayController items can be sorted on itemController properties");
