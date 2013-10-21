@@ -147,8 +147,15 @@ Ember.TextSupport = Ember.Mixin.create({
   */
   keyPress: function(event) {
     sendAction('key-press', this, event);
-  }
+  },
+  
+  keyDown: function(event) {
+                sendAction('key-down', this, event);
+            },
 
+  keyUp: function(event) {
+      sendAction('key-up', this, event);
+  }
 });
 
 Ember.TextSupport.KEY_EVENTS = {
@@ -169,6 +176,14 @@ function sendAction(eventName, view, event) {
   // incompatible with sendAction semantics).
   if (on === eventName || (on === 'keyPress' && eventName === 'key-press')) {
     view.sendAction('action', value);
+  }
+  
+  if (on === eventName || (on === 'keyDown' && eventName === 'key-down')) {
+      view.sendAction('action', value);
+  }
+  
+  if (on === eventName || (on === 'keyUp' && eventName === 'key-up')) {
+      view.sendAction('action', value);
   }
 
   view.sendAction(eventName, value);
