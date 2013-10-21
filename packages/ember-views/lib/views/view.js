@@ -1784,12 +1784,21 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @test in createChildViews
   */
   createChildView: function(view, attrs) {
-    var coreAttrs, templateData;
+    var coreAttrs, templateData, createArity, op;
 
     if (Ember.View.detect(view)) {
       coreAttrs = { _parentView: this, templateData: get(this, 'templateData') };
 
       if (attrs) {
+        createArity = (view.create.base ? view.create.base.length : view.create.length);
+
+        if (createArity > 1) {
+          op = {warn: Ember.deprecate, '1.0': Ember.assert}[Ember.ENV.CREATE_CHILD_VIEW] || Ember.K;
+          op( 'Ember.View#createChildView will pass only one argument to ' + view + '.create in Ember 1.0' );
+        }
+
+        if (Ember.ENV.CREATE_CHILD_VIEW) { Ember.$.extend(coreAttrs, attrs); }
+
         view = view.create(coreAttrs, attrs);
       } else {
         view = view.create(coreAttrs);
