@@ -87,3 +87,13 @@ Ember.FEATURES['link-to'] = true;
   will call to determine if it's ready to continue.
 
   Added in [#3433](https://github.com/emberjs/ember.js/pull/3433)
+* `ember-routing-loading-error-substates`
+
+  Adds support for nested loading/error substates. A loading substate will be entered when a
+  slow-to-resolve promise is returned from one of the Route#model hooks during a transition
+  and an appropriately-named loading template/route can be found.  An error substate will be
+  entered when one of the Route#model hooks returns a rejecting promise and an appropriately-named
+  error template/route can be found.
+
+  Added in [#3568](https://github.com/emberjs/ember.js/pull/3568) and feature
+  flagged in [#3617](https://github.com/emberjs/ember.js/pull/3617).
