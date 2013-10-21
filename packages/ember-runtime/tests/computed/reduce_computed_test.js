@@ -370,6 +370,79 @@ test("dependent arrays with multiple item properties are not double-counted", fu
   equal(0, removeCalls, "no removes yet");
 });
 
+test("dependent arrays can use `replace` with an out of bounds index to add items", function() {
+  var dependentArray = Ember.A(),
+      array;
+
+  obj = Ember.Object.extend({
+    dependentArray: dependentArray,
+    computed: Ember.arrayComputed('dependentArray', {
+      addedItem: function (acc, item, changeMeta) {
+        acc.insertAt(changeMeta.index, item);
+        return acc;
+      },
+      removedItem: function (acc) { return acc; }
+    })
+  }).create();
+
+  array = get(obj, 'computed');
+
+  deepEqual(array, [], "precond - computed array is initially empty");
+
+  dependentArray.replace(100, 0, [1, 2]);
+
+  deepEqual(array, [1, 2], "index >= length treated as a push");
+
+  dependentArray.replace(-100, 0, [3, 4]);
+
+  deepEqual(array, [3, 4, 1, 2], "index < 0 treated as an unshift");
+});
+
+test("dependent arrays can use `replace` with a negative index to remove items indexed from the right", function() {
+  var dependentArray = Ember.A([1,2,3,4,5]),
+      array;
+
+  obj = Ember.Object.extend({
+    dependentArray: dependentArray,
+    computed: Ember.arrayComputed('dependentArray', {
+      addedItem: function (acc, item) { return acc; },
+      removedItem: function (acc, item) { acc.pushObject(item); return acc; }
+    })
+  }).create();
+
+  array = get(obj, 'computed');
+
+  deepEqual(array, [], "precond - no items have been removed initially");
+
+  dependentArray.replace(-3, 2);
+
+  deepEqual(array, [4,3], "index < 0 used as a right index for removal");
+});
+
+test("dependent arrays that call `replace` with an out of bounds index to remove items is a no-op", function() {
+  var dependentArray = Ember.A(),
+      array;
+
+  obj = Ember.Object.extend({
+    dependentArray: dependentArray,
+    computed: Ember.arrayComputed('dependentArray', {
+      addedItem: function (acc, item, changeMeta) {
+        ok(false, "no items have been added");
+      },
+      removedItem: function (acc) {
+        ok(false, "no items have been removed");
+      }
+    })
+  }).create();
+
+  array = get(obj, 'computed');
+
+  deepEqual(array, [], "precond - computed array is initially empty");
+
+  dependentArray.replace(100, 2);
+});
+
+
 if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
   module('Ember.arryComputed - self chains', {
     setup: function() {
@@ -566,3 +639,4 @@ test("when initialValue is undefined, everything works as advertised", function(
 
   equal(get(chars, 'firstUpper'), 'B', "result is the next match when the first matching object is removed");
 });
+
