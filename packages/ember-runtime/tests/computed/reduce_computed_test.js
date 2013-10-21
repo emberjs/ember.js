@@ -420,15 +420,13 @@ test("dependent arrays can use `replace` with a negative index to remove items i
 });
 
 test("dependent arrays that call `replace` with an out of bounds index to remove items is a no-op", function() {
-  var dependentArray = Ember.A(),
+  var dependentArray = Ember.A([1, 2]),
       array;
 
   obj = Ember.Object.extend({
     dependentArray: dependentArray,
     computed: Ember.arrayComputed('dependentArray', {
-      addedItem: function (acc, item, changeMeta) {
-        ok(false, "no items have been added");
-      },
+      addedItem: function (acc, item, changeMeta) { return acc; },
       removedItem: function (acc) {
         ok(false, "no items have been removed");
       }
@@ -440,6 +438,27 @@ test("dependent arrays that call `replace` with an out of bounds index to remove
   deepEqual(array, [], "precond - computed array is initially empty");
 
   dependentArray.replace(100, 2);
+});
+
+test("dependent arrays that call `replace` with a too-large removedCount a) works and b) still right-truncates", function() {
+  var dependentArray = Ember.A([1, 2]),
+      array;
+
+  obj = Ember.Object.extend({
+    dependentArray: dependentArray,
+    computed: Ember.arrayComputed('dependentArray', {
+      addedItem: function (acc, item) { return acc; },
+      removedItem: function (acc, item) { acc.pushObject(item); return acc; }
+    })
+  }).create();
+
+  array = get(obj, 'computed');
+
+  deepEqual(array, [], "precond - computed array is initially empty");
+
+  dependentArray.replace(1, 200);
+
+  deepEqual(array, [2], "array was correctly right-truncated");
 });
 
 
