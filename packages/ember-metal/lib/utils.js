@@ -445,7 +445,7 @@ var needsFinallyFix = (function() {
     try { }
     finally {
       count++;
-      throw new Ember.Error('needsFinallyFixTest');
+      throw new Error('needsFinallyFixTest');
     }
   } catch (e) {}
 
