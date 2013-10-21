@@ -105,3 +105,20 @@ test("`removeItem` returns -1 if the item was not in the subarray", function() {
 
   equal(subarray.removeItem(1), -1, "`removeItem` returns -1 if the item is not in the subarray");
 });
+
+test("`removeItem` raises a sensible exception when there are no operations in the subarray", function() {
+  var subarrayExploder = function() {
+    subarray.removeItem(9);
+  };
+  throws(subarrayExploder, /never\ been\ added/, "`removeItem` raises a sensible exception when there are no operations in the subarray");
+});
+
+test("left composition does not confuse a subsequent right non-composition", function() {
+  subarray.addItem(0, true);
+  subarray.addItem(1, false);
+  subarray.addItem(2, true);
+  equal(operationsString(), "r:1 f:1 r:1", "precond - initial state of subarray is as expected");
+
+  subarray.addItem(1, true);
+  equal(operationsString(), "r:2 f:1 r:1", "left-composition does not confuse right non-composition");
+});

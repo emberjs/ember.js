@@ -1,6 +1,12 @@
 ---
 rvm:
 - 1.9.3
+node_js:
+- "0.10"
+install:
+- "npm install -g defeatureify"
+- "npm install -g yuidocjs"
+- "bundle install --deployment"
 after_success: bundle exec rake publish_build
 script: rake test\[standard]
 notifications:

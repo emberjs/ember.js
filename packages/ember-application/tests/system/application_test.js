@@ -1,4 +1,5 @@
 var view;
+var app;
 var application;
 var set = Ember.set, get = Ember.get;
 var forEach = Ember.ArrayPolyfills.forEach;
@@ -34,8 +35,6 @@ module("Ember.Application", {
 });
 
 test("you can make a new application in a non-overlapping element", function() {
-  var app;
-
   Ember.run(function() {
     app = Ember.Application.create({ rootElement: '#two', router: null });
   });
@@ -87,8 +86,6 @@ test("acts like a namespace", function() {
   app.Foo = Ember.Object.extend();
   equal(app.Foo.toString(), "TestApp.Foo", "Classes pick up their parent namespace");
 });
-
-var app;
 
 module("Ember.Application initialization", {
   teardown: function() {
@@ -194,26 +191,30 @@ test("Minimal Application initialized with just an application template", functi
   equal(trim(Ember.$('#qunit-fixture').text()), 'Hello World');
 });
 
-test('enable log  of libraries with an ENV var', function() {
+test('enable log of libraries with an ENV var', function() {
   var debug = Ember.debug;
+  var messages = [];
+
   Ember.LOG_VERSION = true;
 
   Ember.debug = function(message) {
-    ok(true, 'libraries versions logged');
+    messages.push(message);
   };
 
-  Ember.$("#qunit-fixture").empty();
+  Ember.libraries.register("my-lib", "2.0.0a");
 
   Ember.run(function() {
     app = Ember.Application.create({
       rootElement: '#qunit-fixture'
     });
-
-    app.Router.reopen({
-      location: 'none'
-    });
   });
 
+  equal(messages[1], "Ember      : " + Ember.VERSION);
+  equal(messages[2], "Handlebars : " + Handlebars.VERSION);
+  equal(messages[3], "jQuery     : " + Ember.$().jquery);
+  equal(messages[4], "my-lib     : " + "2.0.0a");
+
+  Ember.libraries.deRegister("my-lib");
   Ember.LOG_VERSION = false;
   Ember.debug = debug;
 });
@@ -239,5 +240,5 @@ test('disable log version of libraries with an ENV var', function() {
     });
   });
 
-  ok(!logged, 'libraries versions logged');
+  ok(!logged, 'library version logging skipped');
 });

@@ -360,6 +360,17 @@ test("Injecting a failed lookup raises an error", function() {
   });
 });
 
+test("Injecting a falsy value does not raise an error", function() {
+  var container = new Container();
+  var ApplicationController = factory();
+
+  container.register('controller:application', ApplicationController);
+  container.register('user:current', null, { instantiate: false });
+  container.injection('controller:application', 'currentUser', 'user:current');
+
+  equal(container.lookup('controller:application').currentUser, null);
+});
+
 test("Destroying the container destroys any cached singletons", function() {
   var container = new Container();
   var PostController = factory();
@@ -445,3 +456,39 @@ test("The container can get options that should be applied to all factories for 
 
   ok(postView1 !== postView2, "The two lookups are different");
 });
+
+test("cannot register an `undefined` factory", function(){
+  var container = new Container();
+
+  throws(function(){
+    container.register('controller:apple', undefined);
+  }, '');
+});
+
+test("can re-register a factory", function(){
+  var container = new Container(),
+    FirstApple = factory('first'),
+    SecondApple = factory('second');
+
+  container.register('controller:apple', FirstApple);
+  container.register('controller:apple', SecondApple);
+
+  ok(container.lookup('controller:apple') instanceof SecondApple);
+});
+
+test("cannot re-register a factory if has been looked up", function(){
+  var container = new Container(),
+    FirstApple = factory('first'),
+    SecondApple = factory('second');
+
+  container.register('controller:apple', FirstApple);
+  ok(container.lookup('controller:apple') instanceof FirstApple);
+
+  throws(function(){
+    container.register('controller:apple', SecondApple);
+  }, 'Cannot re-register: `controller:apple`, as it has already been looked up.');
+
+  ok(container.lookup('controller:apple') instanceof FirstApple);
+});
+
+

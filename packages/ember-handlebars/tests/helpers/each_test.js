@@ -34,6 +34,7 @@ module("the #each helper", {
       view = null;
     });
     Ember.lookup = originalLookup;
+    Ember.TESTING_DEPRECATION = false;
   }
 });
 
@@ -346,27 +347,23 @@ test("it supports {{itemViewClass=}}", function() {
 test("it supports {{itemViewClass=}} with tagName", function() {
   Ember.TESTING_DEPRECATION = true;
 
-  try {
-    Ember.run(function() { view.destroy(); }); // destroy existing view
-    view = Ember.View.create({
-        template: templateFor('{{each view.people itemViewClass="MyView" tagName="ul"}}'),
-        people: people
-    });
+  Ember.run(function() { view.destroy(); }); // destroy existing view
+  view = Ember.View.create({
+      template: templateFor('{{each view.people itemViewClass="MyView" tagName="ul"}}'),
+      people: people
+  });
 
-    append(view);
+  append(view);
 
-    var html = view.$().html();
+  var html = view.$().html();
 
-    // IE 8 (and prior?) adds the \r\n
-    html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
-    html = html.replace(/<div[^>]*><\/div>/ig, '').replace(/[\r\n]/g, '');
-    html = html.replace(/<li[^>]*/ig, '<li');
+  // IE 8 (and prior?) adds the \r\n
+  html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
+  html = html.replace(/<div[^>]*><\/div>/ig, '').replace(/[\r\n]/g, '');
+  html = html.replace(/<li[^>]*/ig, '<li');
 
-    // Use lowercase since IE 8 make tagnames uppercase
-    equal(html.toLowerCase(), "<ul><li>steve holt</li><li>annabelle</li></ul>");
-  } finally {
-    Ember.TESTING_DEPRECATION = false;
-  }
+  // Use lowercase since IE 8 make tagnames uppercase
+  equal(html.toLowerCase(), "<ul><li>steve holt</li><li>annabelle</li></ul>");
 });
 
 test("it supports {{itemViewClass=}} with in format", function() {

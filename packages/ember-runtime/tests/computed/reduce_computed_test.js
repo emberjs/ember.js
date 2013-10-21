@@ -1,5 +1,5 @@
-var obj, addCalls, removeCalls, map = Ember.EnumerableUtils.map, get = Ember.get, set = Ember.set, callbackItems;
 
+var obj, addCalls, removeCalls, map = Ember.EnumerableUtils.map, get = Ember.get, set = Ember.set, callbackItems;
 module('Ember.arrayComputed', {
   setup: function () {
     addCalls = removeCalls = 0;
@@ -140,6 +140,19 @@ test("after first retrieval, array computed properties can observe properties on
   deepEqual(evenNestedNumbers, [2, 4, 6, 22], 'adds new number');
 });
 
+test("changes to array computed properties happen synchronously", function() {
+  var nestedNumbers = get(obj, 'nestedNumbers'),
+      evenNestedNumbers = get(obj, 'evenNestedNumbers');
+
+  deepEqual(evenNestedNumbers, [2, 4, 6], 'precond -- starts off with correct values');
+
+  Ember.run(function() {
+    nestedNumbers.objectAt(0).set('v', 22);
+    deepEqual(nestedNumbers.mapBy('v'), [22, 2, 3, 4, 5, 6], 'nested numbers is updated');
+    deepEqual(evenNestedNumbers, [2, 4, 6, 22], 'adds new number');
+  });
+});
+
 test("doubly nested item property keys (@each.foo.@each) are not supported", function() {
   Ember.run(function() {
     obj = Ember.Object.createWithMixins({
@@ -239,6 +252,101 @@ test("multiple array computed properties on the same object can observe dependen
   deepEqual(get(obj, 'evenNumbers'), [2,4,6,12], "evenNumbers is updated");
   deepEqual(get(obj, 'evenNumbersMultiDep'), [2, 4, 6, 8, 12, 14], "evenNumbersMultiDep is updated");
 });
+
+test("an error is thrown when a reduceComputed is defined without an initialValue property", function() {
+  var defineExploder = function() {
+    Ember.Object.createWithMixins({
+      collection: Ember.A(),
+      exploder: Ember.reduceComputed('collection', {
+        initialize: function(initialValue, changeMeta, instanceMeta) {},
+
+        addedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+          return item;
+        },
+
+        removedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+          return item;
+        }
+      })
+    });
+  };
+
+  throws(defineExploder, /declared\ without\ an\ initial\ value/, "an error is thrown when the reduceComputed is defined without an initialValue");
+});
+
+test("dependent arrays with multiple item properties are not double-counted", function() {
+  var obj = Ember.Object.extend({
+    items: Ember.A([{ foo: true }, { bar: false }, { bar: true }]),
+    countFooOrBar: Ember.reduceComputed({
+      initialValue: 0,
+      addedItem: function (acc) {
+        ++addCalls;
+        return acc;
+      },
+
+      removedItem: function (acc) {
+        ++removeCalls;
+        return acc;
+      }
+    }).property('items.@each.foo', 'items.@each.bar', 'items')
+  }).create();
+
+  equal(0, addCalls, "precond - no adds yet");
+  equal(0, removeCalls, "precond - no removes yet");
+
+  get(obj, 'countFooOrBar');
+
+  equal(3, addCalls, "all items added once");
+  equal(0, removeCalls, "no removes yet");
+});
+
+if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
+  module('Ember.arryComputed - self chains', {
+    setup: function() {
+      var a = Ember.Object.create({ name: 'a' }),
+          b = Ember.Object.create({ name: 'b' });
+
+      obj = Ember.ArrayProxy.createWithMixins({
+        content: Ember.A([a, b]),
+        names: Ember.arrayComputed('@self.@each.name', {
+          addedItem: function (array, item, changeMeta, instanceMeta) {
+            var mapped = get(item, 'name');
+            array.insertAt(changeMeta.index, mapped);
+            return array;
+          },
+          removedItem: function(array, item, changeMeta, instanceMeta) {
+            array.removeAt(changeMeta.index, 1);
+            return array;
+          }
+        })
+      });
+    },
+    teardown: function() {
+      Ember.run(function() {
+        obj.destroy();
+      });
+    }
+  });
+
+  test("@self can be used to treat the object as the array itself", function() {
+    var names = get(obj, 'names');
+
+    deepEqual(names, ['a', 'b'], "precond - names is initially correct");
+
+    Ember.run(function() {
+      obj.objectAt(1).set('name', 'c');
+    });
+
+    deepEqual(names, ['a', 'c'], "@self can be used with item property observers");
+
+    Ember.run(function() {
+      obj.pushObject({ name: 'd' });
+    });
+
+    deepEqual(names, ['a', 'c', 'd'], "@self observes new items");
+  });
+
+}
 
 module('Ember.arrayComputed - changeMeta property observers', {
   setup: function() {
@@ -341,4 +449,51 @@ test("changeMeta includes item and index", function() {
   });
 
   deepEqual(callbackItems, expected, "items removed from the array had observers removed");
+});
+
+test("when initialValue is undefined, everything works as advertised", function() {
+  var chars = Ember.Object.createWithMixins({
+    letters: Ember.A(),
+    firstUpper: Ember.reduceComputed('letters', {
+      initialValue: undefined,
+
+      initialize: function(initialValue, changeMeta, instanceMeta) {
+        instanceMeta.matchingItems = Ember.A();
+        instanceMeta.subArray = new Ember.SubArray();
+        instanceMeta.firstMatch = function() {
+          return Ember.getWithDefault(instanceMeta.matchingItems, 'firstObject', initialValue);
+        };
+      },
+
+      addedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+        var filterIndex;
+        filterIndex = instanceMeta.subArray.addItem(changeMeta.index, item.toUpperCase() === item);
+        if (filterIndex > -1) {
+          instanceMeta.matchingItems.insertAt(filterIndex, item);
+        }
+        return instanceMeta.firstMatch();
+      },
+
+      removedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
+        var filterIndex = instanceMeta.subArray.removeItem(changeMeta.index);
+        if (filterIndex > -1) {
+          instanceMeta.matchingItems.removeAt(filterIndex);
+        }
+        return instanceMeta.firstMatch();
+      }
+    })
+  });
+  equal(get(chars, 'firstUpper'), undefined, "initialValue is undefined");
+
+  get(chars, 'letters').pushObjects(['a', 'b', 'c']);
+
+  equal(get(chars, 'firstUpper'), undefined, "result is undefined when no matches are present");
+
+  get(chars, 'letters').pushObjects(['A', 'B', 'C']);
+
+  equal(get(chars, 'firstUpper'), 'A', "result is the first match when matching objects are present");
+
+  get(chars, 'letters').removeAt(3);
+
+  equal(get(chars, 'firstUpper'), 'B', "result is the next match when the first matching object is removed");
 });

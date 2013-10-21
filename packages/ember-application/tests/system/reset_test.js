@@ -3,17 +3,17 @@ var get = Ember.get, set = Ember.set;
 var application;
 var Application;
 
-Application = Ember.Application.extend({
-  name: "App",
-  rootElement: "#qunit-fixture"
-});
-
 module("Ember.Application - resetting", {
+  setup: function() {
+    Application = Ember.Application.extend({
+      name: "App",
+      rootElement: "#qunit-fixture"
+    });
+  },
   teardown: function() {
+    Application = null;
     if (application) {
-      Ember.run(function() {
-        application.destroy();
-      });
+      Ember.run(application, 'destroy');
     }
   }
 });

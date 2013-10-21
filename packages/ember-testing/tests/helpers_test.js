@@ -1,12 +1,23 @@
 var App;
 
-module("ember-testing Helpers", {
-  teardown: function() {
+function cleanup(){
+  if (App) {
     Ember.run(App, App.destroy);
     App.removeTestHelpers();
     App = null;
-    Ember.TEMPLATES = {};
   }
+
+  Ember.run(function(){
+    Ember.$(document).off('ajaxStart');
+    Ember.$(document).off('ajaxStop');
+  });
+
+  Ember.TEMPLATES = {};
+}
+
+module("ember-testing Helpers", {
+  setup: function(){ cleanup(); },
+  teardown: function() { cleanup(); }
 });
 
 test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
@@ -194,5 +205,149 @@ test("`click` triggers appropriate events in order", function() {
     // Firefox differs so we can't assert the exact ordering here.
     // See https://bugzilla.mozilla.org/show_bug.cgi?id=843554.
     equal(events.length, 5, 'fires click and change on checkboxes');
+  });
+});
+
+test("Ember.Application#injectTestHelpers", function() {
+  var documentEvents;
+
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  documentEvents = Ember.$._data(document, 'events');
+
+  if (!documentEvents) {
+    documentEvents = {};
+  }
+
+  ok(documentEvents['ajaxStart'] === undefined, 'there are no ajaxStart listers setup prior to calling injectTestHelpers');
+  ok(documentEvents['ajaxStop'] === undefined, 'there are no ajaxStop listers setup prior to calling injectTestHelpers');
+
+  App.injectTestHelpers();
+  documentEvents = Ember.$._data(document, 'events');
+
+  equal(documentEvents['ajaxStart'].length, 1, 'calling injectTestHelpers registers an ajaxStart handler');
+  equal(documentEvents['ajaxStop'].length, 1, 'calling injectTestHelpers registers an ajaxStop handler');
+});
+
+test("Ember.Application#injectTestHelpers calls callbacks registered with onInjectHelpers", function(){
+  var injected = 0;
+
+  Ember.Test.onInjectHelpers(function(){
+    injected++;
+  });
+
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  equal(injected, 0, 'onInjectHelpers are not called before injectTestHelpers');
+
+  App.injectTestHelpers();
+
+  equal(injected, 1, 'onInjectHelpers are called after injectTestHelpers');
+});
+
+if (Ember.FEATURES.isEnabled("ember-testing-wait-hooks")) {
+  test("`wait` respects registerWaiters", function() {
+    expect(2);
+
+    var counter=0;
+    function waiter() {
+      return ++counter > 2;
+    }
+
+    Ember.run(function() {
+      App = Ember.Application.create();
+      App.setupForTesting();
+    });
+
+    App.injectTestHelpers();
+
+    Ember.run(App, App.advanceReadiness);
+    Ember.Test.registerWaiter(waiter);
+
+    App.testHelpers.wait().then(function() {
+      equal(waiter(), true, 'should not resolve until our waiter is ready');
+      Ember.Test.unregisterWaiter(waiter);
+      equal(Ember.Test.waiters.length, 0, 'should not leave a waiter registered');
+    });
+  });
+
+  test("`wait` respects registerWaiters with optional context", function() {
+    expect(2);
+
+    var obj = {
+      counter: 0,
+      ready: function() {
+	return ++this.counter > 2;
+      }
+    };
+
+    Ember.run(function() {
+      App = Ember.Application.create();
+      App.setupForTesting();
+    });
+
+    App.injectTestHelpers();
+
+    Ember.run(App, App.advanceReadiness);
+    Ember.Test.registerWaiter(obj, obj.ready);
+
+    App.testHelpers.wait().then(function() {
+      equal(obj.ready(), true, 'should not resolve until our waiter is ready');
+      Ember.Test.unregisterWaiter(obj, obj.ready);
+      equal(Ember.Test.waiters.length, 0, 'should not leave a waiter registered');
+    });
+
+
+  });
+}
+
+module("ember-testing pendingAjaxRequests", {
+  setup: function(){
+    cleanup();
+
+    Ember.run(function() {
+      App = Ember.Application.create();
+      App.setupForTesting();
+    });
+
+    App.injectTestHelpers();
+  },
+
+  teardown: function() { cleanup(); }
+});
+
+test("pendingAjaxRequests is incremented on each document ajaxStart event", function() {
+  Ember.Test.pendingAjaxRequests = 0;
+
+  Ember.run(function(){
+    Ember.$(document).trigger('ajaxStart');
+  });
+
+  equal(Ember.Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
+});
+
+test("pendingAjaxRequests is decremented on each document ajaxStop event", function() {
+  Ember.Test.pendingAjaxRequests = 1;
+
+  Ember.run(function(){
+    Ember.$(document).trigger('ajaxStop');
+  });
+
+  equal(Ember.Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was decremented');
+});
+
+test("it should raise an assertion error if ajaxStop is called without pendingAjaxRequests", function() {
+  Ember.Test.pendingAjaxRequests = 0;
+
+  expectAssertion(function() {
+    Ember.run(function(){
+      Ember.$(document).trigger('ajaxStop');
+    });
   });
 });

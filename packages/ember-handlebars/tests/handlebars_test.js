@@ -83,6 +83,7 @@ module("Ember.View - handlebars integration", {
       view = null;
     }
     Ember.lookup = originalLookup;
+    Ember.TESTING_DEPRECATION = false;
   }
 });
 
@@ -1897,23 +1898,19 @@ test("should expose a view keyword", function() {
 test("Ember.Button targets should respect keywords", function() {
   Ember.TESTING_DEPRECATION = true;
 
-  try {
-    var templateString = '{{#with view.anObject}}{{view Ember.Button target="controller.foo"}}{{/with}}';
-    view = Ember.View.create({
-      template: Ember.Handlebars.compile(templateString),
-      anObject: {},
-      controller: {
-        foo: "bar"
-      }
-    });
+  var templateString = '{{#with view.anObject}}{{view Ember.Button target="controller.foo"}}{{/with}}';
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(templateString),
+    anObject: {},
+    controller: {
+      foo: "bar"
+    }
+  });
 
-    appendView();
+  appendView();
 
-    var button = view.get('childViews').objectAt(0);
-    equal(button.get('targetObject'), "bar", "resolves the target");
-  } finally {
-    Ember.TESTING_DEPRECATION = false;
-  }
+  var button = view.get('childViews').objectAt(0);
+  equal(button.get('targetObject'), "bar", "resolves the target");
 });
 
 test("should be able to explicitly set a view's context", function() {
@@ -2218,7 +2215,10 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
   Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
   });
-  equal(parentView.$('a').attr('href'), 'test');
+
+  // Use match, since old IE appends the whole URL
+  var href = parentView.$('a').attr('href');
+  ok(href.match(/(^|\/)test$/), "Expected href to be 'test' but got '"+href+"'");
 
   Ember.run(function() {
     parentView.destroy();

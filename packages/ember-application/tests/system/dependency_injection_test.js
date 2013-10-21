@@ -30,6 +30,7 @@ module("Ember.Application Dependency Injection", {
     application = locator = null;
     Ember.lookup = originalLookup;
     Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;
+    Ember.TESTING_DEPRECATION = false;
   }
 });
 
@@ -44,15 +45,11 @@ test('container lookup is normalized', function() {
 });
 
 test('Ember.Container.defaultContainer is the same as the Apps container, but emits deprecation warnings', function() {
-  try {
-    Ember.TESTING_DEPRECATION = true;
-    var routerFromContainer = locator.lookup('router:main'),
-      routerFromDefaultCOntainer = Ember.Container.defaultContainer.lookup('router:main');
+  Ember.TESTING_DEPRECATION = true;
+  var routerFromContainer = locator.lookup('router:main'),
+    routerFromDefaultCOntainer = Ember.Container.defaultContainer.lookup('router:main');
 
-    equal(routerFromContainer, routerFromDefaultCOntainer, 'routers from both containers are equal');
-  } finally {
-    Ember.TESTING_DEPRECATION = false;
-  }
+  equal(routerFromContainer, routerFromDefaultCOntainer, 'routers from both containers are equal');
 });
 
 test('registered entities can be looked up later', function() {

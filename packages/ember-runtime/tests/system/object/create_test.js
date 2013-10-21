@@ -95,6 +95,15 @@ test("throws if you try to 'mixin' a definition", function() {
   }, "Ember.Object.create no longer supports mixing in other definitions, use createWithMixins instead.");
 });
 
+// This test is for IE8.
+test("property name is the same as own prototype property", function() {
+  var MyClass = Ember.Object.extend({
+    toString: function() { return 'MyClass'; }
+  });
+
+  equal(MyClass.create().toString(), 'MyClass', "should inherit property from the arguments of `Ember.Object.create`");
+});
+
 module('Ember.Object.createWithMixins');
 
 test("Creates a new object that contains passed properties", function() {
