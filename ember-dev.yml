@@ -15,7 +15,7 @@ testing_suites:
     - "package=all&extendprototypes=true&nojshint=true"
     - "package=all&extendprototypes=true&nojshint=true&enableallfeatures=true"
     - "package=all&skipPackage=container&dist=build&nojshint=true" # container isn't publicly available in the built version
-    - "package=all&skipPackage=container&dist=build&nojshint=true&enableallfeatures=true" # container isn't publicly available in the built version
+    #- "package=all&skipPackage=container&dist=build&nojshint=true&enableallfeatures=true" # container isn't publicly available in the built version
   all:
     - "EACH_PACKAGE"
     - "package=all&jquery=1.7.2&nojshint=true"
