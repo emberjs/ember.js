@@ -239,11 +239,16 @@ define("htmlbars/compiler/helpers",
       }
 
       var programId = popStack(stack);
+      var inverseId = popStack(stack);
 
       var options = ['types:' + array(types), 'hashTypes:' + hash(hashTypes), 'hash:' + hash(hashPairs)];
 
       if (programId !== null) {
         options.push('render:child' + programId + '(dom)');
+      }
+
+      if (inverseId !== null) {
+        options.push('inverse:child' + inverseId + '(dom)');
       }
 
       return {
@@ -342,16 +347,21 @@ define("htmlbars/compiler/pass1",
 
     compiler1.block = function(block) {
       var program = compileAST(block.children, this.options),
+          inverse = compileAST(block.inverse, this.options),
           mustache = block.helper;
 
       this.children.push(program);
+      var programId = this.children.length - 1;
 
-      this.opcode('program', this.children.length - 1);
+      this.children.push(inverse);
+      var inverseId = this.children.length - 1;
+
+      this.opcode('program', programId, inverseId);
       processParams(this, mustache.params);
       processHash(this, mustache.hash);
       this.opcode('helper', mustache.id.string, mustache.params.length, mustache.escaped);
       this.opcode('appendFragment');
-    }
+    };
 
     compiler1.opcode = function(type) {
       var params = [].slice.call(arguments, 1);
@@ -534,7 +544,8 @@ define("htmlbars/compiler/pass2",
       this.output.push("return frag;");
     };
 
-    compiler2.program = function(programId) {
+    compiler2.program = function(programId, inverseId) {
+      pushStack(this.stack, inverseId);
       pushStack(this.stack, programId);
     };
 
@@ -921,7 +932,18 @@ define("htmlbars/parser",
         this.accept(block.program);
       }
 
+      this.tokenizer.token = null;
+      this.elementStack.push(new BlockElement());
+
+      if (block.inverse) {
+        this.accept(block.inverse);
+      }
+
+      var inverse = this.elementStack.pop();
       var blockNode = this.elementStack.pop();
+
+      blockNode.inverse = inverse.children;
+
       currentElement(this).children.push(blockNode);
     };
 

@@ -497,6 +497,14 @@ test("A simple block helper can return the default document fragment", function(
   compilesTo('{{#testing}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
 });
 
+test("A block helper can have an else block", function() {
+  registerHelper('testing', function(options) {
+    return options.inverse(this);
+  });
+
+  compilesTo('{{#testing}}Nope{{else}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
+});
+
 test("A block helper can pass a context to be used in the child", function() {
   registerHelper('testing', function(options) {
     return options.render({ title: 'Rails is omakase' });
@@ -615,3 +623,6 @@ test("Node helpers can be used for attribute bindings", function() {
 
   equalHTML(fragment, '<a href="zippy.html">linky</a>');
 });
+
+var template = compile("<a href='{{foo}}'>{{bar}}</a>");
+console.log(template);
