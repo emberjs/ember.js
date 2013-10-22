@@ -32,8 +32,6 @@
     ENV['STUB_OBJECT_CREATE'] = !Object.create;
   }
 
-  ENV['EXPERIMENTAL_CONTROL_HELPER'] = true;
-
   EmberDev.distros = {
     spade:   'ember-spade.js',
     build:   'ember.js',
