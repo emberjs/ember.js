@@ -162,6 +162,7 @@ define("htmlbars/compiler/attr",
 
     attrCompiler.program = function() {
       pushStack(this.stack, null);
+      pushStack(this.stack, null);
     };
 
     attrCompiler.id = function(parts) {
