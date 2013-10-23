@@ -112,14 +112,14 @@ test("inherits properties from passed in Ember.Object", function() {
 });
 
 test("throws if you try to pass anything other than an object or instance of Ember.Object", function(){
-  var expected = "Ember.Object.create will only accept an object or an instance of Ember.Object.";
+  var expected = "Ember.Object.create only accepts objects.";
 
   expectAssertion(function() {
     var o = Ember.Object.create("some-string");
   }, expected);
 
   expectAssertion(function() {
-    var o = Ember.Object.create(['foo','bar']);
+    var o = Ember.Object.create(null);
   }, expected);
 });
 

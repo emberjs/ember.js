@@ -70,10 +70,8 @@ function makeCtor() {
 
         Ember.assert("Ember.Object.create no longer supports mixing in other definitions, use createWithMixins instead.", !(properties instanceof Ember.Mixin));
 
-        var propertyType = Ember.typeOf(properties);
-        if (propertyType !== 'object' && propertyType !== 'instance') {
-          Ember.assert("Ember.Object.create will only accept an object or an instance of Ember.Object.", false);
-
+        if (properties === null || typeof properties !== 'object') {
+          Ember.assert("Ember.Object.create only accepts objects.");
           continue;
         }
 
