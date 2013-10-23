@@ -14,7 +14,6 @@ require('ember-metal/watch_path');
 var metaFor = Ember.meta, // utils.js
     GUID_KEY = Ember.GUID_KEY, // utils.js
     META_KEY = Ember.META_KEY, // utils.js
-    expandProperties = Ember.expandProperties,
     removeChainWatcher = Ember.removeChainWatcher,
     watchKey = Ember.watchKey, // watch_key.js
     unwatchKey = Ember.unwatchKey,
@@ -23,6 +22,10 @@ var metaFor = Ember.meta, // utils.js
     typeOf = Ember.typeOf, // utils.js
     generateGuid = Ember.generateGuid,
     IS_PATH = /[\.\*]/;
+
+if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+  var expandProperties = Ember.expandProperties;
+}
 
 // returns true if the passed path is just a keyName
 function isKeyName(path) {
@@ -47,13 +50,21 @@ Ember.watch = function(obj, _keyPath) {
   // can't watch length on Array - it is special...
   if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
-  expandProperties(_keyPath, function (keyPath) {
-    if (isKeyName(keyPath)) {
-      watchKey(obj, keyPath);
+  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+    expandProperties(_keyPath, function (keyPath) {
+      if (isKeyName(keyPath)) {
+        watchKey(obj, keyPath);
+      } else {
+        watchPath(obj, keyPath);
+      }
+    });
+  } else {
+    if (isKeyName(_keyPath)) {
+      watchKey(obj, _keyPath);
     } else {
-      watchPath(obj, keyPath);
+      watchPath(obj, _keyPath);
     }
-  });
+  }
 };
 
 Ember.isWatching = function isWatching(obj, key) {
@@ -67,13 +78,21 @@ Ember.unwatch = function(obj, _keyPath) {
   // can't watch length on Array - it is special...
   if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
-  expandProperties(_keyPath, function (keyPath) {
-    if (isKeyName(keyPath)) {
-      unwatchKey(obj, keyPath);
+  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+    expandProperties(_keyPath, function (keyPath) {
+      if (isKeyName(keyPath)) {
+        unwatchKey(obj, keyPath);
+      } else {
+        unwatchPath(obj, keyPath);
+      }
+    });
+  } else {
+    if (isKeyName(_keyPath)) {
+      unwatchKey(obj, _keyPath);
     } else {
-      unwatchPath(obj, keyPath);
+      unwatchPath(obj, _keyPath);
     }
-  });
+  }
 };
 
 /**
