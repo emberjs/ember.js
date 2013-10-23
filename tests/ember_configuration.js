@@ -19,11 +19,6 @@
   var extendPrototypes  = QUnit.urlParams.extendprototypes;
   ENV['EXTEND_PROTOTYPES'] = !!extendPrototypes;
 
-  // Handle testing feature flags
-  QUnit.config.urlConfig.push({ id: 'enableallfeatures', label: "Enable All Features"});
-  var enableAllFeatures = QUnit.urlParams.enableallfeatures;
-  ENV['ENABLE_ALL_FEATURES'] = !!enableAllFeatures;
-
   // Don't worry about jQuery version
   ENV['FORCE_JQUERY'] = true;
 
