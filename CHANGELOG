@@ -1,3 +1,7 @@
+* Ember 1.1.1 (October 23, 2013)*
+
+  * [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
+
 * Ember 1.1.0 (October 21, 2013)*
 
   * Make Ember.run.later more flexible with arguments - Fixes #3072
