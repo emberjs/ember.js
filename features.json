@@ -1,0 +1,14 @@
+{
+  "ember-routing-didTransition-hook": true,
+  "ember-routing-loading-error-substates": true,
+  "ember-runtime-sortBy": true,
+  "container-renderables": true,
+  "link-to-non-block": true,
+  "reduceComputedSelf": true,
+  "ember-testing-wait-hooks": null,
+  "query-params": null,
+  "string-humanize": null,
+  "propertyBraceExpansion": null,
+  "ember-runtime-sortBy": null,
+  "ember-routing-loading-error-substates": null
+}
