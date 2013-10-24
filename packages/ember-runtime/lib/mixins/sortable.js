@@ -119,16 +119,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   },
 
   destroy: function() {
-    var content = get(this, 'content'),
-        sortProperties = get(this, 'sortProperties');
-
-    if (content && sortProperties) {
-      forEach(content, function(item) {
-        forEach(sortProperties, function(sortProperty) {
-          Ember.removeObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-        }, this);
-      }, this);
-    }
+    this._removeContentObservers();
 
     return this._super();
   },
@@ -145,7 +136,6 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   arrangedContent: Ember.computed('content', 'sortProperties.@each', function(key, value) {
     var content = get(this, 'content'),
         isSorted = get(this, 'isSorted'),
-        sortProperties = get(this, 'sortProperties'),
         self = this;
 
     if (content && isSorted) {
@@ -153,11 +143,8 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
       content.sort(function(item1, item2) {
         return self.orderBy(item1, item2);
       });
-      forEach(content, function(item) {
-        forEach(sortProperties, function(sortProperty) {
-          Ember.addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-        }, this);
-      }, this);
+      this._addContentObservers( content );
+
       return Ember.A(content);
     }
 
@@ -165,19 +152,41 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   }),
 
   _contentWillChange: Ember.beforeObserver('content', function() {
+    this._removeContentObservers();
+
+    this._super();
+  }),
+
+  _addItemObservers: function( item, sortProperties ){
+    forEach(sortProperties, function(sortProperty) {
+      Ember.addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
+    }, this);
+  },
+
+  _removeItemObservers: function( item, sortProperties ){
+    forEach(sortProperties, function(sortProperty) {
+      Ember.removeObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
+    }, this);
+  },
+
+  _addContentObservers: function( content ){
+    var sortProperties = get(this, 'sortProperties');
+
+    forEach(content, function(item) {
+     this._addItemObservers( item, sortProperties );
+    }, this);
+  },
+
+  _removeContentObservers: function(){
     var content = get(this, 'content'),
         sortProperties = get(this, 'sortProperties');
 
     if (content && sortProperties) {
       forEach(content, function(item) {
-        forEach(sortProperties, function(sortProperty) {
-          Ember.removeObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-        }, this);
+        this._removeItemObservers( item, sortProperties );
       }, this);
     }
-
-    this._super();
-  }),
+  },
 
   sortAscendingWillChange: Ember.beforeObserver('sortAscending', function() {
     this._lastSortAscending = get(this, 'sortAscending');
@@ -188,6 +197,16 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
       var arrangedContent = get(this, 'arrangedContent');
       arrangedContent.reverseObjects();
     }
+  }),
+
+  sortPropertiesWillChange: Ember.beforeObserver('sortProperties.@each', function() {
+    this._removeContentObservers();
+  }),
+
+  sortPropertiesDidChange: Ember.observer('sortProperties.@each', function() {
+    var content = get(this, 'content');
+
+    this._addContentObservers( content );
   }),
 
   contentArrayWillChange: function(array, idx, removedCount, addedCount) {
@@ -201,9 +220,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
       forEach(removedObjects, function(item) {
         arrangedContent.removeObject(item);
 
-        forEach(sortProperties, function(sortProperty) {
-          Ember.removeObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-        }, this);
+        this._removeItemObservers( item, sortProperties );
       }, this);
     }
 
@@ -220,9 +237,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
       forEach(addedObjects, function(item) {
         this.insertItemSorted(item);
 
-        forEach(sortProperties, function(sortProperty) {
-          Ember.addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-        }, this);
+        this._addItemObservers( item, sortProperties );
       }, this);
     }
 
