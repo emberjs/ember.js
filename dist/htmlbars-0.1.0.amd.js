@@ -1081,7 +1081,7 @@ define("htmlbars/runtime",
           // skip(stream, 1)
           var skippedFirst = false;
 
-          var subscription = stream.subscribe(function(next) {
+          stream.subscribe(function(next) {
             buffer[position] = next;
 
             if (skippedFirst) {
@@ -1090,8 +1090,6 @@ define("htmlbars/runtime",
               skippedFirst = true;
             }
           });
-
-          subscription.connect();
         },
 
         resolveInAttr: function(context, parts, buffer, options) {
@@ -1108,7 +1106,7 @@ define("htmlbars/runtime",
             // skip(stream, 1)
             var skippedFirst = false;
 
-            var subscription = stream.subscribe(function(next) {
+            stream.subscribe(function(next) {
               buffer[position] = next;
 
               if (skippedFirst) {
@@ -1117,8 +1115,6 @@ define("htmlbars/runtime",
                 skippedFirst = true;
               }
             });
-
-            subscription.connect();
 
             return;
           }
