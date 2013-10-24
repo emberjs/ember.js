@@ -53,7 +53,6 @@
 * Don't allow registration of undefined factories.
 * Decamelize handles strings with numbers
 * [BUGFIX] Allow a reduceComputed to have an undefined initialValue.
-* disallow container registration if the corresponding singleton lookup has already occurred Conflicts:         packages/container/tests/container_test.js
 * [BUGFIX] Soft-deprecate mixed binding syntax in view helper
 * Universalize {{view}} helper quoteless binding syntax, prevent id binding
 * disallow container registration if the corresponding singleton lookup has already occurred
