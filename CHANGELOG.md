@@ -1,12 +1,17 @@
-*Ember 1.3.0 (TBD)*
+# Ember Changelog
+
+
+### Ember 1.3.0 _(TBD)_
 
 * Add query params support to the ember router. You can now define which query params your routes respond to, use them in your route hooks to affect model loading or controller state, and transition query parameters with the link-to helper and the transitionTo method
 
-*Ember 1.2.0 (TBD)*
+
+### Ember 1.2.0 _(TBD)_
 
 * In beta
 
-* Ember 1.1.0 (October 21, 2013)*
+
+### Ember 1.1.0 _(October 21, 2013)_
 
 * Make Ember.run.later more flexible with arguments - Fixes #3072
 * Add assertion upon too many ajaxStop's.
@@ -19,7 +24,6 @@
 * Don't allow registration of undefined factories.
 * Decamelize handles strings with numbers
 * [BUGFIX] Allow a reduceComputed to have an undefined initialValue.
-* disallow container registration if the corresponding singleton lookup has already occurred Conflicts:         packages/container/tests/container_test.js
 * [BUGFIX] Soft-deprecate mixed binding syntax in view helper
 * Universalize {{view}} helper quoteless binding syntax, prevent id binding
 * disallow container registration if the corresponding singleton lookup has already occurred
@@ -51,7 +55,7 @@
 * Incorrect error message in router.js
 * Install default error handler on ApplicationRoute#actions, not #events
 
-*Ember 1.0.0 (August 31, 2013)*
+### Ember 1.0.0 _(August 31, 2013)_
 
 * Fix nested `{{yield}}`
 * `ReduceComputed` groups changed properties.
@@ -78,7 +82,7 @@
 * Allow a template explicitly set on a view to be used when rendering a route.
 
 
-*Ember 1.0.0-rc.8 (August 28, 2013)*
+### Ember 1.0.0-rc.8 _(August 28, 2013)_
 
 * View, controller & route action handlers are now expected to be defined on an `actions` object.
 * registerBoundHelper won't treat quoted strings / numbers as paths
@@ -107,7 +111,7 @@
 * Improved `Route#controllerFor` to support `controllerName` and non-route lookups
 
 
-*Ember 1.0.0-rc.7 (August 14, 2013)*
+### Ember 1.0.0-rc.7 _(August 14, 2013)_
 
 * correctly preserve a views container
 * Reference to RSVP repo for documentation
@@ -249,7 +253,8 @@
 * add loc helper
 * document  ember-testing helpers
 
-*Ember 1.0.0-rc.6 (June 23, 2013)*
+
+### Ember 1.0.0-rc.6 _(June 23, 2013)_
 
 * Refactored `Ember.Route`s teardown mechanism for rendered views. This fixes #2857, previously multiple outlets were not tore down.
 * Rename Control to Component. This avoids conflicts with the existing (behind-a-flag) control and is clearer about intent.
@@ -307,7 +312,8 @@
 * Release tooling improvements
 * Adds assertion for misnamed controller name provided to render helper. [Fixes #2385]
 
-*Ember 1.0.0-rc.5 (June 01, 2013)*
+
+### Ember 1.0.0-rc.5 _(June 01, 2013)_
 
 * Added assertion for incorrect container lookup names
 * adding docs for Ember.beforeObserver
@@ -321,7 +327,8 @@
 * maintain ruby'esq version string for gems
 * remove starter_kit upload task (we just use the github tarbals)
 
-*Ember 1.0.0-rc.4 (May 27, 2013)*
+
+### Ember 1.0.0-rc.4 _(May 27, 2013)_
 
 * Loader: improve missing module error message
 * Fix click test helper selector context
@@ -447,7 +454,8 @@
 * Use isNone to check tag name
 * Added length property to Ember.Map
 
-*Ember 1.0.0-rc.3 (April 19, 2013)*
+
+### Ember 1.0.0-rc.3 _(April 19, 2013)_
 
 * fn.call is wasteful when the thisArg is not needed.
 * dont needlessly close-over and rebuild insertViewCollection
@@ -542,7 +550,8 @@
 * Add {{input type="text"}}
 * Insert adjacent child views in batches rather than individually.
 
-*Ember 1.0.0-rc.2 (March 29, 2013)*
+
+### Ember 1.0.0-rc.2 _(March 29, 2013)_
 
 * Improved the App initialization process and deprecated Ember.Application#initialize. If you were using this, use deferReadiness and advanceReadiness instead.
 * Added support for Ember.Application#then which fires similarly to the isReady hook
@@ -580,7 +589,8 @@
 * String#camelize lowercases the first letter
 * Other miscellaneous bug fixes and documentation improvements
 
-*Ember 1.0.0-rc.1 (February 15, 2013)*
+
+### Ember 1.0.0-rc.1 _(February 15, 2013)_
 
 * Upgrade to Handlebars 1.0.0-rc.3
 * Update RSVP.js
@@ -617,14 +627,16 @@
 * Support string literals as param for {{linkTo}} and {{action}}
 * Empty object proxies are no longer truthy in {{#if}}
 
-*Ember 1.0.0-pre.4 (January 17, 2013)*
+
+### Ember 1.0.0-pre.4 _(January 17, 2013)_
 
 * Add {{partial}}
 * Fix regressions in router.js
 * Support jQuery 1.9.0
 * Use the controller with the same name as the template passed to render, if it exists
 
-*Ember 1.0.0-pre.3 (January 17, 2013)*
+
+### Ember 1.0.0-pre.3 _(January 17, 2013)_
 
 * BREAKING CHANGE: New Router API
 * BREAKING CHANGE: `Ember.Object.create` behaves like `setProperties`. Use `createWithMixins` for the old behavior.
@@ -659,7 +671,8 @@
 * Miscellaneous bug fixes
 * General cleanup
 
-*Ember 1.0.0-pre.2 (October 25, 2012)*
+
+### Ember 1.0.0-pre.2 _(October 25, 2012)_
 
 * Ember.SortableMixin: don't remove and reinsert items when their sort order doesn't change.  Fixes #1486.
 * Fix edge cases with adding/removing observers
@@ -742,7 +755,8 @@
 * Rakefile :clean remove 'tmp' folder
 * Performance improvements
 
-*Ember 1.0.pre (August 03, 2012)*
+
+### Ember 1.0.pre _(August 03, 2012)_
 
 * Return undefined instead of empty jQuery object for Ember.View#$ when not in DOM
 * Adds didDefineProperty hook
@@ -910,14 +924,16 @@
 * Implement modelType guessing.
 * Add support for modelType in the router
 
-*Ember 0.9.8.1 (May 22, 2012)*
+
+### Ember 0.9.8.1 _(May 22, 2012)_
 
 * Fix bindAttr with global paths
 * Fix initialization with non routable stateManager
 * Better jQuery warning message
 * Documentation fixes
 
-*Ember 0.9.8 (May 21, 2012)*
+
+### Ember 0.9.8 _(May 21, 2012)_
 
 * Better docs
 * Preliminary routing support
@@ -964,12 +980,14 @@
 * Added ComputedProperty#volatile to turn off caching
 * Support making Computed Properties cacheable by default
 
-*Ember 0.9.7.1 (April 19, 2012)*
+
+### Ember 0.9.7.1 _(April 19, 2012)_
 
 * Better escaping method for RenderBuffer
 * More rigorous XSS escaping from bindAttr
 
-*Ember 0.9.7 (April 18, 2012)*
+
+### Ember 0.9.7 _(April 18, 2012)_
 
 * RenderBuffer now properly escapes attribute values. Fixes XSS vulnerability documented in #699.
 * Make options an optional argument to Ember.Handlebars.getPath
@@ -988,7 +1006,8 @@
 * Ember.Select allows array selections when multiple=false.
 * Ember.ArrayUtils.objectsAt returns correct objects.
 
-*Ember 0.9.6 (March 30, 2012)*
+
+### Ember 0.9.6 _(March 30, 2012)_
 
 * Significant internal performance improvements
 * Improved performance of RenderBuffer
@@ -1037,7 +1056,7 @@
 * Added benchmarking harness for internals
 
 
-*Ember 0.9.5 (February 17, 2012)*
+### Ember 0.9.5 _(February 17, 2012)_
 
 * Add Handlebars helper for {{yield}}
 * Add a .jshintrc
@@ -1068,7 +1087,8 @@
 * Miscellaneous documentation improvements
 * Better framework warnings and deprecations
 
-*Ember 0.9.4 (January 23, 2012)*
+
+### Ember 0.9.4 _(January 23, 2012)_
 
 * Add Ember.Select control
 * Added Ember.Handlebars action helper to easily add event handling to DOM elements without requiring a new view
@@ -1101,14 +1121,16 @@
 * Lots of minor bug fixes
 * Inline documentation improvements
 
-*Ember 0.9.3 (December 19, 2011)*
+
+### Ember 0.9.3 _(December 19, 2011)_
 
 * Make sure willInsertElement actually gets called on all child views. Element is still not guaranteed to work.
 * Implement tab views and controller
 * Fixed some parse errors and jslint warnings
 * allow use of multiple {{bindAttr}}s per element
 
-*Ember 0.9.2 (December 16, 2011)*
+
+### Ember 0.9.2 _(December 16, 2011)_
 
 * add replaceIn to replace an entire node's content with something new
 * Use prepend() and after() methods of Metamorph
@@ -1118,7 +1140,8 @@
 * Adding support for <script type="text/x-raw-handlebars">
 * Remove parentView deprecation warning
 
-*Ember 0.9.1 (December 14, 2011)*
+
+### Ember 0.9.1 _(December 14, 2011)_
 
 * Fix jslint warnings related to missing semicolons and variables defined twice
 * Alias amber_assert to sc_assert for backwards compat
