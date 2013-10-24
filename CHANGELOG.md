@@ -1,12 +1,20 @@
-*Ember 1.3.0 (TBD)*
+Ember Changelog
+===============
+
+Ember 1.3.0 _(TBD)_
+-------------------
 
 * Add query params support to the ember router. You can now define which query params your routes respond to, use them in your route hooks to affect model loading or controller state, and transition query parameters with the link-to helper and the transitionTo method
 
-*Ember 1.2.0 (TBD)*
+
+Ember 1.2.0 _(TBD)_
+-------------------
 
 * In beta
 
-* Ember 1.1.0 (October 21, 2013)*
+
+Ember 1.1.0 _(October 21, 2013)_
+--------------------------------
 
 * Make Ember.run.later more flexible with arguments - Fixes #3072
 * Add assertion upon too many ajaxStop's.
@@ -51,7 +59,8 @@
 * Incorrect error message in router.js
 * Install default error handler on ApplicationRoute#actions, not #events
 
-*Ember 1.0.0 (August 31, 2013)*
+Ember 1.0.0 _(August 31, 2013)_
+-------------------------------
 
 * Fix nested `{{yield}}`
 * `ReduceComputed` groups changed properties.
