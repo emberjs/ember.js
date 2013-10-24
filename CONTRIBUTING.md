@@ -61,13 +61,14 @@ then that will speed the process along.
 
 # Building Ember.js
 
-With a relatively new ruby ( > 1.9.x) and [Bundler](http://bundler.io/) installed, building ember is quite simple.
+With a relatively new ruby ( >= 1.9.3), [Bundler](http://bundler.io/), and [Node.js](http://nodejs.org/)
+building Ember is quite simple.
 
 ```sh
 cd ember.js
 bundle install
-rake dist
-rake test
+npm install -g defeatureify
+rake
 ```
 
 For those having issues with some of the build tool dependencies, an optional VagrantFile is provided.

@@ -120,17 +120,13 @@ everything you need to get started.
 
 # Building Ember.js
 
-NOTE: Due to the rename, these instructions may be in flux
-
-1. Ensure that [Bundler](http://bundler.io/) is installed.
-2. Run `bundle install` to fetch the necessary ruby gems.
-3. Run `rake dist` to build Ember.js. Two builds will be placed in the `dist/` directory.
-  * `ember.js` and `ember.min.js` - unminified and minified builds of Ember.js
-
-If you are building under Linux, you will need a JavaScript runtime for
-minification, for which we recommend installing nodejs.  Alternatively 
-you may have luck with another of the runtimes supported by
-[execjs](https://github.com/sstephenson/execjs).
+1. Ensure that you have a recent Ruby (>= 1.9.3). There are many resources that can help;
+   one of the best is [rvm](https://rvm.io/).
+2. Ensure that [Bundler](http://bundler.io/) is installed (`gem install bundler`).
+3. Ensure that [Node.js](http://nodejs.org/) is installed.
+4. Run `bundle install` to install the necessary ruby gems.
+5. Run `npm install -g defeatureify`.
+6. Run `rake dist` to build Ember.js. The builds will be placed in the `dist/` directory.
 
 # Contribution
 
@@ -138,20 +134,12 @@ you may have luck with another of the runtimes supported by
 
 # How to Run Unit Tests
 
-## Setup
 
-1. Install Ruby 1.9.3+. There are many resources on the web can help;
-one of the best is [rvm](https://rvm.io/).
+1. Follow the setup steps listed above under [Building Ember.js](#building-emberjs).
 
-2. Install Bundler: `gem install bundler`
+2. To start the development server, run `rackup`.
 
-3. Run `bundle` inside the project root to install the gem dependencies.
-
-## In Your Browser
-
-1. To start the development server, run `rackup`.
-
-2. Then visit: `http://localhost:9292/?package=PACKAGE_NAME`. Replace
+3. Then visit: `http://localhost:9292/?package=PACKAGE_NAME`. Replace
 `PACKAGE_NAME` with the name of the package you want to run. For
 example:
 
