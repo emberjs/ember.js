@@ -125,7 +125,7 @@ everything you need to get started.
 2. Ensure that [Bundler](http://bundler.io/) is installed (`gem install bundler`).
 3. Ensure that [Node.js](http://nodejs.org/) is installed.
 4. Run `bundle install` to install the necessary ruby gems.
-5. Run `npm install -g defeatureify`.
+5. Run `npm install`.
 6. Run `rake dist` to build Ember.js. The builds will be placed in the `dist/` directory.
 
 # Contribution

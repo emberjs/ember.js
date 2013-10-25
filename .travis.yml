@@ -4,8 +4,7 @@ rvm:
 node_js:
 - "0.10"
 install:
-- "npm install -g defeatureify"
-- "npm install -g yuidocjs"
+- "npm install"
 - "bundle install --deployment"
 after_success: bundle exec rake publish_build
 script: rake test\[$TEST_SUITE]
