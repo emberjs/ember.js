@@ -1,3 +1,7 @@
+* Ember 1.1.2 (October 25, 2013)*
+
+  * [BUGFIX] Fix failures in component rendering. - Fixes #3637
+
 * Ember 1.1.1 (October 23, 2013)*
 
   * [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.

@@ -4,10 +4,10 @@
   "description": "Namespacing, event delegation, and structure for applications.",
   "homepage": "http://emberjs.com",
   "author": "Yehuda Katz",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "dependencies": {
-    "ember-views": "1.1.1",
-    "ember-routing": "1.1.1"
+    "ember-views": "1.1.2",
+    "ember-routing": "1.1.2"
   },
 
   "directories": {
