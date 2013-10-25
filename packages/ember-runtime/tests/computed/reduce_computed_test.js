@@ -461,6 +461,38 @@ test("dependent arrays that call `replace` with a too-large removedCount a) work
   deepEqual(array, [2], "array was correctly right-truncated");
 });
 
+test("removedItem is not erroneously called for dependent arrays during a recomputation", function() {
+  function addedItem(array, item, changeMeta) {
+    array.insertAt(changeMeta.index, item);
+    return array;
+  }
+
+  function removedItem(array, item, changeMeta) {
+    ok(get(array, 'length') > changeMeta.index, "removedItem not called with invalid index");
+    array.removeAt(changeMeta.index, 1);
+    return array;
+  }
+
+  var dependentArray = Ember.A(),
+      options = {
+        addedItem: addedItem,
+        removedItem: removedItem
+      };
+
+  obj = Ember.Object.extend({
+    dependentArray: Ember.A([1, 2]),
+    identity0: Ember.arrayComputed('dependentArray', options),
+    identity1: Ember.arrayComputed('identity0', options)
+  }).create();
+
+  get(obj, 'identity1');
+  Ember.run(function() {
+    obj.notifyPropertyChange('dependentArray');
+  });
+
+  ok(true, "removedItem not invoked with invalid index");
+});
+
 
 if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
   module('Ember.arryComputed - self chains', {
