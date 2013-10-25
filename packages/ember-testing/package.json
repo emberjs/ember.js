@@ -4,7 +4,7 @@
   "description": "A lightweight library that provides tools for testing Ember applications",
   "homepage": "https://github.com/emberjs/ember.js",
   "authors": ["Erik Bryn"],
-  "version": "1.2.0-beta.1",
+  "version": "1.2.0-beta.2",
 
   "dependencies": {
     "spade": "~> 1.0.0"

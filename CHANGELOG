@@ -1,3 +1,9 @@
+* Ember 1.2.0-beta.2 (October 25, 2013)*
+
+* [BUGFIX] reduceComputed ignore changes during reset.
+* [BUGFIX] reduceComputed handle out-of-range index.
+* [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
+
 * Ember 1.2.0-beta.1 (October 21, 2013)*
 
 * [FEATURE] Add support for nested loading/error substates. A loading substate will be entered when a slow-to-resolve promise is returned from one of the Route#model hooks during a transition and an appropriately-named loading template/route can be found.  An error substate will be entered when one of the Route#model hooks returns a rejecting promise and an appropriately-named error template/route can be found.

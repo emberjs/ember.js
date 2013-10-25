@@ -5,7 +5,7 @@
 
   "homepage": "http://emberjs.com",
   "author": "Charles Jolley",
-  "version": "1.2.0-beta.1",
+  "version": "1.2.0-beta.2",
 
   "directories": {
     "lib": "lib"
@@ -13,7 +13,7 @@
 
   "dependencies": {
     "spade":            "~> 1.0",
-    "ember-metal": "1.2.0-beta.1",
+    "ember-metal": "1.2.0-beta.2",
     "container": "1.0.0-pre.2"
   },
 

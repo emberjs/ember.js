@@ -4,7 +4,7 @@
   "description": "A programmatic compiler for Handlebars with the few syntax extensions supported by Ember with minimal dependencies",
   "homepage": "http://emberjs.com",
   "author": "Yehuda Katz",
-  "version": "1.2.0-beta.1",
+  "version": "1.2.0-beta.2",
   "dependencies": {
     "spade":              "~> 1.0.0",
     "handlebars":         "~> 1.0.0.beta.6"
