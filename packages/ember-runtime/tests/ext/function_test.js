@@ -7,7 +7,7 @@ module('Function.prototype.observes() helper');
 testBoth('global observer helper takes multiple params', function(get, set) {
 
   if (Ember.EXTEND_PROTOTYPES === false) {
-    ok('Function.prototype helper disabled');
+    ok("undefined" === typeof Function.prototype.observes, 'Function.prototype helper disabled');
     return ;
   }
 
@@ -34,7 +34,7 @@ module('Function.prototype.on() helper');
 testBoth('sets up an event listener, and can trigger the function on multiple events', function(get, set) {
 
   if (Ember.EXTEND_PROTOTYPES === false) {
-    ok('Function.prototype helper disabled');
+    ok("undefined" === typeof Function.prototype.on, 'Function.prototype helper disabled');
     return ;
   }
 
@@ -85,7 +85,7 @@ module('Function.prototype.property() helper');
 testBoth('sets up a ComputedProperty', function(get, set) {
 
   if (Ember.EXTEND_PROTOTYPES === false) {
-    ok('Function.prototype helper disabled');
+    ok("undefined" === typeof Function.prototype.property, 'Function.prototype helper disabled');
     return ;
   }
 
