@@ -28,6 +28,14 @@ test("get does not warn on keys with dots in 0.9 mode", function() {
   equal(warnings.length, 0);
 });
 
+test("trySet exists and follows paths in 0.9 mode", function() {
+  Ember.ENV.ACCESSORS = null;
+  var o = { foo: {bar: 'baz'} };
+  Ember.trySet(o, 'foo.bar', 'qux');
+  equal(o.foo.bar, 'qux');
+  equal(warnings.length, 0);
+});
+
 // Ember.ENV.ACCESSORS = "0.9-dotted-properties"
 
 test("get warns with dots in key name on the 0.9 mode with warnings", function() {
@@ -44,6 +52,14 @@ test("set warns with dots in key name on the 0.9 mode with warnings", function()
   Ember.set(o, 'foo.bar', 'baz');
   equal(warnings.length, 1);
   matches(warnings[0], "The behavior of `set` has changed in Ember 1.0. It will no longer support keys with periods in them.");
+});
+
+test("trySet exists and follows paths in 0.9-dotted-properties mode", function() {
+  Ember.ENV.ACCESSORS = '0.9-dotted-properties';
+  var o = { foo: {bar: 'baz'} };
+  Ember.trySet(o, 'foo.bar', 'qux');
+  equal(o.foo.bar, 'qux');
+  equal(warnings.length, 0);
 });
 
 // Ember.ENV.ACCESSORS = "1.0-no-warn"

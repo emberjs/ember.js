@@ -5,7 +5,7 @@
 // ==========================================================================
 
 require('ember-metal/core'); // Ember.Logger
-require('ember-metal/accessors'); // get, getPath, setPath, trySetPath
+require('ember-metal/accessors'); // get, getPath, setPath, trySet
 require('ember-metal/utils'); // guidFor, isArray, meta
 require('ember-metal/observer'); // addObserver, removeObserver
 require('ember-metal/run_loop'); // Ember.run.schedule
@@ -568,10 +568,10 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
         Ember.Logger.log(' ', this.toString(), '->', fromValue, obj);
       }
       if (this._oneWay) {
-        Ember.trySetPath(Ember.isGlobalPath(toPath) ? window : obj, toPath, fromValue);
+        Ember.trySet(Ember.isGlobalPath(toPath) ? window : obj, toPath, fromValue);
       } else {
         Ember._suspendObserver(obj, toPath, this, this.toDidChange, function () {
-          Ember.trySetPath(Ember.isGlobalPath(toPath) ? window : obj, toPath, fromValue);
+          Ember.trySet(Ember.isGlobalPath(toPath) ? window : obj, toPath, fromValue);
         });
       }
     // if we're synchronizing *to* the remote object
@@ -581,7 +581,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
         Ember.Logger.log(' ', this.toString(), '<-', toValue, obj);
       }
       Ember._suspendObserver(obj, fromPath, this, this.fromDidChange, function () {
-        Ember.trySetPath(Ember.isGlobalPath(fromPath) ? window : obj, fromPath, toValue);
+        Ember.trySet(Ember.isGlobalPath(fromPath) ? window : obj, fromPath, toValue);
       });
     }
   }
