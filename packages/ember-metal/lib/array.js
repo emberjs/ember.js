@@ -70,17 +70,49 @@ var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.index
   return -1;
 };
 
-/**
-  Array polyfills to support ES5 features in older browsers.
+if (Ember.FEATURES.isEnabled('array-filter')) {
+  var arrayFilter = isNativeFunc(Array.prototype.filter) ? Array.prototype.filter : function (fn, context) {
+    var i,
+    value,
+    result = [],
+    length = this.length;
 
-  @namespace Ember
-  @property ArrayPolyfills
-*/
-Ember.ArrayPolyfills = {
-  map: arrayMap,
-  forEach: arrayForEach,
-  indexOf: arrayIndexOf
-};
+    for (i = 0; i < length; i++) {
+      if (this.hasOwnProperty(i)) {
+        value = this[i];
+        if (fn.call(context, value, i, this)) {
+          result.push(value);
+        }
+      }
+    }
+    return result;
+  };
+
+  /**
+    Array polyfills to support ES5 features in older browsers.
+
+    @namespace Ember
+    @property ArrayPolyfills
+  */
+  Ember.ArrayPolyfills = {
+    map: arrayMap,
+    forEach: arrayForEach,
+    filter: arrayFilter,
+    indexOf: arrayIndexOf
+  };
+} else {
+  /**
+    Array polyfills to support ES5 features in older browsers.
+
+    @namespace Ember
+    @property ArrayPolyfills
+  */
+  Ember.ArrayPolyfills = {
+    map: arrayMap,
+    forEach: arrayForEach,
+    indexOf: arrayIndexOf
+  };
+}
 
 if (Ember.SHIM_ES5) {
   if (!Array.prototype.map) {

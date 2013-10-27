@@ -1,9 +1,10 @@
-var map, forEach, indexOf, splice;
+var map, forEach, indexOf, splice, filter;
 require('ember-metal/array');
 
 map     = Array.prototype.map     || Ember.ArrayPolyfills.map;
 forEach = Array.prototype.forEach || Ember.ArrayPolyfills.forEach;
 indexOf = Array.prototype.indexOf || Ember.ArrayPolyfills.indexOf;
+filter = Array.prototype.filter || Ember.ArrayPolyfills.filter;
 splice = Array.prototype.splice;
 
 var utils = Ember.EnumerableUtils = {
@@ -13,6 +14,10 @@ var utils = Ember.EnumerableUtils = {
 
   forEach: function(obj, callback, thisArg) {
     return obj.forEach ? obj.forEach.call(obj, callback, thisArg) : forEach.call(obj, callback, thisArg);
+  },
+
+  filter: function(obj, callback, thisArg) {
+    return obj.filter ? obj.filter.call(obj, callback, thisArg) : filter.call(obj, callback, thisArg);
   },
 
   indexOf: function(obj, element, index) {
