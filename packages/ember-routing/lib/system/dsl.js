@@ -25,13 +25,14 @@ DSL.prototype = {
 
     if (callback) {
       var dsl = new DSL(name);
-      dsl.route('loading');
-      dsl.route('error', { path: "/_unused_dummy_error_path/:error" });
+      route(dsl, 'loading');
+      route(dsl, 'error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
       callback.call(dsl);
       this.push(options.path, name, dsl.generate(), options.queryParams);
     } else {
       this.push(options.path, name, null, options.queryParams);
     }
+
   },
 
   push: function(url, name, callback, queryParams) {
@@ -42,19 +43,7 @@ DSL.prototype = {
   },
 
   route: function(name, options) {
-    Ember.assert("You must use `this.resource` to nest", typeof options !== 'function');
-
-    options = options || {};
-
-    if (typeof options.path !== 'string') {
-      options.path = "/" + name;
-    }
-
-    if (this.parent && this.parent !== 'application') {
-      name = this.parent + "." + name;
-    }
-
-    this.push(options.path, name, null, options.queryParams);
+    route(this, name, options);
   },
 
   generate: function() {
@@ -77,6 +66,22 @@ DSL.prototype = {
     };
   }
 };
+
+function route(dsl, name, options) {
+  Ember.assert("You must use `this.resource` to nest", typeof options !== 'function');
+
+  options = options || {};
+
+  if (typeof options.path !== 'string') {
+    options.path = "/" + name;
+  }
+
+  if (dsl.parent && dsl.parent !== 'application') {
+    name = dsl.parent + "." + name;
+  }
+
+  dsl.push(options.path, name, null, options.queryParams);
+}
 
 DSL.map = function(callback) {
   var dsl = new DSL();

@@ -200,7 +200,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
     equal(appController.get('currentPath'), "grandma.mom", "currentPath reflects final state");
   });
 
-  test("Slow promises returned from ApplicationRoute#model don't enter a substate", function() {
+  test("Slow promises returned from ApplicationRoute#model don't enter LoadingRoute", function() {
 
     expect(2);
 
@@ -325,9 +325,9 @@ if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
     equal(appController.get('currentPath'), "grandma.smells", "Finished transition");
   });
 
-  test("Don't bubble loading event above pivot route", function() {
+  test("Loading actions bubble to root, but don't enter substates above pivot", function() {
 
-    expect(5);
+    expect(6);
 
     delete templates.loading;
 
@@ -350,7 +350,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
     App.ApplicationRoute = Ember.Route.extend({
       actions: {
         loading: function(transition, route) {
-          equal(route, container.lookup('route:mom.sally'), "the only route whose loading event should bubble to app route is mom.sally");
+          ok(true, "loading action received on ApplicationRoute");
         }
       }
     });
@@ -376,7 +376,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
     equal(appController.get('currentPath'), "grandma.mom.sally", "transition completed");
 
     Ember.run(router, 'transitionTo', 'grandma.smells');
-    equal(appController.get('currentPath'), "grandma.mom.sally", "still in initial state because loading event didn't bubble");
+    equal(appController.get('currentPath'), "grandma.mom.sally", "still in initial state because the only loading state is above the pivot route");
 
     Ember.run(smellsDeferred, 'resolve', {});
 
@@ -403,9 +403,10 @@ if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
     App.MomSallyRoute = Ember.Route.extend({
       model: function() {
         step(1, "MomSallyRoute#model");
-        throw {
+
+        return Ember.RSVP.reject({
           msg: "did it broke?"
-        };
+        });
       },
       actions: {
         error: function() {
@@ -424,4 +425,5 @@ if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
     var appController = container.lookup('controller:application');
     equal(appController.get('currentPath'), 'grandma.error', "Initial route fully loaded");
   });
+
 }
