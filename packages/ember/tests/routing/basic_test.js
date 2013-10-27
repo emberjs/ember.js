@@ -749,6 +749,9 @@ asyncTest("The Special page returning an error invokes SpecialRoute's error hand
 });
 
 function testOverridableErrorHandler(handlersName) {
+
+  expect(2);
+
   Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
@@ -770,7 +773,6 @@ function testOverridableErrorHandler(handlersName) {
   var attrs = {};
   attrs[handlersName] = {
     error: function(reason) {
-      ok(typeof this._super === 'function', "_super is available");
       equal(reason, 'Setup error', "error was correctly passed to custom ApplicationRoute handler");
       start();
     }
