@@ -24,7 +24,7 @@ var platform = Ember.platform = {};
 */
 Ember.create = Object.create;
 
-// IE8 has Object.create but it couldn't treat property descripters.
+// IE8 has Object.create but it couldn't treat property descriptors.
 if (Ember.create) {
   if (Ember.create({a: 1}, {a: {value: 2}}).a !== 2) {
     Ember.create = null;
