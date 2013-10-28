@@ -1,6 +1,6 @@
 define("router",
-  ["route-recognizer","rsvp"],
-  function(RouteRecognizer, RSVP) {
+  ["route-recognizer","rsvp","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     /**
       @private
@@ -20,6 +20,8 @@ define("router",
       * `{Object} context`: the active context for the handler
     */
 
+    var RouteRecognizer = __dependency1__;
+    var RSVP = __dependency2__;
 
     var slice = Array.prototype.slice;
 
@@ -174,6 +176,7 @@ define("router",
     // TODO: separate into module?
     Router.Transition = Transition;
 
+    __exports__['default'] = Router;
 
 
     /**
@@ -529,7 +532,7 @@ define("router",
     }
 
     function isParam(object) {
-      return (typeof object === "string" || object instanceof String || !isNaN(object));
+      return (typeof object === "string" || object instanceof String || typeof object === "number" || object instanceof Number);
     }
 
 
@@ -702,7 +705,7 @@ define("router",
         // Make sure this route is actually accessible by URL.
         for (i = 0, len = results.length; i < len; ++i) {
 
-          if (router.getHandler(results[i].handler).inaccessiblyByURL) {
+          if (router.getHandler(results[i].handler).inaccessibleByURL) {
             results = null;
             break;
           }
@@ -1069,14 +1072,7 @@ define("router",
         checkAbort(transition);
 
         try {
-          log(router, transition.sequence, "Validation succeeded, finalizing transition;");
-
-          // Don't overwrite contexts / update URL if this was a noop transition.
-          if (!currentHandlerInfos || !currentHandlerInfos.length ||
-              !router.recognizer.hasRoute(currentHandlerInfos[currentHandlerInfos.length - 1].name) ||
-              currentHandlerInfos.length !== matchPointResults.matchPoint) {
-            finalizeTransition(transition, handlerInfos);
-          }
+          finalizeTransition(transition, handlerInfos);
 
           // currentHandlerInfos was updated in finalizeTransition
           trigger(router, router.currentHandlerInfos, true, ['didTransition']);
@@ -1161,6 +1157,8 @@ define("router",
      */
     function finalizeTransition(transition, handlerInfos) {
 
+      log(transition.router, transition.sequence, "Validation succeeded, finalizing transition;");
+
       var router = transition.router,
           seq = transition.sequence,
           handlerName = handlerInfos[handlerInfos.length - 1].name,
@@ -1176,7 +1174,7 @@ define("router",
           objects.unshift(isParam(providedModel) ? providedModel.toString() : handlerInfo.context);
         }
 
-        if (handlerInfo.handler.inaccessiblyByURL) {
+        if (handlerInfo.handler.inaccessibleByURL) {
           urlMethod = null;
         }
       }
@@ -1263,7 +1261,7 @@ define("router",
       }
 
       function handleError(reason) {
-        if (reason instanceof Router.TransitionAborted) {
+        if (reason instanceof Router.TransitionAborted || transition.isAborted) {
           // if the transition was aborted and *no additional* error was thrown,
           // reject with the Router.TransitionAborted instance
           return RSVP.reject(reason);
@@ -1450,7 +1448,4 @@ define("router",
       }
       return object;
     }
-
-
-    return Router;
   });

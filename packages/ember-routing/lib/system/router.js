@@ -3,7 +3,7 @@
 @submodule ember-routing
 */
 
-var Router = requireModule("router");
+var Router = requireModule("router")['default'];
 var get = Ember.get, set = Ember.set;
 var defineProperty = Ember.defineProperty;
 
