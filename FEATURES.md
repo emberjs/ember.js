@@ -1,26 +1,7 @@
 ## About Features
 
-As of Ember 1.0.0 we have started using a new release process. At this point all
-newly added features will be behind a feature flag. This allows changes being
-made to be enabled or disabled at runtime for each application.
-
-This processes is explained in more detail [here](http://emberjs.com/blog/2013/09/06/new-ember-release-process.html).
-
-## How do I use them?
-
-There are a couple different ways to enable a given feature.
-
-Declare an `ENV.FEATURES` global before requiring Ember:
-
-```javascript
-ENV = {FEATURES: {'link-to': true}};
-```
-
-Set the `Ember.FEATURES` value after initialization:
-
-```javascript
-Ember.FEATURES['link-to'] = true;
-```
+Please read the [Feature Flag Guide](http://emberjs.com/guides/configuring-ember/feature-flags/)
+for a detailed explanation.
 
 ## Feature Flags
 
