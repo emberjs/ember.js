@@ -1,6 +1,6 @@
 require('ember-handlebars/ext');
 
-var EmberHandlebars = Ember.Handlebars, getPath = EmberHandlebars.getPath, get = Ember.get;
+var EmberHandlebars = Ember.Handlebars, getPath = EmberHandlebars.get, get = Ember.get;
 
 var ActionHelper = EmberHandlebars.ActionHelper = {
   registeredActions: {}
