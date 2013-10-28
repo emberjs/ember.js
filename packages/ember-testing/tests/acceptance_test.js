@@ -86,12 +86,9 @@ test("helpers can be chained with then", function() {
   }).then(function() {
     equal(Ember.$('.ember-text-field').val(), 'context working', "chained with fillIn");
     click(".does-not-exist");
-  }).then(function() {
-    // This redundant `then` is needed in this test
-    // so we can assert that thrown exceptions
-    // do not fire multiple times
+  }).then(null, function(e) {
+    equal(e.message, "Element .does-not-exist not found.", "Non-existent click exception caught");
   });
-
 });
 
 
