@@ -5,7 +5,7 @@
 // ==========================================================================
 /*globals Handlebars */
 
-var get = Ember.get, set = Ember.set, getPath = Ember.Handlebars.getPath;
+var get = Ember.get, set = Ember.set, getPath = Ember.Handlebars.get;
 
 require('ember-views/views/view');
 require('ember-handlebars/views/metamorph_view');
