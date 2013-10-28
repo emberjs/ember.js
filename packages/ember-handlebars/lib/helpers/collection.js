@@ -9,7 +9,7 @@
 require('ember-handlebars');
 require('ember-handlebars/helpers/view');
 
-var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
+var get = Ember.get, getPath = Ember.Handlebars.get, fmt = Ember.String.fmt;
 
 /**
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
@@ -111,7 +111,7 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
         <p class="ember-view greeting">Howdy Mary</p>
         <p class="ember-view greeting">Howdy Sara</p>
       </div>
-  
+
   @name Handlebars.helpers.collection
   @param {String} path
   @param {Hash} options

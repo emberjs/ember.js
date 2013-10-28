@@ -9,7 +9,7 @@ require('ember-handlebars/views/handlebars_bound_view');
 require('ember-handlebars/views/metamorph_view');
 
 var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
-var getPath = Ember.Handlebars.getPath, normalizePath = Ember.Handlebars.normalizePath;
+var getPath = Ember.Handlebars.get, normalizePath = Ember.Handlebars.normalizePath;
 var forEach = Ember.ArrayUtils.forEach;
 
 var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;

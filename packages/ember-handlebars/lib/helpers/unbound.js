@@ -7,7 +7,7 @@
 
 require('ember-handlebars/ext');
 
-var getPath = Ember.Handlebars.getPath;
+var getPath = Ember.Handlebars.get;
 
 /**
   `unbound` allows you to output a property without binding. *Important:* The
