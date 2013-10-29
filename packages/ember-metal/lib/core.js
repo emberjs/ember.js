@@ -147,7 +147,7 @@ Ember.CP_DEFAULT_CACHEABLE = !!Ember.ENV.CP_DEFAULT_CACHEABLE;
         {{/view}}
       {{/each}}
 */
-Ember.VIEW_PRESERVES_CONTEXT = !!Ember.ENV.VIEW_PRESERVES_CONTEXT;
+Ember.VIEW_PRESERVES_CONTEXT = Ember.ENV.VIEW_PRESERVES_CONTEXT;
 
 /**
   Empty function.  Useful for some operations.
