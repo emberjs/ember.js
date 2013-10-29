@@ -184,7 +184,6 @@ CoreObject.PrototypeMixin = Mixin.create({
     ```javascript
     App.Person = Ember.Object.extend({
       init: function() {
-        this._super();
         alert('Name is ' + this.get('name'));
       }
     });
