@@ -100,7 +100,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   ```
 
   ```handlebars
-  {{view Ember.Select content=names}}
+  {{view Ember.Select contentBinding=names}}
   ```
 
   Would result in the following HTML:
@@ -124,8 +124,8 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         content=names
-         value=selectedName
+         contentBinding=names
+         valueBinding=selectedName
   }}
   ```
 
@@ -166,7 +166,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         content=programmers
+         contentBinding=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"}}
   ```
@@ -197,10 +197,10 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         content=programmers
+         contentBinding=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
-         value=currentProgrammer.id}}
+         valueBinding=currentProgrammer.id}}
   ```
 
   Would result in the following HTML with a selected option:
@@ -234,10 +234,10 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         content=programmers
+         contentBinding=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
-         selection=selectedPerson}}
+         selectionBinding=selectedPerson}}
   ```
 
   Would result in the following HTML with a selected option:
@@ -271,8 +271,8 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ``` handlebars
   {{view Ember.Select
-         content=programmers
-         value=selectedProgrammer
+         contentBinding=programmers
+         valueBinding=selectedProgrammer
   }}
   ```
 
@@ -303,8 +303,8 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         content=programmers
-         value=selectedProgrammer
+         contentBinding=programmers
+         valueBinding=selectedProgrammer
          prompt="Please select a name"
   }}
   ```
