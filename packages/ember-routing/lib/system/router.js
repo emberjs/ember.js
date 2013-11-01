@@ -429,12 +429,12 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
 
   if (!handlerInfos) {
     if (ignoreFailure) { return; }
-    throw new Ember.Error("Could not trigger event '" + name + "'. There are no active handlers");
+    throw new Ember.Error("Can't trigger action '" + name + "' because your app hasn't finished transitioning into its first route. To trigger an action on destination routes during a transition, you can call `.send()` on the `Transition` object passed to the `model/beforeModel/afterModel` hooks.");
   }
 
   var eventWasHandled = false;
 
-  for (var i=handlerInfos.length-1; i>=0; i--) {
+  for (var i = handlerInfos.length - 1; i >= 0; i--) {
     var handlerInfo = handlerInfos[i],
         handler = handlerInfo.handler;
 
