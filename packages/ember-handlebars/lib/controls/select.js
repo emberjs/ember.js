@@ -518,6 +518,19 @@ Ember.Select = Ember.View.extend(
     }
   }),
 
+  contentDidChange: Ember.observer(function() {
+    if (get(this, 'multiple')) { return; }
+    var content = get(this, 'content'),
+        value = get(this, 'value'),
+        valuePath = get(this, 'optionValuePath').replace(/^content\.?/, ''),
+        selection = get(this, 'selection');
+    if (content && selection != null && content.indexOf(selection)===-1) {
+      selection = content.find(function(obj) {
+        return value === (valuePath ? get(obj, valuePath) : obj);
+      });
+      this.set('selection', selection);
+    }
+  }, 'content.[]'),
 
   _triggerChange: function() {
     var selection = get(this, 'selection');
