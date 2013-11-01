@@ -272,8 +272,8 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   deactivate: Ember.K,
 
   /**
-    This hook is executed when the router enters the route for the first time.
-    It is not executed when the model for the route changes.
+    This hook is executed when the router enters the route. It is not executed
+    when the model for the route changes.
 
     @method activate
   */
