@@ -4,7 +4,7 @@
 ### Ember 1.3.0 _(TBD)_
 
 * Add query params support to the ember router. You can now define which query params your routes respond to, use them in your route hooks to affect model loading or controller state, and transition query parameters with the link-to helper and the transitionTo method
-
+* Add named substates; e.g. when resolving a `loading` or `error` substate to enter, Ember will take into account the name of the immediate child route that the `error`/`loading` action originated from, e.g. 'foo' if `FooRoute`, and try and enter `foo_error` or `foo_loading` if it exists. This also adds the ability for a top-level `application_loading` or `application_error` state to be entered for `loading`/`error` events emitted from `ApplicationRoute`.
 
 ### Ember 1.2.0 _(TBD)_
 

@@ -25,12 +25,22 @@ DSL.prototype = {
 
     if (callback) {
       var dsl = new DSL(name);
-      dsl.route('loading');
-      dsl.route('error', { path: "/_unused_dummy_error_path/:error" });
+      route(dsl, 'loading');
+      route(dsl, 'error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
       callback.call(dsl);
       this.push(options.path, name, dsl.generate(), options.queryParams);
     } else {
       this.push(options.path, name, null, options.queryParams);
+    }
+
+
+    if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
+      // For namespace-preserving nested resource (e.g. resource('foo.bar') within
+      // resource('foo')) we only want to use the last route name segment to determine
+      // the names of the error/loading substates (e.g. 'bar_loading')
+      name = name.split('.').pop();
+      route(this, name + '_loading');
+      route(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
     }
   },
 
@@ -42,19 +52,11 @@ DSL.prototype = {
   },
 
   route: function(name, options) {
-    Ember.assert("You must use `this.resource` to nest", typeof options !== 'function');
-
-    options = options || {};
-
-    if (typeof options.path !== 'string') {
-      options.path = "/" + name;
+    route(this, name, options);
+    if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
+      route(this, name + '_loading');
+      route(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
     }
-
-    if (this.parent && this.parent !== 'application') {
-      name = this.parent + "." + name;
-    }
-
-    this.push(options.path, name, null, options.queryParams);
   },
 
   generate: function() {
@@ -77,6 +79,22 @@ DSL.prototype = {
     };
   }
 };
+
+function route(dsl, name, options) {
+  Ember.assert("You must use `this.resource` to nest", typeof options !== 'function');
+
+  options = options || {};
+
+  if (typeof options.path !== 'string') {
+    options.path = "/" + name;
+  }
+
+  if (dsl.parent && dsl.parent !== 'application') {
+    name = dsl.parent + "." + name;
+  }
+
+  dsl.push(options.path, name, null, options.queryParams);
+}
 
 DSL.map = function(callback) {
   var dsl = new DSL();

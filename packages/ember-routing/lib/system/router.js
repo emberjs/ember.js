@@ -297,6 +297,133 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
   }
 });
 
+/**
+  @private
+
+  Helper function for iterating root-ward, starting
+  from (but not including) the provided `originRoute`.
+
+  Returns true if the last callback fired requested
+  to bubble upward.
+ */
+function forEachRouteAbove(originRoute, transition, callback) {
+  var handlerInfos = transition.handlerInfos,
+      originRouteFound = false;
+
+  for (var i = handlerInfos.length - 1; i >= 0; --i) {
+    var handlerInfo = handlerInfos[i],
+        route = handlerInfo.handler;
+
+    if (!originRouteFound) {
+      if (originRoute === route) {
+        originRouteFound = true;
+      }
+      continue;
+    }
+
+    if (callback(route, handlerInfos[i + 1].handler) !== true) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// These get invoked when an action bubbles above ApplicationRoute
+// and are not meant to be overridable.
+var defaultActionHandlers = {
+
+  willResolveModel: function(transition, originRoute) {
+    originRoute.router._scheduleLoadingEvent(transition, originRoute);
+  },
+
+  error: function(error, transition, originRoute) {
+    if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
+
+      // Attempt to find an appropriate error substate to enter.
+      var router = originRoute.router;
+
+      var tryTopLevel = forEachRouteAbove(originRoute, transition, function(route, childRoute) {
+        var childErrorRouteName = findChildRouteName(route, childRoute, 'error');
+        if (childErrorRouteName) {
+          router.intermediateTransitionTo(childErrorRouteName, error);
+          return;
+        }
+        return true;
+      });
+
+      if (tryTopLevel) {
+        // Check for top-level error state to enter.
+        if (routeHasBeenDefined(originRoute.router, 'application_error')) {
+          router.intermediateTransitionTo('application_error', error);
+          return;
+        }
+      } else {
+        // Don't fire an assertion if we found an error substate.
+        return;
+      }
+    }
+
+    Ember.Logger.assert(false, 'Error while loading route: ' + Ember.inspect(error));
+  },
+
+  loading: function(transition, originRoute) {
+    if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
+
+      // Attempt to find an appropriate loading substate to enter.
+      var router = originRoute.router;
+
+      var tryTopLevel = forEachRouteAbove(originRoute, transition, function(route, childRoute) {
+        var childLoadingRouteName = findChildRouteName(route, childRoute, 'loading');
+
+        if (childLoadingRouteName) {
+          router.intermediateTransitionTo(childLoadingRouteName);
+          return;
+        }
+
+        // Don't bubble above pivot route.
+        if (transition.pivotHandler !== route) {
+          return true;
+        }
+      });
+
+      if (tryTopLevel) {
+        // Check for top-level loading state to enter.
+        if (routeHasBeenDefined(originRoute.router, 'application_loading')) {
+          router.intermediateTransitionTo('application_loading');
+          return;
+        }
+      }
+    }
+  }
+};
+
+function findChildRouteName(parentRoute, originatingChildRoute, name) {
+  var router = parentRoute.router,
+      childName,
+      targetChildRouteName = originatingChildRoute.routeName.split('.').pop(),
+      namespace = parentRoute.routeName === 'application' ? '' : parentRoute.routeName + '.';
+
+  if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
+    // First, try a named loading state, e.g. 'foo_loading'
+    childName = namespace + targetChildRouteName + '_' + name;
+    if (routeHasBeenDefined(router, childName)) {
+      return childName;
+    }
+  }
+
+  // Second, try general loading state, e.g. 'loading'
+  childName = namespace + name;
+  if (routeHasBeenDefined(router, childName)) {
+    return childName;
+  }
+}
+
+function routeHasBeenDefined(router, name) {
+  var container = router.container;
+  return router.hasRoute(name) &&
+         (container.has('template:' + name) || container.has('route:' + name));
+}
+
 function triggerEvent(handlerInfos, ignoreFailure, args) {
   var name = args.shift();
 
@@ -320,14 +447,27 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
     }
   }
 
+  if (defaultActionHandlers[name]) {
+    defaultActionHandlers[name].apply(null, args);
+    return;
+  }
+
   if (!eventWasHandled && !ignoreFailure) {
-    throw new Ember.Error("Nothing handled the action '" + name + "'. If you did handle the action, this error can be caused by returning true from an action handler, causing the action to bubble.");
+    throw new Ember.Error("Nothing handled the action '" + name + "'.");
   }
 }
 
 function updatePaths(router) {
-  var appController = router.container.lookup('controller:application'),
-      infos = router.router.currentHandlerInfos,
+  var appController = router.container.lookup('controller:application');
+
+  if (!appController) {
+    // appController might not exist when top-level loading/error
+    // substates have been entered since ApplicationRoute hasn't
+    // actually been entered at that point.
+    return;
+  }
+
+  var infos = router.router.currentHandlerInfos,
       path = Ember.Router._routePath(infos);
 
   if (!('currentPath' in appController)) {

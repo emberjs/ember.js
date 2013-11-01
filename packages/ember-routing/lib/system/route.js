@@ -10,47 +10,6 @@ var get = Ember.get, set = Ember.set,
     a_forEach = Ember.EnumerableUtils.forEach,
     a_replace = Ember.EnumerableUtils.replace;
 
-var defaultActionHandlers = {
-
-  willResolveModel: function(transition, originRoute) {
-    this.router._scheduleLoadingEvent(transition, originRoute);
-  },
-
-  error: function(error, transition, originRoute) {
-    if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
-      if (this !== originRoute) {
-        var childErrorRouteName = findChildRouteName(this, 'error');
-        if (childErrorRouteName) {
-          this.intermediateTransitionTo(childErrorRouteName, error);
-          return;
-        }
-      }
-    }
-
-    if (this.routeName === 'application') {
-      Ember.Logger.assert(false, 'Error while loading route: ' + Ember.inspect(error));
-    }
-
-    return true;
-  },
-
-  loading: function(transition, originRoute) {
-    if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
-      if (this === originRoute) {
-        // This is the route with the error; just bubble
-        // so that the parent route can look up its child loading route.
-        return true;
-      }
-
-      var childLoadingRouteName = findChildRouteName(this, 'loading');
-      if (childLoadingRouteName) {
-        this.intermediateTransitionTo(childLoadingRouteName);
-      } else if (transition.pivotHandler !== this) {
-        return true;
-      }
-    }
-  }
-};
 
 /**
   The `Ember.Route` class is used to define individual routes. Refer to
@@ -296,15 +255,13 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   */
   actions: null,
 
-  _actions: defaultActionHandlers,
-
   /**
     @deprecated
 
     Please use `actions` instead.
     @method events
   */
-  events: defaultActionHandlers,
+  events: null,
 
   mergedProperties: ['events'],
 
@@ -848,7 +805,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     instance would be used.
 
     Example
-    
+
     ```js
     App.PostRoute = Ember.Route.extend({
       setupController: function(controller, model) {
@@ -1275,15 +1232,4 @@ function generateOutletTeardown(parentView, outlet) {
   return function() { parentView.disconnectOutlet(outlet); };
 }
 
-function findChildRouteName(route, name) {
-  var container = route.container;
-
-  var childName = route.routeName === 'application' ? name : route.routeName + '.' + name;
-
-  var hasChild = route.router.hasRoute(childName) &&
-                 (container.has('template:' + childName) ||
-                  container.has('route:' + childName));
-
-  return hasChild && childName;
-}
 
