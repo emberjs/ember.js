@@ -1,5 +1,11 @@
 module('Ember.String.classify');
 
+if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
+  test("String.prototype.classify is not modified without EXTEND_PROTOTYPES", function() {
+    ok("undefined" === typeof String.prototype.classify, 'String.prototype helper disabled');
+  });
+}
+
 test("classify normal string", function() {
   deepEqual(Ember.String.classify('my favorite items'), 'MyFavoriteItems');
   if (Ember.EXTEND_PROTOTYPES) {

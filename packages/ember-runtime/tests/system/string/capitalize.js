@@ -7,6 +7,12 @@
 
 module('Ember.String.capitalize');
 
+if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
+  test("String.prototype.capitalize is not modified without EXTEND_PROTOTYPES", function() {
+    ok("undefined" === typeof String.prototype.capitalize, 'String.prototype helper disabled');
+  });
+}
+
 test("capitalize normal string", function() {
   deepEqual(Ember.String.capitalize('my favorite items'), 'My favorite items');
   if (Ember.EXTEND_PROTOTYPES) {

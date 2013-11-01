@@ -1,6 +1,12 @@
 if (Ember.FEATURES.isEnabled("string-humanize")) {
   module('Ember.String.humanize');
 
+  if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
+    test("String.prototype.humanize is not modified without EXTEND_PROTOTYPES", function() {
+      ok("undefined" === typeof String.prototype.humanize, 'String.prototype helper disabled');
+    });
+  }
+
   test("with underscored string", function() {
     deepEqual(Ember.String.humanize('first_name'), 'First name');
     if (Ember.EXTEND_PROTOTYPES) {
