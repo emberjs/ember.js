@@ -67,7 +67,7 @@ building Ember is quite simple.
 ```sh
 cd ember.js
 bundle install
-npm install -g defeatureify
+npm install
 rake
 ```
 
