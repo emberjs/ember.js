@@ -89,3 +89,14 @@ for a detailed explanation.
 
   Added in [#3568](https://github.com/emberjs/ember.js/pull/3568) and feature
   flagged in [#3617](https://github.com/emberjs/ember.js/pull/3617).
+
+* `ember-routing-named-substates`
+
+  Add named substates; e.g. when resolving a `loading` or `error`
+  substate to enter, Ember will take into account the name of the
+  immediate child route that the `error`/`loading` action originated 
+  from, e.g. 'foo' if `FooRoute`, and try and enter `foo_error` or 
+  `foo_loading` if it exists. This also adds the ability for a 
+  top-level `application_loading` or `application_error` state to
+  be entered for `loading`/`error` events emitted from 
+  `ApplicationRoute`.

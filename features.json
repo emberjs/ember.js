@@ -8,5 +8,6 @@
   "ember-testing-wait-hooks": null,
   "query-params": null,
   "string-humanize": null,
-  "propertyBraceExpansion": null
+  "propertyBraceExpansion": null,
+  "ember-routing-named-substates": null
 }
