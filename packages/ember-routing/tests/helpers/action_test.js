@@ -704,6 +704,33 @@ test("it does not trigger action with special clicks", function() {
   checkClick('which', undefined, true); // IE <9
 });
 
+test("it can trigger actions for keyboard events", function() {
+  var showCalled = false;
+
+  view = Ember.View.create({
+    template: compile("<input type='text' {{action show on='keyUp'}}>")
+  });
+
+  var controller = Ember.Controller.extend({
+    actions: {
+      show: function() {
+        showCalled = true;
+      }
+    }
+  }).create();
+
+  Ember.run(function() {
+    view.set('controller', controller);
+    view.appendTo('#qunit-fixture');
+  });
+
+  var event = Ember.$.Event("keyup");
+  event.char = 'a';
+  event.which = 65;
+  view.$('input').trigger(event);
+  ok(showCalled, "should call action with keyup");
+});
+
 module("Ember.Handlebars - action helper - deprecated invoking directly on target", {
   setup: function() {
     dispatcher = Ember.EventDispatcher.create();
