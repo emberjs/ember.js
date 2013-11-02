@@ -1,5 +1,11 @@
 module('Ember.String.w');
 
+if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
+  test("String.prototype.w is not available without EXTEND_PROTOTYPES", function() {
+    ok("undefined" === typeof String.prototype.w, 'String.prototype helper disabled');
+  });
+}
+
 test("'one two three'.w() => ['one','two','three']", function() {
   deepEqual(Ember.String.w('one two three'), ['one','two','three']);
   if (Ember.EXTEND_PROTOTYPES) {

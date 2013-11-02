@@ -15,6 +15,12 @@ module('Ember.String.loc', {
   }
 });
 
+if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
+  test("String.prototype.loc is not available without EXTEND_PROTOTYPES", function() {
+    ok("undefined" === typeof String.prototype.loc, 'String.prototype helper disabled');
+  });
+}
+
 test("'_Hello World'.loc() => 'Bonjour le monde'", function() {
   equal(Ember.String.loc('_Hello World'), 'Bonjour le monde');
   if (Ember.EXTEND_PROTOTYPES) {

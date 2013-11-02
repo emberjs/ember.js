@@ -1,5 +1,11 @@
 module('Ember.String.decamelize');
 
+if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
+  test("String.prototype.decamelize is not modified without EXTEND_PROTOTYPES", function() {
+    ok("undefined" === typeof String.prototype.decamelize, 'String.prototype helper disabled');
+  });
+}
+
 test("does nothing with normal string", function() {
   deepEqual(Ember.String.decamelize('my favorite items'), 'my favorite items');
   if (Ember.EXTEND_PROTOTYPES) {
