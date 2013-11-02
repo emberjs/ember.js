@@ -1,3 +1,10 @@
+* Ember 1.2.0-beta.3 (November 01, 2013)*
+
+  * Update router.js
+  * [BUGFIX] Give precedence to routes with more static segments. Fixes #3573
+  * [BUGFIX] Improve unhandled action error messages
+  * [BUGFIX] Bubble `loading` action above pivot route
+
 * Ember 1.2.0-beta.2 (October 25, 2013)*
 
 * [BUGFIX] reduceComputed ignore changes during reset.
