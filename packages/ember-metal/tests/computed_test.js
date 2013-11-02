@@ -840,6 +840,18 @@ testBoth('Ember.computed.equal', function(get, set) {
   equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
 });
 
+testBoth('Ember.computed.equalProperty', function(get, set) {
+  var obj = { name: 'Paul', pseudonym: 'Paul' };
+
+  Ember.defineProperty(obj, 'nothingToHide', Ember.computed.equalProperty('name', 'pseudonym'));
+
+  equal(get(obj, 'nothingToHide'), true, 'goes by own name');
+
+  set(obj, 'pseudonym', 'Pierre');
+
+  equal(get(obj, 'nothingToHide'), false, 'does not go by own name');
+});
+
 testBoth('Ember.computed.gt', function(get, set) {
   var obj = { number: 2 };
   Ember.defineProperty(obj, 'isGreaterThenOne', Ember.computed.gt('number', 1));
