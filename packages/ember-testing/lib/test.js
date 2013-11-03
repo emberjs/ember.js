@@ -116,7 +116,7 @@ Ember.Test = {
   unregisterHelper: function(name) {
     delete helpers[name];
     if (originalMethods[name]) {
-      window[name] = originalMethods[name];
+      this.helperContainer[name] = originalMethods[name];
     }
     delete originalMethods[name];
     delete Ember.Test.Promise.prototype[name];
@@ -337,9 +337,21 @@ Ember.Application.reopen({
   },
 
   /**
-    This injects the test helpers into the window's scope. If a function of the
-    same name has already been defined it will be cached (so that it can be reset
-    if the helper is removed with `unregisterHelper` or `removeTestHelpers`).
+    This will be used as the container to inject the test helpers into. By
+    default the helpers are injected into `window`.
+
+    @property helperContainer
+   @type {Object} The object to be used for test helpers.
+   @default window
+  */
+  helperContainer: window,
+
+  /**
+    This injects the test helpers into the `helperContainer` object. If an object is provided
+    it will be used as the helperContainer. If `helperContainer` is not set it will default
+    to `window`. If a function of the same name has already been defined it will be cached
+    (so that it can be reset if the helper is removed with `unregisterHelper` or
+    `removeTestHelpers`).
 
    Any callbacks registered with `onInjectHelpers` will be called once the
    helpers have been injected.
@@ -351,11 +363,13 @@ Ember.Application.reopen({
 
     @method injectTestHelpers
   */
-  injectTestHelpers: function() {
+  injectTestHelpers: function(helperContainer) {
+    if (helperContainer) { this.helperContainer = helperContainer; }
+
     this.testHelpers = {};
     for (var name in helpers) {
-      originalMethods[name] = window[name];
-      this.testHelpers[name] = window[name] = helper(this, name);
+      originalMethods[name] = this.helperContainer[name];
+      this.testHelpers[name] = this.helperContainer[name] = helper(this, name);
       protoWrap(Ember.Test.Promise.prototype, name, helper(this, name), helpers[name].meta.wait);
     }
 
@@ -380,7 +394,7 @@ Ember.Application.reopen({
   */
   removeTestHelpers: function() {
     for (var name in helpers) {
-      window[name] = originalMethods[name];
+      this.helperContainer[name] = originalMethods[name];
       delete this.testHelpers[name];
       delete originalMethods[name];
     }
