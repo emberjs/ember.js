@@ -22,6 +22,38 @@ var get = Ember.get, set = Ember.set,
 Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
   /**
+    The partial title of the route, used for constructing
+    the document.title.
+
+    Setting this as a computed property will make the document
+    title dynamically update. Titles cascade, so any nesting
+    done in route form will be reflected in the construction
+    of the document title.
+
+    If you choose to exclude the route from the document title,
+    simply don't define it.
+
+    A simple case would be updating the title of the document to
+    reflect the user's name. In your route for the `user` model,
+    all that would have to be done would be to set up a `oneWay`
+    computed property to the name of the user:
+
+    ```javascript
+    App.UserRoute = Ember.Route.extend({
+      title: Ember.computed.oneWay('controller.name')
+    });
+    ```
+
+    When the user's name is changed, the title will automatically
+    change to reflect the changes on the model.
+
+    @property title
+    @type String
+    @default null
+   */
+  title: null,
+
+  /**
     @private
 
     @method exit
@@ -447,7 +479,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     // Assign the route's controller so that it can more easily be
     // referenced in action handlers
-    this.controller = controller;
+    set(this, 'controller', controller);
 
     var args = [controller, context];
 
