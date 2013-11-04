@@ -1,5 +1,3 @@
-/*globals Handlebars */
-
 // TODO: Don't require all of this module
 require('ember-handlebars');
 require('ember-handlebars/helpers/view');
@@ -201,7 +199,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   }
 
   var emptyViewClass;
-  if (inverse && inverse !== Handlebars.VM.noop) {
+  if (inverse && inverse !== Ember.Handlebars.VM.noop) {
     emptyViewClass = get(collectionPrototype, 'emptyViewClass');
     emptyViewClass = emptyViewClass.extend({
           template: inverse,
