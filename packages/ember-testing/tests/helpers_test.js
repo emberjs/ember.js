@@ -15,6 +15,29 @@ function cleanup(){
   Ember.TEMPLATES = {};
 }
 
+function assertHelpers(application, helperContainer, expected){
+  if (!helperContainer) { helperContainer = window; }
+  if (expected === undefined) { expected = true; }
+
+  function checkHelperPresent(helper, expected){
+    var presentInHelperContainer = !!helperContainer[helper],
+        presentInTestHelpers = !!application.testHelpers[helper];
+
+    ok(presentInHelperContainer === expected, "Expected '" + helper + "' to be present in the helper container (defaults to window).");
+    ok(presentInTestHelpers === expected, "Expected '" + helper + "' to be present in App.testHelpers.");
+  }
+
+  checkHelperPresent('visit', expected);
+  checkHelperPresent('click', expected);
+  checkHelperPresent('keyEvent', expected);
+  checkHelperPresent('fillIn', expected);
+  checkHelperPresent('wait', expected);
+}
+
+function assertNoHelpers(application, helperContainer) {
+  assertHelpers(application, helperContainer, false);
+}
+
 module("ember-testing Helpers", {
   setup: function(){ cleanup(); },
   teardown: function() { cleanup(); }
@@ -22,42 +45,13 @@ module("ember-testing Helpers", {
 
 test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
   App = Ember.run(Ember.Application, Ember.Application.create);
-  ok(!window.visit);
-  ok(!App.testHelpers.visit);
-  ok(!window.click);
-  ok(!App.testHelpers.click);
-  ok(!window.keyEvent);
-  ok(!App.testHelpers.keyEvent);
-  ok(!window.fillIn);
-  ok(!App.testHelpers.fillIn);
-  ok(!window.wait);
-  ok(!App.testHelpers.wait);
+  assertNoHelpers(App);
 
   App.injectTestHelpers();
-
-  ok(window.visit);
-  ok(App.testHelpers.visit);
-  ok(window.click);
-  ok(App.testHelpers.click);
-  ok(window.keyEvent);
-  ok(App.testHelpers.keyEvent);
-  ok(window.fillIn);
-  ok(App.testHelpers.fillIn);
-  ok(window.wait);
-  ok(App.testHelpers.wait);
+  assertHelpers(App);
 
   App.removeTestHelpers();
-
-  ok(!window.visit);
-  ok(!App.testHelpers.visit);
-  ok(!window.click);
-  ok(!App.testHelpers.click);
-  ok(!window.keyEvent);
-  ok(!App.testHelpers.keyEvent);
-  ok(!window.fillIn);
-  ok(!App.testHelpers.fillIn);
-  ok(!window.wait);
-  ok(!App.testHelpers.wait);
+  assertNoHelpers(App);
 });
 
 test("Ember.Application#setupForTesting", function() {
@@ -249,6 +243,21 @@ test("Ember.Application#injectTestHelpers calls callbacks registered with onInje
   App.injectTestHelpers();
 
   equal(injected, 1, 'onInjectHelpers are called after injectTestHelpers');
+});
+
+test("Ember.Application#injectTestHelpers adds helpers to provided object.", function(){
+  var helpers = {};
+
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  App.injectTestHelpers(helpers);
+  assertHelpers(App, helpers);
+
+  App.removeTestHelpers();
+  assertNoHelpers(App, helpers);
 });
 
 if (Ember.FEATURES.isEnabled("ember-testing-wait-hooks")) {
