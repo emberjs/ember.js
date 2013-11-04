@@ -1648,6 +1648,13 @@ test("should work with precompiled templates", function() {
   equal(view.$().text(), "updated", "the precompiled template was updated");
 });
 
+test("should understand knownHelpers", function() {
+  var knownHelpers = { highlight: true },
+      templateString = Ember.Handlebars.precompile("{{highlight foo}}", { knownHelpers: knownHelpers });
+
+  ok(!/helperMissing/.test(templateString), "Expected " + templateString + " not to use helperMissing.");
+});
+
 test("should expose a controller keyword when present on the view", function() {
   var templateString = "{{controller.foo}}{{#view}}{{controller.baz}}{{/view}}";
   view = Ember.View.create({

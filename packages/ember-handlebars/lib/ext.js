@@ -95,9 +95,11 @@ Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
 
   @param {String} string The template to precompile
 */
-Ember.Handlebars.precompile = function(string) {
+Ember.Handlebars.precompile = function(string, options) {
   var ast = Handlebars.parse(string);
-  var options = { data: true, stringParams: true };
+  options = options || {};
+  options.data = true;
+  options.stringParams = true;
   var environment = new Ember.Handlebars.Compiler().compile(ast, options);
   return new Ember.Handlebars.JavaScriptCompiler().compile(environment, options, undefined, true);
 };
