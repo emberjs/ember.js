@@ -32,10 +32,10 @@ suite.test('every should stop invoking when you return false', function() {
 });
 
 // ..........................................................
-// everyBy()
+// isEvery()
 //
 
-suite.module('everyBy');
+suite.module('isEvery');
 
 suite.test('should return true of every property matches', function() {
   var obj = this.newObject([
@@ -43,8 +43,8 @@ suite.test('should return true of every property matches', function() {
     Ember.Object.create({ foo: 'foo', bar: 'bar' })
   ]);
 
-  equal(obj.everyBy('foo', 'foo'), true, 'everyBy(foo)');
-  equal(obj.everyBy('bar', 'bar'), false, 'everyBy(bar)');
+  equal(obj.isEvery('foo', 'foo'), true, 'isEvery(foo)');
+  equal(obj.isEvery('bar', 'bar'), false, 'isEvery(bar)');
 });
 
 suite.test('should return true of every property is true', function() {
@@ -54,8 +54,8 @@ suite.test('should return true of every property is true', function() {
   ]);
 
   // different values - all eval to true
-  equal(obj.everyBy('foo'), true, 'everyBy(foo)');
-  equal(obj.everyBy('bar'), false, 'everyBy(bar)');
+  equal(obj.isEvery('foo'), true, 'isEvery(foo)');
+  equal(obj.isEvery('bar'), false, 'isEvery(bar)');
 });
 
 suite.test('should return true if every property matches null', function() {
@@ -64,8 +64,18 @@ suite.test('should return true if every property matches null', function() {
     Ember.Object.create({ foo: null, bar: null })
   ]);
 
-  equal(obj.everyBy('foo', null), true, "everyBy('foo', null)");
-  equal(obj.everyBy('bar', null), false, "everyBy('bar', null)");
+  equal(obj.isEvery('foo', null), true, "isEvery('foo', null)");
+  equal(obj.isEvery('bar', null), false, "isEvery('bar', null)");
+});
+
+suite.test('everyBy should be aliased to isEvery', function() {
+  var obj = this.newObject();
+  equal(obj.isEvery, obj.everyBy);
+});
+
+suite.test('everyProperty should be aliased to isEvery', function() {
+  var obj = this.newObject();
+  equal(obj.isEvery, obj.everyProperty);
 });
 
 suite.test('should return true if every property is undefined', function() {
@@ -74,6 +84,6 @@ suite.test('should return true if every property is undefined', function() {
     Ember.Object.create({ bar: undefined })
   ]);
 
-  equal(obj.everyBy('foo', undefined), true, "everyBy('foo', undefined)");
-  equal(obj.everyBy('bar', undefined), false, "everyBy('bar', undefined)");
+  equal(obj.isEvery('foo', undefined), true, "isEvery('foo', undefined)");
+  equal(obj.isEvery('bar', undefined), false, "isEvery('bar', undefined)");
 });

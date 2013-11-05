@@ -55,6 +55,8 @@ Ember.EnumerableTests.extend({
 
 }).run();
 
+module('Ember.Enumerable');
+
 test("should apply Ember.Array to return value of map", function() {
   var x = Ember.Object.createWithMixins(Ember.Enumerable);
   var y = x.map(Ember.K);
@@ -95,7 +97,51 @@ test("should apply Ember.Array to return value of uniq", function() {
   equal(Ember.Array.detect(y), true, "should have mixin applied");
 });
 
+test('any', function() {
+  var kittens = Ember.A([{
+    color: 'white'
+  }, {
+    color: 'black'
+  }, {
+    color: 'white'
+  }]),
+  foundWhite = kittens.any(function(kitten) { return kitten.color === 'white'; }),
+  foundWhite2 = kittens.isAny('color', 'white');
 
+  equal(foundWhite, true);
+  equal(foundWhite2, true);
+});
+
+test('every', function() {
+  var allColorsKittens = Ember.A([{
+    color: 'white'
+  }, {
+    color: 'black'
+  }, {
+    color: 'white'
+  }]),
+  allWhiteKittens = Ember.A([{
+    color: 'white'
+  }, {
+    color: 'white'
+  }, {
+    color: 'white'
+  }]),
+  allWhite = false,
+  whiteKittenPredicate = function(kitten) { return kitten.color === 'white'; };
+
+  allWhite = allColorsKittens.every(whiteKittenPredicate);
+  equal(allWhite, false);
+
+  allWhite = allWhiteKittens.every(whiteKittenPredicate);
+  equal(allWhite, true);
+
+  allWhite = allColorsKittens.isEvery('color', 'white');
+  equal(allWhite, false);
+
+  allWhite = allWhiteKittens.isEvery('color', 'white');
+  equal(allWhite, true);
+});
 
 // ..........................................................
 // CONTENT DID CHANGE
@@ -273,7 +319,4 @@ test('removing enumerable observer should disable', function() {
   obj.enumerableContentDidChange();
   deepEqual(observer._after, null);
 });
-
-
-
 

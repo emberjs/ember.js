@@ -551,29 +551,35 @@ Ember.Enumerable = Ember.Mixin.create({
   },
 
   /**
-    Returns `true` if the passed property resolves to `true` for all items in
-    the enumerable. This method is often simpler/faster than using a callback.
-
     @method everyBy
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
+    @deprecated Use `isEvery` instead
     @return {Boolean}
   */
-  everyBy: function(key, value) {
-    return this.every(iter.apply(this, arguments));
-  },
+  everyBy: Ember.aliasMethod('isEvery'),
+
+  /**
+    @method everyProperty
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @deprecated Use `isEvery` instead
+    @return {Boolean}
+  */
+  everyProperty: Ember.aliasMethod('isEvery'),
 
   /**
     Returns `true` if the passed property resolves to `true` for all items in
     the enumerable. This method is often simpler/faster than using a callback.
 
-    @method everyProperty
+    @method isEvery
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Boolean}
-    @deprecated Use `everyBy` instead
   */
-  everyProperty: Ember.aliasMethod('everyBy'),
+  isEvery: function(key, value) {
+    return this.every(iter.apply(this, arguments));
+  },
 
   /**
     Returns `true` if the passed function returns true for any item in the
@@ -659,21 +665,27 @@ Ember.Enumerable = Ember.Mixin.create({
     @param {String} [value] optional value to test against.
     @return {Boolean} `true` if the passed function returns `true` for any item
   */
-  anyBy: function(key, value) {
+  isAny: function(key, value) {
     return this.any(iter.apply(this, arguments));
   },
 
   /**
-    Returns `true` if the passed property resolves to `true` for any item in
-    the enumerable. This method is often simpler/faster than using a callback.
-
     @method someProperty
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Boolean} `true` if the passed function returns `true` for any item
-    @deprecated Use `anyBy` instead
+    @deprecated Use `isAny` instead
   */
-  someProperty: Ember.aliasMethod('anyBy'),
+  anyBy: Ember.aliasMethod('isAny'),
+
+  /**
+    @method someProperty
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @return {Boolean} `true` if the passed function returns `true` for any item
+    @deprecated Use `isAny` instead
+  */
+  someProperty: Ember.aliasMethod('isAny'),
 
   /**
     This will combine the values of the enumerator into a single value. It
