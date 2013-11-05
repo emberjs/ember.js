@@ -9,5 +9,6 @@
   "query-params": null,
   "string-humanize": null,
   "propertyBraceExpansion": null,
-  "ember-routing-named-substates": null
+  "ember-routing-named-substates": null,
+  "ember-testing-lazy-routing": null
 }

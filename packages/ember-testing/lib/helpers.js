@@ -26,6 +26,10 @@ Test.onInjectHelpers(function() {
 
 
 function visit(app, url) {
+  if (Ember.FEATURES.isEnabled('ember-testing-lazy-routing')){
+    Ember.run(app, 'advanceReadiness');
+  }
+
   app.__container__.lookup('router:main').location.setURL(url);
   Ember.run(app, app.handleURL, url);
   return wait(app);

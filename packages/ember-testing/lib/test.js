@@ -313,6 +313,17 @@ Ember.Application.reopen({
   testHelpers: {},
 
   /**
+  This property indicates whether or not this application is currently in
+  testing mode. This is set when `setupForTesting` is called on the current
+  application.
+
+  @property testing
+  @type {Boolean}
+  @default false
+  */
+  testing: false,
+
+  /**
    This hook defers the readiness of the application, so that you can start
    the app when your tests are ready to run. It also sets the router's
    location to 'none', so that the window's location will not be modified
@@ -329,7 +340,11 @@ Ember.Application.reopen({
   setupForTesting: function() {
     Ember.testing = true;
 
-    this.deferReadiness();
+    if (Ember.FEATURES.isEnabled('ember-testing-lazy-routing')){
+      this.testing = true;
+    } else {
+      this.deferReadiness();
+    }
 
     this.Router.reopen({
       location: 'none'
