@@ -100,3 +100,13 @@ for a detailed explanation.
   top-level `application_loading` or `application_error` state to
   be entered for `loading`/`error` events emitted from 
   `ApplicationRoute`.
+
+* `ember-testing-lazy-routing`
+
+  Uses an initializer to defer readiness while testing. Readiness is advanced upon the first
+  call to `visit`.
+
+  NOTE: This causes `App.reset()` to behave consistently with the way an app works after calling
+  `setupForTesting` (i.e. in a deferred state of readiness).
+
+  Added in [#3695](https://github.com/emberjs/ember.js/pull/3695).
