@@ -301,6 +301,11 @@ function run(fn) {
 
 Ember.Application.reopen({
   /**
+   This property contains the testing helpers for the current application. These
+   are created once you call `injectTestHelpers` on your `Ember.Application`
+   instance. The included helpers are also available on the `window` object by
+   default, but can be used from this object on the individual application also.
+
     @property testHelpers
     @type {Object}
     @default {}
