@@ -94,9 +94,16 @@ for a detailed explanation.
 
   Add named substates; e.g. when resolving a `loading` or `error`
   substate to enter, Ember will take into account the name of the
-  immediate child route that the `error`/`loading` action originated 
-  from, e.g. 'foo' if `FooRoute`, and try and enter `foo_error` or 
-  `foo_loading` if it exists. This also adds the ability for a 
+  immediate child route that the `error`/`loading` action originated
+  from, e.g. 'foo' if `FooRoute`, and try and enter `foo_error` or
+  `foo_loading` if it exists. This also adds the ability for a
   top-level `application_loading` or `application_error` state to
-  be entered for `loading`/`error` events emitted from 
+  be entered for `loading`/`error` events emitted from
   `ApplicationRoute`.
+
+* `ember-handlebars-caps-lookup`
+  Forces Handlebars values starting with capital letters, like `{{CONSTANT}}`,
+  to always be looked up on `Ember.lookup`. Previously, these values would be
+  looked up on the controller in certain cases.
+
+  Added in [#3218](https://github.com/emberjs/ember.js/pull/3218)
