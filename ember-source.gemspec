@@ -13,7 +13,7 @@ Gem::Specification.new do |gem|
 
   gem.version       = Ember.rubygems_version_string
 
-  gem.add_dependency "handlebars-source", ["1.0.12"]
+  gem.add_dependency "handlebars-source", ["1.1.1"]
 
   gem.files = %w(VERSION) + Dir['dist/*.js', 'lib/ember/*.rb']
 end

@@ -442,7 +442,7 @@ test("The {{link-to}} helper accepts string/numeric arguments", function() {
   });
   Ember.TEMPLATES.filter = compile('<p>{{filter}}</p>{{#link-to "filter" "unpopular" id="link"}}Unpopular{{/link-to}}{{#link-to "filter" filter id="path-link"}}Unpopular{{/link-to}}{{#link-to "post" post_id id="post-path-link"}}Post{{/link-to}}{{#link-to "post" 123 id="post-number-link"}}Post{{/link-to}}{{#link-to "repo" repo id="repo-object-link"}}Repo{{/link-to}}');
 
-  Ember.TEMPLATES.index = compile('');
+  Ember.TEMPLATES.index = compile(' ');
 
   bootApplication();
 
@@ -905,7 +905,7 @@ test("The {{link-to}} helper's bound parameter functionality works as expected i
       secondPost = Ember.Object.create({id: '2'});
 
   Ember.TEMPLATES = {
-    index: compile(''),
+    index: compile(' '),
     post:  compile('{{#link-to "post" this id="self-link"}}selflink{{/link-to}}')
   };
 
@@ -937,8 +937,8 @@ test("The {{link-to}} helper is active when a resource is active", function() {
   });
 
   Ember.TEMPLATES.about = compile("<div id='about'>{{#link-to 'about' id='about-link'}}About{{/link-to}} {{#link-to 'about.item' id='item-link'}}Item{{/link-to}} {{outlet}}</div>");
-  Ember.TEMPLATES['about/item'] = compile("");
-  Ember.TEMPLATES['about/index'] = compile("");
+  Ember.TEMPLATES['about/item'] = compile(" ");
+  Ember.TEMPLATES['about/index'] = compile(" ");
 
   bootApplication();
 
