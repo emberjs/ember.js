@@ -135,11 +135,14 @@ Ember.EventDispatcher = Ember.Object.extend(
 
     rootElement.delegate('[data-ember-action]', event + '.ember', function(evt) {
       var actionId = Ember.$(evt.currentTarget).attr('data-ember-action'),
-          action   = Ember.Handlebars.ActionHelper.registeredActions[actionId],
-          handler  = action.handler;
+          action   = Ember.Handlebars.ActionHelper.registeredActions[actionId];
 
-      if (action.eventName === eventName) {
-        return handler(evt);
+      // Fix from https://github.com/emberjs/ember.js/commit/aafb5eb5693dccf04dd0951385b4c6bb6db7ae46
+      // We have to check for action here since in some cases, jQuery will trigger
+      // an event on `removeChild` (i.e. focusout) after we've already torn down the
+      // action handlers for the view.
+      if (action && action.eventName === eventName) {
+        return action.handler(evt);
       }
     });
   },
