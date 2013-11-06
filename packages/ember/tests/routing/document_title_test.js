@@ -60,7 +60,7 @@ if (Ember.FEATURES.isEnabled("ember-document-title")) {
 
         App.Router.reopen({
           location: 'none',
-          titleDivider: '|',
+          titleDivider: ' | ',
           titleSpecificityIncreases: false
         });
 
@@ -202,9 +202,9 @@ if (Ember.FEATURES.isEnabled("ember-document-title")) {
       }, shouldNotHappen).then(function(result) {
         equal(document.title, "Ministry of Silly Walks | British Government");
 
-        set(router, 'titleDivider', '-');
+        set(router, 'titleDivider', ': ');
         Ember.run.next(function () {
-          equal(document.title, "Ministry of Silly Walks - British Government");
+          equal(document.title, "Ministry of Silly Walks: British Government");
           start();
         });
       }, shouldNotHappen);

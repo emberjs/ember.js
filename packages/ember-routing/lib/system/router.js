@@ -72,9 +72,9 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
     @property titleDivider
     @type String
-    @default '|'
+    @default ' - '
    */
-  titleDivider: '|',
+  titleDivider: ' - ',
 
   /**
     A flag to indicate whether the document title should
@@ -82,13 +82,13 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     specific:
 
     ```
-    Ember.js | About
+    Ember.js - About
     ```
 
     or most specific to most general:
 
     ```
-    About | Ember.js
+    About - Ember.js
     ```
 
     @property titleSpecificityIncreases
@@ -116,7 +116,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
     // Add spaces to the divider; it's more intuitive
     // and a common practice across sites.
-    divider = ' ' + divider + ' ';
+    divider = divider;
 
     if (!get(this, 'titleSpecificityIncreases')) {
       tokens = Ember.copy(tokens).reverse();
