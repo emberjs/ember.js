@@ -74,11 +74,6 @@ module("ember-testing Acceptance", {
 
 test("helpers can be chained with then", function() {
   expect(5);
-  Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
-    exception: function(error) {
-      equal(error.message, "Element .does-not-exist not found.", "Exception successfully caught and passed to Ember.Test.adapter.exception");
-    }
-  });
 
   currentRoute = 'index';
 
@@ -208,4 +203,22 @@ test("Aborted transitions are not logged via Ember.Test.adapter#exception", func
   });
 
   visit("/abort_transition");
+});
+
+test("Unhandled exceptions are logged via Ember.Test.adapter#exception", function () {
+  expect(2);
+
+  Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
+    exception: function(error) {
+      equal(error.message, "Element .does-not-exist not found.", "Exception successfully caught and passed to Ember.Test.adapter.exception");
+    }
+  });
+
+  visit('/posts');
+
+  click(".invalid-element").then(null, function(error) {
+    equal(error.message, "Element .invalid-element not found.", "Exception successfully handled in the rejection handler");
+  });
+
+  click(".does-not-exist");
 });
