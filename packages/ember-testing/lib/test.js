@@ -5,8 +5,7 @@
 var slice = [].slice,
     helpers = {},
     originalMethods = {},
-    injectHelpersCallbacks = [],
-    Router = requireModule('router');
+    injectHelpersCallbacks = [];
 
 /**
   This is a container for an assortment of testing related functionality:
@@ -468,9 +467,6 @@ function isolate(fn, val) {
   }
 }
 
-
 function onerror(error) {
-  if (!(error instanceof Router.TransitionAborted)) {
-    Ember.Test.adapter.exception(error);
-  }
+  Ember.Test.adapter.exception(error);
 }
