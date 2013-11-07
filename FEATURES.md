@@ -101,6 +101,8 @@ for a detailed explanation.
   be entered for `loading`/`error` events emitted from 
   `ApplicationRoute`.
 
+  Added in [#3655](https://github.com/emberjs/ember.js/pull/3655).
+
 * `ember-testing-lazy-routing`
 
   Uses an initializer to defer readiness while testing. Readiness is advanced upon the first
