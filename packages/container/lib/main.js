@@ -611,7 +611,6 @@ define("container",
         ```javascript
         var container = new Container();
 
-        container.registerFactory('model:user', User);
         container.register('store:main', SomeStore);
 
         container.factoryTypeInjection('model', 'store', 'store:main');
