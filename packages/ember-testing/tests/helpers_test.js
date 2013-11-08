@@ -1,4 +1,4 @@
-var App;
+var set = Ember.set, App;
 
 function cleanup(){
   if (App) {
@@ -385,6 +385,68 @@ if (Ember.FEATURES.isEnabled("ember-testing-wait-hooks")) {
     });
 
 
+  });
+}
+
+if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
+
+  module("ember-testing routing helpers", {
+    setup: function(){
+      cleanup();
+
+      Ember.run(function() {
+        App = Ember.Application.create();
+        App.Router = Ember.Router.extend({
+          location: 'none'
+        });
+
+        App.Router.map(function() {
+          this.resource("posts", function() {
+            this.route("new");
+          });
+        });
+
+        App.setupForTesting();
+      });
+
+      App.injectTestHelpers();
+      Ember.run(App, 'advanceReadiness');
+    },
+
+    teardown: function(){
+      cleanup();
+    }
+  });
+
+  test("currentRouteName for '/'", function(){
+    expect(3);
+
+    App.testHelpers.visit('/').then(function(){
+      equal(App.testHelpers.currentRouteName(), 'index', "should equal 'index'.");
+      equal(App.testHelpers.currentPath(), 'index', "should equal 'index'.");
+      equal(App.testHelpers.currentURL(), '/', "should equal '/'.");
+    });
+  });
+
+
+  test("currentRouteName for '/posts'", function(){
+    expect(3);
+
+    App.testHelpers.visit('/posts').then(function(){
+      equal(App.testHelpers.currentRouteName(), 'posts.index', "should equal 'posts.index'.");
+      equal(App.testHelpers.currentPath(), 'posts.index', "should equal 'posts.index'.");
+      equal(App.testHelpers.currentURL(), '/posts', "should equal '/posts'.");
+    });
+  });
+
+  test("currentRouteName for '/posts/new'", function(){
+    expect(3);
+
+    App.testHelpers.visit('/posts/new').then(function(){
+      equal(App.testHelpers.currentRouteName(), 'posts.new', "should equal 'posts.new'.");
+      equal(App.testHelpers.currentPath(), 'posts.new', "should equal 'posts.new'.");
+      equal(App.testHelpers.currentURL(), '/posts/new', "should equal '/posts/new'.");
+    });
   });
 }
 
