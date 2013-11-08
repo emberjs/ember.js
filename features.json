@@ -5,6 +5,7 @@
   "container-renderables": true,
   "link-to-non-block": true,
   "reduceComputedSelf": true,
+  "reduceComputed-non-array-dependencies": null,
   "ember-testing-wait-hooks": null,
   "query-params": null,
   "string-humanize": null,
