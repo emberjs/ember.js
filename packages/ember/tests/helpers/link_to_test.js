@@ -362,12 +362,6 @@ test("The {{link-to}} helper moves into the named route with context", function(
 
   Ember.TEMPLATES.about = Ember.Handlebars.compile("<h3>List</h3><ul>{{#each controller}}<li>{{#link-to 'item' this}}{{name}}{{/link-to}}<li>{{/each}}</ul>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
 
-  var people = {
-    yehuda: "Yehuda Katz",
-    tom: "Tom Dale",
-    erik: "Erik Brynroflsson"
-  };
-
   App.AboutRoute = Ember.Route.extend({
     model: function() {
       return Ember.A([
