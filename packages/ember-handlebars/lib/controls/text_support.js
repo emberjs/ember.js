@@ -86,9 +86,32 @@ Ember.TextSupport = Ember.Mixin.create({
   },
 
   _elementValueDidChange: function() {
-    set(this, 'value', this.$().val());
+    set(this, get(this, 'throttle') > 0 ? '_value' : 'value', this.$().val());
   },
 
+  /**
+    With throttling you can limit the update frequency of a text input. Default behaviour is immediate
+    updating of all dependent properties, which can have a performance impact.
+
+    By setting the throttle property to a higher number (like 300ms) you can limit the update rate of 
+    dependent properties, which can improve the performance and UX.
+
+    @property throttle Throttle time in ms
+    @type Integer
+    @default 0
+  */
+  throttle: 0,
+
+  _value: '',
+
+  _updateValueThrottled: function() {
+    set(this, 'value', get(this, '_value'));
+  },
+
+  _valueDidChange: Ember.observer(function() {
+    Ember.run.throttle(this, this._updateValueThrottled, get(this, 'throttle'));
+  }, '_value'),
+  
   /**
     The action to be sent when the user inserts a new line.
 
