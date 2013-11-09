@@ -18,7 +18,8 @@
       "../packages/container/lib",
       "../packages/rsvp/lib",
       "../packages/metamorph/lib",
-      "../packages/loader/lib"
+      "../packages/loader/lib",
+      "../packages/jquery-extensions/lib"
     ],
     "exclude": "vendor",
     "outdir":   "./build"

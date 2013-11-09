@@ -1,0 +1,28 @@
+{
+  "name": "jquery-extensions",
+  "summary": "Provides integration of jQuery with ember",  
+  "homepage": "https://github.com/emberjs/ember.js",  
+  "version": "1.0.0-rc.7",
+
+  "dependencies": {
+    "spade": "~> 1.0.0"
+  },
+
+  "directories": {
+    "lib": "lib"
+  },
+
+  "bpm:build": {
+    "bpm_libs.js": {
+      "files": ["lib"],
+      "modes": "*"
+    },
+
+    "handlebars/bpm_tests.js": {
+      "files": ["tests"],
+      "modes": ["debug"]
+    }
+  }
+}
+
+
