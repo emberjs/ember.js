@@ -51,13 +51,15 @@ test("you cannot make a new application that is a parent of an existing applicat
   });
 });
 
-test("you cannot make a new application that is a descendent of an existing application", function() {
-  expectAssertion(function() {
-    Ember.run(function() {
-      Ember.Application.create({ rootElement: '#one-child' });
+if (!Ember.FEATURES.isEnabled('nested-apps')) {
+  test("you cannot make a new application that is a descendent of an existing application", function() {
+    expectAssertion(function() {
+      Ember.run(function() {
+        Ember.Application.create({ rootElement: '#one-child' });
+      });
     });
   });
-});
+}
 
 test("you cannot make a new application that is a duplicate of an existing application", function() {
   expectAssertion(function() {

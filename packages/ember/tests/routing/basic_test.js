@@ -2553,3 +2553,83 @@ test("Route model hook finds the same model as a manual find", function() {
 
   equal(App.Post, Post);
 });
+
+if (Ember.FEATURES.isEnabled("nested-apps")) {
+  var InnerApp, OuterIndexView, InnerIndexView, innerContainer, innerClicks;
+
+  module("Ember.NestedApplicationView", {
+    setup: function() {
+      Ember.run(function() {
+        App = Ember.Application.create({
+          name: "App",
+          rootElement: '#qunit-fixture'
+        });
+
+        InnerApp = Ember.Application.extend();
+
+        innerClicks = 0;
+
+        InnerIndexView = Ember.View.extend({
+          templateName: "inner_index",
+          click: function() {
+            innerClicks = innerClicks + 1;
+          }
+        });
+
+        InnerApp.initializer({
+          name: "setupInnerIndexView",
+          initialize: function(innerContainer, application) {
+            innerContainer.register('view:index', InnerIndexView);
+          }
+        });
+
+        App.deferReadiness();
+
+        App.Router.reopen({
+          location: 'none'
+        });
+
+        App.LoadingRoute = Ember.Route.extend();
+
+        OuterIndexView = Ember.NestedApplicationView.extend({
+          NestedApplication: InnerApp
+        });
+
+        container = App.__container__;
+        container.register('view:index', OuterIndexView);
+
+        Ember.TEMPLATES.inner_index = compile("I AM THE INNER<button class='inner'>BUTTON</button>");
+      });
+    },
+
+    teardown: function() {
+      Ember.run(function() {
+        InnerApp = null;
+        App.destroy(); // App is an instance, InnerApp is not
+        App = null;
+
+        Ember.TEMPLATES = {};
+      });
+      Ember.TESTING_DEPRECATION = false;
+    }
+  });
+
+  test("InnerApp's index view is rendered", function() {
+    bootApplication();
+
+    handleURL('/');
+
+    equal(Ember.$('#qunit-fixture button.inner').length, 1, "Inner button was rendered");
+    ok(App.get('eventDispatcher')._hasChildren, "event dispatcher knows about nested apps");
+  });
+
+  test("event handlers on views in the InnerApp fire exactly once", function() {
+    bootApplication();
+
+    handleURL('/');
+
+    Ember.$('button.inner').trigger('click');
+
+    equal(innerClicks, 1, "inner view click handler was called one time");
+  });
+}

@@ -5,6 +5,23 @@
 
 var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
+var appRegex = /\bember-application\b/;
+
+/**
+  This method is *significantly* faster than jQuery's `closest`.
+  It gets run for every mouse event, so speed is important here.
+*/
+function closestRootElement(target) {
+  var node = target;
+  while(node) {
+    if (node.nodeType === 1 && appRegex.test(node.className)) {
+      break;
+    }
+    node = node.parentNode;
+  }
+  return node;
+}
+
 /**
   `Ember.EventDispatcher` handles delegating browser events to their
   corresponding `Ember.Views.` For example, when you click on a view,
@@ -102,7 +119,7 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
     rootElement = Ember.$(get(this, 'rootElement'));
 
     Ember.assert(fmt('You cannot use the same root element (%@) multiple times in an Ember.Application', [rootElement.selector || rootElement[0].tagName]), !rootElement.is('.ember-application'));
-    Ember.assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', !rootElement.closest('.ember-application').length);
+    Ember.assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', !rootElement.closest('.ember-application').length || Ember.FEATURES.isEnabled('nested-apps'));
     Ember.assert('You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application', !rootElement.find('.ember-application').length);
 
     rootElement.addClass('ember-application');
@@ -142,6 +159,13 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
     var self = this;
 
     rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
+
+      if (Ember.FEATURES.isEnabled("nested-apps")) {
+        if (self._hasChildren && closestRootElement(this) !== rootElement[0]) {
+          return;
+        }
+      }
+
       return Ember.handleErrors(function() {
         var view = Ember.View.views[this.id],
             result = true, manager = null;

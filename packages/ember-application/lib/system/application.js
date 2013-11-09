@@ -676,6 +676,25 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   }
 });
 
+if (Ember.FEATURES.isEnabled('nested-apps')) {
+  Ember.Application.reopen({
+    init: function() {
+      this._super();
+      this.set('childApps', Ember.A());
+    },
+    registerChildApp: function(childApp) {
+      this.get('childApps').pushObject(childApp);
+      this.get('eventDispatcher')._hasChildren = true;
+    },
+    unregisterChildApp: function(childApp) {
+      this.get('childApps').removeObject(childApp);
+      if (this.get('childApps.length') === 0) {
+        this.get('eventDispatcher')._hasChildren = false;
+      }
+    }
+  });
+}
+
 Ember.Application.reopenClass({
   initializers: {},
   initializer: function(initializer) {
