@@ -71,10 +71,12 @@ Ember.merge(hasElement, {
 
   // Handle events from `Ember.EventDispatcher`
   handleEvent: function(view, eventName, evt) {
+    var additionalArguments = Array.prototype.slice.call(arguments, 3);
+
     if (view.has(eventName)) {
       // Handler should be able to re-dispatch events, so we don't
       // preventDefault or stopPropagation.
-      return view.trigger(eventName, evt);
+      return view.trigger.apply(this, [eventName, evt].concat(additionalArguments));
     } else {
       return true; // continue event propagation
     }
