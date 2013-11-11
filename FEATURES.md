@@ -110,3 +110,9 @@ for a detailed explanation.
   element.
 
   Added in [#3792](https://github.com/emberjs/ember.js/pull/3792).
+
+* `with-controller`
+
+  Enables `{{#with}}` to take a `controller=` option for wrapping the context.
+
+  Added in [#3722](https://github.com/emberjs/ember.js/pull/3722)
