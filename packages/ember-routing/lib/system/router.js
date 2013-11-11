@@ -114,10 +114,6 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     var tokens  = get(this, 'titleTokens'),
         divider = get(this, 'titleDivider');
 
-    // Add spaces to the divider; it's more intuitive
-    // and a common practice across sites.
-    divider = divider;
-
     if (!get(this, 'titleSpecificityIncreases')) {
       tokens = Ember.copy(tokens).reverse();
     }
