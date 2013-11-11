@@ -12,6 +12,8 @@ module("ember-testing Acceptance", {
       App.Router.map(function() {
         this.route('posts');
         this.route('comments');
+
+        this.route('abort_transition');
       });
 
       App.PostsRoute = Ember.Route.extend({
@@ -35,6 +37,12 @@ module("ember-testing Acceptance", {
 
       App.CommentsView = Ember.View.extend({
         defaultTemplate: Ember.Handlebars.compile("{{input type=text}}")
+      });
+
+      App.AbortTransitionRoute = Ember.Route.extend({
+        beforeModel: function(transition) {
+          transition.abort();
+        }
       });
 
       App.setupForTesting();
@@ -192,4 +200,16 @@ test("Helpers nested in thens", function() {
   andThen(function() {
     equal(currentRoute, 'posts');
   });
+});
+
+test("Aborted transitions are not logged via Ember.Test.adapter#exception", function () {
+  expect(0);
+
+  Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
+    exception: function(error) {
+      ok(false, "aborted transitions are not logged");
+    }
+  });
+
+  visit("/abort_transition");
 });
