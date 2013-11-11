@@ -15,7 +15,8 @@
     "composable-computed-properties": null,
     "ember-routing-drop-deprecated-action-style": null,
     "ember-metal-is-blank": true,
-    "ember-eager-url-update": true
+    "ember-eager-url-update": true,
+    "ember-routing-auto-location": null
   },
   "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info"]
 }

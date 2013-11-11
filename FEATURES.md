@@ -133,3 +133,21 @@ for a detailed explanation.
   the transition was aborted/redirected within the same run loop.
 
   Added in [#4122](https://github.com/emberjs/ember.js/pull/4122).
+
+* `ember-routing-auto-location`
+
+  Adds `auto` as a `location` option for the app's `Router`.
+
+  ```javascript
+  App.Router.reopen({
+    location: 'auto'
+  });
+  ```
+
+  When used, Ember will select the best location option based off browser
+  support with the priority order: history, hash, none.
+
+  Clean pushState paths accessed by hashchange-only browsers will be redirected
+  to the hash-equivalent and vice versa so future transitions look consistent.
+
+  Added in [#3725](https://github.com/emberjs/ember.js/pull/3725).
