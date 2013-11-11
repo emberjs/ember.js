@@ -1032,14 +1032,13 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     options = options || {};
     name = name ? name.replace(/\//g, '.') : this.routeName;
     var viewName = options.view || this.viewName || name;
-    var templateName = this.templateName || name;
 
     var container = this.container,
         view = container.lookup('view:' + viewName),
         template = view ? view.get('template') : null;
 
     if (!template) {
-      template = container.lookup('template:' + templateName);
+      template = container.lookup('template:' + name);
     }
 
     if (!view && !template) {
