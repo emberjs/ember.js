@@ -170,6 +170,8 @@ Ember.Handlebars.registerHelper('blockHelperMissing', function(path) {
 
   if (Ember.FEATURES.isEnabled('container-renderables')) {
 
+    Ember.assert("`blockHelperMissing` was invoked without a helper name, which is most likely due to a mismatch between the version of Ember.js you're running now and the one used to precompile your templates. Please make sure the version of `ember-handlebars-compiler` you're using is up to date.", path);
+
     var helper = Ember.Handlebars.resolveHelper(options.data.view.container, path);
 
     if (helper) {
