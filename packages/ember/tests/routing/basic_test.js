@@ -349,6 +349,62 @@ test('render does not replace template if user provided', function () {
   equal(Ember.$('p', '#qunit-fixture').text(), "THIS IS THE REAL HOME", "The homepage template was rendered");
 });
 
+test('render uses templateName from route', function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  Ember.TEMPLATES.the_real_home_template = Ember.Handlebars.compile(
+    "<p>THIS IS THE REAL HOME</p>"
+  );
+
+  App.HomeController = Ember.Controller.extend();
+  App.HomeRoute = Ember.Route.extend({
+    templateName: 'the_real_home_template'
+  });
+
+  bootApplication();
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "THIS IS THE REAL HOME", "The homepage template was rendered");
+});
+
+test('defining templateName allows other templates to be rendered', function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  Ember.TEMPLATES.alert = Ember.Handlebars.compile(
+    "<div class='alert-box'>Invader!</div>"
+  );
+  Ember.TEMPLATES.the_real_home_template = Ember.Handlebars.compile(
+    "<p>THIS IS THE REAL HOME</p>{{outlet alert}}"
+  );
+
+  App.HomeController = Ember.Controller.extend();
+  App.HomeRoute = Ember.Route.extend({
+    templateName: 'the_real_home_template',
+    actions: {
+      showAlert: function(){
+        this.render('alert', {
+          into: 'home',
+          outlet: 'alert'
+        });
+      }
+    }
+  });
+
+  bootApplication();
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "THIS IS THE REAL HOME", "The homepage template was rendered");
+
+  Ember.run(function(){
+    router.send('showAlert');
+  });
+
+  equal(Ember.$('.alert-box', '#qunit-fixture').text(), "Invader!", "Template for alert was render into outlet");
+
+});
+
 test("The Homepage with a `setupController` hook", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
