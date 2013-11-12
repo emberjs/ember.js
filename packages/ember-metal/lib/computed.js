@@ -894,7 +894,6 @@ registerComputed('lte', function(dependentKey, value) {
   A computed property that performs a logical `and` on the
   original values for the provided dependent properties.
 
-
   Example
 
   ```javascript
@@ -911,7 +910,7 @@ registerComputed('lte', function(dependentKey, value) {
 
   @method computed.and
   @for Ember
-  @param {String} dependentKey, [dependentKey...]
+  @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which performs
   a logical `and` on the values of all the original values for properties.
 */
@@ -942,7 +941,7 @@ registerComputedWithProperties('and', function(properties) {
 
   @method computed.or
   @for Ember
-  @param {String} dependentKey, [dependentKey...]
+  @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which performs
   a logical `or` on the values of all the original values for properties.
 */
@@ -973,7 +972,7 @@ registerComputedWithProperties('or', function(properties) {
 
   @method computed.any
   @for Ember
-  @param {String} dependentKey, [dependentKey...]
+  @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which returns
   the first truthy value of given list of properties.
 */
@@ -1005,7 +1004,7 @@ registerComputedWithProperties('any', function(properties) {
 
   @method computed.map
   @for Ember
-  @param {String} dependentKey, [dependentKey...]
+  @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which maps
   values of all passed properties in to an array.
 */
@@ -1134,5 +1133,4 @@ Ember.computed.defaultTo = function(defaultPath) {
     return newValue != null ? newValue : get(this, defaultPath);
   });
 };
-
 
