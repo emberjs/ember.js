@@ -536,7 +536,7 @@ Ember.computed = function(func) {
   @param {Object} obj the object whose property you want to check
   @param {String} key the name of the property whose cached value you want
     to return
-  @return {*} the cached value
+  @return {Object} the cached value
 */
 Ember.cacheFor = function cacheFor(obj, key) {
   var cache = metaFor(obj, false).cache;
