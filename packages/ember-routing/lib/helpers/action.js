@@ -41,7 +41,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       if (POINTER_EVENT_TYPE_REGEX.test(event.type)) {
         return isSimpleClick(event);
       } else {
-        allowedKeys = [];
+        allowedKeys = '';
       }
     }
 
