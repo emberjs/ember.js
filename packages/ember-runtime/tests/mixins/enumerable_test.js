@@ -112,6 +112,14 @@ test('any', function() {
   equal(foundWhite2, true);
 });
 
+test('any with NaN', function() {
+  var numbers = Ember.A([1,2,NaN,4]);
+
+  var hasNaN = numbers.any(function(n){ return isNaN(n); });
+
+  equal(hasNaN, true, "works when matching NaN");
+});
+
 test('every', function() {
   var allColorsKittens = Ember.A([{
     color: 'white'
