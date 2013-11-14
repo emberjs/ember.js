@@ -452,6 +452,7 @@ test("The route controller can be specified via controllerName", function() {
     controllerName: 'myController'
   });
 
+  container.register('controller:home', Ember.Controller.extend());
   container.register('controller:myController', Ember.Controller.extend({
     myValue: "foo"
   }));
