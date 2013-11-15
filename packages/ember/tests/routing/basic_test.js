@@ -1921,7 +1921,7 @@ test("HistoryLocation has the correct rootURL on initState and webkit doesn't fi
       this._super();
       // these two should be equal to be able
       // to successfully detect webkit initial popstate
-      equal(this._previousURL, this.getURL());
+      equal(this._previousURL, encodeURIComponent(this.getURL()));
     }
   });
 

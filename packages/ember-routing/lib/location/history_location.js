@@ -63,7 +63,7 @@ Ember.HistoryLocation = Ember.Object.extend({
       url += search;
     }
 
-    return url;
+    return decodeURIComponent(url);
   },
 
   /**
@@ -134,7 +134,7 @@ Ember.HistoryLocation = Ember.Object.extend({
     }
 
     // used for webkit workaround
-    this._previousURL = this.getURL();
+    this._previousURL = this.formatURL(this.getURL());
   },
 
   /**
@@ -156,7 +156,7 @@ Ember.HistoryLocation = Ember.Object.extend({
     }
 
     // used for webkit workaround
-    this._previousURL = this.getURL();
+    this._previousURL = this.formatURL(this.getURL());
   },
 
   /**
@@ -174,11 +174,12 @@ Ember.HistoryLocation = Ember.Object.extend({
 
     Ember.$(window).on('popstate.ember-location-'+guid, function(e) {
       // Ignore initial page load popstate event in Chrome
+      var url = self.formatURL(self.getURL());
       if (!popstateFired) {
         popstateFired = true;
-        if (self.getURL() === self._previousURL) { return; }
+        if (url === self._previousURL) { return; }
       }
-      callback(self.getURL());
+      callback(url);
     });
   },
 
@@ -198,7 +199,7 @@ Ember.HistoryLocation = Ember.Object.extend({
       rootURL = rootURL.replace(/\/$/, '');
     }
 
-    return rootURL + url;
+    return encodeURIComponent(rootURL + url);
   },
 
   /**
