@@ -39,3 +39,26 @@ test("should get a key array for property that is named the same as prototype pr
 
   deepEqual(object2, ['toString']);
 });
+
+// The following tests should fail when MANDATORY_SETTERS == true
+test('should contain properties declared in the extension', function () {
+  var beer = Ember.Object.extend({
+    type: 'ipa'
+  }).create();
+
+  var keys = Ember.keys(beer);
+
+  deepEqual(keys, ['type']);
+});
+
+test('should return properties that were set after object creation', function () {
+  var beer = Ember.Object.extend({
+    type: 'ipa'
+  }).create();
+
+  beer.set('brand', 'big daddy');
+
+  var keys = Ember.keys(beer);
+
+  deepEqual(keys, ['type', 'brand']);
+});
