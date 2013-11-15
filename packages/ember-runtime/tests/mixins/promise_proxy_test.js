@@ -18,9 +18,13 @@ module("Ember.PromiseProxy - ObjectProxy", {
     proxy = ObjectPromiseProxy.create({
       promise: deferred.promise
     });
+
+    Ember.RSVP.off('error', Ember.RSVP.onerrorDefault);
   },
   teardown: function() {
     proxy = deferred = null;
+
+    Ember.RSVP.on('error', Ember.RSVP.onerrorDefault);
   }
 });
 
