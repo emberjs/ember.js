@@ -1,9 +1,21 @@
+* Ember 1.2.0-beta.4 (November 15, 2013)*
+
+* Allow keyboard events to work with the action helper.
+* Enumerable#any no longer returns false if NaN is matched - Fixes #3736
+* PromiseProxy should merely observe promises. - Fixes #3714
+* Fix issue with templateName in Route and render. - Fixes #3502
+* Sort guid fallback unconfused by ObjectProxy.
+* The router should cleanup itself upon destroy.
+* Correct `Em.typeOf` docs re: boxed types.
+* Update for Handlebars 1.1
+* Allow test helpers to be injected on specific object.
+
 * Ember 1.2.0-beta.3 (November 01, 2013)*
 
-  * Update router.js
-  * [BUGFIX] Give precedence to routes with more static segments. Fixes #3573
-  * [BUGFIX] Improve unhandled action error messages
-  * [BUGFIX] Bubble `loading` action above pivot route
+* Update router.js
+* [BUGFIX] Give precedence to routes with more static segments. Fixes #3573
+* [BUGFIX] Improve unhandled action error messages
+* [BUGFIX] Bubble `loading` action above pivot route
 
 * Ember 1.2.0-beta.2 (October 25, 2013)*
 
