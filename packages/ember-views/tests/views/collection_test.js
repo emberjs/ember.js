@@ -509,6 +509,35 @@ test("should not render the emptyView if content is emptied and refilled in the 
   equal(view.$().find('kbd:contains("OY SORRY GUVNAH")').length, 0);
 });
 
+test("item view class template should be executed in the context of array item when using collection view with array controller", function() {
+  var array = Ember.A([{ name: "Other Katz" }]);
+
+  var controller = Ember.ArrayController.create({
+    content: array
+  });
+
+  var ContainerClass = Ember.CollectionView.extend({
+    tagName: 'ul',
+    content: controller,
+    itemViewClass: Ember.View.extend({
+      template: Handlebars.compile('{{name}}')
+    })
+  });
+
+  var container = ContainerClass.create();
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  equal(container.$('li').length, 1, '1 list element should be in the DOM');
+  equal(container.$('li').text(), 'Other Katz', 'text of item view class\' template should be "Other Katz"');
+
+  Ember.run(function() {
+    container.destroy();
+  });
+});
+
 test("a array_proxy that backs an sorted array_controller that backs a collection view functions properly", function() {
 
   var array = Ember.A([{ name: "Other Katz" }]);

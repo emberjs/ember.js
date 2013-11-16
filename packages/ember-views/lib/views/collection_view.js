@@ -194,6 +194,8 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
   */
   itemViewClass: Ember.View,
 
+  _preserveContext: false,
+
   /**
     Setup a CollectionView
 
@@ -331,7 +333,8 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
   */
   arrayDidChange: function(content, start, removed, added) {
     var addedViews = [], view, item, idx, len, itemViewClass,
-      emptyView;
+        attrs,
+        emptyView;
 
     len = content ? get(content, 'length') : 0;
 
@@ -347,10 +350,17 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
       for (idx = start; idx < start+added; idx++) {
         item = content.objectAt(idx);
 
-        view = this.createChildView(itemViewClass, {
+        attrs = {
           content: item,
           contentIndex: idx
-        });
+        };
+
+        if (!this._preserveContext) {
+          attrs.context = item;
+          attrs.controller = item;
+        }
+
+        view = this.createChildView(itemViewClass, attrs);
 
         addedViews.push(view);
       }
