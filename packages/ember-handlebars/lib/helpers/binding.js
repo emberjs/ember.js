@@ -91,6 +91,8 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
   }
 }
 
+EmberHandlebars.bind = bind;
+
 function simpleBind(currentContext, property, options) {
   var data = options.data,
       view = data.view,
