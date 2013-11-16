@@ -139,54 +139,79 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
   }).property('_parentView'),
 
   /**
-    Sends an action to component's controller. A component inherits its
-    controller from the context in which it is used.
+    Triggers a named action on the controller context where the component is used if
+    this controller has registered for notifications of the action.
 
-    By default, calling `sendAction()` will send an action with the name
-    of the component's `action` property.
+    For example a component for playing or pausing music may translate click events
+    into action notifications of "play" or "stop" depending on some internal state
+    of the component:
 
-    For example, if the component had a property `action` with the value
-    `"addItem"`, calling `sendAction()` would send the `addItem` action
-    to the component's controller.
-
-    If you provide the `action` argument to `sendAction()`, that key will
-    be used to look up the action name.
-
-    For example, if the component had a property `playing` with the value
-    `didStartPlaying`, calling `sendAction('playing')` would send the
-    `didStartPlaying` action to the component's controller.
-
-    Whether or not you are using the default action or a named action, if
-    the action name is not defined on the component, calling `sendAction()`
-    does not have any effect.
-
-    For example, if you call `sendAction()` on a component that does not have
-    an `action` property defined, no action will be sent to the controller,
-    nor will an exception be raised.
-
-    You can send a context object with the action by supplying the `context`
-    argument. The context will be supplied as the first argument in the
-    target's action method. Example:
 
     ```javascript
-    App.MyTreeComponent = Ember.Component.extend({
-      click: function() {
-        this.sendAction('didClickTreeNode', this.get('node'));
-      }
-    });
-
-    App.CategoriesController = Ember.Controller.extend({
-      actions: {
-        didClickCategory: function(category) {
-          //Do something with the node/category that was clicked
+    App.PlayButtonComponent = Ember.Component.extend({
+      click: function(){
+        if (this.get('isPlaying')) {
+          this.triggerAction('play');
+        } else {
+          this.triggerAction('stop');
         }
       }
     });
     ```
 
+    When used inside a template these component actions are configured to
+    trigger actions in the outer application context:
+
     ```handlebars
-    {{! categories.hbs}}
-    {{my-tree didClickTreeNode='didClickCategory'}}
+    {{! application.hbs }}
+    {{play-button play="musicStarted" stop="musicStopped"}}
+    ```
+
+    When the component receives a browser `click` event it translate this
+    interaction into application-specific semantics ("play" or "stop") and
+    triggers the specified action name on the controller for the template
+    where the component is used: 
+
+
+    ```javascript
+    App.ApplicationController = Ember.Controller.extend({
+      actions: {
+        musicStarted: function(){
+          // called when the play button is clicked
+          // and the music started playing
+        },
+        musicStopped: function(){
+          // called when the play button is clicked
+          // and the music stopped playing
+        }
+      }
+    });
+    ```
+
+    If no action name is passed to `sendAction` a default name of "action"
+    is assumed.
+
+    ```javascript
+    App.NextButtonComponent = Ember.Component.extend({
+      click: function(){
+        this.sendAction();
+      }
+    });
+    ```
+
+    ```handlebars
+    {{! application.hbs }}
+    {{next-button action="playNextSongInAlbum"}}
+    ```
+
+    ```javascript
+    App.ApplicationController = Ember.Controller.extend({
+      actions: {
+        playNextSongInAlbum: function(){
+          ...
+        }
+      }
+    });
     ```
 
     @method sendAction
