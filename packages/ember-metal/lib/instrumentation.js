@@ -138,6 +138,8 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
 
   @param {String} [pattern] Namespaced event name.
   @param {Object} [object] Before and After hooks.
+
+  @return {Subscriber}
 */
 Ember.Instrumentation.subscribe = function(pattern, object) {
   var paths = pattern.split("."), path, regex = [];
