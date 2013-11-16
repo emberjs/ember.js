@@ -178,17 +178,24 @@ Ember.Handlebars.resolveHelper = function(container, name) {
   }
 
   var helper = container.lookup('helper:' + name);
-  if (!helper) {
-    var componentLookup = container.lookup('component-lookup:main');
-    Ember.assert("Could not find 'component-lookup:main' on the provided container, which is necessary for performing component lookups", componentLookup);
-
-    var Component = componentLookup.lookupFactory(name, container);
-    if (Component) {
-      helper = EmberHandlebars.makeViewHelper(Component);
-      container.register('helper:' + name, helper);
-    }
+  if (helper) {
+    return helper;
   }
-  return helper;
+
+  var componentLookup = container.lookup('component-lookup:main');
+  Ember.assert("Could not find 'component-lookup:main' on the provided container, which is necessary for performing component lookups", componentLookup);
+
+  var Component = componentLookup.lookupFactory(name, container);
+  if (Component) {
+    helper = EmberHandlebars.makeViewHelper(Component);
+    container.register('helper:' + name, helper);
+    return helper;
+  }
+
+  var template = container.lookup('template:' + name);
+  return template && function(options) {
+    template(this, { data: options.data });
+  };
 };
 
 /**

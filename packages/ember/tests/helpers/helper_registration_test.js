@@ -98,4 +98,22 @@ if (Ember.FEATURES.isEnabled('container-renderables')) {
 
     Ember.Handlebars.helpers.helperMissing = realHelperMissing;
   });
+
+  test("Dasherized mustaches can render templates", function() {
+
+    Ember.TEMPLATES.application = compile("<div id='wrapper'>!{{some-template}}{{other-template}}{{dashed-thing}}!</div>");
+    Ember.TEMPLATES['some-template'] = compile("LOL");
+
+    boot(function() {
+      container.register('template:other-template', compile("ROFL"));
+      container.register('template:dashed-thing', compile("I AM SHADOWED"));
+
+      // This should be prioritized over the template.
+      container.register('helper:dashed-thing', function() {
+        return "OMG";
+      });
+    });
+
+    equal(Ember.$('#wrapper').text(), "!LOLROFLOMG!", "Dasherized mustache successfully rendered templates");
+  });
 }
