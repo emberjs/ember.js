@@ -6,6 +6,7 @@
 * Add query params support to the ember router. You can now define which query params your routes respond to, use them in your route hooks to affect model loading or controller state, and transition query parameters with the link-to helper and the transitionTo method
 * Add named substates; e.g. when resolving a `loading` or `error` substate to enter, Ember will take into account the name of the immediate child route that the `error`/`loading` action originated from, e.g. 'foo' if `FooRoute`, and try and enter `foo_error` or `foo_loading` if it exists. This also adds the ability for a top-level `application_loading` or `application_error` state to be entered for `loading`/`error` events emitted from `ApplicationRoute`.
 * Ensure Handlebars values starting with capital letters are always looked up on `Ember.lookup`.
+* Add simple brace expansion for dependent keys and watched properties specified declaratively.  This is primarily useful with reduce computed properties, for specifying dependencies on multiple item properties of a dependent array, as with `Ember.computed.sort('items.@each.{propertyA,propertyB}', userSortFn)`.
 
 ### Ember 1.2.0 _(TBD)_
 

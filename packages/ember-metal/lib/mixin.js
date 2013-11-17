@@ -2,6 +2,7 @@ require('ember-metal/core');
 require('ember-metal/property_get');
 require('ember-metal/computed');
 require('ember-metal/properties');
+require('ember-metal/expand_properties');
 require('ember-metal/observer');
 require('ember-metal/utils');
 require('ember-metal/array');
@@ -20,6 +21,10 @@ var Mixin, REQUIRED, Alias,
     o_create = Ember.create,
     defineProperty = Ember.defineProperty,
     guidFor = Ember.guidFor;
+
+if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+  var expandProperties = Ember.expandProperties;
+}
 
 function mixinsMeta(obj) {
   var m = Ember.meta(obj, true), ret = m.mixins;
@@ -674,13 +679,33 @@ Ember.aliasMethod = function(methodName) {
 */
 Ember.observer = function() {
   var func  = a_slice.call(arguments, -1)[0];
-  var paths = a_slice.call(arguments, 0, -1);
+  var paths;
 
-  if (typeof func !== "function") {
-    // revert to old, soft-deprecated argument ordering
+  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+    var addWatchedProperty = function (path) { paths.push(path); };
+    var _paths = a_slice.call(arguments, 0, -1);
 
-    func  = arguments[0];
-    paths = a_slice.call(arguments, 1);
+    if (typeof func !== "function") {
+      // revert to old, soft-deprecated argument ordering
+
+      func  = arguments[0];
+      _paths = a_slice.call(arguments, 1);
+    }
+
+    paths = [];
+
+    for (var i=0; i<_paths.length; ++i) {
+      expandProperties(_paths[i], addWatchedProperty);
+    }
+  } else {
+    paths = a_slice.call(arguments, 0, -1);
+
+    if (typeof func !== "function") {
+      // revert to old, soft-deprecated argument ordering
+
+      func  = arguments[0];
+      paths = a_slice.call(arguments, 1);
+    }
   }
 
   if (typeof func !== "function") {
@@ -768,13 +793,34 @@ Ember.immediateObserver = function() {
 */
 Ember.beforeObserver = function() {
   var func  = a_slice.call(arguments, -1)[0];
-  var paths = a_slice.call(arguments, 0, -1);
+  var paths;
 
-  if (typeof func !== "function") {
-    // revert to old, soft-deprecated argument ordering
+  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+    var addWatchedProperty = function(path) { paths.push(path); };
 
-    func  = arguments[0];
-    paths = a_slice.call(arguments, 1);
+    var _paths = a_slice.call(arguments, 0, -1);
+
+    if (typeof func !== "function") {
+      // revert to old, soft-deprecated argument ordering
+
+      func  = arguments[0];
+      _paths = a_slice.call(arguments, 1);
+    }
+
+    paths = [];
+
+    for (var i=0; i<_paths.length; ++i) {
+      expandProperties(_paths[i], addWatchedProperty);
+    }
+  } else {
+    paths = a_slice.call(arguments, 0, -1);
+
+    if (typeof func !== "function") {
+      // revert to old, soft-deprecated argument ordering
+
+      func  = arguments[0];
+      paths = a_slice.call(arguments, 1);
+    }
   }
 
   if (typeof func !== "function") {
