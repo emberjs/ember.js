@@ -154,6 +154,26 @@ test("it should support #with this as qux", function() {
   });
 });
 
+test("it should reset the context properly when using #with-as syntax", function() {
+  var view = Ember.View.create({
+    template: Ember.Handlebars.compile("{{#with name as foo}}{{name}}-{{foo}}{{/with}}:{{foo}}"),
+    context: Ember.Object.create({ name: "Alex" })
+  });
+
+  appendView(view);
+  equal(view.$().text(), "Alex-Alex:", "should be properly scoped");
+
+  // Ember.run(function() {
+    // Ember.set(view, 'controller.name', "twokul");
+  // });
+
+  // equal(view.$().text(), "twokul-twokul", "should update");
+
+  Ember.run(function() {
+    view.destroy();
+  });
+});
+
 module("Handlebars {{#with foo}} insideGroup");
 
 test("it should render without fail", function() {
