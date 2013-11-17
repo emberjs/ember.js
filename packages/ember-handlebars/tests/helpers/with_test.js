@@ -60,6 +60,57 @@ test("updating a property on the view should update the HTML", function() {
   equal(view.$().text(), "Señorette Engineer: Tom Dale", "should be properly scoped after updating");
 });
 
+module("Multiple Handlebars {{with}} helpers with 'as'", {
+  setup: function() {
+    Ember.lookup = lookup = { Ember: Ember };
+
+    view = Ember.View.create({
+      template: Ember.Handlebars.compile("Admin: {{#with admin as person}}{{person.name}}{{/with}} User: {{#with user as person}}{{person.name}}{{/with}}"),
+      context: {
+        admin: { name: "Tom Dale" },
+        user: { name: "Yehuda Katz"}
+      }
+    });
+
+    appendView(view);
+  },
+
+  teardown: function() {
+    Ember.run(function() {
+      view.destroy();
+    });
+    Ember.lookup = originalLookup;
+  }
+});
+
+test("re-using the same variable with different #with blocks does not override each other", function(){
+  equal(view.$().text(), "Admin: Tom Dale User: Yehuda Katz", "should be properly scoped");
+});
+
+test("the scoped variable is not available outside the {{with}} block.", function(){
+  Ember.run(function() {
+    view.set('template', Ember.Handlebars.compile("{{name}}-{{#with other as name}}{{name}}{{/with}}-{{name}}"));
+    view.set('context', {
+      name: 'Stef',
+      other: 'Yehuda'
+    });
+  });
+
+  equal(view.$().text(), "Stef-Yehuda-Stef", "should be properly scoped after updating");
+});
+
+test("nested {{with}} blocks shadow the outer scoped variable properly.", function(){
+  Ember.run(function() {
+    view.set('template', Ember.Handlebars.compile("{{#with first as ring}}{{ring}}-{{#with fifth as ring}}{{ring}}-{{#with ninth as ring}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
+    view.set('context', {
+      first: 'Limbo',
+      fifth: 'Wrath',
+      ninth: 'Treachery'
+    });
+  });
+
+  equal(view.$().text(), "Limbo-Wrath-Treachery-Wrath-Limbo", "should be properly scoped after updating");
+});
 module("Handlebars {{#with}} globals helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
