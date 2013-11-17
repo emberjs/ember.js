@@ -15,6 +15,7 @@ var get = Ember.get, set = Ember.set;
   @extends Ember.Object
 */
 Ember.HashLocation = Ember.Object.extend({
+  implementation: 'hash',
 
   init: function() {
     set(this, 'location', get(this, 'location') || window.location);
@@ -127,5 +128,3 @@ Ember.HashLocation = Ember.Object.extend({
     Ember.$(window).off('hashchange.ember-location-'+guid);
   }
 });
-
-Ember.Location.registerImplementation('hash', Ember.HashLocation);

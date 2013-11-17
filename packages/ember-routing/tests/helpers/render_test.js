@@ -20,6 +20,8 @@ var buildContainer = function(namespace) {
   container.register('application:main', namespace, { instantiate: false });
   container.injection('router:main', 'namespace', 'application:main');
 
+  container.register('location:hash', Ember.HashLocation);
+
   container.register('controller:basic', Ember.Controller, { instantiate: false });
   container.register('controller:object', Ember.ObjectController, { instantiate: false });
   container.register('controller:array', Ember.ArrayController, { instantiate: false });
