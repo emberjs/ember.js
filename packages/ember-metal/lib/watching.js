@@ -1,7 +1,6 @@
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
-require('ember-metal/expand_properties');
 require('ember-metal/property_get');
 require('ember-metal/properties');
 require('ember-metal/watch_key');
@@ -22,10 +21,6 @@ var metaFor = Ember.meta, // utils.js
     typeOf = Ember.typeOf, // utils.js
     generateGuid = Ember.generateGuid,
     IS_PATH = /[\.\*]/;
-
-if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-  var expandProperties = Ember.expandProperties;
-}
 
 // returns true if the passed path is just a keyName
 function isKeyName(path) {
@@ -50,20 +45,10 @@ Ember.watch = function(obj, _keyPath) {
   // can't watch length on Array - it is special...
   if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
-  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-    expandProperties(_keyPath, function (keyPath) {
-      if (isKeyName(keyPath)) {
-        watchKey(obj, keyPath);
-      } else {
-        watchPath(obj, keyPath);
-      }
-    });
+  if (isKeyName(_keyPath)) {
+    watchKey(obj, _keyPath);
   } else {
-    if (isKeyName(_keyPath)) {
-      watchKey(obj, _keyPath);
-    } else {
-      watchPath(obj, _keyPath);
-    }
+    watchPath(obj, _keyPath);
   }
 };
 
@@ -78,20 +63,10 @@ Ember.unwatch = function(obj, _keyPath) {
   // can't watch length on Array - it is special...
   if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
-  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-    expandProperties(_keyPath, function (keyPath) {
-      if (isKeyName(keyPath)) {
-        unwatchKey(obj, keyPath);
-      } else {
-        unwatchPath(obj, keyPath);
-      }
-    });
+  if (isKeyName(_keyPath)) {
+    unwatchKey(obj, _keyPath);
   } else {
-    if (isKeyName(_keyPath)) {
-      unwatchKey(obj, _keyPath);
-    } else {
-      unwatchPath(obj, _keyPath);
-    }
+    unwatchPath(obj, _keyPath);
   }
 };
 
