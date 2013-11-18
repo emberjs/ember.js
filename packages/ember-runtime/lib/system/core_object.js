@@ -27,7 +27,8 @@ var set = Ember.set, get = Ember.get,
     finishPartial = Mixin.finishPartial,
     reopen = Mixin.prototype.reopen,
     MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
-    indexOf = Ember.EnumerableUtils.indexOf;
+    indexOf = Ember.EnumerableUtils.indexOf,
+    a_slice = [].slice;
 
 var undefinedDescriptor = {
   configurable: true,
@@ -517,7 +518,15 @@ var ClassMixin = Mixin.create({
   */
   createWithMixins: function() {
     var C = this;
-    if (arguments.length>0) { this._initMixins(arguments); }
+    if (arguments.length>0) {
+      if (!(arguments[arguments.length - 1] instanceof Mixin)) {
+        this._initMixins(a_slice.call(arguments, 0, arguments.length - 1));
+        this._initProperties(a_slice.call(arguments, arguments.length - 1));
+      } else {
+        this._initMixins(arguments);
+      }
+    }
+
     return new C();
   },
 

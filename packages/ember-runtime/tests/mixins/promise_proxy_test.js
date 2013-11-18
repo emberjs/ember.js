@@ -176,3 +176,22 @@ test("unhandled rejects still propogate to RSVP.configure('onerror', ...) ", fun
   Ember.run(deferred, 'reject', expectedReason);
 });
 
+test("Resolves properly with Ember.ObjectProxy.extend(Ember.PromiseProxyMixin).create()", function(){
+  var proxy = Ember.run(function(){
+    return Ember.ObjectProxy.extend(Ember.PromiseProxyMixin).create({
+        promise: Ember.RSVP.resolve(1)
+    })
+  });
+
+  equal(proxy.get('content'), 1, 'Should resolve');
+});
+
+test("Can be mixed into Ember.ObjectProxy via .createWithMixins", function(){
+  var proxy = Ember.run(function(){
+    return Ember.ObjectProxy.createWithMixins(Ember.PromiseProxyMixin, {
+      promise: Ember.RSVP.resolve(1)
+    })
+  });
+
+  equal(proxy.get('content'), 1, 'Should resolve');
+});
