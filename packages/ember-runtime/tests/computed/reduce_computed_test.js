@@ -4,7 +4,7 @@ module('Ember.arrayComputed', {
   setup: function () {
     addCalls = removeCalls = 0;
 
-    obj = Ember.Object.createWithMixins({
+    obj = Ember.Object.extend({
       numbers:  Ember.A([ 1, 2, 3, 4, 5, 6 ]),
       otherNumbers: Ember.A([ 7, 8, 9 ]),
 
@@ -52,7 +52,7 @@ module('Ember.arrayComputed', {
           return array;
         }
       }).property('nestedNumbers.@each.v')
-    });
+    }).create();
   },
 
   teardown: function() {
@@ -68,7 +68,7 @@ test("array computed properties are instances of Ember.ComputedProperty", functi
 });
 
 test("when the dependent array is null or undefined, `addedItem` is not called and only the initial value is returned", function() {
-  obj = Ember.Object.createWithMixins({
+  obj = Ember.Object.extend({
     numbers: null,
     doubledNumbers: Ember.arrayComputed('numbers', {
       addedItem: function (array, n) {
@@ -77,7 +77,7 @@ test("when the dependent array is null or undefined, `addedItem` is not called a
         return array;
       }
     })
-  });
+  }).create();
 
   deepEqual(get(obj, 'doubledNumbers'), [], "When the dependent array is null, the initial value is returned");
   equal(addCalls, 0,  "`addedItem` is not called when the dependent array is null");
@@ -155,7 +155,7 @@ test("changes to array computed properties happen synchronously", function() {
 
 if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
   test("multiple dependent keys can be specified via brace expansion", function() {
-    var obj = Ember.Object.createWithMixins({
+    var obj = Ember.Object.extend({
           bar: Ember.A(),
           baz: Ember.A(),
           foo: Ember.reduceComputed({
@@ -163,7 +163,7 @@ if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
             addedItem: function(array, item) { array.pushObject('a:' + item); return array; },
             removedItem: function(array, item) { array.pushObject('r:' + item); return array; }
           }).property('{bar,baz}')
-        });
+        }).create();
 
     deepEqual(get(obj, 'foo'), [], "initially empty");
 
@@ -189,7 +189,7 @@ if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
         removedCalls = 0,
         expected = Ember.A(),
         item = { propA: 'A', propB: 'B', propC: 'C' },
-        obj = Ember.Object.createWithMixins({
+        obj = Ember.Object.extend({
           bar: Ember.A([item]),
           foo: Ember.reduceComputed({
             initialValue: Ember.A(),
@@ -202,7 +202,7 @@ if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
               return array;
             }
           }).property('bar.@each.{propA,propB}')
-        });
+        }).create();
 
     expected.pushObjects(['a:A:B:C']);
     deepEqual(get(obj, 'foo'), expected, "initially added dependent item");
@@ -225,7 +225,7 @@ if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
 
 test("doubly nested item property keys (@each.foo.@each) are not supported", function() {
   Ember.run(function() {
-    obj = Ember.Object.createWithMixins({
+    obj = Ember.Object.extend({
       peopleByOrdinalPosition: Ember.A([{ first: Ember.A([Ember.Object.create({ name: "Jaime Lannister" })])}]),
       people: Ember.arrayComputed({
         addedItem: function (array, item) {
@@ -240,13 +240,13 @@ test("doubly nested item property keys (@each.foo.@each) are not supported", fun
           return array;
         }
       }).property('people.@each.name')
-    });
+    }).create();
   });
 
   equal(obj.get('names.firstObject'), 'Jaime Lannister', "Doubly nested item properties can be retrieved manually");
 
   throws(function() {
-    obj = Ember.Object.createWithMixins({
+    obj = Ember.Object.extend({
       people: [{ first: Ember.A([Ember.Object.create({ name: "Jaime Lannister" })])}],
       names: Ember.arrayComputed({
         addedItem: function (array, item) {
@@ -254,7 +254,7 @@ test("doubly nested item property keys (@each.foo.@each) are not supported", fun
           return array;
         }
       }).property('people.@each.first.@each.name')
-    });
+    }).create();
   }, /Nested @each/, "doubly nested item property keys are not supported");
 });
 
@@ -325,7 +325,7 @@ test("multiple array computed properties on the same object can observe dependen
 
 test("an error is thrown when a reduceComputed is defined without an initialValue property", function() {
   var defineExploder = function() {
-    Ember.Object.createWithMixins({
+    Ember.Object.extend({
       collection: Ember.A(),
       exploder: Ember.reduceComputed('collection', {
         initialize: function(initialValue, changeMeta, instanceMeta) {},
@@ -338,7 +338,7 @@ test("an error is thrown when a reduceComputed is defined without an initialValu
           return item;
         }
       })
-    });
+    }).create();
   };
 
   throws(defineExploder, /declared\ without\ an\ initial\ value/, "an error is thrown when the reduceComputed is defined without an initialValue");
@@ -500,7 +500,7 @@ if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
       var a = Ember.Object.create({ name: 'a' }),
           b = Ember.Object.create({ name: 'b' });
 
-      obj = Ember.ArrayProxy.createWithMixins({
+      obj = Ember.ArrayProxy.extend({
         content: Ember.A([a, b]),
         names: Ember.arrayComputed('@this.@each.name', {
           addedItem: function (array, item, changeMeta, instanceMeta) {
@@ -513,7 +513,7 @@ if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
             return array;
           }
         })
-      });
+      }).create();
     },
     teardown: function() {
       Ember.run(function() {
@@ -545,7 +545,7 @@ module('Ember.arrayComputed - changeMeta property observers', {
   setup: function() {
     callbackItems = [];
     Ember.run(function() {
-      obj = Ember.Object.createWithMixins({
+      obj = Ember.Object.extend({
         items: Ember.A([Ember.Object.create({ n: 'zero' }), Ember.Object.create({ n: 'one' })]),
         itemsN: Ember.arrayComputed('items.@each.n', {
           addedItem: function (array, item, changeMeta, instanceMeta) {
@@ -555,7 +555,7 @@ module('Ember.arrayComputed - changeMeta property observers', {
             callbackItems.push('remove:' + changeMeta.index + ":" + get(changeMeta.item, 'n'));
           }
         })
-      });
+      }).create();
     });
   },
   teardown: function() {
@@ -645,7 +645,7 @@ test("changeMeta includes item and index", function() {
 });
 
 test("when initialValue is undefined, everything works as advertised", function() {
-  var chars = Ember.Object.createWithMixins({
+  var chars = Ember.Object.extend({
     letters: Ember.A(),
     firstUpper: Ember.reduceComputed('letters', {
       initialValue: undefined,
@@ -675,7 +675,7 @@ test("when initialValue is undefined, everything works as advertised", function(
         return instanceMeta.firstMatch();
       }
     })
-  });
+  }).create();
   equal(get(chars, 'firstUpper'), undefined, "initialValue is undefined");
 
   get(chars, 'letters').pushObjects(['a', 'b', 'c']);

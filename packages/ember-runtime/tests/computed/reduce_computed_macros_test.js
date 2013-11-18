@@ -10,7 +10,7 @@ module('Ember.computed.map', {
   setup: function() {
     Ember.run(function() {
       userFnCalls = 0;
-      obj = Ember.Object.createWithMixins({
+      obj = Ember.Object.extend({
         array: Ember.A([{ v: 1 }, { v: 3}, { v: 2 }, { v: 1 }]),
 
         mapped: Ember.computed.map('array.@each.v', function(item) {
@@ -26,7 +26,7 @@ module('Ember.computed.map', {
             name: item.v.name
           };
         })
-      });
+      }).create();
     });
   },
   teardown: function() {
@@ -73,10 +73,10 @@ test("it maps simple unshifted properties", function() {
   var array = Ember.A([]);
 
   Ember.run(function() {
-    obj = Ember.Object.createWithMixins({
+    obj = Ember.Object.extend({
       array: array,
       mapped: Ember.computed.map('array', function (item) { return item.toUpperCase(); })
-    });
+    }).create();
     get(obj, 'mapped');
   });
 
@@ -118,12 +118,12 @@ test("it maps unshifted objects with property observers", function() {
       cObj = { v: 'c' };
 
   Ember.run(function() {
-    obj = Ember.Object.createWithMixins({
+    obj = Ember.Object.extend({
       array: array,
       mapped: Ember.computed.map('array.@each.v', function (item) {
         return get(item, 'v').toUpperCase();
       })
-    });
+    }).create();
     get(obj, 'mapped');
   });
 
@@ -142,10 +142,10 @@ test("it maps unshifted objects with property observers", function() {
 module('Ember.computed.mapBy', {
   setup: function() {
     Ember.run(function() {
-      obj = Ember.Object.createWithMixins({
+      obj = Ember.Object.extend({
         array: Ember.A([{ v: 1 }, { v: 3}, { v: 2 }, { v: 1 }]),
         mapped: Ember.computed.mapBy('array', 'v')
-      });
+      }).create();
     });
   },
   teardown: function() {
@@ -195,13 +195,13 @@ module('Ember.computed.filter', {
   setup: function() {
     Ember.run(function() {
       userFnCalls = 0;
-      obj = Ember.Object.createWithMixins({
+      obj = Ember.Object.extend({
         array: Ember.A([1, 2, 3, 4, 5, 6, 7, 8]),
         filtered: Ember.computed.filter('array', function(item) {
           ++userFnCalls;
           return item % 2 === 0;
         })
-      });
+      }).create();
     });
   },
   teardown: function() {
@@ -305,7 +305,7 @@ test("it updates as the array is replaced", function() {
 
 module('Ember.computed.filterBy', {
   setup: function() {
-    obj = Ember.Object.createWithMixins({
+    obj = Ember.Object.extend({
       array: Ember.A([
         {name: "one", a:1, b:false},
         {name: "two", a:2, b:false},
@@ -315,7 +315,7 @@ module('Ember.computed.filterBy', {
       a1s: Ember.computed.filterBy('array', 'a', 1),
       as: Ember.computed.filterBy('array', 'a'),
       bs: Ember.computed.filterBy('array', 'b')
-    });
+    }).create();
   },
   teardown: function() {
     Ember.run(function() {
@@ -388,12 +388,12 @@ a_forEach.call(['uniq', 'union'], function (alias) {
   module('Ember.computed.' + alias, {
     setup: function() {
       Ember.run(function() {
-        obj = Ember.Object.createWithMixins({
+        obj = Ember.Object.extend({
           array: Ember.A([1,2,3,4,5,6]),
           array2: Ember.A([4,5,6,7,8,9,4,5,6,7,8,9]),
           array3: Ember.A([1,8,10]),
           union: Ember.computed[alias]('array', 'array2', 'array3')
-        });
+        }).create();
       });
     },
     teardown: function() {
@@ -461,12 +461,12 @@ a_forEach.call(['uniq', 'union'], function (alias) {
 module('Ember.computed.intersect', {
   setup: function() {
     Ember.run(function() {
-      obj = Ember.Object.createWithMixins({
+      obj = Ember.Object.extend({
         array: Ember.A([1,2,3,4,5,6]),
         array2: Ember.A([3,3,3,4,5]),
         array3: Ember.A([3,5,6,7,8]),
         intersection: Ember.computed.intersect('array', 'array2', 'array3')
-      });
+      }).create();
     });
   },
   teardown: function() {
@@ -514,11 +514,11 @@ test("it has set-intersection semantics", function() {
 module('Ember.computed.setDiff', {
   setup: function() {
     Ember.run(function() {
-      obj = Ember.Object.createWithMixins({
+      obj = Ember.Object.extend({
         array: Ember.A([1,2,3,4,5,6,7]),
         array2: Ember.A([3,4,5,10]),
         diff: Ember.computed.setDiff('array', 'array2')
-      });
+      }).create();
     });
   },
   teardown: function() {
@@ -530,20 +530,20 @@ module('Ember.computed.setDiff', {
 
 test("it throws an error if given fewer or more than two dependent properties", function() {
   throws(function () {
-    Ember.Object.createWithMixins({
+    Ember.Object.extend({
         array: Ember.A([1,2,3,4,5,6,7]),
         array2: Ember.A([3,4,5]),
         diff: Ember.computed.setDiff('array')
-    });
+    }).create();
   }, /requires exactly two dependent arrays/, "setDiff requires two dependent arrays");
 
   throws(function () {
-    Ember.Object.createWithMixins({
+    Ember.Object.extend({
         array: Ember.A([1,2,3,4,5,6,7]),
         array2: Ember.A([3,4,5]),
         array3: Ember.A([7]),
         diff: Ember.computed.setDiff('array', 'array2', 'array3')
-    });
+    }).create();
   }, /requires exactly two dependent arrays/, "setDiff requires two dependent arrays");
 });
 
@@ -709,7 +709,7 @@ function commonSortTests() {
 module('Ember.computed.sort - sortProperties', {
   setup: function() {
     Ember.run(function() {
-      obj = Ember.Object.createWithMixins({
+      obj = Ember.Object.extend({
         itemSorting: Ember.A(['lname', 'fname']),
         items: Ember.A([{
           fname: "Jaime", lname: "Lannister", age: 34
@@ -722,7 +722,7 @@ module('Ember.computed.sort - sortProperties', {
         }]),
 
         sortedItems: Ember.computed.sort('items', 'itemSorting')
-      });
+      }).create();
     });
   },
   teardown: function() {
@@ -855,11 +855,11 @@ test("updating an item's sort properties does not error when binary search does 
       status: 2
     });
 
-    obj = Ember.Object.createWithMixins({
+    obj = Ember.Object.extend({
       people: Ember.A([jaime, cersei]),
       sortProps: Ember.A(['status']),
       sortedPeople: Ember.computed.sort('people', 'sortProps')
-    });
+    }).create();
   });
 
   deepEqual(get(obj, 'sortedPeople'), [jaime, cersei], "precond - array is initially sorted");
@@ -906,7 +906,7 @@ function sortByFnameDesc(a, b) {
 module('Ember.computed.sort - sort function', {
   setup: function() {
     Ember.run(function() {
-      obj = Ember.Object.createWithMixins({
+      obj = Ember.Object.extend({
         items: Ember.A([{
           fname: "Jaime", lname: "Lannister", age: 34
         }, {
@@ -918,7 +918,7 @@ module('Ember.computed.sort - sort function', {
         }]),
 
         sortedItems: Ember.computed.sort('items.@each.fname', sortByLnameFname)
-      });
+      }).create();
     });
   },
   teardown: function() {
@@ -974,10 +974,10 @@ test("changing item properties not specified via @each does not trigger a resort
 module('Ember.computed.max', {
   setup: function() {
     Ember.run(function() {
-      obj = Ember.Object.createWithMixins({
+      obj = Ember.Object.extend({
         items: Ember.A([1,2,3]),
         max: Ember.computed.max('items')
-      });
+      }).create();
     });
   },
   teardown: function() {
@@ -1027,10 +1027,10 @@ test("max recomputes when the current max is removed", function() {
 module('Ember.computed.min', {
   setup: function() {
     Ember.run(function() {
-      obj = Ember.Object.createWithMixins({
+      obj = Ember.Object.extend({
         items: Ember.A([1,2,3]),
         min: Ember.computed.min('items')
-      });
+      }).create();
     });
   },
   teardown: function() {
@@ -1080,7 +1080,7 @@ test("min recomputes when the current min is removed", function() {
 module('Ember.arrayComputed - mixed sugar', {
   setup: function() {
     Ember.run(function() {
-      obj = Ember.Object.createWithMixins({
+      obj = Ember.Object.extend({
         items: Ember.A([{
           fname: "Jaime", lname: "Lannister", age: 34
         }, {
@@ -1099,7 +1099,7 @@ module('Ember.arrayComputed - mixed sugar', {
         starks: Ember.computed.filterBy('items', 'lname', 'Stark'),
         starkAges: Ember.computed.mapBy('starks', 'age'),
         oldestStarkAge: Ember.computed.max('starkAges')
-      });
+      }).create();
     });
   },
   teardown: function() {
@@ -1165,11 +1165,11 @@ function evenPriorities(todo) {
 
 module('Ember.arrayComputed - chains', {
   setup: function() {
-    obj = Ember.Object.createWithMixins({
+    obj = Ember.Object.extend({
       todos: Ember.A([todo('E', 4), todo('D', 3), todo('C', 2), todo('B', 1), todo('A', 0)]),
       sorted: Ember.computed.sort('todos.@each.priority', priorityComparator),
       filtered: Ember.computed.filter('sorted.@each.priority', evenPriorities)
-    });
+    }).create();
   },
   teardown: function() {
     Ember.run(function() {
@@ -1210,14 +1210,14 @@ module('Chaining array and reduced CPs', {
   setup: function() {
     Ember.run(function() {
       userFnCalls = 0;
-      obj = Ember.Object.createWithMixins({
+      obj = Ember.Object.extend({
         array: Ember.A([{ v: 1 }, { v: 3}, { v: 2 }, { v: 1 }]),
         mapped: Ember.computed.mapBy('array', 'v'),
         max: Ember.computed.max('mapped'),
         maxDidChange: Ember.observer('max', function(){
           userFnCalls++;
         })
-      });
+      }).create();
     });
   },
   teardown: function() {
