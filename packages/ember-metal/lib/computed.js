@@ -742,7 +742,7 @@ registerComputed('bool', function(dependentKey) {
 */
 registerComputed('match', function(dependentKey, regexp) {
   var value = get(this, dependentKey);
-  return typeof value === 'string' ? !!value.match(regexp) : false;
+  return typeof value === 'string' ? regexp.test(value) : false;
 });
 
 /**
