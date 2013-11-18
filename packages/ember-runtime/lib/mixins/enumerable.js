@@ -51,7 +51,7 @@ function iter(key, value) {
      with an `Ember.Object` subclass, you should be sure to change the length
      property using `set().`
 
-  2. If you must implement `nextObject().` See documentation.
+  2. You must implement `nextObject().` See documentation.
 
   Once you have these two methods implement, apply the `Ember.Enumerable` mixin
   to your class and you will be able to enumerate the contents of your object
