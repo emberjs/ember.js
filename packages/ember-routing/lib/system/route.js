@@ -309,6 +309,24 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     });
     ```
 
+   Transition to a nested route
+
+   ```javascript
+   App.Router.map(function() {
+     this.resource('articles', { path: '/articles' }, function() {
+       this.route('new');
+     });
+   });
+
+   App.IndexRoute = Ember.Route.extend({
+     actions: {
+       transitionToNewArticle: function() {
+         this.transitionTo('articles.new');
+       }
+     }
+   });
+   ```
+
     Multiple Models Example
 
     ```javascript
