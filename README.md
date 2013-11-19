@@ -162,7 +162,7 @@ versions of jQuery. Default is 1.9.0.
 2. Run `rake test` to run a basic test suite or run `rake test[all]` to
    run a more comprehensive suite.
 
-3. (Mac OS X Only) Run `rake autotest` to automatically re-run tests
+3. (Mac OS X Only) Run `rake ember:autotest` to automatically re-run tests
    when any files are changed.
 
 # Building API Docs
@@ -190,4 +190,3 @@ See <http://emberjs.com/> for annotated introductory documentation.
 
 * The website, along with documentation will be built into the `build`
   directory
-
