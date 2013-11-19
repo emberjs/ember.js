@@ -12,7 +12,7 @@ var set = Ember.set, get = Ember.get;
   The internal class used to create text inputs when the `{{input}}`
   helper is used with `type` of `checkbox`.
 
-  See Handlebars.helpers.input for usage details.
+  See [handlebars.helpers.input](/api/classes/Ember.Handlebars.helpers.html#method_input)  for usage details.
 
   ## Direct manipulation of `checked`
 
