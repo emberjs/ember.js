@@ -40,15 +40,14 @@ test("should get a key array for property that is named the same as prototype pr
   deepEqual(object2, ['toString']);
 });
 
-// The following tests should fail when MANDATORY_SETTERS == true
-test('should contain properties declared in the extension', function () {
+test('should not contain properties declared in the prototype', function () {
   var beer = Ember.Object.extend({
     type: 'ipa'
   }).create();
 
   var keys = Ember.keys(beer);
 
-  deepEqual(keys, ['type']);
+  deepEqual(keys, []);
 });
 
 test('should return properties that were set after object creation', function () {
@@ -56,9 +55,71 @@ test('should return properties that were set after object creation', function ()
     type: 'ipa'
   }).create();
 
-  beer.set('brand', 'big daddy');
+  Ember.set(beer, 'brand', 'big daddy');
 
   var keys = Ember.keys(beer);
 
-  deepEqual(keys, ['type', 'brand']);
+  deepEqual(keys, ['brand']);
+});
+
+module('Keys behavior with observers');
+
+test('should not leak properties on the prototype', function () {
+  var beer = Ember.Object.extend({
+    type: 'ipa'
+  }).create();
+
+  Ember.addObserver(beer, 'type', Ember.K);
+  deepEqual(Ember.keys(beer), []);
+  Ember.removeObserver(beer, 'type', Ember.K);
+});
+
+test('observing a non existent property', function () {
+  var beer = Ember.Object.extend({
+    type: 'ipa'
+  }).create();
+
+  Ember.addObserver(beer, 'brand', Ember.K);
+
+  deepEqual(Ember.keys(beer), []);
+
+  Ember.set(beer, 'brand', 'Corona');
+  deepEqual(Ember.keys(beer), ['brand']);
+
+  Ember.removeObserver(beer, 'brand', Ember.K);
+});
+
+test('with observers switched on and off', function () {
+  var beer = Ember.Object.extend({
+    type: 'ipa'
+  }).create();
+
+  Ember.addObserver(beer, 'type', Ember.K);
+  Ember.removeObserver(beer, 'type', Ember.K);
+
+  deepEqual(Ember.keys(beer), []);
+});
+
+test('observers switched on and off with setter in between', function () {
+  var beer = Ember.Object.extend({
+    type: 'ipa'
+  }).create();
+
+  Ember.addObserver(beer, 'type', Ember.K);
+  Ember.set(beer, 'type', 'ale');
+  Ember.removeObserver(beer, 'type', Ember.K);
+
+  deepEqual(Ember.keys(beer), ['type']);
+});
+
+test('observer switched on and off and then setter', function () {
+  var beer = Ember.Object.extend({
+    type: 'ipa'
+  }).create();
+
+  Ember.addObserver(beer, 'type', Ember.K);
+  Ember.removeObserver(beer, 'type', Ember.K);
+  Ember.set(beer, 'type', 'ale');
+
+  deepEqual(Ember.keys(beer), ['type']);
 });
