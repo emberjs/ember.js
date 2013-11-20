@@ -111,37 +111,6 @@ if (Ember.FEATURES.isEnabled('ember-testing-lazy-routing')){
   });
 }
 
-test("Ember.Test.registerHelper/unregisterHelper", function() {
-  expect(5);
-  var appBooted = false;
-
-  Ember.Test.registerHelper('boot', function(app) {
-    Ember.run(app, app.advanceReadiness);
-    appBooted = true;
-    return window.wait();
-  });
-
-  Ember.run(function() {
-    App = Ember.Application.create();
-    App.setupForTesting();
-    App.injectTestHelpers();
-  });
-
-  ok(App.testHelpers.boot);
-  ok(window.boot);
-
-  window.boot().then(function() {
-    ok(appBooted);
-
-    App.removeTestHelpers();
-    Ember.Test.unregisterHelper('boot');
-
-    ok(!App.testHelpers.boot);
-    ok(!window.boot);
-  });
-
-});
-
 test("`wait` helper can be passed a resolution value", function() {
   expect(4);
 
@@ -306,6 +275,22 @@ test("Ember.Application#injectTestHelpers adds helpers to provided object.", fun
 
   App.removeTestHelpers();
   assertNoHelpers(App, helpers);
+});
+
+test("Ember.Application#removeTestHelpers resets the helperContainer's original values", function(){
+  var helpers = {visit: 'snazzleflabber'};
+
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  App.injectTestHelpers(helpers);
+
+  ok(helpers['visit'] !== 'snazzleflabber', "helper added to container");
+  App.removeTestHelpers();
+
+  ok(helpers['visit'] === 'snazzleflabber', "original value added back to container");
 });
 
 if (Ember.FEATURES.isEnabled("ember-testing-wait-hooks")) {
