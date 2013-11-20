@@ -166,7 +166,8 @@ task :publish_build => [:dist, :docs, 'ember:generate_static_test_site'] do
                dist_dir.join('ember-docs.json')
 
   files = %w{ember.js ember-runtime.js ember-docs.json
-             ember-spade.js ember-tests.js ember-tests.html}
+             ember-spade.js ember-tests.js ember-tests.html
+             ember-template-compiler.js}
 
   EmberDev::Publish.to_s3({
     :access_key_id => ENV['S3_ACCESS_KEY_ID'],
