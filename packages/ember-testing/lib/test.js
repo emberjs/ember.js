@@ -4,7 +4,6 @@
  */
 var slice = [].slice,
     helpers = {},
-    originalMethods = {},
     injectHelpersCallbacks = [];
 
 /**
@@ -114,10 +113,6 @@ Ember.Test = {
   */
   unregisterHelper: function(name) {
     delete helpers[name];
-    if (originalMethods[name]) {
-      this.helperContainer[name] = originalMethods[name];
-    }
-    delete originalMethods[name];
     delete Ember.Test.Promise.prototype[name];
   },
 
@@ -312,6 +307,21 @@ Ember.Application.reopen({
   testHelpers: {},
 
   /**
+   This property will contain the original methods that were registered
+   on the `helperContainer` before `injectTestHelpers` is called.
+
+   When `removeTestHelpers` is called, these methods are restored to the
+   `helperContainer`.
+
+    @property originalMethods
+    @type {Object}
+    @default {}
+    @private
+  */
+  originalMethods: {},
+
+
+  /**
   This property indicates whether or not this application is currently in
   testing mode. This is set when `setupForTesting` is called on the current
   application.
@@ -391,7 +401,7 @@ Ember.Application.reopen({
 
     this.testHelpers = {};
     for (var name in helpers) {
-      originalMethods[name] = this.helperContainer[name];
+      this.originalMethods[name] = this.helperContainer[name];
       this.testHelpers[name] = this.helperContainer[name] = helper(this, name);
       protoWrap(Ember.Test.Promise.prototype, name, helper(this, name), helpers[name].meta.wait);
     }
@@ -418,9 +428,9 @@ Ember.Application.reopen({
   */
   removeTestHelpers: function() {
     for (var name in helpers) {
-      this.helperContainer[name] = originalMethods[name];
+      this.helperContainer[name] = this.originalMethods[name];
       delete this.testHelpers[name];
-      delete originalMethods[name];
+      delete this.originalMethods[name];
     }
     Ember.RSVP.off('error', onerror);
     Ember.RSVP.on('error', Ember.RSVP.onerrorDefault);
