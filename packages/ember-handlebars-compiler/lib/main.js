@@ -111,7 +111,7 @@ Ember.Handlebars.helper = function(name, value) {
 */
 Ember.Handlebars.makeViewHelper = function(ViewClass) {
   return function(options) {
-    Ember.assert("You can only pass attributes (such as name=value) not bare values to a helper for a View", arguments.length < 2);
+    Ember.assert("You can only pass attributes (such as name=value) not bare values to a helper for a View found in '" + ViewClass.toString() + "'", arguments.length < 2);
     return Ember.Handlebars.helpers.view.call(this, ViewClass, options);
   };
 };
