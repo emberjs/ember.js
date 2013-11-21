@@ -111,16 +111,22 @@ test("inherits properties from passed in Ember.Object", function() {
   equal(secondaryObj.foo, baseObj.foo, "Em.O.create inherits properties from Ember.Object parameter");
 });
 
-test("throws if you try to pass anything other than an object or instance of Ember.Object", function(){
-  var expected = "Ember.Object.create only accepts objects.";
+test("throws if you try to pass anything a string as a parameter", function(){
+  var expected = "Ember.Object.create only accepts an objects.";
 
-  expectAssertion(function() {
+  throws(function() {
     var o = Ember.Object.create("some-string");
   }, expected);
+});
 
-  expectAssertion(function() {
-    var o = Ember.Object.create(null);
-  }, expected);
+test("Ember.Object.create can take undefined as a parameter", function(){
+  var o = Ember.Object.create(undefined);
+  deepEqual(Ember.Object.create(), o);
+});
+
+test("Ember.Object.create can take null as a parameter", function(){
+  var o = Ember.Object.create(null);
+  deepEqual(Ember.Object.create(), o);
 });
 
 module('Ember.Object.createWithMixins');
