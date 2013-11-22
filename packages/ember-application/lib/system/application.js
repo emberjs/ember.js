@@ -89,7 +89,7 @@ DeprecatedContainer.prototype = {
   App = Ember.Application.create({
     customEvents: {
       // add support for the paste event
-      'paste: "paste"
+      paste: "paste"
     }
   });
   ```
@@ -211,7 +211,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     App = Ember.Application.create({
       customEvents: {
         // add support for the paste event
-        'paste: "paste"
+        paste: "paste"
       }
     });
     ```
