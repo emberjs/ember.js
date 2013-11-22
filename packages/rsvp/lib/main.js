@@ -48,46 +48,24 @@ define("rsvp/all",
     __exports__.all = all;
   });
 define("rsvp/async",
-  ["exports"],
-  function(__exports__) {
+  ["rsvp/config","exports"],
+  function(__dependency1__, __exports__) {
     "use strict";
+    var config = __dependency1__.config;
+
     var browserGlobal = (typeof window !== 'undefined') ? window : {};
     var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
-    var async;
     var local = (typeof global !== 'undefined') ? global : this;
 
-    // old node
+    // node
     function useNextTick() {
-      return function(callback, arg) {
-        process.nextTick(function() {
-          callback(arg);
-        });
-      };
-    }
-
-    // node >= 0.10.x
-    function useSetImmediate() {
-      return function(callback, arg) {
-        /* global  setImmediate */
-        setImmediate(function(){
-          callback(arg);
-        });
+      return function() {
+        process.nextTick(flush);
       };
     }
 
     function useMutationObserver() {
-      var queue = [];
-
-      var observer = new BrowserMutationObserver(function() {
-        var toProcess = queue.slice();
-        queue = [];
-
-        toProcess.forEach(function(tuple) {
-          var callback = tuple[0], arg= tuple[1];
-          callback(arg);
-        });
-      });
-
+      var observer = new BrowserMutationObserver(flush);
       var element = document.createElement('div');
       observer.observe(element, { attributes: true });
 
@@ -97,44 +75,118 @@ define("rsvp/async",
         observer = null;
       }, false);
 
-      return function(callback, arg) {
-        queue.push([callback, arg]);
+      return function() {
         element.setAttribute('drainQueue', 'drainQueue');
       };
     }
 
     function useSetTimeout() {
-      return function(callback, arg) {
-        local.setTimeout(function() {
-          callback(arg);
-        }, 1);
+      return function() {
+        local.setTimeout(flush, 1);
       };
     }
 
-    if (typeof setImmediate === 'function') {
-      async = useSetImmediate();
-    } else if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
-      async = useNextTick();
+    var queue = [];
+    function flush() {
+      for (var i = 0; i < queue.length; i++) {
+        var tuple = queue[i];
+        var callback = tuple[0], arg = tuple[1];
+        callback(arg);
+      }
+      queue = [];
+    }
+
+    var scheduleFlush;
+
+    // Decide what async method to use to triggering processing of queued callbacks:
+    if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
+      scheduleFlush = useNextTick();
     } else if (BrowserMutationObserver) {
-      async = useMutationObserver();
+      scheduleFlush = useMutationObserver();
     } else {
-      async = useSetTimeout();
+      scheduleFlush = useSetTimeout();
+    }
+
+    function asyncDefault(callback, arg) {
+      var length = queue.push([callback, arg]);
+      if (length === 1) {
+        // If length is 1, that means that we need to schedule an async flush.
+        // If additional callbacks are queued before the queue is flushed, they
+        // will be processed by this flush that we are scheduling.
+        scheduleFlush();
+      }
+    }
+
+    config.async = asyncDefault;
+
+    function async(callback, arg) {
+      config.async(callback, arg);
     }
 
 
     __exports__.async = async;
+    __exports__.asyncDefault = asyncDefault;
+  });
+define("rsvp/cast",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    function cast(object) {
+      /*jshint validthis:true */
+      if (object && typeof object === 'object' && object.constructor === this) {
+        return object;
+      }
+
+      var Promise = this;
+
+      return new Promise(function(resolve) {
+        resolve(object);
+      });
+    }
+
+
+    __exports__.cast = cast;
   });
 define("rsvp/config",
-  ["rsvp/async","exports"],
+  ["rsvp/events","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
-    var async = __dependency1__.async;
+    var EventTarget = __dependency1__.EventTarget;
 
     var config = {};
-    config.async = async;
+    EventTarget.mixin(config);
+
+    function configure(name, value) {
+      if (name === 'onerror') {
+        // handle for legacy users that expect the actual
+        // error to be passed to their function added via
+        // `RSVP.configure('onerror', someFunctionHere);`
+        config.on('error', function(event){
+          value(event.detail);
+        });
+      } else {
+        config[name] = value;
+      }
+    }
+
+    function on(){
+      return config.on.apply(config, arguments);
+    }
+
+    function off(){
+      return config.off.apply(config, arguments);
+    }
+
+    function trigger(){
+      return config.trigger.apply(config, arguments);
+    }
 
 
     __exports__.config = config;
+    __exports__.configure = configure;
+    __exports__.on = on;
+    __exports__.off = off;
+    __exports__.trigger = trigger;
   });
 define("rsvp/defer",
   ["rsvp/promise","exports"],
@@ -363,11 +415,12 @@ define("rsvp/node",
     __exports__.denodeify = denodeify;
   });
 define("rsvp/promise",
-  ["rsvp/config","rsvp/events","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
+  ["rsvp/config","rsvp/events","rsvp/cast","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var config = __dependency1__.config;
     var EventTarget = __dependency2__.EventTarget;
+    var cast = __dependency3__.cast;
 
     function objectOrFunction(x) {
       return isFunction(x) || (typeof x === "object" && x !== null);
@@ -377,7 +430,7 @@ define("rsvp/promise",
       return typeof x === "function";
     }
 
-    var Promise = function(resolver) {
+    function Promise(resolver) {
       var promise = this,
       resolved = false;
 
@@ -401,26 +454,10 @@ define("rsvp/promise",
         reject(promise, value);
       };
 
-      this.on('promise:resolved', function(event) {
-        this.trigger('success', { detail: event.detail });
-      }, this);
-
-      this.on('promise:failed', function(event) {
-        this.trigger('error', { detail: event.detail });
-      }, this);
-
-      this.on('error', onerror);
-
       try {
         resolver(resolvePromise, rejectPromise);
       } catch(e) {
         rejectPromise(e);
-      }
-    };
-
-    function onerror(event) {
-      if (config.onerror) {
-        config.onerror(event.detail);
       }
     }
 
@@ -456,14 +493,19 @@ define("rsvp/promise",
 
     Promise.prototype = {
       constructor: Promise,
-
       isRejected: undefined,
       isFulfilled: undefined,
       rejectedReason: undefined,
       fulfillmentValue: undefined,
 
+      _onerror: function (reason) {
+        config.trigger('error', {
+          detail: reason
+        });
+      },
+
       then: function(done, fail) {
-        this.off('error', onerror);
+        this._onerror = null;
 
         var thenPromise = new this.constructor(function() {});
 
@@ -490,10 +532,26 @@ define("rsvp/promise",
         return thenPromise;
       },
 
-      fail: function(fail) {
-        return this.then(null, fail);
+      fail: function(onRejection) {
+        return this.then(null, onRejection);
+      },
+      'finally': function(callback) {
+        var constructor = this.constructor;
+
+        return this.then(function(value) {
+          return constructor.cast(callback()).then(function(){
+            return value;
+          });
+        }, function(reason) {
+          return constructor.cast(callback()).then(function(){
+            throw reason;
+          });
+        });
       }
     };
+
+    Promise.prototype['catch'] = Promise.prototype.fail;
+    Promise.cast = cast;
 
     EventTarget.mixin(Promise.prototype);
 
@@ -555,6 +613,7 @@ define("rsvp/promise",
 
     function reject(promise, value) {
       config.async(function() {
+        if (promise._onerror) { promise._onerror(value); }
         promise.trigger('promise:failed', { detail: value });
         promise.isRejected = true;
         promise.rejectedReason = value;
@@ -611,8 +670,8 @@ define("rsvp/rethrow",
     __exports__.rethrow = rethrow;
   });
 define("rsvp",
-  ["rsvp/events","rsvp/promise","rsvp/node","rsvp/all","rsvp/hash","rsvp/rethrow","rsvp/defer","rsvp/config","rsvp/resolve","rsvp/reject","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __exports__) {
+  ["rsvp/events","rsvp/promise","rsvp/node","rsvp/all","rsvp/hash","rsvp/rethrow","rsvp/defer","rsvp/config","rsvp/resolve","rsvp/reject","rsvp/async","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __dependency11__, __exports__) {
     "use strict";
     var EventTarget = __dependency1__.EventTarget;
     var Promise = __dependency2__.Promise;
@@ -622,12 +681,14 @@ define("rsvp",
     var rethrow = __dependency6__.rethrow;
     var defer = __dependency7__.defer;
     var config = __dependency8__.config;
+    var configure = __dependency8__.configure;
+    var on = __dependency8__.on;
+    var off = __dependency8__.off;
+    var trigger = __dependency8__.trigger;
     var resolve = __dependency9__.resolve;
     var reject = __dependency10__.reject;
-
-    function configure(name, value) {
-      config[name] = value;
-    }
+    var async = __dependency11__.async;
+    var asyncDefault = __dependency11__.asyncDefault;
 
 
     __exports__.Promise = Promise;
@@ -638,6 +699,11 @@ define("rsvp",
     __exports__.defer = defer;
     __exports__.denodeify = denodeify;
     __exports__.configure = configure;
+    __exports__.trigger = trigger;
+    __exports__.on = on;
+    __exports__.off = off;
     __exports__.resolve = resolve;
     __exports__.reject = reject;
+    __exports__.async = async;
+    __exports__.asyncDefault = asyncDefault;
   });

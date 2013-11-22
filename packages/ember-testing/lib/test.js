@@ -400,7 +400,7 @@ Ember.Application.reopen({
       injectHelpersCallbacks[i](this);
     }
 
-    Ember.RSVP.configure('onerror', onerror);
+    Ember.RSVP.on('error', onerror);
   },
 
   /**
@@ -421,7 +421,7 @@ Ember.Application.reopen({
       delete this.testHelpers[name];
       delete originalMethods[name];
     }
-    Ember.RSVP.configure('onerror', null);
+    Ember.RSVP.off('error', onerror);
   }
 
 });
@@ -491,6 +491,6 @@ function isolate(fn, val) {
   }
 }
 
-function onerror(error) {
-  Ember.Test.adapter.exception(error);
+function onerror(event) {
+  Ember.Test.adapter.exception(event.detail);
 }
