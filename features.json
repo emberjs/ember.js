@@ -12,5 +12,6 @@
   "propertyBraceExpansion": null,
   "ember-routing-named-substates": null,
   "ember-testing-lazy-routing": null,
-  "ember-handlebars-caps-lookup": null
+  "ember-handlebars-caps-lookup": null,
+  "ember-testing-simple-setup": null
 }
