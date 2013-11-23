@@ -22,10 +22,8 @@ var e_get = Ember.get,
     arrayBracketPattern = /\.\[\]$/;
 
 function get(obj, key) {
-  if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
-    if (key === '@this') {
-      return obj;
-    }
+  if (key === '@this') {
+    return obj;
   }
 
   return e_get(obj, key);

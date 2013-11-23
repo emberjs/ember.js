@@ -162,12 +162,9 @@ EmberHandlebars.registerHelper('_triageMustache', function(property, options) {
     return helpers[property].call(this, options);
   }
 
-  if (Ember.FEATURES.isEnabled('container-renderables')) {
-
-    var helper = Ember.Handlebars.resolveHelper(options.data.view.container, property);
-    if (helper) {
-      return helper.call(this, options);
-    }
+  var helper = Ember.Handlebars.resolveHelper(options.data.view.container, property);
+  if (helper) {
+    return helper.call(this, options);
   }
 
   return helpers.bind.call(this, property, options);
