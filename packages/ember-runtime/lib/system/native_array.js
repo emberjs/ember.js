@@ -39,7 +39,7 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
     var len = objects ? get(objects, 'length') : 0;
     this.arrayContentWillChange(idx, amt, len);
 
-    if (!objects || objects.length === 0) {
+    if (len === 0) {
       this.splice(idx, amt);
     } else {
       replace(this, idx, amt, objects);
@@ -126,7 +126,7 @@ Ember.NativeArray = NativeArray;
   Does not modify the original object. Ember.A is not needed if
   `Ember.EXTEND_PROTOTYPES` is `true` (the default value). However,
   it is recommended that you use Ember.A when creating addons for
-  ember or when you can not garentee that `Ember.EXTEND_PROTOTYPES`
+  ember or when you can not guarantee that `Ember.EXTEND_PROTOTYPES`
   will be `true`.
 
   Example

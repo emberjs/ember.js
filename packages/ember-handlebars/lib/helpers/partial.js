@@ -6,24 +6,48 @@ require('ember-handlebars/ext');
 */
 
 /**
-  `partial` renders a template directly using the current context.
-  If needed the context can be set using the `{{#with foo}}` helper.
+  The `partial` helper renders another template without
+  changing the template context:
 
-  ```html
-  <script type="text/x-handlebars" data-template-name="header_bar">
-    {{#with currentUser}}
-      {{partial user_info}}
-    {{/with}}
-  </script>
+  ```handlebars
+  {{foo}}
+  {{partial "nav"}}
   ```
 
-  The `data-template-name` attribute of a partial template
-  is prefixed with an underscore.
+  The above example template will render a template named
+  "_nav", which has the same context as the parent template
+  it's rendered into, so if the "_nav" template also referenced
+  `{{foo}}`, it would print the same thing as the `{{foo}}`
+  in the above example.
 
-  ```html
-  <script type="text/x-handlebars" data-template-name="_user_info">
-    <span>Hello {{username}}!</span>
-  </script>
+  If a "_nav" template isn't found, the `partial` helper will
+  fall back to a template named "nav".
+
+  ## Bound template names
+
+  The parameter supplied to `partial` can also be a path
+  to a property containing a template name, e.g.:
+
+  ```handlebars
+  {{partial someTemplateName}}
+  ```
+
+  The above example will look up the value of `someTemplateName`
+  on the template context (e.g. a controller) and use that
+  value as the name of the template to render. If the resolved
+  value is falsy, nothing will be rendered. If `someTemplateName`
+  changes, the partial will be re-rendered using the new template
+  name.
+
+  ## Setting the partial's context with `with`
+
+  The `partial` helper can be used in conjunction with the `with`
+  helper to set a context that will be used by the partial:
+
+  ```handlebars
+  {{#with currentUser}}
+    {{partial "user_info"}}
+  {{/with}}
   ```
 
   @method partial
@@ -32,6 +56,30 @@ require('ember-handlebars/ext');
 */
 
 Ember.Handlebars.registerHelper('partial', function(name, options) {
+
+  var context = (options.contexts && options.contexts.length) ? options.contexts[0] : this;
+
+  if (options.types[0] === "ID") {
+    // Helper was passed a property path; we need to
+    // create a binding that will re-render whenever
+    // this property changes.
+    options.fn = function(context, fnOptions) {
+      var partialName = Ember.Handlebars.get(context, name, fnOptions);
+      renderPartial(context, partialName, fnOptions);
+    };
+
+    return Ember.Handlebars.bind.call(context, name, options, true, exists);
+  } else {
+    // Render the partial right into parent template.
+    renderPartial(context, name, options);
+  }
+});
+
+function exists(value) {
+  return !Ember.isNone(value);
+}
+
+function renderPartial(context, name, options) {
   var nameParts = name.split("/"),
       lastPart = nameParts[nameParts.length - 1];
 
@@ -46,5 +94,5 @@ Ember.Handlebars.registerHelper('partial', function(name, options) {
 
   template = template || deprecatedTemplate;
 
-  template(this, { data: options.data });
-});
+  template(context, { data: options.data });
+}

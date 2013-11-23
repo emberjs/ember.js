@@ -3,7 +3,7 @@
 @submodule ember-runtime
 */
 
-var get = Ember.get;
+var get = Ember.get, typeOf = Ember.typeOf;
 
 /**
   The `Ember.ActionHandler` mixin implements support for moving an `actions`
@@ -29,9 +29,21 @@ Ember.ActionHandler = Ember.Mixin.create({
     @method willMergeMixin
   */
   willMergeMixin: function(props) {
-    if (props.actions && !props._actions) {
-      props._actions = Ember.merge(props._actions || {}, props.actions);
-      delete props.actions;
+    var hashName;
+
+    if (!props._actions) {
+      if (typeOf(props.actions) === 'object') {
+        hashName = 'actions';
+      } else if (typeOf(props.events) === 'object') {
+        Ember.deprecate('Action handlers contained in an `events` object are deprecated in favor of putting them in an `actions` object', false);
+        hashName = 'events';
+      }
+
+      if (hashName) {
+        props._actions = Ember.merge(props._actions || {}, props[hashName]);
+      }
+
+      delete props[hashName];
     }
   },
 

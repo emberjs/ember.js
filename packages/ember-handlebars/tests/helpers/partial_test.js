@@ -66,3 +66,33 @@ test("should use the current view's context", function() {
 
   equal(Ember.$.trim(view.$().text()), "Who is Kris Selden?");
 });
+
+test("Quoteless parameters passed to {{template}} perform a bound property lookup of the partial name", function() {
+  container.register('template:_subTemplate', Ember.Handlebars.compile("sub-template"));
+  container.register('template:_otherTemplate', Ember.Handlebars.compile("other-template"));
+
+  view = Ember.View.create({
+    container: container,
+    template: Ember.Handlebars.compile('This {{partial view.partialName}} is pretty {{partial nonexistent}}great.'),
+    partialName: 'subTemplate'
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(Ember.$.trim(view.$().text()), "This sub-template is pretty great.");
+
+  Ember.run(function() {
+    view.set('partialName', 'otherTemplate');
+  });
+
+  equal(Ember.$.trim(view.$().text()), "This other-template is pretty great.");
+
+  Ember.run(function() {
+    view.set('partialName', null);
+  });
+
+  equal(Ember.$.trim(view.$().text()), "This  is pretty great.");
+});
+

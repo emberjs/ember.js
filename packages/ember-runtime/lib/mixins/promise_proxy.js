@@ -9,16 +9,15 @@ var set = Ember.set, get = Ember.get,
   @submodule ember-runtime
  */
 
-function installPromise(proxy, promise) {
+function observePromise(proxy, promise) {
   promise.then(function(value) {
     set(proxy, 'isFulfilled', true);
     set(proxy, 'content', value);
-
-    return value;
   }, function(reason) {
     set(proxy, 'isRejected', true);
     set(proxy, 'reason', reason);
-  }).fail(rethrow);
+    // don't re-throw, as we are merely observing
+  });
 }
 
 /**
@@ -96,8 +95,8 @@ Ember.PromiseProxyMixin = Ember.Mixin.create({
   promise: Ember.computed(function(key, promise) {
     if (arguments.length === 2) {
       promise = resolve(promise);
-      installPromise(this, promise);
-      return promise;
+      observePromise(this, promise);
+      return promise.then(); // fork the promise.
     } else {
       throw new Ember.Error("PromiseProxy's promise must be set");
     }
@@ -107,4 +106,5 @@ Ember.PromiseProxyMixin = Ember.Mixin.create({
     return get(this, 'promise').then(fulfill, reject);
   }
 });
+
 

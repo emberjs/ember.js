@@ -304,28 +304,3 @@ if (!Ember.keys || Ember.create.isSimulated) {
     return ret;
   };
 }
-
-// ..........................................................
-// ERROR
-//
-
-var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
-
-/**
-  A subclass of the JavaScript Error object for use in Ember.
-
-  @class Error
-  @namespace Ember
-  @extends Error
-  @constructor
-*/
-Ember.Error = function() {
-  var tmp = Error.apply(this, arguments);
-
-  // Unfortunately errors are not enumerable in Chrome (at least), so `for prop in tmp` doesn't work.
-  for (var idx = 0; idx < errorProps.length; idx++) {
-    this[errorProps[idx]] = tmp[errorProps[idx]];
-  }
-};
-
-Ember.Error.prototype = Ember.create(Error.prototype);

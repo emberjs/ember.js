@@ -1,6 +1,7 @@
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils'); // Ember.tryFinally
+require('ember-metal/expand_properties');
 require('ember-metal/property_get');
 require('ember-metal/array');
 
@@ -8,8 +9,12 @@ require('ember-metal/array');
 @module ember-metal
 */
 
-var AFTER_OBSERVERS = ':change';
-var BEFORE_OBSERVERS = ':before';
+var AFTER_OBSERVERS = ':change',
+    BEFORE_OBSERVERS = ':before';
+
+if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+  var expandProperties = Ember.expandProperties;
+}
 
 function changeEvent(keyName) {
   return keyName+AFTER_OBSERVERS;
@@ -26,9 +31,17 @@ function beforeEvent(keyName) {
   @param {Object|Function} targetOrMethod
   @param {Function|String} [method]
 */
-Ember.addObserver = function(obj, path, target, method) {
-  Ember.addListener(obj, changeEvent(path), target, method);
-  Ember.watch(obj, path);
+Ember.addObserver = function(obj, _path, target, method) {
+  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+    expandProperties(_path, function (path) {
+      Ember.addListener(obj, changeEvent(path), target, method);
+      Ember.watch(obj, path);
+    });
+  } else {
+    Ember.addListener(obj, changeEvent(_path), target, method);
+    Ember.watch(obj, _path);
+  }
+
   return this;
 };
 
@@ -43,9 +56,16 @@ Ember.observersFor = function(obj, path) {
   @param {Object|Function} targetOrMethod
   @param {Function|String} [method]
 */
-Ember.removeObserver = function(obj, path, target, method) {
-  Ember.unwatch(obj, path);
-  Ember.removeListener(obj, changeEvent(path), target, method);
+Ember.removeObserver = function(obj, _path, target, method) {
+  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+    expandProperties(_path, function (path) {
+      Ember.unwatch(obj, path);
+      Ember.removeListener(obj, changeEvent(path), target, method);
+    });
+  } else {
+    Ember.unwatch(obj, _path);
+    Ember.removeListener(obj, changeEvent(_path), target, method);
+  }
   return this;
 };
 
@@ -56,9 +76,16 @@ Ember.removeObserver = function(obj, path, target, method) {
   @param {Object|Function} targetOrMethod
   @param {Function|String} [method]
 */
-Ember.addBeforeObserver = function(obj, path, target, method) {
-  Ember.addListener(obj, beforeEvent(path), target, method);
-  Ember.watch(obj, path);
+Ember.addBeforeObserver = function(obj, _path, target, method) {
+  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+    expandProperties(_path, function (path) {
+      Ember.addListener(obj, beforeEvent(path), target, method);
+      Ember.watch(obj, path);
+    });
+  } else {
+    Ember.addListener(obj, beforeEvent(_path), target, method);
+    Ember.watch(obj, _path);
+  }
   return this;
 };
 
@@ -97,8 +124,15 @@ Ember.beforeObserversFor = function(obj, path) {
   @param {Object|Function} targetOrMethod
   @param {Function|String} [method]
 */
-Ember.removeBeforeObserver = function(obj, path, target, method) {
-  Ember.unwatch(obj, path);
-  Ember.removeListener(obj, beforeEvent(path), target, method);
+Ember.removeBeforeObserver = function(obj, _path, target, method) {
+  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+    expandProperties(_path, function (path) {
+      Ember.unwatch(obj, path);
+      Ember.removeListener(obj, beforeEvent(path), target, method);
+    });
+  } else {
+    Ember.unwatch(obj, _path);
+    Ember.removeListener(obj, beforeEvent(_path), target, method);
+  }
   return this;
 };

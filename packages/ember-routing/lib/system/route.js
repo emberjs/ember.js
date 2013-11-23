@@ -10,6 +10,7 @@ var get = Ember.get, set = Ember.set,
     a_forEach = Ember.EnumerableUtils.forEach,
     a_replace = Ember.EnumerableUtils.replace;
 
+
 /**
   The `Ember.Route` class is used to define individual routes. Refer to
   the [routing guide](http://emberjs.com/guides/routing/) for documentation.
@@ -19,6 +20,7 @@ var get = Ember.get, set = Ember.set,
   @extends Ember.Object
 */
 Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
+
   /**
     @private
 
@@ -283,7 +285,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     Transition into another route. Optionally supply model(s) for the
     route in question. If multiple models are supplied they will be applied
     last to first recursively up the resource tree (see Multiple Models Example
-    below). The model(s) will be serialized into the URL using the appropriate 
+    below). The model(s) will be serialized into the URL using the appropriate
     route's `serialize` hook. See also 'replaceWith'.
 
     Simple Transition Example
@@ -306,6 +308,24 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
       }
     });
     ```
+
+   Transition to a nested route
+
+   ```javascript
+   App.Router.map(function() {
+     this.resource('articles', { path: '/articles' }, function() {
+       this.route('new');
+     });
+   });
+
+   App.IndexRoute = Ember.Route.extend({
+     actions: {
+       transitionToNewArticle: function() {
+         this.transitionTo('articles.new');
+       }
+     }
+   });
+   ```
 
     Multiple Models Example
 
@@ -339,8 +359,28 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   },
 
   /**
+    Perform a synchronous transition into another route with out attempting
+    to resolve promises, update the URL, or abort any currently active
+    asynchronous transitions (i.e. regular transitions caused by
+    `transitionTo` or URL changes).
+
+    This method is handy for performing intermediate transitions on the
+    way to a final destination route, and is called internally by the
+    default implementations of the `error` and `loading` handlers.
+
+    @method intermediateTransitionTo
+    @param {String} name the name of the route
+    @param {...Object} models the model(s) to be used while transitioning
+    to the route.
+   */
+  intermediateTransitionTo: function() {
+    var router = this.router;
+    router.intermediateTransitionTo.apply(router, arguments);
+  },
+
+  /**
     Transition into another route while replacing the current URL, if possible.
-    This will replace the current history entry instead of adding a new one. 
+    This will replace the current history entry instead of adding a new one.
     Beside that, it is identical to `transitionTo` in all other respects. See
     'transitionTo' for additional information regarding multiple models.
 
@@ -368,7 +408,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   */
   replaceWith: function() {
     var router = this.router;
-    return this.router.replaceWith.apply(this.router, arguments);
+    return router.replaceWith.apply(router, arguments);
   },
 
   /**
@@ -416,7 +456,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     @method setup
   */
-  setup: function(context) {
+  setup: function(context, queryParams) {
     var controllerName = this.controllerName || this.routeName,
         controller = this.controllerFor(controllerName, true);
     if (!controller) {
@@ -427,18 +467,24 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     // referenced in action handlers
     this.controller = controller;
 
+    var args = [controller, context];
+
+    if (Ember.FEATURES.isEnabled("query-params")) {
+      args.push(queryParams);
+    }
+
     if (this.setupControllers) {
       Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
       this.setupControllers(controller, context);
     } else {
-      this.setupController(controller, context);
+      this.setupController.apply(this, args);
     }
 
     if (this.renderTemplates) {
       Ember.deprecate("Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.");
       this.renderTemplates(context);
     } else {
-      this.renderTemplate(controller, context);
+      this.renderTemplate.apply(this, args);
     }
   },
 
@@ -529,6 +575,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     @method beforeModel
     @param {Transition} transition
+    @param {Object} queryParams the active query params for this route
     @return {Promise} if the value returned from this hook is
       a promise, the transition will pause until the transition
       resolves. Otherwise, non-promise return values are not
@@ -562,12 +609,13 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @param {Object} resolvedModel the value returned from `model`,
       or its resolved value if it was a promise
     @param {Transition} transition
+    @param {Object} queryParams the active query params for this handler
     @return {Promise} if the value returned from this hook is
       a promise, the transition will pause until the transition
       resolves. Otherwise, non-promise return values are not
       utilized in any way.
    */
-  afterModel: function(resolvedModel, transition) {
+  afterModel: function(resolvedModel, transition, queryParams) {
     this.redirect(resolvedModel, transition);
   },
 
@@ -627,6 +675,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @method model
     @param {Object} params the parameters extracted from the URL
     @param {Transition} transition
+    @param {Object} queryParams the query params for this route
     @return {Object|Promise} the model for this route. If
       a promise is returned, the transition will pause until
       the promise resolves, and the resolved value of the promise
@@ -774,6 +823,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     instance would be used.
 
     Example
+
     ```js
     App.PostRoute = Ember.Route.extend({
       setupController: function(controller, model) {
@@ -998,9 +1048,18 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     }
 
     options = options || {};
-    name = name ? name.replace(/\//g, '.') : this.routeName;
+
+    var templateName;
+
+    if (name) {
+      name = name.replace(/\//g, '.');
+      templateName = name;
+    } else {
+      name = this.routeName;
+      templateName = this.templateName || name;
+    }
+
     var viewName = options.view || this.viewName || name;
-    var templateName = this.templateName || name;
 
     var container = this.container,
         view = container.lookup('view:' + viewName),

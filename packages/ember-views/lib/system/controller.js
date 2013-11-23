@@ -26,7 +26,7 @@ Ember.ControllerMixin.reopen({
     set(this, '_childContainers', {});
   },
 
-  _modelDidChange: Ember.observer(function() {
+  _modelDidChange: Ember.observer('model', function() {
     var containers = get(this, '_childContainers');
 
     for (var prop in containers) {
@@ -35,5 +35,5 @@ Ember.ControllerMixin.reopen({
     }
 
     set(this, '_childContainers', {});
-  }, 'model')
+  })
 });

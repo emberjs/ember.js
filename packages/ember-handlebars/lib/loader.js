@@ -1,6 +1,7 @@
 /*globals Handlebars */
 
 require("ember-handlebars/ext");
+require("ember-handlebars/component_lookup");
 
 /**
 @module ember
@@ -87,6 +88,10 @@ function registerComponent(container, name) {
   Ember.Handlebars.helper(name, Component);
 }
 
+function registerComponentLookup(container) {
+  container.register('component-lookup:main', Ember.ComponentLookup);
+}
+
 /*
   We tie this to application.load to ensure that we've at least
   attempted to bootstrap at the point that the application is loaded.
@@ -104,9 +109,17 @@ Ember.onLoad('Ember.Application', function(Application) {
     initialize: bootstrap
   });
 
-  Application.initializer({
-    name: 'registerComponents',
-    after: 'domTemplates',
-    initialize: registerComponents
-  });
+  if (Ember.FEATURES.isEnabled('container-renderables')) {
+    Application.initializer({
+      name: 'registerComponentLookup',
+      after: 'domTemplates',
+      initialize: registerComponentLookup
+    });
+  } else {
+    Application.initializer({
+      name: 'registerComponents',
+      after: 'domTemplates',
+      initialize: registerComponents
+    });
+  }
 });

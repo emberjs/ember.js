@@ -23,7 +23,7 @@ test("sets up mandatory setters for watched simple properties", function() {
   var MyClass = Ember.Object.extend({
     foo: null,
     bar: null,
-    fooDidChange: Ember.observer(function() {}, 'foo')
+    fooDidChange: Ember.observer('foo', function() {})
   });
 
   var o = MyClass.create({foo: 'bar', bar: 'baz'});
@@ -232,9 +232,9 @@ test('create should not break observed values', function() {
       return this;
     },
 
-    valueDidChange: Ember.observer(function() {
+    valueDidChange: Ember.observer('value', function() {
       this._count++;
-    }, 'value')
+    })
   });
 
   var obj = CountObject.createWithMixins({ value: 'foo' });

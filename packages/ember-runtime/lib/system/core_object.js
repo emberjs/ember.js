@@ -500,7 +500,7 @@ var ClassMixin = Mixin.create({
 
     proto = Class.prototype = o_create(this.prototype);
     proto.constructor = Class;
-    generateGuid(proto, 'ember');
+    generateGuid(proto);
     meta(proto).proto = proto; // this will disable observers on prototype
 
     Class.ClassMixin.apply(Class);

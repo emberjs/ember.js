@@ -1,6 +1,7 @@
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
+require('ember-metal/expand_properties');
 require('ember-metal/property_get');
 require('ember-metal/properties');
 require('ember-metal/watch_key');
@@ -22,6 +23,10 @@ var metaFor = Ember.meta, // utils.js
     generateGuid = Ember.generateGuid,
     IS_PATH = /[\.\*]/;
 
+if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+  var expandProperties = Ember.expandProperties;
+}
+
 // returns true if the passed path is just a keyName
 function isKeyName(path) {
   return path==='*' || !IS_PATH.test(path);
@@ -41,14 +46,24 @@ function isKeyName(path) {
   @param obj
   @param {String} keyName
 */
-Ember.watch = function(obj, keyPath) {
+Ember.watch = function(obj, _keyPath) {
   // can't watch length on Array - it is special...
-  if (keyPath === 'length' && typeOf(obj) === 'array') { return; }
+  if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
-  if (isKeyName(keyPath)) {
-    watchKey(obj, keyPath);
+  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+    expandProperties(_keyPath, function (keyPath) {
+      if (isKeyName(keyPath)) {
+        watchKey(obj, keyPath);
+      } else {
+        watchPath(obj, keyPath);
+      }
+    });
   } else {
-    watchPath(obj, keyPath);
+    if (isKeyName(_keyPath)) {
+      watchKey(obj, _keyPath);
+    } else {
+      watchPath(obj, _keyPath);
+    }
   }
 };
 
@@ -59,14 +74,24 @@ Ember.isWatching = function isWatching(obj, key) {
 
 Ember.watch.flushPending = Ember.flushPendingChains;
 
-Ember.unwatch = function(obj, keyPath) {
+Ember.unwatch = function(obj, _keyPath) {
   // can't watch length on Array - it is special...
-  if (keyPath === 'length' && typeOf(obj) === 'array') { return; }
+  if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
-  if (isKeyName(keyPath)) {
-    unwatchKey(obj, keyPath);
+  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+    expandProperties(_keyPath, function (keyPath) {
+      if (isKeyName(keyPath)) {
+        unwatchKey(obj, keyPath);
+      } else {
+        unwatchPath(obj, keyPath);
+      }
+    });
   } else {
-    unwatchPath(obj, keyPath);
+    if (isKeyName(_keyPath)) {
+      unwatchKey(obj, _keyPath);
+    } else {
+      unwatchPath(obj, _keyPath);
+    }
   }
 };
 
@@ -86,7 +111,7 @@ Ember.rewatch = function(obj) {
 
   // make sure the object has its own guid.
   if (GUID_KEY in obj && !obj.hasOwnProperty(GUID_KEY)) {
-    generateGuid(obj, 'ember');
+    generateGuid(obj);
   }
 
   // make sure any chained watchers update.

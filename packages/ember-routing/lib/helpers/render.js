@@ -10,13 +10,13 @@ require('ember-handlebars/helpers/view');
 Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
   /**
-    Calling ``{{render}}`` from within a template will insert another 
+    Calling ``{{render}}`` from within a template will insert another
     template that matches the provided name. The inserted template will
     access its properties on its own controller (rather than the controller
     of the parent template).
 
     If a view class with the same name exists, the view class also will be used.
-    
+
     Note: A given controller may only be used *once* in your app in this manner.
     A singleton instance of the controller will be created for you.
 
@@ -28,17 +28,17 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     });
     ```
 
-    ```handelbars
+    ```handlebars
     <!-- navigation.hbs -->
     Hello, {{who}}.
     ```
 
     ```handelbars
-    <!-- applications.hbs -->
+    <!-- application.hbs -->
     <h1>My great app</h1>
-    {{render navigaton}}
+    {{render navigation}}
     ```
-    
+
     ```html
     <h1>My great app</h1>
     <div class='ember-view'>
@@ -46,7 +46,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     </div>
     ```
 
-    Optionally you may provide a  second argument: a property path
+    Optionally you may provide a second argument: a property path
     that will be bound to the `model` property of the controller.
 
     If a `model` property path is specified, then a new instance of the

@@ -1,55 +1,107 @@
-* Ember 1.1.2 (October 25, 2013)*
+* Ember 1.2.0-beta.4 (November 15, 2013)*
 
-  * [BUGFIX] Fix failures in component rendering. - Fixes #3637
+* Allow keyboard events to work with the action helper.
+* Enumerable#any no longer returns false if NaN is matched - Fixes #3736
+* PromiseProxy should merely observe promises. - Fixes #3714
+* Fix issue with templateName in Route and render. - Fixes #3502
+* Sort guid fallback unconfused by ObjectProxy.
+* The router should cleanup itself upon destroy.
+* Correct `Em.typeOf` docs re: boxed types.
+* Update for Handlebars 1.1
+* Allow test helpers to be injected on specific object.
 
-* Ember 1.1.1 (October 23, 2013)*
+* Ember 1.2.0-beta.3 (November 01, 2013)*
 
-  * [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
+* Update router.js
+* [BUGFIX] Give precedence to routes with more static segments. Fixes #3573
+* [BUGFIX] Improve unhandled action error messages
+* [BUGFIX] Bubble `loading` action above pivot route
+
+* Ember 1.2.0-beta.2 (October 25, 2013)*
+
+* [BUGFIX] reduceComputed ignore changes during reset.
+* [BUGFIX] reduceComputed handle out-of-range index.
+* [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
+
+* Ember 1.2.0-beta.1 (October 21, 2013)*
+
+* [FEATURE] Add support for nested loading/error substates. A loading substate will be entered when a slow-to-resolve promise is returned from one of the Route#model hooks during a transition and an appropriately-named loading template/route can be found.  An error substate will be entered when one of the Route#model hooks returns a rejecting promise and an appropriately-named error template/route can be found.
+* [FEATURE] Components and helpers registered on the container can be rendered in templates via their dasherized names. E.g. {{helper-name}} or {{component-name}}
+* [FEATURE] Add a `didTransition` hook to the router.
+* [FEATURE] Add a non-block form link-to helper. E.g {{link-to "About us" "about"}} will have "About us" as link text and will transition to the "about" route. Everything works as with the block form link-to.
+* [FEATURE] Add support for nested loading/error substates. A loading substate will be entered when a slow-to-resolve promise is returned from one of the Route#model hooks during a transition and an appropriately-named loading template/route can be found.  An error substate will be entered when one of the Route#model hooks returns a rejecting promise and an appropriately-named error template/route can be found.
+* [FEATURE] Add sortBy using Ember.compare to the Enumerable mixin
+* [FEATURE reduceComputedSelf] reduceComputed dependent keys may refer to @this.
+* [BUGFIX] reduceComputed handle out of range indexes.
+* Update Ember.immediateObserver and Ember.beforeObserver to match the new Ember.observer style.
+* Make Ember.observer work with the function as the last argument.
+* Ember.run.debounce and throttle accept string numbers like time interval
+* Use Ember.Error consistently.
+* Add assertion upon too many ajaxStop's.
+* Introduce registerAsyncHelper which allows for unchained async helpers
+* Ember-testing should not cause a test failure when aborting transitions
+* Ember.Test Helpers no longer need to be chained
+* Refactored promises usage
+* Should not reference global `Handlebars` object, use `Ember.Handlebars` instead
+* Added support for jQuery as a `require` module
+* Decamelize handles strings with numbers
+* disallow container registration if the corresponding singleton lookup has already occurred
+* collection view will now defer all normalization to the resolver
+* Remove Route#redirect soft deprecation
+* Universalize {{view}} helper quoteless binding syntax, prevent id binding
+* prefer Ember.Logger.assert over Logger error + setTimeout throw.
+* Allow for the initial router to be resolved.
+* Don't allow registration of undefined factories.
+* Add `Ember.Subarray.prototype.toString`.
+* [Improved assert for #3457] provide helpful assertion if needs is specified but no container is present.
+* Update router.js to bc22bb4d59e48d187f8d60db6553d9e157f06789
+* Update route recognizer
+* Allow apps with custom jquery builds to exclude the event-alias module
+* Removes long-deprecated getPath/setPath
 
 * Ember 1.1.0 (October 21, 2013)*
 
-  * Make Ember.run.later more flexible with arguments - Fixes #3072
-  * Add assertion upon too many ajaxStop's.
-  * [BUGFIX] Fix an issue with concatenatedProperties.
-  * [BUGFIX] Throw a sensible exception from SubArray.removeItem when not found.
-  * [BUGFIX] Fix evaluateUnboundHelper properties
-  * Use Ember.Error consistently.
-  * [BUGFIX] Make Component.sendAction behave the same as {{action}} helper.
-  * [BUGFIX] uniq reduceComputed dependent keys.
-  * Don't allow registration of undefined factories.
-  * Decamelize handles strings with numbers
-  * [BUGFIX] Allow a reduceComputed to have an undefined initialValue.
-  * disallow container registration if the corresponding singleton lookup has already occurred Conflicts: 	packages/container/tests/container_test.js
-  * [BUGFIX] Soft-deprecate mixed binding syntax in view helper
-  * Universalize {{view}} helper quoteless binding syntax, prevent id binding
-  * disallow container registration if the corresponding singleton lookup has already occurred
-  * [BUGFIX] Fix edge case in `TrackedArray`
-  * Remove Route#redirect soft deprecation
-  * [BUGFIX] link-to, bound helper issues with arrays of primitives
-  * [BUGFIX] Don't use incompatible array methods
-  * [BUGFIX] `Ember.Object.extend` should allow any prorerty
-  * [BUGFIX] Fix to return `undefined` for `href` of {{link-to}}
-  * [BUGFIX] `Ember.keys` should return own property
-  * [BUGFIX] Fixes #3332 - Array Computed Properties should update synchronously
-  * [BUGFIX] Fixes issue when content is undefined for Ember.Select with optgroup
-  * [BUGFIX] `Ember.SubArray` operation composition fix.
-  * [BUGFIX] Fire observers for array computed changes.
-  * [BUGFIX] Added tests failing for issue #3331
-  * Fix a bug in suspendListeners
-  * [BUGFIX] Optimization: Clear the meta cache without using observers.
-  * [BUGFIX] Calling `replaceIn` would incorrectly move views from the `hasElement` to `inDOM`
-  * [BUGFIX] ReduceComputedProperty ignore invalidated property observers.
-  * Set source object as context for callbacks in computed array property
-  * allow to inject falsy values like 'false' and 'null'
-  * `Ember.TargetActionSupport`'s `sendAction` should support `null` as context.
-  * Create Ember.libraries for keeping track of versions for debugging. emberjs/data#1051
-  * components should declare actions in the actions hash
-  * Close #3307 – Fix unexpected behavior with functions in concatenated properties
-  * Add shortcut for whitelisting all modifier keys on {{action}} Modifier key-independent action helper use cases can be less verbose and more future-proof.
-  * Only throw an initialValue error if it is null or undefined (i.e. not 0 or some other falsy value)
-  * Improve message and logic around UnrecognizedURLError
-  * Incorrect error message in router.js
-  * Install default error handler on ApplicationRoute#actions, not #events
+* Make Ember.run.later more flexible with arguments - Fixes #3072
+* Add assertion upon too many ajaxStop's.
+* [BUGFIX] Fix an issue with concatenatedProperties.
+* [BUGFIX] Throw a sensible exception from SubArray.removeItem when not found.
+* [BUGFIX] Fix evaluateUnboundHelper properties
+* Use Ember.Error consistently.
+* [BUGFIX] Make Component.sendAction behave the same as {{action}} helper.
+* [BUGFIX] uniq reduceComputed dependent keys.
+* Don't allow registration of undefined factories.
+* Decamelize handles strings with numbers
+* [BUGFIX] Allow a reduceComputed to have an undefined initialValue.
+* [BUGFIX] Soft-deprecate mixed binding syntax in view helper
+* Universalize {{view}} helper quoteless binding syntax, prevent id binding
+* disallow container registration if the corresponding singleton lookup has already occurred
+* [BUGFIX] Fix edge case in `TrackedArray`
+* Remove Route#redirect soft deprecation
+* [BUGFIX] link-to, bound helper issues with arrays of primitives
+* [BUGFIX] Don't use incompatible array methods
+* [BUGFIX] `Ember.Object.extend` should allow any prorerty
+* [BUGFIX] Fix to return `undefined` for `href` of {{link-to}}
+* [BUGFIX] `Ember.keys` should return own property
+* [BUGFIX] Fixes #3332 - Array Computed Properties should update synchronously
+* [BUGFIX] Fixes issue when content is undefined for Ember.Select with optgroup
+* [BUGFIX] `Ember.SubArray` operation composition fix.
+* [BUGFIX] Fire observers for array computed changes.
+* [BUGFIX] Added tests failing for issue #3331
+* Fix a bug in suspendListeners
+* [BUGFIX] Optimization: Clear the meta cache without using observers.
+* [BUGFIX] Calling `replaceIn` would incorrectly move views from the `hasElement` to `inDOM`
+* [BUGFIX] ReduceComputedProperty ignore invalidated property observers.
+* Set source object as context for callbacks in computed array property
+* allow to inject falsy values like 'false' and 'null'
+* `Ember.TargetActionSupport`'s `sendAction` should support `null` as context.
+* Create Ember.libraries for keeping track of versions for debugging. emberjs/data#1051
+* components should declare actions in the actions hash
+* Close #3307 – Fix unexpected behavior with functions in concatenated properties
+* Add shortcut for whitelisting all modifier keys on {{action}} Modifier key-independent action helper use cases can be less verbose and more future-proof.
+* Only throw an initialValue error if it is null or undefined (i.e. not 0 or some other falsy value)
+* Improve message and logic around UnrecognizedURLError
+* Incorrect error message in router.js
+* Install default error handler on ApplicationRoute#actions, not #events
 
 *Ember 1.0.0 (August 31, 2013)*
 

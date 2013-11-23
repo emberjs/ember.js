@@ -8,7 +8,7 @@ install:
 - "npm install -g yuidocjs"
 - "bundle install --deployment"
 after_success: bundle exec rake publish_build
-script: rake test\[standard]
+script: rake test\[$TEST_SUITE]
 notifications:
   campfire:
     rooms:
@@ -32,3 +32,8 @@ env:
       PZ8DNTxX0zsp2jjY8NwTR5MC8NBH+J5VjuTSGv82t5sm0i0jzaBmOOSLbKqH
 
       I/BFT0MbnR6JVCZiPV7TCWPgY1gvgZ6TEEIKGqauDMUBdL8ZK6I='
+  matrix:
+    - TEST_SUITE=packages
+    - TEST_SUITE=old_jquery
+    - TEST_SUITE=extend_prototypes
+    - TEST_SUITE=built

@@ -72,9 +72,9 @@ test('(regression) watched properties on unmodified inherited objects should sti
 
   var MyMixin = Ember.Mixin.create({
     someProperty: 'foo',
-    propertyDidChange: Ember.observer(function() {
+    propertyDidChange: Ember.observer('someProperty', function() {
       // NOTHING TO DO
-    }, 'someProperty')
+    })
   });
 
   var baseObject = MyMixin.apply({});
@@ -151,9 +151,9 @@ test('(regression) watched properties on unmodified inherited objects should sti
 
   var MyMixin = Ember.Mixin.create({
     someProperty: 'foo',
-    propertyDidChange: Ember.observer(function() {
+    propertyDidChange: Ember.observer('someProperty', function() {
       // NOTHING TO DO
-    }, 'someProperty')
+    })
   });
 
   var baseObject = MyMixin.apply({});

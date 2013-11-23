@@ -1,6 +1,7 @@
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
+require('ember-metal/expand_properties');
 require('ember-metal/property_get');
 require('ember-metal/property_set');
 require('ember-metal/properties');
@@ -22,6 +23,10 @@ var get = Ember.get,
     META_KEY = Ember.META_KEY,
     watch = Ember.watch,
     unwatch = Ember.unwatch;
+
+if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+  var expandProperties = Ember.expandProperties;
+}
 
 // ..........................................................
 // DEPENDENT KEYS
@@ -276,9 +281,20 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
   @chainable
 */
 ComputedPropertyPrototype.property = function() {
+  var addArg;
+
+  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+    // Slightly odd setup to keep JSHint happy
+    addArg = function(arg) { args.push(arg); };
+  }
+
   var args = [];
   for (var i = 0, l = arguments.length; i < l; i++) {
-    args.push(arguments[i]);
+    if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+      expandProperties(arguments[i], addArg);
+    } else {
+      args.push(arguments[i]);
+    }
   }
   this._dependentKeys = args;
   return this;
@@ -407,7 +423,7 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
       funcArgLength, cachedValue, ret;
 
   if (this._readOnly) {
-    throw new Error('Cannot Set: ' + keyName + ' on: ' + obj.toString() );
+    throw new Ember.Error('Cannot Set: ' + keyName + ' on: ' + obj.toString() );
   }
 
   this._suspended = obj;
@@ -497,7 +513,7 @@ Ember.computed = function(func) {
   }
 
   if (typeof func !== "function") {
-    throw new Error("Computed Property declared without a property function");
+    throw new Ember.Error("Computed Property declared without a property function");
   }
 
   var cp = new ComputedProperty(func);
@@ -520,7 +536,7 @@ Ember.computed = function(func) {
   @param {Object} obj the object whose property you want to check
   @param {String} key the name of the property whose cached value you want
     to return
-  @return {*} the cached value
+  @return {Object} the cached value
 */
 Ember.cacheFor = function cacheFor(obj, key) {
   var cache = metaFor(obj, false).cache;
@@ -726,7 +742,7 @@ registerComputed('bool', function(dependentKey) {
 */
 registerComputed('match', function(dependentKey, regexp) {
   var value = get(this, dependentKey);
-  return typeof value === 'string' ? !!value.match(regexp) : false;
+  return typeof value === 'string' ? regexp.test(value) : false;
 });
 
 /**
@@ -878,7 +894,6 @@ registerComputed('lte', function(dependentKey, value) {
   A computed property that performs a logical `and` on the
   original values for the provided dependent properties.
 
-
   Example
 
   ```javascript
@@ -895,7 +910,7 @@ registerComputed('lte', function(dependentKey, value) {
 
   @method computed.and
   @for Ember
-  @param {String} dependentKey, [dependentKey...]
+  @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which performs
   a logical `and` on the values of all the original values for properties.
 */
@@ -926,7 +941,7 @@ registerComputedWithProperties('and', function(properties) {
 
   @method computed.or
   @for Ember
-  @param {String} dependentKey, [dependentKey...]
+  @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which performs
   a logical `or` on the values of all the original values for properties.
 */
@@ -957,7 +972,7 @@ registerComputedWithProperties('or', function(properties) {
 
   @method computed.any
   @for Ember
-  @param {String} dependentKey, [dependentKey...]
+  @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which returns
   the first truthy value of given list of properties.
 */
@@ -989,7 +1004,7 @@ registerComputedWithProperties('any', function(properties) {
 
   @method computed.map
   @for Ember
-  @param {String} dependentKey, [dependentKey...]
+  @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which maps
   values of all passed properties in to an array.
 */
@@ -1118,5 +1133,4 @@ Ember.computed.defaultTo = function(defaultPath) {
     return newValue != null ? newValue : get(this, defaultPath);
   });
 };
-
 

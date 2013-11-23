@@ -159,9 +159,9 @@ testBoth("can iterate over a list of computed properties for a class", function(
 
     }),
 
-    fooDidChange: Ember.observer(function() {
+    fooDidChange: Ember.observer('foo', function() {
 
-    }, 'foo'),
+    }),
 
     bar: Ember.computed(function() {
 

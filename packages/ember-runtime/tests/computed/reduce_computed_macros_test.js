@@ -1,4 +1,9 @@
-var map = Ember.EnumerableUtils.map, a_forEach = Ember.ArrayPolyfills.forEach, get = Ember.get, set = Ember.set, setProperties = Ember.setProperties,
+var map = Ember.EnumerableUtils.map,
+    a_forEach = Ember.ArrayPolyfills.forEach,
+    get = Ember.get,
+    set = Ember.set,
+    setProperties = Ember.setProperties,
+    ObjectProxy = Ember.ObjectProxy,
     obj, sorted, sortProps, items, userFnCalls, todos, filtered;
 
 module('Ember.computed.map', {
@@ -675,6 +680,30 @@ function commonSortTests() {
 
     deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "sorted array is updated");
   });
+
+  test("guid sort-order fallback with a serach proxy is not confused by non-search ObjectProxys", function() {
+    var tyrion = { fname: "Tyrion", lname: "Lannister" },
+        tyrionInDisguise = ObjectProxy.create({
+          fname: "Yollo",
+          lname: "",
+          content: tyrion
+        });
+
+    items = get(obj, 'items');
+    sorted = get(obj, 'sortedItems');
+
+    Ember.run(function() {
+      items.pushObject(tyrion);
+    });
+
+    deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']);
+
+    Ember.run(function() {
+      items.pushObject(tyrionInDisguise);
+    });
+
+    deepEqual(sorted.mapBy('fname'), ['Yollo', 'Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb']);
+  });
 }
 
 module('Ember.computed.sort - sortProperties', {
@@ -1185,9 +1214,9 @@ module('Chaining array and reduced CPs', {
         array: Ember.A([{ v: 1 }, { v: 3}, { v: 2 }, { v: 1 }]),
         mapped: Ember.computed.mapBy('array', 'v'),
         max: Ember.computed.max('mapped'),
-        maxDidChange: Ember.observer(function(){
+        maxDidChange: Ember.observer('max', function(){
           userFnCalls++;
-        },'max')
+        })
       });
     });
   },

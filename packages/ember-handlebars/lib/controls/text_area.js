@@ -34,14 +34,14 @@ Ember.TextArea = Ember.Component.extend(Ember.TextSupport, {
   rows: null,
   cols: null,
 
-  _updateElementValue: Ember.observer(function() {
+  _updateElementValue: Ember.observer('value', function() {
     // We do this check so cursor position doesn't get affected in IE
     var value = get(this, 'value'),
         $el = this.$();
     if ($el && value !== $el.val()) {
       $el.val(value);
     }
-  }, 'value'),
+  }),
 
   init: function() {
     this._super();

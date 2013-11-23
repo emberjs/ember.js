@@ -1,3 +1,6 @@
+require('ember-runtime/ext/string');
+require('ember-runtime/system/namespace');
+require('ember-runtime/system/object_proxy');
 require('ember-runtime/computed/array_computed');
 
 /**
@@ -11,7 +14,8 @@ var get = Ember.get,
     merge = Ember.merge,
     a_slice = [].slice,
     forEach = Ember.EnumerableUtils.forEach,
-    map = Ember.EnumerableUtils.map;
+    map = Ember.EnumerableUtils.map,
+    SearchProxy;
 
 /**
   A computed property that calculates the maximum value in the
@@ -539,12 +543,15 @@ function binarySearch(array, item, low, high) {
   return mid;
 
   function _guidFor(item) {
-    if (Ember.ObjectProxy.detectInstance(item)) {
+    if (SearchProxy.detectInstance(item)) {
       return guidFor(get(item, 'content'));
     }
     return guidFor(item);
   }
 }
+
+
+SearchProxy = Ember.ObjectProxy.extend();
 
 /**
   A computed property which returns a new array with all the
@@ -687,10 +694,10 @@ Ember.computed.sort = function (itemsKey, sortDefinition) {
       if (changeMeta.previousValues) {
         proxyProperties = merge({ content: item }, changeMeta.previousValues);
 
-        searchItem = Ember.ObjectProxy.create(proxyProperties);
-     } else {
-       searchItem = item;
-     }
+        searchItem = SearchProxy.create(proxyProperties);
+      } else {
+        searchItem = item;
+      }
 
       index = instanceMeta.binarySearch(array, searchItem);
       array.removeAt(index);

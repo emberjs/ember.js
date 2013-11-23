@@ -164,5 +164,13 @@ Ember.SubArray.prototype = {
         this._operations.splice(index+1, 1);
       }
     }
+  },
+
+  toString: function () {
+    var str = "";
+    forEach(this._operations, function (operation) {
+      str += " " + operation.type + ":" + operation.count;
+    });
+    return str.substring(1);
   }
 };

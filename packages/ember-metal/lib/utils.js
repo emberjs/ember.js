@@ -1,10 +1,19 @@
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/array');
+require('ember-metal/error');
 
 /**
 @module ember-metal
 */
+
+/**
+  @private
+  
+  Prefix used for guids through out Ember.
+  
+*/
+Ember.GUID_PREFIX = 'ember';
 
 
 var o_defineProperty = Ember.platform.defineProperty,
@@ -60,13 +69,13 @@ var GUID_DESC = {
   @return {String} the guid
 */
 Ember.generateGuid = function generateGuid(obj, prefix) {
-  if (!prefix) prefix = 'ember';
+  if (!prefix) prefix = Ember.GUID_PREFIX;
   var ret = (prefix + (uuid++));
   if (obj) {
     GUID_DESC.value = ret;
     o_defineProperty(obj, GUID_KEY, GUID_DESC);
   }
-  return ret ;
+  return ret;
 };
 
 /**
@@ -603,9 +612,9 @@ var toString = Object.prototype.toString;
 
       | Return Value  | Meaning                                              |
       |---------------|------------------------------------------------------|
-      | 'string'      | String primitive                                     |
-      | 'number'      | Number primitive                                     |
-      | 'boolean'     | Boolean primitive                                    |
+      | 'string'      | String primitive or String object.                   |
+      | 'number'      | Number primitive or Number object.                   |
+      | 'boolean'     | Boolean primitive or Boolean object.                 |
       | 'null'        | Null value                                           |
       | 'undefined'   | Undefined value                                      |
       | 'function'    | A function                                           |
@@ -622,8 +631,11 @@ var toString = Object.prototype.toString;
   Ember.typeOf(null);                   // 'null'
   Ember.typeOf(undefined);              // 'undefined'
   Ember.typeOf('michael');              // 'string'
+  Ember.typeOf(new String('michael'));  // 'string'
   Ember.typeOf(101);                    // 'number'
+  Ember.typeOf(new Number(101));        // 'number'
   Ember.typeOf(true);                   // 'boolean'
+  Ember.typeOf(new Boolean(true));      // 'boolean'
   Ember.typeOf(Ember.makeArray);        // 'function'
   Ember.typeOf([1,2,90]);               // 'array'
   Ember.typeOf(Ember.Object.extend());  // 'class'

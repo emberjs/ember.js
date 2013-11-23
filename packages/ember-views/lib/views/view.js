@@ -1012,9 +1012,9 @@ Ember.View = Ember.CoreView.extend(
 
     @method _contextDidChange
   */
-  _contextDidChange: Ember.observer(function() {
+  _contextDidChange: Ember.observer('context', function() {
     this.rerender();
-  }, 'context'),
+  }),
 
   /**
     If `false`, the view will appear hidden in DOM.
@@ -1041,21 +1041,21 @@ Ember.View = Ember.CoreView.extend(
 
   // When it's a virtual view, we need to notify the parent that their
   // childViews will change.
-  _childViewsWillChange: Ember.beforeObserver(function() {
+  _childViewsWillChange: Ember.beforeObserver('childViews', function() {
     if (this.isVirtual) {
       var parentView = get(this, 'parentView');
       if (parentView) { Ember.propertyWillChange(parentView, 'childViews'); }
     }
-  }, 'childViews'),
+  }),
 
   // When it's a virtual view, we need to notify the parent that their
   // childViews did change.
-  _childViewsDidChange: Ember.observer(function() {
+  _childViewsDidChange: Ember.observer('childViews', function() {
     if (this.isVirtual) {
       var parentView = get(this, 'parentView');
       if (parentView) { Ember.propertyDidChange(parentView, 'childViews'); }
     }
-  }, 'childViews'),
+  }),
 
   /**
     Return the nearest ancestor that is an instance of the provided
@@ -1137,7 +1137,7 @@ Ember.View = Ember.CoreView.extend(
 
     @method _parentViewDidChange
   */
-  _parentViewDidChange: Ember.observer(function() {
+  _parentViewDidChange: Ember.observer('_parentView', function() {
     if (this.isDestroying) { return; }
 
     this.trigger('parentViewDidChange');
@@ -1145,9 +1145,9 @@ Ember.View = Ember.CoreView.extend(
     if (get(this, 'parentView.controller') && !get(this, 'controller')) {
       this.notifyPropertyChange('controller');
     }
-  }, '_parentView'),
+  }),
 
-  _controllerDidChange: Ember.observer(function() {
+  _controllerDidChange: Ember.observer('controller', function() {
     if (this.isDestroying) { return; }
 
     this.rerender();
@@ -1155,7 +1155,7 @@ Ember.View = Ember.CoreView.extend(
     this.forEachChildView(function(view) {
       view.propertyDidChange('controller');
     });
-  }, 'controller'),
+  }),
 
   cloneKeywords: function() {
     var templateData = get(this, 'templateData');
@@ -1758,11 +1758,11 @@ Ember.View = Ember.CoreView.extend(
 
     @method _elementDidChange
   */
-  _elementDidChange: Ember.observer(function() {
+  _elementDidChange: Ember.observer('element', function() {
     this.forEachChildView(function(view) {
       delete meta(view).cache.element;
     });
-  }, 'element'),
+  }),
 
   /**
     Called when the parentView property has changed.
@@ -2143,7 +2143,7 @@ Ember.View = Ember.CoreView.extend(
 
     @method _isVisibleDidChange
   */
-  _isVisibleDidChange: Ember.observer(function() {
+  _isVisibleDidChange: Ember.observer('isVisible', function() {
     var $el = this.$();
     if (!$el) { return; }
 
@@ -2158,7 +2158,7 @@ Ember.View = Ember.CoreView.extend(
     } else {
       this._notifyBecameHidden();
     }
-  }, 'isVisible'),
+  }),
 
   _notifyBecameVisible: function() {
     this.trigger('becameVisible');

@@ -2,6 +2,14 @@
 name: Ember
 assetfile: 'Assetfile'
 testing_suites:
+  packages:
+    - "EACH_PACKAGE"
+  old_jquery:
+    - "package=all&jquery=1.7.2&nojshint=true"
+    - "package=all&jquery=1.7.2&nojshint=true&enableallfeatures=true"
+  extend_prototypes:
+    - "package=all&extendprototypes=true&nojshint=true"
+    - "package=all&extendprototypes=true&nojshint=true&enableallfeatures=true"
   built:
     - "package=all&skipPackage=container&dist=build&nojshint=true" # container isn't publicly available in the built version
   runtime:
@@ -11,8 +19,11 @@ testing_suites:
   standard:
     - "EACH_PACKAGE"
     - "package=all&jquery=1.7.2&nojshint=true"
+    - "package=all&jquery=1.7.2&nojshint=true&enableoptionalfeatures=true"
     - "package=all&extendprototypes=true&nojshint=true"
+    - "package=all&extendprototypes=true&nojshint=true&enableoptionalfeatures=true"
     - "package=all&skipPackage=container&dist=build&nojshint=true" # container isn't publicly available in the built version
+    #- "package=all&skipPackage=container&dist=build&nojshint=true&enableallfeatures=true" # container isn't publicly available in the built version
   all:
     - "EACH_PACKAGE"
     - "package=all&jquery=1.7.2&nojshint=true"

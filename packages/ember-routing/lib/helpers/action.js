@@ -34,9 +34,15 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
   var keys = ["alt", "shift", "meta", "ctrl"];
 
-  var isAllowedClick = function(event, allowedKeys) {
+  var POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
+
+  var isAllowedEvent = function(event, allowedKeys) {
     if (typeof allowedKeys === "undefined") {
-      return isSimpleClick(event);
+      if (POINTER_EVENT_TYPE_REGEX.test(event.type)) {
+        return isSimpleClick(event);
+      } else {
+        allowedKeys = [];
+      }
     }
 
     if (allowedKeys.indexOf("any") >= 0) {
@@ -60,7 +66,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ActionHelper.registeredActions[actionId] = {
       eventName: options.eventName,
       handler: function(event) {
-        if (!isAllowedClick(event, allowedKeys)) { return true; }
+        if (!isAllowedEvent(event, allowedKeys)) { return true; }
 
         event.preventDefault();
 

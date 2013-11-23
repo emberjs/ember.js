@@ -105,9 +105,9 @@ Ember.ObjectProxy = Ember.Object.extend(/** @scope Ember.ObjectProxy.prototype *
     @default null
   */
   content: null,
-  _contentDidChange: Ember.observer(function() {
+  _contentDidChange: Ember.observer('content', function() {
     Ember.assert("Can't set ObjectProxy's content to itself", this.get('content') !== this);
-  }, 'content'),
+  }),
 
   isTruthy: Ember.computed.bool('content'),
 
