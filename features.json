@@ -1,5 +1,4 @@
 {
-  "container-renderables": true,
   "link-to-non-block": true,
   "reduceComputedSelf": true,
   "reduceComputed-non-array-dependencies": null,

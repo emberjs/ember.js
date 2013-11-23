@@ -736,10 +736,7 @@ Ember.Application.reopenClass({
     container.optionsForType('component', { singleton: false });
     container.optionsForType('view', { singleton: false });
     container.optionsForType('template', { instantiate: false });
-
-    if (Ember.FEATURES.isEnabled('container-renderables')) {
-      container.optionsForType('helper', { instantiate: false });
-    }
+    container.optionsForType('helper', { instantiate: false });
 
     container.register('application:main', namespace, { instantiate: false });
 
