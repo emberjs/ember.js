@@ -260,6 +260,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
   _scheduleLoadingEvent: function(transition, originRoute) {
     this._cancelLoadingEvent();
+    this._loadingStateTimer = Ember.run.scheduleOnce('routerTransitions', this, '_fireLoadingEvent', transition, originRoute);
   },
 
   _fireLoadingEvent: function(transition, originRoute) {
