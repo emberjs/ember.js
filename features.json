@@ -1,5 +1,4 @@
 {
-  "ember-routing-loading-error-substates": true,
   "ember-runtime-sortBy": true,
   "container-renderables": true,
   "link-to-non-block": true,

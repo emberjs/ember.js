@@ -55,11 +55,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
   didTransition: function(infos) {
     updatePaths(this);
 
-    if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
-      this._cancelLoadingEvent();
-    } else {
-      exitLegacyLoadingRoute(this);
-    }
+    this._cancelLoadingEvent();
 
     this.notifyPropertyChange('url');
 
@@ -181,11 +177,6 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
       seen[name] = true;
 
       if (!handler) {
-        if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
-        } else {
-          if (name === 'loading') { return {}; }
-        }
-
         container.register(routeName, DefaultRoute.extend());
         handler = container.lookup(routeName);
 
@@ -255,12 +246,6 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
     var transitionPromise = this.router[method].apply(this.router, args);
 
-    // Don't schedule loading state entry if user has already aborted the transition.
-    if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
-    } else {
-      scheduleLegacyLoadingRouteEntry(this);
-    }
-
     transitionPromise.then(null, function(error) {
       if (error.name === "UnrecognizedURLError") {
         Ember.assert("The URL '" + error.message + "' did not match any routes in your application");
@@ -275,23 +260,16 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
   _scheduleLoadingEvent: function(transition, originRoute) {
     this._cancelLoadingEvent();
-    if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
-      this._loadingStateTimer = Ember.run.scheduleOnce('routerTransitions', this, '_fireLoadingEvent', transition, originRoute);
-    }
   },
 
   _fireLoadingEvent: function(transition, originRoute) {
-    if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
-      if (!this.router.activeTransition) {
-        // Don't fire an event if we've since moved on from
-        // the transition that put us in a loading state.
-        return;
-      }
-
-      transition.trigger(true, 'loading', transition, originRoute);
-    } else {
-      enterLegacyLoadingRoute(this);
+    if (!this.router.activeTransition) {
+      // Don't fire an event if we've since moved on from
+      // the transition that put us in a loading state.
+      return;
     }
+
+    transition.trigger(true, 'loading', transition, originRoute);
   },
 
   _cancelLoadingEvent: function () {
@@ -342,61 +320,55 @@ var defaultActionHandlers = {
   },
 
   error: function(error, transition, originRoute) {
-    if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
+    // Attempt to find an appropriate error substate to enter.
+    var router = originRoute.router;
 
-      // Attempt to find an appropriate error substate to enter.
-      var router = originRoute.router;
-
-      var tryTopLevel = forEachRouteAbove(originRoute, transition, function(route, childRoute) {
-        var childErrorRouteName = findChildRouteName(route, childRoute, 'error');
-        if (childErrorRouteName) {
-          router.intermediateTransitionTo(childErrorRouteName, error);
-          return;
-        }
-        return true;
-      });
-
-      if (tryTopLevel) {
-        // Check for top-level error state to enter.
-        if (routeHasBeenDefined(originRoute.router, 'application_error')) {
-          router.intermediateTransitionTo('application_error', error);
-          return;
-        }
-      } else {
-        // Don't fire an assertion if we found an error substate.
+    var tryTopLevel = forEachRouteAbove(originRoute, transition, function(route, childRoute) {
+      var childErrorRouteName = findChildRouteName(route, childRoute, 'error');
+      if (childErrorRouteName) {
+        router.intermediateTransitionTo(childErrorRouteName, error);
         return;
       }
+      return true;
+    });
+
+    if (tryTopLevel) {
+      // Check for top-level error state to enter.
+      if (routeHasBeenDefined(originRoute.router, 'application_error')) {
+        router.intermediateTransitionTo('application_error', error);
+        return;
+      }
+    } else {
+      // Don't fire an assertion if we found an error substate.
+      return;
     }
 
     Ember.Logger.assert(false, 'Error while loading route: ' + Ember.inspect(error));
   },
 
   loading: function(transition, originRoute) {
-    if (Ember.FEATURES.isEnabled("ember-routing-loading-error-substates")) {
+    // Attempt to find an appropriate loading substate to enter.
+    var router = originRoute.router;
 
-      // Attempt to find an appropriate loading substate to enter.
-      var router = originRoute.router;
+    var tryTopLevel = forEachRouteAbove(originRoute, transition, function(route, childRoute) {
+      var childLoadingRouteName = findChildRouteName(route, childRoute, 'loading');
 
-      var tryTopLevel = forEachRouteAbove(originRoute, transition, function(route, childRoute) {
-        var childLoadingRouteName = findChildRouteName(route, childRoute, 'loading');
+      if (childLoadingRouteName) {
+        router.intermediateTransitionTo(childLoadingRouteName);
+        return;
+      }
 
-        if (childLoadingRouteName) {
-          router.intermediateTransitionTo(childLoadingRouteName);
-          return;
-        }
+      // Don't bubble above pivot route.
+      if (transition.pivotHandler !== route) {
+        return true;
+      }
+    });
 
-        // Don't bubble above pivot route.
-        if (transition.pivotHandler !== route) {
-          return true;
-        }
-      });
-
-      if (tryTopLevel) {
-        // Check for top-level loading state to enter.
-        if (routeHasBeenDefined(originRoute.router, 'application_loading')) {
-          router.intermediateTransitionTo('application_loading');
-          return;
-        }
+    if (tryTopLevel) {
+      // Check for top-level loading state to enter.
+      if (routeHasBeenDefined(originRoute.router, 'application_loading')) {
+        router.intermediateTransitionTo('application_loading');
+        return;
       }
     }
   }
@@ -486,41 +458,6 @@ function updatePaths(router) {
   }
 
   set(appController, 'currentRouteName', infos[infos.length - 1].name);
-}
-
-function scheduleLegacyLoadingRouteEntry(router) {
-  cancelLegacyLoadingRouteEntry(router);
-  if (router.router.activeTransition) {
-    router._legacyLoadingStateTimer = Ember.run.scheduleOnce('routerTransitions', null, enterLegacyLoadingRoute, router);
-  }
-}
-
-function enterLegacyLoadingRoute(router) {
-  var loadingRoute = router.router.getHandler('loading');
-  if (loadingRoute && !loadingRoute._loadingStateActive) {
-    if (loadingRoute.enter) { loadingRoute.enter(); }
-    if (loadingRoute.setup) { loadingRoute.setup(); }
-    loadingRoute._loadingStateActive = true;
-  }
-}
-
-function cancelLegacyLoadingRouteEntry(router) {
-  if (router._legacyLoadingStateTimer) {
-    Ember.run.cancel(router._legacyLoadingStateTimer);
-  }
-  router._legacyLoadingStateTimer = null;
-}
-
-function exitLegacyLoadingRoute(router) {
-
-  cancelLegacyLoadingRouteEntry(router);
-
-  var loadingRoute = router.router.getHandler('loading');
-
-  if (loadingRoute && loadingRoute._loadingStateActive) {
-    if (loadingRoute.exit) { loadingRoute.exit(); }
-    loadingRoute._loadingStateActive = false;
-  }
 }
 
 Ember.Router.reopenClass({
