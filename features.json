@@ -1,5 +1,4 @@
 {
-  "link-to-non-block": true,
   "reduceComputedSelf": true,
   "reduceComputed-non-array-dependencies": null,
   "ember-testing-wait-hooks": null,
