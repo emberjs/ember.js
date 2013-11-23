@@ -42,11 +42,6 @@ function boot(callback) {
   });
 }
 
-test("A helper is registered for templates under the components/ directory", function() {
-  boot();
-  ok(Ember.Handlebars.helpers['expand-it'], "The helper is registered");
-});
-
 test("The helper becomes the body of the component", function() {
   boot();
   equal(Ember.$('div.ember-view > div.ember-view', '#qunit-fixture').text(), "hello world", "The component is composed correctly");
