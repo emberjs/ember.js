@@ -1,5 +1,4 @@
 {
-  "ember-routing-didTransition-hook": true,
   "ember-routing-loading-error-substates": true,
   "ember-runtime-sortBy": true,
   "container-renderables": true,

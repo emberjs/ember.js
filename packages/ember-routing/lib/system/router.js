@@ -63,11 +63,9 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
     this.notifyPropertyChange('url');
 
-    if (Ember.FEATURES.isEnabled("ember-routing-didTransition-hook")) {
-      // Put this in the runloop so url will be accurate. Seems
-      // less surprising than didTransition being out of sync.
-      Ember.run.once(this, this.trigger, 'didTransition');
-    }
+    // Put this in the runloop so url will be accurate. Seems
+    // less surprising than didTransition being out of sync.
+    Ember.run.once(this, this.trigger, 'didTransition');
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
       Ember.Logger.log("Transitioned into '" + Ember.Router._routePath(infos) + "'");
