@@ -1,30 +1,27 @@
-* Ember 1.2.0-beta.4 (November 15, 2013)*
+* Ember 1.2.0 (November 22, 2013)*
 
-* Allow keyboard events to work with the action helper.
-* Enumerable#any no longer returns false if NaN is matched - Fixes #3736
-* PromiseProxy should merely observe promises. - Fixes #3714
-* Fix issue with templateName in Route and render. - Fixes #3502
-* Sort guid fallback unconfused by ObjectProxy.
-* The router should cleanup itself upon destroy.
+
+* [BUGFIX] Publish ember-handlebars-compiler along with builds.
+* [BUGFIX] Use RegExp.test() for Ember.computed.match.
+* [BUGFIX] {{partial}} helper now works with bound params
+* [BUGFIX] Added assert mismatched template compiler version.
+* [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
+* [BUGFIX] Allow keyboard events to work with the action helper.
+* [BUGFIX] Enumerable#any no longer returns false if NaN is matched - Fixes #3736
+* [BUGFIX] PromiseProxy should merely observe promises. - Fixes #3714
+* [BUGFIX] Fix issue with templateName in Route and render. - Fixes #3502
+* [BUGFIX] Sort guid fallback unconfused by ObjectProxy.
+* [BUGFIX] The router should cleanup itself upon destroy.
 * Correct `Em.typeOf` docs re: boxed types.
 * Update for Handlebars 1.1
 * Allow test helpers to be injected on specific object.
-
-* Ember 1.2.0-beta.3 (November 01, 2013)*
-
 * Update router.js
 * [BUGFIX] Give precedence to routes with more static segments. Fixes #3573
 * [BUGFIX] Improve unhandled action error messages
 * [BUGFIX] Bubble `loading` action above pivot route
-
-* Ember 1.2.0-beta.2 (October 25, 2013)*
-
 * [BUGFIX] reduceComputed ignore changes during reset.
 * [BUGFIX] reduceComputed handle out-of-range index.
 * [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
-
-* Ember 1.2.0-beta.1 (October 21, 2013)*
-
 * [FEATURE] Add support for nested loading/error substates. A loading substate will be entered when a slow-to-resolve promise is returned from one of the Route#model hooks during a transition and an appropriately-named loading template/route can be found.  An error substate will be entered when one of the Route#model hooks returns a rejecting promise and an appropriately-named error template/route can be found.
 * [FEATURE] Components and helpers registered on the container can be rendered in templates via their dasherized names. E.g. {{helper-name}} or {{component-name}}
 * [FEATURE] Add a `didTransition` hook to the router.
