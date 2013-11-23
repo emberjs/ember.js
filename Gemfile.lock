@@ -27,7 +27,7 @@ GIT
 PATH
   remote: .
   specs:
-    ember-source (1.2.0)
+    ember-source (1.2.1.pre)
       handlebars-source (= 1.1.1)
 
 GEM
