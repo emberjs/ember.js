@@ -494,53 +494,51 @@ test("removedItem is not erroneously called for dependent arrays during a recomp
 });
 
 
-if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
-  module('Ember.arryComputed - self chains', {
-    setup: function() {
-      var a = Ember.Object.create({ name: 'a' }),
-          b = Ember.Object.create({ name: 'b' });
+module('Ember.arryComputed - self chains', {
+  setup: function() {
+    var a = Ember.Object.create({ name: 'a' }),
+    b = Ember.Object.create({ name: 'b' });
 
-      obj = Ember.ArrayProxy.createWithMixins({
-        content: Ember.A([a, b]),
-        names: Ember.arrayComputed('@this.@each.name', {
-          addedItem: function (array, item, changeMeta, instanceMeta) {
-            var mapped = get(item, 'name');
-            array.insertAt(changeMeta.index, mapped);
-            return array;
-          },
-          removedItem: function(array, item, changeMeta, instanceMeta) {
-            array.removeAt(changeMeta.index, 1);
-            return array;
-          }
-        })
-      });
-    },
-    teardown: function() {
-      Ember.run(function() {
-        obj.destroy();
-      });
-    }
+    obj = Ember.ArrayProxy.createWithMixins({
+      content: Ember.A([a, b]),
+      names: Ember.arrayComputed('@this.@each.name', {
+        addedItem: function (array, item, changeMeta, instanceMeta) {
+          var mapped = get(item, 'name');
+          array.insertAt(changeMeta.index, mapped);
+          return array;
+        },
+        removedItem: function(array, item, changeMeta, instanceMeta) {
+          array.removeAt(changeMeta.index, 1);
+          return array;
+        }
+      })
+    });
+  },
+  teardown: function() {
+    Ember.run(function() {
+      obj.destroy();
+    });
+  }
+});
+
+test("@this can be used to treat the object as the array itself", function() {
+  var names = get(obj, 'names');
+
+  deepEqual(names, ['a', 'b'], "precond - names is initially correct");
+
+  Ember.run(function() {
+    obj.objectAt(1).set('name', 'c');
   });
 
-  test("@this can be used to treat the object as the array itself", function() {
-    var names = get(obj, 'names');
+  deepEqual(names, ['a', 'c'], "@this can be used with item property observers");
 
-    deepEqual(names, ['a', 'b'], "precond - names is initially correct");
-
-    Ember.run(function() {
-      obj.objectAt(1).set('name', 'c');
-    });
-
-    deepEqual(names, ['a', 'c'], "@this can be used with item property observers");
-
-    Ember.run(function() {
-      obj.pushObject({ name: 'd' });
-    });
-
-    deepEqual(names, ['a', 'c', 'd'], "@this observes new items");
+  Ember.run(function() {
+    obj.pushObject({ name: 'd' });
   });
 
-}
+  deepEqual(names, ['a', 'c', 'd'], "@this observes new items");
+});
+
 module('Ember.arrayComputed - changeMeta property observers', {
   setup: function() {
     callbackItems = [];

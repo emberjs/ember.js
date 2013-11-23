@@ -1,5 +1,4 @@
 {
-  "reduceComputedSelf": true,
   "reduceComputed-non-array-dependencies": null,
   "ember-testing-wait-hooks": null,
   "query-params": null,
