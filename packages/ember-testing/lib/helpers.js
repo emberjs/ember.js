@@ -24,6 +24,23 @@ Test.onInjectHelpers(function() {
   });
 });
 
+function currentRouteName(app){
+  var appController = app.__container__.lookup('controller:application');
+
+  return get(appController, 'currentRouteName');
+}
+
+function currentPath(app){
+  var appController = app.__container__.lookup('controller:application');
+
+  return get(appController, 'currentPath');
+}
+
+function currentURL(app){
+  var router = app.__container__.lookup('router:main');
+
+  return get(router, 'location').getURL();
+}
 
 function visit(app, url) {
   if (Ember.FEATURES.isEnabled('ember-testing-lazy-routing')){
@@ -283,3 +300,63 @@ helper('findWithAssert', findWithAssert);
 */
 asyncHelper('wait', wait);
 asyncHelper('andThen', andThen);
+
+
+if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
+  /**
+    Returns the currently active route name.
+
+    Example:
+
+    ```
+    function validateRouteName(){
+      equal(currentRouteName(), 'some.path', "correct route was transitioned into.");
+    }
+
+    visit('/some/path').then(validateRouteName)
+
+    ```
+
+    @method currentRouteName
+    @return {Object} The name of the currently active route.
+  */
+  helper('currentRouteName', currentRouteName);
+
+  /**
+    Returns the current path.
+
+    Example:
+
+    ```
+    function validateURL(){
+      equal(currentPath(), 'some.path.index', "correct path was transitioned into.");
+    }
+
+    click('#some-link-id').then(validateURL);
+
+    ```
+
+    @method currentPath
+    @return {Object} The currently active path.
+  */
+  helper('currentPath', currentPath);
+
+  /**
+    Returns the current URL.
+
+    Example:
+
+    ```
+    function validateURL(){
+      equal(currentURL(), '/some/path', "correct URL was transitioned into.");
+    }
+
+    click('#some-link-id').then(validateURL);
+
+    ```
+
+    @method currentURL
+    @return {Object} The currently active URL.
+  */
+  helper('currentURL', currentURL);
+}
