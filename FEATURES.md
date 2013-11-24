@@ -145,3 +145,10 @@ for a detailed explanation.
   Adds `currentRouteName`, `currentPath`, and `currentURL` testing helpers.
 
   Added in [#3711](https://github.com/emberjs/ember.js/pull/3711).
+
+* `ember-testing-triggerEvent-helper`
+
+  Adds `triggerEvent` testing helper to allow triggering of arbitrary events on an
+  element.
+
+  Added in [#3792](https://github.com/emberjs/ember.js/pull/3792).
