@@ -94,6 +94,14 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       lookupOptions = { singleton: false };
     }
 
+    if (options.types[0] === "ID") {
+      var newName = Ember.Handlebars.get(options.contexts[0], name, options);
+      if (newName) {
+        Ember.assert("Path must refer to a string to render. The path " + name + " refers to a " + newName.toString(), typeof(newName) === 'string');
+        name = newName;
+      }
+    }
+
     name = name.replace(/\//g, '.');
     container = options.data.keywords.controller.container;
     router = container.lookup('router:main');
