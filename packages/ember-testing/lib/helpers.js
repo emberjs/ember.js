@@ -78,6 +78,19 @@ function click(app, selector, context) {
   return wait(app);
 }
 
+function triggerEvent(app, selector, context, event){
+  if (typeof method === 'undefined') {
+    event = context;
+    context = null;
+  }
+
+  var $el = findWithAssert(app, selector, context);
+
+  Ember.run($el, 'trigger', event);
+
+  return wait(app);
+}
+
 function keyEvent(app, selector, context, type, keyCode) {
   var $el;
   if (typeof keyCode === 'undefined') {
@@ -359,4 +372,22 @@ if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
     @return {Object} The currently active URL.
   */
   helper('currentURL', currentURL);
+}
+
+if (Ember.FEATURES.isEnabled('ember-testing-triggerEvent-helper')) {
+  /**
+    Triggers the given event on the element identified by the provided selector.
+
+    Example:
+
+    ```javascript
+    triggerEvent('#some-elem-id', 'blur');
+    ```
+
+   @method triggerEvent
+   @param {String} selector jQuery selector for finding element on the DOM
+   @param {String} event The event to be triggered.
+   @return {RSVP.Promise}
+  */
+  asyncHelper('triggerEvent', triggerEvent);
 }
