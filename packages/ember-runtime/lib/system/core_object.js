@@ -74,10 +74,10 @@ function makeCtor() {
           throw new Ember.Error("Ember.Object.create only accepts objects.");
         }
 
-        var keyNames = [];
-        if (properties) {
-          keyNames = Ember.keys(properties);
-        }
+        if (!properties) { continue; }
+
+        var keyNames = Ember.keys(properties);
+
         for (var j = 0, ll = keyNames.length; j < ll; j++) {
           var keyName = keyNames[j];
           if (!properties.hasOwnProperty(keyName)) { continue; }
