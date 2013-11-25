@@ -48,9 +48,13 @@ module("ember-testing Acceptance", {
       App.setupForTesting();
     });
 
-    Ember.run(function() {
-      App.advanceReadiness();
-    });
+    if (Ember.FEATURES.isEnabled('ember-testing-lazy-routing')){
+      // readiness is advanced upon first visit
+    } else {
+      Ember.run(function() {
+        App.advanceReadiness();
+      });
+    }
 
     App.injectTestHelpers();
 

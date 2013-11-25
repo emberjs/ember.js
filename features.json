@@ -1,12 +1,13 @@
 {
-  "ember-routing-didTransition-hook": true,
-  "ember-routing-loading-error-substates": true,
-  "ember-runtime-sortBy": true,
-  "ember-testing-wait-hooks": false,
-  "query-params": false,
-  "string-humanize": false,
-  "container-renderables": true,
-  "link-to-non-block": true,
-  "propertyBraceExpansion": false,
-  "reduceComputedSelf": true
+  "reduceComputed-non-array-dependencies": null,
+  "ember-testing-wait-hooks": null,
+  "query-params": null,
+  "string-humanize": null,
+  "propertyBraceExpansion": null,
+  "ember-routing-named-substates": null,
+  "ember-testing-lazy-routing": null,
+  "ember-handlebars-caps-lookup": null,
+  "ember-testing-simple-setup": null,
+  "ember-testing-routing-helpers": null,
+  "ember-testing-triggerEvent-helper": null
 }

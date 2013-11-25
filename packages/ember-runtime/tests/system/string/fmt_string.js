@@ -1,5 +1,11 @@
 module('Ember.String.fmt');
 
+if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
+  test("String.prototype.fmt is not modified without EXTEND_PROTOTYPES", function() {
+    ok("undefined" === typeof String.prototype.fmt, 'String.prototype helper disabled');
+  });
+}
+
 test("'Hello %@ %@'.fmt('John', 'Doe') => 'Hello John Doe'", function() {
   equal(Ember.String.fmt('Hello %@ %@', ['John', 'Doe']), 'Hello John Doe');
   if (Ember.EXTEND_PROTOTYPES) {

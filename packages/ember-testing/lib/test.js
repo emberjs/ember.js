@@ -312,6 +312,17 @@ Ember.Application.reopen({
   testHelpers: {},
 
   /**
+  This property indicates whether or not this application is currently in
+  testing mode. This is set when `setupForTesting` is called on the current
+  application.
+
+  @property testing
+  @type {Boolean}
+  @default false
+  */
+  testing: false,
+
+  /**
    This hook defers the readiness of the application, so that you can start
    the app when your tests are ready to run. It also sets the router's
    location to 'none', so that the window's location will not be modified
@@ -328,7 +339,11 @@ Ember.Application.reopen({
   setupForTesting: function() {
     Ember.testing = true;
 
-    this.deferReadiness();
+    if (Ember.FEATURES.isEnabled('ember-testing-lazy-routing')){
+      this.testing = true;
+    } else {
+      this.deferReadiness();
+    }
 
     this.Router.reopen({
       location: 'none'
@@ -337,6 +352,10 @@ Ember.Application.reopen({
     // if adapter is not manually set default to QUnit
     if (!Ember.Test.adapter) {
        Ember.Test.adapter = Ember.Test.QUnitAdapter.create();
+    }
+
+    if (Ember.FEATURES.isEnabled('ember-testing-simple-setup')){
+      this.testingSetup = true;
     }
   },
 
@@ -381,7 +400,8 @@ Ember.Application.reopen({
       injectHelpersCallbacks[i](this);
     }
 
-    Ember.RSVP.configure('onerror', onerror);
+    Ember.RSVP.on('error', onerror);
+    Ember.RSVP.off('error', Ember.RSVP.onerrorDefault);
   },
 
   /**
@@ -402,7 +422,8 @@ Ember.Application.reopen({
       delete this.testHelpers[name];
       delete originalMethods[name];
     }
-    Ember.RSVP.configure('onerror', null);
+    Ember.RSVP.off('error', onerror);
+    Ember.RSVP.on('error', Ember.RSVP.onerrorDefault);
   }
 
 });
@@ -472,6 +493,6 @@ function isolate(fn, val) {
   }
 }
 
-function onerror(error) {
-  Ember.Test.adapter.exception(error);
+function onerror(event) {
+  Ember.Test.adapter.exception(event.detail);
 }

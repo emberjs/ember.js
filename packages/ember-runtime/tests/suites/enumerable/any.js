@@ -55,10 +55,10 @@ suite.test('any should be aliased to some', function() {
 });
 
 // ..........................................................
-// anyBy()
+// isAny()
 //
 
-suite.module('anyBy');
+suite.module('isAny');
 
 suite.test('should return true of any property matches', function() {
   var obj = this.newObject([
@@ -66,9 +66,9 @@ suite.test('should return true of any property matches', function() {
     Ember.Object.create({ foo: 'foo', bar: 'bar' })
   ]);
 
-  equal(obj.anyBy('foo', 'foo'), true, 'anyBy(foo)');
-  equal(obj.anyBy('bar', 'bar'), true, 'anyBy(bar)');
-  equal(obj.anyBy('bar', 'BIFF'), false, 'anyBy(BIFF)');
+  equal(obj.isAny('foo', 'foo'), true, 'isAny(foo)');
+  equal(obj.isAny('bar', 'bar'), true, 'isAny(bar)');
+  equal(obj.isAny('bar', 'BIFF'), false, 'isAny(BIFF)');
 });
 
 suite.test('should return true of any property is true', function() {
@@ -78,9 +78,9 @@ suite.test('should return true of any property is true', function() {
   ]);
 
   // different values - all eval to true
-  equal(obj.anyBy('foo'), true, 'anyBy(foo)');
-  equal(obj.anyBy('bar'), true, 'anyBy(bar)');
-  equal(obj.anyBy('BIFF'), false, 'anyBy(biff)');
+  equal(obj.isAny('foo'), true, 'isAny(foo)');
+  equal(obj.isAny('bar'), true, 'isAny(bar)');
+  equal(obj.isAny('BIFF'), false, 'isAny(biff)');
 });
 
 suite.test('should return true if any property matches null', function() {
@@ -89,8 +89,8 @@ suite.test('should return true if any property matches null', function() {
     Ember.Object.create({ foo: 'foo', bar: null })
   ]);
 
-  equal(obj.anyBy('foo', null), true, "anyBy('foo', null)");
-  equal(obj.anyBy('bar', null), true, "anyBy('bar', null)");
+  equal(obj.isAny('foo', null), true, "isAny('foo', null)");
+  equal(obj.isAny('bar', null), true, "isAny('bar', null)");
 });
 
 suite.test('should return true if any property is undefined', function() {
@@ -99,8 +99,8 @@ suite.test('should return true if any property is undefined', function() {
     Ember.Object.create({ foo: 'foo' })
   ]);
 
-  equal(obj.anyBy('foo', undefined), true, "anyBy('foo', undefined)");
-  equal(obj.anyBy('bar', undefined), true, "anyBy('bar', undefined)");
+  equal(obj.isAny('foo', undefined), true, "isAny('foo', undefined)");
+  equal(obj.isAny('bar', undefined), true, "isAny('bar', undefined)");
 });
 
 suite.test('should not match undefined properties without second argument', function() {
@@ -109,10 +109,15 @@ suite.test('should not match undefined properties without second argument', func
     Ember.Object.create({ })
   ]);
 
-  equal(obj.anyBy('foo'), false, "anyBy('foo', undefined)");
+  equal(obj.isAny('foo'), false, "isAny('foo', undefined)");
 });
 
-suite.test('anyBy should be aliased to someProperty', function() {
+suite.test('anyBy should be aliased to isAny', function() {
   var obj = this.newObject();
-  equal(obj.someProperty, obj.anyBy);
+  equal(obj.isAny, obj.anyBy);
+});
+
+suite.test('isAny should be aliased to someProperty', function() {
+  var obj = this.newObject();
+  equal(obj.someProperty, obj.isAny);
 });

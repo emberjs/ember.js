@@ -494,53 +494,51 @@ test("removedItem is not erroneously called for dependent arrays during a recomp
 });
 
 
-if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
-  module('Ember.arryComputed - self chains', {
-    setup: function() {
-      var a = Ember.Object.create({ name: 'a' }),
-          b = Ember.Object.create({ name: 'b' });
+module('Ember.arryComputed - self chains', {
+  setup: function() {
+    var a = Ember.Object.create({ name: 'a' }),
+    b = Ember.Object.create({ name: 'b' });
 
-      obj = Ember.ArrayProxy.createWithMixins({
-        content: Ember.A([a, b]),
-        names: Ember.arrayComputed('@this.@each.name', {
-          addedItem: function (array, item, changeMeta, instanceMeta) {
-            var mapped = get(item, 'name');
-            array.insertAt(changeMeta.index, mapped);
-            return array;
-          },
-          removedItem: function(array, item, changeMeta, instanceMeta) {
-            array.removeAt(changeMeta.index, 1);
-            return array;
-          }
-        })
-      });
-    },
-    teardown: function() {
-      Ember.run(function() {
-        obj.destroy();
-      });
-    }
+    obj = Ember.ArrayProxy.createWithMixins({
+      content: Ember.A([a, b]),
+      names: Ember.arrayComputed('@this.@each.name', {
+        addedItem: function (array, item, changeMeta, instanceMeta) {
+          var mapped = get(item, 'name');
+          array.insertAt(changeMeta.index, mapped);
+          return array;
+        },
+        removedItem: function(array, item, changeMeta, instanceMeta) {
+          array.removeAt(changeMeta.index, 1);
+          return array;
+        }
+      })
+    });
+  },
+  teardown: function() {
+    Ember.run(function() {
+      obj.destroy();
+    });
+  }
+});
+
+test("@this can be used to treat the object as the array itself", function() {
+  var names = get(obj, 'names');
+
+  deepEqual(names, ['a', 'b'], "precond - names is initially correct");
+
+  Ember.run(function() {
+    obj.objectAt(1).set('name', 'c');
   });
 
-  test("@this can be used to treat the object as the array itself", function() {
-    var names = get(obj, 'names');
+  deepEqual(names, ['a', 'c'], "@this can be used with item property observers");
 
-    deepEqual(names, ['a', 'b'], "precond - names is initially correct");
-
-    Ember.run(function() {
-      obj.objectAt(1).set('name', 'c');
-    });
-
-    deepEqual(names, ['a', 'c'], "@this can be used with item property observers");
-
-    Ember.run(function() {
-      obj.pushObject({ name: 'd' });
-    });
-
-    deepEqual(names, ['a', 'c', 'd'], "@this observes new items");
+  Ember.run(function() {
+    obj.pushObject({ name: 'd' });
   });
 
-}
+  deepEqual(names, ['a', 'c', 'd'], "@this observes new items");
+});
+
 module('Ember.arrayComputed - changeMeta property observers', {
   setup: function() {
     callbackItems = [];
@@ -691,3 +689,89 @@ test("when initialValue is undefined, everything works as advertised", function(
   equal(get(chars, 'firstUpper'), 'B', "result is the next match when the first matching object is removed");
 });
 
+if (Ember.FEATURES.isEnabled('reduceComputed-non-array-dependencies')) {
+  module('Ember.arrayComputed - completely invalidating dependencies', {
+    setup: function () {
+      addCalls = removeCalls = 0;
+    }
+  });
+
+  test("non-array dependencies completely invalidate a reduceComputed CP", function() {
+    var dependentArray = Ember.A();
+
+    obj = Ember.Object.extend({
+      nonArray: 'v0',
+      dependentArray: dependentArray,
+
+      computed: Ember.arrayComputed('dependentArray', 'nonArray', {
+        addedItem: function (array) {
+          ++addCalls;
+          return array;
+        },
+
+        removedItem: function (array) {
+          --removeCalls;
+          return array;
+        }
+      })
+    }).create();
+
+    get(obj, 'computed');
+
+    equal(addCalls, 0, "precond - add has not initially been called");
+    equal(removeCalls, 0, "precond - remove has not initially been called");
+
+    dependentArray.pushObjects([1, 2]);
+
+    equal(addCalls, 2, "add called one-at-a-time for dependent array changes");
+    equal(removeCalls, 0, "remove not called");
+
+    Ember.run(function() {
+      set(obj, 'nonArray', 'v1');
+    });
+
+    equal(addCalls, 4, "array completely recomputed when non-array dependency changed");
+    equal(removeCalls, 0, "remove not called");
+  });
+
+  test("array dependencies specified with `.[]` completely invalidate a reduceComputed CP", function() {
+    var dependentArray = Ember.A(),
+        totallyInvalidatingDependentArray = Ember.A();
+
+    obj = Ember.Object.extend({
+      totallyInvalidatingDependentArray: totallyInvalidatingDependentArray,
+      dependentArray: dependentArray,
+
+      computed: Ember.arrayComputed('dependentArray', 'totallyInvalidatingDependentArray.[]', {
+        addedItem: function (array, item) {
+          ok(item !== 3, "totally invalidating items are never passed to the one-at-a-time callbacks");
+          ++addCalls;
+          return array;
+        },
+
+        removedItem: function (array, item) {
+          ok(item !== 3, "totally invalidating items are never passed to the one-at-a-time callbacks");
+          --removeCalls;
+          return array;
+        }
+      })
+    }).create();
+
+    get(obj, 'computed');
+
+    equal(addCalls, 0, "precond - add has not initially been called");
+    equal(removeCalls, 0, "precond - remove has not initially been called");
+
+    dependentArray.pushObjects([1, 2]);
+
+    equal(addCalls, 2, "add called one-at-a-time for dependent array changes");
+    equal(removeCalls, 0, "remove not called");
+
+    Ember.run(function() {
+      totallyInvalidatingDependentArray.pushObject(3);
+    });
+
+    equal(addCalls, 4, "array completely recomputed when totally invalidating dependent array modified");
+    equal(removeCalls, 0, "remove not called");
+  });
+}

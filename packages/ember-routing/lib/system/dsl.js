@@ -33,6 +33,15 @@ DSL.prototype = {
       this.push(options.path, name, null, options.queryParams);
     }
 
+
+    if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
+      // For namespace-preserving nested resource (e.g. resource('foo.bar') within
+      // resource('foo')) we only want to use the last route name segment to determine
+      // the names of the error/loading substates (e.g. 'bar_loading')
+      name = name.split('.').pop();
+      route(this, name + '_loading');
+      route(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
+    }
   },
 
   push: function(url, name, callback, queryParams) {
@@ -44,6 +53,10 @@ DSL.prototype = {
 
   route: function(name, options) {
     route(this, name, options);
+    if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
+      route(this, name + '_loading');
+      route(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
+    }
   },
 
   generate: function() {

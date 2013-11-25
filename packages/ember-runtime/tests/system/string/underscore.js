@@ -1,5 +1,11 @@
 module('Ember.String.underscore');
 
+if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
+  test("String.prototype.underscore is not available without EXTEND_PROTOTYPES", function() {
+    ok("undefined" === typeof String.prototype.underscore, 'String.prototype helper disabled');
+  });
+}
+
 test("with normal string", function() {
   deepEqual(Ember.String.underscore('my favorite items'), 'my_favorite_items');
   if (Ember.EXTEND_PROTOTYPES) {

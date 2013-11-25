@@ -1,5 +1,11 @@
 module('Ember.String.dasherize');
 
+if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
+  test("String.prototype.dasherize is not modified without EXTEND_PROTOTYPES", function() {
+    ok("undefined" === typeof String.prototype.dasherize, 'String.prototype helper disabled');
+  });
+}
+
 test("dasherize normal string", function() {
   deepEqual(Ember.String.dasherize('my favorite items'), 'my-favorite-items');
   if (Ember.EXTEND_PROTOTYPES) {
