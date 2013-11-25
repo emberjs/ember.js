@@ -21,10 +21,8 @@ var e_get = Ember.get,
     doubleEachPropertyPattern = /(.*\.@each){2,}/;
 
 function get(obj, key) {
-  if (Ember.FEATURES.isEnabled('reduceComputedSelf')) {
-    if (key === '@this') {
-      return obj;
-    }
+  if (key === '@this') {
+    return obj;
   }
 
   return e_get(obj, key);

@@ -58,11 +58,6 @@ Ember.HistoryLocation = Ember.Object.extend({
     rootURL = rootURL.replace(/\/$/, '');
     var url = path.replace(rootURL, '');
 
-    if (Ember.FEATURES.isEnabled("query-params")) {
-      var search = location.search || '';
-      url += search;
-    }
-
     return url;
   },
 

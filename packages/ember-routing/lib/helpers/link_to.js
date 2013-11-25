@@ -186,12 +186,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           length = paths.length,
           path, i, normalizedPath;
 
-      if (Ember.FEATURES.isEnabled('link-to-non-block')) {
-        var linkTextPath = helperParameters.options.linkTextPath;
-        if (linkTextPath) {
-          normalizedPath = Ember.Handlebars.normalizePath(templateContext, linkTextPath, helperParameters.options.data);
-          this.registerObserver(normalizedPath.root, normalizedPath.path, this, this.rerender);
-        }
+      var linkTextPath = helperParameters.options.linkTextPath;
+      if (linkTextPath) {
+        normalizedPath = Ember.Handlebars.normalizePath(templateContext, linkTextPath, helperParameters.options.data);
+        this.registerObserver(normalizedPath.root, normalizedPath.path, this, this.rerender);
       }
 
       for(i=0; i < length; i++) {
@@ -203,15 +201,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
         normalizedPath = Ember.Handlebars.normalizePath(templateContext, path, helperParameters.options.data);
         this.registerObserver(normalizedPath.root, normalizedPath.path, this, this._paramsChanged);
-      }
-
-
-      if (Ember.FEATURES.isEnabled("query-params")) {
-        var queryParams = get(this, '_potentialQueryParams') || [];
-
-        for(i=0; i < queryParams.length; i++) {
-          this.registerObserver(this, queryParams[i], this, this._queryParamsChanged);
-        }
       }
     },
 
@@ -360,15 +349,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           types = options.types,
           data = options.data;
 
-      if (Ember.FEATURES.isEnabled("query-params")) {
-        if (parameters.params.length === 0) {
-          var appController = this.container.lookup('controller:application');
-          return [get(appController, 'currentRouteName')];
-        } else {
-          return resolveParams(parameters.context, parameters.params, { types: types, data: data });
-        }
-      }
-
       // Original implementation if query params not enabled
       return resolveParams(parameters.context, parameters.params, { types: types, data: data });
     }).property(),
@@ -400,12 +380,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           // If contexts aren't present, consider the linkView unloaded.
           return;
         }
-      }
-
-      if (Ember.FEATURES.isEnabled("query-params")) {
-        var queryParams = get(this, 'queryParams');
-
-        if (queryParams || queryParams === false) { resolvedParams.push({queryParams: queryParams}); }
       }
 
       return resolvedParams;
@@ -509,44 +483,44 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     To override this option for your entire application, see
     "Overriding Application-wide Defaults".
-    
+
     ### Disabling the `link-to` helper
-    By default `{{link-to}}` is enabled. 
+    By default `{{link-to}}` is enabled.
     any passed value to `disabled` helper property will disable the `link-to` helper.
-     
+
     static use: the `disabled` option:
- 
+
     ```handlebars
     {{#link-to 'photoGallery' disabled=true}}
       Great Hamster Photos
     {{/link-to}}
     ```
-     
+
     dynamic use: the `disabledWhen` option:
-    
+
     ```handlebars
     {{#link-to 'photoGallery' disabledWhen=controller.someProperty}}
       Great Hamster Photos
     {{/link-to}}
     ```
-    
+
     any passed value to `disabled` will disable it except `undefined`.
     to ensure that only `true` disable the `link-to` helper you can
     override the global behaviour of `Ember.LinkView`.
-         
-    ```javascript  
+
+    ```javascript
     Ember.LinkView.reopen({
       disabled: Ember.computed(function(key, value) {
-        if (value !== undefined) { 
-          this.set('_isDisabled', value === true); 
+        if (value !== undefined) {
+          this.set('_isDisabled', value === true);
         }
         return value === true ? get(this, 'disabledClass') : false;
       })
     });
     ```
-     
+
     see "Overriding Application-wide Defaults" for more.
-    
+
     ### Handling `href`
     `{{link-to}}` will use your application's Router to
     fill the element's `href` property with a url that
@@ -724,21 +698,19 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     hash.disabledBinding = hash.disabledWhen;
 
-    if (Ember.FEATURES.isEnabled('link-to-non-block')) {
-      if (!options.fn) {
-        var linkTitle = params.shift();
-        var linkType = options.types.shift();
-        var context = this;
-        if (linkType === 'ID') {
-          options.linkTextPath = linkTitle;
-          options.fn = function() {
-            return Ember.Handlebars.get(context, linkTitle, options);
-          };
-        } else {
-          options.fn = function() {
-            return linkTitle;
-          };
-        }
+    if (!options.fn) {
+      var linkTitle = params.shift();
+      var linkType = options.types.shift();
+      var context = this;
+      if (linkType === 'ID') {
+        options.linkTextPath = linkTitle;
+        options.fn = function() {
+          return Ember.Handlebars.get(context, linkTitle, options);
+        };
+      } else {
+        options.fn = function() {
+          return linkTitle;
+        };
       }
     }
 

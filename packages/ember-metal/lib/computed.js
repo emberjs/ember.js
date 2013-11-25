@@ -1,7 +1,6 @@
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
-require('ember-metal/expand_properties');
 require('ember-metal/property_get');
 require('ember-metal/property_set');
 require('ember-metal/properties');
@@ -23,10 +22,6 @@ var get = Ember.get,
     META_KEY = Ember.META_KEY,
     watch = Ember.watch,
     unwatch = Ember.unwatch;
-
-if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-  var expandProperties = Ember.expandProperties;
-}
 
 // ..........................................................
 // DEPENDENT KEYS
@@ -283,18 +278,9 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
 ComputedPropertyPrototype.property = function() {
   var addArg;
 
-  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-    // Slightly odd setup to keep JSHint happy
-    addArg = function(arg) { args.push(arg); };
-  }
-
   var args = [];
   for (var i = 0, l = arguments.length; i < l; i++) {
-    if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-      expandProperties(arguments[i], addArg);
-    } else {
-      args.push(arguments[i]);
-    }
+    args.push(arguments[i]);
   }
   this._dependentKeys = args;
   return this;

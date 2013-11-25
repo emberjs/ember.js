@@ -469,10 +469,6 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     var args = [controller, context];
 
-    if (Ember.FEATURES.isEnabled("query-params")) {
-      args.push(queryParams);
-    }
-
     if (this.setupControllers) {
       Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
       this.setupControllers(controller, context);

@@ -26,26 +26,6 @@ module('Ember.unwatch', {
   }
 });
 
-if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-  testBoth("unwatching multiple properties specified via brace expansion", function(get, set) {
-    var obj = { foo: null, bar: null, baz: null };
-
-    Ember.watch(obj, 'foo');
-    Ember.watch(obj, 'bar');
-    Ember.watch(obj, 'baz');
-    
-    equal(Ember.isWatching(obj, 'foo'), true, "precond - initially watching foo");
-    equal(Ember.isWatching(obj, 'bar'), true, "precond - initially watching bar");
-    equal(Ember.isWatching(obj, 'baz'), true, "precond - initially watching baz");
-
-    Ember.unwatch(obj, '{foo,bar,baz}');
-
-    equal(Ember.isWatching(obj, 'foo'), false, "unwatching foo from brace expansion");
-    equal(Ember.isWatching(obj, 'bar'), false, "unwatching bar from brace expansion");
-    equal(Ember.isWatching(obj, 'baz'), false, "unwatching baz from brace expansion");
-  });
-}
-
 testBoth('unwatching a computed property - regular get/set', function(get, set) {
 
   var obj = {};

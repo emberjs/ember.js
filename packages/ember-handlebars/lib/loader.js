@@ -109,17 +109,9 @@ Ember.onLoad('Ember.Application', function(Application) {
     initialize: bootstrap
   });
 
-  if (Ember.FEATURES.isEnabled('container-renderables')) {
-    Application.initializer({
-      name: 'registerComponentLookup',
-      after: 'domTemplates',
-      initialize: registerComponentLookup
-    });
-  } else {
-    Application.initializer({
-      name: 'registerComponents',
-      after: 'domTemplates',
-      initialize: registerComponents
-    });
-  }
+  Application.initializer({
+    name: 'registerComponentLookup',
+    after: 'domTemplates',
+    initialize: registerComponentLookup
+  });
 });

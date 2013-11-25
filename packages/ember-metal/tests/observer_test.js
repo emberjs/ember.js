@@ -40,51 +40,6 @@ testBoth('observer should fire when dependent property is modified', function(ge
   equal(count, 1, 'should have invoked observer');
 });
 
-if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-  testBoth('observer added via brace expansion should fire when property changes', function (get, set) {
-    var obj = {};
-    var count = 0;
-
-    Ember.addObserver(obj, '{foo,bar}', function() {
-      count++;
-    });
-
-    set(obj, 'foo', 'foo');
-    equal(count, 1, 'observer specified via brace expansion invoked on property change');
-
-    set(obj, 'bar', 'bar');
-    equal(count, 2, 'observer specified via brace expansion invoked on property change');
-
-    set(obj, 'baz', 'baz');
-    equal(count, 2, 'observer not invoked on unspecified property');
-  });
-
-  testBoth('observer specified via brace expansion should fire when dependent property changes', function (get, set) {
-    var obj = { baz: 'Initial' };
-    var count = 0;
-
-    Ember.defineProperty(obj, 'foo', Ember.computed(function() {
-      return get(this,'bar').toLowerCase();
-    }).property('bar'));
-
-    Ember.defineProperty(obj, 'bar', Ember.computed(function() {
-      return get(this,'baz').toUpperCase();
-    }).property('baz'));
-
-    Ember.addObserver(obj, '{foo,bar}', function() {
-      count++;
-    });
-
-    get(obj, 'foo');
-    set(obj, 'baz', 'Baz');
-    // fire once for foo, once for bar
-    equal(count, 2, 'observer specified via brace expansion invoked on dependent property change');
-
-    set(obj, 'quux', 'Quux');
-    equal(count, 2, 'observer not fired on unspecified property');
-  });
-}
-
 testBoth('nested observers should fire in order', function(get,set) {
   var obj = { foo: 'foo', bar: 'bar' };
   var fooCount = 0, barCount = 0;
@@ -484,45 +439,6 @@ testBoth('removing observer should stop firing', function(get,set) {
   equal(count, 1, "removed observer shouldn't fire");
 });
 
-if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-  testBoth("observers removed via brace expansion should stop firing", function(get, set) {
-    function observer() { count++; }
-    function didRemoveListener(eventName) {
-      if (eventName === 'foo:change') {
-        fooListenerRemoved = true;
-      } else if (eventName === 'bar:change') {
-        barListenerRemoved = true;
-      } else {
-        ok(false, "Unexpected listener removed " + eventName);
-      }
-    }
-
-    var fooListenerRemoved = false,
-        barListenerRemoved = false,
-        obj = { didRemoveListener: didRemoveListener },
-        count = 0;
-
-    Ember.addObserver(obj, 'foo', observer);
-    Ember.addObserver(obj, 'bar', observer);
-
-    set(obj, 'foo', 'foo');
-    equal(count, 1, 'should have invoked observer');
-
-    set(obj, 'bar', 'bar');
-    equal(count, 2, 'should have invoked observer');
-
-    Ember.removeObserver(obj, '{foo,bar}', observer);
-    ok(fooListenerRemoved, 'listener was removed');
-    ok(barListenerRemoved, 'listener was removed');
-
-    set(obj, 'foo', 'foo2');
-    equal(count, 2, "removed observer shouldn't fire");
-
-    set(obj, 'bar', 'bar2');
-    equal(count, 2, "removed observer shouldn't fire");
-  });
-}
-
 testBoth('local observers can be removed', function(get, set) {
   var barObserved = 0;
 
@@ -622,51 +538,6 @@ testBoth('observer should fire before dependent property is modified', function(
   set(obj, 'bar', 'baz');
   equal(count, 1, 'should have invoked observer');
 });
-
-if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-  testBoth('before observer added via brace expansion should fire when property changes', function (get, set) {
-    var obj = {};
-    var count = 0;
-
-    Ember.addBeforeObserver(obj, '{foo,bar}', function() {
-      count++;
-    });
-
-    set(obj, 'foo', 'foo');
-    equal(count, 1, 'observer specified via brace expansion invoked on property change');
-
-    set(obj, 'bar', 'bar');
-    equal(count, 2, 'observer specified via brace expansion invoked on property change');
-
-    set(obj, 'baz', 'baz');
-    equal(count, 2, 'observer not invoked on unspecified property');
-  });
-
-  testBoth('before observer specified via brace expansion should fire when dependent property changes', function (get, set) {
-    var obj = { baz: 'Initial' };
-    var count = 0;
-
-    Ember.defineProperty(obj, 'foo', Ember.computed(function() {
-      return get(this,'bar').toLowerCase();
-    }).property('bar'));
-
-    Ember.defineProperty(obj, 'bar', Ember.computed(function() {
-      return get(this,'baz').toUpperCase();
-    }).property('baz'));
-
-    Ember.addBeforeObserver(obj, '{foo,bar}', function() {
-      count++;
-    });
-
-    get(obj, 'foo');
-    set(obj, 'baz', 'Baz');
-    // fire once for foo, once for bar
-    equal(count, 2, 'observer specified via brace expansion invoked on dependent property change');
-
-    set(obj, 'quux', 'Quux');
-    equal(count, 2, 'observer not fired on unspecified property');
-  });
-}
 
 testBoth('addBeforeObserver should propagate through prototype', function(get,set) {
   var obj = { foo: 'foo', count: 0 }, obj2;
@@ -857,45 +728,6 @@ testBoth('depending on a Global chain', function(get, set) {
 });
 
 module('Ember.removeBeforeObserver');
-
-if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-  testBoth("before observers removed via brace expansion should stop firing", function(get, set) {
-    function observer() { count++; }
-    function didRemoveListener(eventName) {
-      if (eventName === 'foo:before') {
-        fooListenerRemoved = true;
-      } else if (eventName === 'bar:before') {
-        barListenerRemoved = true;
-      } else {
-        ok(false, "Unexpected listener removed " + eventName);
-      }
-    }
-
-    var fooListenerRemoved = false,
-        barListenerRemoved = false,
-        obj = { didRemoveListener: didRemoveListener },
-        count = 0;
-
-    Ember.addBeforeObserver(obj, 'foo', observer);
-    Ember.addBeforeObserver(obj, 'bar', observer);
-
-    set(obj, 'foo', 'foo');
-    equal(count, 1, 'should have invoked observer');
-
-    set(obj, 'bar', 'bar');
-    equal(count, 2, 'should have invoked observer');
-
-    Ember.removeBeforeObserver(obj, '{foo,bar}', observer);
-    ok(fooListenerRemoved, 'listener was removed');
-    ok(barListenerRemoved, 'listener was removed');
-
-    set(obj, 'foo', 'foo2');
-    equal(count, 2, "removed observer shouldn't fire");
-
-    set(obj, 'bar', 'bar2');
-    equal(count, 2, "removed observer shouldn't fire");
-  });
-}
 
 // ..........................................................
 // SETTING IDENTICAL VALUES

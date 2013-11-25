@@ -133,13 +133,10 @@ Ember.Handlebars.registerHelper('helperMissing', function(path) {
 
   var options = arguments[arguments.length - 1];
 
-  if (Ember.FEATURES.isEnabled('container-renderables')) {
+  var helper = Ember.Handlebars.resolveHelper(options.data.view.container, path);
 
-    var helper = Ember.Handlebars.resolveHelper(options.data.view.container, path);
-
-    if (helper) {
-      return helper.apply(this, slice.call(arguments, 1));
-    }
+  if (helper) {
+    return helper.apply(this, slice.call(arguments, 1));
   }
 
   error = "%@ Handlebars error: Could not find property '%@' on object %@.";
@@ -168,15 +165,12 @@ Ember.Handlebars.registerHelper('blockHelperMissing', function(path) {
 
   var options = arguments[arguments.length - 1];
 
-  if (Ember.FEATURES.isEnabled('container-renderables')) {
+  Ember.assert("`blockHelperMissing` was invoked without a helper name, which is most likely due to a mismatch between the version of Ember.js you're running now and the one used to precompile your templates. Please make sure the version of `ember-handlebars-compiler` you're using is up to date.", path);
 
-    Ember.assert("`blockHelperMissing` was invoked without a helper name, which is most likely due to a mismatch between the version of Ember.js you're running now and the one used to precompile your templates. Please make sure the version of `ember-handlebars-compiler` you're using is up to date.", path);
+  var helper = Ember.Handlebars.resolveHelper(options.data.view.container, path);
 
-    var helper = Ember.Handlebars.resolveHelper(options.data.view.container, path);
-
-    if (helper) {
-      return helper.apply(this, slice.call(arguments, 1));
-    }
+  if (helper) {
+    return helper.apply(this, slice.call(arguments, 1));
   }
 
   return Handlebars.helpers.blockHelperMissing.apply(this, arguments);
