@@ -5,6 +5,7 @@ require('ember-metal/property_events'); // propertyWillChange, propertyDidChange
 var META_KEY = Ember.META_KEY,
     MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
     IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/,
+    o_defineProperty = Ember.platform.defineProperty,
     getPath = Ember._getPath;
 
 /**
@@ -72,6 +73,10 @@ var set = function set(obj, keyName, value, tolerant) {
           if (currentValue === undefined && !(keyName in obj)) {
             Ember.defineProperty(obj, keyName, null, value); // setup mandatory setter
           } else {
+            // In case there was an observer attached before the `set` operation.
+            if (!obj.propertyIsEnumerable(keyName)) {
+              o_defineProperty(obj, keyName, {enumerable: true}, value);
+            }
             meta.values[keyName] = value;
           }
         } else {
@@ -80,7 +85,17 @@ var set = function set(obj, keyName, value, tolerant) {
         Ember.propertyDidChange(obj, keyName);
       }
     } else {
-      obj[keyName] = value;
+      // In case there was an observer attached before the `set` operation.
+      if (MANDATORY_SETTER && !obj.propertyIsEnumerable(keyName)) {
+        o_defineProperty(obj, keyName, {
+          configurable: true,
+          enumerable: true,
+          writable: true,
+          value: value
+        });
+      } else {
+        obj[keyName] = value;
+      }
     }
   }
   return value;
