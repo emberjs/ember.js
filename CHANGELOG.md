@@ -1,16 +1,75 @@
 # Ember Changelog
 
+### Ember 1.3.0.beta.1
 
-### Ember 1.3.0 _(TBD)_
+* [FEATURE reduceComputed-non-array-dependencies] `ReduceComputedProperty`s may have non-array dependent keys. When a non-array dependent key changes, the entire property is invalidated.
+* [FEATURE ember-testing-lazy-routing] Uses an initializer to defer readiness while testing. Readiness is advanced upon the first call to `visit`.
+* [FEATURE ember-testing-wait-hooks] Allows registration of additional functions that the `wait` testing helper will call to determine if it's ready to continue.
+* [FEATURE propertyBraceExpansion] Add simple brace expansion for dependent keys and watched properties specified declaratively.  This is primarily useful with reduce computed properties, for specifying dependencies on multiple item properties of a dependent array, as with `Ember.computed.sort('items.@each.{propertyA,propertyB}', userSortFn)`.
+* [BUGFIX release] Update to Handlebars 1.1.2.
+* [BUGFIX] Register a default RSVP error handler.
+* Update to latest RSVP (80cec268).
+* [BUGFIX] Ember.Object.create now takes `undefined` as an argument.
+* Components are lazily looked up.
+* Renaming everyBy and anyBy to isEvery and isAny
 
-* Add query params support to the ember router. You can now define which query params your routes respond to, use them in your route hooks to affect model loading or controller state, and transition query parameters with the link-to helper and the transitionTo method
-* Add named substates; e.g. when resolving a `loading` or `error` substate to enter, Ember will take into account the name of the immediate child route that the `error`/`loading` action originated from, e.g. 'foo' if `FooRoute`, and try and enter `foo_error` or `foo_loading` if it exists. This also adds the ability for a top-level `application_loading` or `application_error` state to be entered for `loading`/`error` events emitted from `ApplicationRoute`.
-* Ensure Handlebars values starting with capital letters are always looked up on `Ember.lookup`.
 
-### Ember 1.2.0 _(TBD)_
+### Ember 1.2.0 _(November 22, 2013)_
 
-* In beta
-
+* [BUGFIX] Publish ember-handlebars-compiler along with builds.
+* [BUGFIX] Use RegExp.test() for Ember.computed.match.
+* [BUGFIX] {{partial}} helper now works with bound params
+* [BUGFIX] Added assert mismatched template compiler version.
+* [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
+* [BUGFIX] Allow keyboard events to work with the action helper.
+* [BUGFIX] Enumerable#any no longer returns false if NaN is matched - Fixes #3736
+* [BUGFIX] PromiseProxy should merely observe promises. - Fixes #3714
+* [BUGFIX] Fix issue with templateName in Route and render. - Fixes #3502
+* [BUGFIX] Sort guid fallback unconfused by ObjectProxy.
+* [BUGFIX] The router should cleanup itself upon destroy.
+* Correct `Em.typeOf` docs re: boxed types.
+* Update for Handlebars 1.1
+* Allow test helpers to be injected on specific object.
+* Update router.js
+* [BUGFIX] Give precedence to routes with more static segments. Fixes #3573
+* [BUGFIX] Improve unhandled action error messages
+* [BUGFIX] Bubble `loading` action above pivot route
+* [BUGFIX] reduceComputed ignore changes during reset.
+* [BUGFIX] reduceComputed handle out-of-range index.
+* [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
+* [FEATURE] Add support for nested loading/error substates. A loading substate will be entered when a slow-to-resolve promise is returned from one of the Route#model hooks during a transition and an appropriately-named loading template/route can be found.  An error substate will be entered when one of the Route#model hooks returns a rejecting promise and an appropriately-named error template/route can be found.
+* [FEATURE] Components and helpers registered on the container can be rendered in templates via their dasherized names. E.g. {{helper-name}} or {{component-name}}
+* [FEATURE] Add a `didTransition` hook to the router.
+* [FEATURE] Add a non-block form link-to helper. E.g {{link-to "About us" "about"}} will have "About us" as link text and will transition to the "about" route. Everything works as with the block form link-to.
+* [FEATURE] Add support for nested loading/error substates. A loading substate will be entered when a slow-to-resolve promise is returned from one of the Route#model hooks during a transition and an appropriately-named loading template/route can be found.  An error substate will be entered when one of the Route#model hooks returns a rejecting promise and an appropriately-named error template/route can be found.
+* [FEATURE] Add sortBy using Ember.compare to the Enumerable mixin
+* [FEATURE reduceComputedSelf] reduceComputed dependent keys may refer to @this.
+* [BUGFIX] reduceComputed handle out of range indexes.
+* Update Ember.immediateObserver and Ember.beforeObserver to match the new Ember.observer style.
+* Make Ember.observer work with the function as the last argument.
+* Ember.run.debounce and throttle accept string numbers like time interval
+* Use Ember.Error consistently.
+* Add assertion upon too many ajaxStop's.
+* Introduce registerAsyncHelper which allows for unchained async helpers
+* Ember-testing should not cause a test failure when aborting transitions
+* Ember.Test Helpers no longer need to be chained
+* Refactored promises usage
+* Should not reference global `Handlebars` object, use `Ember.Handlebars` instead
+* Added support for jQuery as a `require` module
+* Decamelize handles strings with numbers
+* disallow container registration if the corresponding singleton lookup has already occurred
+* collection view will now defer all normalization to the resolver
+* Remove Route#redirect soft deprecation
+* Universalize {{view}} helper quoteless binding syntax, prevent id binding
+* prefer Ember.Logger.assert over Logger error + setTimeout throw.
+* Allow for the initial router to be resolved.
+* Don't allow registration of undefined factories.
+* Add `Ember.Subarray.prototype.toString`.
+* [Improved assert for #3457] provide helpful assertion if needs is specified but no container is present.
+* Update router.js to bc22bb4d59e48d187f8d60db6553d9e157f06789
+* Update route recognizer
+* Allow apps with custom jquery builds to exclude the event-alias module
+* Removes long-deprecated getPath/setPath
 
 ### Ember 1.1.0 _(October 21, 2013)_
 

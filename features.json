@@ -1,13 +1,13 @@
 {
-  "reduceComputed-non-array-dependencies": null,
-  "ember-testing-wait-hooks": null,
-  "query-params": null,
-  "string-humanize": null,
-  "propertyBraceExpansion": null,
-  "ember-routing-named-substates": null,
-  "ember-testing-lazy-routing": null,
-  "ember-handlebars-caps-lookup": null,
-  "ember-testing-simple-setup": null,
-  "ember-testing-routing-helpers": null,
-  "ember-testing-triggerEvent-helper": null
+  "reduceComputed-non-array-dependencies": true,
+  "ember-testing-lazy-routing": true,
+  "ember-testing-wait-hooks": true,
+  "propertyBraceExpansion": false,
+  "query-params": false,
+  "ember-routing-named-substates": false,
+  "string-humanize": false,
+  "ember-handlebars-caps-lookup": false,
+  "ember-testing-simple-setup": false,
+  "ember-testing-routing-helpers": false,
+  "ember-testing-triggerEvent-helper": false
 }
