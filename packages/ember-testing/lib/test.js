@@ -401,6 +401,7 @@ Ember.Application.reopen({
     }
 
     Ember.RSVP.on('error', onerror);
+    Ember.RSVP.off('error', Ember.RSVP.onerrorDefault);
   },
 
   /**
@@ -422,6 +423,7 @@ Ember.Application.reopen({
       delete originalMethods[name];
     }
     Ember.RSVP.off('error', onerror);
+    Ember.RSVP.on('error', Ember.RSVP.onerrorDefault);
   }
 
 });
