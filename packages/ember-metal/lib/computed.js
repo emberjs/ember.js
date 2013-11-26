@@ -281,21 +281,21 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
   @chainable
 */
 ComputedPropertyPrototype.property = function() {
-  var addArg;
+  var args;
 
   if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-    // Slightly odd setup to keep JSHint happy
-    addArg = function(arg) { args.push(arg); };
+    var addArg = function (property) {
+      args.push(property); 
+    };
+
+    args = [];
+    for (var i = 0, l = arguments.length; i < l; i++) {
+      expandProperties(arguments[i], addArg);
+    }
+  } else {
+    args = a_slice.call(arguments);
   }
 
-  var args = [];
-  for (var i = 0, l = arguments.length; i < l; i++) {
-    if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-      expandProperties(arguments[i], addArg);
-    } else {
-      args.push(arguments[i]);
-    }
-  }
   this._dependentKeys = args;
   return this;
 };

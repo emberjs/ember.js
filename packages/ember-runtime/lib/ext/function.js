@@ -1,4 +1,5 @@
 require('ember-runtime/core');
+require('ember-metal/expand_properties');
 
 /**
 @module ember
@@ -6,6 +7,10 @@ require('ember-runtime/core');
 */
 
 var a_slice = Array.prototype.slice;
+
+if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+  var expandProperties = Ember.expandProperties;
+}
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
 
@@ -71,6 +76,8 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
   */
   Function.prototype.property = function() {
     var ret = Ember.computed(this);
+    // ComputedProperty.prototype.property expands properties; no need for us to
+    // do so here.
     return ret.property.apply(ret, arguments);
   };
 
@@ -100,7 +107,17 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @for Function
   */
   Function.prototype.observes = function() {
-    this.__ember_observes__ = a_slice.call(arguments);
+    if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+      var addWatchedProperty = function (obs) { watched.push(obs); };
+      var watched = [];
+
+      for (var i=0; i<arguments.length; ++i) {
+        expandProperties(arguments[i], addWatchedProperty);
+      }
+    } else {
+      this.__ember_observes__ = a_slice.call(arguments);
+    }
+
     return this;
   };
 
@@ -135,6 +152,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
       Ember.assert("Immediate observers must observe internal properties only, not properties on other objects.", arg.indexOf('.') === -1);
     }
 
+    // observes handles property expansion
     return this.observes.apply(this, arguments);
   };
 
@@ -161,7 +179,19 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @for Function
   */
   Function.prototype.observesBefore = function() {
-    this.__ember_observesBefore__ = a_slice.call(arguments);
+    if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+      var addWatchedProperty = function (obs) { watched.push(obs); };
+      var watched = [];
+
+      for (var i=0; i<arguments.length; ++i) {
+        expandProperties(arguments[i], addWatchedProperty);
+      }
+
+      this.__ember_observesBefore__ = watched;
+    } else {
+      this.__ember_observesBefore__ = a_slice.call(arguments);
+    }
+
     return this;
   };
 

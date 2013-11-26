@@ -1,3 +1,4 @@
+require('ember-metal/expand_properties');
 require('ember-metal/computed');
 require('ember-runtime/mixins/array');
 
@@ -20,6 +21,10 @@ var e_get = Ember.get,
     eachPropertyPattern = /^(.*)\.@each\.(.*)/,
     doubleEachPropertyPattern = /(.*\.@each){2,}/,
     arrayBracketPattern = /\.\[\]$/;
+
+if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+  var expandProperties = Ember.expandProperties;
+}
 
 function get(obj, key) {
   if (key === '@this') {
@@ -604,8 +609,18 @@ ReduceComputedProperty.prototype.property = function () {
       throw new Ember.Error("Nested @each properties not supported: " + dependentKey);
     } else if (match = eachPropertyPattern.exec(dependentKey)) {
       dependentArrayKey = match[1];
-      itemPropertyKey = match[2];
-      cp.itemPropertyKey(dependentArrayKey, itemPropertyKey);
+
+      if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+        var itemPropertyKeyPattern = match[2],
+            addItemPropertyKey = function (itemPropertyKey) {
+              cp.itemPropertyKey(dependentArrayKey, itemPropertyKey);
+            };
+
+        expandProperties(itemPropertyKeyPattern, addItemPropertyKey);
+      } else {
+        itemPropertyKey = match[2];
+        cp.itemPropertyKey(dependentArrayKey, itemPropertyKey);
+      }
       propertyArgs.add(dependentArrayKey);
     } else {
       propertyArgs.add(dependentKey);
@@ -613,6 +628,7 @@ ReduceComputedProperty.prototype.property = function () {
   });
 
   return ComputedProperty.prototype.property.apply(this, propertyArgs.toArray());
+
 };
 
 /**
