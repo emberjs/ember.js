@@ -58,7 +58,7 @@ Ember.ActionHandler = Ember.Mixin.create({
       } else {
         return;
       }
-    } else if (this.deprecatedSend && this.deprecatedSendHandles && this.deprecatedSendHandles(actionName)) {
+    } else if (!this.isHandlerAction(actionName) && this.deprecatedSend && this.deprecatedSendHandles && this.deprecatedSendHandles(actionName)) {
       if (this.deprecatedSend.apply(this, [].slice.call(arguments)) === true) {
         // handler return true, so this action will bubble
       } else {
@@ -70,6 +70,18 @@ Ember.ActionHandler = Ember.Mixin.create({
       Ember.assert("The `target` for " + this + " (" + target + ") does not have a `send` method", typeof target.send === 'function');
       target.send.apply(target, arguments);
     }
-  }
+  },
+  isHandlerAction: function(actionName) {
+    var handlerInfos, i;
 
+    if (handlerInfos = this.get('target.router.currentHandlerInfos')) {
+      for (i = 0; i < handlerInfos.length; i++) {
+        if (handlerInfos[i].handler && handlerInfos[i].handler._actions && handlerInfos[i].handler._actions[actionName]) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
 });

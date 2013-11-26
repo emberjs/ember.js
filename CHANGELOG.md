@@ -9,6 +9,10 @@
 
 * In beta
 
+###Ember 1.2.1
+* [BUGFIX] Similarly named actions will be prioritized over matching
+  controller methods.
+
 ###Ember 1.2.0 _(November 22, 2013)_
 
 * [BUGFIX] Publish ember-handlebars-compiler along with builds.

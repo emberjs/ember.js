@@ -1237,7 +1237,7 @@ test("Events can be handled by inherited event handlers", function() {
   router.send("baz");
 });
 
-asyncTest("Events are triggered on the controller if a matching action name is implemented as a method (DEPRECATED)", function() {
+asyncTest("Events are not triggered on the controller if a matching action name is implemented as a method (DEPRECATED)", function() {
   Ember.TESTING_DEPRECATION = true;
   Router.map(function() {
     this.route("home", { path: "/" });
@@ -1251,9 +1251,10 @@ asyncTest("Events are triggered on the controller if a matching action name is i
       return model;
     },
 
-    events: {
+    actions: {
       showStuff: function(obj) {
-        stateIsNotCalled = false;
+        ok (stateIsNotCalled, "an event on the state is not triggered");
+        start();
       }
     }
   });
@@ -1264,8 +1265,8 @@ asyncTest("Events are triggered on the controller if a matching action name is i
 
   var controller = Ember.Controller.extend({
     showStuff: function(context) {
-      ok (stateIsNotCalled, "an event on the state is not triggered");
-      deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
+      stateIsNotCalled = false;
+      ok (stateIsNotCalled, "the controller method was triggered and not the action");
       start();
     }
   });
