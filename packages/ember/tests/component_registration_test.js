@@ -131,3 +131,71 @@ test("Component lookups should take place on components' subcontainers", functio
     }));
   });
 });
+
+test("Components with a block should have the proper content when a template is provided", function(){
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
+  Ember.TEMPLATES['components/my-component'] = compile("{{text}}-{{yield}}");
+
+  boot(function() {
+    container.register('controller:application', Ember.Controller.extend({
+      'text': 'outer'
+    }));
+
+    container.register('component:my-component', Ember.Component.extend({
+      text: 'inner'
+    }));
+  });
+
+  equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
+});
+
+test("Components with a block should yield the proper content without a template provided", function(){
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
+
+  boot(function() {
+    container.register('controller:application', Ember.Controller.extend({
+      'text': 'outer'
+    }));
+
+    container.register('component:my-component', Ember.Component.extend({
+      text: 'inner'
+    }));
+  });
+
+  equal(Ember.$('#wrapper').text(), "outer", "The component is composed correctly");
+});
+
+test("Components without a block should have the proper content when a template is provided", function(){
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component}}</div>");
+  Ember.TEMPLATES['components/my-component'] = compile("{{text}}");
+
+  boot(function() {
+    container.register('controller:application', Ember.Controller.extend({
+      'text': 'outer'
+    }));
+
+    container.register('component:my-component', Ember.Component.extend({
+      text: 'inner'
+    }));
+  });
+
+  equal(Ember.$('#wrapper').text(), "inner", "The component is composed correctly");
+});
+
+test("Components without a block should have the proper content", function(){
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component}}</div>");
+
+  boot(function() {
+    container.register('controller:application', Ember.Controller.extend({
+      'text': 'outer'
+    }));
+
+    container.register('component:my-component', Ember.Component.extend({
+      didInsertElement: function() {
+        this.$().html('Some text inserted by jQuery');
+      }
+    }));
+  });
+
+  equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
+});
