@@ -275,3 +275,59 @@ test("event handlers should be wrapped in a run loop", function() {
 
   Ember.$('#test-view').trigger('mousedown');
 });
+
+module("Ember.EventDispatcher#setup", {
+  setup: function() {
+    Ember.run(function() {
+      dispatcher = Ember.EventDispatcher.create({
+        rootElement: "#qunit-fixture"
+      });
+    });
+  },
+
+  teardown: function() {
+    Ember.run(function() {
+      if (view) { view.destroy(); }
+      dispatcher.destroy();
+    });
+  }
+});
+
+test("additional events which should be listened on can be passed", function () {
+  expect(1);
+
+  Ember.run(function () {
+    dispatcher.setup({ myevent: "myEvent" });
+
+    view = Ember.View.create({
+      elementId: "leView",
+      myEvent: function() {
+        ok(true, "custom event has been triggered");
+      }
+    }).appendTo( dispatcher.get("rootElement") );
+  });
+
+  Ember.$("#leView").trigger("myevent");
+});
+
+test("additional events and rootElement can be specified", function () {
+  expect(3);
+
+  Ember.$("#qunit-fixture").append("<div class='custom-root'></div>");
+
+  Ember.run(function () {
+    dispatcher.setup({ myevent: "myEvent" }, ".custom-root");
+
+    view = Ember.View.create({
+      elementId: "leView",
+      myEvent: function() {
+        ok(true, "custom event has been triggered");
+      }
+    }).appendTo( dispatcher.get("rootElement") );
+  });
+
+  ok(Ember.$(".custom-root").hasClass("ember-application"), "the custom rootElement is used");
+  equal(dispatcher.get("rootElement"), ".custom-root", "the rootElement is updated");
+
+  Ember.$("#leView").trigger("myevent");
+});
