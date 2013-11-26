@@ -41,7 +41,6 @@
 * [FEATURE] Components and helpers registered on the container can be rendered in templates via their dasherized names. E.g. {{helper-name}} or {{component-name}}
 * [FEATURE] Add a `didTransition` hook to the router.
 * [FEATURE] Add a non-block form link-to helper. E.g {{link-to "About us" "about"}} will have "About us" as link text and will transition to the "about" route. Everything works as with the block form link-to.
-* [FEATURE] Add support for nested loading/error substates. A loading substate will be entered when a slow-to-resolve promise is returned from one of the Route#model hooks during a transition and an appropriately-named loading template/route can be found.  An error substate will be entered when one of the Route#model hooks returns a rejecting promise and an appropriately-named error template/route can be found.
 * [FEATURE] Add sortBy using Ember.compare to the Enumerable mixin
 * [FEATURE reduceComputedSelf] reduceComputed dependent keys may refer to @this.
 * [BUGFIX] reduceComputed handle out of range indexes.
