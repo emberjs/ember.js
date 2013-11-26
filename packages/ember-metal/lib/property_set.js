@@ -69,7 +69,7 @@ var set = function set(obj, keyName, value, tolerant) {
       if (value !== currentValue) {
         Ember.propertyWillChange(obj, keyName);
         if (MANDATORY_SETTER) {
-          if (currentValue === undefined && !(keyName in obj)) {
+          if ((currentValue === undefined && !(keyName in obj)) || !obj.propertyIsEnumerable(keyName)) {
             Ember.defineProperty(obj, keyName, null, value); // setup mandatory setter
           } else {
             meta.values[keyName] = value;
