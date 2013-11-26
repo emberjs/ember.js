@@ -38,8 +38,6 @@ Ember.ControllerMixin = Ember.Mixin.create(Ember.ActionHandler, {
 
   parentController: null,
 
-  store: null,
-
   model: Ember.computed.alias('content'),
 
   deprecatedSendHandles: function(actionName) {
