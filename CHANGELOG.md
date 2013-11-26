@@ -31,7 +31,6 @@
 * [BUGFIX] Bubble `loading` action above pivot route
 * [BUGFIX] reduceComputed ignore changes during reset.
 * [BUGFIX] reduceComputed handle out-of-range index.
-* [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
 * [FEATURE] Add support for nested loading/error substates. A loading substate will be entered when a slow-to-resolve promise is returned from one of the Route#model hooks during a transition and an appropriately-named loading template/route can be found.  An error substate will be entered when one of the Route#model hooks returns a rejecting promise and an appropriately-named error template/route can be found.
 * [FEATURE] Components and helpers registered on the container can be rendered in templates via their dasherized names. E.g. {{helper-name}} or {{component-name}}
 * [FEATURE] Add a `didTransition` hook to the router.
