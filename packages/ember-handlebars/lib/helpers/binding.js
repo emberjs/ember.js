@@ -49,6 +49,10 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
       template(context, { data: options.data });
     } else {
+      if (options.hash.keyword) {
+        options.data.keyword = Ember.copy(options.data.keywords);
+        Ember.set(options.data.keywords, options.hash.keyword, Ember.bind(options.data.keywords, options.hash.keyword, options.hash.dataSourceBinding));
+      }
       // Create the view that will wrap the output of this template/property
       // and add it to the nearest view's childViews array.
       // See the documentation of Ember._HandlebarsBoundView for more.
@@ -269,7 +273,7 @@ EmberHandlebars.registerHelper('boundIf', function(property, fn) {
 */
 EmberHandlebars.registerHelper('with', function(context, options) {
   if (arguments.length === 4) {
-    var keywordName, path, rootPath, normalized;
+    var keywordName, path, rootPath, normalized, contextPath;
 
     Ember.assert("If you pass more than one argument to the with helper, it must be in the form #with foo as bar", arguments[1] === "as");
     options = arguments[3];
@@ -278,8 +282,22 @@ EmberHandlebars.registerHelper('with', function(context, options) {
 
     Ember.assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
 
+    options.data.keywords = Ember.copy(options.data.keywords);
+
+    if (!get(this, keywordName)) {
+      // var data = get(view, 'templateData');
+
+      // data = Ember.copy(data);
+      // data.keywords = view.cloneKeywords();
+      // set(view, 'templateData', data);
+
+      // // In this case, we do not bind, because the `content` of
+      // // a #each item cannot change.
+      // data.keywords[keyword] = content;
+    }
+
     if (Ember.isGlobalPath(path)) {
-      Ember.bind(options.data.keywords, keywordName, path);
+      contextPath = path;
     } else {
       normalized = normalizePath(this, path, options.data);
       path = normalized.path;
@@ -290,10 +308,15 @@ EmberHandlebars.registerHelper('with', function(context, options) {
       var contextKey = Ember.$.expando + Ember.guidFor(rootPath);
       options.data.keywords[contextKey] = rootPath;
 
+      options.hash.keyword = keywordName;
+
       // if the path is '' ("this"), just bind directly to the current context
-      var contextPath = path ? contextKey + '.' + path : contextKey;
-      Ember.bind(options.data.keywords, keywordName, contextPath);
+      contextPath = path ? contextKey + '.' + path : contextKey;
+
+      options.hash.dataSourceBinding = contextPath;
     }
+
+    // Ember.bind(options.data.keywords, keywordName, contextPath);
 
     return bind.call(this, path, options, true, exists);
   } else {
