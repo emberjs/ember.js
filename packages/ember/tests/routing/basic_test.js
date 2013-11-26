@@ -1880,7 +1880,8 @@ test("Router accounts for rootURL on page load when using history location", fun
     }
   });
 
-  Ember.Location.registerImplementation('historyTest', HistoryTestLocation);
+
+  container.register('location:historyTest', HistoryTestLocation);
 
   Router.reopen({
     location: 'historyTest',
@@ -1901,9 +1902,6 @@ test("Router accounts for rootURL on page load when using history location", fun
   bootApplication();
 
   ok(postsTemplateRendered, "Posts route successfully stripped from rootURL");
-
-  // clean after test
-  delete Ember.Location.implementations['historyTest'];
 });
 
 test("HistoryLocation has the correct rootURL on initState and webkit doesn't fire popstate on page load", function() {
@@ -1925,7 +1923,7 @@ test("HistoryLocation has the correct rootURL on initState and webkit doesn't fi
     }
   });
 
-  Ember.Location.registerImplementation('historyTest', HistoryTestLocation);
+  container.register('location:historyTest', HistoryTestLocation);
 
   Router.reopen({
     location: 'historyTest',
@@ -1933,9 +1931,6 @@ test("HistoryLocation has the correct rootURL on initState and webkit doesn't fi
   });
 
   bootApplication();
-
-  // clean after test
-  delete Ember.Location.implementations['historyTest'];
 });
 
 
@@ -2604,4 +2599,40 @@ test("Route model hook finds the same model as a manual find", function() {
   handleURL('/post/1');
 
   equal(App.Post, Post);
+});
+
+test("Can register an implementation via Ember.Location.registerImplementation", function(){
+  Ember.TESTING_DEPRECATION = true;
+
+  var TestLocation = Ember.NoneLocation.extend({
+    implementation: 'test'
+  });
+
+  Ember.Location.registerImplementation('test', TestLocation);
+
+  Router.reopen({
+    location: 'test'
+  });
+
+  bootApplication();
+
+  equal(router.get('location.implementation'), 'test', 'custom location implementation can be registered with registerImplementation');
+
+  Ember.TESTING_DEPRECATION = false;
+});
+
+test("Ember.Location.registerImplementation is deprecated", function(){
+  Ember.ENV.RAISE_ON_DEPRECATION = true;
+
+  var TestLocation = Ember.NoneLocation.extend({
+    implementation: 'test'
+  });
+
+  try{
+    Ember.Location.registerImplementation('test', TestLocation);
+  } catch(e) {
+    equal(e.message, "Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.", "deprecation warning is present");
+  }
+
+  Ember.ENV.RAISE_ON_DEPRECATION = false;
 });

@@ -749,6 +749,10 @@ Ember.Application.reopenClass({
     container.register('router:main',  Ember.Router);
     container.injection('router:main', 'namespace', 'application:main');
 
+    container.register('location:hash', Ember.HashLocation);
+    container.register('location:history', Ember.HistoryLocation);
+    container.register('location:none', Ember.NoneLocation);
+
     container.injection('controller', 'target', 'router:main');
     container.injection('controller', 'namespace', 'application:main');
 
