@@ -24,7 +24,7 @@ Ember.watchKey = function(obj, keyName) {
       m.values[keyName] = obj[keyName];
       o_defineProperty(obj, keyName, {
         configurable: true,
-        enumerable: true,
+        enumerable: obj.propertyIsEnumerable(keyName),
         set: Ember.MANDATORY_SETTER_FUNCTION,
         get: Ember.DEFAULT_GETTER_FUNCTION(keyName)
       });
@@ -48,11 +48,19 @@ Ember.unwatchKey = function(obj, keyName) {
     if (MANDATORY_SETTER && keyName in obj) {
       o_defineProperty(obj, keyName, {
         configurable: true,
-        enumerable: true,
-        writable: true,
-        value: m.values[keyName]
+        enumerable: obj.propertyIsEnumerable(keyName),
+        set: function(val) {
+          // redefine to set as enumerable
+          o_defineProperty(obj, keyName, {
+            configurable: true,
+            writable: true,
+            enumerable: true,
+            value: val
+          });
+          delete m.values[keyName];
+        },
+        get: Ember.DEFAULT_GETTER_FUNCTION(keyName)
       });
-      delete m.values[keyName];
     }
   } else if (watching[keyName] > 1) {
     watching[keyName]--;
