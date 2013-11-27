@@ -26,6 +26,10 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     this.router = this.constructor.router || this.constructor.map(Ember.K);
     this._activeViews = {};
     this._setupLocation();
+
+    if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
+      this.router.log = Ember.Logger.debug;
+    }
   },
 
   url: Ember.computed(function() {
@@ -470,10 +474,6 @@ Ember.Router.reopenClass({
       router.callbacks = [];
       router.triggerEvent = triggerEvent;
       this.reopenClass({ router: router });
-    }
-
-    if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
-      router.log = Ember.Logger.debug;
     }
 
     var dsl = Ember.RouterDSL.map(function() {
