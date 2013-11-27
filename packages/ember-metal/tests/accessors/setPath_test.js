@@ -8,7 +8,6 @@ var obj, moduleOpts = {
           baz: { biff: 'BIFF' }
         }
       }
-
     };
 
     Ember.lookup = {
@@ -42,8 +41,8 @@ test('[Foo, bar] -> Foo.bar', function() {
 });
 
 // ..........................................................
-// LOCAL PATHS
 //
+// LOCAL PATHS
 
 test('[obj, foo] -> obj.foo', function() {
   Ember.set(obj, 'foo', "BAM");
@@ -86,6 +85,24 @@ module("Ember.set with path - deprecated", {
   teardown: function() {
     Ember.TESTING_DEPRECATION = false;
     moduleOpts.teardown();
+  }
+});
+
+test('[null, bla] gives a proper exception message', function() {
+  var exceptionMessage = 'Object in path bla could not be found or was destroyed.';
+  try {
+    Ember.set(null, 'bla', "BAM");
+  } catch(ex) {
+    equal(ex.message, exceptionMessage);
+  }
+});
+
+test('[obj, bla.bla] gives a proper exception message', function() {
+  var exceptionMessage = 'Object in path bla could not be found or was destroyed.';
+  try {
+    Ember.set(obj, 'bla.bla', "BAM");
+  } catch(ex) {
+    equal(ex.message, exceptionMessage);
   }
 });
 
