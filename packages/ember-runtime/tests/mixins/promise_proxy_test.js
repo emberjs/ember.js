@@ -158,6 +158,29 @@ test("rejection", function(){
   equal(get(proxy, 'isFulfilled'), false,  'expects the proxy to indicate that it is not fulfilled');
 });
 
+test("fail method", function(){
+  var reason = new Error("failure");
+
+  var proxy = ObjectPromiseProxy.create({
+    promise: deferred.promise
+  });
+
+  var didFulfillCount = 0;
+  var didRejectCount  = 0;
+
+  proxy.then(function(){
+    didFulfillCount++;
+  });
+  proxy.fail(function(){
+    didRejectCount++;
+  });
+
+  Ember.run(deferred, 'reject', reason);
+
+  equal(didFulfillCount, 0, 'should not yet have been fulfilled');
+  equal(didRejectCount, 1, 'should have been rejected');
+});
+
 test("unhandled rejects still propogate to RSVP.on('error', ...) ", function(){
   expect(1);
 
