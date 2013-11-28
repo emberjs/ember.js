@@ -149,7 +149,10 @@ Ember.NativeArray = NativeArray;
   @return {Ember.NativeArray}
 */
 Ember.A = function(arr) {
-  if (arr === undefined) { arr = []; }
+  if (arguments.length === 0) { arr = []; }
+
+  Ember.assert('Em.A only excepts an array argument', Ember.isArray(arr));
+
   return Ember.Array.detect(arr) ? arr : Ember.NativeArray.apply(arr);
 };
 
