@@ -156,7 +156,8 @@ if (ignore.length>0) {
   @return {Ember.NativeArray}
 */
 var A = function(arr) {
-  if (arr === undefined) { arr = []; }
+  if (arguments.length === 0) { arr = []; }
+  Ember.assert('Em.A only excepts an array argument', Ember.isArray(arr));
   return EmberArray.detect(arr) ? arr : NativeArray.apply(arr);
 };
 

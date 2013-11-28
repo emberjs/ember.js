@@ -215,7 +215,12 @@ var ContainerView = View.extend(MutableArray, {
   replace: function(idx, removedCount, addedViews) {
     var addedCount = addedViews ? get(addedViews, 'length') : 0;
     var self = this;
-    Ember.assert("You can't add a child to a container that is already a child of another view", A(addedViews).every(function(item) { return !get(item, '_parentView') || get(item, '_parentView') === self; }));
+
+    Ember.assert(
+      "You can't add a child to a container that is already a child of another view",
+      addedCount === 0 ||
+      A(addedViews).every(function(item) { return !get(item, '_parentView') || get(item, '_parentView') === self; })
+    );
 
     this.arrayContentWillChange(idx, removedCount, addedCount);
     this.childViewsWillChange(this._childViews, idx, removedCount);
