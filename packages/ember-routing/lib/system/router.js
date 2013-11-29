@@ -3,10 +3,13 @@
 @submodule ember-routing
 */
 
-var Router = requireModule("router")['default'];
-var get = Ember.get, set = Ember.set;
+var routerJsModule = requireModule("router");
+var Router = routerJsModule.Router;
+var Transition = routerJsModule.Transition;
+var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 var defineProperty = Ember.defineProperty;
 var slice = Array.prototype.slice;
+var forEach = Ember.EnumerableUtils.forEach;
 
 var DefaultView = Ember._MetamorphView;
 
@@ -237,7 +240,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     var passedName = args[0], name, self = this,
       isQueryParamsOnly = false;
 
-    if (Ember.FEATURES.isEnabled("query-params")) {
+    if (Ember.FEATURES.isEnabled("query-params-new")) {
       isQueryParamsOnly = (args.length === 1 && args[0].hasOwnProperty('queryParams'));
     }
 
@@ -287,8 +290,92 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
       Ember.run.cancel(this._loadingStateTimer);
     }
     this._loadingStateTimer = null;
+  },
+
+  _queryParamNamesFor: function(routeName) {
+
+    // TODO: add caching
+
+    routeName = this.router.hasRoute(routeName) ? routeName : routeName + '.index';
+
+    var handlerInfos = this.router.recognizer.handlersFor(routeName);
+    var result = { queryParams: Ember.create(null), translations: Ember.create(null) };
+    var routerjs = this.router;
+    forEach(handlerInfos, function(recogHandler) {
+      var route = routerjs.getHandler(recogHandler.handler);
+      getQueryParamsForRoute(route, result);
+    });
+
+    return result;
+  },
+
+  _queryParamNamesForSingle: function(routeName) {
+
+    // TODO: add caching
+
+    var result = { queryParams: Ember.create(null), translations: Ember.create(null) };
+    var route = this.router.getHandler(routeName);
+
+    getQueryParamsForRoute(route, result);
+
+    return result;
+  },
+
+  /**
+    @private
+
+    Utility function for fetching all the current query params
+    values from a controller.
+   */
+  _queryParamOverrides: function(results, queryParams, callback) {
+    for (var name in queryParams) {
+      var parts = name.split(':');
+      var controller = this.container.lookup('controller:' + parts[0]);
+      Ember.assert(fmt("Could not lookup controller '%@' while setting up query params", [controller]), controller);
+
+      // Now assign the final URL-serialized key-value pair,
+      // e.g. "foo[propName]": "value"
+      results[queryParams[name]] = get(controller, parts[1]);
+
+      if (callback) {
+        // Give callback a chance to override.
+        callback(name, queryParams[name], name);
+      }
+    }
   }
 });
+
+/**
+  @private
+ */
+function getQueryParamsForRoute(route, result) {
+  var controllerName = route.controllerName || route.routeName,
+      controller = route.controllerFor(controllerName, true);
+
+  if (controller && controller.queryParams) {
+    forEach(controller.queryParams, function(propName) {
+
+      var parts = propName.split(':');
+
+      var urlKeyName;
+      if (parts.length > 1) {
+        urlKeyName = parts[1];
+      } else {
+        // TODO: use _queryParamScope here?
+        if (controllerName !== 'application') {
+          urlKeyName = controllerName + '[' + propName + ']';
+        } else {
+          urlKeyName = propName;
+        }
+      }
+
+      var controllerFullname = controllerName + ':' + propName;
+
+      result.queryParams[controllerFullname] = urlKeyName;
+      result.translations[parts[0]] = controllerFullname;
+    });
+  }
+}
 
 /**
   @private
@@ -300,7 +387,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
   to bubble upward.
  */
 function forEachRouteAbove(originRoute, transition, callback) {
-  var handlerInfos = transition.handlerInfos,
+  var handlerInfos = transition.state.handlerInfos,
       originRouteFound = false;
 
   for (var i = handlerInfos.length - 1; i >= 0; --i) {
@@ -529,7 +616,5 @@ Ember.Router.reopenClass({
     return path.join(".");
   }
 });
-
-Router.Transition.prototype.send = Router.Transition.prototype.trigger;
 
 

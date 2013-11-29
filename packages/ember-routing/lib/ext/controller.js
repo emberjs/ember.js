@@ -3,7 +3,10 @@
 @submodule ember-routing
 */
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set,
+    map = Ember.EnumerableUtils.map;
+
+var queuedQueryParamChanges = {};
 
 Ember.ControllerMixin.reopen({
   /**
@@ -61,7 +64,7 @@ Ember.ControllerMixin.reopen({
 
   /**
     Transition into another route while replacing the current URL, if possible.
-    This will replace the current history entry instead of adding a new one. 
+    This will replace the current history entry instead of adding a new one.
     Beside that, it is identical to `transitionToRoute` in all other respects.
 
     ```javascript
@@ -111,3 +114,85 @@ Ember.ControllerMixin.reopen({
     return this.replaceRoute.apply(this, arguments);
   }
 });
+
+if (Ember.FEATURES.isEnabled("query-params-new")) {
+  Ember.ControllerMixin.reopen({
+
+    concatenatedProperties: ['queryParams'],
+
+    queryParams: null,
+
+    _queryParamScope: null,
+
+    _finalizingQueryParams: false,
+    _queryParamHash: Ember.computed(function computeQueryParamHash() {
+
+      // Given: queryParams: ['foo', 'bar:baz'] on controller:thing
+      // _queryParamHash should yield: { 'foo': 'thing[foo]' }
+
+      var result = {};
+      var queryParams = this.queryParams;
+      if (!queryParams) {
+        return result;
+      }
+
+      for (var i = 0, len = queryParams.length; i < len; ++i) {
+        var full = queryParams[i];
+        var parts = full.split(':');
+        var key = parts[0];
+        var urlKey = parts[1];
+        if (!urlKey) {
+          if (this._queryParamScope) {
+            urlKey = this._queryParamScope + '[' + key + ']';
+          } else {
+            urlKey = key;
+          }
+        }
+        result[key] = urlKey;
+      }
+
+      return result;
+    }),
+
+    _activateQueryParamObservers: function() {
+      var queryParams = get(this, '_queryParamHash');
+
+      for (var k in queryParams) {
+        if (queryParams.hasOwnProperty(k)) {
+          this.addObserver(k, this, this._queryParamChanged);
+        }
+      }
+    },
+
+    _deactivateQueryParamObservers: function() {
+      var queryParams = get(this, '_queryParamHash');
+
+      for (var k in queryParams) {
+        if (queryParams.hasOwnProperty(k)) {
+          this.removeObserver(k, this, this._queryParamChanged);
+        }
+      }
+    },
+
+    _queryParamChanged: function(controller, key) {
+      if (this._finalizingQueryParams) {
+        var changes = this._queryParamChangesDuringSuspension;
+        if (changes) {
+          changes[key] = true;
+        }
+        return;
+      }
+
+      var queryParams = get(this, '_queryParamHash');
+      queuedQueryParamChanges[queryParams[key]] = get(this, key);
+      Ember.run.once(this, this._fireQueryParamTransition);
+    },
+
+    _fireQueryParamTransition: function() {
+      this.transitionToRoute({ queryParams: queuedQueryParamChanges });
+      queuedQueryParamChanges = {};
+    },
+
+    _queryParamChangesDuringSuspension: null
+  });
+}
