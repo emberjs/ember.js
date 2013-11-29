@@ -4,6 +4,7 @@
 ### Ember 1.4.0 _(TBD)_
 
 * In canary
+* {{#with}} can take a controller= option for wrapping the context. Must be an `Ember.ObjectController`
 
 ### Ember 1.3.0 _(TBD)_
 
