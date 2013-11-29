@@ -563,7 +563,10 @@ EmberHandlebars.registerHelper('bind-attr', function(options) {
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('bindAttr', EmberHandlebars.helpers['bind-attr']);
+EmberHandlebars.registerHelper('bindAttr', function() {
+  Ember.warn("The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
+  return EmberHandlebars.helpers['bind-attr'].apply(this, arguments);
+});
 
 /**
   @private

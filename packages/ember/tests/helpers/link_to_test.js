@@ -662,7 +662,7 @@ test("The {{link-to}} helper refreshes href element when one of params changes",
 });
 
 if (Ember.FEATURES.isEnabled("query-params")) {
-  test("The {{linkTo}} helper supports query params", function() {
+  test("The {{link-to}} helper supports query params", function() {
     expect(66);
 
     Router.map(function() {
@@ -670,8 +670,8 @@ if (Ember.FEATURES.isEnabled("query-params")) {
       this.resource("items", { queryParams: ['sort', 'direction'] });
     });
 
-    Ember.TEMPLATES.about = Ember.Handlebars.compile("<h1>About</h1> {{#linkTo 'about' id='about-link'}}About{{/linkTo}} {{#linkTo 'about' section='intro' id='about-link-with-qp'}}Intro{{/linkTo}}{{#linkTo 'about' section=false id='about-clear-qp'}}Intro{{/linkTo}}{{#if isIntro}} <p>Here is the intro</p>{{/if}}");
-    Ember.TEMPLATES.items = Ember.Handlebars.compile("<h1>Items</h1> {{#linkTo 'about' id='about-link'}}About{{/linkTo}} {{#linkTo 'items' id='items-link' direction=otherDirection}}Sort{{/linkTo}} {{#linkTo 'items' id='items-sort-link' sort='name'}}Sort Ascending{{/linkTo}} {{#linkTo 'items' id='items-clear-link' queryParams=false}}Clear Query Params{{/linkTo}}");
+    Ember.TEMPLATES.about = Ember.Handlebars.compile("<h1>About</h1> {{#link-to 'about' id='about-link'}}About{{/link-to}} {{#link-to 'about' section='intro' id='about-link-with-qp'}}Intro{{/link-to}}{{#link-to 'about' section=false id='about-clear-qp'}}Intro{{/link-to}}{{#if isIntro}} <p>Here is the intro</p>{{/if}}");
+    Ember.TEMPLATES.items = Ember.Handlebars.compile("<h1>Items</h1> {{#link-to 'about' id='about-link'}}About{{/link-to}} {{#link-to 'items' id='items-link' direction=otherDirection}}Sort{{/link-to}} {{#link-to 'items' id='items-sort-link' sort='name'}}Sort Ascending{{/link-to}} {{#link-to 'items' id='items-clear-link' queryParams=false}}Clear Query Params{{/link-to}}");
 
     App.AboutRoute = Ember.Route.extend({
       setupController: function(controller, context, queryParams) {
@@ -720,7 +720,7 @@ if (Ember.FEATURES.isEnabled("query-params")) {
       Ember.$('#about-link-with-qp', '#qunit-fixture').click();
     });
 
-    equal(router.get('url'), "/about?section=intro", "Clicking linkTo updates the url");
+    equal(router.get('url'), "/about?section=intro", "Clicking link-to updates the url");
     equal(Ember.$('p', '#qunit-fixture').text(), "Here is the intro", "Query param is applied to controller");
     equal(normalizeUrl(Ember.$('#about-link').attr('href')), '/about?section=intro', "The params have stuck");
     shouldBeActive('#about-link');
@@ -757,11 +757,11 @@ if (Ember.FEATURES.isEnabled("query-params")) {
       Ember.$('#items-link', '#qunit-fixture').click();
     });
 
-    equal(router.get('url'), "/items?direction=desc", "Clicking linkTo should direct to the correct url");
+    equal(router.get('url'), "/items?direction=desc", "Clicking link-to should direct to the correct url");
     equal(controller.get('currentDirection'), 'desc', "Current direction is desc");
     equal(controller.get('otherDirection'), 'asc', "Other direction is asc");
 
-    equal(normalizeUrl(Ember.$('#items-sort-link').attr('href')), '/items?direction=desc&sort=name', "linkTo href correctly merges query parmas");
+    equal(normalizeUrl(Ember.$('#items-sort-link').attr('href')), '/items?direction=desc&sort=name', "link-to href correctly merges query parmas");
     shouldNotBeActive('#items-sort-link');
 
     equal(normalizeUrl(Ember.$('#items-clear-link').attr('href')), '/items', "Can clear query params");
@@ -776,7 +776,7 @@ if (Ember.FEATURES.isEnabled("query-params")) {
     equal(controller.get('currentDirection'), 'desc', "Current direction is desc");
     equal(controller.get('otherDirection'), 'asc', "Other direction is asc");
 
-    equal(normalizeUrl(Ember.$('#items-sort-link').attr('href')), "/items?sort=name&direction=desc", "linkTo href correctly merges query parmas");
+    equal(normalizeUrl(Ember.$('#items-sort-link').attr('href')), "/items?sort=name&direction=desc", "link-to href correctly merges query parmas");
     shouldBeActive('#items-sort-link');
 
     equal(normalizeUrl(Ember.$('#items-link').attr('href')), "/items?sort=name&direction=asc", "Params can come from bindings");
@@ -794,7 +794,7 @@ if (Ember.FEATURES.isEnabled("query-params")) {
 
     equal(normalizeUrl(Ember.$('#items-link').attr('href')), "/items?sort=name&direction=desc", "Params are updated when bindings change");
     shouldBeActive('#items-link');
-    equal(normalizeUrl(Ember.$('#items-sort-link').attr('href')), '/items?sort=name&direction=desc', "linkTo href correctly merges query params when other params change");
+    equal(normalizeUrl(Ember.$('#items-sort-link').attr('href')), '/items?sort=name&direction=desc', "link-to href correctly merges query params when other params change");
     shouldBeActive('#items-sort-link');
 
     Ember.run(function() {
@@ -862,7 +862,7 @@ if (Ember.FEATURES.isEnabled("query-params")) {
 
 
 
-  test("The {{linkTo}} can work without a route name if query params are supplied", function() {
+  test("The {{link-to}} can work without a route name if query params are supplied", function() {
     expect(4);
 
     Router.map(function() {
@@ -870,7 +870,7 @@ if (Ember.FEATURES.isEnabled("query-params")) {
       this.route('about');
     });
 
-    Ember.TEMPLATES.items = Ember.Handlebars.compile("<h1>Items</h1> {{#linkTo page=2 id='next-page'}}Next Page{{/linkTo}}");
+    Ember.TEMPLATES.items = Ember.Handlebars.compile("<h1>Items</h1> {{#link-to page=2 id='next-page'}}Next Page{{/link-to}}");
 
     bootApplication();
 
@@ -920,7 +920,23 @@ test("The {{link-to}} helper's bound parameter functionality works as expected i
 });
 
 test("{{linkTo}} is aliased", function() {
-  equal(Ember.Handlebars.helpers.linkTo, Ember.Handlebars.helpers['link-to']);
+  var originalLinkTo = Ember.Handlebars.helpers['link-to'],
+    originalWarn = Ember.warn;
+
+  Ember.warn = function(msg) {
+    equal(msg, "The 'linkTo' view helper is deprecated in favor of 'link-to'", 'Warning called');
+  };
+
+  Ember.Handlebars.helpers['link-to'] = function() {
+    equal(arguments[0], 'foo', 'First arg match');
+    equal(arguments[1], 'bar', 'Second arg match');
+    return 'result';
+  };
+  var result = Ember.Handlebars.helpers.linkTo('foo', 'bar');
+  equal(result, 'result', 'Result match');
+
+  Ember.Handlebars.helpers['link-to'] = originalLinkTo;
+  Ember.warn = originalWarn;
 });
 
 test("The {{link-to}} helper is active when a resource is active", function() {

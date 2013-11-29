@@ -71,9 +71,9 @@ test("property changes inside views should only rerender their view", function()
   equal(trim(view.$().text()), 'ohbai', "The updated value was rendered");
 });
 
-test("should work with bindAttr", function() {
+test("should work with bind-attr", function() {
   createGroupedView(
-    '<button {{bindAttr class="innerClass"}}>ohai</button>',
+    '<button {{bind-attr class="innerClass"}}>ohai</button>',
     {innerClass: 'magic'}
   );
   appendView();

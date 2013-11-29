@@ -1471,7 +1471,24 @@ test("should be able to bind use {{bind-attr}} more than once on an element", fu
 });
 
 test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
-  equal(Ember.Handlebars.helpers.bindAttr, Ember.Handlebars.helpers['bind-attr']);
+
+  var originalBindAttr = Ember.Handlebars.helpers['bind-attr'],
+    originalWarn = Ember.warn;
+
+  Ember.warn = function(msg) {
+    equal(msg, "The 'bindAttr' view helper is deprecated in favor of 'bind-attr'", 'Warning called');
+  };
+
+  Ember.Handlebars.helpers['bind-attr'] = function() {
+    equal(arguments[0], 'foo', 'First arg match');
+    equal(arguments[1], 'bar', 'Second arg match');
+    return 'result';
+  };
+  var result = Ember.Handlebars.helpers.bindAttr('foo', 'bar');
+  equal(result, 'result', 'Result match');
+
+  Ember.Handlebars.helpers['bind-attr'] = originalBindAttr;
+  Ember.warn = originalWarn;
 });
 
 test("should not reset cursor position when text field receives keyUp event", function() {
