@@ -21,14 +21,6 @@ for a detailed explanation.
 
   Added in [#3614](https://github.com/emberjs/ember.js/pull/3614).
 
-* `query-params`
-
-  Add query params support to the ember router. You can now define which query
-  params your routes respond to, use them in your route hooks to affect model
-  loading or controller state, and transition query parameters with the link-to
-  helper and the transitionTo method.
-
-  Added in [#3182](https://github.com/emberjs/ember.js/pull/3182).
 * `propertyBraceExpansion`
 
   Adds support for brace-expansion in dependent keys, observer, and watch properties.
@@ -143,3 +135,14 @@ for a detailed explanation.
   be wrapped in a function. Useful for integrating with 3rd party callbacks.
 
   Added in [#3991](https://github.com/emberjs/ember.js/pull/3991).
+
+* `query-params-new`
+
+  Add query params support to the ember router. This is a rewrite of a
+  previous attempt at an API for query params. You can define query
+  param properties on route-driven controllers with the `queryParams`
+  property, and any changes to those properties will cause the URL
+  to update, and in the other direction, any URL changes to the query
+  params will cause those controller properties to update.
+
+  Added in [#4008](https://github.com/emberjs/ember.js/pull/4008).

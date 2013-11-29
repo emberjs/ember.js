@@ -28,7 +28,7 @@ Ember.HashLocation = Ember.Object.extend({
     @method getURL
   */
   getURL: function() {
-    if (Ember.FEATURES.isEnabled("query-params")) {
+    if (Ember.FEATURES.isEnabled("query-params-new")) {
       // location.hash is not used because it is inconsistently
       // URL-decoded between browsers.
       var href = get(this, 'location').href,
