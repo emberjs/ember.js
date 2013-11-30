@@ -116,3 +116,10 @@ for a detailed explanation.
   Enables `{{#with}}` to take a `controller=` option for wrapping the context.
 
   Added in [#3722](https://github.com/emberjs/ember.js/pull/3722)
+
+* `ember-unloaded-model-warning`
+
+  Fetching a falsy `model` property on a controller before the
+  associated route has loaded it issues an `Ember.warn`
+
+  Added in ____TODO____
