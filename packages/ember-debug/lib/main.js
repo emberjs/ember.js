@@ -168,3 +168,7 @@ if (!Ember.testing) {
     }, false);
   }
 }
+
+if ('undefined' !== typeof module && module.exports) {
+  module.exports = Ember;
+}
