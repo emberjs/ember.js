@@ -1,11 +1,5 @@
-var proxy, deferred, ObjectPromiseProxy;
+var ObjectPromiseProxy;
 var get = Ember.get;
-var originalRethrow = Ember.RSVP.rethrow;
-module("Ember.PromiseProxyMixin", {
-  teardown: function() {
-    Ember.RSVP.rethrow = originalRethrow;
-  }
-});
 
 test("present on ember namespace", function(){
   ok(Ember.PromiseProxyMixin, "expected Ember.PromiseProxyMixin to exist");
@@ -14,17 +8,6 @@ test("present on ember namespace", function(){
 module("Ember.PromiseProxy - ObjectProxy", {
   setup: function() {
     ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
-    deferred = Ember.RSVP.defer();
-    proxy = ObjectPromiseProxy.create({
-      promise: deferred.promise
-    });
-
-    Ember.RSVP.off('error', Ember.RSVP.onerrorDefault);
-  },
-  teardown: function() {
-    proxy = deferred = null;
-
-    Ember.RSVP.on('error', Ember.RSVP.onerrorDefault);
   }
 });
 
@@ -46,6 +29,8 @@ test("fulfillment", function(){
     firstName: 'stef',
     lastName: 'penner'
   };
+
+  var deferred = Ember.RSVP.defer();
 
   var proxy = ObjectPromiseProxy.create({
     promise: deferred.promise
@@ -104,7 +89,7 @@ test("fulfillment", function(){
 
 test("rejection", function(){
   var reason = new Error("failure");
-
+  var deferred = Ember.RSVP.defer();
   var proxy = ObjectPromiseProxy.create({
     promise: deferred.promise
   });
@@ -161,6 +146,9 @@ test("rejection", function(){
 test("unhandled rejects still propogate to RSVP.on('error', ...) ", function(){
   expect(1);
 
+  Ember.RSVP.on('error', onerror);
+  Ember.RSVP.off('error', Ember.RSVP.onerrorDefault);
+
   var expectedReason = new Error("failure");
   var deferred = Ember.RSVP.defer();
 
@@ -170,15 +158,21 @@ test("unhandled rejects still propogate to RSVP.on('error', ...) ", function(){
 
   var promise = proxy.get('promise');
 
-  function onerror(reason){
-    equal(reason.detail, expectedReason, 'expected reason');
+  function onerror(reason) {
+    equal(reason, expectedReason, 'expected reason');
   }
 
   Ember.RSVP.on('error', onerror);
+  Ember.RSVP.off('error', Ember.RSVP.onerrorDefault);
 
-  // force synchronous promise rejection
   Ember.run(deferred, 'reject', expectedReason);
 
+  Ember.RSVP.on('error', Ember.RSVP.onerrorDefault);
+  Ember.RSVP.off('error', onerror);
+
+  Ember.run(deferred, 'reject', expectedReason);
+
+  Ember.RSVP.on('error', Ember.RSVP.onerrorDefault);
   Ember.RSVP.off('error', onerror);
 });
 
