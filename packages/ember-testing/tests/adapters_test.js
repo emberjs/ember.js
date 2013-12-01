@@ -1,16 +1,21 @@
-var App;
+var App, originalAdapter;
 
 module("ember-testing Adapters", {
+  setup: function() {
+    originalAdapter = Ember.Test.adapter;
+  },
   teardown: function() {
     Ember.run(App, App.destroy);
     App.removeTestHelpers();
     App = null;
+
+    Ember.Test.adapter = originalAdapter;
   }
 });
 
 test("Setting a test adapter manually", function() {
   expect(1);
-  var originalAdapter = Ember.Test.adapter, CustomAdapter;
+  var CustomAdapter;
 
   CustomAdapter = Ember.Test.Adapter.extend({
     asyncStart: function() {
@@ -25,13 +30,10 @@ test("Setting a test adapter manually", function() {
   });
 
   Ember.Test.adapter.asyncStart();
-
-  Ember.Test.adapter = originalAdapter;
 });
 
 test("QUnitAdapter is used by default", function() {
   expect(1);
-  var originalAdapter = Ember.Test.adapter, CustomAdapter;
 
   Ember.Test.adapter = null;
 
@@ -41,6 +43,4 @@ test("QUnitAdapter is used by default", function() {
   });
 
   ok(Ember.Test.adapter instanceof Ember.Test.QUnitAdapter);
-
-  Ember.Test.adapter = originalAdapter;
 });
