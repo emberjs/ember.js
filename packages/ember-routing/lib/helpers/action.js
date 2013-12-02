@@ -255,6 +255,14 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     Clicking "click me" will trigger the `edit` method on the current controller
     with the value of `person` as a parameter.
 
+    You can use `{{action}}` as a toggle for a boolean value.
+
+    ```handlebars
+    <button {{action toggle=show}}>Show</button>
+    ```
+
+    The `show` property will be toggled between `true` and `false`.
+
     @method action
     @for Ember.Handlebars.helpers
     @param {String} actionName
@@ -264,6 +272,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   EmberHandlebars.registerHelper('action', function(actionName) {
     var options = arguments[arguments.length - 1],
         contexts = a_slice.call(arguments, 1, -1);
+    var fooName = actionName;
 
     var hash = options.hash,
         controller;
@@ -288,6 +297,22 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       target = hash.target;
     } else if (controller = options.data.keywords.controller) {
       root = controller;
+    }
+
+    if (Ember.FEATURES.isEnabled('toggle-action')) {
+      if (hash.toggle) {
+        if (!root._actions) {
+          root._actions = {};
+        }
+
+        if (!root._actions['toggle:' + hash.toggle]) {
+          root._actions['toggle:' + hash.toggle] = function() {
+            this.toggleProperty(hash.toggle);
+          };
+        }
+
+        actionName = 'toggle:' + hash.toggle;
+      }
     }
 
     action.target = { root: root, target: target, options: options };
