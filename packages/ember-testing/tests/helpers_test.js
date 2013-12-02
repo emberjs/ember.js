@@ -223,6 +223,44 @@ test("`click` triggers appropriate events in order", function() {
   });
 });
 
+test("`click` correctly handle focus changes", function() {
+  var click, wait, events;
+  expect(2);
+
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  App.IndexView = Ember.View.extend({
+
+    oneView: Ember.TextField.extend({
+      focusOut: function () {
+        this._super();
+        ok(true, "the first one has been focused out");
+      }
+    }),
+
+    twoView: Ember.TextField.extend({
+      focusIn: function () {
+        this._super();
+        ok(true, "the second one has been focused in");
+      }
+    })
+  });
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile('{{view view.oneView id="one"}} {{view view.twoView id="two"}}');
+
+  App.injectTestHelpers();
+
+  Ember.run(App, App.advanceReadiness);
+
+  click = App.testHelpers.click;
+  wait  = App.testHelpers.wait;
+
+  wait().click('#one').click('#two');
+});
+
 test("Ember.Application#injectTestHelpers", function() {
   var documentEvents;
 
