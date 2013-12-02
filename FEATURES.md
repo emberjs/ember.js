@@ -116,3 +116,9 @@ for a detailed explanation.
   Enables `{{#with}}` to take a `controller=` option for wrapping the context.
 
   Added in [#3722](https://github.com/emberjs/ember.js/pull/3722)
+
+* `toggle-action`
+
+  Enables `{{action toggle=property}}` that calls `toggleProperty(property)` to toggle between boolean values.
+
+  Added in [#3834](https://github.com/emberjs/ember.js/pull/3834)

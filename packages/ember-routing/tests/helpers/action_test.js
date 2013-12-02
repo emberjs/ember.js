@@ -731,6 +731,25 @@ test("it can trigger actions for keyboard events", function() {
   ok(showCalled, "should call action with keyup");
 });
 
+if (Ember.FEATURES.isEnabled('toggle-action')) {
+  test("it can toggle a property", function() {
+    view = Ember.View.create({
+      template: compile("<button {{action toggle=show}}>Show</button>")
+    });
+
+    var controller = Ember.Controller.create();
+
+    Ember.run(function() {
+      view.set('controller', controller);
+      view.appendTo('#qunit-fixture');
+    });
+
+    var e = Ember.$.Event("click");
+    view.$('button').trigger(e);
+    ok(controller.get('show'), "should set 'show' to true");
+  });
+}
+
 module("Ember.Handlebars - action helper - deprecated invoking directly on target", {
   setup: function() {
     dispatcher = Ember.EventDispatcher.create();
@@ -768,4 +787,3 @@ test("should invoke a handler defined directly on the target (DEPRECATED)", func
 
   ok(eventHandlerWasCalled, "the action was called");
 });
-
