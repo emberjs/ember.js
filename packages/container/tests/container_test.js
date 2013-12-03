@@ -492,3 +492,20 @@ test("cannot re-register a factory if has been looked up", function(){
 });
 
 
+test('container.has should not accidentally cause injections on that factory to be run. (Mitigate merely on observing)', function(){
+  expect(1);
+
+  var container = new Container(),
+    FirstApple = factory('first'),
+    SecondApple = factory('second');
+
+  SecondApple.extend = function(a,b,c) {
+    ok(false, 'should not extend or touch the injected model, merely to inspect existence of another');
+  };
+
+  container.register('controller:apple', FirstApple);
+  container.register('controller:second-apple', SecondApple);
+  container.injection('controller:apple', 'badApple', 'controller:second-apple');
+
+  ok(container.has('controller:apple'));
+});
