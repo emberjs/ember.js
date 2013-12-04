@@ -454,7 +454,7 @@ define("container",
           return true;
         }
 
-        return !!factoryFor(this, fullName);
+        return !!this.resolve(fullName);
       },
 
       /**

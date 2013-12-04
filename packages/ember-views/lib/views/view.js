@@ -569,6 +569,22 @@ var EMPTY_ARRAY = [];
   });
   ```
 
+  If you have nested resources, your Handlebars template will look like this:
+
+  ```html
+  <script type='text/x-handlebars' data-template-name='posts/new'>
+    <h1>New Post</h1>
+  </script>
+  ```
+
+  And `templateName` property:
+
+  ```javascript
+  AView = Ember.View.extend({
+    templateName: 'posts/new'
+  });
+  ```
+
   Using a value for `templateName` that does not have a Handlebars template
   with a matching `data-template-name` attribute will throw an error.
 

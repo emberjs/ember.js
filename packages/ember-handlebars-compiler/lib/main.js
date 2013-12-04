@@ -262,7 +262,7 @@ Ember.Handlebars.precompile = function(string) {
     knownHelpers: {
       action: true,
       unbound: true,
-      bindAttr: true,
+      'bind-attr': true,
       template: true,
       view: true,
       _triageMustache: true

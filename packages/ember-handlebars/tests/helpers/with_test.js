@@ -233,3 +233,49 @@ test("it should render without fail", function() {
     view.destroy();
   });
 });
+
+if (Ember.FEATURES.isEnabled('with-controller')) {
+  module("Handlebars {{#with foo}} with defined controller");
+
+  test("it should wrap context with object controller", function() {
+    var Controller = Ember.ObjectController.extend({
+      controllerName: Ember.computed(function() {
+        return "controller:"+this.get('content.name');
+      })
+    });
+
+    var person = Ember.Object.create({name: 'Steve Holt'});
+    var container = new Ember.Container();
+
+    var parentController = {
+      container: container
+    };
+
+    view = Ember.View.create({
+      container: container,
+      template: Ember.Handlebars.compile('{{#with view.person controller="person"}}{{controllerName}}{{/with}}'),
+      person: person,
+      controller: parentController
+    });
+
+    container.register('controller:person', Controller);
+
+    appendView(view);
+
+    equal(view.$().text(), "controller:Steve Holt");
+
+    Ember.run(function() {
+      view.rerender();
+    });
+
+    equal(view.$().text(), "controller:Steve Holt");
+
+    Ember.run(function() {
+      person.set('name', 'Gob');
+      view.rerender();
+    });
+
+    equal(view.$().text(), "controller:Gob");
+    Ember.run(function() { view.destroy(); }); // destroy existing view
+  });
+}

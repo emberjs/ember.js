@@ -24,7 +24,7 @@ module("ember-testing Acceptance", {
       });
 
       App.PostsView = Ember.View.extend({
-        defaultTemplate: Ember.Handlebars.compile("<a class=\"dummy-link\"></a><div id=\"comments-link\">{{#linkTo 'comments'}}Comments{{/linkTo}}</div>"),
+        defaultTemplate: Ember.Handlebars.compile("<a class=\"dummy-link\"></a><div id=\"comments-link\">{{#link-to 'comments'}}Comments{{/link-to}}</div>"),
         classNames: ['posts-view']
       });
 

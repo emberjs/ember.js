@@ -49,6 +49,27 @@ Ember.ControllerMixin.reopen({
     this.get('controllers.post'); // instance of App.PostController
     ```
 
+    Given that you have a nested controller (nested resource):
+
+    ```javascript
+    App.CommentsNewController = Ember.ObjectController.extend({
+    });
+    ```
+
+    When you define a controller that requires access to a nested one:
+
+    ```javascript
+    App.IndexController = Ember.ObjectController.extend({
+      needs: ['commentsNew']
+    });
+    ```
+
+    You will be able to get access to it:
+
+    ```javascript
+    this.get('controllers.commentsNew'); // instance of App.CommentsNewController
+    ```
+
     This is only available for singleton controllers.
 
     @property {Array} needs

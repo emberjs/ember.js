@@ -731,7 +731,7 @@ ReduceComputedProperty.prototype.property = function () {
 
   ```javascript
   Ember.computed.max = function (dependentKey) {
-    return Ember.reduceComputed.call(null, dependentKey, {
+    return Ember.reduceComputed(dependentKey, {
       initialValue: -Infinity,
 
       addedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {

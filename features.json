@@ -9,5 +9,6 @@
   "ember-handlebars-caps-lookup": null,
   "ember-testing-simple-setup": null,
   "ember-testing-routing-helpers": null,
-  "ember-testing-triggerEvent-helper": null
+  "ember-testing-triggerEvent-helper": null,
+  "with-controller": null
 }

@@ -159,7 +159,7 @@ function wait(app, value) {
         if (Test.waiters && Test.waiters.any(function(waiter) {
           var context = waiter[0];
           var callback = waiter[1];
-          return !callback.apply(context);
+          return !callback.call(context);
         })) { return; }
       }
       // Stop polling
