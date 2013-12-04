@@ -94,7 +94,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       lookupOptions = { singleton: false };
     }
 
-    name = name.replace(/\//g, '.');
+    if (Ember.ENV['EMBER_SLASH_AS_NAMESPACE_SEPARATOR'] !== false) {
+      name = name.replace(/\//g, '.');
+    }
+
     container = options.data.keywords.controller.container;
     router = container.lookup('router:main');
 

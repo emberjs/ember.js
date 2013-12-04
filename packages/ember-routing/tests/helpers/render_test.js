@@ -60,6 +60,7 @@ module("Handlebars {{render}} helper", {
     container.register('router:main', Ember.Router.extend());
   },
   teardown: function() {
+    delete Ember.ENV['EMBER_SLASH_AS_NAMESPACE_SEPARATOR'] ;
     Ember.run(function () {
       if (container) {
         container.destroy();
@@ -392,4 +393,26 @@ test("{{render}} works with slash notation", function() {
   var renderedView = container.lookup('router:main')._lookupActiveView('blog.post');
   equal(renderedView.get('viewName'), 'blogPost', 'camelizes the view name');
   equal(container.lookup('controller:blog.post'), renderedView.get('controller'), 'rendered with correct controller');
+});
+
+test("{{render}} works with slash notation, with EMBER_SLASH_AS_NAMESPACE_SEPARATOR = false", function() {
+  Ember.ENV['EMBER_SLASH_AS_NAMESPACE_SEPARATOR'] = false;
+
+  var template = '<h1>BLOG</h1>{{render "blog/post"}}';
+
+  var controller = Ember.Controller.extend({container: container});
+  container.register('controller:blog.post', Ember.ObjectController.extend());
+
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  Ember.TEMPLATES['blog/post'] = compile("<p>POST</p>");
+
+  appendView(view);
+
+  var renderedView = container.lookup('router:main')._lookupActiveView('blog/post');
+  equal(renderedView.get('viewName'), 'blog/post', 'camelizes the view name');
+  equal(container.lookup('controller:blog/post'), renderedView.get('controller'), 'rendered with correct controller');
 });

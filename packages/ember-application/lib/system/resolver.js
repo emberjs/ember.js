@@ -151,13 +151,15 @@ Ember.DefaultResolver = Ember.Object.extend({
         namespace = get(this, 'namespace'),
         root = namespace;
 
-    if (type !== 'template' && name.indexOf('/') !== -1) {
-      var parts = name.split('/');
-      name = parts[parts.length - 1];
-      var namespaceName = capitalize(parts.slice(0, -1).join('.'));
-      root = Ember.Namespace.byName(namespaceName);
+    if (Ember.ENV['EMBER_SLASH_AS_NAMESPACE_SEPARATOR'] !== false) {
+      if (type !== 'template' && name.indexOf('/') !== -1) {
+        var parts = name.split('/');
+        name = parts[parts.length - 1];
+        var namespaceName = capitalize(parts.slice(0, -1).join('.'));
+        root = Ember.Namespace.byName(namespaceName);
 
-      Ember.assert('You are looking for a ' + name + ' ' + type + ' in the ' + namespaceName + ' namespace, but the namespace could not be found', root);
+        Ember.assert('You are looking for a ' + name + ' ' + type + ' in the ' + namespaceName + ' namespace, but the namespace could not be found', root);
+      }
     }
 
     return {
