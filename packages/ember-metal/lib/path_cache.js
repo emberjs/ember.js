@@ -1,7 +1,7 @@
 import Cache from 'ember-metal/cache';
 
-var IS_GLOBAL      = /^([A-Z$]|([0-9][A-Z$]))/;
-var IS_GLOBAL_PATH = /^([A-Z$]|([0-9][A-Z$])).*[\.]/;
+var IS_GLOBAL      = /^[A-Z$]/;
+var IS_GLOBAL_PATH = /^[A-Z$].*[\.]/;
 var HAS_THIS       = 'this.';
 
 var isGlobalCache       = new Cache(1000, function(key) { return IS_GLOBAL.test(key);          });

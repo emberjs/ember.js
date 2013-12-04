@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### Canary
+
+- [#3852](https://github.com/emberjs/ember.js/pull/3852) [BREAKING BUGFIX] Do not assume null Ember.get targets always refer to a global
+
 ### 1.11.0-beta.1 (February 06, 2015)
 
 - [#10160](https://github.com/emberjs/ember.js/pull/10160) [FEATURE] Add index as an optional parameter to #each blocks [@tim-evans](https://github.com/tim-evans)
