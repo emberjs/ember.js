@@ -769,3 +769,24 @@ test("should invoke a handler defined directly on the target (DEPRECATED)", func
   ok(eventHandlerWasCalled, "the action was called");
 });
 
+test("should respect preventDefault=false option if provided", function(){
+  view = Ember.View.create({
+    template: compile("<a {{action show preventDefault=false}}>Hi</a>")
+  });
+
+  var controller = Ember.Controller.extend({
+    actions: {
+      show: function() { }
+    }
+  }).create();
+
+  Ember.run(function() {
+    view.set('controller', controller);
+    view.appendTo('#qunit-fixture');
+  });
+
+  var event = Ember.$.Event("click");
+  view.$('a').trigger(event);
+
+  equal(event.isDefaultPrevented(), false, "should not preventDefault");
+});

@@ -1148,3 +1148,35 @@ test("The non-block form {{link-to}} performs property lookup", function() {
 
   assertEquality('/about');
 });
+
+test("the {{link-to}} helper calls preventDefault", function(){
+  Router.map(function() {
+    this.route("about");
+  });
+
+  bootApplication();
+
+  Ember.run(router, 'handleURL', '/');
+
+  var event = Ember.$.Event("click");
+  Ember.$('#about-link', '#qunit-fixture').trigger(event);
+
+  equal(event.isDefaultPrevented(), true, "should preventDefault");
+});
+
+test("the {{link-to}} helper does not call preventDefault if `preventDefault=false` is passed as an option", function(){
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'about' id='about-link' preventDefault=false}}About{{/link-to}}");
+
+  Router.map(function() {
+    this.route("about");
+  });
+
+  bootApplication();
+
+  Ember.run(router, 'handleURL', '/');
+
+  var event = Ember.$.Event("click");
+  Ember.$('#about-link', '#qunit-fixture').trigger(event);
+
+  equal(event.isDefaultPrevented(), false, "should not preventDefault");
+});
