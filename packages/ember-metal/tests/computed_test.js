@@ -841,6 +841,17 @@ testBoth('Ember.computed.equal', function(get, set) {
   equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
 });
 
+testBoth('Ember.computed.notEqual', function(get, set) {
+  var obj = { name: 'Paul' };
+  Ember.defineProperty(obj, 'isntPaul', Ember.computed.notEqual('name', 'Paul'));
+
+  equal(get(obj, 'isntPaul'), false, 'is Paul');
+
+  set(obj, 'name', 'Pierre');
+
+  equal(get(obj, 'isntPaul'), true, 'is not Paul anymore');
+});
+
 testBoth('Ember.computed.gt', function(get, set) {
   var obj = { number: 2 };
   Ember.defineProperty(obj, 'isGreaterThenOne', Ember.computed.gt('number', 1));
