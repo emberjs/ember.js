@@ -285,7 +285,7 @@ ComputedPropertyPrototype.property = function() {
 
   if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
     var addArg = function (property) {
-      args.push(property); 
+      args.push(property);
     };
 
     args = [];
@@ -772,6 +772,35 @@ registerComputed('match', function(dependentKey, regexp) {
 */
 registerComputed('equal', function(dependentKey, value) {
   return get(this, dependentKey) === value;
+});
+
+/**
+  A computed property that returns true if the provided dependent property
+  is not equal to the given value.
+
+  Example
+
+  ```javascript
+  var Hamster = Ember.Object.extend({
+    mealTime: Ember.computed.notEqual('state', 'asleep')
+  });
+  var hamster = Hamster.create();
+  hamster.get('mealTime'); // true
+  hamster.set('state', 'conscious');
+  hamster.get('mealTime'); // true
+  hamster.set('state', 'asleep);
+  hamster.get('mealTime'); // false
+  ```
+
+  @method computed.notEqual
+  @for Ember
+  @param {String} dependentKey
+  @param {String|Number|Object} value
+  @return {Ember.ComputedProperty} computed property which returns true if
+  the original value for property is not equal to the given value.
+*/
+registerComputed('notEqual', function(dependentKey, value) {
+  return get(this, dependentKey) !== value;
 });
 
 /**
