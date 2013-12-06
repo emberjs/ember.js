@@ -325,7 +325,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     if (!this.$ || this.$.isReady) {
       Ember.run.schedule('actions', self, '_initialize');
     } else {
-      this.$().ready(function() {
+      this.$().ready(function runInitialize() {
         Ember.run(self, '_initialize');
       });
     }

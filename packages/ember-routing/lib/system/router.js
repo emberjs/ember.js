@@ -348,7 +348,7 @@ var defaultActionHandlers = {
       return;
     }
 
-    Ember.Logger.assert(false, 'Error while loading route: ' + Ember.inspect(error));
+    Ember.Logger.error('Error while loading route: ' + error.stack);
   },
 
   loading: function(transition, originRoute) {
