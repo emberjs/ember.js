@@ -116,3 +116,11 @@ for a detailed explanation.
   Enables `{{#with}}` to take a `controller=` option for wrapping the context.
 
   Added in [#3722](https://github.com/emberjs/ember.js/pull/3722)
+
+
+* `computed-read-only`
+
+  Enables `Ember.computed.readOnly` which is the shortHand for
+Ember.computed.oneWay('foo').readOnly().
+
+  Added in [#3879](https://github.com/emberjs/ember.js/pull/3879)
