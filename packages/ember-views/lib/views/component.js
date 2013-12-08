@@ -1,4 +1,5 @@
 require("ember-views/views/view");
+require("ember-views/mixins/component_template_deprecation");
 
 var get = Ember.get, set = Ember.set, isNone = Ember.isNone,
     a_slice = Array.prototype.slice;
@@ -94,7 +95,7 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone,
   @namespace Ember
   @extends Ember.View
 */
-Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
+Ember.Component = Ember.View.extend(Ember.TargetActionSupport, Ember.ComponentTemplateDeprecation, {
   init: function() {
     this._super();
     set(this, 'context', this);
@@ -105,6 +106,36 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     options.data = {view: options._context};
     Ember.Handlebars.helpers['yield'].apply(this, [options]);
   },
+
+  /**
+  A components template property is set by passing a block to
+  during its invocation. It is executed within the parent context.
+
+  Example:
+
+  ```handlebars
+  {{#my-component}}
+    // something that is run in the context
+    // of the parent context
+  {{/my-component}}
+  ```
+
+  Specifying a template directly to a component is deprecated without
+  also specifying the layout property.
+
+  @deprecated
+  @property template
+  */
+  template: null,
+
+  /**
+  Specifying a components `templateName` is deprecated without also
+  providing the `layout` or `layoutName` properties.
+
+  @deprecated
+  @property templateName
+  */
+  templateName: null,
 
   // during render, isolate keywords
   cloneKeywords: function() {
