@@ -255,6 +255,37 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     Clicking "click me" will trigger the `edit` method on the current controller
     with the value of `person` as a parameter.
 
+    You can use `{{action}}` as a toggle for a boolean value.
+
+    ```handlebars
+    <button {{action toggle=show}}>Show</button>
+    ```
+
+    The `show` property will be toggled between `true` and `false`.
+    ```
+
+    This works on any `xProperty` function on the controller. For example,
+    `incrementProperty`
+
+    ```handlebars
+    <button {{action increment=count}}Add 1</button>
+    ```
+
+    It can even work on custom functions defined on the controller that
+    conform to `xProperty` naming:
+
+    ```javascript
+    controller = Ember.Controller.extend({
+      doubleProperty: function(property) {
+        this.set(property, (this.get(property) || 0) * 2);
+      }
+    });
+    ```
+
+    ```handlebars
+    <button {{action double=wins}}>Cheat</button>
+    ```
+
     @method action
     @for Ember.Handlebars.helpers
     @param {String} actionName
@@ -288,6 +319,35 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       target = hash.target;
     } else if (controller = options.data.keywords.controller) {
       root = controller;
+    }
+
+    if (Ember.FEATURES.isEnabled('property-action')) {
+      if (root) {
+        var match, property, type;
+
+        if (!root._actions) {
+          root._actions = {};
+        }
+
+        for (property in root) {
+          if (match = property.match(/^(\w+)Property$/)) {
+            type = match[1];
+
+            if (hash[type]) {
+              actionName = '' + type + ':' + hash[type];
+
+              if (!root._actions[actionName]) {
+                /*jshint loopfunc: true */
+                root._actions[actionName] = function(type) {
+                  return function() {
+                    this[type + 'Property'](hash[type]);
+                  };
+                }(type);
+              }
+            }
+          }
+        }
+      }
     }
 
     action.target = { root: root, target: target, options: options };

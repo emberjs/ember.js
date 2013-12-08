@@ -731,6 +731,47 @@ test("it can trigger actions for keyboard events", function() {
   ok(showCalled, "should call action with keyup");
 });
 
+if (Ember.FEATURES.isEnabled('property-action')) {
+  test("it can call an inline Ember property function", function() {
+    view = Ember.View.create({
+      template: compile("<button {{action toggle=show}}>Show</button>")
+    });
+
+    var controller = Ember.Controller.create();
+
+    Ember.run(function() {
+      view.set('controller', controller);
+      view.appendTo('#qunit-fixture');
+    });
+
+    var e = Ember.$.Event("click");
+    view.$('button').trigger(e);
+    ok(controller.get('show'), "should set 'show' to true");
+  });
+
+  test("it can call a custom property function", function() {
+    view = Ember.View.create({
+      template: compile("<button {{action double=age}}>Double</button>")
+    });
+
+    var controller = Ember.Controller.extend({
+      doubleProperty: function(property) {
+        this.set(property, this.get(property) * 2);
+      },
+      age: 20
+    }).create();
+
+    Ember.run(function() {
+      view.set('controller', controller);
+      view.appendTo('#qunit-fixture');
+    });
+
+    var e = Ember.$.Event("click");
+    view.$('button').trigger(e);
+    equal(controller.get('age'), 40);
+  });
+}
+
 module("Ember.Handlebars - action helper - deprecated invoking directly on target", {
   setup: function() {
     dispatcher = Ember.EventDispatcher.create();

@@ -116,3 +116,11 @@ for a detailed explanation.
   Enables `{{#with}}` to take a `controller=` option for wrapping the context.
 
   Added in [#3722](https://github.com/emberjs/ember.js/pull/3722)
+
+* `property-action`
+
+  Allows in-line property functions to be called on a given property.
+{{action toggle=show}} calls `this.toggleProperty('show')`, {{action
+increment=age}} calls `this.incrementProperty('age'). As long as there
+is a corresponding function that ends in `Property` it will be called on
+the property.
