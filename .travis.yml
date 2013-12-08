@@ -5,7 +5,9 @@ node_js:
 - "0.10"
 install:
 - "npm install"
-- "bundle install --deployment"
+- "gem install bundler --pre"
+- "bundle install --deployment --retry 3 --jobs 4"
+- sudo apt-get update && sudo apt-get install git
 after_success: bundle exec rake publish_build
 script: rake test\[$TEST_SUITE]
 notifications:
@@ -32,7 +34,9 @@ env:
 
       I/BFT0MbnR6JVCZiPV7TCWPgY1gvgZ6TEEIKGqauDMUBdL8ZK6I='
   matrix:
-    - TEST_SUITE=packages
-    - TEST_SUITE=old_jquery
-    - TEST_SUITE=extend_prototypes
-    - TEST_SUITE=built
+    - MULTI_BRANCH_TESTS=false TEST_SUITE=packages
+    - MULTI_BRANCH_TESTS=false TEST_SUITE=old_jquery
+    - MULTI_BRANCH_TESTS=false TEST_SUITE=extend_prototypes
+    - MULTI_BRANCH_TESTS=false TEST_SUITE=built
+    - MULTI_BRANCH_TESTS=false TEST_SUITE=standard FORCE_BRANCH=beta
+    - MULTI_BRANCH_TESTS=false TEST_SUITE=standard FORCE_BRANCH=stable
