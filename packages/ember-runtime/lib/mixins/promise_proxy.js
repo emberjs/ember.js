@@ -102,9 +102,14 @@ Ember.PromiseProxyMixin = Ember.Mixin.create({
     }
   }),
 
-  then: function(fulfill, reject) {
-    return get(this, 'promise').then(fulfill, reject);
-  }
+  then: promiseAlias('then'),
+
+  fail: promiseAlias('fail')
+
 });
 
-
+function promiseAlias(name) {
+  return function () {
+    get(this, 'promise')[name].apply(promise, arguments)
+  }
+}
