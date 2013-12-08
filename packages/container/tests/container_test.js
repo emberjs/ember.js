@@ -431,7 +431,7 @@ test("The container normalizes names before resolving", function() {
   };
 
   container.register('controller:post', PostController);
-  var postController = container.lookup('wycats');
+  var postController = container.lookup('controller:wycats');
 
   ok(postController instanceof PostController, "Normalizes the name before resolving");
 });
