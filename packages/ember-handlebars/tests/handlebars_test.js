@@ -1912,24 +1912,6 @@ test("should expose a view keyword", function() {
   equal(view.$().text(), "barbang", "renders values from view and child view");
 });
 
-test("Ember.Button targets should respect keywords", function() {
-  Ember.TESTING_DEPRECATION = true;
-
-  var templateString = '{{#with view.anObject}}{{view Ember.Button target="controller.foo"}}{{/with}}';
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile(templateString),
-    anObject: {},
-    controller: {
-      foo: "bar"
-    }
-  });
-
-  appendView();
-
-  var button = view.get('childViews').objectAt(0);
-  equal(button.get('targetObject'), "bar", "resolves the target");
-});
-
 test("should be able to explicitly set a view's context", function() {
   var context = Ember.Object.create({
     test: 'test'
