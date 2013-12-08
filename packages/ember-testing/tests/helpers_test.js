@@ -377,6 +377,51 @@ if (Ember.FEATURES.isEnabled("ember-testing-wait-hooks")) {
   });
 }
 
+if (Ember.FEATURES.isEnabled("ember-testing-remove-helpers")) {
+  test("Ember.Application#removeTestHelpers", function() {
+    var documentEvents;
+
+    Ember.run(function(){
+      Ember.$(document).off('ajaxStart');
+      Ember.$(document).off('ajaxStop');
+    });
+
+    Ember.run(function() {
+      App = Ember.Application.create();
+      App.setupForTesting();
+    });
+
+    App.injectTestHelpers();
+    App.removeTestHelpers();
+
+    documentEvents = Ember.$._data(document, 'events');
+
+    if (!documentEvents) {
+      documentEvents = {};
+    }
+
+    ok(documentEvents['ajaxStart'] === undefined, 'there are no ajaxStart listers setup after calling removeTestHelpers');
+    ok(documentEvents['ajaxStop'] === undefined, 'there are no ajaxStop listers setup after calling removeTestHelpers');
+  });
+
+  test("Ember.Application#removeTestHelpers calls any callbacks registered with onRemoveHelpers", function(){
+    var called = 0;
+
+    Ember.Test.onRemoveHelpers(function(){
+      called++;
+    });
+
+    Ember.run(function() {
+      App = Ember.Application.create();
+      App.setupForTesting();
+    });
+
+    App.removeTestHelpers();
+
+    equal(called, 1, 'onRemoveHelpers are called after removeTestHelpers');
+  });
+}
+
 if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
 
   module("ember-testing routing helpers", {

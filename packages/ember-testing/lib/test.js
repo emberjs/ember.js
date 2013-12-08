@@ -4,7 +4,8 @@
  */
 var slice = [].slice,
     helpers = {},
-    injectHelpersCallbacks = [];
+    injectHelpersCallbacks = [],
+    removeHelpersCallbacks = [];
 
 /**
   This is a container for an assortment of testing related functionality:
@@ -141,6 +142,29 @@ Ember.Test = {
   */
   onInjectHelpers: function(callback) {
     injectHelpersCallbacks.push(callback);
+  },
+
+  /**
+    Used to register callbacks to be fired whenever `App.removeTestHelpers`
+    is called. These callbacks are only ran if the `ember-testing-remove-helpers`
+    feature flag is enabled.
+
+    The callback will receive the current application as an argument.
+
+    Example:
+    ```
+    Ember.Test.onRemoveHelpers(function() {
+      Ember.$(document).off('ajaxStart');
+      Ember.$(document).off('ajaxStop');
+    });
+    ```
+
+    @public
+    @method onRemoveHelpers
+    @param {Function} callback The function to be called.
+  */
+  onRemoveHelpers: function(callback) {
+    removeHelpersCallbacks.push(callback);
   },
 
   /**
@@ -418,6 +442,10 @@ Ember.Application.reopen({
     This removes all helpers that have been registered, and resets and functions
     that were overridden by the helpers.
 
+   If the `ember-testing-remove-helpers` feature flag is enabled any callbacks
+   registered with `onRemoveHelpers` will be called before the helpers have been
+   removed.
+
     Example:
     ```
     App.removeTestHelpers();
@@ -427,6 +455,12 @@ Ember.Application.reopen({
     @method removeTestHelpers
   */
   removeTestHelpers: function() {
+    if (Ember.FEATURES.isEnabled("ember-testing-remove-helpers")) {
+      for(var i = 0, l = removeHelpersCallbacks.length; i < l; i++) {
+        removeHelpersCallbacks[i](this);
+      }
+    }
+
     for (var name in helpers) {
       this.helperContainer[name] = this.originalMethods[name];
       delete this.testHelpers[name];
