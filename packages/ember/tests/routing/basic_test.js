@@ -2636,3 +2636,56 @@ test("Ember.Location.registerImplementation is deprecated", function(){
 
   Ember.ENV.RAISE_ON_DEPRECATION = false;
 });
+
+test("router wraps array content in Ember.A() for ArrayControllers so the array can be observed when prototype extensions are off", function(){
+  expect(1);
+
+  App.IndexRoute = Ember.Route.extend({
+    model: function(){
+      return [ 1, 2, 3 ];
+    }
+  });
+
+  App.IndexController = Ember.ArrayController.extend();
+
+  bootApplication('/');
+
+  var indexController = container.lookup('controller:index');
+  equal(typeof indexController.get('model').addArrayObserver, 'function', 'wraps in an Ember.A()');
+});
+
+test("router warns when setting up an ArrayController with a non-array as its model", function(){
+
+  Router.map(function(){
+    this.route('cheeses', {path: '/cheeses'});
+  });
+  var emberAssertWasCalled = false,
+      oldAssert = Ember.assert;
+
+  Ember.assert = function(desc, test){
+    emberAssertWasCalled = true;
+    if (!test) {
+      throw new Error(desc);
+    }
+  };
+
+  App.CheesesRoute = Ember.Route.extend({
+    model: function(){
+      return {};
+    }
+  });
+
+  App.CheesesController = Ember.ArrayController.extend();
+
+  bootApplication();
+  Ember.run(function(){
+    router.handleURL('/cheeses').then(function(){
+      ok(false, 'should not get here')
+    }, function(err){
+      ok(/ArrayControllers expect an array as their 'model'/.exec(err.message));
+    });
+  });
+
+  Ember.assert = oldAssert;
+  ok(emberAssertWasCalled);
+});
