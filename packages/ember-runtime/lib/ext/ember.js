@@ -3,7 +3,7 @@ Ember.RSVP = requireModule('rsvp');
 Ember.RSVP.onerrorDefault = function(error) {
   if (error instanceof Error) {
     if (Ember.testing) {
-      if (Ember.Test.adapter) {
+      if (Ember.Test && Ember.Test.adapter) {
         Ember.Test.adapter.exception(error);
       } else {
         throw error;
