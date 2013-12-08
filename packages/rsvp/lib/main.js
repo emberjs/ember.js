@@ -18,7 +18,7 @@ define("rsvp/all",
       is fulfilled with an array that gives all the values in the order they were
       passed in the `promises` array argument.
 
-      For example:
+      Example:
 
       ```javascript
       var promise1 = RSVP.resolve(1);
@@ -34,6 +34,8 @@ define("rsvp/all",
       If any of the `promises` given to `RSVP.all` are rejected, the first promise
       that is rejected will be given as an argument to the returned promises's
       rejection handler. For example:
+
+      Example:
 
       ```javascript
       var promise1 = RSVP.resolve(1);
@@ -52,7 +54,7 @@ define("rsvp/all",
       @for RSVP
       @param {Array} promises
       @param {String} label
-      @returns {Promise} promise that is fulfilled when all `promises` have been
+      @return {Promise} promise that is fulfilled when all `promises` have been
       fulfilled, or rejected if any of them become rejected.
     */
     function all(promises, label) {
@@ -95,10 +97,63 @@ define("rsvp/all",
 
     __exports__.all = all;
   });
+
 define("rsvp/cast", 
   ["exports"],
   function(__exports__) {
     "use strict";
+    /**
+      `RSVP.Promise.cast` returns the same promise if that promise shares a constructor
+      with the promise being casted.
+
+      Example:
+
+      ```javascript
+      var promise = RSVP.resolve(1);
+      var casted = RSVP.Promise.cast(promise);
+
+      console.log(promise === casted); // true
+      ```
+
+      In the case of a promise whose constructor does not match, it is assimilated.
+      The resulting promise will fulfill or reject based on the outcome of the
+      promise being casted.
+
+      In the case of a non-promise, a promise which will fulfill with that value is
+      returned.
+
+      Example:
+
+      ```javascript
+      var value = 1; // could be a number, boolean, string, undefined...
+      var casted = RSVP.Promise.cast(value);
+
+      console.log(value === casted); // false
+      console.log(casted instanceof RSVP.Promise) // true
+
+      casted.then(function(val) {
+        val === value // => true
+      });
+      ```
+
+      `RSVP.Promise.cast` is similar to `RSVP.resolve`, but `RSVP.Promise.cast` differs in the
+      following ways:
+      * `RSVP.Promise.cast` serves as a memory-efficient way of getting a promise, when you
+      have something that could either be a promise or a value. RSVP.resolve
+      will have the same effect but will create a new promise wrapper if the
+      argument is a promise.
+      * `RSVP.Promise.cast` is a way of casting incoming thenables or promise subclasses to
+      promises of the exact class specified, so that the resulting object's `then` is
+      ensured to have the behavior of the constructor you are calling cast on (i.e., RSVP.Promise).
+
+      @method cast
+      @for RSVP
+      @param {Object} object to be casted
+      @return {Promise} promise that is fulfilled when all properties of `promises`
+      have been fulfilled, or rejected if any of them become rejected.
+    */
+
+
     function cast(object) {
       /*jshint validthis:true */
       if (object && typeof object === 'object' && object.constructor === this) {
@@ -166,21 +221,20 @@ define("rsvp/defer",
 
       Example:
 
-      ```javascript
+       ```javascript
+       var deferred = RSVP.defer();
 
-      var deferred = RSVP.defer();
+       deferred.resolve("Success!");
 
-      deferred.resolve("Success!");
-
-      defered.promise.then(function(value){
-        // value here is "Success!"
-      });
-      ```
+       defered.promise.then(function(value){
+         // value here is "Success!"
+       });
+       ```
 
       @method defer
       @for RSVP
       @param {String} -
-      @returns {Object}
+      @return {Object}
      */
 
     function defer(label) {
@@ -224,15 +278,15 @@ define("rsvp/events",
     };
 
     /**
-      @module RSVP
-      @class EventTarget
+      //@module RSVP
+      //@class EventTarget
     */
     var EventTarget = {
 
       /**
         @private
         `RSVP.EventTarget.mixin` extends an object with EventTarget methods. For
-        example:
+        Example:
 
         ```javascript
         var object = {};
@@ -282,8 +336,8 @@ define("rsvp/events",
         @private
 
         Registers a callback to be executed when `eventName` is triggered
-        ```javascript
 
+        ```javascript
         object.on('event', function(eventInfo){
           // handle the event
         });
@@ -323,7 +377,6 @@ define("rsvp/events",
         // Unregister ONLY the doStuff callback
         object.off('stuff', doStuff);
         object.trigger('stuff'); // doStuff will NOT be called
-
         ```
 
         If you don't pass a `callback` argument to `off`, ALL callbacks for the
@@ -438,7 +491,7 @@ define("rsvp/hash",
       argument. If any of the values in the object are not promises, they will
       simply be copied over to the fulfilled object.
 
-      For example:
+      Example:
 
       ```javascript
       var promises = {
@@ -457,7 +510,7 @@ define("rsvp/hash",
         //   notAPromise: 4
         // }
       });
-      ```
+      ````
 
       If any of the `promises` given to `RSVP.hash` are rejected, the first promise
       that is rejected will be given as as the first argument, or as the reason to
@@ -481,7 +534,7 @@ define("rsvp/hash",
       are just a set of keys and values. `RSVP.hash` will NOT preserve prototype
       chains.
 
-      For example:
+      Example:
 
       ```javascript
       function MyConstructor(){
@@ -511,7 +564,7 @@ define("rsvp/hash",
       @param {Object} promises
       @param {String} label - optional string that describes the promise.
       Useful for tooling.
-      @returns {Promise} promise that is fulfilled when all properties of `promises`
+      @return {Promise} promise that is fulfilled when all properties of `promises`
       have been fulfilled, or rejected if any of them become rejected.
     */
     function hash(object, label) {
@@ -660,8 +713,7 @@ define("rsvp/node",
         return writeFile('myfile2.txt', data);
       }).then(function(){
         return log('SUCCESS');
-      });
-      .then(function(){
+      }).then(function(){
         // success handler
       }, function(reason){
         // rejection handler
@@ -676,7 +728,7 @@ define("rsvp/node",
       operation as its second argument ("function(err, value){ }").
       @param {Any} binding optional argument for binding the "this" value when
       calling the `nodeFunc` function.
-      @returns {Function} a function that wraps `nodeFunc` to return an
+      @return {Function} a function that wraps `nodeFunc` to return an
       `RSVP.Promise`
     */
     function denodeify(nodeFunc, binding) {
@@ -962,7 +1014,7 @@ define("rsvp/race",
       `RSVP.race` allows you to watch a series of promises and act as soon as the
       first promise given to the `promises` argument fulfills or rejects.
 
-      For example:
+      Example:
 
       ```javascript
       var promise1 = new RSVP.Promise(function(resolve, reject){
@@ -1015,7 +1067,7 @@ define("rsvp/race",
       @param {Array} promises array of promises to observe
       @param {String} label optional string for describing the promise returned.
       Useful for tooling.
-      @returns {Promise} a promise that becomes fulfilled with the value the first
+      @return {Promise} a promise that becomes fulfilled with the value the first
       completed promises is resolved with if the first completed promise was
       fulfilled, or rejected with the reason that the first completed promise
       was rejected with.
@@ -1052,7 +1104,6 @@ define("rsvp/reject",
       `reason`. `RSVP.reject` is essentially shorthand for the following:
 
       ```javascript
-
       var promise = new RSVP.Promise(function(resolve, reject){
         reject(new Error('WHOOPS'));
       });
@@ -1081,7 +1132,7 @@ define("rsvp/reject",
       @param {Any} reason value that the returned promise will be rejected with.
       @param {String} label optional string for identifying the returned promise.
       Useful for tooling.
-      @returns {Promise} a promise that will become rejected with the given
+      @return {Promise} a promise that will become rejected with the given
       `reason`.
     */
     function reject(reason, label) {
@@ -1103,7 +1154,6 @@ define("rsvp/resolve",
       `value`. `RSVP.resolve` is essentially shorthand for the following:
 
       ```javascript
-
       var promise = new RSVP.Promise(function(resolve, reject){
         resolve(1);
       });
@@ -1128,7 +1178,7 @@ define("rsvp/resolve",
       @param {Any} value value that the returned promise will be resolved with
       @param {String} label optional string for identifying the returned promise.
       Useful for tooling.
-      @returns {Promise} a promise that will become fulfilled with the given
+      @return {Promise} a promise that will become fulfilled with the given
       `value`
     */
     function resolve(value, label) {
@@ -1158,7 +1208,6 @@ define("rsvp/rethrow",
       again so the error can be handled by the promise.
 
       ```javascript
-
       function throws(){
         throw new Error('Whoops!');
       }
@@ -1173,7 +1222,6 @@ define("rsvp/rethrow",
       }, function (err){
         // handle the error here
       });
-
       ```
 
       The 'Whoops' error will be thrown on the next turn of the event loop
@@ -1248,7 +1296,7 @@ define("rsvp",
     function off() {
       config.off.apply(config, arguments);
     }
-    __exports__.__config = config;
+
     __exports__.Promise = Promise;
     __exports__.EventTarget = EventTarget;
     __exports__.all = all;
