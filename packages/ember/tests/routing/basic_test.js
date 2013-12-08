@@ -2636,3 +2636,27 @@ test("Ember.Location.registerImplementation is deprecated", function(){
 
   Ember.ENV.RAISE_ON_DEPRECATION = false;
 });
+
+if (Ember.FEATURES.isEnabled("ember-unloaded-model-warning")) {
+  test("Accessing a controller's model when it hasn't yet been set by a route issues a warning", function() {
+    expect(1);
+
+    var oldWarn = Ember.warn;
+    Ember.warn = function(msg) {
+      ok(/retrieved the `model` property on the application controller/.exec(msg), "warning about unloaded `model` was issued");
+    };
+
+    App.ApplicationController = Ember.ObjectController.extend({});
+
+    App.IndexRoute = Ember.Route.extend({
+      beforeModel: function() {
+        this.controllerFor('application').get('model');
+      }
+    });
+
+    bootApplication();
+
+    Ember.warn = oldWarn;
+  });
+}
+
