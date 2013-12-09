@@ -294,6 +294,21 @@ test("Ember.View should bind properties in the parent context", function() {
   equal(view.$('#first').text(), "bam-shazam", "renders parent properties");
 });
 
+test("using Handlebars helper that doesn't exist should result in an error", function() {
+  var names = [{ name: 'Alex' }, { name: 'Stef' }],
+      context = {
+        content: Ember.A(names)
+      };
+
+  throws(function() {
+    view = Ember.View.create({
+      context: context,
+      template: Ember.Handlebars.compile('{{#group}}{{#each name in content}}{{name}}{{/each}}{{/group}}')
+    });
+
+    appendView();
+  }, "Missing helper: 'group'");
+});
 
 test("Ember.View should bind properties in the grandparent context", function() {
   var context = {
