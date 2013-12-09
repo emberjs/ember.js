@@ -9,16 +9,15 @@ define("metamorph",
 
     var K = function() {},
         guid = 0,
-        document = this.document,
         disableRange = ('undefined' === typeof ENV ? {} : ENV).DISABLE_RANGE_API,
 
         // Feature-detect the W3C range API, the extended check is for IE9 which only partially supports ranges
-        supportsRange = (!disableRange) && document && ('createRange' in document) && (typeof Range !== 'undefined') && Range.prototype.createContextualFragment,
+        supportsRange = (!disableRange) && typeof document !== 'undefined' && ('createRange' in document) && (typeof Range !== 'undefined') && Range.prototype.createContextualFragment,
 
         // Internet Explorer prior to 9 does not allow setting innerHTML if the first element
         // is a "zero-scope" element. This problem can be worked around by making
         // the first node an invisible text node. We, like Modernizr, use &shy;
-        needsShy = document && (function() {
+        needsShy = typeof document !== 'undefined' && (function() {
           var testEl = document.createElement('div');
           testEl.innerHTML = "<div></div>";
           testEl.firstChild.innerHTML = "<script></script>";
