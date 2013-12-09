@@ -324,7 +324,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     _invoke: function(event) {
       if (!isSimpleClick(event)) { return true; }
 
-      event.preventDefault();
+      if (this.preventDefault !== false) { event.preventDefault(); }
       if (this.bubbles === false) { event.stopPropagation(); }
 
       if (get(this, '_isDisabled')) { return false; }
@@ -669,6 +669,22 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     When transitioning into the linked route, the `model` hook will
     be triggered with parameters including this passed identifier.
+
+    ### Allowing Default Action
+
+   By default the `{{link-to}}` helper prevents the default browser action
+   by calling `preventDefault()` as this sort of action bubbling is normally
+   handled internally and we do not want to take the browser to a new URL (for
+   example).
+
+   If you need to override this behavior specify `preventDefault=false` in
+   your template:
+
+    ```handlebars
+    {{#link-to 'photoGallery' aPhotoId preventDefault=false}}
+      {{aPhotoId.title}}
+    {{/link-to}}
+    ```
 
     ### Overriding attributes
     You can override any given property of the Ember.LinkView

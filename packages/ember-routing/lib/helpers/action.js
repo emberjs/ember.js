@@ -68,7 +68,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       handler: function(event) {
         if (!isAllowedEvent(event, allowedKeys)) { return true; }
 
-        event.preventDefault();
+        if (options.preventDefault !== false) {
+          event.preventDefault();
+        }
 
         if (options.bubbles === false) {
           event.stopPropagation();
@@ -157,9 +159,17 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     Events triggered through the action helper will automatically have
     `.preventDefault()` called on them. You do not need to do so in your event
-    handlers.
+    handlers. If you need to allow event propagation (to handle file inputs for
+    example) you can supply the `preventDefault=false` option to the `{{action}}` helper:
 
-    To also disable bubbling, pass `bubbles=false` to the helper:
+    ```handlebars
+    <div {{action "sayHello" preventDefault=false}}>
+      <input type="file" />
+      <input type="checkbox" />
+    </div>
+    ```
+
+    To disable bubbling, pass `bubbles=false` to the helper:
 
     ```handlebars
     <button {{action 'edit' post bubbles=false}}>Edit</button>
@@ -292,6 +302,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     action.target = { root: root, target: target, options: options };
     action.bubbles = hash.bubbles;
+    action.preventDefault = hash.preventDefault;
 
     var actionId = ActionHelper.registerAction(actionName, action, hash.allowedKeys);
     return new SafeString('data-ember-action="' + actionId + '"');
