@@ -1,6 +1,19 @@
 # Ember Changelog
 
-### Ember 1.3.0.beta.1
+### Ember 1.3.0.beta.2 (December 8, 2013)
+
+  * [BUGFIX] Add preventDefault option to link-to and action.
+  * [BUGFIX] contextualizeBindingPath should be aware of empty paths
+  * Expose helpful vars in {{debugger}} helper body
+  * [BUGFIX] container.has should not cause injections to be run.
+  * [BUGFIX] Make flag LOG_TRANSITIONS_INTERNAL work again
+  * [BUGFIX] Fix default {{yield}} for Components.
+  * [BUGFIX] Ensure aliased {{with}} blocks are not shared.
+  * [BUGFIX] Update to latest Backburner.js.
+  * [BUGFIX] Fix issue with Ember.Test.unregisterHelper.
+  * [BUGFIX] Make Ember.Handlebars.makeViewHelper warning useful.
+
+### Ember 1.3.0.beta.1 (November 25, 2013)
 
 * [FEATURE reduceComputed-non-array-dependencies] `ReduceComputedProperty`s may have non-array dependent keys. When a non-array dependent key changes, the entire property is invalidated.
 * [FEATURE ember-testing-lazy-routing] Uses an initializer to defer readiness while testing. Readiness is advanced upon the first call to `visit`.
