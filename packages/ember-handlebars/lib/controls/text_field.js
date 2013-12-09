@@ -32,7 +32,7 @@ Ember.TextField = Ember.Component.extend(Ember.TextSupport,
 
   classNames: ['ember-text-field'],
   tagName: "input",
-  attributeBindings: ['type', 'value', 'size', 'pattern', 'name'],
+  attributeBindings: ['type', 'value', 'size', 'pattern', 'name', 'min', 'max'],
 
   /**
     The `value` attribute of the input element. As the user inputs text, this
@@ -63,11 +63,29 @@ Ember.TextField = Ember.Component.extend(Ember.TextSupport,
   size: null,
 
   /**
-    The `pattern` the pattern attribute of input element.
+    The `pattern` attribute of input element.
 
     @property pattern
     @type String
     @default null
   */
-  pattern: null
+  pattern: null,
+
+  /**
+    The `min` attribute of input element used with `type="number"` or `type="range"`.
+
+    @property min 
+    @type String
+    @default null
+  */
+  min: null,
+
+  /**
+    The `max` attribute of input element used with `type="number"` or `type="range"`.
+
+    @property max 
+    @type String
+    @default null
+  */
+  max: null
 });
