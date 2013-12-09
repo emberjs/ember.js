@@ -9,6 +9,7 @@ test('Ensure that errors thrown from within a promise are sent to the console', 
         throw error;
       });
     });
+    ok(false, 'expected assertion to be thrown');
   } catch (e) {
     equal(e, error, "error was re-thrown");
   }

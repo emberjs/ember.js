@@ -409,9 +409,6 @@ Ember.Application.reopen({
     for(var i = 0, l = injectHelpersCallbacks.length; i < l; i++) {
       injectHelpersCallbacks[i](this);
     }
-
-    Ember.RSVP.on('error', onerror);
-    Ember.RSVP.off('error', Ember.RSVP.onerrorDefault);
   },
 
   /**
@@ -432,10 +429,7 @@ Ember.Application.reopen({
       delete this.testHelpers[name];
       delete this.originalMethods[name];
     }
-    Ember.RSVP.off('error', onerror);
-    Ember.RSVP.on('error', Ember.RSVP.onerrorDefault);
   }
-
 });
 
 // This method is no longer needed
@@ -501,8 +495,4 @@ function isolate(fn, val) {
     });
     return lastPromise;
   }
-}
-
-function onerror(event) {
-  Ember.Test.adapter.exception(event.detail);
 }

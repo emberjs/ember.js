@@ -1,4 +1,4 @@
-var App, find, visit, originalAdapter;
+var App, find, visit, originalAdapter = Ember.Test.adapter;
 
 module("ember-testing Integration", {
   setup: function() {
@@ -54,8 +54,6 @@ module("ember-testing Integration", {
 
     find = window.find;
     visit = window.visit;
-
-    originalAdapter = Ember.Test.adapter;
   },
 
   teardown: function() {

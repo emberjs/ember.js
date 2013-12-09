@@ -1,6 +1,8 @@
-var set = Ember.set, App;
+var set = Ember.set, App, originalAdapter = Ember.Test.adapter;
 
 function cleanup(){
+  Ember.Test.adapter = originalAdapter;
+
   if (App) {
     Ember.run(App, App.destroy);
     App.removeTestHelpers();

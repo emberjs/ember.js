@@ -12,6 +12,8 @@ function unregisterHelper(){
   Ember.Test.unregisterHelper('boot');
 }
 
+var originalAdapter = Ember.Test.adapter;
+
 function setupApp(){
   appBooted = false;
   helperContainer = {};
@@ -32,6 +34,7 @@ function destroyApp(){
 
 module("Ember.Test - registerHelper/unregisterHelper", {
   teardown: function(){
+    Ember.Test.adapter = originalAdapter;
     destroyApp();
   }
 });

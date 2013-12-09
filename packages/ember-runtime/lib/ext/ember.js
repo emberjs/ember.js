@@ -1,23 +1,15 @@
-/**
-  Expose RSVP implementation
-  
-  Documentation can be found here: https://github.com/tildeio/rsvp.js/blob/master/README.md
-
-  @class RSVP
-  @namespace Ember
-  @constructor
-*/
 Ember.RSVP = requireModule('rsvp');
 
-Ember.RSVP.onerrorDefault = function(event) {
-  var error = event.detail;
-
+Ember.RSVP.onerrorDefault = function(error) {
   if (error instanceof Error) {
-    Ember.Logger.error(error.stack);
-
     if (Ember.testing) {
-      throw error;
+      if (Ember.Test && Ember.Test.adapter) {
+        Ember.Test.adapter.exception(error);
+      } else {
+        throw error;
+      }
     } else {
+      Ember.Logger.error(error.stack);
       Ember.assert(error, false);
     }
   }
