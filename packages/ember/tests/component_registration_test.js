@@ -1,19 +1,22 @@
 var App, container;
 var compile = Ember.Handlebars.compile;
 
-module("Application Lifecycle - Component Registration", {
-  setup: function() {
-    Ember.TEMPLATES["components/expand-it"] = compile("<p>hello {{yield}}</p>");
-    Ember.TEMPLATES.application = compile("Hello world {{#expand-it}}world{{/expand-it}}");
-  },
+function prepare(){
+  Ember.TEMPLATES["components/expand-it"] = compile("<p>hello {{yield}}</p>");
+  Ember.TEMPLATES.application = compile("Hello world {{#expand-it}}world{{/expand-it}}");
+}
 
-  teardown: function() {
-    Ember.run(function() {
-      App.destroy();
-      App = null;
-      Ember.TEMPLATES = {};
-    });
-  }
+function cleanup(){
+  Ember.run(function() {
+    App.destroy();
+    App = null;
+    Ember.TEMPLATES = {};
+  });
+}
+
+module("Application Lifecycle - Component Registration", {
+  setup: prepare,
+  teardown: cleanup
 });
 
 function boot(callback) {
@@ -112,7 +115,6 @@ test("Component-like invocations are treated as bound paths if neither template 
 });
 
 test("Component lookups should take place on components' subcontainers", function() {
-
   expect(1);
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#sally-rutherford}}{{mach-ty}}{{/sally-rutherford}}</div>");
@@ -130,6 +132,11 @@ test("Component lookups should take place on components' subcontainers", functio
       }
     }));
   });
+});
+
+module("Application Lifecycle - Component Context", {
+  setup: prepare,
+  teardown: cleanup
 });
 
 test("Components with a block should have the proper content when a template is provided", function(){
@@ -198,4 +205,43 @@ test("Components without a block should have the proper content", function(){
   });
 
   equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
+});
+
+test("Components trigger actions in the parents context when called from within a block", function(){
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>{{/my-component}}</div>");
+
+  boot(function() {
+    container.register('controller:application', Ember.Controller.extend({
+      actions: {
+        fizzbuzz: function(){
+          ok(true, 'action triggered on parent');
+        }
+      }
+    }));
+
+    container.register('component:my-component', Ember.Component.extend());
+  });
+
+  Ember.run(function(){
+    Ember.$('#fizzbuzz', "#wrapper").click();
+  });
+});
+
+test("Components trigger actions in the components context when called from within its template", function(){
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
+  Ember.TEMPLATES['components/my-component'] = compile("<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>");
+
+  boot(function() {
+    container.register('controller:application', Ember.Controller.extend());
+
+    container.register('component:my-component', Ember.Component.extend({
+      actions: {
+        fizzbuzz: function(){
+          ok(true, 'action triggered on component');
+        }
+      }
+    }));
+  });
+
+  Ember.$('#fizzbuzz', "#wrapper").click();
 });
