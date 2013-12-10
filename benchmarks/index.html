@@ -1,14 +1,56 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <html>
   <head>
-    <script src="../lib/jquery-1.9.0.js"></script>
-    <script src="benchmark.js"></script>
-    <script src="runner.js"></script>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+    <title>Ember Benchmarks</title>
+    <script src="vendor/loader.js"></script>
+    <script src="vendor/jquery.js"></script>
+    <script src="vendor/hbs.js"></script>
+    <script src="vendor/ember.js"></script>
+    <script src="tmp/public/bundle.amd.js"></script>
+    <script>
+      require('runner').run();
+      require('app');
+    </script>
   </head>
   <body>
-    <div id="error" style="color:red"></div>
-    <div class="results" data-ember-path="../dist/ember.prod.js"></div>
-    <div class="results" data-ember-path="../distold/ember.prod.js"></div>
+    <script type="text/x-handlebars">
+     <div class="container">
+       {{outlet}}
+     </div>
+   </script>
+   <script type="text/x-handlebars" id="index">
+     <div class="page-header">
+       <h2>Ember Benchmarks</h2>
+     </div>
+     <div class="row">
+       <table class="table table-hover table-striped">
+         <thead>
+           <tr>
+             <th>Benchmark</th>
+             {{#each libNames}}
+               <th>{{this}}</th>
+             {{/each}}
+           </tr>
+         </thead>
+         <tbody>
+         {{#if suites}}
+           {{#each suites}}
+             <tr colspan="3">
+               <td>{{name}}</td>
+               {{#each benchmarks}}
+                 <td {{bind-attr title=infoString}}>{{number info.hz}} ops/sec</td>
+               {{/each}}
+             </tr>
+           {{/each}}
+         {{else}}
+           <tr><td colspan="3">Running benchmarks...</td></tr>
+         {{/if}}
+         </tbody>
+       </table>
+     </div>
+   </script>
   </body>
 </html>
