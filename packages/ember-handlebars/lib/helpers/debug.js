@@ -45,9 +45,8 @@ Ember.Handlebars.registerHelper('log', function(property, options) {
 
   - templateContext: this is most likely a controller
     from which this template looks up / displays properties
-  - typeOfTemplateContext: a string that describes the
-    type of object templateContext is, e.g.
-    "controller:people"
+  - typeOfTemplateContext: a string description of
+    what the templateContext is
 
   For example, if you're wondering why a value `{{foo}}`
   isn't rendering as expected within a template, you
@@ -58,7 +57,7 @@ Ember.Handlebars.registerHelper('log', function(property, options) {
   to perform property lookups on the `templateContext`:
 
   ```
-    > templateContext.get('foo') // -> "<value of foo>"
+    > templateContext.get('foo') // -> "<value of {{foo}}>"
   ```
 
   @method debugger
@@ -69,7 +68,7 @@ Ember.Handlebars.registerHelper('debugger', function(options) {
 
   // These are helpful values you can inspect while debugging.
   var templateContext = this;
-  var typeOfTemplateContext = this ? get(this, '_debugContainerKey') : 'none';
+  var typeOfTemplateContext = Ember.inspect(templateContext);
 
   debugger;
 });
