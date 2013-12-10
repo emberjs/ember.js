@@ -532,9 +532,10 @@ define("rsvp/promise",
         return thenPromise;
       },
 
-      fail: function(onRejection) {
-        return this.then(null, onRejection);
+      'catch': function(onRejection, label) {
+        return this.then(null, onRejection, label);
       },
+
       'finally': function(callback) {
         var constructor = this.constructor;
 
@@ -550,7 +551,6 @@ define("rsvp/promise",
       }
     };
 
-    Promise.prototype['catch'] = Promise.prototype.fail;
     Promise.cast = cast;
 
     EventTarget.mixin(Promise.prototype);
