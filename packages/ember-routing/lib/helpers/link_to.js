@@ -256,7 +256,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       When `true` interactions with the element will not trigger route changes.
       @property disabled
     */
-    disabled: Ember.computed(function(key, value) {
+    disabled: Ember.computed(function computeLinkViewDisabled(key, value) {
       if (value !== undefined) { this.set('_isDisabled', value); }
 
       return value ? get(this, 'disabledClass') : false;
@@ -272,7 +272,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
       @property active
     **/
-    active: Ember.computed(function() {
+    active: Ember.computed(function computeLinkViewActive() {
       if (get(this, 'loading')) { return false; }
 
       var router = get(this, 'router'),
@@ -298,7 +298,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
       @property loading
     **/
-    loading: Ember.computed(function() {
+    loading: Ember.computed(function computeLinkViewLoading() {
       if (!get(this, 'routeArgs')) { return get(this, 'loadingClass'); }
     }).property('routeArgs'),
 
@@ -380,7 +380,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       @property
       @return {Array} An array with the route name and any dynamic segments
      */
-    routeArgs: Ember.computed(function() {
+    routeArgs: Ember.computed(function computeLinkViewRouteArgs() {
       var resolvedParams = get(this, 'resolvedParams').slice(0),
           router = get(this, 'router'),
           namedRoute = resolvedParams[0];
@@ -447,7 +447,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
       @property href
     **/
-    href: Ember.computed(function() {
+    href: Ember.computed(function computeLinkViewHref() {
       if (get(this, 'tagName') !== 'a') { return; }
 
       var router = get(this, 'router'),
