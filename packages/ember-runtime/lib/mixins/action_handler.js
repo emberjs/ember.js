@@ -28,11 +28,11 @@ Ember.ActionHandler = Ember.Mixin.create({
 
     @method willMergeMixin
   */
-  willMergeMixin: function(props) {
+  willMergeMixin: function(props, baseObject) {
     var hashName;
 
     if (!props._actions) {
-      Ember.assert(this + " 'actions' should not be a function", typeof(props.actions) !== 'function');
+      Ember.assert(baseObject + " 'actions' should not be a function", typeof(props.actions) !== 'function');
 
       if (typeOf(props.actions) === 'object') {
         hashName = 'actions';
