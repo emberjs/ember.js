@@ -886,7 +886,7 @@ define("rsvp/promise",
 
         if (this._state) {
           var callbacks = arguments;
-          config.async(function() {
+          config.async(function invokePromiseCallback() {
             invokeCallback(promise._state, thenPromise, callbacks[promise._state - 1], promise._detail);
           });
         } else {
