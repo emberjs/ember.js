@@ -10,6 +10,9 @@ function verifyNeedsDependencies(controller, container, needs) {
 
   for (i=0, l=needs.length; i<l; i++) {
     dependency = needs[i];
+
+    Ember.assert(Ember.inspect(controller) + "#needs must not specify dependencies with periods in their names (" + dependency + ")", dependency.indexOf('.') === -1);
+
     if (dependency.indexOf(':') === -1) {
       dependency = "controller:" + dependency;
     }
