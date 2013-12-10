@@ -900,7 +900,7 @@ define("rsvp/promise",
         return thenPromise;
       },
 
-      fail: function(onRejection, label) {
+      'catch': function(onRejection, label) {
         return this.then(null, onRejection, label);
       },
 
@@ -919,7 +919,6 @@ define("rsvp/promise",
       }
     };
 
-    Promise.prototype['catch'] = Promise.prototype.fail;
     Promise.cast = cast;
 
     function handleThenable(promise, value) {
@@ -1269,7 +1268,7 @@ define("rsvp/utils",
     __exports__.now = now;
   });
 define("rsvp", 
-  ["./rsvp/events","./rsvp/promise","./rsvp/node","./rsvp/all","./rsvp/race","./rsvp/hash","./rsvp/rethrow","./rsvp/defer","./rsvp/config","./rsvp/resolve","./rsvp/reject","exports"],
+  ["./rsvp/events","./rsvp/promise","./rsvp/node","./rsvp/all","./rsvp/race","./rsvp/hash","./rsvp/rethrow","./rsvp/defer","./rsvp/config","./rsvp/resolve","./rsvp/reject", "exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __dependency11__, __exports__) {
     "use strict";
     var EventTarget = __dependency1__.EventTarget;

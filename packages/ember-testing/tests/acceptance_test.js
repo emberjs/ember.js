@@ -216,7 +216,7 @@ test("Unhandled exceptions are logged via Ember.Test.adapter#exception", functio
   Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
     exception: function(error) {
       equal(error.message, "Element .does-not-exist not found.", "Exception successfully caught and passed to Ember.Test.adapter.exception");
-      asyncHandled.fail(function(){ }); // handle the rejection so it doesn't leak later.
+      asyncHandled['catch'](function(){ }); // handle the rejection so it doesn't leak later.
     }
   });
 
