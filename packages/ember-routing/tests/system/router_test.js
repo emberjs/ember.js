@@ -2,6 +2,8 @@ var Router;
 
 var map = Ember.EnumerableUtils.map;
 
+var map = Ember.EnumerableUtils.map;
+
 module("Ember Router", {
   setup: function() {
     Router = Ember.Router.extend();
