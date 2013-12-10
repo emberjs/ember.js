@@ -115,3 +115,18 @@ test ("setting the value of a controller dependency should not be possible", fun
   postController.set('controllers.posts.title', "A Troll's Life");
   equal(postController.get('controllers.posts.title'), "A Troll's Life", "can set the value of controllers.posts.title");
 });
+
+test("raises if a dependency with a period is requested", function() {
+  var container = new Ember.Container();
+
+  container.register('controller:big.bird', Ember.Controller.extend());
+  container.register('controller:foo', Ember.Controller.extend({
+    needs: 'big.bird'
+  }));
+
+  expectAssertion(function() {
+    container.lookup('controller:foo');
+  }, /needs must not specify dependencies with periods in their names \(big\.bird\)/,
+  'throws if periods used');
+});
+
