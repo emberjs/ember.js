@@ -1,0 +1,29 @@
+{
+  "name": "ember-benchmarks",
+  "version": "",
+  "description": "",
+  "directories": {
+    "lib": "lib",
+    "implementations": "implementations"
+  },
+  "config": "lib/config.js",
+  "logToConsole": "false",
+  "private": true,
+  "devDependencies": {
+    "jshint": "~0.9",
+    "grunt": "~0.4.1",
+    "grunt-es6-module-transpiler": "~0.4.0",
+    "load-grunt-config": "~0.5.0",
+    "benchmark": "git://github.com/bestiejs/benchmark.js",
+    "lodash": "~2.3.0",
+    "microtime": "~0.4.0",
+    "grunt-cli": "~0.1.10",
+    "load-grunt-tasks": "~0.2.0",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-connect": "~0.5.0",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-contrib-copy": "~0.4.1",
+    "grunt-contrib-clean": "~0.5.0"
+  },
+  "license": "MIT"
+}

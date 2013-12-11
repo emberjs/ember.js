@@ -13,6 +13,8 @@ _yardoc
 assets
 assets/bpm_libs.js
 assets/bpm_styles.css
+benchmarks/node_modules
+benchmarks/tmp
 bin/
 coverage
 dist
