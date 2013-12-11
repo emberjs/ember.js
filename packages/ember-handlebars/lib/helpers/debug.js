@@ -21,7 +21,7 @@ var get = Ember.get, handlebarsGet = Ember.Handlebars.get, normalizePath = Ember
   @for Ember.Handlebars.helpers
   @param {String} property
 */
-Ember.Handlebars.registerHelper('log', function(property, options) {
+Ember.Handlebars.registerHelper('log', function logHelper(property, options) {
   var context = (options.contexts && options.contexts.length) ? options.contexts[0] : this,
       normalized = normalizePath(context, property, options.data),
       pathRoot = normalized.root,
@@ -64,7 +64,7 @@ Ember.Handlebars.registerHelper('log', function(property, options) {
   @for Ember.Handlebars.helpers
   @param {String} property
 */
-Ember.Handlebars.registerHelper('debugger', function(options) {
+Ember.Handlebars.registerHelper('debugger', function debuggerHelper(options) {
 
   // These are helpful values you can inspect while debugging.
   var templateContext = this;

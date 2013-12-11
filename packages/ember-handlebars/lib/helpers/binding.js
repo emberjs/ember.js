@@ -215,7 +215,7 @@ Ember.Handlebars.resolveHelper = function(container, name) {
   @param {Function} fn Context to provide for rendering
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('bind', function(property, options) {
+EmberHandlebars.registerHelper('bind', function bindHelper(property, options) {
   Ember.assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
 
   var context = (options.contexts && options.contexts.length) ? options.contexts[0] : this;
@@ -245,7 +245,7 @@ EmberHandlebars.registerHelper('bind', function(property, options) {
   @param {Function} fn Context to provide for rendering
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('boundIf', function(property, fn) {
+EmberHandlebars.registerHelper('boundIf', function boundIfHelper(property, fn) {
   var context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : this;
   var func = function(result) {
     var truthy = result && get(result, 'isTruthy');
@@ -268,7 +268,7 @@ EmberHandlebars.registerHelper('boundIf', function(property, fn) {
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('with', function(context, options) {
+EmberHandlebars.registerHelper('with', function withHelper(context, options) {
   if (arguments.length === 4) {
     var keywordName, path, rootPath, normalized, contextPath;
 
@@ -318,7 +318,7 @@ EmberHandlebars.registerHelper('with', function(context, options) {
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('if', function(context, options) {
+EmberHandlebars.registerHelper('if', function ifHelper(context, options) {
   Ember.assert("You must pass exactly one argument to the if helper", arguments.length === 2);
   Ember.assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
 
@@ -332,7 +332,7 @@ EmberHandlebars.registerHelper('if', function(context, options) {
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('unless', function(context, options) {
+EmberHandlebars.registerHelper('unless', function unlessHelper(context, options) {
   Ember.assert("You must pass exactly one argument to the unless helper", arguments.length === 2);
   Ember.assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
 
@@ -467,7 +467,7 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('bind-attr', function(options) {
+EmberHandlebars.registerHelper('bind-attr', function bindAttrHelper(options) {
 
   var attrs = options.hash;
 
@@ -563,7 +563,7 @@ EmberHandlebars.registerHelper('bind-attr', function(options) {
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('bindAttr', function() {
+EmberHandlebars.registerHelper('bindAttr', function bindAttrHelper() {
   Ember.warn("The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
   return EmberHandlebars.helpers['bind-attr'].apply(this, arguments);
 });

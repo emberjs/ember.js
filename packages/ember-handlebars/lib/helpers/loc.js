@@ -23,6 +23,6 @@ require('ember-handlebars/ext');
   @param {String} str The string to format
 */
 
-Ember.Handlebars.registerHelper('loc', function(str) {
+Ember.Handlebars.registerHelper('loc', function locHelper(str) {
   return Ember.String.loc(str);
 });

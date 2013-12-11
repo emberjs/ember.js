@@ -78,7 +78,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       that holds the view for this outlet
     @return {String} HTML string
   */
-  Handlebars.registerHelper('outlet', function(property, options) {
+  Handlebars.registerHelper('outlet', function outletHelper(property, options) {
     var outletSource, outletContainerClass;
 
     if (property && property.data && property.data.isRenderData) {

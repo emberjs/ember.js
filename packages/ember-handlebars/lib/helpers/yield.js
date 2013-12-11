@@ -87,7 +87,7 @@ var get = Ember.get, set = Ember.set;
   @param {Hash} options
   @return {String} HTML string
 */
-Ember.Handlebars.registerHelper('yield', function(options) {
+Ember.Handlebars.registerHelper('yield', function yieldHelper(options) {
   var view = options.data.view;
 
   while (view && !get(view, 'layout')) {

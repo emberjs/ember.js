@@ -79,7 +79,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @param {Hash} options
     @return {String} HTML string
   */
-  Ember.Handlebars.registerHelper('render', function(name, contextString, options) {
+  Ember.Handlebars.registerHelper('render', function renderHelper(name, contextString, options) {
     Ember.assert("You must pass a template to render", arguments.length >= 2);
     var contextProvided = arguments.length === 3,
         container, router, controller, view, context, lookupOptions;
