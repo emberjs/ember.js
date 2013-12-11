@@ -270,7 +270,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @param {Object} [context]*
     @param {Hash} options
   */
-  EmberHandlebars.registerHelper('action', function(actionName) {
+  EmberHandlebars.registerHelper('action', function actionHelper(actionName) {
     var options = arguments[arguments.length - 1],
         contexts = a_slice.call(arguments, 1, -1);
 

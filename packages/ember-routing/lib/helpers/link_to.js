@@ -731,7 +731,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @return {String} HTML string
     @see {Ember.LinkView}
   */
-  Ember.Handlebars.registerHelper('link-to', function(name) {
+  Ember.Handlebars.registerHelper('link-to', function linkToHelper(name) {
     var options = [].slice.call(arguments, -1)[0],
         params = [].slice.call(arguments, 0, -1),
         hash = options.hash;
@@ -773,7 +773,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @param {Object} [context]*
     @return {String} HTML string
   */
-  Ember.Handlebars.registerHelper('linkTo', function() {
+  Ember.Handlebars.registerHelper('linkTo', function linkToHelper() {
     Ember.warn("The 'linkTo' view helper is deprecated in favor of 'link-to'");
     return Ember.Handlebars.helpers['link-to'].apply(this, arguments);
   });

@@ -29,7 +29,7 @@ var handlebarsGet = Ember.Handlebars.get;
   @param {String} property
   @return {String} HTML string
 */
-Ember.Handlebars.registerHelper('unbound', function(property, fn) {
+Ember.Handlebars.registerHelper('unbound', function unboundHelper(property, fn) {
   var options = arguments[arguments.length - 1], helper, context, out;
 
   if (arguments.length > 2) {
