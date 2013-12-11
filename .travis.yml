@@ -6,7 +6,7 @@ node_js:
 install:
 - "npm install"
 - "gem install bundler --pre"
-- "bundle install --deployment --retry 3 --jobs 4"
+- "bin/cached-bundle install --deployment --retry 3 --jobs 4"
 - sudo apt-get update && sudo apt-get install git
 after_success: bundle exec rake publish_build
 script: rake test\[$TEST_SUITE]
@@ -22,6 +22,7 @@ notifications:
     on_failure: always
 env:
   global:
+  - S3_BUILD_CACHE_BUCKET=emberjs-build-cache
   - S3_BUCKET_NAME=builds.emberjs.com
   - secure: ! 'KXJmcGLpnxnPmmei/qPNVcdQxLX1xyYIaVocinQ0YAjtBvCtAwg63EWMFnGp
 
