@@ -20,7 +20,6 @@ Ember.HistoryLocation = Ember.Object.extend({
 
   init: function() {
     set(this, 'location', get(this, 'location') || window.location);
-    this.initState();
   },
 
   /**
