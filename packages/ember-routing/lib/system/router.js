@@ -436,7 +436,7 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
   }
 
   if (!eventWasHandled && !ignoreFailure) {
-    throw new Ember.Error("Nothing handled the action '" + name + "'.");
+    throw new Ember.Error("Nothing handled the action '" + name + "'. If you did handle the action, this error can be caused by returning true from an action handler in a controller, causing the action to bubble.");
   }
 }
 
