@@ -166,6 +166,10 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
       options.implementation = location;
       location = set(this, 'location', Ember.Location.create(options));
     }
+
+    // ensure that initState is called AFTER the rootURL is set on
+    // the location instance
+    if (typeof location.initState === 'function') { location.initState(); }
   },
 
   _getHandlerFunction: function() {

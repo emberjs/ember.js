@@ -1906,30 +1906,26 @@ test("Router accounts for rootURL on page load when using history location", fun
   delete Ember.Location.implementations['historyTest'];
 });
 
-test("HistoryLocation has the correct rootURL on initState and webkit doesn't fire popstate on page load", function() {
-  expect(2);
-  var rootURL = window.location.pathname,
-      history,
+test("The rootURL is passed properly to the location implementation", function() {
+  expect(1);
+  var rootURL = "/blahzorz",
       HistoryTestLocation;
 
-  history = { replaceState: function() {} };
-
   HistoryTestLocation = Ember.HistoryLocation.extend({
-    history: history,
+    rootURL: 'this is not the URL you are looking for',
     initState: function() {
       equal(this.get('rootURL'), rootURL);
-      this._super();
-      // these two should be equal to be able
-      // to successfully detect webkit initial popstate
-      equal(this._previousURL, this.getURL());
     }
   });
 
   Ember.Location.registerImplementation('historyTest', HistoryTestLocation);
 
   Router.reopen({
-    location: 'historyTest',
-    rootURL: rootURL
+    location: 'history-test',
+    rootURL: rootURL,
+    // if we transition in this test we will receive failures
+    // if the tests are run from a static file
+    _doTransition: function(){}
   });
 
   bootApplication();
