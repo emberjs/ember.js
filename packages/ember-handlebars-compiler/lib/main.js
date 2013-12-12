@@ -10,7 +10,7 @@ var objectCreate = Object.create || function(parent) {
   return new F();
 };
 
-var Handlebars = (this && this.Handlebars) || (Ember.imports && Ember.imports.Handlebars);
+var Handlebars = (Ember.imports && Ember.imports.Handlebars) || (this && this.Handlebars);
 if (!Handlebars && typeof require === 'function') {
   Handlebars = require('handlebars');
 }
