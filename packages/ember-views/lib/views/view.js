@@ -133,7 +133,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
 
     this.instrumentDetails(details);
 
-    return Ember.instrument(name, details, function() {
+    return Ember.instrument(name, details, function instrumentRenderToBuffer() {
       return this._renderToBuffer(parentBuffer, bufferOperation);
     }, this);
   },

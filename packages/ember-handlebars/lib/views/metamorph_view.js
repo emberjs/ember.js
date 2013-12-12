@@ -43,7 +43,7 @@ var DOMManager = {
 
     view.transitionTo('preRender');
 
-    Ember.run.schedule('render', this, function() {
+    Ember.run.schedule('render', this, function renderMetamorphView() {
       if (view.isDestroying) { return; }
 
       view.clearRenderedChildren();
