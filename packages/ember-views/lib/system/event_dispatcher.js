@@ -207,7 +207,7 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
   },
 
   _bubbleEvent: function(view, evt, eventName) {
-    return Ember.run(function() {
+    return Ember.run(function bubbleEvent() {
       return view.handleEvent(eventName, evt);
     });
   },
