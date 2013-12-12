@@ -14,8 +14,11 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       isSimpleClick = Ember.ViewUtils.isSimpleClick;
 
   function fullRouteName(router, name) {
+    var nameWithIndex;
     if (!router.hasRoute(name)) {
-      name = name + '.index';
+      nameWithIndex = name + '.index';
+      Ember.assert(fmt("The attempt to link-to route '%@' failed (also tried '%@'). The router did not find '%@' in its possible routes: '%@'", [name, nameWithIndex, name, Ember.keys(router.router.recognizer.names).join("', '")]), router.hasRoute(nameWithIndex));
+      name = nameWithIndex;
     }
 
     return name;
@@ -389,8 +392,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
       namedRoute = fullRouteName(router, namedRoute);
       resolvedParams[0] = namedRoute;
-
-      Ember.assert(fmt("The attempt to link-to route '%@' failed. The router did not find '%@' in its possible routes: '%@'", [namedRoute, namedRoute, Ember.keys(router.router.recognizer.names).join("', '")]), router.hasRoute(namedRoute));
 
       for (var i = 1, len = resolvedParams.length; i < len; ++i) {
         var param = resolvedParams[i];
