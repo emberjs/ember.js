@@ -89,6 +89,19 @@ test("{{render}} helper should render given template", function() {
   ok(container.lookup('router:main')._lookupActiveView('home'), 'should register home as active view');
 });
 
+test("{{render}} helper should have assertion if template is not found", function() {
+  var template = "<h1>HI</h1>{{render 'oops'}}";
+  var controller = Ember.Controller.extend({container: container});
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  expectAssertion(function() {
+    appendView(view);
+  }, 'The template name you supplied \'oops\' was not found.');
+});
+
 test("{{render}} helper should render given template with a supplied model", function() {
   var template = "<h1>HI</h1>{{render 'post' post}}";
   var post = {
@@ -396,7 +409,7 @@ test("{{render}} works with dot notation", function() {
     template: Ember.Handlebars.compile(template)
   });
 
-  Ember.TEMPLATES['blog/post'] = compile("<p>POST</p>");
+  Ember.TEMPLATES['blog.post'] = compile("<p>POST</p>");
 
   appendView(view);
 
@@ -416,7 +429,7 @@ test("{{render}} works with slash notation", function() {
     template: Ember.Handlebars.compile(template)
   });
 
-  Ember.TEMPLATES['blog/post'] = compile("<p>POST</p>");
+  Ember.TEMPLATES['blog.post'] = compile("<p>POST</p>");
 
   appendView(view);
 
