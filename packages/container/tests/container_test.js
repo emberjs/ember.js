@@ -600,3 +600,21 @@ test('container.has should not accidentally cause injections on that factory to 
 
   ok(container.has('controller:apple'));
 });
+
+test('once resolved, always return the same result', function(){
+  expect(1);
+
+  var container = new Container();
+
+  container.resolver = function() {
+    return 'bar';
+  };
+
+  var Bar = container.resolve('models:bar');
+
+  container.resolver = function() {
+    return 'not bar';
+  };
+
+  equal(container.resolve('models:bar'), Bar);
+});
