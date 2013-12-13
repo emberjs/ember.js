@@ -128,7 +128,11 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     controller.set('target', options.data.keywords.controller);
 
     options.hash.viewName = Ember.String.camelize(name);
-    options.hash.template = container.lookup('template:' + name);
+
+    var templateName = 'template:' + name;
+    Ember.assert("The template name you supplied '" + name + "' was not found.", container.has(templateName));
+    options.hash.template = container.lookup(templateName);
+
     options.hash.controller = controller;
 
     if (router && !context) {
