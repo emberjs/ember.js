@@ -149,7 +149,7 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
 
     @method slice
     @param {Integer} beginIndex (Optional) index to begin slicing from.
-    @param {Integer} endIndex (Optional) index to end the slice at.
+    @param {Integer} endIndex (Optional) index to end the slice at (but not included).
     @return {Array} New array with specified slice
   */
   slice: function(beginIndex, endIndex) {
