@@ -180,32 +180,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       this._super.apply(this, arguments);
 
       // Map desired event name to invoke function
-      var eventName = get(this, 'eventName');
+      var eventName = get(this, 'eventName'), i;
       this.on(eventName, this, this._invoke);
-
-      var helperParameters = this.parameters,
-          templateContext = helperParameters.context,
-          paths = getResolvedPaths(helperParameters),
-          length = paths.length,
-          path, i, normalizedPath;
-
-      var linkTextPath = helperParameters.options.linkTextPath;
-      if (linkTextPath) {
-        normalizedPath = Ember.Handlebars.normalizePath(templateContext, linkTextPath, helperParameters.options.data);
-        this.registerObserver(normalizedPath.root, normalizedPath.path, this, this.rerender);
-      }
-
-      for(i=0; i < length; i++) {
-        path = paths[i];
-        if (null === path) {
-          // A literal value was provided, not a path, so nothing to observe.
-          continue;
-        }
-
-        normalizedPath = Ember.Handlebars.normalizePath(templateContext, path, helperParameters.options.data);
-        this.registerObserver(normalizedPath.root, normalizedPath.path, this, this._paramsChanged);
-      }
-
 
       if (Ember.FEATURES.isEnabled("query-params")) {
         var queryParams = get(this, '_potentialQueryParams') || [];
@@ -227,6 +203,41 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       this.notifyPropertyChange('resolvedParams');
     },
 
+    /**
+      @private
+
+     This is called to setup observers that will trigger a rerender.
+
+     @method _setupPathObservers
+    **/
+    _setupPathObservers: function(){
+      var helperParameters = this.parameters,
+          linkTextPath     = helperParameters.options.linkTextPath,
+          paths = getResolvedPaths(helperParameters),
+          length = paths.length,
+          path, i, normalizedPath;
+
+      if (linkTextPath) {
+        normalizedPath = Ember.Handlebars.normalizePath(helperParameters.context, linkTextPath, helperParameters.options.data);
+        this.registerObserver(normalizedPath.root, normalizedPath.path, this, this.rerender);
+      }
+
+      for(i=0; i < length; i++) {
+        path = paths[i];
+        if (null === path) {
+          // A literal value was provided, not a path, so nothing to observe.
+          continue;
+        }
+
+        normalizedPath = Ember.Handlebars.normalizePath(helperParameters.context, path, helperParameters.options.data);
+        this.registerObserver(normalizedPath.root, normalizedPath.path, this, this._paramsChanged);
+      }
+    },
+
+    afterRender: function(){
+      this._super.apply(this, arguments);
+      this._setupPathObservers();
+    },
 
     /**
       @private

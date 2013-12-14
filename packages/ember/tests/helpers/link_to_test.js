@@ -1027,7 +1027,7 @@ test("The non-block form {{link-to}} helper moves into the named route", functio
 });
 
 test("The non-block form {{link-to}} helper updates the link text when it is a binding", function() {
-  expect(7);
+  expect(8);
   Router.map(function(match) {
     this.route("contact");
   });
@@ -1044,14 +1044,19 @@ test("The non-block form {{link-to}} helper updates the link text when it is a b
   Ember.run(function() {
     router.handleURL("/");
   });
+  var controller = container.lookup('controller:index');
 
   equal(Ember.$('#contact-link:contains(Jane)', '#qunit-fixture').length, 1, "The link title is correctly resolved");
 
-  var controller = container.lookup('controller:index');
   Ember.run(function() {
     controller.set('contactName', 'Joe');
   });
   equal(Ember.$('#contact-link:contains(Joe)', '#qunit-fixture').length, 1, "The link title is correctly updated when the bound property changes");
+
+  Ember.run(function() {
+    controller.set('contactName', 'Robert');
+  });
+  equal(Ember.$('#contact-link:contains(Robert)', '#qunit-fixture').length, 1, "The link title is correctly updated when the bound property changes a second time");
 
   Ember.run(function() {
     Ember.$('#contact-link', '#qunit-fixture').click();
@@ -1066,7 +1071,7 @@ test("The non-block form {{link-to}} helper updates the link text when it is a b
   });
 
   equal(Ember.$('h3:contains(Home)', '#qunit-fixture').length, 1, "The index template was rendered");
-  equal(Ember.$('#contact-link:contains(Joe)', '#qunit-fixture').length, 1, "The link title is correctly updated when the route changes");
+  equal(Ember.$('#contact-link:contains(Robert)', '#qunit-fixture').length, 1, "The link title is correctly updated when the route changes");
 });
 
 test("The non-block form {{link-to}} helper moves into the named route with context", function() {
