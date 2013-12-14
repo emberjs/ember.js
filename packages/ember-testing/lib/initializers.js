@@ -23,4 +23,18 @@ Ember.onLoad('Ember.Application', function(Application) {
       }
     });
   }
+
+  Application.initializer({
+    name: 'ember-testing setup container.onerror',
+
+    initialize: function(container, application){
+      if(Ember.testing && Ember.Test.adapter){
+        var onerror = function (error){
+          Ember.Test.adapter.exception(error);
+        };
+
+        container.onerror = onerror;
+      }
+    }
+  });
 });

@@ -236,7 +236,9 @@ test("Unhandled exceptions are logged via Ember.Test.adapter#exception", functio
 });
 
 test("Unhandled exception in controller init logged via Ember.Test.adapter#exception", function() {
-  expect(1);
+  // the controller is looked up on the container twice which is
+  // causing this exception to fire twice
+  expect(2);
 
   Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
     exception: function(error) {

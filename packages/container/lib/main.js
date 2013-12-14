@@ -731,6 +731,15 @@ define("container",
           resetCache(this.children[i]);
         }
         resetCache(this);
+      },
+
+      /**
+        This method will be called for any errors caught during instantiation.
+
+        @method onerror
+      */
+      onerror: function(error){
+        throw error;
       }
     };
 
@@ -876,14 +885,18 @@ define("container",
       }
 
       if (factory) {
-        if (typeof factory.extend === 'function') {
-          // assume the factory was extendable and is already injected
-          return factory.create();
-        } else {
-          // assume the factory was extendable
-          // to create time injections
-          // TODO: support new'ing for instantiation and merge injections for pure JS Functions
-          return factory.create(injectionsFor(container, fullName));
+        try {
+          if (typeof factory.extend === 'function') {
+            // assume the factory was extendable and is already injected
+            return factory.create();
+          } else {
+            // assume the factory was extendable
+            // to create time injections
+            // TODO: support new'ing for instantiation and merge injections for pure JS Functions
+            return factory.create(injectionsFor(container, fullName));
+          }
+        } catch(e) {
+          container.onerror(e);
         }
       }
     }

@@ -618,3 +618,21 @@ test('once resolved, always return the same result', function(){
 
   equal(container.resolve('models:bar'), Bar);
 });
+
+test('an onerror handler can be set to capture any errors during instantiation', function(){
+  expect(1);
+
+  var container = new Container(),
+      error = new Error('error in init'),
+      PostController = {
+        create: function(args) { throw error; }
+      };
+
+  container.register('controller:post', PostController);
+
+  container.onerror = function(captureError){
+    equal(captureError, error, 'error was passed to onerror hook');
+  };
+
+  container.lookup('controller:post');
+});
