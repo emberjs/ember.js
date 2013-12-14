@@ -776,6 +776,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   */
   serialize: function(model, params) {
     if (params.length < 1) { return; }
+    if (!model) { return; }
 
     var name = params[0], object = {};
 
