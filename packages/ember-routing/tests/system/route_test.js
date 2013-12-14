@@ -1,13 +1,16 @@
 var route, routeOne, routeTwo, router, container, lookupHash;
 
-module("Ember.Route", {
-  setup: function() {
-    route = Ember.Route.create();
-  },
+function createRoute(){
+  route = Ember.Route.create();
+}
 
-  teardown: function() {
-    Ember.run(route, 'destroy');
-  }
+function cleanupRoute(){
+  Ember.run(route, 'destroy');
+}
+
+module("Ember.Route", {
+  setup: createRoute,
+  teardown: cleanupRoute
 });
 
 test("default store utilizes the container to acquire the model factory", function() {
@@ -70,6 +73,27 @@ test("'store' can be injected by data persistence frameworks", function() {
   equal(route.findModel('post', 1), post, '#findModel returns the correct post');
 });
 
+module("Ember.Route serialize", {
+  setup: createRoute,
+  teardown: cleanupRoute
+});
+
+test("returns the models properties if params does not include *_id", function(){
+  var model = {id: 2, firstName: 'Ned', lastName: 'Ryerson'};
+
+  deepEqual(route.serialize(model, ['firstName', 'lastName']), {firstName: 'Ned', lastName: 'Ryerson'}, "serialized correctly");
+});
+
+test("returns model.id if params include *_id", function(){
+  var model = {id: 2};
+
+  deepEqual(route.serialize(model, ['post_id']), {post_id: 2}, "serialized correctly");
+});
+
+test("returns undefined if model is not set", function(){
+  equal(route.serialize(undefined, ['post_id']), undefined, "serialized correctly");
+});
+
 module("Ember.Route interaction", {
   setup: function() {
     container = {
@@ -103,3 +127,4 @@ test("controllerFor uses route's controllerName if specified", function() {
 
   equal(routeTwo.controllerFor('one'), testController);
 });
+
