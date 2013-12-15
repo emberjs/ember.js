@@ -9,7 +9,7 @@ var set = Ember.set, get = Ember.get,
   @submodule ember-runtime
  */
 
-function observePromise(proxy, promise) {
+function observePromise(proxy, promise, label) {
   promise.then(function(value) {
     set(proxy, 'isFulfilled', true);
     set(proxy, 'content', value);
@@ -17,7 +17,7 @@ function observePromise(proxy, promise) {
     set(proxy, 'isRejected', true);
     set(proxy, 'reason', reason);
     // don't re-throw, as we are merely observing
-  });
+  }, label);
 }
 
 /**
@@ -72,7 +72,7 @@ function observePromise(proxy, promise) {
   controller.get('lastName')  //=> 'Penner'
   ```
 
-  If the controller is backing a template, the attributes are 
+  If the controller is backing a template, the attributes are
   bindable from within that template
 
   ```handlebars
@@ -91,19 +91,20 @@ Ember.PromiseProxyMixin = Ember.Mixin.create({
   isSettled:  or('isRejected', 'isFulfilled').readOnly(),
   isRejected:  false,
   isFulfilled: false,
+  promiseLabel: null,
 
   promise: Ember.computed(function(key, promise) {
     if (arguments.length === 2) {
-      promise = resolve(promise);
-      observePromise(this, promise);
-      return promise.then(); // fork the promise.
+      promise = resolve(promise, this + " of " + get(this, 'promiseLabel'));
+      observePromise(this, promise, this + " observe promise");
+      return promise.then(null, null, this + " fork " + get(this, 'promiseLabel')); // fork the promise.
     } else {
       throw new Ember.Error("PromiseProxy's promise must be set");
     }
   }),
 
-  then: function(fulfill, reject) {
-    return get(this, 'promise').then(fulfill, reject);
+  then: function(fulfill, reject, label) {
+    return get(this, 'promise').then(fulfill, reject, label);
   }
 });
 
