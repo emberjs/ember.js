@@ -32,7 +32,7 @@ var set = Ember.set, get = Ember.get;
   @namespace Ember
   @extends Ember.View
 */
-Ember.Checkbox = Ember.View.extend({
+Ember.Checkbox = Ember.Component.extend({
   classNames: ['ember-checkbox'],
 
   tagName: 'input',
