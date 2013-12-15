@@ -1017,7 +1017,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   });
 
   Ember.TEMPLATES.home = Ember.Handlebars.compile(
-    "<a {{action showStuff content}}>{{name}}</a>"
+    "<a {{action 'showStuff' content}}>{{name}}</a>"
   );
 
   var controller = Ember.Controller.extend({
@@ -1063,7 +1063,7 @@ asyncTest("Events are triggered on the current state when defined in `actions` o
   });
 
   Ember.TEMPLATES.home = Ember.Handlebars.compile(
-    "<a {{action showStuff content}}>{{name}}</a>"
+    "<a {{action 'showStuff' content}}>{{name}}</a>"
   );
 
   bootApplication();
@@ -1101,7 +1101,7 @@ asyncTest("Events defined in `actions` object are triggered on the current state
   });
 
   Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
-    "<a {{action showStuff content}}>{{name}}</a>"
+    "<a {{action 'showStuff' content}}>{{name}}</a>"
   );
 
   bootApplication();
@@ -1135,7 +1135,7 @@ asyncTest("Events are triggered on the current state when defined in `events` ob
   });
 
   Ember.TEMPLATES.home = Ember.Handlebars.compile(
-    "<a {{action showStuff content}}>{{name}}</a>"
+    "<a {{action 'showStuff' content}}>{{name}}</a>"
   );
 
   expectDeprecation(/Action handlers contained in an `events` object are deprecated/);
@@ -1174,7 +1174,7 @@ asyncTest("Events defined in `events` object are triggered on the current state 
   });
 
   Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
-    "<a {{action showStuff content}}>{{name}}</a>"
+    "<a {{action 'showStuff' content}}>{{name}}</a>"
   );
 
   expectDeprecation(/Action handlers contained in an `events` object are deprecated/);
@@ -1249,7 +1249,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
     });
 
     Ember.TEMPLATES.home = Ember.Handlebars.compile(
-      "<a {{action showStuff content}}>{{name}}</a>"
+      "<a {{action 'showStuff' content}}>{{name}}</a>"
     );
 
     var controller = Ember.Controller.extend({
@@ -1342,7 +1342,7 @@ asyncTest("actions can be triggered with multiple arguments", function() {
   });
 
   Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
-    "<a {{action showStuff model1 model2}}>{{model1.name}}</a>"
+    "<a {{action 'showStuff' model1 model2}}>{{model1.name}}</a>"
   );
 
   bootApplication();
