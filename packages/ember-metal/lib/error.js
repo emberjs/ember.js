@@ -55,26 +55,3 @@ Ember.Error.prototype = Ember.create(Error.prototype);
   @param {Exception} error the error object
 */
 Ember.onerror = null;
-
-/**
-  Wrap code block in a try/catch if `Ember.onerror` is set.
-
-  @private
-  @method handleErrors
-  @for Ember
-  @param {Function} func
-  @param [context]
-*/
-Ember.handleErrors = function(func, context) {
-  // Unfortunately in some browsers we lose the backtrace if we rethrow the existing error,
-  // so in the event that we don't have an `onerror` handler we don't wrap in a try/catch
-  if ('function' === typeof Ember.onerror) {
-    try {
-      return func.call(context || this);
-    } catch (error) {
-      Ember.onerror(error);
-    }
-  } else {
-    return func.call(context || this);
-  }
-};
