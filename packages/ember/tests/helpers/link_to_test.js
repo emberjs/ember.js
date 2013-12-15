@@ -1185,3 +1185,34 @@ test("the {{link-to}} helper does not call preventDefault if `preventDefault=fal
 
   equal(event.isDefaultPrevented(), false, "should not preventDefault");
 });
+
+test("the {{link-to}} helper does not throw an error if its route has exited", function(){
+  expect(0);
+
+  Ember.TEMPLATES.application = Ember.Handlebars.compile("{{#link-to 'index' id='home-link'}}Home{{/link-to}}{{#link-to 'post' defaultPost id='default-post-link'}}Default Post{{/link-to}}{{#if currentPost}}{{#link-to 'post' id='post-link'}}Post{{/link-to}}{{/if}}");
+
+  App.ApplicationController = Ember.Controller.extend({
+    needs: ['post'],
+    currentPost: Ember.computed.alias('controllers.post.model')
+  });
+
+  App.PostController = Ember.Controller.extend({
+    model: {id: 1}
+  });
+
+  Router.map(function() {
+    this.route("post", {path: 'post/:post_id'});
+  });
+
+  bootApplication();
+
+  Ember.run(router, 'handleURL', '/');
+
+  Ember.run(function() {
+    Ember.$('#default-post-link', '#qunit-fixture').click();
+  });
+
+  Ember.run(function() {
+    Ember.$('#home-link', '#qunit-fixture').click();
+  });
+});
