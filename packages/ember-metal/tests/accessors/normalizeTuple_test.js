@@ -1,4 +1,4 @@
-/*globals Foo:true, $foo:true */
+/*globals Foo:true $foo:true */
 
 var obj, moduleOpts = {
   setup: function() {

@@ -1,4 +1,4 @@
-/*global Namespace:true, DepObj:true*/
+/*global Namespace:true DepObj:true*/
 
 var get = Ember.get, set = Ember.set;
 var forEach = Ember.EnumerableUtils.forEach;

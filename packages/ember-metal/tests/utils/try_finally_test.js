@@ -13,7 +13,7 @@ module("Ember.tryFinally", {
   },
 
   teardown: function() {
-    tryCount = finalizeCount = tryable = finalizer = finalizeCount = tryableResult = null;
+    tryCount = finalizeCount = tryable = finalizer = finalizeCount, tryableResult = null;
   }
 });
 

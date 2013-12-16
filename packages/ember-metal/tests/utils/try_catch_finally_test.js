@@ -17,7 +17,8 @@ module("Ember.tryFinally", {
   },
 
   teardown: function() {
-    tryCount = catchCount = finalizeCount = tryable = catchable = finalizer = finalizeCount = tryableResult = null;
+    tryCount = catchCount, finalizeCount = tryable = catchable = finalizer =
+    finalizeCount =tryableResult = null;
   }
 });
 

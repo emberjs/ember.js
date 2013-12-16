@@ -1,4 +1,4 @@
-/*globals Em:true, ENV */
+/*globals Em:true ENV */
 
 /**
 @module ember
