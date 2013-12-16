@@ -259,7 +259,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
       if (error.name === "UnrecognizedURLError") {
         Ember.assert("The URL '" + error.message + "' did not match any routes in your application");
       }
-    });
+    }, 'Ember: Check for Router unrecognized URL error');
 
     // We want to return the configurable promise object
     // so that callers of this function can use `.method()` on it,
