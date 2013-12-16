@@ -1,6 +1,4 @@
 var set = Ember.set, get = Ember.get,
-    resolve = Ember.RSVP.resolve,
-    rethrow = Ember.RSVP.rethrow,
     not = Ember.computed.not,
     or = Ember.computed.or;
 
@@ -9,14 +7,15 @@ var set = Ember.set, get = Ember.get,
   @submodule ember-runtime
  */
 
-function observePromise(proxy, promise) {
-  promise.then(function(value) {
+function tap(proxy, promise) {
+  return promise.then(function(value) {
     set(proxy, 'isFulfilled', true);
     set(proxy, 'content', value);
+    return value;
   }, function(reason) {
     set(proxy, 'isRejected', true);
     set(proxy, 'reason', reason);
-    // don't re-throw, as we are merely observing
+    throw reason;
   });
 }
 
@@ -94,9 +93,7 @@ Ember.PromiseProxyMixin = Ember.Mixin.create({
 
   promise: Ember.computed(function(key, promise) {
     if (arguments.length === 2) {
-      promise = resolve(promise);
-      observePromise(this, promise);
-      return promise.then(); // fork the promise.
+      return tap(this, promise);
     } else {
       throw new Ember.Error("PromiseProxy's promise must be set");
     }
