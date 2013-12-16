@@ -1,4 +1,4 @@
-/*globals GlobalA:true GlobalB:true */
+/*globals GlobalA:true, GlobalB:true */
 
 require('ember-metal/~tests/props_helper');
 

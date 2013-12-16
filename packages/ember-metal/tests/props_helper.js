@@ -1,5 +1,3 @@
-/*global testBoth:true */
-
 // used by unit tests to test both accessor mode and non-accessor mode
 testBoth = function(testname, callback) {
   test(testname+' using Ember.get()/Ember.set()', function() {

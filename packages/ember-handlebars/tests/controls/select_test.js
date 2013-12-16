@@ -315,7 +315,7 @@ test("select with group can group options", function() {
   ]);
 
   Ember.run(function() {
-    select.set('content', content),
+    select.set('content', content);
     select.set('optionGroupPath', 'organization');
     select.set('optionLabelPath', 'content.firstName');
   });
@@ -342,7 +342,7 @@ test("select with group doesn't break options", function() {
   ]);
 
   Ember.run(function() {
-    select.set('content', content),
+    select.set('content', content);
     select.set('optionGroupPath', 'organization');
     select.set('optionLabelPath', 'content.firstName');
     select.set('optionValuePath', 'content.id');
@@ -370,7 +370,7 @@ test("select with group observes its content", function() {
   ]);
 
   Ember.run(function() {
-    select.set('content', content),
+    select.set('content', content);
     select.set('optionGroupPath', 'organization');
     select.set('optionLabelPath', 'content.firstName');
   });
@@ -397,7 +397,7 @@ test("select with group whose content is undefined doesn't breaks", function() {
 
 		var content;
   Ember.run(function() {
-    select.set('content', content),
+    select.set('content', content);
     select.set('optionGroupPath', 'organization');
     select.set('optionLabelPath', 'content.firstName');
   });
