@@ -109,12 +109,12 @@ function setPath(root, path, value, tolerant) {
   }
 
   if (!keyName || keyName.length === 0) {
-    throw new Ember.Error('You passed an empty path');
+    throw new Ember.Error('Property set failed: You passed an empty path');
   }
 
   if (!root) {
     if (tolerant) { return; }
-    else { throw new Ember.Error('Object in path '+path+' could not be found or was destroyed.'); }
+    else { throw new Ember.Error('Property set failed: object in path "'+path+'" could not be found or was destroyed.'); }
   }
 
   return set(root, keyName, value);

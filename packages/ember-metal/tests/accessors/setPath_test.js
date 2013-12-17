@@ -89,7 +89,7 @@ module("Ember.set with path - deprecated", {
 });
 
 test('[null, bla] gives a proper exception message', function() {
-  var exceptionMessage = 'Object in path bla could not be found or was destroyed.';
+  var exceptionMessage = 'Property set failed: object in path \"bla\" could not be found or was destroyed.';
   try {
     Ember.set(null, 'bla', "BAM");
   } catch(ex) {
@@ -98,7 +98,7 @@ test('[null, bla] gives a proper exception message', function() {
 });
 
 test('[obj, bla.bla] gives a proper exception message', function() {
-  var exceptionMessage = 'Object in path bla could not be found or was destroyed.';
+  var exceptionMessage = 'Property set failed: object in path \"bla\" could not be found or was destroyed.';
   try {
     Ember.set(obj, 'bla.bla', "BAM");
   } catch(ex) {
