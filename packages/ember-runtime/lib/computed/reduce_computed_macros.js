@@ -18,6 +18,30 @@ var get = Ember.get,
     SearchProxy;
 
 /**
+ A computed property that returns the sum of the value
+ in the dependent array.
+
+ @method computed.sum
+ @for Ember
+ @param {String} dependentKey
+ @return {Ember.ComputedProperty} computes the sum of all values in the dependentKey's array
+*/
+
+Ember.computed.sum = function(dependentKey){
+  return Ember.reduceComputed(dependentKey, {
+    initialValue: 0,
+
+    addedItem: function(accumulatedValue, item, changeMeta, instanceMeta){
+      return accumulatedValue + item;
+    },
+
+    removedItem: function(accumulatedValue, item, changeMeta, instanceMeta){
+      return accumulatedValue - item;
+    }
+  });
+};
+
+/**
   A computed property that calculates the maximum value in the
   dependent array. This will return `-Infinity` when the dependent
   array is empty.
