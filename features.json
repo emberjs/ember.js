@@ -4,6 +4,7 @@
   "ember-testing-wait-hooks": true,
   "query-params": null,
   "string-humanize": null,
+  "string-parameterize": null,
   "propertyBraceExpansion": null,
   "ember-routing-named-substates": null,
   "ember-handlebars-caps-lookup": null,

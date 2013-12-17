@@ -42,6 +42,11 @@ for a detailed explanation.
   Also strips `_id` suffixes. (E.g. `'first_name'.humanize() // 'First name'`)
 
   Added in [#3224](https://github.com/emberjs/ember.js/pull/3224)
+* `string-parameterize`
+
+  Transforms a string so that it may be used as part of a 'pretty' / SEO friendly URL.
+  (E.g. `'100 ways Ember.js is better than Angular.'.parameterize(); // '100-ways-emberjs-is-better-than-angular'`)
+
 * `ember-testing-wait-hooks`
 
   Allows registration of additional functions that the `wait` testing helper
