@@ -32,9 +32,11 @@ Ember.View.reopen({
     // The html for myView now looks like:
     // <div id="ember228" class="ember-view">Child view: </div>
 
-    myView.connectOutlet('main', Ember.View.extend({
+    var FooView = Ember.View.extend({
       template: Ember.Handlebars.compile('<h1>Foo</h1> ')
-    }));
+    });
+    var fooView = FooView.create();
+    myView.connectOutlet('main', fooView);
     // The html for myView now looks like:
     // <div id="ember228" class="ember-view">Child view:
     //   <div id="ember234" class="ember-view"><h1>Foo</h1> </div>
@@ -99,9 +101,11 @@ Ember.View.reopen({
     // myView's html:
     // <div id="ember228" class="ember-view">Child view: </div>
 
-    myView.connectOutlet('main', Ember.View.extend({
+    var FooView = Ember.View.extend({
       template: Ember.Handlebars.compile('<h1>Foo</h1> ')
-    }));
+    });
+    var fooView = FooView.create();
+    myView.connectOutlet('main', fooView);
     // myView's html:
     // <div id="ember228" class="ember-view">Child view:
     //   <div id="ember234" class="ember-view"><h1>Foo</h1> </div>
