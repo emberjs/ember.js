@@ -351,27 +351,33 @@ CoreObject.PrototypeMixin = Mixin.create({
     than Javascript's `toString` typically does, in a generic way for all Ember
     objects.
 
-        App.Person = Em.Object.extend()
-        person = App.Person.create()
-        person.toString() //=> "<App.Person:ember1024>"
+    ```javascript
+    App.Person = Em.Object.extend()
+    person = App.Person.create()
+    person.toString() //=> "<App.Person:ember1024>"
+    ```
 
     If the object's class is not defined on an Ember namespace, it will
     indicate it is a subclass of the registered superclass:
 
-        Student = App.Person.extend()
-        student = Student.create()
-        student.toString() //=> "<(subclass of App.Person):ember1025>"
+   ```javascript
+    Student = App.Person.extend()
+    student = Student.create()
+    student.toString() //=> "<(subclass of App.Person):ember1025>"
+    ```
 
     If the method `toStringExtension` is defined, its return value will be
     included in the output.
 
-        App.Teacher = App.Person.extend({
-          toStringExtension: function() {
-            return this.get('fullName');
-          }
-        });
-        teacher = App.Teacher.create()
-        teacher.toString(); //=> "<App.Teacher:ember1026:Tom Dale>"
+    ```javascript
+    App.Teacher = App.Person.extend({
+      toStringExtension: function() {
+        return this.get('fullName');
+      }
+    });
+    teacher = App.Teacher.create()
+    teacher.toString(); //=> "<App.Teacher:ember1026:Tom Dale>"
+    ```
 
     @method toString
     @return {String} string representation
