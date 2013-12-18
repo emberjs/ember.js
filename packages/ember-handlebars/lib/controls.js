@@ -293,7 +293,7 @@ Ember.Handlebars.registerHelper('input', function(options) {
   extend the capabilities of text areas in your application by reopening this
   class. For example, if you are deploying to browsers where the `required`
   attribute is used, you can globally add support for the `required` attribute
-  on all {{textarea}}'s' in your app by reopening `Ember.TextArea` or
+  on all `{{textarea}}`s' in your app by reopening `Ember.TextArea` or
   `Ember.TextSupport` and adding it to the `attributeBindings` concatenated
   property:
 
