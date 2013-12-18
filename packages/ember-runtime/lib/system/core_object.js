@@ -571,25 +571,25 @@ var ClassMixin = Mixin.create({
     Augments a constructor's prototype with additional
     properties and functions:
 
-    ```javascript
-    MyObject = Ember.Object.extend({
-      name: 'an object'
-    });
+  ```javascript
+  MyObject = Ember.Object.extend({
+    name: 'an object'
+  });
 
-    o = MyObject.create();
-    o.get('name'); // 'an object'
+  o = MyObject.create();
+  o.get('name'); // 'an object'
 
-    MyObject.reopen({
-      say: function(msg){
-        console.log(msg);
-      }
-    })
+  MyObject.reopen({
+    say: function(msg){
+      console.log(msg);
+    }
+  })
 
-    o2 = MyObject.create();
-    o2.say("hello"); // logs "hello"
+  o2 = MyObject.create();
+  o2.say("hello"); // logs "hello"
 
-    o.say("goodbye"); // logs "goodbye"
-    ```
+  o.say("goodbye"); // logs "goodbye"
+  ```
 
     To add functions and properties to the constructor itself,
     see `reopenClass`
