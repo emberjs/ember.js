@@ -911,10 +911,13 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   },
 
   /**
-    Returns the current model for a given route.
-
-    This is the object returned by the `model` hook of the route
-    in question.
+    Returns the model of a parent (or any ancestor) route
+    in a route hierarchy.  During a transition, all routes
+    must resolve a model object, and if a route
+    needs access to a parent route's model in order to
+    resolve a model (or just reuse the model from a parent),
+    it can call `this.modelFor(theNameOfParentRoute)` to
+    retrieve it.
 
     Example
 
