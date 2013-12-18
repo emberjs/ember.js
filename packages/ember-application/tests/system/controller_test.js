@@ -82,18 +82,6 @@ test("raises if trying to get a controller that was not pre-defined in `needs`",
   'should throw if no such controller was needed');
 });
 
-test("setting the controllers property directly, should not be possible", function(){
-  var controller = Ember.Controller.create();
-  var controllers = controller.get('controllers');
-
-  throws(function(){
-    controller.set('controllers', 'epic-self-troll');
-  }, /Cannot Set: controllers on:/,
-  'should raise when attempting to set to the controllers property');
-
-  equal(controller.get('controllers'), controllers, 'original controllers CP should have been unchanged');
-});
-
 test ("setting the value of a controller dependency should not be possible", function(){
   var container = new Ember.Container();
 
@@ -128,5 +116,23 @@ test("raises if a dependency with a period is requested", function() {
     container.lookup('controller:foo');
   }, /needs must not specify dependencies with periods in their names \(big\.bird\)/,
   'throws if periods used');
+});
+
+test("can unit test controllers with `needs` dependencies by stubbing their `controllers` properties", function() {
+  expect(1);
+
+  var BrotherController = Ember.Controller.extend({
+    needs: 'sister',
+    foo: Ember.computed.alias('controllers.sister.foo')
+  });
+
+  var sisterController = {};
+  var broController = BrotherController.create({
+    controllers: {
+      sister: { foo: 5 }
+    }
+  });
+
+  equal(broController.get('foo'), 5, "`needs` dependencies can be stubbed");
 });
 

@@ -24,6 +24,31 @@ function verifyNeedsDependencies(controller, container, needs) {
   }
 }
 
+var defaultControllersComputedProperty = Ember.computed(function() {
+  var controller = this;
+
+  return {
+    needs: get(controller, 'needs'),
+    container: get(controller, 'container'),
+    unknownProperty: function(controllerName) {
+      var needs = this.needs,
+        dependency, i, l;
+      for (i=0, l=needs.length; i<l; i++) {
+        dependency = needs[i];
+        if (dependency === controllerName) {
+          return this.container.lookup('controller:' + controllerName);
+        }
+      }
+
+      var errorMessage = Ember.inspect(controller) + '#needs does not include `' + controllerName + '`. To access the ' + controllerName + ' controller from ' + Ember.inspect(controller) + ', ' + Ember.inspect(controller) + ' should have a `needs` property that is an array of the controllers it has access to.';
+      throw new ReferenceError(errorMessage);
+    },
+    setUnknownProperty: function (key, value) {
+      throw new Error("You cannot overwrite the value of `controllers." + key + "` of " + Ember.inspect(controller));
+    }
+  };
+});
+
 /**
   @class ControllerMixin
   @namespace Ember
@@ -85,9 +110,11 @@ Ember.ControllerMixin.reopen({
     length = get(needs, 'length');
 
     if (length > 0) {
-      Ember.assert(' `' + Ember.inspect(this) + ' specifies `needs`, but does not have a container. Please ensure this controller was instantiated with a container.', this.container);
+      Ember.assert(' `' + Ember.inspect(this) + ' specifies `needs`, but does not have a container. Please ensure this controller was instantiated with a container.', this.container || Ember.meta(this).descs.controllers !== defaultControllersComputedProperty);
 
-      verifyNeedsDependencies(this, this.container, needs);
+      if (this.container) {
+        verifyNeedsDependencies(this, this.container, needs);
+      }
 
       // if needs then initialize controllers proxy
       get(this, 'controllers');
@@ -125,28 +152,5 @@ Ember.ControllerMixin.reopen({
     @property {Object} controllers
     @default null
   */
-  controllers: Ember.computed(function() {
-    var controller = this;
-
-    return {
-      needs: get(controller, 'needs'),
-      container: get(controller, 'container'),
-      unknownProperty: function(controllerName) {
-        var needs = this.needs,
-          dependency, i, l;
-        for (i=0, l=needs.length; i<l; i++) {
-          dependency = needs[i];
-          if (dependency === controllerName) {
-            return this.container.lookup('controller:' + controllerName);
-          }
-        }
-
-        var errorMessage = Ember.inspect(controller) + '#needs does not include `' + controllerName + '`. To access the ' + controllerName + ' controller from ' + Ember.inspect(controller) + ', ' + Ember.inspect(controller) + ' should have a `needs` property that is an array of the controllers it has access to.';
-        throw new ReferenceError(errorMessage);
-      },
-      setUnknownProperty: function (key, value) {
-        throw new Error("You cannot overwrite the value of `controllers." + key + "` of " + Ember.inspect(controller));
-      }
-    };
-  }).readOnly()
+  controllers: defaultControllersComputedProperty
 });
