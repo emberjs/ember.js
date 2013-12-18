@@ -135,6 +135,7 @@ require("ember-handlebars/controls/select");
   capablilties of checkbox inputs in your applications by reopening this class. For example,
   if you wanted to add a css class to all checkboxes in your application:
 
+
   ```javascript
   Ember.Checkbox.reopen({
     classNames: ['my-app-checkbox']
