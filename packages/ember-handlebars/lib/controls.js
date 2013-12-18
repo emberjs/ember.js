@@ -72,6 +72,7 @@ require("ember-handlebars/controls/select");
   if you are deploying to browsers where the `required` attribute is used, you
   can add this to the `TextField`'s `attributeBindings` property:
 
+
   ```javascript
   Ember.TextField.reopen({
     attributeBindings: ['required']
