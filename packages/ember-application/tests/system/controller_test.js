@@ -126,7 +126,6 @@ test("can unit test controllers with `needs` dependencies by stubbing their `con
     foo: Ember.computed.alias('controllers.sister.foo')
   });
 
-  var sisterController = {};
   var broController = BrotherController.create({
     controllers: {
       sister: { foo: 5 }
