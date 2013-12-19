@@ -63,6 +63,7 @@ Ember.Logger = {
    @param {*} arguments
   */
   log:   consoleMethod('log')   || Ember.K,
+
   /**
    Prints the arguments to the console with a warning icon.
    You can pass as many arguments as you want and they will be joined together with a space.
@@ -76,6 +77,7 @@ Ember.Logger = {
    @param {*} arguments
   */
   warn:  consoleMethod('warn')  || Ember.K,
+
   /**
    Prints the arguments to the console with an error icon, red text and a stack race.
    You can pass as many arguments as you want and they will be joined together with a space.
@@ -89,6 +91,7 @@ Ember.Logger = {
    @param {*} arguments
   */
   error: consoleMethod('error') || Ember.K,
+
   /**
    Logs the arguments to the console.
    You can pass as many arguments as you want and they will be joined together with a space.
@@ -103,6 +106,7 @@ Ember.Logger = {
    @param {*} arguments
   */
   info:  consoleMethod('info')  || Ember.K,
+
   /**
    Logs the arguments to the console in blue text.
    You can pass as many arguments as you want and they will be joined together with a space.
@@ -117,9 +121,9 @@ Ember.Logger = {
    @param {*} arguments
   */
   debug: consoleMethod('debug') || consoleMethod('info') || Ember.K,
-  /**
 
-   If the value passed into Ember.Logger.assert is not truthy it will throw an error with a stack trace.
+  /**
+   If the value passed into `Ember.Logger.assert` is not truthy it will throw an error with a stack trace.
 
     ```javascript
     Ember.Logger.assert(true); // undefined
