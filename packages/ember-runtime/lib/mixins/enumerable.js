@@ -772,7 +772,7 @@ Ember.Enumerable = Ember.Mixin.create({
   },
 
   /**
-    Returns a copy of the array with all null and undefined elements removed.
+    Returns a copy of the array with all `null` and `undefined` elements removed.
 
     ```javascript
     var arr = ["a", null, "c", undefined];
@@ -780,10 +780,10 @@ Ember.Enumerable = Ember.Mixin.create({
     ```
 
     @method compact
-    @return {Array} the array without null and undefined elements.
+    @return {Array} the array without `null` and `undefined` elements.
   */
   compact: function() {
-    return this.filter(function(value) { return value != null; });
+    return this.filter(function(value) { return !Ember.isNone(value); });
   },
 
   /**
@@ -1000,3 +1000,77 @@ Ember.Enumerable = Ember.Mixin.create({
     });
   }
 });
+
+
+if (Ember.FEATURES.isEnabled("ember-runtime-compactBy")) {
+  Ember.Enumerable.reopen({
+    /**
+     Returns a copy of the array without elements with `key` equal to `null` and `undefined`.
+
+     ```javascript
+     var arr = [Ember.Object.create({a: null}), {a: 1}, {a: false}, {a: ''}, {a: undefined}, {a: 0}, {a: null}];
+     arr.compactBy("a");  // [{a: 1}, {a: false}, {a: ''}, {a: 0}]
+     ```
+
+     @method compactBy
+     @return {Array} the array without elements with `key` equal to `null` and `undefined`.
+     */
+    compactBy: function(key) {
+      return this.filter(function(item) { return !Ember.isNone(get(item, key)); });
+    }
+  });
+}
+
+if (Ember.FEATURES.isEnabled("ember-runtime-minBy")) {
+  Ember.Enumerable.reopen({
+    /**
+     Returns an object with minimum `key` value or `undefined` if all elements don't have `key`
+
+     ```javascript
+     var arr = [{a: 2}, {a: 1}, {a: 3}, {a: 4}];
+     arr.minBy("a");  // {a: 1}
+     ```
+
+     @method minBy
+     @return {Object} object with minimum `key` value or `undefined` if all elements don't have `key`
+     */
+    minBy: function(key) {
+      var compactedThis = this.compactBy(key);
+      if (get(compactedThis, 'length') === 0) return undefined;
+      var ret = compactedThis.pop();
+      compactedThis.forEach(function(o) {
+        if (Ember.compare(get(o, key), get(ret, key)) === -1) {
+          ret = o;
+        }
+      });
+      return ret;
+    }
+  });
+}
+
+if (Ember.FEATURES.isEnabled("ember-runtime-maxBy")) {
+  Ember.Enumerable.reopen({
+    /**
+     Returns an object with maximum `key` value or `undefined` if all elements don't have `key`
+
+     ```javascript
+     var arr = [{a: 2}, {a: 1}, {a: 3}, {a: 4}];
+     arr.maxBy("a");  // {a: 4}
+     ```
+
+     @method maxBy
+     @return {Object} object with maximum `key` value or `undefined` if all elements don't have `key`
+     */
+    maxBy: function(key) {
+      var compactedThis = this.compactBy(key);
+      if (get(compactedThis, 'length') === 0) return undefined;
+      var ret = compactedThis.pop();
+      compactedThis.forEach(function(o) {
+        if (Ember.compare(get(o, key), get(ret, key)) === 1) {
+          ret = o;
+        }
+      });
+      return ret;
+    }
+  });
+}
