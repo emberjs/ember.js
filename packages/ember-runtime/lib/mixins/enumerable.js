@@ -1013,6 +1013,7 @@ if (Ember.FEATURES.isEnabled("ember-runtime-compactBy")) {
      ```
 
      @method compactBy
+     @param {String} key name of the property
      @return {Array} the array without elements with `key` equal to `null` and `undefined`.
      */
     compactBy: function(key) {
@@ -1032,15 +1033,21 @@ if (Ember.FEATURES.isEnabled("ember-runtime-minBy")) {
      ```
 
      @method minBy
+     @param {String} key name of the property
      @return {Object} object with minimum `key` value or `undefined` if all elements don't have `key`
      */
     minBy: function(key) {
-      var compactedThis = this.compactBy(key);
-      if (get(compactedThis, 'length') === 0) return undefined;
-      var ret = compactedThis.pop();
-      compactedThis.forEach(function(o) {
-        if (Ember.compare(get(o, key), get(ret, key)) === -1) {
-          ret = o;
+      if (get(this, 'length') === 0) return undefined;
+      var ret;
+      this.forEach(function(o) {
+        if (!Ember.isNone(o)) {
+          var oVal = get(o, key);
+          if (!Ember.isNone(oVal)) {
+            if (Ember.isNone(ret)) ret = o;
+            if (Ember.compare(oVal, get(ret, key)) === -1) {
+              ret = o;
+            }
+          }
         }
       });
       return ret;
@@ -1059,15 +1066,21 @@ if (Ember.FEATURES.isEnabled("ember-runtime-maxBy")) {
      ```
 
      @method maxBy
+     @param {String} key name of the property
      @return {Object} object with maximum `key` value or `undefined` if all elements don't have `key`
      */
     maxBy: function(key) {
-      var compactedThis = this.compactBy(key);
-      if (get(compactedThis, 'length') === 0) return undefined;
-      var ret = compactedThis.pop();
-      compactedThis.forEach(function(o) {
-        if (Ember.compare(get(o, key), get(ret, key)) === 1) {
-          ret = o;
+      if (get(this, 'length') === 0) return undefined;
+      var ret;
+      this.forEach(function(o) {
+        if (!Ember.isNone(o)) {
+          var oVal = get(o, key);
+          if (!Ember.isNone(oVal)) {
+            if (Ember.isNone(ret)) ret = o;
+            if (Ember.compare(oVal, get(ret, key)) === 1) {
+              ret = o;
+            }
+          }
         }
       });
       return ret;
