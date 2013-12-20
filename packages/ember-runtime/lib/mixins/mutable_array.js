@@ -99,7 +99,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     method. You can pass either a single index, or a start and a length.
 
     If you pass a start and length that is beyond the
-    length this method will throw an `OUT_OF_RANGE_EXCEPTION`
+    length this method will throw an `OUT_OF_RANGE_EXCEPTION`.
 
     ```javascript
     var colors = ["red", "green", "blue", "yellow", "orange"];
@@ -133,18 +133,18 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     is KVO-compliant.
 
     ```javascript
-    var colors = ["red", "green", "blue"];
-    colors.pushObject("black");               // ["red", "green", "blue", "black"]
-    colors.pushObject(["yellow", "orange"]);  // ["red", "green", "blue", "black", ["yellow", "orange"]]
+    var colors = ["red", "green"];
+    colors.pushObject("black");     // ["red", "green", "black"]
+    colors.pushObject(["yellow"]);  // ["red", "green", ["yellow"]]
     ```
 
     @method pushObject
     @param {*} obj object to push
-    @return {*} the same obj passed as param
+    @return The same obj passed as param
   */
   pushObject: function(obj) {
     this.insertAt(get(this, 'length'), obj) ;
-    return obj ;
+    return obj;
   },
 
   /**
@@ -152,9 +152,8 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     notifying observers of the change until all objects are added.
 
     ```javascript
-    var colors = ["red", "green", "blue"];
-    colors.pushObjects(["black"]);               // ["red", "green", "blue", "black"]
-    colors.pushObjects(["yellow", "orange"]);  // ["red", "green", "blue", "black", "yellow", "orange"]
+    var colors = ["red"];
+    colors.pushObjects(["yellow", "orange"]);  // ["red", "yellow", "orange"]
     ```
 
     @method pushObjects
