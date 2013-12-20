@@ -215,14 +215,14 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     KVO-compliant.
 
     ```javascript
-    var colors = ["red", "green", "blue"];
-    colors.unshiftObject("yellow");             // ["yellow", "red", "green", "blue"]
-    colors.unshiftObject(["black", "white"]);   // [["black", "white"], "yellow", "red", "green", "blue"]
+    var colors = ["red"];
+    colors.unshiftObject("yellow");    // ["yellow", "red"]
+    colors.unshiftObject(["black"]);   // [["black"], "yellow", "red"]
     ```
 
     @method unshiftObject
     @param {*} obj object to unshift
-    @return {*} the same obj passed as param
+    @return The same obj passed as param
   */
   unshiftObject: function(obj) {
     this.insertAt(0, obj) ;
@@ -234,9 +234,9 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     observers until all objects have been added.
 
     ```javascript
-    var colors = ["red", "green", "blue"];
-    colors.unshiftObjects(["black", "white"]);   // ["black", "white", "red", "green", "blue"]
-    colors.unshiftObjects("yellow");             // Type Error: 'undefined' is not a function
+    var colors = ["red"];
+    colors.unshiftObjects(["black", "white"]);   // ["black", "white", "red"]
+    colors.unshiftObjects("yellow"); // Type Error: 'undefined' is not a function
     ```
 
     @method unshiftObjects
