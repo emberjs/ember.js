@@ -106,6 +106,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     colors.removeAt(0);     // ["green", "blue", "yellow", "orange"]
     colors.removeAt(2, 2);  // ["green", "blue"]
     colors.removeAt(4, 2);  // Error: Index out of range
+    colors.removeAt(0, 0);  // no-op
     ```
 
     @method removeAt
@@ -120,12 +121,14 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
         throw new Ember.Error(OUT_OF_RANGE_EXCEPTION);
       }
 
+      if (len === 0) return this;
+
       // fast case
       if (len === undefined) len = 1;
       this.replace(start, len, EMPTY);
     }
 
-    return this ;
+    return this;
   },
 
   /**
