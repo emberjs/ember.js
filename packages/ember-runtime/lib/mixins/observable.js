@@ -192,9 +192,11 @@ Ember.Observable = Ember.Mixin.create({
     return this;
   },
 
+
   /**
-    To set multiple properties at once, call `setProperties`
-    with a Hash:
+    Sets a list of properties at once. These properties are set inside
+    a single `beginPropertyChanges` and `endPropertyChanges` batch, so
+    observers will be buffered.
 
     ```javascript
     record.setProperties({ firstName: 'Charles', lastName: 'Jolley' });
