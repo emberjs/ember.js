@@ -1,4 +1,4 @@
-var set = Ember.set, get = Ember.get;
+var set = Ember.set, get = Ember.get, trim = Ember.$.trim;
 
 // .......................................................
 //  render()
@@ -13,7 +13,7 @@ test("RenderBuffers combine strings", function() {
   buffer.push('b');
 
   // IE8 returns `element name as upper case with extra whitespace.
-  equal("<div>ab</div>", buffer.string().toLowerCase().replace(/\s+/g, ''), "Multiple pushes should concatenate");
+  equal("<div>ab</div>", trim(buffer.string().toLowerCase()), "Multiple pushes should concatenate");
 });
 
 test("value of 0 is included in output", function() {
@@ -108,7 +108,7 @@ test("handles browsers like Firefox < 11 that don't support outerHTML Issue #195
   var elementStub = '<div></div>';
   buffer.element = function() { return elementStub; };
   // IE8 returns `element name as upper case with extra whitespace.
-  equal(elementStub, buffer.string().toLowerCase().replace(/\s/g, ''));
+  equal(elementStub, trim(buffer.string().toLowerCase()));
 });
 
 module("Ember.RenderBuffer - without tagName");
