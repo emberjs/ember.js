@@ -43,10 +43,25 @@ test("it should not re-render if the property changes", function() {
   equal(view.$().text(), "BORK BORK", "should not re-render if the property changes");
 });
 
+test("it should throw the helper missing error if multiple properties are provided", function() {
+  throws(function() {
+      appendView(Ember.View.create({
+        template: Ember.Handlebars.compile('{{unbound foo bar}}'),
+        context: Ember.Object.create({
+          foo: "BORK",
+          bar: 'foo'
+        })
+      }));
+    }, Ember.Error);
+});
 
 module("Handlebars {{#unbound boundHelper arg1 arg2... argN}} form: render unbound helper invocations", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
+
+    Ember.Handlebars.registerBoundHelper('surround', function(prefix, value, suffix) {
+      return prefix + '-' + value + '-' + suffix;
+    });
 
     Ember.Handlebars.registerBoundHelper('capitalize', function(value) {
       return value.toUpperCase();
@@ -66,6 +81,7 @@ module("Handlebars {{#unbound boundHelper arg1 arg2... argN}} form: render unbou
   },
 
   teardown: function() {
+    delete Ember.Handlebars.helpers['surround'];
     delete Ember.Handlebars.helpers['capitalize'];
     delete Ember.Handlebars.helpers['capitalizeName'];
     delete Ember.Handlebars.helpers['concat'];
@@ -112,6 +128,25 @@ test("should be able to render an unbound helper invocation", function() {
   }
 });
 
+test("should be able to render an bound helper invocation mixed with static values", function() {
+  view = Ember.View.create({
+      template: Ember.Handlebars.compile('{{unbound surround prefix value "bar"}} {{surround prefix value "bar"}} {{unbound surround "bar" value suffix}} {{surround "bar" value suffix}}'),
+      context: Ember.Object.create({
+        prefix: "before",
+        value: "core",
+        suffix: "after"
+      })
+    });
+  appendView(view);
+
+  equal(view.$().text(), "before-core-bar before-core-bar bar-core-after bar-core-after", "first render is correct");
+  Ember.run(function() {
+    set(view, 'context.prefix', 'beforeChanged');
+    set(view, 'context.value', 'coreChanged');
+    set(view, 'context.suffix', 'afterChanged');
+  });
+  equal(view.$().text(), "before-core-bar beforeChanged-coreChanged-bar bar-core-after bar-coreChanged-afterChanged", "only bound values change");
+});
 
 test("should be able to render unbound forms of multi-arg helpers", function() {
   view = Ember.View.create({
