@@ -79,7 +79,7 @@ Ember.Logger = {
   warn:  consoleMethod('warn')  || Ember.K,
 
   /**
-   Prints the arguments to the console with an error icon, red text and a stack race.
+   Prints the arguments to the console with an error icon, red text and a stack trace.
    You can pass as many arguments as you want and they will be joined together with a space.
 
     ```javascript
