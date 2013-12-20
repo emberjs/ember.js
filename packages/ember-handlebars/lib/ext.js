@@ -339,8 +339,8 @@ Ember.Handlebars.makeBoundHelper = function(fn) {
       numProperties = properties.length,
       options = arguments[arguments.length - 1],
       normalizedProperties = [],
-      types = options.types,
       data = options.data,
+      types = data.isUnbound ? slice.call(options.types, 1) : options.types,
       hash = options.hash,
       view = data.view,
       contexts = options.contexts,
@@ -371,7 +371,11 @@ Ember.Handlebars.makeBoundHelper = function(fn) {
         normalizedProperties.push(normalizedProp);
         watchedProperties.push(normalizedProp);
       } else {
-        normalizedProperties.push(null);
+        if(data.isUnbound) {
+          normalizedProperties.push({path: properties[loc]});
+        }else {
+          normalizedProperties.push(null);
+        }
       }
     }
 
@@ -460,7 +464,15 @@ Ember.Handlebars.makeBoundHelper = function(fn) {
   @param {String} options
 */
 function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
-  var args = [], hash = options.hash, boundOptions = hash.boundOptions, loc, len, property, boundOption;
+  var args = [],
+   hash = options.hash,
+   boundOptions = hash.boundOptions,
+   types = slice.call(options.types, 1),
+   loc,
+   len,
+   property,
+   propertyType,
+   boundOption;
 
   for (boundOption in boundOptions) {
     if (!boundOptions.hasOwnProperty(boundOption)) { continue; }
@@ -469,7 +481,12 @@ function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
 
   for(loc = 0, len = normalizedProperties.length; loc < len; ++loc) {
     property = normalizedProperties[loc];
-    args.push(Ember.Handlebars.get(property.root, property.path, options));
+    propertyType = types[loc];
+    if(propertyType === "ID") {
+      args.push(Ember.Handlebars.get(property.root, property.path, options));
+    } else {
+      args.push(property.path);
+    }
   }
   args.push(options);
   return fn.apply(context, args);
