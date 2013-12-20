@@ -2,9 +2,8 @@ var appendView = function(view) {
   Ember.run(function() { view.appendTo('#qunit-fixture'); });
 };
 
-var compile = function(template) {
-  return Ember.Handlebars.compile(template);
-};
+var compile = Ember.Handlebars.compile;
+var trim = Ember.$.trim;
 
 var view;
 
@@ -35,7 +34,7 @@ test("view should support connectOutlet for the main outlet", function() {
   });
 
   // Replace whitespace for older IE
-  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
+  equal(trim(view.$().text()), 'HIBYE');
 });
 
 test("outlet should support connectOutlet in slots in prerender state", function() {
@@ -70,7 +69,7 @@ test("outlet should support an optional name", function() {
   });
 
   // Replace whitespace for older IE
-  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
+  equal(trim(view.$().text()), 'HIBYE');
 });
 
 
@@ -96,7 +95,7 @@ test("outlet should support an optional view class", function() {
   ok(view.outletView.detectInstance(childView.get('_parentView')), "The custom view class should be used for the outlet");
 
   // Replace whitespace for older IE
-  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
+  equal(trim(view.$().text()), 'HIBYE');
 });
 
 
@@ -148,14 +147,14 @@ test("view should support disconnectOutlet for the main outlet", function() {
   });
 
   // Replace whitespace for older IE
-  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
+  equal(trim(view.$().text()), 'HIBYE');
 
   Ember.run(function() {
     view.disconnectOutlet('main');
   });
 
   // Replace whitespace for older IE
-  equal(view.$().text().replace(/\s+/,''), 'HI');
+  equal(trim(view.$().text()), 'HI');
 });
 
 test("Outlets bind to the current template's view, not inner contexts", function() {
@@ -199,5 +198,5 @@ test("should support layouts", function() {
     }));
   });
   // Replace whitespace for older IE
-  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
+  equal(trim(view.$().text()), 'HIBYE');
 });
