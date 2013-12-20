@@ -662,7 +662,7 @@ Ember.Enumerable = Ember.Mixin.create({
     Returns `true` if the passed property resolves to `true` for any item in
     the enumerable. This method is often simpler/faster than using a callback.
 
-    @method anyBy
+    @method isAny
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Boolean} `true` if the passed function returns `true` for any item
@@ -672,7 +672,7 @@ Ember.Enumerable = Ember.Mixin.create({
   },
 
   /**
-    @method someProperty
+    @method anyBy
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Boolean} `true` if the passed function returns `true` for any item
