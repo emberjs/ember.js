@@ -1918,7 +1918,7 @@ test("The rootURL is passed properly to the location implementation", function()
     }
   });
 
-  Ember.Location.registerImplementation('historyTest', HistoryTestLocation);
+  Ember.Location.registerImplementation('history-test', HistoryTestLocation);
 
   Router.reopen({
     location: 'history-test',
@@ -1931,7 +1931,7 @@ test("The rootURL is passed properly to the location implementation", function()
   bootApplication();
 
   // clean after test
-  delete Ember.Location.implementations['historyTest'];
+  delete Ember.Location.implementations['history-test'];
 });
 
 
