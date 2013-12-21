@@ -1,17 +1,31 @@
 # Ember Changelog
 
+### Ember 1.3.0.beta.3 (December 20, 2013)
+
+* [BUGFIX] Do not attempt to serialize undefined models.
+* [BUGFIX] Ensure {{link-to}} path observers are reregistered after render.
+* [BUGFIX] Ensure that the rootURL is available to location.
+* [BUGFIX] Make routePath smarter w/ stacked resource names
+* Better link-to error for invalid dest routes
+* Use imported handlebars before global Handlebars
+* Update router.js
+* Update RSVP.js
+* Improved a handeful of error messages
+* Provide more information for debugging
+* Added more assertions and deprecation warnings
+
 ### Ember 1.3.0.beta.2 (December 8, 2013)
 
-  * [BUGFIX] Add preventDefault option to link-to and action.
-  * [BUGFIX] contextualizeBindingPath should be aware of empty paths
-  * Expose helpful vars in {{debugger}} helper body
-  * [BUGFIX] container.has should not cause injections to be run.
-  * [BUGFIX] Make flag LOG_TRANSITIONS_INTERNAL work again
-  * [BUGFIX] Fix default {{yield}} for Components.
-  * [BUGFIX] Ensure aliased {{with}} blocks are not shared.
-  * [BUGFIX] Update to latest Backburner.js.
-  * [BUGFIX] Fix issue with Ember.Test.unregisterHelper.
-  * [BUGFIX] Make Ember.Handlebars.makeViewHelper warning useful.
+* [BUGFIX] Add preventDefault option to link-to and action.
+* [BUGFIX] contextualizeBindingPath should be aware of empty paths
+* Expose helpful vars in {{debugger}} helper body
+* [BUGFIX] container.has should not cause injections to be run.
+* [BUGFIX] Make flag LOG_TRANSITIONS_INTERNAL work again
+* [BUGFIX] Fix default {{yield}} for Components.
+* [BUGFIX] Ensure aliased {{with}} blocks are not shared.
+* [BUGFIX] Update to latest Backburner.js.
+* [BUGFIX] Fix issue with Ember.Test.unregisterHelper.
+* [BUGFIX] Make Ember.Handlebars.makeViewHelper warning useful.
 
 ### Ember 1.3.0.beta.1 (November 25, 2013)
 
