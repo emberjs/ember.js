@@ -58,11 +58,11 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     });
     ```
 
-    You can specify the view class that the outlet uses to contain and manage the
+    You can specify the view that the outlet uses to contain and manage the
     templates rendered into it.
 
     ``` handlebars
-    {{outlet viewClass=App.SectionContainer}}
+    {{outlet view='sectionContainer'}}
     ```
 
     ``` javascript
@@ -79,23 +79,39 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @return {String} HTML string
   */
   Handlebars.registerHelper('outlet', function outletHelper(property, options) {
-    var outletSource, outletContainerClass;
+   
+    var outletSource,
+        container,
+        viewName,
+        viewClass,
+        viewFullName;
 
     if (property && property.data && property.data.isRenderData) {
       options = property;
       property = 'main';
     }
 
+    container = options.data.view.container;
+
     outletSource = options.data.view;
     while (!outletSource.get('template.isTop')) {
       outletSource = outletSource.get('_parentView');
     }
 
-    outletContainerClass = options.hash.viewClass || Handlebars.OutletView;
+    // provide controller override
+    viewName = options.hash.view;
+
+    if (viewName) {
+      viewFullName = 'view:' + viewName;
+      Ember.assert("Using a quoteless view parameter with {{outlet}} is not supported. Please update to quoted usage '{{outlet \"" + viewName + "\"}}.", options.hashTypes.view !== 'ID');
+      Ember.assert("The view name you supplied '" + viewName + "' did not resolve to a view.", container.has(viewFullName));
+    }
+
+    viewClass = viewName ? container.lookupFactory(viewFullName) : options.hash.viewClass || Handlebars.OutletView;
 
     options.data.view.set('outletSource', outletSource);
     options.hash.currentViewBinding = '_view.outletSource._outlets.' + property;
 
-    return Handlebars.helpers.view.call(this, outletContainerClass, options);
+    return Handlebars.helpers.view.call(this, viewClass, options);
   });
 });
