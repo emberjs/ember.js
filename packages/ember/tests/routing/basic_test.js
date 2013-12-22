@@ -640,6 +640,29 @@ test("The Specials Page defaults to looking models up via `find`", function() {
   equal(Ember.$('p', '#qunit-fixture').text(), "1", "The model was used to render the template");
 });
 
+
+test("The Specials Page returns an assertion if model is not defined", function(){
+  Router.map(function() {
+    this.resource("special", { path: "/specials/:menu_item_id" });
+  });
+
+  bootApplication();
+
+  var oldAssert = Ember.assert;
+
+  Ember.assert = function(msg, test){
+    if(!test){
+      equal(msg, "You used the dynamic segment menu_item_id in your route special, but App.MenuItem did not exist and you did not override your route's `model` hook.");
+    }
+  };
+
+  Ember.run(function(){
+    router.handleURL("/specials/1");
+  });
+
+  Ember.assert = oldAssert;
+});
+
 test("The Special Page returning a promise puts the app into a loading state until the promise is resolved", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
