@@ -8,6 +8,16 @@
 require("ember-views/system/render_buffer");
 
 /**
+  Previously we used `Ember.$.uuid`, however `$.uuid` has been removed from
+  jQuery master. We'll just bootstrap our own uuid now.
+
+  @property uuid
+  @type Number
+  @private
+*/
+Ember.uuid = 0;
+
+/**
   @namespace
   @name Handlebars
   @private
