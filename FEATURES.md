@@ -126,6 +126,14 @@ for a detailed explanation.
 * `computed-read-only`
 
   Enables `Ember.computed.readOnly` which is the shortHand for
-Ember.computed.oneWay('foo').readOnly().
+  Ember.computed.oneWay('foo').readOnly().
 
   Added in [#3879](https://github.com/emberjs/ember.js/pull/3879)
+
+* `ember-metal-run-proxy`
+  Enables `Ember.run.proxy` which is ember run-loop aware variation of
+  jQuery.proxy.  Useful for integrating with 3rd party callbacks.
+
+* `ember-metal-run-method`
+  Enables `Ember.run.method` which constructs a function guarenteed to
+  be wrapped in a function. Useful for integrating with 3rd party callbacks.
