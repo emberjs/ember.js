@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/emberjs/ember-dev.git
-  revision: e287354a5e67c0b8793e7b93d3d9a1d27ed00524
+  revision: 8f73f9151b78d998837b13e6174c451b3251b929
   branch: master
   specs:
     ember-dev (0.1)
@@ -33,7 +33,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    aws-sdk (1.29.1)
+    aws-sdk (1.31.3)
       json (~> 1.4)
       nokogiri (>= 1.4.4)
       uuidtools (~> 2.1)
@@ -56,24 +56,24 @@ GEM
       rb-kqueue (>= 0.2)
     mime-types (1.25.1)
     mini_portile (0.5.2)
-    nokogiri (1.6.0)
+    nokogiri (1.6.1)
       mini_portile (~> 0.5.0)
     notify (0.5.2)
     posix-spawn (0.3.8)
     puma (2.7.1)
       rack (>= 1.1, < 2.0)
     rack (1.5.2)
-    rake (10.1.0)
+    rake (10.1.1)
     rake-pipeline-web-filters (0.7.0)
       rack
       rake-pipeline (~> 0.6)
     rb-fsevent (0.9.3)
-    rb-inotify (0.9.2)
+    rb-inotify (0.9.3)
       ffi (>= 0.5.0)
     rb-kqueue (0.2.0)
       ffi (>= 0.5.0)
     thor (0.18.1)
-    uglifier (2.3.2)
+    uglifier (2.4.0)
       execjs (>= 0.3.0)
       json (>= 1.8.0)
     uuidtools (2.1.4)
