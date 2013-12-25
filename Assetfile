@@ -80,8 +80,6 @@ distros.each do |name, modules|
     # Minify
     match "min/#{name}.js" do
       uglify{ "#{name}.min.js" }
-      filter VersionInfo
-      filter EmberLicenseFilter
     end
   end
 end
