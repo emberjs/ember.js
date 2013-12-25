@@ -22,8 +22,6 @@ var get = Ember.get,
   dependent array. This will return `-Infinity` when the dependent
   array is empty.
 
-  Example
-
   ```javascript
   App.Person = Ember.Object.extend({
     childAges: Ember.computed.mapBy('children', 'age'),
@@ -32,9 +30,17 @@ var get = Ember.get,
 
   var lordByron = App.Person.create({children: []});
   lordByron.get('maxChildAge'); // -Infinity
-  lordByron.get('children').pushObject({name: 'Augusta Ada Byron', age: 7});
+  lordByron.get('children').pushObject({
+    name: 'Augusta Ada Byron', age: 7
+  });
   lordByron.get('maxChildAge'); // 7
-  lordByron.get('children').pushObjects([{name: 'Allegra Byron', age: 5}, {name: 'Elizabeth Medora Leigh', age: 8}]);
+  lordByron.get('children').pushObjects([{
+    name: 'Allegra Byron',
+    age: 5
+  }, {
+    name: 'Elizabeth Medora Leigh',
+    age: 8
+  }]);
   lordByron.get('maxChildAge'); // 8
   ```
 
@@ -64,8 +70,6 @@ Ember.computed.max = function (dependentKey) {
   dependent array. This will return `Infinity` when the dependent
   array is empty.
 
-  Example
-
   ```javascript
   App.Person = Ember.Object.extend({
     childAges: Ember.computed.mapBy('children', 'age'),
@@ -74,9 +78,17 @@ Ember.computed.max = function (dependentKey) {
 
   var lordByron = App.Person.create({children: []});
   lordByron.get('minChildAge'); // Infinity
-  lordByron.get('children').pushObject({name: 'Augusta Ada Byron', age: 7});
+  lordByron.get('children').pushObject({
+    name: 'Augusta Ada Byron', age: 7
+  });
   lordByron.get('minChildAge'); // 7
-  lordByron.get('children').pushObjects([{name: 'Allegra Byron', age: 5}, {name: 'Elizabeth Medora Leigh', age: 8}]);
+  lordByron.get('children').pushObjects([{
+    name: 'Allegra Byron',
+    age: 5
+  }, {
+    name: 'Elizabeth Medora Leigh',
+    age: 8
+  }]);
   lordByron.get('minChildAge'); // 5
   ```
 
@@ -104,13 +116,12 @@ Ember.computed.min = function (dependentKey) {
 /**
   Returns an array mapped via the callback
 
-  The callback method you provide should have the following signature:
+  The callback method you provide should have the following signature.
+  `item` is the current item in the iteration.
 
   ```javascript
   function(item);
   ```
-
-  - `item` is the current item in the iteration.
 
   Example
 
@@ -121,8 +132,10 @@ Ember.computed.min = function (dependentKey) {
     })
   });
 
-  var hamster = App.Hamster.create({chores: ['cook', 'clean', 'write more unit tests']});
-  hamster.get('excitingChores'); // ['COOK!', 'CLEAN!', 'WRITE MORE UNIT TESTS!']
+  var hamster = App.Hamster.create({
+    chores: ['clean', 'write more unit tests']
+  });
+  hamster.get('excitingChores'); // ['CLEAN!', 'WRITE MORE UNIT TESTS!']
   ```
 
   @method computed.map
@@ -150,8 +163,6 @@ Ember.computed.map = function(dependentKey, callback) {
 /**
   Returns an array mapped to the specified key.
 
-  Example
-
   ```javascript
   App.Person = Ember.Object.extend({
     childAges: Ember.computed.mapBy('children', 'age')
@@ -161,7 +172,13 @@ Ember.computed.map = function(dependentKey, callback) {
   lordByron.get('childAges'); // []
   lordByron.get('children').pushObject({name: 'Augusta Ada Byron', age: 7});
   lordByron.get('childAges'); // [7]
-  lordByron.get('children').pushObjects([{name: 'Allegra Byron', age: 5}, {name: 'Elizabeth Medora Leigh', age: 8}]);
+  lordByron.get('children').pushObjects([{
+    name: 'Allegra Byron',
+    age: 5
+  }, {
+    name: 'Elizabeth Medora Leigh',
+    age: 8
+  }]);
   lordByron.get('childAges'); // [7, 5, 8]
   ```
 
@@ -188,15 +205,12 @@ Ember.computed.mapProperty = Ember.computed.mapBy;
 /**
   Filters the array by the callback.
 
-  The callback method you provide should have the following signature:
+  The callback method you provide should have the following signature.
+  `item` is the current item in the iteration.
 
   ```javascript
   function(item);
   ```
-
-  - `item` is the current item in the iteration.
-
-  Example
 
   ```javascript
   App.Hamster = Ember.Object.extend({
@@ -252,8 +266,6 @@ Ember.computed.filter = function(dependentKey, callback) {
 
 /**
   Filters the array by the property and value
-
-  Example
 
   ```javascript
   App.Hamster = Ember.Object.extend({
