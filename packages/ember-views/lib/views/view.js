@@ -111,8 +111,6 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
   },
 
   /**
-    @private
-
     Invoked by the view system when this view needs to produce an HTML
     representation. This method will create a new render buffer, if needed,
     then apply any default attributes, such as class names and visibility.
@@ -127,6 +125,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
     @param {Ember.RenderBuffer} buffer the render buffer. If no buffer is
       passed, a default buffer, using the current view's `tagName`, will
       be used.
+    @private
   */
   renderToBuffer: function(parentBuffer, bufferOperation) {
     var name = 'render.' + this.instrumentName,
@@ -161,13 +160,12 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
   },
 
   /**
-    @private
-
     Override the default event firing from `Ember.Evented` to
     also call methods with the given name.
 
     @method trigger
     @param name {String}
+    @private
   */
   trigger: function(name) {
     this._super.apply(this, arguments);
@@ -854,7 +852,7 @@ var EMPTY_ARRAY = [];
   @extends Ember.CoreView
 */
 Ember.View = Ember.CoreView.extend(
-/** @scope Ember.View.prototype */ {
+/* @scope Ember.View.prototype */ {
 
   concatenatedProperties: ['classNames', 'classNameBindings', 'attributeBindings'],
 
@@ -862,7 +860,7 @@ Ember.View = Ember.CoreView.extend(
     @property isView
     @type Boolean
     @default true
-    @final
+    @static
   */
   isView: true,
 
@@ -987,8 +985,6 @@ Ember.View = Ember.CoreView.extend(
   }).volatile(),
 
   /**
-    @private
-
     Private copy of the view's template context. This can be set directly
     by Handlebars without triggering the observer that causes the view
     to be re-rendered.
@@ -1004,6 +1000,7 @@ Ember.View = Ember.CoreView.extend(
     something of a hack and should be revisited.
 
     @property _context
+    @private
   */
   _context: Ember.computed(function(key) {
     var parentView, controller;
@@ -1021,12 +1018,11 @@ Ember.View = Ember.CoreView.extend(
   }),
 
   /**
-    @private
-
     If a value that affects template rendering changes, the view should be
     re-rendered to reflect the new value.
 
     @method _contextDidChange
+    @private
   */
   _contextDidChange: Ember.observer('context', function() {
     this.rerender();
@@ -1042,14 +1038,13 @@ Ember.View = Ember.CoreView.extend(
   isVisible: true,
 
   /**
-    @private
-
     Array of child views. You should never edit this array directly.
     Instead, use `appendChild` and `removeFromParent`.
 
     @property childViews
     @type Array
     @default []
+    @private
   */
   childViews: childViewsProperty,
 
@@ -1116,7 +1111,7 @@ Ember.View = Ember.CoreView.extend(
   /**
     Return the nearest ancestor that has a given property.
 
-    @property nearestWithProperty
+    @function nearestWithProperty
     @param {String} property A property name
     @return Ember.View
   */
@@ -1133,7 +1128,7 @@ Ember.View = Ember.CoreView.extend(
     Return the nearest ancestor whose parent is an instance of
     `klass`.
 
-    @property nearestChildOf
+    @method nearestChildOf
     @param {Class} klass Subclass of Ember.View (or Ember.View itself)
     @return Ember.View
   */
@@ -1147,11 +1142,10 @@ Ember.View = Ember.CoreView.extend(
   },
 
   /**
-    @private
-
     When the parent view changes, recursively invalidate `controller`
 
     @method _parentViewDidChange
+    @private
   */
   _parentViewDidChange: Ember.observer('_parentView', function() {
     if (this.isDestroying) { return; }
@@ -1266,14 +1260,13 @@ Ember.View = Ember.CoreView.extend(
   },
 
   /**
-    @private
-
     Iterates over the view's `classNameBindings` array, inserts the value
     of the specified property into the `classNames` array, then creates an
     observer to update the view's element if the bound property ever changes
     in the future.
 
     @method _applyClassNameBindings
+    @private
   */
   _applyClassNameBindings: function(classBindings) {
     var classNames = this.classNames,
@@ -1344,13 +1337,12 @@ Ember.View = Ember.CoreView.extend(
   },
 
   /**
-    @private
-
     Iterates through the view's attribute bindings, sets up observers for each,
     then applies the current value of the attributes to the passed render buffer.
 
     @method _applyAttributeBindings
     @param {Ember.RenderBuffer} buffer
+    @private
   */
   _applyAttributeBindings: function(buffer, attributeBindings) {
     var attributeValue, elem;
@@ -1380,8 +1372,6 @@ Ember.View = Ember.CoreView.extend(
   },
 
   /**
-    @private
-
     Given a property name, returns a dasherized version of that
     property name if the property evaluates to a non-falsy value.
 
@@ -1390,6 +1380,7 @@ Ember.View = Ember.CoreView.extend(
 
     @method _classStringForProperty
     @param property
+    @private
   */
   _classStringForProperty: function(property) {
     var parsedPath = Ember.View._parsePropertyPath(property);
@@ -1508,7 +1499,7 @@ Ember.View = Ember.CoreView.extend(
     finished synchronizing
 
     @method replaceIn
-    @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
+    @param {String|DOMElement|jQuery} target A selector, element, HTML string, or jQuery object
     @return {Ember.View} received
   */
   replaceIn: function(target) {
@@ -1524,8 +1515,6 @@ Ember.View = Ember.CoreView.extend(
   },
 
   /**
-    @private
-
     Schedules a DOM operation to occur during the next render phase. This
     ensures that all bindings have finished synchronizing before the view is
     rendered.
@@ -1545,6 +1534,7 @@ Ember.View = Ember.CoreView.extend(
 
     @method _insertElementLater
     @param {Function} fn the function that inserts the element into the DOM
+    @private
   */
   _insertElementLater: function(fn) {
     this._scheduledInsert = Ember.run.scheduleOnce('render', this, '_insertElement', fn);
@@ -1656,13 +1646,12 @@ Ember.View = Ember.CoreView.extend(
   willClearRender: Ember.K,
 
   /**
-    @private
-
     Run this callback on the current view (unless includeSelf is false) and recursively on child views.
 
     @method invokeRecursively
     @param fn {Function}
-    @param includeSelf (optional, default true)
+    @param includeSelf {Boolean} Includes itself if true.
+    @private
   */
   invokeRecursively: function(fn, includeSelf) {
     var childViews = (includeSelf === false) ? this._childViews : [this];
@@ -1747,8 +1736,6 @@ Ember.View = Ember.CoreView.extend(
   willDestroyElement: Ember.K,
 
   /**
-    @private
-
     Triggers the `willDestroyElement` event (which invokes the
     `willDestroyElement()` method if it exists) on this view and all child
     views.
@@ -1757,6 +1744,7 @@ Ember.View = Ember.CoreView.extend(
     `willClearRender` event recursively.
 
     @method _notifyWillDestroyElement
+    @private
   */
   _notifyWillDestroyElement: function() {
     var viewCollection = this.viewHierarchyCollection();
@@ -1766,13 +1754,12 @@ Ember.View = Ember.CoreView.extend(
   },
 
   /**
-    @private
-
     If this view's element changes, we need to invalidate the caches of our
     child views so that we do not retain references to DOM elements that are
     no longer needed.
 
     @method _elementDidChange
+    @private
   */
   _elementDidChange: Ember.observer('element', function() {
     this.forEachChildView(function(view) {
@@ -1966,14 +1953,14 @@ Ember.View = Ember.CoreView.extend(
   //
 
   /**
-    @private
-
     Setup a view, but do not finish waking it up.
-    - configure `childViews`
-    - register the view with the global views hash, which is used for event
+
+    * configure `childViews`
+    * register the view with the global views hash, which is used for event
       dispatch
 
     @method init
+    @private
   */
   init: function() {
     this.elementId = this.elementId || guidFor(this);
@@ -2152,12 +2139,11 @@ Ember.View = Ember.CoreView.extend(
   becameHidden: Ember.K,
 
   /**
-    @private
-
     When the view's `isVisible` property changes, toggle the visibility
     element of the actual DOM element.
 
     @method _isVisibleDidChange
+    @private
   */
   _isVisibleDidChange: Ember.observer('isVisible', function() {
     var $el = this.$();
@@ -2238,13 +2224,12 @@ Ember.View = Ember.CoreView.extend(
   //
 
   /**
-    @private
-
     Handle events from `Ember.EventDispatcher`
 
     @method handleEvent
     @param eventName {String}
     @param evt {Event}
+    @private
   */
   handleEvent: function(eventName, evt) {
     return this.currentState.handleEvent(this, eventName, evt);
@@ -2351,8 +2336,6 @@ Ember.View.reopen({
 Ember.View.reopenClass({
 
   /**
-    @private
-
     Parse a path and return an object which holds the parsed properties.
 
     For example a path like "content.isEnabled:enabled:disabled" will return the
@@ -2369,6 +2352,7 @@ Ember.View.reopenClass({
 
     @method _parsePropertyPath
     @static
+    @private
   */
   _parsePropertyPath: function(path) {
     var split = path.split(':'),
@@ -2395,8 +2379,6 @@ Ember.View.reopenClass({
   },
 
   /**
-    @private
-
     Get the class name for a given value, based on the path, optional
     `className` and optional `falsyClassName`.
 
@@ -2418,6 +2400,7 @@ Ember.View.reopenClass({
     @param className
     @param falsyClassName
     @static
+    @private
   */
   _classStringForValue: function(path, val, className, falsyClassName) {
     // When using the colon syntax, evaluate the truthiness or falsiness
