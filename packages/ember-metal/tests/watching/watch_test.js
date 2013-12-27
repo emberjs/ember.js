@@ -263,3 +263,15 @@ testBoth('watching "length" property on an array', function(get, set) {
   equal(get(arr, 'length'), 10, 'should get new value');
   equal(arr.length, 10, 'property should be accessible on arr');
 });
+
+test('watching non-configurable property should assert', function() {
+  var obj = {
+    state: 'happy'
+  };
+
+  Ember.platform.defineProperty(obj, 'sleepy', {});
+
+  expectAssertion(function() {
+    Ember.watchKey(obj, 'sleepy');
+  }, 'You cannot watch non-configurable property: sleepy');
+});
