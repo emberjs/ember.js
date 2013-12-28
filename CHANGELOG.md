@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### Ember 1.3.0.beta.4 (December 27, 2013)
+
+* Deprecate `RSVP.Promise.prototype.fail`.
+* Cleanup header comment: remove duplication and add version.
+
 ### Ember 1.3.0.beta.3 (December 20, 2013)
 
 * [BUGFIX] Do not attempt to serialize undefined models.
