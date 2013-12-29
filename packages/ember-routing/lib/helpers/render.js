@@ -36,7 +36,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ```handelbars
     <!-- application.hbs -->
     <h1>My great app</h1>
-    {{render navigation}}
+    {{render "navigation"}}
     ```
 
     ```html
@@ -99,6 +99,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     } else {
       throw Ember.Error("You must pass a templateName to render");
     }
+
+    Ember.deprecate("Using a quoteless parameter with {{render}} is deprecated. Please update to quoted usage '{{render \"" + name + "\"}}.", options.types[0] !== 'ID');
 
     // # legacy namespace
     name = name.replace(/\//g, '.');
