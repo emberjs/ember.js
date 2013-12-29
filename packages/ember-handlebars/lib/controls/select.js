@@ -14,7 +14,7 @@ var set = Ember.set,
     isArray = Ember.isArray,
     precompileTemplate = Ember.Handlebars.compile;
 
-Ember.SelectOption = Ember.View.extend({
+Ember.SelectOption = Ember.Component.extend({
   tagName: 'option',
   attributeBindings: ['value', 'selected'],
 
@@ -323,12 +323,12 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   @namespace Ember
   @extends Ember.View
 */
-Ember.Select = Ember.View.extend(
+Ember.Select = Ember.Component.extend(
   /** @scope Ember.Select.prototype */ {
 
   tagName: 'select',
   classNames: ['ember-select'],
-  defaultTemplate: precompileTemplate('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#if view.optionGroupPath}}{{#each view.groupedContent}}{{view view.groupView content=content label=label}}{{/each}}{{else}}{{#each view.content}}{{view view.optionView content=this}}{{/each}}{{/if}}'),
+  defaultLayout: precompileTemplate('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#if view.optionGroupPath}}{{#each view.groupedContent}}{{view view.groupView content=content label=label}}{{/each}}{{else}}{{#each view.content}}{{view view.optionView content=this}}{{/each}}{{/if}}'),
   attributeBindings: ['multiple', 'disabled', 'tabindex', 'name'],
 
   /**
