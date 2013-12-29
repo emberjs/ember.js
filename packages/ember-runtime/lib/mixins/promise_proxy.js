@@ -16,7 +16,7 @@ function observePromise(proxy, promise) {
   }, function(reason) {
     set(proxy, 'isRejected', true);
     set(proxy, 'reason', reason);
-    throw reason;
+    // don't re-throw, as we are merely observing
   }, "Ember: PromiseProxy");
 }
 
