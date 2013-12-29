@@ -108,11 +108,12 @@ Ember.TrackedArray.prototype = {
     items in the array.
 
     `callback` will be called for each operation and will be passed the following arguments:
-      * {array} items The items for the given operation
-      * {number} offset The computed offset of the items, ie the index in the
-      array of the first item for this operation.
-      * {string} operation The type of the operation.  One of
-      `Ember.TrackedArray.{RETAIN, DELETE, INSERT}`
+
+    * {array} items The items for the given operation
+    * {number} offset The computed offset of the items, ie the index in the
+    array of the first item for this operation.
+    * {string} operation The type of the operation.  One of
+    `Ember.TrackedArray.{RETAIN, DELETE, INSERT}`
 
     @method apply
     @param {function} callback
@@ -134,7 +135,7 @@ Ember.TrackedArray.prototype = {
   },
 
   /**
-    Return an ArrayOperationMatch for the operation that contains the item at `index`.
+    Return an `ArrayOperationMatch` for the operation that contains the item at `index`.
 
     @method _findArrayOperation
 
@@ -296,10 +297,10 @@ Ember.TrackedArray.prototype = {
 
   @method ArrayOperation
   @private
-  @property {string} type The type of the operation.  One of
+  @param {string} type The type of the operation.  One of
   `Ember.TrackedArray.{RETAIN, INSERT, DELETE}`
-  @property {number} count The number of items in this operation.
-  @property {array} items The items of the operation, if included.  RETAIN and
+  @param {number} count The number of items in this operation.
+  @param {array} items The items of the operation, if included.  RETAIN and
   INSERT include their items, DELETE does not.
 */
 function ArrayOperation (operation, count, items) {
@@ -314,11 +315,11 @@ function ArrayOperation (operation, count, items) {
 
   @method ArrayOperationMatch
   @private
-  @property {ArrayOperation} operation
-  @property {number} index The index of `operation` in the array of operations.
-  @property {boolean} split Whether or not the item index searched for would
+  @param {ArrayOperation} operation
+  @param {number} index The index of `operation` in the array of operations.
+  @param {boolean} split Whether or not the item index searched for would
   require a split for a new operation type.
-  @property {number} rangeStart The index of the first item in the operation,
+  @param {number} rangeStart The index of the first item in the operation,
   with respect to the tracked array.  The index of the last item can be computed
   from `rangeStart` and `operation.count`.
 */
