@@ -734,6 +734,7 @@ test("The loading state doesn't get entered for promises that resolve on the sam
   equal(Ember.$('p', '#qunit-fixture').text(), "1", "The app is now in the specials state");
 });
 
+/*
 asyncTest("The Special page returning an error fires the error hook on SpecialRoute", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
@@ -767,8 +768,9 @@ asyncTest("The Special page returning an error fires the error hook on SpecialRo
 
   handleURLRejectsWith('/specials/1', 'Setup error');
 });
+*/
 
-asyncTest("The Special page returning an error invokes SpecialRoute's error handler", function() {
+test("The Special page returning an error invokes SpecialRoute's error handler", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
@@ -780,9 +782,6 @@ asyncTest("The Special page returning an error invokes SpecialRoute's error hand
   App.MenuItem.reopenClass({
     find: function(id) {
       menuItem = App.MenuItem.create({ id: id });
-      Ember.run.later(function() {
-        menuItem.resolve(menuItem);
-      }, 1);
       return menuItem;
     }
   });
@@ -794,7 +793,6 @@ asyncTest("The Special page returning an error invokes SpecialRoute's error hand
     actions: {
       error: function(reason) {
         equal(reason, 'Setup error', 'SpecialRoute#error received the error thrown from setup');
-        start();
       }
     }
   });
@@ -802,6 +800,8 @@ asyncTest("The Special page returning an error invokes SpecialRoute's error hand
   bootApplication();
 
   handleURLRejectsWith('/specials/1', 'Setup error');
+
+  Ember.run(menuItem, menuItem.resolve, menuItem);
 });
 
 function testOverridableErrorHandler(handlersName) {
@@ -819,9 +819,6 @@ function testOverridableErrorHandler(handlersName) {
   App.MenuItem.reopenClass({
     find: function(id) {
       menuItem = App.MenuItem.create({ id: id });
-      Ember.run.later(function() {
-        menuItem.resolve(menuItem);
-      }, 1);
       return menuItem;
     }
   });
@@ -830,7 +827,6 @@ function testOverridableErrorHandler(handlersName) {
   attrs[handlersName] = {
     error: function(reason) {
       equal(reason, 'Setup error', "error was correctly passed to custom ApplicationRoute handler");
-      start();
     }
   };
 
@@ -845,13 +841,15 @@ function testOverridableErrorHandler(handlersName) {
   bootApplication();
 
   handleURLRejectsWith("/specials/1", "Setup error");
+
+  Ember.run(menuItem, 'resolve', menuItem);
 }
 
-asyncTest("ApplicationRoute's default error handler can be overridden", function() {
+test("ApplicationRoute's default error handler can be overridden", function() {
   testOverridableErrorHandler('actions');
 });
 
-asyncTest("ApplicationRoute's default error handler can be overridden (with DEPRECATED `events`)", function() {
+test("ApplicationRoute's default error handler can be overridden (with DEPRECATED `events`)", function() {
   Ember.TESTING_DEPRECATION = true;
   testOverridableErrorHandler('events');
 });
@@ -2388,7 +2386,6 @@ test("Route supports clearing outlet explicitly", function() {
 });
 
 test("Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered", function() {
-
   expect(8);
 
   Router.map(function() {
@@ -2632,3 +2629,58 @@ test("Ember.Location.registerImplementation is deprecated", function(){
 
   Ember.ENV.RAISE_ON_DEPRECATION = false;
 });
+
+test("Routes can refresh themselves causing their model hooks to be re-run", function() {
+  Router.map(function() {
+    this.resource('parent', { path: '/parent/:parent_id' }, function() {
+      this.route('child');
+    });
+  });
+
+  var appcount = 0;
+  App.ApplicationRoute = Ember.Route.extend({
+    model: function() {
+      ++appcount;
+    }
+  });
+
+  var parentcount = 0;
+  App.ParentRoute = Ember.Route.extend({
+    model: function(params) {
+      equal(params.parent_id, '123');
+      ++parentcount;
+    },
+    actions: {
+      refreshParent: function() {
+        this.refresh();
+      }
+    }
+  });
+
+  var childcount = 0;
+  App.ParentChildRoute = Ember.Route.extend({
+    model: function() {
+      ++childcount;
+    }
+  });
+
+  bootApplication();
+
+  equal(appcount, 1);
+  equal(parentcount, 0);
+  equal(childcount, 0);
+
+  Ember.run(router, 'transitionTo', 'parent.child', '123');
+
+  equal(appcount, 1);
+  equal(parentcount, 1);
+  equal(childcount, 1);
+
+  Ember.run(router, 'send', 'refreshParent');
+
+  equal(appcount, 1);
+  equal(parentcount, 2);
+  equal(childcount, 2);
+});
+
+

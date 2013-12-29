@@ -191,6 +191,7 @@ var DOT_LOOKUP_REGEX = /helpers\.(.*?)\)/,
     INVOCATION_SPLITTING_REGEX = /(.*blockHelperMissing\.call\(.*)(stack[0-9]+)(,.*)/;
 
 Ember.Handlebars.JavaScriptCompiler.stringifyLastBlockHelperMissingInvocation = function(source) {
+  debugger;
   var helperInvocation = source[source.length - 1],
       helperName = (DOT_LOOKUP_REGEX.exec(helperInvocation) || BRACKET_STRING_LOOKUP_REGEX.exec(helperInvocation))[1],
       matches = INVOCATION_SPLITTING_REGEX.exec(helperInvocation);
