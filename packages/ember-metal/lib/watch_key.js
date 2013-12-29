@@ -7,6 +7,9 @@ var metaFor = Ember.meta, // utils.js
     o_defineProperty = Ember.platform.defineProperty;
 
 Ember.watchKey = function(obj, keyName) {
+  var propertyDescriptor = Object.getOwnPropertyDescriptor(obj, keyName),
+      configurable = (!propertyDescriptor) ? true : (propertyDescriptor.configurable) ? true : false;
+
   // can't watch length on Array - it is special...
   if (keyName === 'length' && typeOf(obj) === 'array') { return; }
 
@@ -22,6 +25,7 @@ Ember.watchKey = function(obj, keyName) {
 
     if (MANDATORY_SETTER && keyName in obj) {
       m.values[keyName] = obj[keyName];
+      Ember.assert('You cannot watch non-configurable property: ' + keyName, configurable);
       o_defineProperty(obj, keyName, {
         configurable: true,
         enumerable: true,
