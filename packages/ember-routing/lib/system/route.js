@@ -27,6 +27,9 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @method exit
   */
   exit: function() {
+    if (Ember.FEATURES.isEnabled("query-params-new")) {
+      this.controller._deactivateQueryParamObservers();
+    }
     this.deactivate();
     this.teardownViews();
   },
@@ -195,21 +198,18 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     ### `error`
 
     When attempting to transition into a route, any of the hooks
-    may throw an error, or return a promise that rejects, at which
-    point an `error` action will be fired on the partially-entered
-    routes, allowing for per-route error handling logic, or shared
-    error handling logic defined on a parent route.
+    may return a promise that rejects, at which point an `error`
+    action will be fired on the partially-entered routes, allowing
+    for per-route error handling logic, or shared error handling
+    logic defined on a parent route.
 
     Here is an example of an error handler that will be invoked
-    for rejected promises / thrown errors from the various hooks
-    on the route, as well as any unhandled errors from child
-    routes:
+    for rejected promises from the various hooks on the route,
+    as well as any unhandled errors from child routes:
 
     ```js
     App.AdminRoute = Ember.Route.extend({
       beforeModel: function() {
-        throw "bad things!";
-        // ...or, equivalently:
         return Ember.RSVP.reject("bad things!");
       },
 
@@ -254,6 +254,53 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @default null
   */
   actions: null,
+
+  _actions: {
+    finalizeQueryParamChange: function(params, finalParams) {
+      if (Ember.FEATURES.isEnabled("query-params-new")) {
+        // In this hook we receive a list of raw URL query
+        // param changes. We need to take any
+
+        var controller = this.controller;
+        var changes = controller._queryParamChangesDuringSuspension;
+        var queryParams = get(controller, '_queryParamHash');
+
+        // Loop through all the query params that
+        // this controller knows about.
+        for (var k in queryParams) {
+          if (queryParams.hasOwnProperty(k)) {
+
+            // Do a reverse lookup to see if the changed query
+            // param URL key corresponds to a QP property on
+            // this controller.
+            if (queryParams[k] in params) {
+              // Update this controller property in a way that
+              // won't fire observers.
+              controller._finalizingQueryParams = true;
+              if (!changes || !(k in changes)) {
+                // Only update the controller if the query param
+                // value wasn't overriden in setupController.
+                set(controller, k, params[queryParams[k]]);
+              }
+              controller._finalizingQueryParams = false;
+
+              // Delete from params so that child routes
+              // don't also try to respond to changes to
+              // non-fully-qualified query param name changes.
+              delete params[queryParams[k]];
+            }
+
+            finalParams[queryParams[k]] = get(controller, k);
+          }
+        }
+
+        controller._queryParamChangesDuringSuspension = null;
+
+        // Bubble so that parent routes can claim QPs.
+        return true;
+      }
+    }
+  },
 
   /**
     @deprecated
@@ -379,6 +426,15 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   },
 
   /**
+    TODO description
+
+    @method refresh
+   */
+  refresh: function() {
+    return this.router.router.refresh(this).method('replace');
+  },
+
+  /**
     Transition into another route while replacing the current URL, if possible.
     This will replace the current history entry instead of adding a new one.
     Beside that, it is identical to `transitionTo` in all other respects. See
@@ -456,7 +512,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     @method setup
   */
-  setup: function(context, queryParams) {
+  setup: function(context, transition) {
     var controllerName = this.controllerName || this.routeName,
         controller = this.controllerFor(controllerName, true);
     if (!controller) {
@@ -467,42 +523,42 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     // referenced in action handlers
     this.controller = controller;
 
-    var args = [controller, context];
+    if (Ember.FEATURES.isEnabled("query-params-new")) {
+      var parts = controllerName.split('.');
 
-    if (Ember.FEATURES.isEnabled("query-params")) {
-      args.push(queryParams);
+      // TODO: this can't be totally right...
+      if (controllerName !== 'application') {
+        this.controller._queryParamScope = parts[parts.length - 1];
+      }
+      this.controller._activateQueryParamObservers();
     }
 
     if (this.setupControllers) {
       Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
       this.setupControllers(controller, context);
     } else {
-      this.setupController.apply(this, args);
+
+      if (Ember.FEATURES.isEnabled("query-params-new")) {
+        // Prevent updates to query params in setupController
+        // from firing another transition. Updating QPs in
+        // setupController will only affect the final
+        // generated URL.
+        controller._finalizingQueryParams = true;
+        controller._queryParamChangesDuringSuspension = {};
+        this.setupController(controller, context, transition);
+        controller._finalizingQueryParams = false;
+      } else {
+        this.setupController(controller, context);
+      }
     }
 
     if (this.renderTemplates) {
       Ember.deprecate("Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.");
       this.renderTemplates(context);
     } else {
-      this.renderTemplate.apply(this, args);
+      this.renderTemplate(controller, context);
     }
   },
-
-  /**
-    A hook you can implement to optionally redirect to another route.
-
-    If you call `this.transitionTo` from inside of this hook, this route
-    will not be entered in favor of the other hook.
-
-    Note that this hook is called by the default implementation of
-    `afterModel`, so if you override `afterModel`, you must either
-    explicitly call `redirect` or just put your redirecting
-    `this.transitionTo()` call within `afterModel`.
-
-    @method redirect
-    @param {Object} model the model for this route
-  */
-  redirect: Ember.K,
 
   /**
     This hook is the first of the route entry validation hooks
@@ -565,8 +621,6 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
             // error so that it'd be handled by the `error`
             // hook, you would have to either
             return Ember.RSVP.reject(e);
-            // or
-            throw e;
           });
         }
       }
@@ -615,10 +669,32 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
       resolves. Otherwise, non-promise return values are not
       utilized in any way.
    */
-  afterModel: function(resolvedModel, transition, queryParams) {
-    this.redirect(resolvedModel, transition);
-  },
+  afterModel: Ember.K,
 
+  /**
+    A hook you can implement to optionally redirect to another route.
+
+    If you call `this.transitionTo` from inside of this hook, this route
+    will not be entered in favor of the other hook.
+
+    `redirect` and `afterModel` behave very similarly and are
+    called almost at the same time, but they have an important
+    distinction in the case that, from one of these hooks, a
+    redirect into a child route of this route occurs: redirects
+    from `afterModel` essentially invalidate the current attempt
+    to enter this route, and will result in this route's `beforeModel`,
+    `model`, and `afterModel` hooks being fired again within
+    the new, redirecting transition. Redirects that occur within
+    the `redirect` hook, on the other hand, will _not_ cause
+    these hooks to be fired again the second time around; in
+    other words, by the time the `redirect` hook has been called,
+    both the resolved model and attempted entry into this route
+    are considered to be fully validated.
+
+    @method redirect
+    @param {Object} model the model for this route
+  */
+  redirect: Ember.K,
 
   /**
     @private
@@ -685,6 +761,8 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     var match, name, sawParams, value;
 
     for (var prop in params) {
+      if (prop === 'queryParams') { continue; }
+
       if (match = prop.match(/^(.*)_id$/)) {
         name = match[1];
         value = params[prop];
@@ -696,6 +774,19 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     else if (!name) { return; }
 
     return this.findModel(name, value);
+  },
+
+  /**
+    @private
+
+    Router.js hook.
+   */
+  deserialize: function(params, transition) {
+    if (Ember.FEATURES.isEnabled("query-params-new")) {
+      return this.model(this.paramsFor(this.routeName), transition);
+    } else {
+      return this.model(params, transition);
+    }
   },
 
   /**
@@ -837,7 +928,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @param {Controller} controller instance
     @param {Object} model
   */
-  setupController: function(controller, context) {
+  setupController: function(controller, context, transition) {
     if (controller && (context !== undefined)) {
       set(controller, 'model', context);
     }
@@ -1156,8 +1247,45 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   }
 });
 
+
+if (Ember.FEATURES.isEnabled("query-params-new")) {
+  Ember.Route.reopen({
+    paramsFor: function(name) {
+      var route = this.container.lookup('route:' + name);
+
+      if (!route) {
+        return {};
+      }
+
+      var transition = this.router.router.activeTransition;
+      var queryParamsHash = this.router._queryParamNamesForSingle(route.routeName);
+
+      var params, queryParams;
+      if (transition) {
+        params = transition.params[name] || {};
+        queryParams = transition.queryParams;
+      } else {
+        var state = this.router.router.state;
+        params = state.params[name] || {};
+        queryParams = state.queryParams;
+      }
+
+      this.router._queryParamOverrides(params, queryParamsHash.queryParams, function(name, resultsName, colonized) {
+        // Replace the controller-supplied value with more up
+        // to date values (e.g. from an incoming transition).
+        var value = (resultsName in queryParams) ?
+                    queryParams[resultsName]  :  params[resultsName];
+        delete params[resultsName];
+        params[colonized.split(':').pop()] = value;
+      });
+
+      return params;
+    }
+  });
+}
+
 function parentRoute(route) {
-  var handlerInfos = route.router.router.targetHandlerInfos;
+  var handlerInfos = route.router.router.state.handlerInfos;
 
   if (!handlerInfos) { return; }
 
