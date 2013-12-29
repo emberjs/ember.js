@@ -16,7 +16,7 @@ function tap(proxy, promise) {
     set(proxy, 'isRejected', true);
     set(proxy, 'reason', reason);
     throw reason;
-  });
+  }, "Ember: PromiseProxy");
 }
 
 /**
@@ -71,7 +71,7 @@ function tap(proxy, promise) {
   controller.get('lastName')  //=> 'Penner'
   ```
 
-  If the controller is backing a template, the attributes are 
+  If the controller is backing a template, the attributes are
   bindable from within that template
 
   ```handlebars
@@ -99,8 +99,8 @@ Ember.PromiseProxyMixin = Ember.Mixin.create({
     }
   }),
 
-  then: function(fulfill, reject) {
-    return get(this, 'promise').then(fulfill, reject);
+  then: function(fulfill, reject, label) {
+    return get(this, 'promise').then(fulfill, reject, label);
   }
 });
 
