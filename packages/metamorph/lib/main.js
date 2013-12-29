@@ -4,7 +4,7 @@ define("metamorph",
     "use strict";
     // ==========================================================================
     // Project:   metamorph
-    // Copyright: ©2011 My Company Inc. All rights reserved.
+    // Copyright: ©2013 Tilde, Inc. All rights reserved.
     // ==========================================================================
 
     var K = function() {},
@@ -121,7 +121,7 @@ define("metamorph",
 
       /**
       * @public
-      * 
+      *
       * Remove this object (including starting and ending
       * placeholders).
       *
@@ -356,6 +356,10 @@ define("metamorph",
         // tables and lists where a simple innerHTML on a div would
         // swallow some of the content.
         node = firstNodeFor(start.parentNode, html);
+
+        if (outerToo) {
+          start.parentNode.removeChild(start);
+        }
 
         // copy the nodes for the HTML between the starting and ending
         // placeholder.
