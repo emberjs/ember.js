@@ -51,7 +51,7 @@ var Backburner = requireModule('backburner').Backburner,
   @param {Object} [args*] Any additional arguments you wish to pass to the method.
   @return {Object} return value from invoking the passed function.
 */
-Ember.run = function(target, method) {
+Ember.run = Ember.fun = function(target, method) {
   var ret;
 
   if (Ember.onerror) {
