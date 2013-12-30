@@ -103,11 +103,10 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray, {
   },
 
   /**
-    @private
-
     Invoked when the content property is about to change. Notifies observers that the
     entire array content will change.
 
+    @private
     @method _contentWillChange
   */
   _contentWillChange: Ember.beforeObserver('content', function() {
@@ -129,11 +128,10 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray, {
   contentArrayDidChange: Ember.K,
 
   /**
-    @private
-
     Invoked when the content property changes. Notifies observers that the
     entire array content has changed.
 
+    @private
     @method _contentDidChange
   */
   _contentDidChange: Ember.observer('content', function() {
