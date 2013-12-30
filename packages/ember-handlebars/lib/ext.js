@@ -4,11 +4,10 @@ var slice = Array.prototype.slice,
     originalTemplate = Ember.Handlebars.template;
 
 /**
-  @private
-
   If a path starts with a reserved keyword, returns the root
   that should be used.
 
+  @private
   @method normalizePath
   @for Ember
   @param root {Object}
@@ -126,8 +125,6 @@ Ember.Handlebars.resolveHash = function(context, hash, options) {
 };
 
 /**
-  @private
-
   Registers a helper in Handlebars that will be called if no property with the
   given name can be found on the current context object, and no helper with
   that name is registered.
@@ -135,6 +132,7 @@ Ember.Handlebars.resolveHash = function(context, hash, options) {
   This throws an exception with a more helpful error message so the user can
   track down where the problem is happening.
 
+  @private
   @method helperMissing
   @for Ember.Handlebars.helpers
   @param {String} path
@@ -159,8 +157,6 @@ Ember.Handlebars.registerHelper('helperMissing', function(path) {
 });
 
 /**
-  @private
-
   Registers a helper in Handlebars that will be called if no property with the
   given name can be found on the current context object, and no helper with
   that name is registered.
@@ -168,6 +164,7 @@ Ember.Handlebars.registerHelper('helperMissing', function(path) {
   This throws an exception with a more helpful error message so the user can
   track down where the problem is happening.
 
+  @private
   @method helperMissing
   @for Ember.Handlebars.helpers
   @param {String} path
@@ -306,8 +303,6 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
 };
 
 /**
-  @private
-
   A (mostly) private helper function to `registerBoundHelper`. Takes the
   provided Handlebars helper function fn and returns it in wrapped
   bound helper form.
@@ -326,6 +321,7 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
   In the above example, if the helper function hadn't been wrapped in
   `makeBoundHelper`, the registered helper would be unbound.
 
+  @private
   @method makeBoundHelper
   @for Ember.Handlebars
   @param {Function} function
@@ -449,10 +445,9 @@ Ember.Handlebars.makeBoundHelper = function(fn) {
 };
 
 /**
-  @private
-
   Renders the unbound form of an otherwise bound helper function.
 
+  @private
   @method evaluateUnboundHelper
   @param {Function} fn
   @param {Object} context
@@ -476,11 +471,10 @@ function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
 }
 
 /**
-  @private
-
   Overrides Handlebars.template so that we can distinguish
   user-created, top-level templates from inner contexts.
 
+  @private
   @method template
   @for Ember.Handlebars
   @param {String} spec

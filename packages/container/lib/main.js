@@ -1,8 +1,8 @@
 /**
-@private
 Public api for the container is still in flux.
 The public api, specified on the application namespace should be considered the stable api.
 // @module container
+  @private
 */
 
 /*
@@ -500,8 +500,6 @@ define("container",
       },
 
       /**
-        @private
-
         Used only via `injection`.
 
         Provides a specialized form of injection, specifically enabling
@@ -530,6 +528,7 @@ define("container",
         user.router === post.router; //=> true
         ```
 
+        @private
         @method typeInjection
         @param {String} type
         @param {String} property
@@ -604,8 +603,6 @@ define("container",
 
 
       /**
-        @private
-
         Used only via `factoryInjection`.
 
         Provides a specialized form of injection, specifically enabling
@@ -628,6 +625,7 @@ define("container",
         UserFactory.store instanceof SomeStore; //=> true
         ```
 
+        @private
         @method factoryTypeInjection
         @param {String} type
         @param {String} property

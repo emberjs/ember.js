@@ -23,10 +23,9 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   /**
-    @private
-
     Used to set state on first call to setURL
 
+    @private
     @method initState
   */
   initState: function() {
@@ -43,10 +42,9 @@ Ember.HistoryLocation = Ember.Object.extend({
   rootURL: '/',
 
   /**
-    @private
-
     Returns the current `location.pathname` without rootURL
 
+    @private
     @method getURL
     @return url {String}
   */
@@ -67,10 +65,9 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   /**
-    @private
-
     Uses `history.pushState` to update the url without a page reload.
 
+    @private
     @method setURL
     @param path {String}
   */
@@ -84,11 +81,10 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   /**
-    @private
-
     Uses `history.replaceState` to update the url without a page reload
     or history modification.
 
+    @private
     @method replaceURL
     @param path {String}
   */
@@ -102,12 +98,11 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   /**
-   @private
-
    Get the current `history.state`
    Polyfill checks for native browser support and falls back to retrieving
    from a private _historyState variable
 
+   @private
    @method getState
    @return state {Object}
   */
@@ -116,10 +111,9 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   /**
-   @private
-
    Pushes a new state
 
+   @private
    @method pushState
    @param path {String}
   */
@@ -138,10 +132,9 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   /**
-   @private
-
    Replaces the current state
 
+   @private
    @method replaceState
    @param path {String}
   */
@@ -160,11 +153,10 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   /**
-    @private
-
     Register a callback to be invoked whenever the browser
     history changes, including using forward and back buttons.
 
+    @private
     @method onUpdateURL
     @param callback {Function}
   */
@@ -183,10 +175,9 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   /**
-    @private
-
     Used when using `{{action}}` helper.  The url is always appended to the rootURL.
 
+    @private
     @method formatURL
     @param url {String}
     @return formatted url {String}
@@ -202,10 +193,9 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   /**
-    @private
-
     Cleans up the HistoryLocation event listener.
 
+    @private
     @method willDestroy
   */
   willDestroy: function() {

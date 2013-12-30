@@ -60,8 +60,6 @@ Ember.EventDispatcher = Ember.Object.extend({
   },
 
   /**
-    @private
-
     The root DOM element to which event listeners should be attached. Event
     listeners will be attached to the document unless this is overridden.
 
@@ -70,6 +68,7 @@ Ember.EventDispatcher = Ember.Object.extend({
     The default body is a string since this may be evaluated before document.body
     exists in the DOM.
 
+    @private
     @property rootElement
     @type DOMElement
     @default 'body'
@@ -77,8 +76,6 @@ Ember.EventDispatcher = Ember.Object.extend({
   rootElement: 'body',
 
   /**
-    @private
-
     Sets up event listeners for standard browser events.
 
     This will be called after the browser sends a `DOMContentReady` event. By
@@ -86,6 +83,7 @@ Ember.EventDispatcher = Ember.Object.extend({
     would like to register the listeners on a different element, set the event
     dispatcher's `root` property.
 
+    @private
     @method setup
     @param addedEvents {Hash}
   */
@@ -117,8 +115,6 @@ Ember.EventDispatcher = Ember.Object.extend({
   },
 
   /**
-    @private
-
     Registers an event listener on the document. If the given event is
     triggered, the provided event handler will be triggered on the target view.
 
@@ -133,6 +129,7 @@ Ember.EventDispatcher = Ember.Object.extend({
     setupHandler('mousedown', 'mouseDown');
     ```
 
+    @private
     @method setupHandler
     @param {Element} rootElement
     @param {String} event the browser-originated event to listen to

@@ -160,8 +160,6 @@ function shouldDisplayIfHelperContent(result) {
 }
 
 /**
-  @private
-
   '_triageMustache' is used internally select between a binding, helper, or component for
   the given context. Until this point, it would be hard to determine if the
   mustache is a property reference or a regular helper reference. This triage
@@ -169,6 +167,7 @@ function shouldDisplayIfHelperContent(result) {
 
   This would not be typically invoked by directly.
 
+  @private
   @method _triageMustache
   @for Ember.Handlebars.helpers
   @param {String} property Property/helperID to triage
@@ -211,8 +210,6 @@ Ember.Handlebars.resolveHelper = function(container, name) {
 };
 
 /**
-  @private
-
   `bind` can be used to display a value, then update that value if it
   changes. For example, if you wanted to print the `title` property of
   `content`:
@@ -228,6 +225,7 @@ Ember.Handlebars.resolveHelper = function(container, name) {
   relies on Ember's KVO system. For all other browsers this will be handled for
   you automatically.
 
+  @private
   @method bind
   @for Ember.Handlebars.helpers
   @param {String} property Property to bind
@@ -247,8 +245,6 @@ EmberHandlebars.registerHelper('bind', function bindHelper(property, options) {
 });
 
 /**
-  @private
-
   Use the `boundIf` helper to create a conditional that re-evaluates
   whenever the truthiness of the bound value changes.
 
@@ -258,6 +254,7 @@ EmberHandlebars.registerHelper('bind', function bindHelper(property, options) {
   {{/boundIf}}
   ```
 
+  @private
   @method boundIf
   @for Ember.Handlebars.helpers
   @param {String} property Property to bind
@@ -621,8 +618,6 @@ EmberHandlebars.registerHelper('bindAttr', function bindAttrHelper() {
 });
 
 /**
-  @private
-
   Helper that, given a space-separated string of property paths and a context,
   returns an array of class names. Calling this method also has the side
   effect of setting up observers at those property paths, such that if they
@@ -634,6 +629,7 @@ EmberHandlebars.registerHelper('bindAttr', function bindAttrHelper() {
   "fooBar"). If the value is a string, it will add that string as the class.
   Otherwise, it will not add any new class name.
 
+  @private
   @method bindClasses
   @for Ember.Handlebars
   @param {Ember.Object} context The context from which to lookup properties

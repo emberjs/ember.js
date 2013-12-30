@@ -193,10 +193,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     },
 
     /**
-      @private
-
       This method is invoked by observers installed during `init` that fire
       whenever the params change
+
+      @private
       @method _paramsChanged
      */
     _paramsChanged: function() {
@@ -204,10 +204,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     },
 
     /**
-      @private
-
      This is called to setup observers that will trigger a rerender.
 
+     @private
      @method _setupPathObservers
     **/
     _setupPathObservers: function(){
@@ -240,10 +239,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     },
 
     /**
-      @private
-
       This method is invoked by observers installed during `init` that fire
       whenever the query params change
+      @private
      */
     _queryParamsChanged: function (object, path) {
       this.notifyPropertyChange('queryParams');
@@ -251,11 +249,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
 
     /**
-      @private
-
       Even though this isn't a virtual view, we want to treat it as if it is
       so that you can access the parent with {{view.prop}}
 
+      @private
       @method concreteView
     **/
     concreteView: Ember.computed(function() {
@@ -317,10 +314,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     }).property('routeArgs'),
 
     /**
-      @private
-
       Returns the application's main router from the container.
 
+      @private
       @property router
     **/
     router: Ember.computed(function() {
@@ -328,10 +324,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     }),
 
     /**
-      @private
-
       Event handler that invokes the link, activating the associated route.
 
+      @private
       @method _invoke
       @param {Event} event
     */
@@ -359,10 +354,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     },
 
     /**
-      @private
-
       Computed property that returns the resolved parameters.
 
+      @private
       @property
       @return {Array}
      */
@@ -386,11 +380,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     }).property(),
 
     /**
-      @private
-
       Computed property that returns the current route name and
       any dynamic segments.
 
+      @private
       @property
       @return {Array} An array with the route name and any dynamic segments
      */
