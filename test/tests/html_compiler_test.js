@@ -623,6 +623,3 @@ test("Node helpers can be used for attribute bindings", function() {
 
   equalHTML(fragment, '<a href="zippy.html">linky</a>');
 });
-
-var template = compile("<a href='{{foo}}'>{{bar}}</a>");
-console.log(template);

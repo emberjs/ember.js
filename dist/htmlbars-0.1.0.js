@@ -297,11 +297,11 @@ define("htmlbars/compiler/helpers",
 
       var options = ['types:' + array(types), 'hashTypes:' + hash(hashTypes), 'hash:' + hash(hashPairs)];
 
-      if (programId !== null) {
+      if (programId != null) {
         options.push('render:child' + programId + '(dom)');
       }
 
-      if (inverseId !== null) {
+      if (inverseId != null) {
         options.push('inverse:child' + inverseId + '(dom)');
       }
 
