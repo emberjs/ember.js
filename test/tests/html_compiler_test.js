@@ -497,6 +497,14 @@ test("A simple block helper can return the default document fragment", function(
   compilesTo('{{#testing}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
 });
 
+test("A simple block helper can return text", function() {
+  registerHelper('testing', function(options) {
+    return options.render(this);
+  });
+
+  compilesTo('{{#testing}}test{{/testing}}', 'test');
+});
+
 test("A block helper can have an else block", function() {
   registerHelper('testing', function(options) {
     return options.inverse(this);
@@ -583,7 +591,7 @@ test("Data-bound block helpers", function() {
   object.shouldRender = true;
   callback();
 
-  equalHTML(fragment, '<p>hi</p> content <p>Appears!</p> more <em>content</em> here'); 
+  equalHTML(fragment, '<p>hi</p> content <p>Appears!</p> more <em>content</em> here');
 
   object.shouldRender = false;
   callback();
