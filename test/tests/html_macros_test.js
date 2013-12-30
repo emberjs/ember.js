@@ -1,4 +1,4 @@
-import { registerMacro, removeMacro } from "htmlbars/macros";
+import { registerMacro } from "htmlbars/macros";
 import { compileSpec } from "htmlbars/compiler";
 import { hydrate } from "htmlbars/runtime";
 import { HTMLElement } from "htmlbars/ast";
@@ -10,21 +10,11 @@ function equalHTML(fragment, html) {
   equal(div.innerHTML, html);
 }
 
-var macros;
-
-module("HTML Macros", {
-  setup: function() {
-    macros = {};
-  }
-});
-
-function registerMacro(name, test, macro) {
-  macros[name] = { test: test, mutate: mutate };;
-}
+module("HTML Macros");
 
 function compile(string) {
   var spec = compileSpec(string);
-  return hydrate(spec, { macros: macros });
+  return hydrate(spec, {});
 }
 
 test("A simple HTML macro can replace a tagName", function() {
