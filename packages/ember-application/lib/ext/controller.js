@@ -6,7 +6,7 @@
 var get = Ember.get, set = Ember.set;
 
 function verifyNeedsDependencies(controller, container, needs) {
-  var dependency, i, l;
+  var dependency, i, l, missing = [];
 
   for (i=0, l=needs.length; i<l; i++) {
     dependency = needs[i];
@@ -19,9 +19,10 @@ function verifyNeedsDependencies(controller, container, needs) {
 
     // Structure assert to still do verification but not string concat in production
     if (!container.has(dependency)) {
-      Ember.assert(Ember.inspect(controller) + " needs " + dependency + " but it does not exist", false);
+      missing.push(dependency);
     }
   }
+  Ember.assert(Ember.inspect(controller) + " needs [ " + missing.join(', ') + " ] but " + (missing.length > 1 ? 'they' : 'it') + " could not be found", !missing.length);
 }
 
 var defaultControllersComputedProperty = Ember.computed(function() {
