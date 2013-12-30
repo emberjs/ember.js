@@ -32,7 +32,7 @@ test("If a controller specifies an unavailable dependency, it raises", function(
     needs: ['comments']
   }));
 
-  expectAssertion(function() {
+  throws(function() {
     container.lookup('controller:post');
   }, /controller:comments/);
 
@@ -40,7 +40,7 @@ test("If a controller specifies an unavailable dependency, it raises", function(
     needs: ['posts', 'comments']
   }));
 
-  expectAssertion(function() {
+  throws(function() {
     container.lookup('controller:blog');
   }, /controller:posts, controller:comments/);
 });
