@@ -185,7 +185,7 @@ function wait(app, value) {
 *
 * Example:
 *
-* ```
+* ```javascript
 * visit('posts/index').then(function() {
 *   // assert something
 * });
@@ -203,7 +203,7 @@ asyncHelper('visit', visit);
 *
 * Example:
 *
-* ```
+* ```javascript
 * click('.some-jQuery-selector').then(function() {
 *  // assert something
 * });
@@ -220,7 +220,7 @@ asyncHelper('click', click);
 *
 * Example:
 *
-* ```
+* ```javascript
 * keyEvent('.some-jQuery-selector', 'keypress', 13).then(function() {
 *  // assert something
 * });
@@ -239,7 +239,7 @@ asyncHelper('keyEvent', keyEvent);
 *
 * Example:
 *
-* ```
+* ```javascript
 * fillIn('#email', 'you@example.com').then(function() {
 *   // assert something
 * });
@@ -259,7 +259,7 @@ asyncHelper('fillIn', fillIn);
 *
 * Example:
 *
-* ```
+* ```javascript
 * var $el = find('.my-selector);
 * ```
 *
@@ -270,12 +270,11 @@ asyncHelper('fillIn', fillIn);
 helper('find', find);
 
 /**
-*
-* Like `find`, but throws an error if the element selector returns no results
+* Like `find`, but throws an error if the element selector returns no results.
 *
 * Example:
 *
-* ```
+* ```javascript
 * var $el = findWithAssert('.doesnt-exist'); // throws error
 * ```
 *
@@ -296,7 +295,7 @@ helper('findWithAssert', findWithAssert);
 
   Example:
 
-  ```
+  ```javascript
   Ember.Test.registerAsyncHelper('loginUser', function(app, username, password) {
     visit('secured/path/here')
     .fillIn('#username', username)
@@ -309,7 +308,6 @@ helper('findWithAssert', findWithAssert);
   @method wait
   @param {Object} value The value to be returned.
   @return {RSVP.Promise}
-  ```
 */
 asyncHelper('wait', wait);
 asyncHelper('andThen', andThen);
