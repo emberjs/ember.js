@@ -15,7 +15,6 @@ var loaded = {};
   The provided `callback` will be called with the `name` passed
   resolved from a string into the object:
 
-
   ``` javascript
   Ember.onLoad('Ember.Handlebars' function(hbars){
     hbars.registerHelper(...);
