@@ -131,9 +131,15 @@ for a detailed explanation.
   Added in [#3879](https://github.com/emberjs/ember.js/pull/3879)
 
 * `ember-metal-run-proxy`
+
   Enables `Ember.run.proxy` which is ember run-loop aware variation of
   jQuery.proxy.  Useful for integrating with 3rd party callbacks.
 
+  Added in [#3991](https://github.com/emberjs/ember.js/pull/3991).
+
 * `ember-metal-run-method`
+
   Enables `Ember.run.method` which constructs a function guarenteed to
   be wrapped in a function. Useful for integrating with 3rd party callbacks.
+
+  Added in [#3991](https://github.com/emberjs/ember.js/pull/3991).
