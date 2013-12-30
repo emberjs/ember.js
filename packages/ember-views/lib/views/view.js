@@ -851,8 +851,7 @@ var EMPTY_ARRAY = [];
   @namespace Ember
   @extends Ember.CoreView
 */
-Ember.View = Ember.CoreView.extend(
-/* @scope Ember.View.prototype */ {
+Ember.View = Ember.CoreView.extend({
 
   concatenatedProperties: ['classNames', 'classNameBindings', 'attributeBindings'],
 
