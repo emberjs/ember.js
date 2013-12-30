@@ -29,12 +29,20 @@ test("If a controller specifies an unavailable dependency, it raises", function(
   var container = new Ember.Container();
 
   container.register('controller:post', Ember.Controller.extend({
-    needs: 'posts'
+    needs: ['comments']
   }));
 
   expectAssertion(function() {
     container.lookup('controller:post');
-  }, /controller:posts/);
+  }, /controller:comments/);
+
+  container.register('controller:blog', Ember.Controller.extend({
+    needs: ['posts', 'comments']
+  }));
+
+  expectAssertion(function() {
+    container.lookup('controller:blog');
+  }, /controller:posts, controller:comments/);
 });
 
 test("Mixin sets up controllers if there is needs before calling super", function() {
