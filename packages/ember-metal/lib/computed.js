@@ -1001,7 +1001,7 @@ registerComputedWithProperties('any', function(properties) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    clothes: Ember.computed.map('hat', 'shirt')
+    clothes: Ember.computed.collect('hat', 'shirt')
   });
   var hamster = Hamster.create();
   hamster.get('clothes'); // [null, null]
@@ -1010,7 +1010,7 @@ registerComputedWithProperties('any', function(properties) {
   hamster.get('clothes'); // ['Camp Hat', 'Camp Shirt']
   ```
 
-  @method computed.map
+  @method computed.collect
   @for Ember
   @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which maps
