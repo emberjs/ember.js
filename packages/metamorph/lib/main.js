@@ -9,7 +9,15 @@ define("metamorph",
 
     var K = function() {},
         guid = 0,
-        disableRange = ('undefined' === typeof ENV ? {} : ENV).DISABLE_RANGE_API,
+        disableRange = (function(){
+          if ('undefined' !== typeof MetamorphENV) {
+            return MetamorphENV.DISABLE_RANGE_API;
+          } else if ('undefined' !== ENV) {
+            return ENV.DISABLE_RANGE_API;
+          } else {
+            return false;
+          }
+        })(),
 
         // Feature-detect the W3C range API, the extended check is for IE9 which only partially supports ranges
         supportsRange = (!disableRange) && typeof document !== 'undefined' && ('createRange' in document) && (typeof Range !== 'undefined') && Range.prototype.createContextualFragment,
