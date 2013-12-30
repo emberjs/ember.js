@@ -7,7 +7,7 @@ module.exports = function(grunt) {
 
   // By default, (i.e., if you invoke `grunt` without arguments), do
   // a new build.
-  this.registerTask('default', ['build']);
+  this.registerTask('default', ['test']);
 
   // Build a new version of the library
   this.registerTask('build', "Builds a distributable version of " + name,
@@ -28,6 +28,8 @@ module.exports = function(grunt) {
 
   // Run a server. This is ideal for running the QUnit tests in the browser.
   this.registerTask('server', ['build', 'tests', 'connect', 'watch']);
+
+  this.registerTask('test', ['build', 'tests', 'qunit']);
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -105,6 +107,10 @@ module.exports = function(grunt) {
         ],
         dest: 'tmp/tests.js'
       }
+    },
+
+    qunit: {
+      all: ['test/index.html']
     }
   });
 
@@ -113,6 +119,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-qunit');
 
   // Multi-task for wrapping browser version
 

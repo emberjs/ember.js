@@ -4,7 +4,7 @@
   "description": "HTMLBars compiles Handlebars templates into document fragments rather than string buffers",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "grunt test"
   },
   "repository": {
     "type": "git",
@@ -20,6 +20,7 @@
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-connect": "~0.6.0",
     "grunt-contrib-watch": "~0.5.3",
-    "es6-module-transpiler": "~0.3.6"
+    "es6-module-transpiler": "~0.3.6",
+    "grunt-contrib-qunit": "~0.3.0"
   }
 }
