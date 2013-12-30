@@ -27,8 +27,7 @@ var get = Ember.get, set = Ember.set;
   @extends Ember.Component
   @uses Ember.TextSupport
 */
-Ember.TextField = Ember.Component.extend(Ember.TextSupport,
-  /* @scope Ember.TextField.prototype */ {
+Ember.TextField = Ember.Component.extend(Ember.TextSupport, {
 
   classNames: ['ember-text-field'],
   tagName: "input",
