@@ -1,4 +1,4 @@
-define("backburner/queue", 
+define("backburner/queue",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -105,10 +105,11 @@ define("backburner/queue",
       }
     };
 
+
     __exports__.Queue = Queue;
   });
 
-define("backburner/deferred_action_queues", 
+define("backburner/deferred_action_queues",
   ["backburner/queue","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -207,10 +208,11 @@ define("backburner/deferred_action_queues",
       return -1;
     }
 
+
     __exports__.DeferredActionQueues = DeferredActionQueues;
   });
 
-define("backburner", 
+define("backburner",
   ["backburner/deferred_action_queues","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -319,7 +321,7 @@ define("backburner",
           method = target[method];
         }
 
-        var stack = this.DEBUG ? new Error().stack : undefined,
+        var stack = this.DEBUG ? new Error() : undefined,
             args = arguments.length > 3 ? slice.call(arguments, 3) : undefined;
         if (!this.currentInstance) { createAutorun(this); }
         return this.currentInstance.schedule(queueName, target, method, args, false, stack);
@@ -335,7 +337,7 @@ define("backburner",
           method = target[method];
         }
 
-        var stack = this.DEBUG ? new Error().stack : undefined,
+        var stack = this.DEBUG ? new Error() : undefined,
             args = arguments.length > 3 ? slice.call(arguments, 3) : undefined;
         if (!this.currentInstance) { createAutorun(this); }
         return this.currentInstance.schedule(queueName, target, method, args, true, stack);
@@ -634,6 +636,7 @@ define("backburner",
 
       return index;
     }
+
 
     __exports__.Backburner = Backburner;
   });
