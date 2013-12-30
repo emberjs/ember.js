@@ -450,10 +450,9 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   },
 
   /**
-    @private
-
     This hook is the entry point for router.js
 
+    @private
     @method setup
   */
   setup: function(context, queryParams) {
@@ -621,10 +620,9 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
 
   /**
-    @private
-
     Called when the context is changed by router.js.
 
+    @private
     @method contextDidChange
   */
   contextDidChange: function() {

@@ -115,11 +115,10 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
   },
 
   /**
-    @private
-
     Resets the state of the router by clearing the current route
     handlers and deactivating them.
 
+    @private
     @method reset
    */
   reset: function() {
@@ -291,13 +290,13 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 });
 
 /**
-  @private
-
   Helper function for iterating root-ward, starting
   from (but not including) the provided `originRoute`.
 
   Returns true if the last callback fired requested
   to bubble upward.
+
+  @private
  */
 function forEachRouteAbove(originRoute, transition, callback) {
   var handlerInfos = transition.handlerInfos,
