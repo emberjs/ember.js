@@ -91,7 +91,7 @@ test("{{render}} helper should render given template", function() {
   ok(container.lookup('router:main')._lookupActiveView('home'), 'should register home as active view');
 });
 
-test("{{render}} helper should have assertion if template is not found", function() {
+test("{{render}} helper should have assertion if neither template nor view exists", function() {
   var template = "<h1>HI</h1>{{render 'oops'}}";
   var controller = Ember.Controller.extend({container: container});
   view = Ember.View.create({
@@ -101,7 +101,22 @@ test("{{render}} helper should have assertion if template is not found", functio
 
   expectAssertion(function() {
     appendView(view);
-  }, 'The template name you supplied \'oops\' was not found.');
+  }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as either a template or a view.');
+});
+
+test("{{render}} helper should not have assertion if view exists without a template", function() {
+  var template = "<h1>HI</h1>{{render 'oops'}}";
+  var controller = Ember.Controller.extend({container: container});
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  container.register('view:oops', Ember.View.extend());
+
+  appendView(view);
+
+  equal(view.$().text(), 'HI');
 });
 
 test("{{render}} helper should render given template with a supplied model", function() {
