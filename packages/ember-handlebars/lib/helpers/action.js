@@ -25,7 +25,7 @@ function triggerAction(target, actionName, event) {
 }
 
 ActionHelper.registerAction = function(actionName, eventName, target, view, context) {
-  var actionId = (++Ember.$.uuid).toString();
+  var actionId = (++Ember.uuid).toString();
 
   ActionHelper.registeredActions[actionId] = {
     eventName: eventName,

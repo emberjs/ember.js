@@ -4,7 +4,9 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var get = Ember.get, set = Ember.set, checkboxView, dispatcher;
+var get = Ember.get, set = Ember.set,
+    isInternetExplorer = window.navigator.userAgent.match(/msie/i),
+    checkboxView, dispatcher;
 
 module("Ember.Checkbox", {
   setup: function() {
@@ -85,7 +87,7 @@ test("checking the checkbox updates the value", function() {
 
   // Can't find a way to programatically trigger a checkbox in IE and have it generate the
   // same events as if a user actually clicks.
-  if (!Ember.$.browser.msie) {
+  if (!isInternetExplorer) {
     checkboxView.$()[0].click();
   } else {
     checkboxView.$().trigger('click');
