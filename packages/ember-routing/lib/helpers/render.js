@@ -115,7 +115,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       Ember.assert("The controller name you supplied '" + controllerName + "' did not resolve to a controller.", container.has(controllerFullName));
     }
 
-    var target = options.data.keywords.controller;
+    var parentController = options.data.keywords.controller;
 
     // choose name
     if (length > 2) {
@@ -124,14 +124,18 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
       controller = factory.create({
         model: context,
-        target: target
+        parentController: parentController,
+        target: parentController
       });
 
     } else {
       controller = container.lookup(controllerFullName) ||
                    Ember.generateController(container, controllerName);
 
-      controller.set('target', target);
+      controller.setProperties({
+        target: parentController,
+        parentController: parentController
+      });
     }
 
     var root = options.contexts[1];

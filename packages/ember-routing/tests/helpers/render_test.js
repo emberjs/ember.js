@@ -358,7 +358,8 @@ test("{{render}} helper should link child controllers to the parent controller",
       parentPlease: function() {
         parentTriggered++;
       }
-    }
+    },
+    role: "Mom"
   });
 
   container.register('controller:posts', Ember.ArrayController.extend());
@@ -368,13 +369,16 @@ test("{{render}} helper should link child controllers to the parent controller",
     template: Ember.Handlebars.compile(template)
   });
 
-  Ember.TEMPLATES['posts'] = compile('<button id="parent-action" {{action "parentPlease"}}>Go to Parent</button>');
+  Ember.TEMPLATES['posts'] = compile('<button id="parent-action" {{action "parentPlease"}}>Go to {{parentController.role}}</button>');
 
   appendView(view);
 
-  var actionId = Ember.$("#parent-action").data('ember-action'),
+  var button = Ember.$("#parent-action"),
+      actionId = button.data('ember-action'),
       action = Ember.Handlebars.ActionHelper.registeredActions[actionId],
       handler = action.handler;
+
+  equal(button.text(), "Go to Mom", "The parentController property is set on the child controller");
 
   Ember.run(null, handler, new Ember.$.Event("click"));
 
