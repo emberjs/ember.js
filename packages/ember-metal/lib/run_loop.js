@@ -76,7 +76,6 @@ Ember.run = function(target, method) {
 
   If invoked when not within a run loop:
 
-
   ```javascript
   Ember.run.join(function() {
     // creates a new run-loop
