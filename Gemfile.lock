@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/emberjs/ember-dev.git
-  revision: 8f73f9151b78d998837b13e6174c451b3251b929
+  revision: 87bc39887fdd1fb7332bebad0c91b57fedef059f
   branch: master
   specs:
     ember-dev (0.1)
@@ -67,7 +67,7 @@ GEM
     rake-pipeline-web-filters (0.7.0)
       rack
       rake-pipeline (~> 0.6)
-    rb-fsevent (0.9.3)
+    rb-fsevent (0.9.4)
     rb-inotify (0.9.3)
       ffi (>= 0.5.0)
     rb-kqueue (0.2.0)
