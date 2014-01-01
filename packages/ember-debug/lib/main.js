@@ -19,7 +19,20 @@ if ('undefined' === typeof Ember) {
   }
 }
 
-Ember.ENV = 'undefined' === typeof ENV ? {} : ENV;
+// This needs to be kept in sync with the logic in
+// `packages/ember-metal/lib/core.js`.
+//
+// This is duplicated here to ensure that `Ember.ENV`
+// is setup even if `Ember` is not loaded yet.
+if (Ember.ENV) {
+  // do nothing if Ember.ENV is already setup
+} else if ('undefined' !== typeof EmberENV) {
+  Ember.ENV = EmberENV;
+} else if('undefined' !== typeof ENV) {
+  Ember.ENV = ENV;
+} else {
+  Ember.ENV = {};
+}
 
 if (!('MANDATORY_SETTER' in Ember.ENV)) {
   Ember.ENV.MANDATORY_SETTER = true; // default to true for debug dist

@@ -65,6 +65,8 @@ Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
   @type Hash
 */
 
+// This needs to be kept in sync with the logic in
+// `packages/ember-debug/lib/main.js`.
 if (Ember.ENV) {
   // do nothing if Ember.ENV is already setup
 } else if ('undefined' !== typeof EmberENV) {
