@@ -35,7 +35,7 @@ Ember.Handlebars.registerHelper('unbound', function unboundHelper(property, fn) 
   if (arguments.length > 2) {
     // Unbound helper call.
     options.data.isUnbound = true;
-    helper = Ember.Handlebars.helpers[arguments[0]] || Ember.Handlebars.helperMissing;
+    helper = Ember.Handlebars.helpers[arguments[0]] || Ember.Handlebars.helpers.helperMissing;
     out = helper.apply(this, Array.prototype.slice.call(arguments, 1));
     delete options.data.isUnbound;
     return out;
