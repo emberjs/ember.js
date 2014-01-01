@@ -138,6 +138,7 @@ define("rsvp/cast",
 
       `RSVP.Promise.cast` is similar to `RSVP.resolve`, but `RSVP.Promise.cast` differs in the
       following ways:
+
       * `RSVP.Promise.cast` serves as a memory-efficient way of getting a promise, when you
       have something that could either be a promise or a value. RSVP.resolve
       will have the same effect but will create a new promise wrapper if the
@@ -284,7 +285,6 @@ define("rsvp/events",
     var EventTarget = {
 
       /**
-        @private
         `RSVP.EventTarget.mixin` extends an object with EventTarget methods. For
         Example:
 
@@ -323,6 +323,7 @@ define("rsvp/events",
 
         @method mixin
         @param {Object} object object to extend with EventTarget methods
+        @private
       */
       mixin: function(object) {
         object.on = this.on;
@@ -333,8 +334,6 @@ define("rsvp/events",
       },
 
       /**
-        @private
-
         Registers a callback to be executed when `eventName` is triggered
 
         ```javascript
@@ -348,6 +347,7 @@ define("rsvp/events",
         @method on
         @param {String} eventName name of the event to listen for
         @param {Function} callback function to be called when the event is triggered.
+        @private
       */
       on: function(eventName, callback) {
         var allCallbacks = callbacksFor(this), callbacks;
@@ -364,8 +364,6 @@ define("rsvp/events",
       },
 
       /**
-        @private
-
         You can use `off` to stop firing a particular callback for an event:
 
         ```javascript
@@ -401,6 +399,7 @@ define("rsvp/events",
         given will be removed from the event's callback queue. If no `callback`
         argument is given, all callbacks will be removed from the event's callback
         queue.
+        @private
       */
       off: function(eventName, callback) {
         var allCallbacks = callbacksFor(this), callbacks, index;
@@ -418,8 +417,6 @@ define("rsvp/events",
       },
 
       /**
-        @private
-
         Use `trigger` to fire custom events. For example:
 
         ```javascript
@@ -446,6 +443,7 @@ define("rsvp/events",
         @param {String} eventName name of the event to be triggered
         @param {Any} options optional value to be passed to any event handlers for
         the given `eventName`
+        @private
       */
       trigger: function(eventName, options) {
         var allCallbacks = callbacksFor(this),
