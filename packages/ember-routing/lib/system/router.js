@@ -21,6 +21,20 @@ require("ember-routing/system/dsl");
   @extends Ember.Object
 */
 Ember.Router = Ember.Object.extend(Ember.Evented, {
+  /**
+    The `location` property determines the type of URL's that your
+    application will use.
+
+    The following location types are currently available:
+
+    * `hash`
+    * `history`
+    * `none`
+
+    @property location
+    @default 'hash'
+    @see {Ember.Location}
+  */
   location: 'hash',
 
   init: function() {
@@ -33,10 +47,23 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     }
   },
 
+  /**
+    Represents the current URL.
+
+    @method url
+    @returns {String} The current URL.
+  */
   url: Ember.computed(function() {
     return get(this, 'location').getURL();
   }),
 
+  /**
+    Initializes the current router instance and sets up the change handling
+    event listeners used by the instances `location` implementation.
+
+    @method startRouting
+    @private
+  */
   startRouting: function() {
     this.router = this.router || this.constructor.map(Ember.K);
 
@@ -57,6 +84,15 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     this.handleURL(location.getURL());
   },
 
+  /**
+    Handles updating the paths and notifying any listeners of the URL
+    change.
+
+    Triggers the router level `didTransition` hook.
+
+    @method didTransition
+    @private
+  */
   didTransition: function(infos) {
     updatePaths(this);
 
@@ -101,6 +137,14 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     return this.location.formatURL(url);
   },
 
+  /**
+    Determines if the supplied route is currently active.
+
+    @method isActive
+    @param routeName
+    @returns {Boolean}
+    @private
+  */
   isActive: function(routeName) {
     var router = this.router;
     return router.isActive.apply(router, arguments);
@@ -110,6 +154,13 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     this.router.trigger.apply(this.router, arguments);
   },
 
+  /**
+    Does this router instance have the given route.
+
+    @method hasRoute
+    @returns {Boolean}
+    @private
+  */
   hasRoute: function(route) {
     return this.router.hasRoute(route);
   },

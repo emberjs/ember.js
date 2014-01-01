@@ -6,8 +6,8 @@
 var get = Ember.get, set = Ember.set;
 
 /**
-  Ember.HashLocation implements the location API using the browser's
-  hash. At present, it relies on a hashchange event existing in the
+  `Ember.HashLocation` implements the location API using the browser's
+  hash. At present, it relies on a `hashchange` event existing in the
   browser.
 
   @class HashLocation

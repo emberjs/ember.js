@@ -41,7 +41,7 @@ Ember.HistoryLocation = Ember.Object.extend({
   rootURL: '/',
 
   /**
-    Returns the current `location.pathname` without rootURL
+    Returns the current `location.pathname` without `rootURL`.
 
     @private
     @method getURL
@@ -110,7 +110,7 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   /**
-   Pushes a new state
+   Pushes a new state.
 
    @private
    @method pushState
@@ -131,7 +131,7 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   /**
-   Replaces the current state
+   Replaces the current state.
 
    @private
    @method replaceState
