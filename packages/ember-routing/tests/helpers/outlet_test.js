@@ -156,7 +156,7 @@ test("outlet should correctly lookup a view", function() {
   ok(ContainerView.detectInstance(childView.get('_parentView')), "The custom view class should be used for the outlet");
 
   // Replace whitespace for older IE
-  equal(trim(view.$().text()), 'HIBYE');
+  equal(Ember.$.trim(view.$().text()), 'HIBYE');
 
 });
 
