@@ -4,7 +4,7 @@ define("metamorph",
     "use strict";
     // ==========================================================================
     // Project:   metamorph
-    // Copyright: ©2013 Tilde, Inc. All rights reserved.
+    // Copyright: ©2014 Tilde, Inc. All rights reserved.
     // ==========================================================================
 
     var K = function() {},
