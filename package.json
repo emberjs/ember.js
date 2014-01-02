@@ -4,7 +4,7 @@
   "description": "HTMLBars compiles Handlebars templates into document fragments rather than string buffers",
   "main": "index.js",
   "scripts": {
-    "test": "grunt test"
+    "test": "./node_modules/grunt-cli/bin/grunt test"
   },
   "repository": {
     "type": "git",
@@ -15,6 +15,7 @@
   "readmeFilename": "README.md",
   "devDependencies": {
     "grunt": "~0.4.2",
+    "grunt-cli": "~0.1.11",
     "connect": "~2.12.0",
     "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-clean": "~0.5.0",
