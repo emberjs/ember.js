@@ -166,7 +166,7 @@ module.exports = function(grunt) {
   }
 
   this.registerMultiTask('transpile', "Transpile ES6 modules into AMD, CJS or globals", function() {
-    var Compiler = require("es6-module-transpiler-rewrite").Compiler;
+    var Compiler = require("es6-module-transpiler").Compiler;
 
     var options = this.options({
       format: 'amd'

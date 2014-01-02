@@ -352,7 +352,7 @@ define("htmlbars/compiler/pass1",
           attrCompiler = new AttrCompiler(options);
 
       var opcodes = compiler1.compile(ast);
-      return attrCompiler.compile(opcodes)
+      return attrCompiler.compile(opcodes);
     }
 
     function Compiler1(options) {
@@ -937,7 +937,7 @@ define("htmlbars/parser",
     var HTMLElement = __dependency2__.HTMLElement;
     var BlockElement = __dependency2__.BlockElement;
     var processToken = __dependency3__.processToken;
-    var Handlebars = __dependency4__['default'];
+    var Handlebars = __dependency4__["default"];
 
     function Visitor() {}
 
