@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "defeatureify": "~0.1.4",
+    "defeatureify": "~0.2.0",
     "yuidocjs": "~0.3.46"
   }
 }
