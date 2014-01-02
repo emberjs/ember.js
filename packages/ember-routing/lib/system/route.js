@@ -729,7 +729,10 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
       find: function(name, value) {
         var modelClass = container.lookupFactory('model:' + name);
 
-        Ember.assert("You used the dynamic segment " + name + "_id in your route "+ routeName + ", but " + namespace + "." + classify(name) + " did not exist and you did not override your route's `model` hook.", modelClass);
+        Ember.assert("You used the dynamic segment " + name + "_id in your route " +
+                     routeName + ", but " + namespace + "." + classify(name) +
+                     " did not exist and you did not override your route's `model` " +
+                     "hook.", modelClass);
 
         return modelClass.find(value);
       }
@@ -874,7 +877,11 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     // NOTE: We're specifically checking that skipAssert is true, because according
     //   to the old API the second parameter was model. We do not want people who
     //   passed a model to skip the assertion.
-    Ember.assert("The controller named '"+name+"' could not be found. Make sure that this route exists and has already been entered at least once. If you are accessing a controller not associated with a route, make sure the controller class is explicitly defined.", controller || _skipAssert === true);
+    Ember.assert("The controller named '"+name+"' could not be found. Make sure " +
+                 "that this route exists and has already been entered at least " +
+                 "once. If you are accessing a controller not associated with a " +
+                 "route, make sure the controller class is explicitly defined.",
+                 controller || _skipAssert === true);
 
     return controller;
   },
