@@ -22,7 +22,9 @@ function verifyNeedsDependencies(controller, container, needs) {
       missing.push(dependency);
     }
   }
-  Ember.assert(Ember.inspect(controller) + " needs [ " + missing.join(', ') + " ] but " + (missing.length > 1 ? 'they' : 'it') + " could not be found", !missing.length);
+  if (missing.length) {
+    throw new Ember.Error(Ember.inspect(controller) + " needs [ " + missing.join(', ') + " ] but " + (missing.length > 1 ? 'they' : 'it') + " could not be found");
+  }
 }
 
 var defaultControllersComputedProperty = Ember.computed(function() {
