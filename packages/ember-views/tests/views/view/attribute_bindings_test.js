@@ -118,6 +118,12 @@ test("should allow binding to String objects", function() {
 
 
   equal(view.$().attr('foo'), 'bar', "should convert String object to bare string");
+
+  Ember.run(function() {
+    view.set('foo', false);
+  });
+
+  ok(!view.$().attr('foo'), "removes foo attribute when false");
 });
 
 test("should teardown observers on rerender", function() {
