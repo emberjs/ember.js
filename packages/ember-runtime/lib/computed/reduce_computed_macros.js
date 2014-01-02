@@ -383,7 +383,7 @@ Ember.computed.union = Ember.computed.uniq;
 
 /**
   A computed property which returns a new array with all the duplicated
-  elements from two or more dependeny arrays.
+  elements from two or more dependent arrays.
 
   Example
 
