@@ -1,18 +1,21 @@
 {
-  "reduceComputed-non-array-dependencies": true,
-  "ember-testing-lazy-routing": true,
-  "ember-testing-wait-hooks": true,
-  "query-params-new": null,
-  "string-humanize": null,
-  "string-parameterize": null,
-  "propertyBraceExpansion": null,
-  "ember-routing-named-substates": null,
-  "ember-handlebars-caps-lookup": null,
-  "ember-testing-simple-setup": null,
-  "ember-testing-routing-helpers": null,
-  "ember-testing-triggerEvent-helper": null,
-  "with-controller": null,
-  "computed-read-only": null,
-  "ember-metal-run-proxy": null,
-  "ember-metal-run-method": null
+  "features": {
+    "reduceComputed-non-array-dependencies": true,
+    "ember-testing-lazy-routing": true,
+    "ember-testing-wait-hooks": true,
+    "query-params-new": null,
+    "string-humanize": null,
+    "string-parameterize": null,
+    "propertyBraceExpansion": null,
+    "ember-routing-named-substates": null,
+    "ember-handlebars-caps-lookup": null,
+    "ember-testing-simple-setup": null,
+    "ember-testing-routing-helpers": null,
+    "ember-testing-triggerEvent-helper": null,
+    "with-controller": null,
+    "computed-read-only": null,
+    "ember-metal-run-proxy": null,
+    "ember-metal-run-method": null
+  },
+  "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info"]
 }
