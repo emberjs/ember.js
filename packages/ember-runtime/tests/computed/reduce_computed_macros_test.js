@@ -384,6 +384,24 @@ test("properties can be filtered by values", function() {
   deepEqual(a1s.mapBy('name'), ['one', 'two'], "arrays computed by matching value respond to modified properties");
 });
 
+test("properties values can be replaced", function() {
+  obj = Ember.Object.createWithMixins({
+      array: Ember.A([]),
+      a1s: Ember.computed.filterBy('array', 'a', 1),
+      a1bs: Ember.computed.filterBy('a1s', 'b')
+    });
+
+  var a1bs = get(obj, 'a1bs');
+  deepEqual(a1bs.mapBy('name'), [], "properties can be filtered by matching value");
+
+  Ember.run(function() {
+    set(obj, 'array', Ember.A([{name: 'item1', a:1, b:true}]));
+  });
+
+  a1bs = get(obj, 'a1bs');
+  deepEqual(a1bs.mapBy('name'), ['item1'], "properties can be filtered by matching value");
+});
+
 a_forEach.call(['uniq', 'union'], function (alias) {
   module('Ember.computed.' + alias, {
     setup: function() {
