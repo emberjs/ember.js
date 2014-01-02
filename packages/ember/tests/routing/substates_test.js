@@ -139,7 +139,7 @@ test("Slow promises waterfall on startup", function() {
   App.MomRoute = Ember.Route.extend({
     model: function() {
       step(2, "Mom#model");
-      return {};
+      return [];
     }
   });
 
@@ -157,7 +157,7 @@ test("Slow promises waterfall on startup", function() {
 
   equal(Ember.$('#app', '#qunit-fixture').text(), "LOADING", "The Loading template is nested in application template's outlet");
 
-  Ember.run(grandmaDeferred, 'resolve', {});
+  Ember.run(grandmaDeferred, 'resolve', []);
   equal(Ember.$('#app', '#qunit-fixture').text(), "GRANDMA MOM MOMLOADING", "Mom's child loading route is displayed due to sally's slow promise");
 
   Ember.run(sallyDeferred, 'resolve', {});

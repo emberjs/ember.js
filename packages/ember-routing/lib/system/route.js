@@ -468,6 +468,10 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     var args = [controller, context];
 
+    Ember.assert(
+        fmt("ArrayControllers expect an array as their 'model', you set the model with %@", [context ? get(context, 'constructor') : context]),
+        !(context && typeof context === 'object' && controller && (controller instanceof Ember.ArrayController) && !Ember.isArray(context)));
+
     if (Ember.FEATURES.isEnabled("query-params")) {
       args.push(queryParams);
     }
