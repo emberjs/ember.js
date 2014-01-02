@@ -1,4 +1,4 @@
-# Status
+# Status [![Build Status](https://travis-ci.org/tildeio/htmlbars.png)](https://travis-ci.org/tildeio/htmlbars)
 
 HTMLBars is still very much a work in progress. At the moment,
 the parser does not have any special logic for void tags (`<img>`)
