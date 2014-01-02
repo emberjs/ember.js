@@ -9,6 +9,15 @@
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
   <script src="qunit.js"></script>
-  <script src="../tmp/tests.js"></script>
+  <script src="../vendor/loader.js"></script>
+  <script src="../vendor/handlebars.amd.js"></script>
+  <script src="../tmp/htmlbars.amd.js"></script>
+  <script src="../tmp/tests.amd.js"></script>
+  <script type="text/javascript">
+
+  for (var key in requireModule.registry) {
+    if (/^tests\//.test(key)) requireModule(key);
+  }
+  </script>
 </body>
 </html>

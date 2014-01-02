@@ -13,6 +13,8 @@ module.exports = function(grunt) {
   this.registerTask('build', "Builds a distributable version of " + name,
                     ['clean',
                      'transpile:amd',
+                     'concat_sourcemap:amd',
+                     'fixSourceMap:amd',
                      'concat:library',
                      'concat:browser',
                      'browser:dist',
@@ -23,7 +25,8 @@ module.exports = function(grunt) {
                     ['build',
                      'concat:deps',
                      'transpile:tests',
-                     'buildTests:dist'
+                     'concat_sourcemap:tests',
+                     'fixSourceMap:tests'
                     ]);
 
   // Run a server. This is ideal for running the QUnit tests in the browser.
@@ -51,23 +54,55 @@ module.exports = function(grunt) {
 
     transpile: {
       amd: {
-        options: {
-          name: barename,
-          format: 'amd'
+        type: "amd",
+        moduleName: function (moduleName) {
+          moduleName = moduleName.replace(/^vendor\//, '');
+          return moduleName;
         },
-
-        src: ["lib/" + barename + ".js", "lib/*/**/*.js"],
-        dest: "tmp/" + barename + ".amd.js"
+        files: [{
+          expand: true,
+          cwd: 'lib/',
+          src: ['**/*.js'],
+          dest: 'tmp/'
+        }]
       },
 
       tests: {
-        options: {
-          name: barename,
-          format: 'amd'
-        },
+        type: 'amd',
+        files: [{
+          expand: true,
+          cwd: 'test/',
+          src: ['test_helpers.js', 'tests.js', 'tests/**/*_test.js'],
+          dest: 'tmp/'
+        }]
+      }
+    },
 
-        src: ['test/test_helpers.js', 'test/tests.js', 'test/tests/**/*_test.js'],
-        dest: 'tmp/tests.amd.js'
+    concat_sourcemap: {
+      amd: {
+        files: [{
+          src: ['tmp/htmlbars.js', 'tmp/htmlbars/**/*.js', 'tmp/vendor/*.js'],
+          dest: 'tmp/htmlbars.amd.js'
+        }]
+      },
+      tests: {
+        files: [{
+          src: ['tmp/tests/*.js'],
+          dest: 'tmp/tests.amd.js'
+        }]
+      }
+    },
+
+    fixSourceMap: {
+      amd: {
+        files: {
+          'tmp/htmlbars.amd.js.map': 'tmp/htmlbars.amd.js.map'
+        }
+      },
+      tests: {
+        files: {
+          'tmp/tests.amd.js.map': 'tmp/tests.amd.js.map'
+        }
       }
     },
 
@@ -85,7 +120,11 @@ module.exports = function(grunt) {
       },
 
       browser: {
-        src: ['vendor/loader.js', 'tmp/' + barename + '.amd.js'],
+        src: [
+          'vendor/loader.js',
+          'vendor/handlebars.amd.js',
+          'tmp/' + barename + '.amd.js'
+        ],
         dest: 'tmp/' + barename + '.browser1.js'
       }
     },
@@ -94,18 +133,6 @@ module.exports = function(grunt) {
       dist: {
         src: 'tmp/' + barename + '.browser1.js',
         dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
-      }
-    },
-
-    buildTests: {
-      dist: {
-        src: [
-          'vendor/loader.js',
-          'tmp/tests.amd.js',
-          'tmp/deps.amd.js',
-          'tmp/' + barename + '.amd.js'
-        ],
-        dest: 'tmp/tests.js'
       }
     },
 
@@ -120,6 +147,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-qunit');
+  grunt.loadNpmTasks('grunt-es6-module-transpiler');
+  grunt.loadNpmTasks('grunt-concat-sourcemap');
 
   // Multi-task for wrapping browser version
 
@@ -129,72 +158,26 @@ module.exports = function(grunt) {
 
   this.registerMultiTask('browser', "Export the object in " + name + " to the window", function() {
     this.files.forEach(function(f) {
-      var output = ["(function(globals) {"];
+      var output = ["(function(global) {"];
 
       output.push.apply(output, f.src.map(grunt.file.read));
 
-      output.push('window.' + barename + ' = requireModule("' + barename + '");');
-      output.push('})(window);');
+      output.push('global.' + barename + ' = requireModule("' + barename + '");');
+      output.push('})(global || window);');
 
       grunt.file.write(f.dest, output.join("\n"));
     });
   });
 
-  this.registerMultiTask('buildTests', "Execute the tests", function() {
-    var testFiles = grunt.file.expand('test/tests/**/*_test.js');
-
+  this.registerMultiTask('fixSourceMap', "Remove tmp from source paths", function() {
     this.files.forEach(function(f) {
-      var output = ["(function(globals) {"];
-
-      output.push.apply(output, f.src.map(grunt.file.read));
-
-      testFiles.forEach(function(file) {
-        var moduleName = nameFor(file);
-        output.push('requireModule("' + moduleName + '");');
-      });
-
-      output.push('})(window);');
-
-      grunt.file.write(f.dest, output.join("\n"));
-    });
-  });
-
-  // Multi-task for es6-module-transpiler
-  function nameFor(path) {
-    console.log(path);
-    return path.match(/^(?:lib\/vendor|lib|test|test\/tests)\/(.*)\.js$/)[1];
-  }
-
-  this.registerMultiTask('transpile', "Transpile ES6 modules into AMD, CJS or globals", function() {
-    var Compiler = require("es6-module-transpiler").Compiler;
-
-    var options = this.options({
-      format: 'amd'
-    });
-
-    this.files.forEach(function(f) {
-      var contents = f.src.map(function(path) {
-        var compiler = new Compiler(grunt.file.read(path), nameFor(path), options);
-        var format;
-
-        switch (options.format) {
-          case 'amd':
-            console.log("Compiling " + path + " to AMD");
-            format = compiler.toAMD;
-            break;
-          case 'globals':
-            format = compiler.toGlobals;
-            break;
-          case 'commonjs':
-            format = compiler.toCJS;
-            break;
+      f.src.forEach(function (src) {
+        map = JSON.parse(grunt.file.read(src));
+        for (var i=0; i<map.sources.length; i++) {
+          map.sources[i] = map.sources[i].replace(/tmp\//,'');
         }
-        return format.call(compiler);
+        grunt.file.write(f.dest, JSON.stringify(map));
       });
-
-      grunt.file.write(f.dest, contents.join("\n\n"));
     });
   });
-
-
 };

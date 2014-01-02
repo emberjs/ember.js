@@ -20,7 +20,6 @@ define("htmlbars",
     __exports__.removeMacro = removeMacro;
     __exports__.registerMacro = registerMacro;
   });
-
 define("htmlbars/ast", 
   ["handlebars/compiler/ast","exports"],
   function(__dependency1__, __exports__) {
@@ -77,7 +76,6 @@ define("htmlbars/ast",
     __exports__.HTMLElement = HTMLElement;
     __exports__.BlockElement = BlockElement;
   });
-
 define("htmlbars/compiler", 
   ["htmlbars/parser","htmlbars/compiler/utils","htmlbars/runtime","htmlbars/helpers","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
@@ -98,7 +96,6 @@ define("htmlbars/compiler",
 
     __exports__.compileSpec = compileSpec;
   });
-
 define("htmlbars/compiler/attr", 
   ["htmlbars/compiler/utils","htmlbars/compiler/helpers","htmlbars/compiler/invoke","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
@@ -190,7 +187,6 @@ define("htmlbars/compiler/attr",
 
     __exports__.AttrCompiler = AttrCompiler;
   });
-
 define("htmlbars/compiler/elements", 
   ["exports"],
   function(__exports__) {
@@ -208,7 +204,6 @@ define("htmlbars/compiler/elements",
     }
     __exports__.topElement = topElement;
   });
-
 define("htmlbars/compiler/helpers", 
   ["htmlbars/compiler/quoting","htmlbars/compiler/stack","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
@@ -260,7 +255,6 @@ define("htmlbars/compiler/helpers",
 
     __exports__.prepareHelper = prepareHelper;
   });
-
 define("htmlbars/compiler/invoke", 
   ["exports"],
   function(__exports__) {
@@ -283,7 +277,6 @@ define("htmlbars/compiler/invoke",
     }
     __exports__.helper = helper;
   });
-
 define("htmlbars/compiler/pass1", 
   ["htmlbars/utils","htmlbars/ast","htmlbars/compiler/attr","htmlbars/compiler/utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
@@ -489,7 +482,6 @@ define("htmlbars/compiler/pass1",
 
     __exports__.Compiler1 = Compiler1;
   });
-
 define("htmlbars/compiler/pass2", 
   ["htmlbars/compiler/utils","htmlbars/compiler/helpers","htmlbars/compiler/invoke","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
@@ -632,7 +624,6 @@ define("htmlbars/compiler/pass2",
 
     __exports__.Compiler2 = Compiler2;
   });
-
 define("htmlbars/compiler/quoting", 
   ["exports"],
   function(__exports__) {
@@ -664,7 +655,6 @@ define("htmlbars/compiler/quoting",
     }
     __exports__.hash = hash;
   });
-
 define("htmlbars/compiler/stack", 
   ["exports"],
   function(__exports__) {
@@ -682,7 +672,6 @@ define("htmlbars/compiler/stack",
     }
     __exports__.popStack = popStack;
   });
-
 define("htmlbars/compiler/utils", 
   ["exports"],
   function(__exports__) {
@@ -713,7 +702,6 @@ define("htmlbars/compiler/utils",
 
     __exports__.compileAST = compileAST;
   });
-
 define("htmlbars/helpers", 
   ["exports"],
   function(__exports__) {
@@ -730,7 +718,6 @@ define("htmlbars/helpers",
 
     __exports__.removeHelper = removeHelper;__exports__.helpers = helpers;
   });
-
 define("htmlbars/html-parser/process-token", 
   ["htmlbars/ast","simple-html-tokenizer","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
@@ -827,7 +814,6 @@ define("htmlbars/html-parser/process-token",
 
     __exports__.config = config;
   });
-
 define("htmlbars/macros", 
   ["htmlbars/html-parser/process-token","htmlbars/ast","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
@@ -872,7 +858,6 @@ define("htmlbars/macros",
     // configure the HTML Parser
     config.processHTMLMacros = processHTMLMacros;
   });
-
 define("htmlbars/parser", 
   ["simple-html-tokenizer","htmlbars/ast","htmlbars/html-parser/process-token","handlebars","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
@@ -998,7 +983,6 @@ define("htmlbars/parser",
       helpers.push(helper);
     };
   });
-
 define("htmlbars/runtime", 
   ["htmlbars/utils","exports"],
   function(__dependency1__, __exports__) {
@@ -1144,8 +1128,7 @@ define("htmlbars/runtime",
         },
 
         frag: function(element, string) {
-          /*global DocumentFragment*/
-          if (element instanceof DocumentFragment) {
+          if (element.nodeType === 11) {
             element = this.createElement('div');
           }
 
@@ -1190,7 +1173,6 @@ define("htmlbars/runtime",
 
     __exports__.hydrate = hydrate;
   });
-
 define("htmlbars/utils", 
   ["exports"],
   function(__exports__) {
@@ -1205,44 +1187,6 @@ define("htmlbars/utils",
 
     __exports__.merge = merge;
   });
-
-define("loader", 
-  [],
-  function() {
-    "use strict";
-    var define, require;
-
-    (function() {
-      var registry = {}, seen = {};
-
-      define = function(name, deps, callback) {
-        registry[name] = { deps: deps, callback: callback };
-      };
-
-      require = function require(name) {
-        if (seen[name]) { return seen[name]; }
-        seen[name] = {};
-
-        var mod = registry[name],
-            deps = mod.deps,
-            callback = mod.callback,
-            reified = [],
-            exports;
-
-        for (var i=0, l=deps.length; i<l; i++) {
-          if (deps[i] === 'exports') {
-            reified.push(exports = {});
-          } else {
-            reified.push(require(deps[i]));
-          }
-        }
-
-        var value = callback.apply(this, reified);
-        return seen[name] = exports || value;
-      };
-    })();
-  });
-
 define("simple-html-tokenizer", 
   ["exports"],
   function(__exports__) {
@@ -1729,3 +1673,4 @@ define("simple-html-tokenizer",
     __exports__.Chars = Chars;
     __exports__.CommentToken = CommentToken;
   });
+//# sourceMappingURL=htmlbars.amd.js.map

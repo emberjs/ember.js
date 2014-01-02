@@ -8,7 +8,7 @@ var define, requireModule;
   };
 
   requireModule = function(name) {
-    if (seen[name]) { return seen[name]; }
+    if (seen.hasOwnProperty(name)) { return seen[name]; }
     seen[name] = {};
 
     if (!registry[name]) {
@@ -48,4 +48,6 @@ var define, requireModule;
       return parentBase.join("/");
     }
   };
+
+  requireModule.registry = registry;
 })();
