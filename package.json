@@ -11,7 +11,7 @@
     "url": "https://github.com/tildeio/htmlbars.git"
   },
   "author": "Tilde, Inc.",
-  "license": "BSD",
+  "license": "MIT",
   "readmeFilename": "README.md",
   "devDependencies": {
     "grunt": "~0.4.2",
