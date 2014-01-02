@@ -113,7 +113,10 @@ Ember.ControllerMixin.reopen({
     length = get(needs, 'length');
 
     if (length > 0) {
-      Ember.assert(' `' + Ember.inspect(this) + ' specifies `needs`, but does not have a container. Please ensure this controller was instantiated with a container.', this.container || Ember.meta(this, false).descs.controllers !== defaultControllersComputedProperty);
+      Ember.assert(' `' + Ember.inspect(this) + ' specifies `needs`, but does ' +
+                   "not have a container. Please ensure this controller was " +
+                   "instantiated with a container.",
+                   this.container || Ember.meta(this, false).descs.controllers !== defaultControllersComputedProperty);
 
       if (this.container) {
         verifyNeedsDependencies(this, this.container, needs);

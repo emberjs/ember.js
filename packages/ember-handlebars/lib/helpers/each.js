@@ -41,7 +41,12 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
   },
 
   _assertArrayLike: function(content) {
-    Ember.assert(fmt("The value that #each loops over must be an Array. You passed %@, but it should have been an ArrayController", [content.constructor]), !Ember.ControllerMixin.detect(content) || (content && content.isGenerated) || content instanceof Ember.ArrayController);
+    Ember.assert(fmt("The value that #each loops over must be an Array. You " +
+                     "passed %@, but it should have been an ArrayController",
+                     [content.constructor]),
+                     !Ember.ControllerMixin.detect(content) ||
+                       (content && content.isGenerated) ||
+                       content instanceof Ember.ArrayController);
     Ember.assert(fmt("The value that #each loops over must be an Array. You passed %@", [(Ember.ControllerMixin.detect(content) && content.get('model') !== undefined) ? fmt("'%@' (wrapped in %@)", [content.get('model'), content]) : content]), Ember.Array.detect(content));
   },
 
