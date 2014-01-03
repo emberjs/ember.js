@@ -1,4 +1,9 @@
-var obj, addCalls, removeCalls, map = Ember.EnumerableUtils.map, get = Ember.get, set = Ember.set, callbackItems;
+var map = Ember.EnumerableUtils.map,
+    get = Ember.get,
+    set = Ember.set,
+    metaFor = Ember.meta,
+    keys = Ember.keys,
+    obj, addCalls, removeCalls, callbackItems;
 
 module('Ember.arrayComputed', {
   setup: function () {
@@ -493,6 +498,62 @@ test("removedItem is not erroneously called for dependent arrays during a recomp
   ok(true, "removedItem not invoked with invalid index");
 });
 
+module('Ember.arrayComputed - recomputation DKs', {
+  setup: function() {
+    obj = Ember.Object.extend({
+      people: Ember.A([{
+        name: 'Jaime Lannister',
+        title: 'Kingsguard'
+      }, {
+        name: 'Cersei Lannister',
+        title: 'Queen'
+      }]),
+
+      titles: Ember.arrayComputed('people', {
+        addedItem: function (acc, person) {
+          acc.pushObject(get(person, 'title'));
+          return acc;
+        }
+      })
+    }).create();
+  },
+  teardown: function() {
+    Ember.run(function() {
+      obj.destroy();
+    });
+  }
+});
+
+test("recomputations from `arrayComputed` observers add back dependent keys", function() {
+  var meta = metaFor(obj),
+      people = get(obj, 'people'),
+      titles;
+
+  equal(meta.deps, undefined, "precond - nobody depends on people'");
+  equal(meta.watching.people, undefined, "precond - nobody is watching people");
+
+  titles = get(obj, 'titles');
+
+  deepEqual(titles, ["Kingsguard", "Queen"], "precond - value is correct");
+
+  ok(meta.deps.people !== undefined, "people has dependencies");
+  deepEqual(keys(meta.deps.people), ["titles"], "only titles depends on people");
+  equal(meta.deps.people.titles, 1, "titles depends on people exactly once");
+  equal(meta.watching.people, 2, "people has two watchers: the array listener and titles");
+
+  Ember.run(function() {
+    set(obj, 'people', Ember.A());
+  });
+
+  // Regular CPs are invalidated when their dependent keys change, but array
+  // computeds keep refs up to date
+  deepEqual(titles, [], "value is correct");
+  equal(meta.cache.titles, titles, "value remains cached");
+  ok(meta.deps.people !== undefined, "people has dependencies");
+  deepEqual(keys(meta.deps.people), ["titles"], "meta.deps.people is unchanged");
+  equal(meta.deps.people.titles, 1, "deps.people.titles is unchanged");
+  equal(meta.watching.people, 2, "watching.people is unchanged");
+});
 
 module('Ember.arryComputed - self chains', {
   setup: function() {

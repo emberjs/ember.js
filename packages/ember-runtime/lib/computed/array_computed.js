@@ -41,6 +41,11 @@ ArrayComputedProperty.prototype.resetValue = function (array) {
   return array;
 };
 
+// This is a stopgap to keep the reference counts correct with lazy CPs.
+ArrayComputedProperty.prototype.didChange = function (obj, keyName) {
+  return;
+};
+
 /**
   Creates a computed property which operates on dependent arrays and
   is updated with "one at a time" semantics. When items are added or
