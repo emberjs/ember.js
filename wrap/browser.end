@@ -1,0 +1,2 @@
+global.HTMLBars = requireModule("htmlbars");
+})(global || window);

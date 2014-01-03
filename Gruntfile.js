@@ -1,7 +1,4 @@
 module.exports = function(grunt) {
-  var name = 'htmlbars';
-  var barename = 'htmlbars';
-
   // Alias tasks for the most common sets of tasks.
   // Most of the time, you will use these.
 
@@ -9,30 +6,36 @@ module.exports = function(grunt) {
   // a new build.
   this.registerTask('default', ['test']);
 
+  this.registerTask('dist', "Builds a distributable version of htmlbars",
+                    ['build',
+                     'concat_sourcemap:library',
+                     'concat_sourcemap:browser',
+                     'fix_sourcemap:library',
+                     'fix_sourcemap:browser',
+                     'copy:sources',
+                     'bytes'
+                    ]);
+
   // Build a new version of the library
-  this.registerTask('build', "Builds a distributable version of " + name,
+  this.registerTask('build', "Builds a htmlbars",
                     ['clean',
                      'transpile:amd',
                      'concat_sourcemap:amd',
-                     'fixSourceMap:amd',
-                     'concat:library',
-                     'concat:browser',
-                     'browser:dist',
-                     'bytes'
+                     'fix_sourcemap:amd'
                     ]);
 
   this.registerTask('tests', "Builds the test package",
                     ['build',
-                     'concat:deps',
                      'transpile:tests',
                      'concat_sourcemap:tests',
-                     'fixSourceMap:tests'
+                     'fix_sourcemap:tests'
                     ]);
 
   // Run a server. This is ideal for running the QUnit tests in the browser.
-  this.registerTask('server', ['build', 'tests', 'connect', 'watch']);
+  this.registerTask('server', ['tests', 'connect', 'watch']);
 
-  this.registerTask('test', ['build', 'tests', 'qunit']);
+  this.registerTask('test', ['tests', 'qunit']);
+
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -49,7 +52,7 @@ module.exports = function(grunt) {
 
     watch: {
       files: ['lib/**', 'vendor/*', 'test/**/*'],
-      tasks: ['build', 'tests']
+      tasks: ['tests']
     },
 
     transpile: {
@@ -90,51 +93,64 @@ module.exports = function(grunt) {
           src: ['tmp/tests/*.js'],
           dest: 'tmp/tests.amd.js'
         }]
+      },
+      library: {
+        src: ['tmp/<%= pkg.name %>.amd.js'],
+        dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.amd.js'
+      },
+      browser: {
+        src: [
+          'wrap/browser.start',
+          'vendor/loader.js',
+          'vendor/handlebars.amd.js',
+          'tmp/<%= pkg.name %>.amd.js',
+          'wrap/browser.end'
+        ],
+        dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
       }
     },
 
-    fixSourceMap: {
+    fix_sourcemap: {
       amd: {
         files: {
-          'tmp/htmlbars.amd.js.map': 'tmp/htmlbars.amd.js.map'
+          src: 'tmp/htmlbars.amd.js.map'
         }
       },
       tests: {
         files: {
-          'tmp/tests.amd.js.map': 'tmp/tests.amd.js.map'
+          src: 'tmp/tests.amd.js.map'
+        }
+      },
+      library: {
+        root: 'sources-<%= pkg.version %>',
+        files: {
+          src: 'dist/<%= pkg.name %>-<%= pkg.version %>.amd.js.map'
+        }
+      },
+      browser: {
+        root: 'sources-<%= pkg.version %>',
+        files: {
+          src: 'dist/<%= pkg.name %>-<%= pkg.version %>.js.map'
         }
       }
     },
 
+    copy: {
+      sources: {
+        files: [{
+          expand: true,
+          cwd: 'tmp/',
+          src: ['<%= pkg.name %>.js', '<%= pkg.name %>.amd.js', '<%= pkg.name %>.amd.js.map', '<%= pkg.name %>/**/*.js', 'vendor/**/*.js'],
+          dest: 'dist/sources-<%= pkg.version %>/'
+        }, {
+          expand: true,
+          src: ['wrap/*', 'vendor/**/*.js'],
+          dest: 'dist/sources-<%= pkg.version %>/'
+        }]
+      }
+    },
+
     clean: ["dist"],
-
-    concat: {
-      library: {
-        src: ['tmp/' + barename + '.amd.js'],
-        dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.amd.js'
-      },
-
-      deps: {
-        src: ['vendor/deps/*.js'],
-        dest: 'tmp/deps.amd.js'
-      },
-
-      browser: {
-        src: [
-          'vendor/loader.js',
-          'vendor/handlebars.amd.js',
-          'tmp/' + barename + '.amd.js'
-        ],
-        dest: 'tmp/' + barename + '.browser1.js'
-      }
-    },
-
-    browser: {
-      dist: {
-        src: 'tmp/' + barename + '.browser1.js',
-        dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.js'
-      }
-    },
 
     qunit: {
       all: ['test/index.html']
@@ -143,41 +159,31 @@ module.exports = function(grunt) {
 
   // Load tasks from npm
   grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-qunit');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-es6-module-transpiler');
   grunt.loadNpmTasks('grunt-concat-sourcemap');
 
   // Multi-task for wrapping browser version
-
   this.registerTask('bytes', function() {
     console.log("TODO: Add a bytes-tracking task");
   });
 
-  this.registerMultiTask('browser', "Export the object in " + name + " to the window", function() {
-    this.files.forEach(function(f) {
-      var output = ["(function(global) {"];
-
-      output.push.apply(output, f.src.map(grunt.file.read));
-
-      output.push('global.' + barename + ' = requireModule("' + barename + '");');
-      output.push('})(global || window);');
-
-      grunt.file.write(f.dest, output.join("\n"));
-    });
-  });
-
-  this.registerMultiTask('fixSourceMap', "Remove tmp from source paths", function() {
+  this.registerMultiTask('fix_sourcemap', "Remove tmp from source paths", function() {
+    var root = this.data.root;
     this.files.forEach(function(f) {
       f.src.forEach(function (src) {
         map = JSON.parse(grunt.file.read(src));
         for (var i=0; i<map.sources.length; i++) {
-          map.sources[i] = map.sources[i].replace(/tmp\//,'');
+          map.sources[i] = map.sources[i].replace(/tmp\//, '');
+          if (root) {
+            map.sources[i] = grunt.config.process(root) + '/' + map.sources[i];
+          }
         }
-        grunt.file.write(f.dest, JSON.stringify(map));
-      });
+        grunt.file.write(src, JSON.stringify(map));
+      }, this);
     });
   });
 };
