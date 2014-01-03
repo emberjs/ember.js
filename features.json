@@ -13,7 +13,8 @@
     "ember-testing-routing-helpers": null,
     "ember-testing-triggerEvent-helper": null,
     "with-controller": null,
-    "computed-read-only": null
+    "computed-read-only": null,
+    "ember-metal-run-bind": null
   },
   "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info"]
 }

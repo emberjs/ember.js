@@ -18,7 +18,8 @@ var Backburner = requireModule('backburner').Backburner,
       onBegin: onBegin,
       onEnd: onEnd
     }),
-    slice = [].slice;
+    slice = [].slice,
+    concat = [].concat;
 
 // ..........................................................
 // Ember.run - this is ideally the only public API the dev sees
@@ -104,7 +105,7 @@ Ember.run = function(target, method) {
   @return {Object} Return value from invoking the passed function. Please note,
   when called within an existing loop, no return value is possible.
 */
-Ember.run.join = function(target, method) {
+Ember.run.join = function(target, method /* args */) {
   if (!Ember.run.currentRunLoop) {
     return Ember.run.apply(Ember.run, arguments);
   }
@@ -113,6 +114,55 @@ Ember.run.join = function(target, method) {
   args.unshift('actions');
   Ember.run.schedule.apply(Ember.run, args);
 };
+
+if (Ember.FEATURES.isEnabled('ember-metal-run-bind')) {
+/**
+  Provides a useful utility for when integrating with non-Ember libraries
+  that provide asynchronous callbacks.
+
+  Ember utilizes a run-loop to batch and coalesce changes. This works by
+  marking the start and end of Ember-related Javascript execution.
+
+  When using events such as a View's click handler, Ember wraps the event
+  handler in a run-loop, but when integrating with non-Ember libraries this
+  can be tedious.
+
+  For example, the following is rather verbose but is the correct way to combine
+  third-party events and Ember code.
+
+  ```javascript
+  var that = this;
+  jQuery(window).on('resize', function(){
+    Ember.run(function(){
+      that.handleResize();
+    });
+  });
+  ```
+
+  To reduce the boilerplate, the following can be used to construct a
+  run-loop-wrapped callback handler.
+
+  ```javascript
+  jQuery(window).on('resize', Ember.run.bind(this, this.triggerResize));
+  ```
+
+  @method bind
+  @namespace Ember.run
+  @param {Object} [target] target of method to call
+  @param {Function|String} method Method to invoke.
+    May be a function or a string. If you pass a string
+    then it will be looked up on the passed target.
+  @param {Object} [args*] Any additional arguments you wish to pass to the method.
+  @return {Object} return value from invoking the passed function. Please note,
+  when called within an existing loop, no return value is possible.
+*/
+  Ember.run.bind = function(target, method /* args*/) {
+    var args = arguments;
+    return function() {
+      return Ember.run.join.apply(Ember.run, args);
+    };
+  };
+}
 
 Ember.run.backburner = backburner;
 
@@ -407,7 +457,7 @@ Ember.run.next = function() {
 
 /**
   Cancels a scheduled item. Must be a value returned by `Ember.run.later()`,
-  `Ember.run.once()`, `Ember.run.next()`, `Ember.run.debounce()`, or 
+  `Ember.run.once()`, `Ember.run.next()`, `Ember.run.debounce()`, or
   `Ember.run.throttle()`.
 
   ```javascript
@@ -496,7 +546,7 @@ Ember.run.cancel = function(timer) {
 
     Ember.run.debounce(myContext, myFunc, 150, true);
 
-    // 150ms passes and nothing else is logged to the console and 
+    // 150ms passes and nothing else is logged to the console and
     // the debouncee is no longer being watched
 
     Ember.run.debounce(myContext, myFunc, 150, true);
