@@ -13,6 +13,8 @@ module.exports = function(grunt) {
                      'fix_sourcemap:library',
                      'fix_sourcemap:browser',
                      'copy:sources',
+                     'uglify:library',
+                     'uglify:browser',
                      'bytes'
                     ]);
 
@@ -150,6 +152,29 @@ module.exports = function(grunt) {
       }
     },
 
+    uglify: {
+      library: {
+        options: {
+          sourceMapIn: 'dist/<%= pkg.name %>-<%= pkg.version %>.amd.js.map',
+          sourceMap: 'dist/<%= pkg.name %>-<%= pkg.version %>.amd.min.js.map',
+          sourceMappingURL: '<%= pkg.name %>-<%= pkg.version %>.amd.min.js.map'
+        },
+        files: {
+          'dist/<%= pkg.name %>-<%= pkg.version %>.amd.min.js': ['dist/<%= pkg.name %>-<%= pkg.version %>.amd.js']
+        }
+      },
+      browser: {
+        options: {
+          sourceMapIn: 'dist/<%= pkg.name %>-<%= pkg.version %>.js.map',
+          sourceMap: 'dist/<%= pkg.name %>-<%= pkg.version %>.min.js.map',
+          sourceMappingURL: '<%= pkg.name %>-<%= pkg.version %>.min.js.map'
+        },
+        files: {
+          'dist/<%= pkg.name %>-<%= pkg.version %>.min.js': ['dist/<%= pkg.name %>-<%= pkg.version %>.js']
+        }
+      }
+    },
+
     clean: ["dist"],
 
     qunit: {
@@ -165,6 +190,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-es6-module-transpiler');
   grunt.loadNpmTasks('grunt-concat-sourcemap');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
 
   // Multi-task for wrapping browser version
   this.registerTask('bytes', function() {
