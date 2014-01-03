@@ -18,8 +18,7 @@ var Backburner = requireModule('backburner').Backburner,
       onBegin: onBegin,
       onEnd: onEnd
     }),
-    slice = [].slice,
-    concat = [].concat;
+    slice = [].slice;
 
 // ..........................................................
 // Ember.run - this is ideally the only public API the dev sees
@@ -105,7 +104,7 @@ Ember.run = function(target, method) {
   @return {Object} Return value from invoking the passed function. Please note,
   when called within an existing loop, no return value is possible.
 */
-Ember.run.join = function(target, method /* args */) {
+Ember.run.join = function(target, method) {
   if (!Ember.run.currentRunLoop) {
     return Ember.run.apply(Ember.run, arguments);
   }
@@ -114,121 +113,6 @@ Ember.run.join = function(target, method /* args */) {
   args.unshift('actions');
   Ember.run.schedule.apply(Ember.run, args);
 };
-
-if (Ember.FEATURES.isEnabled('ember-metal-run-proxy')) {
-/**
-  Provides a useful utility for when integrating with non-Ember libraries
-  that provide asynchronous callbacks.
-
-  Ember utilizes a run-loop to batch and coalesce changes. This works by
-  marking the start and end of Ember-related Javascript execution.
-
-  When using events such as a View's click handler, Ember wraps the event
-  handler in a run-loop, but when integrating with non-Ember libraries this
-  can be tedious.
-
-  For example, the following is rather verbose but is the correct way to combine
-  third-party events and Ember code.
-
-  ```javascript
-  var that = this;
-  jQuery(window).on('resize', function(){
-    Ember.run(function(){
-      that.handleResize();
-    });
-  });
-  ```
-
-  To reduce the boilerplate, the following can be used to construct a
-  run-loop-wrapped callback handler.
-
-  ```javascript
-  jQuery(window).on('resize', Ember.run.proxy(this, this.triggerResize));
-  ```
-
-  @method proxy
-  @namespace Ember.run
-  @param {Object} [target] target of method to call
-  @param {Function|String} method Method to invoke.
-    May be a function or a string. If you pass a string
-    then it will be looked up on the passed target.
-  @param {Object} [args*] Any additional arguments you wish to pass to the method.
-  @return {Object} return value from invoking the passed function. Please note,
-  when called within an existing loop, no return value is possible.
-*/
-  Ember.run.proxy = function(target, method /* args*/) {
-    var args = arguments;
-    return function() {
-      return Ember.run.join.apply(Ember.run, args);
-    };
-  };
-}
-
-if (Ember.FEATURES.isEnabled('ember-metal-run-method')) {
-/**
-  Provides a useful utility for use when integrating with non-Ember libraries
-  that provide asynchronous callbacks.
-
-  Ember utilizes a run-loop to batch and coalesce changes. This works by
-  marking the start and end of Ember-related Javascript execution.
-
-  When using events such as a View's click handler, Ember wraps the event
-  handler in a run-loop, but when integrating with non-Ember libraries this
-  can be tedious.
-
-  For example, the following is rather verbose but the correct way to combine
-  third-party events and Ember code.
-
-  ```javascript
-  var object = Ember.Object.create({
-    handleResize: function(dimensions){
-      this.set('somethingThatNeedsTheRunLoop', dimensions);
-    };
-  });
-
-  jQuery(window).on('resize', function(){
-    var dimensions = extractDimensions();
-    Ember.run(function(){
-      object.handleResize(dimensions);
-    ));
-  });
-  ```
-
-  To reduce the boilerplate, the following can be used to construct a
-  run-loop-wrapped callback handler.
-
-  ```javascript
-  var object = Ember.Object.create({
-    handleResize: Ember.run.method(function(dimensions){
-      this.set('somethingThatNeedsTheRunLoop', dimensions);
-    })
-  });
-
-  jQuery(window).on('scroll', function(){
-    var dimensions = interpolateDimensions();
-    object.handleResize(dimensions);
-  });
-
-  jQuery(window).on('resize', function(){
-    var dimensions = extractDimensions();
-    object.handleResize(dimensions);
-  });
-  ```
-
-  @method method
-  @namespace Ember.run
-  @param {Function} method a method to wrap
-  @return {Object} A method guarenteed to be run-loop-wrapped.
-*/
-  Ember.run.method = function() {
-    var args = slice.call(arguments);
-
-    return function() {
-      args.unshift(this); // ensure the context is the class the method was defined on.
-      return Ember.run.join.apply(Ember.run, concat.call(args, slice.call(arguments)));
-    };
-  };
-}
 
 Ember.run.backburner = backburner;
 
@@ -523,7 +407,7 @@ Ember.run.next = function() {
 
 /**
   Cancels a scheduled item. Must be a value returned by `Ember.run.later()`,
-  `Ember.run.once()`, `Ember.run.next()`, `Ember.run.debounce()`, or
+  `Ember.run.once()`, `Ember.run.next()`, `Ember.run.debounce()`, or 
   `Ember.run.throttle()`.
 
   ```javascript
@@ -612,7 +496,7 @@ Ember.run.cancel = function(timer) {
 
     Ember.run.debounce(myContext, myFunc, 150, true);
 
-    // 150ms passes and nothing else is logged to the console and
+    // 150ms passes and nothing else is logged to the console and 
     // the debouncee is no longer being watched
 
     Ember.run.debounce(myContext, myFunc, 150, true);
