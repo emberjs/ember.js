@@ -24,7 +24,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     var nameWithIndex;
     if (!router.hasRoute(name)) {
       nameWithIndex = name + '.index';
-      Ember.assert(fmt("The attempt to link-to route '%@' failed (also tried '%@'). The router did not find '%@' in its possible routes: '%@'", [name, nameWithIndex, name, Ember.keys(router.router.recognizer.names).join("', '")]), router.hasRoute(nameWithIndex));
+      Ember.assert(fmt("The attempt to link-to route '%@' failed (also tried '%@'). " +
+                       "The router did not find '%@' in its possible routes: '%@'",
+                       [name, nameWithIndex, name, Ember.keys(router.router.recognizer.names).join("', '")]),
+                       router.hasRoute(nameWithIndex));
       name = nameWithIndex;
     }
 
