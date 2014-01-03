@@ -730,7 +730,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     key/value pairs, like so:
 
     ```handlebars
-    {{#link-to  aPhoto tagName='li' title='Following this link will change your life' classNames=['pic', 'sweet']}}
+    {{#link-to  aPhoto tagName='li' title='Following this link will change your life' classNames='pic sweet'}}
       Uh-mazing!
     {{/link-to}}
     ```
