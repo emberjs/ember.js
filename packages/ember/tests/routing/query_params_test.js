@@ -539,4 +539,80 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     var controller = container.lookup('controller:index');
     deepEqual(controller.get('foo'), ["1","2","3"]);
   });
+
+  test("Array query params can be pushed/popped", function() {
+    Router.map(function() {
+      this.route("home", { path: '/' });
+    });
+
+    App.HomeController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: Ember.A([])
+    });
+
+    bootApplication();
+
+    var controller = container.lookup('controller:home');
+
+    Ember.run(controller.foo, 'pushObject', 1);
+    equal(router.get('location.path'), "/?home[foo][]=1");
+    Ember.run(controller.foo, 'pushObject', 2);
+    equal(router.get('location.path'), "/?home[foo][]=1&home[foo][]=2");
+    Ember.run(controller.foo, 'popObject');
+    equal(router.get('location.path'), "/?home[foo][]=1");
+    Ember.run(controller.foo, 'unshiftObject', 'lol');
+    equal(router.get('location.path'), "/?home[foo][]=lol&home[foo][]=1");
+  });
+
+  test("Can swap out qp props as strings, arrays, back and forth", function() {
+    Router.map(function() {
+      this.route("home", { path: '/' });
+    });
+
+    App.HomeController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: Ember.A([])
+    });
+
+    bootApplication();
+
+    var controller = container.lookup('controller:home');
+
+    Ember.run(controller.foo, 'pushObject', 1);
+    equal(router.get('location.path'), "/?home[foo][]=1");
+    Ember.run(controller, 'set', 'foo', Ember.A(['lol']));
+    equal(router.get('location.path'), "/?home[foo][]=lol");
+    Ember.run(controller.foo, 'pushObject', 1);
+    equal(router.get('location.path'), "/?home[foo][]=lol&home[foo][]=1");
+    Ember.run(controller, 'set', 'foo', 'hello');
+    equal(router.get('location.path'), "/?home[foo]=hello");
+    Ember.run(controller, 'set', 'foo', true);
+    equal(router.get('location.path'), "/?home[foo]");
+  });
+
+  test("Overwriting with array with same content shouldn't refire update", function() {
+    expect(1);
+    Router.map(function() {
+      this.route("home", { path: '/' });
+    });
+
+    App.HomeRoute = Ember.Route.extend({
+      actions: {
+        queryParamsDidChange: function() {
+          ok(false, "queryParamsDidChange shouldn't have been called");
+        }
+      }
+    });
+
+    App.HomeController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: Ember.A([1])
+    });
+
+    bootApplication();
+
+    var controller = container.lookup('controller:home');
+    Ember.run(controller, 'set', Ember.A([1]));
+    equal(router.get('location.path'), "/?home[foo][]=1");
+  });
 }

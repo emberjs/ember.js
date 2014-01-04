@@ -69,7 +69,11 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
               if (!changes || !(k in changes)) {
                 // Only update the controller if the query param
                 // value wasn't overriden in setupController.
-                set(controller, k, params[queryParams[k]]);
+
+                // Arrays coming from router.js should be Emberized.
+                var newValue = params[queryParams[k]];
+                newValue = Ember.isArray(newValue) ? Ember.A(newValue) : newValue;
+                set(controller, k, newValue);
               }
               controller._finalizingQueryParams = false;
 
