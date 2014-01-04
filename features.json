@@ -12,7 +12,8 @@
     "ember-testing-routing-helpers": null,
     "ember-testing-triggerEvent-helper": null,
     "computed-read-only": null,
-    "composable-computed-properties": true
+    "composable-computed-properties": true,
+    "ember-routing-drop-deprecated-action-style": null
   },
   "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info"]
 }
