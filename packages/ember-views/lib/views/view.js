@@ -2479,15 +2479,12 @@ Ember.View.applyAttributeBindings = function(elem, name, value) {
       elem.attr(name, value);
     }
   } else if (name === 'value' || type === 'boolean') {
-    // We can't set properties to undefined or null
-    if (Ember.isNone(value)) { value = ''; }
-
-    if (!value) {
+    if (Ember.isNone(value) || value === false) {
+      // `null`, `undefined` or `false` should remove attribute
       elem.removeAttr(name);
-    }
-
-    if (value !== elem.prop(name)) {
-      // value and booleans should always be properties
+      elem.prop(name, '');
+    } else if (value !== elem.prop(name)) {
+      // value should always be properties
       elem.prop(name, value);
     }
   } else if (!value) {
