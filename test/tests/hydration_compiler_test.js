@@ -81,6 +81,48 @@ test("helper usage", function() {
     {type: "string", params: ['bar']},
     {type: "stackLiteral", params: [0]},
     helper('foo', ['bar'], [0], null, null)
-  ]
-);
+  ]);
+});
+
+test("node mustache", function() {
+  var opcodes = opcodesFor("<div {{foo}}></div>");
+  deepEqual(opcodes, [
+    {type: "program", params: [null]},
+    {type: "stackLiteral", params: [0]},
+    {type: "nodeHelper", params:["foo", 0, [0]]}
+  ]);
+});
+
+test("node helper", function() {
+  var opcodes = opcodesFor("<div {{foo 'bar'}}></div>");
+  deepEqual(opcodes, [
+    {type: "program", params: [null]},
+    {type: "string", params: ['bar']},
+    {type: "stackLiteral", params: [0]},
+    {type: "nodeHelper", params:["foo", 1, [0]]}
+  ]);
+});
+
+test("attribute mustache", function() {
+  var opcodes = opcodesFor("<div class='before {{foo}} after'></div>");
+  deepEqual(opcodes, [
+    {type: "content", params: ["before "]},
+    {type: "ambiguous", params: ["foo", true]},
+    {type: "content", params: [" after"]},
+    {type: "attribute", params: ["class", 3, [0]]}
+  ]);
+});
+
+
+test("attribute helper", function() {
+  var opcodes = opcodesFor("<div class='before {{foo 'bar'}} after'></div>");
+  deepEqual(opcodes, [
+    {type: "content", params: ["before "]},
+    {"type":"program","params":[null]},
+    {"type":"string","params":["bar"]},
+    {"type":"stackLiteral","params":[0]},
+    {"type":"helper","params":["foo",1,true]},
+    {type: "content", params: [" after"]},
+    {type: "attribute", params: ["class", 3, [0]]}
+  ]);
 });
