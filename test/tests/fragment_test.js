@@ -50,7 +50,7 @@ test('compiles a fragment', function () {
 });
 
 test('hydrates a fragment', function () {
-  var hydration = hydrationFor("<div>{{foo}} bar {{baz}}</div>");
+  var hydration = hydrationFor("<div>{{foo blah bar=baz}} bar {{baz}}</div>");
   var clone = hydration.fragment.cloneNode(true);
   var hydrate2 = new Hydration2();
   var program = hydrate2.compile(hydration.opcodes)(Range);
