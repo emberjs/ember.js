@@ -431,4 +431,32 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     Ember.run(router, 'transitionTo', { queryParams: { foo: false } });
     equal(router.get('location.path'), "/", "longform supported");
   });
+
+  test("setting controller QP to empty string doesn't generate null in URL", function() {
+    expect(1);
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: "123"
+    });
+
+    bootApplication();
+    var controller = container.lookup('controller:index');
+
+    expectedReplaceURL = "/?index[foo]=";
+    Ember.run(controller, 'set', 'foo', '');
+  });
+
+  test("transitioning to empty string QP doesn't generate null in URL", function() {
+    expect(1);
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: "123"
+    });
+
+    bootApplication();
+    var controller = container.lookup('controller:index');
+
+    expectedReplaceURL = "/?index[foo]=";
+    Ember.run(router, 'transitionTo', { queryParams: { foo: '' } });
+  });
 }

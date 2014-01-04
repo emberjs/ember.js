@@ -68,6 +68,7 @@ Ember.HashLocation = Ember.Object.extend({
   */
   replaceURL: function(path) {
     get(this, 'location').replace('#' + path);
+    set(this, 'lastSetURL', path);
   },
 
   /**
