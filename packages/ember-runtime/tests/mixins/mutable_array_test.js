@@ -1,66 +1,42 @@
 require('ember-runtime/~tests/suites/mutable_array');
 
-/*
-  Implement a basic fake mutable array.  This validates that any non-native
-  enumerable can impl this API.
-*/
-var TestMutableArray = Ember.Object.extend(Ember.MutableArray, {
+var array;
 
-  _content: null,
-
-  init: function(ary) {
-    this._content = Ember.A(ary || []);
+module('mutable array', {
+  setup: function() {
+    array = Ember.A([1,2,3,4]);
   },
-
-  replace: function(idx, amt, objects) {
-
-    var args = objects ? objects.slice() : [],
-        removeAmt = amt,
-        addAmt    = args.length;
-
-    this.arrayContentWillChange(idx, removeAmt, addAmt);
-
-    args.unshift(amt);
-    args.unshift(idx);
-    this._content.splice.apply(this._content, args);
-    this.arrayContentDidChange(idx, removeAmt, addAmt);
-    return this;
-  },
-
-  objectAt: function(idx) {
-    return this._content[idx];
-  },
-
-  length: Ember.computed(function() {
-    return this._content.length;
-  }),
-
-  slice: function() {
-    return this._content.slice();
+  teardown: function() {
+    array = null;
   }
-
 });
 
+test('should remove element at a specified index', function() {
+  deepEqual(array.removeAt(2), [1,2,4]);
+});
 
-Ember.MutableArrayTests.extend({
+test('should not throw OUT_OF_RANGE_EXCEPTION when start === length', function() {
+  var exceptionThrown = false;
 
-  name: 'Basic Mutable Array',
-
-  newObject: function(ary) {
-    ary = ary ? ary.slice() : this.newFixture(3);
-    return new TestMutableArray(ary);
-  },
-
-  // allows for testing of the basic enumerable after an internal mutation
-  mutate: function(obj) {
-    obj.addObject(this.getFixture(1)[0]);
-  },
-
-  toArray: function(obj) {
-    return obj.slice();
+  try {
+    array.removeAt(0, 0);
+  } catch(e) {
+    exceptionThrown = true;
   }
 
-}).run();
+  equal(exceptionThrown, false);
+});
 
+test('should return this if length === 0', function() {
+  var result = [];
 
+  result = array.removeAt(0, 0);
 
+  deepEqual(result, array);
+});
+
+test('should throw OUT_OF_RANGE_EXCEPTION when start > length', function() {
+  throws(function() {
+    array.removeAt(4, 0);
+  });
+});
