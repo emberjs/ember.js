@@ -23,6 +23,7 @@
     "grunt-es6-module-transpiler": "~0.6.0",
     "grunt-concat-sourcemap": "~0.4.0",
     "grunt-contrib-copy": "~0.5.0",
-    "grunt-contrib-uglify": "~0.2.7"
+    "grunt-contrib-uglify": "~0.2.7",
+    "grunt-contrib-jshint": "~0.8.0"
   }
 }

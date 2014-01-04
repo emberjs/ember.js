@@ -20,7 +20,8 @@ module.exports = function(grunt) {
 
   // Build a new version of the library
   this.registerTask('build', "Builds a htmlbars",
-                    ['clean',
+                    ['jshint',
+                     'clean',
                      'transpile:amd',
                      'concat_sourcemap:amd',
                      'fix_sourcemap:amd'
@@ -175,6 +176,13 @@ module.exports = function(grunt) {
       }
     },
 
+    jshint: {
+      library: 'lib/**/*.js',
+      options: {
+        jshintrc: '.jshintrc'
+      }
+    },
+
     clean: ["dist"],
 
     qunit: {
@@ -191,6 +199,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-es6-module-transpiler');
   grunt.loadNpmTasks('grunt-concat-sourcemap');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 
   // Multi-task for wrapping browser version
   this.registerTask('bytes', function() {
