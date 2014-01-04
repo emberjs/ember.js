@@ -13,6 +13,10 @@ function mustache(name, parent, start, end) {
   return {type: 'ambiguous', params: [name, true, parent, start, end]};
 }
 
+function helper(name, params, parent, start, end) {
+  return {type: "helper", params: [name, params.length, true, parent, start, end]};
+}
+
 module("HydrationCompiler opcode generation");
 
 test("simple example", function() {
@@ -70,16 +74,13 @@ test("back to back mustaches should have a text node inserted between them", fun
   ]);
 });
 
-// test("helper usage", function() {
-//   var opcodes = opcodesFor("{{foo 'bar'}}");
-//   deepEqual(opcodes, [
-//     mustache('foo', [], null, 0)
-//   ]);
-// });
-
-// test("helper usage", function() {
-//   var opcodes = opcodesFor("{{#foo 'bar'}}i am crying{{/foo}}");
-//   deepEqual(opcodes, [
-//     mustache('foo', [], null, 0)
-//   ]);
-// });
+test("helper usage", function() {
+  var opcodes = opcodesFor("<div>{{foo 'bar'}}</div>");
+  deepEqual(opcodes, [
+    {type: "program", params: [null]},
+    {type: "string", params: ['bar']},
+    {type: "stackLiteral", params: [0]},
+    helper('foo', ['bar'], [0], null, null)
+  ]
+);
+});
