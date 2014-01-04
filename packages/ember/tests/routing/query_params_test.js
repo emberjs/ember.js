@@ -459,4 +459,30 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     expectedReplaceURL = "/?index[foo]=";
     Ember.run(router, 'transitionTo', { queryParams: { foo: '' } });
   });
+
+  test("Query param without =value are boolean", function() {
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: false
+    });
+
+    startingURL = "/?index[foo]";
+    bootApplication();
+
+    var controller = container.lookup('controller:index');
+    equal(controller.get('foo'), true);
+  });
+
+  test("Query param without value are empty string", function() {
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: ''
+    });
+
+    startingURL = "/?index[foo]=";
+    bootApplication();
+
+    var controller = container.lookup('controller:index');
+    equal(controller.get('foo'), "");
+  });
 }
