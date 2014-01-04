@@ -240,16 +240,17 @@ if (Ember.FEATURES.isEnabled('with-controller')) {
   test("it should wrap context with object controller", function() {
     var Controller = Ember.ObjectController.extend({
       controllerName: Ember.computed(function() {
-        return "controller:"+this.get('content.name');
+        return "controller:"+this.get('content.name') + ' and ' + this.get('parentController.name');
       })
     });
 
     var person = Ember.Object.create({name: 'Steve Holt'});
     var container = new Ember.Container();
 
-    var parentController = {
-      container: container
-    };
+    var parentController = Ember.Object.create({
+      container: container,
+      name: 'Bob Loblaw'
+    });
 
     view = Ember.View.create({
       container: container,
@@ -262,20 +263,27 @@ if (Ember.FEATURES.isEnabled('with-controller')) {
 
     appendView(view);
 
-    equal(view.$().text(), "controller:Steve Holt");
+    equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
 
     Ember.run(function() {
       view.rerender();
     });
 
-    equal(view.$().text(), "controller:Steve Holt");
+    equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
+
+    Ember.run(function() {
+      parentController.set('name', 'Carl Weathers');
+      view.rerender();
+    });
+
+    equal(view.$().text(), "controller:Steve Holt and Carl Weathers");
 
     Ember.run(function() {
       person.set('name', 'Gob');
       view.rerender();
     });
 
-    equal(view.$().text(), "controller:Gob");
+    equal(view.$().text(), "controller:Gob and Carl Weathers");
     Ember.run(function() { view.destroy(); }); // destroy existing view
   });
 }
