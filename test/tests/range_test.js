@@ -116,6 +116,50 @@ function createCombinatorialTest(factory) {
     equalHTML(frag, html);
   });
 
+  test('appendText '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
+    var frag = document.createDocumentFragment(),
+      parent = factory.parent.create(frag),
+      start = factory.start.create(parent),
+      content = factory.content.create(parent),
+      end = factory.end.create(parent),
+      range, html;
+
+    range = new Range(parent, start, end);
+
+    range.appendText('appended text');
+
+    html = factory.parent.startHTML +
+           factory.start.HTML +
+           factory.content.HTML +
+           'appended text' +
+           factory.end.HTML +
+           factory.parent.endHTML;
+
+    equalHTML(frag, html);
+  });
+
+  test('appendHTML '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
+    var frag = document.createDocumentFragment(),
+      parent = factory.parent.create(frag),
+      start = factory.start.create(parent),
+      content = factory.content.create(parent),
+      end = factory.end.create(parent),
+      range, html;
+
+    range = new Range(parent, start, end);
+
+    range.appendHTML('<p>A</p><p>B</p><p>C</p>');
+
+    html = factory.parent.startHTML +
+           factory.start.HTML +
+           factory.content.HTML +
+           '<p>A</p><p>B</p><p>C</p>' +
+           factory.end.HTML +
+           factory.parent.endHTML;
+
+    equalHTML(frag, html);
+  });
+
   test('clear '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
     var frag = document.createDocumentFragment(),
       parent = factory.parent.create(frag),
@@ -159,7 +203,6 @@ function createCombinatorialTest(factory) {
 
     equalHTML(frag, html);
   });
-
 };
 
 function createCombinatorialTests(parents, starts, ends, contents) {
