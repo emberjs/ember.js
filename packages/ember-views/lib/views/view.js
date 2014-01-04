@@ -64,6 +64,7 @@ Ember.TEMPLATES = {};
   @namespace Ember
   @extends Ember.Object
   @uses Ember.Evented
+  @uses Ember.ActionHandler
 */
 
 Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
