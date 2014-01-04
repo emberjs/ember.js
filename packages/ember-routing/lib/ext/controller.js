@@ -160,6 +160,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       for (var k in queryParams) {
         if (queryParams.hasOwnProperty(k)) {
           this.addObserver(k, this, this._queryParamChanged);
+          this.addObserver(k + '.[]', this, this._queryParamChanged);
         }
       }
     },
@@ -170,6 +171,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       for (var k in queryParams) {
         if (queryParams.hasOwnProperty(k)) {
           this.removeObserver(k, this, this._queryParamChanged);
+          this.removeObserver(k + '.[]', this, this._queryParamChanged);
         }
       }
     },
