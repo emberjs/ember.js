@@ -282,10 +282,10 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
         preserveContext = get(this, 'preserveContext'),
         context = get(this, 'previousContext');
 
-    var contextController;
+    var _contextController;
 
     if (Ember.FEATURES.isEnabled('with-controller')) {
-      contextController = get(this, 'contextController');
+      _contextController = get(this, '_contextController');
     }
 
     var inverseTemplate = get(this, 'inverseTemplate'),
@@ -308,9 +308,9 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
       // If so, pass the specified object to the template
         if (displayTemplate) {
           if (Ember.FEATURES.isEnabled('with-controller')) {
-            if (contextController) {
-              set(contextController, 'content', result);
-              result = contextController;
+            if (_contextController) {
+              set(_contextController, 'content', result);
+              result = _contextController;
             }
           }
           set(this, '_context', result);

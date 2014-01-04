@@ -284,6 +284,40 @@ if (Ember.FEATURES.isEnabled('with-controller')) {
     });
 
     equal(view.$().text(), "controller:Gob and Carl Weathers");
+
+    strictEqual(view.get('_childViews')[0].get('_contextController.target'), parentController, "the target property of the child controllers are set correctly");
+
+    Ember.run(function() { view.destroy(); }); // destroy existing view
+  });
+
+  test("it should still have access to original parentController within an {{#each}}", function() {
+    var Controller = Ember.ObjectController.extend({
+      controllerName: Ember.computed(function() {
+        return "controller:"+this.get('content.name') + ' and ' + this.get('parentController.name');
+      })
+    });
+
+    var people = Ember.A([{ name: "Steve Holt" }, { name: "Carl Weathers" }]);
+    var container = new Ember.Container();
+
+    var parentController = Ember.Object.create({
+      container: container,
+      name: 'Bob Loblaw'
+    });
+
+    view = Ember.View.create({
+      container: container,
+      template: Ember.Handlebars.compile('{{#each person in people}}{{#with person controller="person"}}{{controllerName}}{{/with}}{{/each}}'),
+      context: { people: people },
+      controller: parentController
+    });
+
+    container.register('controller:person', Controller);
+
+    appendView(view);
+
+    equal(view.$().text(), "controller:Steve Holt and Bob Loblawcontroller:Carl Weathers and Bob Loblaw");
+
     Ember.run(function() { view.destroy(); }); // destroy existing view
   });
 }
