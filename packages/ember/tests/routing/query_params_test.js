@@ -485,4 +485,58 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     var controller = container.lookup('controller:index');
     equal(controller.get('foo'), "");
   });
+
+  test("Array query params can be set", function() {
+    Router.map(function() {
+      this.route("home", { path: '/' });
+    });
+
+    App.HomeController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: []
+    });
+
+    bootApplication();
+
+    var controller = container.lookup('controller:home');
+
+    Ember.run(controller, '_activateQueryParamObservers');
+    Ember.run(controller, 'set', 'foo', [1,2]);
+
+    equal(router.get('location.path'), "/?home[foo][]=1&home[foo][]=2");
+
+    Ember.run(controller, 'set', 'foo', [3,4]);
+    equal(router.get('location.path'), "/?home[foo][]=3&home[foo][]=4");
+  });
+
+  test("transitionTo supports array query params", function() {
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: [1]
+    });
+
+    bootApplication();
+
+    equal(router.get('location.path'), "/?index[foo][]=1");
+
+    Ember.run(router, 'transitionTo', { queryParams: { foo: [2,3] } });
+    equal(router.get('location.path'), "/?index[foo][]=2&index[foo][]=3", "shorthand supported");
+    Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': [4,5] } });
+    equal(router.get('location.path'), "/?index[foo][]=4&index[foo][]=5", "longform supported");
+    Ember.run(router, 'transitionTo', { queryParams: { foo: [] } });
+    equal(router.get('location.path'), "/", "longform supported");
+  });
+
+  test("Url with array query param sets controller property to array", function() {
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: ''
+    });
+
+    startingURL = "/?index[foo][]=1&index[foo][]=2&index[foo][]=3";
+    bootApplication();
+
+    var controller = container.lookup('controller:index');
+    deepEqual(controller.get('foo'), ["1","2","3"]);
+  });
 }
