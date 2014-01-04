@@ -19,20 +19,8 @@ var dom = {
   createElement: function (name) {
     return document.createElement(name);
   },
-  frag: function (element, string) {
-    if (element.nodeType === 11) {
-      element = this.createElement('div');
-    }
-    return this.createContextualFragment(element, string);
-  },
-  createContextualFragment: function(element, string) {
-    var range = this.createRange();
-    range.setStart(element, 0);
-    range.collapse(false);
-    return range.createContextualFragment(string);
-  },
-  createRange: function() {
-    return document.createRange();
+  appendText: function (element, string) {
+    element.textContent = string;
   }
 }
 
