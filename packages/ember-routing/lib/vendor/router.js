@@ -204,10 +204,10 @@ define("router/handler-info",
     __exports__.UnresolvedHandlerInfoByObject = UnresolvedHandlerInfoByObject;
   });
 define("router/router",
-  ["route-recognizer","rsvp","./utils","./transition-state","./transition","./transition-intent/named-transition-intent","./transition-intent/url-transition-intent","./transition-intent/refresh-transition-intent","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __exports__) {
+  ["route-recognizer","rsvp","./utils","./transition-state","./transition","./transition-intent/named-transition-intent","./transition-intent/url-transition-intent","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
     "use strict";
-    var RouteRecognizer = __dependency1__['default'];
+    var RouteRecognizer = __dependency1__["default"];
     var resolve = __dependency2__.resolve;
     var reject = __dependency2__.reject;
     var async = __dependency2__.async;
@@ -226,7 +226,6 @@ define("router/router",
     var TransitionAborted = __dependency5__.TransitionAborted;
     var NamedTransitionIntent = __dependency6__.NamedTransitionIntent;
     var URLTransitionIntent = __dependency7__.URLTransitionIntent;
-    var RefreshTransitionIntent = __dependency8__.RefreshTransitionIntent;
 
     var pop = Array.prototype.pop;
 
@@ -428,9 +427,22 @@ define("router/router",
       },
 
       refresh: function(pivotHandler) {
-        var intent = new RefreshTransitionIntent({
-          pivotHandler: pivotHandler || this.state.handlerInfos[0].handler,
-          queryParams: this._changedQueryParams
+
+
+        var state = this.activeTransition ? this.activeTransition.state : this.state;
+        var handlerInfos = state.handlerInfos;
+        var params = {};
+        for (var i = 0, len = handlerInfos.length; i < len; ++i) {
+          var handlerInfo = handlerInfos[i];
+          params[handlerInfo.name] = handlerInfo.params || {};
+        }
+
+        log(this, "Starting a refresh transition");
+        var intent = new NamedTransitionIntent({
+          name: handlerInfos[handlerInfos.length - 1].name,
+          pivotHandler: pivotHandler || handlerInfos[0].handler,
+          contexts: [], // TODO collect contexts...?
+          queryParams: this._changedQueryParams || state.queryParams || {}
         });
 
         return this.transitionByIntent(intent, false);
@@ -954,7 +966,6 @@ define("router/transition-intent/named-transition-intent",
         pureArgs              = partitionedArgs[0],
         queryParams           = partitionedArgs[1],
         handlers              = recognizer.handlersFor(pureArgs[0]);
-        //handlerInfos          = generateHandlerInfosWithQueryParams({}, handlers, queryParams);
 
       var targetRouteName = handlers[handlers.length-1].handler;
 
@@ -963,13 +974,26 @@ define("router/transition-intent/named-transition-intent",
 
     NamedTransitionIntent.prototype.applyToHandlers = function(oldState, handlers, getHandler, targetRouteName, isIntermediate, checkingIfActive) {
 
+      var i;
       var newState = new TransitionState();
       var objects = this.contexts.slice(0);
 
       var invalidateIndex = handlers.length;
       var nonDynamicIndexes = [];
 
-      for (var i = handlers.length - 1; i >= 0; --i) {
+      // Pivot handlers are provided for refresh transitions
+      if (this.pivotHandler) {
+        for (i = 0; i < handlers.length; ++i) {
+          if (getHandler(handlers[i].handler) === this.pivotHandler) {
+            invalidateIndex = i;
+            break;
+          }
+        }
+      }
+
+      var pivotHandlerFound = !this.pivotHandler;
+
+      for (i = handlers.length - 1; i >= 0; --i) {
         var result = handlers[i];
         var name = result.handler;
         var handler = getHandler(name);
@@ -978,7 +1002,11 @@ define("router/transition-intent/named-transition-intent",
         var newHandlerInfo = null;
 
         if (result.names.length > 0) {
-          newHandlerInfo = this.getHandlerInfoForDynamicSegment(name, handler, result.names, objects, oldHandlerInfo, targetRouteName);
+          if (i >= invalidateIndex) {
+            newHandlerInfo = this.createParamHandlerInfo(name, handler, result.names, objects, oldHandlerInfo);
+          } else {
+            newHandlerInfo = this.getHandlerInfoForDynamicSegment(name, handler, result.names, objects, oldHandlerInfo, targetRouteName);
+          }
         } else {
           // This route has no dynamic segment.
           // Therefore treat as a param-based handlerInfo
@@ -1004,8 +1032,8 @@ define("router/transition-intent/named-transition-intent",
         }
 
         var handlerToUse = oldHandlerInfo;
-        if (newHandlerInfo.shouldSupercede(oldHandlerInfo)) {
-          invalidateIndex = i;
+        if (i >= invalidateIndex || newHandlerInfo.shouldSupercede(oldHandlerInfo)) {
+          invalidateIndex = Math.min(i, invalidateIndex);
           handlerToUse = newHandlerInfo;
         }
 
@@ -1112,55 +1140,6 @@ define("router/transition-intent/named-transition-intent",
     };
 
     __exports__.NamedTransitionIntent = NamedTransitionIntent;
-  });
-define("router/transition-intent/refresh-transition-intent",
-  ["../transition-intent","../transition-state","../handler-info","../utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
-    "use strict";
-    var TransitionIntent = __dependency1__.TransitionIntent;
-    var TransitionState = __dependency2__.TransitionState;
-    var UnresolvedHandlerInfoByParam = __dependency3__.UnresolvedHandlerInfoByParam;
-    var extractQueryParams = __dependency4__.extractQueryParams;
-    var oCreate = __dependency4__.oCreate;
-    var merge = __dependency4__.merge;
-
-    function RefreshTransitionIntent(props) {
-      TransitionIntent.call(this, props);
-    }
-
-    RefreshTransitionIntent.prototype = oCreate(TransitionIntent.prototype);
-    RefreshTransitionIntent.prototype.applyToState = function(oldState, recognizer, getHandler, isIntermediate) {
-
-      var pivotHandlerFound = false;
-      var newState = new TransitionState();
-
-      var oldHandlerInfos = oldState.handlerInfos;
-      for (var i = 0, len = oldHandlerInfos.length; i < len; ++i) {
-        var handlerInfo = oldHandlerInfos[i];
-        if (handlerInfo.handler === this.pivotHandler) {
-          pivotHandlerFound = true;
-        }
-
-        if (pivotHandlerFound) {
-          newState.handlerInfos.push(new UnresolvedHandlerInfoByParam({
-            name: handlerInfo.name,
-            handler: handlerInfo.handler,
-            params: handlerInfo.params || {}
-          }));
-        } else {
-          newState.handlerInfos.push(handlerInfo);
-        }
-      }
-
-      merge(newState.queryParams, oldState.queryParams);
-      if (this.queryParams) {
-        merge(newState.queryParams, this.queryParams);
-      }
-
-      return newState;
-    };
-
-    __exports__.RefreshTransitionIntent = RefreshTransitionIntent;
   });
 define("router/transition-intent/url-transition-intent",
   ["../transition-intent","../transition-state","../handler-info","../utils","exports"],
