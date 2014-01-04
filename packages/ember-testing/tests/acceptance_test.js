@@ -12,8 +12,8 @@ module("ember-testing Acceptance", {
       App.Router.map(function() {
         this.route('posts');
         this.route('comments');
-
         this.route('abort_transition');
+        this.route('init_exception');
       });
 
       App.PostsRoute = Ember.Route.extend({
@@ -42,6 +42,12 @@ module("ember-testing Acceptance", {
       App.AbortTransitionRoute = Ember.Route.extend({
         beforeModel: function(transition) {
           transition.abort();
+        }
+      });
+
+      App.InitExceptionController = Ember.Controller.extend({
+        init: function() {
+          throw new Error("error thrown in init");
         }
       });
 
@@ -227,4 +233,18 @@ test("Unhandled exceptions are logged via Ember.Test.adapter#exception", functio
   });
 
   asyncHandled = click(".does-not-exist");
+});
+
+test("Unhandled exception in controller init logged via Ember.Test.adapter#exception", function() {
+  // the controller is looked up on the container twice which is
+  // causing this exception to fire twice
+  expect(2);
+
+  Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
+    exception: function(error) {
+      equal(error.message, "error thrown in init", "Unhandled exception in controller init successfully caught and passed to Ember.Test.adapter.exception");
+    }
+  });
+
+  visit("/init_exception");
 });

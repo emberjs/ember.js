@@ -76,7 +76,7 @@ Ember.generateController = function(container, controllerName, context) {
   var fullName = 'controller:' + controllerName;
   var instance = container.lookup(fullName);
 
-  if (get(instance, 'namespace.LOG_ACTIVE_GENERATION')) {
+  if (instance && get(instance, 'namespace.LOG_ACTIVE_GENERATION')) {
     Ember.Logger.info("generated -> " + fullName, { fullName: fullName });
   }
 

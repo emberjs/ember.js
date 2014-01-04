@@ -725,6 +725,9 @@ Ember.Application.reopenClass({
 
     Ember.Container.defaultContainer = new DeprecatedContainer(container);
 
+    if (Ember.onerror){
+      container.onerror = Ember.onerror;
+    }
     container.set = Ember.set;
     container.resolver  = resolverFor(namespace);
     container.normalize = container.resolver.normalize;
