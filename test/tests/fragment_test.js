@@ -64,9 +64,9 @@ test('hydrates a fragment with range mustaches', function () {
   equal(mustaches.length, 2);
 
   equal(mustaches[0][0], "foo");
-  deepEqual(mustaches[0][1], ["foo",3,["blah"]]);
+  deepEqual(mustaches[0][1], ["foo",3,"blah"]);
   deepEqual(mustaches[0][2].types, ["string","number","id"]);
-  deepEqual(mustaches[0][2].hash, {ack:"syn",bar:["baz"]});
+  deepEqual(mustaches[0][2].hash, {ack:"syn",bar:"baz"});
   deepEqual(mustaches[0][2].hashTypes, {ack:"string",bar:"id"});
   equal(mustaches[0][2].escaped, true);
 
@@ -92,9 +92,9 @@ test('hydrates a fragment with range mustaches', function () {
   equal(mustaches.length, 2);
 
   equal(mustaches[0][0], "foo");
-  deepEqual(mustaches[0][1], ["foo",3,["blah"]]);
+  deepEqual(mustaches[0][1], ["foo",3,"blah"]);
   deepEqual(mustaches[0][2].types, ["string","number","id"]);
-  deepEqual(mustaches[0][2].hash, {ack:"syn",bar:["baz"]});
+  deepEqual(mustaches[0][2].hash, {ack:"syn",bar:"baz"});
   deepEqual(mustaches[0][2].hashTypes, {ack:"string",bar:"id"});
   equal(mustaches[0][2].escaped, true);
 

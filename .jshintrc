@@ -1,4 +1,5 @@
 {
   "esnext": true,
-  "boss": true
+  "boss": true,
+  "debug": true
 }
