@@ -2,7 +2,7 @@ import { Fragment } from "htmlbars/compiler/fragment";
 import { compileAST } from "htmlbars/compiler/compile";
 import { HydrationCompiler } from "htmlbars/compiler/hydration";
 import { Hydration2 } from "htmlbars/compiler/hydration2";
-import { Compiler2 } from "htmlbars/compiler/pass2";
+import { Fragment2 } from "htmlbars/compiler/fragment2";
 import { Range } from "htmlbars/runtime/range";
 import { preprocess } from "htmlbars/parser";
 
@@ -27,7 +27,7 @@ var dom = {
 
 function fragmentFor(ast) {
   var fragmentOpcodeCompiler = new Fragment(),
-      fragmentCompiler = new Compiler2();
+      fragmentCompiler = new Fragment2();
 
   fragmentOpcodeCompiler.compile(ast);
   var template = fragmentCompiler.compile(fragmentOpcodeCompiler.opcodes, {
