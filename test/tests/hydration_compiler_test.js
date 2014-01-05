@@ -1,10 +1,9 @@
 import { HydrationOpcodeCompiler } from "htmlbars/compiler/hydration_opcode";
 import { preprocess } from "htmlbars/parser";
-import { compileAST } from "htmlbars/compiler/compile";
 
 function opcodesFor(html, options) {
   var ast = preprocess(html, options),
-      compiler1 = new HydrationOpcodeCompiler(compileAST, options);
+      compiler1 = new HydrationOpcodeCompiler(options);
   compiler1.compile(ast);
   return compiler1.opcodes;
 }

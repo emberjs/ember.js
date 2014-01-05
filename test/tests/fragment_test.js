@@ -2,7 +2,6 @@ import { FragmentOpcodeCompiler } from "htmlbars/compiler/fragment_opcode";
 import { HydrationOpcodeCompiler } from "htmlbars/compiler/hydration_opcode";
 import { FragmentCompiler } from "htmlbars/compiler/fragment";
 import { HydrationCompiler } from "htmlbars/compiler/hydration";
-import { compileAST } from "htmlbars/compiler/compile";
 import { Range } from "htmlbars/runtime/range";
 import { preprocess } from "htmlbars/parser";
 
@@ -36,7 +35,7 @@ function fragmentFor(ast) {
 }
 
 function hydrationOpcodesTreeFor(ast) {
-  var hydration = new HydrationOpcodeCompiler(compileAST);
+  var hydration = new HydrationOpcodeCompiler();
   return hydration.compile(ast);
 }
 
