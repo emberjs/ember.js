@@ -53,7 +53,7 @@ test('compiles a fragment', function () {
 });
 
 test('hydrates a fragment', function () {
-  var ast = preprocess("<div>{{foo blah bar=baz}} bar {{baz}}</div>");
+  var ast = preprocess("<div>{{foo \"foo\" 3 blah bar=baz ack=\"syn\"}} bar {{baz}}</div>");
   var fragment = fragmentFor(ast).cloneNode(true);
   var opcodes = hydrationOpcodesFor(ast);
 
@@ -64,10 +64,10 @@ test('hydrates a fragment', function () {
   equal(mustaches.length, 2);
 
   equal(mustaches[0][0], "foo");
-  deepEqual(mustaches[0][1], [["blah"]]);
-  deepEqual(mustaches[0][2].types, ["id"]);
-  deepEqual(mustaches[0][2].hash, {bar:["baz"]});
-  deepEqual(mustaches[0][2].hashTypes, {bar:"id"});
+  deepEqual(mustaches[0][1], ["foo",3,["blah"]]);
+  deepEqual(mustaches[0][2].types, ["string","number","id"]);
+  deepEqual(mustaches[0][2].hash, {ack:"syn",bar:["baz"]});
+  deepEqual(mustaches[0][2].hashTypes, {ack:"string",bar:"id"});
   equal(mustaches[0][2].escaped, true);
 
   equal(mustaches[1][0], "baz");
