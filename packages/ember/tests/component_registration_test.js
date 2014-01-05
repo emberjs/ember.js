@@ -169,6 +169,28 @@ test("Assigning templateName to a component should setup the template as a layou
   equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
 });
 
+test("Assigning templateName and layoutName should use the templates specified", function(){
+  expect(1);
+
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component}}</div>");
+  Ember.TEMPLATES['foo'] = compile("{{text}}");
+  Ember.TEMPLATES['bar'] = compile("{{text}}-{{yield}}");
+
+  boot(function() {
+    container.register('controller:application', Ember.Controller.extend({
+      'text': 'outer'
+    }));
+
+    container.register('component:my-component', Ember.Component.extend({
+      text: 'inner',
+      layoutName: 'bar',
+      templateName: 'foo'
+    }));
+  });
+
+  equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
+});
+
 module("Application Lifecycle - Component Context", {
   setup: prepare,
   teardown: cleanup

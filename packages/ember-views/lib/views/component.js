@@ -108,7 +108,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, Ember.ComponentTe
   },
 
   /**
-  A components template property is set by passing a block to
+  A components template property is set by passing a block
   during its invocation. It is executed within the parent context.
 
   Example:
@@ -126,7 +126,16 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, Ember.ComponentTe
   @deprecated
   @property template
   */
-  template: null,
+  template: Ember.computed(function(key, value) {
+    if (value !== undefined) { return value; }
+
+    var templateName = get(this, 'templateName'),
+        template = this.templateForName(templateName, 'template');
+
+    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
+
+    return template || get(this, 'defaultTemplate');
+  }).property('templateName'),
 
   /**
   Specifying a components `templateName` is deprecated without also
