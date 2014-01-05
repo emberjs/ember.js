@@ -1,10 +1,10 @@
-import { HydrationCompiler } from "htmlbars/compiler/hydration_opcode";
+import { HydrationOpcodeCompiler } from "htmlbars/compiler/hydration_opcode";
 import { preprocess } from "htmlbars/parser";
 import { compileAST } from "htmlbars/compiler/compile";
 
 function opcodesFor(html, options) {
   var ast = preprocess(html, options),
-      compiler1 = new HydrationCompiler(compileAST, options);
+      compiler1 = new HydrationOpcodeCompiler(compileAST, options);
   compiler1.compile(ast);
   return compiler1.opcodes;
 }
@@ -17,7 +17,7 @@ function helper(name, params, parent, start, end) {
   return {type: "helper", params: [name, params.length, true, parent, start, end]};
 }
 
-module("HydrationCompiler opcode generation");
+module("HydrationOpcodeCompiler opcode generation");
 
 test("simple example", function() {
   var opcodes = opcodesFor("<div>{{foo}} bar {{baz}}</div>");

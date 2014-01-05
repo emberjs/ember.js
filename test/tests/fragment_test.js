@@ -1,8 +1,8 @@
-import { Fragment } from "htmlbars/compiler/fragment_opcode";
+import { FragmentOpcodeCompiler } from "htmlbars/compiler/fragment_opcode";
+import { HydrationOpcodeCompiler } from "htmlbars/compiler/hydration_opcode";
+import { FragmentCompiler } from "htmlbars/compiler/fragment";
+import { HydrationCompiler } from "htmlbars/compiler/hydration";
 import { compileAST } from "htmlbars/compiler/compile";
-import { HydrationCompiler } from "htmlbars/compiler/hydration_opcode";
-import { Hydration2 } from "htmlbars/compiler/hydration";
-import { Fragment2 } from "htmlbars/compiler/fragment";
 import { Range } from "htmlbars/runtime/range";
 import { preprocess } from "htmlbars/parser";
 
@@ -26,8 +26,8 @@ var dom = {
 }
 
 function fragmentFor(ast) {
-  var fragmentOpcodeCompiler = new Fragment(),
-      fragmentCompiler = new Fragment2();
+  var fragmentOpcodeCompiler = new FragmentOpcodeCompiler(),
+      fragmentCompiler = new FragmentCompiler();
 
   var tree = fragmentOpcodeCompiler.compile(ast);
   var templates = fragmentCompiler.compile(tree);
@@ -36,7 +36,7 @@ function fragmentFor(ast) {
 }
 
 function hydrationOpcodesTreeFor(ast) {
-  var hydration = new HydrationCompiler(compileAST);
+  var hydration = new HydrationOpcodeCompiler(compileAST);
   return hydration.compile(ast);
 }
 
@@ -54,7 +54,7 @@ test('hydrates a fragment with range mustaches', function () {
   var fragment = fragmentFor(ast).cloneNode(true);
   var tree = hydrationOpcodesTreeFor(ast);
 
-  var hydrate2 = new Hydration2();
+  var hydrate2 = new HydrationCompiler();
   var program = hydrate2.compile(tree);
   var mustaches = program.fn(Range)(fragment);
 
@@ -82,7 +82,7 @@ test('hydrates a fragment with range mustaches', function () {
   var fragment = fragmentFor(ast).cloneNode(true);
   var tree = hydrationOpcodesTreeFor(ast);
 
-  var hydrate2 = new Hydration2();
+  var hydrate2 = new HydrationCompiler();
   var program = hydrate2.compile(tree).fn(Range);
   var mustaches = program(fragment);
 
@@ -110,7 +110,7 @@ test('hydrates a fragment with range mustaches', function () {
   var fragment = fragmentFor(ast).cloneNode(true);
   var tree = hydrationOpcodesTreeFor(ast);
 
-  var hydrate2 = new Hydration2();
+  var hydrate2 = new HydrationCompiler();
   var program = hydrate2.compile(tree).fn(Range);
   var mustaches = program(fragment);
 
