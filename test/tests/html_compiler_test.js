@@ -396,23 +396,30 @@ test("Attribute helpers can use the hash for data binding", function() {
   callback();
   equalHTML(fragment, '<div class="nope">hi</div>');
 });
-
+*/
 test("Attributes containing multiple helpers are treated like a block", function() {
-  compilesTo('<a href="http://{{url}}/index.html">linky</a>', '<a href="http://example.com/index.html">linky</a>', { url: 'example.com' });
+  registerHelper('testing', function(context, params, options) {
+    if (options.types[0] === 'id') {
+      return context[params[0]];
+    } else {
+      return params[0];
+    }
+  });
+
+  compilesTo('<a href="http://{{foo}}/{{testing bar}}/{{testing "baz"}}">linky</a>', '<a href="http://foo.com/bar/baz">linky</a>', { foo: 'foo.com', bar: 'bar' });
 });
 
-test("Attributes containing a path is treated like a block", function() {
-  compilesTo('<a href="http://{{person.url}}/index.html">linky</a>', '<a href="http://example.com/index.html">linky</a>', { person: { url: 'example.com' } });
-});
+test("Attributes containing a helper are treated like a block", function() {
+  expect(2);
 
-test("Attributes containing a helper is treated like a block", function() {
-  registerHelper('testing', function(number, options) {
-    return streamValue("example.com");
+  registerHelper('testing', function(context, params, options) {
+    deepEqual(params, [123]);
+    return "example.com";
   });
 
   compilesTo('<a href="http://{{testing 123}}/index.html">linky</a>', '<a href="http://example.com/index.html">linky</a>', { person: { url: 'example.com' } });
 });
-
+/*
 test("It is possible to trigger a re-render of an attribute from a child resolution", function() {
   var callback;
 

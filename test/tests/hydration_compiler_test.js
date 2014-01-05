@@ -105,9 +105,9 @@ test("node helper", function() {
 test("attribute mustache", function() {
   var opcodes = opcodesFor("<div class='before {{foo}} after'></div>");
   deepEqual(opcodes, [
-    {type: "content", params: ["before "]},
-    {type: "ambiguousAttr", params: ["foo", true]},
     {type: "content", params: [" after"]},
+    {type: "ambiguousAttr", params: ["foo", true]},
+    {type: "content", params: ["before "]},
     {type: "attribute", params: ["class", 3, [0]]}
   ]);
 });
@@ -116,12 +116,12 @@ test("attribute mustache", function() {
 test("attribute helper", function() {
   var opcodes = opcodesFor("<div class='before {{foo 'bar'}} after'></div>");
   deepEqual(opcodes, [
-    {type: "content", params: ["before "]},
-    {"type":"program","params":[null]},
-    {"type":"string","params":["bar"]},
-    {"type":"stackLiteral","params":[0]},
-    {"type":"helperAttr","params":["foo",1,true]},
     {type: "content", params: [" after"]},
+    {type: "program", params: [null]},
+    {type: "string", params: ["bar"]},
+    {type: "stackLiteral", params: [0]},
+    {type: "helperAttr", params: ["foo",1,true]},
+    {type: "content", params: ["before "]},
     {type: "attribute", params: ["class", 3, [0]]}
   ]);
 });
