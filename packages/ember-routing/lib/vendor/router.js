@@ -1,5 +1,4 @@
-/*jslint es5: true */
-define("router/handler-info",
+define("router/handler-info", 
   ["./utils","rsvp","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
@@ -203,7 +202,7 @@ define("router/handler-info",
     __exports__.UnresolvedHandlerInfoByParam = UnresolvedHandlerInfoByParam;
     __exports__.UnresolvedHandlerInfoByObject = UnresolvedHandlerInfoByObject;
   });
-define("router/router",
+define("router/router", 
   ["route-recognizer","rsvp","./utils","./transition-state","./transition","./transition-intent/named-transition-intent","./transition-intent/url-transition-intent","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
     "use strict";
@@ -921,7 +920,7 @@ define("router/router",
 
     __exports__.Router = Router;
   });
-define("router/transition-intent",
+define("router/transition-intent", 
   ["./utils","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -941,7 +940,7 @@ define("router/transition-intent",
 
     __exports__.TransitionIntent = TransitionIntent;
   });
-define("router/transition-intent/named-transition-intent",
+define("router/transition-intent/named-transition-intent", 
   ["../transition-intent","../transition-state","../handler-info","../utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
@@ -1141,7 +1140,7 @@ define("router/transition-intent/named-transition-intent",
 
     __exports__.NamedTransitionIntent = NamedTransitionIntent;
   });
-define("router/transition-intent/url-transition-intent",
+define("router/transition-intent/url-transition-intent", 
   ["../transition-intent","../transition-state","../handler-info","../utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
@@ -1209,7 +1208,7 @@ define("router/transition-intent/url-transition-intent",
 
     __exports__.URLTransitionIntent = URLTransitionIntent;
   });
-define("router/transition-state",
+define("router/transition-state", 
   ["./handler-info","./utils","rsvp","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
@@ -1244,10 +1243,10 @@ define("router/transition-state",
         var wasAborted = false;
 
         // The prelude RSVP.resolve() asyncs us into the promise land.
-        return resolve().then(resolveOneHandlerInfo).catch(handleError);
+        return resolve().then(resolveOneHandlerInfo)['catch'](handleError);
 
         function innerShouldContinue() {
-          return resolve(shouldContinue()).catch(function(reason) {
+          return resolve(shouldContinue())['catch'](function(reason) {
             // We distinguish between errors that occurred
             // during resolution (e.g. beforeModel/model/afterModel),
             // and aborts due to a rejecting promise from shouldContinue().
@@ -1319,7 +1318,7 @@ define("router/transition-state",
 
     __exports__.TransitionState = TransitionState;
   });
-define("router/transition",
+define("router/transition", 
   ["rsvp","./handler-info","./utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
@@ -1371,7 +1370,7 @@ define("router/transition",
         }
 
         this.sequence = Transition.currentSequence++;
-        this.promise = state.resolve(router.async, checkForAbort, this).catch(function(result) {
+        this.promise = state.resolve(router.async, checkForAbort, this)['catch'](function(result) {
           if (result.wasAborted) {
             throw logAbort(transition);
           } else {
@@ -1535,7 +1534,7 @@ define("router/transition",
        */
       followRedirects: function() {
         var router = this.router;
-        return this.promise.catch(function(reason) {
+        return this.promise['catch'](function(reason) {
           if (router.activeTransition) {
             return router.activeTransition.followRedirects();
           }
@@ -1577,7 +1576,7 @@ define("router/transition",
     __exports__.logAbort = logAbort;
     __exports__.TransitionAborted = TransitionAborted;
   });
-define("router/utils",
+define("router/utils", 
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -1761,7 +1760,7 @@ define("router/utils",
     __exports__.serialize = serialize;
     __exports__.getChangelist = getChangelist;
   });
-define("router",
+define("router", 
   ["./router/router","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
