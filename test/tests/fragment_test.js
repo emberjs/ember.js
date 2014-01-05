@@ -58,8 +58,8 @@ test('hydrates a fragment', function () {
 
   equal(mustaches.length, 2);
 
-  mustaches[0].range.appendChild(document.createTextNode('A'));
-  mustaches[1].range.appendChild(document.createTextNode('B'));
+  mustaches[0][2].range.appendChild(document.createTextNode('A'));
+  mustaches[1][2].range.appendChild(document.createTextNode('B'));
 
   equalHTML(clone, "<div>A bar B</div>");
 });
