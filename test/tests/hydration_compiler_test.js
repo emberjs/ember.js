@@ -1,4 +1,4 @@
-import { HydrationCompiler } from "htmlbars/compiler/hydration";
+import { HydrationCompiler } from "htmlbars/compiler/hydration_opcode";
 import { preprocess } from "htmlbars/parser";
 import { compileAST } from "htmlbars/compiler/compile";
 

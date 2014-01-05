@@ -1,6 +1,6 @@
-import { Fragment } from "htmlbars/compiler/fragment";
+import { Fragment } from "htmlbars/compiler/fragment_opcode";
 import { compileAST } from "htmlbars/compiler/compile";
-import { HydrationCompiler } from "htmlbars/compiler/hydration";
+import { HydrationCompiler } from "htmlbars/compiler/hydration_opcode";
 import { Hydration2 } from "htmlbars/compiler/hydration2";
 import { Fragment2 } from "htmlbars/compiler/fragment2";
 import { Range } from "htmlbars/runtime/range";
