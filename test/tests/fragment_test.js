@@ -25,36 +25,41 @@ var dom = {
   }
 }
 
-function hydrationFor(html, options) {
-  var ast = preprocess(html, options),
-      fragment = new Fragment(options),
-      compiler2 = new Compiler2(options);
-  fragment.compile(ast);
-  var template = compiler2.compile(fragment.opcodes, {
-    children: fragment.children
+function fragmentFor(ast) {
+  var fragmentOpcodeCompiler = new Fragment(),
+      fragmentCompiler = new Compiler2();
+
+  fragmentOpcodeCompiler.compile(ast);
+  var template = fragmentCompiler.compile(fragmentOpcodeCompiler.opcodes, {
+    children: fragmentOpcodeCompiler.children
   })(dom);
-  var hydration = new HydrationCompiler(compileAST, options);
+
+  return template({});
+}
+
+function hydrationOpcodesFor(ast) {
+  var hydration = new HydrationCompiler(compileAST);
   hydration.compile(ast);
-  return {
-    fragment: template({}),
-    opcodes: hydration.opcodes
-  };
+  return hydration.opcodes;
 }
 
 module('fragment');
 
 test('compiles a fragment', function () {
-  var hydration = hydrationFor("<div>{{foo}} bar {{baz}}</div>");
+  var ast = preprocess("<div>{{foo}} bar {{baz}}</div>"),
+      fragment = fragmentFor(ast);
 
-  equalHTML(hydration.fragment, "<div> bar </div>");
+  equalHTML(fragment, "<div> bar </div>");
 });
 
 test('hydrates a fragment', function () {
-  var hydration = hydrationFor("<div>{{foo blah bar=baz}} bar {{baz}}</div>");
-  var clone = hydration.fragment.cloneNode(true);
+  var ast = preprocess("<div>{{foo blah bar=baz}} bar {{baz}}</div>");
+  var fragment = fragmentFor(ast).cloneNode(true);
+  var opcodes = hydrationOpcodesFor(ast);
+
   var hydrate2 = new Hydration2();
-  var program = hydrate2.compile(hydration.opcodes)(Range);
-  var mustaches = program(clone);
+  var program = hydrate2.compile(opcodes)(Range);
+  var mustaches = program(fragment);
 
   equal(mustaches.length, 2);
 
@@ -72,5 +77,5 @@ test('hydrates a fragment', function () {
   mustaches[0][2].range.appendChild(document.createTextNode('A'));
   mustaches[1][2].range.appendChild(document.createTextNode('B'));
 
-  equalHTML(clone, "<div>A bar B</div>");
+  equalHTML(fragment, "<div>A bar B</div>");
 });
