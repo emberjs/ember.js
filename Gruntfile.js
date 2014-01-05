@@ -7,7 +7,8 @@ module.exports = function(grunt) {
   this.registerTask('default', ['test']);
 
   this.registerTask('dist', "Builds a distributable version of htmlbars",
-                    ['build',
+                    ['jshint',
+                     'build',
                      'concat_sourcemap:library',
                      'concat_sourcemap:browser',
                      'fix_sourcemap:library',
@@ -20,8 +21,7 @@ module.exports = function(grunt) {
 
   // Build a new version of the library
   this.registerTask('build', "Builds a htmlbars",
-                    ['jshint',
-                     'clean',
+                    ['clean',
                      'transpile:amd',
                      'concat_sourcemap:amd',
                      'fix_sourcemap:amd'
@@ -37,7 +37,7 @@ module.exports = function(grunt) {
   // Run a server. This is ideal for running the QUnit tests in the browser.
   this.registerTask('server', ['tests', 'connect', 'watch']);
 
-  this.registerTask('test', ['tests', 'qunit']);
+  this.registerTask('test', ['jshint', 'tests', 'qunit']);
 
 
   grunt.initConfig({
@@ -55,7 +55,7 @@ module.exports = function(grunt) {
 
     watch: {
       files: ['lib/**', 'vendor/*', 'test/**/*'],
-      tasks: ['tests']
+      tasks: ['tests', 'jshint']
     },
 
     transpile: {
