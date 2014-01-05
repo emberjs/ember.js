@@ -58,6 +58,17 @@ test('hydrates a fragment', function () {
 
   equal(mustaches.length, 2);
 
+  equal(mustaches[0][0], "foo");
+  deepEqual(mustaches[0][1], [["blah"]]);
+  deepEqual(mustaches[0][2].types, ["id"]);
+  deepEqual(mustaches[0][2].hash, {bar:["baz"]});
+  deepEqual(mustaches[0][2].hashTypes, {bar:"id"});
+  equal(mustaches[0][2].escaped, true);
+
+  equal(mustaches[1][0], "baz");
+  deepEqual(mustaches[1][1], []);
+  equal(mustaches[1][2].escaped, true);
+
   mustaches[0][2].range.appendChild(document.createTextNode('A'));
   mustaches[1][2].range.appendChild(document.createTextNode('B'));
 
