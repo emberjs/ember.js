@@ -617,11 +617,15 @@ registerComputed('empty', function(dependentKey) {
   A computed property that returns true if the value of the dependent
   property is NOT null, an empty string, empty array, or empty function.
 
+  Note: When using `Ember.computed.notEmpty` to watch an array make sure to
+  use the `array.[]` syntax so the computed can subscribe to transitions
+  from empty to non-empty states.
+
   Example
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    hasStuff: Ember.computed.notEmpty('backpack')
+    hasStuff: Ember.computed.notEmpty('backpack.[]')
   });
   var hamster = Hamster.create({backpack: ['Food', 'Sleeping Bag', 'Tent']});
   hamster.get('hasStuff'); // true
