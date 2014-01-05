@@ -198,6 +198,8 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @param {String} name the name of the route
     @param {...Object} models the model(s) to be used while transitioning
     to the route.
+    @return {Transition} the transition object associated with this
+      attempted transition
   */
   transitionTo: function(name, context) {
     var router = this.router;
@@ -225,9 +227,24 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   },
 
   /**
-    TODO description
+    Refresh the model on this route and any child routes, firing the
+    `beforeModel`, `model`, and `afterModel` hooks in a similar fashion
+    to how routes are entered when transitioning in from other route.
+    The current route params (e.g. `article_id`) will be passed in
+    to the respective model hooks, and if a different model is returned,
+    `setupController` and associated route hooks will re-fire as well.
+
+    An example usage of this method is re-querying the server for the
+    latest information using the same parameters as when the route
+    was first entered.
+
+    Note that this will cause `model` hooks to fire even on routes
+    that were provided a model object when the route was initially
+    entered.
 
     @method refresh
+    @return {Transition} the transition object associated with this
+      attempted transition
    */
   refresh: function() {
     return this.router.router.refresh(this).method('replace');
@@ -260,6 +277,8 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @param {String} name the name of the route
     @param {...Object} models the model(s) to be used while transitioning
     to the route.
+    @return {Transition} the transition object associated with this
+      attempted transition
   */
   replaceWith: function() {
     var router = this.router;
