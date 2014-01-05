@@ -1,7 +1,7 @@
 import { TemplateCompiler } from "htmlbars/compiler/template";
 import { compileSpec } from "htmlbars/compiler";
 import { hydrate } from "htmlbars/runtime";
-import { RESOLVE } from "htmlbars/runtime/helpers";
+import { RESOLVE, RESOLVE_IN_ATTR, ATTRIBUTE } from "htmlbars/runtime/helpers";
 
 function compile(string) {
   var compiler =  new TemplateCompiler();
@@ -27,7 +27,7 @@ function registerHelper(name, callback) {
 
 module("HTML-based compiler (output)", {
   setup: function() {
-    helpers = {RESOLVE: RESOLVE};
+    helpers = {RESOLVE: RESOLVE, RESOLVE_IN_ATTR: RESOLVE_IN_ATTR, ATTRIBUTE: ATTRIBUTE};
   }
 });
 
@@ -286,14 +286,13 @@ test("Helpers receive escaping information", function() {
   compilesTo('<div>{{testing escaped}}-{{{testing unescaped}}}</div>', '<div>escaped-unescaped</div>');
 });
 
-/*
 test("Attributes can use computed values", function() {
   compilesTo('<a href="{{url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html' });
 });
 
-test("Attributes can use computed paths", function() {
-  compilesTo('<a href="{{post.url}}">linky</a>', '<a href="linky.html">linky</a>', { post: { url: 'linky.html' }});
-});
+// test("Attributes can use computed paths", function() {
+//   compilesTo('<a href="{{post.url}}">linky</a>', '<a href="linky.html">linky</a>', { post: { url: 'linky.html' }});
+// });
 
 function streamValue(value) {
   return {
@@ -323,12 +322,14 @@ function boundValue(valueGetter, binding) {
 }
 
 test("It is possible to override the resolution mechanism for attributes", function() {
-  registerHelper('RESOLVE_IN_ATTR', function(parts, options) {
-    return streamValue('http://google.com/' + this[parts[0]]);
+  registerHelper('RESOLVE_IN_ATTR', function(context, path, params, options) {
+    return 'http://google.com/' + context[path];
   });
 
   compilesTo('<a href="{{url}}">linky</a>', '<a href="http://google.com/linky.html">linky</a>', { url: 'linky.html' });
 });
+
+/*
 
 test("It is possible to use RESOLVE_IN_ATTR for data binding", function() {
   var callback;
@@ -353,15 +354,16 @@ test("It is possible to use RESOLVE_IN_ATTR for data binding", function() {
 
   equalHTML(fragment, '<a href="zippy.html">linky</a>');
 });
+*/
 
 test("Attributes can be populated with helpers that generate a string", function() {
-  registerHelper('testing', function(path, options) {
-    return streamValue(this[path]);
+  registerHelper('testing', function(context, params, options) {
+    return context[params[0]];
   });
 
   compilesTo('<a href="{{testing url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html'});
 });
-
+/*
 test("A helper can return a stream for the attribute", function() {
   registerHelper('testing', function(path, options) {
     return streamValue(this[path]);
@@ -369,15 +371,15 @@ test("A helper can return a stream for the attribute", function() {
 
   compilesTo('<a href="{{testing url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html'});
 });
-
+*/
 test("Attribute helpers take a hash", function() {
-  registerHelper('testing', function(options) {
-    return streamValue(this[options.hash.path]);
+  registerHelper('testing', function(context, params, options) {
+    return context[options.hash.path];
   });
 
   compilesTo('<a href="{{testing path=url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html' });
 });
-
+/*
 test("Attribute helpers can use the hash for data binding", function() {
   var callback;
 
@@ -487,42 +489,42 @@ test("Attribute runs can contain helpers", function() {
 
   equalHTML(fragment, '<a href="http://nope.example.com/nope.html/linky">linky</a>');
 });
-
+*/
 test("A simple block helper can return the default document fragment", function() {
-  registerHelper('testing', function(options) {
-    return options.render(this);
+  registerHelper('testing', function(context, params, options) {
+    options.range.replace(options.render(context));
   });
 
   compilesTo('{{#testing}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
 });
 
 test("A simple block helper can return text", function() {
-  registerHelper('testing', function(options) {
-    return options.render(this);
+  registerHelper('testing', function(context, params, options) {
+    options.range.replace(options.render(context));
   });
 
   compilesTo('{{#testing}}test{{/testing}}', 'test');
 });
 
 test("A block helper can have an else block", function() {
-  registerHelper('testing', function(options) {
-    return options.inverse(this);
+  registerHelper('testing', function(context, params, options) {
+    options.range.replace(options.inverse(context));
   });
 
   compilesTo('{{#testing}}Nope{{else}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
 });
 
 test("A block helper can pass a context to be used in the child", function() {
-  registerHelper('testing', function(options) {
-    return options.render({ title: 'Rails is omakase' });
+  registerHelper('testing', function(context, params, options) {
+    options.range.replace(options.render({ title: 'Rails is omakase' }, options));
   });
 
   compilesTo('{{#testing}}<div id="test">{{title}}</div>{{/testing}}', '<div id="test">Rails is omakase</div>');
 });
 
 test("A block helper can insert the document fragment manually", function() {
-  registerHelper('testing', function(options) {
-    var frag = options.render({ title: 'Rails is omakase' });
+  registerHelper('testing', function(context, params, options) {
+    var frag = options.render({ title: 'Rails is omakase' }, options);
     options.element.appendChild(frag);
   });
 
@@ -530,14 +532,15 @@ test("A block helper can insert the document fragment manually", function() {
 });
 
 test("Block helpers receive hash arguments", function() {
-  registerHelper('testing', function(options) {
+  registerHelper('testing', function(context, params, options) {
     if (options.hash.truth) {
-      return options.render(this);
+      options.range.replace(options.render(context));
     }
   });
 
   compilesTo('{{#testing truth=true}}<p>Yep!</p>{{/testing}}{{#testing truth=false}}<p>Nope!</p>{{/testing}}', '<p>Yep!</p>');
 });
+/*
 
 test("Data-bound block helpers", function() {
   var callback;
