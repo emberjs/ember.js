@@ -750,6 +750,16 @@ testBoth('Ember.computed.empty', function(get, set) {
   equal(get(obj, 'quzEmpty'), false);
 });
 
+testBoth('Ember.computed.empty when mutating array', function(get, set) {
+  var foo = Ember.ArrayController.create();
+  var obj = {foo: foo};
+  Ember.defineProperty(obj, 'fooEmpty', Ember.computed.empty('foo'));
+
+  equal(get(obj, 'fooEmpty'), true, 'foo is empty');
+  foo.pushObject(1);
+  equal(get(obj, 'fooEmpty'), false, 'foo is not empty');
+});
+
 testBoth('Ember.computed.bool', function(get, set) {
   var obj = {foo: function() {}, bar: 'asdf', baz: null, quz: false};
   Ember.defineProperty(obj, 'fooBool', Ember.computed.bool('foo'));
@@ -826,6 +836,20 @@ testBoth('Ember.computed.notEmpty', function(get, set) {
   equal(get(obj, 'hasItems'), true, 'is not empty');
 
   set(obj, 'items', []);
+
+  equal(get(obj, 'hasItems'), false, 'is empty');
+});
+
+testBoth('Ember.computed.notEmpty when mutating the array', function(get, set) {
+  var items = Ember.ArrayController.create();
+  items.pushObject(1);
+  var obj = { items: items };
+  Ember.defineProperty(obj, 'hasItems', Ember.computed.notEmpty('items'));
+
+  equal(get(obj, 'hasItems'), true, 'is not empty');
+
+  items.removeObject(1);
+  equal(items.get('length'), 0, "Items should be empty");
 
   equal(get(obj, 'hasItems'), false, 'is empty');
 });
