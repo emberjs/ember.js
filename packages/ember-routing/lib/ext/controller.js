@@ -160,6 +160,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       for (var k in queryParams) {
         if (queryParams.hasOwnProperty(k)) {
           this.addObserver(k, this, this._queryParamChanged);
+          this.addObserver(k + '.[]', this, this._queryParamChanged);
         }
       }
     },
@@ -170,11 +171,17 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       for (var k in queryParams) {
         if (queryParams.hasOwnProperty(k)) {
           this.removeObserver(k, this, this._queryParamChanged);
+          this.removeObserver(k + '.[]', this, this._queryParamChanged);
         }
       }
     },
 
     _queryParamChanged: function(controller, key) {
+      // Normalize array observer firings.
+      if (key.substr(-3) === '.[]') {
+        key = key.substr(0, key.length-3);
+      }
+
       if (this._finalizingQueryParams) {
         var changes = this._queryParamChangesDuringSuspension;
         if (changes) {
@@ -184,7 +191,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       }
 
       var queryParams = get(this, '_queryParamHash');
-      queuedQueryParamChanges[queryParams[key]] = get(this, key);
+      queuedQueryParamChanges[queryParams[key]] = Ember.copy(get(this, key));
       Ember.run.once(this, this._fireQueryParamTransition);
     },
 
