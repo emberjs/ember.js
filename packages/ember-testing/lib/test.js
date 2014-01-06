@@ -353,11 +353,7 @@ Ember.Application.reopen({
   setupForTesting: function() {
     Ember.testing = true;
 
-    if (Ember.FEATURES.isEnabled('ember-testing-lazy-routing')){
-      this.testing = true;
-    } else {
-      this.deferReadiness();
-    }
+    this.testing = true;
 
     this.Router.reopen({
       location: 'none'
