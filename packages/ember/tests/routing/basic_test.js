@@ -2,7 +2,8 @@ var Router, App, AppView, templates, router, container;
 var get = Ember.get,
     set = Ember.set,
     compile = Ember.Handlebars.compile,
-    forEach = Ember.EnumerableUtils.forEach;
+    forEach = Ember.EnumerableUtils.forEach,
+    oldAssert = Ember.assert;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -70,6 +71,7 @@ module("Basic Routing", {
   },
 
   teardown: function() {
+    Ember.assert = oldAssert;
     Ember.run(function() {
       App.destroy();
       App = null;
@@ -89,7 +91,6 @@ test("warn on URLs not included in the route set", function () {
   bootApplication();
 
   // it's tricky to use expectAssertion(fn) in a callback.
-  var oldAssert = Ember.assert;
   Ember.assert = function(message, test){
     ok(true, test);
     equal("The URL '/what-is-this-i-dont-even' did not match any routes in your application", message);
@@ -98,9 +99,6 @@ test("warn on URLs not included in the route set", function () {
   Ember.run(function(){
     router.handleURL("/what-is-this-i-dont-even");
   });
-
-  Ember.assert = oldAssert;
-
 });
 
 test("The Homepage", function() {
@@ -2681,6 +2679,26 @@ test("Routes can refresh themselves causing their model hooks to be re-run", fun
   equal(appcount, 1);
   equal(parentcount, 2);
   equal(childcount, 2);
+});
+
+test("Specifying non-existent controller name in route#render throws", function() {
+  expect(1);
+
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      try {
+        this.render('homepage', { controller: 'stefanpenneristhemanforme' });
+      } catch(e) {
+        equal(e.message, "You passed `controller: 'stefanpenneristhemanforme'` into the `render` method, but no such controller could be found.");
+      }
+    }
+  });
+
+  bootApplication();
 });
 
 
