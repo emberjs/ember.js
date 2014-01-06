@@ -1362,7 +1362,7 @@ function normalizeOptions(route, name, template, options) {
     var controllerName = controller;
     controller = route.container.lookup('controller:' + controllerName);
     if (!controller) {
-      throw new Error("You passed `controller: '" + controllerName + "'` into the `render` method, but no such controller could be found.");
+      throw new Ember.Error("You passed `controller: '" + controllerName + "'` into the `render` method, but no such controller could be found.");
     }
   }
 
