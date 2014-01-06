@@ -750,89 +750,87 @@ test("when initialValue is undefined, everything works as advertised", function(
   equal(get(chars, 'firstUpper'), 'B', "result is the next match when the first matching object is removed");
 });
 
-if (Ember.FEATURES.isEnabled('reduceComputed-non-array-dependencies')) {
-  module('Ember.arrayComputed - completely invalidating dependencies', {
-    setup: function () {
-      addCalls = removeCalls = 0;
-    }
+module('Ember.arrayComputed - completely invalidating dependencies', {
+  setup: function () {
+    addCalls = removeCalls = 0;
+  }
+});
+
+test("non-array dependencies completely invalidate a reduceComputed CP", function() {
+  var dependentArray = Ember.A();
+
+  obj = Ember.Object.extend({
+    nonArray: 'v0',
+    dependentArray: dependentArray,
+
+    computed: Ember.arrayComputed('dependentArray', 'nonArray', {
+      addedItem: function (array) {
+        ++addCalls;
+        return array;
+      },
+
+      removedItem: function (array) {
+        --removeCalls;
+        return array;
+      }
+    })
+  }).create();
+
+  get(obj, 'computed');
+
+  equal(addCalls, 0, "precond - add has not initially been called");
+  equal(removeCalls, 0, "precond - remove has not initially been called");
+
+  dependentArray.pushObjects([1, 2]);
+
+  equal(addCalls, 2, "add called one-at-a-time for dependent array changes");
+  equal(removeCalls, 0, "remove not called");
+
+  Ember.run(function() {
+    set(obj, 'nonArray', 'v1');
   });
 
-  test("non-array dependencies completely invalidate a reduceComputed CP", function() {
-    var dependentArray = Ember.A();
+  equal(addCalls, 4, "array completely recomputed when non-array dependency changed");
+  equal(removeCalls, 0, "remove not called");
+});
 
-    obj = Ember.Object.extend({
-      nonArray: 'v0',
-      dependentArray: dependentArray,
+test("array dependencies specified with `.[]` completely invalidate a reduceComputed CP", function() {
+  var dependentArray = Ember.A(),
+  totallyInvalidatingDependentArray = Ember.A();
 
-      computed: Ember.arrayComputed('dependentArray', 'nonArray', {
-        addedItem: function (array) {
-          ++addCalls;
-          return array;
-        },
+  obj = Ember.Object.extend({
+    totallyInvalidatingDependentArray: totallyInvalidatingDependentArray,
+    dependentArray: dependentArray,
 
-        removedItem: function (array) {
-          --removeCalls;
-          return array;
-        }
-      })
-    }).create();
+    computed: Ember.arrayComputed('dependentArray', 'totallyInvalidatingDependentArray.[]', {
+      addedItem: function (array, item) {
+        ok(item !== 3, "totally invalidating items are never passed to the one-at-a-time callbacks");
+        ++addCalls;
+        return array;
+      },
 
-    get(obj, 'computed');
+      removedItem: function (array, item) {
+        ok(item !== 3, "totally invalidating items are never passed to the one-at-a-time callbacks");
+        --removeCalls;
+        return array;
+      }
+    })
+  }).create();
 
-    equal(addCalls, 0, "precond - add has not initially been called");
-    equal(removeCalls, 0, "precond - remove has not initially been called");
+  get(obj, 'computed');
 
-    dependentArray.pushObjects([1, 2]);
+  equal(addCalls, 0, "precond - add has not initially been called");
+  equal(removeCalls, 0, "precond - remove has not initially been called");
 
-    equal(addCalls, 2, "add called one-at-a-time for dependent array changes");
-    equal(removeCalls, 0, "remove not called");
+  dependentArray.pushObjects([1, 2]);
 
-    Ember.run(function() {
-      set(obj, 'nonArray', 'v1');
-    });
+  equal(addCalls, 2, "add called one-at-a-time for dependent array changes");
+  equal(removeCalls, 0, "remove not called");
 
-    equal(addCalls, 4, "array completely recomputed when non-array dependency changed");
-    equal(removeCalls, 0, "remove not called");
+  Ember.run(function() {
+    totallyInvalidatingDependentArray.pushObject(3);
   });
 
-  test("array dependencies specified with `.[]` completely invalidate a reduceComputed CP", function() {
-    var dependentArray = Ember.A(),
-        totallyInvalidatingDependentArray = Ember.A();
-
-    obj = Ember.Object.extend({
-      totallyInvalidatingDependentArray: totallyInvalidatingDependentArray,
-      dependentArray: dependentArray,
-
-      computed: Ember.arrayComputed('dependentArray', 'totallyInvalidatingDependentArray.[]', {
-        addedItem: function (array, item) {
-          ok(item !== 3, "totally invalidating items are never passed to the one-at-a-time callbacks");
-          ++addCalls;
-          return array;
-        },
-
-        removedItem: function (array, item) {
-          ok(item !== 3, "totally invalidating items are never passed to the one-at-a-time callbacks");
-          --removeCalls;
-          return array;
-        }
-      })
-    }).create();
-
-    get(obj, 'computed');
-
-    equal(addCalls, 0, "precond - add has not initially been called");
-    equal(removeCalls, 0, "precond - remove has not initially been called");
-
-    dependentArray.pushObjects([1, 2]);
-
-    equal(addCalls, 2, "add called one-at-a-time for dependent array changes");
-    equal(removeCalls, 0, "remove not called");
-
-    Ember.run(function() {
-      totallyInvalidatingDependentArray.pushObject(3);
-    });
-
-    equal(addCalls, 4, "array completely recomputed when totally invalidating dependent array modified");
-    equal(removeCalls, 0, "remove not called");
-  });
-}
+  equal(addCalls, 4, "array completely recomputed when totally invalidating dependent array modified");
+  equal(removeCalls, 0, "remove not called");
+});
