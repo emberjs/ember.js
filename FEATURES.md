@@ -5,22 +5,6 @@ for a detailed explanation.
 
 ## Feature Flags
 
-* `reduceComputed-non-array-dependencies`
-
-  `ReduceComputedProperty`s may have non-array dependent keys.  When a non-array
-  dependent key changes, the entire property is invalidated.
-
-  Array dependent keys may be specified with either one-at-a-time semantics or
-  total invalidation semantics.  Property names like `'dependentArray'` use
-  one-at-a-time semantics; property names like `'dependentArray.[]'` use total
-  invalidation semantics.
-
-  This can be useful for example, for filtering.  The items to be filtered
-  should use one-a-time semantics, but the properties to filter by should use
-  total invalidation semantics.
-
-  Added in [#3614](https://github.com/emberjs/ember.js/pull/3614).
-
 * `query-params`
 
   Add query params support to the ember router. You can now define which query
@@ -110,3 +94,4 @@ for a detailed explanation.
   element.
 
   Added in [#3792](https://github.com/emberjs/ember.js/pull/3792).
+

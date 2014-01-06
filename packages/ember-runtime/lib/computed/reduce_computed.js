@@ -482,9 +482,7 @@ function ReduceComputedProperty(options) {
 
     meta.dependentArraysObserver.suspendArrayObservers(function () {
       forEach(cp._dependentKeys, function (dependentKey) {
-        if (Ember.FEATURES.isEnabled('reduceComputed-non-array-dependencies')) {
-          if (!partiallyRecomputeFor(this, dependentKey)) { return; }
-        }
+        if (!partiallyRecomputeFor(this, dependentKey)) { return; }
 
         var dependentArray = get(this, dependentKey),
             previousDependentArray = meta.dependentArrays[dependentKey];
@@ -513,9 +511,7 @@ function ReduceComputedProperty(options) {
     }, this);
 
     forEach(cp._dependentKeys, function(dependentKey) {
-      if (Ember.FEATURES.isEnabled('reduceComputed-non-array-dependencies')) {
-        if (!partiallyRecomputeFor(this, dependentKey)) { return; }
-      }
+      if (!partiallyRecomputeFor(this, dependentKey)) { return; }
 
       var dependentArray = get(this, dependentKey);
       if (dependentArray) {
