@@ -1,6 +1,5 @@
 {
   "features": {
-    "ember-testing-wait-hooks": true,
     "propertyBraceExpansion": false,
     "query-params": false,
     "ember-routing-named-substates": false,

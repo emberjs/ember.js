@@ -1,4 +1,4 @@
-## About Features
+bout Features
 
 Please read the [Feature Flag Guide](http://emberjs.com/guides/configuring-ember/feature-flags/)
 for a detailed explanation.
@@ -26,12 +26,7 @@ for a detailed explanation.
   Also strips `_id` suffixes. (E.g. `'first_name'.humanize() // 'First name'`)
 
   Added in [#3224](https://github.com/emberjs/ember.js/pull/3224)
-* `ember-testing-wait-hooks`
 
-  Allows registration of additional functions that the `wait` testing helper
-  will call to determine if it's ready to continue.
-
-  Added in [#3433](https://github.com/emberjs/ember.js/pull/3433)
 * `ember-routing-named-substates`
 
   Add named substates; e.g. when resolving a `loading` or `error`
@@ -44,6 +39,16 @@ for a detailed explanation.
   `ApplicationRoute`.
 
   Added in [#3655](https://github.com/emberjs/ember.js/pull/3655).
+
+* `ember-testing-lazy-routing`
+
+  Uses an initializer to defer readiness while testing. Readiness is advanced upon the first
+  call to `visit`.
+
+  NOTE: This causes `App.reset()` to behave consistently with the way an app works after calling
+  `setupForTesting` (i.e. in a deferred state of readiness).
+
+  Added in [#3695](https://github.com/emberjs/ember.js/pull/3695).
 
 * `ember-handlebars-caps-lookup`
   Forces Handlebars values starting with capital letters, like `{{CONSTANT}}`,

@@ -156,13 +156,11 @@ function wait(app, value) {
 
       // 3. If there are scheduled timers or we are inside of a run loop, keep polling
       if (Ember.run.hasScheduledTimers() || Ember.run.currentRunLoop) { return; }
-      if (Ember.FEATURES.isEnabled("ember-testing-wait-hooks")) {
-        if (Test.waiters && Test.waiters.any(function(waiter) {
-          var context = waiter[0];
-          var callback = waiter[1];
-          return !callback.apply(context);
-        })) { return; }
-      }
+      if (Test.waiters && Test.waiters.any(function(waiter) {
+        var context = waiter[0];
+        var callback = waiter[1];
+        return !callback.call(context);
+      })) { return; }
       // Stop polling
       clearInterval(watcher);
 
