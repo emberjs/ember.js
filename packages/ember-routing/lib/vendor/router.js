@@ -497,8 +497,7 @@ define("router/router",
         var partitionedArgs   = extractQueryParams(slice.call(arguments, 1)),
             contexts          = partitionedArgs[0],
             queryParams       = partitionedArgs[1],
-            activeQueryParams  = {},
-            effectiveQueryParams = {};
+            activeQueryParams  = this.state.queryParams;
 
         var targetHandlerInfos = this.state.handlerInfos,
             found = false, names, object, handlerInfo, handlerObj, i, len;
@@ -530,7 +529,8 @@ define("router/router",
 
         var newState = intent.applyToHandlers(state, recogHandlers, this.getHandler, targetHandler, true, true);
 
-        return handlerInfosEqual(newState.handlerInfos, state.handlerInfos);
+        return handlerInfosEqual(newState.handlerInfos, state.handlerInfos) && 
+               !getChangelist(activeQueryParams, queryParams);
       },
 
       trigger: function(name) {

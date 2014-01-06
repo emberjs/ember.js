@@ -1193,4 +1193,98 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     Ember.run(indexController, 'set', 'foo', 'YEAH');
     equal(Ember.$('#the-link').attr('href'), '/?index[foo]=lol&index[bar]=BORF');
   });
+
+  test("The {{link-to}} applies activeClass when query params are not changed", function() {
+    Ember.TEMPLATES.index = Ember.Handlebars.compile(
+      "{{#link-to (query-params foo='cat') id='cat-link'}}Index{{/link-to}} " +
+      "{{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}} " +
+      "{{#link-to 'index' id='change-nothing'}}Index{{/link-to}}"
+    );
+
+    Ember.TEMPLATES.search = Ember.Handlebars.compile(
+      "{{#link-to (query-params search='same') id='same-search'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='change') id='change-search'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same' archive=true) id='same-search-add-archive'}}Index{{/link-to}} " +
+      "{{#link-to (query-params archive=true) id='only-add-archive'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same' archive=true) id='both-same'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='different' archive=true) id='change-one'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='different' archive=false) id='remove-one'}}Index{{/link-to}} " +
+      "{{#link-to id='change-nothing'}}Index{{/link-to}} " +
+      "{{outlet}}"
+    );
+
+    Ember.TEMPLATES['search/results'] = Ember.Handlebars.compile(
+      "{{#link-to (query-params sort='title') id='same-sort-child-only'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same') id='same-search-parent-only'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='change') id='change-search-parent-only'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same' sort='title') id='same-search-same-sort-child-and-parent'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='same' sort='author') id='same-search-different-sort-child-and-parent'}}Index{{/link-to}} " +
+      "{{#link-to (query-params search='change' sort='title') id='change-search-same-sort-child-and-parent'}}Index{{/link-to}} " +
+      "{{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}} "
+    );
+
+
+
+    Router.map(function() {
+      this.resource("search", function() {
+        this.route("results");
+      });
+    });
+
+    App.SearchController = Ember.Controller.extend({
+      queryParams: ['search', 'archive'],
+      search: '',
+      archive: false
+    });
+
+    App.SearchResultsController = Ember.Controller.extend({
+      queryParams: ['sort', 'showDetails'],
+      sort: 'title',
+      showDetails: true
+    });
+
+
+    bootApplication();
+
+    //Basic tests
+    shouldNotBeActive('#cat-link');
+    shouldNotBeActive('#dog-link');
+    Ember.run(router, 'handleURL', '/?index[foo]=cat');
+    shouldBeActive('#cat-link');
+    shouldNotBeActive('#dog-link');
+    Ember.run(router, 'handleURL', '/?index[foo]=dog');
+    shouldBeActive('#dog-link');
+    shouldNotBeActive('#cat-link');
+    shouldBeActive('#change-nothing');
+
+    //Multiple params
+    Ember.run(function() {
+      router.handleURL("/search?search[search]=same");
+    });
+    shouldBeActive('#same-search');
+    shouldNotBeActive('#change-search');
+    shouldNotBeActive('#same-search-add-archive');
+    shouldNotBeActive('#only-add-archive');
+    shouldNotBeActive('#remove-one');
+    shouldBeActive('#change-nothing');
+
+    Ember.run(function() {
+      router.handleURL("/search?search[search]=same&search[archive]");
+    });
+    shouldBeActive('#both-same');
+    shouldNotBeActive('#change-one');
+
+    //Nested Controllers
+    Ember.run(function() {
+      router.handleURL("/search/results?search[search]=same&results[sort]=title&results[showDetails]");
+    });
+    shouldBeActive('#same-sort-child-only');
+    shouldBeActive('#same-search-parent-only');
+    shouldNotBeActive('#change-search-parent-only');
+    shouldBeActive('#same-search-same-sort-child-and-parent');
+    shouldNotBeActive('#same-search-different-sort-child-and-parent');
+    shouldNotBeActive('#change-search-same-sort-child-and-parent');
+
+
+  });
 }
