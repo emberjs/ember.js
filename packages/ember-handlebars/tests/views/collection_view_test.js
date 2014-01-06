@@ -45,6 +45,29 @@ test("passing a block to the collection helper sets it as the template for examp
   equal(view.$('label').length, 3, 'one label element is created for each content item');
 });
 
+test("collection helper should try to use container to resolve view", function() {
+  var container = new Ember.Container();
+
+  var CollectionView = Ember.CollectionView.extend({
+        tagName: 'ul',
+        content: Ember.A(['foo', 'bar', 'baz'])
+  });
+
+  container.register('view:collectionTest', CollectionView);
+
+  var controller = {container: container};
+  view = Ember.View.create({
+    controller: controller,
+    template: Ember.Handlebars.compile('{{#collection "collectionTest"}} <label></label> {{/collection}}')
+  });
+  
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$('label').length, 3, 'one label element is created for each content item');
+});
+
 test("collection helper should accept relative paths", function() {
   Ember.TESTING_DEPRECATION = true;
 
