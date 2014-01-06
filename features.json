@@ -1,8 +1,5 @@
 {
   "features": {
-    "reduceComputed-non-array-dependencies": true,
-    "ember-testing-lazy-routing": true,
-    "ember-testing-wait-hooks": true,
     "propertyBraceExpansion": true,
     "ember-metal-run-bind": true,
     "with-controller": true,

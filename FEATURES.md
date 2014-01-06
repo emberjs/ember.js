@@ -5,22 +5,6 @@ for a detailed explanation.
 
 ## Feature Flags
 
-* `reduceComputed-non-array-dependencies`
-
-  `ReduceComputedProperty`s may have non-array dependent keys.  When a non-array
-  dependent key changes, the entire property is invalidated.
-
-  Array dependent keys may be specified with either one-at-a-time semantics or
-  total invalidation semantics.  Property names like `'dependentArray'` use
-  one-at-a-time semantics; property names like `'dependentArray.[]'` use total
-  invalidation semantics.
-
-  This can be useful for example, for filtering.  The items to be filtered
-  should use one-a-time semantics, but the properties to filter by should use
-  total invalidation semantics.
-
-  Added in [#3614](https://github.com/emberjs/ember.js/pull/3614).
-
 * `propertyBraceExpansion`
 
   Adds support for brace-expansion in dependent keys, observer, and watch properties.
@@ -39,12 +23,6 @@ for a detailed explanation.
   Transforms a string so that it may be used as part of a 'pretty' / SEO friendly URL.
   (E.g. `'100 ways Ember.js is better than Angular.'.parameterize(); // '100-ways-emberjs-is-better-than-angular'`)
 
-* `ember-testing-wait-hooks`
-
-  Allows registration of additional functions that the `wait` testing helper
-  will call to determine if it's ready to continue.
-
-  Added in [#3433](https://github.com/emberjs/ember.js/pull/3433)
 * `ember-routing-named-substates`
 
   Add named substates; e.g. when resolving a `loading` or `error`
@@ -57,16 +35,6 @@ for a detailed explanation.
   `ApplicationRoute`.
 
   Added in [#3655](https://github.com/emberjs/ember.js/pull/3655).
-
-* `ember-testing-lazy-routing`
-
-  Uses an initializer to defer readiness while testing. Readiness is advanced upon the first
-  call to `visit`.
-
-  NOTE: This causes `App.reset()` to behave consistently with the way an app works after calling
-  `setupForTesting` (i.e. in a deferred state of readiness).
-
-  Added in [#3695](https://github.com/emberjs/ember.js/pull/3695).
 
 * `ember-handlebars-caps-lookup`
   Forces Handlebars values starting with capital letters, like `{{CONSTANT}}`,
