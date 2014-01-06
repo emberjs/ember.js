@@ -43,11 +43,6 @@ module("ember-testing Integration", {
 
     Ember.run(function() {
       App.reset();
-      if (Ember.FEATURES.isEnabled('ember-testing-lazy-routing')){
-        // no need to deferReadiness as it is done via an initializer
-      } else {
-        App.deferReadiness();
-      }
     });
 
     App.injectTestHelpers();
@@ -103,15 +98,13 @@ test("template is again bound to empty array of people", function() {
   });
 });
 
-if (Ember.FEATURES.isEnabled('ember-testing-lazy-routing')){
-  test("`visit` can be called without advancedReadiness.", function(){
-    App.Person.find = function() {
-      return Ember.A();
-    };
+test("`visit` can be called without advancedReadiness.", function(){
+  App.Person.find = function() {
+    return Ember.A();
+  };
 
-    visit("/").then(function() {
-      var rows = find(".name").length;
-      equal(rows, 0, "stubbed an empty array of people without calling advancedReadiness.");
-    });
+  visit("/").then(function() {
+    var rows = find(".name").length;
+    equal(rows, 0, "stubbed an empty array of people without calling advancedReadiness.");
   });
-}
+});

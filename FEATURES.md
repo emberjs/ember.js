@@ -45,16 +45,6 @@ for a detailed explanation.
 
   Added in [#3655](https://github.com/emberjs/ember.js/pull/3655).
 
-* `ember-testing-lazy-routing`
-
-  Uses an initializer to defer readiness while testing. Readiness is advanced upon the first
-  call to `visit`.
-
-  NOTE: This causes `App.reset()` to behave consistently with the way an app works after calling
-  `setupForTesting` (i.e. in a deferred state of readiness).
-
-  Added in [#3695](https://github.com/emberjs/ember.js/pull/3695).
-
 * `ember-handlebars-caps-lookup`
   Forces Handlebars values starting with capital letters, like `{{CONSTANT}}`,
   to always be looked up on `Ember.lookup`. Previously, these values would be
