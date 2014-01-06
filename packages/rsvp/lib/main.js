@@ -8,6 +8,16 @@ define("rsvp/all",
     "use strict";
     var Promise = __dependency1__["default"];
 
+    /**
+      This is a convenient alias for `RSVP.Promise.all`.
+
+      @method all
+      @for RSVP
+      @param {Array} array Array of promises.
+      @param {String} label An optional label. This is useful
+      for tooling.
+      @static
+    */
     __exports__["default"] = function all(array, label) {
       return Promise.all(array, label);
     };
@@ -62,13 +72,14 @@ define("rsvp/all_settled",
       });
       ```
 
-      @method @allSettled
+      @method allSettled
       @for RSVP
-      @param {Array} promises;
+      @param {Array} promises
       @param {String} label - optional string that describes the promise.
       Useful for tooling.
       @return {Promise} promise that is fulfilled with an array of the settled
       states of the constituent promises.
+      @static
     */
 
     __exports__["default"] = function allSettled(entries, label) {
@@ -229,8 +240,7 @@ define("rsvp/events",
     };
 
     /**
-      //@module RSVP
-      //@class EventTarget
+      @class RSVP.EventTarget
     */
     __exports__["default"] = {
 
@@ -617,10 +627,11 @@ define("rsvp/hash",
       @method hash
       @for RSVP
       @param {Object} promises
-      @param {String} label - optional string that describes the promise.
+      @param {String} label optional string that describes the promise.
       Useful for tooling.
       @return {Promise} promise that is fulfilled when all properties of `promises`
       have been fulfilled, or rejected if any of them become rejected.
+      @static
     */
     __exports__["default"] = function hash(object, label) {
       return new Promise(function(resolve, reject){
@@ -700,7 +711,6 @@ define("rsvp/map",
     var isFunction = __dependency3__.isFunction;
 
     /**
-
      `RSVP.map` is similar to JavaScript's native `map` method, except that it
       waits for all promises to become fulfilled before running the `mapFn` on
       each item in given to `promises`. `RSVP.map` returns a promise that will
@@ -775,6 +785,7 @@ define("rsvp/map",
       @return {Promise} promise that is fulfilled with the result of calling
       `mapFn` on each fulfilled promise or value when they become fulfilled.
        The promise will be rejected if any of the given `promises` become rejected.
+      @static
     */
     __exports__["default"] = function map(promises, mapFn, label) {
       return all(promises, label).then(function(results){
@@ -892,6 +903,7 @@ define("rsvp/node",
       calling the `nodeFunc` function.
       @return {Function} a function that wraps `nodeFunc` to return an
       `RSVP.Promise`
+      @static
     */
     __exports__["default"] = function denodeify(nodeFunc, binding) {
       return function()  {
@@ -936,7 +948,6 @@ define("rsvp/promise",
 
 
     /**
-
       Promise objects represent the eventual result of an asynchronous operation. The
       primary way of interacting with a promise is through its `then` method, which
       registers callbacks to receive either a promise’s eventual value or the reason
@@ -953,6 +964,17 @@ define("rsvp/promise",
       - `settled` the final resting state of a promise, fulfilled or rejected.
 
       A promise can be in one of three states: pending, fulfilled, or rejected.
+
+      Promises that are fulfilled have a fulfillment value and are in the fulfilled
+      state.  Promises that are rejected have a rejection reason and are in the
+      rejected state.  A fulfillment value is never a thenable.  Similarly, a
+      rejection reason is never a thenable.
+
+      Promises can also be said to *resolve* a value.  If this value is also a
+      promise, then the original promise's settled state will match the value's
+      settled state.  So a promise that *resolves* a promise that rejects will
+      itself reject, and a promise that *resolves* a promise that fulfills will
+      itself fulfill.
 
 
       Basic Usage:
@@ -1024,7 +1046,7 @@ define("rsvp/promise",
       });
       ```
 
-      @class Promise
+      @class RSVP.Promise
       @param {function}
       @param {String} label optional string for labeling the promise.
       Useful for tooling.
@@ -1106,9 +1128,6 @@ define("rsvp/promise",
     }
 
     Promise.prototype = {
-    /**
-      @property constructor
-    */
       constructor: Promise,
 
       _id: undefined,
@@ -1124,7 +1143,6 @@ define("rsvp/promise",
       },
 
     /**
-
       The primary way of interacting with a promise is through its `then` method,
       which registers callbacks to receive either a promise's eventual value or the
       reason why the promise cannot be fulfilled.
@@ -1542,7 +1560,6 @@ define("rsvp/promise/all",
     var isNonThenable = __dependency1__.isNonThenable;
 
     /**
-
       `RSVP.Promise.all` accepts an array of promises, and returns a new promise which
       is fulfilled with an array of fulfillment values for the passed promises, or
       rejected with the reason of the first passed promise to be rejected. It casts all
@@ -1587,6 +1604,7 @@ define("rsvp/promise/all",
       Useful for tooling.
       @return {Promise} promise that is fulfilled when all `promises` have been
       fulfilled, or rejected if any of them become rejected.
+      @static
     */
     __exports__["default"] = function all(entries, label) {
 
@@ -1640,7 +1658,6 @@ define("rsvp/promise/cast",
   function(__exports__) {
     "use strict";
     /**
-
       `RSVP.Promise.cast` coerces its argument to a promise, or returns the
       argument if it is already a promise which shares a constructor with the caster.
 
@@ -1700,11 +1717,11 @@ define("rsvp/promise/cast",
       ensured to have the behavior of the constructor you are calling cast on (i.e., RSVP.Promise).
 
       @method cast
-      @for RSVP.Promise
       @param {Object} object to be casted
       @param {String} label optional string for labeling the promise.
       Useful for tooling.
       @return {Promise} promise
+      @static
     */
 
     __exports__["default"] = function cast(object, label) {
@@ -1775,7 +1792,7 @@ define("rsvp/promise/race",
       });
 
       RSVP.Promise.race([promise1, promise2]).then(function(result){
-        // Code here never runs because there are rejected promises!
+        // Code here never runs
       }, function(reason){
         // reason.message === "promise2" because promise 2 became rejected before
         // promise 1 became fulfilled
@@ -1789,12 +1806,12 @@ define("rsvp/promise/race",
       ```
 
       @method race
-      @for RSVP.Promise
       @param {Array} promises array of promises to observe
       @param {String} label optional string for describing the promise returned.
       Useful for tooling.
       @return {Promise} a promise which settles in the same way as the first passed
       promise to settle.
+      @static
     */
     __exports__["default"] = function race(entries, label) {
       /*jshint validthis:true */
@@ -1856,11 +1873,11 @@ define("rsvp/promise/reject",
       ```
 
       @method reject
-      @for RSVP.Promise
       @param {Any} reason value that the returned promise will be rejected with.
       @param {String} label optional string for identifying the returned promise.
       Useful for tooling.
       @return {Promise} a promise rejected with the given `reason`.
+      @static
     */
     __exports__["default"] = function reject(reason, label) {
       /*jshint validthis:true */
@@ -1900,12 +1917,12 @@ define("rsvp/promise/resolve",
       ```
 
       @method resolve
-      @for RSVP.Promise
       @param {Any} value value that the returned promise will be resolved with
       @param {String} label optional string for identifying the returned promise.
       Useful for tooling.
       @return {Promise} a promise that will become fulfilled with the given
       `value`
+      @static
     */
     __exports__["default"] = function resolve(value, label) {
       /*jshint validthis:true */
@@ -1922,6 +1939,15 @@ define("rsvp/race",
     "use strict";
     var Promise = __dependency1__["default"];
 
+    /**
+      This is a convenient alias for `RSVP.Promise.race`.
+
+      @method race
+      @param {Array} array Array of promises.
+      @param {String} label An optional label. This is useful
+      for tooling.
+      @static
+    */
     __exports__["default"] = function race(array, label) {
       return Promise.race(array, label);
     };
@@ -1932,6 +1958,17 @@ define("rsvp/reject",
     "use strict";
     var Promise = __dependency1__["default"];
 
+    /**
+      This is a convenient alias for `RSVP.Promise.reject`.
+
+      @method reject
+      @for RSVP
+      @param {Any} reason value that the returned promise will be rejected with.
+      @param {String} label optional string for identifying the returned promise.
+      Useful for tooling.
+      @return {Promise} a promise rejected with the given `reason`.
+      @static
+    */
     __exports__["default"] = function reject(reason, label) {
       return Promise.reject(reason, label);
     };
@@ -1942,6 +1979,18 @@ define("rsvp/resolve",
     "use strict";
     var Promise = __dependency1__["default"];
 
+    /**
+      This is a convenient alias for `RSVP.Promise.resolve`.
+
+      @method resolve
+      @for RSVP
+      @param {Any} value value that the returned promise will be resolved with
+      @param {String} label optional string for identifying the returned promise.
+      Useful for tooling.
+      @return {Promise} a promise that will become fulfilled with the given
+      `value`
+      @static
+    */
     __exports__["default"] = function resolve(value, label) {
       return Promise.resolve(value, label);
     };
@@ -1987,6 +2036,7 @@ define("rsvp/rethrow",
       @for RSVP
       @param {Error} reason reason the promise became rejected.
       @throws Error
+      @static
     */
     __exports__["default"] = function rethrow(reason) {
       setTimeout(function() {
