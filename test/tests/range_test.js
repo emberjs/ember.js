@@ -97,13 +97,12 @@ function createCombinatorialTest(factory) {
       start = factory.start.create(parent),
       content = factory.content.create(parent),
       end = factory.end.create(parent),
-      p = document.createElement('p'),
-      range, html;
-
-    p.textContent = 'appended';
+      p, range, html;
 
     range = new Range(parent, start, end);
 
+    p = document.createElement('p');
+    p.textContent = 'appended';
     range.appendChild(p);
 
     html = factory.parent.startHTML +
@@ -114,6 +113,23 @@ function createCombinatorialTest(factory) {
            factory.parent.endHTML;
 
     equalHTML(frag, html);
+
+    var fixture = document.getElementById('qunit-fixture');
+    fixture.appendChild(frag);
+
+    p = document.createElement('p');
+    p.textContent = 'appended';
+    range.appendChild(p);
+
+    html = factory.parent.startHTML +
+           factory.start.HTML +
+           factory.content.HTML +
+           '<p>appended</p>' +
+           '<p>appended</p>' +
+           factory.end.HTML +
+           factory.parent.endHTML;
+
+    equal(fixture.innerHTML, html);
   });
 
   test('appendText '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
@@ -136,6 +152,21 @@ function createCombinatorialTest(factory) {
            factory.parent.endHTML;
 
     equalHTML(frag, html);
+
+    var fixture = document.getElementById('qunit-fixture');
+    fixture.appendChild(frag);
+
+    range.appendText('appended text');
+
+    html = factory.parent.startHTML +
+           factory.start.HTML +
+           factory.content.HTML +
+           'appended text' +
+           'appended text' +
+           factory.end.HTML +
+           factory.parent.endHTML;
+
+    equal(fixture.innerHTML, html);
   });
 
   test('appendHTML '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
@@ -158,6 +189,21 @@ function createCombinatorialTest(factory) {
            factory.parent.endHTML;
 
     equalHTML(frag, html);
+
+    var fixture = document.getElementById('qunit-fixture');
+    fixture.appendChild(frag);
+
+    range.appendHTML('<p>A</p><p>B</p><p>C</p>');
+
+    html = factory.parent.startHTML +
+           factory.start.HTML +
+           factory.content.HTML +
+           '<p>A</p><p>B</p><p>C</p>' +
+           '<p>A</p><p>B</p><p>C</p>' +
+           factory.end.HTML +
+           factory.parent.endHTML;
+
+    equal(fixture.innerHTML, html);
   });
 
   test('clear '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
@@ -178,6 +224,29 @@ function createCombinatorialTest(factory) {
            factory.parent.endHTML;
 
     equalHTML(frag, html);
+  });
+
+  test('clear after insert '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
+    var frag = document.createDocumentFragment(),
+      parent = factory.parent.create(frag),
+      start = factory.start.create(parent),
+      content = factory.content.create(parent),
+      end = factory.end.create(parent),
+      range, html;
+
+    range = new Range(parent, start, end);
+
+    var fixture = document.getElementById('qunit-fixture');
+    fixture.appendChild(frag);
+
+    range.clear();
+
+    html = factory.parent.startHTML +
+           factory.start.HTML +
+           factory.end.HTML +
+           factory.parent.endHTML;
+
+    equal(fixture.innerHTML, html);
   });
 
   test('replace '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
