@@ -4,11 +4,10 @@ var slice = Array.prototype.slice,
     originalTemplate = Ember.Handlebars.template;
 
 /**
-  @private
-
   If a path starts with a reserved keyword, returns the root
   that should be used.
 
+  @private
   @method normalizePath
   @for Ember
   @param root {Object}
@@ -62,19 +61,31 @@ var handlebarsGet = Ember.Handlebars.get = function(root, path, options) {
       normalizedPath = normalizePath(root, path, data),
       value;
 
-  // In cases where the path begins with a keyword, change the
-  // root to the value represented by that keyword, and ensure
-  // the path is relative to it.
-  root = normalizedPath.root;
-  path = normalizedPath.path;
+  if (Ember.FEATURES.isEnabled("ember-handlebars-caps-lookup")) {
 
-  value = Ember.get(root, path);
+    // If the path starts with a capital letter, look it up on Ember.lookup,
+    // which defaults to the `window` object in browsers.
+    if (Ember.isGlobalPath(path)) {
+      value = Ember.get(Ember.lookup, path);
+    } else {
 
-  // If the path starts with a capital letter, look it up on Ember.lookup,
-  // which defaults to the `window` object in browsers.
-  if (value === undefined && root !== Ember.lookup && Ember.isGlobalPath(path)) {
-    value = Ember.get(Ember.lookup, path);
+      // In cases where the path begins with a keyword, change the
+      // root to the value represented by that keyword, and ensure
+      // the path is relative to it.
+      value = Ember.get(normalizedPath.root, normalizedPath.path);
+    }
+
+  } else {
+    root = normalizedPath.root;
+    path = normalizedPath.path;
+
+    value = Ember.get(root, path);
+
+    if (value === undefined && root !== Ember.lookup && Ember.isGlobalPath(path)) {
+      value = Ember.get(Ember.lookup, path);
+    }
   }
+
   return value;
 };
 
@@ -114,8 +125,6 @@ Ember.Handlebars.resolveHash = function(context, hash, options) {
 };
 
 /**
-  @private
-
   Registers a helper in Handlebars that will be called if no property with the
   given name can be found on the current context object, and no helper with
   that name is registered.
@@ -123,6 +132,7 @@ Ember.Handlebars.resolveHash = function(context, hash, options) {
   This throws an exception with a more helpful error message so the user can
   track down where the problem is happening.
 
+  @private
   @method helperMissing
   @for Ember.Handlebars.helpers
   @param {String} path
@@ -147,8 +157,6 @@ Ember.Handlebars.registerHelper('helperMissing', function(path) {
 });
 
 /**
-  @private
-
   Registers a helper in Handlebars that will be called if no property with the
   given name can be found on the current context object, and no helper with
   that name is registered.
@@ -156,6 +164,7 @@ Ember.Handlebars.registerHelper('helperMissing', function(path) {
   This throws an exception with a more helpful error message so the user can
   track down where the problem is happening.
 
+  @private
   @method helperMissing
   @for Ember.Handlebars.helpers
   @param {String} path
@@ -165,12 +174,18 @@ Ember.Handlebars.registerHelper('blockHelperMissing', function(path) {
 
   var options = arguments[arguments.length - 1];
 
-  Ember.assert("`blockHelperMissing` was invoked without a helper name, which is most likely due to a mismatch between the version of Ember.js you're running now and the one used to precompile your templates. Please make sure the version of `ember-handlebars-compiler` you're using is up to date.", path);
+  Ember.assert("`blockHelperMissing` was invoked without a helper name, which " +
+               "is most likely due to a mismatch between the version of " +
+               "Ember.js you're running now and the one used to precompile your " +
+               "templates. Please make sure the version of " +
+               "`ember-handlebars-compiler` you're using is up to date.", path);
 
   var helper = Ember.Handlebars.resolveHelper(options.data.view.container, path);
 
   if (helper) {
     return helper.apply(this, slice.call(arguments, 1));
+  } else {
+    return Handlebars.helpers.helperMissing.call(this, path);
   }
 
   return Handlebars.helpers.blockHelperMissing.apply(this, arguments);
@@ -292,8 +307,6 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
 };
 
 /**
-  @private
-
   A (mostly) private helper function to `registerBoundHelper`. Takes the
   provided Handlebars helper function fn and returns it in wrapped
   bound helper form.
@@ -312,6 +325,7 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
   In the above example, if the helper function hadn't been wrapped in
   `makeBoundHelper`, the registered helper would be unbound.
 
+  @private
   @method makeBoundHelper
   @for Ember.Handlebars
   @param {Function} function
@@ -325,8 +339,8 @@ Ember.Handlebars.makeBoundHelper = function(fn) {
       numProperties = properties.length,
       options = arguments[arguments.length - 1],
       normalizedProperties = [],
-      types = options.types,
       data = options.data,
+      types = data.isUnbound ? slice.call(options.types, 1) : options.types,
       hash = options.hash,
       view = data.view,
       contexts = options.contexts,
@@ -357,7 +371,11 @@ Ember.Handlebars.makeBoundHelper = function(fn) {
         normalizedProperties.push(normalizedProp);
         watchedProperties.push(normalizedProp);
       } else {
-        normalizedProperties.push(null);
+        if(data.isUnbound) {
+          normalizedProperties.push({path: properties[loc]});
+        }else {
+          normalizedProperties.push(null);
+        }
       }
     }
 
@@ -435,10 +453,9 @@ Ember.Handlebars.makeBoundHelper = function(fn) {
 };
 
 /**
-  @private
-
   Renders the unbound form of an otherwise bound helper function.
 
+  @private
   @method evaluateUnboundHelper
   @param {Function} fn
   @param {Object} context
@@ -446,7 +463,15 @@ Ember.Handlebars.makeBoundHelper = function(fn) {
   @param {String} options
 */
 function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
-  var args = [], hash = options.hash, boundOptions = hash.boundOptions, loc, len, property, boundOption;
+  var args = [],
+   hash = options.hash,
+   boundOptions = hash.boundOptions,
+   types = slice.call(options.types, 1),
+   loc,
+   len,
+   property,
+   propertyType,
+   boundOption;
 
   for (boundOption in boundOptions) {
     if (!boundOptions.hasOwnProperty(boundOption)) { continue; }
@@ -455,18 +480,22 @@ function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
 
   for(loc = 0, len = normalizedProperties.length; loc < len; ++loc) {
     property = normalizedProperties[loc];
-    args.push(Ember.Handlebars.get(property.root, property.path, options));
+    propertyType = types[loc];
+    if(propertyType === "ID") {
+      args.push(Ember.Handlebars.get(property.root, property.path, options));
+    } else {
+      args.push(property.path);
+    }
   }
   args.push(options);
   return fn.apply(context, args);
 }
 
 /**
-  @private
-
   Overrides Handlebars.template so that we can distinguish
   user-created, top-level templates from inner contexts.
 
+  @private
   @method template
   @for Ember.Handlebars
   @param {String} spec

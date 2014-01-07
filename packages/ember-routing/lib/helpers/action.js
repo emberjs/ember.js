@@ -41,7 +41,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       if (POINTER_EVENT_TYPE_REGEX.test(event.type)) {
         return isSimpleClick(event);
       } else {
-        allowedKeys = [];
+        allowedKeys = '';
       }
     }
 
@@ -65,10 +65,12 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     ActionHelper.registeredActions[actionId] = {
       eventName: options.eventName,
-      handler: function(event) {
+      handler: function handleRegisteredAction(event) {
         if (!isAllowedEvent(event, allowedKeys)) { return true; }
 
-        event.preventDefault();
+        if (options.preventDefault !== false) {
+          event.preventDefault();
+        }
 
         if (options.bubbles === false) {
           event.stopPropagation();
@@ -82,7 +84,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           target = target.root;
         }
 
-        Ember.run(function() {
+        Ember.run(function runRegisteredAction() {
           if (target.send) {
             target.send.apply(target, args(options.parameters, actionName));
           } else {
@@ -125,8 +127,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     App.ApplicationController = Ember.Controller.extend({
       actions: {
         anActionName: function() {
-          
-        }  
+        }
       }
     });
     ```
@@ -157,9 +158,17 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     Events triggered through the action helper will automatically have
     `.preventDefault()` called on them. You do not need to do so in your event
-    handlers.
+    handlers. If you need to allow event propagation (to handle file inputs for
+    example) you can supply the `preventDefault=false` option to the `{{action}}` helper:
 
-    To also disable bubbling, pass `bubbles=false` to the helper:
+    ```handlebars
+    <div {{action "sayHello" preventDefault=false}}>
+      <input type="file" />
+      <input type="checkbox" />
+    </div>
+    ```
+
+    To disable bubbling, pass `bubbles=false` to the helper:
 
     ```handlebars
     <button {{action 'edit' post bubbles=false}}>Edit</button>
@@ -261,7 +270,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @param {Object} [context]*
     @param {Hash} options
   */
-  EmberHandlebars.registerHelper('action', function(actionName) {
+  EmberHandlebars.registerHelper('action', function actionHelper(actionName) {
     var options = arguments[arguments.length - 1],
         contexts = a_slice.call(arguments, 1, -1);
 
@@ -292,6 +301,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     action.target = { root: root, target: target, options: options };
     action.bubbles = hash.bubbles;
+    action.preventDefault = hash.preventDefault;
 
     var actionId = ActionHelper.registerAction(actionName, action, hash.allowedKeys);
     return new SafeString('data-ember-action="' + actionId + '"');

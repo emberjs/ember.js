@@ -1,8 +1,8 @@
 require('ember-runtime/system/namespace');
 
 /**
-@module ember
-@submodule ember-runtime
+  @module ember
+  @submodule ember-runtime
 */
 
 
@@ -70,12 +70,14 @@ function makeCtor() {
 
         Ember.assert("Ember.Object.create no longer supports mixing in other definitions, use createWithMixins instead.", !(properties instanceof Ember.Mixin));
 
-        if (properties === null || typeof properties !== 'object') {
-          Ember.assert("Ember.Object.create only accepts objects.");
-          continue;
+        if (typeof properties !== 'object' && properties !== undefined) {
+          throw new Ember.Error("Ember.Object.create only accepts objects.");
         }
 
+        if (!properties) { continue; }
+
         var keyNames = Ember.keys(properties);
+
         for (var j = 0, ll = keyNames.length; j < ll; j++) {
           var keyName = keyNames[j];
           if (!properties.hasOwnProperty(keyName)) { continue; }
@@ -97,7 +99,9 @@ function makeCtor() {
 
           Ember.assert("Ember.Object.create no longer supports defining computed properties.", !(value instanceof Ember.ComputedProperty));
           Ember.assert("Ember.Object.create no longer supports defining methods that call _super.", !(typeof value === 'function' && value.toString().indexOf('._super') !== -1));
-          Ember.assert("`actions` must be provided at extend time, not at create time, when Ember.ActionHandler is used (i.e. views, controllers & routes).", !((keyName === 'actions') && Ember.ActionHandler.detect(this)));
+          Ember.assert("`actions` must be provided at extend time, not at create " +
+                       "time, when Ember.ActionHandler is used (i.e. views, " +
+                       "controllers & routes).", !((keyName === 'actions') && Ember.ActionHandler.detect(this)));
 
           if (concatenatedProperties && indexOf(concatenatedProperties, keyName) >= 0) {
             var baseValue = this[keyName];
@@ -325,11 +329,10 @@ CoreObject.PrototypeMixin = Mixin.create({
   willDestroy: Ember.K,
 
   /**
-    @private
-
     Invoked by the run loop to actually destroy the object. This is
     scheduled for execution by the `destroy` method.
 
+    @private
     @method _scheduledDestroy
   */
   _scheduledDestroy: function() {
@@ -349,27 +352,33 @@ CoreObject.PrototypeMixin = Mixin.create({
     than Javascript's `toString` typically does, in a generic way for all Ember
     objects.
 
-        App.Person = Em.Object.extend()
-        person = App.Person.create()
-        person.toString() //=> "<App.Person:ember1024>"
+    ```javascript
+    App.Person = Em.Object.extend()
+    person = App.Person.create()
+    person.toString() //=> "<App.Person:ember1024>"
+    ```
 
     If the object's class is not defined on an Ember namespace, it will
     indicate it is a subclass of the registered superclass:
 
-        Student = App.Person.extend()
-        student = Student.create()
-        student.toString() //=> "<(subclass of App.Person):ember1025>"
+   ```javascript
+    Student = App.Person.extend()
+    student = Student.create()
+    student.toString() //=> "<(subclass of App.Person):ember1025>"
+    ```
 
     If the method `toStringExtension` is defined, its return value will be
     included in the output.
 
-        App.Teacher = App.Person.extend({
-          toStringExtension: function() {
-            return this.get('fullName');
-          }
-        });
-        teacher = App.Teacher.create()
-        teacher.toString(); //=> "<App.Teacher:ember1026:Tom Dale>"
+    ```javascript
+    App.Teacher = App.Person.extend({
+      toStringExtension: function() {
+        return this.get('fullName');
+      }
+    });
+    teacher = App.Teacher.create()
+    teacher.toString(); //=> "<App.Teacher:ember1026:Tom Dale>"
+    ```
 
     @method toString
     @return {String} string representation
@@ -565,7 +574,6 @@ var ClassMixin = Mixin.create({
   },
 
   /**
-
     Augments a constructor's prototype with additional
     properties and functions:
 
@@ -607,7 +615,6 @@ var ClassMixin = Mixin.create({
     MyObject = Ember.Object.extend({
       name: 'an object'
     });
-
 
     MyObject.reopenClass({
       canBuild: false

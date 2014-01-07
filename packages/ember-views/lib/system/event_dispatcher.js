@@ -16,7 +16,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   @private
   @extends Ember.Object
 */
-Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.prototype */{
+Ember.EventDispatcher = Ember.Object.extend({
 
   /**
     The set of events names (and associated handler function names) to be setup
@@ -60,8 +60,6 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
   },
 
   /**
-    @private
-
     The root DOM element to which event listeners should be attached. Event
     listeners will be attached to the document unless this is overridden.
 
@@ -70,6 +68,7 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
     The default body is a string since this may be evaluated before document.body
     exists in the DOM.
 
+    @private
     @property rootElement
     @type DOMElement
     @default 'body'
@@ -77,8 +76,6 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
   rootElement: 'body',
 
   /**
-    @private
-
     Sets up event listeners for standard browser events.
 
     This will be called after the browser sends a `DOMContentReady` event. By
@@ -86,6 +83,7 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
     would like to register the listeners on a different element, set the event
     dispatcher's `root` property.
 
+    @private
     @method setup
     @param addedEvents {Hash}
   */
@@ -117,8 +115,6 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
   },
 
   /**
-    @private
-
     Registers an event listener on the document. If the given event is
     triggered, the provided event handler will be triggered on the target view.
 
@@ -133,6 +129,7 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
     setupHandler('mousedown', 'mouseDown');
     ```
 
+    @private
     @method setupHandler
     @param {Element} rootElement
     @param {String} event the browser-originated event to listen to
@@ -142,7 +139,7 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
     var self = this;
 
     rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
-      return Ember.handleErrors(function() {
+      return Ember.handleErrors(function handleViewEvent() {
         var view = Ember.View.views[this.id],
             result = true, manager = null;
 
@@ -161,7 +158,7 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
     });
 
     rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
-      return Ember.handleErrors(function() {
+      return Ember.handleErrors(function handleActionEvent() {
         var actionId = Ember.$(evt.currentTarget).attr('data-ember-action'),
             action   = Ember.Handlebars.ActionHelper.registeredActions[actionId];
 
@@ -207,7 +204,7 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
   },
 
   _bubbleEvent: function(view, evt, eventName) {
-    return Ember.run(function() {
+    return Ember.run(function bubbleEvent() {
       return view.handleEvent(eventName, evt);
     });
   },

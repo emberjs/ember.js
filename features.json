@@ -1,0 +1,13 @@
+{
+  "features": {
+    "propertyBraceExpansion": false,
+    "query-params": false,
+    "ember-routing-named-substates": false,
+    "string-humanize": false,
+    "ember-handlebars-caps-lookup": false,
+    "ember-testing-simple-setup": false,
+    "ember-testing-routing-helpers": false,
+    "ember-testing-triggerEvent-helper": false
+  },
+  "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info"]
+}

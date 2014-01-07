@@ -5,6 +5,7 @@ function reverseHelper(value) {
   return arguments.length > 1 ? value.split('').reverse().join('') : "--";
 }
 
+
 module("Application Lifecycle - Helper Registration", {
   teardown: function() {
     Ember.run(function() {

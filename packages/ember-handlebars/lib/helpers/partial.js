@@ -55,7 +55,7 @@ require('ember-handlebars/ext');
   @param {String} partialName the name of the template to render minus the leading underscore
 */
 
-Ember.Handlebars.registerHelper('partial', function(name, options) {
+Ember.Handlebars.registerHelper('partial', function partialHelper(name, options) {
 
   var context = (options.contexts && options.contexts.length) ? options.contexts[0] : this;
 

@@ -87,6 +87,34 @@ test("{{render}} helper should render given template", function() {
   ok(container.lookup('router:main')._lookupActiveView('home'), 'should register home as active view');
 });
 
+test("{{render}} helper should have assertion if neither template nor view exists", function() {
+  var template = "<h1>HI</h1>{{render 'oops'}}";
+  var controller = Ember.Controller.extend({container: container});
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  expectAssertion(function() {
+    appendView(view);
+  }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as either a template or a view.');
+});
+
+test("{{render}} helper should not have assertion if view exists without a template", function() {
+  var template = "<h1>HI</h1>{{render 'oops'}}";
+  var controller = Ember.Controller.extend({container: container});
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  container.register('view:oops', Ember.View.extend());
+
+  appendView(view);
+
+  equal(view.$().text(), 'HI');
+});
+
 test("{{render}} helper should render given template with a supplied model", function() {
   var template = "<h1>HI</h1>{{render 'post' post}}";
   var post = {
@@ -98,7 +126,8 @@ test("{{render}} helper should render given template with a supplied model", fun
     post: post
   });
 
-  var controller = Controller.create();
+  var controller = Controller.create({
+  });
 
   view = Ember.View.create({
     controller: controller,
@@ -125,6 +154,36 @@ test("{{render}} helper should render given template with a supplied model", fun
   } else {
     deepEqual(postController.get('model'), { title: "Rails is unagi" });
   }
+});
+
+test("{{render}} helper with a supplied model should not fire observers on the controller", function () {
+  var template = "<h1>HI</h1>{{render 'post' post}}";
+  var post = {
+    title: "Rails is omakase"
+  };
+
+  view = Ember.View.create({
+    controller: Ember.Controller.create({
+      container: container,
+      post: post
+    }),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  var PostController = Ember.ObjectController.extend({
+    contentDidChange: Ember.observer('content', function(){
+      contentDidChange++;
+    })
+  });
+
+  container.register('controller:post', PostController);
+
+  Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
+
+  var contentDidChange = 0;
+  appendView(view);
+  equal(contentDidChange, 0, "content observer did not fire");
+
 });
 
 test("{{render}} helper should raise an error when a given controller name does not resolve to a controller", function() {
@@ -299,7 +358,8 @@ test("{{render}} helper should link child controllers to the parent controller",
       parentPlease: function() {
         parentTriggered++;
       }
-    }
+    },
+    role: "Mom"
   });
 
   container.register('controller:posts', Ember.ArrayController.extend());
@@ -309,13 +369,16 @@ test("{{render}} helper should link child controllers to the parent controller",
     template: Ember.Handlebars.compile(template)
   });
 
-  Ember.TEMPLATES['posts'] = compile('<button id="parent-action" {{action "parentPlease"}}>Go to Parent</button>');
+  Ember.TEMPLATES['posts'] = compile('<button id="parent-action" {{action "parentPlease"}}>Go to {{parentController.role}}</button>');
 
   appendView(view);
 
-  var actionId = Ember.$("#parent-action").data('ember-action'),
+  var button = Ember.$("#parent-action"),
+      actionId = button.data('ember-action'),
       action = Ember.Handlebars.ActionHelper.registeredActions[actionId],
       handler = action.handler;
+
+  equal(button.text(), "Go to Mom", "The parentController property is set on the child controller");
 
   Ember.run(null, handler, new Ember.$.Event("click"));
 
@@ -363,7 +426,7 @@ test("{{render}} works with dot notation", function() {
     template: Ember.Handlebars.compile(template)
   });
 
-  Ember.TEMPLATES['blog/post'] = compile("<p>POST</p>");
+  Ember.TEMPLATES['blog.post'] = compile("<p>POST</p>");
 
   appendView(view);
 
@@ -383,7 +446,7 @@ test("{{render}} works with slash notation", function() {
     template: Ember.Handlebars.compile(template)
   });
 
-  Ember.TEMPLATES['blog/post'] = compile("<p>POST</p>");
+  Ember.TEMPLATES['blog.post'] = compile("<p>POST</p>");
 
   appendView(view);
 

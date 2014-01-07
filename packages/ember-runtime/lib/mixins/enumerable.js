@@ -51,7 +51,7 @@ function iter(key, value) {
      with an `Ember.Object` subclass, you should be sure to change the length
      property using `set().`
 
-  2. If you must implement `nextObject().` See documentation.
+  2. You must implement `nextObject().` See documentation.
 
   Once you have these two methods implement, apply the `Ember.Enumerable` mixin
   to your class and you will be able to enumerate the contents of your object
@@ -356,7 +356,9 @@ Ember.Enumerable = Ember.Mixin.create({
     The callback method you provide should have the following signature (all
     parameters are optional):
 
-          function(item, index, enumerable);
+    ```javascript
+    function(item, index, enumerable);
+    ```
 
     - *item* is the current item in the iteration.
     - *index* is the current index in the iteration
@@ -551,29 +553,35 @@ Ember.Enumerable = Ember.Mixin.create({
   },
 
   /**
-    Returns `true` if the passed property resolves to `true` for all items in
-    the enumerable. This method is often simpler/faster than using a callback.
-
     @method everyBy
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
+    @deprecated Use `isEvery` instead
     @return {Boolean}
   */
-  everyBy: function(key, value) {
-    return this.every(iter.apply(this, arguments));
-  },
+  everyBy: Ember.aliasMethod('isEvery'),
+
+  /**
+    @method everyProperty
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @deprecated Use `isEvery` instead
+    @return {Boolean}
+  */
+  everyProperty: Ember.aliasMethod('isEvery'),
 
   /**
     Returns `true` if the passed property resolves to `true` for all items in
     the enumerable. This method is often simpler/faster than using a callback.
 
-    @method everyProperty
+    @method isEvery
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Boolean}
-    @deprecated Use `everyBy` instead
   */
-  everyProperty: Ember.aliasMethod('everyBy'),
+  isEvery: function(key, value) {
+    return this.every(iter.apply(this, arguments));
+  },
 
   /**
     Returns `true` if the passed function returns true for any item in the
@@ -656,26 +664,32 @@ Ember.Enumerable = Ember.Mixin.create({
     Returns `true` if the passed property resolves to `true` for any item in
     the enumerable. This method is often simpler/faster than using a callback.
 
-    @method anyBy
+    @method isAny
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Boolean} `true` if the passed function returns `true` for any item
   */
-  anyBy: function(key, value) {
+  isAny: function(key, value) {
     return this.any(iter.apply(this, arguments));
   },
 
   /**
-    Returns `true` if the passed property resolves to `true` for any item in
-    the enumerable. This method is often simpler/faster than using a callback.
+    @method anyBy
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @return {Boolean} `true` if the passed function returns `true` for any item
+    @deprecated Use `isAny` instead
+  */
+  anyBy: Ember.aliasMethod('isAny'),
 
+  /**
     @method someProperty
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Boolean} `true` if the passed function returns `true` for any item
-    @deprecated Use `anyBy` instead
+    @deprecated Use `isAny` instead
   */
-  someProperty: Ember.aliasMethod('anyBy'),
+  someProperty: Ember.aliasMethod('isAny'),
 
   /**
     This will combine the values of the enumerator into a single value. It
@@ -963,11 +977,8 @@ Ember.Enumerable = Ember.Mixin.create({
     Ember.propertyDidChange(this, '[]');
 
     return this ;
-  }
+  },
 
-});
-
-Ember.Enumerable.reopen({
   /**
     Converts the enumerable into an array and sorts by the keys
     specified in the argument.
@@ -977,14 +988,14 @@ Ember.Enumerable.reopen({
     @method sortBy
     @param {String} property name(s) to sort on
     @return {Array} The sorted array.
-  */
+    */
   sortBy: function() {
     var sortKeys = arguments;
     return this.toArray().sort(function(a, b){
       for(var i = 0; i < sortKeys.length; i++) {
         var key = sortKeys[i],
-            propA = get(a, key),
-            propB = get(b, key);
+        propA = get(a, key),
+        propB = get(b, key);
         // return 1 or -1 else continue to the next sortKey
         var compareValue = Ember.compare(propA, propB);
         if (compareValue) { return compareValue; }

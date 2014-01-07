@@ -1,3 +1,43 @@
+var buildContainer = function(namespace) {
+  var container = new Ember.Container();
+
+  container.set = Ember.set;
+  container.resolver = resolverFor(namespace);
+  container.optionsForType('view', { singleton: false });
+  container.optionsForType('template', { instantiate: false });
+  container.register('application:main', namespace, { instantiate: false });
+  container.injection('router:main', 'namespace', 'application:main');
+
+  container.register('location:hash', Ember.HashLocation);
+
+  container.register('controller:basic', Ember.Controller, { instantiate: false });
+  container.register('controller:object', Ember.ObjectController, { instantiate: false });
+  container.register('controller:array', Ember.ArrayController, { instantiate: false });
+
+  container.typeInjection('route', 'router', 'router:main');
+
+  return container;
+};
+
+function resolverFor(namespace) {
+  return function(fullName) {
+    var nameParts = fullName.split(":"),
+        type = nameParts[0], name = nameParts[1];
+
+    if (type === 'template') {
+      var templateName = Ember.String.decamelize(name);
+      if (Ember.TEMPLATES[templateName]) {
+        return Ember.TEMPLATES[templateName];
+      }
+    }
+
+    var className = Ember.String.classify(name) + Ember.String.classify(type);
+    var factory = Ember.get(namespace, className);
+
+    if (factory) { return factory; }
+  };
+}
+
 var appendView = function(view) {
   Ember.run(function() { view.appendTo('#qunit-fixture'); });
 };
@@ -6,11 +46,21 @@ var compile = function(template) {
   return Ember.Handlebars.compile(template);
 };
 
-var view;
+var view, container;
 
 module("Handlebars {{outlet}} helpers", {
+
+  setup: function() {
+    var namespace = Ember.Namespace.create();
+    container = buildContainer(namespace);
+    container.register('view:default', Ember.View.extend());
+    container.register('router:main', Ember.Router.extend());
+  },
   teardown: function() {
     Ember.run(function () {
+      if (container) {
+        container.destroy();
+      }
       if (view) {
         view.destroy();
       }
@@ -73,6 +123,76 @@ test("outlet should support an optional name", function() {
   equal(view.$().text().replace(/\s+/,''), 'HIBYE');
 });
 
+
+test("outlet should correctly lookup a view", function() {
+
+  var template,
+      ContainerView,
+      childView;
+
+  ContainerView = Ember.ContainerView.extend();
+
+  container.register("view:containerView", ContainerView);
+
+  template = "<h1>HI</h1>{{outlet view='containerView'}}";
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(template),
+    container : container
+  });
+
+  childView = Ember.View.create({
+    template: compile("<p>BYE</p>")
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'HI');
+
+  Ember.run(function() {
+    view.connectOutlet('main', childView);
+  });
+
+  ok(ContainerView.detectInstance(childView.get('_parentView')), "The custom view class should be used for the outlet");
+
+  // Replace whitespace for older IE
+  equal(Ember.$.trim(view.$().text()), 'HIBYE');
+
+});
+
+test("outlet should assert view is specified as a string", function() {
+
+  var template = "<h1>HI</h1>{{outlet view=containerView}}";
+
+  expectAssertion(function () {
+
+    view = Ember.View.create({
+      template: Ember.Handlebars.compile(template),
+      container : container
+    });
+
+    appendView(view);
+
+  });
+
+});
+
+test("outlet should assert view path is successfully resolved", function() {
+
+  var template = "<h1>HI</h1>{{outlet view='someViewNameHere'}}";
+
+  expectAssertion(function () {
+
+    view = Ember.View.create({
+      template: Ember.Handlebars.compile(template),
+      container : container
+    });
+
+    appendView(view);
+
+  });
+
+});
 
 test("outlet should support an optional view class", function() {
   var template = "<h1>HI</h1>{{outlet viewClass=view.outletView}}";

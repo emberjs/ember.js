@@ -16,7 +16,7 @@ require('ember-runtime/core');
   @namespace Ember
   @since Ember 0.9
 */
-Ember.Comparable = Ember.Mixin.create( /** @scope Ember.Comparable.prototype */{
+Ember.Comparable = Ember.Mixin.create({
 
   /**
     Override to return the result of the comparison of the two parameters. The

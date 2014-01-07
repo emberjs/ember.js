@@ -375,7 +375,7 @@ GroupedEach.prototype = {
   @param [options.itemController] {String} name of a controller to be created for each item
   @param [options.groupedRows] {boolean} enable normal item-by-item rendering when inside a `#group` helper
 */
-Ember.Handlebars.registerHelper('each', function(path, options) {
+Ember.Handlebars.registerHelper('each', function eachHelper(path, options) {
   if (arguments.length === 4) {
     Ember.assert("If you pass more than one argument to the each helper, it must be in the form #each foo in bar", arguments[1] === "in");
 

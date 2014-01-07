@@ -176,7 +176,7 @@ define("router",
     // TODO: separate into module?
     Router.Transition = Transition;
 
-    __exports__['default'] = Router;
+    __exports__["default"] = Router;
 
 
     /**
@@ -406,7 +406,7 @@ define("router",
 
               if (isParam(object)) {
                 var name = recogHandler.names[0];
-                if ("" + object !== this.currentParams[name]) { return false; }
+                if (!this.currentParams || "" + object !== this.currentParams[name]) { return false; }
               } else if (handlerInfo.context !== object) {
                 return false;
               }

@@ -2,7 +2,7 @@ require('ember-metal/core');
 require('ember-metal/error');
 
 function consoleMethod(name) {
-  var consoleObj;
+  var consoleObj, logToConsole;
   if (Ember.imports.console) {
     consoleObj = Ember.imports.console;
   } else if (typeof console !== 'undefined') {
@@ -14,9 +14,11 @@ function consoleMethod(name) {
   if (method) {
     // Older IE doesn't support apply, but Chrome needs it
     if (method.apply) {
-      return function() {
+      logToConsole = function() {
         method.apply(consoleObj, arguments);
       };
+      logToConsole.displayName = 'console.' + name;
+      return logToConsole;
     } else {
       return function() {
         var message = Array.prototype.join.call(arguments, ', ');
@@ -61,6 +63,7 @@ Ember.Logger = {
    @param {*} arguments
   */
   log:   consoleMethod('log')   || Ember.K,
+
   /**
    Prints the arguments to the console with a warning icon.
    You can pass as many arguments as you want and they will be joined together with a space.
@@ -74,8 +77,9 @@ Ember.Logger = {
    @param {*} arguments
   */
   warn:  consoleMethod('warn')  || Ember.K,
+
   /**
-   Prints the arguments to the console with an error icon, red text and a stack race.
+   Prints the arguments to the console with an error icon, red text and a stack trace.
    You can pass as many arguments as you want and they will be joined together with a space.
 
     ```javascript
@@ -87,6 +91,7 @@ Ember.Logger = {
    @param {*} arguments
   */
   error: consoleMethod('error') || Ember.K,
+
   /**
    Logs the arguments to the console.
    You can pass as many arguments as you want and they will be joined together with a space.
@@ -101,6 +106,7 @@ Ember.Logger = {
    @param {*} arguments
   */
   info:  consoleMethod('info')  || Ember.K,
+
   /**
    Logs the arguments to the console in blue text.
    You can pass as many arguments as you want and they will be joined together with a space.
@@ -115,9 +121,9 @@ Ember.Logger = {
    @param {*} arguments
   */
   debug: consoleMethod('debug') || consoleMethod('info') || Ember.K,
-  /**
 
-   If the value passed into Ember.Logger.assert is not truthy it will throw an error with a stack trace.
+  /**
+   If the value passed into `Ember.Logger.assert` is not truthy it will throw an error with a stack trace.
 
     ```javascript
     Ember.Logger.assert(true); // undefined

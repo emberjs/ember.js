@@ -1,8 +1,8 @@
 /**
-@private
 Public api for the container is still in flux.
 The public api, specified on the application namespace should be considered the stable api.
 // @module container
+  @private
 */
 
 /*
@@ -47,6 +47,7 @@ define("container",
         no matching key is found, return undefined.
 
         @method get
+        @param {String} key
         @return {any}
       */
       get: function(key) {
@@ -344,6 +345,8 @@ define("container",
         to find the `fullName`.
 
         @method describe
+        @param {String} fullName
+        @return {string} described fullName
       */
       describe: function(fullName) {
         return fullName;
@@ -387,7 +390,7 @@ define("container",
         twitter instanceof Twitter; // => true
 
         // by default the container will return singletons
-        twitter2 = container.lookup('api:twitter');
+        var twitter2 = container.lookup('api:twitter');
         twitter instanceof Twitter; // => true
 
         twitter === twitter2; //=> true
@@ -454,7 +457,7 @@ define("container",
           return true;
         }
 
-        return !!factoryFor(this, fullName);
+        return !!this.resolve(fullName);
       },
 
       /**
@@ -500,8 +503,6 @@ define("container",
       },
 
       /**
-        @private
-
         Used only via `injection`.
 
         Provides a specialized form of injection, specifically enabling
@@ -530,6 +531,7 @@ define("container",
         user.router === post.router; //=> true
         ```
 
+        @private
         @method typeInjection
         @param {String} type
         @param {String} property
@@ -549,8 +551,8 @@ define("container",
 
         Two forms of injections are possible:
 
-      * Injecting one fullName on another fullName
-      * Injecting one fullName on a type
+        * Injecting one fullName on another fullName
+        * Injecting one fullName on a type
 
         Example:
 
@@ -597,8 +599,6 @@ define("container",
 
 
       /**
-        @private
-
         Used only via `factoryInjection`.
 
         Provides a specialized form of injection, specifically enabling
@@ -611,7 +611,6 @@ define("container",
         ```javascript
         var container = new Container();
 
-        container.registerFactory('model:user', User);
         container.register('store:main', SomeStore);
 
         container.factoryTypeInjection('model', 'store', 'store:main');
@@ -622,6 +621,7 @@ define("container",
         UserFactory.store instanceof SomeStore; //=> true
         ```
 
+        @private
         @method factoryTypeInjection
         @param {String} type
         @param {String} property
@@ -699,7 +699,6 @@ define("container",
         @method destroy
       */
       destroy: function() {
-        this.isDestroyed = true;
 
         for (var i=0, l=this.children.length; i<l; i++) {
           this.children[i].destroy();

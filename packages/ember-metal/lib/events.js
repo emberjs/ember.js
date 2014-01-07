@@ -182,8 +182,6 @@ function removeListener(obj, eventName, target, method) {
 }
 
 /**
-  @private
-
   Suspend listener during callback.
 
   This should only be used by the target of the event listener
@@ -191,6 +189,7 @@ function removeListener(obj, eventName, target, method) {
   an object might suspend its property change listener while it is
   setting that property.
 
+  @private
   @method suspendListener
   @for Ember
   @param obj
@@ -219,11 +218,9 @@ function suspendListener(obj, eventName, target, method, callback) {
 }
 
 /**
-  @private
-
   Suspends multiple listeners during a callback.
 
-  
+  @private
   @method suspendListeners
   @for Ember
   @param obj
@@ -267,10 +264,9 @@ function suspendListeners(obj, eventNames, target, method, callback) {
 }
 
 /**
-  @private
-
   Return a list of currently watched events
 
+  @private
   @method watchedEvents
   @for Ember
   @param obj
@@ -291,7 +287,7 @@ function watchedEvents(obj) {
   is skipped, and once listeners are removed. A listener without
   a target is executed on the passed object. If an array of actions
   is not passed, the actions stored on the passed object are invoked.
-  
+
   @method sendEvent
   @for Ember
   @param obj
@@ -370,13 +366,16 @@ function listenersFor(obj, eventName) {
   Define a property as a function that should be executed when
   a specified event or events are triggered.
 
-      var Job = Ember.Object.extend({
-        logCompleted: Ember.on('completed', function(){
-          console.log('Job completed!');
-        })
-      });
-      var job = Job.create();
-      Ember.sendEvent(job, 'completed'); // Logs "Job completed!"
+
+  ``` javascript
+  var Job = Ember.Object.extend({
+    logCompleted: Ember.on('completed', function(){
+      console.log('Job completed!');
+    })
+  });
+  var job = Job.create();
+  Ember.sendEvent(job, 'completed'); // Logs "Job completed!"
+ ```
 
   @method on
   @for Ember

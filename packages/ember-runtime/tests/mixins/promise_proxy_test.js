@@ -1,11 +1,5 @@
-var proxy, deferred, ObjectPromiseProxy;
+var ObjectPromiseProxy;
 var get = Ember.get;
-var originalRethrow = Ember.RSVP.rethrow;
-module("Ember.PromiseProxyMixin", {
-  teardown: function() {
-    Ember.RSVP.rethrow = originalRethrow;
-  }
-});
 
 test("present on ember namespace", function(){
   ok(Ember.PromiseProxyMixin, "expected Ember.PromiseProxyMixin to exist");
@@ -14,13 +8,6 @@ test("present on ember namespace", function(){
 module("Ember.PromiseProxy - ObjectProxy", {
   setup: function() {
     ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
-    deferred = Ember.RSVP.defer();
-    proxy = ObjectPromiseProxy.create({
-      promise: deferred.promise
-    });
-  },
-  teardown: function() {
-    proxy = deferred = null;
   }
 });
 
@@ -42,6 +29,8 @@ test("fulfillment", function(){
     firstName: 'stef',
     lastName: 'penner'
   };
+
+  var deferred = Ember.RSVP.defer();
 
   var proxy = ObjectPromiseProxy.create({
     promise: deferred.promise
@@ -100,7 +89,7 @@ test("fulfillment", function(){
 
 test("rejection", function(){
   var reason = new Error("failure");
-
+  var deferred = Ember.RSVP.defer();
   var proxy = ObjectPromiseProxy.create({
     promise: deferred.promise
   });
@@ -154,8 +143,11 @@ test("rejection", function(){
   equal(get(proxy, 'isFulfilled'), false,  'expects the proxy to indicate that it is not fulfilled');
 });
 
-test("unhandled rejects still propogate to RSVP.configure('onerror', ...) ", function(){
-  expect(2);
+test("unhandled rejects still propogate to RSVP.on('error', ...) ", function(){
+  expect(1);
+
+  Ember.RSVP.on('error', onerror);
+  Ember.RSVP.off('error', Ember.RSVP.onerrorDefault);
 
   var expectedReason = new Error("failure");
   var deferred = Ember.RSVP.defer();
@@ -165,14 +157,22 @@ test("unhandled rejects still propogate to RSVP.configure('onerror', ...) ", fun
   });
 
   var promise = proxy.get('promise');
-  // # internal promise behaviour, not to be used elsewhere..
-  equal(1, promise._promiseCallbacks.error.length, '1 error handler should be subscirbed');
-  promise.on('error', function(reason) {
-    equal(reason.detail, expectedReason, 'expected reason');
-  });
-  // / internal promise behaviour, not to be used elsewhere..
 
-  // force synchronous promise rejection
+  function onerror(reason) {
+    equal(reason, expectedReason, 'expected reason');
+  }
+
+  Ember.RSVP.on('error', onerror);
+  Ember.RSVP.off('error', Ember.RSVP.onerrorDefault);
+
   Ember.run(deferred, 'reject', expectedReason);
+
+  Ember.RSVP.on('error', Ember.RSVP.onerrorDefault);
+  Ember.RSVP.off('error', onerror);
+
+  Ember.run(deferred, 'reject', expectedReason);
+
+  Ember.RSVP.on('error', Ember.RSVP.onerrorDefault);
+  Ember.RSVP.off('error', onerror);
 });
 

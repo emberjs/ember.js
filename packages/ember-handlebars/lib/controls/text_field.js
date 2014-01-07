@@ -14,7 +14,7 @@ var get = Ember.get, set = Ember.set;
   The internal class used to create text inputs when the `{{input}}`
   helper is used with `type` of `text`.
 
-  See [handlebars.helpers.input](Ember.Handlebars.helpers.html#method_input)  for usage details.
+  See [Handlebars.helpers.input](/api/classes/Ember.Handlebars.helpers.html#method_input)  for usage details.
 
   ## Layout and LayoutName properties
 
@@ -27,8 +27,7 @@ var get = Ember.get, set = Ember.set;
   @extends Ember.Component
   @uses Ember.TextSupport
 */
-Ember.TextField = Ember.Component.extend(Ember.TextSupport,
-  /** @scope Ember.TextField.prototype */ {
+Ember.TextField = Ember.Component.extend(Ember.TextSupport, {
 
   classNames: ['ember-text-field'],
   tagName: "input",

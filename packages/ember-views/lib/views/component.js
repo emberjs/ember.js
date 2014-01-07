@@ -15,7 +15,7 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone,
   to the view object and actions are targeted at
   the view object. There is no access to the
   surrounding context or outer controller; all
-  contextual information is passed in.
+  contextual information must be passed in.
 
   The easiest way to create an `Ember.Component` is via
   a template. If you name a template
@@ -34,19 +34,23 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone,
   <p class='signature'>{{person.signature}}</p>
   ```
 
-  You can also use `yield` inside a template to
-  include the **contents** of the custom tag:
+  You can use `yield` inside a template to
+  include the **contents** of any block attached to
+  the component. The block will be executed in the
+  context of the surrounding context or outer controller:
 
-  ```html
+  ```handlebars
   {{#app-profile person=currentUser}}
     <p>Admin mode</p>
+    {{! Executed in the controllers context. }}
   {{/app-profile}}
   ```
 
-  ```html
+  ```handlebars
   <!-- app-profile template -->
   <h1>{{person.title}}</h1>
-  {{yield}} <!-- block contents -->
+  {{! Executed in the components context. }}
+  {{yield}} {{! block contents }}
   ```
 
   If you want to customize the component, in order to
@@ -95,6 +99,11 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     this._super();
     set(this, 'context', this);
     set(this, 'controller', this);
+  },
+
+  defaultLayout: function(options){
+    options.data = {view: options._context};
+    Ember.Handlebars.helpers['yield'].apply(this, [options]);
   },
 
   // during render, isolate keywords
@@ -225,10 +234,15 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     // Send the default action
     if (action === undefined) {
       actionName = get(this, 'action');
-      Ember.assert("The default action was triggered on the component " + this.toString() + ", but the action name (" + actionName + ") was not a string.", isNone(actionName) || typeof actionName === 'string');
+      Ember.assert("The default action was triggered on the component " + this.toString() +
+                   ", but the action name (" + actionName + ") was not a string.",
+                   isNone(actionName) || typeof actionName === 'string');
     } else {
       actionName = get(this, action);
-      Ember.assert("The " + action + " action was triggered on the component " + this.toString() + ", but the action name (" + actionName + ") was not a string.", isNone(actionName) || typeof actionName === 'string');
+      Ember.assert("The " + action + " action was triggered on the component " +
+                   this.toString() + ", but the action name (" + actionName +
+                   ") was not a string.",
+                   isNone(actionName) || typeof actionName === 'string');
     }
 
     // If no action name for that action could be found, just abort.

@@ -6,6 +6,7 @@
 var Router = requireModule("router")['default'];
 var get = Ember.get, set = Ember.set;
 var defineProperty = Ember.defineProperty;
+var slice = Array.prototype.slice;
 
 var DefaultView = Ember._MetamorphView;
 
@@ -20,18 +21,49 @@ require("ember-routing/system/dsl");
   @extends Ember.Object
 */
 Ember.Router = Ember.Object.extend(Ember.Evented, {
+  /**
+    The `location` property determines the type of URL's that your
+    application will use.
+
+    The following location types are currently available:
+
+    * `hash`
+    * `history`
+    * `none`
+
+    @property location
+    @default 'hash'
+    @see {Ember.Location}
+  */
   location: 'hash',
 
   init: function() {
     this.router = this.constructor.router || this.constructor.map(Ember.K);
     this._activeViews = {};
     this._setupLocation();
+
+    if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
+      this.router.log = Ember.Logger.debug;
+    }
   },
 
+  /**
+    Represents the current URL.
+
+    @method url
+    @returns {String} The current URL.
+  */
   url: Ember.computed(function() {
     return get(this, 'location').getURL();
   }),
 
+  /**
+    Initializes the current router instance and sets up the change handling
+    event listeners used by the instances `location` implementation.
+
+    @method startRouting
+    @private
+  */
   startRouting: function() {
     this.router = this.router || this.constructor.map(Ember.K);
 
@@ -52,6 +84,15 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     this.handleURL(location.getURL());
   },
 
+  /**
+    Handles updating the paths and notifying any listeners of the URL
+    change.
+
+    Triggers the router level `didTransition` hook.
+
+    @method didTransition
+    @private
+  */
   didTransition: function(infos) {
     updatePaths(this);
 
@@ -96,6 +137,14 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     return this.location.formatURL(url);
   },
 
+  /**
+    Determines if the supplied route is currently active.
+
+    @method isActive
+    @param routeName
+    @returns {Boolean}
+    @private
+  */
   isActive: function(routeName) {
     var router = this.router;
     return router.isActive.apply(router, arguments);
@@ -105,16 +154,22 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     this.router.trigger.apply(this.router, arguments);
   },
 
+  /**
+    Does this router instance have the given route.
+
+    @method hasRoute
+    @returns {Boolean}
+    @private
+  */
   hasRoute: function(route) {
     return this.router.hasRoute(route);
   },
 
   /**
-    @private
-
     Resets the state of the router by clearing the current route
     handlers and deactivating them.
 
+    @private
     @method reset
    */
   reset: function() {
@@ -161,6 +216,10 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
       options.implementation = location;
       location = set(this, 'location', Ember.Location.create(options));
     }
+
+    // ensure that initState is called AFTER the rootURL is set on
+    // the location instance
+    if (typeof location.initState === 'function') { location.initState(); }
   },
 
   _getHandlerFunction: function() {
@@ -222,11 +281,15 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
   _doTransition: function(method, args) {
     // Normalize blank route to root URL.
-    args = [].slice.call(args);
+    args = slice.call(args);
     args[0] = args[0] || '/';
 
     var passedName = args[0], name, self = this,
       isQueryParamsOnly = false;
+
+    if (Ember.FEATURES.isEnabled("query-params")) {
+      isQueryParamsOnly = (args.length === 1 && args[0].hasOwnProperty('queryParams'));
+    }
 
     if (!isQueryParamsOnly && passedName.charAt(0) === '/') {
       name = passedName;
@@ -246,7 +309,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
       if (error.name === "UnrecognizedURLError") {
         Ember.assert("The URL '" + error.message + "' did not match any routes in your application");
       }
-    });
+    }, 'Ember: Check for Router unrecognized URL error');
 
     // We want to return the configurable promise object
     // so that callers of this function can use `.method()` on it,
@@ -278,13 +341,13 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 });
 
 /**
-  @private
-
   Helper function for iterating root-ward, starting
   from (but not including) the provided `originRoute`.
 
   Returns true if the last callback fired requested
   to bubble upward.
+
+  @private
  */
 function forEachRouteAbove(originRoute, transition, callback) {
   var handlerInfos = transition.handlerInfos,
@@ -340,7 +403,7 @@ var defaultActionHandlers = {
       return;
     }
 
-    Ember.Logger.assert(false, 'Error while loading route: ' + Ember.inspect(error));
+    Ember.Logger.error('Error while loading route: ' + error.stack);
   },
 
   loading: function(transition, originRoute) {
@@ -377,6 +440,15 @@ function findChildRouteName(parentRoute, originatingChildRoute, name) {
       targetChildRouteName = originatingChildRoute.routeName.split('.').pop(),
       namespace = parentRoute.routeName === 'application' ? '' : parentRoute.routeName + '.';
 
+  if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
+    // First, try a named loading state, e.g. 'foo_loading'
+    childName = namespace + targetChildRouteName + '_' + name;
+    if (routeHasBeenDefined(router, childName)) {
+      return childName;
+    }
+  }
+
+  // Second, try general loading state, e.g. 'loading'
   childName = namespace + name;
   if (routeHasBeenDefined(router, childName)) {
     return childName;
@@ -418,7 +490,7 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
   }
 
   if (!eventWasHandled && !ignoreFailure) {
-    throw new Ember.Error("Nothing handled the action '" + name + "'.");
+    throw new Ember.Error("Nothing handled the action '" + name + "'. If you did handle the action, this error can be caused by returning true from an action handler in a controller, causing the action to bubble.");
   }
 }
 
@@ -448,7 +520,6 @@ function updatePaths(router) {
   set(appController, 'currentRouteName', infos[infos.length - 1].name);
 }
 
-
 Ember.Router.reopenClass({
   router: null,
   map: function(callback) {
@@ -458,10 +529,6 @@ Ember.Router.reopenClass({
       router.callbacks = [];
       router.triggerEvent = triggerEvent;
       this.reopenClass({ router: router });
-    }
-
-    if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
-      router.log = Ember.Logger.debug;
     }
 
     var dsl = Ember.RouterDSL.map(function() {
@@ -481,11 +548,32 @@ Ember.Router.reopenClass({
   _routePath: function(handlerInfos) {
     var path = [];
 
+    // We have to handle coalescing resource names that
+    // are prefixed with their parent's names, e.g.
+    // ['foo', 'foo.bar.baz'] => 'foo.bar.baz', not 'foo.foo.bar.baz'
+
+    function intersectionMatches(a1, a2) {
+      for (var i = 0, len = a1.length; i < len; ++i) {
+        if (a1[i] !== a2[i]) {
+          return false;
+        }
+      }
+      return true;
+    }
+
     for (var i=1, l=handlerInfos.length; i<l; i++) {
       var name = handlerInfos[i].name,
-          nameParts = name.split(".");
+          nameParts = name.split("."),
+          oldNameParts = slice.call(path);
 
-      path.push(nameParts[nameParts.length - 1]);
+      while (oldNameParts.length) {
+        if (intersectionMatches(oldNameParts, nameParts)) {
+          break;
+        }
+        oldNameParts.shift();
+      }
+
+      path.push.apply(path, nameParts.slice(oldNameParts.length));
     }
 
     return path.join(".");

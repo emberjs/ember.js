@@ -294,6 +294,21 @@ test("Ember.View should bind properties in the parent context", function() {
   equal(view.$('#first').text(), "bam-shazam", "renders parent properties");
 });
 
+test("using Handlebars helper that doesn't exist should result in an error", function() {
+  var names = [{ name: 'Alex' }, { name: 'Stef' }],
+      context = {
+        content: Ember.A(names)
+      };
+
+  throws(function() {
+    view = Ember.View.create({
+      context: context,
+      template: Ember.Handlebars.compile('{{#group}}{{#each name in content}}{{name}}{{/each}}{{/group}}')
+    });
+
+    appendView();
+  }, "Missing helper: 'group'");
+});
 
 test("Ember.View should bind properties in the grandparent context", function() {
   var context = {
@@ -1456,7 +1471,24 @@ test("should be able to bind use {{bind-attr}} more than once on an element", fu
 });
 
 test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
-  equal(Ember.Handlebars.helpers.bindAttr, Ember.Handlebars.helpers['bind-attr']);
+
+  var originalBindAttr = Ember.Handlebars.helpers['bind-attr'],
+    originalWarn = Ember.warn;
+
+  Ember.warn = function(msg) {
+    equal(msg, "The 'bindAttr' view helper is deprecated in favor of 'bind-attr'", 'Warning called');
+  };
+
+  Ember.Handlebars.helpers['bind-attr'] = function() {
+    equal(arguments[0], 'foo', 'First arg match');
+    equal(arguments[1], 'bar', 'Second arg match');
+    return 'result';
+  };
+  var result = Ember.Handlebars.helpers.bindAttr('foo', 'bar');
+  equal(result, 'result', 'Result match');
+
+  Ember.Handlebars.helpers['bind-attr'] = originalBindAttr;
+  Ember.warn = originalWarn;
 });
 
 test("should not reset cursor position when text field receives keyUp event", function() {

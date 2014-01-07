@@ -18,6 +18,7 @@ var get = Ember.get, set = Ember.set,
   @class Route
   @namespace Ember
   @extends Ember.Object
+  @uses Ember.ActionHandler
 */
 Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
@@ -195,21 +196,18 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     ### `error`
 
     When attempting to transition into a route, any of the hooks
-    may throw an error, or return a promise that rejects, at which
-    point an `error` action will be fired on the partially-entered
-    routes, allowing for per-route error handling logic, or shared
-    error handling logic defined on a parent route.
+    may return a promise that rejects, at which point an `error`
+    action will be fired on the partially-entered routes, allowing
+    for per-route error handling logic, or shared error handling
+    logic defined on a parent route.
 
     Here is an example of an error handler that will be invoked
-    for rejected promises / thrown errors from the various hooks
-    on the route, as well as any unhandled errors from child
-    routes:
+    for rejected promises from the various hooks on the route,
+    as well as any unhandled errors from child routes:
 
     ```js
     App.AdminRoute = Ember.Route.extend({
       beforeModel: function() {
-        throw "bad things!";
-        // ...or, equivalently:
         return Ember.RSVP.reject("bad things!");
       },
 
@@ -246,14 +244,66 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     });
     ```
 
-    @see {Ember.Route#send}
-    @see {Handlebars.helpers.action}
-
     @property actions
     @type Hash
     @default null
   */
-  actions: null,
+  _actions: {
+    finalizeQueryParamChange: function(params, finalParams) {
+      if (Ember.FEATURES.isEnabled("query-params-new")) {
+        // In this hook we receive a list of raw URL query
+        // param changes. We need to take any
+
+        var controller = this.controller;
+        var changes = controller._queryParamChangesDuringSuspension;
+        var queryParams = get(controller, '_queryParamHash');
+
+        // Loop through all the query params that
+        // this controller knows about.
+        for (var k in queryParams) {
+          if (queryParams.hasOwnProperty(k)) {
+
+            // Do a reverse lookup to see if the changed query
+            // param URL key corresponds to a QP property on
+            // this controller.
+            if (queryParams[k] in params) {
+              // Update this controller property in a way that
+              // won't fire observers.
+              controller._finalizingQueryParams = true;
+              if (!changes || !(k in changes)) {
+                // Only update the controller if the query param
+                // value wasn't overriden in setupController.
+
+                // Arrays coming from router.js should be Emberized.
+                var newValue = params[queryParams[k]];
+                newValue = Ember.isArray(newValue) ? Ember.A(newValue) : newValue;
+                set(controller, k, newValue);
+              }
+              controller._finalizingQueryParams = false;
+
+              // Delete from params so that child routes
+              // don't also try to respond to changes to
+              // non-fully-qualified query param name changes.
+              delete params[queryParams[k]];
+            }
+
+            // Query params are ordered. This action bubbles up
+            // the route hierarchy so we unshift so that the final
+            // order of query params goes from root to leaf.
+            finalParams.unshift({
+              key: queryParams[k],
+              value: get(controller, k)
+            });
+          }
+        }
+
+        controller._queryParamChangesDuringSuspension = null;
+
+        // Bubble so that parent routes can claim QPs.
+        return true;
+      }
+    }
+  },
 
   /**
     @deprecated
@@ -450,10 +500,9 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   },
 
   /**
-    @private
-
     This hook is the entry point for router.js
 
+    @private
     @method setup
   */
   setup: function(context, queryParams) {
@@ -468,6 +517,10 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     this.controller = controller;
 
     var args = [controller, context];
+
+    if (Ember.FEATURES.isEnabled("query-params")) {
+      args.push(queryParams);
+    }
 
     if (this.setupControllers) {
       Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
@@ -617,10 +670,9 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
 
   /**
-    @private
-
     Called when the context is changed by router.js.
 
+    @private
     @method contextDidChange
   */
   contextDidChange: function() {
@@ -648,7 +700,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     Note that for routes with dynamic segments, this hook is only
     executed when entered via the URL. If the route is entered
-    through a transition (e.g. when using the `linkTo` Handlebars
+    through a transition (e.g. when using the `link-to` Handlebars
     helper), then a model context is already provided and this hook
     is not called. Routes without dynamic segments will always
     execute the model hook.
@@ -727,7 +779,10 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
       find: function(name, value) {
         var modelClass = container.lookupFactory('model:' + name);
 
-        Ember.assert("You used the dynamic segment " + name + "_id in your route "+ routeName + ", but " + namespace + "." + classify(name) + " did not exist and you did not override your route's `model` hook.", modelClass);
+        Ember.assert("You used the dynamic segment " + name + "_id in your route " +
+                     routeName + ", but " + namespace + "." + classify(name) +
+                     " did not exist and you did not override your route's `model` " +
+                     "hook.", modelClass);
 
         return modelClass.find(value);
       }
@@ -772,6 +827,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   */
   serialize: function(model, params) {
     if (params.length < 1) { return; }
+    if (!model) { return; }
 
     var name = params[0], object = {};
 
@@ -871,7 +927,11 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     // NOTE: We're specifically checking that skipAssert is true, because according
     //   to the old API the second parameter was model. We do not want people who
     //   passed a model to skip the assertion.
-    Ember.assert("The controller named '"+name+"' could not be found. Make sure that this route exists and has already been entered at least once. If you are accessing a controller not associated with a route, make sure the controller class is explicitly defined.", controller || _skipAssert === true);
+    Ember.assert("The controller named '"+name+"' could not be found. Make sure " +
+                 "that this route exists and has already been entered at least " +
+                 "once. If you are accessing a controller not associated with a " +
+                 "route, make sure the controller class is explicitly defined.",
+                 controller || _skipAssert === true);
 
     return controller;
   },
@@ -906,10 +966,13 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   },
 
   /**
-    Returns the current model for a given route.
-
-    This is the object returned by the `model` hook of the route
-    in question.
+    Returns the model of a parent (or any ancestor) route
+    in a route hierarchy.  During a transition, all routes
+    must resolve a model object, and if a route
+    needs access to a parent route's model in order to
+    resolve a model (or just reuse the model from a parent),
+    it can call `this.modelFor(theNameOfParentRoute)` to
+    retrieve it.
 
     Example
 

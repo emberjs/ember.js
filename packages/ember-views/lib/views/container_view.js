@@ -15,7 +15,7 @@ var ViewCollection = Ember._ViewCollection;
 
 /**
   A `ContainerView` is an `Ember.View` subclass that implements `Ember.MutableArray`
-  allowing programatic management of its child views.
+  allowing programmatic management of its child views.
 
   ## Setting Initial Child Views
 
@@ -55,7 +55,7 @@ var ViewCollection = Ember._ViewCollection;
 
   ## Adding and Removing Child Views
 
-  The container view implements `Ember.MutableArray` allowing programatic management of its child views.
+  The container view implements `Ember.MutableArray` allowing programmatic management of its child views.
 
   To remove a view, pass that view into a `removeObject` call on the container view.
 
@@ -228,10 +228,9 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
   }).volatile(),
 
   /**
-    @private
-
     Instructs each child view to render to the passed render buffer.
 
+    @private
     @method render
     @param {Ember.RenderBuffer} buffer the buffer to render to
   */
@@ -244,14 +243,13 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
   instrumentName: 'container',
 
   /**
-    @private
-
     When a child view is removed, destroy its element so that
     it is removed from the DOM.
 
     The array observer that triggers this action is set up in the
     `renderToBuffer` method.
 
+    @private
     @method childViewsWillChange
     @param {Ember.Array} views the child views array before mutation
     @param {Number} start the start position of the mutation
@@ -274,8 +272,6 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
   },
 
   /**
-    @private
-
     When a child view is added, make sure the DOM gets updated appropriately.
 
     If the view has already rendered an element, we tell the child view to
@@ -284,6 +280,7 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
     into an element, we insert the string representation of the child into the
     appropriate place in the buffer.
 
+    @private
     @method childViewsDidChange
     @param {Ember.Array} views the array of child views afte the mutation has occurred
     @param {Number} start the start position of the mutation

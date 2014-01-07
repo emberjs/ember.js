@@ -1,6 +1,7 @@
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
+require('ember-metal/expand_properties');
 require('ember-metal/property_get');
 require('ember-metal/property_set');
 require('ember-metal/properties');
@@ -22,6 +23,10 @@ var get = Ember.get,
     META_KEY = Ember.META_KEY,
     watch = Ember.watch,
     unwatch = Ember.unwatch;
+
+if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+  var expandProperties = Ember.expandProperties;
+}
 
 // ..........................................................
 // DEPENDENT KEYS
@@ -217,11 +222,11 @@ ComputedPropertyPrototype.cacheable = function(aFlag) {
   mode the computed property will not automatically cache the return value.
 
   ```javascript
-  MyApp.outsideService = Ember.Object.create({
+  MyApp.outsideService = Ember.Object.extend({
     value: function() {
       return OutsideService.getValue();
     }.property().volatile()
-  });
+  }).create();
   ```
 
   @method volatile
@@ -237,11 +242,13 @@ ComputedPropertyPrototype.volatile = function() {
   mode the computed property will throw an error when set.
 
   ```javascript
-  MyApp.person = Ember.Object.create({
+  MyApp.Person = Ember.Object.extend({
     guid: function() {
       return 'guid-guid-guid';
     }.property().readOnly()
   });
+
+  MyApp.person = MyApp.Person.create();
 
   MyApp.person.set('guid', 'new-guid'); // will throw an exception
   ```
@@ -260,7 +267,7 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
   arguments containing key paths that this computed property depends on.
 
   ```javascript
-  MyApp.president = Ember.Object.create({
+  MyApp.President = Ember.Object.extend({
     fullName: Ember.computed(function() {
       return this.get('firstName') + ' ' + this.get('lastName');
 
@@ -268,6 +275,12 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
       // and lastName
     }).property('firstName', 'lastName')
   });
+
+  MyApp.president = MyApp.President.create({
+    firstName: 'Barack',
+    lastName: 'Obama',
+  });
+  MyApp.president.get('fullName'); // Barack Obama
   ```
 
   @method property
@@ -276,12 +289,21 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
   @chainable
 */
 ComputedPropertyPrototype.property = function() {
-  var addArg;
+  var args;
 
-  var args = [];
-  for (var i = 0, l = arguments.length; i < l; i++) {
-    args.push(arguments[i]);
+  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+    var addArg = function (property) {
+      args.push(property); 
+    };
+
+    args = [];
+    for (var i = 0, l = arguments.length; i < l; i++) {
+      expandProperties(arguments[i], addArg);
+    }
+  } else {
+    args = a_slice.call(arguments);
   }
+
   this._dependentKeys = args;
   return this;
 };
@@ -595,11 +617,15 @@ registerComputed('empty', function(dependentKey) {
   A computed property that returns true if the value of the dependent
   property is NOT null, an empty string, empty array, or empty function.
 
+  Note: When using `Ember.computed.notEmpty` to watch an array make sure to
+  use the `array.[]` syntax so the computed can subscribe to transitions
+  from empty to non-empty states.
+
   Example
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    hasStuff: Ember.computed.notEmpty('backpack')
+    hasStuff: Ember.computed.notEmpty('backpack.[]')
   });
   var hamster = Hamster.create({backpack: ['Food', 'Sleeping Bag', 'Tent']});
   hamster.get('hasStuff'); // true
@@ -979,7 +1005,7 @@ registerComputedWithProperties('any', function(properties) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    clothes: Ember.computed.map('hat', 'shirt')
+    clothes: Ember.computed.collect('hat', 'shirt')
   });
   var hamster = Hamster.create();
   hamster.get('clothes'); // [null, null]
@@ -988,7 +1014,7 @@ registerComputedWithProperties('any', function(properties) {
   hamster.get('clothes'); // ['Camp Hat', 'Camp Shirt']
   ```
 
-  @method computed.map
+  @method computed.collect
   @for Ember
   @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which maps

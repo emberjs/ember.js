@@ -68,7 +68,6 @@ Ember.run = function(target, method) {
 };
 
 /**
-
   If no run-loop is present, it creates a new one. If a run loop is
   present it will queue itself to run on the existing run-loops action
   queue.
@@ -102,7 +101,7 @@ Ember.run = function(target, method) {
     May be a function or a string. If you pass a string
     then it will be looked up on the passed target.
   @param {Object} [args*] Any additional arguments you wish to pass to the method.
-  @return {Object} return value from invoking the passed function. Please note,
+  @return {Object} Return value from invoking the passed function. Please note,
   when called within an existing loop, no return value is possible.
 */
 Ember.run.join = function(target, method) {
@@ -191,7 +190,8 @@ Ember.run.end = function() {
     console.log("scheduled on actions queue");
   });
 
-  // Note the functions will be run in order based on the run queues order. Output would be:
+  // Note the functions will be run in order based on the run queues order.
+  // Output would be:
   //   scheduled on sync queue
   //   scheduled on actions queue
   ```
@@ -348,7 +348,8 @@ Ember.run.scheduleOnce = function(queue, target, method) {
 
   ```javascript
   Ember.run.next(myContext, function() {
-    // code to be executed in the next run loop, which will be scheduled after the current one
+    // code to be executed in the next run loop,
+    // which will be scheduled after the current one
   });
   ```
 

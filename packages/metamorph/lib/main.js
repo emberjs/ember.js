@@ -4,13 +4,20 @@ define("metamorph",
     "use strict";
     // ==========================================================================
     // Project:   metamorph
-    // Copyright: ©2011 My Company Inc. All rights reserved.
+    // Copyright: ©2014 Tilde, Inc. All rights reserved.
     // ==========================================================================
 
     var K = function() {},
         guid = 0,
-        document = this.document,
-        disableRange = ('undefined' === typeof ENV ? {} : ENV).DISABLE_RANGE_API,
+        disableRange = (function(){
+          if ('undefined' !== typeof MetamorphENV) {
+            return MetamorphENV.DISABLE_RANGE_API;
+          } else if ('undefined' !== ENV) {
+            return ENV.DISABLE_RANGE_API;
+          } else {
+            return false;
+          }
+        })(),
 
         // Feature-detect the W3C range API, the extended check is for IE9 which only partially supports ranges
         supportsRange = (!disableRange) && document && ('createRange' in document) && (typeof Range !== 'undefined') && Range.prototype.createContextualFragment,
@@ -122,7 +129,7 @@ define("metamorph",
 
       /**
       * @public
-      * 
+      *
       * Remove this object (including starting and ending
       * placeholders).
       *
@@ -357,6 +364,10 @@ define("metamorph",
         // tables and lists where a simple innerHTML on a div would
         // swallow some of the content.
         node = firstNodeFor(start.parentNode, html);
+
+        if (outerToo) {
+          start.parentNode.removeChild(start);
+        }
 
         // copy the nodes for the HTML between the starting and ending
         // placeholder.

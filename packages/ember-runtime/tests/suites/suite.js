@@ -30,7 +30,7 @@
   @extends Ember.Object
   @private
 */
-Ember.Suite = Ember.Object.extend(/** @scope Ember.Suite.prototype */ {
+Ember.Suite = Ember.Object.extend({
 
   /**
     Define a name for these tests - all modules are prefixed w/ it.

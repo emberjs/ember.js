@@ -139,7 +139,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
       return 'templateData.keywords.' + path;
     } else if (Ember.isGlobalPath(path)) {
       return null;
-    } else if (path === 'this') {
+    } else if (path === 'this' || path === '') {
       return '_parentView.context';
     } else {
       return '_parentView.context.' + path;
@@ -358,7 +358,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('view', function(path, options) {
+EmberHandlebars.registerHelper('view', function viewHelper(path, options) {
   Ember.assert("The view helper only takes a single argument", arguments.length <= 2);
 
   // If no path is provided, treat path param as options.

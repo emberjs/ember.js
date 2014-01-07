@@ -19,10 +19,9 @@ Ember.NoneLocation = Ember.Object.extend({
   path: '',
 
   /**
-    @private
-
     Returns the current path.
 
+    @private
     @method getURL
     @return {String} path
   */
@@ -31,11 +30,10 @@ Ember.NoneLocation = Ember.Object.extend({
   },
 
   /**
-    @private
-
     Set the path and remembers what was set. Using this method
     to change the path will not invoke the `updateURL` callback.
 
+    @private
     @method setURL
     @param path {String}
   */
@@ -44,12 +42,11 @@ Ember.NoneLocation = Ember.Object.extend({
   },
 
   /**
-    @private
-
     Register a callback to be invoked when the path changes. These
     callbacks will execute when the user presses the back or forward
     button, but not after `setURL` is invoked.
 
+    @private
     @method onUpdateURL
     @param callback {Function}
   */
@@ -58,10 +55,9 @@ Ember.NoneLocation = Ember.Object.extend({
   },
 
   /**
-    @private
-
     Sets the path and calls the `updateURL` callback.
 
+    @private
     @method handleURL
     @param callback {Function}
   */
@@ -71,14 +67,13 @@ Ember.NoneLocation = Ember.Object.extend({
   },
 
   /**
-    @private
-
     Given a URL, formats it to be placed into the page as part
     of an element's `href` attribute.
 
     This is used, for example, when using the {{action}} helper
     to generate a URL based on an event.
 
+    @private
     @method formatURL
     @param url {String}
     @return {String} url

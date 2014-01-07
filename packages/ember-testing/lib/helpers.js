@@ -19,13 +19,35 @@ Test.onInjectHelpers(function() {
   });
 
   Ember.$(document).ajaxStop(function() {
-    Ember.assert("An ajaxStop event which would cause the number of pending AJAX requests to be negative has been triggered. This is most likely caused by AJAX events that were started before calling `injectTestHelpers()`.", Test.pendingAjaxRequests !== 0);
+    Ember.assert("An ajaxStop event which would cause the number of pending AJAX " +
+                 "requests to be negative has been triggered. This is most likely " +
+                 "caused by AJAX events that were started before calling " +
+                 "`injectTestHelpers()`.", Test.pendingAjaxRequests !== 0);
     Test.pendingAjaxRequests--;
   });
 });
 
+function currentRouteName(app){
+  var appController = app.__container__.lookup('controller:application');
+
+  return get(appController, 'currentRouteName');
+}
+
+function currentPath(app){
+  var appController = app.__container__.lookup('controller:application');
+
+  return get(appController, 'currentPath');
+}
+
+function currentURL(app){
+  var router = app.__container__.lookup('router:main');
+
+  return get(router, 'location').getURL();
+}
 
 function visit(app, url) {
+  Ember.run(app, 'advanceReadiness');
+
   app.__container__.lookup('router:main').location.setURL(url);
   Ember.run(app, app.handleURL, url);
   return wait(app);
@@ -53,6 +75,19 @@ function click(app, selector, context) {
 
   Ember.run($el, 'mouseup');
   Ember.run($el, 'click');
+
+  return wait(app);
+}
+
+function triggerEvent(app, selector, context, event){
+  if (typeof method === 'undefined') {
+    event = context;
+    context = null;
+  }
+
+  var $el = findWithAssert(app, selector, context);
+
+  Ember.run($el, 'trigger', event);
 
   return wait(app);
 }
@@ -121,7 +156,11 @@ function wait(app, value) {
 
       // 3. If there are scheduled timers or we are inside of a run loop, keep polling
       if (Ember.run.hasScheduledTimers() || Ember.run.currentRunLoop) { return; }
-
+      if (Test.waiters && Test.waiters.any(function(waiter) {
+        var context = waiter[0];
+        var callback = waiter[1];
+        return !callback.call(context);
+      })) { return; }
       // Stop polling
       clearInterval(watcher);
 
@@ -145,7 +184,7 @@ function wait(app, value) {
 *
 * Example:
 *
-* ```
+* ```javascript
 * visit('posts/index').then(function() {
 *   // assert something
 * });
@@ -163,7 +202,7 @@ asyncHelper('visit', visit);
 *
 * Example:
 *
-* ```
+* ```javascript
 * click('.some-jQuery-selector').then(function() {
 *  // assert something
 * });
@@ -180,7 +219,7 @@ asyncHelper('click', click);
 *
 * Example:
 *
-* ```
+* ```javascript
 * keyEvent('.some-jQuery-selector', 'keypress', 13).then(function() {
 *  // assert something
 * });
@@ -199,7 +238,7 @@ asyncHelper('keyEvent', keyEvent);
 *
 * Example:
 *
-* ```
+* ```javascript
 * fillIn('#email', 'you@example.com').then(function() {
 *   // assert something
 * });
@@ -219,7 +258,7 @@ asyncHelper('fillIn', fillIn);
 *
 * Example:
 *
-* ```
+* ```javascript
 * var $el = find('.my-selector);
 * ```
 *
@@ -230,12 +269,11 @@ asyncHelper('fillIn', fillIn);
 helper('find', find);
 
 /**
-*
-* Like `find`, but throws an error if the element selector returns no results
+* Like `find`, but throws an error if the element selector returns no results.
 *
 * Example:
 *
-* ```
+* ```javascript
 * var $el = findWithAssert('.doesnt-exist'); // throws error
 * ```
 *
@@ -256,7 +294,7 @@ helper('findWithAssert', findWithAssert);
 
   Example:
 
-  ```
+  ```javascript
   Ember.Test.registerAsyncHelper('loginUser', function(app, username, password) {
     visit('secured/path/here')
     .fillIn('#username', username)
@@ -269,7 +307,84 @@ helper('findWithAssert', findWithAssert);
   @method wait
   @param {Object} value The value to be returned.
   @return {RSVP.Promise}
-  ```
 */
 asyncHelper('wait', wait);
 asyncHelper('andThen', andThen);
+
+
+if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
+  /**
+    Returns the currently active route name.
+
+    Example:
+
+    ```
+    function validateRouteName(){
+      equal(currentRouteName(), 'some.path', "correct route was transitioned into.");
+    }
+
+    visit('/some/path').then(validateRouteName)
+
+    ```
+
+    @method currentRouteName
+    @return {Object} The name of the currently active route.
+  */
+  helper('currentRouteName', currentRouteName);
+
+  /**
+    Returns the current path.
+
+    Example:
+
+    ```
+    function validateURL(){
+      equal(currentPath(), 'some.path.index', "correct path was transitioned into.");
+    }
+
+    click('#some-link-id').then(validateURL);
+
+    ```
+
+    @method currentPath
+    @return {Object} The currently active path.
+  */
+  helper('currentPath', currentPath);
+
+  /**
+    Returns the current URL.
+
+    Example:
+
+    ```
+    function validateURL(){
+      equal(currentURL(), '/some/path', "correct URL was transitioned into.");
+    }
+
+    click('#some-link-id').then(validateURL);
+
+    ```
+
+    @method currentURL
+    @return {Object} The currently active URL.
+  */
+  helper('currentURL', currentURL);
+}
+
+if (Ember.FEATURES.isEnabled('ember-testing-triggerEvent-helper')) {
+  /**
+    Triggers the given event on the element identified by the provided selector.
+
+    Example:
+
+    ```javascript
+    triggerEvent('#some-elem-id', 'blur');
+    ```
+
+   @method triggerEvent
+   @param {String} selector jQuery selector for finding element on the DOM
+   @param {String} event The event to be triggered.
+   @return {RSVP.Promise}
+  */
+  asyncHelper('triggerEvent', triggerEvent);
+}

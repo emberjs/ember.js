@@ -24,7 +24,7 @@ module("ember-testing Acceptance", {
       });
 
       App.PostsView = Ember.View.extend({
-        defaultTemplate: Ember.Handlebars.compile("<a class=\"dummy-link\"></a><div id=\"comments-link\">{{#linkTo 'comments'}}Comments{{/linkTo}}</div>"),
+        defaultTemplate: Ember.Handlebars.compile("<a class=\"dummy-link\"></a><div id=\"comments-link\">{{#link-to 'comments'}}Comments{{/link-to}}</div>"),
         classNames: ['posts-view']
       });
 
@@ -46,10 +46,6 @@ module("ember-testing Acceptance", {
       });
 
       App.setupForTesting();
-    });
-
-    Ember.run(function() {
-      App.advanceReadiness();
     });
 
     App.injectTestHelpers();
@@ -88,7 +84,7 @@ test("helpers can be chained with then", function() {
     return fillIn('.ember-text-field', '#ember-testing-container', "context working");
   }).then(function() {
     equal(Ember.$('.ember-text-field').val(), 'context working', "chained with fillIn");
-    click(".does-not-exist");
+    return click(".does-not-exist");
   }).then(null, function(e) {
     equal(e.message, "Element .does-not-exist not found.", "Non-existent click exception caught");
   });
@@ -208,9 +204,11 @@ test("Aborted transitions are not logged via Ember.Test.adapter#exception", func
 test("Unhandled exceptions are logged via Ember.Test.adapter#exception", function () {
   expect(2);
 
+  var asyncHandled;
   Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
     exception: function(error) {
       equal(error.message, "Element .does-not-exist not found.", "Exception successfully caught and passed to Ember.Test.adapter.exception");
+      asyncHandled['catch'](function(){ }); // handle the rejection so it doesn't leak later.
     }
   });
 
@@ -220,5 +218,5 @@ test("Unhandled exceptions are logged via Ember.Test.adapter#exception", functio
     equal(error.message, "Element .invalid-element not found.", "Exception successfully handled in the rejection handler");
   });
 
-  click(".does-not-exist");
+  asyncHandled = click(".does-not-exist");
 });

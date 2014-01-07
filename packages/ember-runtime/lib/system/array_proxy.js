@@ -49,7 +49,7 @@ var get = Ember.get, set = Ember.set;
   @extends Ember.Object
   @uses Ember.MutableArray
 */
-Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.ArrayProxy.prototype */ {
+Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray, {
 
   /**
     The content array. Must be an object that implements `Ember.Array` and/or
@@ -103,11 +103,10 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.Array
   },
 
   /**
-    @private
-
     Invoked when the content property is about to change. Notifies observers that the
     entire array content will change.
 
+    @private
     @method _contentWillChange
   */
   _contentWillChange: Ember.beforeObserver('content', function() {
@@ -129,11 +128,10 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.Array
   contentArrayDidChange: Ember.K,
 
   /**
-    @private
-
     Invoked when the content property changes. Notifies observers that the
     entire array content has changed.
 
+    @private
     @method _contentDidChange
   */
   _contentDidChange: Ember.observer('content', function() {

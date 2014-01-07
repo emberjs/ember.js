@@ -98,8 +98,7 @@ Ember._RenderBuffer = function(tagName) {
   this.buffer = "";
 };
 
-Ember._RenderBuffer.prototype =
-/** @scope Ember.RenderBuffer.prototype */ {
+Ember._RenderBuffer.prototype = {
 
   // The root view's element
   _element: null,
@@ -107,12 +106,11 @@ Ember._RenderBuffer.prototype =
   _hasElement: true,
 
   /**
-    @private
-
     An internal set used to de-dupe class names when `addClass()` is
     used. After each call to `addClass()`, the `classes` property
     will be updated.
 
+    @private
     @property elementClasses
     @type Array
     @default []

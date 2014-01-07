@@ -1,6 +1,8 @@
-var App;
+var set = Ember.set, App, originalAdapter = Ember.Test.adapter;
 
 function cleanup(){
+  Ember.Test.adapter = originalAdapter;
+
   if (App) {
     Ember.run(App, App.destroy);
     App.removeTestHelpers();
@@ -32,6 +34,10 @@ function assertHelpers(application, helperContainer, expected){
   checkHelperPresent('keyEvent', expected);
   checkHelperPresent('fillIn', expected);
   checkHelperPresent('wait', expected);
+
+  if (Ember.FEATURES.isEnabled("ember-testing-triggerEvent-helper")) {
+    checkHelperPresent('triggerEvent', expected);
+  }
 }
 
 function assertNoHelpers(application, helperContainer) {
@@ -63,15 +69,38 @@ test("Ember.Application#setupForTesting", function() {
   equal(App.__container__.lookup('router:main').location.implementation, 'none');
 });
 
-test("Ember.Test.registerHelper/unregisterHelper", function() {
-  expect(5);
-  var appBooted = false;
-
-  Ember.Test.registerHelper('boot', function(app) {
-    Ember.run(app, app.advanceReadiness);
-    appBooted = true;
-    return window.wait();
+test("Ember.Application.setupForTesting sets the application to `testing`.", function(){
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
   });
+
+  equal(App.testing, true, "Application instance is set to testing.");
+});
+
+test("Ember.Application.setupForTesting leaves the system in a deferred state.", function(){
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  equal(App._readinessDeferrals, 1, "App is in deferred state after setupForTesting.");
+});
+
+test("App.reset() after Application.setupForTesting leaves the system in a deferred state.", function(){
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  equal(App._readinessDeferrals, 1, "App is in deferred state after setupForTesting.");
+
+  App.reset();
+  equal(App._readinessDeferrals, 1, "App is in deferred state after setupForTesting.");
+});
+
+test("`visit` advances readiness.", function(){
+  expect(2);
 
   Ember.run(function() {
     App = Ember.Application.create();
@@ -79,19 +108,11 @@ test("Ember.Test.registerHelper/unregisterHelper", function() {
     App.injectTestHelpers();
   });
 
-  ok(App.testHelpers.boot);
-  ok(window.boot);
+  equal(App._readinessDeferrals, 1, "App is in deferred state after setupForTesting.");
 
-  window.boot().then(function() {
-    ok(appBooted);
-
-    App.removeTestHelpers();
-    Ember.Test.unregisterHelper('boot');
-
-    ok(!App.testHelpers.boot);
-    ok(!window.boot);
+  App.testHelpers.visit('/').then(function(){
+    equal(App._readinessDeferrals, 0, "App's readiness was advanced by visit.");
   });
-
 });
 
 test("`wait` helper can be passed a resolution value", function() {
@@ -260,6 +281,162 @@ test("Ember.Application#injectTestHelpers adds helpers to provided object.", fun
   assertNoHelpers(App, helpers);
 });
 
+test("Ember.Application#removeTestHelpers resets the helperContainer's original values", function(){
+  var helpers = {visit: 'snazzleflabber'};
+
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  App.injectTestHelpers(helpers);
+
+  ok(helpers['visit'] !== 'snazzleflabber', "helper added to container");
+  App.removeTestHelpers();
+
+  ok(helpers['visit'] === 'snazzleflabber', "original value added back to container");
+});
+
+test("`wait` respects registerWaiters", function() {
+  expect(2);
+
+  var counter=0;
+  function waiter() {
+    return ++counter > 2;
+  }
+
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  App.injectTestHelpers();
+
+  Ember.run(App, App.advanceReadiness);
+  Ember.Test.registerWaiter(waiter);
+
+  App.testHelpers.wait().then(function() {
+    equal(waiter(), true, 'should not resolve until our waiter is ready');
+    Ember.Test.unregisterWaiter(waiter);
+    equal(Ember.Test.waiters.length, 0, 'should not leave a waiter registered');
+  });
+});
+
+test("`wait` waits for outstanding timers", function() {
+  expect(1);
+
+  var wait_done = false;
+
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  App.injectTestHelpers();
+
+  Ember.run(App, App.advanceReadiness);
+
+  Ember.run.later(this, function() {
+    wait_done = true;
+  }, 500);
+
+  App.testHelpers.wait().then(function() {
+    equal(wait_done, true, 'should wait for the timer to be fired.');
+  });
+});
+
+
+test("`wait` respects registerWaiters with optional context", function() {
+  expect(2);
+
+  var obj = {
+    counter: 0,
+    ready: function() {
+      return ++this.counter > 2;
+    }
+  };
+
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  App.injectTestHelpers();
+
+  Ember.run(App, App.advanceReadiness);
+  Ember.Test.registerWaiter(obj, obj.ready);
+
+  App.testHelpers.wait().then(function() {
+    equal(obj.ready(), true, 'should not resolve until our waiter is ready');
+    Ember.Test.unregisterWaiter(obj, obj.ready);
+    equal(Ember.Test.waiters.length, 0, 'should not leave a waiter registered');
+  });
+
+
+});
+
+if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
+
+  module("ember-testing routing helpers", {
+    setup: function(){
+      cleanup();
+
+      Ember.run(function() {
+        App = Ember.Application.create();
+        App.Router = Ember.Router.extend({
+          location: 'none'
+        });
+
+        App.Router.map(function() {
+          this.resource("posts", function() {
+            this.route("new");
+          });
+        });
+
+        App.setupForTesting();
+      });
+
+      App.injectTestHelpers();
+      Ember.run(App, 'advanceReadiness');
+    },
+
+    teardown: function(){
+      cleanup();
+    }
+  });
+
+  test("currentRouteName for '/'", function(){
+    expect(3);
+
+    App.testHelpers.visit('/').then(function(){
+      equal(App.testHelpers.currentRouteName(), 'index', "should equal 'index'.");
+      equal(App.testHelpers.currentPath(), 'index', "should equal 'index'.");
+      equal(App.testHelpers.currentURL(), '/', "should equal '/'.");
+    });
+  });
+
+
+  test("currentRouteName for '/posts'", function(){
+    expect(3);
+
+    App.testHelpers.visit('/posts').then(function(){
+      equal(App.testHelpers.currentRouteName(), 'posts.index', "should equal 'posts.index'.");
+      equal(App.testHelpers.currentPath(), 'posts.index', "should equal 'posts.index'.");
+      equal(App.testHelpers.currentURL(), '/posts', "should equal '/posts'.");
+    });
+  });
+
+  test("currentRouteName for '/posts/new'", function(){
+    expect(3);
+
+    App.testHelpers.visit('/posts/new').then(function(){
+      equal(App.testHelpers.currentRouteName(), 'posts.new', "should equal 'posts.new'.");
+      equal(App.testHelpers.currentPath(), 'posts.new', "should equal 'posts.new'.");
+      equal(App.testHelpers.currentURL(), '/posts/new', "should equal '/posts/new'.");
+    });
+  });
+}
+
 module("ember-testing pendingAjaxRequests", {
   setup: function(){
     cleanup();
@@ -304,3 +481,40 @@ test("it should raise an assertion error if ajaxStop is called without pendingAj
     });
   });
 });
+
+if (Ember.FEATURES.isEnabled("ember-testing-triggerEvent-helper")) {
+  test("`trigger` can be used to trigger arbitrary events", function() {
+    expect(2);
+
+    var triggerEvent, wait, event;
+
+    Ember.run(function() {
+      App = Ember.Application.create();
+      App.setupForTesting();
+    });
+
+    App.IndexView = Ember.View.extend({
+      template: Ember.Handlebars.compile('{{input type="text" id="foo"}}'),
+
+      didInsertElement: function() {
+        this.$('#foo').on('blur change', function(e) {
+          event = e;
+        });
+      }
+    });
+
+    App.injectTestHelpers();
+
+    Ember.run(App, App.advanceReadiness);
+
+    triggerEvent = App.testHelpers.triggerEvent;
+    wait         = App.testHelpers.wait;
+
+    wait().then(function() {
+      return triggerEvent('#foo', 'blur');
+    }).then(function() {
+      equal(event.type, 'blur', 'correct event was triggered');
+      equal(event.target.getAttribute('id'), 'foo', 'triggered on the correct element');
+    });
+  });
+}

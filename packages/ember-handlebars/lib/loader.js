@@ -9,8 +9,6 @@ require("ember-handlebars/component_lookup");
 */
 
 /**
-  @private
-
   Find templates stored in the head tag as script tags and make them available
   to `Ember.CoreView` in the global `Ember.TEMPLATES` object. This will be run
   as as jQuery DOM-ready callback.
@@ -20,6 +18,7 @@ require("ember-handlebars/component_lookup");
   Those with type `text/x-raw-handlebars` will be compiled with regular
   Handlebars and are suitable for use in views' computed properties.
 
+  @private
   @method bootstrap
   @for Ember.Handlebars
   @static
@@ -57,35 +56,6 @@ Ember.Handlebars.bootstrap = function(ctx) {
 
 function bootstrap() {
   Ember.Handlebars.bootstrap( Ember.$(document) );
-}
-
-function registerComponents(container) {
-  var templates = Ember.TEMPLATES, match;
-  if (!templates) { return; }
-
-  for (var prop in templates) {
-    if (match = prop.match(/^components\/(.*)$/)) {
-      registerComponent(container, match[1]);
-    }
-  }
-}
-
-
-function registerComponent(container, name) {
-  Ember.assert("You provided a template named 'components/" + name + "', but custom components must include a '-'", name.match(/-/));
-
-  var fullName = 'component:' + name;
-
-  container.injection(fullName, 'layout', 'template:components/' + name);
-
-  var Component = container.lookupFactory(fullName);
-
-  if (!Component) {
-    container.register(fullName, Ember.Component);
-    Component = container.lookupFactory(fullName);
-  }
-
-  Ember.Handlebars.helper(name, Component);
 }
 
 function registerComponentLookup(container) {

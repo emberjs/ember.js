@@ -10,6 +10,7 @@ require('ember-handlebars/views/metamorph_view');
 var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 var handlebarsGet = Ember.Handlebars.get, normalizePath = Ember.Handlebars.normalizePath;
 var forEach = Ember.ArrayPolyfills.forEach;
+var o_create = Ember.create;
 
 var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
 
@@ -140,8 +141,6 @@ function simpleBind(currentContext, property, options) {
 }
 
 /**
-  @private
-
   '_triageMustache' is used internally select between a binding, helper, or component for
   the given context. Until this point, it would be hard to determine if the
   mustache is a property reference or a regular helper reference. This triage
@@ -149,6 +148,7 @@ function simpleBind(currentContext, property, options) {
 
   This would not be typically invoked by directly.
 
+  @private
   @method _triageMustache
   @for Ember.Handlebars.helpers
   @param {String} property Property/helperID to triage
@@ -191,8 +191,6 @@ Ember.Handlebars.resolveHelper = function(container, name) {
 };
 
 /**
-  @private
-
   `bind` can be used to display a value, then update that value if it
   changes. For example, if you wanted to print the `title` property of
   `content`:
@@ -208,13 +206,14 @@ Ember.Handlebars.resolveHelper = function(container, name) {
   relies on Ember's KVO system. For all other browsers this will be handled for
   you automatically.
 
+  @private
   @method bind
   @for Ember.Handlebars.helpers
   @param {String} property Property to bind
   @param {Function} fn Context to provide for rendering
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('bind', function(property, options) {
+EmberHandlebars.registerHelper('bind', function bindHelper(property, options) {
   Ember.assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
 
   var context = (options.contexts && options.contexts.length) ? options.contexts[0] : this;
@@ -227,8 +226,6 @@ EmberHandlebars.registerHelper('bind', function(property, options) {
 });
 
 /**
-  @private
-
   Use the `boundIf` helper to create a conditional that re-evaluates
   whenever the truthiness of the bound value changes.
 
@@ -238,13 +235,14 @@ EmberHandlebars.registerHelper('bind', function(property, options) {
   {{/boundIf}}
   ```
 
+  @private
   @method boundIf
   @for Ember.Handlebars.helpers
   @param {String} property Property to bind
   @param {Function} fn Context to provide for rendering
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('boundIf', function(property, fn) {
+EmberHandlebars.registerHelper('boundIf', function boundIfHelper(property, fn) {
   var context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : this;
   var func = function(result) {
     var truthy = result && get(result, 'isTruthy');
@@ -261,15 +259,65 @@ EmberHandlebars.registerHelper('boundIf', function(property, fn) {
 });
 
 /**
+  Use the `{{with}}` helper when you want to scope context. Take the following code as an example:
+
+  ```handlebars
+  <h5>{{user.name}}</h5>
+
+  <div class="role">
+    <h6>{{user.role.label}}</h6>
+    <span class="role-id">{{user.role.id}}</span>
+
+    <p class="role-desc">{{user.role.description}}</p>
+  </div>
+  ```
+
+  `{{with}}` can be our best friend in these cases, 
+  instead of writing `user.role.*` over and over, we use `{{#with user.role}}`.
+  Now the context within the `{{#with}} .. {{/with}}` block is `user.role` so you can do the following:
+
+  ```handlebars
+  <h5>{{user.name}}</h5>
+
+  <div class="role">
+    {{#with user.role}}
+      <h6>{{label}}</h6>
+      <span class="role-id">{{id}}</span>
+
+      <p class="role-desc">{{description}}</p>
+    {{/with}}
+  </div>
+  ```
+
+  ### `as` operator
+
+  This operator aliases the scope to a new name. It's helpful for semantic clarity and to retain 
+  default scope or to reference from another `{{with}}` block.
+
+  ```handlebars
+  // posts might not be
+  {{#with user.posts as blogPosts}}
+    <div class="notice">
+      There are {{blogPosts.length}} blog posts written by {{user.name}}.
+    </div>
+
+    {{#each post in blogPosts}}
+      <li>{{post.title}}</li>
+    {{/each}}
+  {{/with}}
+  ```
+
+  Without the `as` operator, it would be impossible to reference `user.name` in the example above.
+
   @method with
   @for Ember.Handlebars.helpers
   @param {Function} context
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('with', function(context, options) {
+EmberHandlebars.registerHelper('with', function withHelper(context, options) {
   if (arguments.length === 4) {
-    var keywordName, path, rootPath, normalized;
+    var keywordName, path, rootPath, normalized, contextPath;
 
     Ember.assert("If you pass more than one argument to the with helper, it must be in the form #with foo as bar", arguments[1] === "as");
     options = arguments[3];
@@ -278,8 +326,12 @@ EmberHandlebars.registerHelper('with', function(context, options) {
 
     Ember.assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
 
+    var localizedOptions = o_create(options);
+    localizedOptions.data = o_create(options.data);
+    localizedOptions.data.keywords = o_create(options.data.keywords || {});
+
     if (Ember.isGlobalPath(path)) {
-      Ember.bind(options.data.keywords, keywordName, path);
+      contextPath = path;
     } else {
       normalized = normalizePath(this, path, options.data);
       path = normalized.path;
@@ -288,14 +340,14 @@ EmberHandlebars.registerHelper('with', function(context, options) {
       // This is a workaround for the fact that you cannot bind separate objects
       // together. When we implement that functionality, we should use it here.
       var contextKey = Ember.$.expando + Ember.guidFor(rootPath);
-      options.data.keywords[contextKey] = rootPath;
-
+      localizedOptions.data.keywords[contextKey] = rootPath;
       // if the path is '' ("this"), just bind directly to the current context
-      var contextPath = path ? contextKey + '.' + path : contextKey;
-      Ember.bind(options.data.keywords, keywordName, contextPath);
+      contextPath = path ? contextKey + '.' + path : contextKey;
     }
 
-    return bind.call(this, path, options, true, exists);
+    Ember.bind(localizedOptions.data.keywords, keywordName, contextPath);
+
+    return bind.call(this, path, localizedOptions, true, exists);
   } else {
     Ember.assert("You must pass exactly one argument to the with helper", arguments.length === 2);
     Ember.assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
@@ -313,7 +365,7 @@ EmberHandlebars.registerHelper('with', function(context, options) {
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('if', function(context, options) {
+EmberHandlebars.registerHelper('if', function ifHelper(context, options) {
   Ember.assert("You must pass exactly one argument to the if helper", arguments.length === 2);
   Ember.assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
 
@@ -327,7 +379,7 @@ EmberHandlebars.registerHelper('if', function(context, options) {
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('unless', function(context, options) {
+EmberHandlebars.registerHelper('unless', function unlessHelper(context, options) {
   Ember.assert("You must pass exactly one argument to the unless helper", arguments.length === 2);
   Ember.assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
 
@@ -462,7 +514,7 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('bind-attr', function(options) {
+EmberHandlebars.registerHelper('bind-attr', function bindAttrHelper(options) {
 
   var attrs = options.hash;
 
@@ -508,7 +560,9 @@ EmberHandlebars.registerHelper('bind-attr', function(options) {
     observer = function observer() {
       var result = handlebarsGet(ctx, path, options);
 
-      Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result === null || result === undefined || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
+      Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]),
+                   result === null || result === undefined || typeof result === 'number' ||
+                     typeof result === 'string' || typeof result === 'boolean');
 
       var elem = view.$("[data-bindattr-" + dataId + "='" + dataId + "']");
 
@@ -558,11 +612,12 @@ EmberHandlebars.registerHelper('bind-attr', function(options) {
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('bindAttr', EmberHandlebars.helpers['bind-attr']);
+EmberHandlebars.registerHelper('bindAttr', function bindAttrHelper() {
+  Ember.warn("The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
+  return EmberHandlebars.helpers['bind-attr'].apply(this, arguments);
+});
 
 /**
-  @private
-
   Helper that, given a space-separated string of property paths and a context,
   returns an array of class names. Calling this method also has the side
   effect of setting up observers at those property paths, such that if they
@@ -574,6 +629,7 @@ EmberHandlebars.registerHelper('bindAttr', EmberHandlebars.helpers['bind-attr'])
   "fooBar"). If the value is a string, it will add that string as the class.
   Otherwise, it will not add any new class name.
 
+  @private
   @method bindClasses
   @for Ember.Handlebars
   @param {Ember.Object} context The context from which to lookup properties

@@ -29,13 +29,13 @@ var handlebarsGet = Ember.Handlebars.get;
   @param {String} property
   @return {String} HTML string
 */
-Ember.Handlebars.registerHelper('unbound', function(property, fn) {
+Ember.Handlebars.registerHelper('unbound', function unboundHelper(property, fn) {
   var options = arguments[arguments.length - 1], helper, context, out;
 
   if (arguments.length > 2) {
     // Unbound helper call.
     options.data.isUnbound = true;
-    helper = Ember.Handlebars.helpers[arguments[0]] || Ember.Handlebars.helperMissing;
+    helper = Ember.Handlebars.helpers[arguments[0]] || Ember.Handlebars.helpers.helperMissing;
     out = helper.apply(this, Array.prototype.slice.call(arguments, 1));
     delete options.data.isUnbound;
     return out;

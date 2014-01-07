@@ -79,42 +79,63 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @param {Hash} options
     @return {String} HTML string
   */
-  Ember.Handlebars.registerHelper('render', function(name, contextString, options) {
-    Ember.assert("You must pass a template to render", arguments.length >= 2);
-    var contextProvided = arguments.length === 3,
+  Ember.Handlebars.registerHelper('render', function renderHelper(name, contextString, options) {
+    var length = arguments.length;
+    Ember.assert("You must pass a template to render", length >= 2);
+    var contextProvided = length === 3,
         container, router, controller, view, context, lookupOptions;
 
-    if (arguments.length === 2) {
-      options = contextString;
-      contextString = undefined;
-    }
-
-    if (typeof contextString === 'string') {
-      context = Ember.Handlebars.get(options.contexts[1], contextString, options);
-      lookupOptions = { singleton: false };
-    }
-
-    name = name.replace(/\//g, '.');
-    container = options.data.keywords.controller.container;
+    container = (options || contextString).data.keywords.controller.container;
     router = container.lookup('router:main');
 
-    Ember.assert("You can only use the {{render}} helper once without a model object as its second argument, as in {{render \"post\" post}}.", contextProvided || !router || !router._lookupActiveView(name));
+    if (length === 2) {
+      // use the singleton controller
+      options = contextString;
+      contextString = undefined;
+      Ember.assert("You can only use the {{render}} helper once without a model object as its second argument, as in {{render \"post\" post}}.", !router || !router._lookupActiveView(name));
+    } else if (length === 3) {
+      // create a new controller
+      context = Ember.Handlebars.get(options.contexts[1], contextString, options);
+    } else {
+      throw Ember.Error("You must pass a templateName to render");
+    }
+
+    // # legacy namespace
+    name = name.replace(/\//g, '.');
+    // \ legacy slash as namespace support
+
 
     view = container.lookup('view:' + name) || container.lookup('view:default');
 
-    var controllerName = options.hash.controller;
+    // provide controller override
+    var controllerName = options.hash.controller || name;
+    var controllerFullName = 'controller:' + controllerName;
 
-    // Look up the controller by name, if provided.
-    if (controllerName) {
-      controller = container.lookup('controller:' + controllerName, lookupOptions);
-      Ember.assert("The controller name you supplied '" + controllerName + "' did not resolve to a controller.", !!controller);
-    } else {
-      controller = container.lookup('controller:' + name, lookupOptions) ||
-                      Ember.generateController(container, name, context);
+    if (options.hash.controller) {
+      Ember.assert("The controller name you supplied '" + controllerName + "' did not resolve to a controller.", container.has(controllerFullName));
     }
 
-    if (controller && contextProvided) {
-      controller.set('model', context);
+    var parentController = options.data.keywords.controller;
+
+    // choose name
+    if (length > 2) {
+      var factory = container.lookupFactory(controllerFullName) ||
+                    Ember.generateControllerFactory(container, controllerName, context);
+
+      controller = factory.create({
+        model: context,
+        parentController: parentController,
+        target: parentController
+      });
+
+    } else {
+      controller = container.lookup(controllerFullName) ||
+                   Ember.generateController(container, controllerName);
+
+      controller.setProperties({
+        target: parentController,
+        parentController: parentController
+      });
     }
 
     var root = options.contexts[1];
@@ -125,10 +146,12 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       });
     }
 
-    controller.set('target', options.data.keywords.controller);
-
     options.hash.viewName = Ember.String.camelize(name);
-    options.hash.template = container.lookup('template:' + name);
+
+    var templateName = 'template:' + name;
+    Ember.assert("You used `{{render '" + name + "'}}`, but '" + name + "' can not be found as either a template or a view.", container.has("view:" + name) || container.has(templateName));
+    options.hash.template = container.lookup(templateName);
+
     options.hash.controller = controller;
 
     if (router && !context) {
@@ -137,5 +160,4 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     Ember.Handlebars.helpers.view.call(this, view, options);
   });
-
 });

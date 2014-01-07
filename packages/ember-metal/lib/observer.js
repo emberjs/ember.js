@@ -47,6 +47,7 @@ Ember.observersFor = function(obj, path) {
 Ember.removeObserver = function(obj, _path, target, method) {
   Ember.unwatch(obj, _path);
   Ember.removeListener(obj, changeEvent(_path), target, method);
+
   return this;
 };
 
@@ -60,6 +61,7 @@ Ember.removeObserver = function(obj, _path, target, method) {
 Ember.addBeforeObserver = function(obj, _path, target, method) {
   Ember.addListener(obj, beforeEvent(_path), target, method);
   Ember.watch(obj, _path);
+
   return this;
 };
 
@@ -101,5 +103,6 @@ Ember.beforeObserversFor = function(obj, path) {
 Ember.removeBeforeObserver = function(obj, _path, target, method) {
   Ember.unwatch(obj, _path);
   Ember.removeListener(obj, beforeEvent(_path), target, method);
+
   return this;
 };

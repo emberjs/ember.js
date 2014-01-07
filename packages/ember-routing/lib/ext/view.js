@@ -32,9 +32,11 @@ Ember.View.reopen({
     // The html for myView now looks like:
     // <div id="ember228" class="ember-view">Child view: </div>
 
-    myView.connectOutlet('main', Ember.View.extend({
+    var FooView = Ember.View.extend({
       template: Ember.Handlebars.compile('<h1>Foo</h1> ')
-    }));
+    });
+    var fooView = FooView.create();
+    myView.connectOutlet('main', fooView);
     // The html for myView now looks like:
     // <div id="ember228" class="ember-view">Child view:
     //   <div id="ember234" class="ember-view"><h1>Foo</h1> </div>
@@ -67,12 +69,11 @@ Ember.View.reopen({
   },
 
   /**
-    @private
-
     Determines if the view has already been created by checking if
     the view has the same constructor, template, and context as the
     view in the `_outlets` object.
 
+    @private
     @method _hasEquivalentView
     @param  {String} outletName The name of the outlet we are checking
     @param  {Object} view       An Ember.View
@@ -100,9 +101,11 @@ Ember.View.reopen({
     // myView's html:
     // <div id="ember228" class="ember-view">Child view: </div>
 
-    myView.connectOutlet('main', Ember.View.extend({
+    var FooView = Ember.View.extend({
       template: Ember.Handlebars.compile('<h1>Foo</h1> ')
-    }));
+    });
+    var fooView = FooView.create();
+    myView.connectOutlet('main', fooView);
     // myView's html:
     // <div id="ember228" class="ember-view">Child view:
     //   <div id="ember234" class="ember-view"><h1>Foo</h1> </div>
@@ -125,11 +128,10 @@ Ember.View.reopen({
   },
 
   /**
-    @private
-
     Gets an outlet that is pending disconnection and then
     nullifys the object on the `_outlet` object.
 
+    @private
     @method _finishDisconnections
    */
   _finishDisconnections: function() {
