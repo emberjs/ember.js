@@ -1233,49 +1233,95 @@ test("Events can be handled by inherited event handlers", function() {
   router.send("baz");
 });
 
-asyncTest("Events are triggered on the controller if a matching action name is implemented as a method (DEPRECATED)", function() {
-  Ember.TESTING_DEPRECATION = true;
-  Router.map(function() {
-    this.route("home", { path: "/" });
-  });
+if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
+  asyncTest("Actions are not triggered on the controller if a matching action name is implemented as a method", function() {
+    Ember.TESTING_DEPRECATION = true;
+    Router.map(function() {
+      this.route("home", { path: "/" });
+    });
 
-  var model = { name: "Tom Dale" };
-  var stateIsNotCalled = true;
+    var model = { name: "Tom Dale" };
+    var stateIsNotCalled = true;
 
-  App.HomeRoute = Ember.Route.extend({
-    model: function() {
-      return model;
-    },
+    App.HomeRoute = Ember.Route.extend({
+      model: function() {
+        return model;
+      },
 
-    events: {
-      showStuff: function(obj) {
-        stateIsNotCalled = false;
+      actions: {
+        showStuff: function(context) {
+          ok (stateIsNotCalled, "an event on the state is not triggered");
+          deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
+          start();
+        }
       }
-    }
+    });
+
+    Ember.TEMPLATES.home = Ember.Handlebars.compile(
+      "<a {{action showStuff content}}>{{name}}</a>"
+    );
+
+    var controller = Ember.Controller.extend({
+      showStuff: function(context) {
+        stateIsNotCalled = false;
+        ok (stateIsNotCalled, "an event on the state is not triggered");
+      }
+    });
+
+    container.register('controller:home', controller);
+
+    bootApplication();
+
+    var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+    var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+    var event = new Ember.$.Event("click");
+    action.handler(event);
   });
+} else {
+  asyncTest("Events are triggered on the controller if a matching action name is implemented as a method (DEPRECATED)", function() {
+    Ember.TESTING_DEPRECATION = true;
+    Router.map(function() {
+      this.route("home", { path: "/" });
+    });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
-    "<a {{action showStuff content}}>{{name}}</a>"
-  );
+    var model = { name: "Tom Dale" };
+    var stateIsNotCalled = true;
 
-  var controller = Ember.Controller.extend({
-    showStuff: function(context) {
-      ok (stateIsNotCalled, "an event on the state is not triggered");
-      deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
-      start();
-    }
+    App.HomeRoute = Ember.Route.extend({
+      model: function() {
+        return model;
+      },
+
+      events: {
+        showStuff: function(obj) {
+          stateIsNotCalled = false;
+          ok (stateIsNotCalled, "an event on the state is not triggered");
+        }
+      }
+    });
+
+    Ember.TEMPLATES.home = Ember.Handlebars.compile(
+      "<a {{action showStuff content}}>{{name}}</a>"
+    );
+
+    var controller = Ember.Controller.extend({
+      showStuff: function(context) {
+        ok (stateIsNotCalled, "an event on the state is not triggered");
+        deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
+        start();
+      }
+    });
+
+    container.register('controller:home', controller);
+
+    bootApplication();
+
+    var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+    var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+    var event = new Ember.$.Event("click");
+    action.handler(event);
   });
-
-  container.register('controller:home', controller);
-
-  bootApplication();
-
-  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
-  var event = new Ember.$.Event("click");
-  action.handler(event);
-});
-
+}
 
 asyncTest("actions can be triggered with multiple arguments", function() {
   Router.map(function() {
