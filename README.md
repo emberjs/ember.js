@@ -1,4 +1,4 @@
-# Ember.js [![Build Status](https://secure.travis-ci.org/emberjs/ember.js.png?branch=master)](http://travis-ci.org/emberjs/ember.js) [![Code Climate](https://codeclimate.com/github/emberjs/ember.js.png)](https://codeclimate.com/github/emberjs/ember.js)
+# Ember.js [![Build Status](https://secure.travis-ci.org/gunziptarball/ember.js.png?branch=master)](http://travis-ci.org/gunziptarball/ember.js) [![Code Climate](https://codeclimate.com/github/gunziptarball/ember.js.png)](https://codeclimate.com/github/gunziptarball/ember.js)
 
 Ember.js is a JavaScript framework that does all of the heavy lifting
 that you'd normally have to do by hand. There are tasks that are common
