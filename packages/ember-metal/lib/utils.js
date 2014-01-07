@@ -167,7 +167,8 @@ Meta.prototype = {
   bindings: null,
   chains: null,
   chainWatchers: null,
-  values: null
+  values: null,
+  proto: null
 };
 
 if (isDefinePropertySimulated) {
