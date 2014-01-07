@@ -1,14 +1,62 @@
 # Ember Changelog
 
+### Ember 1.4.0-beta.1 (January 6, 2014)
 
-### Ember 1.4.0 _(TBD)_
+* Unbound helper supports bound helper static strings.
+* Preserve `<base>` URL when using history location for routing.
+* Begin adding names for anonymous functions to aid in debugging.
+* [FEATURE with-controller] {{#with}} can take a controller= option for wrapping the context. Must be an `Ember.ObjectController`
+* [FEATURE propertyBraceExpansion] Add support for brace-expansion in dependent keys, observer and watch properties.
+* [FEATURE ember-metal-run-bind] Enables `Ember.run.bind` which is ember run-loop aware variation of jQuery.proxy.
 
-* In canary
-* {{#with}} can take a controller= option for wrapping the context. Must be an `Ember.ObjectController`
-
-### Ember 1.3.0 _(TBD)_
-
-* In beta
+### Ember 1.3.0 (January 6, 2014)
+ 
+* Many documentation updates.
+* Update to RSVP 3.0.3.
+* Use defeatureify to strip debug statements allowing multi-line assert statements.
+* Added fail(), catch() and finally() methods to PromiseProxyMixin.
+* [BUGFIX Add 'view' option to {{outlet}} helper
+* Make `Ember.compare` return `date` when appropriate.
+* Prefer `EmberENV` over `ENV`, and do not create a global `ENV` if it was not supplied.
+* `{{unbound}}` helper supports bound helper static strings.
+* [BUGFIX] Make sure mandatory setters don't change default enumerable.
+* [BUGFIX] The `render` helper now sets a `parentController` property on the child controller.
+* `{{render}}` helper now creates the controller with its model.
+* Fix bug in Metamorph.js with nested `if` statements.
+* Label promises for debugging.
+* Deprecate `RSVP.Promise.prototype.fail`.
+* Cleanup header comment: remove duplication and add version.
+* [BUGFIX] Do not attempt to serialize undefined models.
+* [BUGFIX] Ensure {{link-to}} path observers are reregistered after render.
+* [BUGFIX] Ensure that the rootURL is available to location.
+* [BUGFIX] Make routePath smarter w/ stacked resource names
+* Better link-to error for invalid dest routes
+* Use imported handlebars before global Handlebars
+* Update router.js
+* Update RSVP.js
+* Improved a handeful of error messages
+* Provide more information for debugging
+* Added more assertions and deprecation warnings
+* [BUGFIX] Add preventDefault option to link-to and action.
+* [BUGFIX] contextualizeBindingPath should be aware of empty paths
+* Expose helpful vars in {{debugger}} helper body
+* [BUGFIX] container.has should not cause injections to be run.
+* [BUGFIX] Make flag LOG_TRANSITIONS_INTERNAL work again
+* [BUGFIX] Fix default {{yield}} for Components.
+* [BUGFIX] Ensure aliased {{with}} blocks are not shared.
+* [BUGFIX] Update to latest Backburner.js.
+* [BUGFIX] Fix issue with Ember.Test.unregisterHelper.
+* [BUGFIX] Make Ember.Handlebars.makeViewHelper warning useful.
+* [FEATURE reduceComputed-non-array-dependencies] `ReduceComputedProperty`s may have non-array dependent keys. When a non-array dependent key changes, the entire property is invalidated.
+* [FEATURE ember-testing-lazy-routing] Uses an initializer to defer readiness while testing. Readiness is advanced upon the first call to `visit`.
+* [FEATURE ember-testing-wait-hooks] Allows registration of additional functions that the `wait` testing helper will call to determine if it's ready to continue.
+* [FEATURE propertyBraceExpansion] Add simple brace expansion for dependent keys and watched properties specified declaratively.  This is primarily useful with reduce computed properties, for specifying dependencies on multiple item properties of a dependent array, as with `Ember.computed.sort('items.@each.{propertyA,propertyB}', userSortFn)`.
+* [BUGFIX release] Update to Handlebars 1.1.2.
+* [BUGFIX] Register a default RSVP error handler.
+* Update to latest RSVP (80cec268).
+* [BUGFIX] Ember.Object.create now takes `undefined` as an argument.
+* Components are lazily looked up.
+* Renaming everyBy and anyBy to isEvery and isAny.
 
 ###Ember 1.2.0 _(November 22, 2013)_
 
