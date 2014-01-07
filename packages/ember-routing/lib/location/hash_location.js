@@ -15,6 +15,7 @@ var get = Ember.get, set = Ember.set;
   @extends Ember.Object
 */
 Ember.HashLocation = Ember.Object.extend({
+  implementation: 'hash',
 
   init: function() {
     set(this, 'location', get(this, 'location') || window.location);
@@ -27,7 +28,7 @@ Ember.HashLocation = Ember.Object.extend({
     @method getURL
   */
   getURL: function() {
-    if (Ember.FEATURES.isEnabled("query-params")) {
+    if (Ember.FEATURES.isEnabled("query-params-new")) {
       // location.hash is not used because it is inconsistently
       // URL-decoded between browsers.
       var href = get(this, 'location').href,
@@ -67,6 +68,7 @@ Ember.HashLocation = Ember.Object.extend({
   */
   replaceURL: function(path) {
     get(this, 'location').replace('#' + path);
+    set(this, 'lastSetURL', path);
   },
 
   /**
@@ -121,5 +123,3 @@ Ember.HashLocation = Ember.Object.extend({
     Ember.$(window).off('hashchange.ember-location-'+guid);
   }
 });
-
-Ember.Location.registerImplementation('hash', Ember.HashLocation);

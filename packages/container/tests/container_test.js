@@ -431,9 +431,100 @@ test("The container normalizes names before resolving", function() {
   };
 
   container.register('controller:post', PostController);
-  var postController = container.lookup('wycats');
+  var postController = container.lookup('controller:normalized');
 
   ok(postController instanceof PostController, "Normalizes the name before resolving");
+});
+
+test("The container normalizes names when unregistering", function() {
+  var container = new Container();
+  var PostController = factory();
+
+  container.normalize = function(fullName) {
+    return 'controller:post';
+  };
+
+  container.register('controller:post', PostController);
+  var postController = container.lookup('controller:normalized');
+
+  ok(postController instanceof PostController, "Normalizes the name before resolving");
+
+  container.unregister('controller:post');
+  postController = container.lookup('controller:normalized');
+
+  equal(postController, undefined);
+});
+
+test("The container normalizes names when resolving", function() {
+  var container = new Container();
+  var PostController = factory();
+
+  container.normalize = function(fullName) {
+    return 'controller:post';
+  };
+
+  container.register('controller:post', PostController);
+  var type = container.resolve('controller:normalized');
+
+  equal(type === PostController, true, "Normalizes the name when resolving");
+});
+
+test("The container normalizes names when looking factory up", function() {
+  var container = new Container();
+  var PostController = factory();
+
+  container.normalize = function(fullName) {
+    return 'controller:post';
+  };
+
+  container.register('controller:post', PostController);
+  var fact = container.lookupFactory('controller:normalized');
+
+  equal(fact.toString() === PostController.extend().toString(), true, "Normalizes the name when looking factory up");
+});
+
+test("The container normalizes names when checking if the factory or instance is present", function() {
+  var container = new Container();
+  var PostController = factory();
+
+  container.normalize = function(fullName) {
+    return 'controller:post';
+  };
+
+  container.register('controller:post', PostController);
+  var isPresent = container.has('controller:normalized');
+
+  equal(isPresent, true, "Normalizes the name when checking if the factory or instance is present");
+});
+
+test("validateFullName throws an error if name is incorrect", function() {
+  var container = new Container();
+  var PostController = factory();
+
+  container.normalize = function(fullName) {
+    return 'controller:post';
+  };
+
+  container.register('controller:post', PostController);
+  throws(function() {
+    container.lookupFactory('post');
+  }, 'TypeError: Invalid Fullname, expected: `type:name` got: post');
+});
+
+test("The container normalizes names when injecting", function() {
+  var container = new Container();
+  var PostController = factory();
+  var user = { name: 'Stef' };
+
+  container.normalize = function(fullName) {
+    return 'controller:post';
+  };
+
+  container.register('controller:post', PostController);
+  container.register('user:post', user, { instantiate: false });
+  container.injection('controller:post', 'user', 'controller:normalized');
+
+  deepEqual(container.lookup('controller:post'), user, "Normalizes the name when injecting");
 });
 
 test("The container can get options that should be applied to all factories for a given type", function() {
@@ -508,4 +599,22 @@ test('container.has should not accidentally cause injections on that factory to 
   container.injection('controller:apple', 'badApple', 'controller:second-apple');
 
   ok(container.has('controller:apple'));
+});
+
+test('once resolved, always return the same result', function(){
+  expect(1);
+
+  var container = new Container();
+
+  container.resolver = function() {
+    return 'bar';
+  };
+
+  var Bar = container.resolve('models:bar');
+
+  container.resolver = function() {
+    return 'not bar';
+  };
+
+  equal(container.resolve('models:bar'), Bar);
 });

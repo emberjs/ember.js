@@ -8,7 +8,6 @@ var obj, moduleOpts = {
           baz: { biff: 'BIFF' }
         }
       }
-
     };
 
     Ember.lookup = {
@@ -42,8 +41,8 @@ test('[Foo, bar] -> Foo.bar', function() {
 });
 
 // ..........................................................
-// LOCAL PATHS
 //
+// LOCAL PATHS
 
 test('[obj, foo] -> obj.foo', function() {
   Ember.set(obj, 'foo', "BAM");

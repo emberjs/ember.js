@@ -114,6 +114,8 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
       for (var i=0; i<arguments.length; ++i) {
         expandProperties(arguments[i], addWatchedProperty);
       }
+
+      this.__ember_observes__ = watched;
     } else {
       this.__ember_observes__ = a_slice.call(arguments);
     }

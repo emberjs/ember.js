@@ -3,7 +3,7 @@
 @submodule ember-views
 */
 
-var jQuery = this.jQuery || (Ember.imports && Ember.imports.jQuery);
+var jQuery = (this && this.jQuery) || (Ember.imports && Ember.imports.jQuery);
 if (!jQuery && typeof require === 'function') {
   jQuery = require('jquery');
 }

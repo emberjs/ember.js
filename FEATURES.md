@@ -1,18 +1,10 @@
-bout Features
+## About Features
 
 Please read the [Feature Flag Guide](http://emberjs.com/guides/configuring-ember/feature-flags/)
 for a detailed explanation.
 
 ## Feature Flags
 
-* `query-params`
-
-  Add query params support to the ember router. You can now define which query
-  params your routes respond to, use them in your route hooks to affect model
-  loading or controller state, and transition query parameters with the link-to
-  helper and the transitionTo method.
-
-  Added in [#3182](https://github.com/emberjs/ember.js/pull/3182).
 * `propertyBraceExpansion`
 
   Adds support for brace-expansion in dependent keys, observer, and watch properties.
@@ -26,6 +18,10 @@ for a detailed explanation.
   Also strips `_id` suffixes. (E.g. `'first_name'.humanize() // 'First name'`)
 
   Added in [#3224](https://github.com/emberjs/ember.js/pull/3224)
+* `string-parameterize`
+
+  Transforms a string so that it may be used as part of a 'pretty' / SEO friendly URL.
+  (E.g. `'100 ways Ember.js is better than Angular.'.parameterize(); // '100-ways-emberjs-is-better-than-angular'`)
 
 * `ember-routing-named-substates`
 
@@ -39,16 +35,6 @@ for a detailed explanation.
   `ApplicationRoute`.
 
   Added in [#3655](https://github.com/emberjs/ember.js/pull/3655).
-
-* `ember-testing-lazy-routing`
-
-  Uses an initializer to defer readiness while testing. Readiness is advanced upon the first
-  call to `visit`.
-
-  NOTE: This causes `App.reset()` to behave consistently with the way an app works after calling
-  `setupForTesting` (i.e. in a deferred state of readiness).
-
-  Added in [#3695](https://github.com/emberjs/ember.js/pull/3695).
 
 * `ember-handlebars-caps-lookup`
   Forces Handlebars values starting with capital letters, like `{{CONSTANT}}`,
@@ -90,3 +76,31 @@ for a detailed explanation.
 
   Added in [#3792](https://github.com/emberjs/ember.js/pull/3792).
 
+* `with-controller`
+
+  Enables `{{#with}}` to take a `controller=` option for wrapping the context.
+
+  Added in [#3722](https://github.com/emberjs/ember.js/pull/3722)
+
+
+* `computed-read-only`
+
+  Enables `Ember.computed.readOnly` which is the shortHand for
+  Ember.computed.oneWay('foo').readOnly().
+
+  Added in [#3879](https://github.com/emberjs/ember.js/pull/3879)
+
+* `query-params-new`
+
+  Add query params support to the ember router. This is a rewrite of a
+  previous attempt at an API for query params. You can define query
+  param properties on route-driven controllers with the `queryParams`
+  property, and any changes to those properties will cause the URL
+  to update, and in the other direction, any URL changes to the query
+  params will cause those controller properties to update.
+
+  Added in [#4008](https://github.com/emberjs/ember.js/pull/4008).
+
+* `ember-metal-run-bind`
+  Enables `Ember.run.bind` which is ember run-loop aware variation of
+  jQuery.proxy.  Useful for integrating with 3rd party callbacks.

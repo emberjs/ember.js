@@ -239,12 +239,11 @@ test("yield view should be a virtual view", function() {
   var component = Ember.Component.extend({
     isParentComponent: true,
 
-    template: Ember.Handlebars.compile('{{view includedComponent}}'),
     layout: Ember.Handlebars.compile('{{yield}}')
   });
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{view component}}'),
+    template: Ember.Handlebars.compile('{{#view component}}{{view includedComponent}}{{/view}}'),
     controller: {
       component: component,
       includedComponent: Ember.Component.extend({

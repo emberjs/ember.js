@@ -1,52 +1,16 @@
 # Ember Changelog
 
-### Ember 1.3.0.beta.4 (December 27, 2013)
 
-* Deprecate `RSVP.Promise.prototype.fail`.
-* Cleanup header comment: remove duplication and add version.
+### Ember 1.4.0 _(TBD)_
 
-### Ember 1.3.0.beta.3 (December 20, 2013)
+* In canary
+* {{#with}} can take a controller= option for wrapping the context. Must be an `Ember.ObjectController`
 
-* [BUGFIX] Do not attempt to serialize undefined models.
-* [BUGFIX] Ensure {{link-to}} path observers are reregistered after render.
-* [BUGFIX] Ensure that the rootURL is available to location.
-* [BUGFIX] Make routePath smarter w/ stacked resource names
-* Better link-to error for invalid dest routes
-* Use imported handlebars before global Handlebars
-* Update router.js
-* Update RSVP.js
-* Improved a handeful of error messages
-* Provide more information for debugging
-* Added more assertions and deprecation warnings
+### Ember 1.3.0 _(TBD)_
 
-### Ember 1.3.0.beta.2 (December 8, 2013)
+* In beta
 
-* [BUGFIX] Add preventDefault option to link-to and action.
-* [BUGFIX] contextualizeBindingPath should be aware of empty paths
-* Expose helpful vars in {{debugger}} helper body
-* [BUGFIX] container.has should not cause injections to be run.
-* [BUGFIX] Make flag LOG_TRANSITIONS_INTERNAL work again
-* [BUGFIX] Fix default {{yield}} for Components.
-* [BUGFIX] Ensure aliased {{with}} blocks are not shared.
-* [BUGFIX] Update to latest Backburner.js.
-* [BUGFIX] Fix issue with Ember.Test.unregisterHelper.
-* [BUGFIX] Make Ember.Handlebars.makeViewHelper warning useful.
-
-### Ember 1.3.0.beta.1 (November 25, 2013)
-
-* [FEATURE reduceComputed-non-array-dependencies] `ReduceComputedProperty`s may have non-array dependent keys. When a non-array dependent key changes, the entire property is invalidated.
-* [FEATURE ember-testing-lazy-routing] Uses an initializer to defer readiness while testing. Readiness is advanced upon the first call to `visit`.
-* [FEATURE ember-testing-wait-hooks] Allows registration of additional functions that the `wait` testing helper will call to determine if it's ready to continue.
-* [FEATURE propertyBraceExpansion] Add simple brace expansion for dependent keys and watched properties specified declaratively.  This is primarily useful with reduce computed properties, for specifying dependencies on multiple item properties of a dependent array, as with `Ember.computed.sort('items.@each.{propertyA,propertyB}', userSortFn)`.
-* [BUGFIX release] Update to Handlebars 1.1.2.
-* [BUGFIX] Register a default RSVP error handler.
-* Update to latest RSVP (80cec268).
-* [BUGFIX] Ember.Object.create now takes `undefined` as an argument.
-* Components are lazily looked up.
-* Renaming everyBy and anyBy to isEvery and isAny
-
-
-### Ember 1.2.0 _(November 22, 2013)_
+###Ember 1.2.0 _(November 22, 2013)_
 
 * [BUGFIX] Publish ember-handlebars-compiler along with builds.
 * [BUGFIX] Use RegExp.test() for Ember.computed.match.
@@ -68,7 +32,6 @@
 * [BUGFIX] Bubble `loading` action above pivot route
 * [BUGFIX] reduceComputed ignore changes during reset.
 * [BUGFIX] reduceComputed handle out-of-range index.
-* [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
 * [FEATURE] Add support for nested loading/error substates. A loading substate will be entered when a slow-to-resolve promise is returned from one of the Route#model hooks during a transition and an appropriately-named loading template/route can be found.  An error substate will be entered when one of the Route#model hooks returns a rejecting promise and an appropriately-named error template/route can be found.
 * [FEATURE] Components and helpers registered on the container can be rendered in templates via their dasherized names. E.g. {{helper-name}} or {{component-name}}
 * [FEATURE] Add a `didTransition` hook to the router.
