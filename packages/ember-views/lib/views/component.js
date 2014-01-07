@@ -102,9 +102,8 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, Ember.ComponentTe
     set(this, 'controller', this);
   },
 
-  defaultLayout: function(options){
-    options.data = {view: options._context};
-    Ember.Handlebars.helpers['yield'].apply(this, [options]);
+  defaultLayout: function(context, options){
+    Ember.Handlebars.helpers['yield'].call(context, options);
   },
 
   /**
