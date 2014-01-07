@@ -264,6 +264,26 @@ test("Components without a block should have the proper content", function(){
   equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
 });
 
+test("properties of a component  without a template should not collide with internal structures", function(){
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component data=foo}}</div>");
+
+  boot(function() {
+    container.register('controller:application', Ember.Controller.extend({
+      'text': 'outer',
+      'foo': 'Some text inserted by jQuery'
+    }));
+
+    container.register('component:my-component', Ember.Component.extend({
+      didInsertElement: function() {
+        this.$().html(this.get('data'));
+      }
+    }));
+  });
+
+  equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
+});
+
+
 test("Components trigger actions in the parents context when called from within a block", function(){
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>{{/my-component}}</div>");
 
