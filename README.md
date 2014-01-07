@@ -22,7 +22,8 @@ app more and more Ember-1.0-compatible.
 ## Transitions
 
  * [Accessors](doc/accessors.md)
- * [Action Helper arguments](doc/action_helper.md)
+ * [Action Helper arguments](doc/action_helper.md#event-argument)
+ * [Action Helper via Send](doc/action_helper.md#via-send)
  * [Ember.Object.create](doc/object_create.md)
  * [Ember.ViewState](doc/view_state.md)
  * [Ember.Evented#fire](doc/evented_fire.md)

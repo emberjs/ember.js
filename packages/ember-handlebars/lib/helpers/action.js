@@ -7,20 +7,26 @@ var ActionHelper = EmberHandlebars.ActionHelper = {
 };
 
 function triggerAction(target, actionName, event) {
-  var level = Ember.ENV.ACTION_ARGUMENTS,
-      op = { warn: Ember.deprecate, '1.0-compat': Ember.assert }[level] || Ember.K,
+  var eventLevel = Ember.ENV.ACTION_ARGUMENTS,
+      eventOp = { warn: Ember.deprecate, '1.0-compat': Ember.assert }[eventLevel] || Ember.K,
+      passEvent = eventLevel !== '1.0-compat',
+      sendLevel = Ember.ENV.ACTION_VIA_SEND,
+      useSend = sendLevel !== '1.0',
+      warnOnSend = sendLevel === 'warn',
       args = [],
       action;
 
-  if (target.isState && typeof target.send === 'function') {
+  if (useSend && target.isState && typeof target.send === 'function') {
+    Ember.deprecate('The action helper will not delegate to send in Ember 1.0.', !warnOnSend);
     action = target.send;
     args.push(actionName);
   } else {
     action = target[actionName];
+    eventOp("The action helper will not pass a jQuery event in Ember 1.0.", action.length === 0);
   }
 
-  op("The action helper will not pass a jQuery event in Ember 1.0.", action.length === 0);
-  if (level !== '1.0-compat') { args.push(event); }
+  if (passEvent) { args.push(event); }
+
   return action.apply(target, args);
 }
 

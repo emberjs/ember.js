@@ -345,7 +345,7 @@ test("should only trigger actions for the event they were registered on", functi
   });
 
   appendView();
-  
+
   view.$('a').trigger('mouseover');
 
   ok(!editWasCalled, "The action wasn't called");
