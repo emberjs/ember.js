@@ -623,11 +623,10 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
     if (dependentKeys) {
       cp._dependentKeys = normalizeDependentKeys(dependentKeys);
       cp._dependentCPs = selectDependentCPs(dependentKeys);
-      cp.implicitCPKey = implicitKey(cp);
     } else {
       cp._dependentKeys = cp._dependentCPs = [];
-      delete cp.implicitCPKey;
     }
+    cp.implicitCPKey = implicitKey(cp);
   };
   // expose `normalizeDependentKey[s]` so user CP macros can easily support
   // composition
