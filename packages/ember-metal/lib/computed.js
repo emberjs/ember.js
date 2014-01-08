@@ -24,10 +24,6 @@ var get = Ember.get,
     watch = Ember.watch,
     unwatch = Ember.unwatch;
 
-
-if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
-}
-
 if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
   var expandProperties = Ember.expandProperties;
 }

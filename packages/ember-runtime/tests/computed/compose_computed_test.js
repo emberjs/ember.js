@@ -180,14 +180,4 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
 
     deepEqual(get(obj, 'names'), ['Alex', 'David', 'Grey Kitty', 'Hamilton', 'Little Boots', 'Navasardyan']);
   });
-
-  module('Ember.computed - composable', {
-    teardown: function () {
-      if (obj && obj.destroy) {
-        Ember.run(function() {
-          obj.destroy();
-        });
-      }
-    }
-  });
 }
