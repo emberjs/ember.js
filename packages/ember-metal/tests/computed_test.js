@@ -4,6 +4,11 @@ require('ember-metal/~tests/props_helper');
 
 var obj, count;
 
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  var l = Ember.computed.literal,
+      p = Ember.computed.alias;
+}
+
 module('Ember.computed');
 
 test('computed property should be an instance of descriptor', function() {
@@ -733,6 +738,20 @@ testBoth('Ember.computed.not', function(get, set) {
   equal(get(obj, 'notFoo'), false);
 });
 
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.not', function(get, set) {
+    var not = Ember.computed.not,
+        obj = {foo: true};
+
+    Ember.defineProperty(obj, 'notFoo', not(not(not(p('foo')))));
+    equal(get(obj, 'notFoo'), false);
+
+    obj = {foo: {bar: true}};
+    Ember.defineProperty(obj, 'notFoo', not(not(not('foo.bar'))));
+    equal(get(obj, 'notFoo'), false);
+  });
+}
+
 testBoth('Ember.computed.empty', function(get, set) {
   var obj = {foo: [], bar: undefined, baz: null, quz: ''};
   Ember.defineProperty(obj, 'fooEmpty', Ember.computed.empty('foo'));
@@ -750,6 +769,25 @@ testBoth('Ember.computed.empty', function(get, set) {
   equal(get(obj, 'quzEmpty'), false);
 });
 
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.empty', function(get, set) {
+    var obj = {foo: [], bar: undefined, baz: null, quz: ''};
+    Ember.defineProperty(obj, 'fooEmpty', Ember.computed.empty(p('foo')));
+    Ember.defineProperty(obj, 'barEmpty', Ember.computed.empty(p('bar')));
+    Ember.defineProperty(obj, 'bazEmpty', Ember.computed.empty(p('baz')));
+    Ember.defineProperty(obj, 'quzEmpty', Ember.computed.empty(p('quz')));
+
+    equal(get(obj, 'fooEmpty'), true);
+    set(obj, 'foo', [1]);
+    equal(get(obj, 'fooEmpty'), false);
+    equal(get(obj, 'barEmpty'), true);
+    equal(get(obj, 'bazEmpty'), true);
+    equal(get(obj, 'quzEmpty'), true);
+    set(obj, 'quz', 'asdf');
+    equal(get(obj, 'quzEmpty'), false);
+  });
+}
+
 testBoth('Ember.computed.bool', function(get, set) {
   var obj = {foo: function() {}, bar: 'asdf', baz: null, quz: false};
   Ember.defineProperty(obj, 'fooBool', Ember.computed.bool('foo'));
@@ -761,6 +799,20 @@ testBoth('Ember.computed.bool', function(get, set) {
   equal(get(obj, 'bazBool'), false);
   equal(get(obj, 'quzBool'), false);
 });
+
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.bool', function(get, set) {
+    var obj = {foo: function() {}, bar: 'asdf', baz: null, quz: false};
+    Ember.defineProperty(obj, 'fooBool', Ember.computed.bool(p('foo')));
+    Ember.defineProperty(obj, 'barBool', Ember.computed.bool(p('bar')));
+    Ember.defineProperty(obj, 'bazBool', Ember.computed.bool(p('baz')));
+    Ember.defineProperty(obj, 'quzBool', Ember.computed.bool(p('quz')));
+    equal(get(obj, 'fooBool'), true);
+    equal(get(obj, 'barBool'), true);
+    equal(get(obj, 'bazBool'), false);
+    equal(get(obj, 'quzBool'), false);
+  });
+}
 
 testBoth('Ember.computed.alias', function(get, set) {
   var obj = { bar: 'asdf', baz: null, quz: false};
@@ -791,6 +843,37 @@ testBoth('Ember.computed.alias', function(get, set) {
   equal(get(obj, 'quz'), null);
 });
 
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.alias', function(get, set) {
+    var obj = { bar: 'asdf', baz: null, quz: false};
+    Ember.defineProperty(obj, 'bay', Ember.computed(function(key) {
+      return 'apple';
+    }));
+
+    Ember.defineProperty(obj, 'barAlias', Ember.computed.alias(p('bar')));
+    Ember.defineProperty(obj, 'bazAlias', Ember.computed.alias(p('baz')));
+    Ember.defineProperty(obj, 'quzAlias', Ember.computed.alias(p('quz')));
+    Ember.defineProperty(obj, 'bayAlias', Ember.computed.alias(p('bay')));
+
+    equal(get(obj, 'barAlias'), 'asdf');
+    equal(get(obj, 'bazAlias'), null);
+    equal(get(obj, 'quzAlias'), false);
+    equal(get(obj, 'bayAlias'), 'apple');
+
+    set(obj, 'barAlias', 'newBar');
+    set(obj, 'bazAlias', 'newBaz');
+    set(obj, 'quzAlias', null);
+
+    equal(get(obj, 'barAlias'), 'newBar');
+    equal(get(obj, 'bazAlias'), 'newBaz');
+    equal(get(obj, 'quzAlias'), null);
+
+    equal(get(obj, 'bar'), 'newBar');
+    equal(get(obj, 'baz'), 'newBaz');
+    equal(get(obj, 'quz'), null);
+  });
+}
+
 testBoth('Ember.computed.defaultTo', function(get, set) {
   var obj = { source: 'original source value' };
   Ember.defineProperty(obj, 'copy', Ember.computed.defaultTo('source'));
@@ -808,6 +891,21 @@ testBoth('Ember.computed.defaultTo', function(get, set) {
   equal(get(obj, 'copy'), 'new source value');
 });
 
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.defaultTo', function(get, set) {
+    var obj = {};
+    Ember.defineProperty(obj, 'copy', Ember.computed.defaultTo(l('sauce')));
+
+    equal(get(obj, 'copy'), 'sauce');
+
+    set(obj, 'copy', 'new copy value');
+    equal(get(obj, 'copy'), 'new copy value');
+
+    set(obj, 'copy', null);
+    equal(get(obj, 'copy'), 'sauce');
+  });
+}
+
 testBoth('Ember.computed.match', function(get, set) {
   var obj = { name: 'Paul' };
   Ember.defineProperty(obj, 'isPaul', Ember.computed.match('name', /Paul/));
@@ -818,6 +916,19 @@ testBoth('Ember.computed.match', function(get, set) {
 
   equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
 });
+
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.match', function(get, set) {
+    var obj = { name: 'Paul', namePattern: /Paul/ };
+    Ember.defineProperty(obj, 'nameMatches', Ember.computed.match(l('Paul'), p('namePattern')));
+
+    equal(get(obj, 'nameMatches'), true, 'is Paul');
+
+    set(obj, 'namePattern', /Pierre/);
+
+    equal(get(obj, 'nameMatches'), false, 'is not Pierre');
+  });
+}
 
 testBoth('Ember.computed.notEmpty', function(get, set) {
   var obj = { items: [1] };
@@ -830,6 +941,28 @@ testBoth('Ember.computed.notEmpty', function(get, set) {
   equal(get(obj, 'hasItems'), false, 'is empty');
 });
 
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.notEmpty', function(get, set) {
+    var obj = { items: [1] };
+    Ember.defineProperty(obj, 'hasItems', Ember.computed.notEmpty(p('items')));
+
+    equal(get(obj, 'hasItems'), true, 'is not empty');
+
+    set(obj, 'items', []);
+
+    equal(get(obj, 'hasItems'), false, 'is empty');
+  });
+}
+
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.literal', function (get, set) {
+    var obj = {};
+    Ember.defineProperty(obj, 'six', Ember.computed.literal(6));
+
+    equal(get(obj, 'six'), 6, "Ember.computed.literal returns the constant");
+  });
+}
+
 testBoth('Ember.computed.equal', function(get, set) {
   var obj = { name: 'Paul' };
   Ember.defineProperty(obj, 'isPaul', Ember.computed.equal('name', 'Paul'));
@@ -840,6 +973,19 @@ testBoth('Ember.computed.equal', function(get, set) {
 
   equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
 });
+
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.equal', function(get, set) {
+    var obj = { name: 'Paul' };
+    Ember.defineProperty(obj, 'isPaul', Ember.computed.equal(l('Paul'), p('name')));
+
+    equal(get(obj, 'isPaul'), true, 'is Paul');
+
+    set(obj, 'name', 'Pierre');
+
+    equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
+  });
+}
 
 testBoth('Ember.computed.gt', function(get, set) {
   var obj = { number: 2 };
@@ -856,6 +1002,23 @@ testBoth('Ember.computed.gt', function(get, set) {
   equal(get(obj, 'isGreaterThenOne'), false, 'is not gt');
 });
 
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.gt', function(get, set) {
+    var obj = { bound: 1 };
+    Ember.defineProperty(obj, 'isGreaterThanBound', Ember.computed.gt(l(2), p('bound')));
+
+    equal(get(obj, 'isGreaterThanBound'), true, 'is gt');
+
+    set(obj, 'bound', 2);
+
+    equal(get(obj, 'isGreaterThanBound'), false, 'is not gt');
+
+    set(obj, 'bound', 3);
+
+    equal(get(obj, 'isGreaterThanBound'), false, 'is not gt');
+  });
+}
+
 testBoth('Ember.computed.gte', function(get, set) {
   var obj = { number: 2 };
   Ember.defineProperty(obj, 'isGreaterOrEqualThenOne', Ember.computed.gte('number', 1));
@@ -870,6 +1033,23 @@ testBoth('Ember.computed.gte', function(get, set) {
 
   equal(get(obj, 'isGreaterOrEqualThenOne'), false, 'is not gte');
 });
+
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.gte', function(get, set) {
+    var obj = { bound: 1 };
+    Ember.defineProperty(obj, 'isGreaterThanOrEqualToBound', Ember.computed.gte(l(2), p('bound')));
+
+    equal(get(obj, 'isGreaterThanOrEqualToBound'), true, 'is gte');
+
+    set(obj, 'bound', 2);
+
+    equal(get(obj, 'isGreaterThanOrEqualToBound'), true, 'is gte');
+
+    set(obj, 'bound', 3);
+
+    equal(get(obj, 'isGreaterThanOrEqualToBound'), false, 'is not gte');
+  });
+}
 
 testBoth('Ember.computed.lt', function(get, set) {
   var obj = { number: 0 };
@@ -886,6 +1066,23 @@ testBoth('Ember.computed.lt', function(get, set) {
   equal(get(obj, 'isLesserThenOne'), false, 'is not lt');
 });
 
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.lt', function(get, set) {
+    var obj = { bound: 1 };
+    Ember.defineProperty(obj, 'isLessThanBound', Ember.computed.lt(l(0), p('bound')));
+
+    equal(get(obj, 'isLessThanBound'), true, 'is lt');
+
+    set(obj, 'bound', 0);
+
+    equal(get(obj, 'isLessThanBound'), false, 'is not lt');
+
+    set(obj, 'bound', -1);
+
+    equal(get(obj, 'isLessThanBound'), false, 'is not lt');
+  });
+}
+
 testBoth('Ember.computed.lte', function(get, set) {
   var obj = { number: 0 };
   Ember.defineProperty(obj, 'isLesserOrEqualThenOne', Ember.computed.lte('number', 1));
@@ -901,6 +1098,23 @@ testBoth('Ember.computed.lte', function(get, set) {
   equal(get(obj, 'isLesserOrEqualThenOne'), false, 'is not lte');
 });
 
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.lte', function(get, set) {
+    var obj = { bound: 1 };
+    Ember.defineProperty(obj, 'isLessThanOrEqualToBound', Ember.computed.lte(l(0), p('bound')));
+
+    equal(get(obj, 'isLessThanOrEqualToBound'), true, 'is lte');
+
+    set(obj, 'bound', 0);
+
+    equal(get(obj, 'isLessThanOrEqualToBound'), true, 'is lte');
+
+    set(obj, 'bound', -1);
+
+    equal(get(obj, 'isLessThanOrEqualToBound'), false, 'is not lte');
+  });
+}
+
 testBoth('Ember.computed.and', function(get, set) {
   var obj = { one: true, two: true };
   Ember.defineProperty(obj, 'oneAndTwo', Ember.computed.and('one', 'two'));
@@ -911,6 +1125,17 @@ testBoth('Ember.computed.and', function(get, set) {
 
   equal(get(obj, 'oneAndTwo'), false, 'one and not two');
 });
+
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.and', function(get, set) {
+    var obj = {};
+    Ember.defineProperty(obj, 'trueAndTrue', Ember.computed.and(l(true), l(true)));
+    Ember.defineProperty(obj, 'trueAndFalse', Ember.computed.and(l(true), l(false)));
+
+    equal(get(obj, 'trueAndTrue'), true, 'true && true is true');
+    equal(get(obj, 'trueAndFalse'), false, 'true && false is false');
+  });
+}
 
 testBoth('Ember.computed.or', function(get, set) {
   var obj = { one: true, two: true };
@@ -931,6 +1156,17 @@ testBoth('Ember.computed.or', function(get, set) {
   equal(get(obj, 'oneOrTwo'), true, 'one or two');
 });
 
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.or', function(get, set) {
+    var obj = {};
+    Ember.defineProperty(obj, 'trueOrFalse', Ember.computed.or(l(true), l(false)));
+    Ember.defineProperty(obj, 'falseOrFalse', Ember.computed.or(l(false), l(false)));
+
+    equal(get(obj, 'trueOrFalse'), true, 'true || false is true');
+    equal(get(obj, 'falseOrFalse'), false, 'false || false is false');
+  });
+}
+
 testBoth('Ember.computed.any', function(get, set) {
   var obj = { one: 'foo', two: 'bar' };
   Ember.defineProperty(obj, 'anyOf', Ember.computed.any('one', 'two'));
@@ -941,6 +1177,19 @@ testBoth('Ember.computed.any', function(get, set) {
 
   equal(get(obj, 'anyOf'), 'bar', 'is bar');
 });
+
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.any', function(get, set) {
+    var obj = { one: 'foo', two: 'bar' };
+    Ember.defineProperty(obj, 'anyOf', Ember.computed.any(p('one'), p('two')));
+
+    equal(get(obj, 'anyOf'), 'foo', 'is foo');
+
+    set(obj, 'one', false);
+
+    equal(get(obj, 'anyOf'), 'bar', 'is bar');
+  });
+}
 
 testBoth('Ember.computed.collect', function(get, set) {
   var obj = { one: 'foo', two: 'bar', three: null };
@@ -958,6 +1207,25 @@ testBoth('Ember.computed.collect', function(get, set) {
 
   deepEqual(get(obj, 'all'), [0, 'bar', a, true], 'have all of them');
 });
+
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.collect', function(get, set) {
+    var obj = { one: 'foo', two: 'bar', three: null };
+    Ember.defineProperty(obj, 'all', Ember.computed.collect(p('one'), p('two'), p('three'), p('four')));
+
+    deepEqual(get(obj, 'all'), ['foo', 'bar', null, null], 'have all of them');
+
+    set(obj, 'four', true);
+
+    deepEqual(get(obj, 'all'), ['foo', 'bar', null, true], 'have all of them');
+
+    var a = [];
+    set(obj, 'one', 0);
+    set(obj, 'three', a);
+
+    deepEqual(get(obj, 'all'), [0, 'bar', a, true], 'have all of them');
+  });
+}
 
 testBoth('Ember.computed.oneWay', function(get, set) {
   var obj = {
@@ -982,6 +1250,32 @@ testBoth('Ember.computed.oneWay', function(get, set) {
 
   equal(get(obj, 'nickName'), 'TeddyBear');
 });
+
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  testBoth('Ember.computed.oneWay', function(get, set) {
+    var obj = {
+      firstName: 'Teddy',
+      lastName: 'Zeenny'
+    };
+
+    Ember.defineProperty(obj, 'nickName', Ember.computed.oneWay(p('firstName')));
+
+    equal(get(obj, 'firstName'), 'Teddy');
+    equal(get(obj, 'lastName'), 'Zeenny');
+    equal(get(obj, 'nickName'), 'Teddy');
+
+    set(obj, 'nickName', 'TeddyBear');
+
+    equal(get(obj, 'firstName'), 'Teddy');
+    equal(get(obj, 'lastName'), 'Zeenny');
+
+    equal(get(obj, 'nickName'), 'TeddyBear');
+
+    set(obj, 'firstName', 'TEDDDDDDDDYYY');
+
+    equal(get(obj, 'nickName'), 'TeddyBear');
+  });
+}
 
 
 if (Ember.FEATURES.isEnabled('computed-read-only')) {
@@ -1010,4 +1304,32 @@ testBoth('Ember.computed.readOnly', function(get, set) {
 
   equal(get(obj, 'nickName'), 'TEDDDDDDDDYYY');
 });
+
+  if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+    testBoth('Ember.computed.readOnly', function(get, set) {
+      var obj = {
+        firstName: 'Teddy',
+        lastName: 'Zeenny'
+      };
+
+      Ember.defineProperty(obj, 'nickName', Ember.computed.readOnly(p('firstName')));
+
+      equal(get(obj, 'firstName'), 'Teddy');
+      equal(get(obj, 'lastName'), 'Zeenny');
+      equal(get(obj, 'nickName'), 'Teddy');
+
+      throws(function(){
+        set(obj, 'nickName', 'TeddyBear');
+      }, / /);
+
+      equal(get(obj, 'firstName'), 'Teddy');
+      equal(get(obj, 'lastName'), 'Zeenny');
+
+      equal(get(obj, 'nickName'), 'Teddy');
+
+      set(obj, 'firstName', 'TEDDDDDDDDYYY');
+
+      equal(get(obj, 'nickName'), 'TEDDDDDDDDYYY');
+    });
+  }
 }
