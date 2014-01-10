@@ -306,9 +306,18 @@ Ember.DataAdapter = Ember.Object.extend({
     @method getModelTypes
     @return {Array} Array of model types
   */
-
- // TODO: Use the resolver instead of looping over namespaces.
   getModelTypes: function() {
+    var containerDebugAdapter = this.container.lookup('container-debug-adapter:main');
+    if (containerDebugAdapter.canCatalogEntriesByType('model')) {
+      return containerDebugAdapter.catalogEntriesByType('model');
+    }
+    else
+    {
+      return this.getModelTypesViaNamespaces();
+    }
+  },
+
+  getModelTypesViaNamespaces: function() {
     var namespaces = Ember.A(Ember.Namespace.NAMESPACES), types = Ember.A(), self = this;
 
     namespaces.forEach(function(namespace) {
