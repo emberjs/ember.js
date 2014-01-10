@@ -310,7 +310,7 @@ ComputedPropertyPrototype.property = function() {
 
   if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
     var addArg = function (property) {
-      args.push(property); 
+      args.push(property);
     };
 
     args = [];
@@ -569,7 +569,8 @@ Ember.computed = function(func) {
   @return {Object} the cached value
 */
 Ember.cacheFor = function cacheFor(obj, key) {
-  var cache = metaFor(obj, false).cache;
+  var meta = obj[META_KEY],
+      cache = meta && meta.cache;
 
   if (cache && key in cache) {
     return cache[key];
