@@ -17,13 +17,17 @@ Ember.TargetActionSupport = Ember.Mixin.create({
   }).property('target').cacheable(),
 
   triggerAction: function() {
-    var action = get(this, 'action'),
+    var sendLevel = Ember.ENV.ACTION_VIA_SEND,
+        useSend = sendLevel !== '1.0',
+        warnOnSend = sendLevel === 'warn',
+        action = get(this, 'action'),
         target = get(this, 'targetObject');
 
     if (target && action) {
       var ret;
 
-      if (typeof target.send === 'function') {
+      if (useSend && typeof target.send === 'function') {
+        Ember.deprecate('The action helper will not delegate to send in Ember 1.0.', !warnOnSend);
         ret = target.send(action, this);
       } else {
         if (typeof action === 'string') {
