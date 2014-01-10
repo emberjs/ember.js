@@ -62,7 +62,7 @@ var removeChainWatcher = Ember.removeChainWatcher = function(obj, keyName, node)
       if (nodes[i] === node) { nodes.splice(i, 1); }
     }
   }
-  unwatchKey(obj, keyName);
+  unwatchKey(obj, keyName, m);
 };
 
 // A ChainNode watches a single key on an object. If you provide a starting
