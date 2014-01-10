@@ -104,3 +104,9 @@ for a detailed explanation.
 * `ember-metal-run-bind`
   Enables `Ember.run.bind` which is ember run-loop aware variation of
   jQuery.proxy.  Useful for integrating with 3rd party callbacks.
+
+* `ember-metal-is-blank`
+  Adds `Ember.isBlank` method which returns true for an empty value or
+  a whitespace string.
+
+  Added in [#4049](https://github.com/emberjs/ember.js/pull/4049).  
