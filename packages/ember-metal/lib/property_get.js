@@ -59,7 +59,14 @@ var get = function get(obj, keyName) {
   Ember.assert("Cannot call get with "+ keyName +" key.", !!keyName);
   Ember.assert("Cannot call get with '"+ keyName +"' on an undefined object.", obj !== undefined);
 
-  if (obj === null) { return _getPath(obj, keyName);  }
+  if (obj === null) {
+    var value = _getPath(obj, keyName);
+    Ember.deprecate(
+      "Ember.get fetched '"+keyName+"' from the global context. This behavior will change in the future (issue #3852)",
+      !value || (obj && obj !== Ember.lookup) || keyName.indexOf('.') !== -1 || IS_GLOBAL_PATH.test(keyName+".") // Add a . to ensure simple paths are matched.
+    );
+    return value;
+  }
 
   var meta = obj[META_KEY], desc = meta && meta.descs[keyName], ret;
 
@@ -112,6 +119,11 @@ function normalizeTuple(target, path) {
 
   if (!target || isGlobal) target = Ember.lookup;
   if (hasThis) path = path.slice(5);
+
+  Ember.deprecate(
+    "normalizeTuple will return '"+path+"' as a non-global. This behavior will change in the future (issue #3852)",
+    target === Ember.lookup || !target || hasThis || isGlobal || !IS_GLOBAL_PATH.test(path+'.')
+  );
 
   if (target === Ember.lookup) {
     key = path.match(FIRST_KEY)[0];
