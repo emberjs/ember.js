@@ -135,8 +135,11 @@ define("router/handler-info",
     }
 
     ResolvedHandlerInfo.prototype = oCreate(HandlerInfo.prototype);
-    ResolvedHandlerInfo.prototype.resolve = function() {
+    ResolvedHandlerInfo.prototype.resolve = function(async, shouldContinue, payload) {
       // A ResolvedHandlerInfo just resolved with itself.
+      if (payload && payload.resolvedModels) {
+        payload.resolvedModels[this.name] = this.context;
+      }
       return resolve(this);
     };
 
@@ -1300,19 +1303,6 @@ define("router/transition-state",
           return handlerInfo.resolve(async, innerShouldContinue, payload)
                             .then(proceed);
         }
-      },
-
-      getResolvedHandlerInfos: function() {
-        var resolvedHandlerInfos = [];
-        var handlerInfos = this.handlerInfos;
-        for (var i = 0, len = handlerInfos.length; i < len; ++i) {
-          var handlerInfo = handlerInfos[i];
-          if (!(handlerInfo instanceof ResolvedHandlerInfo)) {
-            break;
-          }
-          resolvedHandlerInfos.push(handlerInfo);
-        }
-        return resolvedHandlerInfos;
       }
     };
 
