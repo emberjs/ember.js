@@ -1,5 +1,5 @@
 import { registerMacro } from "htmlbars/macros";
-import { TemplateCompiler } from "htmlbars/compiler/template";
+import { TemplateCompiler } from "htmlbars/compiler/template_old";
 import { HTMLElement } from "htmlbars/ast";
 
 function equalHTML(fragment, html) {

@@ -1,4 +1,4 @@
-import { TemplateCompiler } from "htmlbars/compiler/template";
+import { TemplateCompiler } from "htmlbars/compiler/template_old";
 import { hydrate } from "htmlbars/runtime";
 import { RESOLVE, RESOLVE_IN_ATTR, ATTRIBUTE } from "htmlbars/runtime/helpers";
 

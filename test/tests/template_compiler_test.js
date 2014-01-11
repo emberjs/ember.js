@@ -1,4 +1,4 @@
-import { TemplateCompiler } from "htmlbars/compiler/template";
+import { TemplateCompiler } from "htmlbars/compiler/template_old";
 module helpers from "htmlbars/runtime/helpers";
 
 var helpers = {RESOLVE: helpers.RESOLVE};
