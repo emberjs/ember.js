@@ -9,11 +9,11 @@ function opcodesFor(html, options) {
 }
 
 function mustache(name, parent, start, end) {
-  return {type: 'ambiguous', params: [name, true, parent, start, end]};
+  return [ 'ambiguous', [name, true, parent, start, end] ];
 }
 
 function helper(name, params, parent, start, end) {
-  return {type: "helper", params: [name, params.length, true, parent, start, end]};
+  return [ "helper", [name, params.length, true, parent, start, end] ];
 }
 
 module("HydrationOpcodeCompiler opcode generation");
@@ -76,9 +76,9 @@ test("back to back mustaches should have a text node inserted between them", fun
 test("helper usage", function() {
   var opcodes = opcodesFor("<div>{{foo 'bar'}}</div>");
   deepEqual(opcodes, [
-    {type: "program", params: [null, null]},
-    {type: "stringLiteral", params: ['bar']},
-    {type: "stackLiteral", params: [0]},
+    [ "program", [null, null] ],
+    [ "stringLiteral", ['bar'] ],
+    [ "stackLiteral", [0] ],
     helper('foo', ['bar'], [0], null, null)
   ]);
 });
@@ -86,29 +86,29 @@ test("helper usage", function() {
 test("node mustache", function() {
   var opcodes = opcodesFor("<div {{foo}}></div>");
   deepEqual(opcodes, [
-    {type: "program", params: [null, null]},
-    {type: "stackLiteral", params: [0]},
-    {type: "nodeHelper", params:["foo", 0, [0]]}
+    [ "program", [null, null] ],
+    [ "stackLiteral", [0] ],
+    [ "nodeHelper", ["foo", 0, [0]] ]
   ]);
 });
 
 test("node helper", function() {
   var opcodes = opcodesFor("<div {{foo 'bar'}}></div>");
   deepEqual(opcodes, [
-    {type: "program", params: [null, null]},
-    {type: "stringLiteral", params: ['bar']},
-    {type: "stackLiteral", params: [0]},
-    {type: "nodeHelper", params:["foo", 1, [0]]}
+    [ "program", [null, null] ],
+    [ "stringLiteral", ['bar'] ],
+    [ "stackLiteral", [0] ],
+    [ "nodeHelper", ["foo", 1, [0]] ]
   ]);
 });
 
 test("attribute mustache", function() {
   var opcodes = opcodesFor("<div class='before {{foo}} after'></div>");
   deepEqual(opcodes, [
-    {type: "string", params: [" after"]},
-    {type: "ambiguousAttr", params: ["foo", true]},
-    {type: "string", params: ["before "]},
-    {type: "attribute", params: ["class", 3, [0]]}
+    [ "string", [" after"] ],
+    [ "ambiguousAttr", ["foo", true] ],
+    [ "string", ["before "] ],
+    [ "attribute", ["class", 3, [0]] ]
   ]);
 });
 
@@ -116,12 +116,12 @@ test("attribute mustache", function() {
 test("attribute helper", function() {
   var opcodes = opcodesFor("<div class='before {{foo 'bar'}} after'></div>");
   deepEqual(opcodes, [
-    {type: "string", params: [" after"]},
-    {type: "program", params: [null, null]},
-    {type: "stringLiteral", params: ["bar"]},
-    {type: "stackLiteral", params: [0]},
-    {type: "helperAttr", params: ["foo",1,true]},
-    {type: "string", params: ["before "]},
-    {type: "attribute", params: ["class", 3, [0]]}
+    [ "string", [" after"] ],
+    [ "program", [null, null] ],
+    [ "stringLiteral", ["bar"] ],
+    [ "stackLiteral", [0] ],
+    [ "helperAttr", ["foo",1,true] ],
+    [ "string", ["before "] ],
+    [ "attribute", ["class", 3, [0]] ]
   ]);
 });

@@ -19,10 +19,10 @@ test("visits ast in an order friendly to opcode generation", function () {
     endTemplate: function () {
       this.opcodes.push(['pushTemplate']);
     },
-    startElement: function (element) {
+    openElement: function (element) {
       this.opcodes.push(['openTag', element.tag]);
     },
-    string: function (str) {
+    text: function (str) {
       this.opcodes.push(['text', str]);
     },
     closeElement: function (element) {

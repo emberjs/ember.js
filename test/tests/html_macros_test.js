@@ -1,5 +1,5 @@
 import { registerMacro } from "htmlbars/macros";
-import { TemplateCompiler } from "htmlbars/compiler/template_old";
+import { compile } from "htmlbars/compiler";
 import { HTMLElement } from "htmlbars/ast";
 
 function equalHTML(fragment, html) {
@@ -10,10 +10,6 @@ function equalHTML(fragment, html) {
 }
 
 module("HTML Macros");
-
-function compile(string) {
-  return new TemplateCompiler().compile(string, {});
-}
 
 test("A simple HTML macro can replace a tagName", function() {
   registerMacro('testing', function test(element) {

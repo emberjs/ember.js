@@ -1,11 +1,5 @@
-import { TemplateCompiler } from "htmlbars/compiler/template_old";
-import { hydrate } from "htmlbars/runtime";
+import { compile } from "htmlbars/compiler";
 import { RESOLVE, RESOLVE_IN_ATTR, ATTRIBUTE } from "htmlbars/runtime/helpers";
-
-function compile(string) {
-  var compiler =  new TemplateCompiler();
-  return compiler.compile(string);
-}
 
 function frag(element, string) {
   if (element instanceof DocumentFragment) {
