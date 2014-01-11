@@ -76,8 +76,8 @@ test("back to back mustaches should have a text node inserted between them", fun
 test("helper usage", function() {
   var opcodes = opcodesFor("<div>{{foo 'bar'}}</div>");
   deepEqual(opcodes, [
-    {type: "program", params: [null]},
-    {type: "string", params: ['bar']},
+    {type: "program", params: [null, null]},
+    {type: "stringLiteral", params: ['bar']},
     {type: "stackLiteral", params: [0]},
     helper('foo', ['bar'], [0], null, null)
   ]);
@@ -86,7 +86,7 @@ test("helper usage", function() {
 test("node mustache", function() {
   var opcodes = opcodesFor("<div {{foo}}></div>");
   deepEqual(opcodes, [
-    {type: "program", params: [null]},
+    {type: "program", params: [null, null]},
     {type: "stackLiteral", params: [0]},
     {type: "nodeHelper", params:["foo", 0, [0]]}
   ]);
@@ -95,8 +95,8 @@ test("node mustache", function() {
 test("node helper", function() {
   var opcodes = opcodesFor("<div {{foo 'bar'}}></div>");
   deepEqual(opcodes, [
-    {type: "program", params: [null]},
-    {type: "string", params: ['bar']},
+    {type: "program", params: [null, null]},
+    {type: "stringLiteral", params: ['bar']},
     {type: "stackLiteral", params: [0]},
     {type: "nodeHelper", params:["foo", 1, [0]]}
   ]);
@@ -105,9 +105,9 @@ test("node helper", function() {
 test("attribute mustache", function() {
   var opcodes = opcodesFor("<div class='before {{foo}} after'></div>");
   deepEqual(opcodes, [
-    {type: "content", params: [" after"]},
+    {type: "string", params: [" after"]},
     {type: "ambiguousAttr", params: ["foo", true]},
-    {type: "content", params: ["before "]},
+    {type: "string", params: ["before "]},
     {type: "attribute", params: ["class", 3, [0]]}
   ]);
 });
@@ -116,12 +116,12 @@ test("attribute mustache", function() {
 test("attribute helper", function() {
   var opcodes = opcodesFor("<div class='before {{foo 'bar'}} after'></div>");
   deepEqual(opcodes, [
-    {type: "content", params: [" after"]},
-    {type: "program", params: [null]},
-    {type: "string", params: ["bar"]},
+    {type: "string", params: [" after"]},
+    {type: "program", params: [null, null]},
+    {type: "stringLiteral", params: ["bar"]},
     {type: "stackLiteral", params: [0]},
     {type: "helperAttr", params: ["foo",1,true]},
-    {type: "content", params: ["before "]},
+    {type: "string", params: ["before "]},
     {type: "attribute", params: ["class", 3, [0]]}
   ]);
 });
