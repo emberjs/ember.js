@@ -29,21 +29,45 @@ function checkActive(selector, active) {
 
 }
 
+var updateCount, replaceCount;
+
+function sharedSetup() {
+  App = Ember.Application.create({
+    name: "App",
+    rootElement: '#qunit-fixture'
+  });
+
+  App.deferReadiness();
+
+  updateCount = replaceCount = 0;
+  App.Router.reopen({
+    location: Ember.NoneLocation.createWithMixins({
+      setURL: function(path) {
+        updateCount++;
+        set(this, 'path', path);
+      },
+
+      replaceURL: function(path) {
+        replaceCount++;
+        set(this, 'path', path);
+      }
+    })
+  });
+
+  Router = App.Router;
+  container = App.__container__;
+}
+
+function sharedTeardown() {
+  Ember.run(function() { App.destroy(); });
+  Ember.TEMPLATES = {};
+}
+
 module("The {{link-to}} helper", {
   setup: function() {
     Ember.run(function() {
-      App = Ember.Application.create({
-        name: "App",
-        rootElement: '#qunit-fixture'
-      });
 
-      App.deferReadiness();
-
-      App.Router.reopen({
-        location: 'none'
-      });
-
-      Router = App.Router;
+      sharedSetup();
 
       Ember.TEMPLATES.app = Ember.Handlebars.compile("{{outlet}}");
       Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#link-to 'about' id='about-link'}}About{{/link-to}}{{#link-to 'index' id='self-link'}}Self{{/link-to}}");
@@ -54,17 +78,12 @@ module("The {{link-to}} helper", {
         templateName: 'app'
       });
 
-      container = App.__container__;
-
       container.register('view:app', AppView);
       container.register('router:main', Router);
     });
   },
 
-  teardown: function() {
-    Ember.run(function() { App.destroy(); });
-    Ember.TEMPLATES = {};
-  }
+  teardown: sharedTeardown
 });
 
 test("The {{link-to}} helper moves into the named route", function() {
@@ -92,24 +111,8 @@ test("The {{link-to}} helper moves into the named route", function() {
 });
 
 test("The {{link-to}} helper supports URL replacement", function() {
-  var setCount = 0,
-      replaceCount = 0;
 
   Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#link-to 'about' id='about-link' replace=true}}About{{/link-to}}");
-
-  Router.reopen({
-    location: Ember.NoneLocation.createWithMixins({
-      setURL: function(path) {
-        setCount++;
-        set(this, 'path', path);
-      },
-
-      replaceURL: function(path) {
-        replaceCount++;
-        set(this, 'path', path);
-      }
-    })
-  });
 
   Router.map(function() {
     this.route("about");
@@ -121,14 +124,14 @@ test("The {{link-to}} helper supports URL replacement", function() {
     router.handleURL("/");
   });
 
-  equal(setCount, 0, 'precond: setURL has not been called');
+  equal(updateCount, 0, 'precond: setURL has not been called');
   equal(replaceCount, 0, 'precond: replaceURL has not been called');
 
   Ember.run(function() {
     Ember.$('#about-link', '#qunit-fixture').click();
   });
 
-  equal(setCount, 0, 'setURL should not be called');
+  equal(updateCount, 0, 'setURL should not be called');
   equal(replaceCount, 1, 'replaceURL should be called once');
 });
 
@@ -1047,16 +1050,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
   module("The {{link-to}} helper: invoking with query params", {
     setup: function() {
       Ember.run(function() {
-        App = Ember.Application.create({
-          name: "App",
-          rootElement: '#qunit-fixture'
-        });
-
-        App.deferReadiness();
-
-        App.Router.reopen({
-          location: 'none'
-        });
+        sharedSetup();
 
         App.IndexController = Ember.Controller.extend({
           queryParams: ['foo', 'bar'],
@@ -1071,18 +1065,11 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
           bat: 'borf'
         });
 
-        Router = App.Router;
-
-        container = App.__container__;
-
         container.register('router:main', Router);
       });
     },
 
-    teardown: function() {
-      Ember.run(function() { App.destroy(); });
-      Ember.TEMPLATES = {};
-    }
+    teardown: sharedTeardown
   });
 
   test("doesn't update controller QP properties on current route when invoked", function() {
@@ -1288,3 +1275,86 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
   });
 }
+
+if (Ember.FEATURES.isEnabled("ember-eager-url-update")) {
+  var aboutDefer;
+  module("The {{link-to}} helper: eager URL updating", {
+    setup: function() {
+      Ember.run(function() {
+        sharedSetup();
+
+        container.register('router:main', Router);
+
+        Router.map(function() {
+          this.route('about');
+        });
+
+        App.AboutRoute = Ember.Route.extend({
+          model: function() {
+            aboutDefer = Ember.RSVP.defer();
+            return aboutDefer.promise;
+          }
+        });
+
+        Ember.TEMPLATES.application = Ember.Handlebars.compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link'}}");
+      });
+    },
+
+    teardown: function() {
+      sharedTeardown();
+      aboutDefer = null;
+    }
+  });
+
+  test("invoking a link-to with a slow promise eager updates url", function() {
+    bootApplication();
+    equal(updateCount, 0);
+    Ember.run(Ember.$('#about-link'), 'click');
+
+    // URL should be eagerly updated now
+    equal(updateCount, 1);
+    equal(router.get('location.path'), '/about');
+
+    // Resolve the promise.
+    Ember.run(aboutDefer, 'resolve');
+    equal(router.get('location.path'), '/about');
+
+    // Shouldn't have called update url again.
+    equal(updateCount, 1);
+    equal(router.get('location.path'), '/about');
+  });
+
+  test("invoking a link-to with a promise that rejects on the run loop doesn't update url", function() {
+    App.AboutRoute = Ember.Route.extend({
+      model: function() {
+        return Ember.RSVP.reject();
+      }
+    });
+
+    bootApplication();
+    Ember.run(Ember.$('#about-link'), 'click');
+
+    // Shouldn't have called update url.
+    equal(updateCount, 0);
+    equal(router.get('location.path'), '', 'url was not updated');
+  });
+
+  test("invoking a link-to whose transition gets aborted in will transition doesn't update the url", function() {
+    App.IndexRoute = Ember.Route.extend({
+      actions: {
+        willTransition: function(transition) {
+          ok(true, "aborting transition");
+          transition.abort();
+        }
+      }
+    });
+
+    bootApplication();
+    Ember.run(Ember.$('#about-link'), 'click');
+
+    // Shouldn't have called update url.
+    equal(updateCount, 0);
+    equal(router.get('location.path'), '', 'url was not updated');
+  });
+}
+
