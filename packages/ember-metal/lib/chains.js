@@ -326,7 +326,8 @@ Ember.finishChains = function(obj) {
   if (chains) {
     if (chains.value() !== obj) {
       metaFor(obj).chains = chains = chains.copy(obj);
+    } else {
+      chains.didChange(null);
     }
-    chains.didChange(null);
   }
 };
