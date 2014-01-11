@@ -2383,6 +2383,40 @@ test("Route supports clearing outlet explicitly", function() {
   equal(Ember.$('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 0, "The posts/extra template was removed");
 });
 
+test("Route silently fails when cleaning an outlet from an inactive view", function() {
+  expect(1); // handleURL
+
+  Ember.TEMPLATES.application = compile("{{outlet}}");
+  Ember.TEMPLATES.posts = compile("{{outlet modal}}");
+  Ember.TEMPLATES.modal = compile("A Yo.");
+
+  Router.map(function() {
+    this.route("posts");
+  });
+
+  App.PostsRoute = Ember.Route.extend({
+    actions: {
+      hideSelf: function() {
+        this.disconnectOutlet({outlet: 'main', parentView: 'application'});
+      },
+      showModal: function() {
+        this.render('modal', {into: 'posts', outlet: 'modal'});
+      },
+      hideModal: function() {
+        this.disconnectOutlet({outlet: 'modal', parentView: 'posts'});
+      }
+    }
+  });
+
+  bootApplication();
+
+  handleURL('/posts');
+
+  Ember.run(function() { router.send('showModal'); });
+  Ember.run(function() { router.send('hideSelf'); });
+  Ember.run(function() { router.send('hideModal'); });
+});
+
 test("Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered", function() {
   expect(8);
 
