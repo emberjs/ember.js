@@ -2,8 +2,7 @@ var Router, App, AppView, templates, router, container;
 var get = Ember.get,
     set = Ember.set,
     compile = Ember.Handlebars.compile,
-    forEach = Ember.EnumerableUtils.forEach,
-    oldAssert = Ember.assert;
+    forEach = Ember.EnumerableUtils.forEach;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -71,7 +70,6 @@ module("Basic Routing", {
   },
 
   teardown: function() {
-    Ember.assert = oldAssert;
     Ember.run(function() {
       App.destroy();
       App = null;
@@ -90,15 +88,11 @@ test("warn on URLs not included in the route set", function () {
 
   bootApplication();
 
-  // it's tricky to use expectAssertion(fn) in a callback.
-  Ember.assert = function(message, test){
-    ok(true, test);
-    equal("The URL '/what-is-this-i-dont-even' did not match any routes in your application", message);
-  };
-
-  Ember.run(function(){
-    router.handleURL("/what-is-this-i-dont-even");
-  });
+  expectAssertion(function(){
+    Ember.run(function(){
+      router.handleURL("/what-is-this-i-dont-even");
+    });
+  }, "The URL '/what-is-this-i-dont-even' did not match any routes in your application");
 });
 
 test("The Homepage", function() {
