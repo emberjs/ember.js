@@ -79,11 +79,9 @@ test('[null, Foo.bar] -> Foo.bar', function() {
 
 module("Ember.set with path - deprecated", {
   setup: function() {
-    Ember.TESTING_DEPRECATION = true;
     moduleOpts.setup();
   },
   teardown: function() {
-    Ember.TESTING_DEPRECATION = false;
     moduleOpts.teardown();
   }
 });

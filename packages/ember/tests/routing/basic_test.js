@@ -76,7 +76,6 @@ module("Basic Routing", {
 
       Ember.TEMPLATES = {};
     });
-    Ember.TESTING_DEPRECATION = false;
   }
 });
 
@@ -842,7 +841,6 @@ test("ApplicationRoute's default error handler can be overridden", function() {
 });
 
 test("ApplicationRoute's default error handler can be overridden (with DEPRECATED `events`)", function() {
-  Ember.TESTING_DEPRECATION = true;
   testOverridableErrorHandler('events');
 });
 
@@ -1115,7 +1113,6 @@ asyncTest("Events defined in `actions` object are triggered on the current state
 });
 
 asyncTest("Events are triggered on the current state when defined in `events` object (DEPRECATED)", function() {
-  Ember.TESTING_DEPRECATION = true;
   Router.map(function() {
     this.route("home", { path: "/" });
   });
@@ -1150,7 +1147,6 @@ asyncTest("Events are triggered on the current state when defined in `events` ob
 });
 
 asyncTest("Events defined in `events` object are triggered on the current state when routes are nested (DEPRECATED)", function() {
-  Ember.TESTING_DEPRECATION = true;
   Router.map(function() {
     this.resource("root", { path: "/" }, function() {
       this.route("index", { path: "/" });
@@ -1229,7 +1225,6 @@ test("Events can be handled by inherited event handlers", function() {
 
 if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
   asyncTest("Actions are not triggered on the controller if a matching action name is implemented as a method", function() {
-    Ember.TESTING_DEPRECATION = true;
     Router.map(function() {
       this.route("home", { path: "/" });
     });
@@ -1273,7 +1268,6 @@ if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
   });
 } else {
   asyncTest("Events are triggered on the controller if a matching action name is implemented as a method (DEPRECATED)", function() {
-    Ember.TESTING_DEPRECATION = true;
     Router.map(function() {
       this.route("home", { path: "/" });
     });
@@ -2633,8 +2627,6 @@ test("Route model hook finds the same model as a manual find", function() {
 });
 
 test("Can register an implementation via Ember.Location.registerImplementation", function(){
-  Ember.TESTING_DEPRECATION = true;
-
   var TestLocation = Ember.NoneLocation.extend({
     implementation: 'test'
   });
@@ -2648,24 +2640,16 @@ test("Can register an implementation via Ember.Location.registerImplementation",
   bootApplication();
 
   equal(router.get('location.implementation'), 'test', 'custom location implementation can be registered with registerImplementation');
-
-  Ember.TESTING_DEPRECATION = false;
 });
 
 test("Ember.Location.registerImplementation is deprecated", function(){
-  Ember.ENV.RAISE_ON_DEPRECATION = true;
-
   var TestLocation = Ember.NoneLocation.extend({
     implementation: 'test'
   });
 
-  try{
+  expectDeprecation(function(){
     Ember.Location.registerImplementation('test', TestLocation);
-  } catch(e) {
-    equal(e.message, "Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.", "deprecation warning is present");
-  }
-
-  Ember.ENV.RAISE_ON_DEPRECATION = false;
+  }, "Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.");
 });
 
 test("Routes can refresh themselves causing their model hooks to be re-run", function() {

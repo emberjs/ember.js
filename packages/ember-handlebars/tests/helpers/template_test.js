@@ -3,8 +3,6 @@ var originalLookup = Ember.lookup, lookup, TemplateTests, view, container;
 
 module("Support for {{template}} helper", {
   setup: function() {
-    Ember.TESTING_DEPRECATION = true;
-
     Ember.lookup = lookup = { Ember: Ember };
     MyApp = lookup.MyApp = Ember.Object.create({});
     container = new Ember.Container();
@@ -17,8 +15,6 @@ module("Support for {{template}} helper", {
       }
     });
     Ember.lookup = originalLookup;
-
-    Ember.TESTING_DEPRECATION = false;
   }
 });
 
