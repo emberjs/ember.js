@@ -38,6 +38,10 @@ function superFunction(){
   return ret;
 }
 
+if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
+  var expandProperties = Ember.expandProperties;
+}
+
 function mixinsMeta(obj) {
   var m = metaFor(obj, true), ret = m.mixins;
   if (!ret) {

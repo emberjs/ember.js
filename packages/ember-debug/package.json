@@ -4,7 +4,7 @@
   "description": "Debugging helpers for Ember",
   "homepage": "http://www.emberjs.com",
   "author": "Peter Wagenet",
-  "version": "1.0.0",
+  "version": "1.2.0-beta.3",
 
   "directories": {
     "lib": "lib"

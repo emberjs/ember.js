@@ -2,6 +2,8 @@ var Router, container, router;
 
 var map = Ember.EnumerableUtils.map;
 
+var map = Ember.EnumerableUtils.map;
+
 module("Ember Router", {
   setup: function() {
     container = new Ember.Container();
