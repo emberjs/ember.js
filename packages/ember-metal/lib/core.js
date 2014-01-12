@@ -210,27 +210,116 @@ if ('undefined' === typeof Ember.deprecateFunc) {
 */
 Ember.uuid = 0;
 
+//Ember.merge and Ember.mergeIf implementation
+//Note that this function accepts updates passed as array
+var a_concat = Array.prototype.concat;
+var a_slice = Array.prototype.slice;
+var merge  = function (original, source, deep, replace) {
+  if (Ember.isNone(source)) {
+    return original;
+  }
+
+  var idx, prop, old, oldDefined, newVal;
+  if (Ember.isArray(source)) {
+    for (idx = 0; idx < source.length; idx++) {
+      original = merge.call(this, original, source[idx], deep, replace);
+    }
+  } else {
+    for (prop in source) {
+      newVal = source[prop];
+      old = original[prop];
+      oldDefined = !Ember.isNone(old);
+      if (!source.hasOwnProperty(prop) || (oldDefined && Ember.isEmpty(newVal) && !replace)) { continue; }
+      if (deep && oldDefined && Ember.typeOf(newVal) === 'object')  {
+        newVal = merge.call(this, old, newVal, deep, replace);
+      }
+      original[prop] = newVal;
+    }
+  }
+  return original;
+};
+
+//prepare arguments of Ember.merge and Ember.mergeIf as the merge function expects them
+var genMergeArgs = function (args, replace) {
+  args = a_slice.call(args);
+  var updates,
+      deep = false,
+      original = args.shift();
+  replace = ('boolean' === typeof replace) ? replace : true;
+  if ('boolean' === typeof original) {
+    deep = original;
+    original = args.shift();
+  }
+  updates = a_concat.apply([ args.shift() ], args);
+  return [original, updates, deep, replace];
+};
+
 /**
-  Merge the contents of two objects together into the first object.
+  Merge the contents of two or more objects together into the first object. this function accepts also arrays of objects.
 
   ```javascript
   Ember.merge({first: 'Tom'}, {last: 'Dale'}); // {first: 'Tom', last: 'Dale'}
-  var a = {first: 'Yehuda'}, b = {last: 'Katz'};
-  Ember.merge(a, b); // a == {first: 'Yehuda', last: 'Katz'}, b == {last: 'Katz'}
+  var a = {first: 'Yehuda'}, b = {last: 'Katz'}, c = {nickname: 'wycats'}, d = {friend: 'Tom Dale'};
+  Ember.merge(a, [c, d], b); // c, d and b merged in to a == {first: 'Yehuda', last: 'Katz', nickname: 'wycats', friend: 'Tom Dale'}
+  ```
+
+  the last line is equivalent to:
+
+  ```javascript
+  var a = {first: 'Yehuda'}, b = {last: 'Katz'}, c = {nickname: 'wycats'}, d = {friend: 'Tom Dale'};
+  Ember.merge(a, c); // c merged in to a == {first: 'Yehuda', last: 'Katz'}
+  Ember.merge(a, d); // d merged in to a == {first: 'Yehuda', last: 'Katz', nickname: 'wycats'}
+  Ember.merge(a, b); // b merged in to a == {first: 'Yehuda', last: 'Katz', nickname: 'wycats', friend: 'Tom Dale'}
+  ```
+
+  A deep merge is possible by passing `true` as the first parameter, that means that all nested objects will be merged rather then overriding them.
+
+  ```javascript
+  var a = {projectName: 'Emberjs', features: {binding: true}}, b = {features: {computedProperties: true}};
+  Ember.merge(true, a, b); // a = {projectName: 'Emberjs', features: {binding: true, computedProperties: true}}
+  Ember.merge(a, b); // a = {projectName: 'Emberjs', features: {computedProperties: true}}
   ```
 
   @method merge
   @for Ember
-  @param {Object} original The object to merge into
-  @param {Object} updates The object to copy properties from
+  @param {Boolean} [deep=false] deep merge
+  @param {Object} dest Target object
+  @param {Object/Array} [source]* Source objects to copy properties from
   @return {Object}
 */
-Ember.merge = function(original, updates) {
-  for (var prop in updates) {
-    if (!updates.hasOwnProperty(prop)) { continue; }
-    original[prop] = updates[prop];
-  }
-  return original;
+
+Ember.merge = function() {
+  //replace is by default true
+  var args = genMergeArgs.call(this, arguments);
+  return merge.apply(this, args);
+};
+
+/**
+  Similar to `Ember.merge` except that it ignores empty properties from source objects. Keys values are tested using `Ember.isEmpty`
+  to determine if they can be applied or not.
+
+  ```javascript
+  Ember.mergeIf({first: 'Tom'}, {first : '', last: 'Dale'}); // {first: 'Tom', last: 'Dale'}
+  ```
+
+  This is useful to keep your default values in first object if they are not defined in the merged objects.
+
+  ```javascript
+  Ember.merge({defaultName: 'Cat'}, {defaultName : ''); // {defaultName: ''}
+  Ember.mergeIf({defaultName: 'Cat'}, {defaultName : ''); // {defaultName: 'Cat'}
+  ```
+
+  @method mergeIf
+  @param {Boolean} [deep=false] deep merge
+  @param {Object} dest Target object
+  @param {Object/Array} [source]* Source objects to copy properties from
+  @return {Object}
+*/
+
+Ember.mergeIf = function() {
+  //same as merge except that it sets replace to false
+  var args = genMergeArgs.call(this, arguments, false);
+  return merge.apply(this, args);
 };
 
 /**
