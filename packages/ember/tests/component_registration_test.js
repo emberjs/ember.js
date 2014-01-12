@@ -1,9 +1,12 @@
 var App, container;
 var compile = Ember.Handlebars.compile;
+var originalHelpers;
 
 function prepare(){
   Ember.TEMPLATES["components/expand-it"] = compile("<p>hello {{yield}}</p>");
   Ember.TEMPLATES.application = compile("Hello world {{#expand-it}}world{{/expand-it}}");
+
+  originalHelpers = Ember.A(Ember.keys(Ember.Handlebars.helpers));
 }
 
 function cleanup(){
@@ -11,6 +14,18 @@ function cleanup(){
     App.destroy();
     App = null;
     Ember.TEMPLATES = {};
+
+    cleanupHandlebarsHelpers();
+  });
+}
+
+function cleanupHandlebarsHelpers(){
+  var currentHelpers = Ember.A(Ember.keys(Ember.Handlebars.helpers));
+
+  currentHelpers.forEach(function(name){
+    if (!originalHelpers.contains(name)) {
+      delete Ember.Handlebars.helpers[name];
+    }
   });
 }
 
@@ -134,6 +149,48 @@ test("Component lookups should take place on components' subcontainers", functio
   });
 });
 
+test("Assigning templateName to a component should setup the template as a layout", function(){
+  expect(1);
+
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
+  Ember.TEMPLATES['foo-bar-baz'] = compile("{{text}}-{{yield}}");
+
+  boot(function() {
+    container.register('controller:application', Ember.Controller.extend({
+      'text': 'outer'
+    }));
+
+    container.register('component:my-component', Ember.Component.extend({
+      text: 'inner',
+      templateName: 'foo-bar-baz'
+    }));
+  });
+
+  equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
+});
+
+test("Assigning templateName and layoutName should use the templates specified", function(){
+  expect(1);
+
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component}}</div>");
+  Ember.TEMPLATES['foo'] = compile("{{text}}");
+  Ember.TEMPLATES['bar'] = compile("{{text}}-{{yield}}");
+
+  boot(function() {
+    container.register('controller:application', Ember.Controller.extend({
+      'text': 'outer'
+    }));
+
+    container.register('component:my-component', Ember.Component.extend({
+      text: 'inner',
+      layoutName: 'bar',
+      templateName: 'foo'
+    }));
+  });
+
+  equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
+});
+
 module("Application Lifecycle - Component Context", {
   setup: prepare,
   teardown: cleanup
@@ -207,6 +264,26 @@ test("Components without a block should have the proper content", function(){
   equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
 });
 
+test("properties of a component  without a template should not collide with internal structures", function(){
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{my-component data=foo}}</div>");
+
+  boot(function() {
+    container.register('controller:application', Ember.Controller.extend({
+      'text': 'outer',
+      'foo': 'Some text inserted by jQuery'
+    }));
+
+    container.register('component:my-component', Ember.Component.extend({
+      didInsertElement: function() {
+        this.$().html(this.get('data'));
+      }
+    }));
+  });
+
+  equal(Ember.$('#wrapper').text(), "Some text inserted by jQuery", "The component is composed correctly");
+});
+
+
 test("Components trigger actions in the parents context when called from within a block", function(){
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>{{/my-component}}</div>");
 
@@ -232,7 +309,13 @@ test("Components trigger actions in the components context when called from with
   Ember.TEMPLATES['components/my-component'] = compile("<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>");
 
   boot(function() {
-    container.register('controller:application', Ember.Controller.extend());
+    container.register('controller:application', Ember.Controller.extend({
+      actions: {
+        fizzbuzz: function(){
+          ok(false, 'action triggered on the wrong context');
+        }
+      }
+    }));
 
     container.register('component:my-component', Ember.Component.extend({
       actions: {

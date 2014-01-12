@@ -747,27 +747,29 @@ module("Ember.Handlebars - action helper - deprecated invoking directly on targe
   }
 });
 
-test("should invoke a handler defined directly on the target (DEPRECATED)", function() {
-  var eventHandlerWasCalled,
-      model = Ember.Object.create();
+if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
+  test("should invoke a handler defined directly on the target (DEPRECATED)", function() {
+    var eventHandlerWasCalled,
+        model = Ember.Object.create();
 
-  var controller = Ember.Controller.extend({
-    edit: function() {
-      eventHandlerWasCalled = true;
-    }
-  }).create();
+    var controller = Ember.Controller.extend({
+      edit: function() {
+        eventHandlerWasCalled = true;
+      }
+    }).create();
 
-  view = Ember.View.create({
-    controller: controller,
-    template: Ember.Handlebars.compile('<button {{action edit}}>edit</button>')
+    view = Ember.View.create({
+      controller: controller,
+      template: Ember.Handlebars.compile('<button {{action edit}}>edit</button>')
+    });
+
+    appendView();
+
+    view.$('button').trigger('click');
+
+    ok(eventHandlerWasCalled, "the action was called");
   });
-
-  appendView();
-
-  view.$('button').trigger('click');
-
-  ok(eventHandlerWasCalled, "the action was called");
-});
+}
 
 test("should respect preventDefault=false option if provided", function(){
   view = Ember.View.create({

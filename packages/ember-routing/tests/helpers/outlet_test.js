@@ -42,9 +42,8 @@ var appendView = function(view) {
   Ember.run(function() { view.appendTo('#qunit-fixture'); });
 };
 
-var compile = function(template) {
-  return Ember.Handlebars.compile(template);
-};
+var compile = Ember.Handlebars.compile;
+var trim = Ember.$.trim;
 
 var view, container;
 
@@ -85,7 +84,7 @@ test("view should support connectOutlet for the main outlet", function() {
   });
 
   // Replace whitespace for older IE
-  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
+  equal(trim(view.$().text()), 'HIBYE');
 });
 
 test("outlet should support connectOutlet in slots in prerender state", function() {
@@ -120,9 +119,79 @@ test("outlet should support an optional name", function() {
   });
 
   // Replace whitespace for older IE
-  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
+  equal(trim(view.$().text()), 'HIBYE');
 });
 
+
+test("outlet should correctly lookup a view", function() {
+
+  var template,
+      ContainerView,
+      childView;
+
+  ContainerView = Ember.ContainerView.extend();
+
+  container.register("view:containerView", ContainerView);
+
+  template = "<h1>HI</h1>{{outlet view='containerView'}}";
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(template),
+    container : container
+  });
+
+  childView = Ember.View.create({
+    template: compile("<p>BYE</p>")
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'HI');
+
+  Ember.run(function() {
+    view.connectOutlet('main', childView);
+  });
+
+  ok(ContainerView.detectInstance(childView.get('_parentView')), "The custom view class should be used for the outlet");
+
+  // Replace whitespace for older IE
+  equal(trim(view.$().text()), 'HIBYE');
+
+});
+
+test("outlet should assert view is specified as a string", function() {
+
+  var template = "<h1>HI</h1>{{outlet view=containerView}}";
+
+  expectAssertion(function () {
+
+    view = Ember.View.create({
+      template: Ember.Handlebars.compile(template),
+      container : container
+    });
+
+    appendView(view);
+
+  });
+
+});
+
+test("outlet should assert view path is successfully resolved", function() {
+
+  var template = "<h1>HI</h1>{{outlet view='someViewNameHere'}}";
+
+  expectAssertion(function () {
+
+    view = Ember.View.create({
+      template: Ember.Handlebars.compile(template),
+      container : container
+    });
+
+    appendView(view);
+
+  });
+
+});
 
 test("outlet should correctly lookup a view", function() {
 
@@ -216,7 +285,7 @@ test("outlet should support an optional view class", function() {
   ok(view.outletView.detectInstance(childView.get('_parentView')), "The custom view class should be used for the outlet");
 
   // Replace whitespace for older IE
-  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
+  equal(trim(view.$().text()), 'HIBYE');
 });
 
 
@@ -268,14 +337,14 @@ test("view should support disconnectOutlet for the main outlet", function() {
   });
 
   // Replace whitespace for older IE
-  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
+  equal(trim(view.$().text()), 'HIBYE');
 
   Ember.run(function() {
     view.disconnectOutlet('main');
   });
 
   // Replace whitespace for older IE
-  equal(view.$().text().replace(/\s+/,''), 'HI');
+  equal(trim(view.$().text()), 'HI');
 });
 
 test("Outlets bind to the current template's view, not inner contexts", function() {
@@ -319,5 +388,5 @@ test("should support layouts", function() {
     }));
   });
   // Replace whitespace for older IE
-  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
+  equal(trim(view.$().text()), 'HIBYE');
 });

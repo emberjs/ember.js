@@ -2,7 +2,8 @@ var Router, App, AppView, templates, router, container;
 var get = Ember.get,
     set = Ember.set,
     compile = Ember.Handlebars.compile,
-    forEach = Ember.EnumerableUtils.forEach;
+    forEach = Ember.EnumerableUtils.forEach,
+    oldAssert = Ember.assert;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -70,6 +71,7 @@ module("Basic Routing", {
   },
 
   teardown: function() {
+    Ember.assert = oldAssert;
     Ember.run(function() {
       App.destroy();
       App = null;
@@ -89,7 +91,6 @@ test("warn on URLs not included in the route set", function () {
   bootApplication();
 
   // it's tricky to use expectAssertion(fn) in a callback.
-  var oldAssert = Ember.assert;
   Ember.assert = function(message, test){
     ok(true, test);
     equal("The URL '/what-is-this-i-dont-even' did not match any routes in your application", message);
@@ -98,9 +99,6 @@ test("warn on URLs not included in the route set", function () {
   Ember.run(function(){
     router.handleURL("/what-is-this-i-dont-even");
   });
-
-  Ember.assert = oldAssert;
-
 });
 
 test("The Homepage", function() {
@@ -734,6 +732,7 @@ test("The loading state doesn't get entered for promises that resolve on the sam
   equal(Ember.$('p', '#qunit-fixture').text(), "1", "The app is now in the specials state");
 });
 
+/*
 asyncTest("The Special page returning an error fires the error hook on SpecialRoute", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
@@ -767,8 +766,9 @@ asyncTest("The Special page returning an error fires the error hook on SpecialRo
 
   handleURLRejectsWith('/specials/1', 'Setup error');
 });
+*/
 
-asyncTest("The Special page returning an error invokes SpecialRoute's error handler", function() {
+test("The Special page returning an error invokes SpecialRoute's error handler", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
@@ -780,9 +780,6 @@ asyncTest("The Special page returning an error invokes SpecialRoute's error hand
   App.MenuItem.reopenClass({
     find: function(id) {
       menuItem = App.MenuItem.create({ id: id });
-      Ember.run.later(function() {
-        menuItem.resolve(menuItem);
-      }, 1);
       return menuItem;
     }
   });
@@ -794,7 +791,6 @@ asyncTest("The Special page returning an error invokes SpecialRoute's error hand
     actions: {
       error: function(reason) {
         equal(reason, 'Setup error', 'SpecialRoute#error received the error thrown from setup');
-        start();
       }
     }
   });
@@ -802,6 +798,8 @@ asyncTest("The Special page returning an error invokes SpecialRoute's error hand
   bootApplication();
 
   handleURLRejectsWith('/specials/1', 'Setup error');
+
+  Ember.run(menuItem, menuItem.resolve, menuItem);
 });
 
 function testOverridableErrorHandler(handlersName) {
@@ -819,9 +817,6 @@ function testOverridableErrorHandler(handlersName) {
   App.MenuItem.reopenClass({
     find: function(id) {
       menuItem = App.MenuItem.create({ id: id });
-      Ember.run.later(function() {
-        menuItem.resolve(menuItem);
-      }, 1);
       return menuItem;
     }
   });
@@ -830,7 +825,6 @@ function testOverridableErrorHandler(handlersName) {
   attrs[handlersName] = {
     error: function(reason) {
       equal(reason, 'Setup error', "error was correctly passed to custom ApplicationRoute handler");
-      start();
     }
   };
 
@@ -845,13 +839,15 @@ function testOverridableErrorHandler(handlersName) {
   bootApplication();
 
   handleURLRejectsWith("/specials/1", "Setup error");
+
+  Ember.run(menuItem, 'resolve', menuItem);
 }
 
-asyncTest("ApplicationRoute's default error handler can be overridden", function() {
+test("ApplicationRoute's default error handler can be overridden", function() {
   testOverridableErrorHandler('actions');
 });
 
-asyncTest("ApplicationRoute's default error handler can be overridden (with DEPRECATED `events`)", function() {
+test("ApplicationRoute's default error handler can be overridden (with DEPRECATED `events`)", function() {
   Ember.TESTING_DEPRECATION = true;
   testOverridableErrorHandler('events');
 });
@@ -1237,49 +1233,95 @@ test("Events can be handled by inherited event handlers", function() {
   router.send("baz");
 });
 
-asyncTest("Events are triggered on the controller if a matching action name is implemented as a method (DEPRECATED)", function() {
-  Ember.TESTING_DEPRECATION = true;
-  Router.map(function() {
-    this.route("home", { path: "/" });
-  });
+if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
+  asyncTest("Actions are not triggered on the controller if a matching action name is implemented as a method", function() {
+    Ember.TESTING_DEPRECATION = true;
+    Router.map(function() {
+      this.route("home", { path: "/" });
+    });
 
-  var model = { name: "Tom Dale" };
-  var stateIsNotCalled = true;
+    var model = { name: "Tom Dale" };
+    var stateIsNotCalled = true;
 
-  App.HomeRoute = Ember.Route.extend({
-    model: function() {
-      return model;
-    },
+    App.HomeRoute = Ember.Route.extend({
+      model: function() {
+        return model;
+      },
 
-    events: {
-      showStuff: function(obj) {
-        stateIsNotCalled = false;
+      actions: {
+        showStuff: function(context) {
+          ok (stateIsNotCalled, "an event on the state is not triggered");
+          deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
+          start();
+        }
       }
-    }
+    });
+
+    Ember.TEMPLATES.home = Ember.Handlebars.compile(
+      "<a {{action showStuff content}}>{{name}}</a>"
+    );
+
+    var controller = Ember.Controller.extend({
+      showStuff: function(context) {
+        stateIsNotCalled = false;
+        ok (stateIsNotCalled, "an event on the state is not triggered");
+      }
+    });
+
+    container.register('controller:home', controller);
+
+    bootApplication();
+
+    var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+    var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+    var event = new Ember.$.Event("click");
+    action.handler(event);
   });
+} else {
+  asyncTest("Events are triggered on the controller if a matching action name is implemented as a method (DEPRECATED)", function() {
+    Ember.TESTING_DEPRECATION = true;
+    Router.map(function() {
+      this.route("home", { path: "/" });
+    });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
-    "<a {{action showStuff content}}>{{name}}</a>"
-  );
+    var model = { name: "Tom Dale" };
+    var stateIsNotCalled = true;
 
-  var controller = Ember.Controller.extend({
-    showStuff: function(context) {
-      ok (stateIsNotCalled, "an event on the state is not triggered");
-      deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
-      start();
-    }
+    App.HomeRoute = Ember.Route.extend({
+      model: function() {
+        return model;
+      },
+
+      events: {
+        showStuff: function(obj) {
+          stateIsNotCalled = false;
+          ok (stateIsNotCalled, "an event on the state is not triggered");
+        }
+      }
+    });
+
+    Ember.TEMPLATES.home = Ember.Handlebars.compile(
+      "<a {{action showStuff content}}>{{name}}</a>"
+    );
+
+    var controller = Ember.Controller.extend({
+      showStuff: function(context) {
+        ok (stateIsNotCalled, "an event on the state is not triggered");
+        deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
+        start();
+      }
+    });
+
+    container.register('controller:home', controller);
+
+    bootApplication();
+
+    var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+    var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+    var event = new Ember.$.Event("click");
+    action.handler(event);
   });
-
-  container.register('controller:home', controller);
-
-  bootApplication();
-
-  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
-  var event = new Ember.$.Event("click");
-  action.handler(event);
-});
-
+}
 
 asyncTest("actions can be triggered with multiple arguments", function() {
   Router.map(function() {
@@ -1880,7 +1922,8 @@ test("Router accounts for rootURL on page load when using history location", fun
     }
   });
 
-  Ember.Location.registerImplementation('historyTest', HistoryTestLocation);
+
+  container.register('location:historyTest', HistoryTestLocation);
 
   Router.reopen({
     location: 'historyTest',
@@ -1901,9 +1944,6 @@ test("Router accounts for rootURL on page load when using history location", fun
   bootApplication();
 
   ok(postsTemplateRendered, "Posts route successfully stripped from rootURL");
-
-  // clean after test
-  delete Ember.Location.implementations['historyTest'];
 });
 
 test("The rootURL is passed properly to the location implementation", function() {
@@ -1918,7 +1958,7 @@ test("The rootURL is passed properly to the location implementation", function()
     }
   });
 
-  Ember.Location.registerImplementation('history-test', HistoryTestLocation);
+  container.register('location:history-test', HistoryTestLocation);
 
   Router.reopen({
     location: 'history-test',
@@ -1929,9 +1969,6 @@ test("The rootURL is passed properly to the location implementation", function()
   });
 
   bootApplication();
-
-  // clean after test
-  delete Ember.Location.implementations['history-test'];
 });
 
 
@@ -2393,7 +2430,6 @@ test("Route supports clearing outlet explicitly", function() {
 });
 
 test("Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered", function() {
-
   expect(8);
 
   Router.map(function() {
@@ -2601,3 +2637,114 @@ test("Route model hook finds the same model as a manual find", function() {
 
   equal(App.Post, Post);
 });
+
+test("Can register an implementation via Ember.Location.registerImplementation", function(){
+  Ember.TESTING_DEPRECATION = true;
+
+  var TestLocation = Ember.NoneLocation.extend({
+    implementation: 'test'
+  });
+
+  Ember.Location.registerImplementation('test', TestLocation);
+
+  Router.reopen({
+    location: 'test'
+  });
+
+  bootApplication();
+
+  equal(router.get('location.implementation'), 'test', 'custom location implementation can be registered with registerImplementation');
+
+  Ember.TESTING_DEPRECATION = false;
+});
+
+test("Ember.Location.registerImplementation is deprecated", function(){
+  Ember.ENV.RAISE_ON_DEPRECATION = true;
+
+  var TestLocation = Ember.NoneLocation.extend({
+    implementation: 'test'
+  });
+
+  try{
+    Ember.Location.registerImplementation('test', TestLocation);
+  } catch(e) {
+    equal(e.message, "Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.", "deprecation warning is present");
+  }
+
+  Ember.ENV.RAISE_ON_DEPRECATION = false;
+});
+
+test("Routes can refresh themselves causing their model hooks to be re-run", function() {
+  Router.map(function() {
+    this.resource('parent', { path: '/parent/:parent_id' }, function() {
+      this.route('child');
+    });
+  });
+
+  var appcount = 0;
+  App.ApplicationRoute = Ember.Route.extend({
+    model: function() {
+      ++appcount;
+    }
+  });
+
+  var parentcount = 0;
+  App.ParentRoute = Ember.Route.extend({
+    model: function(params) {
+      equal(params.parent_id, '123');
+      ++parentcount;
+    },
+    actions: {
+      refreshParent: function() {
+        this.refresh();
+      }
+    }
+  });
+
+  var childcount = 0;
+  App.ParentChildRoute = Ember.Route.extend({
+    model: function() {
+      ++childcount;
+    }
+  });
+
+  bootApplication();
+
+  equal(appcount, 1);
+  equal(parentcount, 0);
+  equal(childcount, 0);
+
+  Ember.run(router, 'transitionTo', 'parent.child', '123');
+
+  equal(appcount, 1);
+  equal(parentcount, 1);
+  equal(childcount, 1);
+
+  Ember.run(router, 'send', 'refreshParent');
+
+  equal(appcount, 1);
+  equal(parentcount, 2);
+  equal(childcount, 2);
+});
+
+test("Specifying non-existent controller name in route#render throws", function() {
+  expect(1);
+
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      try {
+        this.render('homepage', { controller: 'stefanpenneristhemanforme' });
+      } catch(e) {
+        equal(e.message, "You passed `controller: 'stefanpenneristhemanforme'` into the `render` method, but no such controller could be found.");
+      }
+    }
+  });
+
+  bootApplication();
+});
+
+

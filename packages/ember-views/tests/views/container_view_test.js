@@ -1,4 +1,4 @@
-var get = Ember.get, set = Ember.set, container, view, otherContainer;
+var get = Ember.get, set = Ember.set, trim = Ember.$.trim, container, view, otherContainer;
 
 module("ember-views/views/container_view_test", {
   teardown: function() {
@@ -526,7 +526,7 @@ test("should be able to modify childViews many times during an run loop", functi
   });
 
   // Remove whitespace added by IE 8
-  equal(container.$().text().replace(/\s+/g,''), 'onetwothree');
+  equal(trim(container.$().text()), 'onetwothree');
 });
 
 test("should be able to modify childViews then remove the ContainerView in same run loop", function () {
@@ -615,7 +615,7 @@ test("should be able to modify childViews then rerender then modify again the Co
   equal(one.count, 1, 'rendered child only once');
   equal(two.count, 1, 'rendered child only once');
   // Remove whitespace added by IE 8
-  equal(container.$().text().replace(/\s+/g, ''), 'onetwo');
+  equal(trim(container.$().text()), 'onetwo');
 });
 
 test("should be able to modify childViews then rerender again the ContainerView in same run loop and then modify again", function () {
@@ -650,7 +650,7 @@ test("should be able to modify childViews then rerender again the ContainerView 
   equal(one.count, 1, 'rendered child only once');
   equal(two.count, 1, 'rendered child only once');
   // IE 8 adds a line break but this shouldn't affect validity
-  equal(container.$().text().replace(/\s/g, ''), 'onetwo');
+  equal(trim(container.$().text()), 'onetwo');
 });
 
 test("should invalidate `element` on itself and childViews when being rendered by ensureChildrenAreInDOM", function () {

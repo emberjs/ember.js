@@ -101,3 +101,56 @@ test("The `if` helper updates if an array is empty or not", function() {
 
   equal(view.$().text(), '');
 });
+
+test("The `if` helper updates when the value changes", function() {
+  view = Ember.View.create({
+    conditional: true,
+    template: compile('{{#if view.conditional}}Yep{{/if}}')
+  });
+  appendView(view);
+  equal(view.$().text(), 'Yep');
+  Ember.run(function(){
+    view.set('conditional', false);
+  });
+  equal(view.$().text(), '');
+});
+
+test("The `unbound if` helper does not update when the value changes", function() {
+  view = Ember.View.create({
+    conditional: true,
+    template: compile('{{#unbound if view.conditional}}Yep{{/unbound}}')
+  });
+  appendView(view);
+  equal(view.$().text(), 'Yep');
+  Ember.run(function(){
+    view.set('conditional', false);
+  });
+  equal(view.$().text(), 'Yep');
+});
+
+test("The `unless` helper updates when the value changes", function() {
+  view = Ember.View.create({
+    conditional: false,
+    template: compile('{{#unless view.conditional}}Nope{{/unless}}')
+  });
+  appendView(view);
+  equal(view.$().text(), 'Nope');
+  Ember.run(function(){
+    view.set('conditional', true);
+  });
+  equal(view.$().text(), '');
+});
+
+test("The `unbound if` helper does not update when the value changes", function() {
+  view = Ember.View.create({
+    conditional: false,
+    template: compile('{{#unbound unless view.conditional}}Nope{{/unbound}}')
+  });
+  appendView(view);
+  equal(view.$().text(), 'Nope');
+  Ember.run(function(){
+    view.set('conditional', true);
+  });
+  equal(view.$().text(), 'Nope');
+});
+

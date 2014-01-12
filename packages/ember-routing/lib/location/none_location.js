@@ -16,6 +16,7 @@ var get = Ember.get, set = Ember.set;
   @extends Ember.Object
 */
 Ember.NoneLocation = Ember.Object.extend({
+  implementation: 'none',
   path: '',
 
   /**
@@ -85,5 +86,3 @@ Ember.NoneLocation = Ember.Object.extend({
     return url;
   }
 });
-
-Ember.Location.registerImplementation('none', Ember.NoneLocation);

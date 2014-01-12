@@ -1,5 +1,14 @@
 # Ember Changelog
 
+### Ember 1.4.0-beta.1 (January 6, 2014)
+
+* Unbound helper supports bound helper static strings.
+* Preserve `<base>` URL when using history location for routing.
+* Begin adding names for anonymous functions to aid in debugging.
+* [FEATURE with-controller] {{#with}} can take a controller= option for wrapping the context. Must be an `Ember.ObjectController`
+* [FEATURE propertyBraceExpansion] Add support for brace-expansion in dependent keys, observer and watch properties.
+* [FEATURE ember-metal-run-bind] Enables `Ember.run.bind` which is ember run-loop aware variation of jQuery.proxy.
+
 ### Ember 1.3.0 (January 6, 2014)
  
 * Many documentation updates.
@@ -48,8 +57,8 @@
 * [BUGFIX] Ember.Object.create now takes `undefined` as an argument.
 * Components are lazily looked up.
 * Renaming everyBy and anyBy to isEvery and isAny.
- 
-### Ember 1.2.0 _(November 22, 2013)_
+
+###Ember 1.2.0 _(November 22, 2013)_
 
 * [BUGFIX] Publish ember-handlebars-compiler along with builds.
 * [BUGFIX] Use RegExp.test() for Ember.computed.match.
@@ -71,7 +80,6 @@
 * [BUGFIX] Bubble `loading` action above pivot route
 * [BUGFIX] reduceComputed ignore changes during reset.
 * [BUGFIX] reduceComputed handle out-of-range index.
-* [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
 * [FEATURE] Add support for nested loading/error substates. A loading substate will be entered when a slow-to-resolve promise is returned from one of the Route#model hooks during a transition and an appropriately-named loading template/route can be found.  An error substate will be entered when one of the Route#model hooks returns a rejecting promise and an appropriately-named error template/route can be found.
 * [FEATURE] Components and helpers registered on the container can be rendered in templates via their dasherized names. E.g. {{helper-name}} or {{component-name}}
 * [FEATURE] Add a `didTransition` hook to the router.
