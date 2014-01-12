@@ -287,7 +287,6 @@ var genMergeArgs = function (args, replace) {
   @param {Object/Array} [source]* Source objects to copy properties from
   @return {Object}
 */
-
 Ember.merge = function() {
   //replace is by default true
   var args = genMergeArgs.call(this, arguments);
@@ -315,11 +314,27 @@ Ember.merge = function() {
   @param {Object/Array} [source]* Source objects to copy properties from
   @return {Object}
 */
-
 Ember.mergeIf = function() {
   //same as merge except that it sets replace to false
   var args = genMergeArgs.call(this, arguments, false);
   return merge.apply(this, args);
+};
+
+/**
+  A faster version of `Ember.merge` that accepts only two objects and does not allow deep merge.
+
+  @method fastMerge
+  @for Ember
+  @param {Object} original The object to merge into
+  @param {Object} updates The object to copy properties from
+  @return {Object}
+*/
+Ember.fastMerge = function(original, updates) {
+  for (var prop in updates) {
+    if (!updates.hasOwnProperty(prop)) { continue; }
+    original[prop] = updates[prop];
+  }
+  return original;
 };
 
 /**
