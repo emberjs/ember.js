@@ -378,6 +378,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
         return;
       }
 
+      if (href.indexOf('#') === 0) {
+        href = href.slice(1);
+      }
+
       // Re-use the routerjs hooks set up by the Ember router.
       var routerjs = get(this, 'router.router');
       if (transition.urlMethod === 'update') {
