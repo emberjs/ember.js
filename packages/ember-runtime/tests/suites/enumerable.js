@@ -309,6 +309,7 @@ require('ember-runtime/~tests/suites/enumerable/firstObject');
 require('ember-runtime/~tests/suites/enumerable/forEach');
 require('ember-runtime/~tests/suites/enumerable/mapBy');
 require('ember-runtime/~tests/suites/enumerable/maxBy');
+require('ember-runtime/~tests/suites/enumerable/minBy');
 require('ember-runtime/~tests/suites/enumerable/invoke');
 require('ember-runtime/~tests/suites/enumerable/lastObject');
 require('ember-runtime/~tests/suites/enumerable/map');
