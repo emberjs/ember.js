@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### Ember 1.4.0-beta.2 (January 14, 2014)
+
+* [BUGFIX] Fix stripping trailing slashes for * routes.
+* [SECURITY] Ensure primitive value contexts are escaped.
+* [SECURITY] Ensure {{group}} helper escapes properly.
+* Performance improvements.
+* [BUGFIX] Templete-less components properties should not collide with internal properties.
+
 ### Ember 1.4.0-beta.1 (January 6, 2014)
 
 * Unbound helper supports bound helper static strings.
@@ -8,6 +16,11 @@
 * [FEATURE with-controller] {{#with}} can take a controller= option for wrapping the context. Must be an `Ember.ObjectController`
 * [FEATURE propertyBraceExpansion] Add support for brace-expansion in dependent keys, observer and watch properties.
 * [FEATURE ember-metal-run-bind] Enables `Ember.run.bind` which is ember run-loop aware variation of jQuery.proxy.
+
+### Ember 1.3.1 (January 14, 2014)
+
+* [SECURITY] Ensure primitive value contexts are escaped.
+* [SECURITY] Ensure {{group}} helper escapes properly.
 
 ### Ember 1.3.0 (January 6, 2014)
  
