@@ -1,5 +1,9 @@
-* Ember 1.2.0 (November 22, 2013)*
+* Ember 1.2.1 (January 13, 2014)*
 
+* [SECURITY] Ensure primitive value contexts are escaped.
+* [SECURITY] Ensure {{group}} helper escapes properly.
+
+* Ember 1.2.0 (November 22, 2013)*
 
 * [BUGFIX] Publish ember-handlebars-compiler along with builds.
 * [BUGFIX] Use RegExp.test() for Ember.computed.match.
