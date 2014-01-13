@@ -107,7 +107,15 @@ function simpleBind(currentContext, property, options) {
       };
 
       var result = handlebarsGet(currentContext, property, options);
-      if (result === null || result === undefined) { result = ""; }
+      if (result === null || result === undefined) {
+        result = "";
+      } else if (!(result instanceof Handlebars.SafeString)) {
+        result = String(result);
+      }
+      if (!options.hash.unescaped){
+        result = Handlebars.Utils.escapeExpression(result);
+      }
+
       data.buffer.push(result);
     } else {
       var bindView = new Ember._SimpleHandlebarsView(
