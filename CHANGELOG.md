@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### Ember 1.3.1 (January 14, 2014)
+
+* [SECURITY] Ensure primitive value contexts are escaped.
+* [SECURITY] Ensure {{group}} helper escapes properly.
+
 ### Ember 1.3.0 (January 6, 2014)
  
 * Many documentation updates.
