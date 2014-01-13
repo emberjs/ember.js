@@ -1935,6 +1935,35 @@ test("should be able to explicitly set a view's context", function() {
   equal(view.$().text(), "test");
 });
 
+test("should escape HTML in primitive value contexts when using normal mustaches", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{#each view.kiddos}}{{this}}{{/each}}'),
+    kiddos: Ember.A(['<b>Max</b>', '<b>James</b>'])
+  });
+
+  appendView();
+  equal(view.$('b').length, 0, "does not create an element");
+  equal(view.$().text(), '<b>Max</b><b>James</b>', "inserts entities, not elements");
+
+  Ember.run(function() { set(view, 'kiddos', Ember.A(['<i>Max</i>','<i>James</i>'])); });
+  equal(view.$().text(), '<i>Max</i><i>James</i>', "updates with entities, not elements");
+  equal(view.$('i').length, 0, "does not create an element when value is updated");
+});
+
+test("should not escape HTML in primitive value contexts when using triple mustaches", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{#each view.kiddos}}{{{this}}}{{/each}}'),
+    kiddos: Ember.A(['<b>Max</b>', '<b>James</b>'])
+  });
+
+  appendView();
+
+  equal(view.$('b').length, 2, "creates an element");
+
+  Ember.run(function() { set(view, 'kiddos', Ember.A(['<i>Max</i>','<i>James</i>'])); });
+  equal(view.$('i').length, 2, "creates an element when value is updated");
+});
+
 module("Ember.View - handlebars integration", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
