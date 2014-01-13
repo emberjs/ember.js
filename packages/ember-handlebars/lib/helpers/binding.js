@@ -154,7 +154,16 @@ function simpleBind(currentContext, property, options) {
     // The object is not observable, so just render it out and
     // be done with it.
     output = handlebarsGet(currentContext, property, options);
-    data.buffer.push((output === null || typeof output === 'undefined') ? '' : output);
+    if (output === null || output === undefined) {
+      output = "";
+    } else if (!(output instanceof Handlebars.SafeString)) {
+      output = String(output);
+    }
+    if (!options.hash.unescaped){
+      output = Handlebars.Utils.escapeExpression(output);
+    }
+
+    data.buffer.push(output);
   }
 }
 
