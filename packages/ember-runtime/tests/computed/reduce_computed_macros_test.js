@@ -13,7 +13,7 @@ import {
   endPropertyChanges
 } from "ember-metal/property_events";
 import { forEach } from "ember-metal/array";
-import { observer } from 'ember-metal/mixin';
+import { observer, Mixin } from 'ember-metal/mixin';
 import {
   sum as computedSum,
   min as computedMin,
@@ -32,7 +32,7 @@ import {
 
 import NativeArray from "ember-runtime/system/native_array";
 
-var obj, sorted, sortProps, items, userFnCalls, todos, filtered;
+var obj, sorted, sortProps, items, userFnCalls, todos, filtered, union;
 
 QUnit.module('computedMap', {
   setup: function() {
@@ -437,11 +437,12 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
   QUnit.module('computed.' + alias, {
     setup: function() {
       run(function() {
+        union = testedFunc('array', 'array2', 'array3');
         obj = EmberObject.createWithMixins({
           array: Ember.A([1,2,3,4,5,6]),
           array2: Ember.A([4,5,6,7,8,9,4,5,6,7,8,9]),
           array3: Ember.A([1,8,10]),
-          union: testedFunc('array', 'array2', 'array3')
+          union: union
         });
       });
     },
@@ -505,6 +506,22 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
 
     deepEqual(union, [1,4,5,6,7,8,9,10], "objects are removed when they are no longer in any dependent array");
   });
+
+  test("does not need to query the accumulated array while building it", function() {
+    var indexOfCalls = [];
+    var CountIndexOfCalls = Mixin.create({
+      indexOf: function() {
+        indexOfCalls.push(arguments);
+        return this._super.apply(this, arguments);
+      }
+    });
+    union.initialValue = function() {
+      return CountIndexOfCalls.apply(Ember.A([]));
+    };
+    get(obj, 'union');
+    ok(indexOfCalls.length === 0, "Ember.computed." + alias + " should not need to query the union as it is being built");
+  });
+
 });
 
 QUnit.module('computed.intersect', {

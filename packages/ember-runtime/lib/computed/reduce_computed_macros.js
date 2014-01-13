@@ -399,11 +399,10 @@ export function uniq() {
 
       if (!instanceMeta.itemCounts[guid]) {
         instanceMeta.itemCounts[guid] = 1;
+        array.pushObject(item);
       } else {
         ++instanceMeta.itemCounts[guid];
       }
-
-      array.addObject(item);
       return array;
     },
 
