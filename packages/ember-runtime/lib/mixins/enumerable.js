@@ -774,7 +774,7 @@ Ember.Enumerable = Ember.Mixin.create({
   },
 
   /**
-    Returns a copy of the array with all null and undefined elements removed.
+    Returns a copy of the array with all `null` and `undefined` elements removed.
 
     ```javascript
     var arr = ["a", null, "c", undefined];
@@ -782,10 +782,10 @@ Ember.Enumerable = Ember.Mixin.create({
     ```
 
     @method compact
-    @return {Array} the array without null and undefined elements.
+    @return {Array} the array without `null` and `undefined` elements.
   */
   compact: function() {
-    return this.filter(function(value) { return value != null; });
+    return this.filter(function(value) { return !Ember.isNone(value); });
   },
 
   /**
@@ -1002,3 +1002,24 @@ Ember.Enumerable = Ember.Mixin.create({
     });
   }
 });
+
+
+if (Ember.FEATURES.isEnabled("ember-runtime-compact-by")) {
+  Ember.Enumerable.reopen({
+    /**
+     Returns a copy of the array without elements with `key` equal to `null` and `undefined`.
+
+     ```javascript
+     var arr = [Ember.Object.create({a: null}), {a: 1}, {a: false}, {a: ''}, {a: undefined}, {a: 0}, {a: null}];
+     arr.compactBy("a");  // [{a: 1}, {a: false}, {a: ''}, {a: 0}]
+     ```
+
+     @method compactBy
+     @param {String} key name of the property
+     @return {Array} the array without elements with `key` equal to `null` and `undefined`.
+     */
+    compactBy: function(key) {
+      return this.filter(function(item) { return !Ember.isNone(get(item, key)); });
+    }
+  });
+}
