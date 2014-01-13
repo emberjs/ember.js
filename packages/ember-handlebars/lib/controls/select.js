@@ -100,7 +100,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   ```
 
   ```handlebars
-  {{view Ember.Select content=names}}
+  {{view Ember.Select contentBinding=names}}
   ```
 
   Would result in the following HTML:
@@ -124,7 +124,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         content=names
+         contentBinding=names
          value=selectedName
   }}
   ```
@@ -166,7 +166,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         content=programmers
+         contentBinding=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"}}
   ```
@@ -197,7 +197,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         content=programmers
+         contentBinding=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
          value=currentProgrammer.id}}
@@ -234,7 +234,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         content=programmers
+         contentBinding=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
          selection=selectedPerson}}
@@ -271,7 +271,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ``` handlebars
   {{view Ember.Select
-         content=programmers
+         contentBinding=programmers
          value=selectedProgrammer
   }}
   ```
@@ -303,7 +303,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         content=programmers
+         contentBinding=programmers
          value=selectedProgrammer
          prompt="Please select a name"
   }}
