@@ -214,3 +214,20 @@ test("#each with itemViewClass behaves like a normal bound #each", function() {
   // IE likes to add newlines
   equal(trim(view.$().text()), 'ErikPeterTom');
 });
+
+test("should escape HTML in normal mustaches", function() {
+  createGroupedView(
+    '{{msg}}', {msg: 'you need to be more <b>bold</b>'}
+  );
+  appendView();
+  equal(view.$('b').length, 0, "does not create an element");
+  equal(view.$().text(), 'you need to be more <b>bold</b>', "inserts entities, not elements");
+});
+
+test("should not escape HTML in triple mustaches", function() {
+  createGroupedView(
+    '{{{msg}}}', {msg: 'you need to be more <b>bold</b>'}
+  );
+  appendView();
+  equal(view.$('b').length, 1, "creates an element");
+});
