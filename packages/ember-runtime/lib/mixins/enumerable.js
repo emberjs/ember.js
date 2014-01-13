@@ -1023,3 +1023,36 @@ if (Ember.FEATURES.isEnabled("ember-runtime-compact-by")) {
     }
   });
 }
+
+if (Ember.FEATURES.isEnabled("ember-runtime-max-by")) {
+  Ember.Enumerable.reopen({
+    /**
+     Returns an object with maximum `key` value or `null` if all elements don't have `key`
+
+     ```javascript
+     var arr = [{a: 2}, {a: 1}, {a: 3}, {a: 4}];
+     arr.maxBy("a");  // {a: 4}
+     ```
+
+     @method maxBy
+     @param {String} key name of the property
+     @return {Object} object with maximum `key` value or `null` if all elements don't have `key`
+     */
+    maxBy: function(key) {
+      if (get(this, 'length') === 0) return null;
+      var ret = null;
+      this.forEach(function(o) {
+        if (!Ember.isNone(o)) {
+          var oVal = get(o, key);
+          if (!Ember.isNone(oVal)) {
+            if (Ember.isNone(ret)) ret = o;
+            if (Ember.compare(oVal, get(ret, key)) === 1) {
+              ret = o;
+            }
+          }
+        }
+      });
+      return ret;
+    }
+  });
+}
