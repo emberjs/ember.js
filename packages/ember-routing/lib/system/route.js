@@ -295,7 +295,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
             // order of query params goes from root to leaf.
             finalParams.unshift({
               key: queryParams[k],
-              value: get(controller, k)
+              value: Ember.copy(get(controller, k))
             });
           }
         }

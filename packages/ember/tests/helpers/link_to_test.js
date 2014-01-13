@@ -1274,6 +1274,56 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
 
   });
+
+  test("The {{link-to}} applies active class when query-param is number", function() {
+      Ember.TEMPLATES.index = Ember.Handlebars.compile(
+        "{{#link-to (query-params page=pageNumber) id='page-link'}}Index{{/link-to}} ");
+
+      App.IndexController = Ember.Controller.extend({
+        queryParams: ['page'],
+        page: 1,
+        pageNumber: 5
+      });
+
+      bootApplication();
+
+      shouldNotBeActive('#page-link');
+      Ember.run(router, 'handleURL', '/?index[page]=5');
+      shouldBeActive('#page-link');
+
+  });
+
+  test("The {{link-to}} applies active class when query-param is array", function() {
+      Ember.TEMPLATES.index = Ember.Handlebars.compile(
+        "{{#link-to (query-params pages=pagesArray) id='array-link'}}Index{{/link-to}} " +
+        "{{#link-to (query-params pages=biggerArray) id='bigger-link'}}Index{{/link-to}} " +
+        "{{#link-to (query-params pages=emptyArray) id='empty-link'}}Index{{/link-to}} "
+        );
+
+      App.IndexController = Ember.Controller.extend({
+        queryParams: ['pages'],
+        pages: [],
+        pagesArray: [1,2],
+        biggerArray: [1,2,3],
+        emptyArray: []
+      });
+
+      bootApplication();
+
+      shouldNotBeActive('#array-link');
+      Ember.run(router, 'handleURL', '/?index[pages][]=1&index[pages][]=2');
+      shouldBeActive('#array-link');
+      shouldNotBeActive('#bigger-link');
+      shouldNotBeActive('#empty-link');
+      Ember.run(router, 'handleURL', '/?index[pages][]=2&index[pages][]=1');
+      shouldNotBeActive('#array-link');
+      shouldNotBeActive('#bigger-link');
+      shouldNotBeActive('#empty-link');
+      Ember.run(router, 'handleURL', '/?index[pages][]=1&index[pages][]=2&index[pages][]=3');
+      shouldBeActive('#bigger-link');
+      shouldNotBeActive('#array-link');
+      shouldNotBeActive('#empty-link');
+  });
 }
 
 if (Ember.FEATURES.isEnabled("ember-eager-url-update")) {
