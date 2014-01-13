@@ -1,3 +1,8 @@
+*Ember 1.0.1 (January 13, 2014)*
+
+* [SECURITY] Ensure primitive value contexts are escaped.
+* [SECURITY] Ensure {{group}} helper escapes properly.
+
 *Ember 1.0.0 (August 31, 2013)*
 
 * Fix nested `{{yield}}`
