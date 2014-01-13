@@ -456,7 +456,8 @@ define("route-recognizer",
 
       recognize: function(path) {
         var states = [ this.rootState ],
-            pathLen, i, l, queryStart, queryParams = {};
+            pathLen, i, l, queryStart, queryParams = {}, 
+            isSlashDropped = false;
 
         queryStart = path.indexOf('?');
         if (queryStart !== -1) {
@@ -472,6 +473,7 @@ define("route-recognizer",
         pathLen = path.length;
         if (pathLen > 1 && path.charAt(pathLen - 1) === "/") {
           path = path.substr(0, pathLen - 1);
+          isSlashDropped = true;
         }
 
         for (i=0, l=path.length; i<l; i++) {
@@ -491,6 +493,11 @@ define("route-recognizer",
         var state = solutions[0];
 
         if (state && state.handlers) {
+          // if a trailing slash was dropped and a star segment is the last segment 
+          // specified, put the trailing slash back
+          if (isSlashDropped && state.regex.source.slice(-5) === "(.+)$") {
+            path = path + "/";
+          }
           return findHandler(state, path, queryParams);
         }
       }
