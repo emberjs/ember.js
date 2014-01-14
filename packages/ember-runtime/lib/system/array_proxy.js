@@ -146,6 +146,10 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray, {
     var content = get(this, 'content');
 
     if (content) {
+      Ember.assert(Ember.String.fmt('ArrayProxy expects an Array or ' + 
+        'Ember.ArrayProxy, but you passed %@', [typeof content]), 
+        Ember.isArray(content));
+
       content.addArrayObserver(this, {
         willChange: 'contentArrayWillChange',
         didChange: 'contentArrayDidChange'
@@ -179,6 +183,10 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray, {
     var arrangedContent = get(this, 'arrangedContent');
 
     if (arrangedContent) {
+      Ember.assert(Ember.String.fmt('ArrayProxy expects an Array or ' + 
+        'Ember.ArrayProxy, but you passed %@', [typeof arrangedContent]), 
+        Ember.isArray(arrangedContent));
+
       arrangedContent.addArrayObserver(this, {
         willChange: 'arrangedContentArrayWillChange',
         didChange: 'arrangedContentArrayDidChange'
