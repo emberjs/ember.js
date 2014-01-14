@@ -1247,7 +1247,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     options.outlet = options.outlet || 'main';
 
     var parentView = this.router._lookupActiveView(options.parentView);
-    parentView.disconnectOutlet(options.outlet);
+    if (parentView) { parentView.disconnectOutlet(options.outlet); }
   },
 
   willDestroy: function() {
