@@ -49,16 +49,6 @@ var EachView = CollectionView.extend(_Metamorph, {
     return this._super();
   },
 
-  disableContentObservers: function(callback) {
-    removeBeforeObserver(this, 'content', null, '_contentWillChange');
-    removeObserver(this, 'content', null, '_contentDidChange');
-
-    callback.call(this);
-
-    addBeforeObserver(this, 'content', null, '_contentWillChange');
-    addObserver(this, 'content', null, '_contentDidChange');
-  },
-
   itemViewClass: _MetamorphView,
   emptyViewClass: _MetamorphView,
 
