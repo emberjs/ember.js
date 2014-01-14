@@ -116,3 +116,11 @@ for a detailed explanation.
   instead of waiting for the transition to run to completion, unless
   the transition was aborted/redirected within the same run loop.
 
+* `ember-runtime-compact-by`
+  Returns a copy of the array without elements with `key` equal to `null` and `undefined`.
+
+* `ember-runtime-max-by`
+  Returns an object with maximum `key` value or `null` if all elements don't have `key`.
+
+* `ember-runtime-min-by`
+  Returns an object with minimum `key` value or `null` if all elements don't have `key`.
