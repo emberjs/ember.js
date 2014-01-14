@@ -164,7 +164,7 @@ test("handles attribute bindings for properties", function() {
     view.set('checked', false);
   });
 
-  equal(view.$().prop('checked'), false, 'changes to unchecked');
+  equal(!!view.$().prop('checked'), false, 'changes to unchecked');
 });
 
 test("handles `undefined` value for properties", function() {

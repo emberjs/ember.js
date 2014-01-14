@@ -34,7 +34,6 @@ module("the #each helper", {
       view = null;
     });
     Ember.lookup = originalLookup;
-    Ember.TESTING_DEPRECATION = false;
   }
 });
 
@@ -371,8 +370,6 @@ test("it supports {{itemViewClass=}}", function() {
 });
 
 test("it supports {{itemViewClass=}} with tagName", function() {
-  Ember.TESTING_DEPRECATION = true;
-
   Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
       template: templateFor('{{each view.people itemViewClass="MyView" tagName="ul"}}'),

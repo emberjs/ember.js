@@ -135,8 +135,11 @@ define("router/handler-info",
     }
 
     ResolvedHandlerInfo.prototype = oCreate(HandlerInfo.prototype);
-    ResolvedHandlerInfo.prototype.resolve = function() {
+    ResolvedHandlerInfo.prototype.resolve = function(async, shouldContinue, payload) {
       // A ResolvedHandlerInfo just resolved with itself.
+      if (payload && payload.resolvedModels) {
+        payload.resolvedModels[this.name] = this.context;
+      }
       return resolve(this);
     };
 
@@ -1300,19 +1303,6 @@ define("router/transition-state",
           return handlerInfo.resolve(async, innerShouldContinue, payload)
                             .then(proceed);
         }
-      },
-
-      getResolvedHandlerInfos: function() {
-        var resolvedHandlerInfos = [];
-        var handlerInfos = this.handlerInfos;
-        for (var i = 0, len = handlerInfos.length; i < len; ++i) {
-          var handlerInfo = handlerInfos[i];
-          if (!(handlerInfo instanceof ResolvedHandlerInfo)) {
-            break;
-          }
-          resolvedHandlerInfos.push(handlerInfo);
-        }
-        return resolvedHandlerInfos;
       }
     };
 
@@ -1582,6 +1572,10 @@ define("router/utils",
     "use strict";
     var slice = Array.prototype.slice;
 
+    function isArray(test) {
+      return Object.prototype.toString.call(test) === "[object Array]";
+    }
+
     function merge(hash, other) {
       for (var prop in other) {
         if (other.hasOwnProperty(prop)) { hash[prop] = other[prop]; }
@@ -1611,6 +1605,22 @@ define("router/utils",
       }
     }
 
+    /**
+      @private
+
+      Coerces query param properties and array elements into strings.
+    **/
+    function coerceQueryParamsToString(queryParams) {
+      for (var key in queryParams) {
+        if (typeof queryParams[key] === 'number') {
+          queryParams[key] = '' + queryParams[key];
+        } else if (isArray(queryParams[key])) {
+          for (var i = 0, l = queryParams[key].length; i < l; i++) {
+            queryParams[key][i] = '' + queryParams[key][i];
+          }
+        }
+      }
+    }
     /**
       @private
      */
@@ -1712,7 +1722,6 @@ define("router/utils",
       }
     }
 
-
     function getChangelist(oldObject, newObject) {
       var key;
       var results = {
@@ -1724,6 +1733,8 @@ define("router/utils",
       merge(results.all, newObject);
 
       var didChange = false;
+      coerceQueryParamsToString(oldObject);
+      coerceQueryParamsToString(newObject);
 
       // Calculate removals
       for (key in oldObject) {
@@ -1738,9 +1749,24 @@ define("router/utils",
       // Calculate changes
       for (key in newObject) {
         if (newObject.hasOwnProperty(key)) {
-          if (oldObject[key] !== newObject[key]) {
-            results.changed[key] = newObject[key];
-            didChange = true;
+          if (isArray(oldObject[key]) && isArray(newObject[key])) {
+            if (oldObject[key].length !== newObject[key].length) {
+              results.changed[key] = newObject[key];
+              didChange = true;
+            } else {
+              for (var i = 0, l = oldObject[key].length; i < l; i++) {
+                if (oldObject[key][i] !== newObject[key][i]) {
+                  results.changed[key] = newObject[key];
+                  didChange = true;
+                }
+              }
+            }
+          }
+          else {
+            if (oldObject[key] !== newObject[key]) {
+              results.changed[key] = newObject[key];
+              didChange = true;
+            }
           }
         }
       }
@@ -1759,6 +1785,7 @@ define("router/utils",
     __exports__.slice = slice;
     __exports__.serialize = serialize;
     __exports__.getChangelist = getChangelist;
+    __exports__.coerceQueryParamsToString = coerceQueryParamsToString;
   });
 define("router", 
   ["./router/router","exports"],

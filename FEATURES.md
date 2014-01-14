@@ -110,3 +110,9 @@ for a detailed explanation.
   a whitespace string.
 
   Added in [#4049](https://github.com/emberjs/ember.js/pull/4049).  
+
+* `ember-eager-url-update`
+  Invoking (clicking) `link-to` tags will immediately update the URL
+  instead of waiting for the transition to run to completion, unless
+  the transition was aborted/redirected within the same run loop.
+
