@@ -106,7 +106,6 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
         Ember.TEMPLATES = {};
       });
-      Ember.TESTING_DEPRECATION = false;
     }
   });
 

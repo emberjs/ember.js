@@ -735,7 +735,6 @@ module("Ember.Handlebars - action helper - deprecated invoking directly on targe
   setup: function() {
     dispatcher = Ember.EventDispatcher.create();
     dispatcher.setup();
-    Ember.TESTING_DEPRECATION = true;
   },
 
   teardown: function() {
@@ -743,7 +742,6 @@ module("Ember.Handlebars - action helper - deprecated invoking directly on targe
       dispatcher.destroy();
       if (view) { view.destroy(); }
     });
-    Ember.TESTING_DEPRECATION = false;
   }
 });
 
