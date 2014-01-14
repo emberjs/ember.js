@@ -27,44 +27,26 @@ import {on} from "ember-metal/events";
 import {handlebarsGet} from "ember-handlebars/ext";
 
 var EachView = CollectionView.extend(_Metamorph, {
+  content: Ember.computed.oneWay('dataSource'),
   init: function() {
     var itemController = get(this, 'itemController');
-    var binding;
 
     if (itemController) {
-      var controller = get(this, 'controller.container').lookupFactory('controller:array').create({
+      var parentController = get(this, 'controller');
+      var controller = get(this, 'controller.container').lookupFactory('controller:array').createWithMixins({
         _isVirtual: true,
-        parentController: get(this, 'controller'),
+        _eachView: this,
+        modelBinding: '_eachView.dataSource',
+        parentController: parentController,
         itemController: itemController,
-        target: get(this, 'controller'),
-        _eachView: this
+        target: parentController
       });
 
-      this.disableContentObservers(function() {
-        set(this, 'content', controller);
-        binding = new Binding('content', '_eachView.dataSource').oneWay();
-        binding.connect(controller);
-      });
-
+      set(this, 'content', controller);
       set(this, '_arrayController', controller);
-    } else {
-      this.disableContentObservers(function() {
-        binding = new Binding('content', 'dataSource').oneWay();
-        binding.connect(this);
-      });
     }
 
     return this._super();
-  },
-
-  _assertArrayLike: function(content) {
-    Ember.assert(fmt("The value that #each loops over must be an Array. You " +
-                     "passed %@, but it should have been an ArrayController",
-                     [content.constructor]),
-                     !ControllerMixin.detect(content) ||
-                       (content && content.isGenerated) ||
-                       content instanceof ArrayController);
-    Ember.assert(fmt("The value that #each loops over must be an Array. You passed %@", [(ControllerMixin.detect(content) && content.get('model') !== undefined) ? fmt("'%@' (wrapped in %@)", [content.get('model'), content]) : content]), EmberArray.detect(content));
   },
 
   disableContentObservers: function(callback) {
@@ -439,8 +421,6 @@ function eachHelper(path, options) {
   }
 
   options.hash.dataSourceBinding = path;
-  // Set up emptyView as a metamorph with no tag
-  //options.hash.emptyViewClass = Ember._MetamorphView;
 
   // can't rely on this default behavior when use strict
   ctx = this || window;

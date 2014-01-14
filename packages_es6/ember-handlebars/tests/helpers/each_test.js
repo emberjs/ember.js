@@ -223,7 +223,9 @@ test("it supports itemController", function() {
     })
   });
 
-  run(function() { view.destroy(); }); // destroy existing view
+  var container = new Ember.Container();
+
+  Ember.run(view, 'destroy');
 
   var parentController = {
     container: container
