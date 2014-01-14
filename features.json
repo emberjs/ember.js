@@ -15,7 +15,10 @@
     "composable-computed-properties": true,
     "ember-routing-drop-deprecated-action-style": null,
     "ember-metal-is-blank": null,
-    "ember-eager-url-update": null
+    "ember-eager-url-update": null,
+    "ember-runtime-compact-by": null,
+    "ember-runtime-max-by": null,
+    "ember-runtime-min-by": null
   },
   "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info"]
 }
