@@ -33,10 +33,8 @@ var EachView = CollectionView.extend(_Metamorph, {
 
     if (itemController) {
       var parentController = get(this, 'controller');
-      var controller = get(this, 'controller.container').lookupFactory('controller:array').createWithMixins({
-        _isVirtual: true,
+      var controller = get(this, 'controller.container').lookupFactory('controller:-each-array').create({
         _eachView: this,
-        modelBinding: '_eachView.dataSource',
         parentController: parentController,
         itemController: itemController,
         target: parentController
@@ -71,12 +69,6 @@ var EachView = CollectionView.extend(_Metamorph, {
       // In this case, we do not bind, because the `content` of
       // a #each item cannot change.
       data.keywords[keyword] = content;
-    }
-
-    // If {{#each}} is looping over an array of controllers,
-    // point each child view at their respective controller.
-    if (content && content.isController) {
-      set(view, 'controller', content);
     }
 
     return view;

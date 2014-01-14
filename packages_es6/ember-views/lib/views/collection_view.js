@@ -405,6 +405,13 @@ var CollectionView = ContainerView.extend({
       set(view, 'tagName', itemTagName);
     }
 
+    var content = get(view, 'content');
+
+    // point each child view at their respective controller.
+    if (content && content.isController) {
+      set(view, 'controller', content);
+    }
+
     return view;
   }
 });

@@ -7,7 +7,7 @@ import Ember from "ember-metal"; // Ember.FEATURES, Ember.deprecate, Ember.asser
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import {runLoadHooks} from "ember-runtime/system/lazy_load";
-import DAG from "ember-application/system/dag"
+import DAG from "ember-application/system/dag";
 import Namespace from "ember-runtime/system/namespace";
 import DeferredMixin from "ember-runtime/mixins/deferred";
 import {DefaultResolver} from "ember-application/system/resolver";
@@ -19,6 +19,7 @@ import {Controller} from "ember-runtime/controllers/controller";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
+import EachArrayController from "ember-handlebars/helpers/each_array_controller";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
 import jQuery from "ember-views/system/jquery";
@@ -846,6 +847,8 @@ Application.reopenClass({
     container.register('controller:array', ArrayController, { instantiate: false });
     container.register('route:basic', Route, { instantiate: false });
     container.register('event_dispatcher:main', EventDispatcher);
+
+    container.register('controller:-each-array', EachArrayController);
 
     container.register('router:main',  Router);
     container.injection('router:main', 'namespace', 'application:main');
