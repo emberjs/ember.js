@@ -132,3 +132,10 @@ for a detailed explanation.
   the transition was aborted/redirected within the same run loop.
 
   Added in [#4122](https://github.com/emberjs/ember.js/pull/4122).
+
+* `ember-application-ajax`
+  Incorporates https://github.com/instructure/ic-ajax as an internal
+  vendored package, and makes it available as `Ember.ajax`.
+
+  Added in [#4148](https://github.com/emberjs/ember.js/pull/4148)
+
