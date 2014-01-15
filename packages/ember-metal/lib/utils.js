@@ -361,7 +361,7 @@ Ember.wrap = function(func, superFunc) {
   @return {Boolean} true if the passed object is an array or Array-like
 */
 Ember.isArray = function(obj) {
-  if (!obj || obj.setInterval) { return false; }
+  if (!obj) { return false; }
   if (Array.isArray && Array.isArray(obj)) { return true; }
   if (Ember.Array && Ember.Array.detect(obj)) { return true; }
   if ((obj.length !== undefined) && 'object'===typeof obj) { return true; }
