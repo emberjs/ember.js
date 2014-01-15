@@ -531,6 +531,15 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   },
 
   /**
+    A hook to make the route use a specific controller
+
+    @property controllerName
+    @type String
+    @default null
+   */
+  controllerName: null,
+
+  /**
     This hook is the entry point for router.js
 
     @private
