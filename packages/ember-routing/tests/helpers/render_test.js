@@ -457,7 +457,7 @@ test("{{render}} works with slash notation", function() {
   equal(container.lookup('controller:blog.post'), renderedView.get('controller'), 'rendered with correct controller');
 });
 
-test("Using quoteless templateName is deprecated", function(){
+test("Using quoteless templateName works properly (DEPRECATED)", function(){
   var template = '<h1>HI</h1>{{render home}}';
   var controller = Ember.Controller.extend({container: container});
   view = Ember.View.create({
@@ -467,21 +467,7 @@ test("Using quoteless templateName is deprecated", function(){
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
-  expectDeprecation(function(){
-    appendView(view);
-  }, "Using a quoteless parameter with {{render}} is deprecated. Please update to quoted usage '{{render \"home\"}}.");
-});
-
-test("Using quoteless templateName works properly", function(){
-  var template = '<h1>HI</h1>{{render home}}';
-  var controller = Ember.Controller.extend({container: container});
-  view = Ember.View.create({
-    controller: controller.create(),
-    template: Ember.Handlebars.compile(template)
-  });
-
-  Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
-
+  expectDeprecation("Using a quoteless parameter with {{render}} is deprecated. Please update to quoted usage '{{render \"home\"}}.");
   appendView(view);
 
   equal(view.$('p:contains(BYE)').length, 1, "template was rendered");

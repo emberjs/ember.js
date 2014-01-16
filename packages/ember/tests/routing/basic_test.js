@@ -1138,6 +1138,7 @@ asyncTest("Events are triggered on the current state when defined in `events` ob
     "<a {{action showStuff content}}>{{name}}</a>"
   );
 
+  expectDeprecation(/Action handlers contained in an `events` object are deprecated/);
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
@@ -1176,6 +1177,7 @@ asyncTest("Events defined in `events` object are triggered on the current state 
     "<a {{action showStuff content}}>{{name}}</a>"
   );
 
+  expectDeprecation(/Action handlers contained in an `events` object are deprecated/);
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
@@ -1302,6 +1304,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
 
     container.register('controller:home', controller);
 
+    expectDeprecation(/Action handlers contained in an `events` object are deprecated/);
     bootApplication();
 
     var actionId = Ember.$("#qunit-fixture a").data("ember-action");
@@ -2715,10 +2718,12 @@ test("Route model hook finds the same model as a manual find", function() {
   equal(App.Post, Post);
 });
 
-test("Can register an implementation via Ember.Location.registerImplementation", function(){
+test("Can register an implementation via Ember.Location.registerImplementation (DEPRECATED)", function(){
   var TestLocation = Ember.NoneLocation.extend({
     implementation: 'test'
   });
+
+  expectDeprecation(/Using the Ember.Location.registerImplementation is no longer supported/);
 
   Ember.Location.registerImplementation('test', TestLocation);
 

@@ -67,6 +67,12 @@ test("Lowercase namespaces should be deprecated", function() {
   expectDeprecation(function(){
     lookup.namespaceC.toString();
   }, "Namespaces should not begin with lowercase.");
+
+  expectDeprecation(function(){
+    Ember.run(function() {
+      lookup.namespaceC.destroy();
+    });
+  }, "Namespaces should not begin with lowercase.");
 });
 
 test("A namespace can be assigned a custom name", function() {

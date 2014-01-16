@@ -44,10 +44,11 @@ test('container lookup is normalized', function() {
 });
 
 test('Ember.Container.defaultContainer is the same as the Apps container, but emits deprecation warnings', function() {
+  expectDeprecation(/Using the defaultContainer is no longer supported./);
   var routerFromContainer = locator.lookup('router:main'),
-    routerFromDefaultCOntainer = Ember.Container.defaultContainer.lookup('router:main');
+    routerFromDefaultContainer = Ember.Container.defaultContainer.lookup('router:main');
 
-  equal(routerFromContainer, routerFromDefaultCOntainer, 'routers from both containers are equal');
+  equal(routerFromContainer, routerFromDefaultContainer, 'routers from both containers are equal');
 });
 
 test('registered entities can be looked up later', function() {
