@@ -152,7 +152,7 @@ test("The compiler provides the current element as an option", function() {
   var textNode;
   registerHelper('testing', function(context, params, options) {
     textNode = document.createTextNode("testy");
-    options.element.appendChild(textNode);
+    options.range.appendChild(textNode);
   });
 
   compilesTo('<div>{{testing}}</div>', '<div>testy</div>');
@@ -162,9 +162,9 @@ test("The compiler provides the current element as an option", function() {
 test("It is possible to override the resolution mechanism", function() {
   registerHelper('RESOLVE', function(context, path, params, options) {
     if (path === 'zomg') {
-      options.element.appendChild(document.createTextNode(context.zomg));
+      options.range.appendChild(document.createTextNode(context.zomg));
     } else {
-      options.element.appendChild(document.createTextNode(path.replace(".", "-")));
+      options.range.appendChild(document.createTextNode(path.replace(".", "-")));
     }
   });
 
@@ -189,7 +189,7 @@ test("Simple data binding using text nodes", function() {
       parent.removeChild(originalText);
     };
 
-    options.element.appendChild(textNode);
+    options.range.appendChild(textNode);
   });
 
   var object = { title: 'hello' };
@@ -210,7 +210,7 @@ test("Simple data binding on fragments", function() {
   var callback;
 
   registerHelper('RESOLVE', function(context, path, params, options) {
-    var fragment = frag(options.element.parent, context[path]);
+    var fragment = frag(options.range.parent, context[path]);
 
     var firstChild = fragment.firstChild,
         lastChild = fragment.lastChild;
@@ -230,7 +230,7 @@ test("Simple data binding on fragments", function() {
       range.insertNode(fragment);
     };
 
-    options.element.appendChild(fragment);
+    options.range.appendChild(fragment);
   });
 
   var object = { title: '<p>hello</p> to the' };
@@ -257,7 +257,7 @@ test("RESOLVE hook receives escaping information", function() {
       equal(options.escaped, false);
     }
 
-    options.element.appendChild(document.createTextNode(path));
+    options.range.appendChild(document.createTextNode(path));
   });
 
   compilesTo('<div>{{escaped}}-{{{unescaped}}}</div>', '<div>escaped-unescaped</div>');
@@ -273,7 +273,7 @@ test("Helpers receive escaping information", function() {
       equal(options.escaped, false);
     }
 
-    options.element.appendText(params[0]);
+    options.range.appendText(params[0]);
   });
 
   compilesTo('<div>{{testing escaped}}-{{{testing unescaped}}}</div>', '<div>escaped-unescaped</div>');
@@ -525,7 +525,7 @@ test("A block helper can pass a context to be used in the child", function() {
 test("A block helper can insert the document fragment manually", function() {
   registerHelper('testing', function(context, params, options) {
     var frag = options.render({ title: 'Rails is omakase' }, options);
-    options.element.appendChild(frag);
+    options.range.appendChild(frag);
   });
 
   compilesTo('{{#testing}}<div id="test">{{title}}</div>{{/testing}}', '<div id="test">Rails is omakase</div>');
