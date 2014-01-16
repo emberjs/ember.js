@@ -23,6 +23,8 @@ for a detailed explanation.
   Transforms a string so that it may be used as part of a 'pretty' / SEO friendly URL.
   (E.g. `'100 ways Ember.js is better than Angular.'.parameterize(); // '100-ways-emberjs-is-better-than-angular'`)
 
+  Added in [#3953](https://github.com/emberjs/ember.js/pull/3953).
+
 * `ember-routing-named-substates`
 
   Add named substates; e.g. when resolving a `loading` or `error`
