@@ -90,6 +90,14 @@ for a detailed explanation.
 
   Added in [#3879](https://github.com/emberjs/ember.js/pull/3879)
 
+* `composable-computed-properties`
+
+  This feature allows you to combine (compose) different computed
+  properties together. So it gives you a really nice "functional
+  programming" like syntax to deal with complex expressions.
+
+  Added in [#3696](https://github.com/emberjs/ember.js/pull/3696).
+
 * `query-params-new`
 
   Add query params support to the ember router. This is a rewrite of a
@@ -102,18 +110,21 @@ for a detailed explanation.
   Added in [#4008](https://github.com/emberjs/ember.js/pull/4008).
 
 * `ember-metal-run-bind`
+
   Enables `Ember.run.bind` which is ember run-loop aware variation of
   jQuery.proxy.  Useful for integrating with 3rd party callbacks.
 
   Added in [161113](https://github.com/emberjs/ember.js/commit/161113a9e5fad7f6dfde09a053166a05660a0051).
 
 * `ember-metal-is-blank`
+
   Adds `Ember.isBlank` method which returns true for an empty value or
   a whitespace string.
 
   Added in [#4049](https://github.com/emberjs/ember.js/pull/4049).  
 
 * `ember-eager-url-update`
+
   Invoking (clicking) `link-to` tags will immediately update the URL
   instead of waiting for the transition to run to completion, unless
   the transition was aborted/redirected within the same run loop.
