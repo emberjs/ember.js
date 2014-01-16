@@ -105,6 +105,8 @@ for a detailed explanation.
   Enables `Ember.run.bind` which is ember run-loop aware variation of
   jQuery.proxy.  Useful for integrating with 3rd party callbacks.
 
+  Added in [161113](https://github.com/emberjs/ember.js/commit/161113a9e5fad7f6dfde09a053166a05660a0051).
+
 * `ember-metal-is-blank`
   Adds `Ember.isBlank` method which returns true for an empty value or
   a whitespace string.
@@ -116,3 +118,4 @@ for a detailed explanation.
   instead of waiting for the transition to run to completion, unless
   the transition was aborted/redirected within the same run loop.
 
+  Added in [#4122](https://github.com/emberjs/ember.js/pull/4122).
