@@ -725,18 +725,22 @@ Ember.Application.reopenClass({
 
     Ember.Container.defaultContainer = new DeprecatedContainer(container);
 
+    if(namespace) {
+      container.resolver  = resolverFor(namespace);
+      container.normalize = container.resolver.normalize;
+      container.describe  = container.resolver.describe;
+      container.makeToString = container.resolver.makeToString;
+
+      container.register('application:main', namespace, { instantiate: false });
+      container.injection('controller', 'namespace', 'application:main');
+    }
+
     container.set = Ember.set;
-    container.resolver  = resolverFor(namespace);
-    container.normalize = container.resolver.normalize;
-    container.describe  = container.resolver.describe;
-    container.makeToString = container.resolver.makeToString;
 
     container.optionsForType('component', { singleton: false });
     container.optionsForType('view', { singleton: false });
     container.optionsForType('template', { instantiate: false });
     container.optionsForType('helper', { instantiate: false });
-
-    container.register('application:main', namespace, { instantiate: false });
 
     container.register('controller:basic', Ember.Controller, { instantiate: false });
     container.register('controller:object', Ember.ObjectController, { instantiate: false });
@@ -752,7 +756,6 @@ Ember.Application.reopenClass({
     container.register('location:none', Ember.NoneLocation);
 
     container.injection('controller', 'target', 'router:main');
-    container.injection('controller', 'namespace', 'application:main');
 
     container.injection('route', 'router', 'router:main');
 
