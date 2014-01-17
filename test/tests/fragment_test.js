@@ -131,3 +131,16 @@ test('test auto insertion of text nodes for needed edges a fragment with range m
 
   equalHTML(fragment, "A<p>B</p>C");
 });
+
+// TODO move test to AST
+test('test auto insertion of text nodes between blocks and mustaches', function () {
+  var ast = preprocess("{{one}}{{two}}{{#three}}{{/three}}{{#four}}{{/four}}{{five}}");
+  // "" {{one}} "" {{two}} "" {{#three}}{{/three}} "" {{#four}}{{/four}} "" {{five}} ""
+  equal(ast.length, 11);
+  equal(ast[0], '');
+  equal(ast[2], '');
+  equal(ast[4], '');
+  equal(ast[6], '');
+  equal(ast[8], '');
+  equal(ast[10], '');
+});
