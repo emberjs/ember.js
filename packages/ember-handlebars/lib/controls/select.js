@@ -507,7 +507,7 @@ Ember.Select = Ember.View.extend({
         selectedValue = (valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection')),
         selection;
 
-    if (value !== selectedValue) {
+    if (value !== selectedValue && typeof value !== "undefined") {
       selection = content ? content.find(function(obj) {
         return value === (valuePath ? get(obj, valuePath) : obj);
       }) : null;
