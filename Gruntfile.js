@@ -196,7 +196,7 @@ module.exports = function(grunt) {
       }
     },
 
-    clean: ["dist"],
+    clean: ["dist", "tmp"],
 
     qunit: {
       all: ['test/index.html']
