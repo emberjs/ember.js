@@ -29,6 +29,7 @@
         "minispade",
         "expectAssertion",
         "expectDeprecation",
+        "expectNoDeprecation",
 
         // A safe subset of "browser:true":
         "window", "location", "document", "XMLSerializer",

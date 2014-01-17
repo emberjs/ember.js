@@ -22,7 +22,8 @@ test("Action can be handled by a function on actions object", function() {
 
 if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
   test("Action can be handled by a function on the view (DEPRECATED)", function() {
-    expect(1);
+    expect(2);
+    expectDeprecation(/Action handlers implemented directly on views are deprecated/);
     view = Ember.View.extend({
       poke: function() {
         ok(true, 'poked');

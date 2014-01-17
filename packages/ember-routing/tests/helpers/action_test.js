@@ -763,6 +763,8 @@ if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
 
     appendView();
 
+    expectDeprecation(/Action handlers implemented directly on controllers are deprecated/);
+
     view.$('button').trigger('click');
 
     ok(eventHandlerWasCalled, "the action was called");

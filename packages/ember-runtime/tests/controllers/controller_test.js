@@ -122,7 +122,7 @@ module('Ember.Controller deprecations');
 
 if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
   test("Action can be handled by method directly on controller (DEPRECATED)", function() {
-    expect(1);
+    expectDeprecation(/Action handlers implemented directly on controllers are deprecated/);
     var TestController = Ember.Controller.extend({
       poke: function() {
         ok(true, 'poked');
