@@ -109,3 +109,25 @@ test('hydrates a fragment with range mustaches', function () {
   equal(mustaches[0][0], "foo");
   deepEqual(mustaches[0][1], []);
 });
+
+test('test auto insertion of text nodes for needed edges a fragment with range mustaches', function () {
+  var ast = preprocess("{{first}}<p>{{second}}</p>{{third}}");
+  var fragment = fragmentFor(ast).cloneNode(true);
+  var hydrate = hydrationFor(ast);
+  var mustaches = hydrate(fragment);
+
+  equal(mustaches.length, 3);
+  equal(mustaches[0][0], "first");
+  deepEqual(mustaches[0][1], []);
+  equal(mustaches[1][0], "second");
+  deepEqual(mustaches[1][1], []);
+  equal(mustaches[2][0], "third");
+  deepEqual(mustaches[2][1], []);
+
+
+  mustaches[0][2].range.appendText('A');
+  mustaches[1][2].range.appendText('B');
+  mustaches[2][2].range.appendText('C');
+
+  equalHTML(fragment, "A<p>B</p>C");
+});

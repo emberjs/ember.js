@@ -58,8 +58,8 @@ test("two sibling elements with mustaches", function() {
 test("mustaches at the root", function() {
   var opcodes = opcodesFor("{{foo}} {{bar}}");
   deepEqual(opcodes, [
-    mustache('foo', [], null, 0),
-    mustache('bar', [], 0, null)
+    mustache('foo', [], 0, 1),
+    mustache('bar', [], 1, 2)
   ]);
 });
 

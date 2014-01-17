@@ -89,6 +89,7 @@ test("A more complete embedding example", function() {
              " {{more 'embed'}}";
 
   deepEqual(preprocess(html), [
+    '',
     mustache('embed'), ' ',
     mustache([id('some'), string('content')]), ' ',
     element("div", [
@@ -96,17 +97,19 @@ test("A more complete embedding example", function() {
     ], [
       mustache('content')
     ]),
-    ' ', mustache([id('more'), string('embed')])
+    ' ', mustache([id('more'), string('embed')]),
+    ''
   ]);
 });
 
 test("Simple embedded block helpers", function() {
   var html = "{{#if foo}}<div>{{content}}</div>{{/if}}";
 
-  deepEqual(preprocess(html), [
+  deepEqual(preprocess(html), ['',
     block(mustache([id('if'), id('foo')]), [
       element('div', [ mustache('content') ])
-    ])
+    ]),
+    ''
   ]);
 });
 
