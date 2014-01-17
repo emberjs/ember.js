@@ -20,7 +20,9 @@ var parents = [
   },
   {
     name: 'with parent as a fragment',
-    create: function (frag) { return frag; },
+    create: function (frag) {
+      return frag;
+    },
     startHTML: '',
     endHTML: ''
   }
@@ -89,7 +91,24 @@ var contents = [
 ];
 
 function createCombinatorialTest(factory) {
-  QUnit.module('Range');
+  function filter() {
+    var frag = document.createDocumentFragment(),
+      parent = factory.parent.create(frag),
+      start = factory.start.create(parent),
+      end = factory.end.create(parent);
+
+    // this is prevented in the parser by generating
+    // empty text nodes at boundaries of fragments
+    if (parent === frag && (start === null || end === null)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  if (filter()) {
+    return;
+  }
 
   test('appendChild '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
     var frag = document.createDocumentFragment(),
@@ -275,6 +294,8 @@ function createCombinatorialTest(factory) {
 };
 
 function createCombinatorialTests(parents, starts, ends, contents) {
+  QUnit.module('Range');
+
   for (var i=0; i<parents.length; i++) {
     for (var j=0; j<starts.length; j++) {
       for (var k=0; k<ends.length; k++) {
