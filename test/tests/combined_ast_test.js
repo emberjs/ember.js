@@ -38,9 +38,7 @@ function element(tagName, attrs, children, helpers) {
 }
 
 function block(helper, children) {
-  var block = new BlockElement(helper, children);
-  block.inverse = [];
-  return block;
+  return new BlockElement(helper, children);;
 }
 
 test("a simple piece of content", function() {

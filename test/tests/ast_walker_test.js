@@ -5,7 +5,7 @@ module("ASTWalker");
 
 test("visits ast in an order friendly to opcode generation", function () {
   var input = "A{{#if}}B{{#block}}C{{/block}}{{#block}}D{{/block}}{{else}}E{{#block}}F{{/block}}{{/if}}<div>G{{#block}}H{{/block}}</div>";
-  var expected = "[0: [0: 'C' 1: '' 2: 'D' 3: ''] 'B{{0,1}}{{2,3}}' 1: [0: 'F' 1: ''] 'E{{0,1}}' 2: 'H' 3: ''] 'A{{0,1}}<div>G{{2,3}}</div>'";
+  var expected = "[0: [0: 'C' 1: 'D'] 'B{{0}}{{1}}' 1: [0: 'F'] 'E{{0}}' 2: 'H'] 'A{{0,1}}<div>G{{2}}</div>'";
 
   var ast = preprocess(input);
 
@@ -29,7 +29,7 @@ test("visits ast in an order friendly to opcode generation", function () {
       this.opcodes.push(['closeTag', element.tag]);
     },
     block: function (block) {
-      this.opcodes.push(['block', this.templateId++, this.templateId++]);
+      this.opcodes.push(['block', this.templateId++, block.inverse === null ? null : this.templateId++]);
     },
     node: function (node) { }
   }
@@ -68,7 +68,12 @@ test("visits ast in an order friendly to opcode generation", function () {
       this.template += str;
     },
     block: function (programId, inverseId) {
-      this.template += '{{' + programId + ',' + inverseId + '}}';
+      this.template += '{{' + programId;
+      if (inverseId !== null) {
+        this.template += ',' + inverseId;
+      }
+
+      this.template += '}}';
     },
     compile: function (opcodes) {
       var opcode, i;
