@@ -20,18 +20,27 @@ function destroy(object) {
   });
 }
 
+function setupTextArea(controller, template) {
+  if (template === undefined) {
+    template = controller;
+    controller = {};
+  }
+
+  textArea = Ember.View.extend({
+    controller: controller,
+    template: compile(template)
+  }).create();
+
+  append();
+}
+
 module("{{textarea}}", {
   setup: function() {
     controller = {
       val: 'Lorem ipsum dolor'
     };
 
-    textArea = Ember.View.extend({
-      controller: controller,
-      template: compile('{{textarea disabled=disabled value=val}}')
-    }).create();
-
-    append();
+    setupTextArea(controller, '{{textarea disabled=disabled value=val}}');
   },
 
   teardown: function() {
@@ -54,6 +63,20 @@ test("Should bind its contents to the specified value", function() {
   set(controller, 'val', "sit amet");
   equal(textArea.$('textarea').val(), "sit amet", "The new contents are included");
 });
+
+if (Ember.FEATURES.isEnabled('ember-views-bindable-attributes')) {
+  module("{{textarea}} - with bindableAttributes", {
+    teardown: function() {
+      destroy(textArea);
+    }
+  });
+
+  test("should add attributes for any bindableAttributes that are passed to the {{textarea}} helper", function() {
+    setupTextArea('{{textarea autofocus=true}}');
+
+    equal(textArea.$('textarea').attr('autofocus'), 'autofocus', 'has the bindableAttribute');
+  });
+}
 
 module("Ember.TextArea", {
   setup: function() {

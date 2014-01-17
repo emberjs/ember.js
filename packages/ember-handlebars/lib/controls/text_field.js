@@ -32,6 +32,12 @@ Ember.TextField = Ember.Component.extend(Ember.TextSupport, {
   classNames: ['ember-text-field'],
   tagName: "input",
   attributeBindings: ['type', 'value', 'size', 'pattern', 'name', 'min', 'max'],
+  bindableAttributes: ['accept', 'autocomplete', 'autosave', 'formaction',
+                       'formenctype', 'formmethod', 'formnovalidate', 'formtarget',
+                       'height', 'inputmode', 'list', 'multiple', 'pattern',
+                       'step', 'width'],
+
+
 
   /**
     The `value` attribute of the input element. As the user inputs text, this

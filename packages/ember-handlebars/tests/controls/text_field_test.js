@@ -17,6 +17,20 @@ function destroy(view) {
   });
 }
 
+function setupTextField(controller, template) {
+  if (template === undefined) {
+    template = controller;
+    controller = {};
+  }
+
+  textField = Ember.View.extend({
+    controller: controller,
+    template: compile(template)
+  }).create();
+
+  append();
+}
+
 var controller;
 
 module("{{input type='text'}}", {
@@ -30,12 +44,7 @@ module("{{input type='text'}}", {
       tab: 5
     };
 
-    textField = Ember.View.extend({
-      controller: controller,
-      template: compile('{{input type="text" disabled=disabled value=val placeholder=place name=name maxlength=max size=size tabindex=tab}}')
-    }).create();
-
-    append();
+    setupTextField(controller, '{{input type="text" disabled=disabled value=val placeholder=place name=name maxlength=max size=size tabindex=tab}}');
   },
 
   teardown: function() {
@@ -97,14 +106,7 @@ test("input tabindex is updated when setting tabindex property of view", functio
 
 module("{{input type='text'}} - static values", {
   setup: function() {
-    controller = {};
-
-    textField = Ember.View.extend({
-      controller: controller,
-      template: compile('{{input type="text" disabled=true value="hello" placeholder="Enter some text" name="some-name" maxlength=30 size=30 tabindex=5}}')
-    }).create();
-
-    append();
+    setupTextField('{{input type="text" disabled=true value="hello" placeholder="Enter some text" name="some-name" maxlength=30 size=30 tabindex=5}}');
   },
 
   teardown: function() {
@@ -146,14 +148,7 @@ test("input tabindex is updated when setting tabindex property of view", functio
 
 module("{{input}} - default type", {
   setup: function() {
-    controller = {};
-
-    textField = Ember.View.extend({
-      controller: controller,
-      template: compile('{{input}}')
-    }).create();
-
-    append();
+    setupTextField('{{input}}');
   },
 
   teardown: function() {
@@ -164,6 +159,20 @@ module("{{input}} - default type", {
 test("should have the default type", function() {
   equal(textField.$('input').attr('type'), 'text', "Has a default text type");
 });
+
+if (Ember.FEATURES.isEnabled('ember-views-bindable-attributes')) {
+  module("{{input}} - with bindableAttributes", {
+    teardown: function() {
+      destroy(textField);
+    }
+  });
+
+  test("should add attributes for any bindableAttributes that are passed to the {{input}} helper", function() {
+    setupTextField('{{input autofocus=true}}');
+
+    equal(textField.$('input').attr('autofocus'), 'autofocus', 'has the bindableAttribute');
+  });
+}
 
 module("Ember.TextField", {
   setup: function() {

@@ -17,7 +17,8 @@
     "ember-metal-is-blank": true,
     "ember-eager-url-update": true,
     "ember-routing-auto-location": null,
-    "ember-routing-bound-action-name": null
+    "ember-routing-bound-action-name": null,
+    "ember-views-bindable-attributes": null
   },
   "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info"]
 }

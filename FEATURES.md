@@ -158,3 +158,12 @@ for a detailed explanation.
   be fired.
 
   Added in [#3936](https://github.com/emberjs/ember.js/pull/3936)
+
+* `ember-views-bindable-attributes`
+  Allows setting up observers for binding to attributes only if the
+  property is present at the time of the first render. This enables us
+  to allow binding to most of the HTML5 attributes without the
+  performance penalty that you would get with `attributeBindings` alone.
+
+  Added in [#4170](https://github.com/emberjs/ember.js/pull/4170).
+

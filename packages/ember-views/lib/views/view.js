@@ -474,7 +474,14 @@ var EMPTY_ARRAY = [];
 
   The HTML attribute section of a view's tag can be set by providing an
   `attributeBindings` property set to an array of property names on the view.
-  The return value of these properties will be used as the value of the view's
+
+  `attributeBindings` always setup observers on the properties listed. This allows
+  missing properties to be specified at a later time and the new attributes will be
+  added to the views element. This has negative performance impact if you specify
+  many attributes that are not present, as setting up and maintaining the observers
+  in this case is not efficient.
+
+  The return value of the properties will be used as the value of the view's
   HTML associated attribute:
 
   ```javascript
@@ -528,8 +535,9 @@ var EMPTY_ARRAY = [];
   Updates to the the property of an attribute binding will result in automatic
   update of the  HTML attribute in the view's rendered HTML representation.
 
-  `attributeBindings` is a concatenated property. See [Ember.Object](/api/classes/Ember.Object.html)
-  documentation for more information about concatenated properties.
+  `attributeBindings` is concatenated property.
+  See [Ember.Object](/api/classes/Ember.Object.html) documentation for more
+  information about concatenated properties.
 
   ## Templates
 
@@ -1949,6 +1957,7 @@ Ember.View = Ember.CoreView.extend({
     @property attributeBindings
   */
   attributeBindings: EMPTY_ARRAY,
+
 
   // .......................................................
   // CORE DISPLAY METHODS

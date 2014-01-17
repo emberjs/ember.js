@@ -7,19 +7,23 @@ var appendView = function() {
   Ember.run(function() { view.appendTo('#qunit-fixture'); });
 };
 
-module("Ember.View - Attribute Bindings", {
-  setup: function() {
-    Ember.lookup = lookup = {};
-  },
-  teardown: function() {
-    if (view) {
-      Ember.run(function() {
-        view.destroy();
-      });
-      view = null;
-    }
-    Ember.lookup = originalLookup;
+function sharedSetup(){
+  Ember.lookup = lookup = {};
+}
+
+function sharedTeardown(){
+  if (view) {
+    Ember.run(function() {
+      view.destroy();
+    });
+    view = null;
   }
+  Ember.lookup = originalLookup;
+}
+
+module("Ember.View - Attribute Bindings", {
+  setup: sharedSetup,
+  teardown: sharedTeardown
 });
 
 test("should render attribute bindings", function() {
@@ -267,3 +271,4 @@ test("attributeBindings should not fail if view has been destroyed", function() 
   }
   ok(!error, error);
 });
+
