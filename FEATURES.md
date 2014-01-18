@@ -158,3 +158,12 @@ for a detailed explanation.
   be fired.
 
   Added in [#3936](https://github.com/emberjs/ember.js/pull/3936)
+
+* `ember-runtime-test-friendly-promises`
+  Ember.RSVP.Promise's are now ember testing aware
+
+  - they no longer cause autorun assertions
+  - if a test adapter is provided, they still automatically tell the
+    underlying test framework to start/stop between async steps.
+
+  Added in [#4176](https://github.com/emberjs/ember.js/pull/4176)
