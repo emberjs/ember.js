@@ -9,13 +9,13 @@
     "ember-routing-named-substates": null,
     "ember-handlebars-caps-lookup": null,
     "ember-testing-simple-setup": null,
-    "ember-testing-routing-helpers": null,
-    "ember-testing-triggerEvent-helper": null,
-    "computed-read-only": null,
-    "composable-computed-properties": true,
+    "ember-testing-routing-helpers": true,
+    "ember-testing-triggerEvent-helper": true,
+    "computed-read-only": true,
+    "composable-computed-properties": null,
     "ember-routing-drop-deprecated-action-style": null,
-    "ember-metal-is-blank": null,
-    "ember-eager-url-update": null
+    "ember-metal-is-blank": true,
+    "ember-eager-url-update": true
   },
   "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info"]
 }
