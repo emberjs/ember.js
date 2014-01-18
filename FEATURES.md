@@ -77,6 +77,7 @@ for a detailed explanation.
   element.
 
   Added in [#3792](https://github.com/emberjs/ember.js/pull/3792).
+  Updated in [#4177](https://github.com/emberjs/ember.js/pull/4177).
 
 * `with-controller`
 
