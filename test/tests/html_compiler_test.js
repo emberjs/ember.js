@@ -89,6 +89,11 @@ test("The compiler can handle quotes", function() {
   compilesTo('<div>"This is a title," we\'re on a boat</div>');
 });
 
+test("The compiler can handle newlines", function() {
+  compilesTo("<div>common\nbro</div>");
+  ok(true);
+});
+
 function compilesTo(html, expected, context) {
   var template = compile(html);
   var fragment = template(context, {helpers: helpers});
