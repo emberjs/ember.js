@@ -503,7 +503,7 @@ test("A simple block helper can return text", function() {
     options.range.replace(options.render(context));
   });
 
-  compilesTo('{{#testing}}test{{/testing}}', 'test');
+  compilesTo('{{#testing}}test{{else}}not shown{{/testing}}', 'test');
 });
 
 test("A block helper can have an else block", function() {
