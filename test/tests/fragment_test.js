@@ -74,32 +74,7 @@ test('hydrates a fragment with range mustaches', function () {
   equalHTML(fragment, "<div>A bar B</div>");
 });
 
-test('hydrates a fragment with range mustaches', function () {
-  var ast = preprocess("<div>{{foo \"foo\" 3 blah bar=baz ack=\"syn\"}} bar {{baz}}</div>");
-  var fragment = fragmentFor(ast).cloneNode(true);
-  var hydrate = hydrationFor(ast);
-  var mustaches = hydrate(fragment);
-
-  equal(mustaches.length, 2);
-
-  equal(mustaches[0][0], "foo");
-  deepEqual(mustaches[0][1], ["foo",3,"blah"]);
-  deepEqual(mustaches[0][2].types, ["string","number","id"]);
-  deepEqual(mustaches[0][2].hash, {ack:"syn",bar:"baz"});
-  deepEqual(mustaches[0][2].hashTypes, {ack:"string",bar:"id"});
-  equal(mustaches[0][2].escaped, true);
-
-  equal(mustaches[1][0], "baz");
-  deepEqual(mustaches[1][1], []);
-  equal(mustaches[1][2].escaped, true);
-
-  mustaches[0][2].range.appendChild(document.createTextNode('A'));
-  mustaches[1][2].range.appendChild(document.createTextNode('B'));
-
-  equalHTML(fragment, "<div>A bar B</div>");
-});
-
-test('hydrates a fragment with range mustaches', function () {
+test('hydrates a fragment with range mustaches (ATTRIBUTE)', function () {
   var ast = preprocess("<div {{foo}}></div>");
   var fragment = fragmentFor(ast).cloneNode(true);
   var hydrate = hydrationFor(ast);

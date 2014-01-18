@@ -1,5 +1,5 @@
 import { preprocess } from "htmlbars/parser";
-module AST from "handlebars/compiler/ast";
+import AST from "handlebars/compiler/ast";
 import { HTMLElement, BlockElement } from "htmlbars/ast";
 
 module("HTML-based compiler (AST)");
@@ -21,7 +21,7 @@ function mustache(string, pairs, raw) {
     params = [id(string)];
   }
 
-  return new AST.MustacheNode(params, hash(pairs), raw || false);
+  return new AST.MustacheNode(params, hash(pairs), raw ? '{{{' : '{{', { left: false, right: false });
 }
 
 function string(data) {
@@ -41,6 +41,29 @@ function block(helper, children) {
   return new BlockElement(helper, children);;
 }
 
+function removeLocInfo(obj) {
+  delete obj.firstColumn;
+  delete obj.firstLine;
+  delete obj.lastColumn;
+  delete obj.lastLine;
+
+  for (var k in obj) {
+    if (obj.hasOwnProperty(k) && obj[k] && typeof obj[k] === 'object') {
+      removeLocInfo(obj[k]);
+    }
+  }
+}
+
+function astEqual(result, expected, message) {
+  // Perform a deepEqual but recursively remove the locInfo stuff
+  // (e.g. line/column information about the compiled template)
+  // that we don't want to have to write into our test cases.
+  removeLocInfo(result);
+  removeLocInfo(expected);
+
+  deepEqual(result, expected, message);
+}
+
 test("a simple piece of content", function() {
   deepEqual(preprocess('some content'), ['some content']);
 });
@@ -54,7 +77,8 @@ test("a piece of content with HTML", function() {
 });
 
 test("a piece of Handlebars with HTML", function() {
-  deepEqual(preprocess('some <div>{{content}}</div> done'), [
+  var preprocessed = preprocess('some <div>{{content}}</div> done');
+  astEqual(preprocessed, [
     "some ",
     element("div", [ mustache('content') ]),
     " done"
@@ -62,7 +86,7 @@ test("a piece of Handlebars with HTML", function() {
 });
 
 test("Handlebars embedded in an attribute", function() {
-  deepEqual(preprocess('some <div class="{{foo}}">content</div> done'), [
+  astEqual(preprocess('some <div class="{{foo}}">content</div> done'), [
     "some ",
       element("div", [[ "class", [mustache('foo')] ]], [
       "content"
@@ -72,7 +96,7 @@ test("Handlebars embedded in an attribute", function() {
 });
 
 test("Handlebars embedded in an attribute with other content surrounding it", function() {
-  deepEqual(preprocess('some <a href="http://{{link}}/">content</a> done'), [
+  astEqual(preprocess('some <a href="http://{{link}}/">content</a> done'), [
     "some ",
       element("a", [[ "href", ["http://", mustache('link'), "/"] ]], [
       "content"
@@ -86,7 +110,7 @@ test("A more complete embedding example", function() {
              "<div class='{{foo}} {{bind-class isEnabled truthy='enabled'}}'>{{ content }}</div>" +
              " {{more 'embed'}}";
 
-  deepEqual(preprocess(html), [
+  astEqual(preprocess(html), [
     '',
     mustache('embed'), ' ',
     mustache([id('some'), string('content')]), ' ',
@@ -103,7 +127,7 @@ test("A more complete embedding example", function() {
 test("Simple embedded block helpers", function() {
   var html = "{{#if foo}}<div>{{content}}</div>{{/if}}";
 
-  deepEqual(preprocess(html), ['',
+  astEqual(preprocess(html), ['',
     block(mustache([id('if'), id('foo')]), [
       element('div', [ mustache('content') ])
     ]),
@@ -114,7 +138,7 @@ test("Simple embedded block helpers", function() {
 test("Involved block helper", function() {
   var html = '<p>hi</p> content {{#testing shouldRender}}<p>Appears!</p>{{/testing}} more <em>content</em> here';
 
-  deepEqual(preprocess(html), [
+  astEqual(preprocess(html), [
     element('p', ['hi']),
     ' content ',
     block(mustache([id('testing'), id('shouldRender')]), [
@@ -129,7 +153,7 @@ test("Involved block helper", function() {
 test("Node helpers", function() {
   var html = "<p {{action 'boom'}} class='bar'>Some content</p>";
 
-  deepEqual(preprocess(html), [
+  astEqual(preprocess(html), [
     element('p', [['class', ['bar']]], ['Some content'], [mustache([id('action'), string('boom')])])
   ]);
 });
