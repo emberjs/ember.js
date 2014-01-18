@@ -90,7 +90,7 @@ test("The compiler can handle quotes", function() {
 });
 
 test("The compiler can handle newlines", function() {
-  compilesTo("<div>common\nbro</div>");
+  compilesTo("<div>common\n\nbro</div>");
   ok(true);
 });
 
