@@ -27,11 +27,6 @@ function fragmentFor(ast) {
   return fn();
 }
 
-function hydrationOpcodes(ast) {
-  var hydration = new HydrationOpcodeCompiler();
-  return hydration.compile(ast);
-}
-
 function hydrationFor(ast) {
   var hydrate = new HydrationOpcodeCompiler();
   var opcodes = hydrate.compile(ast);

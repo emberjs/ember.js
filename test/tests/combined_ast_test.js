@@ -8,6 +8,15 @@ function id(string) {
   return new AST.IdNode([{ part: string }]);
 }
 
+function sexpr(params) {
+  var sexprNode = new AST.SexprNode(params);
+
+  // normalize 1 -> true for the sake of comparison; not sure
+  // why they come in differently...
+  sexprNode.isHelper = sexprNode.isHelper === 1 ? true : sexprNode.isHelper;
+  return sexprNode;
+}
+
 function hash(pairs) {
   return pairs ? new AST.HashNode(pairs) : undefined;
 }
@@ -94,6 +103,19 @@ test("Handlebars embedded in an attribute", function() {
     " done"
   ]);
 });
+
+test("Handlebars embedded in an attribute (sexprs)", function() {
+  var preprocessed = preprocess('some <div class="{{foo (foo "abc")}}">content</div> done');
+  var expected = [
+    "some ",
+      element("div", [[ "class", [mustache([id('foo'), sexpr([id('foo'), string('abc')])])] ]], [
+      "content"
+    ]),
+    " done"
+  ];
+  astEqual(preprocessed, expected);
+});
+
 
 test("Handlebars embedded in an attribute with other content surrounding it", function() {
   astEqual(preprocess('some <a href="http://{{link}}/">content</a> done'), [

@@ -122,6 +122,31 @@ test("The compiler can handle simple helpers", function() {
   compilesTo('<div>{{testing title}}</div>', '<div>hello</div>', { title: 'hello' });
 });
 
+test("The compiler can handle sexpr helpers", function() {
+  registerHelper('testing', function(context, params, options) {
+    return params[0] + "!";
+  });
+
+  compilesTo('<div>{{testing (testing "hello")}}</div>', '<div>hello!!</div>', {});
+});
+
+test("The compiler can handle multiple invocations of sexprs", function() {
+  function evalParam(context, param, type) {
+    if (type === 'id') {
+      return context[param];
+    } else {
+      return param;
+    }
+  }
+
+  registerHelper('testing', function(context, params, options) {
+    return evalParam(context, params[0], options.types[0]) +
+           evalParam(context, params[1], options.types[1]);
+  });
+
+  compilesTo('<div>{{testing (testing "hello" foo) (testing (testing bar "lol") baz)}}</div>', '<div>helloFOOBARlolBAZ</div>', { foo: "FOO", bar: "BAR", baz: "BAZ" });
+});
+
 test("The compiler tells helpers what kind of expression the path is", function() {
   registerHelper('testing', function(context, params, options) {
     return options.types[0] + '-' + params[0];
