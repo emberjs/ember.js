@@ -143,7 +143,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-run-bind')) {
   run-loop-wrapped callback handler.
 
   ```javascript
-  jQuery(window).on('resize', Ember.run.bind(this, this.triggerResize));
+  jQuery(window).on('resize', Ember.run.bind(this, this.handleResize));
   ```
 
   @method bind
