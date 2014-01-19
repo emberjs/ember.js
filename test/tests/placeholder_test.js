@@ -1,4 +1,4 @@
-import { Range } from "htmlbars/runtime/range";
+import { Placeholder } from "htmlbars/runtime/placeholder";
 
 function equalHTML(fragment, html) {
   var div = document.createElement("div");
@@ -68,12 +68,12 @@ var ends = [
 
 var contents = [
   {
-    name: 'with an empty Range',
+    name: 'with an empty Placeholder',
     create: function (parent) { },
     HTML: ''
   },
   {
-    name: 'with some paragraphs in the Range',
+    name: 'with some paragraphs in the Placeholder',
     create: function (parent) {
       var p;
       p = document.createElement('p');
@@ -116,13 +116,13 @@ function createCombinatorialTest(factory) {
       start = factory.start.create(parent),
       content = factory.content.create(parent),
       end = factory.end.create(parent),
-      p, range, html;
+      p, placeholder, html;
 
-    range = new Range(parent, start, end);
+    placeholder = new Placeholder(parent, start, end);
 
     p = document.createElement('p');
     p.textContent = 'appended';
-    range.appendChild(p);
+    placeholder.appendChild(p);
 
     html = factory.parent.startHTML +
            factory.start.HTML +
@@ -138,7 +138,7 @@ function createCombinatorialTest(factory) {
 
     p = document.createElement('p');
     p.textContent = 'appended';
-    range.appendChild(p);
+    placeholder.appendChild(p);
 
     html = factory.parent.startHTML +
            factory.start.HTML +
@@ -157,11 +157,11 @@ function createCombinatorialTest(factory) {
       start = factory.start.create(parent),
       content = factory.content.create(parent),
       end = factory.end.create(parent),
-      range, html;
+      placeholder, html;
 
-    range = new Range(parent, start, end);
+    placeholder = new Placeholder(parent, start, end);
 
-    range.appendText('appended text');
+    placeholder.appendText('appended text');
 
     html = factory.parent.startHTML +
            factory.start.HTML +
@@ -175,7 +175,7 @@ function createCombinatorialTest(factory) {
     var fixture = document.getElementById('qunit-fixture');
     fixture.appendChild(frag);
 
-    range.appendText('appended text');
+    placeholder.appendText('appended text');
 
     html = factory.parent.startHTML +
            factory.start.HTML +
@@ -194,11 +194,11 @@ function createCombinatorialTest(factory) {
       start = factory.start.create(parent),
       content = factory.content.create(parent),
       end = factory.end.create(parent),
-      range, html;
+      placeholder, html;
 
-    range = new Range(parent, start, end);
+    placeholder = new Placeholder(parent, start, end);
 
-    range.appendHTML('<p>A</p><p>B</p><p>C</p>');
+    placeholder.appendHTML('<p>A</p><p>B</p><p>C</p>');
 
     html = factory.parent.startHTML +
            factory.start.HTML +
@@ -212,7 +212,7 @@ function createCombinatorialTest(factory) {
     var fixture = document.getElementById('qunit-fixture');
     fixture.appendChild(frag);
 
-    range.appendHTML('<p>A</p><p>B</p><p>C</p>');
+    placeholder.appendHTML('<p>A</p><p>B</p><p>C</p>');
 
     html = factory.parent.startHTML +
            factory.start.HTML +
@@ -231,11 +231,11 @@ function createCombinatorialTest(factory) {
       start = factory.start.create(parent),
       content = factory.content.create(parent),
       end = factory.end.create(parent),
-      range, html;
+      placeholder, html;
 
-    range = new Range(parent, start, end);
+    placeholder = new Placeholder(parent, start, end);
 
-    range.clear();
+    placeholder.clear();
 
     html = factory.parent.startHTML +
            factory.start.HTML +
@@ -251,14 +251,14 @@ function createCombinatorialTest(factory) {
       start = factory.start.create(parent),
       content = factory.content.create(parent),
       end = factory.end.create(parent),
-      range, html;
+      placeholder, html;
 
-    range = new Range(parent, start, end);
+    placeholder = new Placeholder(parent, start, end);
 
     var fixture = document.getElementById('qunit-fixture');
     fixture.appendChild(frag);
 
-    range.clear();
+    placeholder.clear();
 
     html = factory.parent.startHTML +
            factory.start.HTML +
@@ -275,13 +275,13 @@ function createCombinatorialTest(factory) {
       content = factory.content.create(parent),
       end = factory.end.create(parent),
       p = document.createElement('p'),
-      range, html;
+      placeholder, html;
 
     p.textContent = 'replaced';
 
-    range = new Range(parent, start, end);
+    placeholder = new Placeholder(parent, start, end);
 
-    range.replace(p);
+    placeholder.replace(p);
 
     html = factory.parent.startHTML +
            factory.start.HTML +
@@ -294,7 +294,7 @@ function createCombinatorialTest(factory) {
 };
 
 function createCombinatorialTests(parents, starts, ends, contents) {
-  QUnit.module('Range');
+  QUnit.module('Placeholder');
 
   for (var i=0; i<parents.length; i++) {
     for (var j=0; j<starts.length; j++) {

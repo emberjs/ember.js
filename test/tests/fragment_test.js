@@ -3,7 +3,7 @@ import { HydrationOpcodeCompiler } from "htmlbars/compiler/hydration_opcode";
 import { FragmentCompiler } from "htmlbars/compiler/fragment";
 import { HydrationCompiler } from "htmlbars/compiler/hydration";
 import { domHelpers } from "htmlbars/runtime/dom_helpers";
-import { Range } from "htmlbars/runtime/range";
+import { Placeholder } from "htmlbars/runtime/placeholder";
 import { preprocess } from "htmlbars/parser";
 
 function equalHTML(fragment, html) {
@@ -37,19 +37,19 @@ function hydrationFor(ast) {
   var opcodes = hydrate.compile(ast);
   var hydrate2 = new HydrationCompiler();
   var program = hydrate2.compile(opcodes, []);
-  return new Function("Range", 'return '+program)(Range);
+  return new Function("Placeholder", 'return '+program)(Placeholder);
 }
 
 module('fragment');
 
 test('compiles a fragment', function () {
-  var ast = preprocess("<div>{{foo}} bar {{baz}}</div>"),
-      fragment = fragmentFor(ast);
+  var ast = preprocess("<div>{{foo}} bar {{baz}}</div>");
+  var fragment = fragmentFor(ast);
 
   equalHTML(fragment, "<div> bar </div>");
 });
 
-test('hydrates a fragment with range mustaches', function () {
+test('hydrates a fragment with placeholder mustaches', function () {
   var ast = preprocess("<div>{{foo \"foo\" 3 blah bar=baz ack=\"syn\"}} bar {{baz}}</div>");
   var fragment = fragmentFor(ast).cloneNode(true);
   var hydrate = hydrationFor(ast);
@@ -68,13 +68,13 @@ test('hydrates a fragment with range mustaches', function () {
   deepEqual(mustaches[1][1], []);
   equal(mustaches[1][2].escaped, true);
 
-  mustaches[0][2].range.appendChild(document.createTextNode('A'));
-  mustaches[1][2].range.appendChild(document.createTextNode('B'));
+  mustaches[0][2].placeholder.appendChild(document.createTextNode('A'));
+  mustaches[1][2].placeholder.appendChild(document.createTextNode('B'));
 
   equalHTML(fragment, "<div>A bar B</div>");
 });
 
-test('hydrates a fragment with range mustaches (ATTRIBUTE)', function () {
+test('hydrates a fragment with placeholder mustaches (ATTRIBUTE)', function () {
   var ast = preprocess("<div {{foo}}></div>");
   var fragment = fragmentFor(ast).cloneNode(true);
   var hydrate = hydrationFor(ast);
@@ -85,7 +85,7 @@ test('hydrates a fragment with range mustaches (ATTRIBUTE)', function () {
   deepEqual(mustaches[0][1], []);
 });
 
-test('test auto insertion of text nodes for needed edges a fragment with range mustaches', function () {
+test('test auto insertion of text nodes for needed edges a fragment with placeholder mustaches', function () {
   var ast = preprocess("{{first}}<p>{{second}}</p>{{third}}");
   var fragment = fragmentFor(ast).cloneNode(true);
   var hydrate = hydrationFor(ast);
@@ -100,9 +100,9 @@ test('test auto insertion of text nodes for needed edges a fragment with range m
   deepEqual(mustaches[2][1], []);
 
 
-  mustaches[0][2].range.appendText('A');
-  mustaches[1][2].range.appendText('B');
-  mustaches[2][2].range.appendText('C');
+  mustaches[0][2].placeholder.appendText('A');
+  mustaches[1][2].placeholder.appendText('B');
+  mustaches[2][2].placeholder.appendText('C');
 
   equalHTML(fragment, "A<p>B</p>C");
 });

@@ -1,5 +1,5 @@
 import { TemplateCompiler } from "htmlbars/compiler/template";
-import { Range } from "htmlbars/runtime/range";
+import { Placeholder } from "htmlbars/runtime/placeholder";
 import { preprocess } from "htmlbars/parser";
 
 module("TemplateCompiler");
@@ -28,12 +28,12 @@ var helpers = {
     if (options.helpers[name]) {
       options.helpers[name](context, params, options);
     } else {
-      options.range.appendText(context[name]);
+      options.placeholder.appendText(context[name]);
     }
   },
   'if': function (context, params, options) {
     if (context[params[0]]) {
-      options.range.appendChild(
+      options.placeholder.appendChild(
         options.render(context, options)
       );
     }
@@ -44,7 +44,7 @@ test("it works", function testFunction() {
   var ast = preprocess('<div>{{#if working}}Hello {{firstName}} {{lastName}}!{{/if}}</div>')
   var compiler = new TemplateCompiler()
   var program = compiler.compile(ast);
-  var template = new Function("dom", "Range", "return " + program)(dom, Range);
+  var template = new Function("dom", "Placeholder", "return " + program)(dom, Placeholder);
   var frag = template(
     { working: true, firstName: 'Kris', lastName: 'Selden' },
     { helpers: helpers }
