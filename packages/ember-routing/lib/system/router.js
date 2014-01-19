@@ -44,7 +44,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
   },
 
   /**
-    The series of `title`s that compromise the active routes.
+    The series of `title`s that comprise the active routes.
 
     @property titleTokens
     @type String[]
