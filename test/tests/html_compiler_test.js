@@ -39,10 +39,10 @@ test("Simple content produces a document fragment", function() {
 });
 
 test("Simple elements are created", function() {
-  var template = compile("<div>content</div>");
+  var template = compile("<h1>hello!</h1><div>content</div>");
   var fragment = template();
 
-  equalHTML(fragment, "<div>content</div>");
+  equalHTML(fragment, "<h1>hello!</h1><div>content</div>");
 });
 
 test("Simple elements can have attributes", function() {
