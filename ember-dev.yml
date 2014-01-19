@@ -39,6 +39,7 @@ testing_packages:
   - ember-metal
   - ember-runtime
   - ember-views
+  - ember-http
   - ember-handlebars
   - ember-handlebars-compiler
   - ember-routing
