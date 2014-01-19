@@ -1,5 +1,7 @@
 # Ember Changelog
 
+* [BUGFIX] Fixed how parentController property of an itemController when nested. Breaking for apps that rely on previous broken behavior of an itemController's `parentController` property skipping its ArrayController when nested.
+
 ### Ember 1.4.0-beta.3 (January 20, 2014)
 
 * Document the send method on Ember.ActionHandler.
@@ -30,12 +32,12 @@
 * [SECURITY] Ensure {{group}} helper escapes properly.
 
 ### Ember 1.3.0 (January 6, 2014)
- 
+
 * Many documentation updates.
 * Update to RSVP 3.0.3.
 * Use defeatureify to strip debug statements allowing multi-line assert statements.
 * Added fail(), catch() and finally() methods to PromiseProxyMixin.
-* [BUGFIX Add 'view' option to {{outlet}} helper
+* [BUGFIX] Add 'view' option to {{outlet}} helper
 * Make `Ember.compare` return `date` when appropriate.
 * Prefer `EmberENV` over `ENV`, and do not create a global `ENV` if it was not supplied.
 * `{{unbound}}` helper supports bound helper static strings.

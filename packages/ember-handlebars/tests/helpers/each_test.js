@@ -245,12 +245,12 @@ test("it supports itemController", function() {
   strictEqual(view.get('_childViews')[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
 });
 
-test("itemController gets a parentController property", function() {
+test("itemController specified in template gets a parentController property", function() {
   // using an ObjectController for this test to verify that parentController does accidentally get set
   // on the proxied model.
   var Controller = Ember.ObjectController.extend({
         controllerName: Ember.computed(function() {
-          return "controller:"+this.get('content.name') + ' of ' + this.get('parentController.company');
+          return "controller:" + get(this, 'content.name') + ' of ' + get(this, 'parentController.company');
         })
       }),
       container = new Ember.Container(),
@@ -270,6 +270,69 @@ test("itemController gets a parentController property", function() {
   });
 
   container.register('controller:person', Controller);
+
+  append(view);
+
+  equal(view.$().text(), "controller:Steve Holt of Yappcontroller:Annabelle of Yapp");
+});
+
+test("itemController specified in ArrayController gets a parentController property", function() {
+  var PersonController = Ember.ObjectController.extend({
+        controllerName: Ember.computed(function() {
+          return "controller:" + get(this, 'content.name') + ' of ' + get(this, 'parentController.company');
+        })
+      }),
+      PeopleController = Ember.ArrayController.extend({
+        content: people,
+        itemController: 'person',
+        company: 'Yapp'
+      }),
+      container = new Ember.Container();
+
+  container.register('controller:people', PeopleController);
+  container.register('controller:person', PersonController);
+  Ember.run(function() { view.destroy(); }); // destroy existing view
+
+  view = Ember.View.create({
+    container: container,
+    template: templateFor('{{#each}}{{controllerName}}{{/each}}'),
+    controller: container.lookup('controller:people')
+  });
+
+
+  append(view);
+
+  equal(view.$().text(), "controller:Steve Holt of Yappcontroller:Annabelle of Yapp");
+});
+
+test("itemController's parentController property, when the ArrayController has a parentController", function() {
+  var PersonController = Ember.ObjectController.extend({
+        controllerName: Ember.computed(function() {
+          return "controller:" + get(this, 'content.name') + ' of ' + get(this, 'parentController.company');
+        })
+      }),
+      PeopleController = Ember.ArrayController.extend({
+        content: people,
+        itemController: 'person',
+        parentController: Ember.computed(function(){
+          return this.container.lookup('controller:company');
+        }),
+        company: 'Yapp'
+      }),
+      CompanyController = Ember.Controller.extend(),
+      container = new Ember.Container();
+
+  container.register('controller:company', CompanyController);
+  container.register('controller:people', PeopleController);
+  container.register('controller:person', PersonController);
+
+  Ember.run(function() { view.destroy(); }); // destroy existing view
+  view = Ember.View.create({
+    container: container,
+    template: templateFor('{{#each}}{{controllerName}}{{/each}}'),
+    controller: container.lookup('controller:people')
+  });
+
 
   append(view);
 
