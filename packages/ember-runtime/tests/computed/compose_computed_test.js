@@ -181,13 +181,65 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
     deepEqual(get(obj, 'names'), ['Alex', 'David', 'Grey Kitty', 'Hamilton', 'Little Boots', 'Navasardyan']);
   });
 
-  module('Ember.computed - composable', {
-    teardown: function () {
-      if (obj && obj.destroy) {
-        Ember.run(function() {
-          obj.destroy();
-        });
-      }
-    }
+  testBoth('composable computed properties work with CPs that have no dependencies', function (get, set) {
+    var not = Ember.computed.not,
+        constant = function (c) {
+          return Ember.computed(function () {
+            return c;
+          });
+        };
+
+    obj = Ember.Object.extend({
+      p: not(constant(true))
+    }).create();
+
+    equal(get(obj, 'p'), false, "ccp works with dependencies that themselves have no dependencies");
+  });
+
+  testBoth('composable computed properties work with depKey paths', function (get, set) {
+    var not = Ember.computed.not,
+        alias = Ember.computed.alias;
+
+    obj = Ember.Object.extend({
+      q: not(alias('indirection.p'))
+    }).create({
+      indirection: { p: true }
+    });
+
+    equal(get(obj, 'q'), false, "ccp is initially correct");
+
+    set(obj, 'indirection.p', false);
+
+    equal(get(obj, 'q'), true, "ccp is true after dependent chain updated");
+  });
+
+  testBoth('composable computed properties work with macros that have non-cp args', function (get, set) {
+    var equals = Ember.computed.equal,
+        not = Ember.computed.not,
+        or = Ember.computed.or;
+
+    obj = Ember.Object.extend({
+      isJaime: equals('name', 'Jaime'),
+      isCersei: equals('name', 'Cersei'),
+
+      isEither: or( equals('name', 'Jaime'),
+                    equals('name', 'Cersei'))
+    }).create({
+      name: 'Robb'
+    });
+
+    equal(false, get(obj, 'isEither'), "Robb is neither Jaime nor Cersei");
+
+    set(obj, 'name', 'Jaime');
+
+    equal(true, get(obj, 'isEither'), "Jaime is either Jaime nor Cersei");
+
+    set(obj, 'name', 'Cersei');
+
+    equal(true, get(obj, 'isEither'), "Cersei is either Jaime nor Cersei");
+
+    set(obj, 'name', 'Tyrion');
+
+    equal(false, get(obj, 'isEither'), "Tyrion is neither Jaime nor Cersei");
   });
 }
