@@ -47,7 +47,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   /**
     The name of the view to use by default when rendering this routes template.
 
-    When a rendering a template, the route will, by default, determine the
+    When rendering a template, the route will, by default, determine the
     template and view to use from the name of the route itself. If you need to
     define a specific view, set this property.
 
