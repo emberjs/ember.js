@@ -26,107 +26,48 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     this.router = this.constructor.router || this.constructor.map(Ember.K);
     this._activeViews = {};
     this._setupLocation();
+    this._titleTokens = [];
 
-    // Activate observers on `title`
     if (Ember.FEATURES.isEnabled("ember-document-title")) {
+      // Activate observers on `title`
       this.get('title');
     }
   },
 
-  /**
-    @private
+  _titleTokens: null,
 
-    Trigger the `titleTokens` property to change to cause
-    a cascade of changes down to the `title`.
-   */
-  titleTokensDidChange: function() {
-    this.notifyPropertyChange('titleTokens');
-  },
-
-  /**
-    The series of `title`s that comprise the active routes.
-
-    @property titleTokens
-    @type String[]
-    @default []
-   */
-  titleTokens: Ember.computed(function() {
-    var currentHandlerInfos = get(this, 'router.currentHandlerInfos'),
-        tokens = [],
-        token;
-
-    if (currentHandlerInfos) {
-      for (var i = 0, len = currentHandlerInfos.length; i < len; i++) {
-        token = get(currentHandlerInfos[i], 'handler.title');
-        if (token) {
-          tokens.push(token);
-        }
-      }
-    }
-
-    return tokens;
-  }),
-
-  /**
-    The title divider to use between each route `title`.
-
-    @property titleDivider
-    @type String
-    @default ' - '
-   */
-  titleDivider: ' - ',
-
-  /**
-    A flag to indicate whether the document title should
-    sort the route `title`s from most general to most
-    specific:
-
-    ```
-    Ember.js - About
-    ```
-
-    or most specific to most general:
-
-    ```
-    About - Ember.js
-    ```
-
-    @property titleSpecificityIncreases
-    @type Boolean
-    @default false
-   */
-  titleSpecificityIncreases: false,
-
-  /**
-    The title to be used to control the `document.title`.
-
-    Override this property to fully customize how the
-    `document.title` is computed. When overriding this
-    property, use the `titleTokens` property to get all
-    of the tokens that are active in order of most general
-    to most specific.
-
-    @property type
-    @type String
-    @default ''
-   */
-  title: Ember.computed('titleTokens', 'titleDivider', 'titleSpecificityIncreases', function() {
-    var tokens  = get(this, 'titleTokens'),
-        divider = get(this, 'titleDivider');
-
-    if (!get(this, 'titleSpecificityIncreases')) {
-      tokens = Ember.copy(tokens).reverse();
-    }
-
-    return tokens.join(divider);
-  }),
-
-  titleDidChange: Ember.observer(function() {
+  title: null,
+  _titleDidChange: Ember.observer(function() {
     var title = get(this, 'title');
     if (title) {
-      document.title = title;
+      if (Ember.testing) {
+        this._docTitle = title;
+      } else {
+        document.title = title;
+      }
     }
   }, 'title'),
+
+  refreshTitle: function() {
+    if (Ember.FEATURES.isEnabled("ember-document-title")) {
+      Ember.run.once(this, this._refreshTitle);
+    }
+  },
+
+  _refreshTitle: function() {
+    if (Ember.FEATURES.isEnabled("ember-document-title")) {
+      this._titleTokens.length = 0;
+      this.send('_refreshTitle');
+    }
+  },
+
+  titleDidChange: function() {
+    if (Ember.testing) {
+      this._title = title;
+    } else {
+      window.document.title = title;
+    }
+  },
 
   url: Ember.computed(function() {
     return get(this, 'location').getURL();
@@ -152,18 +93,6 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     this.handleURL(location.getURL());
   },
 
-  willTransition: function(infos) {
-    var activeHandlers = get(this, 'router.currentHandlerInfos');
-
-    if (Ember.FEATURES.isEnabled("ember-document-title")) {
-      if (activeHandlers) {
-        for (var i = 0, len = activeHandlers.length; i < len; i++) {
-          Ember.removeObserver(activeHandlers[i].handler, 'title', this, this.titleTokensDidChange);
-        }
-      }
-    }
-  },
-
   didTransition: function(infos) {
     updatePaths(this);
 
@@ -173,14 +102,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
       exitLegacyLoadingRoute(this);
     }
 
-    if (Ember.FEATURES.isEnabled("ember-document-title")) {
-      for (var i = 0, len = infos.length; i < len; i++) {
-        Ember.addObserver(infos[i].handler, 'title', this, this.titleTokensDidChange);
-      }
-
-      this.notifyPropertyChange('titleTokens');
-    }
-
+    this.refreshTitle();
     this.notifyPropertyChange('url');
 
     if (Ember.FEATURES.isEnabled("ember-routing-didTransition-hook")) {

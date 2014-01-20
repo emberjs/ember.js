@@ -23,15 +23,19 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
   /**
     The partial title of the route, used for constructing
-    the document.title.
+    the document.title. Multiple active routes can specify
+    `titleToken`s, and then the leaf-most active route that
+    defines a `title` property can access the collected
+    `titleToken`s via `this.get('titleTokens')` in order
+    to construct and return the final title value used
+    to set `document.title`.
 
     Setting this as a computed property will make the document
-    title dynamically update. Titles cascade, so any nesting
-    done in route form will be reflected in the construction
-    of the document title.
+    title dynamically update when the specified dependent keys
+    change.
 
-    If you choose to exclude the route from the document title,
-    simply don't define it.
+    If you choose to exclude a route from the document title,
+    simply don't define a `titleToken` for that route.
 
     A simple case would be updating the title of the document to
     reflect the user's name. In your route for the `user` model,
@@ -51,7 +55,17 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @type String
     @default null
    */
+  titleToken: null,
+
+  /**
+    TODO: Document this
+   */
   title: null,
+
+  /**
+    TODO: Document this; mention that it's only real use is with `title`.
+   */
+  titleTokens: Ember.computed.oneWay('router._titleTokens'),
 
   /**
     @private
@@ -60,6 +74,10 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   */
   exit: function() {
     this.deactivate();
+    if (Ember.FEATURES.isEnabled("ember-document-title")) {
+      Ember.removeObserver(this, 'titleToken', this, this._titleChanged);
+      Ember.removeObserver(this, 'title',      this, this._titleChanged);
+    }
     this.teardownViews();
   },
 
@@ -70,6 +88,19 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   */
   enter: function() {
     this.activate();
+
+    if (Ember.FEATURES.isEnabled("ember-document-title")) {
+      Ember.addObserver(this, 'titleToken', this, this._titleChanged);
+      Ember.addObserver(this, 'title',      this, this._titleChanged);
+    }
+  },
+
+  _titleChanged: function() {
+    if (!this.router.router.activeTransition) {
+      // Don't fire mid-transition; just let the `didTransition`
+      // router handler take care of it when the transition is complete.
+      Ember.run.once(this.router, this.router.refreshTitle);
+    }
   },
 
   /**
@@ -286,6 +317,37 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @default null
   */
   actions: null,
+
+  _actions: {
+    _refreshTitle: function() {
+      Ember._suspendObservers(this, ['title', 'titleToken'], this, this._titleChanged, function() {
+        this.notifyPropertyChange('title');
+        this.notifyPropertyChange('titleToken');
+      });
+
+      var titleToken = get(this, 'titleToken');
+
+      var tokens = this.router._titleTokens;
+      if (Ember.isArray(titleToken)) {
+        tokens.unshift.apply(tokens, titleToken);
+      } else if (titleToken) {
+        tokens.unshift(titleToken);
+      }
+
+      var title = get(this, 'title');
+      if (!title && this.routeName === 'application') {
+        Ember.warn("You specified a `titleToken` on at least one route but did not specify a `title` property on the 'application' route. A default document.title has been generated for you, but you'll probably want to provide your own implementation of a `title` computed property on the 'application' route that constructs a custom title using the collected title tokens in `this.get('titleTokens')`");
+        title = tokens.join(' | ');
+      }
+
+      if (title) {
+        this.router.set('title', title);
+      } else {
+        // Continue bubbling.
+        return true;
+      }
+    }
+  },
 
   /**
     @deprecated
