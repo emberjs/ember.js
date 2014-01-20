@@ -126,10 +126,10 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     Ember.run(controller, '_activateQueryParamObservers');
     Ember.run(controller, 'set', 'foo', '456');
 
-    equal(router.get('location.path'), "/?home[foo]=456");
+    equal(router.get('location.path'), "/?foo=456");
 
     Ember.run(controller, 'set', 'foo', '987');
-    equal(router.get('location.path'), "/?home[foo]=987");
+    equal(router.get('location.path'), "/?foo=987");
   });
 
   test("A replaceURL occurs on startup if QP values aren't already in sync", function() {
@@ -140,7 +140,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       foo: "123"
     });
 
-    expectedReplaceURL = "/?index[foo]=123";
+    expectedReplaceURL = "/?foo=123";
 
     bootApplication();
   });
@@ -187,9 +187,9 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
 
-    deepEqual(router._queryParamNamesFor('home'), { queryParams: { 'home:foo': 'home[foo]' }, translations: { foo: 'home:foo' } });
-    deepEqual(router._queryParamNamesFor('parmesan'), { queryParams: { 'parmesan:bar': 'parmesan[bar]' }, translations: { 'bar': 'parmesan:bar'} });
-    deepEqual(router._queryParamNamesFor('nothin'), { queryParams: {}, translations: {} });
+    deepEqual(router._queryParamNamesFor('home'), { queryParams: { 'home:foo': 'foo' }, translations: { foo: 'home:foo' }, validQueryParams: {foo: true} });
+    deepEqual(router._queryParamNamesFor('parmesan'), { queryParams: { 'parmesan:bar': 'bar' }, translations: { 'bar': 'parmesan:bar'}, validQueryParams: {bar: true} });
+    deepEqual(router._queryParamNamesFor('nothin'), { queryParams: {}, translations: {}, validQueryParams: {} });
   });
 
   test("model hooks receives query params", function() {
@@ -206,7 +206,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
 
-    equal(router.get('location.path'), "/?index[omg]=lol");
+    equal(router.get('location.path'), "/?omg=lol");
   });
 
   test("model hooks receives query params (overridden by incoming url value)", function() {
@@ -221,10 +221,10 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       }
     });
 
-    startingURL = "/?index[omg]=yes";
+    startingURL = "/?omg=yes";
     bootApplication();
 
-    equal(router.get('location.path'), "/?index[omg]=yes");
+    equal(router.get('location.path'), "/?omg=yes");
   });
 
   test("Route#paramsFor fetches query params", function() {
@@ -275,7 +275,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
 
-    equal(router.get('location.path'), "/?appomg=applol&index[omg]=lol");
+    equal(router.get('location.path'), "/?appomg=applol&omg=lol");
   });
 
   test("model hook can query prefix-less application params (overridden by incoming url value)", function() {
@@ -302,10 +302,10 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       }
     });
 
-    startingURL = "/?index[omg]=yes&appomg=appyes";
+    startingURL = "/?omg=yes&appomg=appyes";
     bootApplication();
 
-    equal(router.get('location.path'), "/?appomg=appyes&index[omg]=yes");
+    equal(router.get('location.path'), "/?appomg=appyes&omg=yes");
   });
 
   test("can opt into full transition in response to QP change by calling refresh() inside queryParamsDidChange action", function() {
@@ -377,9 +377,9 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       }
     });
 
-    startingURL = "/?index[omg]=borf";
+    startingURL = "/?omg=borf";
     bootApplication();
-    equal(router.get('location.path'), "/?index[omg]=OVERRIDE");
+    equal(router.get('location.path'), "/?omg=OVERRIDE");
   });
 
   test("Subresource naming style is supported", function() {
@@ -404,13 +404,13 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
     equal(router.get('location.path'), "");
-    equal(Ember.$('#one').attr('href'), "/abcdef?abc.def[foo]=123");
-    equal(Ember.$('#two').attr('href'), "/abcdef/zoo?abc.def[foo]=123&abc.def.zoo[bar]=456");
+    equal(Ember.$('#one').attr('href'), "/abcdef?foo=123");
+    equal(Ember.$('#two').attr('href'), "/abcdef/zoo?foo=123&bar=456");
 
     Ember.run(Ember.$('#one'), 'click');
-    equal(router.get('location.path'), "/abcdef?abc.def[foo]=123");
+    equal(router.get('location.path'), "/abcdef?foo=123");
     Ember.run(Ember.$('#two'), 'click');
-    equal(router.get('location.path'), "/abcdef/zoo?abc.def[foo]=123&abc.def.zoo[bar]=456");
+    equal(router.get('location.path'), "/abcdef/zoo?foo=123&bar=456");
   });
 
   test("transitionTo supports query params", function() {
@@ -421,12 +421,12 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
 
-    equal(router.get('location.path'), "/?index[foo]=lol");
+    equal(router.get('location.path'), "/?foo=lol");
 
     Ember.run(router, 'transitionTo', { queryParams: { foo: "borf" } });
-    equal(router.get('location.path'), "/?index[foo]=borf", "shorthand supported");
+    equal(router.get('location.path'), "/?foo=borf", "shorthand supported");
     Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': "blaf" } });
-    equal(router.get('location.path'), "/?index[foo]=blaf", "longform supported");
+    equal(router.get('location.path'), "/?foo=blaf", "longform supported");
     Ember.run(router, 'transitionTo', { queryParams: { foo: false } });
     equal(router.get('location.path'), "/", "longform supported");
   });
@@ -441,7 +441,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     bootApplication();
     var controller = container.lookup('controller:index');
 
-    expectedReplaceURL = "/?index[foo]=";
+    expectedReplaceURL = "/?foo=";
     Ember.run(controller, 'set', 'foo', '');
   });
 
@@ -455,7 +455,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     bootApplication();
     var controller = container.lookup('controller:index');
 
-    expectedReplaceURL = "/?index[foo]=";
+    expectedReplaceURL = "/?foo=";
     Ember.run(router, 'transitionTo', { queryParams: { foo: '' } });
   });
 
@@ -465,7 +465,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       foo: false
     });
 
-    startingURL = "/?index[foo]";
+    startingURL = "/?foo";
     bootApplication();
 
     var controller = container.lookup('controller:index');
@@ -478,7 +478,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       foo: ''
     });
 
-    startingURL = "/?index[foo]=";
+    startingURL = "/?foo=";
     bootApplication();
 
     var controller = container.lookup('controller:index');
@@ -502,10 +502,10 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     Ember.run(controller, '_activateQueryParamObservers');
     Ember.run(controller, 'set', 'foo', [1,2]);
 
-    equal(router.get('location.path'), "/?home[foo][]=1&home[foo][]=2");
+    equal(router.get('location.path'), "/?foo[]=1&foo[]=2");
 
     Ember.run(controller, 'set', 'foo', [3,4]);
-    equal(router.get('location.path'), "/?home[foo][]=3&home[foo][]=4");
+    equal(router.get('location.path'), "/?foo[]=3&foo[]=4");
   });
 
   test("transitionTo supports array query params", function() {
@@ -516,12 +516,12 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
 
-    equal(router.get('location.path'), "/?index[foo][]=1");
+    equal(router.get('location.path'), "/?foo[]=1");
 
     Ember.run(router, 'transitionTo', { queryParams: { foo: [2,3] } });
-    equal(router.get('location.path'), "/?index[foo][]=2&index[foo][]=3", "shorthand supported");
+    equal(router.get('location.path'), "/?foo[]=2&foo[]=3", "shorthand supported");
     Ember.run(router, 'transitionTo', { queryParams: { 'index:foo': [4,5] } });
-    equal(router.get('location.path'), "/?index[foo][]=4&index[foo][]=5", "longform supported");
+    equal(router.get('location.path'), "/?foo[]=4&foo[]=5", "longform supported");
     Ember.run(router, 'transitionTo', { queryParams: { foo: [] } });
     equal(router.get('location.path'), "/", "longform supported");
   });
@@ -532,7 +532,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       foo: ''
     });
 
-    startingURL = "/?index[foo][]=1&index[foo][]=2&index[foo][]=3";
+    startingURL = "/?foo[]=1&foo[]=2&foo[]=3";
     bootApplication();
 
     var controller = container.lookup('controller:index');
@@ -554,13 +554,13 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     var controller = container.lookup('controller:home');
 
     Ember.run(controller.foo, 'pushObject', 1);
-    equal(router.get('location.path'), "/?home[foo][]=1");
+    equal(router.get('location.path'), "/?foo[]=1");
     Ember.run(controller.foo, 'pushObject', 2);
-    equal(router.get('location.path'), "/?home[foo][]=1&home[foo][]=2");
+    equal(router.get('location.path'), "/?foo[]=1&foo[]=2");
     Ember.run(controller.foo, 'popObject');
-    equal(router.get('location.path'), "/?home[foo][]=1");
+    equal(router.get('location.path'), "/?foo[]=1");
     Ember.run(controller.foo, 'unshiftObject', 'lol');
-    equal(router.get('location.path'), "/?home[foo][]=lol&home[foo][]=1");
+    equal(router.get('location.path'), "/?foo[]=lol&foo[]=1");
   });
 
   test("Can swap out qp props as strings, arrays, back and forth", function() {
@@ -578,15 +578,15 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     var controller = container.lookup('controller:home');
 
     Ember.run(controller.foo, 'pushObject', 1);
-    equal(router.get('location.path'), "/?home[foo][]=1");
+    equal(router.get('location.path'), "/?foo[]=1");
     Ember.run(controller, 'set', 'foo', Ember.A(['lol']));
-    equal(router.get('location.path'), "/?home[foo][]=lol");
+    equal(router.get('location.path'), "/?foo[]=lol");
     Ember.run(controller.foo, 'pushObject', 1);
-    equal(router.get('location.path'), "/?home[foo][]=lol&home[foo][]=1");
+    equal(router.get('location.path'), "/?foo[]=lol&foo[]=1");
     Ember.run(controller, 'set', 'foo', 'hello');
-    equal(router.get('location.path'), "/?home[foo]=hello");
+    equal(router.get('location.path'), "/?foo=hello");
     Ember.run(controller, 'set', 'foo', true);
-    equal(router.get('location.path'), "/?home[foo]");
+    equal(router.get('location.path'), "/?foo");
   });
 
   test("Overwriting with array with same content shouldn't refire update", function() {
@@ -612,6 +612,53 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     var controller = container.lookup('controller:home');
     Ember.run(controller, 'set', Ember.A([1]));
-    equal(router.get('location.path'), "/?home[foo][]=1");
+    equal(router.get('location.path'), "/?foo[]=1");
+  });
+
+  test("Conflicting query params are scoped", function() {
+
+    Router.map(function() {
+      this.resource('root', function() {
+        this.resource('leaf');
+      });
+    });
+
+    Ember.TEMPLATES.application = compile("{{link-to 'Leaf' 'leaf' (query-params root:foo='123' leaf:foo='abc') id='leaf-link'}} " +
+                                          "{{link-to 'Root' 'root' (query-params foo='bar') id='root-link'}} " +
+                                          "{{outlet}}");
+
+    App.RootController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: '123'
+    });
+
+    App.LeafController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: 'abc'
+    });
+
+    bootApplication();
+    var rootController = container.lookup('controller:root'),
+        leafController = container.lookup('controller:leaf');
+
+  
+    equal(router.get('location.path'), "");
+    equal(Ember.$('#leaf-link').attr('href'), "/root/leaf?root[foo]=123&leaf[foo]=abc");
+    equal(Ember.$('#root-link').attr('href'), "/root?foo=bar");
+
+    Ember.run(Ember.$('#root-link'), 'click');
+    equal(rootController.get('foo'), 'bar');
+    
+    Ember.run(Ember.$('#leaf-link'), 'click');
+    equal(rootController.get('foo'), '123');
+    equal(leafController.get('foo'), 'abc');
+
+    Ember.run(rootController, 'set', 'foo', '456');
+    equal(router.get('location.path'), "/root/leaf?root[foo]=456&leaf[foo]=abc");
+
+    Ember.run(leafController, 'set', 'foo', 'def');
+    equal(router.get('location.path'), "/root/leaf?root[foo]=456&leaf[foo]=def");
+
+
   });
 }
