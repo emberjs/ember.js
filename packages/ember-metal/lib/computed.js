@@ -1218,6 +1218,20 @@ Ember.computed.oneWay = function(dependentKey) {
   });
 };
 
+if (Ember.FEATURES.isEnabled('query-params-new')) {
+  /**
+    This is a more semantically meaningful alias of `computed.oneWay`,
+    whose name is somewhat ambiguous as to which direction the data flows.
+
+    @method computed.reads
+    @for Ember
+    @param {String} dependentKey
+    @return {Ember.ComputedProperty} computed property which creates a
+      one way computed property to the original value for property.
+   */
+  Ember.computed.reads = Ember.computed.oneWay;
+}
+
 if (Ember.FEATURES.isEnabled('computed-read-only')) {
 /**
   Where `computed.oneWay` provides oneWay bindings, `computed.readOnly` provides
