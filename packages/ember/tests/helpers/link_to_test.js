@@ -998,7 +998,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'index' id='the-link'}}Index{{/link-to}}");
     bootApplication();
-    equal(Ember.$('#the-link').attr('href'), "/?index[foo]=123", "link has right href");
+    equal(Ember.$('#the-link').attr('href'), "/?foo=123", "link has right href");
   });
 
   test("{{link-to}} populates href with default query param values with empty query-params object", function() {
@@ -1009,7 +1009,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}");
     bootApplication();
-    equal(Ember.$('#the-link').attr('href'), "/?index[foo]=123", "link has right href");
+    equal(Ember.$('#the-link').attr('href'), "/?foo=123", "link has right href");
   });
 
   test("{{link-to}} populates href with supplied query param values", function() {
@@ -1020,7 +1020,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}");
     bootApplication();
-    equal(Ember.$('#the-link').attr('href'), "/?index[foo]=456", "link has right href");
+    equal(Ember.$('#the-link').attr('href'), "/?foo=456", "link has right href");
   });
 
   test("{{link-to}} populates href with partially supplied query param values", function() {
@@ -1032,7 +1032,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}");
     bootApplication();
-    equal(Ember.$('#the-link').attr('href'), "/?index[foo]=456&index[bar]=yes", "link has right href");
+    equal(Ember.$('#the-link').attr('href'), "/?foo=456&bar=yes", "link has right href");
   });
 
   test("{{link-to}} populates href with fully supplied query param values", function() {
@@ -1044,7 +1044,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'index' (query-params foo='456' bar='NAW') id='the-link'}}Index{{/link-to}}");
     bootApplication();
-    equal(Ember.$('#the-link').attr('href'), "/?index[foo]=456&index[bar]=NAW", "link has right href");
+    equal(Ember.$('#the-link').attr('href'), "/?foo=456&bar=NAW", "link has right href");
   });
 
   module("The {{link-to}} helper: invoking with query params", {
@@ -1134,7 +1134,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'about' (query-params baz='lol') id='the-link'}}About{{/link-to}}");
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/about?about[baz]=lol&about[bat]=borf');
+    equal(Ember.$('#the-link').attr('href'), '/about?baz=lol&bat=borf');
     Ember.run(Ember.$('#the-link'), 'click');
     var aboutController = container.lookup('controller:about');
     deepEqual(aboutController.getProperties('baz', 'bat'), { baz: 'lol', bat: 'borf' }, "about controller QP properties updated");
@@ -1148,9 +1148,9 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/?index[foo]=OMG&index[bar]=abc');
+    equal(Ember.$('#the-link').attr('href'), '/?foo=OMG&bar=abc');
     Ember.run(indexController, 'set', 'boundThing', "ASL");
-    equal(Ember.$('#the-link').attr('href'), '/?index[foo]=ASL&index[bar]=abc');
+    equal(Ember.$('#the-link').attr('href'), '/?foo=ASL&bar=abc');
   });
 
   test("supplied QP properties can be bound (booleans)", function() {
@@ -1159,9 +1159,9 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/?index[foo]=OMG&index[bar]=abc');
+    equal(Ember.$('#the-link').attr('href'), '/?foo=OMG&bar=abc');
     Ember.run(indexController, 'set', 'boundThing', false);
-    equal(Ember.$('#the-link').attr('href'), '/?index[bar]=abc');
+    equal(Ember.$('#the-link').attr('href'), '/?bar=abc');
 
     Ember.run(Ember.$('#the-link'), 'click');
 
@@ -1174,11 +1174,11 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/?index[foo]=lol&index[bar]=abc');
+    equal(Ember.$('#the-link').attr('href'), '/?foo=lol&bar=abc');
     Ember.run(indexController, 'set', 'bar', 'BORF');
-    equal(Ember.$('#the-link').attr('href'), '/?index[foo]=lol&index[bar]=BORF');
+    equal(Ember.$('#the-link').attr('href'), '/?foo=lol&bar=BORF');
     Ember.run(indexController, 'set', 'foo', 'YEAH');
-    equal(Ember.$('#the-link').attr('href'), '/?index[foo]=lol&index[bar]=BORF');
+    equal(Ember.$('#the-link').attr('href'), '/?foo=lol&bar=BORF');
   });
 
   test("The {{link-to}} applies activeClass when query params are not changed", function() {
@@ -1236,17 +1236,17 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     //Basic tests
     shouldNotBeActive('#cat-link');
     shouldNotBeActive('#dog-link');
-    Ember.run(router, 'handleURL', '/?index[foo]=cat');
+    Ember.run(router, 'handleURL', '/?foo=cat');
     shouldBeActive('#cat-link');
     shouldNotBeActive('#dog-link');
-    Ember.run(router, 'handleURL', '/?index[foo]=dog');
+    Ember.run(router, 'handleURL', '/?foo=dog');
     shouldBeActive('#dog-link');
     shouldNotBeActive('#cat-link');
     shouldBeActive('#change-nothing');
 
     //Multiple params
     Ember.run(function() {
-      router.handleURL("/search?search[search]=same");
+      router.handleURL("/search?search=same");
     });
     shouldBeActive('#same-search');
     shouldNotBeActive('#change-search');
@@ -1256,14 +1256,14 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     shouldBeActive('#change-nothing');
 
     Ember.run(function() {
-      router.handleURL("/search?search[search]=same&search[archive]");
+      router.handleURL("/search?search=same&archive");
     });
     shouldBeActive('#both-same');
     shouldNotBeActive('#change-one');
 
     //Nested Controllers
     Ember.run(function() {
-      router.handleURL("/search/results?search[search]=same&results[sort]=title&results[showDetails]");
+      router.handleURL("/search/results?search=same&sort=title&showDetails");
     });
     shouldBeActive('#same-sort-child-only');
     shouldBeActive('#same-search-parent-only');
@@ -1288,7 +1288,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       bootApplication();
 
       shouldNotBeActive('#page-link');
-      Ember.run(router, 'handleURL', '/?index[page]=5');
+      Ember.run(router, 'handleURL', '/?page=5');
       shouldBeActive('#page-link');
 
   });
@@ -1311,15 +1311,15 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       bootApplication();
 
       shouldNotBeActive('#array-link');
-      Ember.run(router, 'handleURL', '/?index[pages][]=1&index[pages][]=2');
+      Ember.run(router, 'handleURL', '/?pages[]=1&pages[]=2');
       shouldBeActive('#array-link');
       shouldNotBeActive('#bigger-link');
       shouldNotBeActive('#empty-link');
-      Ember.run(router, 'handleURL', '/?index[pages][]=2&index[pages][]=1');
+      Ember.run(router, 'handleURL', '/?pages[]=2&pages[]=1');
       shouldNotBeActive('#array-link');
       shouldNotBeActive('#bigger-link');
       shouldNotBeActive('#empty-link');
-      Ember.run(router, 'handleURL', '/?index[pages][]=1&index[pages][]=2&index[pages][]=3');
+      Ember.run(router, 'handleURL', '/?pages[]=1&pages[]=2&pages[]=3');
       shouldBeActive('#bigger-link');
       shouldNotBeActive('#array-link');
       shouldNotBeActive('#empty-link');
