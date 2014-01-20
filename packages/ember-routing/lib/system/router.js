@@ -67,67 +67,6 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     return tokens;
   }),
 
-  /**
-    The title divider to use between each route `title`.
-
-    @property titleDivider
-    @type String
-    @default ' - '
-   */
-  titleDivider: ' - ',
-
-  /**
-    A flag to indicate whether the document title should
-    sort the route `title`s from most general to most
-    specific:
-
-    ```
-    Ember.js - About
-    ```
-
-    or most specific to most general:
-
-    ```
-    About - Ember.js
-    ```
-
-    @property titleSpecificityIncreases
-    @type Boolean
-    @default false
-   */
-  titleSpecificityIncreases: false,
-
-  /**
-    The title to be used to control the `document.title`.
-
-    Override this property to fully customize how the
-    `document.title` is computed. When overriding this
-    property, use the `titleTokens` property to get all
-    of the tokens that are active in order of most general
-    to most specific.
-
-    @property type
-    @type String
-    @default ''
-   */
-  title: Ember.computed('titleTokens', 'titleDivider', 'titleSpecificityIncreases', function() {
-    var tokens  = get(this, 'titleTokens'),
-        divider = get(this, 'titleDivider');
-
-    if (!get(this, 'titleSpecificityIncreases')) {
-      tokens = Ember.copy(tokens).reverse();
-    }
-
-    return tokens.join(divider);
-  }),
-
-  titleDidChange: Ember.observer(function() {
-    var title = get(this, 'title');
-    if (title) {
-      document.title = title;
-    }
-  }, 'title'),
-
   url: Ember.computed(function() {
     return get(this, 'location').getURL();
   }),
