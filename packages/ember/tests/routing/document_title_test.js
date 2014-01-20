@@ -11,6 +11,15 @@ function compile(string) {
   return Ember.Handlebars.compile(string);
 }
 
+function transitionTo() {
+  var args = arguments;
+  Ember.run(function() {
+    router.transitionTo.apply(router, args).then(null, function() {
+      ok(false, "TRANSITION FAILED");
+    });
+  });
+}
+
 function handleURL(path) {
   return Ember.run(function() {
     return router.handleURL(path).then(function(value) {
@@ -48,6 +57,8 @@ function handleURLRejectsWith(path, expectedReason) {
   });
 }
 if (Ember.FEATURES.isEnabled("ember-document-title")) {
+
+  var originalWarn = Ember.warn;
   module("Routing document.title integration", {
     setup: function() {
       Ember.run(function() {
@@ -79,6 +90,7 @@ if (Ember.FEATURES.isEnabled("ember-document-title")) {
     },
 
     teardown: function() {
+      Ember.warn = originalWarn;
       Ember.run(function() {
         App.destroy();
         App = null;
@@ -100,12 +112,12 @@ if (Ember.FEATURES.isEnabled("ember-document-title")) {
     });
 
     bootApplication("/");
-    equal(document.title, "British Government");
+    equal(router._docTitle, "British Government");
   });
 
 
-  asyncTest("Transitioning will update the title of the document", function() {
-    expect(8);
+  test("Transitioning will update the title of the document", function() {
+    expect(7);
 
     Router.map(function() {
       this.route("ministries", { path: "/ministries" });
@@ -127,124 +139,152 @@ if (Ember.FEATURES.isEnabled("ember-document-title")) {
       })
     });
 
-    var originalTitle = document.title;
     bootApplication();
 
-    var transition = handleURL('/'),
-        ministry = Ember.Object.create({
-          name: "Ministry of Silly Walks"
-        });
-
-    Ember.run(function () {
-      transition.then(function () {
-        equal(document.title, originalTitle);
-        return router.transitionTo('ministries');
-      }, shouldNotHappen).then(function(result) {
-        equal(document.title, "Ministries");
-
-        return router.transitionTo('ministry', ministry);
-      }, shouldNotHappen).then(function (result) {
-        equal(document.title, "Ministry of Silly Walks");
-
-        set(ministry, 'name', "Ministry of Pointless Arguments");
-        equal(document.title, "Ministry of Pointless Arguments");
-
-        return router.transitionTo('ministries');
-      }, shouldNotHappen).then(function (result) {
-        equal(document.title, "Ministries");
-
-        set(ministry, 'name', "Ministry of Silly Walks");
-
-        return new Ember.RSVP.Promise(function (resolve) {
-          Ember.run.next(resolve);
-        });
-      }).then(function () {
-        equal(document.title, "Ministries");
-
-        return router.transitionTo("employee", Ember.Object.create({
-          id: 5,
-          name: "Mr. Teabag"
-        }));
-      }, shouldNotHappen).then(function (result) {
-        equal(document.title, "Employee #5");
-
-        start();
-      }, shouldNotHappen);
+    var ministry = Ember.Object.create({
+      name: "Ministry of Silly Walks"
     });
+
+    ok(!router._docTitle);
+    transitionTo('ministries');
+    equal(router._docTitle, "Ministries");
+    transitionTo('ministry', ministry);
+    equal(router._docTitle, "Ministry of Silly Walks");
+    Ember.run(ministry, 'set', 'name', "Ministry of Pointless Arguments");
+    equal(router._docTitle, "Ministry of Pointless Arguments");
+    transitionTo('ministries');
+    equal(router._docTitle, "Ministries");
+    Ember.run(ministry, 'set', 'name', "Ministry of Silly Walks");
+    equal(router._docTitle, "Ministries");
+
+    transitionTo("employee", Ember.Object.create({
+      id: 5,
+      name: "Mr. Teabag"
+    }));
+
+    equal(router._docTitle, "Employee #5");
   });
 
-
-  asyncTest("specifying the titleDivider property", function() {
-    expect(3);
+  test("Deeper nesting", function() {
+    expect(11);
 
     Router.map(function() {
-      this.resource("ministry", { path: "/ministry/:ministry_id" });
+      this.resource("ministry", { path: "/ministry/:ministry_id" }, function() {
+        this.route('lameness');
+      });
+      this.route('outside');
+      this.route('override');
     });
 
+    var titleCount = 0;
     App.ApplicationRoute = Ember.Route.extend({
-      title: "British Government"
+      title: Ember.computed(function() {
+        ++titleCount;
+        return this.get('titleTokens').reverse().join(' | ');
+      }),
+
+      titleToken: "British Government"
+    });
+
+    App.MinistryIndexRoute = Ember.Route.extend({
+      titleToken: "Welcome"
+    });
+
+    App.MinistryLamenessRoute = Ember.Route.extend({
+      titleToken: "Lameskies"
     });
 
     App.MinistryRoute = Ember.Route.extend({
-      title: Ember.computed.oneWay("controller.name")
+      titleToken: Ember.computed.oneWay("controller.name")
     });
+
+    App.OutsideRoute = Ember.Route.extend({
+      titleToken: 'Outside'
+    });
+
+    App.OverrideRoute = Ember.Route.extend({
+      title: Ember.computed(function() {
+        titleCount++;
+        return 'WHAT NOW APPLICATIONROUTE';
+      })
+    });
+
+    function assertCount(count) {
+      equal(count, titleCount, "title hasn't been over-computed");
+    }
 
     bootApplication();
+    assertCount(1);
 
-    var transition = handleURL('/'),
-        ministry = Ember.Object.create({
-          name: "Ministry of Silly Walks"
-        });
+    var ministry = Ember.Object.create({
+      name: "Ministry of Silly Walks"
+    });
+
+    transitionTo('ministry', ministry);
+    assertCount(2);
+
+    equal(router._docTitle, "Welcome | Ministry of Silly Walks | British Government");
+
+    transitionTo('ministry.lameness');
+    assertCount(3);
+    equal(router._docTitle, "Lameskies | Ministry of Silly Walks | British Government");
+
+    Ember.run(ministry, 'set', 'name', "Ministry of Matchneerian Ineptitude");
+    assertCount(4);
+    equal(router._docTitle, "Lameskies | Ministry of Matchneerian Ineptitude | British Government");
 
     Ember.run(function() {
-      transition.then(function() {
-        return router.transitionTo('ministry', ministry);
-      }, shouldNotHappen).then(function(result) {
-        equal(document.title, "Ministry of Silly Walks | British Government");
-
-        set(router, 'titleDivider', ': ');
-        Ember.run.next(function () {
-          equal(document.title, "Ministry of Silly Walks: British Government");
-          start();
-        });
-      }, shouldNotHappen);
+      router.transitionTo('outside');
+      ministry.set('name', 'OMG');
     });
+
+    assertCount(5);
+    equal(router._docTitle, "Outside | British Government");
+
+    transitionTo('override');
+    assertCount(6);
+    equal(router._docTitle, 'WHAT NOW APPLICATIONROUTE');
   });
 
-  asyncTest("specifying the titleSpecificityIncreases property", function() {
-    expect(3);
-
-    Router.map(function() {
-      this.resource("ministry", { path: "/ministry/:ministry_id" });
-    });
+  test("titleToken can be an array of multiple tokens", function() {
+    expect(1);
 
     App.ApplicationRoute = Ember.Route.extend({
-      title: "British Government"
+      title: Ember.computed(function() {
+        return this.get('titleTokens').join(' - ');
+      }),
+      titleToken: ["APP", "LOL"]
     });
 
-    App.MinistryRoute = Ember.Route.extend({
-      title: Ember.computed.oneWay("controller.name")
+    App.IndexRoute = Ember.Route.extend({
+      titleToken: Ember.computed(function() {
+        return ["INDEX", "WOOT"];
+      })
+    });
+
+    bootApplication();
+    equal(router._docTitle, "APP - LOL - INDEX - WOOT");
+  });
+
+  test("Defining titleTokens but no title on parent route yields default title and warns user", function() {
+
+    expect(2);
+
+    Ember.warn = function(msg) {
+      equal(msg, "You specified a `titleToken` on at least one route but did not specify a `title` property on the 'application' route. A default document.title has been generated for you, but you'll probably want to provide your own implementation of a `title` computed property on the 'application' route that constructs a custom title using the collected title tokens in `this.get('titleTokens')`");
+    };
+
+    App.ApplicationRoute = Ember.Route.extend({
+      titleToken: 'app'
+    });
+
+    App.IndexRoute = Ember.Route.extend({
+      titleToken: 'index'
     });
 
     bootApplication();
 
-    var transition = handleURL('/'),
-        ministry = Ember.Object.create({
-          name: "Ministry of Silly Walks"
-        });
-
-    Ember.run(function() {
-      transition.then(function() {
-        return router.transitionTo('ministry', ministry);
-      }, shouldNotHappen).then(function(result) {
-        equal(document.title, "Ministry of Silly Walks | British Government");
-
-        set(router, 'titleSpecificityIncreases', true);
-        Ember.run.next(function () {
-          equal(document.title, "British Government | Ministry of Silly Walks");
-          start();
-        });
-      }, shouldNotHappen);
-    });
+    equal(router._docTitle, "app | index");
   });
 }
+
