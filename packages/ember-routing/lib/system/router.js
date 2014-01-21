@@ -287,26 +287,21 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     args = slice.call(args);
     args[0] = args[0] || '/';
 
-    var passedName = args[0], name, self = this,
+    var name = args[0], self = this,
       isQueryParamsOnly = false, queryParams;
 
     if (Ember.FEATURES.isEnabled("query-params-new")) {
       if (args[args.length - 1].hasOwnProperty('queryParams')) {
         if (args.length === 1) {
           isQueryParamsOnly = true;
+          name = null;
         }
         queryParams = args[args.length - 1].queryParams;
       }
     }
 
-    if (!isQueryParamsOnly && passedName.charAt(0) !== '/') {
-      if (!this.router.hasRoute(passedName)) {
-        name = args[0] = passedName + '.index';
-      } else {
-        name = passedName;
-      }
-
-      Ember.assert("The route " + passedName + " was not found", this.router.hasRoute(name));
+    if (!isQueryParamsOnly && name.charAt(0) !== '/') {
+      Ember.assert("The route " + name + " was not found", this.router.hasRoute(name));
     }
 
     if (queryParams) {
@@ -380,7 +375,6 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
   _queryParamNamesFor: function(routeName) {
 
     // TODO: add caching
-    routeName = this.router.hasRoute(routeName) ? routeName : routeName + '.index';
 
     var handlerInfos = this.router.recognizer.handlersFor(routeName);
     var result = { queryParams: Ember.create(null), translations: Ember.create(null), validQueryParams: Ember.create(null) };
@@ -756,7 +750,7 @@ Ember.Router.reopenClass({
     var regex = /\[(.+)\]/,
         result = param.match(regex);
 
-    if (!result) { 
+    if (!result) {
       result = param;
     } else {
       result = result[1];
