@@ -859,7 +859,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
       sawParams = true;
     }
 
-    if (!name && sawParams) { return params; }
+    if (!name && sawParams) { return Ember.copy(params); }
     else if (!name) { return; }
 
     return this.findModel(name, value);

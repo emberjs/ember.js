@@ -661,4 +661,31 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
 
   });
+
+  test("Defaulting to params hash as the model should not result in that params object being watched", function() {
+    expect(1);
+
+    Router.map(function() {
+      this.route('other');
+    });
+
+    // This causes the params hash, which is returned as a route's
+    // model if no other model could be resolved given the provided
+    // params (and no custom model hook was defined), to be watched,
+    // unless we return a copy of the params hash.
+    App.ApplicationController = Ember.ObjectController.extend({
+      queryParams: ['woot']
+    });
+
+    App.OtherRoute = Ember.Route.extend({
+      model: function(p, trans) {
+        var m = Ember.meta(trans.params.application);
+        ok(!m.watching.woot, "A meta object isn't constructed for this params POJO");
+      }
+    });
+
+    bootApplication();
+
+    Ember.run(router, 'transitionTo', 'other');
+  });
 }
