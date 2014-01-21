@@ -837,7 +837,7 @@ define("router/router",
         if (!(e instanceof TransitionAborted)) {
           //var erroneousHandler = handlerInfos.pop();
           var infos = transition.state.handlerInfos;
-          transition.trigger(true, 'error', e, transition, infos[infos.length-1]);
+          transition.trigger(true, 'error', e, transition, infos[infos.length-1].handler);
           transition.abort();
         }
 
@@ -1283,9 +1283,12 @@ define("router/transition-state",
         function handleError(error) {
           // This is the only possible
           // reject value of TransitionState#resolve
+          var handlerInfos = currentState.handlerInfos;
+          var errorHandlerIndex = payload.resolveIndex >= handlerInfos.length ?
+                                  handlerInfos.length - 1 : payload.resolveIndex;
           throw {
             error: error,
-            handlerWithError: currentState.handlerInfos[payload.resolveIndex].handler,
+            handlerWithError: currentState.handlerInfos[errorHandlerIndex].handler,
             wasAborted: wasAborted,
             state: currentState
           };
