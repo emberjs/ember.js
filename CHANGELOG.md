@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### Ember 1.4.0-beta.3 (January 20, 2014)
+
+* Document the send method on Ember.ActionHandler.
+* Document Ember.Route #controllerName and #viewName properties.
+* Allow jQuery version 1.11 and 2.1.
+
 ### Ember 1.4.0-beta.2 (January 14, 2014)
 
 * [BUGFIX] Fix stripping trailing slashes for * routes.
