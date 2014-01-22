@@ -1,10 +1,12 @@
-var App, find, click, fillIn, currentRoute, visit, originalAdapter, andThen;
+var App, find, click, fillIn, currentRoute, visit, originalAdapter, andThen, indexHitCount;
 
 module("ember-testing Acceptance", {
   setup: function() {
     Ember.$('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
     Ember.$('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
     Ember.run(function() {
+      indexHitCount = 0;
+
       App = Ember.Application.create({
         rootElement: '#ember-testing'
       });
@@ -14,6 +16,12 @@ module("ember-testing Acceptance", {
         this.route('comments');
 
         this.route('abort_transition');
+      });
+
+      App.IndexRoute = Ember.Route.extend({
+        model: function(){
+          indexHitCount += 1;
+        }
       });
 
       App.PostsRoute = Ember.Route.extend({
@@ -65,6 +73,7 @@ module("ember-testing Acceptance", {
     Ember.run(App, App.destroy);
     App = null;
     Ember.Test.adapter = originalAdapter;
+    indexHitCount = 0;
   }
 });
 
@@ -219,4 +228,22 @@ test("Unhandled exceptions are logged via Ember.Test.adapter#exception", functio
   });
 
   asyncHandled = click(".does-not-exist");
+});
+
+test("should not start routing on the root URL when visiting another", function(){
+  visit('/posts');
+
+  andThen(function(){
+    ok(find('#comments-link'), 'found comments-link');
+    equal(currentRoute, 'posts', "Successfully visited posts route");
+    equal(indexHitCount, 0, 'should not hit index route when visiting another route');
+  });
+});
+
+test("only enters the index route once when visiting /", function(){
+  visit('/');
+
+  andThen(function(){
+    equal(indexHitCount, 1, 'should hit index once when visiting /');
+  });
 });
