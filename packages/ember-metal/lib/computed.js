@@ -24,10 +24,6 @@ var get = Ember.get,
     watch = Ember.watch,
     unwatch = Ember.unwatch;
 
-
-if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
-}
-
 if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
   var expandProperties = Ember.expandProperties;
 }
@@ -594,7 +590,7 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
       typeOf = Ember.typeOf;
 
   var implicitKey = function (cp) {
-    return [guidFor(cp)].concat(cp._dependentKeys).join('_');
+    return [guidFor(cp)].concat(cp._dependentKeys).join('_').replace(/\./g, '_DOT_');
   };
 
   var normalizeDependentKey = function (key) {
@@ -623,11 +619,10 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
     if (dependentKeys) {
       cp._dependentKeys = normalizeDependentKeys(dependentKeys);
       cp._dependentCPs = selectDependentCPs(dependentKeys);
-      cp.implicitCPKey = implicitKey(cp);
     } else {
       cp._dependentKeys = cp._dependentCPs = [];
-      delete cp.implicitCPKey;
     }
+    cp.implicitCPKey = implicitKey(cp);
   };
   // expose `normalizeDependentKey[s]` so user CP macros can easily support
   // composition
