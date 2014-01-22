@@ -62,6 +62,8 @@ var get = Ember.get,
   'controller:posts.index' //=> App.PostsIndexController
   'controller:blog/post' //=> Blog.PostController
   'controller:basic' //=> Ember.Controller
+  'item-controller:post' //=> App.PostItemController
+  'item-controller:post' //=> App.PostController
   'route:post' //=> App.PostRoute
   'route:posts.index' //=> App.PostsIndexRoute
   'route:blog/post' //=> Blog.PostRoute
@@ -218,6 +220,30 @@ Ember.DefaultResolver = Ember.Object.extend({
   resolveController: function(parsedName) {
     this.useRouterNaming(parsedName);
     return this.resolveOther(parsedName);
+  },
+  /**
+    Lookup the itemController using `resolveOther`, if no factory is found
+    change the type to 'controller' and call `resolveOther` again.
+
+    This means we look for `App.FooItemController` and fallback to
+    `App.FooController` if the first lookup fails.
+
+    @protected
+    @param {Object} parsedName a parseName object with the parsed
+      fullName lookup string
+    @method resolveController
+  */
+  resolveItemController: function(parsedName){
+    this.useRouterNaming(parsedName);
+
+    // resolve as App.PostItemController first
+    var factory = this.resolveOther(parsedName);
+
+    if (factory) { return factory; }
+
+    // fall back to App.PostController
+    parsedName.type = 'controller';
+    factory = this.resolveOther(parsedName);
   },
   /**
     Lookup the route using `resolveOther`

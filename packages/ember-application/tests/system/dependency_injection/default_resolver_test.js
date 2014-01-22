@@ -86,3 +86,22 @@ test("the default resolver throws an error if the fullName to resolve is invalid
   raises(function(){ locator.resolve('model:'); }, TypeError, /Invalid fullName/ );
   raises(function(){ locator.resolve(':type');  }, TypeError, /Invalid fullName/ );
 });
+
+test('the default resolver looks up item-controller as FooItemController on namespace', function() {
+  application.FooItemController = Ember.Object.extend({});
+
+  detectEqual(application.FooItemController, locator.resolver('item-controller:foo'),"looks up FooItemController on application");
+});
+
+test('the default resolver looks up item-controller as FooController on namespace', function() {
+  application.FooController = Ember.Object.extend({});
+
+  detectEqual(application.FooController, locator.resolver('item-controller:foo'),"looks up FooController on application");
+});
+
+test('the default resolver looks up item-controller as FooItemController if both FooItemController and FooController exist on namespace', function() {
+  application.FooItemController = Ember.Object.extend({});
+  application.FooController = Ember.Object.extend({});
+
+  detectEqual(application.FooItemController, locator.resolver('item-controller:foo'),"looks up FooItemController on application");
+});
