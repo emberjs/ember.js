@@ -54,7 +54,7 @@ test("Model types added with DefaultResolver", function() {
 });
 
 test("Model types added with custom container-debug-adapter", function() {
-  var PostClass = Model.extend(),
+  var PostClass = Model.extend() ,
       StubContainerDebugAdapter = Ember.DefaultResolver.extend({
         canCatalogEntriesByType: function(type){
           return true;
@@ -76,12 +76,13 @@ test("Model types added with custom container-debug-adapter", function() {
   });
 
   Ember.run(App, 'advanceReadiness');
-
+ 
   var modelTypesAdded = function(types) {
 
     equal(types.length, 1);
     var postType = types[0];
-    equal(postType.name, 'Post', 'Correctly sets the name');
+
+    equal(postType.name, PostClass.toString(), 'Correctly sets the name');
     equal(postType.count, 3, 'Correctly sets the record count');
     strictEqual(postType.object, PostClass, 'Correctly sets the object');
     deepEqual(postType.columns, [ {name: 'title', desc: 'Title'} ], 'Correctly sets the columns');

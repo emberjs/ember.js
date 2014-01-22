@@ -5,8 +5,8 @@ module("Ember.Application Depedency Injection – customResolver",{
     function fallbackTemplate() { return "<h1>Fallback</h1>"; }
 
     var Resolver = Ember.DefaultResolver.extend({
-      resolveTemplate: function(parsedName) {
-        var resolvedTemplate = this._super(parsedName);
+      resolveTemplate: function(resolvable) {
+        var resolvedTemplate = this._super(resolvable);
         if (resolvedTemplate) { return resolvedTemplate; }
         return fallbackTemplate;
       }

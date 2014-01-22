@@ -34,6 +34,7 @@ test("the default ContainerDebugAdapter can catalog typical entries by type", fu
 test("the default ContainerDebugAdapter catalogs controller entries", function(){
   App.PostController = Ember.Controller.extend();
   var controllerClasses = adapter.catalogEntriesByType('controller');
+ 
   equal(controllerClasses.length, 1, "found 1 class");
   equal(controllerClasses[0], App.PostController, "found the right class");
 });

@@ -39,10 +39,6 @@ require('ember-application');
   @extends Ember.Object
 */
 Ember.ContainerDebugAdapter = Ember.Object.extend({
-  init: function() {
-    this._super();
-  },
-
   /**
     The container of the application being debugged.
     This property will be injected
@@ -86,6 +82,7 @@ Ember.ContainerDebugAdapter = Ember.Object.extend({
   catalogEntriesByType: function(type) {
     var namespaces = Ember.A(Ember.Namespace.NAMESPACES), types = Ember.A(), self = this;
     var typeSuffixRegex = new RegExp(Ember.String.classify(type) + "$");
+     
     namespaces.forEach(function(namespace) {
       if (namespace !== Ember) {
         for (var key in namespace) {
@@ -98,6 +95,7 @@ Ember.ContainerDebugAdapter = Ember.Object.extend({
           }
         }
       }
+      
     });
     return types;
   }
