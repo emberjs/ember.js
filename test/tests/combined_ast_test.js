@@ -47,7 +47,7 @@ function element(tagName, attrs, children, helpers) {
 }
 
 function block(helper, children) {
-  return new BlockElement(helper, children);;
+  return new BlockElement(helper, children);
 }
 
 function removeLocInfo(obj) {

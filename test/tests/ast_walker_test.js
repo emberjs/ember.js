@@ -32,7 +32,7 @@ test("visits ast in an order friendly to opcode generation", function () {
       this.opcodes.push(['block', this.templateId++, block.inverse === null ? null : this.templateId++]);
     },
     node: function (node) { }
-  }
+  };
 
   var walker = new ASTWalker(visitor);
   walker.visit(ast);
@@ -76,14 +76,14 @@ test("visits ast in an order friendly to opcode generation", function () {
       this.template += '}}';
     },
     compile: function (opcodes) {
-      var opcode, i;
+      var opcode;
       for (var i=0; i<opcodes.length; i++) {
         opcode = opcodes[i];
         this[opcode[0]].apply(this, opcode.slice(1));
       }
       return this.stack.pop();
     }
-  }
+  };
 
   var output = compiler.compile(visitor.opcodes);
 

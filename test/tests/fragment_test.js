@@ -16,6 +16,7 @@ function equalHTML(fragment, html) {
 var dom = domHelpers();
 
 function fragmentFor(ast) {
+  /* jshint evil: true */
   var fragmentOpcodeCompiler = new FragmentOpcodeCompiler(),
       fragmentCompiler = new FragmentCompiler();
 
@@ -28,6 +29,7 @@ function fragmentFor(ast) {
 }
 
 function hydrationFor(ast) {
+  /* jshint evil: true */
   var hydrate = new HydrationOpcodeCompiler();
   var opcodes = hydrate.compile(ast);
   var hydrate2 = new HydrationCompiler();

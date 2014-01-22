@@ -21,7 +21,7 @@ var dom = {
   appendText: function (node, string) {
     node.appendChild(document.createTextNode(string));
   }
-}
+};
 
 var helpers = {
   RESOLVE: function (context, name, params, options) {
@@ -41,13 +41,14 @@ var helpers = {
 };
 
 test("it works", function testFunction() {
-  var ast = preprocess('<div>{{#if working}}Hello {{firstName}} {{lastName}}!{{/if}}</div>')
-  var compiler = new TemplateCompiler()
+  /* jshint evil: true */
+  var ast = preprocess('<div>{{#if working}}Hello {{firstName}} {{lastName}}!{{/if}}</div>');
+  var compiler = new TemplateCompiler();
   var program = compiler.compile(ast);
   var template = new Function("dom", "Placeholder", "return " + program)(dom, Placeholder);
   var frag = template(
     { working: true, firstName: 'Kris', lastName: 'Selden' },
     { helpers: helpers }
   );
-  equalHTML(frag, '<div>Hello Kris Selden!</div>')
+  equalHTML(frag, '<div>Hello Kris Selden!</div>');
 });
