@@ -8,7 +8,7 @@ var get = Ember.get,
     capitalize = Ember.String.capitalize,
     decamelize = Ember.String.decamelize;
 
-Ember.AbstractResolver = Ember.Object.extend({
+Ember.Resolver = Ember.Object.extend({
   /**
     This will be set to the Application instance when it is
     created.
@@ -17,40 +17,22 @@ Ember.AbstractResolver = Ember.Object.extend({
   */
   namespace: null,
   normalize: function(fullName) {
-    throw new Error("Invalid call to `resolver.normalize(fullName)`. Please override the 'normalize' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");    
+    throw new Error("Invalid call to `resolver.normalize(fullName)`. Please override the 'normalize' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");
   },
   resolve: function(fullName) {
-   throw new Error("Invalid call to `resolver.resolve(parsedName)`. Please override the 'resolve' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");        
+   throw new Error("Invalid call to `resolver.resolve(parsedName)`. Please override the 'resolve' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");
   },
   parseName: function(parsedName) {
-   throw new Error("Invalid call to `resolver.resolveByType(parsedName)`. Please override the 'resolveByType' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");        
+   throw new Error("Invalid call to `resolver.resolveByType(parsedName)`. Please override the 'resolveByType' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");
   },
   lookupDescription: function(fullName) {
-    throw new Error("Invalid call to `resolver.lookupDescription(fullName)`. Please override the 'lookupDescription' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");    
+    throw new Error("Invalid call to `resolver.lookupDescription(fullName)`. Please override the 'lookupDescription' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");
   },
   makeToString: function(factory, fullName) {
-    throw new Error("Invalid call to `resolver.makeToString(factory, fullName)`. Please override the 'makeToString' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");    
+    throw new Error("Invalid call to `resolver.makeToString(factory, fullName)`. Please override the 'makeToString' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");
   },
-  resolveTemplate: function(parsedName) {
-   throw new Error("Invalid call to `resolver.resolveTemplate(parsedName)`. Please override the 'resolveTemplate' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");        
-  },
-  resolveView: function(parsedName) {
-   throw new Error("Invalid call to `resolver.resolveView(parsedName)`. Please override the 'resolveView' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");        
-  },
-  resolveController: function(parsedName) {
-   throw new Error("Invalid call to `resolver.resolveController(parsedName)`. Please override the 'resolveController' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");        
-  },
-  resolveRoute: function(parsedName) {
-   throw new Error("Invalid call to `resolver.resolveRoute(parsedName)`. Please override the 'resolveRoute' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");        
-  },
-  resolveModel: function(parsedName) {
-   throw new Error("Invalid call to `resolver.resolveModel(parsedName)`. Please override the 'resolveModel' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");        
-  },
-  // resolveHelper: function(parsedName) {
-  //  throw new Error("Invalid call to `resolver.resolveHelper(parsedName)`. Please override the 'resolveHelper' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");        
-  // },
   resolveOther: function(parsedName) {
-   throw new Error("Invalid call to `resolver.resolveDefault(parsedName)`. Please override the 'resolveDefault' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");        
+   throw new Error("Invalid call to `resolver.resolveDefault(parsedName)`. Please override the 'resolveDefault' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");
   }
 });
 
@@ -339,9 +321,9 @@ Ember.DefaultResolver = Ember.Object.extend({
       fullName lookup string
     @method resolveHelper
   */
-  // resolveHelper: function(parsedName) {
-  //   return this.resolveOther(parsedName);
-  // },
+  resolveHelper: function(parsedName) {
+    return this.resolveOther(parsedName) || Ember.Handlebars.helpers[parsedName.fullNameWithoutType];
+  },
   /**
     Look up the specified object (from parsedName) on the appropriate
     namespace (usually on the Application)
