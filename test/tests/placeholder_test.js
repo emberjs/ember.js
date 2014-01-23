@@ -291,7 +291,7 @@ function createCombinatorialTest(factory) {
 
     equalHTML(frag, html);
   });
-};
+}
 
 function createCombinatorialTests(parents, starts, ends, contents) {
   QUnit.module('Placeholder');
