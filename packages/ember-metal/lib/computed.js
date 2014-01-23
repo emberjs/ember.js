@@ -596,10 +596,8 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   var normalizeDependentKey = function (key) {
     if (key instanceof Ember.ComputedProperty) {
       return implicitKey(key);
-    } else if (typeof key === 'string' || key instanceof String || typeof key === 'object' || typeof key === 'number') {
-      return key;
     } else {
-      Ember.assert('Unexpected dependent key  ' + key + ' of type ' + typeof(key), false);
+      return key;
     }
   };
 
