@@ -173,7 +173,7 @@ Ember.ThrottleSetMixin = Ember.Mixin.create({
     Read the configuration fo throttled properties from the `throttledProperties` property.
    */
   init: function() {
-    var props, that, meta, that = this;
+    var props, meta, that = this;
     this._super.apply(this, arguments);
 
     if ((props = get(this, 'throttledProperties'))) {
