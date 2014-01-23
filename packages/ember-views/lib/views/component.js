@@ -199,9 +199,9 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, Ember.ComponentTe
     App.PlayButtonComponent = Ember.Component.extend({
       click: function(){
         if (this.get('isPlaying')) {
-          this.triggerAction('play');
+          this.sendAction('play');
         } else {
-          this.triggerAction('stop');
+          this.sendAction('stop');
         }
       }
     });
