@@ -894,6 +894,8 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
                      " did not exist and you did not override your route's `model` " +
                      "hook.", modelClass);
 
+        if (!modelClass) { return; }
+
         return modelClass.find(value);
       }
     };
