@@ -834,3 +834,20 @@ test("array dependencies specified with `.[]` completely invalidate a reduceComp
   equal(addCalls, 4, "array completely recomputed when totally invalidating dependent array modified");
   equal(removeCalls, 0, "remove not called");
 });
+
+if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.Array) {
+  test("reduceComputed complains about array dependencies that are not `Ember.Array`s", function() {
+    var Type = Ember.Object.extend({
+      rc: Ember.reduceComputed('array', {
+        initialValue: 0,
+        addedItem: function(v){ return v; },
+        removedItem: function(v){ return v; }
+      })
+    });
+
+    expectAssertion(function() {
+      obj = Type.create({ array: [] });
+      get(obj, 'rc');
+    }, /must be an `Ember.Array`/, "Ember.reduceComputed complains about dependent non-extended native arrays");
+  });
+}
