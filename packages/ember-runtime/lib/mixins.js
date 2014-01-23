@@ -11,3 +11,4 @@ require('ember-runtime/mixins/evented');
 require('ember-runtime/mixins/deferred');
 require('ember-runtime/mixins/action_handler');
 require('ember-runtime/mixins/promise_proxy');
+require('ember-runtime/mixins/throttle_set');
