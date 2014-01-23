@@ -361,6 +361,40 @@ test("properties can be filtered by truthiness", function() {
   deepEqual(bs.mapBy('name'), ['six'], "arrays computed by filtered property respond to array changes");
 });
 
+
+test("Em.computed.filterBy works correctly", function() {
+  var Team = Em.Object.extend({
+    isSelected: true
+  });
+
+  var Project = Em.Object.extend({
+    selectedTeams: Em.computed.filterBy('teams', 'isSelected'),
+    selectedTeamsAlternate: Em.computed.filter('teams.@each.isSelected', function(team) {
+      return team.get('isSelected');
+    })
+  });
+
+  var team = Team.create({name: "Team 1"});
+
+  var project = Project.create({name: "Project 1", teams: [team]});
+
+  deepEqual(project.get('teams'), [team], "Project should have a team");
+  ok(project.get('teams')[0].get('isSelected'), "Team should be selected");
+
+  deepEqual(project.get('selectedTeams'), [team], "Project should have a selected team using computed.filterBy");
+  equal(project.get('selectedTeams.length'), 1, "selectedTeams should have correct length");
+  deepEqual(project.get('selectedTeamsAlternate'), [team], "Project should have a selected team using computed.filter");
+  equal(project.get('selectedTeamsAlternate.length'), 1, "selectedTeamsAlternate should have correct length");
+
+  team.set('isSelected', false);
+
+  deepEqual(project.get('selectedTeams'), [], "Project should have no selected teams using computed.filterBy");
+  equal(project.get('selectedTeams.length'), 0, "selectedTeams should have correct length");
+  deepEqual(project.get('selectedTeamsAlternate'), [], "Project should have no selected teams using computed.filter");
+  equal(project.get('selectedTeamsAlternate.length'), 0, "selectedTeamsAlternate should have correct length");
+
+});
+
 test("properties can be filtered by values", function() {
   var array = get(obj, 'array'),
       a1s = get(obj, 'a1s');
