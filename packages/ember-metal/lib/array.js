@@ -70,6 +70,23 @@ var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.index
   return -1;
 };
 
+var arrayFilter = isNativeFunc(Array.prototype.filter) ? Array.prototype.filter : function (fn, context) {
+  var i,
+  value,
+  result = [],
+  length = this.length;
+
+  for (i = 0; i < length; i++) {
+    if (this.hasOwnProperty(i)) {
+      value = this[i];
+      if (fn.call(context, value, i, this)) {
+        result.push(value);
+      }
+    }
+  }
+  return result;
+};
+
 /**
   Array polyfills to support ES5 features in older browsers.
 
@@ -79,6 +96,7 @@ var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.index
 Ember.ArrayPolyfills = {
   map: arrayMap,
   forEach: arrayForEach,
+  filter: arrayFilter,
   indexOf: arrayIndexOf
 };
 
@@ -89,6 +107,10 @@ if (Ember.SHIM_ES5) {
 
   if (!Array.prototype.forEach) {
     Array.prototype.forEach = arrayForEach;
+  }
+
+  if (!Array.prototype.filter) {
+    Array.prototype.filter = arrayFilter;
   }
 
   if (!Array.prototype.indexOf) {
