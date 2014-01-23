@@ -835,6 +835,49 @@ test("array dependencies specified with `.[]` completely invalidate a reduceComp
   equal(removeCalls, 0, "remove not called");
 });
 
+test("returning undefined in addedItem/removedItem completely invalidates a reduceComputed CP", function() {
+  var dependentArray = Ember.A([3,2,1]),
+      counter = 0;
+
+  obj = Ember.Object.extend({
+    dependentArray: dependentArray,
+
+    computed: Ember.reduceComputed('dependentArray', {
+      initialValue: Infinity,
+
+      addedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+        return Math.min(accumulatedValue, item);
+      },
+
+      removedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+        if (item > accumulatedValue) {
+          return accumulatedValue;
+        }
+      }
+    }),
+
+    computedDidChange: Ember.observer('computed', function() {
+      counter++;
+    })
+  }).create();
+
+  get(obj, 'computed');
+  equal(get(obj, 'computed'), 1);
+  equal(counter, 0);
+
+  dependentArray.pushObject(10);
+  equal(get(obj, 'computed'), 1);
+  equal(counter, 0);
+
+  dependentArray.removeObject(10);
+  equal(get(obj, 'computed'), 1);
+  equal(counter, 0);
+
+  dependentArray.removeObject(1);
+  equal(get(obj, 'computed'), 2);
+  equal(counter, 1);
+});
+
 if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.Array) {
   test("reduceComputed complains about array dependencies that are not `Ember.Array`s", function() {
     var Type = Ember.Object.extend({
