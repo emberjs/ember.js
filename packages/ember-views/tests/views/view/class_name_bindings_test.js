@@ -254,3 +254,14 @@ test("classNameBindings should not fail if view has been destroyed", function() 
   }
   ok(!error, error);
 });
+
+test("Providing a binding with a space in it asserts", function() {
+  view = Ember.View.create({
+    classNameBindings: 'i:think:i am:so:clever'
+  });
+
+  expectAssertion(function() {
+    view.createElement();
+  }, /classNameBindings must not have spaces in them/i);
+});
+
