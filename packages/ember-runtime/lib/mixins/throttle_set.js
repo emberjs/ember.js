@@ -32,6 +32,29 @@ function throttleSet() {
   `Ember.ThrottleSetMixin` provides a way to delay the set of some properties
   on Ember objects.
 
+  The delayed properties can be defined on object creation or class definition
+  using the `throttledProperties` property, in which case the delayed properties
+  will not be set on the object on creation until the delay is passed.
+  They can also be defined/updated/disabled afterward using the
+  `defineThrottledProperty` method.
+
+  Example:
+  ```javascript
+  var obj = Ember.Object.createWithMixins(Ember.ThrottleSetMixin, {
+    throttledProperties: [
+      {name: 'myProperty', delay: 500}
+    ],
+    myProperty: 'someValue'
+  });
+  obj.get('myProperty'); // will output `undefined`
+  // after 1/2 second or more:
+  obj.get('myProperty'); // will output "someValue"
+  obj.set('myProperty', 'hello');
+  obj.get('myProperty'); // will output "someValue"
+  // after 1/2 second or more:
+  obj.get('myProperty'); // will output "hello"
+  ```
+
   @class ThrottleSetMixin
   @namespace Ember
 */
@@ -72,19 +95,20 @@ Ember.ThrottleSetMixin = Ember.Mixin.create({
     @returns {Object|null} Meta information about the throttled property or null if removed
    */
   defineThrottledProperty: function(name, delay) {
-    var meta = throttledMeta(name);
+    var meta = throttledMeta(this, name);
     delay = Math.max(delay || 0, 0);
     if (delay === 0) {
       // disable the throttled property
       if (meta.throttlerId) {
         // stops the throttler and set the value
+        Ember.run.cancel(meta.throttlerId);
         throttleSet.apply(meta);
         meta = null;
       }
       delete this._throttledPropertiesIndex[name];
     } else {
       // defines/update a throttled property setting
-      meta = throttledMeta(name, delay);
+      meta = throttledMeta(this, name, delay);
     }
     return meta;
   },
@@ -96,7 +120,7 @@ Ember.ThrottleSetMixin = Ember.Mixin.create({
     @param {String} name
    */
   cancelThrottledProperty: function(name) {
-    var meta = throttledMeta(name);
+    var meta = throttledMeta(this, name);
     if (meta.throttlerId) {
       Ember.run.cancel(meta.throttlerId);
       meta.throttlerId = null;
@@ -132,7 +156,10 @@ Ember.ThrottleSetMixin = Ember.Mixin.create({
         } else {
           // update the next value and (re)start the throttle
           meta.nextValue = value;
-          meta.throttlerId = Ember.run.throttle(meta, throttleSet, meta.delay);
+          if (meta.throttlerId) {
+            Ember.run.cancel(meta.throttlerId);
+          }
+          meta.throttlerId = Ember.run.later(meta, throttleSet, meta.delay);
           // exit, we don't want the property to be set
           return;
         }
@@ -156,7 +183,7 @@ Ember.ThrottleSetMixin = Ember.Mixin.create({
         if (meta.delay && (meta.nextValue = get(that, prop.name)) !== undefined) {
           meta.bypassThrottle = true;
           that.set(prop.name, undefined);
-          meta.throttlerId = Ember.run.throttle(meta, throttleSet, meta.delay);
+          meta.throttlerId = Ember.run.later(meta, throttleSet, meta.delay);
         }
       });
     }
