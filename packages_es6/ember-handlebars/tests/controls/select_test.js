@@ -363,6 +363,33 @@ test("select with group can group options", function() {
   equal(trim(select.$('optgroup').last().text()), 'Keith');
 });
 
+test("select with group when optionGroupPath is prefixed with content doesn't break options", function() {
+  var content = Ember.A([
+    { firstName: 'Yehuda', organization: 'Tilde' },
+    { firstName: 'Tom', organization: 'Tilde' },
+    { firstName: 'Keith', organization: 'Envato' }
+  ]);
+
+  Ember.run(function() {
+    select.set('content', content),
+    select.set('optionGroupPath', 'content.organization');
+    select.set('optionLabelPath', 'content.firstName');
+  });
+
+  append();
+
+  equal(select.$('optgroup').length, 2);
+
+  var labels = [];
+  select.$('optgroup').each(function() {
+    labels.push(this.label);
+  });
+  equal(labels.join(''), ['TildeEnvato']);
+
+  equal(trim(select.$('optgroup').first().text()), 'YehudaTom');
+  equal(trim(select.$('optgroup').last().text()), 'Keith');
+});
+
 test("select with group doesn't break options", function() {
   var content = Ember.A([
     { id: 1, firstName: 'Yehuda', organization: 'Tilde' },

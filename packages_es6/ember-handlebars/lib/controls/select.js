@@ -472,7 +472,7 @@ var Select = View.extend({
   groupView: SelectOptgroup,
 
   groupedContent: computed(function() {
-    var groupPath = get(this, 'optionGroupPath');
+    var groupPath = get(this, 'optionGroupPath').replace(/^content\.?/, '');
     var groupedContent = A();
     var content = get(this, 'content') || [];
 
