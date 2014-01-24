@@ -46,6 +46,13 @@ test('compiles a fragment', function () {
   equalHTML(fragment, "<div> bar </div>");
 });
 
+test('converts entities to their char/string equivalent', function () {
+  var ast = preprocess("<div>lol &lt; &#60;&#x3c; &#x3C; &LT; &NotGreaterFullEqual; &Borksnorlax;</div>");
+  var fragment = fragmentFor(ast);
+
+  equal(fragment.childNodes[0].textContent, "lol < << < < ≧̸ &Borksnorlax;");
+});
+
 test('hydrates a fragment with placeholder mustaches', function () {
   var ast = preprocess("<div>{{foo \"foo\" 3 blah bar=baz ack=\"syn\"}} bar {{baz}}</div>");
   var fragment = fragmentFor(ast).cloneNode(true);
