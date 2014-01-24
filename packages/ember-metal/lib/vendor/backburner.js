@@ -526,7 +526,7 @@ define("backburner",
               return true;
             }
           }
-        } else if (window.toString.call(timer) === "[object Array]"){ // we're cancelling a throttle or debounce
+        } else if (Object.prototype.toString.call(timer) === "[object Array]"){ // we're cancelling a throttle or debounce
           return this._cancelItem(findThrottler, throttlers, timer) || 
                    this._cancelItem(findDebouncee, debouncees, timer);
         } else {
