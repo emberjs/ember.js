@@ -30,6 +30,7 @@
         "expectAssertion",
         "expectDeprecation",
         "expectNoDeprecation",
+        "ignoreAssertion",
 
         // A safe subset of "browser:true":
         "window", "location", "document", "XMLSerializer",
