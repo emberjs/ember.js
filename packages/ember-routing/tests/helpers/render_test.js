@@ -102,6 +102,20 @@ test("{{render}} helper should have assertion if neither template nor view exist
   }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as either a template or a view.');
 });
 
+test("{{render}} helper should not have assertion if template is supplied in block-form", function() {
+  var template = "<h1>HI</h1>{{#render 'good'}} {{name}}{{/render}}";
+  var controller = Ember.Controller.extend({container: container});
+  container.register('controller:good', Ember.Controller.extend({ name: 'Rob'}));
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'HI Rob');
+});
+
 test("{{render}} helper should not have assertion if view exists without a template", function() {
   var template = "<h1>HI</h1>{{render 'oops'}}";
   var controller = Ember.Controller.extend({container: container});
