@@ -1334,6 +1334,78 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     if (parentView) { parentView.disconnectOutlet(options.outlet); }
   },
 
+  /**
+    Test whether this route is included in the destination of a
+    transition. This is useful in `willTransition` callbacks, where
+    you may want to know if the active transition is going to tear
+    down your route.
+
+    ```js
+    App.ContactFormRoute = Ember.Route.extend({
+      actions: {
+        willTransition: function(transition) {
+          if (this.includedIn(transition)) {
+            // We'll still be active after the transition.
+          } else {
+            // We're leaving, so check for unsaved changes and
+            // possibly abort
+            if (this.controller.hasUnsavedChanged()) {
+              displayNavigationConfirm();
+              transition.abort();
+            }
+          }
+        }
+      }
+    ```
+
+    @method includedIn
+    @param {Transition} A transition object.
+    @return {Boolean} true iff this route is part of the transition's destination.
+  */
+  includedIn: function(transition) {
+    var i, me = this.routeName;
+    for (i = 0; i < transition.handlerInfos.length; i++) {
+      if (transition.handlerInfos[i].name === me) {
+        return true;
+      }
+    }
+    return false;
+  },
+
+  /**
+    Test whether this route will have a different context after the
+    given transition.
+
+    ```js
+    App.PersonRoute = Ember.Route.extend({
+      actions: {
+        willTransition: function(transition) {
+          if (this.contextChangedBy(transition)) {
+            // we'll be switching to a new person, so make the sure the
+            // current one has no unsaved changes...
+          }
+        }
+      }
+    ```
+
+    @method contextChangedBy
+    @param {Transition} A transition object.
+    @return {Boolean} true iff this route will have new parameters
+  */
+  contextChangedBy: function(transition) {
+    var have, param;
+    if (!this.currentModel || !this.includedIn(transition)) {
+      return true;
+    }
+    have = this.serialize(this.currentModel);
+    for (param in have) {
+      if (transition.params[param] !== have[param]) {
+        return true;
+      }
+    }
+    return false;
+  },
+
   willDestroy: function() {
     this.teardownViews();
   },
