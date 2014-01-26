@@ -71,6 +71,28 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   viewName: null,
 
   /**
+    The name of the template to use by default when rendering this routes
+    template.
+
+    This is similar with `viewName`, but is useful when you just want a custom
+    template without a view.
+
+    ```js
+    var PostsList = Ember.Route.extend({
+      templateName: 'posts/list'
+    });
+
+    App.PostsIndexRoute = PostsList.extend();
+    App.PostsArchivedRoute = PostsList.extend();
+    ```
+
+    @property templateName
+    @type String
+    @default null
+  */
+  templateName: null,
+
+  /**
     The name of the controller to associate with this route.
 
     By default, Ember will lookup a route's controller that matches the name
