@@ -153,7 +153,7 @@ two passes (on the compile side):
    the HTMLbars AST is recursively walked and a flattened 
    array of opcodes (used in step 2) is generated. 
    The intent of this phase is to flatten the recursive structure of the 
-   AST so that so recursion need take place in our compiled
+   AST so that no recursion need take place in our compiled
    template (recursion leads to deep object graphs, clunky GC, etc)
 2. This opcodes array is then passed to `lib/compiler/fragment.js` which
    loops through the array and builds up a string of JavaScript code for
