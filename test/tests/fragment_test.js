@@ -47,9 +47,10 @@ test('compiles a fragment', function () {
 });
 
 test('converts entities to their char/string equivalent', function () {
-  var ast = preprocess("<div>lol &lt; &#60;&#x3c; &#x3C; &LT; &NotGreaterFullEqual; &Borksnorlax;</div>");
+  var ast = preprocess("<div title=\"&quot;Foo &amp; Bar&quot;\">lol &lt; &#60;&#x3c; &#x3C; &LT; &NotGreaterFullEqual; &Borksnorlax;</div>");
   var fragment = fragmentFor(ast);
 
+  equal(fragment.childNodes[0].getAttribute('title'), '"Foo & Bar"');
   equal(fragment.childNodes[0].textContent, "lol < << < < ≧̸ &Borksnorlax;");
 });
 
