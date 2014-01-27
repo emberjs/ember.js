@@ -151,3 +151,10 @@ for a detailed explanation.
   to the hash-equivalent and vice versa so future transitions look consistent.
 
   Added in [#3725](https://github.com/emberjs/ember.js/pull/3725).
+
+* `ember-routing-bound-action-name`
+
+  Enables using a bound property lookup to determine the action name to
+  be fired.
+
+  Added in [#3936](https://github.com/emberjs/ember.js/pull/3936)

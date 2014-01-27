@@ -60,7 +60,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     return allowed;
   };
 
-  ActionHelper.registerAction = function(actionName, options, allowedKeys) {
+  ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
     var actionId = (++Ember.uuid).toString();
 
     ActionHelper.registeredActions[actionId] = {
@@ -76,12 +76,28 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           event.stopPropagation();
         }
 
-        var target = options.target;
+        var target = options.target,
+            actionName;
 
         if (target.target) {
           target = handlebarsGet(target.root, target.target, target.options);
         } else {
           target = target.root;
+        }
+
+        if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
+          if (options.boundProperty) {
+            actionName = handlebarsGet(target, actionNameOrPath, options.options);
+
+            if(typeof actionName === 'undefined') {
+              Ember.assert("You specified a quoteless path to the {{action}} helper '" + actionNameOrPath + "' which did not resolve to an actionName. Perhaps you meant to use a quoted actionName? (e.g. {{action '" + actionNameOrPath + "'}}).", true);
+              actionName = actionNameOrPath;
+            }
+          }
+        }
+
+        if (!actionName) {
+          actionName = actionNameOrPath;
         }
 
         Ember.run(function runRegisteredAction() {
@@ -111,7 +127,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     to the current route, and it bubbles up the route hierarchy from there.
 
     User interaction with that element will invoke the supplied action name on
-    the appropriate target.
+    the appropriate target. Specifying a non-quoted action name will result in
+    a bound property lookup at the time the event will be triggered.
 
     Given the following application Handlebars template on the page
 
@@ -288,7 +305,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       view: options.data.view,
       bubbles: hash.bubbles,
       preventDefault: hash.preventDefault,
-      target: { options: options }
+      target: { options: options },
+      boundProperty: options.types[0] === "ID"
     };
 
     if (hash.target) {
