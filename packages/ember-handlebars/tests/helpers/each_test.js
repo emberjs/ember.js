@@ -216,7 +216,7 @@ test("it supports itemController", function() {
     controller: parentController
   });
 
-  container.register('controller:person', Controller);
+  container.register('item-controller:person', Controller);
 
   append(view);
 
@@ -268,7 +268,7 @@ test("itemController specified in template gets a parentController property", fu
     controller: parentController
   });
 
-  container.register('controller:person', Controller);
+  container.register('item-controller:person', Controller);
 
   append(view);
 
@@ -358,7 +358,7 @@ test("it supports itemController when using a custom keyword", function() {
     }
   });
 
-  container.register('controller:person', Controller);
+  container.register('item-controller:person', Controller);
 
   append(view);
 

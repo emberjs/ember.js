@@ -206,7 +206,7 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
 
     if (subController) { return subController; }
 
-    fullName = "controller:" + controllerClass;
+    fullName = "item-controller:" + controllerClass;
 
     if (!container.has(fullName)) {
       throw new Ember.Error('Could not resolve itemController: "' + controllerClass + '"');

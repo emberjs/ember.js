@@ -30,8 +30,8 @@ module("Ember.ArrayController - itemController", {
       }
     });
 
-    container.register("controller:Item", controllerClass);
-    container.register("controller:OtherItem", otherControllerClass);
+    container.register("item-controller:Item", controllerClass);
+    container.register("item-controller:OtherItem", otherControllerClass);
   },
   teardown: function() {
     Ember.run(function() {
@@ -301,7 +301,7 @@ module('Ember.ArrayController - itemController with arrayComputed', {
       }
     });
 
-    container.register("controller:Item", controllerClass);
+    container.register("item-controller:Item", controllerClass);
   },
   teardown: function() {
     Ember.run(function() {
