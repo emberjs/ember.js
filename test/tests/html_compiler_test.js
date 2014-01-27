@@ -1,6 +1,6 @@
 import { compile } from "htmlbars/compiler";
-import { RESOLVE, RESOLVE_IN_ATTR, ATTRIBUTE } from "htmlbars/runtime/helpers";
 import { tokenize } from "simple-html-tokenizer";
+import { CONTENT, ELEMENT, ATTRIBUTE, SUBEXPR, LOOKUP_HELPER, SIMPLE } from "htmlbars/runtime/helpers";
 
 function frag(element, string) {
   if (element instanceof DocumentFragment) {
@@ -13,15 +13,24 @@ function frag(element, string) {
   return range.createContextualFragment(string);
 }
 
-var helpers;
+var hooks, helpers;
 
 function registerHelper(name, callback) {
   helpers[name] = callback;
 }
 
+function lookupHelper(helperName, context, options) {
+  if (helperName === 'ATTRIBUTE') {
+    return this.ATTRIBUTE;
+  } else {
+    return helpers[helperName];
+  }
+}
+
 module("HTML-based compiler (output)", {
   setup: function() {
-    helpers = {RESOLVE: RESOLVE, RESOLVE_IN_ATTR: RESOLVE_IN_ATTR, ATTRIBUTE: ATTRIBUTE};
+    helpers = [];
+    hooks = { CONTENT: CONTENT, ELEMENT: ELEMENT, ATTRIBUTE: ATTRIBUTE, SUBEXPR: SUBEXPR, LOOKUP_HELPER: lookupHelper, SIMPLE: SIMPLE };
   }
 });
 
@@ -110,7 +119,7 @@ test("The compiler can handle newlines", function() {
 
 function compilesTo(html, expected, context) {
   var template = compile(html);
-  var fragment = template(context, {helpers: helpers});
+  var fragment = template(context, {helpers: hooks });
 
   equalHTML(fragment, expected === undefined ? html : expected);
   return fragment;
@@ -192,25 +201,14 @@ test("The compiler passes along the types of the hash arguments", function() {
   compilesTo('<div>{{testing first=false}}</div>', '<div>boolean-false</div>');
 });
 
-test("The compiler provides the current element as an option", function() {
-  var textNode;
-  registerHelper('testing', function(context, params, options) {
-    textNode = document.createTextNode("testy");
-    options.placeholder.appendChild(textNode);
-  });
-
-  compilesTo('<div>{{testing}}</div>', '<div>testy</div>');
-  equal(textNode.textContent, 'testy');
-});
-
 test("It is possible to override the resolution mechanism", function() {
-  registerHelper('RESOLVE', function(context, path, params, options) {
-    if (path === 'zomg') {
-      options.placeholder.appendChild(document.createTextNode(context.zomg));
+  hooks.SIMPLE = function(context, name, options) {
+    if (name === 'zomg') {
+      return context.zomg;
     } else {
-      options.placeholder.appendChild(document.createTextNode(path.replace(".", "-")));
+      return name.replace('.', '-');
     }
-  });
+  };
 
   compilesTo('<div>{{foo}}</div>', '<div>foo</div>');
   compilesTo('<div>{{foo.bar}}</div>', '<div>foo-bar</div>');
@@ -220,7 +218,7 @@ test("It is possible to override the resolution mechanism", function() {
 test("Simple data binding using text nodes", function() {
   var callback;
 
-  registerHelper('RESOLVE', function(context, path, params, options) {
+  hooks.CONTENT = function(placeholder, path, context, params, options) {
     var textNode = document.createTextNode(context[path]);
 
     callback = function() {
@@ -233,8 +231,8 @@ test("Simple data binding using text nodes", function() {
       parent.removeChild(originalText);
     };
 
-    options.placeholder.appendChild(textNode);
-  });
+    placeholder.appendChild(textNode);
+  };
 
   var object = { title: 'hello' };
   var fragment = compilesTo('<div>{{title}} world</div>', '<div>hello world</div>', object);
@@ -253,8 +251,8 @@ test("Simple data binding using text nodes", function() {
 test("Simple data binding on fragments", function() {
   var callback;
 
-  registerHelper('RESOLVE', function(context, path, params, options) {
-    var fragment = frag(options.placeholder.parent, context[path]);
+  hooks.CONTENT = function(placeholder, path, context, params, options) {
+    var fragment = frag(placeholder.parent, context[path]);
 
     var firstChild = fragment.firstChild,
         lastChild = fragment.lastChild;
@@ -274,8 +272,8 @@ test("Simple data binding on fragments", function() {
       range.insertNode(fragment);
     };
 
-    options.placeholder.appendChild(fragment);
-  });
+    placeholder.appendChild(fragment);
+  };
 
   var object = { title: '<p>hello</p> to the' };
   var fragment = compilesTo('<div>{{title}} world</div>', '<div><p>hello</p> to the world</div>', object);
@@ -291,19 +289,22 @@ test("Simple data binding on fragments", function() {
   equalHTML(fragment, '<div><p>brown cow</p> to the world</div>');
 });
 
-test("RESOLVE hook receives escaping information", function() {
+test("CONTENT hook receives escaping information", function() {
   expect(3);
 
-  registerHelper('RESOLVE', function(context, path, params, options) {
+  hooks.CONTENT = function(placeholder, path, context, params, options) {
     if (path === 'escaped') {
       equal(options.escaped, true);
     } else if (path === 'unescaped') {
       equal(options.escaped, false);
     }
 
-    options.placeholder.appendChild(document.createTextNode(path));
-  });
+    placeholder.appendChild(document.createTextNode(path));
+  };
 
+  // so we NEED a reference to div. because it's passed in twice.
+  // not divs childNodes.
+  // the parent we need to save is fragment.childNodes
   compilesTo('<div>{{escaped}}-{{{unescaped}}}</div>', '<div>escaped-unescaped</div>');
 });
 
@@ -317,7 +318,7 @@ test("Helpers receive escaping information", function() {
       equal(options.escaped, false);
     }
 
-    options.placeholder.appendText(params[0]);
+    return params[0];
   });
 
   compilesTo('<div>{{testing escaped}}-{{{testing unescaped}}}</div>', '<div>escaped-unescaped</div>');
@@ -325,6 +326,21 @@ test("Helpers receive escaping information", function() {
 
 test("Attributes can use computed values", function() {
   compilesTo('<a href="{{url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html' });
+});
+
+test("Mountain range of nesting", function() {
+  var context = { foo: "FOO", bar: "BAR", baz: "BAZ", boo: "BOO", brew: "BREW", bat: "BAT", flute: "FLUTE", argh: "ARGH" };
+  compilesTo('{{foo}}<span></span>', 'FOO<span></span>', context);
+  compilesTo('<span></span>{{foo}}', '<span></span>FOO', context);
+  compilesTo('<span>{{foo}}</span>{{foo}}', '<span>FOO</span>FOO', context);
+  compilesTo('{{foo}}<span>{{foo}}</span>{{foo}}', 'FOO<span>FOO</span>FOO', context);
+  compilesTo('{{foo}}<span></span>{{foo}}', 'FOO<span></span>FOO', context);
+  compilesTo('{{foo}}<span></span>{{bar}}<span><span><span>{{baz}}</span></span></span>',
+             'FOO<span></span>BAR<span><span><span>BAZ</span></span></span>', context);
+  compilesTo('{{foo}}<span></span>{{bar}}<span>{{argh}}<span><span>{{baz}}</span></span></span>',
+             'FOO<span></span>BAR<span>ARGH<span><span>BAZ</span></span></span>', context);
+  compilesTo('{{foo}}<span>{{bar}}<a>{{baz}}<em>{{boo}}{{brew}}</em>{{bat}}</a></span><span><span>{{flute}}</span></span>{{argh}}',
+             'FOO<span>BAR<a>BAZ<em>BOOBREW</em>BAT</a></span><span><span>FLUTE</span></span>ARGH', context);
 });
 
 // test("Attributes can use computed paths", function() {
@@ -359,9 +375,9 @@ function boundValue(valueGetter, binding) {
 }
 
 test("It is possible to override the resolution mechanism for attributes", function() {
-  registerHelper('RESOLVE_IN_ATTR', function(context, path, params, options) {
-    return 'http://google.com/' + context[path];
-  });
+  hooks.ATTRIBUTE = function (context, params, options) {
+    options.element.setAttribute(params[0], 'http://google.com/' + params[1]);
+  };
 
   compilesTo('<a href="{{url}}">linky</a>', '<a href="http://google.com/linky.html">linky</a>', { url: 'linky.html' });
 });
@@ -535,52 +551,69 @@ test("Attribute runs can contain helpers", function() {
 });
 */
 test("A simple block helper can return the default document fragment", function() {
-  registerHelper('testing', function(context, params, options) {
-    options.placeholder.replace(options.render(context));
-  });
+
+  hooks.CONTENT = function(placeholder, path, context, params, options) {
+    placeholder.replace(options.render(context));
+  };
 
   compilesTo('{{#testing}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
 });
 
 test("A simple block helper can return text", function() {
-  registerHelper('testing', function(context, params, options) {
-    options.placeholder.replace(options.render(context));
-  });
+  hooks.CONTENT = function(placeholder, path, context, params, options) {
+    placeholder.replace(options.render(context));
+  };
 
   compilesTo('{{#testing}}test{{else}}not shown{{/testing}}', 'test');
 });
 
 test("A block helper can have an else block", function() {
-  registerHelper('testing', function(context, params, options) {
-    options.placeholder.replace(options.inverse(context));
-  });
+  hooks.CONTENT = function(placeholder, path, context, params, options) {
+    placeholder.replace(options.inverse(context));
+  };
 
   compilesTo('{{#testing}}Nope{{else}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
 });
 
 test("A block helper can pass a context to be used in the child", function() {
-  registerHelper('testing', function(context, params, options) {
-    options.placeholder.replace(options.render({ title: 'Rails is omakase' }, options));
-  });
+  var CONTENT = hooks.CONTENT;
+  hooks.CONTENT = function(placeholder, path, context, params, options) {
+    if (path === 'testing') {
+
+      // TODO: this sucks
+      options.helpers = hooks;
+
+      placeholder.replace(options.render({ title: 'Rails is omakase' }, options));
+    } else {
+      CONTENT.apply(this, arguments);
+    }
+  };
 
   compilesTo('{{#testing}}<div id="test">{{title}}</div>{{/testing}}', '<div id="test">Rails is omakase</div>');
 });
 
 test("A block helper can insert the document fragment manually", function() {
-  registerHelper('testing', function(context, params, options) {
-    var frag = options.render({ title: 'Rails is omakase' }, options);
-    options.placeholder.appendChild(frag);
-  });
+  var CONTENT = hooks.CONTENT;
+  hooks.CONTENT = function(placeholder, path, context, params, options) {
+    if (path === 'testing') {
+      options.helpers = hooks;
+      var frag = options.render({ title: 'Rails is omakase' }, options);
+      placeholder.appendChild(frag);
+    } else {
+      CONTENT.apply(this, arguments);
+    }
+  };
 
   compilesTo('{{#testing}}<div id="test">{{title}}</div>{{/testing}}', '<div id="test">Rails is omakase</div>');
 });
 
 test("Block helpers receive hash arguments", function() {
-  registerHelper('testing', function(context, params, options) {
+  hooks.CONTENT = function(placeholder, path, context, params, options) {
     if (options.hash.truth) {
-      options.placeholder.replace(options.render(context));
+      options.helpers = hooks;
+      placeholder.replace(options.render(context, options));
     }
-  });
+  };
 
   compilesTo('{{#testing truth=true}}<p>Yep!</p>{{/testing}}{{#testing truth=false}}<p>Nope!</p>{{/testing}}', '<p>Yep!</p>');
 });

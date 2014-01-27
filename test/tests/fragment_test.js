@@ -28,13 +28,13 @@ function fragmentFor(ast) {
   return fn( dom );
 }
 
-function hydrationFor(ast) {
+function hydratorFor(ast) {
   /* jshint evil: true */
   var hydrate = new HydrationOpcodeCompiler();
   var opcodes = hydrate.compile(ast);
   var hydrate2 = new HydrationCompiler();
   var program = hydrate2.compile(opcodes, []);
-  return new Function("Placeholder", 'return '+program)(Placeholder);
+  return new Function("Placeholder", "fragment", "context", "helpers", program);
 }
 
 module('fragment');
@@ -57,57 +57,92 @@ test('converts entities to their char/string equivalent', function () {
 test('hydrates a fragment with placeholder mustaches', function () {
   var ast = preprocess("<div>{{foo \"foo\" 3 blah bar=baz ack=\"syn\"}} bar {{baz}}</div>");
   var fragment = fragmentFor(ast).cloneNode(true);
-  var hydrate = hydrationFor(ast);
-  var mustaches = hydrate(fragment);
+  var hydrate = hydratorFor(ast);
 
-  equal(mustaches.length, 2);
+  var contentResolves = [];
+  var context = {};
+  var helpers = {
+    CONTENT: function(placeholder, path, context, params, options) {
+      contentResolves.push({
+        placeholder: placeholder,
+        context: context,
+        path: path,
+        params: params,
+        options: options
+      });
+    }
+  };
 
-  equal(mustaches[0][0], "foo");
-  deepEqual(mustaches[0][1], ["foo",3,"blah"]);
-  deepEqual(mustaches[0][2].types, ["string","number","id"]);
-  deepEqual(mustaches[0][2].hash, {ack:"syn",bar:"baz"});
-  deepEqual(mustaches[0][2].hashTypes, {ack:"string",bar:"id"});
-  equal(mustaches[0][2].escaped, true);
+  hydrate(Placeholder, fragment, context, helpers);
 
-  equal(mustaches[1][0], "baz");
-  deepEqual(mustaches[1][1], []);
-  equal(mustaches[1][2].escaped, true);
+  equal(contentResolves.length, 2);
 
-  mustaches[0][2].placeholder.appendChild(document.createTextNode('A'));
-  mustaches[1][2].placeholder.appendChild(document.createTextNode('B'));
+  var foo = contentResolves[0];
+  equal(foo.placeholder.parent, fragment.childNodes[0]);
+  equal(foo.context, context);
+  equal(foo.path, 'foo');
+  deepEqual(foo.params, ["foo",3,"blah"]);
+  deepEqual(foo.options.types, ["string","number","id"]);
+  deepEqual(foo.options.hash, {ack:"syn",bar:"baz"});
+  deepEqual(foo.options.hashTypes, {ack:"string",bar:"id"});
+  equal(foo.options.escaped, true);
+
+  var baz = contentResolves[1];
+  equal(baz.placeholder.parent, fragment.childNodes[0]);
+  equal(baz.context, context);
+  equal(baz.path, 'baz');
+  equal(baz.params.length, 0);
+  equal(baz.options.escaped, true);
+
+  foo.placeholder.appendChild(document.createTextNode('A'));
+  baz.placeholder.appendChild(document.createTextNode('B'));
 
   equalHTML(fragment, "<div>A bar B</div>");
-});
-
-test('hydrates a fragment with placeholder mustaches (ATTRIBUTE)', function () {
-  var ast = preprocess("<div {{foo}}></div>");
-  var fragment = fragmentFor(ast).cloneNode(true);
-  var hydrate = hydrationFor(ast);
-  var mustaches = hydrate(fragment);
-
-  equal(mustaches.length, 1);
-  equal(mustaches[0][0], "foo");
-  deepEqual(mustaches[0][1], []);
 });
 
 test('test auto insertion of text nodes for needed edges a fragment with placeholder mustaches', function () {
   var ast = preprocess("{{first}}<p>{{second}}</p>{{third}}");
   var fragment = fragmentFor(ast).cloneNode(true);
-  var hydrate = hydrationFor(ast);
-  var mustaches = hydrate(fragment);
+  var hydrate = hydratorFor(ast);
 
-  equal(mustaches.length, 3);
-  equal(mustaches[0][0], "first");
-  deepEqual(mustaches[0][1], []);
-  equal(mustaches[1][0], "second");
-  deepEqual(mustaches[1][1], []);
-  equal(mustaches[2][0], "third");
-  deepEqual(mustaches[2][1], []);
+  var placeholders = [];
+  function FakePlaceholder() {
+    Placeholder.apply(this, arguments);
+    placeholders.push(this);
+  }
+  FakePlaceholder.prototype = Object.create(Placeholder.prototype);
 
+  var contentResolves = [];
+  var context = {};
+  var helpers = {
+    CONTENT: function(placeholder, path, context, params, options) {
+      contentResolves.push({
+        placeholder: placeholder,
+        context: context,
+        path: path,
+        params: params,
+        options: options
+      });
+    }
+  };
 
-  mustaches[0][2].placeholder.appendText('A');
-  mustaches[1][2].placeholder.appendText('B');
-  mustaches[2][2].placeholder.appendText('C');
+  hydrate(FakePlaceholder, fragment, context, helpers);
+
+  equal(placeholders.length, 3);
+
+  var t = placeholders[0].start;
+  equal(t.nodeType, 3);
+  equal(t.textContent , '');
+  equal(placeholders[1].start, null);
+  equal(placeholders[1].end, null);
+
+  equal(placeholders[2].start, placeholders[1].parent);
+  equal(placeholders[2].end.nodeType, 3);
+  equal(placeholders[2].end.textContent, '');
+
+  placeholders[0].appendText('A');
+  placeholders[1].appendText('B');
+  placeholders[2].appendText('C');
 
   equalHTML(fragment, "A<p>B</p>C");
 });

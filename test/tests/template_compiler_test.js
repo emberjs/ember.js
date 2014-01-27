@@ -24,19 +24,17 @@ var dom = {
 };
 
 var helpers = {
-  RESOLVE: function (context, name, params, options) {
-    if (options.helpers[name]) {
-      options.helpers[name](context, params, options);
-    } else {
-      options.placeholder.appendText(context[name]);
+  CONTENT: function(placeholder, helperName, context, params, options, helpers) {
+    if (helperName === 'if') {
+      if (context[params[0]]) {
+        options.helpers = helpers;
+        placeholder.appendChild(
+          options.render(context, options)
+        );
+      }
+      return;
     }
-  },
-  'if': function (context, params, options) {
-    if (context[params[0]]) {
-      options.placeholder.appendChild(
-        options.render(context, options)
-      );
-    }
+    placeholder.appendText(context[helperName]);
   }
 };
 
@@ -52,3 +50,4 @@ test("it works", function testFunction() {
   );
   equalHTML(frag, '<div>Hello Kris Selden!</div>');
 });
+
