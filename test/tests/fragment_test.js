@@ -25,7 +25,7 @@ function fragmentFor(ast) {
 
   var fn = new Function("dom", 'return ' + program)(dom);
 
-  return fn();
+  return fn( dom );
 }
 
 function hydrationFor(ast) {
