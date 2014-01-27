@@ -882,7 +882,17 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     }
 
     if (!name && sawParams) { return Ember.copy(params); }
-    else if (!name) { return; }
+    else if (!name) {
+      if (Ember.FEATURES.isEnabled("ember-routing-inherits-parent-model")) {
+        if (transition.resolveIndex !== transition.state.handlerInfos.length-1) { return; }
+
+        var parentModel = transition.state.handlerInfos[transition.resolveIndex-1].context;
+
+        return parentModel;
+      } else {
+        return;
+      }
+    }
 
     return this.findModel(name, value);
   },
@@ -1333,7 +1343,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     Alternatively, you can pass the `outlet` name directly as a string.
 
     Example:
-    
+
     ```js
     hideModal: function(evt) {
       this.disconnectOutlet('modal');
