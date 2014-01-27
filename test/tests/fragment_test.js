@@ -23,7 +23,7 @@ function fragmentFor(ast) {
   var opcodes = fragmentOpcodeCompiler.compile(ast);
   var program = fragmentCompiler.compile(opcodes);
 
-  var fn = new Function("dom", 'return ' + program)(dom);
+  var fn = new Function('return ' + program)();
 
   return fn( dom );
 }
