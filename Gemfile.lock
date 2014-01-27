@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/emberjs/ember-dev.git
-  revision: 605e4c54fc6695d9061bc597d5abc9cf8d1de259
+  revision: 257349f0f123528f558757de1222828540353c24
   branch: master
   specs:
     ember-dev (0.1)
