@@ -1354,7 +1354,7 @@ var Route = EmberObject.extend(ActionHandler, {
   render: function(name, options) {
     Ember.assert("The name in the given arguments is undefined", arguments.length > 0 ? !isNone(arguments[0]) : true);
 
-    var namePassed = !!name;
+    var namePassed = typeof name === 'string' && !!name;
 
     if (typeof name === 'object' && !options) {
       options = name;
@@ -1373,7 +1373,7 @@ var Route = EmberObject.extend(ActionHandler, {
       templateName = this.templateName || name;
     }
 
-    var viewName = options.view || this.viewName || name;
+    var viewName = options.view || namePassed && name || this.viewName || name;
 
     var container = this.container,
         view = container.lookup('view:' + viewName),
@@ -1384,7 +1384,7 @@ var Route = EmberObject.extend(ActionHandler, {
     }
 
     if (!view && !template) {
-      Ember.assert("Could not find \"" + name + "\" template or view.", !namePassed);
+      Ember.assert("Could not find \"" + name + "\" template or view.", Ember.isEmpty(arguments[0]));
       if (get(this.router, 'namespace.LOG_VIEW_LOOKUPS')) {
         Ember.Logger.info("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
       }
