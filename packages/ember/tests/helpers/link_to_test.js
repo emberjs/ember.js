@@ -24,9 +24,8 @@ function shouldBeActive(selector) {
 }
 
 function checkActive(selector, active) {
-  var classList = Ember.$(selector, '#qunit-fixture')[0].classList;
-  equal(classList.contains('active'), active, selector + " active should be " + active.toString());
-
+  var classList = Ember.$(selector, '#qunit-fixture')[0].className;
+  equal(classList.indexOf('active') > -1, active, selector + " active should be " + active.toString());
 }
 
 var updateCount, replaceCount;
@@ -1229,7 +1228,6 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       sort: 'title',
       showDetails: true
     });
-
 
     bootApplication();
 
