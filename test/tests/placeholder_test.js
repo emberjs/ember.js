@@ -34,14 +34,14 @@ var starts = [
     create: function (parent) {
       var start = document.createTextNode('Some text before ');
       parent.appendChild(start);
-      return start;
+      return parent.childNodes.length-1;
     },
     HTML: 'Some text before '
   },
   {
     name: 'with no sibling before',
     create: function (parent) {
-      return null;
+      return -1;
     },
     HTML: ''
   }
@@ -53,14 +53,14 @@ var ends = [
     create: function (parent) {
       var end = document.createTextNode(' some text after.');
       parent.appendChild(end);
-      return end;
+      return parent.childNodes.length-1;
     },
     HTML: ' some text after.'
   },
   {
     name: 'and no sibling after',
     create: function (parent) {
-      return null;
+      return -1;
     },
     HTML: ''
   }
@@ -94,12 +94,12 @@ function createCombinatorialTest(factory) {
   function filter() {
     var frag = document.createDocumentFragment(),
       parent = factory.parent.create(frag),
-      start = factory.start.create(parent),
-      end = factory.end.create(parent);
+      startIndex = factory.start.create(parent),
+      endIndex = factory.end.create(parent);
 
     // this is prevented in the parser by generating
     // empty text nodes at boundaries of fragments
-    if (parent === frag && (start === null || end === null)) {
+    if (parent === frag && (startIndex === -1 || endIndex === -1)) {
       return true;
     }
 
@@ -113,12 +113,12 @@ function createCombinatorialTest(factory) {
   test('appendChild '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
     var frag = document.createDocumentFragment(),
       parent = factory.parent.create(frag),
-      start = factory.start.create(parent),
+      startIndex = factory.start.create(parent),
       content = factory.content.create(parent),
-      end = factory.end.create(parent),
+      endIndex = factory.end.create(parent),
       p, placeholder, html;
 
-    placeholder = new Placeholder(parent, start, end);
+    placeholder = new Placeholder(parent, startIndex, endIndex);
 
     p = document.createElement('p');
     p.textContent = 'appended';
@@ -154,12 +154,12 @@ function createCombinatorialTest(factory) {
   test('appendText '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
     var frag = document.createDocumentFragment(),
       parent = factory.parent.create(frag),
-      start = factory.start.create(parent),
+      startIndex = factory.start.create(parent),
       content = factory.content.create(parent),
-      end = factory.end.create(parent),
+      endIndex = factory.end.create(parent),
       placeholder, html;
 
-    placeholder = new Placeholder(parent, start, end);
+    placeholder = new Placeholder(parent, startIndex, endIndex);
 
     placeholder.appendText('appended text');
 
@@ -191,12 +191,12 @@ function createCombinatorialTest(factory) {
   test('appendHTML '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
     var frag = document.createDocumentFragment(),
       parent = factory.parent.create(frag),
-      start = factory.start.create(parent),
+      startIndex = factory.start.create(parent),
       content = factory.content.create(parent),
-      end = factory.end.create(parent),
+      endIndex = factory.end.create(parent),
       placeholder, html;
 
-    placeholder = new Placeholder(parent, start, end);
+    placeholder = new Placeholder(parent, startIndex, endIndex);
 
     placeholder.appendHTML('<p>A</p><p>B</p><p>C</p>');
 
@@ -228,12 +228,12 @@ function createCombinatorialTest(factory) {
   test('clear '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
     var frag = document.createDocumentFragment(),
       parent = factory.parent.create(frag),
-      start = factory.start.create(parent),
+      startIndex = factory.start.create(parent),
       content = factory.content.create(parent),
-      end = factory.end.create(parent),
+      endIndex = factory.end.create(parent),
       placeholder, html;
 
-    placeholder = new Placeholder(parent, start, end);
+    placeholder = new Placeholder(parent, startIndex, endIndex);
 
     placeholder.clear();
 
@@ -248,12 +248,12 @@ function createCombinatorialTest(factory) {
   test('clear after insert '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
     var frag = document.createDocumentFragment(),
       parent = factory.parent.create(frag),
-      start = factory.start.create(parent),
+      startIndex = factory.start.create(parent),
       content = factory.content.create(parent),
-      end = factory.end.create(parent),
+      endIndex = factory.end.create(parent),
       placeholder, html;
 
-    placeholder = new Placeholder(parent, start, end);
+    placeholder = new Placeholder(parent, startIndex, endIndex);
 
     var fixture = document.getElementById('qunit-fixture');
     fixture.appendChild(frag);
@@ -271,15 +271,15 @@ function createCombinatorialTest(factory) {
   test('replace '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
     var frag = document.createDocumentFragment(),
       parent = factory.parent.create(frag),
-      start = factory.start.create(parent),
+      startIndex = factory.start.create(parent),
       content = factory.content.create(parent),
-      end = factory.end.create(parent),
+      endIndex = factory.end.create(parent),
       p = document.createElement('p'),
       placeholder, html;
 
     p.textContent = 'replaced';
 
-    placeholder = new Placeholder(parent, start, end);
+    placeholder = new Placeholder(parent, startIndex, endIndex);
 
     placeholder.replace(p);
 
