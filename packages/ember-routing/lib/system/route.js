@@ -97,7 +97,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     By default, Ember will lookup a route's controller that matches the name
     of the route (i.e. `App.PostController` for `App.PostRoute`). However,
-    if you would to like define a specific controller to use, you can do so
+    if you would like to define a specific controller to use, you can do so
     using this property.
 
     This is useful in many ways, as the controller specified will be:
