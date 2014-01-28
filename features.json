@@ -8,7 +8,8 @@
     "ember-runtime-test-friendly-promises": true,
     "ember-routing-add-model-option": true,
     "ember-routing-linkto-target-attribute": null,
-    "ember-routing-will-change-hooks": null
+    "ember-routing-will-change-hooks": null,
+    "ember-routing-consistent-resources": null
   },
   "debugStatements": [
     "Ember.warn",

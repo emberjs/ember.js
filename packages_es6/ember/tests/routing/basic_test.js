@@ -1054,7 +1054,12 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
       equal(rootModel, 1, "The root model was called again");
 
       deepEqual(router.location.path, '/specials/1');
-      equal(currentPath, 'root.special');
+
+      if (Ember.FEATURES.isEnabled('ember-routing-consistent-resources')) {
+        equal(currentPath, 'root.special.index');
+      } else {
+        equal(currentPath, 'root.special');
+      }
 
       QUnit.start();
     });
@@ -3166,3 +3171,25 @@ if (Ember.FEATURES.isEnabled("ember-routing-will-change-hooks")) {
   });
 }
 
+if (Ember.FEATURES.isEnabled('ember-routing-consistent-resources')) {
+  test("specifying no callback to `this.resources` still generates ", function() {
+    expect(1);
+
+    Router.map(function() {
+      this.resource("home");
+    });
+
+    var currentPath;
+
+    App.ApplicationController = Ember.Controller.extend({
+      currentPathDidChange: Ember.observer('currentPath', function() {
+        currentPath = get(this, 'currentPath');
+      })
+    });
+
+    bootApplication();
+
+    Ember.run(router, 'transitionTo', 'home');
+    equal(currentPath, 'home.index');
+  });
+}
