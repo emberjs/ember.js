@@ -111,6 +111,27 @@ test("handles browsers like Firefox < 11 that don't support outerHTML Issue #195
   equal(elementStub, trim(buffer.string().toLowerCase()));
 });
 
+test("resets classes after pushing the opening tag", function() {
+  var buffer = new Ember.RenderBuffer('div');
+  buffer.addClass('foo');
+  buffer.pushOpeningTag();
+  buffer.begin('div');
+  buffer.addClass('bar');
+  buffer.pushOpeningTag();
+  buffer.pushClosingTag();
+  buffer.pushClosingTag();
+  equal(buffer.string(), '<div class="foo"><div class="bar"></div></div>');
+});
+
+test("lets `setClasses` and `addClass` work together", function() {
+  var buffer = new Ember.RenderBuffer('div');
+  buffer.setClasses(['foo', 'bar']);
+  buffer.addClass('baz');
+  buffer.pushOpeningTag();
+  buffer.pushClosingTag();
+  equal(buffer.string(), '<div class="foo bar baz"></div>');
+});
+
 module("Ember.RenderBuffer - without tagName");
 
 test("It is possible to create a RenderBuffer without a tagName", function() {
