@@ -14,13 +14,15 @@ var get = Ember.get, set = Ember.set;
   @class TextSupport
   @namespace Ember
   @uses Ember.TargetActionSupport
+  @uses Ember.BindableAttributesMixin
   @extends Ember.Mixin
   @private
 */
-Ember.TextSupport = Ember.Mixin.create(Ember.TargetActionSupport, {
+Ember.TextSupport = Ember.Mixin.create(Ember.TargetActionSupport, Ember.BindableAttributesMixin, {
   value: "",
 
   attributeBindings: ['placeholder', 'disabled', 'maxlength', 'tabindex', 'readonly'],
+  bindableAttributes: ['autofocus', 'form', 'selectionDirection', 'spellcheck', 'required'],
   placeholder: null,
   disabled: false,
   maxlength: null,

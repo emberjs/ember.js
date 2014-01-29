@@ -31,6 +31,7 @@ Ember.TextArea = Ember.Component.extend(Ember.TextSupport, {
 
   tagName: "textarea",
   attributeBindings: ['rows', 'cols', 'name'],
+  bindableAttributes: ['selectionEnd', 'selectionStart', 'wrap'],
   rows: null,
   cols: null,
 
