@@ -1,5 +1,6 @@
 import { compile } from "htmlbars/compiler";
 import { RESOLVE, RESOLVE_IN_ATTR, ATTRIBUTE } from "htmlbars/runtime/helpers";
+import { tokenize } from "simple-html-tokenizer";
 
 function frag(element, string) {
   if (element instanceof DocumentFragment) {
@@ -26,9 +27,22 @@ module("HTML-based compiler (output)", {
 
 function equalHTML(fragment, html) {
   var div = document.createElement("div");
+
   div.appendChild(fragment.cloneNode(true));
 
-  QUnit.push(div.innerHTML === html, div.innerHTML, html);
+  var fragTokens = tokenize(div.innerHTML);
+  var htmlTokens = tokenize(html);
+
+  function normalizeTokens(token) {
+    if (token.type === 'StartTag') {
+      token.attributes = token.attributes.sort();
+    }
+  }
+
+  fragTokens.forEach(normalizeTokens);
+  htmlTokens.forEach(normalizeTokens);
+
+  deepEqual(fragTokens, htmlTokens);
 }
 
 test("Simple content produces a document fragment", function() {
