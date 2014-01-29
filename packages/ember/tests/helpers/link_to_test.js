@@ -1335,6 +1335,7 @@ if (Ember.FEATURES.isEnabled("ember-eager-url-update")) {
 
         Router.map(function() {
           this.route('about');
+          this.route('contact');
         });
 
         App.AboutRoute = Ember.Route.extend({
@@ -1344,7 +1345,14 @@ if (Ember.FEATURES.isEnabled("ember-eager-url-update")) {
           }
         });
 
-        Ember.TEMPLATES.application = Ember.Handlebars.compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link'}}");
+        App.ContactRoute = Ember.Route.extend({
+          model: function() {
+            aboutDefer = Ember.RSVP.defer();
+            return aboutDefer.promise;
+          }
+        });
+
+        Ember.TEMPLATES.application = Ember.Handlebars.compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link'}}{{link-to 'Contact' 'contact' id='contact-link' tagName='li'}}");
       });
     },
 
@@ -1399,6 +1407,24 @@ if (Ember.FEATURES.isEnabled("ember-eager-url-update")) {
 
     bootApplication();
     Ember.run(Ember.$('#about-link'), 'click');
+
+    // Shouldn't have called update url.
+    equal(updateCount, 0);
+    equal(router.get('location.path'), '', 'url was not updated');
+  });
+
+  test("invoking a link-to whose tagName without an href attribute doesn't update the url", function() {
+    App.IndexRoute = Ember.Route.extend({
+      actions: {
+        willTransition: function(transition) {
+          ok(true, "aborting transition");
+          transition.abort();
+        }
+      }
+    });
+
+    bootApplication();
+    Ember.run(Ember.$('#contact-link'), 'click');
 
     // Shouldn't have called update url.
     equal(updateCount, 0);
