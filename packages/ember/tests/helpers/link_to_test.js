@@ -1324,6 +1324,30 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
   });
 }
 
+function basicEagerURLUpdateTest(setTagName) {
+  expect(6);
+
+  if (setTagName) {
+    Ember.TEMPLATES.application = Ember.Handlebars.compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link' tagName='span'}}");
+  }
+
+  bootApplication();
+  equal(updateCount, 0);
+  Ember.run(Ember.$('#about-link'), 'click');
+
+  // URL should be eagerly updated now
+  equal(updateCount, 1);
+  equal(router.get('location.path'), '/about');
+
+  // Resolve the promise.
+  Ember.run(aboutDefer, 'resolve');
+  equal(router.get('location.path'), '/about');
+
+  // Shouldn't have called update url again.
+  equal(updateCount, 1);
+  equal(router.get('location.path'), '/about');
+}
+
 if (Ember.FEATURES.isEnabled("ember-eager-url-update")) {
   var aboutDefer;
   module("The {{link-to}} helper: eager URL updating", {
@@ -1355,21 +1379,11 @@ if (Ember.FEATURES.isEnabled("ember-eager-url-update")) {
   });
 
   test("invoking a link-to with a slow promise eager updates url", function() {
-    bootApplication();
-    equal(updateCount, 0);
-    Ember.run(Ember.$('#about-link'), 'click');
+    basicEagerURLUpdateTest(false);
+  });
 
-    // URL should be eagerly updated now
-    equal(updateCount, 1);
-    equal(router.get('location.path'), '/about');
-
-    // Resolve the promise.
-    Ember.run(aboutDefer, 'resolve');
-    equal(router.get('location.path'), '/about');
-
-    // Shouldn't have called update url again.
-    equal(updateCount, 1);
-    equal(router.get('location.path'), '/about');
+  test("non `a` tags also eagerly update URL", function() {
+    basicEagerURLUpdateTest(true);
   });
 
   test("invoking a link-to with a promise that rejects on the run loop doesn't update url", function() {
