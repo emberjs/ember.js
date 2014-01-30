@@ -307,7 +307,9 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
       isQueryParamsOnly = false, queryParams;
 
     if (Ember.FEATURES.isEnabled("query-params-new")) {
-      if (args[args.length - 1].hasOwnProperty('queryParams')) {
+
+      var possibleQueryParamArg = args[args.length - 1];
+      if (possibleQueryParamArg && possibleQueryParamArg.hasOwnProperty('queryParams')) {
         if (args.length === 1) {
           isQueryParamsOnly = true;
           name = null;
