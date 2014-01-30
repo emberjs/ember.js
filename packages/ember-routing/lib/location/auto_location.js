@@ -14,7 +14,10 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
     support with the priority order: history, hash, none.
 
     Clean pushState paths accessed by hashchange-only browsers will be redirected
-    to the hash-equivalent and vice versa so future transitions look consistent.
+    to the hash-equivalent and vice versa so future transitions are consistent.
+
+    Keep in mind that since some of your users will use `HistoryLocation`, your
+    server must serve the Ember app at all the routes you define.
 
     @class AutoLocation
     @namespace Ember
