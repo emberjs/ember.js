@@ -91,11 +91,8 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
         App.LoadingRoute = Ember.Route.extend({
         });
 
-
         Ember.TEMPLATES.application = compile("{{outlet}}");
         Ember.TEMPLATES.home = compile("<h3>Hours</h3>");
-        Ember.TEMPLATES.homepage = compile("<h3>Megatroll</h3><p>{{home}}</p>");
-        Ember.TEMPLATES.camelot = compile('<section><h3>Is a silly place</h3></section>');
       });
     },
 
@@ -207,6 +204,63 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     bootApplication();
 
     equal(router.get('location.path'), "/?omg=lol");
+  });
+
+  test("controllers won't be eagerly instantiated by internal query params logic", function() {
+    expect(6);
+    Router.map(function() {
+      this.route("home", { path: '/' });
+      this.route("about");
+    });
+
+    Ember.TEMPLATES.home = compile("<h3>{{link-to 'About' 'about' (query-params lol='wat') id='link-to-about'}}</h3>");
+    Ember.TEMPLATES.about = compile("<h3>{{link-to 'Home' 'home'  (query-params foo='naw')}}</h3>");
+
+    var homeShouldBeCreated = false,
+        aboutShouldBeCreated = false;
+
+    App.HomeRoute = Ember.Route.extend({
+      setup: function() {
+        homeShouldBeCreated = true;
+        this._super.apply(this, arguments);
+      }
+    });
+
+    App.HomeController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: "123",
+      init: function() {
+        this._super();
+        ok (homeShouldBeCreated, "HomeController should be created at this time");
+      }
+    });
+
+    App.AboutRoute = Ember.Route.extend({
+      setup: function() {
+        aboutShouldBeCreated = true;
+        this._super.apply(this, arguments);
+      }
+    });
+
+    App.AboutController = Ember.Controller.extend({
+      queryParams: ['lol'],
+      lol: "haha",
+      init: function() {
+        this._super();
+        ok (aboutShouldBeCreated, "AboutController should be created at this time");
+      }
+    });
+
+    bootApplication();
+
+    equal(router.get('location.path'), "/?foo=123", 'url is correct');
+    var controller = container.lookup('controller:home');
+    Ember.run(controller, 'set', 'foo', '456');
+    equal(router.get('location.path'), "/?foo=456", 'url is correct');
+    equal(Ember.$('#link-to-about').attr('href'), "/about?lol=wat", "link to about is correct");
+    Ember.run(router, 'transitionTo', 'about');
+
+    equal(router.get('location.path'), "/about?lol=haha", 'url is correct');
   });
 
   test("model hooks receives query params (overridden by incoming url value)", function() {
@@ -641,14 +695,14 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     var rootController = container.lookup('controller:root'),
         leafController = container.lookup('controller:leaf');
 
-  
+
     equal(router.get('location.path'), "");
     equal(Ember.$('#leaf-link').attr('href'), "/root/leaf?root[foo]=123&leaf[foo]=abc");
     equal(Ember.$('#root-link').attr('href'), "/root?foo=bar");
 
     Ember.run(Ember.$('#root-link'), 'click');
     equal(rootController.get('foo'), 'bar');
-    
+
     Ember.run(Ember.$('#leaf-link'), 'click');
     equal(rootController.get('foo'), '123');
     equal(leafController.get('foo'), 'abc');
