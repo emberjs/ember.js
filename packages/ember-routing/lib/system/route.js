@@ -1458,10 +1458,12 @@ function normalizeOptions(route, name, template, options) {
 
   if (options.controller) {
     controller = options.controller;
+  } else if (route.controllerName) {
+    controller = route.controllerName;
   } else if (namedController = route.container.lookup('controller:' + name)) {
     controller = namedController;
   } else {
-    controller = route.controllerName || route.routeName;
+    controller = route.routeName;
   }
 
   if (typeof controller === 'string') {
