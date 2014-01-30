@@ -451,6 +451,34 @@ test("The {{link-to}} helper accepts string/numeric arguments", function() {
   equal(normalizeUrl(Ember.$('#repo-object-link', '#qunit-fixture').attr('href')), "/repo/ember/ember.js");
 });
 
+test("Issue 4201 - Shorthand for route.index shouldn't throw errors about context arguments", function() {
+  expect(2);
+  Router.map(function() {
+    this.resource('lobby', function() {
+      this.route('index', {
+        path: ':lobby_id'
+      });
+      this.route('list');
+    });
+  });
+
+  App.LobbyIndexRoute = Ember.Route.extend({
+    model: function(params) {
+      equal(params.lobby_id, 'foobar');
+      return params.lobby_id;
+    }
+  });
+
+  Ember.TEMPLATES['lobby/index'] = compile("{{#link-to 'lobby' 'foobar' id='lobby-link'}}Lobby{{/link-to}}");
+  Ember.TEMPLATES.index = compile("");
+  Ember.TEMPLATES['lobby/list'] = compile("{{#link-to 'lobby' 'foobar' id='lobby-link'}}Lobby{{/link-to}}");
+  bootApplication();
+  Ember.run(router, 'handleURL', '/lobby/list');
+  Ember.run(Ember.$('#lobby-link'), 'click');
+  shouldBeActive('#lobby-link');
+
+});
+
 test("The {{link-to}} helper unwraps controllers", function() {
   expect(2);
 

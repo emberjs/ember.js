@@ -284,8 +284,17 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           routeArgs = get(this, 'routeArgs'),
           contexts = routeArgs.slice(1),
           resolvedParams = get(this, 'resolvedParams'),
-          currentWhen = this.currentWhen || resolvedParams[0],
-          isActive = router.isActive.apply(router, [currentWhen].concat(contexts));
+          currentWhen = this.currentWhen || routeArgs[0];
+
+      // if overriding active w/ currentWhen then don't apply contexts since they won't match
+      if (this.currentWhen) {
+        contexts = [];
+        if (Ember.FEATURES.isEnabled("query-params-new")) {
+          contexts.push({ queryParams: get(this, 'queryParams') });
+        }
+      }
+
+      var isActive = router.isActive.apply(router, [currentWhen].concat(contexts));
 
       if (isActive) { return get(this, 'activeClass'); }
     }).property('resolvedParams', 'routeArgs'),
@@ -438,7 +447,14 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
                        [namedRoute, namedRoute, Ember.keys(router.router.recognizer.names).join("', '")]),
                        router.hasRoute(namedRoute));
 
-      resolvedParams[0] = namedRoute;
+      //normalize route name
+      var handlers = router.router.recognizer.handlersFor(namedRoute);
+      var normalizedPath = handlers[handlers.length - 1].handler;
+      if (namedRoute !== normalizedPath) {
+        this.set('currentWhen', namedRoute);
+        namedRoute = handlers[handlers.length - 1].handler;
+        resolvedParams[0] = namedRoute;
+      }
 
       for (var i = 1, len = resolvedParams.length; i < len; ++i) {
         var param = resolvedParams[i];
