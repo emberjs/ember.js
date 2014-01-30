@@ -2819,4 +2819,29 @@ test("Specifying non-existent controller name in route#render throws", function(
   bootApplication();
 });
 
+test("Redirecting with null model doesn't error out", function() {
+  Router.map(function() {
+    this.route("home", { path: '/' });
+    this.route("about", { path: '/about/:hurhurhur' });
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    beforeModel: function() {
+      this.transitionTo('about', null);
+    }
+  });
+
+  App.AboutRoute = Ember.Route.extend({
+    serialize: function(model) {
+      if (model === null) {
+        return { hurhurhur: 'TreeklesMcGeekles' };
+      }
+    }
+  });
+
+  bootApplication();
+
+  equal(router.get('location.path'), "/about/TreeklesMcGeekles");
+});
+
 
