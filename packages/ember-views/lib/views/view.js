@@ -7,11 +7,12 @@ var states = {};
 @submodule ember-views
 */
 
-var get = Ember.get, set = Ember.set;
-var guidFor = Ember.guidFor;
-var a_forEach = Ember.EnumerableUtils.forEach;
-var a_addObject = Ember.EnumerableUtils.addObject;
-var meta = Ember.meta;
+var get = Ember.get, set = Ember.set,
+    guidFor = Ember.guidFor,
+    a_forEach = Ember.EnumerableUtils.forEach,
+    a_addObject = Ember.EnumerableUtils.addObject,
+    meta = Ember.meta,
+    defineProperty = Ember.defineProperty;
 
 var childViewsProperty = Ember.computed(function() {
   var childViews = this._childViews, ret = Ember.A(), view = this;
@@ -1338,6 +1339,8 @@ Ember.View = Ember.CoreView.extend({
     }, this);
   },
 
+  _unspecifiedAttributeBindings: null,
+
   /**
     Iterates through the view's attribute bindings, sets up observers for each,
     then applies the current value of the attributes to the passed render buffer.
@@ -1347,30 +1350,67 @@ Ember.View = Ember.CoreView.extend({
     @private
   */
   _applyAttributeBindings: function(buffer, attributeBindings) {
-    var attributeValue, elem;
+    var attributeValue,
+        unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
 
     a_forEach(attributeBindings, function(binding) {
       var split = binding.split(':'),
           property = split[0],
           attributeName = split[1] || property;
 
-      // Create an observer to add/remove/change the attribute if the
-      // JavaScript property changes.
-      var observer = function() {
-        elem = this.$();
+      if (property in this) {
+        this._setupAttributeBindingObservation(property, attributeName);
 
+        // Determine the current value and add it to the render buffer
+        // if necessary.
         attributeValue = get(this, property);
-
-        Ember.View.applyAttributeBindings(elem, attributeName, attributeValue);
-      };
-
-      this.registerObserver(this, property, observer);
-
-      // Determine the current value and add it to the render buffer
-      // if necessary.
-      attributeValue = get(this, property);
-      Ember.View.applyAttributeBindings(buffer, attributeName, attributeValue);
+        Ember.View.applyAttributeBindings(buffer, attributeName, attributeValue);
+      } else {
+        unspecifiedAttributeBindings[property] = attributeName;
+      }
     }, this);
+
+    // Lazily setup setUnknownProperty after attributeBindings are initially applied
+    this.setUnknownProperty = this._setUnknownProperty;
+  },
+
+  _setupAttributeBindingObservation: function(property, attributeName) {
+    var attributeValue, elem;
+
+    // Create an observer to add/remove/change the attribute if the
+    // JavaScript property changes.
+    var observer = function() {
+      elem = this.$();
+
+      attributeValue = get(this, property);
+
+      Ember.View.applyAttributeBindings(elem, attributeName, attributeValue);
+    };
+
+    this.registerObserver(this, property, observer);
+  },
+
+  /**
+    We're using setUnknownProperty as a hook to setup attributeBinding observers for
+    properties that aren't defined on a view at initialization time.
+
+    Note: setUnknownProperty will only be called once for each property.
+
+    @method setUnknownProperty
+    @param key
+    @param value
+    @private
+  */
+  setUnknownProperty: null, // Gets defined after initialization by _applyAttributeBindings
+
+  _setUnknownProperty: function(key, value) {
+    var attributeName = this._unspecifiedAttributeBindings && this._unspecifiedAttributeBindings[key];
+    if (attributeName) {
+      this._setupAttributeBindingObservation(key, attributeName);
+    }
+
+    defineProperty(this, key);
+    return set(this, key, value);
   },
 
   /**

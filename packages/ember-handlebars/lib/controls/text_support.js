@@ -20,7 +20,8 @@ var get = Ember.get, set = Ember.set;
 Ember.TextSupport = Ember.Mixin.create(Ember.TargetActionSupport, {
   value: "",
 
-  attributeBindings: ['placeholder', 'disabled', 'maxlength', 'tabindex', 'readonly'],
+  attributeBindings: ['placeholder', 'disabled', 'maxlength', 'tabindex', 'readonly',
+                      'autofocus', 'form', 'selectionDirection', 'spellcheck', 'required'],
   placeholder: null,
   disabled: false,
   maxlength: null,
