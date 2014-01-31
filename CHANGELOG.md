@@ -2,6 +2,17 @@
 
 * [BUGFIX] Fixed how parentController property of an itemController when nested. Breaking for apps that rely on previous broken behavior of an itemController's `parentController` property skipping its ArrayController when nested.
 
+### Ember 1.4.0-beta.4 (January 29, 2014)
+
+* [BUGFIX beta] reduceComputed fires observers when invalidating with undefined.
+* [BUGFIX beta] Provide helpful error even if Model isn't found.
+* [BUGFIX beta] Do not deprecate the block form of {{render}}.
+* [BUGFIX beta] allow enumerable/any to match undefined as value
+* [BUGFIX release] Allow canceling of Timers in IE8.
+* [BUGFIX] Calling toString at extend time causes Ember.View to memoize and return the same value for different instances.
+* [BUGFIX release] Fix ember-testing-lazy-routing.
+* [BUGFIX] Fixed how parentController property of an itemController when nested. Breaking for apps that rely on previous broken behavior of an itemController's `parentController` property skipping its ArrayController when nested.
+
 ### Ember 1.4.0-beta.3 (January 20, 2014)
 
 * Document the send method on Ember.ActionHandler.
