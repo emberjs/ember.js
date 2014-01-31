@@ -1,3 +1,5 @@
+/*globals EmberDev */
+
 var view, originalLookup;
 
 var container = {
@@ -17,7 +19,10 @@ module("Handlebars {{#view}} helper", {
 
   teardown: function() {
     Ember.lookup = originalLookup;
-    Ember.run(view, 'destroy');
+
+    if (view) {
+      Ember.run(view, 'destroy');
+    }
   }
 });
 
@@ -100,6 +105,10 @@ test("id bindings downgrade to one-time property lookup", function() {
 });
 
 test("mixing old and new styles of property binding fires a warning, treats value as if it were quoted", function() {
+  if (EmberDev && EmberDev.runningProdBuild){
+    ok(true, 'Logging does not occur in production builds');
+    return;
+  }
 
   expect(2);
 

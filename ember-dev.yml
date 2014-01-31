@@ -12,6 +12,8 @@ testing_suites:
     - "package=all&extendprototypes=true&nojshint=true&enableoptionalfeatures=true"
   built:
     - "package=all&skipPackage=container&dist=build&nojshint=true" # container isn't publicly available in the built version
+    - "skipPackage=container,ember-testing&dist=min&prod=true"     # container isn't public, and ember-testing is stripped from prod/min
+    - "skipPackage=container,ember-testing&dist=prod&prod=true"    # container isn't public, and ember-testing is stripped from prod/min
   runtime:
     - "package=ember-metal,ember-runtime"
   views:
@@ -34,6 +36,8 @@ testing_suites:
     - "package=all&extendprototypes=true&jquery=git&nojshint=true"
     - "package=all&extendprototypes=true&jquery=git2&nojshint=true"
     - "package=all&skipPackage=container&dist=build&nojshint=true" # container isn't publicly available in the built version
+    - "skipPackage=container,ember-testing&dist=min&prod=true"     # container isn't public, and ember-testing is stripped from prod/min
+    - "skipPackage=container,ember-testing&dist=prod&prod=true"    # container isn't public, and ember-testing is stripped from prod/min
 testing_packages:
   - container
   - ember-metal
