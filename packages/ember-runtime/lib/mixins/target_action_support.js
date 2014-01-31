@@ -3,7 +3,8 @@
 @submodule ember-runtime
 */
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, isNone = Ember.isNone,
+    a_slice = Array.prototype.slice;
 
 /**
 `Ember.TargetActionSupport` is a mixin that can be included in a class
@@ -133,5 +134,112 @@ Ember.TargetActionSupport = Ember.Mixin.create({
     } else {
       return false;
     }
+  },
+
+  /**
+    Triggers a named action on the controller context where the component is used if
+    this controller has registered for notifications of the action.
+
+    For example a component for playing or pausing music may translate click events
+    into action notifications of "play" or "stop" depending on some internal state
+    of the component:
+
+
+    ```javascript
+    App.PlayButtonComponent = Ember.Component.extend({
+      click: function(){
+        if (this.get('isPlaying')) {
+          this.sendAction('play');
+        } else {
+          this.sendAction('stop');
+        }
+      }
+    });
+    ```
+
+    When used inside a template these component actions are configured to
+    trigger actions in the outer application context:
+
+    ```handlebars
+    {{! application.hbs }}
+    {{play-button play="musicStarted" stop="musicStopped"}}
+    ```
+
+    When the component receives a browser `click` event it translate this
+    interaction into application-specific semantics ("play" or "stop") and
+    triggers the specified action name on the controller for the template
+    where the component is used: 
+
+
+    ```javascript
+    App.ApplicationController = Ember.Controller.extend({
+      actions: {
+        musicStarted: function(){
+          // called when the play button is clicked
+          // and the music started playing
+        },
+        musicStopped: function(){
+          // called when the play button is clicked
+          // and the music stopped playing
+        }
+      }
+    });
+    ```
+
+    If no action name is passed to `sendAction` a default name of "action"
+    is assumed.
+
+    ```javascript
+    App.NextButtonComponent = Ember.Component.extend({
+      click: function(){
+        this.sendAction();
+      }
+    });
+    ```
+
+    ```handlebars
+    {{! application.hbs }}
+    {{next-button action="playNextSongInAlbum"}}
+    ```
+
+    ```javascript
+    App.ApplicationController = Ember.Controller.extend({
+      actions: {
+        playNextSongInAlbum: function(){
+          ...
+        }
+      }
+    });
+    ```
+
+    @method sendAction
+    @param [action] {String} the action to trigger
+    @param [context] {*} a context to send with the action
+  */
+  sendAction: function(action) {
+    var actionName,
+        contexts = a_slice.call(arguments, 1);
+
+    // Send the default action
+    if (action === undefined) {
+      actionName = get(this, 'action');
+      Ember.assert("The default action was triggered on the component " + this.toString() +
+                   ", but the action name (" + actionName + ") was not a string.",
+                   isNone(actionName) || typeof actionName === 'string');
+    } else {
+      actionName = get(this, action);
+      Ember.assert("The " + action + " action was triggered on the component " +
+                   this.toString() + ", but the action name (" + actionName +
+                   ") was not a string.",
+                   isNone(actionName) || typeof actionName === 'string');
+    }
+
+    // If no action name for that action could be found, just abort.
+    if (actionName === undefined) { return; }
+
+    this.triggerAction({
+      action: actionName,
+      actionContext: contexts
+    });
   }
 });
