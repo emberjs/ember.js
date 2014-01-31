@@ -86,6 +86,21 @@ Ember.DefaultResolver = Ember.Object.extend({
     @property namespace
   */
   namespace: null,
+  /**
+    This indicates the resolver style. This will be used internally
+    to determine the type of resolution that will be performed.
+
+    @property lookupType
+  */
+  lookupType: 'global',
+
+  /**
+    This indicates the resolver version. This will be used internally
+    to determine the type of resolution that will be performed.
+
+    @property version
+  */
+  version: 1,
 
   normalize: function(fullName) {
     var split = fullName.split(':', 2),
