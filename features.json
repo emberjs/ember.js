@@ -18,7 +18,7 @@
     "ember-routing-drop-deprecated-action-style": null,
     "ember-metal-is-blank": true,
     "ember-eager-url-update": true,
-    "ember-routing-auto-location": null,
+    "ember-routing-auto-location": true,
     "ember-routing-bound-action-name": null,
     "ember-runtime-test-friendly-promises": null
   },
