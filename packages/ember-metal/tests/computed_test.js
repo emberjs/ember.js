@@ -1018,3 +1018,66 @@ testBoth('Ember.computed.readOnly', function(get, set) {
   equal(get(obj, 'nickName'), 'TEDDDDDDDDYYY');
 });
 }
+
+if (Ember.FEATURES.isEnabled('ember-metal-computed-instance')) {
+  module('Ember.computed - instance');
+  testBoth('Ember.computed.instance', function(get, set) {
+    var filledArray = [1 , 2],
+        emptyArray = [],
+        emptyObj = {},
+        filledObject = {name: 'HTMLBars'},
+        Config = Ember.Object.extend({name: null}),
+        Developer = Ember.Object.extend({
+          configModel: Config,
+          initialProjectConfig: filledObject,
+          globalClass: Ember.computed.instance('Object'),
+          array1: Ember.computed.instance(filledArray),
+          array2: Ember.computed.instance(Array, 1, 2),
+          array3: Ember.computed.instance(emptyArray, filledArray),
+          obj1: Ember.computed.instance(filledObject),
+          obj2: Ember.computed.instance(emptyObj, filledObject),
+          instance1: Ember.computed.instance(Config, 'initialProjectConfig'),
+          instance2: Ember.computed.instance('configModel', 'initialProjectConfig'),
+          instance3: Ember.computed.instance('configModel', 'initialProjectConfig').volatile()
+        }),
+        dev1 = Developer.create(),
+        dev2 = Developer.create();
+
+
+      var deepHelper = function (key, obj, msg) {
+        var val = get(dev1, key),
+            insObj = (obj instanceof Array) ? val : Ember.getProperties(val, Ember.keys(obj));
+        deepEqual(insObj, obj, msg);
+      };
+      var checkRef = function (msg, key, origin) {
+        var test = true,
+            val1 = dev1.get(key),
+            val2 = dev2.get(key);
+          ok(val1 !== origin && val1 !== val2, msg);
+      };
+
+      checkRef('return new instance of a global Object', 'globalClass');
+      //arrays
+      checkRef('creates different array instances in each object', 'array1', filledArray);
+      deepHelper('array1', filledArray, 'make a copy of non empty array');
+      deepHelper('array2', filledArray, 'invoked with class constructor followed with params');
+      deepHelper('array3', filledArray, 'new array with content of initialValue');
+
+      //plain objects
+      checkRef('creates different object instances in each object', 'obj1', filledObject);
+      deepHelper('obj1', filledObject, 'merges props from source obj');
+      deepHelper('obj2', filledObject, 'merges props from initialValue');
+
+      //Ember classes
+      checkRef('creates different class instances in each object', 'instance1');
+      deepHelper('instance1', filledObject, 'fills values from value at path');
+      ok(get(dev1, 'instance2') instanceof Config, 'new instance of Class submitted as path');
+
+      //volatile
+      var in1 = get(dev1, 'instance3');
+      set(dev1, 'initialProjectConfig', {name: 'Ember'});
+      var in2 = get(dev1, 'instance3');
+      ok(get(in2, 'name') === 'Ember', 'instantiate with different init');
+      ok(in1 !== in2, 'making it volatile returns a new instance at each get');
+  });
+}
