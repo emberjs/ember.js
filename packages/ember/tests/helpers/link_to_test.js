@@ -1059,7 +1059,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}");
     bootApplication();
-    equal(Ember.$('#the-link').attr('href'), "/?foo=456&bar=yes", "link has right href");
+    equal(Ember.$('#the-link').attr('href'), "/?bar=yes&foo=456", "link has right href");
   });
 
   test("{{link-to}} populates href with fully supplied query param values", function() {
@@ -1071,7 +1071,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'index' (query-params foo='456' bar='NAW') id='the-link'}}Index{{/link-to}}");
     bootApplication();
-    equal(Ember.$('#the-link').attr('href'), "/?foo=456&bar=NAW", "link has right href");
+    equal(Ember.$('#the-link').attr('href'), "/?bar=NAW&foo=456", "link has right href");
   });
 
   module("The {{link-to}} helper: invoking with query params", {
@@ -1161,7 +1161,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'about' (query-params baz='lol') id='the-link'}}About{{/link-to}}");
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/about?baz=lol&bat=borf');
+    equal(Ember.$('#the-link').attr('href'), '/about?bat=borf&baz=lol');
     Ember.run(Ember.$('#the-link'), 'click');
     var aboutController = container.lookup('controller:about');
     deepEqual(aboutController.getProperties('baz', 'bat'), { baz: 'lol', bat: 'borf' }, "about controller QP properties updated");
@@ -1175,9 +1175,9 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/?foo=OMG&bar=abc');
+    equal(Ember.$('#the-link').attr('href'), '/?bar=abc&foo=OMG');
     Ember.run(indexController, 'set', 'boundThing', "ASL");
-    equal(Ember.$('#the-link').attr('href'), '/?foo=ASL&bar=abc');
+    equal(Ember.$('#the-link').attr('href'), '/?bar=abc&foo=ASL');
   });
 
   test("supplied QP properties can be bound (booleans)", function() {
@@ -1186,7 +1186,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/?foo=OMG&bar=abc');
+    equal(Ember.$('#the-link').attr('href'), '/?bar=abc&foo=OMG');
     Ember.run(indexController, 'set', 'boundThing', false);
     equal(Ember.$('#the-link').attr('href'), '/?bar=abc');
 
@@ -1201,11 +1201,11 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/?foo=lol&bar=abc');
+    equal(Ember.$('#the-link').attr('href'), '/?bar=abc&foo=lol');
     Ember.run(indexController, 'set', 'bar', 'BORF');
-    equal(Ember.$('#the-link').attr('href'), '/?foo=lol&bar=BORF');
+    equal(Ember.$('#the-link').attr('href'), '/?bar=BORF&foo=lol');
     Ember.run(indexController, 'set', 'foo', 'YEAH');
-    equal(Ember.$('#the-link').attr('href'), '/?foo=lol&bar=BORF');
+    equal(Ember.$('#the-link').attr('href'), '/?bar=BORF&foo=lol');
   });
 
   test("The {{link-to}} applies activeClass when query params are not changed", function() {
