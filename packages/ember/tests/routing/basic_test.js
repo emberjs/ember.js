@@ -1291,7 +1291,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
     });
 
     Ember.TEMPLATES.home = Ember.Handlebars.compile(
-      "<a {{action showStuff content}}>{{name}}</a>"
+      "<a {{action 'showStuff' content}}>{{name}}</a>"
     );
 
     var controller = Ember.Controller.extend({
