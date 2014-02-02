@@ -1,0 +1,7 @@
+/* SC.TabView */
+
+.sc-tab-view > .sc-container-view {
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+  overflow: visible;
+}

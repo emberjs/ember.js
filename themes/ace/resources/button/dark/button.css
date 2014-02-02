@@ -1,0 +1,17 @@
+@theme(dark) {
+
+  $theme.button {
+    color: #ddd;
+    text-shadow: 0 -1px 0 black;
+
+    &.active {
+      color: #bbb;
+      text-shadow: 0 -1px 0 black;
+    }
+
+    &.sel.active, &.def.active {
+      color: #ddd;
+      text-shadow: 0 -1px 0 black;
+    }
+  }
+}

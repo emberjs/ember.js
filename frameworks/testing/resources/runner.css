@@ -1,0 +1,136 @@
+.core-test {
+  font: 12px/16px "Helvetica", Verdana, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #f0f0f0;
+  overflow: auto;
+}
+  
+.core-test .useragent {
+  border-bottom: 1px solid #000;
+  font: 10pt "Helvetica", Verdana, Arial, sans-serif;
+  height: 15px;
+}
+
+.core-test .testresult {
+  background: rgb(238, 238, 238);
+  border-bottom: 1px solid #bbb;
+  font-weight: bold;
+  margin: 0;
+  padding: 6px;
+  text-align: right;
+  position: relative;
+}
+
+.testresult label.hide-passed, .testresult label.show-progress {
+  position: absolute;
+  display: block;
+  margin: 0;
+  padding: 0;
+  left: 20px;
+  height: 14px;
+  top: 50%;
+  margin-top: -8px;
+}
+
+.testresult label.hide-passed.disabled, .testresult label.show-progress.disabled  {
+  color: #aaa;
+}
+
+.testresult label.show-progress {
+  left: 200px;
+}
+
+.testresult em {
+  display: block;
+  font-weight: normal;
+  font-style: normal;
+}
+
+.testresult em span {
+  border: 1px solid #666;
+  display: inline-block;
+  font-weight: bold;
+  padding: 2px 4px;
+}
+
+.core-test tbody th {
+    text-align: left;
+    min-width: 300px;
+  }
+
+.core-test .detail {
+  padding: 20px;
+}
+
+.core-test table {
+  background: #000;
+  border-spacing: 1px;
+  width: 100%;
+}
+
+.core-test .hide-clean tr.clean {
+  display: none;
+}
+
+.core-test table td,
+.core-test table th {
+    background: #fff;
+    padding: 4px;
+  }
+
+.core-test table th {
+  font-weight: bold;
+}
+
+.core-test tbody td {
+  text-align: center;
+  padding: 8px;
+}
+
+.core-test th em {
+  display: block;
+  font-weight: normal;
+  font-size: 10px;
+  font-style: normal;
+}
+
+.core-test thead th:first-child {
+  text-align: left;
+}
+
+.core-test .warnings {
+  background: #E49723;
+}
+
+.core-test .passed {
+  background: #80D175;
+}
+
+.core-test .failed {
+  background: #ea4d44;
+}
+
+.core-test .errors {
+  background: red;
+  color: #fff;
+}
+
+.core-test tr.test th {
+  background: #454545;
+  color: #fff;
+  font-size: 12px;
+  padding: 2px 4px;
+  text-align: right;
+}
+
+.core-test td.desc,
+.core-test th.desc {
+  text-align: left;
+  width: 90%;
+}

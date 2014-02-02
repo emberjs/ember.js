@@ -1,0 +1,18 @@
+.sc-theme .sc-dialog-pane {
+  z-index: 2000;
+  background: #494949;
+}
+
+/*
+Content-Type: multipart/related; boundary="BLANK_IMAGE"
+
+--BLANK_IMAGE
+Content-Location:SCTheme
+Content-Transfer-Encoding:base64
+
+R0lGODlhAQABAJAAAP///wAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw==
+*/
+.sc-theme div.sc-ghost-view {
+  background-image: url(data:image/gif;base64,R0lGODlhAQABAJAAAP///wAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw==) top left no-repeat; 
+  *background-image: sc_static('sproutcore/foundation:blank.gif') top left no-repeat; /* IE < 8 */
+}

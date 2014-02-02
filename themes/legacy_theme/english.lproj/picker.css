@@ -1,0 +1,17 @@
+/** SC.PickerPane Support */
+
+.sc-theme .sc-pane.sc-panel.sc-picker .perfectRight {
+  background: static_url('images/panels/sprite-x.png') no-repeat 0 -30px;
+}
+
+.sc-theme .sc-pane.sc-panel.sc-picker .perfectLeft {
+  background: static_url('images/panels/sprite-x.png') no-repeat -30px -30px;
+}
+
+.sc-theme .sc-pane.sc-panel.sc-picker .perfectTop {
+  background: static_url('images/panels/sprite-x.png') no-repeat 0 -90px;
+}
+
+.sc-theme .sc-pane.sc-panel.sc-picker .perfectBottom {
+  background: static_url('images/panels/sprite-x.png') no-repeat 0 0;
+}

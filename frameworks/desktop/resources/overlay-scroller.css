@@ -1,0 +1,186 @@
+@import "compass/css3";
+
+
+.sc-overlay-scroller-view {
+
+  /* Track */
+  .track {
+    background: none;
+    display: none;
+  }
+
+  /* Cap */
+  .cap, .endcap {
+    background: none;
+    display: none;
+  }
+
+  /* Buttons */
+  .button-top {
+    background: none;
+    display: none;
+  }
+
+  .button-bottom {
+    background: none;
+    display: none;
+  }
+
+  /* Active */
+  .button-top:active {
+    background: none;
+    display: none;
+  }
+
+  .button-bottom:active {
+    background: none;
+    display: none;
+  }
+
+  /* Thumb */
+  .thumb {
+    @include transform(translateZ(0px));
+    position: absolute;
+    opacity: 0.5;
+    overflow: hidden;
+  }
+
+  .thumb-top {
+    background: black;
+    position: absolute;
+  }
+
+  .thumb-clip {
+    position: absolute;
+    overflow: hidden;
+  }
+
+  .thumb-inner {
+    @include transform(translate3d(0px,0px,0px));
+    position: absolute;
+  }
+
+  .thumb-center {
+    background: black;
+    position: absolute;
+  }
+
+  .thumb-bottom {
+    background: black;
+    position: absolute;
+  }
+
+  &.sc-vertical {
+
+    /* Thumb */
+    .thumb {
+      width: 12px;
+      height: 1044px;
+    }
+
+    .thumb-top {
+      @include border-top-radius(4px);
+      width: 7px;
+      top: 0px;
+      left: 5px;
+      height: 10px;
+    }
+
+    .thumb-clip {
+      height: 1034px;
+      width: 7px;
+      top: 10px;
+      left: 5px;
+    }
+
+    .thumb-inner {
+      left: 0px;
+      top: 0px;
+      width: 7px;
+      height: 1034px;
+    }
+
+    .thumb-center {
+      width: 7px;
+      left: 0px;
+      top: 0px;
+      height: 1024px;
+    }
+
+    .thumb-bottom {
+      @include border-bottom-radius(4px);
+      width: 7px;
+      top: 1024px;
+      left: 0px;
+      height: 10px;
+    }
+  }
+
+  &.sc-horizontal {
+
+    /* Thumb */
+    .thumb {
+      height: 12px;
+      width: 1044px;
+    }
+
+    .thumb-top {
+      @include border-left-radius(4px);
+      width: 10px;
+      top: 5px;
+      left: 0px;
+      height: 7px;
+    }
+
+    .thumb-clip {
+      width: 1034px;
+      height: 7px;
+      left: 10px;
+      top: 5px;
+    }
+
+    .thumb-inner {
+      top: 0px;
+      left: 0px;
+      height: 7px;
+      width: 1034px;
+    }
+
+    .thumb-center {
+      height: 7px;
+      top: 0px;
+      left: 0px;
+      width: 1024px;
+    }
+
+    .thumb-bottom {
+      @include border-right-radius(4px);
+      height: 7px;
+      left: 1024px;
+      top: 0px;
+      width: 10px;
+    }
+  }
+
+  /* Fading in & out */
+  &.sc-vertical, &.sc-horizontal {
+
+    &.fade-in {
+      .thumb {
+        @include transition-duration(0.1s);
+        @include transition-property(opacity);
+        @include transition-timing-function(ease);
+        opacity: 0.5;
+      }
+    }
+
+    &.fade-out {
+      .thumb {
+        @include transition-duration(0.5s);
+        @include transition-property(opacity);
+        @include transition-timing-function(ease);
+        opacity: 0;
+      }
+    }
+  }
+}

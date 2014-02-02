@@ -1,0 +1,36 @@
+/*
+First, a helper for other views so they can have the source list background.
+*/
+$theme.source-list-background {
+  background: #d0dae3;
+}
+
+@theme(source-list) {
+  $theme.collection {
+    background: #d0dae3;
+
+
+    .sc-list-item-view label {
+      top: 50%;
+      margin-top: -9px;
+      font-size:14px;
+    }
+
+    .sc-collection-item.sel {
+      @include slice("selection.png", $repeat: repeat-x, $top: 48, $width: 1, $height: 32);
+      border-top: 1px solid #43638d;
+      border-bottom: 1px solid #43638d;
+      color: white;
+      font-weight: bold;
+      text-shadow: 0 1px 1px black;
+    }
+
+    .sc-collection-item.sc-group-item {
+      font-weight: bold;
+      color: #4a4a4a;
+      text-shadow: 0 1px 1px white;
+      font-size:12px;
+    }
+
+  }
+}

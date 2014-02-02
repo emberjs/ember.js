@@ -1,0 +1,20 @@
+/* SC.DisclosureView - sc-theme */
+
+.sc-button-view.sc-disclosure-view {
+  background: transparent;
+  img.disclosure.button {
+  	width: 16px;
+  	height: 16px;
+  	position: absolute;
+  	left: 0px;
+  	top: 0px;
+  }
+  .sc-disclosure-label {
+  	position: absolute;
+  	left: 16px;
+  	top: 0;
+  	bottom: 0;
+  	right: 0;
+  	text-align: left;
+  }
+}

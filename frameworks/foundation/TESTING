@@ -1,0 +1,46 @@
+SproutCore Unit Testing
+
+ABOUT UNIT TESTS
+
+Unit tests are divided into two types of tests: API unit tests and integration 
+tests. API unit tests test each public method and property to ensure that the method behaves correctly according to its documentation.  Integration tests 
+spot check the way various API methods are used together to ensure they 
+function correctly in usage scenarios.
+
+Most unit tests found in the SproutCore framework are API unit tests.  
+Typically the testing directory for a framework will contain a folder 
+structure matching the framework source.  Within those folders will be one 
+folder per source class file.  Within that folder will be one test file per
+method (or groups of methods of the methods are very closely related).
+
+Integration tests, on the other hand, are all kept in the tests/integration
+folder.  Each file is named for the general type of integration scenarios 
+tested, but the structure and naming of this directory is less rigid.
+
+WHERE TO ADD NEW UNIT TESTS
+
+If you find a bug and reduce the problem down to a particular API method that
+is not responding in the way you might expect, then the best place to add a 
+test for this is in the API unit tests.  This will effectively make your unit
+test part of the API "specification" that must be satisfied for all future
+releases.
+
+Often times, however, you will find bugs that are not due to a particular 
+method behaving badly but is due to a problem that occurs when you use a 
+series of API methods together in a certain way.  For these kinds of tests
+you should add a test to the integration directory.  If one of the existing
+files makes sense for your scenario, add it there.  Otherwise, create a new
+test file and add it there.
+
+HOW TO WRITE API UNIT TESTS VS INTEGRATION
+
+The purpose of an API unit test is to exercise individual methods in the API
+in isolation of the rest of the API.  You should swap out methods, mock objects, or make any other temporary modifications to the framework needed to
+make the method run as isolated as possible from other methods.
+
+Integration tests, on the other hand, are about testing API usage in place.
+Avoid mocking parts of the framework unless necessary. Try to run the
+framework code in its natural state to ensure the full stack is exercised just
+as it would be in production code.
+
+

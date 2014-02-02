@@ -1,0 +1,214 @@
+/*
+  These built-in images/icons are available for use in your own application free of charge.  Just pass one of these CSS classnames as an image.
+*/
+
+/* @group 48-Pixel images/icons */
+
+.sc-icon-alert-48 {
+	width: 48px;
+	height: 48px;
+	@include slice("images/icons/sc-icon-alert-48.png");
+}
+
+.sc-icon-info-48 {
+	width: 48px;
+	height: 48px;
+	@include slice("images/icons/sc-icon-info-48.png");
+}
+
+.sc-icon-error-48 {
+	width: 48px;
+	height: 48px;
+	@include slice("images/icons/sc-icon-error-48.png");
+}
+
+
+/* @end */
+
+/* @group 24-Pixel images/icons */
+
+.sc-icon-tools-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-tools-24.png");
+}
+
+.sc-icon-bookmark-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-bookmark-24.png");
+}
+
+.sc-icon-info-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-info-24.png");
+}
+
+.sc-icon-help-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-help-24.png");
+}
+
+.sc-icon-alert-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-alert-24.png");
+}
+
+.sc-icon-left-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-left-24.png");
+}
+
+.sc-icon-right-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-right-24.png");
+}
+
+.sc-icon-up-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-up-24.png");
+}
+
+.sc-icon-down-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-down-24.png");
+}
+
+.sc-icon-undo-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-undo-24.png");
+}
+
+.sc-icon-redo-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-redo-24.png");
+}
+
+.sc-icon-group-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-group-24.png");
+}
+
+.sc-icon-user-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-user-24.png");
+}
+
+.sc-icon-cancel-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-cancel-24.png");
+}
+
+.sc-icon-options-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-options-24.png");
+}
+
+.sc-icon-folder-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-folder-24.png");
+}
+
+.sc-icon-trash-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-trash-24.png");
+}
+
+.sc-icon-document-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-document-24.png");
+}
+
+.sc-icon-favorite-24 {
+	width: 24px;
+	height: 24px;
+	@include slice("images/icons/sc-icon-favorite-24.png");
+}
+
+/* @end */
+
+/* @group 16-Pixel images/icons */
+
+.sc-icon-bookmark-16 {
+	width: 16px;
+	height: 16px;
+	@include slice("images/icons/sc-icon-bookmark-16.png");
+}
+
+.sc-icon-info-16 {
+	width: 16px;
+	height: 16px;
+	@include slice("images/icons/sc-icon-info-16.png");
+}
+
+.sc-icon-help-16 {
+	width: 16px;
+	height: 16px;
+	@include slice("images/icons/sc-icon-help-16.png");
+}
+
+.sc-icon-alert-16 {
+	width: 16px;
+	height: 16px;
+	@include slice("images/icons/sc-icon-alert-16.png");
+}
+
+.sc-icon-group-16 {
+	width: 16px;
+	height: 16px;
+	@include slice("images/icons/sc-icon-group-16.png");
+}
+
+.sc-icon-user-16 {
+	width: 16px;
+	height: 16px;
+	@include slice("images/icons/sc-icon-user-16.png");
+}
+
+.sc-icon-options-16 {
+	width: 16px;
+	height: 16px;
+	@include slice("images/icons/sc-icon-options-16.png");
+}
+
+.sc-icon-folder-16 {
+	width: 16px;
+	height: 16px;
+	@include slice("images/icons/sc-icon-folder-16.png");
+}
+
+.sc-icon-trash-16 {
+	width: 16px;
+	height: 16px;
+	@include slice("images/icons/sc-icon-trash-16.png");
+}
+
+.sc-icon-document-16 {
+	width: 16px;
+	height: 16px;
+	@include slice("images/icons/sc-icon-document-16.png");
+}
+
+.sc-icon-favorite-16 {
+	width: 16px;
+	height: 16px;
+	@include slice("images/icons/sc-icon-favorite-16.png");
+}
+
+/* @end */

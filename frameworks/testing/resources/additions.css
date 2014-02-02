@@ -1,0 +1,8 @@
+/* Move test result to top of page where it is easier to see */
+#testresult {
+  position: absolute;
+  top: 19px;
+  right: 10px;
+  text-align: right;
+  font-weight:bold;
+}

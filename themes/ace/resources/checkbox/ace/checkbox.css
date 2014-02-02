@@ -1,0 +1,7 @@
+$theme.checkbox {
+  border: 0 none;
+
+  &.disabled {
+    opacity: .5;
+  }
+}

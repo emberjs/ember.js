@@ -1,0 +1,29 @@
+{
+  "name": "/media",
+  "views": [
+    {
+      "name": "Audio",
+      "scClass": "SC.AudioView"
+    },
+    {
+      "name": "Media Controls",
+      "scClass": "SC.MediaControlsView"
+    },
+    {
+      "name": "Media Slider",
+      "scClass": "SC.MediaSlider"
+    },
+    {
+      "name": "Mini Media Controls",
+      "scClass": "SC.MiniMediaControlsView"
+    },
+    {
+      "name": "Simple Media Controls",
+      "scClass": "SC.SimpleMediaControlsView"
+    },
+    {
+      "name": "Video",
+      "scClass": "SC.VideoView"
+    }
+  ]
+}

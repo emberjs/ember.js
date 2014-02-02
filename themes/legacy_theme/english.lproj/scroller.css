@@ -1,0 +1,159 @@
+/* Track */
+.sc-theme .sc-view.sc-scroller-view.sc-vertical .track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: sc_static("images/sc-scroller-repeat-x") 0 0 repeat-y;
+}
+
+/* Cap */
+.sc-theme .sc-view.sc-scroller-view.sc-vertical .cap {
+  position: absolute;
+  width: 14px;
+  height: 16px;
+  top: 0;
+  background: sc_static("images/sc-scroller-sprite") -58px -14px no-repeat;
+}
+
+/* Buttons */
+.sc-theme .sc-view.sc-scroller-view.sc-vertical .button-top {
+  position: absolute;
+  background: sc_static("images/sc-scroller-sprite") -30px -14px no-repeat;
+  height: 26px;
+  width: 14px;
+  bottom: 14px;
+}
+
+.sc-theme .sc-view.sc-scroller-view.sc-vertical .button-bottom {
+  position: absolute;
+  background: sc_static("images/sc-scroller-sprite") 0 -40px no-repeat;
+  height: 15px;
+  width: 14px;
+  bottom: 0;
+}
+
+/* Active */
+.sc-theme .sc-view.sc-scroller-view.sc-vertical .button-top:active,
+.sc-theme .sc-view.sc-scroller-view.sc-vertical .button-top.active {
+  background: sc_static("images/sc-scroller-sprite") -44px -14px no-repeat;
+}
+
+.sc-theme .sc-view.sc-scroller-view.sc-vertical .button-bottom:active,
+.sc-theme .sc-view.sc-scroller-view.sc-vertical .button-bottom.active {
+  background: sc_static("images/sc-scroller-sprite") -14px -40px no-repeat;
+}
+
+/* Thumb */
+.sc-theme .sc-view.sc-scroller-view.sc-vertical .thumb {
+  position: absolute;
+}
+
+.sc-theme .sc-view.sc-scroller-view.sc-vertical .thumb-center {
+  position: absolute;
+  width: 14px;
+  top: 10px;
+  bottom: 10px;
+  background: sc_static("images/sc-scroller-repeat-x") -14px 0 repeat-y;
+}
+
+.sc-theme .sc-view.sc-scroller-view.sc-vertical .thumb-top {
+  position: absolute;
+  width: 14px;
+  top: 0;
+  height: 10px;
+  background: sc_static("images/sc-scroller-sprite") -42px -40px no-repeat;
+}
+
+.sc-theme .sc-view.sc-scroller-view.sc-vertical .thumb-bottom {
+  position: absolute;
+  width: 14px;
+  bottom: 0;
+  height: 10px;
+  background: sc_static("images/sc-scroller-sprite") -28px -40px no-repeat;
+}
+
+/* Track */
+.sc-theme .sc-view.sc-scroller-view.sc-horizontal .track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: sc_static("images/sc-scroller-repeat-y") 0 0 repeat-x;
+}
+
+/* Cap */
+.sc-theme .sc-view.sc-scroller-view.sc-horizontal .cap {
+  position: absolute;
+  height: 14px;
+  width: 16px;
+  left: 0;
+  background: sc_static("images/sc-scroller-sprite") -52px 0 no-repeat;
+}
+
+/* Buttons */
+.sc-theme .sc-view.sc-scroller-view.sc-horizontal .button-top {
+  position: absolute;
+  background: sc_static("images/sc-scroller-sprite") 0 0 no-repeat;
+  width: 26px;
+  height: 14px;
+  right: 14px;
+}
+
+.sc-theme .sc-view.sc-scroller-view.sc-horizontal .button-bottom {
+  position: absolute;
+  background: sc_static("images/sc-scroller-sprite") -15px -14px no-repeat;
+  width: 15px;
+  height: 14px;
+  right: 0;
+}
+
+/* Active */
+.sc-theme .sc-view.sc-scroller-view.sc-horizontal .button-top:active,
+.sc-theme .sc-view.sc-scroller-view.sc-horizontal .button-top.active {
+	background: sc_static("images/sc-scroller-sprite") -26px 0 no-repeat;
+}
+
+.sc-theme .sc-view.sc-scroller-view.sc-horizontal .button-bottom:active,
+.sc-theme .sc-view.sc-scroller-view.sc-horizontal .button-bottom.active {
+	background: sc_static("images/sc-scroller-sprite") 0 -14px no-repeat;
+}
+
+/* Thumb */
+.sc-theme .sc-view.sc-scroller-view.sc-horizontal .thumb {
+  position: absolute;
+}
+
+.sc-theme .sc-view.sc-scroller-view.sc-horizontal .thumb-center {
+  position: absolute;
+  height: 14px;
+  left: 10px;
+  right: 10px;
+  background: sc_static("images/sc-scroller-repeat-y") 0 -14px repeat-x;
+}
+
+.sc-theme .sc-view.sc-scroller-view.sc-horizontal .thumb-top {
+  position: absolute;
+  height: 14px;
+  left: 0;
+  width: 10px;
+  background: sc_static("images/sc-scroller-sprite") -68px 0 no-repeat;
+}
+
+.sc-theme .sc-view.sc-scroller-view.sc-horizontal .thumb-bottom {
+  position: absolute;
+  height: 14px;
+  right: 0;
+  width: 10px;
+  background: sc_static("images/sc-scroller-sprite") -56px -40px no-repeat;
+}
+
+/* Hidden Controls */
+.sc-theme .sc-view.sc-scroller-view.controls-hidden .button-top,
+.sc-theme .sc-view.sc-scroller-view.controls-hidden .button-bottom,
+.sc-theme .sc-view.sc-scroller-view.controls-hidden .thumb,
+.sc-theme .sc-view.sc-scroller-view.controls-hidden .cap {
+  display: none;
+}

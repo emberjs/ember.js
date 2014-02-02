@@ -1,0 +1,37 @@
+@theme(sc-small-size) {
+
+  $theme.button {
+    font-size: 11px;
+
+    .sc-button-label {
+      margin-top:-4px;
+      height: 16px;
+      padding-top:2px;
+    }
+
+    img {
+      top: -2px;
+    }
+
+    @include slices("normal_button.png", $left: 3, $right: 3);
+
+    &.active {
+      @include slices("active_button.png", $left: 3, $right: 3);
+    }
+
+    &.sel, &.def {
+      @include slices("selected_button.png", $left: 3, $right: 3);
+
+    }
+
+    &.sel.active, &.def.active {
+      @include slices("selected_active_button.png", $left: 3, $right: 3);
+    }
+
+    &.sc-static-layout .sc-button-label {
+      margin-left: 3px;
+      margin-right: 3px;
+    }
+  }
+
+}

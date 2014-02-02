@@ -1,0 +1,139 @@
+.sc-video-view
+{
+  background: black;
+}
+
+.sc-media-controls
+{
+  background: black;
+  opacity:0.8;
+
+  .sc-button-view
+  {
+    .sc-button-label
+    {
+      padding: 0px;
+    }
+
+    .left, .middle, .right
+    {
+      display: none;
+    }
+
+    .stop
+    {
+      @include slice("controls.png", $left: 13, $width: 11);
+      height: 11px;
+      width: 11px;
+      position: absolute;
+      top: 4px;
+      left: 4px;
+    }
+
+    .play
+    {
+      @include slice("controls.png", $left: 0, $width: 8);
+      height: 11px;
+      width: 8px;
+      position: absolute;
+      top: 4px;
+      left: 6px;
+    }
+
+    .theater
+    {
+      @include slice("controls.png", $left: 32, $width: 11);
+      height: 11px;
+      width: 11px;
+      position: absolute;
+      top: 4px;
+      left: 4px;
+    }
+  }
+
+  .sc-label-view
+  {
+  	position: absolute;
+
+    .minus
+    {
+      @include slice("controls.png", $left: 50, $width: 6);
+      height: 11px;
+      width: 6px;
+      position: absolute;
+      top: 4px;
+      left: 7px;
+    }
+
+    .plus
+    {
+      @include slice("controls.png", $left: 64, $width: 10);
+      height: 11px;
+      width: 10px;
+      position: absolute;
+      top: 4px;
+      left: 5px;
+    }
+  }
+
+  .time{
+    font-size: 10px !important;
+    line-height: 20px !important;
+    color: #FFFFFF;
+    text-align: center;
+  }
+  .sc-view.sc-slider-view
+  {
+    overflow:visible;
+
+    .track{
+      background: none;
+      position:absolute;
+      left:0px;
+      top: 9px;
+      bottom: 9px;
+      right:0px;
+      z-index:1;
+      overflow: display;
+
+      .left, .right
+      {
+        display: none;
+      }
+
+      .middle
+      {
+        position:absolute;
+        top: 0px;
+        bottom: 0px;
+        left:0px;
+        right:0px;
+        background: #CCCCCC;
+      }
+
+      .sc-loaded-ranges{
+        position:absolute;
+        top: 0px;
+        bottom: 0px;
+        left:0px;
+        right:0px;
+        background: none;
+
+        .sc-loaded-range {
+          background-color: green;
+          top: 0px;
+          bottom: 0px;
+          position:absolute;
+        }
+      }
+
+      .sc-handle
+      {
+        background:white;
+        height: 10px;
+        width:10px;
+        margin-left: -5px;
+      }
+    }
+  }
+}

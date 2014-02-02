@@ -1,0 +1,6 @@
+These are string formatters to be used with String#fmt.
+
+For example, you can use the date formatter like this:
+
+    "Date: %{myDate:mm}/%{myDate:dd}/%{myDate:yyyy}".fmt({ myDate: new Date(), myDateFormatter: SC.DateFormatter })
+

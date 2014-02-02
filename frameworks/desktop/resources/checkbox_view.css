@@ -1,0 +1,9 @@
+.sc-button-view.sc-checkbox-view img {
+  margin-right: 4px;
+  top: -1px;
+  left: 0;
+}
+
+.sc-button-view.sc-checkbox-view.sc-small-size img {
+  top: -2px;
+}

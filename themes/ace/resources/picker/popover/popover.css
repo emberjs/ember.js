@@ -1,0 +1,153 @@
+@theme(popover) {
+  $theme.picker {
+    background: none;
+  }
+
+  $theme.toolbar {
+    background: none;
+    color: white;
+    text-shadow: none;
+    border-bottom: 0 none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+  }
+
+  $theme.workspace {
+    overflow: visible;
+    background: none;
+
+    .popover-background {
+
+      position: absolute;
+      top: -25px;
+      bottom: -25px;
+      left: -25px;
+      right: -25px;
+
+      @include slices("popover_notoolbar.png", $left: 30, $top: 34, $bottom: 34, $right: 30, $fill: 1 1, $skip: middle);
+
+      .middle { display: none }
+
+      div { z-index: 5; }
+    }
+
+    &.top-toolbar .popover-background {
+      top: -20px;
+      @include slices(
+        "popover.png", $left: 30, $top: 75, $bottom: 34, $right: 30,
+        $skip: left middle right bottom-left bottom bottom-left bottom-right
+      );
+
+    }
+
+
+    &.bottom-toolbar .popover-background {
+      bottom: -20px;
+      @include slices(
+        "popover.png", $left: 30, $bottom: 75, $top: 34, $right: 30,
+        $skip: left middle right top-left top top-right
+      );
+
+    }
+
+  }
+
+  @theme(solid) {
+    $theme.picker .popover-background,
+    $theme.picker.top-toolbar    .popover-background,
+    $theme.picker.bottom-toolbar .popover-background {
+      top: -25px;
+      bottom: -25px;
+
+      @include slices("popover_empty.png", $left: 30, $top: 75, $bottom: 40, $right: 30, $fill: 1 1);
+    }
+  }
+
+  $theme.picker.perfectBottom {
+    .sc-pointer {
+      z-index: 6;
+      position: absolute; width: 50px; height: 25px; margin-left: -25px; left: 50%; top: 0;
+      @include slice("popover_pointers_notoolbar.png", $left: 155, $top: 0, $width: 50, $height: 25);
+    }
+
+    &.solid .sc-pointer, .solid .sc-pointer {
+      top: 0;
+      @include slice("popover_pointers.png", $left: 155, $top: 0, $width: 50, $height: 25);
+    }
+
+    .top-toolbar .sc-pointer {
+      top: 0;
+      @include slice("popover_pointers.png", $left: 155, $top: 0, $width: 50, $height: 25);
+    }
+
+    &.extra-left {
+      .sc-pointer { left: 70px; }
+    }
+  }
+
+  $theme.picker.perfectTop {
+    .sc-pointer {
+      z-index: 6;
+      position: absolute; width: 50px; height: 25px; margin-left: -25px; left: 50%; bottom: 0;
+      @include slice("popover_pointers.png", $left: 155, $bottom: 0, $width: 50, $height: 25);
+    }
+
+    &.solid .sc-pointer, .solid .sc-pointer {
+      bottom: 0;
+      @include slice("popover_pointers.png", $left: 155, $bottom: 0, $width: 50, $height: 25);
+    }
+
+    .top-toolbar .sc-pointer {
+      bottom: 0;
+      @include slice("popover_pointers.png", $left: 155, $bottom: 0, $width: 50, $height: 25);
+    }
+
+    &.extra-left {
+      .sc-pointer { left: 70px; }
+    }
+  }
+
+  $theme.picker.perfectLeft {
+    .sc-pointer {
+      z-index: 6;
+      position: absolute; width: 20px; height: 50px; margin-left: -20px; right: 0; top: 40px;
+      @include slice("popover_pointers.png", $right: 0, $top: 85, $width: 20, $height: 50);
+    }
+
+    &.solid .sc-pointer, .solid .sc-pointer {
+      bottom: 0;
+      @include slice("popover_pointers.png", $right: 0, $top: 85, $width: 20, $height: 50);
+    }
+
+    .top-toolbar .sc-pointer {
+      bottom: 0;
+      @include slice("popover_pointers.png", $right: 0, $top: 85, $width: 20, $height: 50);
+    }
+
+    &.extra-left {
+      .sc-pointer { left: 70px; }
+    }
+  }
+
+  $theme.picker.perfectRight {
+    .sc-pointer {
+      z-index: 6;
+      position: absolute; width: 20px; height: 50px; margin-left: 0; left: 0; top: 40px;
+      @include slice("popover_pointers.png", $left: 0, $top: 85, $width: 20, $height: 50);
+    }
+
+    &.solid .sc-pointer, .solid .sc-pointer {
+      bottom: 0;
+      @include slice("popover_pointers.png", $left: 0, $top: 85, $width: 20, $height: 50);
+    }
+
+    .top-toolbar .sc-pointer {
+      bottom: 0;
+      @include slice("popover_pointers.png", $left: 0, $top: 85, $width: 20, $height: 50);
+    }
+
+    &.extra-left {
+      .sc-pointer { left: 70px; }
+    }
+  }
+}

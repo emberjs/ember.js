@@ -1,0 +1,31 @@
+$theme.master-detail {
+  background: #333;
+  
+  &.round-toolbars $theme.toolbar {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    -webkit-border-top-left-radius: 10px;
+    -webkit-border-top-right-radius: 10px;
+    -moz-border-radius-topleft: 10px;
+    -moz-border-radius-topright: 10px;
+  }
+  
+  & > .sc-view {
+    background: #ccc;
+  }
+  
+  
+  & > .sc-view {
+    background: -moz-linear-gradient(top,#ddd,#bbb);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ddd), to(#bbb));
+  }
+  
+  &.round-toolbars > .sc-view {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    -webkit-border-top-left-radius: 10px;
+    -webkit-border-top-right-radius: 10px;
+    -moz-border-radius-topleft: 10px;
+    -moz-border-radius-topright: 10px;
+  }
+}

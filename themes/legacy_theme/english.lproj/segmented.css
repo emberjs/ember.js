@@ -1,0 +1,270 @@
+.sc-theme .sc-segmented-view {
+  display: block;
+}
+
+.sc-theme .sc-segment-view:active, .sc-segment-view:focus {
+	outline: none;
+}
+
+.sc-theme .sc-segment-view img.icon {
+	position: relative;
+	vertical-align: middle;
+	top: -2px;
+	margin-right: 2px;
+	height: 16px;
+	width: 16px;
+}
+
+.sc-theme .sc-segmented-view.disabled .sc-segment-view img.icon {
+	opacity: 0.5;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
+  -moz-opacity: 0.5;
+}
+
+/* @group Layout */
+
+.sc-theme .sc-segmented-view .sc-segment-view {
+	display: inline-block;
+	top: 0;
+	height: 24px;
+	line-height: 24px;
+	text-shadow: #fff 0 1px 0;
+	margin-left: -1px;
+	text-decoration: none ;
+	color: black ;
+	text-align: center ;
+}
+
+.sc-theme .sc-segmented-view .sc-button-inner {
+  display: block;
+  min-width: 20px;
+  min-height: 24px;
+  border: none;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view {
+	padding-left: 11px;
+	padding-right: 0;
+	border: none;
+	background:  transparent;
+}
+
+
+.sc-theme .sc-segmented-view .sc-segment-view .sc-button-inner {
+  padding-left: 0;
+  padding-right: 11px;
+  background:  transparent;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view label {
+  display: block;
+  line-height: 24px;
+  height:  24px;
+  text-align: center;
+  background:  transparent;
+}
+
+/* @end */
+
+/* @group Appearance */
+
+/* @group Normal */
+
+.sc-theme .sc-segmented-view .sc-segment-view.sc-last-segment .sc-button-inner {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -814px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sc-first-segment {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -789px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view label {
+  background: static_url('images/sc-theme-repeat-x.png') repeat-x left -764px;
+  text-shadow: #fff 0 1px 0;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sc-middle-segment,
+.sc-theme .sc-segmented-view .sc-segment-view.sc-last-segment {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -839px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sc-middle-segment .sc-button-inner,
+.sc-theme .sc-segmented-view .sc-segment-view.sc-first-segment .sc-button-inner {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -864px;
+}
+
+
+
+/* @end */
+
+
+
+/* @group Active */
+
+.sc-theme .sc-segmented-view .sc-segment-view.active.sc-last-segment .sc-button-inner {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -939px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.active.sc-first-segment {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -913px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.active label {
+  background: static_url('images/sc-theme-repeat-x.png') repeat-x left -889px;
+  text-shadow: #fff 0 1px 0;
+  text-shadow:  black 0 -1px 0;
+  color: white;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.active.sc-middle-segment,
+.sc-theme .sc-segmented-view .sc-segment-view.active.sc-last-segment {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -964px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.active.sc-middle-segment .sc-button-inner,
+.sc-theme .sc-segmented-view .sc-segment-view.active.sc-first-segment .sc-button-inner {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -989px;
+}
+
+
+
+/* @end */
+
+/* @group Normal - Disabled */
+
+.sc-theme .sc-segmented-view .sc-segment-view.sc-last-segment.disabled .sc-button-inner,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view.sc-last-segment .sc-button-inner {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -1064px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sc-first-segment.disabled,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view.sc-first-segment {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -1038px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.disabled label,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view label {
+  background: static_url('images/sc-theme-repeat-x.png') repeat-x left -1014px;
+  color: #999;
+  text-shadow: none;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sc-middle-segment.disabled,
+.sc-theme .sc-segmented-view .sc-segment-view.sc-last-segment.disabled,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view.sc-middle-segment,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view.sc-last-segment {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -1089px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sc-middle-segment.disabled .sc-button-inner,
+.sc-theme .sc-segmented-view .sc-segment-view.sc-first-segment.disabled .sc-button-inner,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view.sc-middle-segment .sc-button-inner,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view.sc-first-segment .sc-button-inner {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -1114px;
+}
+
+
+
+/* @end */
+
+/* @group Selected */
+
+.sc-theme .sc-segmented-view .sc-segment-view.sc-last-segment.sel .sc-button-inner {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -1190px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sc-first-segment.sel {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -1164px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sel label {
+  background: static_url('images/sc-theme-repeat-x.png') repeat-x left -1140px;
+  text-shadow:  black 0 -1px 0;
+  color: white;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sc-middle-segment.sel,
+.sc-theme .sc-segmented-view .sc-segment-view.sc-last-segment.sel {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -1215px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sc-middle-segment.sel .sc-button-inner,
+.sc-theme .sc-segmented-view .sc-segment-view.sc-first-segment.sel .sc-button-inner {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -1240px;
+}
+
+/* @end */
+
+/* @group Selected - Disabled */
+
+.sc-theme .sc-segmented-view .sc-segment-view.sel.sc-last-segment.disabled .sc-button-inner,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view.sel.sc-last-segment .sc-button-inner {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -1442px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sel.sc-first-segment.disabled,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view.sel.sc-first-segment {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -1416px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sel.disabled label,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view.sel label {
+  background: static_url('images/sc-theme-repeat-x.png') repeat-x left -1392px;
+	color: white;
+	text-shadow: none;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sel.sc-middle-segment.disabled,
+.sc-theme .sc-segmented-view .sc-segment-view.sel.sc-last-segment.disabled,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view.sel.sc-middle-segment,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view.sel.sc-last-segment {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -1467px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.sel.sc-middle-segment.disabled .sc-button-inner,
+.sc-theme .sc-segmented-view .sc-segment-view.sel.sc-first-segment.disabled .sc-button-inner,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view.sel.sc-middle-segment .sc-button-inner,
+.sc-theme .sc-segmented-view.disabled .sc-segment-view.sel.sc-first-segment .sc-button-inner {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -1492px;
+}
+
+/* @end */
+
+
+
+
+
+/* @group Selected - Active */
+
+.sc-theme .sc-segmented-view .sc-segment-view.active.sel.sc-last-segment .sc-button-inner {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -1316px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.active.sel.sc-first-segment {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -1290px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.active.sel label {
+  background: static_url('images/sc-theme-repeat-x.png') repeat-x left -1266px;
+  text-shadow:  black 0 -1px 0;
+  color: white;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.active.sel.sc-middle-segment,
+.sc-theme .sc-segmented-view .sc-segment-view.active.sel.sc-last-segment {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -1341px;
+}
+
+.sc-theme .sc-segmented-view .sc-segment-view.active.sel.sc-middle-segment .sc-button-inner,
+.sc-theme .sc-segmented-view .sc-segment-view.active.sel.sc-first-segment .sc-button-inner {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -1366px;
+}
+
+
+
+/* @end */
+
+/* @end */
+
+

@@ -1,0 +1,33 @@
+{
+  "name": "/amber",
+  "views": [
+    {
+      "name": "View",
+      "scClass": "SC.View"
+    }
+  ],
+  "controllers": [
+    {
+      "name": "Array",
+      "scClass": "SC.ArrayController"
+    },
+    {
+      "name": "Object",
+      "scClass": "SC.ObjectController"
+    },
+    {
+      "name": "Controller",
+      "scClass": "SC.Controller"
+    }
+  ],
+  "panes": [
+    {
+      "name": "Pane",
+      "scClass": "SC.Pane"
+    },
+    {
+      "name": "Main Pane",
+      "scClass": "SC.MainPane"
+    }
+  ]
+}

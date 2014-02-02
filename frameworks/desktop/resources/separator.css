@@ -1,0 +1,20 @@
+.sc-separator-view{
+  span{
+    position: absolute;
+    background-color: #fefefe;
+  }
+  &.sc-layout-horizontal span {
+    top: 50%;
+    height: 1px;
+    border-top: 1px #ccc solid;
+    left: 0;
+    right: 0;
+  } 
+  &.sc-layout-vertical span {
+    left: 50%;
+    width: 1px;
+    border-left: 1px #ccc solid;
+    top: 0;
+    bottom: 0;
+  }
+}

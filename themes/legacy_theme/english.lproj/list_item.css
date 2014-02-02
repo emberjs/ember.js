@@ -1,0 +1,82 @@
+/* @group Checkbox */
+
+.sc-list-item-view .sc-checkbox-view {
+	position: absolute;
+	display: block;
+	border: none;
+	width: 17px;
+	height: 16px;
+	left: 5px;
+	top:  50%;
+	margin-top: -8px;
+  background: none;
+}
+
+.sc-list-item-view.sel .sc-checkbox-view {
+  background: none;
+	border: none;
+}
+
+.sc-list-item-view .sc-checkbox-view.sel {
+  background: none;
+	border: none;
+}
+
+.sc-list-item-view .sc-checkbox-view.active {
+  background: none;
+	border: none;
+}
+
+/* @end */
+
+/* @group Disclosure */
+
+.sc-list-item-view img.disclosure {
+	position: absolute ;
+	left: -11px;
+	top: 50%;
+	margin-top: -6px;
+	width: 14px;
+	height: 14px;
+	background-image: static_url('images/sc-theme-repeat-x.png') ;
+	background-position: -16px -1614px ;
+}
+
+.sc-list-item-view img.disclosure.open {
+	background-position: 0 -1597px ;
+}
+
+.sc-list-item-view img.disclosure.active {
+	background-position: -0px -1630px ;
+}
+
+.sc-list-item-view img.disclosure.open.active {
+	background-position: -16px -1597px ;
+}
+
+.sc-list-item-view.disabled img.disclosure,
+.sc-list-item-view.disabled img.disclosure.active {
+	background-position: -16px -1630px ;
+}
+
+.sc-list-item-view.disabled img.disclosure.open,
+.sc-list-item-view.disabled img.disclosure.open.active {
+	background-position: 0 -1613px ;
+}
+
+
+/* @end */
+
+/* @group Branch */
+
+.sc-list-item-view .branch {
+	background-image: sc_static('icons/mini_454545');
+	background-position: -32px 0;
+}
+
+.sc-list-item-view.sel .branch,
+.sc-list-item-view.active .branch {
+	background-image: sc_static('icons/mini_ffffff');
+}
+
+/* @end */

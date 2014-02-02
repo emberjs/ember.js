@@ -1,0 +1,34 @@
+.sc-view.sc-main {
+  background: #262B32 static_url('images/main-bg.png') repeat;
+}
+
+.app-selector {
+  background-color: #f4f4f4;
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  border: 1px solid #f4f4f4;
+  border-bottom-color: #fff;
+  -webkit-box-shadow: inset rgba(0,0,0,0.3) 0 3px 8px;
+  -moz-box-shadow: inset rgba(0,0,0,0.3) 0 3px 8px;
+}
+
+.app-selector .sc-list-item-view {
+  font-size: 11px;
+}
+
+.app-selector .sc-collection-view {
+  background: none;
+  border-right: none;
+}
+
+.sc-list-view .sc-list-item-view {
+  border-bottom: 1px solid #ddd;
+  font-weight: bold;
+}
+
+.sc-list-view .sc-list-item-view:first-child {
+  -webkit-border-top-left-radius: 8px;
+  -webkit-border-top-right-radius: 8px;
+  -moz-border-radius-topleft: 8px;
+  -moz-border-radius-topright: 8px;
+}

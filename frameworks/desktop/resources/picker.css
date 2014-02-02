@@ -1,0 +1,37 @@
+/** SC.PickerPane Support */
+
+.sc-pane.sc-panel.sc-picker{
+  .perfectRight {
+    position: absolute;
+    width: 25px;
+    height: 51px;
+    top: 20px;
+    left: -25px;
+  }
+
+  .perfectLeft {
+    position: absolute;
+    width: 25px;
+    height: 51px;
+    top: 20px;
+    right: -25px;
+  }
+
+  .perfectTop {
+    position: absolute;
+    width: 51px;
+    height: 25px;
+    bottom: -25px;
+    left: 50%;
+    margin-left: -25px;
+  }
+
+  .perfectBottom {
+    position: absolute;
+    width: 51px;
+    height: 25px;
+    top: -25px;
+    left: 50%;
+    margin-left: -25px;
+  }
+} 

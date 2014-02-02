@@ -1,0 +1,35 @@
+{
+  "name": "/foundation",
+  "views": [
+    {
+      "name": "Field",
+      "scClass": "SC.FieldView"
+    },
+    
+    {
+      "name": "Container View",
+      "scClass": "SC.ContainerView"
+    },
+    
+    {
+      "name": "Image",
+      "scClass": "SC.ImageView"
+    },
+    
+    {
+      "name": "Label",
+      "scClass": "SC.LabelView"
+    },
+    
+    {
+      "name": "Text Field",
+      "scClass": "SC.TextFieldView"
+    }
+  ],
+  "controllers": [
+    {
+      "name": "Tree",
+      "scClass": "SC.TreeController"
+    }
+  ]
+}

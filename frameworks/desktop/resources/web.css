@@ -1,0 +1,5 @@
+/* Scrolling an iframe in iOS requires the following style. */
+.sc-web-view {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}

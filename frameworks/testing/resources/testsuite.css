@@ -1,0 +1,136 @@
+#qunit,
+#qunit div, 
+#qunit h1 { 
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', verdana, sans-serif; 
+  margin: 0; 
+  padding: 0 
+}
+
+#qunit {
+  position: absolute;
+  top: 0;
+  left:0 ;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  font-size: 10pt; 
+}
+
+#qunit h1 { 
+  padding: 15px; 
+  font-size: large; 
+  background-color: #06b; 
+  color: white; 
+}
+
+#qunit h1 a { color: white; }
+
+#qunit h2 { 
+  padding: 10px; 
+  background-color: #eee; 
+  color: black; 
+  margin: 0; 
+  font-size: small; 
+  font-weight: normal 
+}
+
+#qunit .pass { color: green; } 
+#qunit .fail { color: red; } 
+#qunit p.result { margin-left: 1em; }
+
+#qunit #banner { 
+  height: 2em; 
+  border-bottom: 1px solid white; 
+}
+
+#qunit h2.pass { background-color: green; }
+#qunit h2.fail { background-color: red; }
+
+#qunit div.testrunner-toolbar { 
+  background: #eee; 
+  border-top: 1px solid black; 
+  padding: 10px; 
+}
+
+#qunit ol#tests > li > strong { cursor:pointer; }
+
+#qunit div#fx-tests h4 { background: red; }
+
+#qunit div#fx-tests h4.pass { background: green; }
+
+#qunit div#fx-tests div.box {
+	background: red url(data/cow.jpg) no-repeat;
+	overflow: hidden;
+	border: 2px solid #000;
+}
+
+#qunit div#fx-tests div.overflow {
+	overflow: visible;
+}
+
+#qunit div.inline     { display: inline; }
+#qunit div.autoheight { height: auto; }
+#qunit div.autowidth  { width: auto; }
+#qunit div.autoopacity { opacity: auto; }
+#qunit div.largewidth { width: 100px; }
+#qunit div.largeheight { height: 100px; }
+#qunit div.largeopacity {
+	filter: progid:DXImageTransform.Microsoft.Alpha(opacity=100);
+}
+
+#qunit div.medwidth { width: 50px; }
+
+#qunit div.medheight { height: 50px; }
+#qunit div.medopacity {
+	opacity: 0.5;
+	filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)"; 
+  -moz-opacity:0.5;
+}
+
+#qunit div.nowidth {
+	width: 0px;
+}
+
+#qunit div.noheight {
+	height: 0px;
+}
+
+#qunit div.noopacity {
+	opacity: 0;
+	filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)"; 
+  -moz-opacity:0;
+  
+}
+
+#qunit div.hidden {
+	display: none;
+}
+
+div#fx-tests div.widewidth {
+	background-repeat: repeat-x;
+}
+
+div#fx-tests div.wideheight {
+	background-repeat: repeat-y;
+}
+
+div#fx-tests div.widewidth.wideheight {
+	background-repeat: repeat;
+}
+
+div#fx-tests div.noback {
+	background-image: none;
+}
+
+div.chain, div.chain div { width: 100px; height: 20px; position: relative; float: left; }
+div.chain div { position: absolute; top: 0px; left: 0px; }
+
+div.chain.test { background: red; }
+div.chain.test div { background: green; }
+
+div.chain.out { background: green; }
+div.chain.out div { background: red; display: none; }
+
+div#show-tests * { display: none; }

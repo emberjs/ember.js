@@ -1,0 +1,96 @@
+/*
+==========================================================================
+ Project: Designer - Styling
+ Author: Matt Grantham - @MattGrantham
+==========================================================================
+*/
+
+body.sc-theme,
+body.sc-theme > .sc-pane.sc-main.workspace { 
+  overflow: hidden;
+  background: static_url('images/main-bg.png');
+}
+
+.workspace {
+  background: static_url('images/main-bg.png');
+  
+}
+
+/* Design Area
+---------------------------------------------- */
+
+.workspace .design {
+  background: #fff;
+  border: 1px solid #1c1c1c;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.75);
+  -moz-box-shadow: 0 3px 6px rgba(0,0,0,0.75);
+  -webkit-box-shadow: 0 3px 6px rgba(0,0,0,0.75);
+}
+
+.workspace .rotated-page {
+  transform: rotate(0.8deg);
+  -moz-transform: rotate(0.8deg);
+  -webkit-transform: rotate(0.8deg);
+  border: 1px solid #111;
+  background: #ccc;
+}
+
+/* Dock
+---------------------------------------------- */
+
+.workspace .dock,
+.workspace .dock .sc-collection-view {
+  /*HACK: Overriding gray border since I can't figure out how to turn it off in all cases */
+  border: none !important;
+  background: static_url('images/dock-bg.png') repeat-x;
+}
+
+/* Collection Items */
+.workspace .dock .sc-collection-view .sc-collection-item {
+  background: static_url('images/dock-item-bg.png') repeat-x;
+  color: #fff;
+  text-shadow: 0 1px 0 #000;
+  text-align: center;
+}
+.workspace .dock .sc-collection-view .sc-collection-item .sc-outline {
+  background: static_url('images/dock-item-divider.png') no-repeat right;
+}
+.sc-theme.focus .workspace .sc-collection-view.focus .sc-collection-item.sel,
+.workspace .dock .sc-collection-view .sc-collection-item.sel {
+  background: static_url('images/dock-item-sel-bg.png') repeat-x;
+  color: #aebf85;
+}
+.workspace .dock .sc-collection-view .sc-collection-item.sel .sc-outline {
+  background: static_url('images/dock-item-sel-divider.png') no-repeat right;
+}
+
+.workspace .dock .sc-list-item-view.has-icon label {
+  left: 4px;
+  right: 4px;
+  bottom: 6px;
+  height: 18px;
+  margin-top: 10px;
+}
+.workspace .dock .sc-collection-item .icon {
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  top: 10px;
+  margin-top: 0;
+  left: 50%;
+  margin-left: -16px;
+}
+
+.workspace .dock .sc-collection-item .icon.pane {
+  background: static_url('images/pane.png') no-repeat;
+}
+.workspace .dock .sc-collection-item .icon.controller {
+  background: static_url('images/controller.png') no-repeat;
+}
+.workspace .dock .sc-collection-item .icon.view {
+  background: static_url('images/view.png') no-repeat;
+}
+.workspace .dock .sc-collection-item .icon.page {
+  background: static_url('images/page.png') no-repeat;
+}
+

@@ -1,0 +1,140 @@
+/* Common SC.TextFieldView styles - needed to work properly */
+
+.sc-text-field-view {
+  border:none;
+  overflow: visible;
+  background :white;
+  .border {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    bottom: 0px;
+    right: 0px;
+  }
+  .padding {
+    top: 0px;
+    left: 3px;
+    bottom: 0px;
+    right: 3px;
+    position: absolute;
+  }
+
+  &.sc-text-field-accessory-view {
+    z-index: 2;
+  }
+  input {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: transparent;
+    vertical-align: middle;
+    border: none;
+    outline: none;
+    -webkit-appearance:none;
+  }
+
+  textarea {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    display: block;
+    background: transparent;
+    vertical-align: middle;
+    resize: none;
+    overflow: auto;
+    border: none;
+    outline: none;
+    -webkit-appearance:none;
+  }
+
+  &.text-area .padding {
+    bottom: 1px;
+    top: 2px;
+  }
+  
+  .sc-hint {
+    z-index: 1;
+  }  
+
+  .sc-hint, .hint {
+    position: absolute;
+    top: 3px;
+    left: 1px;
+    right: 1px;
+    bottom: 3px;
+    padding: 0px;
+    color: #aaa ;
+    font-size: 12px;
+    -webkit-font-smoothing: antialiased;
+    cursor: text;
+  }
+
+  &.text-area .sc-hint,
+  &.text-area .hint {
+    top: 0px;
+    left: 1px;
+    right: 1px;
+    bottom: 2px;
+  }
+
+  &.focus .sc-hint,
+  &.not-empty .sc-hint {
+    display: none;
+  }
+
+  &.sc-hint .field{
+    color: #B3B3B3 !important;
+  }
+
+  .webkit &{
+    &.focus {
+      outline: auto 7px -webkit-focus-ring-color; 
+      outline-offset: -2px;
+    } 
+    .border {
+      -webkit-appearance: textfield;
+    }
+  }
+
+  .firefox &{
+    &.focus {
+      outline-color:-moz-mac-focusring;
+      outline-offset:-5px;
+      outline-style:solid;
+      outline-width:3px;
+    } 
+    .border {
+      -moz-appearance: textfield;
+    }
+    textarea.field {
+      height: 100%;
+    }
+  }
+
+  .ie &{
+    &.focus {
+      outline: 1px dotted;
+    }
+    .border {
+      border:1px inset;
+    }
+    textarea.field {
+      height: 100%;
+    }
+  }
+
+  .opera &{
+    .border {
+      border:1px inset;
+    }
+  }
+
+  .mobile-safari &{
+    .border {
+      border:1px inset;
+    }
+  }
+}

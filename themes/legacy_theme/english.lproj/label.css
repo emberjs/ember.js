@@ -1,0 +1,11 @@
+/* @override http://localhost:4020/static/sproutcore/en/desktop/_cache/sc.theme/1227685866/label.css */
+
+/* SC.LabelView - sc-theme support */
+
+.sc-theme .sc-label-view img.icon {
+	top: -2px;
+	margin-left: 2px;
+	margin-right: 4px;
+	height: 16px;
+	width: 16px;
+}
