@@ -1,0 +1,97 @@
+.sc-menu-item {
+  background-color: #ffffff none repeat scroll 0 0;
+  border: none;
+  
+  a {
+    position: absolute;
+    display: block;
+    top: 0;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    line-height: 22px;
+    text-decoration: none ;
+    text-align: left;
+    color: black;
+    outline: none ;
+    span.shortcut {
+      position:absolute;
+      right:5px;
+      margin-right:15px;
+      text-align:center;
+      font-size: 12px;
+    }
+    &.has-icon span.value {
+      margin-left: 44px;
+    }
+    &.shortcutkey span.value {
+      right: 55px;
+    }
+    span.has-branch {
+      position: absolute;
+      right: 10px;
+      top: 5px; 
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-left: 5px solid black;
+    }
+  }
+  &.disabled{
+    border:none;
+    color:#A0A0A0;
+    a{
+      color:#A0A0A0;
+    }
+    a:hover {
+      background-color: transparent;
+      color:#A0A0A0;
+    }
+    .checkbox{
+      background-image: url(data:image/gif;base64,R0lGODlhAQABAJAAAP///wAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw==) top left no-repeat; 
+      *background-image: sc_static('foundation:blank.gif') top left no-repeat; /* IE < 8 */
+    }
+    
+  }
+  span.separator{
+    display: block;
+    height: 1px;
+    border-bottom: 1px #cccccc solid;
+  }
+  img {
+    left: 24px;
+    top: 3px;
+    display: block;
+    position: absolute;
+  }
+  &.checkbox {
+    position: absolute;
+    display: block;
+    width: 12px;
+    height: 12px;
+    left: 6px;
+    top: 5px;
+    border-radius: 2px;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    &.inactive {
+      background-image: url(data:image/gif;base64,R0lGODlhAQABAJAAAP///wAAACH5BAUQAAAALAAAAAABAAEAAAICBAEAOw==) top left no-repeat; 
+      *background-image: sc_static('foundation:blank.gif') top left no-repeat; /* IE < 8 */
+    }
+  }
+  
+  .value {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 5px;
+    display: inline-block;
+    text-align:left;
+    margin-left:25px;
+  }
+  
+  &.sc-small-size a {
+    line-height: 11px;
+    font-size: 11px;
+  }
+}

@@ -1,0 +1,10 @@
+
+.sc-menu-scroll-view{
+  .sc-menu-scroller-view {
+    background: #EAEAEA;
+  }
+  .sc-menu-scroller-view.sc-vertical {
+    overflow-y: hidden;
+    text-align: center;
+  }
+} 

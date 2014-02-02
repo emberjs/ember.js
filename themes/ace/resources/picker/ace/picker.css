@@ -1,0 +1,61 @@
+$theme.picker {
+  background: transparent;
+
+  /* The panel background extends outside the pane's frame by the shadow amount. */
+  .panel-background {
+    @include slices("panel.png", $top: 25, $left: 25, $right: 25, $bottom: 25, $fill: 1 1);
+    bottom: -15px;
+    left: -15px;
+    position: absolute;
+    right: -15px;
+    top: -15px;
+  }
+
+  &.perfectBottom {
+    .sc-pointer {
+      @include slice("pointers.png", $left: 28, $top: 2, $width: 45, $height: 22);
+      height: 22px;
+      left: 50%;
+      // margin-left: -22px;
+      position: absolute;
+      top: -20px;
+      width: 45px;
+    }
+  }
+
+  &.perfectRight {
+    .sc-pointer {
+      @include slice("pointers.png", $left: 2, $top: 26, $width: 22, $height: 50);
+      height: 50px;
+      left: -19px;
+      // margin-top: -25px;
+      position: absolute;
+      top: 50%;
+      width: 22px;
+    }
+  }
+
+  &.perfectLeft {
+    .sc-pointer {
+      @include slice("pointers.png", $left: 76, $top: 26, $width: 22, $height: 50);
+      height: 50px;
+      // margin-top: -25px;
+      position: absolute;
+      right: -19px;
+      top: 50%;
+      width: 22px;
+    }
+  }
+
+  &.perfectTop {
+    .sc-pointer {
+      @include slice("pointers.png", $left: 28, $top: 76, $width: 45, $height: 22);
+      bottom: -19px;
+      height: 22px;
+      left: 50%;
+      // margin-left: -22px;
+      position: absolute;
+      width: 45px;
+    }
+  }
+}

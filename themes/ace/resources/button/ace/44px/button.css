@@ -1,0 +1,41 @@
+@theme(sc-jumbo-size) {
+
+  $theme.button {
+    // set these here because SC.AutoResize looks here...
+    font-size: 16px;
+    font-weight: bold;
+
+    .sc-button-label {
+      color: #777;
+      line-height: 24px;
+      margin-top: 10px;
+      top: 0;
+      height: 24px;
+    }
+
+    @include slices("normal_button.png", $left: 3, $right: 3);
+
+    &.sc-static-layout .sc-button-label {
+      margin-left: 3px;
+      margin-right: 3px;
+    }
+
+    &.active {
+      @include slices("active_button.png", $left: 3, $right: 3);
+    }
+
+    &.sel, &.def {
+      .sc-button-label {
+        color:white;
+        text-shadow: 0 -1px 1px black;
+      }
+
+      @include slices("selected_button.png", $left: 3, $right: 3);
+
+      &.sel.active, &.def.active {
+        @include slices("selected_active_button.png", $left: 3, $right: 3);
+      }
+    }
+  }
+
+}

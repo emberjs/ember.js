@@ -1,0 +1,54 @@
+.sc-segmented-view {
+  display: block;
+  white-space: nowrap;
+
+  /* The entire SegmentedView is disabled. */
+  &.disabled {
+    .sc-segment-view {
+      background: #FFF;
+      color: #999;
+
+      &.sel {
+        background: #EEE;
+      }
+    }
+  }
+
+  img.icon {
+    position: relative;
+  }
+
+  /* Style for an individual segment. */
+  .sc-segment-view {
+    background: #DDD;
+    color: black;
+    display: inline-block;
+    position: relative;
+    text-align: center;
+
+    &:focus {
+      outline: none;
+    }
+
+    &.active, &.sel {
+      background: #999;
+    }
+
+    &.disabled {
+      background: #FFF;
+      color: #999;
+
+      &.sel {
+        background: #EEE;
+      }
+    }
+
+    &.sel.active {
+      background: #888;
+    }
+
+    &.vertical {
+      display: block;
+    }
+  }
+}

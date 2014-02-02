@@ -1,0 +1,20 @@
+.ellipsis {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	-o-text-overflow: ellipsis;
+  -ms-text-overflow: ellipsis;
+}
+
+body {
+  position: absolute;
+  margin: 0px;
+  top:0px;
+  bottom: 0px;
+  left:0px;
+  right:0px;
+  font-family: "Lucida Sans", "Lucida Grande", Verdana, Arial, sans-serif;
+ 	font-size: 12px;
+ 	line-height: 1.4;
+}
+

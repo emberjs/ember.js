@@ -1,0 +1,20 @@
+
+.sc-theme .sc-menu-scroller-view.sc-vertical .arrowDown{
+  border: none;
+  width: 14px;
+  height: 14px;
+  text-align: center;
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat 0 -1598px;
+  display: inline-block;
+  vertical-align:bottom;
+}
+
+.sc-theme .sc-menu-scroller-view.sc-vertical .arrowUp{
+  border: none;
+  width: 14px;
+  height: 14px;
+  text-align: center;
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat 0 -1585px;
+  display: inline-block;
+  vertical-align:bottom;
+}

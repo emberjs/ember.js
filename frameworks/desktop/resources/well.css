@@ -1,0 +1,65 @@
+.sc-well-view{
+  .top-right-edge {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    top: 0px;
+    right: 0px;
+  }
+  .top-left-edge {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    top: 0px;
+    left: 0px;
+  }
+  .bottom-left-edge {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    bottom: 0px;
+    left: 0px;
+  }
+  .bottom-right-edge {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    bottom: 0px;
+    right: 0px;
+  }
+  .top-edge {
+    position: absolute;
+    height: 5px;
+    top: 0px;
+    right: 7px;
+    left: 7px;
+  }
+  .bottom-edge {
+    position: absolute;
+    height: 5px;
+    bottom: 0px;
+    right: 7px;
+    left: 7px;
+  }
+  .left-edge {
+    position: absolute;
+    width: 7px;
+    top: 7px;
+    bottom: 7px;
+    left: 0px;
+  }
+  .right-edge {
+    position: absolute;
+    width: 7px;
+    top: 7px;
+    bottom: 7px;
+    right: 0px;
+  }
+  .content-background {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    right: 7px;
+    left: 7px;
+  }  
+} 

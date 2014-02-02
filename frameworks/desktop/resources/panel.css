@@ -1,0 +1,84 @@
+/** SC.Panel Support */
+
+.sc-pane.sc-panel {
+  overflow: visible;
+  z-index: 100;
+
+  > .sc-view {
+    border: 0px #444 solid;
+    background-color: #EEE;
+  }
+
+  > .top-right-edge {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    top: -20px;
+    right: -20px;
+    z-index: -1;
+  }
+
+  > .top-left-edge {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    top: -20px;
+    left: -20px;
+    z-index: -1;
+  }
+
+  > .bottom-left-edge {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    bottom: -20px;
+    left: -20px;
+    z-index: -1;
+  }
+
+  > .bottom-right-edge {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    bottom: -20px;
+    right: -20px;
+    z-index: -1;
+  }
+
+  > .top-edge {
+    position: absolute;
+    height: 20px;
+    top: -20px;
+    right: 20px;
+    left: 20px;
+    z-index: -1;
+  }
+
+  > .bottom-edge {
+    position: absolute;
+    height: 20px;
+    bottom: -20px;
+    right: 20px;
+    left: 20px;
+    z-index: -1;
+  }
+
+  > .left-edge {
+    position: absolute;
+    width: 20px;
+    top: 20px;
+    bottom: 20px;
+    left: -20px;
+    z-index: -1;
+  }
+
+  > .right-edge {
+    position: absolute;
+    width: 20px;
+    top: 20px;
+    bottom: 20px;
+    right: -20px;
+    z-index: -1;
+  }
+}
+

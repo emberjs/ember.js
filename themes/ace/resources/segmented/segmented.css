@@ -1,0 +1,84 @@
+$theme.sc-segmented-view {
+  overflow: visible;
+
+  &.disabled {
+    opacity: 0.5;
+
+    /* The base style has a white background added to the first and last segments when disabled. */
+    .sc-first-segment { background: none; }
+    .sc-last-segment { background: none; }
+  }
+
+}
+
+$theme.sc-segment-view {
+  margin: 0;
+  background: none;
+  border: 0 none;
+  color: #555;
+  text-shadow: 0 1px 1px white;
+  display:inline-block;
+  zoom: 1;
+  overflow:hidden;
+  position: relative;
+  padding: 0;
+
+  .ie7 & {
+    display: inline;
+  }
+
+  /* The base style has a gray background added to the first and last segments. */
+  &.sc-first-segment { background: none;  margin: 0; padding: 0;}
+  &.sc-last-segment { background: none;  margin: 0; padding: 0; }
+
+  .left {
+    position: absolute;
+    left: 0;
+    zoom: 1;
+  }
+
+  .right {
+    position: absolute;
+    right: 0;
+    zoom: 1;
+  }
+
+  .middle {
+    margin: 0;
+    padding: 0;
+    padding-top:1px;
+    vertical-align:top;
+    zoom: 1;
+    position: absolute;
+  }
+
+  .sc-button-label {
+    position: relative;
+  }
+
+  &.active {
+    color: #333;
+    text-shadow: 0 1px 1px white;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+
+    /* The base style has a white background added to the first and last segments when disabled. */
+    &.sc-first-segment { background: none; }
+    &.sc-last-segment { background: none; }
+  }
+
+  &.sel {
+    background:none;
+    color: #fff;
+    text-shadow: 0 -1px 1px rgba(0,0,0,.5);
+  }
+
+  &.sel.active {
+    background:none;
+    color: #fff;
+    text-shadow: 0 -1px 1px rgba(0,0,0,.5);
+  }
+
+}

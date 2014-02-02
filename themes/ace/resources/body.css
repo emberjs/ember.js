@@ -1,0 +1,17 @@
+body {
+  overflow: hidden;
+}
+
+.sc-main {
+  background: #ccc;
+}
+.sc-main {
+  background: -moz-linear-gradient(top,#ddd,#bbb);
+  background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ddd), to(#bbb));
+  height: 100%;
+  font-family: Helvetica, sans-serif;
+}
+
+.sc-view {
+  font-family: Helvetica, sans-serif;
+}

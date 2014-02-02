@@ -1,0 +1,18 @@
+/*
+  This defines the global $theme variable for use inside your CSS.
+  The $theme variable holds the CSS class names for your theme.
+  
+  You can then theme your app by using CSS like this:
+
+      $theme.button {
+        color: blue;
+        @include slices('white-button.png', $left: 3, $right: 3);
+      }
+  
+  Any _theme.css file is prepended to all files inside its directory,
+  and any subdirectories that don't define their own _theme.css file.
+  
+  This allows you to give different directories different values for
+  $theme if you wish.
+*/
+$theme: '.ace.test';

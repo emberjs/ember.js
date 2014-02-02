@@ -1,0 +1,78 @@
+/* Track */
+$theme.sc-scroller-view.sc-vertical {
+  .track {
+    @include slice("track_and_arrows.png", $repeat: repeat-y, $height: 1, $top: 16);
+	  position: absolute;
+  	top: 0;
+  	right: 0;
+  	bottom: 0;
+  	width: 14px;
+  }
+
+  .cap {
+    @include slice("track_and_arrows.png", $height: 16);
+  	position: absolute;
+  	width: 14px;
+  	height: 16px;
+  	top: 0;
+  }
+
+  /* Buttons */
+  .button-top, .button-left {
+    @include slice("track_and_arrows.png", $bottom: 15, $height: 26);
+	  position: absolute;
+  	height: 26px;
+    width: 14px;
+    bottom: 15px;
+  }
+
+  .button-right, .button-bottom {
+    @include slice("track_and_arrows.png", $bottom: 0, $height: 15);
+  	position: absolute;
+  	height: 15px;
+    width: 14px;
+    bottom: 0;
+  }
+
+  /* Active */
+  .button-top:active, .button-left:active,
+  .button-top.active, .button-left.active {
+	  @include slice("track_and_arrows_active.png", $bottom: 15, $height: 26);
+  }
+
+  .button-right:active, .button-bottom:active,
+  .button-right.active, .button-bottom.active {
+  	@include slice("track_and_arrows_active.png", $bottom: 0, $height: 15);
+  }
+
+  /* Thumb */
+  .thumb {
+  	position: absolute;
+  }
+
+  .thumb-center {
+    @include slice("thumb.png", $repeat: repeat-y, $top: 10, $height: 1);
+  	position: absolute;
+  	width: 14px;
+  	top: 10px;
+  	bottom: 8px; /* hack to account for a different cap length than is hard-coded in;
+  	we need a render delegate here pretty badly. */
+  }
+
+  .thumb-top, .thumb-left {
+    @include slice("thumb.png", $height: 10);
+  	position: absolute;
+  	width: 14px;
+  	top: 0;
+  	height: 10px;
+  }
+
+  .thumb-right, .thumb-bottom {
+    @include slice("thumb.png", $height: 10, $bottom: 0);
+  	position: absolute;
+  	width: 14px;
+  	bottom: -2px; /* hack to account for a different cap length than is hard-coded in;
+  	we need a render delegate here pretty badly. */
+  	height: 10px;
+  }
+}

@@ -1,0 +1,58 @@
+.sc-view.handles {
+  border: 1px rgba(185,192,255,0.5) dashed;
+  overflow: visible;
+}
+
+.sc-view.handles .handle {
+  background-color: #ffdfb2;
+  width: 7px;
+  height: 7px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-shadow: rgba(0,0,0,0.2) 0px 1px 0px;
+  opacity: 0.9;
+  margin-left: -4px;
+  margin-top: -4px;
+}
+
+.sc-view.handles .handle.top {
+  margin-top: 0;
+  top: -4px;
+  cursor: row-resize;
+}
+
+.sc-view.handles .handle.bottom {
+  margin-top: 0;
+  top:  auto;
+  bottom: -4px;
+  cursor: row-resize;
+}
+
+.sc-view.handles .handle.left {
+  margin-left: 0;
+  left: -4px;
+  cursor: col-resize;
+}
+
+.sc-view.handles .handle.right {
+  margin-left: 0;
+  left:  auto;
+  right: -4px;
+  cursor: col-resize;
+}
+
+.sc-view.handles .handle.top.left,
+.sc-view.handles .handle.bottom.right {
+  cursor: default;
+}
+
+.sc-view.handles .handle.top.right,
+.sc-view.handles .handle.bottom.left {
+  cursor: default;
+}
+

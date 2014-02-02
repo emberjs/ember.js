@@ -1,0 +1,34 @@
+.sc-theme .sc-menu-item.focus a {
+  color: #fff;
+  background-color: #5A8EC6;
+}
+
+.sc-menu-item div.checkbox {
+  background-image: sc_static('icons/mini_454545');
+  background-position: -66px -147px;
+}
+
+.sc-menu-item.focus div.checkbox {
+  background-image: sc_static('icons/mini_ffffff');
+}
+
+.sc-theme .sc-menu-item .separator {
+  margin: 3px 1px 3px 1px;
+}
+
+.sc-menu-item span.has-branch {
+  position:absolute;
+  display: block;
+  width: 16px;
+  height: 16px;
+  text-align:center;
+  right:5px;
+  top: 2px;
+  background: transparent sc_static('images/icons/mini_222222');
+  background-position: 0 -160px;
+}
+
+.sc-menu-item.focus span.has-branch {
+  background: transparent sc_static('images/icons/mini_ffffff');
+  background-position: 0 -160px;
+}

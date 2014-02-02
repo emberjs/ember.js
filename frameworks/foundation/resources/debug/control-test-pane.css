@@ -1,0 +1,9 @@
+.sc-view.sc-control-test-pane {
+  border: 1px #888 solid ;
+  overflow-y: auto;
+  background: white;
+}
+
+.sc-view.sc-control-test-pane .sc-view.wrapper {
+  border: 1px #ccc solid;
+}

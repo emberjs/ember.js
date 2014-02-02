@@ -1,0 +1,8 @@
+$theme.slider {
+  &.disabled { opacity: .5; }
+
+  .sc-handle {
+    -webkit-transform: translate3d(0,0,0);
+    background: transparent;
+  }
+}

@@ -1,0 +1,94 @@
+/* @override http://localhost:4020/static/sproutcore/en/desktop/_cache/sc.theme/1228020574/slider.css */
+
+/* @group SC.SliderView */
+
+.sc-theme .sc-slider-view.sc-regular-size {
+	height: 21px;
+}
+
+.sc-theme.blur .sc-slider-view,
+.sc-theme.focus .sc-slider-view.disabled {
+}
+
+.sc-theme.focus .sc-slider-view {
+}
+
+/* sc-inner is the slider bar */
+.sc-theme .sc-slider-view .sc-inner {
+  display: block;
+	position: absolute;
+	left: 8px;
+	right: 12px;
+	height: 8px;
+	top: 5px;
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -170px;
+  border: none;
+}
+
+.sc-theme .sc-slider-view .sc-inner .sc-leftcap {
+  display: block;
+  position: absolute;
+  left: 7px;
+  right: 1px;
+  top: 0;
+  bottom: 0;
+  background: static_url('images/sc-theme-repeat-x.png') repeat-x left -179px;
+}
+
+.sc-theme .sc-slider-view .sc-inner .sc-rightcap {
+  display: block;
+  position: absolute;
+  right: 0;
+  margin-right: -6px;
+  width: 7px;
+  top: 0;
+  bottom: 0;
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -188px;
+}
+
+/* @end */
+
+/* sc-inner is the slider bar */
+.sc-theme.focus .sc-slider-view.disabled .sc-inner,
+.sc-theme.blur .sc-slider-view .sc-inner {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat left -251px;
+  border: none;
+}
+
+.sc-theme.focus .sc-slider-view.disabled .sc-inner .sc-leftcap,
+.sc-theme.blur .sc-slider-view .sc-inner .sc-leftcap {
+  background: static_url('images/sc-theme-repeat-x.png') repeat-x left -260px;
+}
+
+.sc-theme.focus .sc-slider-view.disabled .sc-inner .sc-rightcap,
+.sc-theme.blur .sc-slider-view .sc-inner .sc-rightcap {
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat right -269px;
+}
+
+/* @end */
+
+/* @group Handle */
+
+.sc-theme .sc-slider-view .sc-handle {
+	height: 21px;
+	width: 21px;
+	margin-left: -6px;
+	top: -5px;
+	position: absolute ;
+  background: static_url('images/sc-theme-repeat-x.png') no-repeat -25px -333px
+}
+
+.sc-theme .sc-slider-view.active .sc-handle {
+	background-position: -2px -410px ;
+}
+
+.sc-theme.blur .sc-slider-view .sc-handle,
+.sc-theme.focus .sc-slider-view.disabled .sc-handle {
+	background-position: -2px -333px
+}
+
+.sc-theme.focus .sc-slider-view.active .sc-handle {
+	background-position: -2px -410px ;
+}
+
+/* @end */

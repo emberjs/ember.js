@@ -1,0 +1,38 @@
+h1.app-title {
+  font-weight: bold;
+  font-size: 18px;
+  line-height: 35px;
+  padding-left: 12px;
+}
+
+h1.app-title img {
+  width: 24px;
+  height: 24px;
+  margin-right: 3px;
+  position: relative;
+  top: 4px;
+}
+
+.sc-collection-view.test-list .sc-collection-item {
+  border-bottom: 1px #eee solid;
+  font-size: 12px;
+}
+
+.sc-view.sc-toolbar-view.navigation-bar {
+  border-top:0;
+  border-bottom: 1px #4D5567 solid;
+}
+
+.sc-label-view.center-label {
+  color: white;
+  font-weight: bold;
+  text-align: center;
+}
+
+.sc-label-view.location-label {
+  text-align: right;
+}
+
+.sc-view.sc-toolbar-view .sc-checkbox-view {
+  color: white;
+}

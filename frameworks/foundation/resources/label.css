@@ -1,0 +1,48 @@
+/* SC.LabelView */
+
+.sc-label-view {
+  text-align: left;
+  white-space: pre-line;      /* Allow strings to include '\n' characters, etc., like many other UI frameworks */
+
+  &.icon img {
+  	position: relative;
+  	vertical-align: middle;
+  }
+
+  &.sc-hint {
+  	position: absolute;
+  	top: 3px;
+  	left: 1px;
+  	right: 1px;
+  	bottom: 3px;
+  	padding: 0px;
+  	color: #aaa ;
+  	font-size: 12px;
+  }
+
+  &.disabled {
+  	color: #999;
+  	color: rgba(50,50,50,0.5);
+  }
+
+  /* Allow ellipsis to be used with single line strings (through 'needsEllipsis: true') */
+  &.ellipsis {
+    white-space: nowrap;
+  }
+
+  &.sc-large-size {
+  	font-size: 18px;
+  }
+
+  &.sc-regular-size {
+  	font-size: 12px;
+  }
+
+  &.sc-small-size {
+  	font-size: 11px;
+  }
+
+  &.sc-tiny-size {
+  	font-size: 9px;
+  }
+}

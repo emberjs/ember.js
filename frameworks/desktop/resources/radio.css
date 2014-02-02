@@ -1,0 +1,11 @@
+/* Common SC.RadioView support */
+
+.sc-radio-view{
+  &.sc-layout-vertical .sc-radio-button {
+    display: block;
+  }
+  &.sc-layout-horizontal .sc-radio-button {
+    display: inline-block;
+    -moz-display: inline-block;
+  }
+}

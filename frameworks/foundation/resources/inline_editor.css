@@ -1,0 +1,12 @@
+.mozilla .sc-view .sc-text-field-view.inline-editor .border,
+.webkit .sc-view .sc-text-field-view.inline-editor .border,
+.msie .sc-view .sc-text-field-view.inline-editor .border,
+.sc-view .sc-text-field-view.inline-editor .border {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: none;
+}
+
+.mozilla .sc-view .sc-text-field-view.inline-editor.focus {
+  outline-offset: 0px;
+}

@@ -1,0 +1,146 @@
+/* SC.ListItemView */
+
+.sc-list-item-view{
+  &.sc-regular-size {
+    font-size: 12px;
+  } 
+  &.sel {
+  	background-color: #888; 
+  	color: white ;
+  	.sc-checkbox-view {
+    	border: 1px #333 solid;
+    }
+    .count {
+    	background-color:  #333;
+    	border: 1px #333 solid;
+    }
+  }
+  &.active {
+  	background-color: #333 ;
+  	color: white ;
+  	.count {
+    	background-color:  #000;
+    	border: 1px #000 solid;
+    }
+  }
+  &.has-branch .count {
+  	right: 16px;
+  }
+  label {
+  	top: 50%;
+  	height: 18px;
+  	display: block;
+  	position: absolute; 
+  	margin-top: -9px;
+  	line-height: 18px;
+  	left:  4px;
+  	right: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -o-text-overflow: ellipsis;
+    -ms-text-overflow: ellipsis;
+  }
+  .sc-outline {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
+  &.has-icon label,
+  &.has-checkbox label {
+  	left: 24px;
+  }
+  &.has-checkbox.has-icon label {
+  	left: 44px;
+  }
+  img.icon,
+  img.right-icon {
+  	margin-top: -9px;
+  	position: absolute;
+  	top: 50%;
+  }
+  img.icon {
+    margin-top: -9px;
+  	position: absolute;
+  	top: 50%;
+  	left: 5px;
+  }
+  img.right-icon {
+    margin-top: -9px;
+  	position: absolute;
+  	top: 50%;
+    right: 5px;
+  }
+  &.has-checkbox img.icon {
+  	left: 25px;
+  }
+  
+  &.has-count {
+    img.right-icon {
+      right: 32px;
+    }
+    &.two-digit img.right-icon {
+      right: 38px;
+    }
+    &.three-digit img.right-icon {
+      right: 44px;
+    }
+    &.four-digit img.right-icon {
+      right: 50px;
+    }
+    &.five-digit img.right-icon {
+      right: 56px;
+    }
+  }
+  .sc-checkbox-view {
+  	position: absolute;
+  	display: block;
+  	border: 1px #888 solid;
+  	width: 12px;
+  	height: 12px;
+  	left: 5px;
+  	top:  50%;
+  	margin-top: -8px;
+
+  	-webkit-border-radius: 2px;
+  	-moz-border-radius: 2px;
+  	border-radius: 2px;
+  	background-color: #d0d0d0 ;
+    & .active {
+      background-color: #333;
+      border-color: black;
+    }
+  }
+  .count {
+  	position: absolute;
+  	display: block;
+  	right: 4px;
+  	top:  50%;
+  	margin-top: -7px;
+  	height: 12px;
+  	background-color: #888;
+  	text-align: center;
+  	padding-left: 7px;
+  	padding-right: 8px;
+  	line-height: 11px;
+  	color: white ;
+  	font-weight: bold;
+  	border: 1px #888 solid;
+  	letter-spacing: -1px;
+    border-radius: 7px;
+  	-webkit-border-radius: 7px;
+  	-moz-border-radius: 7px;
+  }
+  
+  .branch {
+  	position: absolute;
+  	width: 16px;
+  	height: 16px;
+  	display: block;
+  	right: 1px;
+  	top: 50%;
+  	margin-top: -8px;
+  }
+}

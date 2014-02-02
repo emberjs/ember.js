@@ -1,0 +1,218 @@
+{
+  "name": "/desktop",
+  "views": [
+    {
+      "name": "Button",
+      "scClass": "SC.ButtonView"
+    },
+    
+    {
+      "name": "Checkbox",
+      "scClass": "SC.CheckboxView"
+    },
+    
+    {
+      "name": "Collection",
+      "scClass": "SC.CollectionView"
+    },
+    
+    {
+      "name": "Date Field",
+      "scClass": "SC.DateFieldView"
+    },
+    
+    {
+      "name": "Disclosure",
+      "scClass": "SC.DisclosureView"
+    },
+    {
+      "name": "File",
+      "scClass": "SC.FileView"
+    },
+    
+    {
+      "name": "Grid",
+      "scClass": "SC.GridView"
+    },
+    
+    {
+      "name": "Image Button",
+      "scClass": "SC.ImageButtonView"
+    },
+    
+    {
+      "name": "List",
+      "scClass": "SC.ListView"
+    },
+    
+    {
+      "name": "List Item",
+      "scClass": "SC.ListItemView"
+    },
+    {
+      "name": "Master Detail",
+      "scClass": "SC.MasterDetailView"
+    },
+    
+    {
+      "name": "Menu Item",
+      "scClass": "SC.MenuItemView"
+    },
+    
+    {
+      "name": "Menu Scroller",
+      "scClass": "SC.MenuScrollerView"
+    },
+    
+    {
+      "name": "Navigation",
+      "scClass": "SC.NavigationView"
+    },
+    
+    {
+      "name": "Navigation Bar",
+      "scClass": "SC.NavigationBarView"
+    },
+    {
+      "name": "Popup Button",
+      "scClass": "SC.PopupButtonView"
+    },
+    
+    {
+      "name": "Progress",
+      "scClass": "SC.ProgressView"
+    },
+    
+    {
+      "name": "Radio",
+      "scClass": "SC.RadioView"
+    },
+    
+    {
+      "name": "Scene",
+      "scClass": "SC.SceneView"
+    },
+    
+    {
+      "name": "Scroll",
+      "scClass": "SC.ScrollView"
+    },
+    {
+      "name": "Scroller",
+      "scClass": "SC.ScrollerView"
+    },
+    
+    {
+      "name": "Segment",
+      "scClass": "SC.SegmentView"
+    },
+    
+    {
+      "name": "Segmented",
+      "scClass": "SC.SegmentedView"
+    },
+    
+    {
+      "name": "Select Field",
+      "scClass": "SC.SelectFieldView"
+    },
+    
+    {
+      "name": "Separator",
+      "scClass": "SC.SeparatorView"
+    },
+    {
+      "name": "Slider",
+      "scClass": "SC.SliderView"
+    },
+    
+    {
+      "name": "Source List",
+      "scClass": "SC.SourceListView"
+    },
+    
+    {
+      "name": "Source List Group",
+      "scClass": "SC.SourceListGroupView"
+    },
+    
+    {
+      "name": "Split",
+      "scClass": "SC.SplitView"
+    },
+    
+    {
+      "name": "Split Divider",
+      "scClass": "SC.SplitDividerView"
+    },
+    {
+      "name": "Stacked",
+      "scClass": "SC.StackedView"
+    },
+    
+    {
+      "name": "Static Content",
+      "scClass": "SC.StaticContentView"
+    },
+    
+    {
+      "name": "Tab",
+      "scClass": "SC.TabView"
+    },
+    
+    {
+      "name": "Thumb",
+      "scClass": "SC.ThumbView"
+    },
+    
+    {
+      "name": "Toolbar",
+      "scClass": "SC.ToolbarView"
+    },
+    {
+      "name": "Web(iframe)",
+      "scClass": "SC.WebView"
+    },
+    
+    {
+      "name": "Well",
+      "scClass": "SC.WellView"
+    },
+    
+    {
+      "name": "Workspace",
+      "scClass": "SC.WorkspaceView"
+    }
+  ],
+  "panes": [
+    {
+      "name": "Alert",
+      "scClass": "SC.AlertPane"
+    },
+    
+    {
+      "name": "Menu",
+      "scClass": "SC.MenuPane"
+    },
+    
+    {
+      "name": "Modal",
+      "scClass": "SC.ModalPane"
+    },
+    
+    {
+      "name": "Palette",
+      "scClass": "SC.PalettePane"
+    },
+    
+    {
+      "name": "Picker",
+      "scClass": "SC.PickerPane"
+      
+    },
+    {
+      "name": "Sheet",
+      "scClass": "SC.SheetPane"
+    }
+  ]
+}

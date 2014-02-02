@@ -1,0 +1,41 @@
+
+.sc-view {
+	font-size: 20px;
+	font-weight: bold;
+	font-family: Helvetica, sans-serif;
+	margin: 0;
+	padding: 0;
+}
+
+.sc-view.sc-button-view {
+	border: none;
+	background-color: inherit;
+  margin: 3px auto;
+	border-width: 0 14px 0 14px;
+	color: #000;
+	text-shadow: #fff 0 1px 1px;
+
+	-webkit-border-image: sc_static('images/whiteButton.png') 0 14 0 14;
+  text-decoration: none;
+}
+
+.sc-view.sc-button-view label {
+  display: block;
+  position: absolute;
+
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  margin: 0;
+  padding: 0;
+
+  line-height: 46px;
+  text-align: center;
+}
+
+.sc-view.sc-button-view.active {
+	-webkit-border-image: sc_static('images/blueButton.png') 0 14 0 14;
+	color: #fff;
+	text-shadow: #000 0 1px 1px;
+}

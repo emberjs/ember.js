@@ -1,0 +1,13 @@
+# ==========================================================================
+# Project:   MediaExamples - A Media Playback Sandbox.
+# Copyright: ©2012 Michael Krotscheck and contributors.
+# License:   Licensed under MIT license (see license.js)
+# ==========================================================================
+
+# This is your Buildfile for your app, Test. This tells SproutCore
+# how to build your app. These settings override those in your project
+# Buildfile, which contains default settings for all apps in your project.
+
+# It is better to add :required targets here than in the global Buildfile.
+config :media_examples, :required => [ :sproutcore, :media ]
+

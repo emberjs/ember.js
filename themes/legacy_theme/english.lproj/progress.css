@@ -1,0 +1,27 @@
+/* SC.ProgressView - sc-theme */
+
+/* @override http://localhost:4020/static/sproutcore/en/desktop/_cache/sc.theme/1227986917/progress.css */
+
+.sc-theme .sc-progress-view {
+ 	background: transparent static_url('images/sc-theme-repeat-x.png') repeat-x 0 -1540px;
+ 	border: none;
+ 	border-left: 1px solid #666;
+ 	border-right: 1px solid #666;
+}
+
+.sc-theme .sc-progress-view.disabled {
+	opacity: 0.5;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
+  -moz-opacity:0.5;
+}
+
+.sc-theme .sc-progress-view .sc-inner {
+ 	background: transparent static_url('images/sc-theme-repeat-x.png') repeat-x 0 -1518px;
+	border-right: 1px solid #625560;
+}
+
+.sc-theme .sc-progress-view.sc-indeterminate .sc-inner {
+ 	background: transparent static_url('images/sc-theme-repeat-x.png') repeat-x 0 -1562px;
+}
+

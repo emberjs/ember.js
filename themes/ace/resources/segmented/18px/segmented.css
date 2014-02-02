@@ -1,0 +1,96 @@
+@theme(sc-small-size) {
+
+$theme.sc-segment-view {
+
+  height: 18px;
+
+  .left {
+    width: 8px;
+    height: 18px;
+    @include slice("segmented_normal.png", $left: 100, $width: 8);
+  }
+
+  .right {
+    width: 8px;
+    height: 18px;
+    @include slice("segmented_normal.png", $left: 92, $width: 8);
+  }
+
+  .middle {
+    left: 8px; right: 8px;
+    height: 18px;
+    @include slice("segmented_normal.png", $repeat: repeat-x, $left: 8, $width: 1);
+  }
+
+  .sc-button-label {
+    font-size: 11px;
+    line-height: 18px;
+    margin-left: 9px;
+    margin-right: 10px;
+  }
+
+  img.icon {
+    height: 12px;
+    top: 2px;
+    width: 12px;
+  }
+
+  &.sc-first-segment .left {
+    @include slice("segmented_normal.png", $width: 8);
+  }
+
+  &.sc-last-segment .right {
+    @include slice("segmented_normal.png", $right: 0, $width: 8);
+  }
+
+
+  /* ACTIVE STATE */
+  &.active {
+    .left { @include slice("segmented_active.png", $left: 100, $width: 8); }
+    .right { @include slice("segmented_active.png", $left: 92, $width: 8); }
+    .middle { @include slice("segmented_active.png", $left: 8, $width: 1, $repeat: repeat-x); }
+  }
+
+  &.active.sc-first-segment {
+    .left { @include slice("segmented_active.png", $left: 0, $width: 8); }
+  }
+
+  &.active.sc-last-segment {
+    .right { @include slice("segmented_active.png", $right: 0, $width: 8); }
+  }
+
+
+  /* SELECTED STATE */
+  &.sel {
+    .left { @include slice("segmented_selected.png", $left: 100, $width: 8); }
+    .right { @include slice("segmented_selected.png", $left: 92, $width: 8); }
+    .middle { @include slice("segmented_selected.png", $left: 8, $width: 1, $repeat: repeat-x); }
+  }
+
+  &.sel.sc-first-segment {
+    .left { @include slice("segmented_selected.png", $left: 0, $width: 8); }
+  }
+
+  &.sel.sc-last-segment {
+    .right { @include slice("segmented_selected.png", $right: 0, $width: 8); }
+  }
+
+
+  /* SELECTED ACTIVE STATE */
+  &.sel.active {
+    .left { @include slice("segmented_selected_active.png", $left: 100, $width: 8); }
+    .right { @include slice("segmented_selected_active.png", $left: 92, $width: 8); }
+    .middle { @include slice("segmented_selected_active.png", $left: 8, $width: 1, $repeat: repeat-x); }
+  }
+
+  &.sel.active.sc-first-segment {
+    .left { @include slice("segmented_selected_active.png", $left: 0, $width: 8); }
+  }
+
+  &.sel.active.sc-last-segment {
+    .right { @include slice("segmented_selected_active.png", $right: 0, $width: 8); }
+  }
+
+}
+
+}

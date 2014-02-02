@@ -1,0 +1,76 @@
+/*
+  This is the main SproutCore theme.  If you would prefer not to use this
+  theme, just set the theme option in your sc-config to another theme name.
+*/
+
+/* Always use Helvetica and this background color. */
+body.sc-theme {
+	font: 12px/18px "Lucida Grande", "Lucida Sans", Verdana, Arial, sans-serif;
+	background-color: #57647f ;
+	padding: 0;
+}
+
+
+body.sc-theme .sc-view.invalid {
+  outline: 2px red solid;
+}
+
+/* @group Border Styles */
+
+body.sc-theme .sc-view.sc-bezel-border {
+  border-left:   1px #999 solid;
+  border-top:    1px #666 solid;
+  border-bottom: 1px #fff solid;
+  border-right:  1px #fff solid;
+}
+
+body.sc-theme .sc-view.sc-black-border {
+  border: 1px black solid;
+}
+
+body.sc-theme .sc-view.sc-gray-border {
+  border: 1px #888 solid;
+}
+
+body.sc-theme .sc-view.sc-bottom-border {
+  border-bottom: 1px #888 solid;
+}
+
+body.sc-theme .sc-view.sc-top-border {
+  border-top: 1px #888 solid;
+}
+
+/* @end */
+
+.sc-theme div.sc-web-view {
+  background-color: white;
+}
+
+.sc-theme .sc-pane.sc-main {
+	background: -webkit-gradient(linear, left top, left bottom, from(#57647f), to(#848ea2));
+	color: white;
+}
+
+.sc-theme #loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+	background: -webkit-gradient(linear, left top, left bottom, from(#57647f), to(#848ea2));
+	color: white;
+}
+
+.sc-theme #loading p.loading {
+  position: absolute;
+  padding: 4px 12px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  background-color: #b1baca;
+  color: black;
+  border-top: 1px #b1baca solid;
+  text-align: right;
+}
+

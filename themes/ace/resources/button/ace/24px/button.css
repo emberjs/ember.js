@@ -1,0 +1,110 @@
+@theme(sc-regular-size) {
+
+  $theme.button {
+
+    .sc-button-label {
+      height: 22px;
+      padding-top:2px;
+    }
+
+    @include slices("normal_button.png", $left: 3, $right: 3);
+
+    &.active {
+      @include slices("active_button.png", $left: 3, $right: 3);
+    }
+
+    &.sel, &.def {
+      @include slices("selected_button.png", $left: 3, $right: 3);    
+  
+      &.active {
+        @include slices("selected_active_button.png", $left: 3, $right: 3);    
+      }
+    }
+    
+    &.sc-static-layout .sc-button-label {
+      margin-left: 12px;
+      margin-right: 12px;
+    }
+  }
+
+  @theme(point-left) {
+    $theme.button {
+      @include slices("normal_button_pointer.png", $left: 12, $right: 12, $skip: middle right);
+
+      .middle { left: 12px; }
+      .right { right:10px; width:3px }
+
+      &.active {
+        @include slices("active_button_pointer.png", $left: 12, $right: 12, $skip: middle right);
+        .middle { left: 12px; }
+        .right { right:10px; width:3px }
+      }
+
+      &.sel, &.def {
+        @include slices("selected_button_pointer.png", $left: 12, $right: 12, $skip: middle right);
+        .middle { left: 12px; }
+        .right { right:10px; width:3px }
+      }
+
+      &.sel.active, &.def.active {
+        @include slices("selected_active_button_pointer.png", $left: 12, $right: 12, $skip: middle right);
+        .middle { left: 12px; }
+        .right { right:10px; width:3px }
+      }
+    }
+  }
+
+  @theme(point-right) {
+    $theme.button {
+      @include slices("normal_button_pointer.png", $left: 12, $right: 12, $skip: middle left);
+
+      .middle { right: 12px; }
+      .left { left:10px; width:3px }
+
+      &.active {
+        @include slices("active_button_pointer.png", $left: 12, $right: 12, $skip: middle left);
+        .middle { right: 12px; }
+        .left { left:10px; width:3px }
+      }
+
+      &.sel, &.def {
+        @include slices("selected_button_pointer.png", $left: 12, $right: 12, $skip: middle left);
+        .middle { right: 12px; }
+        .left { left:10px; width:3px }
+      }
+
+      &.sel.active, &.def.active {
+        @include slices("selected_active_button_pointer.png", $left: 12, $right: 12, $skip: middle left);
+        .middle { right: 12px; }
+        .left { left:10px; width:3px }
+      }
+    }
+  }
+
+  @theme(capsule) {
+    $theme.button {
+      @include slices("normal_button_capsule.png", $left: 12, $right: 12, $skip: middle);
+      
+      & > .middle { left: 12px; right: 12px; }
+
+      &.active, &.sel, &.def, &.sel.active, &.sel.active.def {
+        & > .middle { left: 12px; right: 12px; }
+      }
+
+      &.active {
+        @include slices("active_button_capsule.png", $left: 12, $right: 12, $skip: middle);
+        .middle { left: 12px; right: 12px; }
+      }
+
+      &.sel, &.def {
+        @include slices("selected_button_capsule.png", $left: 12, $right: 12, $skip: middle);
+        .middle { left: 12px; right: 12px; }
+      }
+
+      &.sel.active, &.def.active {
+        @include slices("selected_active_button_capsule.png", $left: 12, $right: 12, $skip: middle);
+        .middle { left: 12px; right: 12px; }
+      }
+    }
+  }
+}

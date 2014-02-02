@@ -1,0 +1,5 @@
+.sc-icon-sproutcore-16 {
+  width: 16px;
+  height: 16px;
+  @include slice("sc-icon-sproutcore-16.png");
+}

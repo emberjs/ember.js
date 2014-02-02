@@ -1,0 +1,102 @@
+@theme(sc-jumbo-size) {
+
+$theme.sc-segment-view {
+
+  height: 44px;
+
+  .left {
+    width: 8px;
+    height: 44px;
+    @include slice("segmented_normal.png", $left: 100, $width: 8);
+  }
+
+  .right {
+    width: 8px;
+    height: 44px;
+    @include slice("segmented_normal.png", $left: 92, $width: 8);
+  }
+
+  .middle {
+    left: 8px; right: 8px;
+    height: 44px;
+    @include slice("segmented_normal.png", $repeat: repeat-x, $left: 8, $width: 1);
+  }
+
+  .sc-button-label {
+    color:#777;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 44px;
+    // top: 11px;
+    text-shadow: 0 1px 1px white;
+    margin-left: 9px;
+    margin-right: 10px;
+  }
+
+  img.icon {
+    height: 24px;
+    top: 9px;
+    width: 24px;
+  }
+
+  &.sc-first-segment .left {
+    @include slice("segmented_normal.png", $width: 8);
+  }
+
+  &.sc-last-segment .right {
+    @include slice("segmented_normal.png", $right: 0, $width: 8);
+  }
+
+
+  /* ACTIVE STATE */
+  &.active {
+    .left { @include slice("segmented_active.png", $left: 100, $width: 8); }
+    .right { @include slice("segmented_active.png", $left: 92, $width: 8); }
+    .middle { @include slice("segmented_active.png", $left: 8, $width: 1, $repeat: repeat-x); }
+  }
+
+  &.active.sc-first-segment {
+    .left { @include slice("segmented_active.png", $left: 0, $width: 8); }
+  }
+
+  &.active.sc-last-segment {
+    .right { @include slice("segmented_active.png", $right: 0, $width: 8); }
+  }
+
+
+  /* SELECTED STATE */
+  &.sel {
+    .left { @include slice("segmented_selected.png", $left: 100, $width: 8); }
+    .right { @include slice("segmented_selected.png", $left: 92, $width: 8); }
+    .middle { @include slice("segmented_selected.png", $left: 8, $width: 1, $repeat: repeat-x); }
+
+    .sc-button-label { color: white; text-shadow: 0 -1px 1px rgba(0,0,0,.7);}
+  }
+
+  &.sel.sc-first-segment {
+    .left { @include slice("segmented_selected.png", $left: 0, $width: 8); }
+  }
+
+  &.sel.sc-last-segment {
+    .right { @include slice("segmented_selected.png", $right: 0, $width: 8); }
+  }
+
+
+  /* SELECTED ACTIVE STATE */
+  &.sel.active {
+    .left { @include slice("segmented_selected_active.png", $left: 100, $width: 8); }
+    .right { @include slice("segmented_selected_active.png", $left: 92, $width: 8); }
+    .middle { @include slice("segmented_selected_active.png", $left: 8, $width: 1, $repeat: repeat-x); }
+  }
+
+  &.sel.active.sc-first-segment {
+    .left { @include slice("segmented_selected_active.png", $left: 0, $width: 8); }
+  }
+
+  &.sel.active.sc-last-segment {
+    .right { @include slice("segmented_selected_active.png", $right: 0, $width: 8); }
+  }
+
+}
+
+}

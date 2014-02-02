@@ -1,0 +1,33 @@
+/* SC.ProgressView */
+
+.sc-progress-view {
+	border: 1px solid #555555;
+	background-color: #c8c8c8;
+	-webkit-border-radius: 2px;
+	border-radius: 2px;
+
+	&.disabled {
+  	background-color: #e8e8e8;
+  	border: 1px #9a9a9a solid;
+  }
+
+  .sc-inner {
+  	position: absolute;
+  	left: 0px;
+  	top: 0px;
+  	bottom: 0px;
+   	background: #555555;
+  	border-right: 1px solid #555555;
+  	-webkit-transition: all 0.01s linear;
+  	-webkit-transform: translate3d(0,0,0);
+  }
+
+  &.sc-indeterminate .sc-inner {
+   	background: #555555;
+   	border: 0;
+  }
+
+  &.sc-empty .sc-inner {
+  	border: none;
+  }
+}

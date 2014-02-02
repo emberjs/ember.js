@@ -1,0 +1,57 @@
+$theme.radio-group {
+  line-height: 18px;
+  vertical-align: middle;
+}
+
+$theme.radio {
+  position: relative;
+  display:block;
+  height:18px;
+  padding-left: 20px;
+  margin-bottom:3px;
+
+  .sc-button-label {
+    line-height: 18px;
+  }
+
+  .button {
+    @include slice("radio_unselected.png");
+    width: 16px;
+    height:16px;
+    vertical-align:middle;
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 0;
+  }
+
+  &.active .button {
+    @include slice("radio_active.png");
+  }
+
+  &.sel .button {
+    @include slice("radio_selected.png");
+  }
+
+  &.mixed .button {
+    @include slice("radio_mixed.png");
+  }
+
+  &.sel.active .button {
+    @include slice("radio_selected_active.png");
+  }
+
+  &.mixed.active .button {
+    @include slice("radio_mixed_active.png");
+  }
+
+  &.disabled {
+    opacity: .5;
+  }
+}
+
+$theme.radio-group.sc-layout-horizontal $theme.radio, $theme.radio.sc-layout-horizontal {
+  display: inline-block;
+  -moz-display: inline-block;
+  margin-right: 14px;
+}

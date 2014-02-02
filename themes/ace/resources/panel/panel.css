@@ -1,0 +1,13 @@
+$theme.panel {
+  background: transparent;
+
+  .panel-background {
+    position: absolute;
+    left: -15px;
+    top: -15px;
+    bottom: -15px;
+    right: -15px;
+
+    @include slices("panel.png", $top: 25, $left: 25, $right: 25, $bottom: 25, $fill: 1 1);
+  }
+}

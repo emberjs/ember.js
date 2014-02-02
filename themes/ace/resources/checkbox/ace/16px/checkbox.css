@@ -1,0 +1,40 @@
+@theme(sc-regular-size) {
+
+$theme.checkbox {
+  
+  .button {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    @include slice("checkbox_unchecked.png");
+  }
+  
+  .label {
+    position: absolute;
+    left: 22px;
+  }
+
+  &.active .button {
+    @include slice("checkbox_unchecked_active.png");
+  }
+
+  &.sel .button {
+    @include slice("checkbox_checked.png");
+  }
+
+  &.sel.active .button {
+    @include slice("checkbox_checked_active.png");
+  }
+  
+
+  &.mixed .button {
+    @include slice("checkbox_mixed.png");
+  }
+
+  &.mixed.active .button {
+    @include slice("checkbox_mixed_active.png");
+  }
+  
+}
+
+}
