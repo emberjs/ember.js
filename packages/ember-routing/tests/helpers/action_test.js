@@ -843,6 +843,37 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
 
     Ember.assert = oldAssert;
   });
+} else {
+  test("a quoteless parameter as an action name", function(){
+    expect(2);
+
+    expectDeprecation("Using a quoteless parameter with {{action}} is deprecated. Please update to quoted usage '{{action \"ohNoeNotValid\"}}.");
+
+    var triggeredAction;
+
+    view = Ember.View.create({
+      template: compile("<a id='oops-bound-param'' {{action ohNoeNotValid}}>Hi</a>")
+    });
+
+    var controller = Ember.Controller.extend({
+      actions: {
+        ohNoeNotValid: function() {
+          triggeredAction = true;
+        }
+      }
+    }).create();
+
+    Ember.run(function() {
+      view.set('controller', controller);
+      view.appendTo('#qunit-fixture');
+    });
+
+    Ember.run(function(){
+      view.$("#oops-bound-param").click();
+    });
+
+    ok(triggeredAction, 'the action was triggered');
+  });
 }
 
 module("Ember.Handlebars - action helper - deprecated invoking directly on target", {

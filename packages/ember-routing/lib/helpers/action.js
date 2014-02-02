@@ -94,6 +94,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
               actionName = actionNameOrPath;
             }
           }
+        } else {
+          if (options.boundProperty) {
+            Ember.deprecate("Using a quoteless parameter with {{action}} is deprecated. Please update to quoted usage '{{action \"" + actionNameOrPath + "\"}}.", false);
+          }
         }
 
         if (!actionName) {
