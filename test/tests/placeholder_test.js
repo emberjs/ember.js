@@ -90,227 +90,181 @@ var contents = [
   }
 ];
 
-function createCombinatorialTest(factory) {
-  function filter() {
-    var frag = document.createDocumentFragment(),
-      parent = factory.parent.create(frag),
-      startIndex = factory.start.create(parent),
-      endIndex = factory.end.create(parent);
-
-    // this is prevented in the parser by generating
-    // empty text nodes at boundaries of fragments
-    if (parent === frag && (startIndex === -1 || endIndex === -1)) {
-      return true;
-    }
-
-    return false;
-  }
-
-  if (filter()) {
-    return;
-  }
-
-  test('appendChild '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
-    var frag = document.createDocumentFragment(),
-      parent = factory.parent.create(frag),
-      startIndex = factory.start.create(parent),
-      content = factory.content.create(parent),
-      endIndex = factory.end.create(parent),
-      p, placeholder, html;
-
-    placeholder = new Placeholder(parent, startIndex, endIndex);
+function placeholderTests(factory) {
+  test('appendChild '+factory.name, function () {
+    var fixture = document.getElementById('qunit-fixture'),
+      setup = factory.create(),
+      fragment = setup.fragment,
+      placeholder = setup.placeholder,
+      startHTML = setup.startHTML,
+      contentHTML = setup.contentHTML,
+      endHTML = setup.endHTML,
+      p, html;
 
     p = document.createElement('p');
-    p.textContent = 'appended';
+    p.appendChild(document.createTextNode('appended'));
+
     placeholder.appendChild(p);
 
-    html = factory.parent.startHTML +
-           factory.start.HTML +
-           factory.content.HTML +
-           '<p>appended</p>' +
-           factory.end.HTML +
-           factory.parent.endHTML;
+    html = startHTML+contentHTML+'<p>appended</p>'+endHTML;
 
-    equalHTML(frag, html);
+    equalHTML(fragment, html);
 
-    var fixture = document.getElementById('qunit-fixture');
-    fixture.appendChild(frag);
+    fixture.appendChild(setup.fragment);
 
     p = document.createElement('p');
-    p.textContent = 'appended';
+    p.appendChild(document.createTextNode('more'));
     placeholder.appendChild(p);
 
-    html = factory.parent.startHTML +
-           factory.start.HTML +
-           factory.content.HTML +
-           '<p>appended</p>' +
-           '<p>appended</p>' +
-           factory.end.HTML +
-           factory.parent.endHTML;
+    html = startHTML+contentHTML+'<p>appended</p><p>more</p>'+endHTML;
 
     equal(fixture.innerHTML, html);
   });
 
-  test('appendText '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
-    var frag = document.createDocumentFragment(),
-      parent = factory.parent.create(frag),
-      startIndex = factory.start.create(parent),
-      content = factory.content.create(parent),
-      endIndex = factory.end.create(parent),
-      placeholder, html;
-
-    placeholder = new Placeholder(parent, startIndex, endIndex);
+  test('appendText '+factory.name, function () {
+    var fixture = document.getElementById('qunit-fixture'),
+      setup = factory.create(),
+      fragment = setup.fragment,
+      placeholder = setup.placeholder,
+      startHTML = setup.startHTML,
+      contentHTML = setup.contentHTML,
+      endHTML = setup.endHTML,
+      html;
 
     placeholder.appendText('appended text');
 
-    html = factory.parent.startHTML +
-           factory.start.HTML +
-           factory.content.HTML +
-           'appended text' +
-           factory.end.HTML +
-           factory.parent.endHTML;
+    html = startHTML+contentHTML+'appended text'+endHTML;
 
-    equalHTML(frag, html);
+    equalHTML(fragment, html);
 
-    var fixture = document.getElementById('qunit-fixture');
-    fixture.appendChild(frag);
+    fixture.appendChild(fragment);
 
-    placeholder.appendText('appended text');
+    placeholder.appendText(' more');
 
-    html = factory.parent.startHTML +
-           factory.start.HTML +
-           factory.content.HTML +
-           'appended text' +
-           'appended text' +
-           factory.end.HTML +
-           factory.parent.endHTML;
+    html = startHTML+contentHTML+'appended text more'+endHTML;
 
     equal(fixture.innerHTML, html);
   });
 
-  test('appendHTML '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
-    var frag = document.createDocumentFragment(),
-      parent = factory.parent.create(frag),
-      startIndex = factory.start.create(parent),
-      content = factory.content.create(parent),
-      endIndex = factory.end.create(parent),
-      placeholder, html;
-
-    placeholder = new Placeholder(parent, startIndex, endIndex);
+  test('appendHTML '+factory.name, function () {
+    var fixture = document.getElementById('qunit-fixture'),
+      setup = factory.create(),
+      fragment = setup.fragment,
+      placeholder = setup.placeholder,
+      startHTML = setup.startHTML,
+      contentHTML = setup.contentHTML,
+      endHTML = setup.endHTML,
+      html;
 
     placeholder.appendHTML('<p>A</p><p>B</p><p>C</p>');
 
-    html = factory.parent.startHTML +
-           factory.start.HTML +
-           factory.content.HTML +
-           '<p>A</p><p>B</p><p>C</p>' +
-           factory.end.HTML +
-           factory.parent.endHTML;
+    html = startHTML+contentHTML+'<p>A</p><p>B</p><p>C</p>'+endHTML;
 
-    equalHTML(frag, html);
+    equalHTML(fragment, html);
 
-    var fixture = document.getElementById('qunit-fixture');
-    fixture.appendChild(frag);
+    fixture.appendChild(fragment);
 
     placeholder.appendHTML('<p>A</p><p>B</p><p>C</p>');
 
-    html = factory.parent.startHTML +
-           factory.start.HTML +
-           factory.content.HTML +
-           '<p>A</p><p>B</p><p>C</p>' +
-           '<p>A</p><p>B</p><p>C</p>' +
-           factory.end.HTML +
-           factory.parent.endHTML;
+    html = startHTML+contentHTML+'<p>A</p><p>B</p><p>C</p><p>A</p><p>B</p><p>C</p>'+endHTML;
 
     equal(fixture.innerHTML, html);
   });
 
-  test('clear '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
-    var frag = document.createDocumentFragment(),
-      parent = factory.parent.create(frag),
-      startIndex = factory.start.create(parent),
-      content = factory.content.create(parent),
-      endIndex = factory.end.create(parent),
-      placeholder, html;
-
-    placeholder = new Placeholder(parent, startIndex, endIndex);
+  test('clear '+factory.name, function () {
+    var setup = factory.create(),
+      fragment = setup.fragment,
+      placeholder = setup.placeholder,
+      startHTML = setup.startHTML,
+      endHTML = setup.endHTML,
+      html;
 
     placeholder.clear();
 
-    html = factory.parent.startHTML +
-           factory.start.HTML +
-           factory.end.HTML +
-           factory.parent.endHTML;
+    html = startHTML+endHTML;
 
-    equalHTML(frag, html);
+    equalHTML(fragment, html);
   });
 
-  test('clear after insert '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
-    var frag = document.createDocumentFragment(),
-      parent = factory.parent.create(frag),
-      startIndex = factory.start.create(parent),
-      content = factory.content.create(parent),
-      endIndex = factory.end.create(parent),
-      placeholder, html;
+  test('clear after insert '+factory.name, function () {
+    var fixture = document.getElementById('qunit-fixture'),
+      setup = factory.create(),
+      fragment = setup.fragment,
+      placeholder = setup.placeholder,
+      startHTML = setup.startHTML,
+      endHTML = setup.endHTML,
+      html;
 
-    placeholder = new Placeholder(parent, startIndex, endIndex);
-
-    var fixture = document.getElementById('qunit-fixture');
-    fixture.appendChild(frag);
+    fixture.appendChild(fragment);
 
     placeholder.clear();
 
-    html = factory.parent.startHTML +
-           factory.start.HTML +
-           factory.end.HTML +
-           factory.parent.endHTML;
+    html = startHTML+endHTML;
 
     equal(fixture.innerHTML, html);
   });
 
-  test('replace '+factory.parent.name+' '+factory.start.name+' '+factory.end.name+' '+factory.content.name, function () {
-    var frag = document.createDocumentFragment(),
-      parent = factory.parent.create(frag),
-      startIndex = factory.start.create(parent),
-      content = factory.content.create(parent),
-      endIndex = factory.end.create(parent),
+  test('replace '+factory.name, function () {
+    var setup = factory.create(),
+      fragment = setup.fragment,
+      placeholder = setup.placeholder,
+      startHTML = setup.startHTML,
+      endHTML = setup.endHTML,
       p = document.createElement('p'),
-      placeholder, html;
+      html;
 
-    p.textContent = 'replaced';
-
-    placeholder = new Placeholder(parent, startIndex, endIndex);
+    p.appendChild(document.createTextNode('replaced'));
 
     placeholder.replace(p);
 
-    html = factory.parent.startHTML +
-           factory.start.HTML +
-           '<p>replaced</p>' +
-           factory.end.HTML +
-           factory.parent.endHTML;
+    html = startHTML+'<p>replaced</p>'+endHTML;
 
-    equalHTML(frag, html);
+    equalHTML(fragment, html);
   });
 }
 
-function createCombinatorialTests(parents, starts, ends, contents) {
-  QUnit.module('Placeholder');
+function iterateCombinations(parents, starts, ends, contents, callback) {
+  function buildFactory(parentFactory, startFactory, endFactory, contentFactory) {
+    return {
+      name: parentFactory.name+' '+startFactory.name+' '+endFactory.name+' '+contentFactory.name,
+      create: function factory() {
+        var fragment = document.createDocumentFragment(),
+        parent = parentFactory.create(fragment),
+        startIndex = startFactory.create(parent),
+        content = contentFactory.create(parent),
+        endIndex = endFactory.create(parent);
+
+        // this is prevented in the parser by generating
+        // empty text nodes at boundaries of fragments
+
+        if (parent === fragment && (startIndex === -1 || endIndex === -1)) {
+          return null;
+        }
+
+        return {
+          fragment: fragment,
+          placeholder: new Placeholder(parent, startIndex, endIndex),
+          startHTML: parentFactory.startHTML + startFactory.HTML,
+          contentHTML: contentFactory.HTML,
+          endHTML: endFactory.HTML + parentFactory.endHTML
+        };
+      }
+    };
+  }
 
   for (var i=0; i<parents.length; i++) {
     for (var j=0; j<starts.length; j++) {
       for (var k=0; k<ends.length; k++) {
         for (var l=0; l<contents.length; l++) {
-          createCombinatorialTest({
-            parent: parents[i],
-            start: starts[j],
-            end: ends[k],
-            content: contents[l]
-          });
+          var factory = buildFactory(parents[i], starts[i], ends[i], contents[i]);
+          if (factory.create() === null) continue; // unsupported combo
+          callback(factory);
         }
       }
     }
   }
 }
 
-createCombinatorialTests(parents, starts, ends, contents);
+QUnit.module('Placeholder');
 
+iterateCombinations(parents, starts, ends, contents, placeholderTests);
