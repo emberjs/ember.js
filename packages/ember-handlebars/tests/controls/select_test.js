@@ -45,6 +45,24 @@ test("should begin disabled if the disabled attribute is true", function() {
   ok(select.$().is(":disabled"));
 });
 
+test("should begin required if the required attribute is true", function() {
+  select.set('required', true);
+  append();
+
+  equal(select.$().attr('required'), 'required');
+});
+
+test("should become required if the required attribute is changed", function() {
+  append();
+  equal(select.$().attr('required'), undefined);
+
+  Ember.run(function() { select.set('required', true); });
+  equal(select.$().attr('required'), 'required');
+
+  Ember.run(function() { select.set('required', false); });
+  equal(select.$().attr('required'), undefined);
+});
+
 test("should become disabled if the disabled attribute is changed", function() {
   append();
   ok(select.$().is(":not(:disabled)"));
