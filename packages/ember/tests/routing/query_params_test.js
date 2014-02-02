@@ -459,12 +459,12 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     bootApplication();
     equal(router.get('location.path'), "");
     equal(Ember.$('#one').attr('href'), "/abcdef?foo=123");
-    equal(Ember.$('#two').attr('href'), "/abcdef/zoo?foo=123&bar=456");
+    equal(Ember.$('#two').attr('href'), "/abcdef/zoo?bar=456&foo=123");
 
     Ember.run(Ember.$('#one'), 'click');
     equal(router.get('location.path'), "/abcdef?foo=123");
     Ember.run(Ember.$('#two'), 'click');
-    equal(router.get('location.path'), "/abcdef/zoo?foo=123&bar=456");
+    equal(router.get('location.path'), "/abcdef/zoo?bar=456&foo=123");
   });
 
   test("transitionTo supports query params", function() {
@@ -697,7 +697,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
 
     equal(router.get('location.path'), "");
-    equal(Ember.$('#leaf-link').attr('href'), "/root/leaf?root[foo]=123&leaf[foo]=abc");
+    equal(Ember.$('#leaf-link').attr('href'), "/root/leaf?leaf[foo]=abc&root[foo]=123");
     equal(Ember.$('#root-link').attr('href'), "/root?foo=bar");
 
     Ember.run(Ember.$('#root-link'), 'click');
@@ -708,10 +708,10 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     equal(leafController.get('foo'), 'abc');
 
     Ember.run(rootController, 'set', 'foo', '456');
-    equal(router.get('location.path'), "/root/leaf?root[foo]=456&leaf[foo]=abc");
+    equal(router.get('location.path'), "/root/leaf?leaf[foo]=abc&root[foo]=456");
 
     Ember.run(leafController, 'set', 'foo', 'def');
-    equal(router.get('location.path'), "/root/leaf?root[foo]=456&leaf[foo]=def");
+    equal(router.get('location.path'), "/root/leaf?leaf[foo]=def&root[foo]=456");
 
 
   });
