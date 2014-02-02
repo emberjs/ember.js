@@ -1303,3 +1303,127 @@ Ember.computed.defaultTo = function(defaultPath) {
   });
 };
 
+/**
+  A computed property that creates a new instance of source. `source` can be any Class constructor, object,
+  array, or a path to property. Optionally you can specify the initial value(s), if only `initialValue`
+  is given and if it is a string, it is treated as a local path, otherwise as arguments.
+
+  Example
+
+  ```javascript
+  var Project = Ember.Object.extend({name: null}),
+      Config = Ember.Object.extend({repository: null'});
+  var Developer = Ember.Object.extend({
+    configModel: Config,
+    currentProjectProps: {name: 'HTMLBars'},
+    initialProjectConfig: {repository: 'https://github.com/'},
+    accounts: Ember.computed.instance(Array, 1, 2), // => [1, 2]
+    computers: Ember.computed.instance([1, 2]), // => return a new array with the same content, prefered to the previous form
+    profile: Ember.computed.instance({website: 'http://url'}), // => return an new object with merged properties
+    profile2: Ember.computed.instance(Object, {website: 'http://url'}), // => is similar to profile definition
+    currentProject: Ember.computed.instance(Project, 'currentProjectProps'),
+    projectConfig: Ember.computed.instance('configModel', 'initialProjectConfig')
+  });
+
+  //The above code is equivalent to:
+
+  var Project = Ember.Object.extend({name: null})
+  var Developer = Ember.Object.extend({
+    projects: null,
+    accounts: null,
+    computers: null,
+    profile: null,
+    currentproject: null,
+    init: function () {
+      var initialConfig = this.get('initialProjectConfig'),
+          configModel = this.get('configModel');
+      this._super();
+      this.set('accounts', new Array(1, 2));
+      this.set('computers', [1, 2]);
+      this.set('profile', {website: 'http://url'});
+      this.set('profile2', Object.create({website: 'http://url'}));
+      this.set('currentProject', Project.create( this.get('currentProjectProps') ));
+      this.set('projectConfig', configModel.create(initialConfig);
+    }
+  });
+  ```
+
+  @method computed.instance
+  @for Ember
+  @param {String/Object} Class class to instantiate
+  @param {String/Object} initialValue initial value
+  @return {Ember.ComputedProperty} computed property that returns a new instance of the given Object.
+*/
+if (Ember.FEATURES.isEnabled('ember-metal-computed-instance')) {
+  Ember.computed.instance = function (source, initialValue) {
+
+    Ember.assert('Ember.computed.instance expects at least one argument', arguments.length >= 1);
+
+    var value,
+        args = Array.prototype.slice.call(arguments, 1),
+        isPath = typeof source === 'string',
+        //we allow only one path as init value otherwise treated as params, ex for Array constructor
+        initValueIsPath = args.length === 1 && typeof initialValue === 'string',
+        Klass = !isPath && source,
+        ProxyClass; //cached constructor
+
+    //Source becomes the init value if no init values and source is not empty
+    if (args.length === 0 && !isPath && !Ember.isEmpty(Klass)) {
+      value = source;
+    }
+
+    if (args.length === 1 && !initValueIsPath) {
+      value = initialValue;
+    }
+
+    return Ember.computed(function () {
+      if (arguments > 1) { //allow override
+        return arguments[1];
+      }
+
+      if (initValueIsPath) {
+        args = [Ember.get(this, initialValue)];
+      } else if (value) {
+        args = [].concat(value);
+      }
+
+      //Class constructor might change between two calls, so we don't cache it.
+      if (isPath) {
+        Klass = get(this, source);
+      }
+
+      Ember.assert('Class object for `' + source + '` could not be resolved, make sure source is not a global path and that is defined', Klass);
+
+      //if cached
+      if (ProxyClass) {
+        return new ProxyClass();
+      }
+
+      //otherwise
+      //this block is executed only the first time it is invoked,
+      //The class to instantiate is cached within ProxyClass
+
+      var type = Ember.typeOf(Klass);
+      if (type === 'class') {
+        ProxyClass = function () {
+          return Klass.create(args[0] || {});
+        };
+      } else if (type === 'object' || Klass === Object) {
+        ProxyClass = function () {
+          return Ember.merge({}, args[0]);
+        };
+      } else if (type === 'array') {
+        Klass = Array;
+      }
+
+      if (!ProxyClass) {
+        ProxyClass = function () {
+          return Klass.apply(this, args);
+        };
+        ProxyClass.prototype = Klass.prototype;
+      }
+
+      return new ProxyClass();
+    });
+  };
+}

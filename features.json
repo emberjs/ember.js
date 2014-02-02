@@ -12,6 +12,7 @@
     "ember-testing-simple-setup": null,
     "ember-testing-routing-helpers": true,
     "ember-testing-triggerEvent-helper": true,
+    "ember-metal-computed-instance": null,
     "computed-read-only": true,
     "composable-computed-properties": null,
     "ember-routing-drop-deprecated-action-style": null,
