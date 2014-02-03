@@ -256,6 +256,30 @@ test("The Homepage with explicit template name in renderTemplate and controller"
   equal(Ember.$('h3:contains(Megatroll) + p:contains(YES I AM HOME)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
+if(Ember.FEATURES.isEnabled("ember-routing-add-model-option")) {
+test("Model passed via renderTemplate model is set as controller's content", function(){
+  Ember.TEMPLATES['bio'] = compile("<p>{{name}}</p>");
+  
+  App.BioController = Ember.ObjectController.extend();
+  
+  Router.map(function(){
+    this.route('home', { path: '/'});
+  });
+  
+  App.HomeRoute = Ember.Route.extend({
+    renderTemplate: function(){
+      this.render('bio', {
+        model: {name: 'emberjs'} 
+      });
+    }
+  });
+  
+  bootApplication();
+  
+  equal(Ember.$('p:contains(emberjs)', '#qunit-fixture').length, 1, "Passed model was set as controllers content");
+});
+}
+
 test("Renders correct view with slash notation", function() {
   Ember.TEMPLATES['home/page'] = compile("<p>{{view.name}}</p>");
 

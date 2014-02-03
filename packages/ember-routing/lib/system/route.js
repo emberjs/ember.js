@@ -1508,7 +1508,9 @@ function normalizeOptions(route, name, template, options) {
 
   Ember.assert("An outlet ("+options.outlet+") was specified but was not found.", options.outlet === 'main' || options.into);
 
-  var controller = options.controller, namedController;
+  var controller = options.controller,
+      model = options.model,
+      namedController;
 
   if (options.controller) {
     controller = options.controller;
@@ -1524,6 +1526,12 @@ function normalizeOptions(route, name, template, options) {
     if (!controller) {
       throw new Ember.Error("You passed `controller: '" + controllerName + "'` into the `render` method, but no such controller could be found.");
     }
+  }
+
+  if(Ember.FEATURES.isEnabled("ember-routing-add-model-option")) {
+    if(model) {
+      controller.set('content', model);
+    }    
   }
 
   options.controller = controller;
