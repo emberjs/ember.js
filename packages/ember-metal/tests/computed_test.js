@@ -1026,33 +1026,51 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-instance')) {
         emptyArray = [],
         emptyObj = {},
         filledObject = {name: 'HTMLBars'},
-        Config = Ember.Object.extend({name: null}),
-        Developer = Ember.Object.extend({
-          configModel: Config,
-          initialProjectConfig: filledObject,
+        cfg = {
           globalClass: Ember.computed.instance('Object'),
           array1: Ember.computed.instance(filledArray),
           array2: Ember.computed.instance(Array, 1, 2),
           array3: Ember.computed.instance(emptyArray, filledArray),
           obj1: Ember.computed.instance(filledObject),
           obj2: Ember.computed.instance(emptyObj, filledObject),
-          instance1: Ember.computed.instance(Config, 'initialProjectConfig'),
+          instance1: Ember.computed.instance(Object, 'initialProjectConfig'),
           instance2: Ember.computed.instance('configModel', 'initialProjectConfig'),
           instance3: Ember.computed.instance('configModel', 'initialProjectConfig').volatile()
-        }),
-        dev1 = Developer.create(),
-        dev2 = Developer.create();
+        },
+        makeObject = function (hash) {
+          var newO = Ember.create({
+            configModel: Object,
+            initialProjectConfig: filledObject
+          });
 
+          for (var prop in hash) {
+              Ember.defineProperty(newO, prop, hash[prop]);
+          }
+          return newO;
+        },
+        inst1 = makeObject(cfg),
+        inst2 = makeObject(cfg);
+
+
+
+      var getProps = function (obj1, obj2) {
+        var props = {};
+        for (var prop in obj2) {
+          props[prop] = get(obj1, prop);
+        }
+        return props;
+      };
 
       var deepHelper = function (key, obj, msg) {
-        var val = get(dev1, key),
-            insObj = (obj instanceof Array) ? val : Ember.getProperties(val, Ember.keys(obj));
+        var val = get(inst1, key),
+            insObj = (obj instanceof Array) ? val : getProps(val, obj);
         deepEqual(insObj, obj, msg);
       };
+
       var checkRef = function (msg, key, origin) {
         var test = true,
-            val1 = dev1.get(key),
-            val2 = dev2.get(key);
+            val1 = get(inst1, key),
+            val2 = get(inst2, key);
           ok(val1 !== origin && val1 !== val2, msg);
       };
 
@@ -1071,13 +1089,13 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-instance')) {
       //Ember classes
       checkRef('creates different class instances in each object', 'instance1');
       deepHelper('instance1', filledObject, 'fills values from value at path');
-      ok(get(dev1, 'instance2') instanceof Config, 'new instance of Class submitted as path');
+      ok(get(inst1, 'instance2') instanceof Object, 'new instance of Class submitted as path');
 
       //volatile
-      var in1 = get(dev1, 'instance3');
-      set(dev1, 'initialProjectConfig', {name: 'Ember'});
-      var in2 = get(dev1, 'instance3');
-      ok(get(in2, 'name') === 'Ember', 'instantiate with different init');
-      ok(in1 !== in2, 'making it volatile returns a new instance at each get');
+      var prop1 = get(inst1, 'instance3');
+      set(inst1, 'initialProjectConfig', {name: 'Ember'});
+      var prop2 = get(inst1, 'instance3');
+      ok(get(prop2, 'name') === 'Ember', 'instantiate with different init');
+      ok(prop1 !== prop2, 'making it volatile returns a new instance at each get');
   });
 }
