@@ -1308,7 +1308,7 @@ Ember.computed.defaultTo = function(defaultPath) {
   Source object can be any instantiable Object including JS primitives, or can be a path to local or global object. By convention a global
   path will be looked up only if it start with a capital letter, otherwise a local property will be used.
 
-  Optionnaly you can specify the initial value.
+  Optionally you can specify the initial value.
 
   Example
 
