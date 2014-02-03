@@ -88,7 +88,7 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach,
   ```
 
   The itemController instances will have a `parentController` property set to
-  to the `ArrayController` instance.
+  the `ArrayController` instance.
 
   @class ArrayController
   @namespace Ember
