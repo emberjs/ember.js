@@ -1364,10 +1364,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-instance')) {
         initValueIsPath = args.length === 1 && typeof initialValue === 'string',
         isGlobal = isPath && Ember.isGlobalPath(source),
         Klass = !isPath && source,
-        ProxyClass, //cached constructor
-        isCreateInvoquable = function () {
-          return Ember.canInvoke(Klass, 'create');
-        };
+        ProxyClass; //cached constructor
 
     //Source becomes the init value if no init values and source is not empty
     if (args.length === 0 && !isPath && !Ember.isEmpty(Klass)) {
@@ -1416,7 +1413,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-instance')) {
       }
 
       ProxyClass = function () {
-        if (isCreateInvoquable()) {
+        if (Ember.canInvoke(Klass, 'create')) {
           return Klass.create(args[0] || {});
         }
         return Klass.apply(this, args);
