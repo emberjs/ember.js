@@ -19,7 +19,7 @@
     "ember-metal-is-blank": true,
     "ember-eager-url-update": true,
     "ember-routing-auto-location": true,
-    "ember-routing-bound-action-name": null,
+    "ember-routing-bound-action-name": true,
     "ember-runtime-test-friendly-promises": null
   },
   "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info"]
