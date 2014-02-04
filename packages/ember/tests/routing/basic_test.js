@@ -1469,6 +1469,122 @@ test("using replaceWith calls setURL if location.replaceURL is not defined", fun
   equal(router.get('location').getURL(), "/foo");
 });
 
+if (Ember.FEATURES.isEnabled("ember-routing-inherits-parent-model")) {
+  test("Route inherits model from parent route", function() {
+    expect(9);
+
+    Router.map(function() {
+      this.resource("the_post", { path: "/posts/:post_id" }, function() {
+        this.route("comments");
+
+        this.resource("shares", { path: "/shares/:share_id"}, function() {
+          this.route("share");
+        });
+      });
+    });
+
+    var post1 = {}, post2 = {}, post3 = {}, currentPost;
+    var share1 = {}, share2 = {}, share3 = {}, currentShare;
+
+    var posts = {
+      1: post1,
+      2: post2,
+      3: post3
+    };
+    var shares = {
+      1: share1,
+      2: share2,
+      3: share3
+    };
+
+    App.ThePostRoute = Ember.Route.extend({
+      model: function(params) {
+        return posts[params.post_id];
+      }
+    });
+
+    App.ThePostCommentsRoute = Ember.Route.extend({
+      afterModel: function(post, transition) {
+        var parent_model = this.modelFor('thePost');
+
+        equal(post, parent_model);
+      }
+    });
+
+    App.SharesRoute = Ember.Route.extend({
+      model: function(params) {
+        return shares[params.share_id];
+      }
+    });
+
+    App.SharesShareRoute = Ember.Route.extend({
+      afterModel: function(share, transition) {
+        var parent_model = this.modelFor('shares');
+
+        equal(share, parent_model);
+      }
+    });
+
+    bootApplication();
+
+    currentPost = post1;
+    handleURL("/posts/1/comments");
+    handleURL("/posts/1/shares/1");
+
+    currentPost = post2;
+    handleURL("/posts/2/comments");
+    handleURL("/posts/2/shares/2");
+
+    currentPost = post3;
+    handleURL("/posts/3/comments");
+    handleURL("/posts/3/shares/3");
+  });
+
+  test("Resource does not inherit model from parent resource", function() {
+    expect(6);
+
+    Router.map(function() {
+      this.resource("the_post", { path: "/posts/:post_id" }, function() {
+        this.resource("comments", function() {
+        });
+      });
+    });
+
+    var post1 = {}, post2 = {}, post3 = {}, currentPost;
+
+    var posts = {
+      1: post1,
+      2: post2,
+      3: post3
+    };
+
+    App.ThePostRoute = Ember.Route.extend({
+      model: function(params) {
+        return posts[params.post_id];
+      }
+    });
+
+    App.CommentsRoute = Ember.Route.extend({
+      afterModel: function(post, transition) {
+        var parent_model = this.modelFor('thePost');
+
+        notEqual(post, parent_model);
+      }
+    });
+
+    bootApplication();
+
+    currentPost = post1;
+    handleURL("/posts/1/comments");
+
+    currentPost = post2;
+    handleURL("/posts/2/comments");
+
+    currentPost = post3;
+    handleURL("/posts/3/comments");
+  });
+}
+
 test("It is possible to get the model from a parent route", function() {
   expect(9);
 
