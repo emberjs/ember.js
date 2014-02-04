@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### Ember 1.4.0-beta.5 (February 3, 2014)
+
+* Deprecate quoteless action names.
+* [BUGFIX beta] Make Ember.RenderBuffer#addClass work as expected.
+* [DOC beta] Display Ember Inspector hint in Firefox.
+* [Bugfix BETA] App.destroy resets routes before destroying the container.
+
 ### Ember 1.4.0-beta.4 (January 29, 2014)
 
 * [BUGFIX beta] reduceComputed fires observers when invalidating with undefined.
