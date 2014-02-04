@@ -3,6 +3,13 @@
 * [BREAKING CHANGE] `Ember.run.throttle` now supports leading edge execution. To follow industry standard leading edge is the default.
 * [BUGFIX] Fixed how parentController property of an itemController when nested. Breaking for apps that rely on previous broken behavior of an itemController's `parentController` property skipping its ArrayController when nested.
 
+### Ember 1.4.0-beta.5 (February 3, 2014)
+
+* Deprecate quoteless action names.
+* [BUGFIX beta] Make Ember.RenderBuffer#addClass work as expected.
+* [DOC beta] Display Ember Inspector hint in Firefox.
+* [Bugfix BETA] App.destroy resets routes before destroying the container.
+
 ### Ember 1.4.0-beta.4 (January 29, 2014)
 
 * [BUGFIX beta] reduceComputed fires observers when invalidating with undefined.
