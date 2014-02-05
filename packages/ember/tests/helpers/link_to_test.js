@@ -922,6 +922,28 @@ test("The non-block form {{link-to}} performs property lookup", function() {
   assertEquality('/about');
 });
 
+test("The non-block form {{link-to}} protects against XSS", function() {
+  Ember.TEMPLATES.application = Ember.Handlebars.compile("{{link-to display 'index' id='link'}}");
+
+  App.ApplicationController = Ember.Controller.extend({
+    display: 'blahzorz'
+  });
+
+  bootApplication();
+
+  Ember.run(router, 'handleURL', '/');
+
+  var controller = container.lookup('controller:application');
+
+  equal(Ember.$('#link', '#qunit-fixture').text(), 'blahzorz');
+  Ember.run(function() {
+    controller.set('display', '<b>BLAMMO</b>');
+  });
+
+  equal(Ember.$('#link', '#qunit-fixture').text(), '<b>BLAMMO</b>');
+  equal(Ember.$('b', '#qunit-fixture').length, 0);
+});
+
 test("the {{link-to}} helper calls preventDefault", function(){
   Router.map(function() {
     this.route("about");
