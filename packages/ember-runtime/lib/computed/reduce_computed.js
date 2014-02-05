@@ -466,11 +466,10 @@ function ReduceComputedProperty(options) {
   this.cacheable();
 
   this.recomputeOnce = function(propertyName) {
-    // What we really want to do is coalesce by <cp, propertyName>.
-    // We need a form of `scheduleOnce` that accepts an arbitrary token to
-    // coalesce by, in addition to the target and method.
-    Ember.run.once(this, recompute, propertyName);
+    // TODO: Coalesce recomputation by <this, propertyName, cp>.
+    recompute.call(this, propertyName);
   };
+
   var recompute = function(propertyName) {
     var dependentKeys = cp._dependentKeys,
         meta = cp._instanceMeta(this, propertyName),
