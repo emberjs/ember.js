@@ -829,16 +829,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       if (linkType === 'ID') {
         options.linkTextPath = linkTitle;
         options.fn = function() {
-          var result = Ember.Handlebars.get(context, linkTitle, options);
-          if (result === null || result === undefined) {
-            result = "";
-          } else if (!(result instanceof Handlebars.SafeString)) {
-            result = String(result);
-          }
-          if (!options.hash.unescaped){
-            result = Handlebars.Utils.escapeExpression(result);
-          }
-          return result;
+          return Ember.Handlebars.getEscaped(context, linkTitle, options);
         };
       } else {
         options.fn = function() {
