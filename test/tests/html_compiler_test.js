@@ -108,6 +108,14 @@ test("The compiler can handle nesting", function() {
   equalHTML(fragment, html);
 });
 
+test("The compiler can handle foreign elements", function() {
+  var html = '<svg><path stroke="black" d="M 0 0 L 100 100"></path></svg>';
+  var template = compile(html);
+  var fragment = template();
+
+  equalHTML(fragment, html);
+});
+
 test("The compiler can handle quotes", function() {
   compilesTo('<div>"This is a title," we\'re on a boat</div>');
 });
