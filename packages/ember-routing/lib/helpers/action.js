@@ -61,7 +61,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   };
 
   ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
-    var actionId = (++Ember.uuid).toString();
+    var actionId = ++Ember.uuid;
 
     ActionHelper.registeredActions[actionId] = {
       eventName: options.eventName,
