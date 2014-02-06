@@ -7,7 +7,8 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
   var get = Ember.get, set = Ember.set;
   var documentMode = document.documentMode,
       history = window.history,
-      location = window.location;
+      location = window.location,
+      getHash = Ember.Location.getHash;
 
   /**
     Ember.AutoLocation will select the best location option based off browser
@@ -142,7 +143,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
       @method getFullPath
     */
     getFullPath: function () {
-      return this.getPath() + location.hash;
+      return this.getPath() + getHash().substr(1);
     },
 
     /**
@@ -156,7 +157,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
     */
     getHistoryPath: function () {
       var path = this.getPath(),  
-          hashPath = location.hash.substr(1),
+          hashPath = getHash().substr(1),
           url = path + hashPath;
 
       // Removes any stacked double stashes
