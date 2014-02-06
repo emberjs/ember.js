@@ -101,7 +101,16 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
   } else {
     // The object is not observable, so just render it out and
     // be done with it.
-    data.buffer.push(handlebarsGet(currentContext, property, options));
+    var output = handlebarsGet(currentContext, property, options);
+    if (output === null || output === undefined) {
+      output = "";
+    } else if (!(output instanceof Handlebars.SafeString)) {
+      output = String(output);
+    }
+    if (!options.hash.unescaped){
+      output = Handlebars.Utils.escapeExpression(output);
+    }
+    data.buffer.push(output);
   }
 }
 
