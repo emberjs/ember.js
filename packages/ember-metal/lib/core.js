@@ -214,45 +214,56 @@ Ember.uuid = 0;
 //Note that this function accepts updates passed as array
 var a_concat = Array.prototype.concat;
 var a_slice = Array.prototype.slice;
-var merge  = function (original, source, deep, replace) {
-  if (Ember.isNone(source)) {
-    return original;
-  }
 
-  var idx, prop, old, oldDefined, newVal;
-  if (Ember.isArray(source)) {
-    for (idx = 0; idx < source.length; idx++) {
-      original = merge.call(this, original, source[idx], deep, replace);
-    }
-  } else {
-    for (prop in source) {
-      newVal = source[prop];
-      old = original[prop];
-      oldDefined = !Ember.isNone(old);
-      if (!source.hasOwnProperty(prop) || (oldDefined && Ember.isEmpty(newVal) && !replace)) { continue; }
-      if (deep && oldDefined && Ember.typeOf(newVal) === 'object')  {
-        newVal = merge.call(this, old, newVal, deep, replace);
-      }
-      original[prop] = newVal;
-    }
+var fastMerge = function(original, updates) {
+  for (var prop in updates) {
+    if (!updates.hasOwnProperty(prop)) { continue; }
+    original[prop] = updates[prop];
   }
   return original;
 };
 
-//prepare arguments of Ember.merge and Ember.mergeIf as the merge function expects them
-var genMergeArgs = function (args, replace) {
-  args = a_slice.call(args);
-  var updates,
-      deep = false,
+if (Ember.FEATURES.isEnabled('core-merge-mergeIf-fastMerge')) {
+  var merge  = function (original, source, deep, replace) {
+    if (Ember.isNone(source)) {
+      return original;
+    }
+
+    var idx, prop, oldVal, oldDefined, newVal;
+    if (Ember.isArray(source)) {
+      for (idx = 0; idx < source.length; idx++) {
+        original = merge.call(this, original, source[idx], deep, replace);
+      }
+    } else {
+      for (prop in source) {
+        newVal = source[prop];
+        oldVal = original[prop];
+        oldDefined = !Ember.isNone(oldVal);
+        if (!source.hasOwnProperty(prop) || (oldDefined && Ember.isEmpty(newVal) && !replace)) { continue; }
+        if (deep && oldDefined && Ember.typeOf(newVal) === 'object')  {
+          newVal = merge.call(this, oldVal, newVal, deep, replace);
+        }
+        original[prop] = newVal;
+      }
+    }
+    return original;
+  };
+
+  //prepare arguments of Ember.merge and Ember.mergeIf as the merge function expects them
+  var genMergeArgs = function (args, replace) {
+    args = a_slice.call(args);
+    var updates,
+        deep = false,
+        original = args.shift();
+    replace = ('boolean' === typeof replace) ? replace : true;
+    if ('boolean' === typeof original) {
+      deep = original;
       original = args.shift();
-  replace = ('boolean' === typeof replace) ? replace : true;
-  if ('boolean' === typeof original) {
-    deep = original;
-    original = args.shift();
-  }
-  updates = a_concat.apply([ args.shift() ], args);
-  return [original, updates, deep, replace];
-};
+    }
+    updates = a_concat.apply([ args.shift() ], args);
+    return [original, updates, deep, replace];
+  };
+}
 
 /**
   Merge the contents of two or more objects together into the first object. this function accepts also arrays of objects.
@@ -287,11 +298,16 @@ var genMergeArgs = function (args, replace) {
   @param {Object/Array} [source]* Source objects to copy properties from
   @return {Object}
 */
-Ember.merge = function() {
-  //replace is by default true
-  var args = genMergeArgs.call(this, arguments);
-  return merge.apply(this, args);
-};
+
+if (Ember.FEATURES.isEnabled('core-merge-mergeIf-fastMerge')) {
+  Ember.merge = function() {
+    //replace is by default true
+    var args = genMergeArgs.call(this, arguments);
+    return merge.apply(this, args);
+  };
+} else {
+  Ember.merge = fastMerge;
+}
 
 /**
   Similar to `Ember.merge` except that it ignores empty properties from source objects. Keys values are tested using `Ember.isEmpty`
@@ -314,11 +330,14 @@ Ember.merge = function() {
   @param {Object/Array} [source]* Source objects to copy properties from
   @return {Object}
 */
-Ember.mergeIf = function() {
-  //same as merge except that it sets replace to false
-  var args = genMergeArgs.call(this, arguments, false);
-  return merge.apply(this, args);
-};
+
+if (Ember.FEATURES.isEnabled('core-merge-mergeIf-fastMerge')) {
+  Ember.mergeIf = function() {
+    //same as merge except that it sets replace to false
+    var args = genMergeArgs.call(this, arguments, false);
+    return merge.apply(this, args);
+  };
+}
 
 /**
   A faster version of `Ember.merge` that accepts only two objects and does not allow deep merge.
@@ -329,13 +348,10 @@ Ember.mergeIf = function() {
   @param {Object} updates The object to copy properties from
   @return {Object}
 */
-Ember.fastMerge = function(original, updates) {
-  for (var prop in updates) {
-    if (!updates.hasOwnProperty(prop)) { continue; }
-    original[prop] = updates[prop];
-  }
-  return original;
-};
+
+if (Ember.FEATURES.isEnabled('core-merge-mergeIf-fastMerge')) {
+  Ember.fastMerge = fastMerge;
+}
 
 /**
   Returns true if the passed value is null or undefined. This avoids errors
