@@ -186,9 +186,7 @@ Ember.EventDispatcher = Ember.Object.extend({
 
     var handler = object[eventName];
     if (Ember.typeOf(handler) === 'function') {
-      result = Ember.run(function dispatchEvent() {
-        return handler.call(object, evt, view);
-      });
+      result = Ember.run(object, handler, evt, view);
       // Do not preventDefault in eventManagers.
       evt.stopPropagation();
     }
@@ -200,9 +198,7 @@ Ember.EventDispatcher = Ember.Object.extend({
   },
 
   _bubbleEvent: function(view, evt, eventName) {
-    return Ember.run(function bubbleEvent() {
-      return view.handleEvent(eventName, evt);
-    });
+    return Ember.run(view, view.handleEvent, eventName, evt);
   },
 
   destroy: function() {
