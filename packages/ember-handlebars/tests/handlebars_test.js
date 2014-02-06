@@ -2433,3 +2433,21 @@ test("should teardown observers from bind-attr on rerender", function() {
 
   equal(Ember.observersFor(view, 'foo').length, 2);
 });
+
+test("bind should prevent XSS", function() {
+  function Boo() {
+
+  }
+
+  Boo.hoo = '<b>OH GOSH</b>';
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile("{{#with view.foo}}{{#if hoo}}{{/if}}{{/with}}"),
+    foo: Boo
+  });
+
+  appendView();
+
+  equal(view.$().text(), '<b>OH GOSH</b>', '');
+  equal(view.$('b').length, 0, 'properly escapes');
+});
