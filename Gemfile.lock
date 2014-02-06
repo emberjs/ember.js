@@ -28,7 +28,7 @@ PATH
   remote: .
   specs:
     ember-source (1.4.0.pre)
-      handlebars-source (~> 1.3.0)
+      handlebars-source (~> 1.0)
 
 GEM
   remote: https://rubygems.org/
