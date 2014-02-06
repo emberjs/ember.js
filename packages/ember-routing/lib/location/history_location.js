@@ -78,7 +78,9 @@ Ember.HistoryLocation = Ember.Object.extend({
     var state = this.getState();
     path = this.formatURL(path);
 
-    if (state && state.path !== path) {
+    var gotState = (state !== null) && (typeof state !== 'undefined');
+
+    if (((gotState === true) && (state.path !== path)) || (gotState === false)) {
       this.pushState(path);
     }
   },
@@ -95,7 +97,9 @@ Ember.HistoryLocation = Ember.Object.extend({
     var state = this.getState();
     path = this.formatURL(path);
 
-    if (state && state.path !== path) {
+    var gotState = (state !== null) && (typeof state !== 'undefined');
+
+    if (((gotState === true) && (state.path !== path)) || (gotState === false)) {
       this.replaceState(path);
     }
   },
