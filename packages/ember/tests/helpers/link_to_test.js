@@ -480,7 +480,7 @@ test("Issue 4201 - Shorthand for route.index shouldn't throw errors about contex
 });
 
 test("The {{link-to}} helper unwraps controllers", function() {
-  expect(2);
+  expect(3);
 
   Router.map(function() {
     this.route('filter', { path: '/filters/:filter' });
@@ -1408,6 +1408,43 @@ if (Ember.FEATURES.isEnabled("ember-eager-url-update")) {
 
   test("invoking a link-to with a slow promise eager updates url", function() {
     basicEagerURLUpdateTest(false);
+  });
+
+  test("when link-to eagerly updates url, the path it provides does NOT include the rootURL", function() {
+    expect(2);
+    
+    // HistoryLocation is the only Location class that will cause rootURL to be
+    // prepended to link-to href's right now
+    var HistoryTestLocation = Ember.HistoryLocation.extend({
+      // Don't actually touch the URL
+      replaceState: function(path) {},
+      pushState: function(path) {},
+
+      setURL: function(path) {
+        set(this, 'path', path);
+      },
+
+      replaceURL: function(path) {
+        set(this, 'path', path);
+      }
+    });
+
+    container.register('location:historyTest', HistoryTestLocation);
+
+    Router.reopen({
+      location: 'historyTest',
+      rootURL: '/app/'
+    });
+
+    bootApplication();
+
+    // href should have rootURL prepended
+    equal(Ember.$('#about-link').attr('href'), '/app/about');
+
+    Ember.run(Ember.$('#about-link'), 'click');
+
+    // Actual path provided to Location class should NOT have rootURL
+    equal(router.get('location.path'), '/about');
   });
 
   test("non `a` tags also eagerly update URL", function() {

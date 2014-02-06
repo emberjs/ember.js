@@ -357,11 +357,12 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       // Schedule eager URL update, but after we've given the transition
       // a chance to synchronously redirect.
       if (Ember.FEATURES.isEnabled("ember-eager-url-update")) {
-        var href = get(this, 'href');
-        if (typeof href === 'undefined') {
-          href = router.generate.apply(router, get(this, 'routeArgs'));
-        }
-        Ember.run.scheduleOnce('routerTransitions', this, this._eagerUpdateUrl, transition, href);
+        // We need to always generate the URL instead of using the href because
+        // the href will include any rootURL set, but the router expects a URL
+        // without it! Note that we don't use the first level router because it
+        // calls location.formatURL(), which also would add the rootURL!
+        var url = router.router.generate.apply(router.router, get(this, 'routeArgs'));
+        Ember.run.scheduleOnce('routerTransitions', this, this._eagerUpdateUrl, transition, url);
       }
     },
 
