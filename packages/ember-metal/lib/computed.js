@@ -201,9 +201,12 @@ function ComputedProperty(func, opts) {
 }
 
 Ember.ComputedProperty = ComputedProperty;
+
 ComputedProperty.prototype = new Ember.Descriptor();
 
 var ComputedPropertyPrototype = ComputedProperty.prototype;
+ComputedPropertyPrototype._dependentKeys = undefined;
+ComputedPropertyPrototype._suspended = undefined;
 
 if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   ComputedPropertyPrototype.toString = function() {
