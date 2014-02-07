@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### Ember 1.4.0-beta.6 (February 7, 2014)
+
+* [SECURITY] Ensure link-to non-block escapes title.
+
 ### Ember 1.4.0-beta.5 (February 3, 2014)
 
 * Deprecate quoteless action names.
