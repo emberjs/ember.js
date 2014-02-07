@@ -1,6 +1,5 @@
 {
   "features": {
-    "propertyBraceExpansion": true,
     "ember-metal-run-bind": true,
     "with-controller": true,
     "query-params-new": false,

@@ -24,13 +24,7 @@ var get = Ember.get,
     watch = Ember.watch,
     unwatch = Ember.unwatch;
 
-
-if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
-}
-
-if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-  var expandProperties = Ember.expandProperties;
-}
+var expandProperties = Ember.expandProperties;
 
 // ..........................................................
 // DEPENDENT KEYS
@@ -308,17 +302,13 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
 ComputedPropertyPrototype.property = function() {
   var args;
 
-  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-    var addArg = function (property) {
-      args.push(property);
-    };
+  var addArg = function (property) {
+    args.push(property);
+  };
 
-    args = [];
-    for (var i = 0, l = arguments.length; i < l; i++) {
-      expandProperties(arguments[i], addArg);
-    }
-  } else {
-    args = a_slice.call(arguments);
+  args = [];
+  for (var i = 0, l = arguments.length; i < l; i++) {
+    expandProperties(arguments[i], addArg);
   }
 
   if (Ember.FEATURES.isEnabled('composable-computed-properties')) {

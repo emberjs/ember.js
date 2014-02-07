@@ -158,36 +158,35 @@ test("changes to array computed properties happen synchronously", function() {
   });
 });
 
-if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-  test("multiple dependent keys can be specified via brace expansion", function() {
-    var obj = Ember.Object.createWithMixins({
-          bar: Ember.A(),
-          baz: Ember.A(),
-          foo: Ember.reduceComputed({
-            initialValue: Ember.A(),
-            addedItem: function(array, item) { array.pushObject('a:' + item); return array; },
-            removedItem: function(array, item) { array.pushObject('r:' + item); return array; }
-          }).property('{bar,baz}')
-        });
-
-    deepEqual(get(obj, 'foo'), [], "initially empty");
-
-    get(obj, 'bar').pushObject(1);
-
-    deepEqual(get(obj, 'foo'), ['a:1'], "added item from brace-expanded dependency");
-
-    get(obj, 'baz').pushObject(2);
-
-    deepEqual(get(obj, 'foo'), ['a:1', 'a:2'], "added item from brace-expanded dependency");
-
-    get(obj, 'bar').popObject();
-
-    deepEqual(get(obj, 'foo'), ['a:1', 'a:2', 'r:1'], "removed item from brace-expanded dependency");
-
-    get(obj, 'baz').popObject();
-
-    deepEqual(get(obj, 'foo'), ['a:1', 'a:2', 'r:1', 'r:2'], "removed item from brace-expanded dependency");
+test("multiple dependent keys can be specified via brace expansion", function() {
+  var obj = Ember.Object.createWithMixins({
+    bar: Ember.A(),
+    baz: Ember.A(),
+    foo: Ember.reduceComputed({
+      initialValue: Ember.A(),
+      addedItem: function(array, item) { array.pushObject('a:' + item); return array; },
+      removedItem: function(array, item) { array.pushObject('r:' + item); return array; }
+    }).property('{bar,baz}')
   });
+
+  deepEqual(get(obj, 'foo'), [], "initially empty");
+
+  get(obj, 'bar').pushObject(1);
+
+  deepEqual(get(obj, 'foo'), ['a:1'], "added item from brace-expanded dependency");
+
+  get(obj, 'baz').pushObject(2);
+
+  deepEqual(get(obj, 'foo'), ['a:1', 'a:2'], "added item from brace-expanded dependency");
+
+  get(obj, 'bar').popObject();
+
+  deepEqual(get(obj, 'foo'), ['a:1', 'a:2', 'r:1'], "removed item from brace-expanded dependency");
+
+  get(obj, 'baz').popObject();
+
+  deepEqual(get(obj, 'foo'), ['a:1', 'a:2', 'r:1', 'r:2'], "removed item from brace-expanded dependency");
+});
 
   test("multiple item property keys can be specified via brace expansion", function() {
     var addedCalls = 0,
@@ -226,7 +225,6 @@ if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
 
     deepEqual(get(obj, 'foo'), expected, "not observing unspecified item properties");
   });
-}
 
 test("doubly nested item property keys (@each.foo.@each) are not supported", function() {
   Ember.run(function() {
