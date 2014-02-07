@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### Ember 1.3.2 (February 7, 2014)
+
+* [SECURITY] Ensure link-to non-block escapes title.
+* [SECURITY] Bind Handlebars helper properly escapes.
+
 ### Ember 1.3.1 (January 13, 2014)
 
 * [SECURITY] Ensure primitive value contexts are escaped.
