@@ -1,6 +1,5 @@
 {
   "features": {
-    "with-controller": true,
     "query-params-new": false,
     "string-humanize": false,
     "string-parameterize": false,
