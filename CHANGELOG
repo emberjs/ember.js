@@ -1,3 +1,6 @@
+* Ember 1.1.4 (February 7, 2014)*
+  * [SECURITY] Bind Handlebars helper properly escapes.
+
 * Ember 1.1.3 (January 13, 2014)*
   * [SECURITY] Ensure primitive value contexts are escaped.
   * [SECURITY] Ensure {{group}} helper escapes properly.
