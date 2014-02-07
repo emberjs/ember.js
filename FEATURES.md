@@ -5,13 +5,6 @@ for a detailed explanation.
 
 ## Feature Flags
 
-* `propertyBraceExpansion`
-
-  Adds support for brace-expansion in dependent keys, observer, and watch properties.
-  (E.g. `Em.computed.filter('list.@each.{propA,propB}', filterFn)` which will observe both
-  `propA` and `propB`).
-
-  Added in [#3538](https://github.com/emberjs/ember.js/pull/3538).
 * `string-humanize`
 
   Replaces underscores with spaces, and capitializes first character of string.
