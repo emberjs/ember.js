@@ -114,7 +114,6 @@ Ember.run.join = function(target, method /* args */) {
   Ember.run.schedule.apply(Ember.run, args);
 };
 
-if (Ember.FEATURES.isEnabled('ember-metal-run-bind')) {
 /**
   Provides a useful utility for when integrating with non-Ember libraries
   that provide asynchronous callbacks.
@@ -155,13 +154,12 @@ if (Ember.FEATURES.isEnabled('ember-metal-run-bind')) {
   @return {Object} return value from invoking the passed function. Please note,
   when called within an existing loop, no return value is possible.
 */
-  Ember.run.bind = function(target, method /* args*/) {
-    var args = arguments;
-    return function() {
-      return Ember.run.join.apply(Ember.run, args);
-    };
+Ember.run.bind = function(target, method /* args*/) {
+  var args = arguments;
+  return function() {
+    return Ember.run.join.apply(Ember.run, args);
   };
-}
+};
 
 Ember.run.backburner = backburner;
 

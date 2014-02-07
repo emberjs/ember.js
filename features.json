@@ -1,6 +1,5 @@
 {
   "features": {
-    "ember-metal-run-bind": true,
     "ember-metal-computed-empty-array": null,
     "with-controller": true,
     "query-params-new": null,
