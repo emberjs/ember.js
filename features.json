@@ -1,7 +1,6 @@
 {
   "features": {
     "query-params-new": false,
-    "string-humanize": false,
     "string-parameterize": false,
     "ember-routing-named-substates": false,
     "ember-handlebars-caps-lookup": false,

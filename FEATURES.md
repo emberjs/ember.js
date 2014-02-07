@@ -5,12 +5,6 @@ for a detailed explanation.
 
 ## Feature Flags
 
-* `string-humanize`
-
-  Replaces underscores with spaces, and capitializes first character of string.
-  Also strips `_id` suffixes. (E.g. `'first_name'.humanize() // 'First name'`)
-
-  Added in [#3224](https://github.com/emberjs/ember.js/pull/3224)
 * `string-parameterize`
 
   Transforms a string so that it may be used as part of a 'pretty' / SEO friendly URL.

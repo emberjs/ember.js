@@ -18,10 +18,6 @@ var fmt = Ember.String.fmt,
     capitalize = Ember.String.capitalize,
     classify = Ember.String.classify;
 
-if (Ember.FEATURES.isEnabled("string-humanize")) {
-  var humanize = Ember.String.humanize;
-}
-
 if (Ember.FEATURES.isEnabled("string-parameterize")) {
   var parameterize = Ember.String.parameterize;
 }
@@ -117,18 +113,6 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
   String.prototype.capitalize = function() {
     return capitalize(this);
   };
-
-  if (Ember.FEATURES.isEnabled("string-humanize")) {
-    /**
-      See [Ember.String.humanize](/api/classes/Ember.String.html#method_humanize).
-
-      @method humanize
-      @for String
-    */
-    String.prototype.humanize = function() {
-      return humanize(this);
-    };
-  }
 
   if (Ember.FEATURES.isEnabled("string-parameterize")) {
     /**
