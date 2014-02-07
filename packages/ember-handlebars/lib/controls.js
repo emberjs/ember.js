@@ -166,6 +166,7 @@ Ember.Handlebars.registerHelper('input', function(options) {
   delete hash.on;
 
   if (inputType === 'checkbox') {
+    Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`; you must use `checked=someBooleanValue` instead.", options.hashTypes.value !== 'ID');
     return Ember.Handlebars.helpers.view.call(this, Ember.Checkbox, options);
   } else {
     if (inputType) { hash.type = inputType; }
