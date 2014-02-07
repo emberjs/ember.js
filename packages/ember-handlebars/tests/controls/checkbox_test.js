@@ -61,6 +61,25 @@ test("checkbox checked property is updated", function() {
   equal(checkboxView.$('input').prop('checked'), true, "the checkbox is checked now");
 });
 
+module("{{input type='checkbox'}} - prevent value= usage", {
+  setup: function() {
+    checkboxView = Ember.View.extend({
+      controller: controller,
+      template: compile('{{input type="checkbox" disabled=disabled tabindex=tab name=name value=val}}')
+    }).create();
+  },
+
+  teardown: function() {
+    destroy(checkboxView);
+  }
+});
+
+test("It works", function() {
+  expectAssertion(function() {
+    append();
+  }, /you must use `checked=/);
+});
+
 module("{{input type='checkbox'}} - static values", {
   setup: function() {
     controller = {
