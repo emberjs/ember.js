@@ -209,6 +209,9 @@ ComputedPropertyPrototype._dependentKeys = undefined;
 ComputedPropertyPrototype._suspended = undefined;
 
 if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  ComputedPropertyPrototype._dependentCPs = undefined;
+  ComputedPropertyPrototype.implicitCPKey = undefined;
+
   ComputedPropertyPrototype.toString = function() {
     if (this.implicitCPKey) {
       return this.implicitCPKey;
