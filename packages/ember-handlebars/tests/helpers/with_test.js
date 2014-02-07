@@ -234,90 +234,88 @@ test("it should render without fail", function() {
   });
 });
 
-if (Ember.FEATURES.isEnabled('with-controller')) {
-  module("Handlebars {{#with foo}} with defined controller");
+module("Handlebars {{#with foo}} with defined controller");
 
-  test("it should wrap context with object controller", function() {
-    var Controller = Ember.ObjectController.extend({
-      controllerName: Ember.computed(function() {
-        return "controller:"+this.get('content.name') + ' and ' + this.get('parentController.name');
-      })
-    });
-
-    var person = Ember.Object.create({name: 'Steve Holt'});
-    var container = new Ember.Container();
-
-    var parentController = Ember.Object.create({
-      container: container,
-      name: 'Bob Loblaw'
-    });
-
-    view = Ember.View.create({
-      container: container,
-      template: Ember.Handlebars.compile('{{#with view.person controller="person"}}{{controllerName}}{{/with}}'),
-      person: person,
-      controller: parentController
-    });
-
-    container.register('controller:person', Controller);
-
-    appendView(view);
-
-    equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
-
-    Ember.run(function() {
-      view.rerender();
-    });
-
-    equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
-
-    Ember.run(function() {
-      parentController.set('name', 'Carl Weathers');
-      view.rerender();
-    });
-
-    equal(view.$().text(), "controller:Steve Holt and Carl Weathers");
-
-    Ember.run(function() {
-      person.set('name', 'Gob');
-      view.rerender();
-    });
-
-    equal(view.$().text(), "controller:Gob and Carl Weathers");
-
-    strictEqual(view.get('_childViews')[0].get('_contextController.target'), parentController, "the target property of the child controllers are set correctly");
-
-    Ember.run(function() { view.destroy(); }); // destroy existing view
+test("it should wrap context with object controller", function() {
+  var Controller = Ember.ObjectController.extend({
+    controllerName: Ember.computed(function() {
+      return "controller:"+this.get('content.name') + ' and ' + this.get('parentController.name');
+    })
   });
 
-  test("it should still have access to original parentController within an {{#each}}", function() {
-    var Controller = Ember.ObjectController.extend({
-      controllerName: Ember.computed(function() {
-        return "controller:"+this.get('content.name') + ' and ' + this.get('parentController.name');
-      })
-    });
+  var person = Ember.Object.create({name: 'Steve Holt'});
+  var container = new Ember.Container();
 
-    var people = Ember.A([{ name: "Steve Holt" }, { name: "Carl Weathers" }]);
-    var container = new Ember.Container();
-
-    var parentController = Ember.Object.create({
-      container: container,
-      name: 'Bob Loblaw'
-    });
-
-    view = Ember.View.create({
-      container: container,
-      template: Ember.Handlebars.compile('{{#each person in people}}{{#with person controller="person"}}{{controllerName}}{{/with}}{{/each}}'),
-      context: { people: people },
-      controller: parentController
-    });
-
-    container.register('controller:person', Controller);
-
-    appendView(view);
-
-    equal(view.$().text(), "controller:Steve Holt and Bob Loblawcontroller:Carl Weathers and Bob Loblaw");
-
-    Ember.run(function() { view.destroy(); }); // destroy existing view
+  var parentController = Ember.Object.create({
+    container: container,
+    name: 'Bob Loblaw'
   });
-}
+
+  view = Ember.View.create({
+    container: container,
+    template: Ember.Handlebars.compile('{{#with view.person controller="person"}}{{controllerName}}{{/with}}'),
+    person: person,
+    controller: parentController
+  });
+
+  container.register('controller:person', Controller);
+
+  appendView(view);
+
+  equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
+
+  Ember.run(function() {
+    view.rerender();
+  });
+
+  equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
+
+  Ember.run(function() {
+    parentController.set('name', 'Carl Weathers');
+    view.rerender();
+  });
+
+  equal(view.$().text(), "controller:Steve Holt and Carl Weathers");
+
+  Ember.run(function() {
+    person.set('name', 'Gob');
+    view.rerender();
+  });
+
+  equal(view.$().text(), "controller:Gob and Carl Weathers");
+
+  strictEqual(view.get('_childViews')[0].get('_contextController.target'), parentController, "the target property of the child controllers are set correctly");
+
+  Ember.run(function() { view.destroy(); }); // destroy existing view
+});
+
+test("it should still have access to original parentController within an {{#each}}", function() {
+  var Controller = Ember.ObjectController.extend({
+    controllerName: Ember.computed(function() {
+      return "controller:"+this.get('content.name') + ' and ' + this.get('parentController.name');
+    })
+  });
+
+  var people = Ember.A([{ name: "Steve Holt" }, { name: "Carl Weathers" }]);
+  var container = new Ember.Container();
+
+  var parentController = Ember.Object.create({
+    container: container,
+    name: 'Bob Loblaw'
+  });
+
+  view = Ember.View.create({
+    container: container,
+    template: Ember.Handlebars.compile('{{#each person in people}}{{#with person controller="person"}}{{controllerName}}{{/with}}{{/each}}'),
+    context: { people: people },
+    controller: parentController
+  });
+
+  container.register('controller:person', Controller);
+
+  appendView(view);
+
+  equal(view.$().text(), "controller:Steve Holt and Bob Loblawcontroller:Carl Weathers and Bob Loblaw");
+
+  Ember.run(function() { view.destroy(); }); // destroy existing view
+});

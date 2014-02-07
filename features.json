@@ -1,7 +1,6 @@
 {
   "features": {
     "ember-metal-computed-empty-array": null,
-    "with-controller": true,
     "query-params-new": null,
     "string-humanize": null,
     "string-parameterize": null,

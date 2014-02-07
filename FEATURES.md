@@ -72,13 +72,6 @@ for a detailed explanation.
   Added in [#3792](https://github.com/emberjs/ember.js/pull/3792).
   Updated in [#4177](https://github.com/emberjs/ember.js/pull/4177).
 
-* `with-controller`
-
-  Enables `{{#with}}` to take a `controller=` option for wrapping the context.
-
-  Added in [#3722](https://github.com/emberjs/ember.js/pull/3722)
-
-
 * `computed-read-only`
 
   Enables `Ember.computed.readOnly` which is the shortHand for
