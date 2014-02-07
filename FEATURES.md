@@ -93,7 +93,3 @@ for a detailed explanation.
   params will cause those controller properties to update.
 
   Added in [#4008](https://github.com/emberjs/ember.js/pull/4008).
-
-* `ember-metal-run-bind`
-  Enables `Ember.run.bind` which is ember run-loop aware variation of
-  jQuery.proxy.  Useful for integrating with 3rd party callbacks.

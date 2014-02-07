@@ -1,6 +1,5 @@
 {
   "features": {
-    "ember-metal-run-bind": true,
     "with-controller": true,
     "query-params-new": false,
     "string-humanize": false,
