@@ -147,6 +147,7 @@ function simpleBind(currentContext, property, options) {
     // The object is not observable, so just render it out and
     // be done with it.
     output = handlebarsGetEscaped(currentContext, property, options);
+    data.buffer.push(output);
   }
 }
 
