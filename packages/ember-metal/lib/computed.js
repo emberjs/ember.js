@@ -207,6 +207,7 @@ ComputedProperty.prototype = new Ember.Descriptor();
 var ComputedPropertyPrototype = ComputedProperty.prototype;
 ComputedPropertyPrototype._dependentKeys = undefined;
 ComputedPropertyPrototype._suspended = undefined;
+ComputedPropertyPrototype._meta = undefined;
 
 if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   ComputedPropertyPrototype._dependentCPs = undefined;
