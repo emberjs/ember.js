@@ -21,7 +21,8 @@
     "ember-routing-auto-location": true,
     "ember-routing-bound-action-name": true,
     "ember-runtime-test-friendly-promises": null,
-    "ember-routing-inherits-parent-model": null
+    "ember-routing-inherits-parent-model": null,
+    "ember-metal-computed-equal-property": null
   },
   "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info"]
 }

@@ -1384,3 +1384,11 @@ Ember.computed.defaultTo = function(defaultPath) {
   });
 };
 
+
+if (Ember.FEATURES.isEnabled('ember-metal-computed-equal-property')) {
+  Ember.computed.equalProperty = function(dependentKey, property) {
+   return Ember.computed(function() {
+     return this.get(dependentKey) === this.get(property);
+   });
+ };
+}
