@@ -59,11 +59,14 @@ get = function get(obj, keyName) {
   Ember.assert("Cannot call get with "+ keyName +" key.", !!keyName);
   Ember.assert("Cannot call get with '"+ keyName +"' on an undefined object.", obj !== undefined);
 
-  if (obj === null || keyName.indexOf('.') !== -1) {
+  if (obj === null) { return getPath(obj, keyName);  }
+
+  var meta = obj[META_KEY], desc = meta && meta.descs[keyName], ret;
+
+  if (desc === undefined && keyName.indexOf('.') !== -1) {
     return getPath(obj, keyName);
   }
 
-  var meta = obj[META_KEY], desc = meta && meta.descs[keyName], ret;
   if (desc) {
     return desc.get(obj, keyName);
   } else {
