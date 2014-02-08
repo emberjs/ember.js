@@ -476,6 +476,9 @@ Container.prototype = {
     validateFullName(fullName);
     var normalizedName = this.normalize(fullName);
 
+    if (this.cache.has(normalizedName)) {
+      throw new Error("Attempted to register an injection for a type that has already been looked up. ('" + normalizedName + "', '" + property + "', '" + injectionName + "')");
+    }
     addInjection(this.injections, normalizedName, property, normalizedInjectionName);
   },
 
@@ -578,6 +581,9 @@ Container.prototype = {
 
     validateFullName(fullName);
 
+    if (this.factoryCache.has(normalizedName)) {
+      throw new Error("Attempted to register a factoryInjection for a type that has already been looked up. ('" + normalizedName + "', '" + property + "', '" + injectionName + "')");
+    }
     addInjection(this.factoryInjections, normalizedName, property, normalizedInjectionName);
   },
 
