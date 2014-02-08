@@ -552,9 +552,7 @@ Ember.cacheFor = function cacheFor(obj, key) {
   var meta = obj[META_KEY],
       cache = meta && meta.cache;
 
-  if (cache && key in cache) {
-    return cache[key];
-  }
+  return cache && cache[key];
 };
 
 function getProperties(self, propertyNames) {
