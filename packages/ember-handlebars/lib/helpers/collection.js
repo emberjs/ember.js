@@ -167,6 +167,7 @@ function collectionHelper(path, options) {
   if (path) {
     controller = data.keywords.controller;
     container = controller && controller.container;
+    options.silenceGlobalDeprecation = true;
     collectionClass = handlebarsGet(this, path, options) || container.lookupFactory('view:' + path);
     Ember.assert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
   }
@@ -193,6 +194,7 @@ function collectionHelper(path, options) {
                  "not found at " + container.describe("view:" + hash.itemView) +
                  " (and it was not registered in the container)", !!itemViewClass);
   } else if (hash.itemViewClass) {
+    options.silenceGlobalDeprecation = true;
     itemViewClass = handlebarsGet(collectionPrototype, hash.itemViewClass, options);
   } else {
     itemViewClass = collectionPrototype.itemViewClass;
@@ -232,6 +234,7 @@ function collectionHelper(path, options) {
           tagName: itemHash.tagName
     });
   } else if (hash.emptyViewClass) {
+    options.silenceGlobalDeprecation = true;
     emptyViewClass = handlebarsGet(this, hash.emptyViewClass, options);
   }
   if (emptyViewClass) { hash.emptyView = emptyViewClass; }

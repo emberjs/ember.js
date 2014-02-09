@@ -177,6 +177,68 @@ test("should allow values from normal JavaScript hash objects to be used", funct
   equal(view.$().text(), "Señor CFC (and Fido)", "prints out values from a hash");
 });
 
+test("should read from globals [DEPRECATED]", function() {
+  Ember.lookup.Global = 'Klarg';
+  view = EmberView.create({
+    template: EmberHandlebars.compile('{{Global}}')
+  });
+
+  expectDeprecation(function(){
+    appendView();
+  }, "Global lookup of Global from a Handlebars template is deprecated.");
+  equal(view.$().text(), Ember.lookup.Global);
+});
+
+test("should read from globals with a path [DEPRECATED]", function() {
+  Ember.lookup.Global = { Space: 'Klarg' };
+  view = EmberView.create({
+    template: EmberHandlebars.compile('{{Global.Space}}')
+  });
+
+  expectDeprecation(function(){
+    appendView();
+  }, "Global lookup of Global.Space from a Handlebars template is deprecated.");
+  equal(view.$().text(), Ember.lookup.Global.Space);
+});
+
+test("with context, should read from globals [DEPRECATED]", function() {
+  Ember.lookup.Global = 'Klarg';
+  view = EmberView.create({
+    context: {},
+    template: EmberHandlebars.compile('{{Global}}')
+  });
+
+  expectDeprecation(function(){
+    appendView();
+  }, "Global lookup of Global from a Handlebars template is deprecated.");
+  equal(view.$().text(), Ember.lookup.Global);
+});
+
+test("with context, should read from globals with a path [DEPRECATED]", function() {
+  Ember.lookup.Global = { Space: 'Klarg' };
+  view = EmberView.create({
+    context: {},
+    template: EmberHandlebars.compile('{{Global.Space}}')
+  });
+
+  expectDeprecation(function(){
+    appendView();
+  }, "Global lookup of Global.Space from a Handlebars template is deprecated.");
+  equal(view.$().text(), Ember.lookup.Global.Space);
+});
+
+test("should read from a global-ish simple local path without deprecation", function() {
+  view = EmberView.create({
+    context: { NotGlobal: 'Gwar' },
+    template: EmberHandlebars.compile('{{NotGlobal}}')
+  });
+
+  expectNoDeprecation();
+  appendView();
+
+  equal(view.$().text(), 'Gwar');
+});
+
 test("htmlSafe should return an instance of Handlebars.SafeString", function() {
   var safeString = htmlSafe("you need to be more <b>bold</b>");
 

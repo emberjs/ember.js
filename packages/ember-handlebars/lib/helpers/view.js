@@ -47,6 +47,7 @@ function makeBindings(thisContext, options) {
 
   if (hash.hasOwnProperty('idBinding')) {
     // id can't be bound, so just perform one-time lookup.
+    options.silenceGlobalDeprecation = true;
     hash.id = handlebarsGet(thisContext, hash.idBinding, options);
     hashType.id = 'STRING';
     delete hash.idBinding;
@@ -174,6 +175,7 @@ export var ViewHelper = EmberObject.create({
       if (options.types[0] === 'STRING' && LOWERCASE_A_Z.test(path) && !VIEW_PREFIX.test(path)) {
         lookup = path;
       } else {
+        options.silenceGlobalDeprecation = true;
         newView = handlebarsGet(thisContext, path, options);
         if (typeof newView === 'string') {
           lookup = newView;
