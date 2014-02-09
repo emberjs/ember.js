@@ -25,13 +25,6 @@ for a detailed explanation.
 
   Added in [#3655](https://github.com/emberjs/ember.js/pull/3655).
 
-* `ember-handlebars-caps-lookup`
-  Forces Handlebars values starting with capital letters, like `{{CONSTANT}}`,
-  to always be looked up on `Ember.lookup`. Previously, these values would be
-  looked up on the controller in certain cases.
-
-  Added in [#3218](https://github.com/emberjs/ember.js/pull/3218)
-
 * `ember-testing-simple-setup`
   Removes the need for most of the ceremony of setting up an application for testing. The following
   examples are equivalent:
