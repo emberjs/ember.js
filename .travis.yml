@@ -1,13 +1,11 @@
 ---
 rvm:
-- 1.9.3
+- 2.1.0
 node_js:
 - "0.10"
 install:
 - "npm install"
-- "gem install bundler --pre"
 - "bin/cached-bundle install --deployment --retry 3 --jobs 4"
-- sudo apt-get update && sudo apt-get install git
 after_success: bundle exec rake publish_build
 script: rake test\[$TEST_SUITE]
 notifications:
