@@ -78,7 +78,7 @@ test('hydrates a fragment with placeholder mustaches', function () {
   equal(contentResolves.length, 2);
 
   var foo = contentResolves[0];
-  equal(foo.placeholder.parent, fragment.childNodes[0]);
+  equal(foo.placeholder.parent(), fragment.childNodes[0]);
   equal(foo.context, context);
   equal(foo.path, 'foo');
   deepEqual(foo.params, ["foo",3,"blah"]);
@@ -88,7 +88,7 @@ test('hydrates a fragment with placeholder mustaches', function () {
   equal(foo.options.escaped, true);
 
   var baz = contentResolves[1];
-  equal(baz.placeholder.parent, fragment.childNodes[0]);
+  equal(baz.placeholder.parent(), fragment.childNodes[0]);
   equal(baz.context, context);
   equal(baz.path, 'baz');
   equal(baz.params.length, 0);
@@ -136,7 +136,7 @@ test('test auto insertion of text nodes for needed edges a fragment with placeho
   equal(placeholders[1].start, null);
   equal(placeholders[1].end, null);
 
-  equal(placeholders[2].start, placeholders[1].parent);
+  equal(placeholders[2].start, placeholders[1].parent());
   equal(placeholders[2].end.nodeType, 3);
   equal(placeholders[2].end.textContent, '');
 

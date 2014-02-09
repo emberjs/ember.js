@@ -260,7 +260,7 @@ test("Simple data binding on fragments", function() {
   var callback;
 
   hooks.CONTENT = function(placeholder, path, context, params, options) {
-    var fragment = frag(placeholder.parent, context[path]);
+    var fragment = frag(placeholder.parent(), context[path]);
 
     var firstChild = fragment.firstChild,
         lastChild = fragment.lastChild;
