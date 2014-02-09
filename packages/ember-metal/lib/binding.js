@@ -46,7 +46,13 @@ var isGlobalPath = Ember.isGlobalPath = function(path) {
 };
 
 function getWithGlobals(obj, path) {
-  return get(isGlobalPath(path) ? Ember.lookup : obj, path);
+  var value = get(obj, path);
+
+  if (value === undefined && isGlobalPath(path)) {
+    value = get(Ember.lookup, path);
+  }
+
+  return value;
 }
 
 // ..........................................................
@@ -250,7 +256,7 @@ Binding.prototype = {
       if (this._oneWay) {
         Ember.trySet(obj, toPath, fromValue);
       } else {
-        Ember._suspendObserver(obj, toPath, this, this.toDidChange, function () {
+        Ember._suspendObserver(obj, toPath, this, this.toDidChange, function() {
           Ember.trySet(obj, toPath, fromValue);
         });
       }
@@ -260,8 +266,14 @@ Binding.prototype = {
       if (log) {
         Ember.Logger.log(' ', this.toString(), '<-', toValue, obj);
       }
-      Ember._suspendObserver(obj, fromPath, this, this.fromDidChange, function () {
-        Ember.trySet(Ember.isGlobalPath(fromPath) ? Ember.lookup : obj, fromPath, toValue);
+      Ember._suspendObserver(obj, fromPath, this, this.fromDidChange, function() {
+        try {
+          Ember.set(obj, fromPath, toValue);
+        } catch (e) {
+          if (Ember.isGlobalPath(fromPath)) {
+            Ember.trySet(Ember.lookup, fromPath, toValue);
+          }
+        }
       });
     }
   }
