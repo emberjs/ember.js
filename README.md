@@ -174,19 +174,27 @@ NOTE: Requires node.js to generate.
 
 See <http://emberjs.com/> for annotated introductory documentation.
 
-## Preview API documentation
+## Setup Additional Repos
 
-* Clone https://github.com/emberjs/website.git at the same level as the
+To preview or build the API documentation, you will need to setup
+the `website` and `data` repos in addition to this repo.
+
+* Clone `https://github.com/emberjs/website.git` at the same level as the
   main Ember repo.
 
-* From the website repo, run `rake preview`
+* Clone `https://github.com/emberjs/data.git` at the same level as the main
+  Ember repo. Make sure to follow the setup steps in the Ember Data repo,
+  which includes installing npm modules.
+
+## Preview API documentation
+
+* From the website repo, run `bundle exec rake preview`
 
 * The docs will be available at <http://localhost:4567/api>
 
-
 ## Build API documentation
 
-* From the website repo, run `rake build`
+* From the website repo, run `bundle exec rake build`
 
 * The website, along with documentation will be built into the `build`
   directory
