@@ -1,6 +1,6 @@
-/*global setProperties:true factory:true o_create:true */
+/*jshint validthis:true */
 
-setProperties = function(object, properties) {
+var setProperties = function(object, properties) {
   for (var key in properties) {
     if (properties.hasOwnProperty(key)) {
       object[key] = properties[key];
@@ -24,7 +24,7 @@ var guids = 0;
 
 var passedOptions;
 
-factory = function() {
+var factory = function() {
   var Klass = function(options) {
     setProperties(this, options);
     this._guid = guids++;
@@ -76,3 +76,5 @@ factory = function() {
     return Child;
   }
 };
+
+export {factory, o_create, setProperties};
