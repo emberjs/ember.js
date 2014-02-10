@@ -1,6 +1,8 @@
-/*globals factory setProperties o_create */
+import { factory,
+         o_create,
+         setProperties} from 'container/tests/container_helper';
 
-var Container = requireModule('container');
+import Container from 'container';
 
 var originalModelInjections;
 
