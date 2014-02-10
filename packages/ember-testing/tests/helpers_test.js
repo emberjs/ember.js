@@ -1,4 +1,4 @@
-var set = Ember.set, App, originalAdapter = Ember.Test.adapter;
+var set = Ember.set, get = Ember.get, App, originalAdapter = Ember.Test.adapter;
 
 function cleanup(){
   Ember.Test.adapter = originalAdapter;
@@ -42,6 +42,36 @@ function assertHelpers(application, helperContainer, expected){
 
 function assertNoHelpers(application, helperContainer) {
   assertHelpers(application, helperContainer, false);
+}
+
+function currentRouteName(app){
+  if(Ember.FEATURES.isEnabled('ember-testing-route-helpers')) {
+    return app.testHelpers.currentRouteName();
+  } else {
+    var appController = app.__container__.lookup('controller:application');
+
+    return get(appController, 'currentRouteName');
+  }
+}
+
+function currentPath(app){
+  if(Ember.FEATURES.isEnabled('ember-testing-route-helpers')) {
+    return app.testHelpers.currentPath();
+  } else {
+    var appController = app.__container__.lookup('controller:application');
+
+    return get(appController, 'currentPath');
+  }
+}
+
+function currentURL(app){
+  if(Ember.FEATURES.isEnabled('ember-testing-route-helpers')) {
+    return app.testHelpers.currentURL();
+  } else {
+    var router = app.__container__.lookup('router:main');
+
+    return get(router, 'location').getURL();
+  }
 }
 
 module("ember-testing Helpers", {
