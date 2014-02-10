@@ -518,3 +518,89 @@ if (Ember.FEATURES.isEnabled("ember-testing-triggerEvent-helper")) {
     });
   });
 }
+
+module("ember-testing async router", {
+  setup: function(){
+    cleanup();
+
+    Ember.run(function() {
+      App = Ember.Application.create();
+      App.Router = Ember.Router.extend({
+        location: 'none'
+      });
+
+      App.Router.map(function() {
+        this.resource("user", function() {
+          this.route("profile");
+          this.route("edit");
+        });
+      });
+
+      App.UserRoute = Ember.Route.extend({
+        model: function() {
+          return resolveLater();
+        }
+      });
+
+      App.UserProfileRoute = Ember.Route.extend({
+        beforeModel: function() {
+          var self = this;
+          return resolveLater().then(function() {
+            self.transitionTo('user.edit');
+          });
+        }
+      });
+
+      // Emulates a long-running unscheduled async operation.
+      function resolveLater() {
+        var promise;
+
+        Ember.run(function() {
+          promise = new Ember.RSVP.Promise(function(resolve) {
+            // The wait() helper has a 10ms tick. We should resolve() after at least one tick
+            // to test whether wait() held off while the async router was still loading. 20ms
+            // should be enough.
+            setTimeout(function() {
+              Ember.run(function() {
+                resolve(Ember.Object.create({firstName: 'Tom'}));
+              });
+            }, 20);
+          });
+        });
+
+        return promise;
+      }
+
+      App.setupForTesting();
+    });
+
+    App.injectTestHelpers();
+    Ember.run(App, 'advanceReadiness');
+  },
+
+  teardown: function(){
+    cleanup();
+  }
+});
+
+test("currentRouteName for '/user'", function(){
+  expect(4);
+
+  App.testHelpers.visit('/user').then(function(){
+    equal(App.testHelpers.currentRouteName(), 'user.index', "should equal 'user.index'.");
+    equal(App.testHelpers.currentPath(), 'user.index', "should equal 'user.index'.");
+    equal(App.testHelpers.currentURL(), '/user', "should equal '/user'.");
+    equal(App.__container__.lookup('route:user').get('controller.content.firstName'), 'Tom', "should equal 'Tom'.");
+  });
+});
+
+test("currentRouteName for '/user/profile'", function(){
+  expect(4);
+
+  App.testHelpers.visit('/user/profile').then(function(){
+    equal(App.testHelpers.currentRouteName(), 'user.edit', "should equal 'user.edit'.");
+    equal(App.testHelpers.currentPath(), 'user.edit', "should equal 'user.edit'.");
+    equal(App.testHelpers.currentURL(), '/user/edit', "should equal '/user/edit'.");
+    equal(App.__container__.lookup('route:user').get('controller.content.firstName'), 'Tom', "should equal 'Tom'.");
+  });
+});
