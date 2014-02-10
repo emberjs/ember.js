@@ -95,6 +95,6 @@ ES6Package.prototype = {
 
 
 ['container'].forEach(function(packageName) {
-  pkg = new ES6Package('container');
+  pkg = new ES6Package(packageName);
   pkg.process();
 });
