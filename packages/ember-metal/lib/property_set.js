@@ -30,18 +30,28 @@ var set = function set(obj, keyName, value, tolerant) {
 
   Ember.assert("Cannot call set with "+ keyName +" key.", !!keyName);
 
-  if (!obj || keyName.indexOf('.') !== -1) {
+  if (!obj) {
+    return setPath(obj, keyName, value, tolerant);
+  }
+
+  var meta = obj[META_KEY], desc = meta && meta.descs[keyName],
+      isUnknown, currentValue;
+
+  if (desc === undefined && keyName.indexOf('.') !== -1) {
     return setPath(obj, keyName, value, tolerant);
   }
 
   Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
   Ember.assert('calling set on destroyed object', !obj.isDestroyed);
 
-  var meta = obj[META_KEY], desc = meta && meta.descs[keyName],
-      isUnknown, currentValue;
-  if (desc) {
+  if (desc !== undefined) {
     desc.set(obj, keyName, value);
   } else {
+
+    if (typeof obj === 'object' && obj !== null && obj[keyName] === value) {
+      return value;
+    }
+
     isUnknown = 'object' === typeof obj && !(keyName in obj);
 
     // setUnknownProperty is called if `obj` is an object,

@@ -189,6 +189,7 @@ function removeDependentKeys(desc, obj, keyName, meta) {
   @constructor
 */
 function ComputedProperty(func, opts) {
+  func.__ember_arity__ = func.length;
   this.func = func;
 
   this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : true;
@@ -442,7 +443,6 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
   var cacheable = this._cacheable,
       func = this.func,
       meta = metaFor(obj, cacheable),
-      watched = meta.watching[keyName],
       oldSuspended = this._suspended,
       hadCachedValue = false,
       cache = meta.cache,
@@ -456,14 +456,15 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
 
   try {
 
-    if (cacheable && cache.hasOwnProperty(keyName)) {
+    if (cacheable && cache[keyName] !== undefined) {
       cachedValue = cache[keyName];
       hadCachedValue = true;
     }
 
     // Check if the CP has been wrapped. If if has, use the
     // length from the wrapped function.
-    funcArgLength = (func.wrappedFunction ? func.wrappedFunction.length : func.length);
+
+    funcArgLength = func.wrappedFunction ? func.wrappedFunction.__ember_arity__ : func.__ember_arity__;
 
     // For backwards-compatibility with computed properties
     // that check for arguments.length === 2 to determine if
@@ -482,10 +483,11 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
 
     if (hadCachedValue && cachedValue === ret) { return; }
 
+    var watched = meta.watching[keyName];
     if (watched) { Ember.propertyWillChange(obj, keyName); }
 
     if (hadCachedValue) {
-      delete cache[keyName];
+      cache[keyName] = undefined;
     }
 
     if (cacheable) {

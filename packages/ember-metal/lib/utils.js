@@ -339,6 +339,7 @@ Ember.wrap = function(func, superFunc) {
   }
 
   superWrapper.wrappedFunction = func;
+  superWrapper.wrappedFunction.__ember_arity__ = func.length;
   superWrapper.__ember_observes__ = func.__ember_observes__;
   superWrapper.__ember_observesBefore__ = func.__ember_observesBefore__;
   superWrapper.__ember_listens__ = func.__ember_listens__;
