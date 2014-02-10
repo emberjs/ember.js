@@ -5,13 +5,6 @@ for a detailed explanation.
 
 ## Feature Flags
 
-* `propertyBraceExpansion`
-
-  Adds support for brace-expansion in dependent keys, observer, and watch properties.
-  (E.g. `Em.computed.filter('list.@each.{propA,propB}', filterFn)` which will observe both
-  `propA` and `propB`).
-
-  Added in [#3538](https://github.com/emberjs/ember.js/pull/3538).
 * `string-humanize`
 
   Replaces underscores with spaces, and capitializes first character of string.
@@ -79,13 +72,6 @@ for a detailed explanation.
   Added in [#3792](https://github.com/emberjs/ember.js/pull/3792).
   Updated in [#4177](https://github.com/emberjs/ember.js/pull/4177).
 
-* `with-controller`
-
-  Enables `{{#with}}` to take a `controller=` option for wrapping the context.
-
-  Added in [#3722](https://github.com/emberjs/ember.js/pull/3722)
-
-
 * `computed-read-only`
 
   Enables `Ember.computed.readOnly` which is the shortHand for
@@ -111,13 +97,6 @@ for a detailed explanation.
   params will cause those controller properties to update.
 
   Added in [#4008](https://github.com/emberjs/ember.js/pull/4008).
-
-* `ember-metal-run-bind`
-
-  Enables `Ember.run.bind` which is ember run-loop aware variation of
-  jQuery.proxy.  Useful for integrating with 3rd party callbacks.
-
-  Added in [161113](https://github.com/emberjs/ember.js/commit/161113a9e5fad7f6dfde09a053166a05660a0051).
 
 * `ember-metal-is-blank`
 
