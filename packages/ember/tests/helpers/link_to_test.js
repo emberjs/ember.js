@@ -1372,6 +1372,31 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       shouldNotBeActive('#array-link');
       shouldNotBeActive('#empty-link');
   });
+
+  test("The {{link-to}} applies active class to parent route", function() {
+    App.Router.map(function() {
+      this.resource('parent', function() {
+        this.route('child');
+      });
+    });
+
+    Ember.TEMPLATES.application = Ember.Handlebars.compile(
+        "{{#link-to 'parent' id='parent-link'}}Parent{{/link-to}} " +
+        "{{#link-to 'parent.child' id='parent-child-link'}}Child{{/link-to}} " +
+        "{{outlet}}"
+        );
+
+    App.ParentChildController = Ember.ObjectController.extend({
+      queryParams: ['foo'],
+      foo: 'bar'
+    });
+
+    bootApplication();
+    shouldNotBeActive('#parent-link');
+    shouldNotBeActive('#parent-child-link');
+    Ember.run(router, 'handleURL', '/parent/child?foo=dog');
+    shouldBeActive('#parent-link');
+  });
 }
 
 function basicEagerURLUpdateTest(setTagName) {
