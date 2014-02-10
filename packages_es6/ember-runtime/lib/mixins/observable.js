@@ -435,7 +435,7 @@ var Observable = Mixin.create({
   incrementProperty: function(keyName, increment) {
     if (isNone(increment)) { increment = 1; }
     Ember.assert("Must pass a numeric value to incrementProperty", (!isNaN(parseFloat(increment)) && isFinite(increment)));
-    set(this, keyName, (get(this, keyName) || 0) + increment);
+    set(this, keyName, (parseFloat(get(this, keyName)) || 0) + increment);
     return get(this, keyName);
   },
 
