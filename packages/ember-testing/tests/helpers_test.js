@@ -617,9 +617,9 @@ test("currentRouteName for '/user'", function(){
   expect(4);
 
   App.testHelpers.visit('/user').then(function(){
-    equal(App.testHelpers.currentRouteName(), 'user.index', "should equal 'user.index'.");
-    equal(App.testHelpers.currentPath(), 'user.index', "should equal 'user.index'.");
-    equal(App.testHelpers.currentURL(), '/user', "should equal '/user'.");
+    equal(currentRouteName(App), 'user.index', "should equal 'user.index'.");
+    equal(currentPath(App), 'user.index', "should equal 'user.index'.");
+    equal(currentURL(App), '/user', "should equal '/user'.");
     equal(App.__container__.lookup('route:user').get('controller.content.firstName'), 'Tom', "should equal 'Tom'.");
   });
 });
@@ -628,9 +628,9 @@ test("currentRouteName for '/user/profile'", function(){
   expect(4);
 
   App.testHelpers.visit('/user/profile').then(function(){
-    equal(App.testHelpers.currentRouteName(), 'user.edit', "should equal 'user.edit'.");
-    equal(App.testHelpers.currentPath(), 'user.edit', "should equal 'user.edit'.");
-    equal(App.testHelpers.currentURL(), '/user/edit', "should equal '/user/edit'.");
+    equal(currentRouteName(App), 'user.edit', "should equal 'user.edit'.");
+    equal(currentPath(App), 'user.edit', "should equal 'user.edit'.");
+    equal(currentURL(App), '/user/edit', "should equal '/user/edit'.");
     equal(App.__container__.lookup('route:user').get('controller.content.firstName'), 'Tom', "should equal 'Tom'.");
   });
 });
