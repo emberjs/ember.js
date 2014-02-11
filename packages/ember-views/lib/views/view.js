@@ -14,6 +14,10 @@ var get = Ember.get, set = Ember.set,
     meta = Ember.meta,
     defineProperty = Ember.defineProperty;
 
+function nullViewsBuffer(view) {
+  view.buffer = null;
+}
+
 var childViewsProperty = Ember.computed(function() {
   var childViews = this._childViews, ret = Ember.A(), view = this;
 
@@ -87,7 +91,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
     @type Ember.View
     @default null
   */
-  parentView: Ember.computed(function() {
+  parentView: Ember.computed('_parentView', function() {
     var parent = this._parentView;
 
     if (parent && parent.isVirtual) {
@@ -95,17 +99,17 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
     } else {
       return parent;
     }
-  }).property('_parentView'),
+  }),
 
   state: null,
 
   _parentView: null,
 
   // return the current view, not including virtual views
-  concreteView: Ember.computed(function() {
+  concreteView: Ember.computed('parentView', function() {
     if (!this.isVirtual) { return this; }
     else { return get(this, 'parentView'); }
-  }).property('parentView'),
+  }),
 
   instrumentName: 'core_view',
 
@@ -905,7 +909,7 @@ Ember.View = Ember.CoreView.extend({
     @property template
     @type Function
   */
-  template: Ember.computed(function(key, value) {
+  template: Ember.computed('templateName', function(key, value) {
     if (value !== undefined) { return value; }
 
     var templateName = get(this, 'templateName'),
@@ -914,7 +918,7 @@ Ember.View = Ember.CoreView.extend({
     Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
 
     return template || get(this, 'defaultTemplate');
-  }).property('templateName'),
+  }),
 
   /**
     The controller managing this view. If this property is set, it will be
@@ -923,10 +927,10 @@ Ember.View = Ember.CoreView.extend({
     @property controller
     @type Object
   */
-  controller: Ember.computed(function(key) {
+  controller: Ember.computed('_parentView', function(key) {
     var parentView = get(this, '_parentView');
     return parentView ? get(parentView, 'controller') : null;
-  }).property('_parentView'),
+  }),
 
   /**
     A view may contain a layout. A layout is a regular template but
@@ -1447,13 +1451,13 @@ Ember.View = Ember.CoreView.extend({
     @property element
     @type DOMElement
   */
-  element: Ember.computed(function(key, value) {
+  element: Ember.computed('_parentView', function(key, value) {
     if (value !== undefined) {
       return this.currentState.setElement(this, value);
     } else {
       return this.currentState.getElement(this);
     }
-  }).property('_parentView'),
+  }),
 
   /**
     Returns a jQuery object for this view's element. If you pass in a selector
@@ -2250,9 +2254,7 @@ Ember.View = Ember.CoreView.extend({
   },
 
   clearBuffer: function() {
-    this.invokeRecursively(function(view) {
-      view.buffer = null;
-    });
+    this.invokeRecursively(nullViewsBuffer);
   },
 
   transitionTo: function(state, children) {
