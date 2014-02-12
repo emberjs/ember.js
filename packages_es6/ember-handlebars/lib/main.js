@@ -29,12 +29,15 @@ import locHelper from "ember-handlebars/helpers/loc";
 
 
 import Checkbox from "ember-handlebars/controls/checkbox";
+import {RadioButton, RadioButtonGroup} from "ember-handlebars/controls/radio_button";
+
 import {Select, SelectOption, SelectOptgroup} from "ember-handlebars/controls/select";
 import TextArea from "ember-handlebars/controls/text_area";
 import TextField from "ember-handlebars/controls/text_field";
 import TextSupport from "ember-handlebars/controls/text_support";
 import TextSupport from "ember-handlebars/controls/text_support";
 import {inputHelper, textareaHelper} from "ember-handlebars/controls"
+import {radiobuttonHelper, radiogroupHelper} from "ember-handlebars/controls"
 
 
 import ComponentLookup from "ember-handlebars/component_lookup";
@@ -79,6 +82,9 @@ Ember._MetamorphView = _MetamorphView;
 Ember._Metamorph = _Metamorph;
 Ember.TextSupport = TextSupport;
 Ember.Checkbox = Checkbox;
+Ember.RadioButton = RadioButton;
+Ember.RadioButtonGroup = RadioButtonGroup;
+
 Ember.Select = Select;
 Ember.SelectOption = SelectOption;
 Ember.SelectOptgroup = SelectOptgroup;
@@ -110,6 +116,8 @@ EmberHandlebars.registerHelper("view", viewHelper);
 EmberHandlebars.registerHelper("unbound", unboundHelper);
 EmberHandlebars.registerHelper("input", inputHelper);
 EmberHandlebars.registerHelper("textarea", textareaHelper);
+EmberHandlebars.registerHelper("radio", radiobuttonHelper);
+EmberHandlebars.registerHelper("radiogroup", radiogroupHelper);
 
 // run load hooks
 runLoadHooks('Ember.Handlebars', EmberHandlebars);
