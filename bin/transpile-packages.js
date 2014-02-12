@@ -19,7 +19,8 @@ ES6Package.prototype = {
 
     glob(directory + '/**/*', function(err, files){
       files.forEach(function(filename){
-        var result;
+        var stats = fs.statSync(filename), result;
+        if (stats.isDirectory()) { return; }
 
         if (filename.match(/\.amd\.js$/)){
           result = fs.readFileSync(filename);
