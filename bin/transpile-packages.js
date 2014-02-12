@@ -19,12 +19,17 @@ ES6Package.prototype = {
 
     glob(directory + '/**/*', function(err, files){
       files.forEach(function(filename){
-        console.log('Processing '+filename);
+        var result;
 
-        var result = this.compileFile(directory, filename)
+        if (filename.match(/\.amd\.js$/)){
+          result = fs.readFileSync(filename);
+          compiledOutput.push(result);
+        } else {
+          result = this.compileFile(directory, filename);
+          compiledOutput.push(result['compiled']);
+          moduleNames.push(result['name']);
+        }
 
-        compiledOutput.push(result['compiled']);
-        moduleNames.push(result['name']);
       }.bind(this));
 
       callback({compiled: compiledOutput, moduleNames: moduleNames});
