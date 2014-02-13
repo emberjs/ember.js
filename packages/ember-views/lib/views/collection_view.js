@@ -353,9 +353,13 @@ Ember.CollectionView = Ember.ContainerView.extend({
           contentIndex: idx
         };
 
-        if (!this._preserveContext) {
+        if (this._preserveContext) {
+          set(get(this, 'context'), 'container', get(this, 'container'));
+          set(get(this, 'context'), 'parentController', get(this, 'controller'));
+          attrs.context = get(this, 'context');
+        }
+        else {
           attrs.context = item;
-          attrs.controller = item;
         }
 
         view = this.createChildView(itemViewClass, attrs);

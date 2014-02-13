@@ -70,7 +70,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
       if (options.hash.controller) {
         bindView.set('_contextController', this.container.lookupFactory('controller:'+options.hash.controller).create({
           container: currentContext.container,
-          parentController: currentContext,
+          parentController: get(currentContext, 'parentController') || currentContext,
           target: currentContext
         }));
       }
