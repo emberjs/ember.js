@@ -177,6 +177,7 @@ Ember.Location = {
   },
 
   implementations: {},
+  _location: window.location,
 
   /**
     Returns the current `location.hash` by parsing location.href since browsers
@@ -187,8 +188,10 @@ Ember.Location = {
     @private
     @method getHash
   */
-  getHash: function () {
-    var href = window.location.href,
+  _getHash: function () {
+    // AutoLocation has it at _location, HashLocation at .location.
+    // Being nice and not changing 
+    var href = (this._location || this.location).href,
         hashIndex = href.indexOf('#');
 
     if (hashIndex === -1) {
