@@ -354,6 +354,23 @@ EmberHandlebars.registerHelper('unboundIf', function unboundIfHelper(property, f
 
   Without the `as` operator, it would be impossible to reference `user.name` in the example above.
 
+  ### `controller` option
+
+  Adding `controller='something'` instructs the `{{with}}` helper to create and use an instance of
+  the specified controller with the new context as its content.
+
+  This is very similar to using an `itemController` option with the `{{each}}` helper.
+
+  ```handlebars
+  {{#with users.posts controller='userBlogPosts'}}
+    {{!- The current context is wrapped in our controller instance }}
+  {{/with}}
+  ```
+
+  In the above example, the template provided to the `{{with}}` block is now wrapped in the
+  `userBlogPost` controller, which provides a very elegant way to decorate the context with custom
+  functions/properties.
+
   @method with
   @for Ember.Handlebars.helpers
   @param {Function} context
