@@ -15,6 +15,8 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
     var itemController = get(this, 'itemController');
     var binding;
 
+    this._preserveContext = true;
+
     if (itemController) {
       var controller = get(this, 'controller.container').lookupFactory('controller:array').create({
         _isVirtual: true,
