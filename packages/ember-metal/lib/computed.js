@@ -1357,12 +1357,14 @@ Ember.computed.defaultTo = function(defaultPath) {
 */
 if (Ember.FEATURES.isEnabled('ember-metal-computed-instance')) {
   Ember.computed.instance = function (source, initialValue) {
+
+    Ember.assert('Ember.computed.instance expects at least one argument', arguments.length >= 1);
+
     var value,
         args = Array.prototype.slice.call(arguments, 1),
         isPath = typeof source === 'string',
         //we allow only one path as init value otherwise treated as params ex for Array constructor
         initValueIsPath = args.length === 1 && typeof initialValue === 'string',
-        isGlobal = isPath && Ember.isGlobalPath(source),
         Klass = !isPath && source,
         ProxyClass; //cached constructor
 
@@ -1384,16 +1386,11 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-instance')) {
         args = [].concat(value);
       }
 
-      //If source is a path, we lookup at runtime in case source class is declared lazilly
       if (isPath) {
-        if (isGlobal) {
-          Klass = Klass || Ember.get(source);
-        } else {
-          //We lookup each time it is invoked in local path in case source class has changed,
-          //should we ?? it might be usefull
-          Klass = get(this, source);
-        }
+        Klass = get(this, source);
       }
+
+      Ember.assert('Class object for `' + source + '` could not be resolved, make sure source is not a global path and that is defined', Klass);
 
       //if already declared
       if (ProxyClass) {

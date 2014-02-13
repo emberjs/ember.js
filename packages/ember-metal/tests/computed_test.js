@@ -1074,7 +1074,14 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-instance')) {
           ok(val1 !== origin && val1 !== val2, msg);
       };
 
-      checkRef('return new instance of a global Object', 'globalClass');
+      expectAssertion(function () {
+            Ember.defineProperty(inst1, 'invalid', Ember.computed.instance());
+        }, 'Ember.computed.instance expects at least one argument');
+
+      expectAssertion(function () {
+            get(inst1, 'globalClass');
+        }, 'Class object for `Object` could not be resolved, make sure source is not a global path and that is defined');
+
       //arrays
       checkRef('creates different array instances in each object', 'array1', filledArray);
       deepHelper('array1', filledArray, 'make a copy of non empty array');
