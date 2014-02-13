@@ -3,8 +3,7 @@
 @submodule ember-routing
 */
 
-var get = Ember.get, set = Ember.set,
-    getHash = Ember.Location.getHash;
+var get = Ember.get, set = Ember.set;
 
 /**
   `Ember.HashLocation` implements the location API using the browser's
@@ -19,8 +18,17 @@ Ember.HashLocation = Ember.Object.extend({
   implementation: 'hash',
 
   init: function() {
-    set(this, 'location', get(this, 'location') || window.location);
+    set(this, 'location', get(this, '_location') || window.location);
   },
+
+  /**
+    @private
+
+    Returns normalized location.hash
+
+    @method getHash
+  */
+  getHash: Ember.Location._getHash,
 
   /**
     Returns the current `location.hash`, minus the '#' at the front.
@@ -29,7 +37,7 @@ Ember.HashLocation = Ember.Object.extend({
     @method getURL
   */
   getURL: function() {
-    return getHash().substr(1);
+    return this.getHash().substr(1);
   },
 
   /**
