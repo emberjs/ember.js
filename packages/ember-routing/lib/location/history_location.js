@@ -43,7 +43,7 @@ Ember.HistoryLocation = Ember.Object.extend({
   rootURL: '/',
 
   /**
-    Returns the current `location.pathname` without `rootURL`.
+    Returns the current `location.pathname` without `rootURL` or `baseURL`
 
     @private
     @method getURL

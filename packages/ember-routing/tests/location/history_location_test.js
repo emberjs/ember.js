@@ -8,7 +8,7 @@ function createLocation(options){
   location = HistoryTestLocation.create(options);
 }
 
-module("History Location", {
+module("Ember.HistoryLocation", {
   setup: function() {
     FakeHistory = {
       state: null,
@@ -130,4 +130,22 @@ test("replaceURL continues to set even with a null state (iframes may set this)"
     location.replaceURL('/three/four');
 
     equal(FakeHistory.state && FakeHistory.state.path, '/three/four');
+});
+
+test("HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL", function() {
+    expect(1);
+
+    HistoryTestLocation.reopen({
+        init: function() {
+            this._super();
+
+            set(this, 'location', { pathname: '/base/foo/bar' });
+            set(this, 'rootURL', '/app/');
+            set(this, 'baseURL', '/base/');
+        }
+    });
+
+    createLocation();
+
+    equal(location.getURL(), '/foo/bar');
 });
