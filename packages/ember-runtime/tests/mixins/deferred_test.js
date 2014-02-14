@@ -206,7 +206,7 @@ test("can self reject", function() {
   });
 
   deferred.then(function() {
-    ok(false, 'should not fulfill'); 
+    ok(false, 'should not fulfill');
   },function(value) {
     equal(value, deferred, "successfully rejected to itself");
   });
@@ -311,3 +311,94 @@ test("can handle fulfillment without  fulfillment handler", function() {
 
   Ember.run(deferred, 'resolve', fulfillment);
 });
+
+if (Ember.FEATURES['ember-runtime-test-friendly-promises']) {
+  var asyncStarted = 0;
+  var asyncEnded = 0;
+  var Promise = Ember.RSVP.Promise;
+
+  var EmberTest;
+  var EmberTesting;
+
+  module("Ember.DeferredMixin RSVP's async + Testing", {
+    setup: function() {
+      EmberTest = Ember.Test;
+      EmberTesting = Ember.testing;
+
+      Ember.Test = {
+        adapter: {
+          asyncStart: function() {
+            asyncStarted++;
+            QUnit.stop();
+          },
+          asyncEnd: function() {
+            asyncEnded++;
+            QUnit.start();
+          }
+        }
+      };
+    },
+    teardown: function() {
+      asyncStarted = 0;
+      asyncEnded = 0;
+
+      Ember.testing = EmberTesting;
+      Ember.Test =  EmberTest;
+    }
+  });
+
+  test("given `Ember.testing = true`, correctly informs the test suite about async steps", function() {
+    expect(19);
+
+    ok(!Ember.run.currentRunLoop, 'expect no run-loop');
+
+    Ember.testing = true;
+
+    equal(asyncStarted, 0);
+    equal(asyncEnded, 0);
+
+    var user = Promise.resolve({
+      name: 'tomster'
+    });
+
+    equal(asyncStarted, 1);
+    equal(asyncEnded, 0);
+
+    user.then(function(user){
+      equal(asyncStarted, 1);
+      equal(asyncEnded, 1);
+
+      equal(user.name, 'tomster');
+
+      return Promise.resolve(1).then(function(){
+        equal(asyncStarted, 1);
+        equal(asyncEnded, 1);
+      });
+
+    }).then(function(){
+      equal(asyncStarted, 1);
+      equal(asyncEnded, 1);
+
+      return new Promise(function(resolve){
+        stop(); // raw async, we must inform the test framework manually
+        setTimeout(function(){
+          start(); // raw async, we must inform the test framework manually
+
+          equal(asyncStarted, 1);
+          equal(asyncEnded, 1);
+
+          resolve({
+            name: 'async tomster'
+          });
+
+          equal(asyncStarted, 2);
+          equal(asyncEnded, 1);
+        }, 0);
+      });
+    }).then(function(user){
+      equal(user.name, 'async tomster');
+      equal(asyncStarted, 2);
+      equal(asyncEnded, 2);
+    });
+  });
+}

@@ -355,18 +355,13 @@ Ember.Application.reopen({
     @method setupForTesting
   */
   setupForTesting: function() {
-    Ember.testing = true;
+    Ember.setupForTesting();
 
     this.testing = true;
 
     this.Router.reopen({
       location: 'none'
     });
-
-    // if adapter is not manually set default to QUnit
-    if (!Ember.Test.adapter) {
-       Ember.Test.adapter = Ember.Test.QUnitAdapter.create();
-    }
 
     if (Ember.FEATURES.isEnabled('ember-testing-simple-setup')){
       this.testingSetup = true;

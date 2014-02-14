@@ -19,29 +19,32 @@ test("calls computed property setters", function() {
   equal(o.get('foo'), 'bar');
 });
 
-test("sets up mandatory setters for watched simple properties", function() {
-  var MyClass = Ember.Object.extend({
-    foo: null,
-    bar: null,
-    fooDidChange: Ember.observer('foo', function() {})
+if (Ember.ENV.MANDATORY_SETTER) {
+  test("sets up mandatory setters for watched simple properties", function() {
+
+    var MyClass = Ember.Object.extend({
+      foo: null,
+      bar: null,
+      fooDidChange: Ember.observer('foo', function() {})
+    });
+
+    var o = MyClass.create({foo: 'bar', bar: 'baz'});
+    equal(o.get('foo'), 'bar');
+
+    // Catch IE8 where Object.getOwnPropertyDescriptor exists but only works on DOM elements
+    try {
+      Object.getOwnPropertyDescriptor({}, 'foo');
+    } catch(e) {
+      return;
+    }
+
+    var descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
+    ok(descriptor.set, 'Mandatory setter was setup');
+
+    descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
+    ok(!descriptor.set, 'Mandatory setter was not setup');
   });
-
-  var o = MyClass.create({foo: 'bar', bar: 'baz'});
-  equal(o.get('foo'), 'bar');
-
-  // Catch IE8 where Object.getOwnPropertyDescriptor exists but only works on DOM elements
-  try {
-    Object.getOwnPropertyDescriptor({}, 'foo');
-  } catch(e) {
-    return;
-  }
-
-  var descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
-  ok(descriptor.set, 'Mandatory setter was setup');
-
-  descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
-  ok(!descriptor.set, 'Mandatory setter was not setup');
-});
+}
 
 test("allows bindings to be defined", function() {
   var obj = Ember.Object.create({

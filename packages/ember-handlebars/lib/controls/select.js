@@ -327,7 +327,8 @@ Ember.Select = Ember.View.extend({
   tagName: 'select',
   classNames: ['ember-select'],
   defaultTemplate: precompileTemplate('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#if view.optionGroupPath}}{{#each view.groupedContent}}{{view view.groupView content=content label=label}}{{/each}}{{else}}{{#each view.content}}{{view view.optionView content=this}}{{/each}}{{/if}}'),
-  attributeBindings: ['multiple', 'disabled', 'tabindex', 'name'],
+  attributeBindings: ['multiple', 'disabled', 'tabindex', 'name', 'required', 'autofocus',
+                      'form', 'size'],
 
   /**
     The `multiple` attribute of the select element. Indicates whether multiple
@@ -348,6 +349,16 @@ Ember.Select = Ember.View.extend({
     @default false
   */
   disabled: false,
+
+  /**
+    The `required` attribute of the select element. Indicates whether
+    a selected option is required for form validation.
+
+    @property required
+    @type Boolean
+    @default false
+  */
+  required: false,
 
   /**
     The list of options.

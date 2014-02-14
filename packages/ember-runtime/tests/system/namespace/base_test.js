@@ -16,14 +16,9 @@ module('Ember.Namespace', {
     if (lookup.NamespaceA) { Ember.run(function() { lookup.NamespaceA.destroy(); }); }
     if (lookup.NamespaceB) { Ember.run(function() { lookup.NamespaceB.destroy(); }); }
     if (lookup.namespaceC) {
-      try {
-        Ember.TESTING_DEPRECATION = true;
-        Ember.run(function() {
-          lookup.namespaceC.destroy();
-        });
-      } finally {
-        Ember.TESTING_DEPRECATION = false;
-      }
+      Ember.run(function() {
+        lookup.namespaceC.destroy();
+      });
     }
 
     Ember.lookup = originalLookup;
@@ -69,19 +64,15 @@ test("Classes under Ember are properly named", function() {
 test("Lowercase namespaces should be deprecated", function() {
   lookup.namespaceC = Ember.Namespace.create();
 
-  var originalWarn = Ember.Logger.warn,
-      loggerWarning;
-
-  Ember.Logger.warn = function(msg) { loggerWarning = msg; };
-
-  try {
+  expectDeprecation(function(){
     lookup.namespaceC.toString();
-  } finally {
-    Ember.Logger.warn = originalWarn;
-  }
+  }, "Namespaces should not begin with lowercase.");
 
-  // Ignore backtrace
-  equal(loggerWarning.split("\n")[0], "DEPRECATION: Namespaces should not begin with lowercase.");
+  expectDeprecation(function(){
+    Ember.run(function() {
+      lookup.namespaceC.destroy();
+    });
+  }, "Namespaces should not begin with lowercase.");
 });
 
 test("A namespace can be assigned a custom name", function() {

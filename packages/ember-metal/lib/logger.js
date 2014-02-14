@@ -13,7 +13,7 @@ function consoleMethod(name) {
 
   if (method) {
     // Older IE doesn't support apply, but Chrome needs it
-    if (method.apply) {
+    if (typeof method.apply === 'function') {
       logToConsole = function() {
         method.apply(consoleObj, arguments);
       };

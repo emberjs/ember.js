@@ -7,11 +7,16 @@ var states = {};
 @submodule ember-views
 */
 
-var get = Ember.get, set = Ember.set;
-var guidFor = Ember.guidFor;
-var a_forEach = Ember.EnumerableUtils.forEach;
-var a_addObject = Ember.EnumerableUtils.addObject;
-var meta = Ember.meta;
+var get = Ember.get, set = Ember.set,
+    guidFor = Ember.guidFor,
+    a_forEach = Ember.EnumerableUtils.forEach,
+    a_addObject = Ember.EnumerableUtils.addObject,
+    meta = Ember.meta,
+    defineProperty = Ember.defineProperty;
+
+function nullViewsBuffer(view) {
+  view.buffer = null;
+}
 
 var childViewsProperty = Ember.computed(function() {
   var childViews = this._childViews, ret = Ember.A(), view = this;
@@ -75,6 +80,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
   init: function() {
     this._super();
     this.transitionTo('preRender');
+    this._isVisible = get(this, 'isVisible');
   },
 
   /**
@@ -85,7 +91,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
     @type Ember.View
     @default null
   */
-  parentView: Ember.computed(function() {
+  parentView: Ember.computed('_parentView', function() {
     var parent = this._parentView;
 
     if (parent && parent.isVirtual) {
@@ -93,17 +99,17 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
     } else {
       return parent;
     }
-  }).property('_parentView'),
+  }),
 
   state: null,
 
   _parentView: null,
 
   // return the current view, not including virtual views
-  concreteView: Ember.computed(function() {
+  concreteView: Ember.computed('parentView', function() {
     if (!this.isVirtual) { return this; }
     else { return get(this, 'parentView'); }
-  }).property('parentView'),
+  }),
 
   instrumentName: 'core_view',
 
@@ -903,7 +909,7 @@ Ember.View = Ember.CoreView.extend({
     @property template
     @type Function
   */
-  template: Ember.computed(function(key, value) {
+  template: Ember.computed('templateName', function(key, value) {
     if (value !== undefined) { return value; }
 
     var templateName = get(this, 'templateName'),
@@ -912,7 +918,7 @@ Ember.View = Ember.CoreView.extend({
     Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
 
     return template || get(this, 'defaultTemplate');
-  }).property('templateName'),
+  }),
 
   /**
     The controller managing this view. If this property is set, it will be
@@ -921,10 +927,10 @@ Ember.View = Ember.CoreView.extend({
     @property controller
     @type Object
   */
-  controller: Ember.computed(function(key) {
+  controller: Ember.computed('_parentView', function(key) {
     var parentView = get(this, '_parentView');
     return parentView ? get(parentView, 'controller') : null;
-  }).property('_parentView'),
+  }),
 
   /**
     A view may contain a layout. A layout is a regular template but
@@ -1338,6 +1344,8 @@ Ember.View = Ember.CoreView.extend({
     }, this);
   },
 
+  _unspecifiedAttributeBindings: null,
+
   /**
     Iterates through the view's attribute bindings, sets up observers for each,
     then applies the current value of the attributes to the passed render buffer.
@@ -1347,30 +1355,67 @@ Ember.View = Ember.CoreView.extend({
     @private
   */
   _applyAttributeBindings: function(buffer, attributeBindings) {
-    var attributeValue, elem;
+    var attributeValue,
+        unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
 
     a_forEach(attributeBindings, function(binding) {
       var split = binding.split(':'),
           property = split[0],
           attributeName = split[1] || property;
 
-      // Create an observer to add/remove/change the attribute if the
-      // JavaScript property changes.
-      var observer = function() {
-        elem = this.$();
+      if (property in this) {
+        this._setupAttributeBindingObservation(property, attributeName);
 
+        // Determine the current value and add it to the render buffer
+        // if necessary.
         attributeValue = get(this, property);
-
-        Ember.View.applyAttributeBindings(elem, attributeName, attributeValue);
-      };
-
-      this.registerObserver(this, property, observer);
-
-      // Determine the current value and add it to the render buffer
-      // if necessary.
-      attributeValue = get(this, property);
-      Ember.View.applyAttributeBindings(buffer, attributeName, attributeValue);
+        Ember.View.applyAttributeBindings(buffer, attributeName, attributeValue);
+      } else {
+        unspecifiedAttributeBindings[property] = attributeName;
+      }
     }, this);
+
+    // Lazily setup setUnknownProperty after attributeBindings are initially applied
+    this.setUnknownProperty = this._setUnknownProperty;
+  },
+
+  _setupAttributeBindingObservation: function(property, attributeName) {
+    var attributeValue, elem;
+
+    // Create an observer to add/remove/change the attribute if the
+    // JavaScript property changes.
+    var observer = function() {
+      elem = this.$();
+
+      attributeValue = get(this, property);
+
+      Ember.View.applyAttributeBindings(elem, attributeName, attributeValue);
+    };
+
+    this.registerObserver(this, property, observer);
+  },
+
+  /**
+    We're using setUnknownProperty as a hook to setup attributeBinding observers for
+    properties that aren't defined on a view at initialization time.
+
+    Note: setUnknownProperty will only be called once for each property.
+
+    @method setUnknownProperty
+    @param key
+    @param value
+    @private
+  */
+  setUnknownProperty: null, // Gets defined after initialization by _applyAttributeBindings
+
+  _setUnknownProperty: function(key, value) {
+    var attributeName = this._unspecifiedAttributeBindings && this._unspecifiedAttributeBindings[key];
+    if (attributeName) {
+      this._setupAttributeBindingObservation(key, attributeName);
+    }
+
+    defineProperty(this, key);
+    return set(this, key, value);
   },
 
   /**
@@ -1406,13 +1451,13 @@ Ember.View = Ember.CoreView.extend({
     @property element
     @type DOMElement
   */
-  element: Ember.computed(function(key, value) {
+  element: Ember.computed('_parentView', function(key, value) {
     if (value !== undefined) {
       return this.currentState.setElement(this, value);
     } else {
       return this.currentState.getElement(this);
     }
-  }).property('_parentView'),
+  }),
 
   /**
     Returns a jQuery object for this view's element. If you pass in a selector
@@ -2148,12 +2193,21 @@ Ember.View = Ember.CoreView.extend({
     @private
   */
   _isVisibleDidChange: Ember.observer('isVisible', function() {
+    if (this._isVisible === get(this, 'isVisible')) { return ; }
+    Ember.run.scheduleOnce('render', this, this._toggleVisibility);
+  }),
+
+  _toggleVisibility: function() {
     var $el = this.$();
     if (!$el) { return; }
 
     var isVisible = get(this, 'isVisible');
 
+    if (this._isVisible === isVisible) { return ; }
+
     $el.toggle(isVisible);
+
+    this._isVisible = isVisible;
 
     if (this._isAncestorHidden()) { return; }
 
@@ -2162,7 +2216,7 @@ Ember.View = Ember.CoreView.extend({
     } else {
       this._notifyBecameHidden();
     }
-  }),
+  },
 
   _notifyBecameVisible: function() {
     this.trigger('becameVisible');
@@ -2200,9 +2254,7 @@ Ember.View = Ember.CoreView.extend({
   },
 
   clearBuffer: function() {
-    this.invokeRecursively(function(view) {
-      view.buffer = null;
-    });
+    this.invokeRecursively(nullViewsBuffer);
   },
 
   transitionTo: function(state, children) {

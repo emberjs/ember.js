@@ -126,14 +126,14 @@ Ember.DefaultResolver = Ember.Object.extend({
   */
   resolve: function(fullName) {
     var parsedName = this.parseName(fullName),
-        typeSpecificResolveMethod = this[parsedName.resolveMethodName];
+        resolveMethodName = parsedName.resolveMethodName;
 
-    if (!parsedName.name || !parsedName.type) {
+    if (!(parsedName.name && parsedName.type)) {
       throw new TypeError("Invalid fullName: `" + fullName + "`, must be of the form `type:name` ");
     }
 
-    if (typeSpecificResolveMethod) {
-      var resolved = typeSpecificResolveMethod.call(this, parsedName);
+    if (this[resolveMethodName]) {
+      var resolved = this[resolveMethodName](parsedName);
       if (resolved) { return resolved; }
     }
     return this.resolveOther(parsedName);

@@ -83,7 +83,6 @@ module("Ember.View - handlebars integration", {
       view = null;
     }
     Ember.lookup = originalLookup;
-    Ember.TESTING_DEPRECATION = false;
   }
 });
 

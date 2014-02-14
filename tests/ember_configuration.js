@@ -31,7 +31,8 @@
     spade:   'ember-spade.js',
     build:   'ember.js',
     prod:    'ember.prod.js',
-    runtime: 'ember-runtime.js'
+    runtime: 'ember-runtime.js',
+    min:     'ember.min.js'
   };
 
 

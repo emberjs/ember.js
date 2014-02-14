@@ -60,8 +60,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     return allowed;
   };
 
-  ActionHelper.registerAction = function(actionName, options, allowedKeys) {
-    var actionId = (++Ember.uuid).toString();
+  ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
+    var actionId = ++Ember.uuid;
 
     ActionHelper.registeredActions[actionId] = {
       eventName: options.eventName,
@@ -76,7 +76,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           event.stopPropagation();
         }
 
-        var target = options.target;
+        var target = options.target,
+            actionName;
 
         if (target.target) {
           target = handlebarsGet(target.root, target.target, target.options);
@@ -84,8 +85,23 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           target = target.root;
         }
 
-        if (options.boundProperty) {
-          Ember.deprecate("Using a quoteless parameter with {{action}} is deprecated. Please update to quoted usage '{{action \"" + actionName + "\"}}.", false);
+        if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
+          if (options.boundProperty) {
+            actionName = handlebarsGet(target, actionNameOrPath, options.options);
+
+            if(typeof actionName === 'undefined' || typeof actionName === 'function') {
+              Ember.assert("You specified a quoteless path to the {{action}} helper '" + actionNameOrPath + "' which did not resolve to an actionName. Perhaps you meant to use a quoted actionName? (e.g. {{action '" + actionNameOrPath + "'}}).", true);
+              actionName = actionNameOrPath;
+            }
+          }
+        } else {
+          if (options.boundProperty) {
+            Ember.deprecate("Using a quoteless parameter with {{action}} is deprecated. Please update to quoted usage '{{action \"" + actionNameOrPath + "\"}}.", false);
+          }
+        }
+
+        if (!actionName) {
+          actionName = actionNameOrPath;
         }
 
         Ember.run(function runRegisteredAction() {
@@ -115,7 +131,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     to the current route, and it bubbles up the route hierarchy from there.
 
     User interaction with that element will invoke the supplied action name on
-    the appropriate target.
+    the appropriate target. Specifying a non-quoted action name will result in
+    a bound property lookup at the time the event will be triggered.
 
     Given the following application Handlebars template on the page
 
@@ -279,37 +296,31 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
         contexts = a_slice.call(arguments, 1, -1);
 
     var hash = options.hash,
-        controller;
+        controller = options.data.keywords.controller;
 
     // create a hash to pass along to registerAction
     var action = {
-      eventName: hash.on || "click"
+      eventName: hash.on || "click",
+      parameters: {
+        context: this,
+        options: options,
+        params: contexts
+      },
+      view: options.data.view,
+      bubbles: hash.bubbles,
+      preventDefault: hash.preventDefault,
+      target: { options: options },
+      boundProperty: options.types[0] === "ID"
     };
-
-    action.parameters = {
-      context: this,
-      options: options,
-      params: contexts
-    };
-
-    action.view = options.data.view;
-
-    var root, target;
 
     if (hash.target) {
-      root = this;
-      target = hash.target;
-    } else if (controller = options.data.keywords.controller) {
-      root = controller;
+      action.target.root = this;
+      action.target.target = hash.target;
+    } else if (controller) {
+      action.target.root = controller;
     }
-
-    action.target = { root: root, target: target, options: options };
-    action.bubbles = hash.bubbles;
-    action.preventDefault = hash.preventDefault;
-    action.boundProperty =  options.types[0] === "ID";
 
     var actionId = ActionHelper.registerAction(actionName, action, hash.allowedKeys);
     return new SafeString('data-ember-action="' + actionId + '"');
   });
-
 });

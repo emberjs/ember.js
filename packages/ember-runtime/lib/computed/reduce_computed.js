@@ -91,8 +91,6 @@ DependentArraysObserver.prototype = {
   },
 
   setupObservers: function (dependentArray, dependentKey) {
-    Ember.assert("dependent array must be an `Ember.Array`", Ember.Array.detect(dependentArray));
-
     this.dependentKeysByGuid[guidFor(dependentArray)] = dependentKey;
 
     dependentArray.addArrayObserver(this, {
@@ -482,6 +480,11 @@ function ReduceComputedProperty(options) {
 
     meta.dependentArraysObserver.suspendArrayObservers(function () {
       forEach(cp._dependentKeys, function (dependentKey) {
+        Ember.assert(
+          "dependent array " + dependentKey + " must be an `Ember.Array`.  " +
+          "If you are not extending arrays, you will need to wrap native arrays with `Ember.A`",
+          !(Ember.isArray(get(this, dependentKey)) && !Ember.Array.detect(get(this, dependentKey))));
+
         if (!partiallyRecomputeFor(this, dependentKey)) { return; }
 
         var dependentArray = get(this, dependentKey),
@@ -601,7 +604,7 @@ ReduceComputedProperty.prototype.property = function () {
       dependentArrayKey,
       itemPropertyKey;
 
-  forEach(a_slice.call(arguments), function (dependentKey) {
+  forEach(args, function (dependentKey) {
     if (doubleEachPropertyPattern.test(dependentKey)) {
       throw new Ember.Error("Nested @each properties not supported: " + dependentKey);
     } else if (match = eachPropertyPattern.exec(dependentKey)) {

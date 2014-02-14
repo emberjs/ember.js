@@ -79,6 +79,14 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
         self = this,
         initialURL = get(this, 'initialURL');
 
+    if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
+      // Allow the Location class to cancel the router setup while it refreshes
+      // the page
+      if (get(location, 'cancelRouterSetup')) {
+        return;
+      }
+    }
+
     this._setupRouter(router, location);
 
     container.register('view:default', DefaultView);
@@ -295,26 +303,23 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     args = slice.call(args);
     args[0] = args[0] || '/';
 
-    var passedName = args[0], name, self = this,
+    var name = args[0], self = this,
       isQueryParamsOnly = false, queryParams;
 
     if (Ember.FEATURES.isEnabled("query-params-new")) {
-      if (args[args.length - 1].hasOwnProperty('queryParams')) {
+
+      var possibleQueryParamArg = args[args.length - 1];
+      if (possibleQueryParamArg && possibleQueryParamArg.hasOwnProperty('queryParams')) {
         if (args.length === 1) {
           isQueryParamsOnly = true;
+          name = null;
         }
         queryParams = args[args.length - 1].queryParams;
       }
     }
 
-    if (!isQueryParamsOnly && passedName.charAt(0) !== '/') {
-      if (!this.router.hasRoute(passedName)) {
-        name = args[0] = passedName + '.index';
-      } else {
-        name = passedName;
-      }
-
-      Ember.assert("The route " + passedName + " was not found", this.router.hasRoute(name));
+    if (!isQueryParamsOnly && name.charAt(0) !== '/') {
+      Ember.assert("The route " + name + " was not found", this.router.hasRoute(name));
     }
 
     if (queryParams) {
@@ -331,12 +336,20 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
       }
 
       var qpMappings = this._queryParamNamesFor(name);
+
+
       Ember.Router._translateQueryParams(queryParams, qpMappings.translations, name);
+      var value;
       for (var key in queryParams) {
+        var descopedParam = Ember.Router._descopeQueryParam(key);
         if (key in qpMappings.queryParams) {
-          var value = queryParams[key];
+          value = queryParams[key];
           delete queryParams[key];
           queryParams[qpMappings.queryParams[key]] = value;
+        } else if (descopedParam in qpMappings.validQueryParams) {
+          value = queryParams[key];
+          delete queryParams[key];
+          queryParams[descopedParam] = value;
         }
       }
     }
@@ -344,7 +357,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     var transitionPromise = this.router[method].apply(this.router, args);
 
     transitionPromise.then(null, function(error) {
-      if (error.name === "UnrecognizedURLError") {
+      if (error && error.name === "UnrecognizedURLError") {
         Ember.assert("The URL '" + error.message + "' did not match any routes in your application");
       }
     }, 'Ember: Check for Router unrecognized URL error');
@@ -381,16 +394,19 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
     // TODO: add caching
 
-    routeName = this.router.hasRoute(routeName) ? routeName : routeName + '.index';
-
     var handlerInfos = this.router.recognizer.handlersFor(routeName);
-    var result = { queryParams: Ember.create(null), translations: Ember.create(null) };
+    var result = { queryParams: Ember.create(null), translations: Ember.create(null), validQueryParams: Ember.create(null) };
     var routerjs = this.router;
     forEach(handlerInfos, function(recogHandler) {
       var route = routerjs.getHandler(recogHandler.handler);
       getQueryParamsForRoute(route, result);
     });
 
+    descopeQueryParams(result.queryParams);
+
+    for (var k in result.queryParams) {
+      result.validQueryParams[result.queryParams[k]] = true;
+    }
     return result;
   },
 
@@ -402,6 +418,14 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     var route = this.router.getHandler(routeName);
 
     getQueryParamsForRoute(route, result);
+
+    // Descope non duplicate params.
+    if (routeName !== 'application') {
+      var allParams = this._queryParamNamesFor(routeName);
+      for (var k in result.queryParams) {
+        result.queryParams[k] = allParams.queryParams[k];
+      }
+    }
 
     return result;
   },
@@ -415,7 +439,8 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
   _queryParamOverrides: function(results, queryParams, callback) {
     for (var name in queryParams) {
       var parts = name.split(':');
-      var controller = this.container.lookup('controller:' + parts[0]);
+
+      var controller = controllerOrProtoFor(parts[0], this.container);
       Ember.assert(fmt("Could not lookup controller '%@' while setting up query params", [controller]), controller);
 
       // Now assign the final URL-serialized key-value pair,
@@ -435,10 +460,11 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
  */
 function getQueryParamsForRoute(route, result) {
   var controllerName = route.controllerName || route.routeName,
-      controller = route.controllerFor(controllerName, true);
+      controller = controllerOrProtoFor(controllerName, route.container),
+      queryParams = get(controller, 'queryParams');
 
-  if (controller && controller.queryParams) {
-    forEach(controller.queryParams, function(propName) {
+  if (queryParams) {
+    forEach(queryParams, function(propName) {
 
       var parts = propName.split(':');
 
@@ -459,6 +485,47 @@ function getQueryParamsForRoute(route, result) {
       result.queryParams[controllerFullname] = urlKeyName;
       result.translations[parts[0]] = controllerFullname;
     });
+  }
+}
+
+function controllerOrProtoFor(controllerName, container) {
+  var fullName = 'controller:' + controllerName;
+  if (container.cache.has(fullName)) {
+    return container.lookup(fullName);
+  } else {
+    // Controller hasn't been instantiated yet; just return its proto.
+    var controllerClass = container.lookupFactory(fullName);
+    if (controllerClass && typeof controllerClass.proto === 'function') {
+      return controllerClass.proto();
+    } else {
+      return {};
+    }
+  }
+}
+
+function descopeQueryParams(params) {
+  var paramCounts = {},
+      descopedParam,
+      k;
+
+  // Loop through params and count the occurance of descoped param
+  for (k in params) {
+    descopedParam = Ember.Router._descopeQueryParam(params[k]);
+
+    if (!paramCounts[descopedParam]) {
+      paramCounts[descopedParam] = 1;
+    } else {
+      paramCounts[descopedParam] = paramCounts[descopedParam] + 1;
+    }
+  }
+
+  // Loop through again descoping params if the descoped key only occurs once
+  for (k in params) {
+    descopedParam = Ember.Router._descopeQueryParam(params[k]);
+
+    if (paramCounts[descopedParam] === 1) {
+      params[k] = descopedParam;
+    }
   }
 }
 
@@ -525,7 +592,7 @@ var defaultActionHandlers = {
       return;
     }
 
-    Ember.Logger.error('Error while loading route: ' + error.stack);
+    Ember.Logger.error('Error while loading route: ' + (error && error.stack));
   },
 
   loading: function(transition, originRoute) {
@@ -712,6 +779,19 @@ Ember.Router.reopenClass({
         Ember.assert(fmt("You supplied an unknown query param controller property '%@' for route '%@'. Only the following query param properties can be set for this route: %@", [name, routeName, Ember.keys(translations)]), name in queryParams);
       }
     }
+  },
+
+  _descopeQueryParam: function(param) {
+    var regex = /\[(.+)\]/,
+        result = param.match(regex);
+
+    if (!result) {
+      result = param;
+    } else {
+      result = result[1];
+    }
+
+    return result;
   }
 });
 

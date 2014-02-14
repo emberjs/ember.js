@@ -18,9 +18,9 @@ var o_defineProperty = Ember.platform.defineProperty,
     o_create = Ember.create,
     // Used for guid generation...
     GUID_KEY = '__ember'+ (+ new Date()),
-    uuid         = 0,
     numberCache  = [],
-    stringCache  = {};
+    stringCache  = {},
+    uuid = 0;
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
@@ -68,8 +68,12 @@ Ember.generateGuid = function generateGuid(obj, prefix) {
   if (!prefix) prefix = Ember.GUID_PREFIX;
   var ret = (prefix + (uuid++));
   if (obj) {
-    GUID_DESC.value = ret;
-    o_defineProperty(obj, GUID_KEY, GUID_DESC);
+    if (obj[GUID_KEY] === null) {
+      obj[GUID_KEY] = ret;
+    } else {
+      GUID_DESC.value = ret;
+      o_defineProperty(obj, GUID_KEY, GUID_DESC);
+    }
   }
   return ret;
 };
@@ -116,9 +120,14 @@ Ember.guidFor = function guidFor(obj) {
       if (obj[GUID_KEY]) return obj[GUID_KEY];
       if (obj === Object) return '(Object)';
       if (obj === Array)  return '(Array)';
-      ret = 'ember'+(uuid++);
-      GUID_DESC.value = ret;
-      o_defineProperty(obj, GUID_KEY, GUID_DESC);
+      ret = 'ember' + (uuid++);
+
+      if (obj[GUID_KEY] === null) {
+        obj[GUID_KEY] = ret;
+      } else {
+        GUID_DESC.value = ret;
+        o_defineProperty(obj, GUID_KEY, GUID_DESC);
+      }
       return ret;
   }
 };
@@ -321,13 +330,11 @@ Ember.metaPath = function metaPath(obj, path, writable) {
   @return {Function} wrapped function.
 */
 Ember.wrap = function(func, superFunc) {
-  function K() {}
-
   function superWrapper() {
-    var ret, sup = this._super;
-    this._super = superFunc || K;
+    var ret, sup = this.__nextSuper;
+    this.__nextSuper = superFunc;
     ret = func.apply(this, arguments);
-    this._super = sup;
+    this.__nextSuper = sup;
     return ret;
   }
 

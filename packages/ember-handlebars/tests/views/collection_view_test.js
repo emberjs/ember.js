@@ -24,7 +24,6 @@ module("ember-handlebars/tests/views/collection_view_test", {
     });
 
     Ember.lookup = originalLookup;
-    Ember.TESTING_DEPRECATION = false;
   }
 });
 
@@ -69,8 +68,6 @@ test("collection helper should try to use container to resolve view", function()
 });
 
 test("collection helper should accept relative paths", function() {
-  Ember.TESTING_DEPRECATION = true;
-
   view = Ember.View.create({
     template: Ember.Handlebars.compile('{{#collection view.collection}} <label></label> {{/collection}}'),
     collection: Ember.CollectionView.extend({
@@ -126,8 +123,6 @@ test("empty views should be removed when content is added to the collection (reg
 });
 
 test("should be able to specify which class should be used for the empty view", function() {
-  Ember.TESTING_DEPRECATION = true;
-
   var App;
 
   Ember.run(function() {
@@ -292,8 +287,6 @@ test("should give its item views the classBinding specified by itemClassBinding"
 });
 
 test("should give its item views the property specified by itemPropertyBinding", function() {
-  Ember.TESTING_DEPRECATION = true;
-
   TemplateTests.itemPropertyBindingTestItemView = Ember.View.extend({
     tagName: 'li'
   });

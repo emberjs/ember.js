@@ -957,30 +957,37 @@ testBoth('Ember.computed.collect', function(get, set) {
   deepEqual(get(obj, 'all'), [0, 'bar', a, true], 'have all of them');
 });
 
-testBoth('Ember.computed.oneWay', function(get, set) {
-  var obj = {
-    firstName: 'Teddy',
-    lastName: 'Zeenny'
+function oneWayTest(methodName) {
+  return function(get, set) {
+    var obj = {
+      firstName: 'Teddy',
+      lastName: 'Zeenny'
+    };
+
+    Ember.defineProperty(obj, 'nickName', Ember.computed[methodName]('firstName'));
+
+    equal(get(obj, 'firstName'), 'Teddy');
+    equal(get(obj, 'lastName'), 'Zeenny');
+    equal(get(obj, 'nickName'), 'Teddy');
+
+    set(obj, 'nickName', 'TeddyBear');
+
+    equal(get(obj, 'firstName'), 'Teddy');
+    equal(get(obj, 'lastName'), 'Zeenny');
+
+    equal(get(obj, 'nickName'), 'TeddyBear');
+
+    set(obj, 'firstName', 'TEDDDDDDDDYYY');
+
+    equal(get(obj, 'nickName'), 'TeddyBear');
   };
+}
 
-  Ember.defineProperty(obj, 'nickName', Ember.computed.oneWay('firstName'));
+testBoth('Ember.computed.oneWay', oneWayTest('oneWay'));
 
-  equal(get(obj, 'firstName'), 'Teddy');
-  equal(get(obj, 'lastName'), 'Zeenny');
-  equal(get(obj, 'nickName'), 'Teddy');
-
-  set(obj, 'nickName', 'TeddyBear');
-
-  equal(get(obj, 'firstName'), 'Teddy');
-  equal(get(obj, 'lastName'), 'Zeenny');
-
-  equal(get(obj, 'nickName'), 'TeddyBear');
-
-  set(obj, 'firstName', 'TEDDDDDDDDYYY');
-
-  equal(get(obj, 'nickName'), 'TeddyBear');
-});
-
+if (Ember.FEATURES.isEnabled('query-params-new')) {
+  testBoth('Ember.computed.reads', oneWayTest('reads'));
+}
 
 if (Ember.FEATURES.isEnabled('computed-read-only')) {
 testBoth('Ember.computed.readOnly', function(get, set) {

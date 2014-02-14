@@ -384,6 +384,24 @@ test("properties can be filtered by values", function() {
   deepEqual(a1s.mapBy('name'), ['one', 'two'], "arrays computed by matching value respond to modified properties");
 });
 
+test("properties values can be replaced", function() {
+  obj = Ember.Object.createWithMixins({
+      array: Ember.A([]),
+      a1s: Ember.computed.filterBy('array', 'a', 1),
+      a1bs: Ember.computed.filterBy('a1s', 'b')
+    });
+
+  var a1bs = get(obj, 'a1bs');
+  deepEqual(a1bs.mapBy('name'), [], "properties can be filtered by matching value");
+
+  Ember.run(function() {
+    set(obj, 'array', Ember.A([{name: 'item1', a:1, b:true}]));
+  });
+
+  a1bs = get(obj, 'a1bs');
+  deepEqual(a1bs.mapBy('name'), ['item1'], "properties can be filtered by matching value");
+});
+
 a_forEach.call(['uniq', 'union'], function (alias) {
   module('Ember.computed.' + alias, {
     setup: function() {
@@ -755,7 +773,7 @@ test("updating sort properties in place updates the sorted array", function() {
   });
 
   deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "precond - array is initially sorted");
-  
+
   Ember.run(function() {
     sortProps.clear();
     sortProps.pushObject('fname');
@@ -877,6 +895,53 @@ test("updating an item's sort properties does not error when binary search does 
   deepEqual(get(obj, 'sortedPeople'), [jaime, cersei], "array is sorted correctly");
 });
 
+test("property paths in sort properties update the sorted array", function () {
+  var jaime, cersei, sansa;
+
+  Ember.run(function () {
+    jaime = Ember.Object.create({
+      relatedObj: Ember.Object.create({ status: 1, firstName: 'Jaime', lastName: 'Lannister' })
+    });
+    cersei = Ember.Object.create({
+      relatedObj: Ember.Object.create({ status: 2, firstName: 'Cersei', lastName: 'Lannister' })
+    });
+    sansa = Ember.Object.create({
+      relatedObj: Ember.Object.create({ status: 3, firstName: 'Sansa', lastName: 'Stark' })
+    });
+
+    obj = Ember.Object.createWithMixins({
+      people: Ember.A([jaime, cersei, sansa]),
+      sortProps: Ember.A(['relatedObj.status']),
+      sortedPeople: Ember.computed.sort('people', 'sortProps')
+    });
+  });
+
+  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei, sansa], "precond - array is initially sorted");
+
+  Ember.run(function () {
+    cersei.set('status', 3);
+  });
+
+  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei, sansa], "array is sorted correctly");
+
+  Ember.run(function () {
+    cersei.set('status', 1);
+  });
+
+  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei, sansa], "array is sorted correctly");
+
+  Ember.run(function () {
+    sansa.set('status', 1);
+  });
+
+  deepEqual(get(obj, 'sortedPeople'), [jaime, cersei, sansa], "array is sorted correctly");
+
+  Ember.run(function () {
+    obj.set('sortProps', Ember.A(['relatedObj.firstName']));
+  });
+
+  deepEqual(get(obj, 'sortedPeople'), [cersei, jaime, sansa], "array is sorted correctly");
+});
 
 function sortByLnameFname(a, b) {
   var lna = get(a, 'lname'),

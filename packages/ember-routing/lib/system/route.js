@@ -334,10 +334,19 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
         for (var k in queryParams) {
           if (queryParams.hasOwnProperty(k)) {
 
+            var key = false,
+                descopedKey = Ember.Router._descopeQueryParam(k);
+
+            if (queryParams[k] in params) {
+              key = queryParams[k];
+            } else if (params[descopedKey] !== undefined) {
+              key = descopedKey;
+            }
+
             // Do a reverse lookup to see if the changed query
             // param URL key corresponds to a QP property on
             // this controller.
-            if (queryParams[k] in params) {
+            if (key) {
               // Update this controller property in a way that
               // won't fire observers.
               controller._finalizingQueryParams = true;
@@ -346,7 +355,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
                 // value wasn't overriden in setupController.
 
                 // Arrays coming from router.js should be Emberized.
-                var newValue = params[queryParams[k]];
+                var newValue = params[key];
                 newValue = Ember.isArray(newValue) ? Ember.A(newValue) : newValue;
                 set(controller, k, newValue);
               }
@@ -355,19 +364,32 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
               // Delete from params so that child routes
               // don't also try to respond to changes to
               // non-fully-qualified query param name changes.
-              delete params[queryParams[k]];
+              delete params[key];
             }
 
             // Query params are ordered. This action bubbles up
             // the route hierarchy so we unshift so that the final
             // order of query params goes from root to leaf.
-            finalParams.unshift({
-              key: queryParams[k],
-              value: get(controller, k)
-            });
+            var param = {
+              longform: queryParams[k],
+              shortform: descopedKey,
+              value: Ember.copy(get(controller, k))
+            };
+
+            var useLongform = false;
+
+            for (var i = 0, l = finalParams.length; i < l; i++) {
+              if (finalParams[i].key === descopedKey) {
+                useLongform = true;
+                finalParams[i].key = finalParams[i].longform;
+              }
+            }
+
+            param.key = useLongform ? queryParams[k] : descopedKey;
+
+            finalParams.unshift(param);
           }
         }
-
         controller._queryParamChangesDuringSuspension = null;
 
         // Bubble so that parent routes can claim QPs.
@@ -859,8 +881,18 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
       sawParams = true;
     }
 
-    if (!name && sawParams) { return params; }
-    else if (!name) { return; }
+    if (!name && sawParams) { return Ember.copy(params); }
+    else if (!name) {
+      if (Ember.FEATURES.isEnabled("ember-routing-inherits-parent-model")) {
+        if (transition.resolveIndex !== transition.state.handlerInfos.length-1) { return; }
+
+        var parentModel = transition.state.handlerInfos[transition.resolveIndex-1].context;
+
+        return parentModel;
+      } else {
+        return;
+      }
+    }
 
     return this.findModel(name, value);
   },
@@ -1308,11 +1340,25 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     });
     ```
 
+    Alternatively, you can pass the `outlet` name directly as a string.
+
+    Example:
+
+    ```js
+    hideModal: function(evt) {
+      this.disconnectOutlet('modal');
+    }
+    ```
+
     @method disconnectOutlet
-    @param {Object} options the options
+    @param {Object|String} options the options hash or outlet name
   */
   disconnectOutlet: function(options) {
-    options = options || {};
+    if (!options || typeof options === "string") {
+      var outletName = options;
+      options = {};
+      options.outlet = outletName;
+    }
     options.parentView = options.parentView ? options.parentView.replace(/\//g, '.') : parentTemplate(this);
     options.outlet = options.outlet || 'main';
 

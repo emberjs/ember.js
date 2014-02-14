@@ -12,9 +12,6 @@ module("Ember.Component", {
       if(component)  { component.destroy(); }
       if(controller) { controller.destroy(); }
     });
-
-    Ember.TESTING_DEPRECATION = false;
-    Ember.ENV.RAISE_ON_DEPRECATION = false;
   }
 });
 
@@ -27,8 +24,7 @@ test("The controller (target of `action`) of an Ember.Component is itself", func
 });
 
 test("A templateName specified to a component is moved to the layoutName", function(){
-  Ember.TESTING_DEPRECATION = true;
-
+  expectDeprecation(/Do not specify templateName on a Component, use layoutName instead/);
   component = Ember.Component.extend({
     templateName: 'blah-blah'
   }).create();
@@ -37,8 +33,7 @@ test("A templateName specified to a component is moved to the layoutName", funct
 });
 
 test("A template specified to a component is moved to the layout", function(){
-  Ember.TESTING_DEPRECATION = true;
-
+  expectDeprecation(/Do not specify template on a Component, use layout instead/);
   component = Ember.Component.extend({
     template: 'blah-blah'
   }).create();
@@ -47,42 +42,27 @@ test("A template specified to a component is moved to the layout", function(){
 });
 
 test("A template specified to a component is deprecated", function(){
-  Ember.ENV.RAISE_ON_DEPRECATION = true;
-
-  try {
+  expectDeprecation(function(){
     component = Ember.Component.extend({
       template: 'blah-blah'
     }).create();
-  } catch (e) {
-    equal(e.message, 'Do not specify template on a Component, use layout instead.', "deprecation warning is present");
-  }
+  }, 'Do not specify template on a Component, use layout instead.');
 });
 
 test("A templateName specified to a component is deprecated", function(){
-  Ember.ENV.RAISE_ON_DEPRECATION = true;
-
-  try {
+  expectDeprecation(function(){
     component = Ember.Component.extend({
       templateName: 'blah-blah'
     }).create();
-  } catch (e) {
-    equal(e.message, 'Do not specify templateName on a Component, use layoutName instead.', "deprecation warning is present");
-  }
+  }, 'Do not specify templateName on a Component, use layoutName instead.');
 });
 
 test("Specifying both templateName and layoutName to a component is NOT deprecated", function(){
-  expect(0);
-
-  Ember.ENV.RAISE_ON_DEPRECATION = true;
-
-  try {
-    component = Ember.Component.extend({
-      templateName: 'blah-blah',
-      layoutName: 'hum-drum'
-    }).create();
-  } catch (e) {
-    ok(false, "deprecation should not be thrown");
-  }
+  expectNoDeprecation();
+  component = Ember.Component.extend({
+    templateName: 'blah-blah',
+    layoutName: 'hum-drum'
+  }).create();
 });
 
 module("Ember.Component - Actions", {

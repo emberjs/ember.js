@@ -20,20 +20,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       resolvePaths  = Ember.Router.resolvePaths,
       isSimpleClick = Ember.ViewUtils.isSimpleClick;
 
-  function fullRouteName(router, name) {
-    var nameWithIndex;
-    if (!router.hasRoute(name)) {
-      nameWithIndex = name + '.index';
-      Ember.assert(fmt("The attempt to link-to route '%@' failed (also tried '%@'). " +
-                       "The router did not find '%@' in its possible routes: '%@'",
-                       [name, nameWithIndex, name, Ember.keys(router.router.recognizer.names).join("', '")]),
-                       router.hasRoute(nameWithIndex));
-      name = nameWithIndex;
-    }
-
-    return name;
-  }
-
   function getResolvedPaths(options) {
 
     var types = options.options.types,
@@ -298,10 +284,17 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           routeArgs = get(this, 'routeArgs'),
           contexts = routeArgs.slice(1),
           resolvedParams = get(this, 'resolvedParams'),
-          currentWhen = this.currentWhen || resolvedParams[0],
-          currentWithIndex = currentWhen + '.index',
-          isActive = router.isActive.apply(router, [currentWhen].concat(contexts)) ||
-                     router.isActive.apply(router, [currentWithIndex].concat(contexts));
+          currentWhen = this.currentWhen || routeArgs[0];
+
+      // if overriding active w/ currentWhen then don't apply contexts since they won't match
+      if (this.currentWhen) {
+        contexts = [];
+        if (Ember.FEATURES.isEnabled("query-params-new")) {
+          contexts.push({ queryParams: get(this, 'queryParams') });
+        }
+      }
+
+      var isActive = router.isActive.apply(router, [currentWhen].concat(contexts));
 
       if (isActive) { return get(this, 'activeClass'); }
     }).property('resolvedParams', 'routeArgs'),
@@ -354,11 +347,49 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       var router = get(this, 'router'),
           routeArgs = get(this, 'routeArgs');
 
+      var transition;
       if (get(this, 'replace')) {
-        router.replaceWith.apply(router, routeArgs);
+        transition = router.replaceWith.apply(router, routeArgs);
       } else {
-        router.transitionTo.apply(router, routeArgs);
+        transition = router.transitionTo.apply(router, routeArgs);
       }
+
+      // Schedule eager URL update, but after we've given the transition
+      // a chance to synchronously redirect.
+      if (Ember.FEATURES.isEnabled("ember-eager-url-update")) {
+        // We need to always generate the URL instead of using the href because
+        // the href will include any rootURL set, but the router expects a URL
+        // without it! Note that we don't use the first level router because it
+        // calls location.formatURL(), which also would add the rootURL!
+        var url = router.router.generate.apply(router.router, get(this, 'routeArgs'));
+        Ember.run.scheduleOnce('routerTransitions', this, this._eagerUpdateUrl, transition, url);
+      }
+    },
+
+    /**
+      @private
+     */
+    _eagerUpdateUrl: function(transition, href) {
+      if (!transition.isActive || !transition.urlMethod) {
+        // transition was aborted, already ran to completion,
+        // or it has a null url-updated method.
+        return;
+      }
+
+      if (href.indexOf('#') === 0) {
+        href = href.slice(1);
+      }
+
+      // Re-use the routerjs hooks set up by the Ember router.
+      var routerjs = get(this, 'router.router');
+      if (transition.urlMethod === 'update') {
+        routerjs.updateURL(href);
+      } else if (transition.urlMethod === 'replace') {
+        routerjs.replaceURL(href);
+      }
+
+      // Prevent later update url refire.
+      transition.method(null);
     },
 
     /**
@@ -412,8 +443,19 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
       if (!namedRoute) { return; }
 
-      namedRoute = fullRouteName(router, namedRoute);
-      resolvedParams[0] = namedRoute;
+      Ember.assert(fmt("The attempt to link-to route '%@' failed. " +
+                       "The router did not find '%@' in its possible routes: '%@'",
+                       [namedRoute, namedRoute, Ember.keys(router.router.recognizer.names).join("', '")]),
+                       router.hasRoute(namedRoute));
+
+      //normalize route name
+      var handlers = router.router.recognizer.handlersFor(namedRoute);
+      var normalizedPath = handlers[handlers.length - 1].handler;
+      if (namedRoute !== normalizedPath) {
+        this.set('currentWhen', namedRoute);
+        namedRoute = handlers[handlers.length - 1].handler;
+        resolvedParams[0] = namedRoute;
+      }
 
       for (var i = 1, len = resolvedParams.length; i < len; ++i) {
         var param = resolvedParams[i];

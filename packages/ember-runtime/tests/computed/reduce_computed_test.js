@@ -875,3 +875,20 @@ test("returning undefined in addedItem/removedItem completely invalidates a redu
   equal(get(obj, 'computed'), 2);
   equal(counter, 1);
 });
+
+if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.Array) {
+  test("reduceComputed complains about array dependencies that are not `Ember.Array`s", function() {
+    var Type = Ember.Object.extend({
+      rc: Ember.reduceComputed('array', {
+        initialValue: 0,
+        addedItem: function(v){ return v; },
+        removedItem: function(v){ return v; }
+      })
+    });
+
+    expectAssertion(function() {
+      obj = Type.create({ array: [] });
+      get(obj, 'rc');
+    }, /must be an `Ember.Array`/, "Ember.reduceComputed complains about dependent non-extended native arrays");
+  });
+}

@@ -87,7 +87,7 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
 
     // If {{#each}} is looping over an array of controllers,
     // point each child view at their respective controller.
-    if (content && get(content, 'isController')) {
+    if (content && content.isController) {
       set(view, 'controller', content);
     }
 

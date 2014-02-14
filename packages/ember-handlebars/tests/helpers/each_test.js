@@ -34,7 +34,6 @@ module("the #each helper", {
       view = null;
     });
     Ember.lookup = originalLookup;
-    Ember.TESTING_DEPRECATION = false;
   }
 });
 
@@ -433,14 +432,14 @@ test("it supports {{itemViewClass=}}", function() {
   assertText(view, "Steve HoltAnnabelle");
 });
 
-test("it supports {{itemViewClass=}} with tagName", function() {
-  Ember.TESTING_DEPRECATION = true;
-
+test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function() {
   Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
       template: templateFor('{{each view.people itemViewClass="MyView" tagName="ul"}}'),
       people: people
   });
+
+  expectDeprecation(/Supplying a tagName to Metamorph views is unreliable and is deprecated./);
 
   append(view);
 

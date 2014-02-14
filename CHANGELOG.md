@@ -1,8 +1,7 @@
 # Ember Changelog
 
-### Ember 1.4.0-beta.6 (February 7, 2014)
-
-* [SECURITY] Ensure link-to non-block escapes title.
+* [BREAKING CHANGE] `Ember.run.throttle` now supports leading edge execution. To follow industry standard leading edge is the default.
+* [BUGFIX] Fixed how parentController property of an itemController when nested. Breaking for apps that rely on previous broken behavior of an itemController's `parentController` property skipping its ArrayController when nested.
 
 ### Ember 1.4.0-beta.5 (February 3, 2014)
 
@@ -21,6 +20,7 @@
 * [BUGFIX] Calling toString at extend time causes Ember.View to memoize and return the same value for different instances.
 * [BUGFIX release] Fix ember-testing-lazy-routing.
 * [BUGFIX] Fixed how parentController property of an itemController when nested. Breaking for apps that rely on previous broken behavior of an itemController's `parentController` property skipping its ArrayController when nested.
+* Slight, sensible alteration to URL parsing logic: prefer fewer stars to more stars; if any stars, prefer more dynamics and statics to fewer; if no stars, prefer fewer dynamics and more statics
 
 ### Ember 1.4.0-beta.3 (January 20, 2014)
 
@@ -35,7 +35,6 @@
 * [SECURITY] Ensure {{group}} helper escapes properly.
 * Performance improvements.
 * [BUGFIX] Templete-less components properties should not collide with internal properties.
-
 
 ### Ember 1.4.0-beta.1 (January 6, 2014)
 
@@ -100,6 +99,11 @@
 * Components are lazily looked up.
 * Renaming everyBy and anyBy to isEvery and isAny.
 
+###Ember 1.2.1 _(January 14, 2014)_
+
+* [SECURITY] Ensure primitive value contexts are escaped.
+* [SECURITY] Ensure {{group}} helper escapes properly.
+
 ###Ember 1.2.0 _(November 22, 2013)_
 
 * [BUGFIX] Publish ember-handlebars-compiler along with builds.
@@ -154,6 +158,19 @@
 * Update route recognizer
 * Allow apps with custom jquery builds to exclude the event-alias module
 * Removes long-deprecated getPath/setPath
+
+###Ember 1.1.3 _(January 13, 2014)_
+
+* [SECURITY] Ensure primitive value contexts are escaped.
+* [SECURITY] Ensure {{group}} helper escapes properly.
+
+###Ember 1.1.2 _(October 25, 2013)
+
+* [BUGFIX] Fix failures in component rendering. - Fixes #3637
+
+###Ember 1.1.1 _(October 23, 2013)_
+
+* [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
 
 ### Ember 1.1.0 _(October 21, 2013)_
 

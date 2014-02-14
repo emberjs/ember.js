@@ -49,7 +49,10 @@ test("should hide views when isVisible is false", function() {
 
   ok(view.$().is(':hidden'), "the view is hidden");
 
-  set(view, 'isVisible', true);
+  Ember.run(function(){
+    set(view, 'isVisible', true);
+  });
+
   ok(view.$().is(':visible'), "the view is visible");
   Ember.run(function() {
     view.remove();
@@ -75,7 +78,9 @@ test("should hide element if isVisible is false before element is created", func
     view.remove();
   });
 
-  set(view, 'isVisible', true);
+  Ember.run(function(){
+    set(view, 'isVisible', true);
+  });
 
   Ember.run(function() {
     view.append();

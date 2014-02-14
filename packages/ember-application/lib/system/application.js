@@ -749,6 +749,10 @@ Ember.Application.reopenClass({
     container.register('router:main',  Ember.Router);
     container.injection('router:main', 'namespace', 'application:main');
 
+    if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
+      container.register('location:auto', Ember.AutoLocation);
+    }
+    
     container.register('location:hash', Ember.HashLocation);
     container.register('location:history', Ember.HistoryLocation);
     container.register('location:none', Ember.NoneLocation);

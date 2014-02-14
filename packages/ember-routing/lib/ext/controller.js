@@ -178,7 +178,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     _queryParamChanged: function(controller, key) {
       // Normalize array observer firings.
-      if (key.substr(-3) === '.[]') {
+      if (key.slice(key.length - 3) === '.[]') {
         key = key.substr(0, key.length-3);
       }
 

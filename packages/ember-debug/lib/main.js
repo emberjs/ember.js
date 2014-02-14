@@ -105,9 +105,6 @@ Ember.debug = function(message) {
     will be displayed.
 */
 Ember.deprecate = function(message, test) {
-  if (Ember.TESTING_DEPRECATION) { return; }
-
-  if (arguments.length === 1) { test = false; }
   if (test) { return; }
 
   if (Ember.ENV.RAISE_ON_DEPRECATION) { throw new Ember.Error(message); }
