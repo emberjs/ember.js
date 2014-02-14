@@ -53,7 +53,7 @@ namespace :release do
       mkdir_p "tmp"
 
       cd("tmp") do
-        sh "git clone https://github.com/emberjs/starter-kit.git"
+        sh "git clone git@github.com:emberjs/starter-kit.git"
       end
     end
 
