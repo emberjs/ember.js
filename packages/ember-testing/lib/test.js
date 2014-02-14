@@ -107,7 +107,7 @@ Ember.Test = {
 
     Example:
 
-    ```
+    ```javascript
     Ember.Test.unregisterHelper('wait');
     ```
 
@@ -127,7 +127,8 @@ Ember.Test = {
     The callback will receive the current application as an argument.
 
     Example:
-    ```
+
+    ```javascript
     Ember.Test.onInjectHelpers(function() {
       Ember.$(document).ajaxStart(function() {
         Test.pendingAjaxRequests++;
@@ -170,7 +171,7 @@ Ember.Test = {
 
    Example:
 
-   ```
+   ```javascript
    Ember.Test.adapter = MyCustomAdapter.create()
    ```
 
@@ -204,18 +205,21 @@ Ember.Test = {
      transition or an IndexDB transaction.
 
      For example:
+
      ```javascript
      Ember.Test.registerWaiter(function() {
-     return myPendingTransactions() == 0;
+       return myPendingTransactions() == 0;
      });
      ```
      The `context` argument allows you to optionally specify the `this`
      with which your callback will be invoked.
 
      For example:
+
      ```javascript
      Ember.Test.registerWaiter(MyDB, MyDB.hasPendingTransactions);
      ```
+
      @public
      @method registerWaiter
      @param {Object} context (optional)
@@ -479,7 +483,7 @@ function isolate(fn, val) {
   // Reset lastPromise for nested helpers
   Ember.Test.lastPromise = null;
 
-  value = fn.call(null, val);
+  value = fn(val);
 
   lastPromise = Ember.Test.lastPromise;
 

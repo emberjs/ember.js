@@ -1,17 +1,63 @@
 # Ember Changelog
 
+### Ember 1.4.0-beta.6 (February 7, 2014)
+
+* [SECURITY] Ensure link-to non-block escapes title.
+
+### Ember 1.4.0-beta.5 (February 3, 2014)
+
+* Deprecate quoteless action names.
+* [BUGFIX beta] Make Ember.RenderBuffer#addClass work as expected.
+* [DOC beta] Display Ember Inspector hint in Firefox.
+* [Bugfix BETA] App.destroy resets routes before destroying the container.
+
+### Ember 1.4.0-beta.4 (January 29, 2014)
+
+* [BUGFIX beta] reduceComputed fires observers when invalidating with undefined.
+* [BUGFIX beta] Provide helpful error even if Model isn't found.
+* [BUGFIX beta] Do not deprecate the block form of {{render}}.
+* [BUGFIX beta] allow enumerable/any to match undefined as value
+* [BUGFIX release] Allow canceling of Timers in IE8.
+* [BUGFIX] Calling toString at extend time causes Ember.View to memoize and return the same value for different instances.
+* [BUGFIX release] Fix ember-testing-lazy-routing.
+* [BUGFIX] Fixed how parentController property of an itemController when nested. Breaking for apps that rely on previous broken behavior of an itemController's `parentController` property skipping its ArrayController when nested.
+
+### Ember 1.4.0-beta.3 (January 20, 2014)
+
+* Document the send method on Ember.ActionHandler.
+* Document Ember.Route #controllerName and #viewName properties.
+* Allow jQuery version 1.11 and 2.1.
+
+### Ember 1.4.0-beta.2 (January 14, 2014)
+
+* [BUGFIX] Fix stripping trailing slashes for * routes.
+* [SECURITY] Ensure primitive value contexts are escaped.
+* [SECURITY] Ensure {{group}} helper escapes properly.
+* Performance improvements.
+* [BUGFIX] Templete-less components properties should not collide with internal properties.
+
+
+### Ember 1.4.0-beta.1 (January 6, 2014)
+
+* Unbound helper supports bound helper static strings.
+* Preserve `<base>` URL when using history location for routing.
+* Begin adding names for anonymous functions to aid in debugging.
+* [FEATURE with-controller] {{#with}} can take a controller= option for wrapping the context. Must be an `Ember.ObjectController`
+* [FEATURE propertyBraceExpansion] Add support for brace-expansion in dependent keys, observer and watch properties.
+* [FEATURE ember-metal-run-bind] Enables `Ember.run.bind` which is ember run-loop aware variation of jQuery.proxy.
+
 ### Ember 1.3.1 (January 14, 2014)
 
 * [SECURITY] Ensure primitive value contexts are escaped.
 * [SECURITY] Ensure {{group}} helper escapes properly.
 
 ### Ember 1.3.0 (January 6, 2014)
- 
+
 * Many documentation updates.
 * Update to RSVP 3.0.3.
 * Use defeatureify to strip debug statements allowing multi-line assert statements.
 * Added fail(), catch() and finally() methods to PromiseProxyMixin.
-* [BUGFIX Add 'view' option to {{outlet}} helper
+* [BUGFIX] Add 'view' option to {{outlet}} helper
 * Make `Ember.compare` return `date` when appropriate.
 * Prefer `EmberENV` over `ENV`, and do not create a global `ENV` if it was not supplied.
 * `{{unbound}}` helper supports bound helper static strings.
@@ -53,8 +99,8 @@
 * [BUGFIX] Ember.Object.create now takes `undefined` as an argument.
 * Components are lazily looked up.
 * Renaming everyBy and anyBy to isEvery and isAny.
- 
-### Ember 1.2.0 _(November 22, 2013)_
+
+###Ember 1.2.0 _(November 22, 2013)_
 
 * [BUGFIX] Publish ember-handlebars-compiler along with builds.
 * [BUGFIX] Use RegExp.test() for Ember.computed.match.
@@ -76,7 +122,6 @@
 * [BUGFIX] Bubble `loading` action above pivot route
 * [BUGFIX] reduceComputed ignore changes during reset.
 * [BUGFIX] reduceComputed handle out-of-range index.
-* [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
 * [FEATURE] Add support for nested loading/error substates. A loading substate will be entered when a slow-to-resolve promise is returned from one of the Route#model hooks during a transition and an appropriately-named loading template/route can be found.  An error substate will be entered when one of the Route#model hooks returns a rejecting promise and an appropriately-named error template/route can be found.
 * [FEATURE] Components and helpers registered on the container can be rendered in templates via their dasherized names. E.g. {{helper-name}} or {{component-name}}
 * [FEATURE] Add a `didTransition` hook to the router.

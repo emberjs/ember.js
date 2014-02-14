@@ -155,7 +155,7 @@ function wait(app, value) {
     // Every 10ms, poll for the async thing to have finished
     var watcher = setInterval(function() {
       // 1. If the router is loading, keep polling
-      var routerIsLoading = app.__container__.lookup('router:main').router.isLoading;
+      var routerIsLoading = !!app.__container__.lookup('router:main').router.activeTransition;
       if (routerIsLoading) { return; }
 
       // 2. If there are pending Ajax requests, keep polling
@@ -211,7 +211,7 @@ asyncHelper('visit', visit);
 *
 * ```javascript
 * click('.some-jQuery-selector').then(function() {
-*  // assert something
+*   // assert something
 * });
 * ```
 *
@@ -266,7 +266,7 @@ asyncHelper('fillIn', fillIn);
 * Example:
 *
 * ```javascript
-* var $el = find('.my-selector);
+* var $el = find('.my-selector');
 * ```
 *
 * @method find
@@ -325,13 +325,12 @@ if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
 
     Example:
 
-    ```
+    ```javascript
     function validateRouteName(){
       equal(currentRouteName(), 'some.path', "correct route was transitioned into.");
     }
 
     visit('/some/path').then(validateRouteName)
-
     ```
 
     @method currentRouteName
@@ -344,13 +343,12 @@ if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
 
     Example:
 
-    ```
+    ```javascript
     function validateURL(){
       equal(currentPath(), 'some.path.index', "correct path was transitioned into.");
     }
 
     click('#some-link-id').then(validateURL);
-
     ```
 
     @method currentPath
@@ -363,13 +361,12 @@ if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
 
     Example:
 
-    ```
+    ```javascript
     function validateURL(){
       equal(currentURL(), '/some/path', "correct URL was transitioned into.");
     }
 
     click('#some-link-id').then(validateURL);
-
     ```
 
     @method currentURL

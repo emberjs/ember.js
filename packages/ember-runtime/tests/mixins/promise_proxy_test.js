@@ -176,3 +176,18 @@ test("unhandled rejects still propogate to RSVP.on('error', ...) ", function(){
   Ember.RSVP.off('error', onerror);
 });
 
+test("should work with promise inheritance", function(){
+  function PromiseSubclass() {
+    Ember.RSVP.Promise.apply(this, arguments);
+  }
+
+  PromiseSubclass.prototype = Ember.create(Ember.RSVP.Promise.prototype);
+  PromiseSubclass.prototype.constructor = PromiseSubclass;
+  PromiseSubclass.cast = Ember.RSVP.Promise.cast;
+
+  var proxy = ObjectPromiseProxy.create({
+    promise: new PromiseSubclass(function(){ })
+  });
+
+  ok(proxy.then() instanceof PromiseSubclass, 'promise proxy respected inheritence');
+});

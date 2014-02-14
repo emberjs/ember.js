@@ -1245,3 +1245,42 @@ test("it computes interdependent array computed properties", function() {
   equal(calls, 1, 'runtime created observers fire');
 });
 
+module('Ember.computed.sum', {
+  setup: function() {
+    Ember.run(function() {
+      obj = Ember.Object.createWithMixins({
+        array: Ember.A([ 1, 2, 3 ]),
+        total: Ember.computed.sum('array')
+      });
+    });
+  },
+  teardown: function() {
+    Ember.run(function() {
+      obj.destroy();
+    });
+  }
+});
+
+test('sums the values in the dependentKey', function(){
+  var sum = get(obj, 'total');
+  equal(sum, 6, 'sums the values');
+});
+
+test('updates when array is modified', function(){
+  var run = Ember.run;
+  var sum = function(){
+    return get(obj, 'total');
+  };
+
+  run(function(){
+    get(obj, 'array').pushObject(1);
+  });
+
+  equal(sum(), 7, 'recomputed when elements are added');
+
+  run(function(){
+    get(obj, 'array').popObject();
+  });
+
+  equal(sum(), 6, 'recomputes when elements are removed');
+});

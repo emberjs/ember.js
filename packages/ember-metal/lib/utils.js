@@ -167,7 +167,8 @@ Meta.prototype = {
   bindings: null,
   chains: null,
   chainWatchers: null,
-  values: null
+  values: null,
+  proto: null
 };
 
 if (isDefinePropertySimulated) {
@@ -673,3 +674,38 @@ Ember.typeOf = function(item) {
 
   return ret;
 };
+
+/**
+  Convenience method to inspect an object. This method will attempt to
+  convert the object into a useful string description.
+
+  It is a pretty simple implementation. If you want something more robust,
+  use something like JSDump: https://github.com/NV/jsDump
+
+  @method inspect
+  @for Ember
+  @param {Object} obj The object you want to inspect.
+  @return {String} A description of the object
+*/
+Ember.inspect = function(obj) {
+  var type = Ember.typeOf(obj);
+  if (type === 'array') {
+    return '[' + obj + ']';
+  }
+  if (type !== 'object') {
+    return obj + '';
+  }
+
+  var v, ret = [];
+  for(var key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      v = obj[key];
+      if (v === 'toString') { continue; } // ignore useless items
+      if (Ember.typeOf(v) === 'function') { v = "function() { ... }"; }
+      ret.push(key + ": " + v);
+    }
+  }
+  return "{" + ret.join(", ") + "}";
+};
+
+

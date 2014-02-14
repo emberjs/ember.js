@@ -1,13 +1,14 @@
 {
   "features": {
-    "propertyBraceExpansion": false,
-    "query-params": false,
+    "query-params-new": false,
+    "string-parameterize": false,
     "ember-routing-named-substates": false,
-    "string-humanize": false,
     "ember-handlebars-caps-lookup": false,
     "ember-testing-simple-setup": false,
     "ember-testing-routing-helpers": false,
-    "ember-testing-triggerEvent-helper": false
+    "ember-testing-triggerEvent-helper": false,
+    "computed-read-only": false,
+    "composable-computed-properties": false
   },
   "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info"]
 }

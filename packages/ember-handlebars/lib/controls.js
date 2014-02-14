@@ -1,6 +1,5 @@
 require("ember-handlebars/controls/checkbox");
 require("ember-handlebars/controls/text_field");
-require("ember-handlebars/controls/button");
 require("ember-handlebars/controls/text_area");
 require("ember-handlebars/controls/select");
 
@@ -161,6 +160,7 @@ Ember.Handlebars.registerHelper('input', function(options) {
   delete hash.on;
 
   if (inputType === 'checkbox') {
+    Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`; you must use `checked=someBooleanValue` instead.", options.hashTypes.value !== 'ID');
     return Ember.Handlebars.helpers.view.call(this, Ember.Checkbox, options);
   } else {
     if (inputType) { hash.type = inputType; }

@@ -282,6 +282,8 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
         preserveContext = get(this, 'preserveContext'),
         context = get(this, 'previousContext');
 
+    var _contextController = get(this, '_contextController');
+
     var inverseTemplate = get(this, 'inverseTemplate'),
         displayTemplate = get(this, 'displayTemplate');
 
@@ -301,6 +303,10 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
       // Otherwise, determine if this is a block bind or not.
       // If so, pass the specified object to the template
         if (displayTemplate) {
+          if (_contextController) {
+            set(_contextController, 'content', result);
+            result = _contextController;
+          }
           set(this, '_context', result);
         } else {
         // This is not a bind block, just push the result of the

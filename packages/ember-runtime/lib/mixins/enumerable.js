@@ -47,13 +47,13 @@ function iter(key, value) {
   To make your own custom class enumerable, you need two items:
 
   1. You must have a length property. This property should change whenever
-     the number of items in your enumerable object changes. If you using this
+     the number of items in your enumerable object changes. If you use this
      with an `Ember.Object` subclass, you should be sure to change the length
      property using `set().`
 
   2. You must implement `nextObject().` See documentation.
 
-  Once you have these two methods implement, apply the `Ember.Enumerable` mixin
+  Once you have these two methods implemented, apply the `Ember.Enumerable` mixin
   to your class and you will be able to enumerate the contents of your object
   like any other collection.
 
@@ -617,11 +617,23 @@ Ember.Enumerable = Ember.Mixin.create({
     @return {Boolean} `true` if the passed function returns `true` for any item
   */
   any: function(callback, target) {
-    var found = this.find(function(x, idx, i) {
-      return !!callback.call(target, x, idx, i);
-    });
+    var len     = get(this, 'length'),
+        context = popCtx(),
+        found   = false,
+        last    = null,
+        next, idx;
 
-    return typeof found !== 'undefined';
+    if (target === undefined) { target = null; }
+
+    for (idx = 0; idx < len && !found; idx++) {
+      next  = this.nextObject(idx, last, context);
+      found = callback.call(target, next, idx, this);
+      last  = next;
+    }
+
+    next = last = null;
+    context = pushCtx(context);
+    return found;
   },
 
   /**
@@ -730,7 +742,7 @@ Ember.Enumerable = Ember.Mixin.create({
     var ret = initialValue;
 
     this.forEach(function(item, i) {
-      ret = callback.call(null, ret, item, i, this, reducerProperty);
+      ret = callback(ret, item, i, this, reducerProperty);
     }, this);
 
     return ret;
@@ -753,7 +765,7 @@ Ember.Enumerable = Ember.Mixin.create({
     this.forEach(function(x, idx) {
       var method = x && x[methodName];
       if ('function' === typeof method) {
-        ret[idx] = args ? method.apply(x, args) : method.call(x);
+        ret[idx] = args ? method.apply(x, args) : x[methodName]();
       }
     }, this);
 
@@ -948,8 +960,6 @@ Ember.Enumerable = Ember.Mixin.create({
     notify range observers.
 
     @method enumerableContentDidChange
-    @param {Number} [start] optional start offset for the content change.
-      For unordered enumerables, you should always pass -1.
     @param {Ember.Enumerable|Number} removing An enumerable of the objects to
       be removed or the number of items to be removed.
     @param {Ember.Enumerable|Number} adding  An enumerable of the objects to

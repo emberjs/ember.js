@@ -1,6 +1,6 @@
-define("route-recognizer",
-  [],
-  function() {
+define("route-recognizer", 
+  ["exports"],
+  function(__exports__) {
     "use strict";
     var specials = [
       '/', '.', '*', '+', '?', '|',
@@ -29,11 +29,11 @@ define("route-recognizer",
     function StaticSegment(string) { this.string = string; }
     StaticSegment.prototype = {
       eachChar: function(callback) {
-        var string = this.string, char;
+        var string = this.string, ch;
 
         for (var i=0, l=string.length; i<l; i++) {
-          char = string.charAt(i);
-          callback({ validChars: char });
+          ch = string.charAt(i);
+          callback({ validChars: ch });
         }
       },
 
@@ -173,8 +173,8 @@ define("route-recognizer",
       },
 
       // Find a list of child states matching the next character
-      match: function(char) {
-        // DEBUG "Processing `" + char + "`:"
+      match: function(ch) {
+        // DEBUG "Processing `" + ch + "`:"
         var nextStates = this.nextStates,
             child, charSpec, chars;
 
@@ -187,9 +187,9 @@ define("route-recognizer",
           charSpec = child.charSpec;
 
           if (typeof (chars = charSpec.validChars) !== 'undefined') {
-            if (chars.indexOf(char) !== -1) { returned.push(child); }
+            if (chars.indexOf(ch) !== -1) { returned.push(child); }
           } else if (typeof (chars = charSpec.invalidChars) !== 'undefined') {
-            if (chars.indexOf(char) === -1) { returned.push(child); }
+            if (chars.indexOf(ch) === -1) { returned.push(child); }
           }
         }
 
@@ -238,53 +238,58 @@ define("route-recognizer",
       });
     }
 
-    function recognizeChar(states, char) {
+    function recognizeChar(states, ch) {
       var nextStates = [];
 
       for (var i=0, l=states.length; i<l; i++) {
         var state = states[i];
 
-        nextStates = nextStates.concat(state.match(char));
+        nextStates = nextStates.concat(state.match(ch));
       }
 
       return nextStates;
     }
 
+    var oCreate = Object.create || function(proto) {
+      function F() {}
+      F.prototype = proto;
+      return new F();
+    };
+
+    function RecognizeResults(queryParams) {
+      this.queryParams = queryParams || {};
+    }
+    RecognizeResults.prototype = oCreate({
+      splice: Array.prototype.splice,
+      slice:  Array.prototype.slice,
+      push:   Array.prototype.push,
+      length: 0,
+      queryParams: null
+    });
+
     function findHandler(state, path, queryParams) {
       var handlers = state.handlers, regex = state.regex;
       var captures = path.match(regex), currentCapture = 1;
-      var result = [];
+      var result = new RecognizeResults(queryParams);
 
       for (var i=0, l=handlers.length; i<l; i++) {
-        var handler = handlers[i], names = handler.names, params = {},
-          watchedQueryParams = handler.queryParams || [],
-          activeQueryParams = {},
-          j, m;
+        var handler = handlers[i], names = handler.names, params = {};
 
-        for (j=0, m=names.length; j<m; j++) {
+        for (var j=0, m=names.length; j<m; j++) {
           params[names[j]] = captures[currentCapture++];
         }
-        for (j=0, m=watchedQueryParams.length; j < m; j++) {
-          var key = watchedQueryParams[j];
-          if(queryParams[key]){
-            activeQueryParams[key] = queryParams[key];
-          }
-        }
-        var currentResult = { handler: handler.handler, params: params, isDynamic: !!names.length };
-        if(watchedQueryParams && watchedQueryParams.length > 0) {
-          currentResult.queryParams = activeQueryParams;
-        }
-        result.push(currentResult);
+
+        result.push({ handler: handler.handler, params: params, isDynamic: !!names.length });
       }
 
       return result;
     }
 
     function addSegment(currentState, segment) {
-      segment.eachChar(function(char) {
+      segment.eachChar(function(ch) {
         var state;
 
-        currentState = currentState.put(char);
+        currentState = currentState.put(ch);
       });
 
       return currentState;
@@ -330,9 +335,6 @@ define("route-recognizer",
           }
 
           var handler = { handler: route.handler, names: names };
-          if(route.queryParams) {
-            handler.queryParams = route.queryParams;
-          }
           handlers.push(handler);
         }
 
@@ -393,24 +395,26 @@ define("route-recognizer",
       },
 
       generateQueryString: function(params, handlers) {
-        var pairs = [], allowedParams = [];
-        for(var i=0; i < handlers.length; i++) {
-          var currentParamList = handlers[i].queryParams;
-          if(currentParamList) {
-            allowedParams.push.apply(allowedParams, currentParamList);
-          }
-        }
+        var pairs = [];
         for(var key in params) {
           if (params.hasOwnProperty(key)) {
-            if(allowedParams.indexOf(key) === -1) {
-              throw 'Query param "' + key + '" is not specified as a valid param for this route';
-            }
             var value = params[key];
-            var pair = encodeURIComponent(key);
-            if(value !== true) {
-              pair += "=" + encodeURIComponent(value);
+            if (value === false || value == null) {
+              continue;
             }
-            pairs.push(pair);
+            var pair = key;
+            if (Array.isArray(value)) {
+              for (var i = 0, l = value.length; i < l; i++) {
+                var arrayPair = key + '[]' + '=' + encodeURIComponent(value[i]);
+                pairs.push(arrayPair);
+              }
+            }
+            else if (value !== true) {
+              pair += "=" + encodeURIComponent(value);
+              pairs.push(pair);
+            } else {
+              pairs.push(pair);
+            }
           }
         }
 
@@ -424,15 +428,36 @@ define("route-recognizer",
         for(var i=0; i < pairs.length; i++) {
           var pair      = pairs[i].split('='),
               key       = decodeURIComponent(pair[0]),
-              value     = pair[1] ? decodeURIComponent(pair[1]) : true;
-          queryParams[key] = value;
+              keyLength = key.length,
+              isArray = false,
+              value;
+          if (pair.length === 1) {
+            value = true;
+          } else {
+            //Handle arrays
+            if (keyLength > 2 && key.slice(keyLength -2) === '[]') {
+              isArray = true;
+              key = key.slice(0, keyLength - 2);
+              if(!queryParams[key]) {
+                queryParams[key] = [];
+              }
+            }
+            value = pair[1] ? decodeURIComponent(pair[1]) : '';
+          }
+          if (isArray) {
+            queryParams[key].push(value);
+          } else {
+            queryParams[key] = value;
+          }
+          
         }
         return queryParams;
       },
 
       recognize: function(path) {
         var states = [ this.rootState ],
-            pathLen, i, l, queryStart, queryParams = {};
+            pathLen, i, l, queryStart, queryParams = {}, 
+            isSlashDropped = false;
 
         queryStart = path.indexOf('?');
         if (queryStart !== -1) {
@@ -448,6 +473,7 @@ define("route-recognizer",
         pathLen = path.length;
         if (pathLen > 1 && path.charAt(pathLen - 1) === "/") {
           path = path.substr(0, pathLen - 1);
+          isSlashDropped = true;
         }
 
         for (i=0, l=path.length; i<l; i++) {
@@ -467,10 +493,17 @@ define("route-recognizer",
         var state = solutions[0];
 
         if (state && state.handlers) {
+          // if a trailing slash was dropped and a star segment is the last segment 
+          // specified, put the trailing slash back
+          if (isSlashDropped && state.regex.source.slice(-5) === "(.+)$") {
+            path = path + "/";
+          }
           return findHandler(state, path, queryParams);
         }
       }
     };
+
+    __exports__["default"] = RouteRecognizer;
 
     function Target(path, matcher, delegate) {
       this.path = path;
@@ -493,34 +526,18 @@ define("route-recognizer",
           this.matcher.addChild(this.path, target, callback, this.delegate);
         }
         return this;
-      },
-
-      withQueryParams: function() {
-        if (arguments.length === 0) { throw new Error("you must provide arguments to the withQueryParams method"); }
-        for (var i = 0; i < arguments.length; i++) {
-          if (typeof arguments[i] !== "string") {
-            throw new Error('you should call withQueryParams with a list of strings, e.g. withQueryParams("foo", "bar")');
-          }
-        }
-        var queryParams = [].slice.call(arguments);
-        this.matcher.addQueryParams(this.path, queryParams);
       }
     };
 
     function Matcher(target) {
       this.routes = {};
       this.children = {};
-      this.queryParams = {};
       this.target = target;
     }
 
     Matcher.prototype = {
       add: function(path, handler) {
         this.routes[path] = handler;
-      },
-
-      addQueryParams: function(path, params) {
-        this.queryParams[path] = params;
       },
 
       addChild: function(path, target, callback, delegate) {
@@ -549,7 +566,7 @@ define("route-recognizer",
       };
     }
 
-    function addRoute(routeArray, path, handler, queryParams) {
+    function addRoute(routeArray, path, handler) {
       var len = 0;
       for (var i=0, l=routeArray.length; i<l; i++) {
         len += routeArray[i].path.length;
@@ -557,18 +574,16 @@ define("route-recognizer",
 
       path = path.substr(len);
       var route = { path: path, handler: handler };
-      if(queryParams) { route.queryParams = queryParams; }
       routeArray.push(route);
     }
 
     function eachRoute(baseRoute, matcher, callback, binding) {
       var routes = matcher.routes;
-      var queryParams = matcher.queryParams;
 
       for (var path in routes) {
         if (routes.hasOwnProperty(path)) {
           var routeArray = baseRoute.slice();
-          addRoute(routeArray, path, routes[path], queryParams[path]);
+          addRoute(routeArray, path, routes[path]);
 
           if (matcher.children[path]) {
             eachRoute(routeArray, matcher.children[path], callback, binding);
@@ -589,5 +604,4 @@ define("route-recognizer",
         else { this.add(route); }
       }, this);
     };
-    return RouteRecognizer;
   });

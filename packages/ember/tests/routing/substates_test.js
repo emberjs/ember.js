@@ -590,5 +590,4 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
     equal(Ember.$('#app', '#qunit-fixture').text(), "INDEX");
   });
-
 }

@@ -790,3 +790,34 @@ test("should respect preventDefault=false option if provided", function(){
 
   equal(event.isDefaultPrevented(), false, "should not preventDefault");
 });
+
+test("a quoteless parameter as an action name", function(){
+  expect(2);
+
+  var triggeredAction;
+
+  view = Ember.View.create({
+    template: compile("<a id='oops-bound-param'' {{action ohNoeNotValid}}>Hi</a>")
+  });
+
+  var controller = Ember.Controller.extend({
+    actions: {
+      ohNoeNotValid: function() {
+        triggeredAction = true;
+      }
+    }
+  }).create();
+
+  Ember.run(function() {
+    view.set('controller', controller);
+    view.appendTo('#qunit-fixture');
+  });
+
+  expectDeprecation(function(){
+    Ember.run(function(){
+      view.$("#oops-bound-param").click();
+    });
+  },"Using a quoteless parameter with {{action}} is deprecated. Please update to quoted usage '{{action \"ohNoeNotValid\"}}." );
+
+  ok(triggeredAction, 'the action was triggered');
+});

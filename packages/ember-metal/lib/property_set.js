@@ -13,16 +13,6 @@ var META_KEY = Ember.META_KEY,
   property is not defined but the object implements the `setUnknownProperty`
   method then that will be invoked as well.
 
-  If you plan to run on IE8 and older browsers then you should use this
-  method anytime you want to set a property on an object that you don't
-  know for sure is private. (Properties beginning with an underscore '_'
-  are considered private.)
-
-  On all newer browsers, you only need to use this method to set
-  properties if the property might not be defined on the object and you want
-  to respect the `setUnknownProperty` handler. Otherwise you can ignore this
-  method.
-
   @method set
   @for Ember
   @param {Object} obj The object to modify.

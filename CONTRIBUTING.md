@@ -71,34 +71,6 @@ npm install
 rake
 ```
 
-For those having issues with some of the build tool dependencies, an optional VagrantFile is provided.
-
-Using Vagrant to build latest version of Ember.js is quite simple. Just
-follow these 4 steps:
-
-1. Install Virtual Box - [Download](https://www.virtualbox.org/wiki/Downloads)
-
-2. Install Vagrant - [Download](http://downloads.vagrantup.com/)
-
-3. Retrieve chef cookbooks
-~~~
-git submodule init
-git submodule update
-~~~
-4. Lauch your vagrant virtual machine
-~~~
-vagrant up
-vagrant ssh
-~~~
-5. Use it!
-~~~
-cd /vagrant
-bundle install
-rake dist
-rake test
-...
-~~~
-
 # Pull Requests
 
 We love pull requests. Here's a quick guide:

@@ -409,9 +409,15 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 
     ```javascript
     App.inject(<full_name or type>, <property name>, <full_name>)
-    App.inject('model:user', 'email', 'model:email')
-    App.inject('model', 'source', 'source:main')
+    App.inject('controller:application', 'email', 'model:email')
+    App.inject('controller', 'source', 'source:main')
     ```
+    Please note that injections on models are currently disabled. 
+    This was done because ember-data was not ready for fully a container aware ecosystem.
+    
+    You can enable injections on models by setting `Ember.MODEL_FACTORY_INJECTIONS` flag to `true`
+    If model factory injections are enabled, models should not be
+    accessed globally (only through `container.lookupFactory('model:modelName'))`);
 
     @method inject
     @param  factoryNameOrType {String}
@@ -660,6 +666,8 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 
   willDestroy: function() {
     Ember.BOOTED = false;
+    // Ensure deactivation of routes before objects are destroyed
+    this.__container__.lookup('router:main').reset();
 
     this.__container__.destroy();
   },
@@ -740,6 +748,10 @@ Ember.Application.reopenClass({
 
     container.register('router:main',  Ember.Router);
     container.injection('router:main', 'namespace', 'application:main');
+
+    container.register('location:hash', Ember.HashLocation);
+    container.register('location:history', Ember.HistoryLocation);
+    container.register('location:none', Ember.NoneLocation);
 
     container.injection('controller', 'target', 'router:main');
     container.injection('controller', 'namespace', 'application:main');

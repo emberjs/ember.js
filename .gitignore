@@ -15,6 +15,7 @@ assets/bpm_libs.js
 assets/bpm_styles.css
 coverage
 dist
+distold
 docs/build
 docs/node_modules
 lib/*/tests/all.js
@@ -34,6 +35,5 @@ tmp.bpm
 tmp.spade
 tests/source
 node_modules
-.vagrant
 bundle/
 *~

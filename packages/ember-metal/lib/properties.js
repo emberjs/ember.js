@@ -116,6 +116,12 @@ Ember.defineProperty = function(obj, keyName, desc, data, meta) {
     } else {
       obj[keyName] = undefined; // make enumerable
     }
+
+    if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+      if (desc.func && desc._dependentCPs) {
+        addImplicitCPs(obj, desc._dependentCPs, meta);
+      }
+    }
   } else {
     descs[keyName] = undefined; // shadow descriptor in proto
     if (desc == null) {
@@ -151,3 +157,19 @@ Ember.defineProperty = function(obj, keyName, desc, data, meta) {
   return this;
 };
 
+if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
+  var addImplicitCPs = function defineImplicitCPs(obj, implicitCPs, meta) {
+    var cp, key, length = implicitCPs.length;
+
+    for (var i=0; i<length; ++i) {
+      cp = implicitCPs[i];
+      key = cp.implicitCPKey;
+
+      Ember.defineProperty(obj, key, cp, undefined, meta);
+
+      if (cp._dependentCPs) {
+        addImplicitCPs(obj, cp._dependentCPs, meta);
+      }
+    }
+  };
+}

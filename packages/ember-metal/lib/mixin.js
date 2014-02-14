@@ -24,9 +24,7 @@ var Mixin, REQUIRED, Alias,
     metaFor = Ember.meta,
     META_KEY = Ember.META_KEY;
 
-if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-  var expandProperties = Ember.expandProperties;
-}
+var expandProperties = Ember.expandProperties;
 
 function mixinsMeta(obj) {
   var m = metaFor(obj, true), ret = m.mixins;
@@ -401,7 +399,7 @@ Ember.mixin = function(obj) {
 
   Note that mixins extend a constructor's prototype so arrays and object literals
   defined as properties will be shared amongst objects that implement the mixin.
-  If you want to define an property in a mixin that is not shared, you can define
+  If you want to define a property in a mixin that is not shared, you can define
   it either as a computed property or have it be created on initialization of the object.
 
   ```javascript
@@ -605,35 +603,6 @@ Alias = function(methodName) {
 Alias.prototype = new Ember.Descriptor();
 
 /**
-  Makes a property or method available via an additional name.
-
-  ```javascript
-  App.PaintSample = Ember.Object.extend({
-    color: 'red',
-    colour: Ember.alias('color'),
-    name: function() {
-      return "Zed";
-    },
-    moniker: Ember.alias("name")
-  });
-
-  var paintSample = App.PaintSample.create()
-  paintSample.get('colour');  // 'red'
-  paintSample.moniker();      // 'Zed'
-  ```
-
-  @method alias
-  @for Ember
-  @param {String} methodName name of the method or property to alias
-  @return {Ember.Descriptor}
-  @deprecated Use `Ember.aliasMethod` or `Ember.computed.alias` instead
-*/
-Ember.alias = function(methodName) {
-  Ember.deprecate("Ember.alias is deprecated. Please use Ember.aliasMethod or Ember.computed.alias instead.");
-  return new Alias(methodName);
-};
-
-/**
   Makes a method available via an additional name.
 
   ```javascript
@@ -687,31 +656,20 @@ Ember.observer = function() {
   var func  = a_slice.call(arguments, -1)[0];
   var paths;
 
-  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-    var addWatchedProperty = function (path) { paths.push(path); };
-    var _paths = a_slice.call(arguments, 0, -1);
+  var addWatchedProperty = function (path) { paths.push(path); };
+  var _paths = a_slice.call(arguments, 0, -1);
 
-    if (typeof func !== "function") {
-      // revert to old, soft-deprecated argument ordering
+  if (typeof func !== "function") {
+    // revert to old, soft-deprecated argument ordering
 
-      func  = arguments[0];
-      _paths = a_slice.call(arguments, 1);
-    }
+    func  = arguments[0];
+    _paths = a_slice.call(arguments, 1);
+  }
 
-    paths = [];
+  paths = [];
 
-    for (var i=0; i<_paths.length; ++i) {
-      expandProperties(_paths[i], addWatchedProperty);
-    }
-  } else {
-    paths = a_slice.call(arguments, 0, -1);
-
-    if (typeof func !== "function") {
-      // revert to old, soft-deprecated argument ordering
-
-      func  = arguments[0];
-      paths = a_slice.call(arguments, 1);
-    }
+  for (var i=0; i<_paths.length; ++i) {
+    expandProperties(_paths[i], addWatchedProperty);
   }
 
   if (typeof func !== "function") {
@@ -801,32 +759,21 @@ Ember.beforeObserver = function() {
   var func  = a_slice.call(arguments, -1)[0];
   var paths;
 
-  if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-    var addWatchedProperty = function(path) { paths.push(path); };
+  var addWatchedProperty = function(path) { paths.push(path); };
 
-    var _paths = a_slice.call(arguments, 0, -1);
+  var _paths = a_slice.call(arguments, 0, -1);
 
-    if (typeof func !== "function") {
-      // revert to old, soft-deprecated argument ordering
+  if (typeof func !== "function") {
+    // revert to old, soft-deprecated argument ordering
 
-      func  = arguments[0];
-      _paths = a_slice.call(arguments, 1);
-    }
+    func  = arguments[0];
+    _paths = a_slice.call(arguments, 1);
+  }
 
-    paths = [];
+  paths = [];
 
-    for (var i=0; i<_paths.length; ++i) {
-      expandProperties(_paths[i], addWatchedProperty);
-    }
-  } else {
-    paths = a_slice.call(arguments, 0, -1);
-
-    if (typeof func !== "function") {
-      // revert to old, soft-deprecated argument ordering
-
-      func  = arguments[0];
-      paths = a_slice.call(arguments, 1);
-    }
+  for (var i=0; i<_paths.length; ++i) {
+    expandProperties(_paths[i], addWatchedProperty);
   }
 
   if (typeof func !== "function") {

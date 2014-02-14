@@ -28,6 +28,9 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @method exit
   */
   exit: function() {
+    if (Ember.FEATURES.isEnabled("query-params-new")) {
+      this.controller._deactivateQueryParamObservers();
+    }
     this.deactivate();
     this.teardownViews();
   },
@@ -40,6 +43,74 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   enter: function() {
     this.activate();
   },
+
+  /**
+    The name of the view to use by default when rendering this routes template.
+
+    When rendering a template, the route will, by default, determine the
+    template and view to use from the name of the route itself. If you need to
+    define a specific view, set this property.
+
+    This is useful when multiple routes would benefit from using the same view
+    because it doesn't require a custom `renderTemplate` method. For example,
+    the following routes will all render using the `App.PostsListView` view:
+
+    ```js
+    var PostsList = Ember.Route.extend({
+      viewName: 'postsList',
+    });
+
+    App.PostsIndexRoute = PostsList.extend();
+    App.PostsArchivedRoute = PostsList.extend();
+    ```
+
+    @property viewName
+    @type String
+    @default null
+  */
+  viewName: null,
+
+  /**
+    The name of the template to use by default when rendering this routes
+    template.
+
+    This is similar with `viewName`, but is useful when you just want a custom
+    template without a view.
+
+    ```js
+    var PostsList = Ember.Route.extend({
+      templateName: 'posts/list'
+    });
+
+    App.PostsIndexRoute = PostsList.extend();
+    App.PostsArchivedRoute = PostsList.extend();
+    ```
+
+    @property templateName
+    @type String
+    @default null
+  */
+  templateName: null,
+
+  /**
+    The name of the controller to associate with this route.
+
+    By default, Ember will lookup a route's controller that matches the name
+    of the route (i.e. `App.PostController` for `App.PostRoute`). However,
+    if you would like to define a specific controller to use, you can do so
+    using this property.
+
+    This is useful in many ways, as the controller specified will be:
+
+    * passed to the `setupController` method.
+    * used as the controller for the view being rendered by the route.
+    * returned from a call to `controllerFor` for the route.
+
+    @property controllerName
+    @type String
+    @default null
+  */
+  controllerName: null,
 
   /**
     The collection of functions, keyed by name, available on this route as
@@ -402,6 +473,8 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @param {String} name the name of the route
     @param {...Object} models the model(s) to be used while transitioning
     to the route.
+    @return {Transition} the transition object associated with this
+      attempted transition
   */
   transitionTo: function(name, context) {
     var router = this.router;
@@ -409,7 +482,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   },
 
   /**
-    Perform a synchronous transition into another route with out attempting
+    Perform a synchronous transition into another route without attempting
     to resolve promises, update the URL, or abort any currently active
     asynchronous transitions (i.e. regular transitions caused by
     `transitionTo` or URL changes).
@@ -426,6 +499,30 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   intermediateTransitionTo: function() {
     var router = this.router;
     router.intermediateTransitionTo.apply(router, arguments);
+  },
+
+  /**
+    Refresh the model on this route and any child routes, firing the
+    `beforeModel`, `model`, and `afterModel` hooks in a similar fashion
+    to how routes are entered when transitioning in from other route.
+    The current route params (e.g. `article_id`) will be passed in
+    to the respective model hooks, and if a different model is returned,
+    `setupController` and associated route hooks will re-fire as well.
+
+    An example usage of this method is re-querying the server for the
+    latest information using the same parameters as when the route
+    was first entered.
+
+    Note that this will cause `model` hooks to fire even on routes
+    that were provided a model object when the route was initially
+    entered.
+
+    @method refresh
+    @return {Transition} the transition object associated with this
+      attempted transition
+   */
+  refresh: function() {
+    return this.router.router.refresh(this).method('replace');
   },
 
   /**
@@ -455,6 +552,8 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @param {String} name the name of the route
     @param {...Object} models the model(s) to be used while transitioning
     to the route.
+    @return {Transition} the transition object associated with this
+      attempted transition
   */
   replaceWith: function() {
     var router = this.router;
@@ -505,7 +604,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @private
     @method setup
   */
-  setup: function(context, queryParams) {
+  setup: function(context, transition) {
     var controllerName = this.controllerName || this.routeName,
         controller = this.controllerFor(controllerName, true);
     if (!controller) {
@@ -516,42 +615,40 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     // referenced in action handlers
     this.controller = controller;
 
-    var args = [controller, context];
-
-    if (Ember.FEATURES.isEnabled("query-params")) {
-      args.push(queryParams);
+    if (Ember.FEATURES.isEnabled("query-params-new")) {
+      // TODO: configurable _queryParamScope
+      if (controllerName !== 'application') {
+        this.controller._queryParamScope = controllerName;
+      }
+      this.controller._activateQueryParamObservers();
     }
 
     if (this.setupControllers) {
       Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
       this.setupControllers(controller, context);
     } else {
-      this.setupController.apply(this, args);
+
+      if (Ember.FEATURES.isEnabled("query-params-new")) {
+        // Prevent updates to query params in setupController
+        // from firing another transition. Updating QPs in
+        // setupController will only affect the final
+        // generated URL.
+        controller._finalizingQueryParams = true;
+        controller._queryParamChangesDuringSuspension = {};
+        this.setupController(controller, context, transition);
+        controller._finalizingQueryParams = false;
+      } else {
+        this.setupController(controller, context);
+      }
     }
 
     if (this.renderTemplates) {
       Ember.deprecate("Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.");
       this.renderTemplates(context);
     } else {
-      this.renderTemplate.apply(this, args);
+      this.renderTemplate(controller, context);
     }
   },
-
-  /**
-    A hook you can implement to optionally redirect to another route.
-
-    If you call `this.transitionTo` from inside of this hook, this route
-    will not be entered in favor of the other hook.
-
-    Note that this hook is called by the default implementation of
-    `afterModel`, so if you override `afterModel`, you must either
-    explicitly call `redirect` or just put your redirecting
-    `this.transitionTo()` call within `afterModel`.
-
-    @method redirect
-    @param {Object} model the model for this route
-  */
-  redirect: Ember.K,
 
   /**
     This hook is the first of the route entry validation hooks
@@ -614,8 +711,6 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
             // error so that it'd be handled by the `error`
             // hook, you would have to either
             return Ember.RSVP.reject(e);
-            // or
-            throw e;
           });
         }
       }
@@ -664,10 +759,32 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
       resolves. Otherwise, non-promise return values are not
       utilized in any way.
    */
-  afterModel: function(resolvedModel, transition, queryParams) {
-    this.redirect(resolvedModel, transition);
-  },
+  afterModel: Ember.K,
 
+  /**
+    A hook you can implement to optionally redirect to another route.
+
+    If you call `this.transitionTo` from inside of this hook, this route
+    will not be entered in favor of the other hook.
+
+    `redirect` and `afterModel` behave very similarly and are
+    called almost at the same time, but they have an important
+    distinction in the case that, from one of these hooks, a
+    redirect into a child route of this route occurs: redirects
+    from `afterModel` essentially invalidate the current attempt
+    to enter this route, and will result in this route's `beforeModel`,
+    `model`, and `afterModel` hooks being fired again within
+    the new, redirecting transition. Redirects that occur within
+    the `redirect` hook, on the other hand, will _not_ cause
+    these hooks to be fired again the second time around; in
+    other words, by the time the `redirect` hook has been called,
+    both the resolved model and attempted entry into this route
+    are considered to be fully validated.
+
+    @method redirect
+    @param {Object} model the model for this route
+  */
+  redirect: Ember.K,
 
   /**
     Called when the context is changed by router.js.
@@ -733,6 +850,8 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     var match, name, sawParams, value;
 
     for (var prop in params) {
+      if (prop === 'queryParams') { continue; }
+
       if (match = prop.match(/^(.*)_id$/)) {
         name = match[1];
         value = params[prop];
@@ -744,6 +863,19 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     else if (!name) { return; }
 
     return this.findModel(name, value);
+  },
+
+  /**
+    @private
+
+    Router.js hook.
+   */
+  deserialize: function(params, transition) {
+    if (Ember.FEATURES.isEnabled("query-params-new")) {
+      return this.model(this.paramsFor(this.routeName), transition);
+    } else {
+      return this.model(params, transition);
+    }
   },
 
   /**
@@ -783,6 +915,8 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
                      routeName + ", but " + namespace + "." + classify(name) +
                      " did not exist and you did not override your route's `model` " +
                      "hook.", modelClass);
+
+        if (!modelClass) { return; }
 
         return modelClass.find(value);
       }
@@ -888,7 +1022,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @param {Controller} controller instance
     @param {Object} model
   */
-  setupController: function(controller, context) {
+  setupController: function(controller, context, transition) {
     if (controller && (context !== undefined)) {
       set(controller, 'model', context);
     }
@@ -1183,7 +1317,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     options.outlet = options.outlet || 'main';
 
     var parentView = this.router._lookupActiveView(options.parentView);
-    parentView.disconnectOutlet(options.outlet);
+    if (parentView) { parentView.disconnectOutlet(options.outlet); }
   },
 
   willDestroy: function() {
@@ -1211,8 +1345,45 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   }
 });
 
+
+if (Ember.FEATURES.isEnabled("query-params-new")) {
+  Ember.Route.reopen({
+    paramsFor: function(name) {
+      var route = this.container.lookup('route:' + name);
+
+      if (!route) {
+        return {};
+      }
+
+      var transition = this.router.router.activeTransition;
+      var queryParamsHash = this.router._queryParamNamesForSingle(route.routeName);
+
+      var params, queryParams;
+      if (transition) {
+        params = transition.params[name] || {};
+        queryParams = transition.queryParams;
+      } else {
+        var state = this.router.router.state;
+        params = state.params[name] || {};
+        queryParams = state.queryParams;
+      }
+
+      this.router._queryParamOverrides(params, queryParamsHash.queryParams, function(name, resultsName, colonized) {
+        // Replace the controller-supplied value with more up
+        // to date values (e.g. from an incoming transition).
+        var value = (resultsName in queryParams) ?
+                    queryParams[resultsName]  :  params[resultsName];
+        delete params[resultsName];
+        params[colonized.split(':').pop()] = value;
+      });
+
+      return params;
+    }
+  });
+}
+
 function parentRoute(route) {
-  var handlerInfos = route.router.router.targetHandlerInfos;
+  var handlerInfos = route.router.router.state.handlerInfos;
 
   if (!handlerInfos) { return; }
 
@@ -1258,7 +1429,11 @@ function normalizeOptions(route, name, template, options) {
   }
 
   if (typeof controller === 'string') {
-    controller = route.container.lookup('controller:' + controller);
+    var controllerName = controller;
+    controller = route.container.lookup('controller:' + controllerName);
+    if (!controller) {
+      throw new Ember.Error("You passed `controller: '" + controllerName + "'` into the `render` method, but no such controller could be found.");
+    }
   }
 
   options.controller = controller;

@@ -66,3 +66,44 @@ test("webkit doesn't fire popstate on page load", function() {
   createLocation();
   location.initState();
 });
+
+test("base URL is removed when retrieving the current pathname", function() {
+    expect(1);
+
+    HistoryTestLocation.reopen({
+        init: function() {
+            this._super();
+
+            set(this, 'location', { pathname: '/base/foo/bar' });
+            set(this, 'baseURL', '/base/');
+        },
+
+        initState: function() {
+            this._super();
+
+            equal(this.getURL(), '/foo/bar');
+        }
+    });
+
+    createLocation();
+    location.initState();
+});
+
+test("base URL is preserved when moving around", function() {
+    expect(1);
+
+    HistoryTestLocation.reopen({
+        init: function() {
+            this._super();
+
+            set(this, 'location', { pathname: '/base/foo/bar' });
+            set(this, 'baseURL', '/base/');
+        }
+    });
+
+    createLocation();
+    location.initState();
+    location.setURL('/one/two');
+
+    equal(FakeHistory.state.path, '/base/one/two');
+});

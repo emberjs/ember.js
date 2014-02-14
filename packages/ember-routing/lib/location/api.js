@@ -134,8 +134,30 @@ Ember.Location = {
    container directly.
   */
   registerImplementation: function(name, implementation) {
+    Ember.deprecate('Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.', false);
+
     this.implementations[name] = implementation;
   },
 
-  implementations: {}
+  implementations: {},
+
+  /**
+    Returns the current `location.hash` by parsing location.href since browsers
+    inconsistently URL-decode `location.hash`.
+  
+    https://bugzilla.mozilla.org/show_bug.cgi?id=483304
+
+    @private
+    @method getHash
+  */
+  getHash: function () {
+    var href = window.location.href,
+        hashIndex = href.indexOf('#');
+
+    if (hashIndex === -1) {
+      return '';
+    } else {
+      return href.substr(hashIndex);
+    }
+  }
 };

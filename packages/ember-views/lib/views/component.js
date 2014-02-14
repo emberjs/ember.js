@@ -1,4 +1,5 @@
 require("ember-views/views/view");
+require("ember-views/mixins/component_template_deprecation");
 
 var get = Ember.get, set = Ember.set, isNone = Ember.isNone,
     a_slice = Array.prototype.slice;
@@ -23,11 +24,11 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone,
   `{{my-foo}}` in other templates, which will make
   an instance of the isolated component.
 
-  ```html
+  ```handlebars
   {{app-profile person=currentUser}}
   ```
 
-  ```html
+  ```handlebars
   <!-- app-profile template -->
   <h1>{{person.title}}</h1>
   <img {{bind-attr src=person.avatar}}>
@@ -42,7 +43,7 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone,
   ```handlebars
   {{#app-profile person=currentUser}}
     <p>Admin mode</p>
-    {{! Executed in the controllers context. }}
+    {{! Executed in the controller's context. }}
   {{/app-profile}}
   ```
 
@@ -74,7 +75,7 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone,
 
   And then use it in the component's template:
 
-  ```html
+  ```handlebars
   <!-- app-profile template -->
 
   <h1>{{person.title}}</h1>
@@ -94,7 +95,7 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone,
   @namespace Ember
   @extends Ember.View
 */
-Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
+Ember.Component = Ember.View.extend(Ember.TargetActionSupport, Ember.ComponentTemplateDeprecation, {
   init: function() {
     this._super();
     set(this, 'context', this);
@@ -104,6 +105,45 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
   defaultLayout: function(context, options){
     Ember.Handlebars.helpers['yield'].call(context, options);
   },
+
+  /**
+  A components template property is set by passing a block
+  during its invocation. It is executed within the parent context.
+
+  Example:
+
+  ```handlebars
+  {{#my-component}}
+    // something that is run in the context
+    // of the parent context
+  {{/my-component}}
+  ```
+
+  Specifying a template directly to a component is deprecated without
+  also specifying the layout property.
+
+  @deprecated
+  @property template
+  */
+  template: Ember.computed(function(key, value) {
+    if (value !== undefined) { return value; }
+
+    var templateName = get(this, 'templateName'),
+        template = this.templateForName(templateName, 'template');
+
+    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
+
+    return template || get(this, 'defaultTemplate');
+  }).property('templateName'),
+
+  /**
+  Specifying a components `templateName` is deprecated without also
+  providing the `layout` or `layoutName` properties.
+
+  @deprecated
+  @property templateName
+  */
+  templateName: null,
 
   // during render, isolate keywords
   cloneKeywords: function() {
@@ -159,9 +199,9 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     App.PlayButtonComponent = Ember.Component.extend({
       click: function(){
         if (this.get('isPlaying')) {
-          this.triggerAction('play');
+          this.sendAction('play');
         } else {
-          this.triggerAction('stop');
+          this.sendAction('stop');
         }
       }
     });

@@ -22,9 +22,7 @@ var e_get = Ember.get,
     doubleEachPropertyPattern = /(.*\.@each){2,}/,
     arrayBracketPattern = /\.\[\]$/;
 
-if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-  var expandProperties = Ember.expandProperties;
-}
+var expandProperties = Ember.expandProperties;
 
 function get(obj, key) {
   if (key === '@this') {
@@ -425,20 +423,22 @@ ReduceComputedPropertyInstanceMeta.prototype = {
   setValue: function(newValue, triggerObservers) {
     // This lets sugars force a recomputation, handy for very simple
     // implementations of eg max.
-    if (newValue !== undefined) {
-      var fireObservers = triggerObservers && (newValue !== this.cache[this.propertyName]);
+    if (newValue === this.cache[this.propertyName]) {
+      return;
+    }
 
-      if (fireObservers) {
-        propertyWillChange(this.context, this.propertyName);
-      }
+    if (triggerObservers) {
+      propertyWillChange(this.context, this.propertyName);
+    }
 
-      this.cache[this.propertyName] = newValue;
-
-      if (fireObservers) {
-        propertyDidChange(this.context, this.propertyName);
-      }
-    } else {
+    if (newValue === undefined) {
       delete this.cache[this.propertyName];
+    } else {
+      this.cache[this.propertyName] = newValue;
+    }
+
+    if (triggerObservers) {
+      propertyDidChange(this.context, this.propertyName);
     }
   }
 };
@@ -519,6 +519,7 @@ function ReduceComputedProperty(options) {
       }
     }, this);
   };
+
 
   this.func = function (propertyName) {
     Ember.assert("Computed reduce values require at least one dependent key", cp._dependentKeys);
@@ -606,17 +607,12 @@ ReduceComputedProperty.prototype.property = function () {
     } else if (match = eachPropertyPattern.exec(dependentKey)) {
       dependentArrayKey = match[1];
 
-      if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-        var itemPropertyKeyPattern = match[2],
-            addItemPropertyKey = function (itemPropertyKey) {
-              cp.itemPropertyKey(dependentArrayKey, itemPropertyKey);
-            };
+      var itemPropertyKeyPattern = match[2],
+          addItemPropertyKey = function (itemPropertyKey) {
+            cp.itemPropertyKey(dependentArrayKey, itemPropertyKey);
+          };
 
-        expandProperties(itemPropertyKeyPattern, addItemPropertyKey);
-      } else {
-        itemPropertyKey = match[2];
-        cp.itemPropertyKey(dependentArrayKey, itemPropertyKey);
-      }
+      expandProperties(itemPropertyKeyPattern, addItemPropertyKey);
       propertyArgs.add(dependentArrayKey);
     } else {
       propertyArgs.add(dependentKey);
@@ -727,7 +723,7 @@ ReduceComputedProperty.prototype.property = function () {
 
   ```javascript
   Ember.computed.max = function (dependentKey) {
-    return Ember.reduceComputed.call(null, dependentKey, {
+    return Ember.reduceComputed(dependentKey, {
       initialValue: -Infinity,
 
       addedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {

@@ -1,5 +1,6 @@
 var set = Ember.set, get = Ember.get;
 var forEach = Ember.EnumerableUtils.forEach;
+var trim = Ember.$.trim;
 var view;
 
 module("Ember.CollectionView", {
@@ -393,7 +394,7 @@ test("should fire life cycle events when elements are added and removed", functi
   equal(willDestroy, 0);
   equal(destroy, 0);
   // Remove whitspace added by IE 8
-  equal(view.$().text().replace(/\s+/g,''), '01234');
+  equal(trim(view.$().text()), '01234');
 
   Ember.run(function () {
     content.popObject();
@@ -405,7 +406,7 @@ test("should fire life cycle events when elements are added and removed", functi
   equal(willDestroy, 2);
   equal(destroy, 2);
   // Remove whitspace added by IE 8
-  equal(view.$().text().replace(/\s+/g,''), '123');
+  equal(trim(view.$().text()), '123');
 
   Ember.run(function () {
     view.set('content', Ember.A([7,8,9]));
@@ -416,7 +417,7 @@ test("should fire life cycle events when elements are added and removed", functi
   equal(willDestroy, 5);
   equal(destroy, 5);
   // Remove whitspace added by IE 8
-  equal(view.$().text().replace(/\s+/g,''), '789');
+  equal(trim(view.$().text()), '789');
 
   Ember.run(function () {
     view.destroy();

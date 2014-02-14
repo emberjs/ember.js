@@ -20,6 +20,8 @@ var buildContainer = function(namespace) {
   container.register('application:main', namespace, { instantiate: false });
   container.injection('router:main', 'namespace', 'application:main');
 
+  container.register('location:hash', Ember.HashLocation);
+
   container.register('controller:basic', Ember.Controller, { instantiate: false });
   container.register('controller:object', Ember.ObjectController, { instantiate: false });
   container.register('controller:array', Ember.ArrayController, { instantiate: false });
@@ -68,11 +70,13 @@ module("Handlebars {{render}} helper", {
     });
 
     Ember.TEMPLATES = {};
+    Ember.ENV.TESTING_DEPRECATION = false;
+    Ember.ENV.RAISE_ON_DEPRECATION = false;
   }
 });
 
 test("{{render}} helper should render given template", function() {
-  var template = "<h1>HI</h1>{{render home}}";
+  var template = "<h1>HI</h1>{{render 'home'}}";
   var controller = Ember.Controller.extend({container: container});
   view = Ember.View.create({
     controller: controller.create(),
@@ -98,6 +102,20 @@ test("{{render}} helper should have assertion if neither template nor view exist
   expectAssertion(function() {
     appendView(view);
   }, 'You used `{{render \'oops\'}}`, but \'oops\' can not be found as either a template or a view.');
+});
+
+test("{{render}} helper should not have assertion if template is supplied in block-form", function() {
+  var template = "<h1>HI</h1>{{#render 'good'}} {{name}}{{/render}}";
+  var controller = Ember.Controller.extend({container: container});
+  container.register('controller:good', Ember.Controller.extend({ name: 'Rob'}));
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'HI Rob');
 });
 
 test("{{render}} helper should not have assertion if view exists without a template", function() {
@@ -187,7 +205,7 @@ test("{{render}} helper with a supplied model should not fire observers on the c
 });
 
 test("{{render}} helper should raise an error when a given controller name does not resolve to a controller", function() {
-  var template = '<h1>HI</h1>{{render home controller="postss"}}';
+  var template = '<h1>HI</h1>{{render "home" controller="postss"}}';
   var controller = Ember.Controller.extend({container: container});
   container.register('controller:posts', Ember.ArrayController.extend());
   view = Ember.View.create({
@@ -203,7 +221,7 @@ test("{{render}} helper should raise an error when a given controller name does 
 });
 
 test("{{render}} helper should render with given controller", function() {
-  var template = '<h1>HI</h1>{{render home controller="posts"}}';
+  var template = '<h1>HI</h1>{{render "home" controller="posts"}}';
   var controller = Ember.Controller.extend({container: container});
   container.register('controller:posts', Ember.ArrayController.extend());
   view = Ember.View.create({
@@ -220,7 +238,7 @@ test("{{render}} helper should render with given controller", function() {
 });
 
 test("{{render}} helper should render a template without a model only once", function() {
-  var template = "<h1>HI</h1>{{render home}}<hr/>{{render home}}";
+  var template = "<h1>HI</h1>{{render 'home'}}<hr/>{{render home}}";
   var controller = Ember.Controller.extend({container: container});
   view = Ember.View.create({
     controller: controller.create(),
@@ -399,7 +417,7 @@ test("{{render}} helper should be able to render a template again when it was re
   Ember.run(function() {
     view.connectOutlet('main', Ember.View.create({
       controller: controller.create(),
-      template: compile("<p>1{{render home}}</p>")
+      template: compile("<p>1{{render 'home'}}</p>")
     }));
   });
 
@@ -408,7 +426,7 @@ test("{{render}} helper should be able to render a template again when it was re
   Ember.run(function() {
     view.connectOutlet('main', Ember.View.create({
       controller: controller.create(),
-      template: compile("<p>2{{render home}}</p>")
+      template: compile("<p>2{{render 'home'}}</p>")
     }));
   });
 
@@ -416,7 +434,7 @@ test("{{render}} helper should be able to render a template again when it was re
 });
 
 test("{{render}} works with dot notation", function() {
-  var template = '<h1>BLOG</h1>{{render blog.post}}';
+  var template = '<h1>BLOG</h1>{{render "blog.post"}}';
 
   var controller = Ember.Controller.extend({container: container});
   container.register('controller:blog.post', Ember.ObjectController.extend());
@@ -453,4 +471,44 @@ test("{{render}} works with slash notation", function() {
   var renderedView = container.lookup('router:main')._lookupActiveView('blog.post');
   equal(renderedView.get('viewName'), 'blogPost', 'camelizes the view name');
   equal(container.lookup('controller:blog.post'), renderedView.get('controller'), 'rendered with correct controller');
+});
+
+test("Using quoteless templateName is deprecated", function(){
+  Ember.ENV.RAISE_ON_DEPRECATION = true;
+
+  var template = '<h1>HI</h1>{{render home}}';
+  var controller = Ember.Controller.extend({container: container});
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
+
+  try {
+    appendView(view);
+  } catch(e) {
+    equal(e.message, "Using a quoteless parameter with {{render}} is deprecated. Please update to quoted usage '{{render \"home\"}}.", "expected deprecation was raised");
+  }
+
+  Ember.ENV.RAISE_ON_DEPRECATION = false;
+});
+
+test("Using quoteless templateName works properly", function(){
+  Ember.ENV.TESTING_DEPRECATION = true;
+
+  var template = '<h1>HI</h1>{{render home}}';
+  var controller = Ember.Controller.extend({container: container});
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
+
+  appendView(view);
+
+  equal(view.$('p:contains(BYE)').length, 1, "template was rendered");
+
+  Ember.TESTING_DEPRECATION = false;
 });

@@ -8,9 +8,7 @@ require('ember-metal/expand_properties');
 
 var a_slice = Array.prototype.slice;
 
-if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-  var expandProperties = Ember.expandProperties;
-}
+var expandProperties = Ember.expandProperties;
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
 
@@ -107,16 +105,14 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @for Function
   */
   Function.prototype.observes = function() {
-    if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-      var addWatchedProperty = function (obs) { watched.push(obs); };
-      var watched = [];
+    var addWatchedProperty = function (obs) { watched.push(obs); };
+    var watched = [];
 
-      for (var i=0; i<arguments.length; ++i) {
-        expandProperties(arguments[i], addWatchedProperty);
-      }
-    } else {
-      this.__ember_observes__ = a_slice.call(arguments);
+    for (var i=0; i<arguments.length; ++i) {
+      expandProperties(arguments[i], addWatchedProperty);
     }
+
+    this.__ember_observes__ = watched;
 
     return this;
   };
@@ -179,18 +175,14 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @for Function
   */
   Function.prototype.observesBefore = function() {
-    if (Ember.FEATURES.isEnabled('propertyBraceExpansion')) {
-      var addWatchedProperty = function (obs) { watched.push(obs); };
-      var watched = [];
+    var addWatchedProperty = function (obs) { watched.push(obs); };
+    var watched = [];
 
-      for (var i=0; i<arguments.length; ++i) {
-        expandProperties(arguments[i], addWatchedProperty);
-      }
-
-      this.__ember_observesBefore__ = watched;
-    } else {
-      this.__ember_observesBefore__ = a_slice.call(arguments);
+    for (var i=0; i<arguments.length; ++i) {
+      expandProperties(arguments[i], addWatchedProperty);
     }
+
+    this.__ember_observesBefore__ = watched;
 
     return this;
   };

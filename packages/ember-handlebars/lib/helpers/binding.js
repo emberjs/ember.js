@@ -67,6 +67,14 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
         templateData: options.data
       });
 
+      if (options.hash.controller) {
+        bindView.set('_contextController', this.container.lookupFactory('controller:'+options.hash.controller).create({
+          container: currentContext.container,
+          parentController: currentContext,
+          target: currentContext
+        }));
+      }
+
       view.appendChild(bindView);
 
       observer = function() {
@@ -138,6 +146,17 @@ function simpleBind(currentContext, property, options) {
     // be done with it.
     output = handlebarsGetEscaped(currentContext, property, options);
     data.buffer.push(output);
+  }
+}
+
+function shouldDisplayIfHelperContent(result) {
+  var truthy = result && get(result, 'isTruthy');
+  if (typeof truthy === 'boolean') { return truthy; }
+
+  if (Ember.isArray(result)) {
+    return get(result, 'length') !== 0;
+  } else {
+    return !!result;
   }
 }
 
@@ -245,18 +264,43 @@ EmberHandlebars.registerHelper('bind', function bindHelper(property, options) {
 */
 EmberHandlebars.registerHelper('boundIf', function boundIfHelper(property, fn) {
   var context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : this;
-  var func = function(result) {
-    var truthy = result && get(result, 'isTruthy');
-    if (typeof truthy === 'boolean') { return truthy; }
 
-    if (Ember.isArray(result)) {
-      return get(result, 'length') !== 0;
-    } else {
-      return !!result;
-    }
-  };
+  return bind.call(context, property, fn, true, shouldDisplayIfHelperContent, shouldDisplayIfHelperContent, ['isTruthy', 'length']);
+});
 
-  return bind.call(context, property, fn, true, func, func, ['isTruthy', 'length']);
+
+/**
+  @private
+
+  Use the `unboundIf` helper to create a conditional that evaluates once.
+
+  ```handlebars
+  {{#unboundIf "content.shouldDisplayTitle"}}
+    {{content.title}}
+  {{/unboundIf}}
+  ```
+
+  @method unboundIf
+  @for Ember.Handlebars.helpers
+  @param {String} property Property to bind
+  @param {Function} fn Context to provide for rendering
+  @return {String} HTML string
+*/
+EmberHandlebars.registerHelper('unboundIf', function unboundIfHelper(property, fn) {
+  var context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : this,
+      data = fn.data,
+      template = fn.fn,
+      inverse = fn.inverse,
+      normalized, propertyValue, result;
+
+  normalized = normalizePath(context, property, data);
+  propertyValue = handlebarsGet(context, property, fn);
+
+  if (!shouldDisplayIfHelperContent(propertyValue)) {
+    template = inverse;
+  }
+
+  template(context, { data: data });
 });
 
 /**
@@ -310,6 +354,23 @@ EmberHandlebars.registerHelper('boundIf', function boundIfHelper(property, fn) {
 
   Without the `as` operator, it would be impossible to reference `user.name` in the example above.
 
+  ### `controller` option
+
+  Adding `controller='something'` instructs the `{{with}}` helper to create and use an instance of
+  the specified controller with the new context as its content.
+
+  This is very similar to using an `itemController` option with the `{{each}}` helper.
+
+  ```handlebars
+  {{#with users.posts controller='userBlogPosts'}}
+    {{!- The current context is wrapped in our controller instance }}
+  {{/with}}
+  ```
+
+  In the above example, the template provided to the `{{with}}` block is now wrapped in the
+  `userBlogPost` controller, which provides a very elegant way to decorate the context with custom
+  functions/properties.
+
   @method with
   @for Ember.Handlebars.helpers
   @param {Function} context
@@ -359,6 +420,7 @@ EmberHandlebars.registerHelper('with', function withHelper(context, options) {
 
 /**
   See [boundIf](/api/classes/Ember.Handlebars.helpers.html#method_boundIf)
+  and [unboundIf](/api/classes/Ember.Handlebars.helpers.html#method_unboundIf)
 
   @method if
   @for Ember.Handlebars.helpers
@@ -369,8 +431,11 @@ EmberHandlebars.registerHelper('with', function withHelper(context, options) {
 EmberHandlebars.registerHelper('if', function ifHelper(context, options) {
   Ember.assert("You must pass exactly one argument to the if helper", arguments.length === 2);
   Ember.assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
-
-  return helpers.boundIf.call(options.contexts[0], context, options);
+  if (options.data.isUnbound) {
+    return helpers.unboundIf.call(options.contexts[0], context, options);
+  } else {
+    return helpers.boundIf.call(options.contexts[0], context, options);
+  }
 });
 
 /**
@@ -389,7 +454,11 @@ EmberHandlebars.registerHelper('unless', function unlessHelper(context, options)
   options.fn = inverse;
   options.inverse = fn;
 
-  return helpers.boundIf.call(options.contexts[0], context, options);
+  if (options.data.isUnbound) {
+    return helpers.unboundIf.call(options.contexts[0], context, options);
+  } else {
+    return helpers.boundIf.call(options.contexts[0], context, options);
+  }
 });
 
 /**

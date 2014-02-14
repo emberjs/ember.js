@@ -9,6 +9,10 @@ var STRING_DECAMELIZE_REGEXP = (/([a-z\d])([A-Z])/g);
 var STRING_CAMELIZE_REGEXP = (/(\-|_|\.|\s)+(.)?/g);
 var STRING_UNDERSCORE_REGEXP_1 = (/([a-z\d])([A-Z]+)/g);
 var STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
+var STRING_PARAMETERIZE_REGEXP_1 = (/[_|\/|\s]+/g);
+var STRING_PARAMETERIZE_REGEXP_2 = (/[^a-z0-9\-]+/gi);
+var STRING_PARAMETERIZE_REGEXP_3 = (/[\-]+/g);
+var STRING_PARAMETERIZE_REGEXP_4 = (/^-+|-+$/g);
 
 /**
   Defines the hash of localized strings for the current language. Used by
@@ -247,29 +251,26 @@ Ember.String = {
   }
 };
 
-if (Ember.FEATURES.isEnabled("string-humanize")) {
+if (Ember.FEATURES.isEnabled("string-parameterize")) {
   /**
-    Returns the Humanized form of a string
-
-    Replaces underscores with spaces, and capitializes first character
-    of string. Also strips "_id" suffixes.
+    Transforms a string so that it may be used as part of a 'pretty' / SEO friendly URL.
 
     ```javascript
-    'first_name'.humanize()       // 'First name'
-    'user_id'.humanize()          // 'User'
+    'My favorite items.'.parameterize();                        // 'my-favorite-items'
+    'action_name'.parameterize();                               // 'action-name'
+    '100 ways Ember.js is better than Angular.'.parameterize(); // '100-ways-emberjs-is-better-than-angular'
     ```
 
-    @method humanize
-    @param {String} str The string to humanize.
-    @return {String} The humanized string.
+    @method parameterize
+    @param {String} str The string to parameterize.
+    @return {String} the parameterized string.
   */
-
-  Ember.String.humanize = function(str) {
-    return str.replace(/_id$/, '').
-      replace(/_/g, ' ').
-      replace(/^\w/g, function(s){
-        return s.toUpperCase();
-      });
+  Ember.String.parameterize = function(str) {
+    return str.replace(STRING_PARAMETERIZE_REGEXP_1, '-') // replace underscores, slashes and spaces with separator
+              .replace(STRING_PARAMETERIZE_REGEXP_2, '')  // remove non-alphanumeric characters except the separator
+              .replace(STRING_PARAMETERIZE_REGEXP_3, '-') // replace multiple occurring separators
+              .replace(STRING_PARAMETERIZE_REGEXP_4, '')  // trim leading and trailing separators 
+              .toLowerCase();
   };
 }
 

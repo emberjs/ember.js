@@ -50,7 +50,7 @@ Ember.ControllerMixin = Ember.Mixin.create(Ember.ActionHandler, {
   deprecatedSend: function(actionName) {
     var args = [].slice.call(arguments, 1);
     Ember.assert('' + this + " has the action " + actionName + " but it is not a function", typeof this[actionName] === 'function');
-    Ember.deprecate('Action handlers implemented directly on controllers are deprecated in favor of action handlers on an `actions` object (' + actionName + ' on ' + this + ')', false);
+    Ember.deprecate('Action handlers implemented directly on controllers are deprecated in favor of action handlers on an `actions` object ( action: `' + actionName + '` on ' + this + ')', false);
     this[actionName].apply(this, args);
     return;
   }
