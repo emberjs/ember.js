@@ -107,3 +107,27 @@ test("base URL is preserved when moving around", function() {
 
     equal(FakeHistory.state.path, '/base/one/two');
 });
+
+test("setURL continues to set even with a null state (iframes may set this)", function() {
+    expect(1);
+
+    createLocation();
+    location.initState();
+
+    FakeHistory.pushState(null);
+    location.setURL('/three/four');
+
+    equal(FakeHistory.state && FakeHistory.state.path, '/three/four');
+});
+
+test("replaceURL continues to set even with a null state (iframes may set this)", function() {
+    expect(1);
+
+    createLocation();
+    location.initState();
+
+    FakeHistory.pushState(null);
+    location.replaceURL('/three/four');
+
+    equal(FakeHistory.state && FakeHistory.state.path, '/three/four');
+});
