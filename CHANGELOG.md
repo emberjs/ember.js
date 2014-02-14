@@ -1,43 +1,42 @@
 # Ember Changelog
 
+### Ember 1.5.0-beta.1 (February 14, 2014)
+
+* [FEATURE ember-handlebars-log-primitives]
+* [FEATURE ember-testing-routing-helpers]
+* [FEATURE ember-testing-triggerEvent-helper]
+* [FEATURE computed-read-only]
+* [FEATURE ember-metal-is-blank]
+* [FEATURE ember-eager-url-update]
+* [FEATURE ember-routing-auto-location]
+* [FEATURE ember-routing-bound-action-name]
+* [FEATURE ember-routing-inherits-parent-model]
 * [BREAKING CHANGE] `Ember.run.throttle` now supports leading edge execution. To follow industry standard leading edge is the default.
 * [BUGFIX] Fixed how parentController property of an itemController when nested. Breaking for apps that rely on previous broken behavior of an itemController's `parentController` property skipping its ArrayController when nested.
 
-### Ember 1.4.0-beta.5 (February 3, 2014)
+### Ember 1.4.0 (February 13, 2014)
 
+* [SECURITY] Ensure link-to non-block escapes title.
 * Deprecate quoteless action names.
-* [BUGFIX beta] Make Ember.RenderBuffer#addClass work as expected.
-* [DOC beta] Display Ember Inspector hint in Firefox.
-* [Bugfix BETA] App.destroy resets routes before destroying the container.
-
-### Ember 1.4.0-beta.4 (January 29, 2014)
-
-* [BUGFIX beta] reduceComputed fires observers when invalidating with undefined.
-* [BUGFIX beta] Provide helpful error even if Model isn't found.
-* [BUGFIX beta] Do not deprecate the block form of {{render}}.
-* [BUGFIX beta] allow enumerable/any to match undefined as value
-* [BUGFIX release] Allow canceling of Timers in IE8.
+* [BUGFIX] Make Ember.RenderBuffer#addClass work as expected.
+* [DOC] Display Ember Inspector hint in Firefox.
+* [BUGFIX] App.destroy resets routes before destroying the container.
+* [BUGFIX] reduceComputed fires observers when invalidating with undefined.
+* [BUGFIX] Provide helpful error even if Model isn't found.
+* [BUGFIX] Do not deprecate the block form of {{render}}.
+* [BUGFIX] allow enumerable/any to match undefined as value
+* [BUGFIX] Allow canceling of Timers in IE8.
 * [BUGFIX] Calling toString at extend time causes Ember.View to memoize and return the same value for different instances.
-* [BUGFIX release] Fix ember-testing-lazy-routing.
+* [BUGFIX] Fix ember-testing-lazy-routing.
 * [BUGFIX] Fixed how parentController property of an itemController when nested. Breaking for apps that rely on previous broken behavior of an itemController's `parentController` property skipping its ArrayController when nested.
-* Slight, sensible alteration to URL parsing logic: prefer fewer stars to more stars; if any stars, prefer more dynamics and statics to fewer; if no stars, prefer fewer dynamics and more statics
-
-### Ember 1.4.0-beta.3 (January 20, 2014)
-
 * Document the send method on Ember.ActionHandler.
 * Document Ember.Route #controllerName and #viewName properties.
 * Allow jQuery version 1.11 and 2.1.
-
-### Ember 1.4.0-beta.2 (January 14, 2014)
-
 * [BUGFIX] Fix stripping trailing slashes for * routes.
 * [SECURITY] Ensure primitive value contexts are escaped.
 * [SECURITY] Ensure {{group}} helper escapes properly.
 * Performance improvements.
 * [BUGFIX] Templete-less components properties should not collide with internal properties.
-
-### Ember 1.4.0-beta.1 (January 6, 2014)
-
 * Unbound helper supports bound helper static strings.
 * Preserve `<base>` URL when using history location for routing.
 * Begin adding names for anonymous functions to aid in debugging.
