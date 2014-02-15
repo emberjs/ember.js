@@ -1402,20 +1402,24 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-instance')) {
       //The class to instantiate is cached within ProxyClass
 
       var type = Ember.typeOf(Klass);
-
-      if (type === 'object') {
-        Klass = Object;
+      if (type === 'class') {
+        ProxyClass = function () {
+          return Klass.create(args[0] || {});
+        };
+      } else if (type === 'object' || Klass === Object) {
+        ProxyClass = function () {
+          return Ember.merge({}, args[0]);
+        };
       } else if (type === 'array') {
         Klass = Array;
       }
 
-      ProxyClass = function () {
-        if (Ember.canInvoke(Klass, 'create')) {
-          return Klass.create(args[0] || {});
-        }
-        return Klass.apply(this, args);
-      };
-      ProxyClass.prototype = Klass.prototype;
+      if (!ProxyClass) {
+        ProxyClass = function () {
+          return Klass.apply(this, args);
+        };
+        ProxyClass.prototype = Klass.prototype;
+      }
 
       return new ProxyClass();
     });
