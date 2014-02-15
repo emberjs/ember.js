@@ -1304,11 +1304,8 @@ Ember.computed.defaultTo = function(defaultPath) {
 };
 
 /**
-  A computed property that creates a new instance of the given object or function class.
-  Source object can be any instantiable Object including JS primitives, or can be a path to local or global object. By convention a global
-  path will be looked up only if it start with a capital letter, otherwise a local property will be used.
-
-  Optionally you can specify the initial value.
+  A computed property that creates a new instance of source. `source` can be any Class constructor, object, array, or a path to a local property`.
+  Optionally you can specify the initial value(s), if only `initialValue` is given and if it is a string, it is treated as a local path.
 
   Example
 
