@@ -22,14 +22,16 @@
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
 
-require('ember-metal/enumerable_utils');
-require('ember-metal/utils');
-require('ember-metal/core');
-require('ember-metal/property_set');
+// ES6Todo: Never needed? require('ember-metal/enumerable_utils');
+// require('ember-metal/utils');
+// require('ember-metal/core');
+// require('ember-metal/property_set');
 
-var set = Ember.set,
-    guidFor = Ember.guidFor,
-    indexOf = Ember.ArrayPolyfills.indexOf;
+import ArrayPolyfills from "ember-metal/array"
+import {guidFor} from "ember-metal/utils";
+import {set} from "ember-metal/propert_set";
+
+var indexOf = ArrayPolyfills.indexOf;
 
 var copy = function(obj) {
   var output = {};
@@ -62,7 +64,7 @@ var copyMap = function(original, newObject) {
   @constructor
   @private
 */
-var OrderedSet = Ember.OrderedSet = function() {
+function OrderedSet() {
   this.clear();
 };
 
@@ -194,7 +196,7 @@ OrderedSet.prototype = {
   @constructor
 */
 var Map = Ember.Map = function() {
-  this.keys = Ember.OrderedSet.create();
+  this.keys = OrderedSet.create();
   this.values = {};
 };
 
@@ -326,7 +328,7 @@ Map.prototype = {
   @param [options]
     @param {*} [options.defaultValue]
 */
-var MapWithDefault = Ember.MapWithDefault = function(options) {
+function MapWithDefault(options) {
   Map.call(this);
   this.defaultValue = options.defaultValue;
 };
@@ -377,3 +379,5 @@ MapWithDefault.prototype.copy = function() {
     defaultValue: this.defaultValue
   }));
 };
+
+export {OrderedSet, Map, MapWithDefault};

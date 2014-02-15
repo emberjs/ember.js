@@ -1,12 +1,13 @@
-require('ember-metal/core');
-require('ember-metal/utils');
+// Not needed? require('ember-metal/core');
+// Not needed? require('ember-metal/utils');
 
+import EnumerableUtils from "ember-metal/enumerable_utils";
 
 /**
   @module ember-metal
   */
 
-var forEach = Ember.EnumerableUtils.forEach,
+var forEach = EnumerableUtils.forEach,
 BRACE_EXPANSION = /^((?:[^\.]*\.)*)\{(.*)\}$/;
 
 /**
@@ -32,7 +33,7 @@ BRACE_EXPANSION = /^((?:[^\.]*\.)*)\{(.*)\}$/;
   @param {function} callback The callback to invoke.  It is invoked once per
   expansion, and is passed the expansion.
   */
-Ember.expandProperties = function (pattern, callback) {
+function expandProperties(pattern, callback) {
   var match, prefix, list;
 
   if (match = BRACE_EXPANSION.exec(pattern)) {
@@ -46,3 +47,5 @@ Ember.expandProperties = function (pattern, callback) {
     callback(pattern);
   }
 };
+
+export default expandProperties;

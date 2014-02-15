@@ -1,15 +1,12 @@
-require('ember-metal/utils');
-require('ember-metal/events');
-require('ember-metal/observer_set');
+// require('ember-metal/utils');
+// require('ember-metal/events');
+// require('ember-metal/observer_set');
 
-var META_KEY = Ember.META_KEY,
-    guidFor = Ember.guidFor,
-    tryFinally = Ember.tryFinally,
-    sendEvent = Ember.sendEvent,
-    listenersUnion = Ember.listenersUnion,
-    listenersDiff = Ember.listenersDiff,
-    ObserverSet = Ember._ObserverSet,
-    beforeObserverSet = new ObserverSet(),
+import { META_KEY, guidFor, tryFinally} from "ember-metal/utils";
+import {sendEvent, listenersUnion, listenersDiff} from "ember-metal/events";
+import ObserverSet from "ember-metal/observer_set";
+
+var beforeObserverSet = new ObserverSet(),
     observerSet = new ObserverSet(),
     deferred = 0;
 
@@ -45,7 +42,6 @@ function propertyWillChange(obj, keyName) {
   chainsWillChange(obj, keyName, m);
   notifyBeforeObservers(obj, keyName);
 }
-Ember.propertyWillChange = propertyWillChange;
 
 /**
   This function is called just after an object property has changed.
@@ -78,7 +74,6 @@ function propertyDidChange(obj, keyName) {
   chainsDidChange(obj, keyName, m, false);
   notifyObservers(obj, keyName);
 }
-Ember.propertyDidChange = propertyDidChange;
 
 var WILL_SEEN, DID_SEEN;
 
@@ -161,7 +156,7 @@ function chainsDidChange(obj, keyName, m, suppressEvents) {
   }
 }
 
-Ember.overrideChains = function(obj, keyName, m) {
+function overrideChains(obj, keyName, m) {
   chainsDidChange(obj, keyName, m, true);
 };
 
@@ -174,8 +169,6 @@ function beginPropertyChanges() {
   deferred++;
 }
 
-Ember.beginPropertyChanges = beginPropertyChanges;
-
 /**
   @method endPropertyChanges
   @private
@@ -187,8 +180,6 @@ function endPropertyChanges() {
     observerSet.flush();
   }
 }
-
-Ember.endPropertyChanges = endPropertyChanges;
 
 /**
   Make a series of property changes together in an
@@ -205,7 +196,7 @@ Ember.endPropertyChanges = endPropertyChanges;
   @param {Function} callback
   @param [binding]
 */
-Ember.changeProperties = function(cb, binding) {
+function changeProperties(cb, binding) {
   beginPropertyChanges();
   tryFinally(cb, endPropertyChanges, binding);
 };
@@ -234,3 +225,5 @@ function notifyObservers(obj, keyName) {
     sendEvent(obj, eventName, [obj, keyName]);
   }
 }
+
+export {propertyWillChange, propertyDidChange, overrideChains, beginPropertyChanges, endPropertyChanges, changeProperties};

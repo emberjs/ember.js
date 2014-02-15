@@ -1,17 +1,18 @@
-require('ember-metal/utils');
-require('ember-metal/property_get');
-require('ember-metal/array');
-require('ember-metal/watch_key');
+// require('ember-metal/utils');
+// require('ember-metal/property_get');
+// require('ember-metal/array');
+// require('ember-metal/watch_key');
 
-var metaFor = Ember.meta, // utils.js
-    get = Ember.get, // property_get.js
-    normalizeTuple = Ember.normalizeTuple, // property_get.js
-    forEach = Ember.ArrayPolyfills.forEach, // array.js
+import Ember from "ember-metal/core"; // warn, assert, etc;
+import {meta, META_KEY} from "ember-metal/utils";
+import {get, normalizeTuple} from "ember-metal/get_property";
+import ArrayPolyfills from "ember-metal/array";
+import {watchKey, unwatchKey} from "ember-metal/watch_key";
+
+var metaFor = meta,
+    forEach = ArrayPolyfills.forEach,
     warn = Ember.warn,
-    watchKey = Ember.watchKey,
-    unwatchKey = Ember.unwatchKey,
-    FIRST_KEY = /^([^\.\*]+)/,
-    META_KEY = Ember.META_KEY;
+    FIRST_KEY = /^([^\.\*]+)/;
 
 function firstKey(path) {
   return path.match(FIRST_KEY)[0];
@@ -22,7 +23,7 @@ var pendingQueue = [];
 // attempts to add the pendingQueue chains again. If some of them end up
 // back in the queue and reschedule is true, schedules a timeout to try
 // again.
-Ember.flushPendingChains = function() {
+function flushPendingChains() {
   if (pendingQueue.length === 0) { return; } // nothing to do
 
   var queue = pendingQueue;
@@ -48,7 +49,7 @@ function addChainWatcher(obj, keyName, node) {
   watchKey(obj, keyName, m);
 }
 
-var removeChainWatcher = Ember.removeChainWatcher = function(obj, keyName, node) {
+function removeChainWatcher(obj, keyName, node) {
   if (!obj || 'object' !== typeof obj) { return; } // nothing to do
 
   var m = obj[META_KEY];
@@ -68,7 +69,7 @@ var removeChainWatcher = Ember.removeChainWatcher = function(obj, keyName, node)
 // A ChainNode watches a single key on an object. If you provide a starting
 // value for the key then the node won't actually watch it. For a root node
 // pass null for parent and key and object for value.
-var ChainNode = Ember._ChainNode = function(parent, key, value) {
+function ChainNode(parent, key, value) {
   this._parent = parent;
   this._key    = key;
 
@@ -320,7 +321,7 @@ ChainNodePrototype.didChange = function(events) {
   if (this._parent) { this._parent.chainDidChange(this, this._key, 1, events); }
 };
 
-Ember.finishChains = function(obj) {
+function finishChains(obj) {
   // We only create meta if we really have to
   var m = obj[META_KEY], chains = m && m.chains;
   if (chains) {
@@ -331,3 +332,5 @@ Ember.finishChains = function(obj) {
     }
   }
 };
+
+export {flushPendingChains, removeChainWatcher, ChainNode, finishChains};

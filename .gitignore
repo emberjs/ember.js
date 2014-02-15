@@ -1,4 +1,5 @@
 packages/container
+packages/ember-metal
 *.bpkg
 *.gem
 *.rbc

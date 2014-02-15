@@ -1,8 +1,8 @@
-require('ember-metal/property_events');
-require('ember-metal/property_set');
+// require('ember-metal/property_events');
+// require('ember-metal/property_set');
 
-var changeProperties = Ember.changeProperties,
-    set = Ember.set;
+import {changeProperties} from "ember-metal/property_events";
+import {set} from "ember-metal/property_set";
 
 /**
   Set a list of properties on an object. These properties are set inside
@@ -22,7 +22,7 @@ var changeProperties = Ember.changeProperties,
   @param {Object} hash
   @return self
 */
-Ember.setProperties = function(self, hash) {
+function setProperties(self, hash) {
   changeProperties(function() {
     for(var prop in hash) {
       if (hash.hasOwnProperty(prop)) { set(self, prop, hash[prop]); }
@@ -30,3 +30,5 @@ Ember.setProperties = function(self, hash) {
   });
   return self;
 };
+
+export default setProperties;

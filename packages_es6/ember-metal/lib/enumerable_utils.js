@@ -1,5 +1,7 @@
-var map, forEach, indexOf, filter, splice;
-require('ember-metal/array');
+var map, forEach, indexOf, splice, filter;
+// require('ember-metal/array');
+
+import ArrayPolyfills from "ember-metal/array";
 
 map     = Array.prototype.map     || Ember.ArrayPolyfills.map;
 forEach = Array.prototype.forEach || Ember.ArrayPolyfills.forEach;
@@ -15,7 +17,7 @@ splice = Array.prototype.splice;
  * @namespace Ember
  * @static
  * */
-var utils = Ember.EnumerableUtils = {
+var utils = {
   /**
    * Calls the map function on the passed object with a specified callback. This
    * uses `Ember.ArrayPolyfill`'s-map method when necessary.
@@ -217,3 +219,5 @@ var utils = Ember.EnumerableUtils = {
     return intersection;
   }
 };
+
+export default utils;

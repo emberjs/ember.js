@@ -1,9 +1,10 @@
-require('ember-metal/utils');
-require('ember-metal/chains');
+// require('ember-metal/utils');
+// require('ember-metal/chains');
 
-var metaFor = Ember.meta, // utils.js
-    typeOf = Ember.typeOf, // utils.js
-    ChainNode = Ember._ChainNode; // chains.js
+import {meta, typeOf} from "ember-metal/utils";
+import {ChainNode} from "ember-metal/chains";
+
+var metaFor = meta;
 
 // get the chains for the current object. If the current object has
 // chains inherited from the proto they will be cloned and reconfigured for
@@ -18,7 +19,7 @@ function chainsFor(obj, meta) {
   return ret;
 }
 
-Ember.watchPath = function(obj, keyPath, meta) {
+function watchPath(obj, keyPath, meta) {
   // can't watch length on Array - it is special...
   if (keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
@@ -32,7 +33,7 @@ Ember.watchPath = function(obj, keyPath, meta) {
   }
 };
 
-Ember.unwatchPath = function(obj, keyPath, meta) {
+function unwatchPath(obj, keyPath, meta) {
   var m = meta || metaFor(obj), watching = m.watching;
 
   if (watching[keyPath] === 1) {
@@ -42,3 +43,5 @@ Ember.unwatchPath = function(obj, keyPath, meta) {
     watching[keyPath]--;
   }
 };
+
+export {watchPath, unwatchPath};

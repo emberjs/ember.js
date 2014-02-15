@@ -1,25 +1,21 @@
-require('ember-metal/core');
-require('ember-metal/platform');
-require('ember-metal/utils');
-require('ember-metal/property_get');
-require('ember-metal/properties');
-require('ember-metal/watch_key');
-require('ember-metal/watch_path');
+// require('ember-metal/core');
+// require('ember-metal/platform');
+// require('ember-metal/utils');
+// require('ember-metal/property_get');
+// require('ember-metal/properties');
+// require('ember-metal/watch_key');
+// require('ember-metal/watch_path');
 
 /**
 @module ember-metal
 */
 
-var metaFor = Ember.meta, // utils.js
-    GUID_KEY = Ember.GUID_KEY, // utils.js
-    META_KEY = Ember.META_KEY, // utils.js
-    removeChainWatcher = Ember.removeChainWatcher,
-    watchKey = Ember.watchKey, // watch_key.js
-    unwatchKey = Ember.unwatchKey,
-    watchPath = Ember.watchPath, // watch_path.js
-    unwatchPath = Ember.unwatchPath,
-    typeOf = Ember.typeOf, // utils.js
-    generateGuid = Ember.generateGuid,
+import {meta, META_KEY, GUID_KEY, typeOf, generateGuid} from "ember-metal/utils";
+import {removeChainWatcher, flushPendingChains} from "ember-metal/chains";
+import {watchKey, unwatchKey} from "ember-metal/watch_key";
+import {watchPath, unwatchPath} from "ember-metal/watch_path";
+
+var metaFor = meta, // utils.js
     IS_PATH = /[\.\*]/;
 
 // returns true if the passed path is just a keyName
@@ -40,7 +36,7 @@ function isKeyName(path) {
   @param obj
   @param {String} keyName
 */
-Ember.watch = function(obj, _keyPath, m) {
+function watch(obj, _keyPath, m) {
   // can't watch length on Array - it is special...
   if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
@@ -51,14 +47,14 @@ Ember.watch = function(obj, _keyPath, m) {
   }
 };
 
-Ember.isWatching = function isWatching(obj, key) {
+function isWatching(obj, key) {
   var meta = obj[META_KEY];
   return (meta && meta.watching[key]) > 0;
 };
 
-Ember.watch.flushPending = Ember.flushPendingChains;
+watch.flushPending = flushPendingChains;
 
-Ember.unwatch = function(obj, _keyPath, m) {
+function unwatch(obj, _keyPath, m) {
   // can't watch length on Array - it is special...
   if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
@@ -79,7 +75,7 @@ Ember.unwatch = function(obj, _keyPath, m) {
   @for Ember
   @param obj
 */
-Ember.rewatch = function(obj) {
+function rewatch(obj) {
   var m = obj[META_KEY], chains = m && m.chains;
 
   // make sure the object has its own guid.
@@ -104,7 +100,7 @@ var NODE_STACK = [];
   @param {Object} obj  the object to destroy
   @return {void}
 */
-Ember.destroy = function (obj) {
+function destroy(obj) {
   var meta = obj[META_KEY], node, nodes, key, nodeObject;
   if (meta) {
     obj[META_KEY] = null;
@@ -135,3 +131,5 @@ Ember.destroy = function (obj) {
     }
   }
 };
+
+export {watch, isWatching, unwatch, rewatch, destroy};
