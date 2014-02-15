@@ -1,11 +1,18 @@
-require('ember-metal/utils'); // META_KEY
-require('ember-metal/property_get'); // _getPath
-require('ember-metal/property_events'); // propertyWillChange, propertyDidChange
+// require('ember-metal/utils'); // META_KEY
+// require('ember-metal/property_get'); // _getPath
+// require('ember-metal/property_events'); // propertyWillChange, propertyDidChange
+// require('ember-metal/properties');
 
-var META_KEY = Ember.META_KEY,
-    MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
+import Ember from "ember-metal/core";
+import {META_KEY} from "ember-metal/utils";
+import {_getPath} from "ember-metal/property_get";
+import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
+import {defineProperty} from "ember-metal/properties";
+import EmberError from "ember-metal/error";
+
+var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
     IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/,
-    getPath = Ember._getPath;
+    getPath = _getPath;
 
 /**
   Sets the value of a property on an object, respecting computed properties
@@ -57,17 +64,17 @@ var set = function set(obj, keyName, value, tolerant) {
       }
       // only trigger a change if the value has changed
       if (value !== currentValue) {
-        Ember.propertyWillChange(obj, keyName);
+        propertyWillChange(obj, keyName);
         if (MANDATORY_SETTER) {
           if ((currentValue === undefined && !(keyName in obj)) || !obj.propertyIsEnumerable(keyName)) {
-            Ember.defineProperty(obj, keyName, null, value); // setup mandatory setter
+            defineProperty(obj, keyName, null, value); // setup mandatory setter
           } else {
             meta.values[keyName] = value;
           }
         } else {
           obj[keyName] = value;
         }
-        Ember.propertyDidChange(obj, keyName);
+        propertyDidChange(obj, keyName);
       }
     } else {
       obj[keyName] = value;
@@ -77,6 +84,7 @@ var set = function set(obj, keyName, value, tolerant) {
 };
 
 // Currently used only by Ember Data tests
+// ES6TODO: Verify still true
 if (Ember.config.overrideAccessors) {
   Ember.set = set;
   Ember.config.overrideAccessors();
@@ -99,18 +107,16 @@ function setPath(root, path, value, tolerant) {
   }
 
   if (!keyName || keyName.length === 0) {
-    throw new Ember.Error('Property set failed: You passed an empty path');
+    throw new EmberError('Property set failed: You passed an empty path');
   }
 
   if (!root) {
     if (tolerant) { return; }
-    else { throw new Ember.Error('Property set failed: object in path "'+path+'" could not be found or was destroyed.'); }
+    else { throw new EmberError('Property set failed: object in path "'+path+'" could not be found or was destroyed.'); }
   }
 
   return set(root, keyName, value);
 }
-
-Ember.set = set;
 
 /**
   Error-tolerant form of `Ember.set`. Will not blow up if any part of the
@@ -125,6 +131,8 @@ Ember.set = set;
   @param {String} path The property path to set
   @param {Object} value The value to set
 */
-Ember.trySet = function(root, path, value) {
+function trySet(root, path, value) {
   return set(root, path, value, true);
 };
+
+export {set, trySet};

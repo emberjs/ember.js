@@ -1,5 +1,5 @@
-var guidFor = Ember.guidFor,
-    sendEvent = Ember.sendEvent;
+import {guidFor} from "ember-metal/utils";
+import {sendEvent} from "ember-metal/events";
 
 /*
   this.observerSet = {
@@ -19,7 +19,7 @@ var guidFor = Ember.guidFor,
     ...
   ]
 */
-var ObserverSet = Ember._ObserverSet = function() {
+function ObserverSet() {
   this.clear();
 };
 
@@ -61,3 +61,5 @@ ObserverSet.prototype.clear = function() {
   this.observerSet = {};
   this.observers = [];
 };
+
+export default ObserverSet;

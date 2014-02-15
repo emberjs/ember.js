@@ -605,23 +605,28 @@ define("ember-metal/binding",
     };
   });
 define("ember-metal/chains", 
-  [],
-  function() {
+  ["ember-metal/core","ember-metal/utils","ember-metal/get_property","ember-metal/array","ember-metal/watch_key","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     "use strict";
-    require('ember-metal/utils');
-    require('ember-metal/property_get');
-    require('ember-metal/array');
-    require('ember-metal/watch_key');
+    // require('ember-metal/utils');
+    // require('ember-metal/property_get');
+    // require('ember-metal/array');
+    // require('ember-metal/watch_key');
 
-    var metaFor = Ember.meta, // utils.js
-        get = Ember.get, // property_get.js
-        normalizeTuple = Ember.normalizeTuple, // property_get.js
-        forEach = Ember.ArrayPolyfills.forEach, // array.js
+    var Ember = __dependency1__["default"];
+    // warn, assert, etc;
+    var meta = __dependency2__.meta;
+    var META_KEY = __dependency2__.META_KEY;
+    var get = __dependency3__.get;
+    var normalizeTuple = __dependency3__.normalizeTuple;
+    var ArrayPolyfills = __dependency4__["default"];
+    var watchKey = __dependency5__.watchKey;
+    var unwatchKey = __dependency5__.unwatchKey;
+
+    var metaFor = meta,
+        forEach = ArrayPolyfills.forEach,
         warn = Ember.warn,
-        watchKey = Ember.watchKey,
-        unwatchKey = Ember.unwatchKey,
-        FIRST_KEY = /^([^\.\*]+)/,
-        META_KEY = Ember.META_KEY;
+        FIRST_KEY = /^([^\.\*]+)/;
 
     function firstKey(path) {
       return path.match(FIRST_KEY)[0];
@@ -632,7 +637,7 @@ define("ember-metal/chains",
     // attempts to add the pendingQueue chains again. If some of them end up
     // back in the queue and reschedule is true, schedules a timeout to try
     // again.
-    Ember.flushPendingChains = function() {
+    function flushPendingChains() {
       if (pendingQueue.length === 0) { return; } // nothing to do
 
       var queue = pendingQueue;
@@ -658,7 +663,7 @@ define("ember-metal/chains",
       watchKey(obj, keyName, m);
     }
 
-    var removeChainWatcher = Ember.removeChainWatcher = function(obj, keyName, node) {
+    function removeChainWatcher(obj, keyName, node) {
       if (!obj || 'object' !== typeof obj) { return; } // nothing to do
 
       var m = obj[META_KEY];
@@ -678,7 +683,7 @@ define("ember-metal/chains",
     // A ChainNode watches a single key on an object. If you provide a starting
     // value for the key then the node won't actually watch it. For a root node
     // pass null for parent and key and object for value.
-    var ChainNode = Ember._ChainNode = function(parent, key, value) {
+    function ChainNode(parent, key, value) {
       this._parent = parent;
       this._key    = key;
 
@@ -930,7 +935,7 @@ define("ember-metal/chains",
       if (this._parent) { this._parent.chainDidChange(this, this._key, 1, events); }
     };
 
-    Ember.finishChains = function(obj) {
+    function finishChains(obj) {
       // We only create meta if we really have to
       var m = obj[META_KEY], chains = m && m.chains;
       if (chains) {
@@ -941,10 +946,15 @@ define("ember-metal/chains",
         }
       }
     };
+
+    __exports__.flushPendingChains = flushPendingChains;
+    __exports__.removeChainWatcher = removeChainWatcher;
+    __exports__.ChainNode = ChainNode;
+    __exports__.finishChains = finishChains;
   });
 define("ember-metal/computed", 
-  [],
-  function() {
+  ["ember-metal/core","ember-metal/get_property","ember-metal/set_property","ember-metal/utils","ember-metal/platform"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__) {
     "use strict";
     require('ember-metal/core');
     require('ember-metal/platform');
@@ -956,6 +966,12 @@ define("ember-metal/computed",
     require('ember-metal/watching');
     require('ember-metal/property_events');
 
+    var Ember = __dependency1__["default"];
+    var get = __dependency2__.get;
+    var set = __dependency3__.set;
+    var meta = __dependency4__.meta;
+    var META_KEY = __dependency4__.META_KEY;
+    var create = __dependency5__.create;
     /**
     @module ember-metal
     */
@@ -963,12 +979,9 @@ define("ember-metal/computed",
     Ember.warn("The CP_DEFAULT_CACHEABLE flag has been removed and computed properties are always cached by default. Use `volatile` if you don't want caching.", Ember.ENV.CP_DEFAULT_CACHEABLE !== false);
 
 
-    var get = Ember.get,
-        set = Ember.set,
-        metaFor = Ember.meta,
+    var metaFor = meta,
         a_slice = [].slice,
-        o_create = Ember.create,
-        META_KEY = Ember.META_KEY,
+        o_create = create,
         watch = Ember.watch,
         unwatch = Ember.unwatch;
 
@@ -2919,21 +2932,23 @@ define("ember-metal/error",
     __exports__["default"] = EmberError;
   });
 define("ember-metal/events", 
-  [],
-  function() {
+  ["ember-metal/core","ember-metal/utils","ember-metal/platform","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
-    require('ember-metal/core');
-    require('ember-metal/platform');
-    require('ember-metal/utils');
+    // require('ember-metal/core');
+    // require('ember-metal/platform');
+    // require('ember-metal/utils');
 
     /**
     @module ember-metal
     */
+    var Ember = __dependency1__["default"];
+    var meta = __dependency2__.meta;
+    var META_KEY = __dependency2__.META_KEY;
+    var tryFinally = __dependency2__.tryFinally;
+    var create = __dependency3__.create;
 
-    var o_create = Ember.create,
-        metaFor = Ember.meta,
-        META_KEY = Ember.META_KEY,
-        a_slice = [].slice,
+    var a_slice = [].slice,
         /* listener flags */
         ONCE = 1, SUSPENDED = 2;
 
@@ -3144,7 +3159,7 @@ define("ember-metal/events",
       function tryable()   { return callback.call(target); }
       function finalizer() { if (actionIndex !== -1) { actions[actionIndex+2] &= ~SUSPENDED; } }
 
-      return Ember.tryFinally(tryable, finalizer);
+      return tryFinally(tryable, finalizer);
     }
 
     /**
@@ -3191,7 +3206,7 @@ define("ember-metal/events",
         }
       }
 
-      return Ember.tryFinally(tryable, finalizer);
+      return tryFinally(tryable, finalizer);
     }
 
     /**
@@ -3314,23 +3329,24 @@ define("ember-metal/events",
       @param {Function} func
       @return func
     */
-    Ember.on = function(){
+    function on(){
       var func = a_slice.call(arguments, -1)[0],
           events = a_slice.call(arguments, 0, -1);
       func.__ember_listens__ = events;
       return func;
     };
 
-    Ember.addListener = addListener;
-    Ember.removeListener = removeListener;
-    Ember._suspendListener = suspendListener;
-    Ember._suspendListeners = suspendListeners;
-    Ember.sendEvent = sendEvent;
-    Ember.hasListeners = hasListeners;
-    Ember.watchedEvents = watchedEvents;
-    Ember.listenersFor = listenersFor;
-    Ember.listenersDiff = actionsDiff;
-    Ember.listenersUnion = actionsUnion;
+    __exports__.on = on;
+    __exports__.addListener = addListener;
+    __exports__.removeListener = removeListener;
+    __exports__.suspendListener = suspendListener;
+    __exports__.suspendListeners = suspendListeners;
+    __exports__.sendEvent = sendEvent;
+    __exports__.hasListeners = hasListeners;
+    __exports__.watchedEvents = watchedEvents;
+    __exports__.listenersFor = listenersFor;
+    __exports__.actionsDiff = actionsDiff;
+    __exports__.actionsUnion = actionsUnion;
   });
 define("ember-metal/expand_properties", 
   [],
@@ -3386,13 +3402,14 @@ define("ember-metal/expand_properties",
     };
   });
 define("ember-metal/get_properties", 
-  [],
-  function() {
+  ["ember-metal/property_get","ember-metal/utils","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
-    require('ember-metal/property_get');
-    require('ember-metal/utils');
+    // require('ember-metal/property_get');
+    // require('ember-metal/utils');
 
-    var get = Ember.get;
+    var get = __dependency1__.get;
+    var typeOf = __dependency2__.typeOf;
 
     /**
       To get multiple properties at once, call `Ember.getProperties`
@@ -3413,12 +3430,12 @@ define("ember-metal/get_properties",
       @param {String...|Array} list of keys to get
       @return {Hash}
     */
-    Ember.getProperties = function(obj) {
+    function getProperties(obj) {
       var ret = {},
           propertyNames = arguments,
           i = 1;
 
-      if (arguments.length === 2 && Ember.typeOf(arguments[1]) === 'array') {
+      if (arguments.length === 2 && typeOf(arguments[1]) === 'array') {
         i = 0;
         propertyNames = arguments[1];
       }
@@ -3427,6 +3444,8 @@ define("ember-metal/get_properties",
       }
       return ret;
     };
+
+    __exports__["default"] = getProperties;
   });
 define("ember-metal/instrumentation", 
   ["ember-metal/core","ember-metal/utils","exports"],
@@ -3836,8 +3855,8 @@ define("ember-metal/logger",
     __exports__["default"] = Logger;
   });
 define("ember-metal", 
-  ["ember-metal/core","ember-metal/instrumentation","ember-metal/utils","ember-metal/error","ember-metal/enumerable_utils","ember-metal/platform","ember-metal/array","ember-metal/logger","ember-metal/property_get","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __exports__) {
+  ["ember-metal/core","ember-metal/instrumentation","ember-metal/utils","ember-metal/error","ember-metal/enumerable_utils","ember-metal/platform","ember-metal/array","ember-metal/logger","ember-metal/property_get","ember-metal/events","ember-metal/observer_set","ember-metal/property_events","ember-metal/properties","ember-metal/property_set","ember-metal/map","ember-metal/get_properties","ember-metal/set_properties","ember-metal/watch_key","ember-metal/chains","ember-metal/watch_path","ember-metal/watching","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __dependency11__, __dependency12__, __dependency13__, __dependency14__, __dependency15__, __dependency16__, __dependency17__, __dependency18__, __dependency19__, __dependency20__, __dependency21__, __exports__) {
     "use strict";
     /**
     Ember Metal
@@ -3884,6 +3903,50 @@ define("ember-metal",
     var normalizeTuple = __dependency9__.normalizeTuple;
     var _getPath = __dependency9__._getPath;
 
+    var on = __dependency10__.on;
+    var addListener = __dependency10__.addListener;
+    var removeListener = __dependency10__.removeListener;
+    var suspendListener = __dependency10__.suspendListener;
+    var sendEvent = __dependency10__.sendEvent;
+    var hasListeners = __dependency10__.hasListeners;
+    var watchedEvents = __dependency10__.watchedEvents;
+    var listenersFor = __dependency10__.listenersFor;
+    var actionsDiff = __dependency10__.actionsDiff;
+    var actionsUnion = __dependency10__.actionsUnion;
+
+    var ObserverSet = __dependency11__["default"];
+
+    var propertyWillChange = __dependency12__.propertyWillChange;
+    var propertyDidChange = __dependency12__.propertyDidChange;
+    var overrideChains = __dependency12__.overrideChains;
+    var beginPropertyChanges = __dependency12__.beginPropertyChanges;
+    var endPropertyChanges = __dependency12__.endPropertyChanges;
+    var changeProperties = __dependency12__.changeProperties;
+
+    var Descriptor = __dependency13__.Descriptor;
+    var defineProperty = __dependency13__.defineProperty;
+    var set = __dependency14__.set;
+    var trySet = __dependency14__.trySet;
+
+    var OrderedSet = __dependency15__.OrderedSet;
+    var Map = __dependency15__.Map;
+    var MapWithDefault = __dependency15__.MapWithDefault;
+    var getProperties = __dependency16__["default"];
+    var setProperties = __dependency17__["default"];
+    var watchKey = __dependency18__.watchKey;
+    var unwatchKey = __dependency18__.unwatchKey;
+    var flushPendingChains = __dependency19__.flushPendingChains;
+    var removeChainWatcher = __dependency19__.removeChainWatcher;
+    var ChainNode = __dependency19__.ChainNode;
+    var finishChains = __dependency19__.finishChains;
+    var watchPath = __dependency20__.watchPath;
+    var unwatchPath = __dependency20__.unwatchPath;
+    var watch = __dependency21__.watch;
+    var isWatching = __dependency21__.isWatching;
+    var unwatch = __dependency21__.unwatch;
+    var rewatch = __dependency21__.rewatch;
+    var destroy = __dependency21__.destroy;
+
     // EXPORTS to the global window Ember.
 
     Ember.Instrumentation = {
@@ -3891,7 +3954,7 @@ define("ember-metal",
       subscribe: subscribe,
       unsubscribe: unsubscribe,
       reset: reset
-    }
+    };
 
     Ember.generateGuid    = generateGuid;
     Ember.GUID_KEY        = GUID_KEY;
@@ -3910,21 +3973,71 @@ define("ember-metal",
     Ember.inspect         = inspect;
     Ember.typeOf          = typeOf;
     Ember.tryCatchFinally = tryCatchFinally;
-    Ember.isArray = isArray;
-    Ember.makeArray = makeArray;
-    Ember.canInvoke = canInvoke;
-    Ember.tryInvoke = tryInvoke;
-    Ember.tryFinally = tryFinally;
+    Ember.isArray         = isArray;
+    Ember.makeArray       = makeArray;
+    Ember.canInvoke       = canInvoke;
+    Ember.tryInvoke       = tryInvoke;
+    Ember.tryFinally      = tryFinally;
 
     Ember.Logger = Logger;
 
-    Ember.get = get;
+    Ember.get            = get;
     Ember.getWithDefault = getWithDefault;
     Ember.normalizeTuple = normalizeTuple;
-    Ember._getPath = _getPath;
+    Ember._getPath       = _getPath;
 
     Ember.EnumerableUtils = EnumerableUtils;
 
+    Ember.on                = on;
+    Ember.addListener       = addListener;
+    Ember.removeListener    = removeListener;
+    Ember._suspendListener  = suspendListener;
+    Ember._suspendListeners = suspendListeners;
+    Ember.sendEvent         = sendEvent;
+    Ember.hasListeners      = hasListeners;
+    Ember.watchedEvents     = watchedEvents;
+    Ember.listenersFor      = listenersFor;
+    Ember.listenersDiff     = listenersDiff;
+    Ember.listenersUnion    = listenersUnion;
+
+    Ember._ObserverSet = ObserverSet;
+
+    Ember.propertyWillChange = propertyWillChange;
+    Ember.propertyDidChange = propertyDidChange;
+    Ember.overrideChains = overrideChains;
+    Ember.beginPropertyChanges = beginPropertyChanges;
+    Ember.endPropertyChanges = endPropertyChanges;
+    Ember.changeProperties = changeProperties;
+
+    Ember.Descriptor     = Descriptor;
+    Ember.defineProperty = defineProperty;
+
+    Ember.set    = set;
+    Ember.trySet = trySet;
+
+    Ember.OrderedSet = OrderedSet;
+    Ember.Map = Map;
+    Ember.MapWithDefault = MapWithDefault;
+
+    Ember.getProperties = getProperties;
+    Ember.setProperties = setProperties;
+
+    Ember.watchKey   = watchKey;
+    Ember.unwatchKey = unwatchKey;
+
+    Ember.flushPendingChains = flushPendingChains;
+    Ember.removeChainWatcher = removeChainWatcher;
+    Ember._ChainNode = ChainNode;
+    Ember.finishChains = finishChains;
+
+    Ember.watchPath = watchPath;
+    Ember.unwatchPath = unwatchPath;
+
+    Ember.watch = watch;
+    Ember.isWatching = isWatching;
+    Ember.unwatch = unwatch;
+    Ember.rewatch = rewatch;
+    Ember.destroy = destroy;
     // ..........................................................
     // ERROR HANDLING
     //
@@ -3950,23 +4063,23 @@ define("ember-metal",
     Ember.onerror = null;
 
     // require('ember-metal/instrumentation');
-    require('ember-metal/map');
+    // require('ember-metal/map');
     // require('ember-metal/platform');
     // require('ember-metal/utils');
     // require('ember-metal/error');
     // require('ember-metal/logger');
     // require('ember-metal/property_get');
-    require('ember-metal/property_set');
-    require('ember-metal/properties');
-    require('ember-metal/property_events');
-    require('ember-metal/get_properties');
-    require('ember-metal/set_properties');
-    require('ember-metal/chains');
+    // require('ember-metal/property_set');
+    // require('ember-metal/properties');
+    // require('ember-metal/property_events');
+    // require('ember-metal/get_properties');
+    // require('ember-metal/set_properties');
+    // require('ember-metal/chains');
     require('ember-metal/computed');
     require('ember-metal/watching');
     require('ember-metal/watch_key');
     require('ember-metal/watch_path');
-    require('ember-metal/events');
+    // require('ember-metal/events');
     require('ember-metal/observer');
     require('ember-metal/mixin');
     require('ember-metal/binding');
@@ -3978,8 +4091,8 @@ define("ember-metal",
     __exports__["default"] = Ember;
   });
 define("ember-metal/map", 
-  [],
-  function() {
+  ["ember-metal/array","ember-metal/utils","ember-metal/propert_set","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     /**
     @module ember-metal
@@ -4005,14 +4118,15 @@ define("ember-metal/map",
       `Ember.Map.create()` for symmetry with other Ember classes.
     */
 
-    require('ember-metal/enumerable_utils');
-    require('ember-metal/utils');
-    require('ember-metal/core');
-    require('ember-metal/property_set');
+    // ES6Todo: Never needed? require('ember-metal/enumerable_utils');
+    // require('ember-metal/utils');
+    // require('ember-metal/core');
+    // require('ember-metal/property_set');
 
-    var set = Ember.set,
-        guidFor = Ember.guidFor,
-        indexOf = Ember.ArrayPolyfills.indexOf;
+    var ArrayPolyfills = __dependency1__["default"];var guidFor = __dependency2__.guidFor;
+    var set = __dependency3__.set;
+
+    var indexOf = ArrayPolyfills.indexOf;
 
     var copy = function(obj) {
       var output = {};
@@ -4045,7 +4159,7 @@ define("ember-metal/map",
       @constructor
       @private
     */
-    var OrderedSet = Ember.OrderedSet = function() {
+    function OrderedSet() {
       this.clear();
     };
 
@@ -4177,7 +4291,7 @@ define("ember-metal/map",
       @constructor
     */
     var Map = Ember.Map = function() {
-      this.keys = Ember.OrderedSet.create();
+      this.keys = OrderedSet.create();
       this.values = {};
     };
 
@@ -4309,7 +4423,7 @@ define("ember-metal/map",
       @param [options]
         @param {*} [options.defaultValue]
     */
-    var MapWithDefault = Ember.MapWithDefault = function(options) {
+    function MapWithDefault(options) {
       Map.call(this);
       this.defaultValue = options.defaultValue;
     };
@@ -4360,6 +4474,10 @@ define("ember-metal/map",
         defaultValue: this.defaultValue
       }));
     };
+
+    __exports__.OrderedSet = OrderedSet;
+    __exports__.Map = Map;
+    __exports__.MapWithDefault = MapWithDefault;
   });
 define("ember-metal/mixin", 
   [],
@@ -5284,11 +5402,11 @@ define("ember-metal/observer",
     };
   });
 define("ember-metal/observer_set", 
-  [],
-  function() {
+  ["ember-metal/utils","ember-metal/events","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
-    var guidFor = Ember.guidFor,
-        sendEvent = Ember.sendEvent;
+    var guidFor = __dependency1__.guidFor;
+    var sendEvent = __dependency2__.sendEvent;
 
     /*
       this.observerSet = {
@@ -5308,7 +5426,7 @@ define("ember-metal/observer_set",
         ...
       ]
     */
-    var ObserverSet = Ember._ObserverSet = function() {
+    function ObserverSet() {
       this.clear();
     };
 
@@ -5350,6 +5468,8 @@ define("ember-metal/observer_set",
       this.observerSet = {};
       this.observers = [];
     };
+
+    __exports__["default"] = ObserverSet;
   });
 define("ember-metal/platform", 
   ["ember-metal/core","exports"],
@@ -5522,21 +5642,25 @@ define("ember-metal/platform",
     __exports__.platform = platform;
   });
 define("ember-metal/properties", 
-  [],
-  function() {
+  ["ember-metal/core","ember-metal/utils","ember-metal/platform","ember-metal/property_events","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
-    require('ember-metal/core');
-    require('ember-metal/platform');
-    require('ember-metal/utils');
-    require('ember-metal/property_get');
+    // require('ember-metal/core');
+    // require('ember-metal/platform');
+    // require('ember-metal/utils');
+    // require('ember-metal/property_get');
 
     /**
     @module ember-metal
     */
 
-    var META_KEY = Ember.META_KEY,
-        metaFor = Ember.meta,
-        objectDefineProperty = Ember.platform.defineProperty;
+    var Ember = __dependency1__["default"];
+    var META_KEY = __dependency2__.META_KEY;
+    var meta = __dependency2__.meta;
+    var platform = __dependency3__.platform;
+    var overrideChains = __dependency4__.overrideChains;
+    var metaFor = meta,
+        objectDefineProperty = platform.defineProperty;
 
     var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
@@ -5555,7 +5679,7 @@ define("ember-metal/properties",
       @private
       @constructor
     */
-    Ember.Descriptor = function() {};
+    function Descriptor() {};
 
     // ..........................................................
     // DEFINING PROPERTIES API
@@ -5617,7 +5741,7 @@ define("ember-metal/properties",
       @param {*} [data] something other than a descriptor, that will
         become the explicit value of this property.
     */
-    Ember.defineProperty = function(obj, keyName, desc, data, meta) {
+    function defineProperty(obj, keyName, desc, data, meta) {
       var descs, existingDesc, watching, value;
 
       if (!meta) meta = metaFor(obj);
@@ -5625,11 +5749,11 @@ define("ember-metal/properties",
       existingDesc = meta.descs[keyName];
       watching = meta.watching[keyName] > 0;
 
-      if (existingDesc instanceof Ember.Descriptor) {
+      if (existingDesc instanceof Descriptor) {
         existingDesc.teardown(obj, keyName);
       }
 
-      if (desc instanceof Ember.Descriptor) {
+      if (desc instanceof Descriptor) {
         value = desc;
 
         descs[keyName] = desc;
@@ -5675,7 +5799,7 @@ define("ember-metal/properties",
 
       // if key is being watched, override chains that
       // were initialized with the prototype
-      if (watching) { Ember.overrideChains(obj, keyName, meta); }
+      if (watching) { overrideChains(obj, keyName, meta); }
 
       // The `value` passed to the `didDefineProperty` hook is
       // either the descriptor or data, whichever was passed.
@@ -5692,7 +5816,7 @@ define("ember-metal/properties",
           cp = implicitCPs[i];
           key = cp.implicitCPKey;
 
-          Ember.defineProperty(obj, key, cp, undefined, meta);
+          defineProperty(obj, key, cp, undefined, meta);
 
           if (cp._dependentCPs) {
             addImplicitCPs(obj, cp._dependentCPs, meta);
@@ -5700,23 +5824,27 @@ define("ember-metal/properties",
         }
       };
     }
+
+    __exports__.Descriptor = Descriptor;
+    __exports__.defineProperty = defineProperty;
   });
 define("ember-metal/property_events", 
-  [],
-  function() {
+  ["ember-metal/utils","ember-metal/events","ember-metal/observer_set","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
-    require('ember-metal/utils');
-    require('ember-metal/events');
-    require('ember-metal/observer_set');
+    // require('ember-metal/utils');
+    // require('ember-metal/events');
+    // require('ember-metal/observer_set');
 
-    var META_KEY = Ember.META_KEY,
-        guidFor = Ember.guidFor,
-        tryFinally = Ember.tryFinally,
-        sendEvent = Ember.sendEvent,
-        listenersUnion = Ember.listenersUnion,
-        listenersDiff = Ember.listenersDiff,
-        ObserverSet = Ember._ObserverSet,
-        beforeObserverSet = new ObserverSet(),
+    var META_KEY = __dependency1__.META_KEY;
+    var guidFor = __dependency1__.guidFor;
+    var tryFinally = __dependency1__.tryFinally;
+    var sendEvent = __dependency2__.sendEvent;
+    var listenersUnion = __dependency2__.listenersUnion;
+    var listenersDiff = __dependency2__.listenersDiff;
+    var ObserverSet = __dependency3__["default"];
+
+    var beforeObserverSet = new ObserverSet(),
         observerSet = new ObserverSet(),
         deferred = 0;
 
@@ -5752,7 +5880,6 @@ define("ember-metal/property_events",
       chainsWillChange(obj, keyName, m);
       notifyBeforeObservers(obj, keyName);
     }
-    Ember.propertyWillChange = propertyWillChange;
 
     /**
       This function is called just after an object property has changed.
@@ -5785,7 +5912,6 @@ define("ember-metal/property_events",
       chainsDidChange(obj, keyName, m, false);
       notifyObservers(obj, keyName);
     }
-    Ember.propertyDidChange = propertyDidChange;
 
     var WILL_SEEN, DID_SEEN;
 
@@ -5868,7 +5994,7 @@ define("ember-metal/property_events",
       }
     }
 
-    Ember.overrideChains = function(obj, keyName, m) {
+    function overrideChains(obj, keyName, m) {
       chainsDidChange(obj, keyName, m, true);
     };
 
@@ -5881,8 +6007,6 @@ define("ember-metal/property_events",
       deferred++;
     }
 
-    Ember.beginPropertyChanges = beginPropertyChanges;
-
     /**
       @method endPropertyChanges
       @private
@@ -5894,8 +6018,6 @@ define("ember-metal/property_events",
         observerSet.flush();
       }
     }
-
-    Ember.endPropertyChanges = endPropertyChanges;
 
     /**
       Make a series of property changes together in an
@@ -5912,7 +6034,7 @@ define("ember-metal/property_events",
       @param {Function} callback
       @param [binding]
     */
-    Ember.changeProperties = function(cb, binding) {
+    function changeProperties(cb, binding) {
       beginPropertyChanges();
       tryFinally(cb, endPropertyChanges, binding);
     };
@@ -5941,6 +6063,13 @@ define("ember-metal/property_events",
         sendEvent(obj, eventName, [obj, keyName]);
       }
     }
+
+    __exports__.propertyWillChange = propertyWillChange;
+    __exports__.propertyDidChange = propertyDidChange;
+    __exports__.overrideChains = overrideChains;
+    __exports__.beginPropertyChanges = beginPropertyChanges;
+    __exports__.endPropertyChanges = endPropertyChanges;
+    __exports__.changeProperties = changeProperties;
   });
 define("ember-metal/property_get", 
   ["ember-metal/core","ember-metal/utils","ember-metal/error","exports"],
@@ -6114,17 +6243,25 @@ define("ember-metal/property_get",
     __exports__._getPath = _getPath;
   });
 define("ember-metal/property_set", 
-  [],
-  function() {
+  ["ember-metal/core","ember-metal/utils","ember-metal/property_get","ember-metal/property_events","ember-metal/properties","ember-metal/error","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
     "use strict";
-    require('ember-metal/utils'); // META_KEY
-    require('ember-metal/property_get'); // _getPath
-    require('ember-metal/property_events'); // propertyWillChange, propertyDidChange
+    // require('ember-metal/utils'); // META_KEY
+    // require('ember-metal/property_get'); // _getPath
+    // require('ember-metal/property_events'); // propertyWillChange, propertyDidChange
+    // require('ember-metal/properties');
 
-    var META_KEY = Ember.META_KEY,
-        MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
+    var Ember = __dependency1__["default"];
+    var META_KEY = __dependency2__.META_KEY;
+    var _getPath = __dependency3__._getPath;
+    var propertyWillChange = __dependency4__.propertyWillChange;
+    var propertyDidChange = __dependency4__.propertyDidChange;
+    var defineProperty = __dependency5__.defineProperty;
+    var EmberError = __dependency6__["default"];
+
+    var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
         IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/,
-        getPath = Ember._getPath;
+        getPath = _getPath;
 
     /**
       Sets the value of a property on an object, respecting computed properties
@@ -6176,17 +6313,17 @@ define("ember-metal/property_set",
           }
           // only trigger a change if the value has changed
           if (value !== currentValue) {
-            Ember.propertyWillChange(obj, keyName);
+            propertyWillChange(obj, keyName);
             if (MANDATORY_SETTER) {
               if ((currentValue === undefined && !(keyName in obj)) || !obj.propertyIsEnumerable(keyName)) {
-                Ember.defineProperty(obj, keyName, null, value); // setup mandatory setter
+                defineProperty(obj, keyName, null, value); // setup mandatory setter
               } else {
                 meta.values[keyName] = value;
               }
             } else {
               obj[keyName] = value;
             }
-            Ember.propertyDidChange(obj, keyName);
+            propertyDidChange(obj, keyName);
           }
         } else {
           obj[keyName] = value;
@@ -6196,6 +6333,7 @@ define("ember-metal/property_set",
     };
 
     // Currently used only by Ember Data tests
+    // ES6TODO: Verify still true
     if (Ember.config.overrideAccessors) {
       Ember.set = set;
       Ember.config.overrideAccessors();
@@ -6218,18 +6356,16 @@ define("ember-metal/property_set",
       }
 
       if (!keyName || keyName.length === 0) {
-        throw new Ember.Error('Property set failed: You passed an empty path');
+        throw new EmberError('Property set failed: You passed an empty path');
       }
 
       if (!root) {
         if (tolerant) { return; }
-        else { throw new Ember.Error('Property set failed: object in path "'+path+'" could not be found or was destroyed.'); }
+        else { throw new EmberError('Property set failed: object in path "'+path+'" could not be found or was destroyed.'); }
       }
 
       return set(root, keyName, value);
     }
-
-    Ember.set = set;
 
     /**
       Error-tolerant form of `Ember.set`. Will not blow up if any part of the
@@ -6244,9 +6380,12 @@ define("ember-metal/property_set",
       @param {String} path The property path to set
       @param {Object} value The value to set
     */
-    Ember.trySet = function(root, path, value) {
+    function trySet(root, path, value) {
       return set(root, path, value, true);
     };
+
+    __exports__.set = set;
+    __exports__.trySet = trySet;
   });
 define("ember-metal/run_loop", 
   [],
@@ -6867,14 +7006,14 @@ define("ember-metal/run_loop",
     }
   });
 define("ember-metal/set_properties", 
-  [],
-  function() {
+  ["ember-metal/property_events","ember-metal/property_set","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
-    require('ember-metal/property_events');
-    require('ember-metal/property_set');
+    // require('ember-metal/property_events');
+    // require('ember-metal/property_set');
 
-    var changeProperties = Ember.changeProperties,
-        set = Ember.set;
+    var changeProperties = __dependency1__.changeProperties;
+    var set = __dependency2__.set;
 
     /**
       Set a list of properties on an object. These properties are set inside
@@ -6894,7 +7033,7 @@ define("ember-metal/set_properties",
       @param {Object} hash
       @return self
     */
-    Ember.setProperties = function(self, hash) {
+    function setProperties(self, hash) {
       changeProperties(function() {
         for(var prop in hash) {
           if (hash.hasOwnProperty(prop)) { set(self, prop, hash[prop]); }
@@ -6902,6 +7041,8 @@ define("ember-metal/set_properties",
       });
       return self;
     };
+
+    __exports__["default"] = setProperties;
   });
 define("ember-metal/utils", 
   ["ember-metal/core","ember-metal/platform","ember-metal/array","exports"],
@@ -8306,18 +8447,22 @@ define("ember-metal/vendor/backburner",
       });
   });
 define("ember-metal/watch_key", 
-  [],
-  function() {
+  ["ember-metal/core","ember-metal/utils","ember-metal/platform","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
-    require('ember-metal/utils');
-    require('ember-metal/platform');
+    // require('ember-metal/utils');
+    // require('ember-metal/platform');
 
-    var metaFor = Ember.meta, // utils.js
-        typeOf = Ember.typeOf, // utils.js
+    var Ember = __dependency1__["default"];
+    var meta = __dependency2__.meta;
+    var typeOf = __dependency2__.typeOf;
+    var platform = __dependency3__.platform;
+
+    var metaFor = meta, // utils.js
         MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
-        o_defineProperty = Ember.platform.defineProperty;
+        o_defineProperty = platform.defineProperty;
 
-    Ember.watchKey = function(obj, keyName, meta) {
+    function watchKey(obj, keyName, meta) {
       // can't watch length on Array - it is special...
       if (keyName === 'length' && typeOf(obj) === 'array') { return; }
 
@@ -8345,8 +8490,7 @@ define("ember-metal/watch_key",
       }
     };
 
-
-    Ember.unwatchKey = function(obj, keyName, meta) {
+    function unwatchKey(obj, keyName, meta) {
       var m = meta || metaFor(obj), watching = m.watching;
 
       if (watching[keyName] === 1) {
@@ -8377,17 +8521,22 @@ define("ember-metal/watch_key",
         watching[keyName]--;
       }
     };
+
+    __exports__.watchKey = watchKey;
+    __exports__.unwatchKey = unwatchKey;
   });
 define("ember-metal/watch_path", 
-  [],
-  function() {
+  ["ember-metal/utils","ember-metal/chains","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
-    require('ember-metal/utils');
-    require('ember-metal/chains');
+    // require('ember-metal/utils');
+    // require('ember-metal/chains');
 
-    var metaFor = Ember.meta, // utils.js
-        typeOf = Ember.typeOf, // utils.js
-        ChainNode = Ember._ChainNode; // chains.js
+    var meta = __dependency1__.meta;
+    var typeOf = __dependency1__.typeOf;
+    var ChainNode = __dependency2__.ChainNode;
+
+    var metaFor = meta;
 
     // get the chains for the current object. If the current object has
     // chains inherited from the proto they will be cloned and reconfigured for
@@ -8402,7 +8551,7 @@ define("ember-metal/watch_path",
       return ret;
     }
 
-    Ember.watchPath = function(obj, keyPath, meta) {
+    function watchPath(obj, keyPath, meta) {
       // can't watch length on Array - it is special...
       if (keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
@@ -8416,7 +8565,7 @@ define("ember-metal/watch_path",
       }
     };
 
-    Ember.unwatchPath = function(obj, keyPath, meta) {
+    function unwatchPath(obj, keyPath, meta) {
       var m = meta || metaFor(obj), watching = m.watching;
 
       if (watching[keyPath] === 1) {
@@ -8426,10 +8575,13 @@ define("ember-metal/watch_path",
         watching[keyPath]--;
       }
     };
+
+    __exports__.watchPath = watchPath;
+    __exports__.unwatchPath = unwatchPath;
   });
 define("ember-metal/watching", 
-  [],
-  function() {
+  ["ember-metal/utils","ember-metal/chains","ember-metal/watch_key","ember-metal/watch_path","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
     require('ember-metal/core');
     require('ember-metal/platform');
@@ -8443,16 +8595,19 @@ define("ember-metal/watching",
     @module ember-metal
     */
 
-    var metaFor = Ember.meta, // utils.js
-        GUID_KEY = Ember.GUID_KEY, // utils.js
-        META_KEY = Ember.META_KEY, // utils.js
-        removeChainWatcher = Ember.removeChainWatcher,
-        watchKey = Ember.watchKey, // watch_key.js
-        unwatchKey = Ember.unwatchKey,
-        watchPath = Ember.watchPath, // watch_path.js
-        unwatchPath = Ember.unwatchPath,
-        typeOf = Ember.typeOf, // utils.js
-        generateGuid = Ember.generateGuid,
+    var meta = __dependency1__.meta;
+    var META_KEY = __dependency1__.META_KEY;
+    var GUID_KEY = __dependency1__.GUID_KEY;
+    var typeOf = __dependency1__.typeOf;
+    var generateGuid = __dependency1__.generateGuid;
+    var removeChainWatcher = __dependency2__.removeChainWatcher;
+    var flushPendingChains = __dependency2__.flushPendingChains;
+    var watchKey = __dependency3__.watchKey;
+    var unwatchKey = __dependency3__.unwatchKey;
+    var watchPath = __dependency4__.watchPath;
+    var unwatchPath = __dependency4__.unwatchPath;
+
+    var metaFor = meta, // utils.js
         IS_PATH = /[\.\*]/;
 
     // returns true if the passed path is just a keyName
@@ -8473,7 +8628,7 @@ define("ember-metal/watching",
       @param obj
       @param {String} keyName
     */
-    Ember.watch = function(obj, _keyPath, m) {
+    function watch(obj, _keyPath, m) {
       // can't watch length on Array - it is special...
       if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
@@ -8484,14 +8639,14 @@ define("ember-metal/watching",
       }
     };
 
-    Ember.isWatching = function isWatching(obj, key) {
+    function isWatching(obj, key) {
       var meta = obj[META_KEY];
       return (meta && meta.watching[key]) > 0;
     };
 
-    Ember.watch.flushPending = Ember.flushPendingChains;
+    watch.flushPending = flushPendingChains;
 
-    Ember.unwatch = function(obj, _keyPath, m) {
+    function unwatch(obj, _keyPath, m) {
       // can't watch length on Array - it is special...
       if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
@@ -8512,7 +8667,7 @@ define("ember-metal/watching",
       @for Ember
       @param obj
     */
-    Ember.rewatch = function(obj) {
+    function rewatch(obj) {
       var m = obj[META_KEY], chains = m && m.chains;
 
       // make sure the object has its own guid.
@@ -8537,7 +8692,7 @@ define("ember-metal/watching",
       @param {Object} obj  the object to destroy
       @return {void}
     */
-    Ember.destroy = function (obj) {
+    function destroy(obj) {
       var meta = obj[META_KEY], node, nodes, key, nodeObject;
       if (meta) {
         obj[META_KEY] = null;
@@ -8568,4 +8723,10 @@ define("ember-metal/watching",
         }
       }
     };
+
+    __exports__.watch = watch;
+    __exports__.isWatching = isWatching;
+    __exports__.unwatch = unwatch;
+    __exports__.rewatch = rewatch;
+    __exports__.destroy = destroy;
   });

@@ -1,15 +1,18 @@
-require('ember-metal/core');
-require('ember-metal/platform');
-require('ember-metal/utils');
-require('ember-metal/property_get');
+// require('ember-metal/core');
+// require('ember-metal/platform');
+// require('ember-metal/utils');
+// require('ember-metal/property_get');
 
 /**
 @module ember-metal
 */
 
-var META_KEY = Ember.META_KEY,
-    metaFor = Ember.meta,
-    objectDefineProperty = Ember.platform.defineProperty;
+import Ember from "ember-metal/core";
+import {META_KEY, meta} from "ember-metal/utils";
+import {platform} from "ember-metal/platform";
+import {overrideChains} from "ember-metal/property_events";
+var metaFor = meta,
+    objectDefineProperty = platform.defineProperty;
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
@@ -28,7 +31,7 @@ var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
   @private
   @constructor
 */
-Ember.Descriptor = function() {};
+function Descriptor() {};
 
 // ..........................................................
 // DEFINING PROPERTIES API
@@ -90,7 +93,7 @@ var DEFAULT_GETTER_FUNCTION = Ember.DEFAULT_GETTER_FUNCTION = function(name) {
   @param {*} [data] something other than a descriptor, that will
     become the explicit value of this property.
 */
-Ember.defineProperty = function(obj, keyName, desc, data, meta) {
+function defineProperty(obj, keyName, desc, data, meta) {
   var descs, existingDesc, watching, value;
 
   if (!meta) meta = metaFor(obj);
@@ -98,11 +101,11 @@ Ember.defineProperty = function(obj, keyName, desc, data, meta) {
   existingDesc = meta.descs[keyName];
   watching = meta.watching[keyName] > 0;
 
-  if (existingDesc instanceof Ember.Descriptor) {
+  if (existingDesc instanceof Descriptor) {
     existingDesc.teardown(obj, keyName);
   }
 
-  if (desc instanceof Ember.Descriptor) {
+  if (desc instanceof Descriptor) {
     value = desc;
 
     descs[keyName] = desc;
@@ -148,7 +151,7 @@ Ember.defineProperty = function(obj, keyName, desc, data, meta) {
 
   // if key is being watched, override chains that
   // were initialized with the prototype
-  if (watching) { Ember.overrideChains(obj, keyName, meta); }
+  if (watching) { overrideChains(obj, keyName, meta); }
 
   // The `value` passed to the `didDefineProperty` hook is
   // either the descriptor or data, whichever was passed.
@@ -165,7 +168,7 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
       cp = implicitCPs[i];
       key = cp.implicitCPKey;
 
-      Ember.defineProperty(obj, key, cp, undefined, meta);
+      defineProperty(obj, key, cp, undefined, meta);
 
       if (cp._dependentCPs) {
         addImplicitCPs(obj, cp._dependentCPs, meta);
@@ -173,3 +176,5 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
     }
   };
 }
+
+export {Descriptor, defineProperty};

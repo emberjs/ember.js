@@ -1,9 +1,15 @@
+/*
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils'); // Ember.tryFinally
 require('ember-metal/property_get');
 require('ember-metal/array');
+require('ember-metal/events');
+*/
 
+import {watch, unwatch} from "ember-metal/watching";
+import ArrayPolyfills from "ember-metal/array";
+import {listenersFor, addListener, removeListener, suspendListeners, suspendListener} from "ember-metal/events";
 /**
 @module ember-metal
 */
@@ -26,14 +32,14 @@ function beforeEvent(keyName) {
   @param {Object|Function} targetOrMethod
   @param {Function|String} [method]
 */
-Ember.addObserver = function(obj, _path, target, method) {
-  Ember.addListener(obj, changeEvent(_path), target, method);
-  Ember.watch(obj, _path);
+function addObserver(obj, _path, target, method) {
+  addListener(obj, changeEvent(_path), target, method);
+  watch(obj, _path);
 
   return this;
 };
 
-Ember.observersFor = function(obj, path) {
+function observersFor(obj, path) {
   return Ember.listenersFor(obj, changeEvent(path));
 };
 
@@ -44,9 +50,9 @@ Ember.observersFor = function(obj, path) {
   @param {Object|Function} targetOrMethod
   @param {Function|String} [method]
 */
-Ember.removeObserver = function(obj, _path, target, method) {
-  Ember.unwatch(obj, _path);
-  Ember.removeListener(obj, changeEvent(_path), target, method);
+function removeObserver(obj, _path, target, method) {
+  unwatch(obj, _path);
+  removeListener(obj, changeEvent(_path), target, method);
 
   return this;
 };
@@ -58,9 +64,9 @@ Ember.removeObserver = function(obj, _path, target, method) {
   @param {Object|Function} targetOrMethod
   @param {Function|String} [method]
 */
-Ember.addBeforeObserver = function(obj, _path, target, method) {
-  Ember.addListener(obj, beforeEvent(_path), target, method);
-  Ember.watch(obj, _path);
+function addBeforeObserver(obj, _path, target, method) {
+  addListener(obj, beforeEvent(_path), target, method);
+  watch(obj, _path);
 
   return this;
 };
@@ -69,28 +75,28 @@ Ember.addBeforeObserver = function(obj, _path, target, method) {
 //
 // This should only be used by the target of the observer
 // while it is setting the observed path.
-Ember._suspendBeforeObserver = function(obj, path, target, method, callback) {
-  return Ember._suspendListener(obj, beforeEvent(path), target, method, callback);
+function _suspendBeforeObserver(obj, path, target, method, callback) {
+  return suspendListener(obj, beforeEvent(path), target, method, callback);
 };
 
-Ember._suspendObserver = function(obj, path, target, method, callback) {
-  return Ember._suspendListener(obj, changeEvent(path), target, method, callback);
+function _suspendObserver(obj, path, target, method, callback) {
+  return suspendListener(obj, changeEvent(path), target, method, callback);
 };
 
-var map = Ember.ArrayPolyfills.map;
+var map = ArrayPolyfills.map;
 
-Ember._suspendBeforeObservers = function(obj, paths, target, method, callback) {
+function _suspendBeforeObservers(obj, paths, target, method, callback) {
   var events = map.call(paths, beforeEvent);
-  return Ember._suspendListeners(obj, events, target, method, callback);
+  return suspendListeners(obj, events, target, method, callback);
 };
 
-Ember._suspendObservers = function(obj, paths, target, method, callback) {
+function _suspendObservers(obj, paths, target, method, callback) {
   var events = map.call(paths, changeEvent);
-  return Ember._suspendListeners(obj, events, target, method, callback);
+  return suspendListeners(obj, events, target, method, callback);
 };
 
-Ember.beforeObserversFor = function(obj, path) {
-  return Ember.listenersFor(obj, beforeEvent(path));
+function beforeObserversFor(obj, path) {
+  return listenersFor(obj, beforeEvent(path));
 };
 
 /**
@@ -100,9 +106,11 @@ Ember.beforeObserversFor = function(obj, path) {
   @param {Object|Function} targetOrMethod
   @param {Function|String} [method]
 */
-Ember.removeBeforeObserver = function(obj, _path, target, method) {
-  Ember.unwatch(obj, _path);
-  Ember.removeListener(obj, beforeEvent(_path), target, method);
+function removeBeforeObserver(obj, _path, target, method) {
+  unwatch(obj, _path);
+  removeListener(obj, beforeEvent(_path), target, method);
 
   return this;
 };
+
+export {addObserver, observersFor, removeObserver, addBeforeObserver, _suspendBeforeObserver, _suspendObserver,_suspendBeforeObserver, _suspendObservers, beforeObserversFor, removeBeforeObserver};

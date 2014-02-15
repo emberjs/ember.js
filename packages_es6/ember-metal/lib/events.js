@@ -1,15 +1,15 @@
-require('ember-metal/core');
-require('ember-metal/platform');
-require('ember-metal/utils');
+// require('ember-metal/core');
+// require('ember-metal/platform');
+// require('ember-metal/utils');
 
 /**
 @module ember-metal
 */
+import Ember from "ember-metal/core";
+import {meta, META_KEY, tryFinally} from "ember-metal/utils";
+import {create} from "ember-metal/platform";
 
-var o_create = Ember.create,
-    metaFor = Ember.meta,
-    META_KEY = Ember.META_KEY,
-    a_slice = [].slice,
+var a_slice = [].slice,
     /* listener flags */
     ONCE = 1, SUSPENDED = 2;
 
@@ -220,7 +220,7 @@ function suspendListener(obj, eventName, target, method, callback) {
   function tryable()   { return callback.call(target); }
   function finalizer() { if (actionIndex !== -1) { actions[actionIndex+2] &= ~SUSPENDED; } }
 
-  return Ember.tryFinally(tryable, finalizer);
+  return tryFinally(tryable, finalizer);
 }
 
 /**
@@ -267,7 +267,7 @@ function suspendListeners(obj, eventNames, target, method, callback) {
     }
   }
 
-  return Ember.tryFinally(tryable, finalizer);
+  return tryFinally(tryable, finalizer);
 }
 
 /**
@@ -390,20 +390,11 @@ function listenersFor(obj, eventName) {
   @param {Function} func
   @return func
 */
-Ember.on = function(){
+function on(){
   var func = a_slice.call(arguments, -1)[0],
       events = a_slice.call(arguments, 0, -1);
   func.__ember_listens__ = events;
   return func;
 };
 
-Ember.addListener = addListener;
-Ember.removeListener = removeListener;
-Ember._suspendListener = suspendListener;
-Ember._suspendListeners = suspendListeners;
-Ember.sendEvent = sendEvent;
-Ember.hasListeners = hasListeners;
-Ember.watchedEvents = watchedEvents;
-Ember.listenersFor = listenersFor;
-Ember.listenersDiff = actionsDiff;
-Ember.listenersUnion = actionsUnion;
+export {on, addListener, removeListener, suspendListener, suspendListeners, sendEvent, hasListeners, watchedEvents, listenersFor, actionsDiff, actionsUnion};
