@@ -1,7 +1,11 @@
-require('ember-metal/core');
-require('ember-metal/platform');
-require('ember-metal/array');
-require('ember-metal/error');
+// require('ember-metal/core');
+// require('ember-metal/platform');
+// require('ember-metal/array');
+// require('ember-metal/error');
+
+import Ember from "ember-metal/core";
+import {platform, create} from "ember-metal/platform";
+import ArrayPolyfills from "ember-metal/array";
 
 /**
 @module ember-metal
@@ -11,13 +15,12 @@ require('ember-metal/error');
   Prefix used for guids through out Ember.
   @private
 */
-Ember.GUID_PREFIX = 'ember';
+var GUID_PREFIX = 'ember';
 
 
-var o_defineProperty = Ember.platform.defineProperty,
-    o_create = Ember.create,
+var o_defineProperty = platform.defineProperty,
+    o_create = create,
     // Used for guid generation...
-    GUID_KEY = '__ember'+ (+ new Date()),
     numberCache  = [],
     stringCache  = {},
     uuid = 0;
@@ -38,7 +41,7 @@ var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
   @type String
   @final
 */
-Ember.GUID_KEY = GUID_KEY;
+var GUID_KEY = '__ember' + (+ new Date());
 
 var GUID_DESC = {
   writable:    false,
@@ -64,8 +67,8 @@ var GUID_DESC = {
     separate the guid into separate namespaces.
   @return {String} the guid
 */
-Ember.generateGuid = function generateGuid(obj, prefix) {
-  if (!prefix) prefix = Ember.GUID_PREFIX;
+function generateGuid(obj, prefix) {
+  if (!prefix) prefix = GUID_PREFIX;
   var ret = (prefix + (uuid++));
   if (obj) {
     if (obj[GUID_KEY] === null) {
@@ -76,7 +79,7 @@ Ember.generateGuid = function generateGuid(obj, prefix) {
     }
   }
   return ret;
-};
+}
 
 /**
   Returns a unique id for the object. If the object does not yet have a guid,
@@ -92,7 +95,7 @@ Ember.generateGuid = function generateGuid(obj, prefix) {
   @param {Object} obj any object, string, number, Element, or primitive
   @return {String} the unique guid for this instance.
 */
-Ember.guidFor = function guidFor(obj) {
+function guidFor(obj) {
 
   // special cases where we don't want to add a key to object
   if (obj === undefined) return "(undefined)";
@@ -136,14 +139,13 @@ Ember.guidFor = function guidFor(obj) {
 // META
 //
 
-var META_DESC = Ember.META_DESC = {
+var META_DESC = {
   writable:    true,
   configurable: false,
   enumerable:  false,
   value: null
 };
 
-var META_KEY = Ember.GUID_KEY+'_meta';
 
 /**
   The key used to store meta information on object for property observing.
@@ -154,9 +156,9 @@ var META_KEY = Ember.GUID_KEY+'_meta';
   @final
   @type String
 */
-Ember.META_KEY = META_KEY;
+var META_KEY = GUID_KEY+'_meta';
 
-var isDefinePropertySimulated = Ember.platform.defineProperty.isSimulated;
+var isDefinePropertySimulated = platform.defineProperty.isSimulated;
 
 function Meta(obj) {
   this.descs = {};
@@ -197,8 +199,6 @@ var EMPTY_META = new Meta(null);
 
 if (MANDATORY_SETTER) { EMPTY_META.values = {}; }
 
-Ember.EMPTY_META = EMPTY_META;
-
 /**
   Retrieves the meta hash for an object. If `writable` is true ensures the
   hash is writable for this object as well.
@@ -217,7 +217,7 @@ Ember.EMPTY_META = EMPTY_META;
     the meta hash, allowing the method to avoid making an unnecessary copy.
   @return {Object} the meta hash for an object
 */
-Ember.meta = function meta(obj, writable) {
+function meta(obj, writable) {
 
   var ret = obj[META_KEY];
   if (writable===false) return ret || EMPTY_META;
@@ -250,14 +250,14 @@ Ember.meta = function meta(obj, writable) {
   return ret;
 };
 
-Ember.getMeta = function getMeta(obj, property) {
-  var meta = Ember.meta(obj, false);
-  return meta[property];
+function getMeta(obj, property) {
+  var _meta = meta(obj, false);
+  return _meta[property];
 };
 
-Ember.setMeta = function setMeta(obj, property, value) {
-  var meta = Ember.meta(obj, true);
-  meta[property] = value;
+function setMeta(obj, property, value) {
+  var _meta = meta(obj, true);
+  _meta[property] = value;
   return value;
 };
 
@@ -294,24 +294,24 @@ Ember.setMeta = function setMeta(obj, property, value) {
     (or meta property) if one does not already exist or if it's
     shared with its constructor
 */
-Ember.metaPath = function metaPath(obj, path, writable) {
+function metaPath(obj, path, writable) {
   Ember.deprecate("Ember.metaPath is deprecated and will be removed from future releases.");
-  var meta = Ember.meta(obj, writable), keyName, value;
+  var _meta = meta(obj, writable), keyName, value;
 
   for (var i=0, l=path.length; i<l; i++) {
     keyName = path[i];
-    value = meta[keyName];
+    value = _meta[keyName];
 
     if (!value) {
       if (!writable) { return undefined; }
-      value = meta[keyName] = { __ember_source__: obj };
+      value = _meta[keyName] = { __ember_source__: obj };
     } else if (value.__ember_source__ !== obj) {
       if (!writable) { return undefined; }
-      value = meta[keyName] = o_create(value);
+      value = _meta[keyName] = o_create(value);
       value.__ember_source__ = obj;
     }
 
-    meta = value;
+    _meta = value;
   }
 
   return value;
@@ -329,7 +329,7 @@ Ember.metaPath = function metaPath(obj, path, writable) {
   @param {Function} superFunc The super function.
   @return {Function} wrapped function.
 */
-Ember.wrap = function(func, superFunc) {
+function wrap(func, superFunc) {
   function superWrapper() {
     var ret, sup = this.__nextSuper;
     this.__nextSuper = superFunc;
@@ -369,7 +369,8 @@ Ember.wrap = function(func, superFunc) {
   @param {Object} obj The object to test
   @return {Boolean} true if the passed object is an array or Array-like
 */
-Ember.isArray = function(obj) {
+// ES6TODO: Move up to runtime. This isn't used in ember-metal at all. Also depends on Ember.Array.
+function isArray(obj) {
   if (!obj || obj.setInterval) { return false; }
   if (Array.isArray && Array.isArray(obj)) { return true; }
   if (Ember.Array && Ember.Array.detect(obj)) { return true; }
@@ -398,14 +399,10 @@ Ember.isArray = function(obj) {
   @param {Object} obj the object
   @return {Array}
 */
-Ember.makeArray = function(obj) {
+function makeArray(obj) {
   if (obj === null || obj === undefined) { return []; }
-  return Ember.isArray(obj) ? obj : [obj];
+  return isArray(obj) ? obj : [obj];
 };
-
-function canInvoke(obj, methodName) {
-  return !!(obj && typeof obj[methodName] === 'function');
-}
 
 /**
   Checks to see if the `methodName` exists on the `obj`.
@@ -423,7 +420,9 @@ function canInvoke(obj, methodName) {
   @param {String} methodName The method name to check for
   @return {Boolean}
 */
-Ember.canInvoke = canInvoke;
+function canInvoke(obj, methodName) {
+  return !!(obj && typeof obj[methodName] === 'function');
+}
 
 /**
   Checks to see if the `methodName` exists on the `obj`,
@@ -443,7 +442,7 @@ Ember.canInvoke = canInvoke;
   @param {Array} [args] The arguments to pass to the method
   @return {*} the return value of the invoked method or undefined if it cannot be invoked
 */
-Ember.tryInvoke = function(obj, methodName, args) {
+function tryInvoke(obj, methodName, args) {
   if (canInvoke(obj, methodName)) {
     return obj[methodName].apply(obj, args || []);
   }
@@ -488,8 +487,9 @@ var needsFinallyFix = (function() {
   of the tryable
 */
 
+var tryFinally;
 if (needsFinallyFix) {
-  Ember.tryFinally = function(tryable, finalizer, binding) {
+  tryFinally = function(tryable, finalizer, binding) {
     var result, finalResult, finalError;
 
     binding = binding || this;
@@ -509,7 +509,7 @@ if (needsFinallyFix) {
     return (finalResult === undefined) ? result : finalResult;
   };
 } else {
-  Ember.tryFinally = function(tryable, finalizer, binding) {
+  tryFinally = function(tryable, finalizer, binding) {
     var result, finalResult;
 
     binding = binding || this;
@@ -562,8 +562,9 @@ if (needsFinallyFix) {
   unless that value is undefined, in which case it is the return value
   of the tryable.
 */
+var tryCatchFinally;
 if (needsFinallyFix) {
-  Ember.tryCatchFinally = function(tryable, catchable, finalizer, binding) {
+  tryCatchFinally = function(tryable, catchable, finalizer, binding) {
     var result, finalResult, finalError;
 
     binding = binding || this;
@@ -585,7 +586,7 @@ if (needsFinallyFix) {
     return (finalResult === undefined) ? result : finalResult;
   };
 } else {
-  Ember.tryCatchFinally = function(tryable, catchable, finalizer, binding) {
+  tryCatchFinally = function(tryable, catchable, finalizer, binding) {
     var result, finalResult;
 
     binding = binding || this;
@@ -608,7 +609,7 @@ if (needsFinallyFix) {
 
 var TYPE_MAP = {};
 var t = "Boolean Number String Function Array Date RegExp Object".split(" ");
-Ember.ArrayPolyfills.forEach.call(t, function(name) {
+ArrayPolyfills.forEach.call(t, function(name) {
   TYPE_MAP[ "[object " + name + "]" ] = name.toLowerCase();
 });
 
@@ -666,7 +667,8 @@ var toString = Object.prototype.toString;
   @param {Object} item the item to check
   @return {String} the type
 */
-Ember.typeOf = function(item) {
+// ES6Todo: Depends on Ember.Object which is defined in runtime.
+function typeOf(item) {
   var ret;
 
   ret = (item === null || item === undefined) ? String(item) : TYPE_MAP[toString.call(item)] || 'object';
@@ -694,8 +696,8 @@ Ember.typeOf = function(item) {
   @param {Object} obj The object you want to inspect.
   @return {String} A description of the object
 */
-Ember.inspect = function(obj) {
-  var type = Ember.typeOf(obj);
+function inspect(obj) {
+  var type = typeOf(obj);
   if (type === 'array') {
     return '[' + obj + ']';
   }
@@ -708,11 +710,11 @@ Ember.inspect = function(obj) {
     if (obj.hasOwnProperty(key)) {
       v = obj[key];
       if (v === 'toString') { continue; } // ignore useless items
-      if (Ember.typeOf(v) === 'function') { v = "function() { ... }"; }
+      if (typeOf(v) === 'function') { v = "function() { ... }"; }
       ret.push(key + ": " + v);
     }
   }
   return "{" + ret.join(", ") + "}";
 };
 
-
+export {generateGuid, GUID_KEY, GUID_PREFIX, guidFor, META_DESC, EMPTY_META, meta, getMeta, setMeta, metaPath, inspect, typeOf, tryCatchFinally, isArray, makeArray, canInvoke, tryInvoke, tryFinally};

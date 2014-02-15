@@ -1,12 +1,15 @@
-require('ember-metal/core');
-require('ember-metal/platform');
-require('ember-metal/utils');
+// require('ember-metal/core');
+// require('ember-metal/utils');
 
 /**
 @module ember-metal
 */
 
-var META_KEY = Ember.META_KEY, get;
+import Ember from "ember-metal/core";
+import {META_KEY} from "ember-metal/utils";
+import EmberError from "ember-metal/error";
+
+var get;
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
@@ -102,7 +105,7 @@ if (Ember.config.overrideAccessors) {
   @param {String} path A path on the target or a global property path.
   @return {Array} a temporary array with the normalized target/path pair.
 */
-var normalizeTuple = Ember.normalizeTuple = function(target, path) {
+function normalizeTuple(target, path) {
   var hasThis  = HAS_THIS.test(path),
       isGlobal = !hasThis && IS_GLOBAL_PATH.test(path),
       key;
@@ -117,12 +120,12 @@ var normalizeTuple = Ember.normalizeTuple = function(target, path) {
   }
 
   // must return some kind of path to be valid else other things will break.
-  if (!path || path.length===0) throw new Ember.Error('Path cannot be empty');
+  if (!path || path.length===0) throw new EmberError('Path cannot be empty');
 
   return [ target, path ];
 };
 
-var getPath = Ember._getPath = function(root, path) {
+function _getPath(root, path) {
   var hasThis, parts, tuple, idx, len;
 
   // If there is no root and path is a key name, return that
@@ -149,12 +152,12 @@ var getPath = Ember._getPath = function(root, path) {
   return root;
 };
 
-Ember.getWithDefault = function(root, key, defaultValue) {
+function getWithDefault(root, key, defaultValue) {
   var value = get(root, key);
 
   if (value === undefined) { return defaultValue; }
   return value;
 };
 
-
-Ember.get = get;
+export default get;
+export {get, getWithDefault, normalizeTuple, _getPath};

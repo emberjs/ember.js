@@ -1,6 +1,6 @@
 /*globals Node */
 
-require('ember-metal/core');
+import Ember from "ember-metal/core";
 
 /**
 @module ember-metal
@@ -13,8 +13,8 @@ require('ember-metal/core');
   @namespace Ember
   @static
 */
-var platform = Ember.platform = {};
-
+// TODO remove this
+var platform = {};
 
 /**
   Identical to `Object.create()`. Implements if not available natively.
@@ -22,21 +22,21 @@ var platform = Ember.platform = {};
   @method create
   @for Ember
 */
-Ember.create = Object.create;
+var create = Object.create;
 
 // IE8 has Object.create but it couldn't treat property descriptors.
-if (Ember.create) {
-  if (Ember.create({a: 1}, {a: {value: 2}}).a !== 2) {
-    Ember.create = null;
+if (create) {
+  if (create({a: 1}, {a: {value: 2}}).a !== 2) {
+    create = null;
   }
 }
 
 // STUB_OBJECT_CREATE allows us to override other libraries that stub
 // Object.create different than we would prefer
-if (!Ember.create || Ember.ENV.STUB_OBJECT_CREATE) {
+if (!create || Ember.ENV.STUB_OBJECT_CREATE) {
   var K = function() {};
 
-  Ember.create = function(obj, props) {
+  create = function(obj, props) {
     K.prototype = obj;
     obj = new K();
     if (props) {
@@ -51,7 +51,7 @@ if (!Ember.create || Ember.ENV.STUB_OBJECT_CREATE) {
     return obj;
   };
 
-  Ember.create.isSimulated = true;
+  create.isSimulated = true;
 }
 
 var defineProperty = Object.defineProperty;
@@ -160,3 +160,5 @@ if (!platform.defineProperty) {
 if (Ember.ENV.MANDATORY_SETTER && !platform.hasPropertyAccessors) {
   Ember.ENV.MANDATORY_SETTER = false;
 }
+
+export {create, platform};

@@ -1,4 +1,5 @@
-require('ember-metal/utils'); // Ember.tryCatchFinally
+import Ember from "ember-metal/core";
+import {tryCatchFinally} from "ember-metal/utils";
 
 /**
   The purpose of the Ember Instrumentation module is
@@ -46,8 +47,6 @@ require('ember-metal/utils'); // Ember.tryCatchFinally
   @namespace Ember
   @static
 */
-Ember.Instrumentation = {};
-
 var subscribers = [], cache = {};
 
 var populateListeners = function(name) {
@@ -82,9 +81,10 @@ var time = (function() {
   @param {Function} callback Function that you're instrumenting.
   @param {Object} binding Context that instrument function is called with.
 */
-Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
+function instrument(name, payload, callback, binding) {
   var listeners = cache[name], timeName, ret;
 
+  // ES6TODO: Docs. What is this?
   if (Ember.STRUCTURED_PROFILE) {
     timeName = name + ": " + payload.object;
     console.time(timeName);
@@ -127,7 +127,7 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
     }
   }
 
-  return Ember.tryCatchFinally(tryable, catchable, finalizer);
+  return tryCatchFinally(tryable, catchable, finalizer);
 };
 
 /**
@@ -141,7 +141,7 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
 
   @return {Subscriber}
 */
-Ember.Instrumentation.subscribe = function(pattern, object) {
+function subscribe(pattern, object) {
   var paths = pattern.split("."), path, regex = [];
 
   for (var i=0, l=paths.length; i<l; i++) {
@@ -176,7 +176,7 @@ Ember.Instrumentation.subscribe = function(pattern, object) {
 
   @param {Object} [subscriber]
 */
-Ember.Instrumentation.unsubscribe = function(subscriber) {
+function unsubscribe(subscriber) {
   var index;
 
   for (var i=0, l=subscribers.length; i<l; i++) {
@@ -195,10 +195,9 @@ Ember.Instrumentation.unsubscribe = function(subscriber) {
   @method reset
   @namespace Ember.Instrumentation
 */
-Ember.Instrumentation.reset = function() {
+function reset() {
   subscribers = [];
   cache = {};
 };
 
-Ember.instrument = Ember.Instrumentation.instrument;
-Ember.subscribe = Ember.Instrumentation.subscribe;
+export {instrument, subscribe, unsubscribe, reset};

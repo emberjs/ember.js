@@ -93,7 +93,8 @@ var arrayFilter = isNativeFunc(Array.prototype.filter) ? Array.prototype.filter 
   @namespace Ember
   @property ArrayPolyfills
 */
-Ember.ArrayPolyfills = {
+// ES6TODO: each function should be a separate export
+var ArrayPolyfills = {
   map: arrayMap,
   forEach: arrayForEach,
   filter: arrayFilter,
@@ -117,3 +118,5 @@ if (Ember.SHIM_ES5) {
     Array.prototype.indexOf = arrayIndexOf;
   }
 }
+
+export default ArrayPolyfills;

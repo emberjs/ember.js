@@ -1,5 +1,8 @@
-require('ember-metal/core');
-require('ember-metal/error');
+// require('ember-metal/core');
+// require('ember-metal/error');
+
+import Ember from "ember-metal/core";
+import EmberError from "ember-metal/error";
 
 function consoleMethod(name) {
   var consoleObj, logToConsole;
@@ -32,7 +35,7 @@ function assertPolyfill(test, message) {
   if (!test) {
     try {
       // attempt to preserve the stack
-      throw new Ember.Error("assertion failed: " + message);
+      throw new EmberError("assertion failed: " + message);
     } catch(error) {
       setTimeout(function() {
         throw error;
@@ -48,7 +51,7 @@ function assertPolyfill(test, message) {
   @class Logger
   @namespace Ember
 */
-Ember.Logger = {
+var Logger = {
   /**
    Logs the arguments to the console.
    You can pass as many arguments as you want and they will be joined together with a space.
@@ -137,3 +140,4 @@ Ember.Logger = {
   assert: consoleMethod('assert') || assertPolyfill
 };
 
+export default Logger;

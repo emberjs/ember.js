@@ -1,5 +1,7 @@
-require('ember-metal/core');
-require('ember-metal/platform');
+// require('ember-metal/core');
+// require('ember-metal/platform');
+
+import {create} from "ember-metal/platform";
 
 var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
 
@@ -11,7 +13,7 @@ var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'n
   @extends Error
   @constructor
 */
-Ember.Error = function() {
+var EmberError = function() {
   var tmp = Error.apply(this, arguments);
 
   // Adds a `stack` property to the given error object that will yield the
@@ -30,28 +32,6 @@ Ember.Error = function() {
   }
 };
 
-Ember.Error.prototype = Ember.create(Error.prototype);
+Error.prototype = create(Error.prototype);
 
-// ..........................................................
-// ERROR HANDLING
-//
-
-/**
-  A function may be assigned to `Ember.onerror` to be called when Ember
-  internals encounter an error. This is useful for specialized error handling
-  and reporting code.
-
-  ```javascript
-  Ember.onerror = function(error) {
-    Em.$.ajax('/report-error', 'POST', {
-      stack: error.stack,
-      otherInformation: 'whatever app state you want to provide'
-    });
-  };
-  ```
-
-  @event onerror
-  @for Ember
-  @param {Exception} error the error object
-*/
-Ember.onerror = null;
+export default EmberError;

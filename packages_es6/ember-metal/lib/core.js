@@ -65,6 +65,7 @@ Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
   @type Hash
 */
 
+// ES6TODO: Should this be its own initializer file?
 // This needs to be kept in sync with the logic in
 // `packages/ember-debug/lib/main.js`.
 if (Ember.ENV) {
@@ -311,3 +312,5 @@ if (Ember.FEATURES.isEnabled('ember-metal-is-blank')) {
     return Ember.isEmpty(obj) || (typeof obj === 'string' && obj.match(/\S/) === null);
   };
 }
+
+export default Ember;
