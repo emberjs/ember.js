@@ -9,6 +9,21 @@ var slice = Array.prototype.slice;
 
 require('ember-handlebars/helpers/view');
 
+var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
+  var req = 0;
+  for (var i = 0, l = handlerInfos.length; i < l; i++) {
+    req = req + handlerInfos[i].names.length;
+    if (handlerInfos[i].handler === handler)
+      break;
+  }
+
+  // query params adds an additional context
+  if (Ember.FEATURES.isEnabled("query-params-new")) {
+    req = req + 1;
+  }
+  return req;
+};
+
 Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
   var QueryParams = Ember.Object.extend({
@@ -284,16 +299,14 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           routeArgs = get(this, 'routeArgs'),
           contexts = routeArgs.slice(1),
           resolvedParams = get(this, 'resolvedParams'),
-          currentWhen = this.currentWhen || routeArgs[0];
+          currentWhen = this.currentWhen || routeArgs[0],
+          maximumContexts = numberOfContextsAcceptedByHandler(currentWhen, router.router.recognizer.handlersFor(currentWhen));
 
-      // if overriding active w/ currentWhen then don't apply contexts since they won't match
-      if (this.currentWhen) {
-        contexts = [];
-        if (Ember.FEATURES.isEnabled("query-params-new")) {
-          contexts.push({ queryParams: get(this, 'queryParams') });
-        }
-      }
-
+      // if we don't have enough contexts revert back to full route name
+      // this is because the leaf route will use one of the contexts
+      if (contexts.length > maximumContexts)
+        currentWhen = routeArgs[0];
+      
       var isActive = router.isActive.apply(router, [currentWhen].concat(contexts));
 
       if (isActive) { return get(this, 'activeClass'); }

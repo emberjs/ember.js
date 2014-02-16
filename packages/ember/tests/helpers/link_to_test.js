@@ -1037,6 +1037,30 @@ test("the {{link-to}} helper does not throw an error if its route has exited", f
   });
 });
 
+test("{{link-to}} active property respects changing parent route context", function() {
+  Ember.TEMPLATES.application = Ember.Handlebars.compile(
+    "{{link-to 'OMG' 'things' 'omg' id='omg-link'}} " +
+    "{{link-to 'LOL' 'things' 'lol' id='lol-link'}} ");
+
+
+  Router.map(function() {
+    this.resource('things', { path: '/things/:name' }, function() {
+      this.route('other');
+    });
+  });
+
+  bootApplication();
+
+  Ember.run(router, 'handleURL', '/things/omg');
+  shouldBeActive('#omg-link');
+  shouldNotBeActive('#lol-link');
+
+  Ember.run(router, 'handleURL', '/things/omg/other');
+  shouldBeActive('#omg-link');
+  shouldNotBeActive('#lol-link');
+
+});
+
 if (Ember.FEATURES.isEnabled("query-params-new")) {
 
   test("{{link-to}} populates href with default query param values even without query-params object", function() {
