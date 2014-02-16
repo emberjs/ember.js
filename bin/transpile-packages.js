@@ -65,7 +65,7 @@ ES6Package.prototype = {
     this.compileDirectory(path.join(this.inputPath, 'tests'), function(results){
       var compiledOutput = results['compiled'],
           moduleNames = results['moduleNames'],
-          requireOutput = ['require("container");', 'require("ember-metal");'],
+          requireOutput = ['require("' + this.packageName + '");'],
           output;
 
       moduleNames.forEach(function(name) {
