@@ -24,6 +24,13 @@ var o_defineProperty = Ember.platform.defineProperty,
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
+var undefinedDescriptor = {
+  configurable: true,
+  writable: true,
+  enumerable: false,
+  value: undefined
+};
+
 /**
   A unique key used to assign guids and other private metadata to objects.
   If you inspect an object in your browser debugger you will often see these.
@@ -332,6 +339,9 @@ Ember.metaPath = function metaPath(obj, path, writable) {
 Ember.wrap = function(func, superFunc) {
   function superWrapper() {
     var ret, sup = this.__nextSuper;
+    if (!this.hasOwnProperty('__nextSuper')) {
+      o_defineProperty(this, '__nextSuper', undefinedDescriptor);
+    }
     this.__nextSuper = superFunc;
     ret = func.apply(this, arguments);
     this.__nextSuper = sup;

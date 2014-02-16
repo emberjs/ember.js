@@ -30,13 +30,6 @@ var set = Ember.set, get = Ember.get,
     MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
     indexOf = Ember.EnumerableUtils.indexOf;
 
-var undefinedDescriptor = {
-  configurable: true,
-  writable: true,
-  enumerable: false,
-  value: undefined
-};
-
 var nullDescriptor = {
   configurable: true,
   writable: true,
@@ -57,7 +50,6 @@ function makeCtor() {
       Class.proto(); // prepare prototype...
     }
     o_defineProperty(this, GUID_KEY, nullDescriptor);
-    o_defineProperty(this, '__nextSuper', undefinedDescriptor);
     var m = meta(this), proto = m.proto;
     m.proto = this;
     if (initMixins) {
