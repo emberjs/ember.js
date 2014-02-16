@@ -13,12 +13,8 @@ module('Ember.Namespace', {
   teardown: function() {
     Ember.BOOTED = false;
 
-    if (lookup.NamespaceA) { Ember.run(function() { lookup.NamespaceA.destroy(); }); }
-    if (lookup.NamespaceB) { Ember.run(function() { lookup.NamespaceB.destroy(); }); }
-    if (lookup.namespaceC) {
-      Ember.run(function() {
-        lookup.namespaceC.destroy();
-      });
+    for(var prop in lookup) {
+      if (lookup[prop]) { Ember.run(lookup[prop], 'destroy'); }
     }
 
     Ember.lookup = originalLookup;
@@ -120,4 +116,20 @@ test("A nested namespace can be looked up by its name", function() {
   UI.Nav = Ember.Namespace.create();
 
   equal(Ember.Namespace.byName('UI.Nav'), UI.Nav);
+});
+
+test("Destroying a namespace before caching lookup removes it from the list of namespaces", function(){
+  var CF = lookup.CF = Ember.Namespace.create();
+
+  Ember.run(CF,'destroy');
+  equal(Ember.Namespace.byName('CF'), undefined, "namespace can not be found after destroyed");
+});
+
+test("Destroying a namespace after looking up removes it from the list of namespaces", function(){
+  var CF = lookup.CF = Ember.Namespace.create();
+
+  equal(Ember.Namespace.byName('CF'), CF, "precondition - namespace can be looked up by name");
+
+  Ember.run(CF,'destroy');
+  equal(Ember.Namespace.byName('CF'), undefined, "namespace can not be found after destroyed");
 });
