@@ -1,13 +1,14 @@
 var map, forEach, indexOf, splice, filter;
 // require('ember-metal/array');
 
-import ArrayPolyfills from "ember-metal/array";
+import {map, forEach, indexOf, filter} from "ember-metal/array";
 
-map     = Array.prototype.map     || Ember.ArrayPolyfills.map;
-forEach = Array.prototype.forEach || Ember.ArrayPolyfills.forEach;
-indexOf = Array.prototype.indexOf || Ember.ArrayPolyfills.indexOf;
-filter  = Array.prototype.filter  || Ember.ArrayPolyfills.filter;
-splice = Array.prototype.splice;
+// ES6TODO: doesn't array polyfills already do this?
+map     = Array.prototype.map     || map;
+forEach = Array.prototype.forEach || forEach;
+indexOf = Array.prototype.indexOf || indexOf;
+filter  = Array.prototype.filter   || filter;
+splice  = Array.prototype.splice;
 
 /**
  * Defines some convenience methods for working with Enumerables.

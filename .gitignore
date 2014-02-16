@@ -1,5 +1,6 @@
 packages/container
 packages/ember-metal
+packages/ember-runtime
 *.bpkg
 *.gem
 *.rbc

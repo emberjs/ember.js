@@ -5,7 +5,7 @@
 
 import Ember from "ember-metal/core";
 import {platform, create} from "ember-metal/platform";
-import ArrayPolyfills from "ember-metal/array";
+import {forEach} from "ember-metal/array";
 
 /**
 @module ember-metal
@@ -610,7 +610,7 @@ if (needsFinallyFix) {
 
 var TYPE_MAP = {};
 var t = "Boolean Number String Function Array Date RegExp Object".split(" ");
-ArrayPolyfills.forEach.call(t, function(name) {
+forEach.call(t, function(name) {
   TYPE_MAP[ "[object " + name + "]" ] = name.toLowerCase();
 });
 
@@ -747,4 +747,4 @@ function applyStr(t /* target */, m /* method */, a /* args */) {
   }
 };
 
-export {generateGuid, GUID_KEY, GUID_PREFIX, guidFor, META_DESC, EMPTY_META, meta, getMeta, setMeta, metaPath, inspect, typeOf, tryCatchFinally, isArray, makeArray, canInvoke, tryInvoke, tryFinally, applyStr, apply};
+export {generateGuid, GUID_KEY, GUID_PREFIX, guidFor, META_DESC, EMPTY_META, meta, getMeta, setMeta, metaPath, inspect, typeOf, tryCatchFinally, isArray, makeArray, canInvoke, tryInvoke, tryFinally, wrap, applyStr, apply};};

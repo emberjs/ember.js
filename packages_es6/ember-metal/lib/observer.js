@@ -8,7 +8,7 @@ require('ember-metal/events');
 */
 
 import {watch, unwatch} from "ember-metal/watching";
-import ArrayPolyfills from "ember-metal/array";
+import {map} from "ember-metal/array";
 import {listenersFor, addListener, removeListener, suspendListeners, suspendListener} from "ember-metal/events";
 /**
 @module ember-metal
@@ -85,8 +85,6 @@ function _suspendBeforeObserver(obj, path, target, method, callback) {
 function _suspendObserver(obj, path, target, method, callback) {
   return suspendListener(obj, changeEvent(path), target, method, callback);
 };
-
-var map = ArrayPolyfills.map;
 
 function _suspendBeforeObservers(obj, paths, target, method, callback) {
   var events = map.call(paths, beforeEvent);
