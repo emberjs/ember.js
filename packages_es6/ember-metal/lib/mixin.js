@@ -1,30 +1,34 @@
-require('ember-metal/core');
-require('ember-metal/property_get');
-require('ember-metal/computed');
-require('ember-metal/properties');
-require('ember-metal/expand_properties');
-require('ember-metal/observer');
-require('ember-metal/utils');
-require('ember-metal/array');
-require('ember-metal/binding');
+// require('ember-metal/core');
+// ES6TODO: not actually used? require('ember-metal/property_get');
+// require('ember-metal/computed');
+// require('ember-metal/properties');
+// require('ember-metal/expand_properties');
+// ES6TODO: not actually used? require('ember-metal/observer');
+// require('ember-metal/utils');
+// require('ember-metal/array');
+// require('ember-metal/binding');
 
 /**
 @module ember
 @submodule ember-metal
 */
 
-var Mixin, REQUIRED, Alias,
-    a_map = Ember.ArrayPolyfills.map,
-    a_indexOf = Ember.ArrayPolyfills.indexOf,
-    a_forEach = Ember.ArrayPolyfills.forEach,
-    a_slice = [].slice,
-    o_create = Ember.create,
-    defineProperty = Ember.defineProperty,
-    guidFor = Ember.guidFor,
-    metaFor = Ember.meta,
-    META_KEY = Ember.META_KEY;
+import Ember from "ember-metal/core"; // warn, assert, wrap, et;
+import {map, indexOf, forEach} from "ember-metal/array";
+import create from "ember-metal/platform";
+import {guidFor, metaFor, META_KEY, wrap, makeArray} from "ember-metal/utils";
+import expandProperties from "ember-metal/expand_properties";
+import {Descriptor, defineProperty} from "ember-metal/properties";
+import ComputedProperty from "ember-metal/computed";
+import Binding from "ember-metal/binding";
 
-var expandProperties = Ember.expandProperties;
+var Mixin, REQUIRED, Alias,
+    a_map = map,
+    a_indexOf = indexOf,
+    a_forEach = forEach,
+    a_slice = [].slice,
+    o_create = create,
+    defineProperty = defineProperty;
 
 function superFunction(){
   var ret, func = this.__nextSuper;
@@ -108,7 +112,7 @@ function giveDescriptorSuper(meta, key, property, values, descs) {
   // it on the original object.
   superProperty = superProperty || meta.descs[key];
 
-  if (!superProperty || !(superProperty instanceof Ember.ComputedProperty)) {
+  if (!superProperty || !(superProperty instanceof ComputedProperty)) {
     return property;
   }
 
@@ -116,7 +120,7 @@ function giveDescriptorSuper(meta, key, property, values, descs) {
   // to clone the computed property so that other mixins do not receive
   // the wrapped version.
   property = o_create(property);
-  property.func = Ember.wrap(property.func, superProperty.func);
+  property.func = wrap(property.func, superProperty.func);
 
   return property;
 }
@@ -139,7 +143,7 @@ function giveMethodSuper(obj, key, method, values, descs) {
     return method;
   }
 
-  return Ember.wrap(method, superMethod);
+  return wrap(method, superMethod);
 }
 
 function applyConcatenatedProperties(obj, key, value, values) {
@@ -149,10 +153,10 @@ function applyConcatenatedProperties(obj, key, value, values) {
     if ('function' === typeof baseValue.concat) {
       return baseValue.concat(value);
     } else {
-      return Ember.makeArray(baseValue).concat(value);
+      return makeArray(baseValue).concat(value);
     }
   } else {
-    return Ember.makeArray(value);
+    return makeArray(value);
   }
 }
 
@@ -185,7 +189,7 @@ function applyMergedProperties(obj, key, value, values) {
 }
 
 function addNormalizedProperty(base, key, value, meta, descs, values, concats, mergings) {
-  if (value instanceof Ember.Descriptor) {
+  if (value instanceof Descriptor) {
     if (value === REQUIRED && descs[key]) { return CONTINUE; }
 
     // Wrap descriptor function to implement
@@ -249,7 +253,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
   }
 }
 
-var IS_BINDING = Ember.IS_BINDING = /^.+Binding$/;
+var IS_BINDING = /^.+Binding$/;
 
 function detectBinding(obj, key, value, m) {
   if (IS_BINDING.test(key)) {
@@ -271,11 +275,11 @@ function connectBindings(obj, m) {
       binding = bindings[key];
       if (binding) {
         to = key.slice(0, -7); // strip Binding off end
-        if (binding instanceof Ember.Binding) {
+        if (binding instanceof Binding) {
           binding = binding.copy(); // copy prototypes' instance
           binding.to(to);
         } else { // binding is string path
-          binding = new Ember.Binding(to, binding);
+          binding = new Binding(to, binding);
         }
         binding.connect(obj);
         obj[key] = binding;
@@ -384,7 +388,7 @@ function applyMixin(obj, mixins, partial) {
   @param mixins*
   @return obj
 */
-Ember.mixin = function(obj) {
+function mixin(obj) {
   var args = a_slice.call(arguments, 1);
   applyMixin(obj, args, false);
   return obj;
@@ -444,9 +448,7 @@ Ember.mixin = function(obj) {
   @class Mixin
   @namespace Ember
 */
-Ember.Mixin = function() { return initMixin(this, arguments); };
-
-Mixin = Ember.Mixin;
+function Mixin() { return initMixin(this, arguments); };
 
 Mixin.prototype = {
   properties: null,
@@ -463,6 +465,7 @@ Mixin.applyPartial = function(obj) {
 
 Mixin.finishPartial = finishPartial;
 
+// ES6TODO: this relies on a global state?
 Ember.anyUnprocessedMixins = false;
 
 /**
@@ -471,6 +474,7 @@ Ember.anyUnprocessedMixins = false;
   @param arguments*
 */
 Mixin.create = function() {
+  // ES6TODO: this relies on a global state?
   Ember.anyUnprocessedMixins = true;
   var M = this;
   return initMixin(new M(), arguments);
@@ -603,7 +607,7 @@ Mixin.mixins = function(obj) {
   return ret;
 };
 
-REQUIRED = new Ember.Descriptor();
+REQUIRED = new Descriptor();
 REQUIRED.toString = function() { return '(Required Property)'; };
 
 /**
@@ -612,14 +616,14 @@ REQUIRED.toString = function() { return '(Required Property)'; };
   @method required
   @for Ember
 */
-Ember.required = function() {
+function required() {
   return REQUIRED;
 };
 
 Alias = function(methodName) {
   this.methodName = methodName;
 };
-Alias.prototype = new Ember.Descriptor();
+Alias.prototype = new Descriptor();
 
 /**
   Makes a method available via an additional name.
@@ -640,7 +644,7 @@ Alias.prototype = new Ember.Descriptor();
   @param {String} methodName name of the method to alias
   @return {Ember.Descriptor}
 */
-Ember.aliasMethod = function(methodName) {
+function aliasMethod(methodName) {
   return new Alias(methodName);
 };
 
@@ -671,7 +675,7 @@ Ember.aliasMethod = function(methodName) {
   @param {Function} func
   @return func
 */
-Ember.observer = function() {
+function observer() {
   var func  = a_slice.call(arguments, -1)[0];
   var paths;
 
@@ -722,13 +726,13 @@ Ember.observer = function() {
   @param {Function} func
   @return func
 */
-Ember.immediateObserver = function() {
+function immediateObserver() {
   for (var i=0, l=arguments.length; i<l; i++) {
     var arg = arguments[i];
     Ember.assert("Immediate observers must observe internal properties only, not properties on other objects.", typeof arg !== "string" || arg.indexOf('.') === -1);
   }
 
-  return Ember.observer.apply(this, arguments);
+  return observer.apply(this, arguments);
 };
 
 /**
@@ -774,7 +778,7 @@ Ember.immediateObserver = function() {
   @param {Function} func
   @return func
 */
-Ember.beforeObserver = function() {
+function beforeObserver() {
   var func  = a_slice.call(arguments, -1)[0];
   var paths;
 
@@ -802,3 +806,5 @@ Ember.beforeObserver = function() {
   func.__ember_observesBefore__ = paths;
   return func;
 };
+
+export {IS_BINDING, mixin, Mixin, required, aliasMethod, observer, immediateObserver, beforeObserver}

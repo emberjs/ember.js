@@ -1,12 +1,13 @@
 var map, forEach, indexOf, splice, filter;
 // require('ember-metal/array');
 
-import ArrayPolyfills from "ember-metal/array";
+import {map, forEach, indexOf, filter} from "ember-metal/array";
 
-map     = Array.prototype.map     || ArrayPolyfills.map;
-forEach = Array.prototype.forEach || ArrayPolyfills.forEach;
-indexOf = Array.prototype.indexOf || ArrayPolyfills.indexOf;
-filter = Array.prototype.filter || ArrayPolyfills.filter;
+// ES6TODO: doesn't array polyfills already do this?
+map     = Array.prototype.map     || map;
+forEach = Array.prototype.forEach || forEach;
+indexOf = Array.prototype.indexOf || indexOf;
+filter = Array.prototype.filter   || filter;
 splice = Array.prototype.splice;
 
 /**

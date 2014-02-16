@@ -5,7 +5,7 @@
 
 import Ember from "ember-metal/core";
 import {platform, create} from "ember-metal/platform";
-import ArrayPolyfills from "ember-metal/array";
+import {forEach} from "ember-metal/array";
 
 /**
 @module ember-metal
@@ -717,4 +717,4 @@ function inspect(obj) {
   return "{" + ret.join(", ") + "}";
 };
 
-export {generateGuid, GUID_KEY, GUID_PREFIX, guidFor, META_DESC, EMPTY_META, meta, getMeta, setMeta, metaPath, inspect, typeOf, tryCatchFinally, isArray, makeArray, canInvoke, tryInvoke, tryFinally};
+export {generateGuid, GUID_KEY, GUID_PREFIX, guidFor, META_DESC, EMPTY_META, meta, getMeta, setMeta, metaPath, inspect, typeOf, tryCatchFinally, isArray, makeArray, canInvoke, tryInvoke, tryFinally, wrap};

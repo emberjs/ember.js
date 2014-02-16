@@ -15,7 +15,7 @@ var isNativeFunc = function(func) {
 };
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/map
-var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : function(fun /*, thisp */) {
+var map = isNativeFunc(Array.prototype.map) ? Array.prototype.map : function(fun /*, thisp */) {
   //"use strict";
 
   if (this === void 0 || this === null) {
@@ -40,7 +40,7 @@ var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : functio
 };
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/foreach
-var arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEach : function(fun /*, thisp */) {
+var forEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEach : function(fun /*, thisp */) {
   //"use strict";
 
   if (this === void 0 || this === null) {
@@ -61,7 +61,7 @@ var arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEa
   }
 };
 
-var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.indexOf : function (obj, fromIndex) {
+var indexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.indexOf : function (obj, fromIndex) {
   if (fromIndex === null || fromIndex === undefined) { fromIndex = 0; }
   else if (fromIndex < 0) { fromIndex = Math.max(0, this.length + fromIndex); }
   for (var i = fromIndex, j = this.length; i < j; i++) {
@@ -70,7 +70,7 @@ var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.index
   return -1;
 };
 
-var arrayFilter = isNativeFunc(Array.prototype.filter) ? Array.prototype.filter : function (fn, context) {
+var filter = isNativeFunc(Array.prototype.filter) ? Array.prototype.filter : function (fn, context) {
   var i,
   value,
   result = [],
@@ -87,36 +87,24 @@ var arrayFilter = isNativeFunc(Array.prototype.filter) ? Array.prototype.filter 
   return result;
 };
 
-/**
-  Array polyfills to support ES5 features in older browsers.
-
-  @namespace Ember
-  @property ArrayPolyfills
-*/
-// ES6TODO: each function should be a separate export
-var ArrayPolyfills = {
-  map: arrayMap,
-  forEach: arrayForEach,
-  filter: arrayFilter,
-  indexOf: arrayIndexOf
-};
 
 if (Ember.SHIM_ES5) {
   if (!Array.prototype.map) {
-    Array.prototype.map = arrayMap;
+    Array.prototype.map = map;
   }
 
   if (!Array.prototype.forEach) {
-    Array.prototype.forEach = arrayForEach;
+    Array.prototype.forEach = forEach;
   }
 
   if (!Array.prototype.filter) {
-    Array.prototype.filter = arrayFilter;
+    Array.prototype.filter = filter;
   }
 
   if (!Array.prototype.indexOf) {
-    Array.prototype.indexOf = arrayIndexOf;
+    Array.prototype.indexOf = indexOf;
   }
 }
 
-export default ArrayPolyfills;
+export {map, forEach, filter, indexOf};
+

@@ -27,13 +27,14 @@ import {
   makeArray,
   canInvoke,
   tryInvoke,
-  tryFinally
+  tryFinally,
+  wrap
 } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 
 import {create, platform} from "ember-metal/platform";
-import ArrayPolyfills from "ember-metal/array";
+import {map, forEach, filter, indexOf} from "ember-metal/array";
 import Logger from "ember-metal/logger";
 
 import {get, getWithDefault, normalizeTuple, _getPath} from "ember-metal/property_get";
@@ -70,6 +71,10 @@ import expandProperties from "ember-metal/expand_properties";
 import {ComputedProperty, computed, cacheFor} from "ember-metal/computed";
 
 import {addObserver, observersFor, removeObserver, addBeforeObserver, _suspendBeforeObserver, _suspendObserver, _suspendBeforeObserver, _suspendObservers, beforeObserversFor, removeBeforeObserver} from "ember-metal/observer";
+import {IS_BINDING, mixin, Mixin, required, aliasMethod, observer, immediateObserver} from "ember-metal/minix";
+import {Binding, isGlobalPath, bind, oneWay} from "ember-metal/binding";
+import Run from "ember-metal/run_loop";
+import libraries from "ember-metal/libraries";
 
 // EXPORTS to the global window Ember.
 
@@ -85,7 +90,14 @@ Ember.GUID_KEY        = GUID_KEY;
 Ember.GUID_PREFIX     = GUID_PREFIX;
 Ember.create          = create;
 Ember.platform        = platform;
-Ember.ArrayPolyfills  = ArrayPolyfills;
+
+/**
+  Array polyfills to support ES5 features in older browsers.
+
+  @namespace Ember
+  @property ArrayPolyfills
+*/
+Ember.ArrayPolyfills  = {map: map, forEach: forEach, filter: filter, indexOf: indexOf};
 Ember.Error           = EmberError;
 Ember.guidFor         = guidFor;
 Ember.META_DESC       = META_DESC;
@@ -102,6 +114,7 @@ Ember.makeArray       = makeArray;
 Ember.canInvoke       = canInvoke;
 Ember.tryInvoke       = tryInvoke;
 Ember.tryFinally      = tryFinally;
+Ember.wrap            = wrap;
 
 Ember.Logger = Logger;
 
@@ -180,6 +193,25 @@ Ember._suspendObservers = _suspendObservers;
 Ember.beforeObserversFor = beforeObserversFor;
 Ember.removeBeforeObserver = removeBeforeObserver;
 
+Ember.IS_BINDING = IS_BINDING;
+Ember.require = required;
+Ember.aliasMethod = aliasMethod;
+Ember.observer = observer;
+Ember.immediateObserver = immediateObserver;
+Ember.beforeObserver = beforeObserver;
+Ember.mixin = mixin;
+Ember.Mixin = Mixin;
+
+Ember.oneWay = oneWay;
+Ember.bind = bind;
+Ember.Binding = Binding;
+Ember.isGlobalPath = isGlobalPath;
+
+Ember.Run = Run;
+
+Ember.libraries = libraries;
+Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
+
 /**
   A function may be assigned to `Ember.onerror` to be called when Ember
   internals encounter an error. This is useful for specialized error handling
@@ -219,10 +251,10 @@ Ember.onerror = null;
 // require('ember-metal/watch_path');
 // require('ember-metal/events');
 //require('ember-metal/observer');
-require('ember-metal/mixin');
-require('ember-metal/binding');
-require('ember-metal/run_loop');
-require('ember-metal/libraries');
+// require('ember-metal/mixin');
+// require('ember-metal/binding');
+// require('ember-metal/run_loop');
+// require('ember-metal/libraries');
 
 window.Ember = Ember;
 

@@ -27,11 +27,9 @@
 // require('ember-metal/core');
 // require('ember-metal/property_set');
 
-import ArrayPolyfills from "ember-metal/array"
+import {indexOf} from "ember-metal/array"
 import {guidFor} from "ember-metal/utils";
 import {set} from "ember-metal/propert_set";
-
-var indexOf = ArrayPolyfills.indexOf;
 
 var copy = function(obj) {
   var output = {};

@@ -6,11 +6,10 @@
 import Ember from "ember-metal/core"; // warn, assert, etc;
 import {meta, META_KEY} from "ember-metal/utils";
 import {get, normalizeTuple} from "ember-metal/get_property";
-import ArrayPolyfills from "ember-metal/array";
+import {forEach} from "ember-metal/array";
 import {watchKey, unwatchKey} from "ember-metal/watch_key";
 
 var metaFor = meta,
-    forEach = ArrayPolyfills.forEach,
     warn = Ember.warn,
     FIRST_KEY = /^([^\.\*]+)/;
 

@@ -1,43 +1,43 @@
 // Provides a way to register library versions with ember.
-var forEach = Ember.EnumerableUtils.forEach,
-    indexOf = Ember.EnumerableUtils.indexOf;
+import EnumerableUtils from "ember-metal/enumerable_utils";
 
-Ember.libraries = function() {
-  var libraries    = [];
+var forEach = EnumerableUtils.forEach,
+    indexOf = EnumerableUtils.indexOf;
+
+export defult function libraries() {
+  var _libraries   = [];
   var coreLibIndex = 0;
 
   var getLibrary = function(name) {
-    for (var i = 0; i < libraries.length; i++) {
-      if (libraries[i].name === name) {
-        return libraries[i];
+    for (var i = 0; i < _libraries.length; i++) {
+      if (_libraries[i].name === name) {
+        return _libraries[i];
       }
     }
   };
 
-  libraries.register = function(name, version) {
+  _libraries.register = function(name, version) {
     if (!getLibrary(name)) {
-      libraries.push({name: name, version: version});
+      _libraries.push({name: name, version: version});
     }
   };
 
-  libraries.registerCoreLibrary = function(name, version) {
+  _libraries.registerCoreLibrary = function(name, version) {
     if (!getLibrary(name)) {
-      libraries.splice(coreLibIndex++, 0, {name: name, version: version});
+      _libraries.splice(coreLibIndex++, 0, {name: name, version: version});
     }
   };
 
-  libraries.deRegister = function(name) {
+  _libraries.deRegister = function(name) {
     var lib = getLibrary(name);
-    if (lib) libraries.splice(indexOf(libraries, lib), 1);
+    if (lib) _libraries.splice(indexOf(_libraries, lib), 1);
   };
 
-  libraries.each = function (callback) {
-    forEach(libraries, function(lib) {
+  _libraries.each = function (callback) {
+    forEach(_libraries, function(lib) {
       callback(lib.name, lib.version);
     });
   };
 
-  return libraries;
+  return _libraries;
 }();
-
-Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
