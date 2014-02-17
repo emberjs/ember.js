@@ -8,13 +8,15 @@ var get = Ember.get;
   with an object followed by a list of strings or an array:
 
   ```javascript
-  Ember.getProperties(record, 'firstName', 'lastName', 'zipCode');  // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
+  Ember.getProperties(record, 'firstName', 'lastName', 'zipCode');
+  // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
   ```
 
   is equivalent to:
 
   ```javascript
-  Ember.getProperties(record, ['firstName', 'lastName', 'zipCode']);  // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
+  Ember.getProperties(record, ['firstName', 'lastName', 'zipCode']);
+  // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
   ```
 
   @method getProperties
