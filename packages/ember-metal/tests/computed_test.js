@@ -714,7 +714,7 @@ testBoth('protects against setting', function(get, set) {
 
   raises(function() {
     set(obj, 'bar', 'newBar');
-  }, /Cannot Set: bar on:/ );
+  }, /Cannot set read\-only property "bar" on object:/ );
 
   equal(get(obj, 'bar'), 'barValue');
 });
