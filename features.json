@@ -3,6 +3,7 @@
     "ember-metal-computed-empty-array": null,
     "query-params-new": null,
     "string-parameterize": null,
+    "core-merge-mergeIf-fastMerge": null,
     "ember-routing-named-substates": null,
     "ember-handlebars-caps-lookup": null,
     "ember-handlebars-log-primitives": true,
