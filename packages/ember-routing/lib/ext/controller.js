@@ -57,7 +57,7 @@ Ember.ControllerMixin.reopen({
     aController.transitionToRoute('/blog/post/1/comment/13');
     ```
 
-    See also 'replaceRoute'.
+    See also [replaceRoute](/api/classes/Ember.ControllerMixin.html#method_replaceRoute).
 
     @param {String} name the name of the route or a URL
     @param {...Object} models the model(s) or identifier(s) to be used
