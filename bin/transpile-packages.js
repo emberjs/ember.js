@@ -42,10 +42,20 @@ ES6Package.prototype = {
         basenameNoExt = path.basename(filename, ext),
         dirname = path.dirname(filename.replace(basePath +'/', '')),
         isTest  = basePath.match(/\/tests$/),
-        moduleName = path.join(this.packageName, isTest ? 'tests' : '', dirname, basenameNoExt);
+        moduleName = path.join(this.packageName, isTest ? 'tests' : '', dirname, basenameNoExt),
+        compiler;
 
     if (moduleName === path.join(this.packageName, 'main')) {
       moduleName = this.packageName;
+    }
+
+    try {
+      compiler = new Compiler(fs.readFileSync(filename), moduleName);
+      return {name: moduleName, compiled: compiler.toAMD()};
+    } catch (e) {
+      console.log('An error was raised while compiling "' + filename + '".');
+      console.log('   ' + e.message);
+      process.exit(1);
     }
 
     var compiler = new Compiler(fs.readFileSync(filename), moduleName);
