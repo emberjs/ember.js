@@ -37,6 +37,39 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
     /**
       @private
 
+      Exposed for testing
+
+      @property location
+      @default window.location
+    */
+    _location: location,
+
+    /**
+      @private
+
+      Returns location.origin or builds it if device doesn't support it.
+
+      @method getOrigin
+    */
+    getOrigin: function () {
+      var location = this._location,
+          origin = location.origin;
+
+      // Older browsers, especially IE, don't have origin
+      if (!origin) {
+        origin = location.protocol + '//' + location.hostname;
+        
+        if (location.port) {
+          origin += ':' + location.port;
+        }
+      }
+
+      return origin;
+    },
+
+    /**
+      @private
+
       We assume that if the history object has a pushState method, the host should
       support HistoryLocation.
 
@@ -88,7 +121,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
           implementationClass = Ember.HistoryLocation;
         } else {
           cancelRouterSetup = true;
-          location.replace(historyPath);
+          this.replacePath(historyPath);
         }
 
       } else if (this.supportsHashChange) {
@@ -100,7 +133,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
           implementationClass = Ember.HashLocation;
         } else {
           cancelRouterSetup = true;
-          location.replace(hashPath);
+          this.replacePath(hashPath);
         }
       }
 
@@ -116,6 +149,18 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
       }
       
       return implementation;
+    },
+
+    /**
+      @private
+
+      Redirects the browser using location.replace, prepending the locatin.origin
+      to prevent phishing attempts
+
+      @method replacePath
+    */
+    replacePath: function (path) {
+      this._location.replace(this.getOrigin() + path);
     },
 
     /**
