@@ -1,6 +1,6 @@
-require('ember-runtime/~tests/suites/mutable_array');
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = Ember.MutableArrayTests;
+var suite = SuiteModuleBuilder.create();
 
 suite.module('replace');
 
@@ -139,3 +139,5 @@ suite.test('Adding object should notify array observer', function() {
   deepEqual(observer._before, [obj, 2, 2, 1], 'before');
   deepEqual(observer._after, [obj, 2, 2, 1], 'after');
 });
+
+export default suite;

@@ -1,6 +1,6 @@
-require('ember-runtime/~tests/suites/mutable_array');
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = Ember.MutableArrayTests;
+var suite = SuiteModuleBuilder.create();
 
 suite.module('setObjects');
 
@@ -45,3 +45,5 @@ suite.test("[A,B,C].setObjects([D, E, F, G]) = > [D, E, F, G] + notify", functio
   equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject once');
   equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
 });
+
+export default suite;

@@ -1,11 +1,14 @@
+import CopyableTests from 'ember-runtime/tests/suites/copyable';
+import {generateGuid} from 'ember-metal/utils';
+
 // ..........................................................
 // COPYABLE TESTS
 //
-Ember.CopyableTests.extend({
+CopyableTests.extend({
   name: 'NativeArray Copyable',
 
   newObject: function() {
-    return Ember.A([Ember.generateGuid()]);
+    return Ember.A([generateGuid()]);
   },
 
   isEqual: function(a,b) {

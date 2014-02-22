@@ -1,5 +1,5 @@
 require('ember-views/views/container_view');
-require('ember-runtime/system/string');
+//require('ember-runtime/system/string');
 
 /**
 @module ember

@@ -1,4 +1,5 @@
-import get from "ember-metal/property_get";
+import {get} from "ember-metal/property_get";
+import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 
 var RETAIN = 'r',
@@ -107,7 +108,7 @@ SubArray.prototype = {
         self._composeAt(operationIndex);
       }
     }, function() {
-      throw new Ember.Error("Can't remove an item that has never been added.");
+      throw new EmberError("Can't remove an item that has never been added.");
     });
 
     return returnValue;

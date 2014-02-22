@@ -7,16 +7,16 @@
 // HELPERS
 //
 
-import get from "ember-metal/property_get";
-import set from "ember-metal/property_set";
+import Ember from "ember-metal/core";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {apply} from "ember-metal/utils";
 import {Mixin, required, aliasMethod} from "ember-metal/mixin";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import {computed} from "ember-metal/computed";
-import {hasListeners} from "ember-metal/events";
-import {addListener, removeListener, propertyWillChange, propertyDidChange, sendEvent} from "ember-metal/property_events";
-import {apply} from "ember-metal/utils";
-import {A} from "ember-runtime/system/native_array";
-import {compare} from "ember-runtime/core";
+import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
+import {addListener, removeListener, sendEvent, hasListeners} from "ember-metal/events";
+import compare from "ember-runtime/compare";
 
 var a_slice = Array.prototype.slice;
 var a_indexOf = EnumerableUtils.indexOf;
@@ -290,7 +290,7 @@ var Enumerable = Mixin.create({
     @return {Array} The mapped array.
   */
   map: function(callback, target) {
-    var ret = A();
+    var ret = Ember.A();
     this.forEach(function(x, idx, i) {
       ret[idx] = callback.call(target, x, idx,i);
     });
@@ -352,7 +352,7 @@ var Enumerable = Mixin.create({
     @return {Array} A filtered array.
   */
   filter: function(callback, target) {
-    var ret = A();
+    var ret = Ember.A();
     this.forEach(function(x, idx, i) {
       if (callback.call(target, x, idx, i)) ret.push(x);
     });
@@ -769,7 +769,7 @@ var Enumerable = Mixin.create({
     @return {Array} return values from calling invoke.
   */
   invoke: function(methodName) {
-    var args, ret = A();
+    var args, ret = Ember.A();
     if (arguments.length>1) args = a_slice.call(arguments, 1);
 
     this.forEach(function(x, idx) {
@@ -790,7 +790,7 @@ var Enumerable = Mixin.create({
     @return {Array} the enumerable as an array.
   */
   toArray: function() {
-    var ret = A();
+    var ret = Ember.A();
     this.forEach(function(o, idx) { ret[idx] = o; });
     return ret ;
   },
@@ -826,7 +826,7 @@ var Enumerable = Mixin.create({
   */
   without: function(value) {
     if (!this.contains(value)) return this; // nothing to do
-    var ret = A();
+    var ret = Ember.A();
     this.forEach(function(k) {
       if (k !== value) ret[ret.length] = k;
     }) ;
@@ -846,7 +846,7 @@ var Enumerable = Mixin.create({
     @return {Ember.Enumerable}
   */
   uniq: function() {
-    var ret = A();
+    var ret = Ember.A();
     this.forEach(function(k) {
       if (a_indexOf(ret, k)<0) ret.push(k);
     });

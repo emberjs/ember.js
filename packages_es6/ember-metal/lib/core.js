@@ -25,6 +25,9 @@
   @version VERSION_STRING_PLACEHOLDER
 */
 
+// We need to make sure to operate on the same object if window.Ember already
+// existed.
+Ember = window.Ember;
 if ('undefined' === typeof Ember) {
   // Create core object. Make it act like an instance of Ember.Namespace so that
   // objects assigned to it are given a sane string representation.
@@ -37,7 +40,7 @@ var exports = Ember.exports = Ember.exports || this;
 var lookup  = Ember.lookup  = Ember.lookup  || this;
 
 // aliases needed to keep minifiers from removing the global context
-exports.Em = exports.Ember = Em = Ember;
+exports.Em = exports.Ember = Ember;
 
 // Make sure these are set whether Ember was already defined or not
 
@@ -65,9 +68,6 @@ Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
   @type Hash
 */
 
-// ES6TODO: Should this be its own initializer file?
-// This needs to be kept in sync with the logic in
-// `packages/ember-debug/lib/main.js`.
 if (Ember.ENV) {
   // do nothing if Ember.ENV is already setup
 } else if ('undefined' !== typeof EmberENV) {
@@ -234,83 +234,6 @@ Ember.merge = function(original, updates) {
   return original;
 };
 
-/**
-  Returns true if the passed value is null or undefined. This avoids errors
-  from JSLint complaining about use of ==, which can be technically
-  confusing.
-
-  ```javascript
-  Ember.isNone();              // true
-  Ember.isNone(null);          // true
-  Ember.isNone(undefined);     // true
-  Ember.isNone('');            // false
-  Ember.isNone([]);            // false
-  Ember.isNone(function() {});  // false
-  ```
-
-  @method isNone
-  @for Ember
-  @param {Object} obj Value to test
-  @return {Boolean}
-*/
-Ember.isNone = function(obj) {
-  return obj === null || obj === undefined;
-};
-Ember.none = Ember.deprecateFunc("Ember.none is deprecated. Please use Ember.isNone instead.", Ember.isNone);
-
-/**
-  Verifies that a value is `null` or an empty string, empty array,
-  or empty function.
-
-  Constrains the rules on `Ember.isNone` by returning false for empty
-  string and empty arrays.
-
-  ```javascript
-  Ember.isEmpty();                // true
-  Ember.isEmpty(null);            // true
-  Ember.isEmpty(undefined);       // true
-  Ember.isEmpty('');              // true
-  Ember.isEmpty([]);              // true
-  Ember.isEmpty('Adam Hawkins');  // false
-  Ember.isEmpty([0,1,2]);         // false
-  ```
-
-  @method isEmpty
-  @for Ember
-  @param {Object} obj Value to test
-  @return {Boolean}
-*/
-Ember.isEmpty = function(obj) {
-  return Ember.isNone(obj) || (obj.length === 0 && typeof obj !== 'function') || (typeof obj === 'object' && Ember.get(obj, 'length') === 0);
-};
-Ember.empty = Ember.deprecateFunc("Ember.empty is deprecated. Please use Ember.isEmpty instead.", Ember.isEmpty);
-
-if (Ember.FEATURES.isEnabled('ember-metal-is-blank')) {
-  /**
-    A value is blank if it is empty or a whitespace string.
-
-    ```javascript
-    Ember.isBlank();                // true
-    Ember.isBlank(null);            // true
-    Ember.isBlank(undefined);       // true
-    Ember.isBlank('');              // true
-    Ember.isBlank([]);              // true
-    Ember.isBlank('\n\t');          // true
-    Ember.isBlank('  ');            // true
-    Ember.isBlank({});              // false
-    Ember.isBlank('\n\t Hello');    // false
-    Ember.isBlank('Hello world');   // false
-    Ember.isBlank([1,2,3]);         // false
-    ```
-
-    @method isBlank
-    @for Ember
-    @param {Object} obj Value to test
-    @return {Boolean}
-  */
-  Ember.isBlank = function(obj) {
-    return Ember.isEmpty(obj) || (typeof obj === 'string' && obj.match(/\S/) === null);
-  };
-}
+window.Em = window.Ember = Ember;
 
 export default Ember;

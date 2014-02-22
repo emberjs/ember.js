@@ -1,13 +1,20 @@
+import Ember from "ember-metal/core";
+import {create} from "ember-metal/platform";
+import {get} from "ember-metal/property_get";
+import run from "ember-metal/run_loop";
+import ObjectProxy from "ember-runtime/system/object_proxy";
+import PromiseProxyMixin from "ember-runtime/mixins/promise_proxy";
+
+var RSVP = requireModule("rsvp");
 var ObjectPromiseProxy;
-var get = Ember.get;
 
 test("present on ember namespace", function(){
-  ok(Ember.PromiseProxyMixin, "expected Ember.PromiseProxyMixin to exist");
+  ok(PromiseProxyMixin, "expected PromiseProxyMixin to exist");
 });
 
 module("Ember.PromiseProxy - ObjectProxy", {
   setup: function() {
-    ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
+    ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
   }
 });
 
@@ -30,7 +37,7 @@ test("fulfillment", function(){
     lastName: 'penner'
   };
 
-  var deferred = Ember.RSVP.defer();
+  var deferred = RSVP.defer();
 
   var proxy = ObjectPromiseProxy.create({
     promise: deferred.promise
@@ -55,7 +62,7 @@ test("fulfillment", function(){
   equal(didFulfillCount, 0, 'should not yet have been fulfilled');
   equal(didRejectCount, 0, 'should not yet have been rejected');
 
-  Ember.run(deferred, 'resolve', value);
+  run(deferred, 'resolve', value);
 
   equal(didFulfillCount, 1, 'should have been fulfilled');
   equal(didRejectCount, 0, 'should not have been rejected');
@@ -67,12 +74,12 @@ test("fulfillment", function(){
   equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
   equal(get(proxy, 'isFulfilled'), true,  'expects the proxy to indicate that it is fulfilled');
 
-  Ember.run(deferred, 'resolve', value);
+  run(deferred, 'resolve', value);
 
   equal(didFulfillCount, 1, 'should still have been only fulfilled once');
   equal(didRejectCount,  0, 'should still not have been rejected');
 
-  Ember.run(deferred, 'reject', value);
+  run(deferred, 'reject', value);
 
   equal(didFulfillCount, 1, 'should still have been only fulfilled once');
   equal(didRejectCount,  0, 'should still not have been rejected');
@@ -89,7 +96,7 @@ test("fulfillment", function(){
 
 test("rejection", function(){
   var reason = new Error("failure");
-  var deferred = Ember.RSVP.defer();
+  var deferred = RSVP.defer();
   var proxy = ObjectPromiseProxy.create({
     promise: deferred.promise
   });
@@ -113,7 +120,7 @@ test("rejection", function(){
   equal(didFulfillCount, 0, 'should not yet have been fulfilled');
   equal(didRejectCount, 0, 'should not yet have been rejected');
 
-  Ember.run(deferred, 'reject', reason);
+  run(deferred, 'reject', reason);
 
   equal(didFulfillCount, 0, 'should not yet have been fulfilled');
   equal(didRejectCount, 1, 'should have been rejected');
@@ -125,12 +132,12 @@ test("rejection", function(){
   equal(get(proxy, 'isRejected'),  true, 'expects the proxy to indicate that it is  rejected');
   equal(get(proxy, 'isFulfilled'), false,  'expects the proxy to indicate that it is not fulfilled');
 
-  Ember.run(deferred, 'reject', reason);
+  run(deferred, 'reject', reason);
 
   equal(didFulfillCount, 0, 'should stll not yet have been fulfilled');
   equal(didRejectCount, 1, 'should still remain rejected');
 
-  Ember.run(deferred, 'resolve', 1);
+  run(deferred, 'resolve', 1);
 
   equal(didFulfillCount, 0, 'should stll not yet have been fulfilled');
   equal(didRejectCount, 1, 'should still remain rejected');
@@ -146,11 +153,11 @@ test("rejection", function(){
 test("unhandled rejects still propogate to RSVP.on('error', ...) ", function(){
   expect(1);
 
-  Ember.RSVP.on('error', onerror);
-  Ember.RSVP.off('error', Ember.RSVP.onerrorDefault);
+  RSVP.on('error', onerror);
+  RSVP.off('error', RSVP.onerrorDefault);
 
   var expectedReason = new Error("failure");
-  var deferred = Ember.RSVP.defer();
+  var deferred = RSVP.defer();
 
   var proxy = ObjectPromiseProxy.create({
     promise: deferred.promise
@@ -162,28 +169,28 @@ test("unhandled rejects still propogate to RSVP.on('error', ...) ", function(){
     equal(reason, expectedReason, 'expected reason');
   }
 
-  Ember.RSVP.on('error', onerror);
-  Ember.RSVP.off('error', Ember.RSVP.onerrorDefault);
+  RSVP.on('error', onerror);
+  RSVP.off('error', RSVP.onerrorDefault);
 
-  Ember.run(deferred, 'reject', expectedReason);
+  run(deferred, 'reject', expectedReason);
 
-  Ember.RSVP.on('error', Ember.RSVP.onerrorDefault);
-  Ember.RSVP.off('error', onerror);
+  RSVP.on('error', RSVP.onerrorDefault);
+  RSVP.off('error', onerror);
 
-  Ember.run(deferred, 'reject', expectedReason);
+  run(deferred, 'reject', expectedReason);
 
-  Ember.RSVP.on('error', Ember.RSVP.onerrorDefault);
-  Ember.RSVP.off('error', onerror);
+  RSVP.on('error', RSVP.onerrorDefault);
+  RSVP.off('error', onerror);
 });
 
 test("should work with promise inheritance", function(){
   function PromiseSubclass() {
-    Ember.RSVP.Promise.apply(this, arguments);
+    RSVP.Promise.apply(this, arguments);
   }
 
-  PromiseSubclass.prototype = Ember.create(Ember.RSVP.Promise.prototype);
+  PromiseSubclass.prototype = create(RSVP.Promise.prototype);
   PromiseSubclass.prototype.constructor = PromiseSubclass;
-  PromiseSubclass.cast = Ember.RSVP.Promise.cast;
+  PromiseSubclass.cast = RSVP.Promise.cast;
 
   var proxy = ObjectPromiseProxy.create({
     promise: new PromiseSubclass(function(){ })

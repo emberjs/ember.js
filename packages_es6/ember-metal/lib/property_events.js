@@ -1,7 +1,3 @@
-// require('ember-metal/utils');
-// require('ember-metal/events');
-// require('ember-metal/observer_set');
-
 import { META_KEY, guidFor, tryFinally} from "ember-metal/utils";
 import {sendEvent, listenersUnion, listenersDiff} from "ember-metal/events";
 import ObserverSet from "ember-metal/observer_set";

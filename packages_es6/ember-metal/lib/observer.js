@@ -1,12 +1,3 @@
-/*
-require('ember-metal/core');
-require('ember-metal/platform');
-require('ember-metal/utils'); // Ember.tryFinally
-require('ember-metal/property_get');
-require('ember-metal/array');
-require('ember-metal/events');
-*/
-
 import {watch, unwatch} from "ember-metal/watching";
 import {map} from "ember-metal/array";
 import {listenersFor, addListener, removeListener, suspendListeners, suspendListener} from "ember-metal/events";
@@ -41,7 +32,7 @@ function addObserver(obj, _path, target, method) {
 };
 
 function observersFor(obj, path) {
-  return Ember.listenersFor(obj, changeEvent(path));
+  return listenersFor(obj, changeEvent(path));
 };
 
 /**
@@ -115,4 +106,4 @@ function removeBeforeObserver(obj, _path, target, method) {
   return this;
 };
 
-export {addObserver, observersFor, removeObserver, addBeforeObserver, _suspendBeforeObserver, _suspendObserver,_suspendBeforeObserver, _suspendObservers, beforeObserversFor, removeBeforeObserver};
+export {addObserver, observersFor, removeObserver, addBeforeObserver, _suspendBeforeObserver, _suspendObserver,_suspendBeforeObservers, _suspendObservers, beforeObserversFor, removeBeforeObserver};

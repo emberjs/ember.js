@@ -1,15 +1,19 @@
+import {OrderedSet, Map, MapWithDefault} from "ember-metal/map";
+
 var object, number, string, map;
 
-var varieties = ['Map', 'MapWithDefault'], variety;
+var varieties = [['Map', Map], ['MapWithDefault', MapWithDefault]], variety;
 
-function testMap(variety) {
+function testMap(nameAndFunc) {
+  variety = nameAndFunc[0];
+
   module("Ember." + variety + " (forEach and get are implicitly tested)", {
     setup: function() {
       object = {};
       number = 42;
       string = "foo";
 
-      map = Ember[variety].create();
+      map = nameAndFunc[1].create();
     }
   });
 
@@ -160,7 +164,7 @@ for (var i = 0;  i < varieties.length;  i++) {
 module("MapWithDefault - default values");
 
 test("Retrieving a value that has not been set returns and sets a default value", function() {
-  var map = Ember.MapWithDefault.create({
+  var map = MapWithDefault.create({
     defaultValue: function(key) {
       return [key];
     }
@@ -173,7 +177,7 @@ test("Retrieving a value that has not been set returns and sets a default value"
 });
 
 test("Copying a MapWithDefault copies the default value", function() {
-  var map = Ember.MapWithDefault.create({
+  var map = MapWithDefault.create({
     defaultValue: function(key) {
       return [key];
     }

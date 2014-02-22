@@ -1,3 +1,6 @@
+import Ember from 'ember-metal';
+import run from 'ember-metal/run_loop';
+
 module('system/run_loop/onerror_test');
 
 test('With Ember.onerror undefined, errors in Ember.run are thrown', function () {
@@ -5,7 +8,7 @@ test('With Ember.onerror undefined, errors in Ember.run are thrown', function ()
       caught;
 
   try {
-    Ember.run(function() { throw thrown; });
+    run(function() { throw thrown; });
   } catch (error) {
     caught = error;
   }
@@ -19,7 +22,7 @@ test('With Ember.onerror set, errors in Ember.run are caught', function () {
 
   Ember.onerror = function(error) { caught = error; };
 
-  Ember.run(function() { throw thrown; });
+  run(function() { throw thrown; });
 
   deepEqual(caught, thrown);
 

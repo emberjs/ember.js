@@ -1,5 +1,4 @@
 var map, forEach, indexOf, splice, filter;
-// require('ember-metal/array');
 
 import {map, forEach, indexOf, filter} from "ember-metal/array";
 

@@ -2,7 +2,7 @@
 // require("ember-runtime/system/object");
 
 import DeferredMixin from "ember-runtime/mixins/deferred";
-import get from "ember-metal/property_get";
+import {get} from "ember-metal/property_get";
 import EmberObject from "ember-runtime/system/object";
 
 var Deferred = EmberObject.extend(DeferredMixin);

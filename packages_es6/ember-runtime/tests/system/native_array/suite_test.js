@@ -1,4 +1,6 @@
-Ember.MutableArrayTests.extend({
+import MutableArrayTests from 'ember-runtime/tests/suites/mutable_array';
+
+MutableArrayTests.extend({
 
   name: 'Native Array',
 
@@ -15,6 +17,3 @@ Ember.MutableArrayTests.extend({
   }
 
 }).run();
-
-
-

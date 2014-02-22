@@ -1,18 +1,21 @@
+import {typeOf} from "ember-metal/utils";
+import EmberObject from "ember-runtime/system/object";
+
 module("Ember Type Checking");
 
 test("Ember.typeOf", function() {
-	var a = null,
+  var a = null,
       arr = [1,2,3],
       obj = {},
-      object = Ember.Object.create({ method: function() {} });
+      object = EmberObject.create({ method: function() {} });
 
-  equal(Ember.typeOf(undefined),     'undefined', "item of type undefined");
-  equal(Ember.typeOf(a),             'null',      "item of type null");
-	equal(Ember.typeOf(arr),           'array',     "item of type array");
-	equal(Ember.typeOf(obj),           'object',    "item of type object");
-	equal(Ember.typeOf(object),        'instance',  "item of type instance");
-	equal(Ember.typeOf(object.method), 'function',  "item of type function") ;
-	equal(Ember.typeOf(Ember.Object),     'class',     "item of type class");
-  equal(Ember.typeOf(new Error()),   'error',     "item of type error");
+  equal(typeOf(undefined),     'undefined', "item of type undefined");
+  equal(typeOf(a),             'null',      "item of type null");
+  equal(typeOf(arr),           'array',     "item of type array");
+  equal(typeOf(obj),           'object',    "item of type object");
+  equal(typeOf(object),        'instance',  "item of type instance");
+  equal(typeOf(object.method), 'function',  "item of type function") ;
+  equal(typeOf(EmberObject),     'class',     "item of type class");
+  equal(typeOf(new Error()),   'error',     "item of type error");
 });
 

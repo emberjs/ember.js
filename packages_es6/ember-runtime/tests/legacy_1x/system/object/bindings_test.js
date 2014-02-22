@@ -1,4 +1,9 @@
-/*globals TestNamespace:true*/
+import Ember from "ember-metal/core";
+import {get} from 'ember-metal/property_get';
+import {set} from 'ember-metal/property_set';
+import run from "ember-metal/run_loop";
+import {destroy} from "ember-metal/watching";
+import EmberObject from 'ember-runtime/system/object';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -7,39 +12,41 @@
 
   CHANGES FROM 1.6:
 
-  * changed Ember.Bending.flushPendingChanges() -> Ember.run.sync();
+  * changed Ember.Bending.flushPendingChanges() -> run.sync();
   * changes obj.set() and obj.get() to Ember.set() and Ember.get()
   * Fixed an actual bug in unit tests around line 133
-  * fixed 'bindings should disconnect on destroy' test to use Ember.destroy.
+  * fixed 'bindings should disconnect on destroy' test to use destroy.
 */
 
 // ========================================================================
-// Ember.Object bindings Tests
+// EmberObject bindings Tests
 // ========================================================================
 
 var testObject, fromObject, extraObject, TestObject;
-
-var set = Ember.set, get = Ember.get;
+var TestNamespace, originalLookup, lookup;
 
 var bindModuleOpts = {
 
   setup: function() {
-    testObject = Ember.Object.create({
+    originalLookup = Ember.lookup;
+    Ember.lookup = lookup = {};
+
+    testObject = EmberObject.create({
       foo: "bar",
       bar: "foo",
       extraObject: null
     });
 
-    fromObject = Ember.Object.create({
+    fromObject = EmberObject.create({
       bar: "foo",
       extraObject: null
     }) ;
 
-    extraObject = Ember.Object.create({
+    extraObject = EmberObject.create({
       foo: "extraObjectValue"
     }) ;
 
-    TestNamespace = {
+    lookup['TestNamespace'] = TestNamespace = {
       fromObject: fromObject,
       testObject: testObject
     } ;
@@ -47,6 +54,7 @@ var bindModuleOpts = {
 
   teardown: function() {
     testObject = fromObject = extraObject = null ;
+    Ember.lookup = originalLookup;
   }
 
 };
@@ -54,7 +62,7 @@ var bindModuleOpts = {
 module("bind() method", bindModuleOpts);
 
 test("bind(TestNamespace.fromObject.bar) should follow absolute path", function() {
-  Ember.run(function() {
+  run(function() {
     // create binding
     testObject.bind("foo", "TestNamespace.fromObject.bar");
 
@@ -66,7 +74,7 @@ test("bind(TestNamespace.fromObject.bar) should follow absolute path", function(
 });
 
 test("bind(.bar) should bind to relative path", function() {
-  Ember.run(function() {
+  run(function() {
     // create binding
     testObject.bind("foo", "bar") ;
 
@@ -80,28 +88,32 @@ test("bind(.bar) should bind to relative path", function() {
 var fooBindingModuleOpts = {
 
   setup: function() {
-    TestObject = Ember.Object.extend({
+    originalLookup = Ember.lookup;
+    Ember.lookup = lookup = {};
+
+    TestObject = EmberObject.extend({
       foo: "bar",
       bar: "foo",
       extraObject: null
     });
 
-    fromObject = Ember.Object.create({
+    fromObject = EmberObject.create({
       bar: "foo",
       extraObject: null
     }) ;
 
-    extraObject = Ember.Object.create({
+    extraObject = EmberObject.create({
       foo: "extraObjectValue"
     }) ;
 
-    TestNamespace = {
+    lookup['TestNamespace'] = TestNamespace = {
       fromObject: fromObject,
       testObject: TestObject
     } ;
   },
 
   teardown: function() {
+    Ember.lookup = originalLookup;
     TestObject = fromObject = extraObject = null ;
   //  delete TestNamespace ;
   }
@@ -113,7 +125,7 @@ module("fooBinding method", fooBindingModuleOpts);
 
 test("fooBinding: TestNamespace.fromObject.bar should follow absolute path", function() {
   // create binding
-  Ember.run(function() {
+  run(function() {
     testObject = TestObject.createWithMixins({
       fooBinding: "TestNamespace.fromObject.bar"
     }) ;
@@ -122,12 +134,11 @@ test("fooBinding: TestNamespace.fromObject.bar should follow absolute path", fun
     set(fromObject, "bar", "changedValue") ;
   });
 
-
   equal("changedValue", get(testObject, "foo"), "testObject.foo");
 });
 
 test("fooBinding: .bar should bind to relative path", function() {
-  Ember.run(function() {
+  run(function() {
     testObject = TestObject.createWithMixins({
       fooBinding: "bar"
     });
@@ -139,7 +150,7 @@ test("fooBinding: .bar should bind to relative path", function() {
 });
 
 test('fooBinding: should disconnect bindings when destroyed', function () {
-  Ember.run(function() {
+  run(function() {
     testObject = TestObject.createWithMixins({
       fooBinding: "TestNamespace.fromObject.bar"
     });
@@ -149,9 +160,9 @@ test('fooBinding: should disconnect bindings when destroyed', function () {
 
   equal(get(testObject, 'foo'), 'BAZ', 'binding should have synced');
 
-  Ember.destroy(testObject);
+  destroy(testObject);
 
-  Ember.run(function() {
+  run(function() {
     set(TestNamespace.fromObject, 'bar', 'BIFF');
   });
 

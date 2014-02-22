@@ -1,16 +1,20 @@
-/*global Global: true*/
-
-require('ember-metal/~tests/props_helper');
+import Ember from 'ember-metal/core';
+import {metaFor} from 'ember-metal/utils';
+import {addObserver} from 'ember-metal/observer';
+import {computed} from 'ember-metal/computed';
+import run from 'ember-metal/run_loop';
+import {defineProperty} from "ember-metal/properties";
+import compare from 'ember-runtime/compare';
+import testBoth from 'ember-metal/tests/props_helper';
+import EmberObject from 'ember-runtime/system/object';
 
 if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
-  var metaFor = Ember.meta,
-      addObserver = Ember.addObserver,
-      obj;
+  var obj;
     
-  module('Ember.computed - composable', {
+  module('computed - composable', {
     teardown: function () {
       if (obj && obj.destroy) {
-        Ember.run(function() {
+        run(function() {
           obj.destroy();
         });
       }
@@ -18,10 +22,10 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('should be able to take a computed property as a parameter for ember objects', function(get, set) {
-    var not = Ember.computed.not,
-        equals = Ember.computed.equal;
+    var not = computed.not,
+        equals = computed.equal;
 
-    obj = Ember.Object.extend({
+    obj = EmberObject.extend({
       firstName: null,
       lastName: null,
       state: null,
@@ -44,8 +48,8 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('should work with plain JavaScript objects', function(get, set) {
-    var not = Ember.computed.not,
-        equals = Ember.computed.equal;
+    var not = computed.not,
+        equals = computed.equal;
 
     obj = {
       firstName: 'Alex',
@@ -53,7 +57,7 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
       state: 'sleepy'
     };
 
-    Ember.defineProperty(obj, 'napTime', not(equals('state', 'sleepy')));
+    defineProperty(obj, 'napTime', not(equals('state', 'sleepy')));
 
     equal(get(obj, 'firstName'), 'Alex');
     equal(get(obj, 'lastName'), 'Navasardyan');
@@ -67,10 +71,10 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('should be able to take many computed properties as parameters', function(get, set) {
-    var and     = Ember.computed.and,
-        equals  = Ember.computed.equal,
-        not     = Ember.computed.not,
-        obj = Ember.Object.extend({
+    var and     = computed.and,
+        equals  = computed.equal,
+        not     = computed.not,
+        obj = EmberObject.extend({
           firstName: null,
           lastName: null,
           state: null,
@@ -102,14 +106,14 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('composable computed properties can be shared between types', function (get, set) {
-    var not = Ember.computed.not,
-        equals = Ember.computed.equal,
+    var not = computed.not,
+        equals = computed.equal,
         notSleepy = not(equals('state', 'sleepy')),
-        Type0 = Ember.Object.extend({
+        Type0 = EmberObject.extend({
           state: null,
           napTime: notSleepy
         }),
-        Type1 = Ember.Object.extend({
+        Type1 = EmberObject.extend({
           state: null,
           napTime: notSleepy
         }),
@@ -132,11 +136,11 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('composable computed properties work with existing CP macros', function(get, set) {
-    var not = Ember.computed.not,
-        equals = Ember.computed.equal,
+    var not = computed.not,
+        equals = computed.equal,
         observerCalls = 0;
 
-    obj = Ember.Object.extend({
+    obj = EmberObject.extend({
       firstName: null,
       lastName: null,
       state: null,
@@ -160,14 +164,14 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('composable computed properties work with arrayComputed properties', function (get, set) {
-    var mapBy = Ember.computed.mapBy,
-        union = Ember.computed.union,
-        sort  = Ember.computed.sort;
+    var mapBy = computed.mapBy,
+        union = computed.union,
+        sort  = computed.sort;
 
-    obj = Ember.Object.extend({
+    obj = EmberObject.extend({
       names: sort(
               union(mapBy('people', 'firstName'), mapBy('people', 'lastName'), 'cats'),
-              Ember.compare
+              compare
              )
     }).create({
       people: Ember.A([{
@@ -182,14 +186,14 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('composable computed properties work with CPs that have no dependencies', function (get, set) {
-    var not = Ember.computed.not,
+    var not = computed.not,
         constant = function (c) {
-          return Ember.computed(function () {
+          return computed(function () {
             return c;
           });
         };
 
-    obj = Ember.Object.extend({
+    obj = EmberObject.extend({
       p: not(constant(true))
     }).create();
 
@@ -197,10 +201,10 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('composable computed properties work with depKey paths', function (get, set) {
-    var not = Ember.computed.not,
-        alias = Ember.computed.alias;
+    var not = computed.not,
+        alias = computed.alias;
 
-    obj = Ember.Object.extend({
+    obj = EmberObject.extend({
       q: not(alias('indirection.p'))
     }).create({
       indirection: { p: true }
@@ -214,11 +218,11 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('composable computed properties work with macros that have non-cp args', function (get, set) {
-    var equals = Ember.computed.equal,
-        not = Ember.computed.not,
-        or = Ember.computed.or;
+    var equals = computed.equal,
+        not = computed.not,
+        or = computed.or;
 
-    obj = Ember.Object.extend({
+    obj = EmberObject.extend({
       isJaime: equals('name', 'Jaime'),
       isCersei: equals('name', 'Cersei'),
 

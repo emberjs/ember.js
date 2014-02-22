@@ -1,8 +1,3 @@
-// require('ember-metal/core');
-// require('ember-metal/platform');
-// require('ember-metal/array');
-// require('ember-metal/error');
-
 import Ember from "ember-metal/core";
 import {platform, create} from "ember-metal/platform";
 import {forEach} from "ember-metal/array";
@@ -347,6 +342,8 @@ function wrap(func, superFunc) {
   return superWrapper;
 };
 
+var EmberArray;
+
 /**
   Returns true if the passed object is an array or Array-like.
 
@@ -370,11 +367,15 @@ function wrap(func, superFunc) {
   @param {Object} obj The object to test
   @return {Boolean} true if the passed object is an array or Array-like
 */
-// ES6TODO: Move up to runtime. This isn't used in ember-metal at all. Also depends on Ember.Array.
+// ES6TODO: Move up to runtime? This is only use in ember-metal by concatenatedProperties
 function isArray(obj) {
+  if (typeof EmberArray === 'undefined') {
+    EmberArray = requireModule("ember-runtime/mixins/array")["default"];
+  }
+
   if (!obj || obj.setInterval) { return false; }
   if (Array.isArray && Array.isArray(obj)) { return true; }
-  if (Ember.Array && Ember.Array.detect(obj)) { return true; }
+  if (EmberArray && EmberArray.detect(obj)) { return true; }
   if ((obj.length !== undefined) && 'object'===typeof obj) { return true; }
   return false;
 };
@@ -616,6 +617,8 @@ forEach.call(t, function(name) {
 
 var toString = Object.prototype.toString;
 
+var EmberObject;
+
 /**
   Returns a consistent type for the passed item.
 
@@ -668,17 +671,21 @@ var toString = Object.prototype.toString;
   @param {Object} item the item to check
   @return {String} the type
 */
-// ES6Todo: Depends on Ember.Object which is defined in runtime.
 function typeOf(item) {
   var ret;
+
+  // ES6TODO: Depends on Ember.Object which is defined in runtime.
+  if (typeof EmberObject === "undefined") {
+    EmberObject = requireModule('ember-runtime/system/object')['default'];
+  }
 
   ret = (item === null || item === undefined) ? String(item) : TYPE_MAP[toString.call(item)] || 'object';
 
   if (ret === 'function') {
-    if (Ember.Object && Ember.Object.detect(item)) ret = 'class';
+    if (EmberObject && EmberObject.detect(item)) ret = 'class';
   } else if (ret === 'object') {
     if (item instanceof Error) ret = 'error';
-    else if (Ember.Object && item instanceof Ember.Object) ret = 'instance';
+    else if (EmberObject && item instanceof EmberObject) ret = 'instance';
     else if (item instanceof Date) ret = 'date';
   }
 
@@ -718,6 +725,7 @@ function inspect(obj) {
   return "{" + ret.join(", ") + "}";
 };
 
+
 // The following functions are intentionally minified to keep the functions
 // below Chrome's function body size inlining limit of 600 chars.
 
@@ -747,4 +755,4 @@ function applyStr(t /* target */, m /* method */, a /* args */) {
   }
 };
 
-export {generateGuid, GUID_KEY, GUID_PREFIX, guidFor, META_DESC, EMPTY_META, meta, getMeta, setMeta, metaPath, inspect, typeOf, tryCatchFinally, isArray, makeArray, canInvoke, tryInvoke, tryFinally, wrap, applyStr, apply};};
+export {generateGuid, GUID_KEY, GUID_PREFIX, guidFor, META_DESC, EMPTY_META, MEAT_KEY, meta, getMeta, setMeta, metaPath, inspect, typeOf, tryCatchFinally, isArray, makeArray, canInvoke, tryInvoke, tryFinally, wrap, applyStr, apply};

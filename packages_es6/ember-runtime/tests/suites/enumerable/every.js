@@ -1,6 +1,7 @@
-require('ember-runtime/~tests/suites/enumerable');
+import EmberObject from 'ember-runtime/system/object';
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = Ember.EnumerableTests;
+var suite = SuiteModuleBuilder.create();
 
 // ..........................................................
 // every()
@@ -40,7 +41,7 @@ suite.module('isEvery');
 suite.test('should return true of every property matches', function() {
   var obj = this.newObject([
     { foo: 'foo', bar: 'BAZ' },
-    Ember.Object.create({ foo: 'foo', bar: 'bar' })
+    EmberObject.create({ foo: 'foo', bar: 'bar' })
   ]);
 
   equal(obj.isEvery('foo', 'foo'), true, 'isEvery(foo)');
@@ -50,7 +51,7 @@ suite.test('should return true of every property matches', function() {
 suite.test('should return true of every property is true', function() {
   var obj = this.newObject([
     { foo: 'foo', bar: true },
-    Ember.Object.create({ foo: 'bar', bar: false })
+    EmberObject.create({ foo: 'bar', bar: false })
   ]);
 
   // different values - all eval to true
@@ -61,7 +62,7 @@ suite.test('should return true of every property is true', function() {
 suite.test('should return true if every property matches null', function() {
   var obj = this.newObject([
     { foo: null, bar: 'BAZ' },
-    Ember.Object.create({ foo: null, bar: null })
+    EmberObject.create({ foo: null, bar: null })
   ]);
 
   equal(obj.isEvery('foo', null), true, "isEvery('foo', null)");
@@ -81,9 +82,11 @@ suite.test('everyProperty should be aliased to isEvery', function() {
 suite.test('should return true if every property is undefined', function() {
   var obj = this.newObject([
     { foo: undefined, bar: 'BAZ' },
-    Ember.Object.create({ bar: undefined })
+    EmberObject.create({ bar: undefined })
   ]);
 
   equal(obj.isEvery('foo', undefined), true, "isEvery('foo', undefined)");
   equal(obj.isEvery('bar', undefined), false, "isEvery('bar', undefined)");
 });
+
+export default suite;

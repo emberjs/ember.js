@@ -3,9 +3,9 @@
 
 
 import Ember from "ember-metal/core"; // Ember.K, Ember.assert
-import get from "ember-metal/property_get";
-import set from "ember-metal/property_set";
-import computed from "ember-metal/computed";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {computed} from "ember-metal/computed";
 import {beforeObserver, observer} from "ember-metal/mixin";
 import {beginPropertyChanges, endPropertyChanges} from "ember-metal/property_events";
 import EmberError from "ember-metal/error";

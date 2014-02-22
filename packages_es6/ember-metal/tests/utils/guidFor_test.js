@@ -1,16 +1,19 @@
-module("Ember.guidFor");
+import {guidFor, generateGuid} from "ember-metal/utils";
+import {rewatch} from "ember-metal/watching";
+
+module("guidFor");
 
 var sameGuid = function(a, b, message) {
-  equal( Ember.guidFor(a), Ember.guidFor(b), message );
+  equal( guidFor(a), guidFor(b), message );
 };
 
 var diffGuid = function(a, b, message) {
-  ok( Ember.guidFor(a) !== Ember.guidFor(b), message);
+  ok( guidFor(a) !== guidFor(b), message);
 };
 
 var nanGuid = function(obj) {
   var type = typeof obj;
-  ok( isNaN(parseInt(Ember.guidFor(obj), 0)), "guids for " + type + "don't parse to numbers");
+  ok( isNaN(parseInt(guidFor(obj), 0)), "guids for " + type + "don't parse to numbers");
 };
 
 test("Object", function() {
@@ -24,15 +27,15 @@ test("Object", function() {
 test("Object with prototype", function() {
   var Class = function() { };
 
-  Ember.guidFor(Class.prototype);
+  guidFor(Class.prototype);
 
   var a = new Class();
   var b = new Class();
 
   sameGuid( a, b , "without calling rewatch, objects copy the guid from their prototype");
 
-  Ember.rewatch(a);
-  Ember.rewatch(b);
+  rewatch(a);
+  rewatch(b);
 
   diffGuid( a, b, "after calling rewatch, objects don't share guids" );
 });

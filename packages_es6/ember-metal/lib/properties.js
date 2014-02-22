@@ -1,8 +1,3 @@
-// require('ember-metal/core');
-// require('ember-metal/platform');
-// require('ember-metal/utils');
-// require('ember-metal/property_get');
-
 /**
 @module ember-metal
 */

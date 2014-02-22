@@ -1,10 +1,9 @@
-var RSVP = requireModule("rsvp");
-
 import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.Test
-import get from "ember-metal/property_get";
-import Mixin from "ember-metal/mixin";
-import computed from "ember-metal/computed";
+import {get} from "ember-metal/property_get";
+import {Mixin} from "ember-metal/mixin";
+import {computed} from "ember-metal/computed";
 import run from "ember-metal/run_loop";
+import RSVP from "ember-runtime/ext/rsvp";
 
 if (Ember.FEATURES['ember-runtime-test-friendly-promises']) {
 

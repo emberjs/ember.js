@@ -1,8 +1,13 @@
-module('Ember.Controller event handling');
+import Ember from "ember-metal/core";
+import {Controller, ControllerMixin} from "ember-runtime/controllers/controller";
+import ObjectController from "ember-runtime/controllers/object_controller";
+import {Mixin} from "ember-metal/mixin";
+
+module('Controller event handling');
 
 test("Action can be handled by a function on actions object", function() {
   expect(1);
-  var TestController = Ember.Controller.extend({
+  var TestController = Controller.extend({
     actions: {
       poke: function() {
         ok(true, 'poked');
@@ -16,7 +21,7 @@ test("Action can be handled by a function on actions object", function() {
 // TODO: Can we support this?
 // test("Actions handlers can be configured to use another name", function() {
 //   expect(1);
-//   var TestController = Ember.Controller.extend({
+//   var TestController = Controller.extend({
 //     actionsProperty: 'actionHandlers',
 //     actionHandlers: {
 //       poke: function() {
@@ -30,7 +35,7 @@ test("Action can be handled by a function on actions object", function() {
 
 test("When `_actions` is provided, `actions` is left alone", function() {
   expect(2);
-  var TestController = Ember.Controller.extend({
+  var TestController = Controller.extend({
     actions: ['foo', 'bar'],
     _actions: {
       poke: function() {
@@ -44,7 +49,7 @@ test("When `_actions` is provided, `actions` is left alone", function() {
 });
 
 test("Actions object doesn't shadow a proxied object's 'actions' property", function() {
-  var TestController = Ember.ObjectController.extend({
+  var TestController = ObjectController.extend({
     content: {
       actions: 'foo'
     },
@@ -60,7 +65,7 @@ test("Actions object doesn't shadow a proxied object's 'actions' property", func
 
 test("A handled action can be bubbled to the target for continued processing", function() {
   expect(2);
-  var TestController = Ember.Controller.extend({
+  var TestController = Controller.extend({
     actions: {
       poke: function() {
         ok(true, 'poked 1');
@@ -70,7 +75,7 @@ test("A handled action can be bubbled to the target for continued processing", f
   });
 
   var controller = TestController.create({
-    target: Ember.Controller.extend({
+    target: Controller.extend({
       actions: {
         poke: function() {
           ok(true, 'poked 2');
@@ -84,7 +89,7 @@ test("A handled action can be bubbled to the target for continued processing", f
 test("Action can be handled by a superclass' actions object", function() {
   expect(4);
 
-  var SuperController = Ember.Controller.extend({
+  var SuperController = Controller.extend({
     actions: {
       foo: function() {
         ok(true, 'foo');
@@ -95,7 +100,7 @@ test("Action can be handled by a superclass' actions object", function() {
     }
   });
 
-  var BarControllerMixin = Ember.Mixin.create({
+  var BarControllerMixin = Mixin.create({
     actions: {
       bar: function(msg) {
         equal(msg, "HELLO");
@@ -118,12 +123,12 @@ test("Action can be handled by a superclass' actions object", function() {
   controller.send("baz");
 });
 
-module('Ember.Controller deprecations');
+module('Controller deprecations');
 
 if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
   test("Action can be handled by method directly on controller (DEPRECATED)", function() {
     expectDeprecation(/Action handlers implemented directly on controllers are deprecated/);
-    var TestController = Ember.Controller.extend({
+    var TestController = Controller.extend({
       poke: function() {
         ok(true, 'poked');
       }

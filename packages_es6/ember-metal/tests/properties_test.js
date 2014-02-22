@@ -1,9 +1,15 @@
+import Ember from 'ember-metal/core';
+import {set} from 'ember-metal/property_set';
+import {get} from 'ember-metal/property_get';
+import {computed} from 'ember-metal/computed';
+import {defineProperty} from "ember-metal/properties";
+
 module('Ember.defineProperty');
 
 test('toString', function() {
 
   var obj = {};
-  Ember.defineProperty(obj, 'toString', undefined, function() { return 'FOO'; });
+  defineProperty(obj, 'toString', undefined, function() { return 'FOO'; });
   equal(obj.toString(), 'FOO', 'should replace toString');
 });
 
@@ -17,13 +23,13 @@ test("for data properties, didDefineProperty hook should be called if implemente
     }
   };
 
-  Ember.defineProperty(obj, 'foo', undefined, "bar");
+  defineProperty(obj, 'foo', undefined, "bar");
 });
 
 test("for descriptor properties, didDefineProperty hook should be called if implemented", function() {
   expect(2);
 
-  var computedProperty = Ember.computed(Ember.K);
+  var computedProperty = computed(Ember.K);
 
   var obj = {
     didDefineProperty: function(obj, keyName, value) {
@@ -32,6 +38,6 @@ test("for descriptor properties, didDefineProperty hook should be called if impl
     }
   };
 
-  Ember.defineProperty(obj, 'foo', computedProperty);
+  defineProperty(obj, 'foo', computedProperty);
 });
 

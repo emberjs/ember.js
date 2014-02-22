@@ -1,16 +1,18 @@
-/*globals testBoth */
+import Ember from "ember-metal/core";
+import {observer} from "ember-metal/mixin";
+import run from "ember-metal/run_loop";
+import {testWithDefault, testBoth} from 'ember-runtime/tests/props_helper';
+import EmberObject from "ember-runtime/system/object";
 
-require('ember-runtime/~tests/props_helper');
-
-module('Ember.Object observer');
+module('EmberObject observer');
 
 testBoth('observer on class', function(get, set) {
 
-  var MyClass = Ember.Object.extend({
+  var MyClass = EmberObject.extend({
 
     count: 0,
 
-    foo: Ember.observer('bar', function() {
+    foo: observer('bar', function() {
       set(this, 'count', get(this, 'count')+1);
     })
 
@@ -26,18 +28,18 @@ testBoth('observer on class', function(get, set) {
 
 testBoth('observer on subclass', function(get, set) {
 
-  var MyClass = Ember.Object.extend({
+  var MyClass = EmberObject.extend({
 
     count: 0,
 
-    foo: Ember.observer('bar', function() {
+    foo: observer('bar', function() {
       set(this, 'count', get(this, 'count')+1);
     })
 
   });
 
   var Subclass = MyClass.extend({
-    foo: Ember.observer('baz', function() {
+    foo: observer('baz', function() {
       set(this, 'count', get(this, 'count')+1);
     })
   });
@@ -55,11 +57,11 @@ testBoth('observer on subclass', function(get, set) {
 
 testBoth('observer on instance', function(get, set) {
 
-  var obj = Ember.Object.createWithMixins({
+  var obj = EmberObject.createWithMixins({
 
     count: 0,
 
-    foo: Ember.observer('bar', function() {
+    foo: observer('bar', function() {
       set(this, 'count', get(this, 'count')+1);
     })
 
@@ -74,18 +76,18 @@ testBoth('observer on instance', function(get, set) {
 
 testBoth('observer on instance overridding class', function(get, set) {
 
-  var MyClass = Ember.Object.extend({
+  var MyClass = EmberObject.extend({
 
     count: 0,
 
-    foo: Ember.observer('bar', function() {
+    foo: observer('bar', function() {
       set(this, 'count', get(this, 'count')+1);
     })
 
   });
 
   var obj = MyClass.createWithMixins({
-    foo: Ember.observer('baz', function() { // <-- change property we observe
+    foo: observer('baz', function() { // <-- change property we observe
       set(this, 'count', get(this, 'count')+1);
     })
   });
@@ -102,16 +104,16 @@ testBoth('observer on instance overridding class', function(get, set) {
 
 testBoth('observer should not fire after being destroyed', function(get, set) {
 
-  var obj = Ember.Object.createWithMixins({
+  var obj = EmberObject.createWithMixins({
     count: 0,
-    foo: Ember.observer('bar', function() {
+    foo: observer('bar', function() {
       set(this, 'count', get(this, 'count')+1);
     })
   });
 
   equal(get(obj, 'count'), 0, 'precond - should not invoke observer immediately');
 
-  Ember.run(function() { obj.destroy(); });
+  run(function() { obj.destroy(); });
 
   if (Ember.assert) {
     expectAssertion(function() {
@@ -130,10 +132,10 @@ testBoth('observer should not fire after being destroyed', function(get, set) {
 
 testBoth('chain observer on class', function(get, set) {
 
-  var MyClass = Ember.Object.extend({
+  var MyClass = EmberObject.extend({
     count: 0,
 
-    foo: Ember.observer('bar.baz', function() {
+    foo: observer('bar.baz', function() {
       set(this, 'count', get(this, 'count')+1);
     })
   });
@@ -161,10 +163,10 @@ testBoth('chain observer on class', function(get, set) {
 
 testBoth('chain observer on class', function(get, set) {
 
-  var MyClass = Ember.Object.extend({
+  var MyClass = EmberObject.extend({
     count: 0,
 
-    foo: Ember.observer('bar.baz', function() {
+    foo: observer('bar.baz', function() {
       set(this, 'count', get(this, 'count')+1);
     })
   });
@@ -177,7 +179,7 @@ testBoth('chain observer on class', function(get, set) {
     bar: { baz: 'biff2' },
     bar2: { baz: 'biff3' },
 
-    foo: Ember.observer('bar2.baz', function() {
+    foo: observer('bar2.baz', function() {
       set(this, 'count', get(this, 'count')+1);
     })
   });

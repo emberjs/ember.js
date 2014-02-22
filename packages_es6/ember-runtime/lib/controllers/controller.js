@@ -1,12 +1,10 @@
-require('ember-runtime/system/object');
-
 import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
 
 import EmberObject from "ember-runtime/system/object";
-import get from "ember-metal/property_get";
-import Mixin from "ember-metal/mixin";
-import computed from "ember-metal/computed";
-import ActionHandler from "ember-metal/mixins/action_handler";
+import {get} from "ember-metal/property_get";
+import {Mixin} from "ember-metal/mixin";
+import {computed} from "ember-metal/computed";
+import ActionHandler from "ember-runtime/mixins/action_handler";
 
 /**
 @module ember

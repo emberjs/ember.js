@@ -1,4 +1,4 @@
-import get from "ember-metal/property_get";
+import {get} from "ember-metal/property_get";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 
 var forEach = EnumerableUtils.forEach,
@@ -29,11 +29,11 @@ function TrackedArray(items) {
   }
 };
 
-Ember.TrackedArray.RETAIN = RETAIN;
-Ember.TrackedArray.INSERT = INSERT;
-Ember.TrackedArray.DELETE = DELETE;
+TrackedArray.RETAIN = RETAIN;
+TrackedArray.INSERT = INSERT;
+TrackedArray.DELETE = DELETE;
 
-Ember.TrackedArray.prototype = {
+TrackedArray.prototype = {
 
   /**
     Track that `newItems` were added to the tracked array at `index`.

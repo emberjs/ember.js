@@ -10,16 +10,16 @@
 
 import Ember from "ember-metal/core"; // Ember.EXTEND_PROTOTYPES
 
-import get from "ember-metal/property_get";
-import set from "ember-metal/property_set";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
 import EnumerableUtils from "ember-metal/enumerable_utils";
-import Mixin from "ember-metal/mixin";
-import MutableArray from "ember-runtime/mixins/mutable_array"
+import {Mixin} from "ember-metal/mixin";
+import EmberArray from "ember-runtime/mixins/array";
+import MutableArray from "ember-runtime/mixins/mutable_array";
 import Observable from "ember-runtime/mixins/observable";
 import Copyable from "ember-runtime/mixins/copyable";
-import FROZEN_ERROR from "ember-runtime/mixins/freezing";
-import EmberArray from "ember-runtime/mixins";
-import copy from "ember-runtime/core";
+import {FROZEN_ERROR} from "ember-runtime/mixins/freezable";
+import copy from "ember-runtime/copy";
 
 var replace = EnumerableUtils._replace,
     forEach = EnumerableUtils.forEach;
@@ -133,7 +133,6 @@ if (ignore.length>0) {
   NativeArray = NativeArray.without.apply(NativeArray, ignore);
 }
 
-
 /**
   Creates an `Ember.NativeArray` from an Array like object.
   Does not modify the original object. Ember.A is not needed if
@@ -161,8 +160,7 @@ if (ignore.length>0) {
   @for Ember
   @return {Ember.NativeArray}
 */
-var A;
-A = function A(arr) {
+var A = function(arr) {
   if (arr === undefined) { arr = []; }
   return EmberArray.detect(arr) ? arr : NativeArray.apply(arr);
 };
@@ -196,4 +194,6 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Array) {
   NativeArray.activate();
 }
 
-export {NativeArray, A}
+Ember.A = A; // ES6TODO: Setting A onto the object returned by ember-metal/core to avoid circles
+export {A, NativeArray}
+export default NativeArray;

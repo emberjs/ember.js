@@ -8,22 +8,20 @@
 // ..........................................................
 // HELPERS
 //
-import Ember from "ember-metal/core"; // ES6TODO: Ember.isNone; SBB
+import Ember from "ember-metal/core"; // ES6TODO: Ember.A
 
-import get from "ember-metal/property_get";
-import set from "ember-metal/property_set";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
 import {computed, cacheFor} from "ember-metal/computed";
-import {Enumerable} from "ember-metal/enumerable";
+import {isNone, none} from 'ember-metal/is_none';
+import Enumerable from "ember-runtime/mixins/enumerable";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import {Mixin, required} from "ember-metal/mixin";
-import {hasListeners} from "ember-metal/events";
-import {addListener, removeListener, propertyWillChange, propertyDidChange, sendEvent} from "ember-metal/property_events";
+import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
+import {addListener, removeListener, sendEvent, hasListeners } from "ember-metal/events";
 import {isWatching} from "ember-metal/watching";
 
-import {A} from "ember-runtime/system/native_array";
-
-
-var isNone = Ember.isNone, map = EnumerableUtils.map;
+var map = EnumerableUtils.map;
 
 // ..........................................................
 // ARRAY
@@ -172,7 +170,7 @@ var EmberArray = Mixin.create(Enumerable, {
     @return {Array} New array with specified slice
   */
   slice: function(beginIndex, endIndex) {
-    var ret = A();
+    var ret = Ember.A();
     var length = get(this, 'length') ;
     if (isNone(beginIndex)) beginIndex = 0 ;
     if (isNone(endIndex) || (endIndex > length)) endIndex = length ;
@@ -437,7 +435,13 @@ var EmberArray = Mixin.create(Enumerable, {
     @property @each
   */
   '@each': computed(function() {
-    if (!this.__each) this.__each = new Ember.EachProxy(this);
+    if (!this.__each) {
+      // ES6TODO: GRRRRR
+      var EachProxy = requireModule('ember-runtime/system/each_proxy')['EachProxy'];
+
+      this.__each = new EachProxy(this);
+    }
+
     return this.__each;
   })
 

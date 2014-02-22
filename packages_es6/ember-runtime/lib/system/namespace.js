@@ -7,12 +7,12 @@
 
 // Ember.lookup, Ember.BOOTED, Ember.deprecate, Ember.NAME_KEY, Ember.anyUnprocessedMixins
 import Ember from "ember-metal/core";
-import get from "ember-metal/property_get";
-import indexOf from "ember-metal/array";
+import {get} from "ember-metal/property_get";
+import {indexOf} from "ember-metal/array";
 import {GUID_KEY, guidFor} from "ember-metal/utils";
 import {Mixin} from "ember-metal/mixin";
 
-import EmberObject from "ember-runtime/object";
+import EmberObject from "ember-runtime/system/object";
 
 /**
   A Namespace is an object usually used to contain other objects or methods
@@ -52,10 +52,13 @@ var Namespace = EmberObject.extend({
   },
 
   destroy: function() {
-    var namespaces = Namespace.NAMESPACES;
+    var namespaces = Namespace.NAMESPACES,
+        toString = this.toString();
 
-    Ember.lookup[this.toString()] = undefined;
-    delete Ember.Namespace.NAMESPACES_BY_ID[this.toString()];
+    if (toString) {
+      Ember.lookup[toString] = undefined;
+      delete Namespace.NAMESPACES_BY_ID[toString];
+    }
     namespaces.splice(indexOf.call(namespaces, this), 1);
     this._super();
   }

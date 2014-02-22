@@ -1,5 +1,3 @@
-require('ember-metal/vendor/backburner');
-
 var onBegin = function(current) {
   run.currentRunLoop = current;
 };
@@ -54,7 +52,7 @@ var Backburner = requireModule('backburner').Backburner,
   @param {Object} [args*] Any additional arguments you wish to pass to the method.
   @return {Object} return value from invoking the passed function.
 */
-run = function() {
+var run = function() {
   if (Ember.onerror) {
     return onerror(arguments);
   } else {

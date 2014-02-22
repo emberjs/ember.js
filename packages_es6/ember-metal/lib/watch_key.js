@@ -1,6 +1,3 @@
-// require('ember-metal/utils');
-// require('ember-metal/platform');
-
 import Ember from "ember-metal/core";
 import {meta, typeOf} from "ember-metal/utils";
 import {platform} from "ember-metal/platform";

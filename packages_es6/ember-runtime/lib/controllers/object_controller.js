@@ -1,7 +1,7 @@
 // require('ember-runtime/system/object_proxy');
 // require('ember-runtime/controllers/controller');
 
-import ControllerMixin from "ember-runtime/controllers/controller";
+import {ControllerMixin} from "ember-runtime/controllers/controller";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 
 /**

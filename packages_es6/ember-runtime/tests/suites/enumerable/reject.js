@@ -1,6 +1,7 @@
-require('ember-runtime/~tests/suites/enumerable');
+import EmberObject from 'ember-runtime/system/object';
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = Ember.EnumerableTests;
+var suite = SuiteModuleBuilder.create();
 
 // ..........................................................
 // reject()
@@ -39,7 +40,7 @@ suite.test('should reject based on object', function() {
 
   ary = [
     { foo: 'foo', bar: 'BAZ' },
-    Ember.Object.create({ foo: 'foo', bar: 'bar' })
+    EmberObject.create({ foo: 'foo', bar: 'bar' })
   ];
 
   obj = this.newObject(ary);
@@ -53,7 +54,7 @@ suite.test('should include in result if property is false', function() {
 
   ary = [
     { foo: false, bar: true },
-    Ember.Object.create({ foo: false, bar: false })
+    EmberObject.create({ foo: false, bar: false })
   ];
 
   obj = this.newObject(ary);
@@ -67,9 +68,9 @@ suite.test('should reject on second argument if provided', function() {
 
   ary = [
     { name: 'obj1', foo: 3},
-    Ember.Object.create({ name: 'obj2', foo: 2}),
+    EmberObject.create({ name: 'obj2', foo: 2}),
     { name: 'obj3', foo: 2},
-    Ember.Object.create({ name: 'obj4', foo: 3})
+    EmberObject.create({ name: 'obj4', foo: 3})
   ];
 
   obj = this.newObject(ary);
@@ -82,9 +83,9 @@ suite.test('should correctly reject null second argument', function() {
 
   ary = [
     { name: 'obj1', foo: 3},
-    Ember.Object.create({ name: 'obj2', foo: null}),
+    EmberObject.create({ name: 'obj2', foo: null}),
     { name: 'obj3', foo: null},
-    Ember.Object.create({ name: 'obj4', foo: 3})
+    EmberObject.create({ name: 'obj4', foo: 3})
   ];
 
   obj = this.newObject(ary);
@@ -97,7 +98,7 @@ suite.test('should correctly reject undefined second argument', function() {
 
   ary = [
     { name: 'obj1', foo: 3},
-    Ember.Object.create({ name: 'obj2', foo: 2})
+    EmberObject.create({ name: 'obj2', foo: 2})
   ];
 
   obj = this.newObject(ary);
@@ -110,11 +111,11 @@ suite.test('should correctly reject explicit undefined second argument', functio
 
   ary = [
     { name: 'obj1', foo: 3},
-    Ember.Object.create({ name: 'obj2', foo: 3}),
+    EmberObject.create({ name: 'obj2', foo: 3}),
     { name: 'obj3', foo: undefined},
-    Ember.Object.create({ name: 'obj4', foo: undefined}),
+    EmberObject.create({ name: 'obj4', foo: undefined}),
     { name: 'obj5'},
-    Ember.Object.create({ name: 'obj6'})
+    EmberObject.create({ name: 'obj6'})
   ];
 
   obj = this.newObject(ary);
@@ -127,15 +128,15 @@ suite.test('should match undefined, null, or false properties without second arg
 
   ary = [
     { name: 'obj1', foo: 3},
-    Ember.Object.create({ name: 'obj2', foo: 3}),
+    EmberObject.create({ name: 'obj2', foo: 3}),
     { name: 'obj3', foo: undefined},
-    Ember.Object.create({ name: 'obj4', foo: undefined}),
+    EmberObject.create({ name: 'obj4', foo: undefined}),
     { name: 'obj5'},
-    Ember.Object.create({ name: 'obj6'}),
+    EmberObject.create({ name: 'obj6'}),
     { name: 'obj7', foo: null },
-    Ember.Object.create({ name: 'obj8', foo: null }),
+    EmberObject.create({ name: 'obj8', foo: null }),
     { name: 'obj9', foo: false },
-    Ember.Object.create({ name: 'obj10', foo: false })
+    EmberObject.create({ name: 'obj10', foo: false })
   ];
 
   obj = this.newObject(ary);
@@ -148,3 +149,5 @@ suite.test('should be aliased to rejectProperty', function() {
 
   equal(ary.rejectProperty, ary.rejectBy);
 });
+
+export default suite;

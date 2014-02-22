@@ -1,18 +1,12 @@
-// require('ember-metal/utils'); // META_KEY
-// require('ember-metal/property_get'); // _getPath
-// require('ember-metal/property_events'); // propertyWillChange, propertyDidChange
-// require('ember-metal/properties');
-
 import Ember from "ember-metal/core";
 import {META_KEY} from "ember-metal/utils";
-import {_getPath} from "ember-metal/property_get";
+import {_getPath as getPath} from "ember-metal/property_get";
 import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
 import {defineProperty} from "ember-metal/properties";
 import EmberError from "ember-metal/error";
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
-    IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/,
-    getPath = _getPath;
+    IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
 
 /**
   Sets the value of a property on an object, respecting computed properties

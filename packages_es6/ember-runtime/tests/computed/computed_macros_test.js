@@ -1,13 +1,17 @@
+import {computed} from "ember-metal/computed";
+import EmberObject from "ember-runtime/system/object";
+import {testBoth} from "ember-runtime/tests/props_helper";
+
 module('CP macros');
 
 if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
   testBoth('Ember.computed.empty', function (get, set) {
-    var obj = Ember.Object.extend({
+    var obj = EmberObject.extend({
       bestLannister: null,
       lannisters: null,
 
-      bestLannisterUnspecified: Ember.computed.empty('bestLannister'),
-      noLannistersKnown: Ember.computed.empty('lannisters')
+      bestLannisterUnspecified: computed.empty('bestLannister'),
+      noLannistersKnown: computed.empty('lannisters')
     }).create({
       lannisters: Ember.A([])
     });
@@ -24,10 +28,10 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
 
   if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
     testBoth('Ember.computed.empty with composable computed properties', function (get, set) {
-      var obj = Ember.Object.extend({
+      var obj = EmberObject.extend({
         lannisters: null,
 
-        noPeopleKnown: Ember.computed.empty(Ember.computed.alias('lannisters'))
+        noPeopleKnown: computed.empty(computed.alias('lannisters'))
       }).create({
         lannisters: Ember.A([])
       });

@@ -1,57 +1,63 @@
-module('Ember.isWatching');
+import {get} from 'ember-metal/property_get';
+import {defineProperty} from "ember-metal/properties";
+import {Mixin, observer} from 'ember-metal/mixin';
+import {addObserver, removeObserver} from "ember-metal/observer";
+import {isWatching} from 'ember-metal/watching';
+
+module('isWatching');
 
 var testObserver = function(setup, teardown, key) {
   var obj = {}, fn = function() {};
   key = key || 'foo';
 
-  equal(Ember.isWatching(obj, key), false, "precond - isWatching is false by default");
+  equal(isWatching(obj, key), false, "precond - isWatching is false by default");
   setup(obj, key, fn);
-  equal(Ember.isWatching(obj, key), true, "isWatching is true when observers are added");
+  equal(isWatching(obj, key), true, "isWatching is true when observers are added");
   teardown(obj, key, fn);
-  equal(Ember.isWatching(obj, key), false, "isWatching is false after observers are removed");
+  equal(isWatching(obj, key), false, "isWatching is false after observers are removed");
 };
 
 test("isWatching is true for regular local observers", function() {
   testObserver(function(obj, key, fn) {
-    Ember.Mixin.create({
-      didChange: Ember.observer(key, fn)
+    Mixin.create({
+      didChange: observer(key, fn)
     }).apply(obj);
   }, function(obj, key, fn) {
-    Ember.removeObserver(obj, key, obj, fn);
+    removeObserver(obj, key, obj, fn);
   });
 });
 
 test("isWatching is true for nonlocal observers", function() {
   testObserver(function(obj, key, fn) {
-    Ember.addObserver(obj, key, obj, fn);
+    addObserver(obj, key, obj, fn);
   }, function(obj, key, fn) {
-    Ember.removeObserver(obj, key, obj, fn);
+    removeObserver(obj, key, obj, fn);
   });
 });
 
 test("isWatching is true for chained observers", function() {
   testObserver(function(obj, key, fn) {
-    Ember.addObserver(obj, key + '.bar', obj, fn);
+    addObserver(obj, key + '.bar', obj, fn);
   }, function(obj, key, fn) {
-    Ember.removeObserver(obj, key + '.bar', obj, fn);
+    removeObserver(obj, key + '.bar', obj, fn);
   });
 });
 
 test("isWatching is true for computed properties", function() {
   testObserver(function(obj, key, fn) {
-    Ember.defineProperty(obj, 'computed', Ember.computed(fn).property(key));
-    Ember.get(obj, 'computed');
+    defineProperty(obj, 'computed', Ember.computed(fn).property(key));
+    get(obj, 'computed');
   }, function(obj, key, fn) {
-    Ember.defineProperty(obj, 'computed', null);
+    defineProperty(obj, 'computed', null);
   });
 });
 
 test("isWatching is true for chained computed properties", function() {
   testObserver(function(obj, key, fn) {
-    Ember.defineProperty(obj, 'computed', Ember.computed(fn).property(key + '.bar'));
-    Ember.get(obj, 'computed');
+    defineProperty(obj, 'computed', Ember.computed(fn).property(key + '.bar'));
+    get(obj, 'computed');
   }, function(obj, key, fn) {
-    Ember.defineProperty(obj, 'computed', null);
+    defineProperty(obj, 'computed', null);
   });
 });
 
@@ -59,9 +65,9 @@ test("isWatching is true for chained computed properties", function() {
 // But you should be able to watch a length property of an object
 test("isWatching is true for 'length' property on object", function() {
   testObserver(function(obj, key, fn) {
-    Ember.defineProperty(obj, 'length', null, '26.2 miles');
-    Ember.addObserver(obj, 'length', obj, fn);
+    defineProperty(obj, 'length', null, '26.2 miles');
+    addObserver(obj, 'length', obj, fn);
   }, function(obj, key, fn) {
-    Ember.removeObserver(obj, 'length', obj, fn);
+    removeObserver(obj, 'length', obj, fn);
   }, 'length');
 });

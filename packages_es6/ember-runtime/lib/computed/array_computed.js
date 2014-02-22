@@ -1,8 +1,5 @@
-require('ember-metal/computed');
-require('ember-runtime/mixins/array');
-require('ember-runtime/computed/reduce_computed');
-
-import ReduceComputedProperty from "ember-runtime/computed/reduce_computed"
+import Ember from "ember-metal/core";
+import {reduceComputed, ReduceComputedProperty } from "ember-runtime/computed/reduce_computed";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import {create} from "ember-metal/platform";
 import {addObserver} from "ember-metal/observer";

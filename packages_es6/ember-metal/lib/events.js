@@ -1,7 +1,3 @@
-// require('ember-metal/core');
-// require('ember-metal/platform');
-// require('ember-metal/utils');
-
 /**
 @module ember-metal
 */
@@ -10,8 +6,10 @@ import {meta, META_KEY, tryFinally} from "ember-metal/utils";
 import {create} from "ember-metal/platform";
 
 var a_slice = [].slice,
+    metaFor = meta,
     /* listener flags */
     ONCE = 1, SUSPENDED = 2;
+
 
 /*
   The event system uses a series of nested hashes to store listeners on an
@@ -52,7 +50,7 @@ function actionsFor(obj, eventName) {
 
   if (!meta.hasOwnProperty('listeners')) {
     // setup inherited copy of the listeners object
-    meta.listeners = o_create(meta.listeners);
+    meta.listeners = create(meta.listeners);
   }
 
   actions = meta.listeners[eventName];
@@ -67,7 +65,7 @@ function actionsFor(obj, eventName) {
   return actions;
 }
 
-function actionsUnion(obj, eventName, otherActions) {
+function listenersUnion(obj, eventName, otherActions) {
   var meta = obj[META_KEY],
       actions = meta && meta.listeners && meta.listeners[eventName];
 
@@ -84,7 +82,7 @@ function actionsUnion(obj, eventName, otherActions) {
   }
 }
 
-function actionsDiff(obj, eventName, otherActions) {
+function listenersDiff(obj, eventName, otherActions) {
   var meta = obj[META_KEY],
       actions = meta && meta.listeners && meta.listeners[eventName],
       diffActions = [];
@@ -404,4 +402,4 @@ function on(){
   return func;
 };
 
-export {on, addListener, removeListener, suspendListener, suspendListeners, sendEvent, hasListeners, watchedEvents, listenersFor, actionsDiff, actionsUnion};
+export {on, addListener, removeListener, suspendListener, suspendListeners, sendEvent, hasListeners, watchedEvents, listenersFor, listenersDiff, listenersUnion};

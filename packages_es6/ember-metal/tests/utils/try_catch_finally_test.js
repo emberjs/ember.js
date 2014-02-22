@@ -1,3 +1,5 @@
+import {tryCatchFinally} from 'ember-metal/utils';
+
 var tryCount, catchCount, finalizeCount, tryable, catchable, finalizer, error,
 tryableResult, catchableResult, finalizerResult;
 
@@ -25,7 +27,7 @@ module("Ember.tryFinally", {
 function callTryCatchFinallyWithError() {
   var errorWasThrown;
   try {
-    Ember.tryCatchFinally(tryable, catchable, finalizer);
+    tryCatchFinally(tryable, catchable, finalizer);
   } catch(e) {
     errorWasThrown = true;
     equal(e, error, 'correct error was thrown');
@@ -35,7 +37,7 @@ function callTryCatchFinallyWithError() {
 }
 
 test("no failure", function() {
-  equal(Ember.tryCatchFinally(tryable, catchable, finalizer), tryableResult, 'correct return value');
+  equal(tryCatchFinally(tryable, catchable, finalizer), tryableResult, 'correct return value');
 
   equal(tryCount,      1, 'tryable was called once');
   equal(catchCount,    0, 'catchable was never called');
@@ -45,7 +47,7 @@ test("no failure", function() {
 test("no failure, return from finally", function() {
   finalizerResult = 'finalizer return value';
 
-  equal(Ember.tryCatchFinally(tryable, catchable, finalizer), finalizerResult, 'correct return value');
+  equal(tryCatchFinally(tryable, catchable, finalizer), finalizerResult, 'correct return value');
 
   equal(tryCount,      1, 'tryable was called once');
   equal(catchCount,    0, 'catchable was never called');
@@ -55,7 +57,7 @@ test("no failure, return from finally", function() {
 test("try failed", function() {
   tryable = function() { tryCount++; throw error; };
 
-  var result = Ember.tryCatchFinally(tryable, catchable, finalizer);
+  var result = tryCatchFinally(tryable, catchable, finalizer);
 
   equal(result, catchableResult, 'correct return value');
 
@@ -67,7 +69,7 @@ test("try failed", function() {
 test("catch failed", function() {
   catchable = function() { catchCount++; throw error; };
 
-  Ember.tryCatchFinally(tryable, catchable, finalizer);
+  tryCatchFinally(tryable, catchable, finalizer);
 
   equal(tryCount,      1, 'tryable was called once');
   equal(catchCount,    0, 'catchable was called once');

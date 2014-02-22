@@ -2,17 +2,19 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from "ember-metal/core"; // Ember.isNone, Ember.assert
+import Ember from "ember-metal/core"; // Ember.assert
 
 import {get, getWithDefault} from "ember-metal/property_get";
-import set from "ember-metal/property_set";
+import {set} from "ember-metal/property_set";
 import getProperties from "ember-metal/get_properties";
 import setProperties from "ember-metal/set_properties";
-import Mixin from "ember-metal/mixin";
-import {beginPropertyChanges, propertyWillChange, propertyDidChange, endPropertyChanges, hasListeners} from "ember-metal/property_events";
+import {Mixin} from "ember-metal/mixin";
+import {hasListeners} from "ember-metal/events";
+import {beginPropertyChanges, propertyWillChange, propertyDidChange, endPropertyChanges} from "ember-metal/property_events";
 import {addObserver, addBeforeObserver, removeObserver, observersFor} from "ember-metal/observer";
 import {cacheFor} from "ember-metal/computed";
 import {apply} from "ember-metal/utils";
+import {isNone} from "ember-metal/is_none";
 
 
 var slice = Array.prototype.slice;
@@ -431,7 +433,7 @@ var Observable = Mixin.create({
     @return {Number} The new property value
   */
   incrementProperty: function(keyName, increment) {
-    if (Ember.isNone(increment)) { increment = 1; }
+    if (isNone(increment)) { increment = 1; }
     Ember.assert("Must pass a numeric value to incrementProperty", (!isNaN(parseFloat(increment)) && isFinite(increment)));
     set(this, keyName, (get(this, keyName) || 0) + increment);
     return get(this, keyName);
@@ -451,7 +453,7 @@ var Observable = Mixin.create({
     @return {Number} The new property value
   */
   decrementProperty: function(keyName, decrement) {
-    if (Ember.isNone(decrement)) { decrement = 1; }
+    if (isNone(decrement)) { decrement = 1; }
     Ember.assert("Must pass a numeric value to decrementProperty", (!isNaN(parseFloat(decrement)) && isFinite(decrement)));
     set(this, keyName, (get(this, keyName) || 0) - decrement);
     return get(this, keyName);

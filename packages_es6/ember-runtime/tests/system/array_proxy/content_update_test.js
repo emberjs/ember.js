@@ -1,3 +1,7 @@
+import Ember from "ember-metal/core";
+import {computed} from "ember-metal/computed";
+import ArrayProxy from "ember-runtime/system/array_proxy";
+
 // ==========================================================================
 // Project:  Ember Runtime
 // Copyright: ©2011 Strobe Inc. and contributors.
@@ -10,10 +14,10 @@ test("The `contentArrayDidChange` method is invoked after `content` is updated."
 
   var proxy, observerCalled = false;
 
-  proxy = Ember.ArrayProxy.createWithMixins({
+  proxy = ArrayProxy.createWithMixins({
     content: Ember.A(),
 
-    arrangedContent: Ember.computed('content', function(key, value) {
+    arrangedContent: computed('content', function(key, value) {
       // setup arrangedContent as a different object than content,
       // which is the default
       return Ember.A(this.get('content').slice());

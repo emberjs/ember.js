@@ -1,25 +1,16 @@
-// require('ember-metal/core');
-// require('ember-metal/platform');
-// require('ember-metal/utils');
-// require('ember-metal/expand_properties');
-// require('ember-metal/property_get');
-// require('ember-metal/property_set');
-// require('ember-metal/properties');
-// require('ember-metal/watching');
-// require('ember-metal/property_events');
-
 import Ember from "ember-metal/core";
-import {get} from "ember-metal/get_property";
-import {set} from "ember-metal/set_property";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
 import {meta, META_KEY, guidFor, typeOf} from "ember-metal/utils";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import {create} from "ember-metal/platform";
 import {watch, unwatch} from "ember-metal/watching";
 import expandProperties from "ember-metal/expand_properties";
-import {Descriptor} from "ember-metal/computed";
 import EmberError from "ember-metal/error";
-import {defineProperty} from "ember-metal/properties";
+import {Descriptor, defineProperty} from "ember-metal/properties";
 import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
+import isEmpty from 'ember-metal/is_empty';
+
 /**
 @module ember-metal
 */
@@ -202,8 +193,6 @@ function ComputedProperty(func, opts) {
   this._readOnly = opts && (opts.readOnly !== undefined || !!opts.readOnly) || false;
 }
 
-ComputedProperty = ComputedProperty;
-
 ComputedProperty.prototype = new Descriptor();
 
 var ComputedPropertyPrototype = ComputedProperty.prototype;
@@ -223,7 +212,7 @@ ComputedPropertyPrototype._meta = undefined;
 
   @method cacheable
   @param {Boolean} aFlag optional set to `false` to disable caching
-  @return {computedProperty} this
+  @return {Ember.ComputedProperty} this
   @chainable
 */
 ComputedPropertyPrototype.cacheable = function(aFlag) {
@@ -244,7 +233,7 @@ ComputedPropertyPrototype.cacheable = function(aFlag) {
   ```
 
   @method volatile
-  @return {computedProperty} this
+  @return {Ember.ComputedProperty} this
   @chainable
 */
 ComputedPropertyPrototype.volatile = function() {
@@ -268,7 +257,7 @@ ComputedPropertyPrototype.volatile = function() {
   ```
 
   @method readOnly
-  @return {computedProperty} this
+  @return {Ember.ComputedProperty} this
   @chainable
 */
 ComputedPropertyPrototype.readOnly = function(readOnly) {
@@ -299,7 +288,7 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
 
   @method property
   @param {String} path* zero or more property paths
-  @return {computedProperty} this
+  @return {Ember.ComputedProperty} this
   @chainable
 */
 ComputedPropertyPrototype.property = function() {
@@ -539,7 +528,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   @method computed
   @for Ember
   @param {Function} func The computed property function.
-  @return {computedProperty} property descriptor instance
+  @return {Ember.ComputedProperty} property descriptor instance
 */
 function computed(func) {
   var args;
@@ -625,11 +614,11 @@ registerComputedWithProperties = function(name, macro) {
   Ember.computed[name] = function() {
     var properties = a_slice.call(arguments);
 
-    var computed = Ember.computed(function() {
+    var computedFunc = computed(function() {
       return macro.apply(this, [getProperties(this, properties)]);
     });
 
-    return computed.property.apply(computed, properties);
+    return computedFunc.property.apply(computed, args);
   };
 };
 
@@ -685,11 +674,11 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
     @method computed.empty
     @for Ember
     @param {String} dependentKey
-    @return {computedProperty} computed property which negate
+    @return {Ember.ComputedProperty} computed property which negate
     the original value for property
   */
   registerComputed('empty', function(dependentKey) {
-    return Ember.isEmpty(get(this, dependentKey));
+    return isEmpty(get(this, dependentKey));
   });
 }
 
@@ -716,11 +705,11 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
   @method computed.notEmpty
   @for Ember
   @param {String} dependentKey
-  @return {computedProperty} computed property which returns true if
+  @return {Ember.ComputedProperty} computed property which returns true if
   original value for property is not empty.
 */
 registerComputed('notEmpty', function(dependentKey) {
-  return !Ember.isEmpty(get(this, dependentKey));
+  return !isEmpty(get(this, dependentKey));
 });
 
 /**
@@ -745,7 +734,7 @@ registerComputed('notEmpty', function(dependentKey) {
   @method computed.none
   @for Ember
   @param {String} dependentKey
-  @return {computedProperty} computed property which
+  @return {Ember.ComputedProperty} computed property which
   returns true if original value for property is null or undefined.
 */
 registerComputed('none', function(dependentKey) {
@@ -771,7 +760,7 @@ registerComputed('none', function(dependentKey) {
   @method computed.not
   @for Ember
   @param {String} dependentKey
-  @return {computedProperty} computed property which returns
+  @return {Ember.ComputedProperty} computed property which returns
   inverse of the original value for property
 */
 registerComputed('not', function(dependentKey) {
@@ -799,7 +788,7 @@ registerComputed('not', function(dependentKey) {
   @method computed.bool
   @for Ember
   @param {String} dependentKey
-  @return {computedProperty} computed property which converts
+  @return {Ember.ComputedProperty} computed property which converts
   to boolean the original value for property
 */
 registerComputed('bool', function(dependentKey) {
@@ -829,7 +818,7 @@ registerComputed('bool', function(dependentKey) {
   @for Ember
   @param {String} dependentKey
   @param {RegExp} regexp
-  @return {computedProperty} computed property which match
+  @return {Ember.ComputedProperty} computed property which match
   the original value for property against a given RegExp
 */
 registerComputed('match', function(dependentKey, regexp) {
@@ -859,7 +848,7 @@ registerComputed('match', function(dependentKey, regexp) {
   @for Ember
   @param {String} dependentKey
   @param {String|Number|Object} value
-  @return {computedProperty} computed property which returns true if
+  @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is equal to the given value.
 */
 registerComputed('equal', function(dependentKey, value) {
@@ -888,7 +877,7 @@ registerComputed('equal', function(dependentKey, value) {
   @for Ember
   @param {String} dependentKey
   @param {Number} value
-  @return {computedProperty} computed property which returns true if
+  @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is greater then given value.
 */
 registerComputed('gt', function(dependentKey, value) {
@@ -917,7 +906,7 @@ registerComputed('gt', function(dependentKey, value) {
   @for Ember
   @param {String} dependentKey
   @param {Number} value
-  @return {computedProperty} computed property which returns true if
+  @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is greater or equal then given value.
 */
 registerComputed('gte', function(dependentKey, value) {
@@ -946,7 +935,7 @@ registerComputed('gte', function(dependentKey, value) {
   @for Ember
   @param {String} dependentKey
   @param {Number} value
-  @return {computedProperty} computed property which returns true if
+  @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is less then given value.
 */
 registerComputed('lt', function(dependentKey, value) {
@@ -975,7 +964,7 @@ registerComputed('lt', function(dependentKey, value) {
   @for Ember
   @param {String} dependentKey
   @param {Number} value
-  @return {computedProperty} computed property which returns true if
+  @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is less or equal then given value.
 */
 registerComputed('lte', function(dependentKey, value) {
@@ -1003,7 +992,7 @@ registerComputed('lte', function(dependentKey, value) {
   @method computed.and
   @for Ember
   @param {String} dependentKey*
-  @return {computedProperty} computed property which performs
+  @return {Ember.ComputedProperty} computed property which performs
   a logical `and` on the values of all the original values for properties.
 */
 registerComputedWithProperties('and', function(properties) {
@@ -1034,7 +1023,7 @@ registerComputedWithProperties('and', function(properties) {
   @method computed.or
   @for Ember
   @param {String} dependentKey*
-  @return {computedProperty} computed property which performs
+  @return {Ember.ComputedProperty} computed property which performs
   a logical `or` on the values of all the original values for properties.
 */
 registerComputedWithProperties('or', function(properties) {
@@ -1065,7 +1054,7 @@ registerComputedWithProperties('or', function(properties) {
   @method computed.any
   @for Ember
   @param {String} dependentKey*
-  @return {computedProperty} computed property which returns
+  @return {Ember.ComputedProperty} computed property which returns
   the first truthy value of given list of properties.
 */
 registerComputedWithProperties('any', function(properties) {
@@ -1097,7 +1086,7 @@ registerComputedWithProperties('any', function(properties) {
   @method computed.collect
   @for Ember
   @param {String} dependentKey*
-  @return {computedProperty} computed property which maps
+  @return {Ember.ComputedProperty} computed property which maps
   values of all passed properties in to an array.
 */
 registerComputedWithProperties('collect', function(properties) {
@@ -1135,7 +1124,7 @@ registerComputedWithProperties('collect', function(properties) {
   @method computed.alias
   @for Ember
   @param {String} dependentKey
-  @return {computedProperty} computed property which creates an
+  @return {Ember.ComputedProperty} computed property which creates an
   alias to the original value for property.
 */
 computed.alias = function(dependentKey) {
@@ -1183,7 +1172,7 @@ computed.alias = function(dependentKey) {
   @method computed.oneWay
   @for Ember
   @param {String} dependentKey
-  @return {computedProperty} computed property which creates a
+  @return {Ember.ComputedProperty} computed property which creates a
   one way computed property to the original value for property.
 */
 computed.oneWay = function(dependentKey) {
@@ -1200,7 +1189,7 @@ if (Ember.FEATURES.isEnabled('query-params-new')) {
     @method computed.reads
     @for Ember
     @param {String} dependentKey
-    @return {computedProperty} computed property which creates a
+    @return {Ember.ComputedProperty} computed property which creates a
       one way computed property to the original value for property.
    */
   computed.reads = computed.oneWay;
@@ -1242,7 +1231,7 @@ if (Ember.FEATURES.isEnabled('computed-read-only')) {
   @method computed.readOnly
   @for Ember
   @param {String} dependentKey
-  @return {computedProperty} computed property which creates a
+  @return {Ember.ComputedProperty} computed property which creates a
   one way computed property to the original value for property.
 */
 computed.readOnly = function(dependentKey) {
@@ -1272,7 +1261,7 @@ computed.readOnly = function(dependentKey) {
   @method computed.defaultTo
   @for Ember
   @param {String} defaultPath
-  @return {computedProperty} computed property which acts like
+  @return {Ember.ComputedProperty} computed property which acts like
   a standard getter and setter, but defaults to the value from `defaultPath`.
 */
 // ES6TODO: computed should have its own export path so you can do import {defaultTo} from computed

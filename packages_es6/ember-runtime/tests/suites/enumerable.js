@@ -1,4 +1,11 @@
-var ObserverClass = Ember.Object.extend({
+import {Suite, SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import EmberObject from "ember-runtime/system/object";
+import {required} from "ember-metal/mixin";
+import {guidFor, generateGuid} from "ember-metal/utils";
+import {computed} from "ember-metal/computed";
+import {get} from "ember-metal/property_get";
+
+var ObserverClass = EmberObject.extend({
 
   _keysBefore: null,
   _keys: null,
@@ -138,23 +145,7 @@ var ObserverClass = Ember.Object.extend({
 });
 
 
-/**
-  Defines a test suite that can be used to test any object for compliance
-  with any enumerable.  To use, extend this object and define the required
-  methods to generate new object instances for testing, etc.
-
-  You can also add your own tests by defining new methods beginning with the
-  word 'test'
-*/
-var EnumerableTests = Ember.Object.extend({
-
-  /**
-    Define a name for these tests - all modules are prefixed w/ it.
-
-    @type String
-  */
-  name: Ember.required(String),
-
+var EnumerableTests = Suite.extend({
   /**
     Implement to return a new enumerable object for testing.  Should accept
     either no parameters, a single number (indicating the desired length of
@@ -165,7 +156,7 @@ var EnumerableTests = Ember.Object.extend({
 
     @returns {Ember.Enumerable} a new enumerable
   */
-  newObject: Ember.required(Function),
+  newObject: required(Function),
 
   /**
     Implement to return a set of new fixture objects that can be applied to
@@ -178,7 +169,7 @@ var EnumerableTests = Ember.Object.extend({
   */
   newFixture: function(cnt) {
     var ret = [];
-    while(--cnt>=0) ret.push(Ember.generateGuid());
+    while(--cnt>=0) ret.push(generateGuid());
     return ret;
   },
 
@@ -192,7 +183,7 @@ var EnumerableTests = Ember.Object.extend({
 
     @returns {Array} array of items
   */
-  toArray: Ember.required(Function),
+  toArray: required(Function),
 
   /**
     Implement this method if your object can mutate internally (even if it
@@ -217,7 +208,7 @@ var EnumerableTests = Ember.Object.extend({
 
     @type Boolean
   */
-  canTestMutation: Ember.computed(function() {
+  canTestMutation: computed(function() {
     return this.mutate !== EnumerableTests.prototype.mutate;
   }),
 
@@ -234,88 +225,54 @@ var EnumerableTests = Ember.Object.extend({
     validate the results.
   */
   newObserver: function(obj) {
-    var ret = Ember.get(this, 'observerClass').create();
+    var ret = get(this, 'observerClass').create();
     if (arguments.length>0) ret.observeBefore.apply(ret, arguments);
     if (arguments.length>0) ret.observe.apply(ret, arguments);
     return ret;
   },
 
   observerClass: ObserverClass
-
 });
 
-EnumerableTests.reopenClass({
+import anyTests         from 'ember-runtime/tests/suites/enumerable/any';
+import isAnyTests       from 'ember-runtime/tests/suites/enumerable/is_any';
+import compactTests     from 'ember-runtime/tests/suites/enumerable/compact';
+import containsTests    from 'ember-runtime/tests/suites/enumerable/contains';
+import everyTests       from 'ember-runtime/tests/suites/enumerable/every';
+import filterTests      from 'ember-runtime/tests/suites/enumerable/filter';
+import findTests        from 'ember-runtime/tests/suites/enumerable/find';
+import firstObjectTests from 'ember-runtime/tests/suites/enumerable/firstObject';
+import forEachTests     from 'ember-runtime/tests/suites/enumerable/forEach';
+import mapByTests       from 'ember-runtime/tests/suites/enumerable/mapBy';
+import invokeTests      from 'ember-runtime/tests/suites/enumerable/invoke';
+import lastObjectTests  from 'ember-runtime/tests/suites/enumerable/lastObject';
+import mapTests         from 'ember-runtime/tests/suites/enumerable/map';
+import reduceTests      from 'ember-runtime/tests/suites/enumerable/reduce';
+import rejectTests      from 'ember-runtime/tests/suites/enumerable/reject';
+import sortByTests      from 'ember-runtime/tests/suites/enumerable/sortBy';
+import toArrayTests     from 'ember-runtime/tests/suites/enumerable/toArray';
+import uniqTests        from 'ember-runtime/tests/suites/enumerable/uniq';
+import withoutTests     from 'ember-runtime/tests/suites/enumerable/without';
 
-  plan: null,
+EnumerableTests.importModuleTests(anyTests);
+EnumerableTests.importModuleTests(isAnyTests);
+EnumerableTests.importModuleTests(compactTests);
+EnumerableTests.importModuleTests(containsTests);
+EnumerableTests.importModuleTests(everyTests);
+EnumerableTests.importModuleTests(filterTests);
+EnumerableTests.importModuleTests(findTests);
+EnumerableTests.importModuleTests(firstObjectTests);
+EnumerableTests.importModuleTests(forEachTests);
+EnumerableTests.importModuleTests(mapByTests);
+EnumerableTests.importModuleTests(invokeTests);
+EnumerableTests.importModuleTests(lastObjectTests);
+EnumerableTests.importModuleTests(mapTests);
+EnumerableTests.importModuleTests(reduceTests);
+EnumerableTests.importModuleTests(rejectTests);
+EnumerableTests.importModuleTests(sortByTests);
+EnumerableTests.importModuleTests(toArrayTests);
+EnumerableTests.importModuleTests(uniqTests);
+EnumerableTests.importModuleTests(withoutTests);
 
-  run: function() {
-    var C = this;
-    return new C().run();
-  },
-
-  module: function(desc, opts) {
-    if (!opts) opts = {};
-    var setup = opts.setup, teardown = opts.teardown;
-    this.reopen({
-      run: function() {
-        this._super();
-        var title = Ember.get(this,'name')+': '+desc, ctx = this;
-        module(title, {
-          setup: function() {
-            if (setup) setup.call(ctx);
-          },
-
-          teardown: function() {
-            if (teardown) teardown.call(ctx);
-          }
-        });
-      }
-    });
-  },
-
-  test: function(name, func) {
-    this.reopen({
-      run: function() {
-        this._super();
-        var ctx = this;
-        if (!func) test(name); // output warning
-        else test(name, function() { func.call(ctx); });
-      }
-    });
-  },
-
-  // convert to guids to minimize logging.
-  same: function(actual, exp, message) {
-    actual = (actual && actual.map) ? actual.map(function(x) { return Ember.guidFor(x); }) : actual;
-    exp = (exp && exp.map) ? exp.map(function(x) { return Ember.guidFor(x); }) : exp;
-    return deepEqual(actual, exp, message);
-  },
-
-  // easy way to disable tests
-  notest: function() {}
-
-});
-
-Ember.EnumerableTests = EnumerableTests;
-Ember.EnumerableTests.ObserverClass = ObserverClass;
-
-require('ember-runtime/~tests/suites/enumerable/any');
-require('ember-runtime/~tests/suites/enumerable/compact');
-require('ember-runtime/~tests/suites/enumerable/contains');
-require('ember-runtime/~tests/suites/enumerable/every');
-require('ember-runtime/~tests/suites/enumerable/filter');
-require('ember-runtime/~tests/suites/enumerable/find');
-require('ember-runtime/~tests/suites/enumerable/firstObject');
-require('ember-runtime/~tests/suites/enumerable/forEach');
-require('ember-runtime/~tests/suites/enumerable/mapBy');
-require('ember-runtime/~tests/suites/enumerable/invoke');
-require('ember-runtime/~tests/suites/enumerable/lastObject');
-require('ember-runtime/~tests/suites/enumerable/map');
-require('ember-runtime/~tests/suites/enumerable/reduce');
-require('ember-runtime/~tests/suites/enumerable/reject');
-require('ember-runtime/~tests/suites/enumerable/sortBy');
-require('ember-runtime/~tests/suites/enumerable/toArray');
-require('ember-runtime/~tests/suites/enumerable/uniq');
-require('ember-runtime/~tests/suites/enumerable/without');
-
-
+export default EnumerableTests;
+export {EnumerableTests, ObserverClass};

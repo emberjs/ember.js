@@ -1,16 +1,17 @@
-var get = Ember.get;
+import {get} from "ember-metal/property_get";
+import EmberObject from "ember-runtime/system/object";
 
-module('Ember.Object.extend');
+module('EmberObject.extend');
 
 test('Basic extend', function() {
-  var SomeClass = Ember.Object.extend({ foo: 'BAR' });
+  var SomeClass = EmberObject.extend({ foo: 'BAR' });
   ok(SomeClass.isClass, "A class has isClass of true");
   var obj = new SomeClass();
   equal(obj.foo, 'BAR');
 });
 
 test('Sub-subclass', function() {
-  var SomeClass = Ember.Object.extend({ foo: 'BAR' });
+  var SomeClass = EmberObject.extend({ foo: 'BAR' });
   var AnotherClass = SomeClass.extend({ bar: 'FOO' });
   var obj = new AnotherClass();
   equal(obj.foo, 'BAR');
@@ -18,7 +19,7 @@ test('Sub-subclass', function() {
 });
 
 test('Overriding a method several layers deep', function() {
-  var SomeClass = Ember.Object.extend({
+  var SomeClass = EmberObject.extend({
     fooCnt: 0,
     foo: function() { this.fooCnt++; },
 
@@ -54,7 +55,7 @@ test('Overriding a method several layers deep', function() {
 });
 
 test('With concatenatedProperties', function(){
-  var SomeClass = Ember.Object.extend({ things: 'foo', concatenatedProperties: ['things'] });
+  var SomeClass = EmberObject.extend({ things: 'foo', concatenatedProperties: ['things'] });
   var AnotherClass = SomeClass.extend({ things: 'bar' });
   var YetAnotherClass = SomeClass.extend({ things: 'baz' });
   var some = new SomeClass();
@@ -66,7 +67,7 @@ test('With concatenatedProperties', function(){
 });
 
 test('With concatenatedProperties class properties', function(){
-  var SomeClass = Ember.Object.extend();
+  var SomeClass = EmberObject.extend();
   SomeClass.reopenClass({
     concatenatedProperties: ['things'],
     things: 'foo'

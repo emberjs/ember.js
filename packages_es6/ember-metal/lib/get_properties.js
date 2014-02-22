@@ -1,6 +1,3 @@
-// require('ember-metal/property_get');
-// require('ember-metal/utils');
-
 import {get} from "ember-metal/property_get";
 import {typeOf} from "ember-metal/utils";
 

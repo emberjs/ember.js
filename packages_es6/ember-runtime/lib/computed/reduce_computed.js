@@ -3,10 +3,10 @@
 // require('ember-runtime/mixins/array');
 
 import Ember from "ember-metal/core"; // Ember.assert
-import get from "ember-metal/property_get";
-import set from "ember-metal/property_set";
+import {get as e_get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
 import EmberError from "ember-metal/error";
-import {guidFor, metaFor} from "ember-metal/utils";
+import {guidFor, meta} from "ember-metal/utils";
 import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
 import expandProperties from "ember-metal/expand_properties";
 import {addObserver, observersFor, removeObserver, addBeforeObserver, removeBeforeObserver} from "ember-metal/observer";
@@ -14,10 +14,10 @@ import {ComputedProperty, cacheFor} from "ember-metal/computed";
 import {create} from "ember-metal/platform";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import TrackedArray from "ember-runtime/system/tracked_array";
-import {EmberArray} from "ember-runtime/mixin/array";
+import EmberArray from "ember-runtime/mixins/array";
 import run from "ember-metal/run_loop";
 import Set from "ember-runtime/system/set";
-import isArray from "ember-metal/utils";
+import {isArray} from "ember-metal/utils";
 
 var e_get = get,
     cacheSet = cacheFor.set,
@@ -26,6 +26,7 @@ var e_get = get,
     a_slice = [].slice,
     o_create = create,
     forEach = EnumerableUtils.forEach,
+    metaFor = meta,
     // Here we explicitly don't allow `@each.foo`; it would require some special
     // testing, but there's no particular reason why it should be disallowed.
     eachPropertyPattern = /^(.*)\.@each\.(.*)/,

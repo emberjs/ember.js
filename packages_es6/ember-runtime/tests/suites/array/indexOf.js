@@ -1,6 +1,7 @@
-require('ember-runtime/~tests/suites/array');
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import EmberStringUtils from "ember-runtime/system/string";
 
-var suite = Ember.ArrayTests;
+var suite = SuiteModuleBuilder.create();
 
 suite.module('indexOf');
 
@@ -11,7 +12,7 @@ suite.test("should return index of object", function() {
       idx;
 
   for(idx=0;idx<len;idx++) {
-    equal(obj.indexOf(expected[idx]), idx, Ember.String.fmt('obj.indexOf(%@) should match idx', [expected[idx]]));
+    equal(obj.indexOf(expected[idx]), idx, EmberStringUtils.fmt('obj.indexOf(%@) should match idx', [expected[idx]]));
   }
 
 });
@@ -21,3 +22,4 @@ suite.test("should return -1 when requesting object not in index", function() {
   equal(obj.indexOf(foo), -1, 'obj.indexOf(foo) should be < 0');
 });
 
+export default suite;

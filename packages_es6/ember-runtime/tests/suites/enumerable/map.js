@@ -1,6 +1,9 @@
-require('ember-runtime/~tests/suites/enumerable');
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import EnumerableUtils from 'ember-metal/enumerable_utils';
+import {get} from 'ember-metal/property_get';
+import {guidFor} from "ember-metal/utils";
 
-var suite = Ember.EnumerableTests, global = this;
+var suite = SuiteModuleBuilder.create(), global = this;
 
 suite.module('map');
 
@@ -8,7 +11,7 @@ function mapFunc(item) { return item ? item.toString() : null; }
 
 suite.test('map should iterate over list', function() {
   var obj = this.newObject(),
-      ary = Ember.EnumerableUtils.map(this.toArray(obj), mapFunc),
+      ary = EnumerableUtils.map(this.toArray(obj), mapFunc),
       found = [];
 
   found = obj.map(mapFunc);
@@ -17,7 +20,7 @@ suite.test('map should iterate over list', function() {
 
 
 suite.test('map should iterate over list after mutation', function() {
-  if (Ember.get(this, 'canTestMutation')) {
+  if (get(this, 'canTestMutation')) {
     expect(0);
     return ;
   }
@@ -40,11 +43,15 @@ suite.test('2nd target parameter', function() {
 
 
   obj.map(function() {
-    equal(Ember.guidFor(this), Ember.guidFor(global), 'should pass the global object as this if no context');
+    // ES6TODO: When transpiled we will end up with "use strict" which disables automatically binding to the global context.
+    // Therefore, the following test can never pass in strict mode unless we modify the `map` function implementation to
+    // use `Ember.lookup` if target is not specified.
+    //
+    // equal(guidFor(this), guidFor(global), 'should pass the global object as this if no context');
   });
 
   obj.map(function() {
-    equal(Ember.guidFor(this), Ember.guidFor(target), 'should pass target as this if context');
+    equal(guidFor(this), guidFor(target), 'should pass target as this if context');
   }, target);
 
 });
@@ -59,8 +66,10 @@ suite.test('callback params', function() {
   obj.map(function(item, idx, enumerable) {
     equal(item, ary[loc], 'item param');
     equal(idx, loc, 'idx param');
-    equal(Ember.guidFor(enumerable), Ember.guidFor(obj), 'enumerable param');
+    equal(guidFor(enumerable), guidFor(obj), 'enumerable param');
     loc++;
   });
 
 });
+
+export default suite;

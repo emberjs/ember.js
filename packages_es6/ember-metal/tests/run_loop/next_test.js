@@ -1,11 +1,13 @@
-module('Ember.run.next');
+import run from 'ember-metal/run_loop';
+
+module('run.next');
 
 asyncTest('should invoke immediately on next timeout', function() {
 
   var invoked = false;
 
-  Ember.run(function() {
-    Ember.run.next(function() { invoked = true; });
+  run(function() {
+    run.next(function() { invoked = true; });
   });
 
   equal(invoked, false, 'should not have invoked yet');
@@ -20,9 +22,9 @@ asyncTest('should invoke immediately on next timeout', function() {
 
 asyncTest('callback should be called from within separate loop', function() {
   var firstRunLoop, secondRunLoop;
-  Ember.run(function() {
-    firstRunLoop = Ember.run.currentRunLoop;
-    Ember.run.next(function() { secondRunLoop = Ember.run.currentRunLoop; });
+  run(function() {
+    firstRunLoop = run.currentRunLoop;
+    run.next(function() { secondRunLoop = run.currentRunLoop; });
   });
 
   setTimeout(function() {
@@ -32,12 +34,12 @@ asyncTest('callback should be called from within separate loop', function() {
   }, 20);
 });
 
-asyncTest('multiple calls to Ember.run.next share coalesce callbacks into same run loop', function() {
+asyncTest('multiple calls to run.next share coalesce callbacks into same run loop', function() {
   var firstRunLoop, secondRunLoop, thirdRunLoop;
-  Ember.run(function() {
-    firstRunLoop = Ember.run.currentRunLoop;
-    Ember.run.next(function() { secondRunLoop = Ember.run.currentRunLoop; });
-    Ember.run.next(function() { thirdRunLoop  = Ember.run.currentRunLoop; });
+  run(function() {
+    firstRunLoop = run.currentRunLoop;
+    run.next(function() { secondRunLoop = run.currentRunLoop; });
+    run.next(function() { thirdRunLoop  = run.currentRunLoop; });
   });
 
   setTimeout(function() {

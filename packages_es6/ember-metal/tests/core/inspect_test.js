@@ -1,6 +1,7 @@
-module("Ember.inspect");
+import {inspect} from "ember-metal/utils";
+import Ember from 'ember-metal/core';
 
-var inspect = Ember.inspect;
+module("Ember.inspect");
 
 test("strings", function() {
   equal(inspect("foo"), "foo");

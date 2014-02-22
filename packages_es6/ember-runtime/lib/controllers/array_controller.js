@@ -7,15 +7,15 @@
 @submodule ember-runtime
 */
 
-import get from "ember-metal/property_get";
-import set from "ember-metal/property_set";
+import Ember from "ember-metal/core";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import SortableMixin from "ember-runtime/mixins/sortable";
-import ControllerMixin from "ember-runtime/controllers/controller";
-import computed from "ember-metal/computed";
+import {ControllerMixin} from "ember-runtime/controllers/controller";
+import {computed} from "ember-metal/computed";
 import EmberError from "ember-metal/error";
-import {A} from "ember-runtime/system/native_array";
 
 var forEach = EnumerableUtils.forEach,
     replace = EnumerableUtils.replace;
@@ -191,11 +191,11 @@ var ArrayController = ArrayProxy.extend(ControllerMixin, SortableMixin, {
   init: function() {
     this._super();
 
-    this.set('_subControllers', A());
+    this.set('_subControllers', Ember.A());
   },
 
   content: computed(function () {
-    return A();
+    return Ember.A();
   }),
 
   /**
@@ -246,7 +246,7 @@ var ArrayController = ArrayProxy.extend(ControllerMixin, SortableMixin, {
       });
     }
 
-    this.set('_subControllers', A());
+    this.set('_subControllers', Ember.A());
   }
 });
 

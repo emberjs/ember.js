@@ -1,5 +1,4 @@
-// require('ember-runtime/core');
-import required from "ember-metal/mixin";
+import {Mixin, required} from "ember-metal/mixin";
 
 /**
 @module ember
@@ -17,7 +16,7 @@ import required from "ember-metal/mixin";
   @namespace Ember
   @since Ember 0.9
 */
-var Comparable = Ember.Mixin.create({
+var Comparable = Mixin.create({
 
   /**
     Override to return the result of the comparison of the two parameters. The

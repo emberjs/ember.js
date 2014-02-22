@@ -1,11 +1,3 @@
-// require('ember-metal/core');
-// require('ember-metal/platform');
-// require('ember-metal/utils');
-// require('ember-metal/property_get');
-// require('ember-metal/properties');
-// require('ember-metal/watch_key');
-// require('ember-metal/watch_path');
-
 /**
 @module ember-metal
 */

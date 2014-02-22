@@ -1,19 +1,24 @@
+import CopyableTests from 'ember-runtime/tests/suites/copyable';
+import Set from "ember-runtime/system/set";
+import {generateGuid} from 'ember-metal/utils';
+import {get} from 'ember-metal/property_get';
+
 // ..........................................................
 // COPYABLE TESTS
 //
-Ember.CopyableTests.extend({
+CopyableTests.extend({
   name: 'Ember.Set Copyable',
 
   newObject: function() {
-    var set = new Ember.Set();
-    set.addObject(Ember.generateGuid());
+    var set = new Set();
+    set.addObject(generateGuid());
     return set;
   },
 
   isEqual: function(a,b) {
-    if (!(a instanceof Ember.Set)) return false;
-    if (!(b instanceof Ember.Set)) return false;
-    return Ember.get(a, 'firstObject') === Ember.get(b, 'firstObject');
+    if (!(a instanceof Set)) return false;
+    if (!(b instanceof Set)) return false;
+    return get(a, 'firstObject') === get(b, 'firstObject');
   },
 
   shouldBeFreezable: true

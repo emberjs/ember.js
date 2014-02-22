@@ -1,12 +1,14 @@
+import isNone from 'ember-metal/is_none';
+import run from 'ember-metal/run_loop';
 
 var originalSetTimeout = window.setTimeout,
     originalDateValueOf = Date.prototype.valueOf;
 
 var wait = function(callback, maxWaitCount) {
-  maxWaitCount = Ember.isNone(maxWaitCount) ? 100 : maxWaitCount;
+  maxWaitCount = isNone(maxWaitCount) ? 100 : maxWaitCount;
 
   originalSetTimeout(function() {
-    if (maxWaitCount > 0 && (Ember.run.hasScheduledTimers() || Ember.run.currentRunLoop)) {
+    if (maxWaitCount > 0 && (run.hasScheduledTimers() || run.currentRunLoop)) {
       wait(callback, maxWaitCount - 1);
 
       return;
@@ -16,7 +18,7 @@ var wait = function(callback, maxWaitCount) {
   }, 10);
 };
 
-module('Ember.run.later', {
+module('run.later', {
   teardown: function() {
     window.setTimeout = originalSetTimeout;
     Date.prototype.valueOf = originalDateValueOf;
@@ -27,8 +29,8 @@ asyncTest('should invoke after specified period of time - function only', functi
 
   var invoked = false;
 
-  Ember.run(function() {
-    Ember.run.later(function() { invoked = true; }, 100);
+  run(function() {
+    run.later(function() { invoked = true; }, 100);
   });
 
   wait(function() {
@@ -41,8 +43,8 @@ asyncTest('should invoke after specified period of time - target/method', functi
 
   var obj = { invoked: false } ;
 
-  Ember.run(function() {
-    Ember.run.later(obj, function() { this.invoked = true; }, 100);
+  run(function() {
+    run.later(obj, function() { this.invoked = true; }, 100);
   });
 
   wait(function() {
@@ -55,8 +57,8 @@ asyncTest('should invoke after specified period of time - target/method/args', f
 
   var obj = { invoked: 0 } ;
 
-  Ember.run(function() {
-    Ember.run.later(obj, function(amt) { this.invoked += amt; }, 10, 100);
+  run(function() {
+    run.later(obj, function(amt) { this.invoked += amt; }, 10, 100);
   });
 
   wait(function() {
@@ -68,12 +70,12 @@ asyncTest('should invoke after specified period of time - target/method/args', f
 asyncTest('should always invoke within a separate runloop', function() {
   var obj = { invoked: 0 }, firstRunLoop, secondRunLoop;
 
-  Ember.run(function() {
-    firstRunLoop = Ember.run.currentRunLoop;
+  run(function() {
+    firstRunLoop = run.currentRunLoop;
 
-    Ember.run.later(obj, function(amt) {
+    run.later(obj, function(amt) {
       this.invoked += amt;
-      secondRunLoop = Ember.run.currentRunLoop;
+      secondRunLoop = run.currentRunLoop;
     }, 10, 1);
 
     // Synchronous "sleep". This simulates work being done
@@ -88,7 +90,7 @@ asyncTest('should always invoke within a separate runloop', function() {
   });
 
   ok(firstRunLoop, "first run loop captured");
-  ok(!Ember.run.currentRunLoop, "shouldn't be in a run loop after flush");
+  ok(!run.currentRunLoop, "shouldn't be in a run loop after flush");
   equal(obj.invoked, 0, "shouldn't have invoked later item yet");
 
   wait(function() {
@@ -107,12 +109,12 @@ asyncTest('should always invoke within a separate runloop', function() {
 //   var array = [];
 //   function fn(val) { array.push(val); }
 
-//   Ember.run(function() {
-//     Ember.run.later(this, fn, 4, 5);
-//     Ember.run.later(this, fn, 1, 1);
-//     Ember.run.later(this, fn, 5, 10);
-//     Ember.run.later(this, fn, 2, 3);
-//     Ember.run.later(this, fn, 3, 3);
+//   run(function() {
+//     run.later(this, fn, 4, 5);
+//     run.later(this, fn, 1, 1);
+//     run.later(this, fn, 5, 10);
+//     run.later(this, fn, 2, 3);
+//     run.later(this, fn, 3, 3);
 //   });
 
 //   deepEqual(array, []);
@@ -130,18 +132,18 @@ asyncTest('should always invoke within a separate runloop', function() {
 
 // asyncTest('callbacks coalesce into same run loop if expiring at the same time', function() {
 //   var array = [];
-//   function fn(val) { array.push(Ember.run.currentRunLoop); }
+//   function fn(val) { array.push(run.currentRunLoop); }
 
-//   Ember.run(function() {
+//   run(function() {
 
 //     // Force +new Date to return the same result while scheduling
 //     // run.later timers. Otherwise: non-determinism!
 //     var now = +new Date();
 //     Date.prototype.valueOf = function() { return now; };
 
-//     Ember.run.later(this, fn, 10);
-//     Ember.run.later(this, fn, 200);
-//     Ember.run.later(this, fn, 200);
+//     run.later(this, fn, 10);
+//     run.later(this, fn, 200);
+//     run.later(this, fn, 200);
 
 //     Date.prototype.valueOf = originalDateValueOf;
 //   });
@@ -162,17 +164,17 @@ asyncTest('inception calls to run.later should run callbacks in separate run loo
 
   var runLoop, finished;
 
-  Ember.run(function() {
-    runLoop = Ember.run.currentRunLoop;
+  run(function() {
+    runLoop = run.currentRunLoop;
     ok(runLoop);
 
-    Ember.run.later(function() {
-      ok(Ember.run.currentRunLoop && Ember.run.currentRunLoop !== runLoop,
+    run.later(function() {
+      ok(run.currentRunLoop && run.currentRunLoop !== runLoop,
          'first later callback has own run loop');
-      runLoop = Ember.run.currentRunLoop;
+      runLoop = run.currentRunLoop;
 
-      Ember.run.later(function() {
-        ok(Ember.run.currentRunLoop && Ember.run.currentRunLoop !== runLoop,
+      run.later(function() {
+        ok(run.currentRunLoop && run.currentRunLoop !== runLoop,
            'second later callback has own run loop');
         finished = true;
       }, 40);
@@ -204,9 +206,9 @@ asyncTest('setTimeout should never run with a negative wait', function() {
   };
 
   var count = 0;
-  Ember.run(function() {
+  run(function() {
 
-    Ember.run.later(function() {
+    run.later(function() {
       count++;
 
       // This will get run first. Waste some time.
@@ -219,7 +221,7 @@ asyncTest('setTimeout should never run with a negative wait', function() {
       while(+new Date() < pauseUntil) { /* do nothing - sleeping */ }
     }, 1);
 
-    Ember.run.later(function() {
+    run.later(function() {
       equal(count, 1, 'callbacks called in order');
     }, 50);
   });

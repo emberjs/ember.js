@@ -6,10 +6,13 @@
 */
 
 
-import get from "ember-metal/property_get";
-import set from "ember-metal/property_set";
-import required from "ember-metal/mixin";
-import Freezable from "ember-metal/freezable";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {required} from "ember-metal/mixin";
+import {Freezable} from "ember-runtime/mixins/freezable";
+import {Mixin} from 'ember-metal/mixin';
+import EmberStringUtils from "ember-runtime/system/string";
+import EmberError from 'ember-metal/error';
 
 
 /**
@@ -27,7 +30,7 @@ import Freezable from "ember-metal/freezable";
   @namespace Ember
   @since Ember 0.9
 */
-var Copyable = Ember.Mixin.create({
+var Copyable = Mixin.create({
 
   /**
     Override to return a copy of the receiver. Default implementation raises
@@ -57,7 +60,7 @@ var Copyable = Ember.Mixin.create({
     if (Freezable && Freezable.detect(this)) {
       return get(this, 'isFrozen') ? this : this.copy().freeze();
     } else {
-      throw new Ember.Error(Ember.String.fmt("%@ does not support freezing", [this]));
+      throw new EmberError(EmberStringUtils.fmt("%@ does not support freezing", [this]));
     }
   }
 });

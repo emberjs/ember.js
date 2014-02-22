@@ -1,18 +1,21 @@
-var forEach = Ember.EnumerableUtils.forEach, trackedArray,
-    RETAIN = Ember.TrackedArray.RETAIN,
-    INSERT = Ember.TrackedArray.INSERT,
-    DELETE = Ember.TrackedArray.DELETE;
+import EnumerableUtils from 'ember-metal/enumerable_utils';
+import TrackedArray from "ember-runtime/system/tracked_array";
+
+var forEach = EnumerableUtils.forEach, trackedArray,
+    RETAIN = TrackedArray.RETAIN,
+    INSERT = TrackedArray.INSERT,
+    DELETE = TrackedArray.DELETE;
 
 module('Ember.TrackedArray');
 
 test("operations for a tracked array of length n are initially retain:n", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+  trackedArray = new TrackedArray([1,2,3,4]);
 
   equal("r:4", trackedArray.toString(), "initial mutation is retain n");
 });
 
 test("insert zero items is a no-op", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+  trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(2, []);
 
@@ -22,7 +25,7 @@ test("insert zero items is a no-op", function() {
 });
 
 test("inserts can split retains", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+  trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(2, ['a']);
 
@@ -34,7 +37,7 @@ test("inserts can split retains", function() {
 });
 
 test("inserts can expand (split/compose) inserts", function() {
-  trackedArray = new Ember.TrackedArray([]);
+  trackedArray = new TrackedArray([]);
 
   trackedArray.addItems(0, [1,2,3,4]);
   trackedArray.addItems(2, ['a']);
@@ -45,7 +48,7 @@ test("inserts can expand (split/compose) inserts", function() {
 });
 
 test("inserts left of inserts compose", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+  trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(2, ['b']);
   trackedArray.addItems(2, ['a']);
@@ -58,7 +61,7 @@ test("inserts left of inserts compose", function() {
 });
 
 test("inserts right of inserts compose", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+  trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(2, ['a']);
   trackedArray.addItems(3, ['b']);
@@ -71,7 +74,7 @@ test("inserts right of inserts compose", function() {
 });
 
 test("delete zero items is a no-op", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+  trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(2, []);
 
@@ -81,7 +84,7 @@ test("delete zero items is a no-op", function() {
 });
 
 test("deletes compose with several inserts and retains", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+  trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(4, ['e']);
   trackedArray.addItems(3, ['d']);
@@ -94,7 +97,7 @@ test("deletes compose with several inserts and retains", function() {
 });
 
 test("deletes compose with several inserts and retains and an adjacent delete", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3,4,5]);
+  trackedArray = new TrackedArray([1,2,3,4,5]);
 
   trackedArray.removeItems(0, 1);
   trackedArray.addItems(4, ['e']);
@@ -108,7 +111,7 @@ test("deletes compose with several inserts and retains and an adjacent delete", 
 });
 
 test("deletes compose with several inserts and retains and can reduce the last one", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+  trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(4, ['e', 'f']);
   trackedArray.addItems(3, ['d']);
@@ -122,7 +125,7 @@ test("deletes compose with several inserts and retains and can reduce the last o
 });
 
 test("deletes can split retains", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+  trackedArray = new TrackedArray([1,2,3,4]);
   trackedArray.removeItems(0, 2);
 
   equal(trackedArray.toString(), "d:2 r:2", "deletes can split retains");
@@ -130,7 +133,7 @@ test("deletes can split retains", function() {
 });
 
 test("deletes can trim retains on the right", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3]);
+  trackedArray = new TrackedArray([1,2,3]);
   trackedArray.removeItems(2, 1);
 
   equal(trackedArray.toString(), "r:2 d:1", "deletes can trim retains on the right");
@@ -138,7 +141,7 @@ test("deletes can trim retains on the right", function() {
 });
 
 test("deletes can trim retains on the left", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3]);
+  trackedArray = new TrackedArray([1,2,3]);
   trackedArray.removeItems(0, 1);
 
   equal(trackedArray.toString(), "d:1 r:2", "deletes can trim retains on the left");
@@ -146,7 +149,7 @@ test("deletes can trim retains on the left", function() {
 });
 
 test("deletes can split inserts", function() {
-  trackedArray = new Ember.TrackedArray([]);
+  trackedArray = new TrackedArray([]);
   trackedArray.addItems(0, ['a','b','c']);
   trackedArray.removeItems(0, 1);
 
@@ -155,7 +158,7 @@ test("deletes can split inserts", function() {
 });
 
 test("deletes can trim inserts on the right", function() {
-  trackedArray = new Ember.TrackedArray([]);
+  trackedArray = new TrackedArray([]);
   trackedArray.addItems(0, ['a','b','c']);
   trackedArray.removeItems(2, 1);
 
@@ -164,7 +167,7 @@ test("deletes can trim inserts on the right", function() {
 });
 
 test("deletes can trim inserts on the left", function() {
-  trackedArray = new Ember.TrackedArray([]);
+  trackedArray = new TrackedArray([]);
   trackedArray.addItems(0, ['a','b','c']);
   trackedArray.removeItems(0, 1);
 
@@ -173,7 +176,7 @@ test("deletes can trim inserts on the left", function() {
 });
 
 test("deletes can trim inserts on the left while composing with a delete on the left", function() {
-  trackedArray = new Ember.TrackedArray(['a']);
+  trackedArray = new TrackedArray(['a']);
   trackedArray.removeItems(0, 1);
   trackedArray.addItems(0, ['b', 'c']);
   trackedArray.removeItems(0, 1);
@@ -183,7 +186,7 @@ test("deletes can trim inserts on the left while composing with a delete on the 
 });
 
 test("deletes can reduce an insert or retain, compose with several mutations of different types and reduce the last mutation if it is non-delete", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+  trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(4, ['e', 'f']);    // 1234ef
   trackedArray.addItems(3, ['d']);         // 123d4ef
@@ -198,13 +201,13 @@ test("deletes can reduce an insert or retain, compose with several mutations of 
 });
 
 test("removeItems returns the removed items", function() {
-  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+  trackedArray = new TrackedArray([1,2,3,4]);
   deepEqual(trackedArray.removeItems(1, 2), [2,3], "`removeItems` returns the removed items");
 });
 
 test("apply invokes the callback with each group of items and the mutation's calculated offset", function() {
   var i = 0;
-  trackedArray = new Ember.TrackedArray([1,2,3,4]);
+  trackedArray = new TrackedArray([1,2,3,4]);
 
   trackedArray.addItems(2, ['a','b','c']); // 12abc34
   trackedArray.removeItems(4, 2);          // 12ab4

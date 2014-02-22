@@ -1,20 +1,22 @@
+import EmberObject from "ember-runtime/system/object";
+
 module('system/object/detectInstance');
 
 test('detectInstance detects instances correctly', function() {
 
-  var A = Ember.Object.extend();
+  var A = EmberObject.extend();
   var B = A.extend();
   var C = A.extend();
 
-  var o = Ember.Object.create(),
+  var o = EmberObject.create(),
       a = A.create(),
       b = B.create(),
       c = C.create();
 
-  ok( Ember.Object.detectInstance(o), 'o is an instance of Ember.Object' );
-  ok( Ember.Object.detectInstance(a), 'a is an instance of Ember.Object' );
-  ok( Ember.Object.detectInstance(b), 'b is an instance of Ember.Object' );
-  ok( Ember.Object.detectInstance(c), 'c is an instance of Ember.Object' );
+  ok( EmberObject.detectInstance(o), 'o is an instance of EmberObject' );
+  ok( EmberObject.detectInstance(a), 'a is an instance of EmberObject' );
+  ok( EmberObject.detectInstance(b), 'b is an instance of EmberObject' );
+  ok( EmberObject.detectInstance(c), 'c is an instance of EmberObject' );
 
   ok( !A.detectInstance(o), 'o is not an instance of A');
   ok( A.detectInstance(a), 'a is an instance of A' );

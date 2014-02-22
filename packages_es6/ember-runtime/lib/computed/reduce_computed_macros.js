@@ -1,26 +1,26 @@
-// require('ember-runtime/ext/string');
-// require('ember-runtime/system/namespace');
-// require('ember-runtime/system/object_proxy');
-// require('ember-runtime/computed/array_computed');
-
 /**
 @module ember
 @submodule ember-runtime
 */
 
 import Ember from "ember-metal/core"; // Ember.merge
-import get from "ember-metal/property_get";
-import set from "ember-metal/property_set";
-import guidFor from "ember-metal/utils";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {isArray, guidFor} from "ember-metal/utils";
 import EnumerableUtils from "ember-metal/enumerable_utils";
-import arrayComputed from "ember-runtime/computed/array_computed";
-import reduceComputed from "ember-runtime/computed/reduce_computed";
+import run from 'ember-metal/run_loop';
+import {addObserver} from "ember-metal/observer";
+import EmberError from "ember-metal/error";
+import {arrayComputed} from "ember-runtime/computed/array_computed";
+import {reduceComputed} from "ember-runtime/computed/reduce_computed";
 import ObjectProxy from "ember-runtime/system/object_proxy";
+import SubArray from "ember-runtime/system/subarray";
+import keys from "ember-runtime/keys";
+import compare from "ember-runtime/compare";
 
 var merge = Ember.merge,
     a_slice = [].slice,
     forEach = EnumerableUtils.forEach,
-    map = EnumerableUtils.map,
     SearchProxy;
 
 /**
@@ -220,7 +220,7 @@ function map(dependentKey, callback) {
 */
 function mapBy (dependentKey, propertyKey) {
   var callback = function(item) { return get(item, propertyKey); };
-  return Ember.computed.map(dependentKey + '.@each.' + propertyKey, callback);
+  return map(dependentKey + '.@each.' + propertyKey, callback);
 };
 
 /**
@@ -266,7 +266,7 @@ var mapProperty = mapBy;
 function filter(dependentKey, callback) {
   var options = {
     initialize: function (array, changeMeta, instanceMeta) {
-      instanceMeta.filteredArrayIndexes = new Ember.SubArray();
+      instanceMeta.filteredArrayIndexes = new SubArray();
     },
 
     addedItem: function(array, item, changeMeta, instanceMeta) {
@@ -330,7 +330,7 @@ function filterBy (dependentKey, propertyKey, value) {
     };
   }
 
-  return Ember.computed.filter(dependentKey + '.@each.' + propertyKey, callback);
+  return filter(dependentKey + '.@each.' + propertyKey, callback);
 };
 
 /**
@@ -435,7 +435,7 @@ var union = uniq;
 */
 function intersect() {
   var getDependentKeyGuids = function (changeMeta) {
-    return map(changeMeta.property._dependentKeys, function (dependentKey) {
+    return EnumerableUtils.map(changeMeta.property._dependentKeys, function (dependentKey) {
       return guidFor(dependentKey);
     });
   };
@@ -457,7 +457,7 @@ function intersect() {
       if (itemCounts[itemGuid][dependentGuid] === undefined) { itemCounts[itemGuid][dependentGuid] = 0; }
 
       if (++itemCounts[itemGuid][dependentGuid] === 1 &&
-          numberOfDependentArrays === Ember.keys(itemCounts[itemGuid]).length) {
+          numberOfDependentArrays === keys(itemCounts[itemGuid]).length) {
 
         array.addObject(item);
       }
@@ -474,7 +474,7 @@ function intersect() {
       if (itemCounts[itemGuid][dependentGuid] === undefined) { itemCounts[itemGuid][dependentGuid] = 0; }
       if (--itemCounts[itemGuid][dependentGuid] === 0) {
         delete itemCounts[itemGuid][dependentGuid];
-        numberOfArraysItemAppearsIn = Ember.keys(itemCounts[itemGuid]).length;
+        numberOfArraysItemAppearsIn = keys(itemCounts[itemGuid]).length;
 
         if (numberOfArraysItemAppearsIn === 0) {
           delete itemCounts[itemGuid];
@@ -517,7 +517,7 @@ function intersect() {
 */
 function setDiff(setAProperty, setBProperty) {
   if (arguments.length !== 2) {
-    throw new Ember.Error("setDiff requires exactly two dependent arrays.");
+    throw new EmberError("setDiff requires exactly two dependent arrays.");
   }
   return arrayComputed(setAProperty, setBProperty, {
     addedItem: function (array, item, changeMeta, instanceMeta) {
@@ -678,7 +678,7 @@ function sort(itemsKey, sortDefinition) {
             idx,
             asc;
 
-        Ember.assert("Cannot sort: '" + sortPropertiesKey + "' is not an array.", Ember.isArray(sortPropertyDefinitions));
+        Ember.assert("Cannot sort: '" + sortPropertiesKey + "' is not an array.", isArray(sortPropertyDefinitions));
 
         changeMeta.property.clearItemPropertyKeys(itemsKey);
 
@@ -700,7 +700,7 @@ function sort(itemsKey, sortDefinition) {
       }
 
       function updateSortPropertiesOnce() {
-        Ember.run.once(this, updateSortProperties, changeMeta.propertyName);
+        run.once(this, updateSortProperties, changeMeta.propertyName);
       }
 
       function updateSortProperties(propertyName) {
@@ -708,7 +708,7 @@ function sort(itemsKey, sortDefinition) {
         changeMeta.property.recomputeOnce.call(this, propertyName);
       }
 
-      Ember.addObserver(this, sortPropertiesKey, updateSortPropertiesOnce);
+      addObserver(this, sortPropertiesKey, updateSortPropertiesOnce);
 
       setupSortProperties.call(this);
 
@@ -719,7 +719,7 @@ function sort(itemsKey, sortDefinition) {
 
         for (var i = 0; i < this.sortProperties.length; ++i) {
           sortProperty = this.sortProperties[i];
-          result = Ember.compare(get(itemA, sortProperty), isProxy ? itemB[sortProperty] : get(itemB, sortProperty));
+          result = compare(get(itemA, sortProperty), isProxy ? itemB[sortProperty] : get(itemB, sortProperty));
 
           if (result !== 0) {
             asc = this.sortPropertyAscending[sortProperty];
@@ -761,22 +761,5 @@ function sort(itemsKey, sortDefinition) {
   });
 };
 
-
-// ES6TODO: this seems a less than ideal way/place to add properties to Ember.computed
-import computed from "ember-metal/computed";
-computed.sum = sum;
-computed.min = min;
-computed.max = max;
-computed.map = map;
-computed.sort = sort;
-computed.setDiff = setDiff;
-computed.mapBy = mapBy;
-computed.mapProperty = mapProperty;
-computed.filter = filter;
-computed.filterBy = filterBy;
-computed.filterProperty = filterProperty;
-computed.uniq = uniq;
-computed.union = union;
-computed.intersect = intersect;
 
 export {sum, min, max, map, sort, setDiff, mapBy, mapProperty, filter, filterBy, filterProperty, uniq, union, intersect}

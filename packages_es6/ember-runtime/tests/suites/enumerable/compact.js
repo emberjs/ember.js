@@ -1,6 +1,6 @@
-require('ember-runtime/~tests/suites/enumerable');
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = Ember.EnumerableTests;
+var suite = SuiteModuleBuilder.create();
 
 suite.module('compact');
 
@@ -9,3 +9,5 @@ suite.test('removes null and undefined values from enumerable', function() {
   var ary = obj.compact();
   deepEqual(ary, [1, false, '', 0]);
 });
+
+export default suite;

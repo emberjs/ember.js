@@ -1,4 +1,7 @@
-var libs = Ember.libraries;
+import Ember from 'ember-metal';
+import libraries from "ember-metal/libraries";
+
+var libs = libraries;
 
 test('Ember registers itself', function() {
   equal(libs[0].name, "Ember");

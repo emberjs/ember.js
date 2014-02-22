@@ -1,12 +1,18 @@
-require('ember-runtime/~tests/suites/mutable_enumerable');
+import MutableEnumerableTests from 'ember-runtime/tests/suites/mutable_enumerable';
+import MutableEnumerable from 'ember-runtime/mixins/mutable_enumerable';
+import EnumerableUtils from 'ember-metal/enumerable_utils';
+import EmberObject from 'ember-runtime/system/object';
+import {computed} from 'ember-metal/computed';
+import {get} from 'ember-metal/property_get';
+import {set} from 'ember-metal/property_set';
 
-var indexOf = Ember.EnumerableUtils.indexOf;
+var indexOf = EnumerableUtils.indexOf;
 
 /*
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-var TestMutableEnumerable = Ember.Object.extend(Ember.MutableEnumerable, {
+var TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
 
   _content: null,
 
@@ -32,10 +38,10 @@ var TestMutableEnumerable = Ember.Object.extend(Ember.MutableEnumerable, {
   },
 
   nextObject: function(idx) {
-    return idx>=Ember.get(this, 'length') ? undefined : this._content[idx];
+    return idx>=get(this, 'length') ? undefined : this._content[idx];
   },
 
-  length: Ember.computed(function() {
+  length: computed(function() {
     return this._content.length;
   }),
 
@@ -45,7 +51,7 @@ var TestMutableEnumerable = Ember.Object.extend(Ember.MutableEnumerable, {
 });
 
 
-Ember.MutableEnumerableTests.extend({
+MutableEnumerableTests.extend({
 
   name: 'Basic Mutable Array',
 
@@ -64,6 +70,3 @@ Ember.MutableEnumerableTests.extend({
   }
 
 }).run();
-
-
-

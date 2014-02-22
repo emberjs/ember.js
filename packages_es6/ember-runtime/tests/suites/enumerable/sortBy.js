@@ -1,7 +1,7 @@
-require('ember-runtime/~tests/suites/enumerable');
-var get = Ember.get;
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import {get} from 'ember-metal/property_get';
 
-var suite = Ember.EnumerableTests;
+var suite = SuiteModuleBuilder.create();
 
 suite.module('sortBy');
 
@@ -18,3 +18,5 @@ suite.test('supports multiple propertyNames', function() {
   equal(get(sorted[0], 'b'), 1);
   equal(get(sorted[1], 'b'), 2);
 });
+
+export default suite;

@@ -1,6 +1,3 @@
-// require('ember-metal/core');
-// require('ember-metal/platform');
-
 import {create} from "ember-metal/platform";
 
 var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
@@ -32,6 +29,6 @@ var EmberError = function() {
   }
 };
 
-Error.prototype = create(Error.prototype);
+EmberError.prototype = create(Error.prototype);
 
 export default EmberError;

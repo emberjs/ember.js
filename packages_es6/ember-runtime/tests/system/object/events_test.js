@@ -1,10 +1,13 @@
+import EmberObject from "ember-runtime/system/object";
+import Evented from "ember-runtime/mixins/evented";
+
 module("Object events");
 
 test("a listener can be added to an object", function() {
   var count = 0;
   var F = function() { count++; };
 
-  var obj = Ember.Object.createWithMixins(Ember.Evented);
+  var obj = EmberObject.createWithMixins(Evented);
 
   obj.on('event!', F);
   obj.trigger('event!');
@@ -20,7 +23,7 @@ test("a listener can be added and removed automatically the first time it is tri
   var count = 0;
   var F = function() { count++; };
 
-  var obj = Ember.Object.createWithMixins(Ember.Evented);
+  var obj = EmberObject.createWithMixins(Evented);
 
   obj.one('event!', F);
   obj.trigger('event!');
@@ -35,7 +38,7 @@ test("a listener can be added and removed automatically the first time it is tri
 test("triggering an event can have arguments", function() {
   var self, args;
 
-  var obj = Ember.Object.createWithMixins(Ember.Evented);
+  var obj = EmberObject.createWithMixins(Evented);
 
   obj.on('event!', function() {
     args = [].slice.call(arguments);
@@ -51,7 +54,7 @@ test("triggering an event can have arguments", function() {
 test("a listener can be added and removed automatically and have arguments", function() {
   var self, args, count = 0;
 
-  var obj = Ember.Object.createWithMixins(Ember.Evented);
+  var obj = EmberObject.createWithMixins(Evented);
 
   obj.one('event!', function() {
     args = [].slice.call(arguments);
@@ -75,7 +78,7 @@ test("a listener can be added and removed automatically and have arguments", fun
 test("binding an event can specify a different target", function() {
   var self, args;
 
-  var obj = Ember.Object.createWithMixins(Ember.Evented);
+  var obj = EmberObject.createWithMixins(Evented);
   var target = {};
 
   obj.on('event!', target, function() {
@@ -94,7 +97,7 @@ test("a listener registered with one can take method as string and can be added 
   var target = {};
   target.fn = function() { count++; };
 
-  var obj = Ember.Object.createWithMixins(Ember.Evented);
+  var obj = EmberObject.createWithMixins(Evented);
 
   obj.one('event!', target, 'fn');
   obj.trigger('event!');
@@ -107,7 +110,7 @@ test("a listener registered with one can take method as string and can be added 
 });
 
 test("a listener registered with one can be removed with off", function() {
-  var obj = Ember.Object.createWithMixins(Ember.Evented, {
+  var obj = EmberObject.createWithMixins(Evented, {
     F: function() {}
   });
   var F = function() {};
@@ -124,7 +127,7 @@ test("a listener registered with one can be removed with off", function() {
 });
 
 test("adding and removing listeners should be chainable", function() {
-  var obj = Ember.Object.createWithMixins(Ember.Evented);
+  var obj = EmberObject.createWithMixins(Evented);
   var F = function() {};
 
   var ret = obj.on('event!', F);

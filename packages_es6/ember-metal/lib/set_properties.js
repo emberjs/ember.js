@@ -1,6 +1,3 @@
-// require('ember-metal/property_events');
-// require('ember-metal/property_set');
-
 import {changeProperties} from "ember-metal/property_events";
 import {set} from "ember-metal/property_set";
 

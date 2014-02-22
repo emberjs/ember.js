@@ -1,6 +1,6 @@
-require('ember-runtime/~tests/suites/mutable_array');
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = Ember.MutableArrayTests;
+var suite = SuiteModuleBuilder.create();
 
 suite.module('pushObjects');
 
@@ -11,3 +11,5 @@ suite.test("should raise exception if not Ember.Enumerable is passed to pushObje
     obj.pushObjects( "string" );
   });
 });
+
+export default suite;

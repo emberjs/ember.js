@@ -1,4 +1,13 @@
-var get = Ember.get, set = Ember.set;
+import Ember from "ember-metal/core";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import {observer as emberObserver} from "ember-metal/mixin";
+import {listenersFor} from "ember-metal/events";
+import ArrayProxy from "ember-runtime/system/array_proxy";
+import SortableMixin from "ember-runtime/mixins/sortable";
+import EmberObject from "ember-runtime/system/object";
+import ArrayController from "ember-runtime/controllers/array_controller";
 
 var unsortedArray, sortedArrayController;
 
@@ -6,19 +15,19 @@ module("Ember.Sortable");
 
 module("Ember.Sortable with content", {
   setup: function() {
-    Ember.run(function() {
+    run(function() {
       var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
 
       unsortedArray = Ember.A(Ember.A(array).copy());
 
-      sortedArrayController = Ember.ArrayProxy.createWithMixins(Ember.SortableMixin, {
+      sortedArrayController = ArrayProxy.createWithMixins(SortableMixin, {
         content: unsortedArray
       });
     });
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       sortedArrayController.set('content', null);
       sortedArrayController.destroy();
     });
@@ -55,9 +64,9 @@ test("you can change sorted properties", function() {
 
 test("changing sort order triggers observers", function() {
   var observer, changeCount = 0;
-  observer = Ember.Object.createWithMixins({
+  observer = EmberObject.createWithMixins({
     array: sortedArrayController,
-    arrangedDidChange: Ember.observer('array.[]', function() {
+    arrangedDidChange: emberObserver('array.[]', function() {
       changeCount++;
     })
   });
@@ -76,17 +85,17 @@ test("changing sort order triggers observers", function() {
 
   equal(changeCount, 3, 'changing sortAscending again increments changeCount');
 
-  Ember.run(function() { observer.destroy(); });
+  run(function() { observer.destroy(); });
 });
 
 module("Ember.Sortable with content and sortProperties", {
   setup: function() {
-    Ember.run(function() {
+    run(function() {
       var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
 
       unsortedArray = Ember.A(Ember.A(array).copy());
 
-      sortedArrayController = Ember.ArrayController.create({
+      sortedArrayController = ArrayController.create({
         content: unsortedArray,
         sortProperties: ['name']
       });
@@ -94,7 +103,7 @@ module("Ember.Sortable with content and sortProperties", {
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       sortedArrayController.destroy();
     });
   }
@@ -149,7 +158,7 @@ test("you can unshift objects in sorted order", function() {
 
 test("addObject does not insert duplicates", function() {
   var sortedArrayProxy, obj = {};
-  sortedArrayProxy = Ember.ArrayProxy.createWithMixins(Ember.SortableMixin, {
+  sortedArrayProxy = ArrayProxy.createWithMixins(SortableMixin, {
     content: Ember.A([obj])
   });
 
@@ -190,24 +199,24 @@ test("don't remove and insert if position didn't change", function() {
 
   sortedArrayController.set('sortProperties', ['name']);
 
-  Ember.set(sortedArrayController.objectAt(0), 'name', 'Scumbag Brynjolfsson');
+  set(sortedArrayController.objectAt(0), 'name', 'Scumbag Brynjolfsson');
 
   ok(!insertItemSortedCalled, "insertItemSorted should not have been called");
 });
 
 test("sortProperties observers removed on content removal", function() {
   var removedObject = unsortedArray.objectAt(2);
-  equal(Ember.listenersFor(removedObject, 'name:change').length, 1,
+  equal(listenersFor(removedObject, 'name:change').length, 1,
     "Before removal, there should be one listener for sortProperty change.");
   unsortedArray.replace(2, 1, []);
-  equal(Ember.listenersFor(removedObject, 'name:change').length, 0,
+  equal(listenersFor(removedObject, 'name:change').length, 0,
     "After removal, there should be no listeners for sortProperty change.");
 });
 
 module("Ember.Sortable with sortProperties", {
   setup: function() {
-    Ember.run(function() {
-      sortedArrayController = Ember.ArrayController.create({
+    run(function() {
+      sortedArrayController = ArrayController.create({
         sortProperties: ['name']
       });
       var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
@@ -216,7 +225,7 @@ module("Ember.Sortable with sortProperties", {
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       sortedArrayController.destroy();
     });
   }
@@ -225,7 +234,7 @@ module("Ember.Sortable with sortProperties", {
 test("you can set content later and it will be sorted", function() {
   equal(sortedArrayController.get('length'), 0, 'array has 0 items');
 
-  Ember.run(function() {
+  run(function() {
     sortedArrayController.set('content', unsortedArray);
   });
 
@@ -235,8 +244,8 @@ test("you can set content later and it will be sorted", function() {
 
 module("Ember.Sortable with sortFunction and sortProperties", {
   setup: function() {
-    Ember.run(function() {
-      sortedArrayController = Ember.ArrayController.create({
+    run(function() {
+      sortedArrayController = ArrayController.create({
         sortProperties: ['name'],
         sortFunction: function(v, w) {
             var lowerV = v.toLowerCase(),
@@ -259,7 +268,7 @@ module("Ember.Sortable with sortFunction and sortProperties", {
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       sortedArrayController.destroy();
     });
   }
@@ -268,7 +277,7 @@ module("Ember.Sortable with sortFunction and sortProperties", {
 test("you can sort with custom sorting function", function() {
   equal(sortedArrayController.get('length'), 0, 'array has 0 items');
 
-  Ember.run(function() {
+  run(function() {
     sortedArrayController.set('content', unsortedArray);
   });
 

@@ -1,5 +1,10 @@
+import {set} from "ember-metal/property_set";
+import keys from "ember-runtime/keys";
+import {addObserver, removeObserver} from "ember-metal/observer";
+import EmberObject from "ember-runtime/system/object";
+
 // ========================================================================
-// Ember.keys Tests
+// keys Tests
 // ========================================================================
 /*globals module test */
 
@@ -12,19 +17,19 @@ test("should get a key array for a specified object", function() {
   object1.age = "23";
   object1.place = "Mangalore";
 
-  var object2 = Ember.keys(object1);
+  var object2 = keys(object1);
 
   deepEqual(object2, ['names','age','place']);
 });
 
 test("should get a key array for a specified Ember.Object", function() {
-  var object1 = Ember.Object.create({
+  var object1 = EmberObject.create({
     names: "Rahul",
     age: "23",
     place: "Mangalore"
   });
 
-  var object2 = Ember.keys(object1);
+  var object2 = keys(object1);
 
   deepEqual(object2, ['names','age','place']);
 });
@@ -35,91 +40,87 @@ test("should get a key array for property that is named the same as prototype pr
     toString: function() {}
   };
 
-  var object2 = Ember.keys(object1);
+  var object2 = keys(object1);
 
   deepEqual(object2, ['toString']);
 });
 
 test('should not contain properties declared in the prototype', function () {
-  var beer = Ember.Object.extend({
+  var beer = EmberObject.extend({
     type: 'ipa'
   }).create();
 
-  var keys = Ember.keys(beer);
-
-  deepEqual(keys, []);
+  deepEqual(keys(beer), []);
 });
 
 test('should return properties that were set after object creation', function () {
-  var beer = Ember.Object.extend({
+  var beer = EmberObject.extend({
     type: 'ipa'
   }).create();
 
-  Ember.set(beer, 'brand', 'big daddy');
+  set(beer, 'brand', 'big daddy');
 
-  var keys = Ember.keys(beer);
-
-  deepEqual(keys, ['brand']);
+  deepEqual(keys(beer), ['brand']);
 });
 
 module('Keys behavior with observers');
 
 test('should not leak properties on the prototype', function () {
-  var beer = Ember.Object.extend({
+  var beer = EmberObject.extend({
     type: 'ipa'
   }).create();
 
-  Ember.addObserver(beer, 'type', Ember.K);
-  deepEqual(Ember.keys(beer), []);
-  Ember.removeObserver(beer, 'type', Ember.K);
+  addObserver(beer, 'type', Ember.K);
+  deepEqual(keys(beer), []);
+  removeObserver(beer, 'type', Ember.K);
 });
 
 test('observing a non existent property', function () {
-  var beer = Ember.Object.extend({
+  var beer = EmberObject.extend({
     type: 'ipa'
   }).create();
 
-  Ember.addObserver(beer, 'brand', Ember.K);
+  addObserver(beer, 'brand', Ember.K);
 
-  deepEqual(Ember.keys(beer), []);
+  deepEqual(keys(beer), []);
 
-  Ember.set(beer, 'brand', 'Corona');
-  deepEqual(Ember.keys(beer), ['brand']);
+  set(beer, 'brand', 'Corona');
+  deepEqual(keys(beer), ['brand']);
 
-  Ember.removeObserver(beer, 'brand', Ember.K);
+  removeObserver(beer, 'brand', Ember.K);
 });
 
 test('with observers switched on and off', function () {
-  var beer = Ember.Object.extend({
+  var beer = EmberObject.extend({
     type: 'ipa'
   }).create();
 
-  Ember.addObserver(beer, 'type', Ember.K);
-  Ember.removeObserver(beer, 'type', Ember.K);
+  addObserver(beer, 'type', Ember.K);
+  removeObserver(beer, 'type', Ember.K);
 
-  deepEqual(Ember.keys(beer), []);
+  deepEqual(keys(beer), []);
 });
 
 test('observers switched on and off with setter in between', function () {
-  var beer = Ember.Object.extend({
+  var beer = EmberObject.extend({
     type: 'ipa'
   }).create();
 
-  Ember.addObserver(beer, 'type', Ember.K);
-  Ember.set(beer, 'type', 'ale');
-  Ember.removeObserver(beer, 'type', Ember.K);
+  addObserver(beer, 'type', Ember.K);
+  set(beer, 'type', 'ale');
+  removeObserver(beer, 'type', Ember.K);
 
-  deepEqual(Ember.keys(beer), ['type']);
+  deepEqual(keys(beer), ['type']);
 });
 
 test('observer switched on and off and then setter', function () {
-  var beer = Ember.Object.extend({
+  var beer = EmberObject.extend({
     type: 'ipa'
   }).create();
 
-  Ember.addObserver(beer, 'type', Ember.K);
-  Ember.removeObserver(beer, 'type', Ember.K);
-  Ember.set(beer, 'type', 'ale');
+  addObserver(beer, 'type', Ember.K);
+  removeObserver(beer, 'type', Ember.K);
+  set(beer, 'type', 'ale');
 
-  deepEqual(Ember.keys(beer), ['type']);
+  deepEqual(keys(beer), ['type']);
 });

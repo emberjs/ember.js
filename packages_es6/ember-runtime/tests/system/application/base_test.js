@@ -1,7 +1,9 @@
+import Namespace from "ember-runtime/system/namespace";
+import Application from "ember-runtime/system/application";
+
 module('Ember.Application');
 
 test('Ember.Application should be a subclass of Ember.Namespace', function() {
 
-  ok(Ember.Namespace.detect(Ember.Application), 'Ember.Application subclass of Ember.Namespace');
-
+  ok(Namespace.detect(Application), 'Ember.Application subclass of Ember.Namespace');
 });

@@ -12,13 +12,13 @@
 // require('ember-runtime/mixins/action_handler');
 // require('ember-runtime/mixins/promise_proxy');
 
-import {EmberArray} from "ember-runtime/mixin/array";
+import EmberArray from "ember-runtime/mixins/array";
 import {Comparable} from "ember-runtime/mixins/comparable";
 import {Copyable} from "ember-runtime/mixins/copyable";
-import {Enumerable} from "ember-runtime/mixins/enumerable";
-import {Freezable, FROZEN_ERROR} from "ember-runtime/mixins/freezing";
-import {Observable} from "ember-runtime/mixins/observable";
-import {ActionHandler} from "ember-runtime/mixins/action_handler";
+import Enumerable from "ember-runtime/mixins/enumerable";
+import {Freezable, FROZEN_ERROR} from "ember-runtime/mixins/freezable";
+import Observable from "ember-runtime/mixins/observable";
+import ActionHandler from "ember-runtime/mixins/action_handler";
 import Deferred from "ember-runtime/mixins/deferred";
 import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";
 import MutableArray from "ember-runtime/mixins/mutable_array"

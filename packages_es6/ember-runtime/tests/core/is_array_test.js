@@ -1,7 +1,11 @@
+import Ember from "ember-metal/core";
+import {isArray} from "ember-metal/utils";
+import ArrayProxy from "ember-runtime/system/array_proxy";
+
 module("Ember Type Checking");
 
 test("Ember.isArray" ,function() {
-  var arrayProxy = Ember.ArrayProxy.create({ content: Ember.A() });
+  var arrayProxy = ArrayProxy.create({ content: Ember.A() });
 
-  equal(Ember.isArray(arrayProxy), true, "[]");
+  equal(isArray(arrayProxy), true, "[]");
 });

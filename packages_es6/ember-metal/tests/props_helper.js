@@ -1,9 +1,12 @@
 /*global testBoth:true */
 
+import {get} from 'ember-metal/property_get';
+import {set} from 'ember-metal/property_set';
+
 // used by unit tests to test both accessor mode and non-accessor mode
-testBoth = function(testname, callback) {
+export default function(testname, callback) {
   test(testname+' using Ember.get()/Ember.set()', function() {
-    callback(Ember.get, Ember.set);
+    callback(get, set);
   });
 
   // test(testname+' using accessors', function() {

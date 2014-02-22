@@ -1,6 +1,3 @@
-// Not needed? require('ember-metal/core');
-// Not needed? require('ember-metal/utils');
-
 import EnumerableUtils from "ember-metal/enumerable_utils";
 
 /**

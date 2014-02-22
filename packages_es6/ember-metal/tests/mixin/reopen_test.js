@@ -1,7 +1,9 @@
+import {Mixin} from 'ember-metal/mixin';
+
 module('Ember.Mixin#reopen');
 
 test('using reopen() to add more properties to a simple', function() {
-  var MixinA = Ember.Mixin.create({ foo: 'FOO', baz: 'BAZ' });
+  var MixinA = Mixin.create({ foo: 'FOO', baz: 'BAZ' });
   MixinA.reopen({ bar: 'BAR', foo: 'FOO2' });
   var obj = {};
   MixinA.apply(obj);

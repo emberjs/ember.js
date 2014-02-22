@@ -1,4 +1,7 @@
-module('Ember.set');
+import {get} from 'ember-metal/property_get';
+import {set} from 'ember-metal/property_set';
+
+module('set');
 
 test('should set arbitrary properties on an object', function() {
   var obj = {
@@ -13,8 +16,8 @@ test('should set arbitrary properties on an object', function() {
 
   for(var key in obj) {
     if (!obj.hasOwnProperty(key)) continue;
-    equal(Ember.set(newObj, key, obj[key]), obj[key], 'should return value');
-    equal(Ember.get(newObj, key), obj[key], 'should set value');
+    equal(set(newObj, key, obj[key]), obj[key], 'should return value');
+    equal(get(newObj, key), obj[key], 'should set value');
   }
 
 });
@@ -36,7 +39,7 @@ test('should call setUnknownProperty if defined and value is undefined', functio
     }
   };
 
-  equal(Ember.set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
+  equal(set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
   equal(obj.count, 1, 'should have invoked');
 });
 

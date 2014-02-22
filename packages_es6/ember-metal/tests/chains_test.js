@@ -1,4 +1,7 @@
-var META_KEY = Ember.META_KEY;
+import {META_KEY} from 'ember-metal/utils';
+import {addObserver} from "ember-metal/observer";
+import {finishChains} from "ember-metal/chains";
+import {create} from 'ember-metal/platform';
 
 module("Chains");
 
@@ -6,10 +9,10 @@ test("finishChains should properly copy chains from prototypes to instances", fu
   function didChange() {}
 
   var obj = {};
-  Ember.addObserver(obj, 'foo.bar', null, didChange);
+  addObserver(obj, 'foo.bar', null, didChange);
 
-  var childObj = Object.create(obj);
-  Ember.finishChains(childObj);
+  var childObj = create(obj);
+  finishChains(childObj);
 
   ok(obj[META_KEY].chains !== childObj[META_KEY].chains, "The chains object is copied");
 });

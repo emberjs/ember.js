@@ -1,13 +1,3 @@
-// require('ember-metal/core');
-// ES6TODO: not actually used? require('ember-metal/property_get');
-// require('ember-metal/computed');
-// require('ember-metal/properties');
-// require('ember-metal/expand_properties');
-// ES6TODO: not actually used? require('ember-metal/observer');
-// require('ember-metal/utils');
-// require('ember-metal/array');
-// require('ember-metal/binding');
-
 /**
 @module ember
 @submodule ember-metal
@@ -15,12 +5,14 @@
 
 import Ember from "ember-metal/core"; // warn, assert, wrap, et;
 import {map, indexOf, forEach} from "ember-metal/array";
-import create from "ember-metal/platform";
-import {guidFor, metaFor, META_KEY, wrap, makeArray, apply} from "ember-metal/utils";
+import {create} from "ember-metal/platform";
+import {guidFor, meta, META_KEY, wrap, makeArray, apply} from "ember-metal/utils";
 import expandProperties from "ember-metal/expand_properties";
 import {Descriptor, defineProperty} from "ember-metal/properties";
-import ComputedProperty from "ember-metal/computed";
-import Binding from "ember-metal/binding";
+import {ComputedProperty} from "ember-metal/computed";
+import {Binding} from "ember-metal/binding";
+import {addObserver, removeObserver, addBeforeObserver, removeBeforeObserver} from "ember-metal/observer";
+import {addListener, removeListener} from "ember-metal/events";
 
 var Mixin, REQUIRED, Alias,
     a_map = map,
@@ -28,7 +20,8 @@ var Mixin, REQUIRED, Alias,
     a_forEach = forEach,
     a_slice = [].slice,
     o_create = create,
-    defineProperty = defineProperty;
+    defineProperty = defineProperty,
+    metaFor = meta;
 
 function superFunction(){
   var ret, func = this.__nextSuper;
@@ -316,7 +309,7 @@ function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, upd
 
   if (paths) {
     for (var i=0, l=paths.length; i<l; i++) {
-      Ember[updateMethod](obj, paths[i], null, key);
+      updateMethod(obj, paths[i], null, key);
     }
   }
 }
@@ -325,15 +318,15 @@ function replaceObserversAndListeners(obj, key, observerOrListener) {
   var prev = obj[key];
 
   if ('function' === typeof prev) {
-    updateObserversAndListeners(obj, key, prev, '__ember_observesBefore__', 'removeBeforeObserver');
-    updateObserversAndListeners(obj, key, prev, '__ember_observes__', 'removeObserver');
-    updateObserversAndListeners(obj, key, prev, '__ember_listens__', 'removeListener');
+    updateObserversAndListeners(obj, key, prev, '__ember_observesBefore__', removeBeforeObserver);
+    updateObserversAndListeners(obj, key, prev, '__ember_observes__', removeObserver);
+    updateObserversAndListeners(obj, key, prev, '__ember_listens__', removeListener);
   }
 
   if ('function' === typeof observerOrListener) {
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observesBefore__', 'addBeforeObserver');
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observes__', 'addObserver');
-    updateObserversAndListeners(obj, key, observerOrListener, '__ember_listens__', 'addListener');
+    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observesBefore__', addBeforeObserver);
+    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observes__', addObserver);
+    updateObserversAndListeners(obj, key, observerOrListener, '__ember_listens__', addListener);
   }
 }
 

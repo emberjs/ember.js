@@ -44,12 +44,13 @@ import {
   addListener,
   removeListener,
   suspendListener,
+  suspendListeners,
   sendEvent,
   hasListeners,
   watchedEvents,
   listenersFor,
-  actionsDiff,
-  actionsUnion
+  listenersDiff,
+  listenersUnion
 } from "ember-metal/events";
 
 import ObserverSet from "ember-metal/observer_set";
@@ -70,11 +71,14 @@ import {watch, isWatching, unwatch, rewatch, destroy} from "ember-metal/watching
 import expandProperties from "ember-metal/expand_properties";
 import {ComputedProperty, computed, cacheFor} from "ember-metal/computed";
 
-import {addObserver, observersFor, removeObserver, addBeforeObserver, _suspendBeforeObserver, _suspendObserver, _suspendBeforeObserver, _suspendObservers, beforeObserversFor, removeBeforeObserver} from "ember-metal/observer";
+import {addObserver, observersFor, removeObserver, addBeforeObserver, _suspendBeforeObserver, _suspendObserver, _suspendBeforeObservers, _suspendObservers, beforeObserversFor, removeBeforeObserver} from "ember-metal/observer";
 import {IS_BINDING, mixin, Mixin, required, aliasMethod, observer, immediateObserver, beforeObserver} from "ember-metal/mixin";
 import {Binding, isGlobalPath, bind, oneWay} from "ember-metal/binding";
-import Run from "ember-metal/run_loop";
+import run from "ember-metal/run_loop";
 import libraries from "ember-metal/libraries";
+import {isNone, none} from 'ember-metal/is_none';
+import {isEmpty, empty} from 'ember-metal/is_empty';
+import isBlank from 'ember-metal/is_blank';
 
 // EXPORTS to the global window Ember.
 
@@ -84,6 +88,8 @@ Ember.Instrumentation = {
   unsubscribe: unsubscribe,
   reset: reset
 };
+Ember.instrument = instrument;
+Ember.subscribe = subscribe;
 
 Ember.generateGuid    = generateGuid;
 Ember.GUID_KEY        = GUID_KEY;
@@ -207,10 +213,18 @@ Ember.bind = bind;
 Ember.Binding = Binding;
 Ember.isGlobalPath = isGlobalPath;
 
-Ember.Run = Run;
+Ember.run = run;
 
 Ember.libraries = libraries;
 Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
+
+Ember.isNone = isNone;
+Ember.none = none;
+
+Ember.isEmpty = isEmpty;
+Ember.empty = empty;
+
+Ember.isBlank = isBlank;
 
 /**
   A function may be assigned to `Ember.onerror` to be called when Ember
@@ -255,7 +269,5 @@ Ember.onerror = null;
 // require('ember-metal/binding');
 // require('ember-metal/run_loop');
 // require('ember-metal/libraries');
-
-window.Ember = Ember;
 
 export default Ember;

@@ -1,7 +1,7 @@
-import get from "ember-metal/property_get";
-import set from "ember-metal/property_set";
-import computed from "ember-metal/computed";
-import Mixin from "ember-metal/mixin";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {computed} from "ember-metal/computed";
+import {Mixin} from "ember-metal/mixin";
 import EmberError from "ember-metal/error";
 
 var not = computed.not, or = computed.or;

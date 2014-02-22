@@ -1,6 +1,6 @@
-require('ember-runtime/~tests/suites/copyable');
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = Ember.CopyableTests;
+var suite = SuiteModuleBuilder.create();
 
 suite.module('copy');
 
@@ -10,4 +10,4 @@ suite.test("should return an equivalent copy", function() {
   ok(this.isEqual(obj, copy), 'old object and new object should be equivalent');
 });
 
-
+export default suite;

@@ -1,19 +1,23 @@
+import MutableEnumerableTests from 'ember-runtime/tests/suites/mutable_enumerable';
+import Set from "ember-runtime/system/set";
+import {get} from "ember-metal/property_get";
+
 // ..........................................................
 // MUTABLE ENUMERABLE TESTS
 //
-Ember.MutableEnumerableTests.extend({
+MutableEnumerableTests.extend({
 
   name: 'Ember.Set',
 
   newObject: function(ary) {
     ary = ary ? ary.slice() : this.newFixture(3);
-    var ret = new Ember.Set();
+    var ret = new Set();
     ret.addObjects(ary);
     return ret;
   },
 
   mutate: function(obj) {
-    obj.addObject(Ember.get(obj, 'length')+1);
+    obj.addObject(get(obj, 'length')+1);
   },
 
   toArray: function(obj) {

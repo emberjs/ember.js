@@ -1,3 +1,5 @@
+import Ember from 'ember-metal/core';
+
 var isEnabled = Ember.FEATURES.isEnabled,
     origFeatures, origEnableAll, origEnableOptional;
 

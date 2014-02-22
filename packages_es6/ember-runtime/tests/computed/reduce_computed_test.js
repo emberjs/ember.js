@@ -1,22 +1,34 @@
-var map = Ember.EnumerableUtils.map,
-    get = Ember.get,
-    set = Ember.set,
-    metaFor = Ember.meta,
-    keys = Ember.keys,
+import Ember from 'ember-metal/core';
+import EnumerableUtils from 'ember-metal/enumerable_utils';
+import {get, getWithDefault} from 'ember-metal/property_get';
+import {set} from 'ember-metal/property_set';
+import {meta} from 'ember-metal/utils';
+import run from 'ember-metal/run_loop';
+import {observer} from 'ember-metal/mixin';
+import keys from "ember-runtime/keys";
+import EmberObject from "ember-runtime/system/object";
+import {ComputedProperty, computed} from "ember-metal/computed";
+import {arrayComputed} from "ember-runtime/computed/array_computed";
+import {reduceComputed} from "ember-runtime/computed/reduce_computed";
+import ArrayProxy from "ember-runtime/system/array_proxy";
+import SubArray from "ember-runtime/system/subarray";
+
+var map = EnumerableUtils.map,
+    metaFor = meta,
     obj, addCalls, removeCalls, callbackItems;
 
-module('Ember.arrayComputed', {
+module('arrayComputed', {
   setup: function () {
     addCalls = removeCalls = 0;
 
-    obj = Ember.Object.createWithMixins({
+    obj = EmberObject.createWithMixins({
       numbers:  Ember.A([ 1, 2, 3, 4, 5, 6 ]),
       otherNumbers: Ember.A([ 7, 8, 9 ]),
 
       // Users would obviously just use `Ember.computed.map`
       // This implemantion is fine for these tests, but doesn't properly work as
       // it's not index based.
-      evenNumbers: Ember.arrayComputed('numbers', {
+      evenNumbers: arrayComputed('numbers', {
         addedItem: function (array, item) {
           addCalls++;
           if (item % 2 === 0) {
@@ -31,7 +43,7 @@ module('Ember.arrayComputed', {
         }
       }),
 
-      evenNumbersMultiDep: Ember.arrayComputed('numbers', 'otherNumbers', {
+      evenNumbersMultiDep: arrayComputed('numbers', 'otherNumbers', {
         addedItem: function (array, item) {
           if (item % 2 === 0) {
             array.pushObject(item);
@@ -41,10 +53,10 @@ module('Ember.arrayComputed', {
       }),
 
       nestedNumbers:  Ember.A(map([1,2,3,4,5,6], function (n) {
-                        return Ember.Object.create({ p: 'otherProperty', v: n });
+                        return EmberObject.create({ p: 'otherProperty', v: n });
                       })),
 
-      evenNestedNumbers: Ember.arrayComputed({
+      evenNestedNumbers: arrayComputed({
         addedItem: function (array, item, keyName) {
           var value = item.get('v');
           if (value % 2 === 0) {
@@ -61,21 +73,21 @@ module('Ember.arrayComputed', {
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       obj.destroy();
     });
   }
 });
 
 
-test("array computed properties are instances of Ember.ComputedProperty", function() {
-  ok(Ember.arrayComputed({}) instanceof Ember.ComputedProperty);
+test("array computed properties are instances of ComputedProperty", function() {
+  ok(arrayComputed({}) instanceof ComputedProperty);
 });
 
 test("when the dependent array is null or undefined, `addedItem` is not called and only the initial value is returned", function() {
-  obj = Ember.Object.createWithMixins({
+  obj = EmberObject.createWithMixins({
     numbers: null,
-    doubledNumbers: Ember.arrayComputed('numbers', {
+    doubledNumbers: arrayComputed('numbers', {
       addedItem: function (array, n) {
         addCalls++;
         array.pushObject(n * 2);
@@ -87,7 +99,7 @@ test("when the dependent array is null or undefined, `addedItem` is not called a
   deepEqual(get(obj, 'doubledNumbers'), [], "When the dependent array is null, the initial value is returned");
   equal(addCalls, 0,  "`addedItem` is not called when the dependent array is null");
 
-  Ember.run(function() {
+  run(function() {
     set(obj, 'numbers', Ember.A([1,2]));
   });
 
@@ -112,7 +124,7 @@ test("after the first retrieval, array computed properties observe additions to 
       // set up observers
       evenNumbers = get(obj, 'evenNumbers');
 
-  Ember.run(function() {
+  run(function() {
     numbers.pushObjects([7, 8]);
   });
 
@@ -124,7 +136,7 @@ test("after the first retrieval, array computed properties observe removals from
       // set up observers
       evenNumbers = get(obj, 'evenNumbers');
 
-  Ember.run(function() {
+  run(function() {
     numbers.removeObjects([3, 4]);
   });
 
@@ -137,7 +149,7 @@ test("after first retrieval, array computed properties can observe properties on
 
   deepEqual(evenNestedNumbers, [2, 4, 6], 'precond -- starts off with correct values');
 
-  Ember.run(function() {
+  run(function() {
     nestedNumbers.objectAt(0).set('v', 22);
   });
 
@@ -151,7 +163,7 @@ test("changes to array computed properties happen synchronously", function() {
 
   deepEqual(evenNestedNumbers, [2, 4, 6], 'precond -- starts off with correct values');
 
-  Ember.run(function() {
+  run(function() {
     nestedNumbers.objectAt(0).set('v', 22);
     deepEqual(nestedNumbers.mapBy('v'), [22, 2, 3, 4, 5, 6], 'nested numbers is updated');
     deepEqual(evenNestedNumbers, [2, 4, 6, 22], 'adds new number');
@@ -159,10 +171,10 @@ test("changes to array computed properties happen synchronously", function() {
 });
 
 test("multiple dependent keys can be specified via brace expansion", function() {
-  var obj = Ember.Object.createWithMixins({
+  var obj = EmberObject.createWithMixins({
     bar: Ember.A(),
     baz: Ember.A(),
-    foo: Ember.reduceComputed({
+    foo: reduceComputed({
       initialValue: Ember.A(),
       addedItem: function(array, item) { array.pushObject('a:' + item); return array; },
       removedItem: function(array, item) { array.pushObject('r:' + item); return array; }
@@ -193,9 +205,9 @@ test("multiple dependent keys can be specified via brace expansion", function() 
         removedCalls = 0,
         expected = Ember.A(),
         item = { propA: 'A', propB: 'B', propC: 'C' },
-        obj = Ember.Object.createWithMixins({
+        obj = EmberObject.createWithMixins({
           bar: Ember.A([item]),
-          foo: Ember.reduceComputed({
+          foo: reduceComputed({
             initialValue: Ember.A(),
             addedItem: function(array, item, changeMeta) {
               array.pushObject('a:' + get(item, 'propA') + ':' + get(item, 'propB') + ':' + get(item, 'propC'));
@@ -227,16 +239,16 @@ test("multiple dependent keys can be specified via brace expansion", function() 
   });
 
 test("doubly nested item property keys (@each.foo.@each) are not supported", function() {
-  Ember.run(function() {
-    obj = Ember.Object.createWithMixins({
-      peopleByOrdinalPosition: Ember.A([{ first: Ember.A([Ember.Object.create({ name: "Jaime Lannister" })])}]),
-      people: Ember.arrayComputed({
+  run(function() {
+    obj = EmberObject.createWithMixins({
+      peopleByOrdinalPosition: Ember.A([{ first: Ember.A([EmberObject.create({ name: "Jaime Lannister" })])}]),
+      people: arrayComputed({
         addedItem: function (array, item) {
           array.pushObject(get(item, 'first.firstObject'));
           return array;
         }
       }).property('peopleByOrdinalPosition.@each.first'),
-      names: Ember.arrayComputed({
+      names: arrayComputed({
         addedItem: function (array, item) {
           equal(get(item, 'name'), 'Jaime Lannister');
           array.pushObject(item.get('name'));
@@ -249,9 +261,9 @@ test("doubly nested item property keys (@each.foo.@each) are not supported", fun
   equal(obj.get('names.firstObject'), 'Jaime Lannister', "Doubly nested item properties can be retrieved manually");
 
   throws(function() {
-    obj = Ember.Object.createWithMixins({
-      people: [{ first: Ember.A([Ember.Object.create({ name: "Jaime Lannister" })])}],
-      names: Ember.arrayComputed({
+    obj = EmberObject.createWithMixins({
+      people: [{ first: Ember.A([EmberObject.create({ name: "Jaime Lannister" })])}],
+      names: arrayComputed({
         addedItem: function (array, item) {
           array.pushObject(item);
           return array;
@@ -267,7 +279,7 @@ test("after the first retrieval, array computed properties observe dependent arr
 
   deepEqual(evenNumbers, [2, 4, 6], 'precond -- starts off with correct values');
 
-  Ember.run(function() {
+  run(function() {
     set(obj, 'numbers', Ember.A([20, 23, 28]));
   });
 
@@ -281,7 +293,7 @@ test("array observers are torn down when dependent arrays change", function() {
   equal(addCalls, 6, 'precond - add has been called for each item in the array');
   equal(removeCalls, 0, 'precond - removed has not been called');
 
-  Ember.run(function() {
+  run(function() {
     set(obj, 'numbers', Ember.A([20, 23, 28]));
   });
 
@@ -301,7 +313,7 @@ test("modifying properties on dependent array items triggers observers exactly o
   equal(addCalls, 6, 'precond - add has not been called for each item in the array');
   equal(removeCalls, 0, 'precond - removed has not been called');
 
-  Ember.run(function() {
+  run(function() {
     numbers.replace(0,2,[7,8,9,10]);
   });
 
@@ -317,7 +329,7 @@ test("multiple array computed properties on the same object can observe dependen
   deepEqual(get(obj, 'evenNumbers'), [2,4,6], "precond - evenNumbers is initially correct");
   deepEqual(get(obj, 'evenNumbersMultiDep'), [2, 4, 6, 8], "precond - evenNumbersMultiDep is initially correct");
 
-  Ember.run(function() {
+  run(function() {
     numbers.pushObject(12);
     otherNumbers.pushObject(14);
   });
@@ -328,9 +340,9 @@ test("multiple array computed properties on the same object can observe dependen
 
 test("an error is thrown when a reduceComputed is defined without an initialValue property", function() {
   var defineExploder = function() {
-    Ember.Object.createWithMixins({
+    EmberObject.createWithMixins({
       collection: Ember.A(),
-      exploder: Ember.reduceComputed('collection', {
+      exploder: reduceComputed('collection', {
         initialize: function(initialValue, changeMeta, instanceMeta) {},
 
         addedItem: function(accumulatedValue,item,changeMeta,instanceMeta) {
@@ -348,9 +360,9 @@ test("an error is thrown when a reduceComputed is defined without an initialValu
 });
 
 test("dependent arrays with multiple item properties are not double-counted", function() {
-  var obj = Ember.Object.extend({
+  var obj = EmberObject.extend({
     items: Ember.A([{ foo: true }, { bar: false }, { bar: true }]),
-    countFooOrBar: Ember.reduceComputed({
+    countFooOrBar: reduceComputed({
       initialValue: 0,
       addedItem: function (acc) {
         ++addCalls;
@@ -377,9 +389,9 @@ test("dependent arrays can use `replace` with an out of bounds index to add item
   var dependentArray = Ember.A(),
       array;
 
-  obj = Ember.Object.extend({
+  obj = EmberObject.extend({
     dependentArray: dependentArray,
-    computed: Ember.arrayComputed('dependentArray', {
+    computed: arrayComputed('dependentArray', {
       addedItem: function (acc, item, changeMeta) {
         acc.insertAt(changeMeta.index, item);
         return acc;
@@ -405,9 +417,9 @@ test("dependent arrays can use `replace` with a negative index to remove items i
   var dependentArray = Ember.A([1,2,3,4,5]),
       array;
 
-  obj = Ember.Object.extend({
+  obj = EmberObject.extend({
     dependentArray: dependentArray,
-    computed: Ember.arrayComputed('dependentArray', {
+    computed: arrayComputed('dependentArray', {
       addedItem: function (acc, item) { return acc; },
       removedItem: function (acc, item) { acc.pushObject(item); return acc; }
     })
@@ -426,9 +438,9 @@ test("dependent arrays that call `replace` with an out of bounds index to remove
   var dependentArray = Ember.A([1, 2]),
       array;
 
-  obj = Ember.Object.extend({
+  obj = EmberObject.extend({
     dependentArray: dependentArray,
-    computed: Ember.arrayComputed('dependentArray', {
+    computed: arrayComputed('dependentArray', {
       addedItem: function (acc, item, changeMeta) { return acc; },
       removedItem: function (acc) {
         ok(false, "no items have been removed");
@@ -447,9 +459,9 @@ test("dependent arrays that call `replace` with a too-large removedCount a) work
   var dependentArray = Ember.A([1, 2]),
       array;
 
-  obj = Ember.Object.extend({
+  obj = EmberObject.extend({
     dependentArray: dependentArray,
-    computed: Ember.arrayComputed('dependentArray', {
+    computed: arrayComputed('dependentArray', {
       addedItem: function (acc, item) { return acc; },
       removedItem: function (acc, item) { acc.pushObject(item); return acc; }
     })
@@ -482,23 +494,23 @@ test("removedItem is not erroneously called for dependent arrays during a recomp
         removedItem: removedItem
       };
 
-  obj = Ember.Object.extend({
+  obj = EmberObject.extend({
     dependentArray: Ember.A([1, 2]),
-    identity0: Ember.arrayComputed('dependentArray', options),
-    identity1: Ember.arrayComputed('identity0', options)
+    identity0: arrayComputed('dependentArray', options),
+    identity1: arrayComputed('identity0', options)
   }).create();
 
   get(obj, 'identity1');
-  Ember.run(function() {
+  run(function() {
     obj.notifyPropertyChange('dependentArray');
   });
 
   ok(true, "removedItem not invoked with invalid index");
 });
 
-module('Ember.arrayComputed - recomputation DKs', {
+module('arrayComputed - recomputation DKs', {
   setup: function() {
-    obj = Ember.Object.extend({
+    obj = EmberObject.extend({
       people: Ember.A([{
         name: 'Jaime Lannister',
         title: 'Kingsguard'
@@ -507,7 +519,7 @@ module('Ember.arrayComputed - recomputation DKs', {
         title: 'Queen'
       }]),
 
-      titles: Ember.arrayComputed('people', {
+      titles: arrayComputed('people', {
         addedItem: function (acc, person) {
           acc.pushObject(get(person, 'title'));
           return acc;
@@ -516,7 +528,7 @@ module('Ember.arrayComputed - recomputation DKs', {
     }).create();
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       obj.destroy();
     });
   }
@@ -539,7 +551,7 @@ test("recomputations from `arrayComputed` observers add back dependent keys", fu
   equal(meta.deps.people.titles, 1, "titles depends on people exactly once");
   equal(meta.watching.people, 2, "people has two watchers: the array listener and titles");
 
-  Ember.run(function() {
+  run(function() {
     set(obj, 'people', Ember.A());
   });
 
@@ -555,12 +567,12 @@ test("recomputations from `arrayComputed` observers add back dependent keys", fu
 
 module('Ember.arryComputed - self chains', {
   setup: function() {
-    var a = Ember.Object.create({ name: 'a' }),
-    b = Ember.Object.create({ name: 'b' });
+    var a = EmberObject.create({ name: 'a' }),
+    b = EmberObject.create({ name: 'b' });
 
-    obj = Ember.ArrayProxy.createWithMixins({
+    obj = ArrayProxy.createWithMixins({
       content: Ember.A([a, b]),
-      names: Ember.arrayComputed('@this.@each.name', {
+      names: arrayComputed('@this.@each.name', {
         addedItem: function (array, item, changeMeta, instanceMeta) {
           var mapped = get(item, 'name');
           array.insertAt(changeMeta.index, mapped);
@@ -574,7 +586,7 @@ module('Ember.arryComputed - self chains', {
     });
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       obj.destroy();
     });
   }
@@ -585,26 +597,26 @@ test("@this can be used to treat the object as the array itself", function() {
 
   deepEqual(names, ['a', 'b'], "precond - names is initially correct");
 
-  Ember.run(function() {
+  run(function() {
     obj.objectAt(1).set('name', 'c');
   });
 
   deepEqual(names, ['a', 'c'], "@this can be used with item property observers");
 
-  Ember.run(function() {
+  run(function() {
     obj.pushObject({ name: 'd' });
   });
 
   deepEqual(names, ['a', 'c', 'd'], "@this observes new items");
 });
 
-module('Ember.arrayComputed - changeMeta property observers', {
+module('arrayComputed - changeMeta property observers', {
   setup: function() {
     callbackItems = [];
-    Ember.run(function() {
-      obj = Ember.Object.createWithMixins({
-        items: Ember.A([Ember.Object.create({ n: 'zero' }), Ember.Object.create({ n: 'one' })]),
-        itemsN: Ember.arrayComputed('items.@each.n', {
+    run(function() {
+      obj = EmberObject.createWithMixins({
+        items: Ember.A([EmberObject.create({ n: 'zero' }), EmberObject.create({ n: 'one' })]),
+        itemsN: arrayComputed('items.@each.n', {
           addedItem: function (array, item, changeMeta, instanceMeta) {
             callbackItems.push('add:' + changeMeta.index + ":" + get(changeMeta.item, 'n'));
           },
@@ -616,7 +628,7 @@ module('Ember.arrayComputed - changeMeta property observers', {
     });
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       obj.destroy();
     });
   }
@@ -628,22 +640,22 @@ test("changeMeta includes item and index", function() {
   items = get(obj, 'items');
 
   // initial computation add0 add1
-  Ember.run(function() {
+  run(function() {
     obj.get('itemsN');
   });
 
   // add2
-  Ember.run(function() {
-    items.pushObject(Ember.Object.create({ n: 'two' }));
+  run(function() {
+    items.pushObject(EmberObject.create({ n: 'two' }));
   });
 
   // remove2
-  Ember.run(function() {
+  run(function() {
     items.popObject();
   });
 
   // remove0 add0
-  Ember.run(function() {
+  run(function() {
     set(get(items, 'firstObject'), 'n', "zero'");
   });
 
@@ -652,13 +664,13 @@ test("changeMeta includes item and index", function() {
 
   // [zero', one] -> [zero', one, five, six]
   // add2 add3
-  Ember.run(function() {
-    items.pushObject(Ember.Object.create({ n: 'five' }));
-    items.pushObject(Ember.Object.create({ n: 'six' }));
+  run(function() {
+    items.pushObject(EmberObject.create({ n: 'five' }));
+    items.pushObject(EmberObject.create({ n: 'six' }));
   });
 
   // remove0 add0
-  Ember.run(function() {
+  run(function() {
     items.objectAt(0).set('n', "zero''");
   });
 
@@ -667,19 +679,19 @@ test("changeMeta includes item and index", function() {
 
   // [zero'', one, five, six] -> [zero'', five, six]
   // remove1
-  Ember.run(function() {
+  run(function() {
     item = items.objectAt(1);
     items.removeAt(1, 1);
   });
 
-  Ember.run(function() {
+  run(function() {
     // observer should have been removed from the deleted item
     item.set('n', 'ten thousand');
   });
 
   // [zero'', five, six] -> [zero'', five, seven]
   // remove2 add2
-  Ember.run(function() {
+  run(function() {
     items.objectAt(2).set('n', "seven");
   });
 
@@ -688,12 +700,12 @@ test("changeMeta includes item and index", function() {
   deepEqual(callbackItems, expected, "changeMeta includes items");
 
   // reset (does not call remove)
-  Ember.run(function() {
+  run(function() {
     item = items.objectAt(1);
     set(obj, 'items', Ember.A([]));
   });
 
-  Ember.run(function() {
+  run(function() {
     // observers should have been removed from the items in the old array
     set(item, 'n', 'eleven thousand');
   });
@@ -702,16 +714,16 @@ test("changeMeta includes item and index", function() {
 });
 
 test("when initialValue is undefined, everything works as advertised", function() {
-  var chars = Ember.Object.createWithMixins({
+  var chars = EmberObject.createWithMixins({
     letters: Ember.A(),
-    firstUpper: Ember.reduceComputed('letters', {
+    firstUpper: reduceComputed('letters', {
       initialValue: undefined,
 
       initialize: function(initialValue, changeMeta, instanceMeta) {
         instanceMeta.matchingItems = Ember.A();
-        instanceMeta.subArray = new Ember.SubArray();
+        instanceMeta.subArray = new SubArray();
         instanceMeta.firstMatch = function() {
-          return Ember.getWithDefault(instanceMeta.matchingItems, 'firstObject', initialValue);
+          return getWithDefault(instanceMeta.matchingItems, 'firstObject', initialValue);
         };
       },
 
@@ -748,7 +760,7 @@ test("when initialValue is undefined, everything works as advertised", function(
   equal(get(chars, 'firstUpper'), 'B', "result is the next match when the first matching object is removed");
 });
 
-module('Ember.arrayComputed - completely invalidating dependencies', {
+module('arrayComputed - completely invalidating dependencies', {
   setup: function () {
     addCalls = removeCalls = 0;
   }
@@ -757,11 +769,11 @@ module('Ember.arrayComputed - completely invalidating dependencies', {
 test("non-array dependencies completely invalidate a reduceComputed CP", function() {
   var dependentArray = Ember.A();
 
-  obj = Ember.Object.extend({
+  obj = EmberObject.extend({
     nonArray: 'v0',
     dependentArray: dependentArray,
 
-    computed: Ember.arrayComputed('dependentArray', 'nonArray', {
+    computed: arrayComputed('dependentArray', 'nonArray', {
       addedItem: function (array) {
         ++addCalls;
         return array;
@@ -784,7 +796,7 @@ test("non-array dependencies completely invalidate a reduceComputed CP", functio
   equal(addCalls, 2, "add called one-at-a-time for dependent array changes");
   equal(removeCalls, 0, "remove not called");
 
-  Ember.run(function() {
+  run(function() {
     set(obj, 'nonArray', 'v1');
   });
 
@@ -796,11 +808,11 @@ test("array dependencies specified with `.[]` completely invalidate a reduceComp
   var dependentArray = Ember.A(),
   totallyInvalidatingDependentArray = Ember.A();
 
-  obj = Ember.Object.extend({
+  obj = EmberObject.extend({
     totallyInvalidatingDependentArray: totallyInvalidatingDependentArray,
     dependentArray: dependentArray,
 
-    computed: Ember.arrayComputed('dependentArray', 'totallyInvalidatingDependentArray.[]', {
+    computed: arrayComputed('dependentArray', 'totallyInvalidatingDependentArray.[]', {
       addedItem: function (array, item) {
         ok(item !== 3, "totally invalidating items are never passed to the one-at-a-time callbacks");
         ++addCalls;
@@ -825,7 +837,7 @@ test("array dependencies specified with `.[]` completely invalidate a reduceComp
   equal(addCalls, 2, "add called one-at-a-time for dependent array changes");
   equal(removeCalls, 0, "remove not called");
 
-  Ember.run(function() {
+  run(function() {
     totallyInvalidatingDependentArray.pushObject(3);
   });
 
@@ -837,10 +849,10 @@ test("returning undefined in addedItem/removedItem completely invalidates a redu
   var dependentArray = Ember.A([3,2,1]),
       counter = 0;
 
-  obj = Ember.Object.extend({
+  obj = EmberObject.extend({
     dependentArray: dependentArray,
 
-    computed: Ember.reduceComputed('dependentArray', {
+    computed: reduceComputed('dependentArray', {
       initialValue: Infinity,
 
       addedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
@@ -854,7 +866,7 @@ test("returning undefined in addedItem/removedItem completely invalidates a redu
       }
     }),
 
-    computedDidChange: Ember.observer('computed', function() {
+    computedDidChange: observer('computed', function() {
       counter++;
     })
   }).create();
@@ -878,8 +890,8 @@ test("returning undefined in addedItem/removedItem completely invalidates a redu
 
 if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.Array) {
   test("reduceComputed complains about array dependencies that are not `Ember.Array`s", function() {
-    var Type = Ember.Object.extend({
-      rc: Ember.reduceComputed('array', {
+    var Type = EmberObject.extend({
+      rc: reduceComputed('array', {
         initialValue: 0,
         addedItem: function(v){ return v; },
         removedItem: function(v){ return v; }

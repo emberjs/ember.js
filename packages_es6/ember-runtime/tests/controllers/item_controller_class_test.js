@@ -1,19 +1,30 @@
+import Ember from "ember-metal/core";
+import {guidFor} from "ember-metal/utils";
+import run from "ember-metal/run_loop";
+import {get} from "ember-metal/property_get";
+import {computed} from "ember-metal/computed";
+import compare from "ember-runtime/compare";
+import EmberObject from "ember-runtime/system/object";
+import ArrayController from "ember-runtime/controllers/array_controller";
+import ObjectController from "ember-runtime/controllers/object_controller";
+import {sort} from "ember-runtime/computed/reduce_computed_macros";
+import Container from "container";
+
 var lannisters, arrayController, controllerClass, otherControllerClass, container, itemControllerCount,
-    tywin, jaime, cersei, tyrion,
-    get = Ember.get;
+    tywin, jaime, cersei, tyrion;
 
 module("Ember.ArrayController - itemController", {
   setup: function() {
-    container = new Ember.Container();
+    container = new Container();
 
-    tywin = Ember.Object.create({ name: 'Tywin' });
-    jaime = Ember.Object.create({ name: 'Jaime' });
-    cersei = Ember.Object.create({ name: 'Cersei' });
-    tyrion = Ember.Object.create({ name: 'Tyrion' });
+    tywin = EmberObject.create({ name: 'Tywin' });
+    jaime = EmberObject.create({ name: 'Jaime' });
+    cersei = EmberObject.create({ name: 'Cersei' });
+    tyrion = EmberObject.create({ name: 'Tyrion' });
     lannisters = Ember.A([ tywin, jaime, cersei ]);
 
     itemControllerCount = 0;
-    controllerClass = Ember.ObjectController.extend({
+    controllerClass = ObjectController.extend({
       init: function() {
         ++itemControllerCount;
         this._super();
@@ -24,7 +35,7 @@ module("Ember.ArrayController - itemController", {
       }
     });
 
-    otherControllerClass = Ember.ObjectController.extend({
+    otherControllerClass = ObjectController.extend({
       toString: function() {
         return "otherItemController for " + this.get('name');
       }
@@ -34,21 +45,21 @@ module("Ember.ArrayController - itemController", {
     container.register("controller:OtherItem", otherControllerClass);
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       container.destroy();
     });
   }
 });
 
 function createUnwrappedArrayController() {
-  arrayController = Ember.ArrayController.create({
+  arrayController = ArrayController.create({
     container: container,
     content: lannisters
   });
 }
 
 function createArrayController() {
-  arrayController = Ember.ArrayController.create({
+  arrayController = ArrayController.create({
     container: container,
     itemController: 'Item',
     content: lannisters
@@ -56,7 +67,7 @@ function createArrayController() {
 }
 
 function createDynamicArrayController() {
-  arrayController = Ember.ArrayController.create({
+  arrayController = ArrayController.create({
     container: container,
     lookupItemController: function(object) {
       if ("Tywin" === object.get("name")) {
@@ -146,7 +157,7 @@ test("when the underlying array changes, old subcontainers are destroyed", funct
   equal(!!jaimeController.isDestroying, false, "precond - nobody is destroyed yet");
   equal(!!cerseiController.isDestroying, false, "precond - nobody is destroyed yet");
 
-  Ember.run(function() {
+  run(function() {
     arrayController.set('content', Ember.A());
   });
 
@@ -174,7 +185,7 @@ test("when items are removed from the arrayController, their respective subconta
   equal(!!jaimeController.isDestroyed, false, "precond - nobody is destroyed yet");
   equal(!!cerseiController.isDestroyed, false, "precond - nobody is destroyed yet");
 
-  Ember.run(function() {
+  run(function() {
     arrayController.removeObject(cerseiController);
   });
 
@@ -192,7 +203,7 @@ test("one cannot remove wrapped content directly when specifying `itemController
 
   equal(arrayController.get('length'), 3, "cannot remove wrapped objects directly");
 
-  Ember.run(function() {
+  run(function() {
     arrayController.removeObject(cerseiController);
   });
   equal(arrayController.get('length'), 2, "can remove wrapper objects");
@@ -207,7 +218,7 @@ test("when items are removed from the underlying array, their respective subcont
   equal(!!jaimeController.isDestroying, false, "precond - nobody is destroyed yet");
   equal(!!cerseiController.isDestroying, false, "precond - nobody is destroyed yet");
 
-  Ember.run(function() {
+  run(function() {
     lannisters.removeObject(cersei); // if only it were that easy
   });
 
@@ -226,7 +237,7 @@ test("`itemController` can be dynamic by overwriting `lookupItemController`", fu
 });
 
 test("when `idx` is out of range, `lookupItemController` is not called", function() {
-  arrayController = Ember.ArrayController.create({
+  arrayController = ArrayController.create({
     container: container,
     lookupItemController: function(object) {
       ok(false, "`lookupItemController` should not be called when `idx` is out of range");
@@ -239,7 +250,7 @@ test("when `idx` is out of range, `lookupItemController` is not called", functio
 });
 
 test("if `lookupItemController` returns a string, it must be resolvable by the container", function() {
-  arrayController = Ember.ArrayController.create({
+  arrayController = ArrayController.create({
     container: container,
     lookupItemController: function(object) {
       return "NonExistant";
@@ -272,7 +283,7 @@ test("array observers can invoke `objectAt` without overwriting existing item co
     didChange: 'lannistersDidChange'
   });
 
-  Ember.run(function() {
+  run(function() {
     lannisters.unshiftObject(tyrion);
   });
 
@@ -282,14 +293,14 @@ test("array observers can invoke `objectAt` without overwriting existing item co
 
 module('Ember.ArrayController - itemController with arrayComputed', {
   setup: function() {
-    container = new Ember.Container();
+    container = new Container();
 
-    cersei = Ember.Object.create({ name: 'Cersei' });
-    jaime = Ember.Object.create({ name: 'Jaime' });
+    cersei = EmberObject.create({ name: 'Cersei' });
+    jaime = EmberObject.create({ name: 'Jaime' });
     lannisters = Ember.A([ jaime, cersei ]);
 
-    controllerClass = Ember.ObjectController.extend({
-      title: Ember.computed(function () {
+    controllerClass = ObjectController.extend({
+      title: computed(function () {
         switch (get(this, 'name')) {
           case 'Jaime':   return 'Kingsguard';
           case 'Cersei':  return 'Queen';
@@ -304,7 +315,7 @@ module('Ember.ArrayController - itemController with arrayComputed', {
     container.register("controller:Item", controllerClass);
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       container.destroy();
     });
   }
@@ -313,11 +324,11 @@ module('Ember.ArrayController - itemController with arrayComputed', {
 test("item controllers can be used to provide properties for array computed macros", function() {
   createArrayController();
 
-  ok(Ember.compare(Ember.guidFor(cersei), Ember.guidFor(jaime)) < 0, "precond - guid tiebreaker would fail test");
+  ok(compare(guidFor(cersei), guidFor(jaime)) < 0, "precond - guid tiebreaker would fail test");
 
   arrayController.reopen({
     sortProperties: Ember.A(['title']),
-    sorted: Ember.computed.sort('@this', 'sortProperties')
+    sorted: sort('@this', 'sortProperties')
   });
 
   deepEqual(arrayController.get('sorted').mapProperty('name'), ['Jaime', 'Cersei'], "ArrayController items can be sorted on itemController properties");

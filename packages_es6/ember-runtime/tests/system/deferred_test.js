@@ -1,11 +1,15 @@
+import Ember from 'ember-metal/core';
+import run from 'ember-metal/run_loop';
+import Deferred from "ember-runtime/system/deferred";
+
 module("Ember.Deferred all-in-one");
 
 asyncTest("Can resolve a promise", function() {
   var value = { value: true };
 
-  var promise = Ember.Deferred.promise(function(deferred) {
+  var promise = Deferred.promise(function(deferred) {
     setTimeout(function() {
-      Ember.run(function() { deferred.resolve(value); });
+      run(function() { deferred.resolve(value); });
     });
   });
 
@@ -18,9 +22,9 @@ asyncTest("Can resolve a promise", function() {
 asyncTest("Can reject a promise", function() {
   var rejected = { rejected: true };
 
-  var promise = Ember.Deferred.promise(function(deferred) {
+  var promise = Deferred.promise(function(deferred) {
     setTimeout(function() {
-      Ember.run(function() { deferred.reject(rejected); });
+      run(function() { deferred.reject(rejected); });
     });
   });
 

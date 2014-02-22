@@ -1,6 +1,7 @@
-require('ember-runtime/~tests/suites/enumerable');
+import EmberObject from 'ember-runtime/system/object';
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = Ember.EnumerableTests;
+var suite = SuiteModuleBuilder.create();
 
 // ..........................................................
 // filter()
@@ -31,7 +32,7 @@ suite.test('should filter based on object', function() {
 
   ary = [
     { foo: 'foo', bar: 'BAZ' },
-    Ember.Object.create({ foo: 'foo', bar: 'bar' })
+    EmberObject.create({ foo: 'foo', bar: 'bar' })
   ];
 
   obj = this.newObject(ary);
@@ -45,7 +46,7 @@ suite.test('should include in result if property is true', function() {
 
   ary = [
     { foo: 'foo', bar: true },
-    Ember.Object.create({ foo: 'bar', bar: false })
+    EmberObject.create({ foo: 'bar', bar: false })
   ];
 
   obj = this.newObject(ary);
@@ -60,9 +61,9 @@ suite.test('should filter on second argument if provided', function() {
 
   ary = [
     { name: 'obj1', foo: 3},
-    Ember.Object.create({ name: 'obj2', foo: 2}),
+    EmberObject.create({ name: 'obj2', foo: 2}),
     { name: 'obj3', foo: 2},
-    Ember.Object.create({ name: 'obj4', foo: 3})
+    EmberObject.create({ name: 'obj4', foo: 3})
   ];
 
   obj = this.newObject(ary);
@@ -75,9 +76,9 @@ suite.test('should correctly filter null second argument', function() {
 
   ary = [
     { name: 'obj1', foo: 3},
-    Ember.Object.create({ name: 'obj2', foo: null}),
+    EmberObject.create({ name: 'obj2', foo: null}),
     { name: 'obj3', foo: null},
-    Ember.Object.create({ name: 'obj4', foo: 3})
+    EmberObject.create({ name: 'obj4', foo: 3})
   ];
 
   obj = this.newObject(ary);
@@ -90,7 +91,7 @@ suite.test('should not return all objects on undefined second argument', functio
 
   ary = [
     { name: 'obj1', foo: 3},
-    Ember.Object.create({ name: 'obj2', foo: 2})
+    EmberObject.create({ name: 'obj2', foo: 2})
   ];
 
   obj = this.newObject(ary);
@@ -103,11 +104,11 @@ suite.test('should correctly filter explicit undefined second argument', functio
 
   ary = [
     { name: 'obj1', foo: 3},
-    Ember.Object.create({ name: 'obj2', foo: 3}),
+    EmberObject.create({ name: 'obj2', foo: 3}),
     { name: 'obj3', foo: undefined},
-    Ember.Object.create({ name: 'obj4', foo: undefined}),
+    EmberObject.create({ name: 'obj4', foo: undefined}),
     { name: 'obj5'},
-    Ember.Object.create({ name: 'obj6'})
+    EmberObject.create({ name: 'obj6'})
   ];
 
   obj = this.newObject(ary);
@@ -120,11 +121,11 @@ suite.test('should not match undefined properties without second argument', func
 
   ary = [
     { name: 'obj1', foo: 3},
-    Ember.Object.create({ name: 'obj2', foo: 3}),
+    EmberObject.create({ name: 'obj2', foo: 3}),
     { name: 'obj3', foo: undefined},
-    Ember.Object.create({ name: 'obj4', foo: undefined}),
+    EmberObject.create({ name: 'obj4', foo: undefined}),
     { name: 'obj5'},
-    Ember.Object.create({ name: 'obj6'})
+    EmberObject.create({ name: 'obj6'})
   ];
 
   obj = this.newObject(ary);
@@ -137,3 +138,5 @@ suite.test('should be aliased to filterProperty', function() {
 
   equal(ary.filterProperty, ary.filterBy);
 });
+
+export default suite;

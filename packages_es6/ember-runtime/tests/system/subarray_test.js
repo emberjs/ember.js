@@ -1,8 +1,11 @@
-var forEach = Ember.EnumerableUtils.forEach, subarray;
+import EnumerableUtils from "ember-metal/enumerable_utils";
+import SubArray from "ember-runtime/system/subarray";
 
-module('Ember.SubArray', {
+var forEach = EnumerableUtils.forEach, subarray;
+
+module('SubArray', {
   setup: function () {
-    subarray = new Ember.SubArray();
+    subarray = new SubArray();
   }
 });
 
@@ -15,7 +18,7 @@ function operationsString() {
 }
 
 test("Subarray operations are initially retain:n", function() {
-  subarray = new Ember.SubArray(10);
+  subarray = new SubArray(10);
 
   equal(operationsString(), "r:10", "subarray operations are initially retain n");
 });

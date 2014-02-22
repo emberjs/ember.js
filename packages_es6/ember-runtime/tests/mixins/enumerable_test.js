@@ -1,12 +1,21 @@
-require('ember-runtime/~tests/suites/enumerable');
+import Ember from 'ember-metal/core'; // for Ember.K and Ember.A
+import EnumerableTests from 'ember-runtime/tests/suites/enumerable';
+import EnumerableUtils from 'ember-metal/enumerable_utils';
+import EmberObject from 'ember-runtime/system/object';
+import Enumerable from 'ember-runtime/mixins/enumerable';
+import EmberArray from 'ember-runtime/mixins/array';
+import {get} from 'ember-metal/property_get';
+import {set} from 'ember-metal/property_set';
+import {computed} from 'ember-metal/computed';
+import {observer as emberObserver} from 'ember-metal/mixin';
 
-var indexOf = Ember.EnumerableUtils.indexOf;
+var indexOf = EnumerableUtils.indexOf;
 
 /*
   Implement a basic fake enumerable.  This validates that any non-native
   enumerable can impl this API.
 */
-var TestEnumerable = Ember.Object.extend(Ember.Enumerable, {
+var TestEnumerable = EmberObject.extend(Enumerable, {
 
   _content: null,
 
@@ -21,10 +30,10 @@ var TestEnumerable = Ember.Object.extend(Ember.Enumerable, {
   },
 
   nextObject: function(idx) {
-    return idx >= Ember.get(this, 'length') ? undefined : this._content[idx];
+    return idx >= get(this, 'length') ? undefined : this._content[idx];
   },
 
-  length: Ember.computed(function() {
+  length: computed(function() {
     return this._content.length;
   }),
 
@@ -35,7 +44,7 @@ var TestEnumerable = Ember.Object.extend(Ember.Enumerable, {
 });
 
 
-Ember.EnumerableTests.extend({
+EnumerableTests.extend({
 
   name: 'Basic Enumerable',
 
@@ -58,43 +67,43 @@ Ember.EnumerableTests.extend({
 module('Ember.Enumerable');
 
 test("should apply Ember.Array to return value of map", function() {
-  var x = Ember.Object.createWithMixins(Ember.Enumerable);
+  var x = EmberObject.createWithMixins(Enumerable);
   var y = x.map(Ember.K);
-  equal(Ember.Array.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
 test("should apply Ember.Array to return value of filter", function() {
-  var x = Ember.Object.createWithMixins(Ember.Enumerable);
+  var x = EmberObject.createWithMixins(Enumerable);
   var y = x.filter(Ember.K);
-  equal(Ember.Array.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
 test("should apply Ember.Array to return value of invoke", function() {
-  var x = Ember.Object.createWithMixins(Ember.Enumerable);
+  var x = EmberObject.createWithMixins(Enumerable);
   var y = x.invoke(Ember.K);
-  equal(Ember.Array.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
 test("should apply Ember.Array to return value of toArray", function() {
-  var x = Ember.Object.createWithMixins(Ember.Enumerable);
+  var x = EmberObject.createWithMixins(Enumerable);
   var y = x.toArray(Ember.K);
-  equal(Ember.Array.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
 test("should apply Ember.Array to return value of without", function() {
-  var x = Ember.Object.createWithMixins(Ember.Enumerable, {
+  var x = EmberObject.createWithMixins(Enumerable, {
     contains: function() {
       return true;
     }
   });
   var y = x.without(Ember.K);
-  equal(Ember.Array.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
 test("should apply Ember.Array to return value of uniq", function() {
-  var x = Ember.Object.createWithMixins(Ember.Enumerable);
+  var x = EmberObject.createWithMixins(Enumerable);
   var y = x.uniq(Ember.K);
-  equal(Ember.Array.detect(y), true, "should have mixin applied");
+  equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
 test('any', function() {
@@ -155,7 +164,7 @@ test('every', function() {
 // CONTENT DID CHANGE
 //
 
-var DummyEnum = Ember.Object.extend(Ember.Enumerable, {
+var DummyEnum = EmberObject.extend(Enumerable, {
   nextObject: function() {},
   length: 0
 });
@@ -170,11 +179,11 @@ module('mixins/enumerable/enumerableContentDidChange');
 
 test('should notify observers of []', function() {
 
-  var obj = Ember.Object.createWithMixins(Ember.Enumerable, {
+  var obj = EmberObject.createWithMixins(Enumerable, {
     nextObject: function() {}, // avoid exceptions
 
     _count: 0,
-    enumerablePropertyDidChange: Ember.observer('[]', function() {
+    enumerablePropertyDidChange: emberObserver('[]', function() {
       this._count++;
     })
   });
@@ -194,7 +203,7 @@ module('notify observers of length', {
   setup: function() {
     obj = DummyEnum.createWithMixins({
       _after: 0,
-      lengthDidChange: Ember.observer('length', function() {
+      lengthDidChange: emberObserver('length', function() {
         this._after++;
       })
 
@@ -261,7 +270,7 @@ module('notify enumerable observers', {
   setup: function() {
     obj = DummyEnum.create();
 
-    observer = Ember.Object.createWithMixins({
+    observer = EmberObject.createWithMixins({
       _before: null,
       _after: null,
 

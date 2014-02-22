@@ -1,3 +1,12 @@
+import Ember from "ember-metal/core";
+import {get} from 'ember-metal/property_get';
+import {set} from 'ember-metal/property_set';
+import {observer as emberObserver} from 'ember-metal/mixin';
+import run from "ember-metal/run_loop";
+import {Binding} from "ember-metal/binding";
+import Observable from "ember-runtime/mixins/observable";
+import EmberObject from 'ember-runtime/system/object';
+
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
   are the same except for places where we intend to break the API we instead
@@ -5,7 +14,7 @@
 
   CHANGES FROM 1.6:
 
-  * Updated the API usage for setting up and syncing Ember.Binding since these
+  * Updated the API usage for setting up and syncing Binding since these
     are not the APIs this file is testing.
 
   * Disabled a call to invokeOnce() around line 127 because it appeared to be
@@ -17,39 +26,39 @@ var MyApp, binding1, binding2, previousPreventRunloop;
 module("System:run_loop() - chained binding", {
   setup: function() {
     MyApp = {};
-    MyApp.first = Ember.Object.createWithMixins(Ember.Observable, {
+    MyApp.first = EmberObject.createWithMixins(Observable, {
       output: 'MyApp.first'
     }) ;
 
-    MyApp.second = Ember.Object.createWithMixins(Ember.Observable, {
+    MyApp.second = EmberObject.createWithMixins(Observable, {
       input: 'MyApp.second',
       output: 'MyApp.second',
 
-      inputDidChange: Ember.observer("input", function() {
+      inputDidChange: emberObserver("input", function() {
         this.set("output", this.get("input")) ;
       })
 
     }) ;
 
-    MyApp.third = Ember.Object.createWithMixins(Ember.Observable, {
+    MyApp.third = EmberObject.createWithMixins(Observable, {
       input: "MyApp.third"
     }) ;
   }
 });
 
 test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop)", function() {
-  Ember.run(function () {
+  run(function () {
 
     //Binding of output of MyApp.first object to input of MyApp.second object
-      binding1 = Ember.Binding.from("first.output")
+      binding1 = Binding.from("first.output")
         .to("second.input").connect(MyApp) ;
 
     //Binding of output of MyApp.second object to input of MyApp.third object
-    binding2 = Ember.Binding.from("second.output")
+    binding2 = Binding.from("second.output")
       .to("third.input").connect(MyApp) ;
 
   });
-  Ember.run(function () {
+  run(function () {
     // Based on the above binding if you change the output of MyApp.first
     // object it should change the all the variable of
     //  MyApp.first,MyApp.second and MyApp.third object
@@ -71,17 +80,17 @@ test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop
 });
 
 test("Should propagate bindings after the RunLoop completes", function() {
-  Ember.run(function () {
+  run(function () {
     //Binding of output of MyApp.first object to input of MyApp.second object
-    binding1 = Ember.Binding.from("first.output")
+    binding1 = Binding.from("first.output")
       .to("second.input").connect(MyApp) ;
 
     //Binding of output of MyApp.second object to input of MyApp.third object
-    binding2 = Ember.Binding.from("second.output")
+    binding2 = Binding.from("second.output")
         .to("third.input").connect(MyApp) ;
   });
 
-  Ember.run(function () {
+  run(function () {
     //Based on the above binding if you change the output of MyApp.first object it should
     //change the all the variable of MyApp.first,MyApp.second and MyApp.third object
     MyApp.first.set("output", "change") ;

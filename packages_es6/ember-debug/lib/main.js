@@ -1,5 +1,9 @@
 /*global __fail__*/
 
+import Ember from "ember-metal/core";
+import EmberError from "ember-metal/error";
+import Logger from "ember-metal/logger";
+
 /**
 Ember Debug
 
@@ -10,33 +14,6 @@ Ember Debug
 /**
 @class Ember
 */
-
-if ('undefined' === typeof Ember) {
-  Ember = {};
-
-  if ('undefined' !== typeof window) {
-    window.Em = window.Ember = Em = Ember;
-  }
-}
-
-// This needs to be kept in sync with the logic in
-// `packages/ember-metal/lib/core.js`.
-//
-// This is duplicated here to ensure that `Ember.ENV`
-// is setup even if `Ember` is not loaded yet.
-if (Ember.ENV) {
-  // do nothing if Ember.ENV is already setup
-} else if ('undefined' !== typeof EmberENV) {
-  Ember.ENV = EmberENV;
-} else if('undefined' !== typeof ENV) {
-  Ember.ENV = ENV;
-} else {
-  Ember.ENV = {};
-}
-
-if (!('MANDATORY_SETTER' in Ember.ENV)) {
-  Ember.ENV.MANDATORY_SETTER = true; // default to true for debug dist
-}
 
 /**
   Define an assertion that will throw an exception if the condition is not
@@ -58,7 +35,7 @@ if (!('MANDATORY_SETTER' in Ember.ENV)) {
 */
 Ember.assert = function(desc, test) {
   if (!test) {
-    throw new Ember.Error("Assertion Failed: " + desc);
+    throw new EmberError("Assertion Failed: " + desc);
   }
 };
 
@@ -74,8 +51,8 @@ Ember.assert = function(desc, test) {
 */
 Ember.warn = function(message, test) {
   if (!test) {
-    Ember.Logger.warn("WARNING: "+message);
-    if ('trace' in Ember.Logger) Ember.Logger.trace();
+    Logger.warn("WARNING: "+message);
+    if ('trace' in Logger) Logger.trace();
   }
 };
 
@@ -91,7 +68,7 @@ Ember.warn = function(message, test) {
   @param {String} message A debug message to display.
 */
 Ember.debug = function(message) {
-  Ember.Logger.debug("DEBUG: "+message);
+  Logger.debug("DEBUG: "+message);
 };
 
 /**
@@ -107,7 +84,7 @@ Ember.debug = function(message) {
 Ember.deprecate = function(message, test) {
   if (test) { return; }
 
-  if (Ember.ENV.RAISE_ON_DEPRECATION) { throw new Ember.Error(message); }
+  if (Ember.ENV.RAISE_ON_DEPRECATION) { throw new EmberError(message); }
 
   var error;
 
@@ -132,7 +109,7 @@ Ember.deprecate = function(message, test) {
     message = message + stackStr;
   }
 
-  Ember.Logger.warn("DEPRECATION: "+message);
+  Logger.warn("DEPRECATION: "+message);
 };
 
 

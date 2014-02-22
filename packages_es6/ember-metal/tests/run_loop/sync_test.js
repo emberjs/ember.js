@@ -1,21 +1,23 @@
+import run from 'ember-metal/run_loop';
+
 module('system/run_loop/sync_test');
 
 test('sync() will immediately flush the sync queue only', function() {
   var cnt = 0;
 
-  Ember.run(function() {
+  run(function() {
 
     function cntup() { cnt++; }
 
     function syncfunc() {
-      if (++cnt<5) Ember.run.schedule('sync', syncfunc);
-      Ember.run.schedule('actions', cntup);
+      if (++cnt<5) run.schedule('sync', syncfunc);
+      run.schedule('actions', cntup);
     }
 
     syncfunc();
 
     equal(cnt, 1, 'should not run action yet') ;
-    Ember.run.sync();
+    run.sync();
 
     equal(cnt, 5, 'should have run sync queue continuously');
   });
@@ -27,5 +29,5 @@ test('sync() will immediately flush the sync queue only', function() {
 test('calling sync() outside a run loop does not cause an error', function() {
   expect(0);
 
-  Ember.run.sync();
+  run.sync();
 });

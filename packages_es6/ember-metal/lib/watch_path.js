@@ -1,6 +1,3 @@
-// require('ember-metal/utils');
-// require('ember-metal/chains');
-
 import {meta, typeOf} from "ember-metal/utils";
 import {ChainNode} from "ember-metal/chains";
 
