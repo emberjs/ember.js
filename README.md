@@ -13,8 +13,8 @@ attribute, etc.)
 
 Ultimately, the goal is to have a good data binding setup for
 Handlebars that can work directly against DOM nodes and doesn't
-need special tags in the String for the data binding code can
-find (a major limitation in Ember).
+need special tags in the String for the data binding code to work
+(a major limitation in Ember).
 
 There are also many performance gains in HTMLBars' approach to building
 DOM vs the HTML-unaware string building approach of Handlebars.
