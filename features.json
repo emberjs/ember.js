@@ -17,5 +17,5 @@
     "ember-runtime-test-friendly-promises": false,
     "ember-routing-inherits-parent-model": true
   },
-  "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info"]
+  "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info", "Ember.runInDebug"]
 }

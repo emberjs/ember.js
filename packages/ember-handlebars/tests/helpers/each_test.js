@@ -621,3 +621,24 @@ test("single-arg each will iterate over controller if present", function() {
   equal(view.$().text(), "AdamSteve");
 });
 
+test("it asserts when the morph tags disagree on their parentage", function() {
+  view = Ember.View.create({
+    controller: Ember.A(['Cyril', 'David']),
+    template: templateFor('<table>{{#each}}<tr><td>{{this}}</td></tr>{{/each}}</table>')
+  });
+
+  expectAssertion(function() {
+    append(view);
+  }, /The metamorph tags, metamorph-\d+-start and metamorph-\d+-end, have different parents.\nThe browser has fixed your template to output valid HTML \(for example, check that you have properly closed all tags and have used a TBODY tag when creating a table with '\{\{#each\}\}'\)/);
+});
+
+test("it doesn't assert when the morph tags have the same parent", function() {
+  view = Ember.View.create({
+    controller: Ember.A(['Cyril', 'David']),
+    template: templateFor('<table><tbody>{{#each}}<tr><td>{{this}}</td></tr>{{/each}}<tbody></table>')
+  });
+
+  append(view);
+
+  ok(true, "No assertion from valid template");
+});
