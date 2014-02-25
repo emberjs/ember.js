@@ -1,5 +1,13 @@
 # Ember Changelog
 
+
+### Ember 1.5.0-beta.2 (February 23, 2014)
+
+* [SECURITY] Ensure that `ember-routing-auto-location` cannot be forced to redirect to another domain.
+* [BUGFIX beta] Handle ES6 transpiler errors.
+* [BUGFIX beta] Ensure namespaces are cleaned up.
+* Many documentation updates.
+
 ### Ember 1.5.0-beta.1 (February 14, 2014)
 
 * [FEATURE ember-handlebars-log-primitives]

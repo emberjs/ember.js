@@ -454,7 +454,7 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
       funcArgLength, cachedValue, ret;
 
   if (this._readOnly) {
-    throw new Ember.Error('Cannot Set: ' + keyName + ' on: ' + Ember.inspect(obj));
+    throw new Ember.Error('Cannot set read-only property "' + keyName + '" on object: ' + Ember.inspect(obj));
   }
 
   this._suspended = obj;
@@ -1373,7 +1373,7 @@ Ember.computed.readOnly = function(dependentKey) {
 Ember.computed.defaultTo = function(defaultPath) {
   return Ember.computed(function(key, newValue, cachedValue) {
     if (arguments.length === 1) {
-      return cachedValue != null ? cachedValue : get(this, defaultPath);
+      return get(this, defaultPath);
     }
     return newValue != null ? newValue : get(this, defaultPath);
   });
