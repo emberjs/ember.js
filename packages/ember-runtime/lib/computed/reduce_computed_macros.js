@@ -612,7 +612,9 @@ SearchProxy = Ember.ObjectProxy.extend();
   ```javascript
   var ToDoList = Ember.Object.extend({
     todosSorting: ['name'],
+    todosSortingDesc: ['name:desc'],
     sortedTodos: Ember.computed.sort('todos', 'todosSorting'),
+    sortedTodosDesc: Ember.computed.sort('todos', 'todosSortingDesc'),
     priorityTodos: Ember.computed.sort('todos', function(a, b){
       if (a.priority > b.priority) {
         return 1;
@@ -629,6 +631,7 @@ SearchProxy = Ember.ObjectProxy.extend();
   ]});
 
   todoList.get('sortedTodos'); // [{name:'Documentation', priority:3}, {name:'Release', priority:1}, {name:'Unit Test', priority:2}]
+  todoList.get('sortedTodosDesc'); // [{name:'Unit Test', priority:2}, {name:'Release', priority:1}, {name:'Documentation', priority:3}]
   todoList.get('priorityTodos'); // [{name:'Release', priority:1}, {name:'Unit Test', priority:2}, {name:'Documentation', priority:3}]
   ```
 
@@ -636,7 +639,7 @@ SearchProxy = Ember.ObjectProxy.extend();
   @for Ember
   @param {String} dependentKey
   @param {String or Function} sortDefinition a dependent key to an
-  array of sort properties or a function to use when sorting
+  array of sort properties (add `:desc` to the arrays sort properties to sort descending) or a function to use when sorting
   @return {Ember.ComputedProperty} computes a new sorted array based
   on the sort property array or callback function
 */
