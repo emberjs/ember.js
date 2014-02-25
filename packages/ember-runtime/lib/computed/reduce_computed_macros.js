@@ -611,10 +611,15 @@ SearchProxy = Ember.ObjectProxy.extend();
 
   ```javascript
   var ToDoList = Ember.Object.extend({
+    // using standard ascending sort
     todosSorting: ['name'],
-    todosSortingDesc: ['name:desc'],
     sortedTodos: Ember.computed.sort('todos', 'todosSorting'),
+    
+    // using descending sort
+    todosSortingDesc: ['name:desc'],
     sortedTodosDesc: Ember.computed.sort('todos', 'todosSortingDesc'),
+
+    // sorting with a custom sort function
     priorityTodos: Ember.computed.sort('todos', function(a, b){
       if (a.priority > b.priority) {
         return 1;
