@@ -489,7 +489,7 @@ function getQueryParamsForRoute(route, result) {
 }
 
 function controllerOrProtoFor(controllerName, container) {
-  var fullName = 'controller:' + controllerName;
+  var fullName = container.normalize('controller:' + controllerName);
   if (container.cache.has(fullName)) {
     return container.lookup(fullName);
   } else {
@@ -794,5 +794,3 @@ Ember.Router.reopenClass({
     return result;
   }
 });
-
-
