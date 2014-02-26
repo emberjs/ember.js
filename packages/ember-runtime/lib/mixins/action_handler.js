@@ -215,7 +215,7 @@ Ember.ActionHandler = Ember.Mixin.create({
       }
     }
 
-    if (target = get(this, 'target')) {
+    if (target = get(this, 'target') || get(this, 'targetObject')) {
       Ember.assert("The `target` for " + this + " (" + target + ") does not have a `send` method", typeof target.send === 'function');
       target.send.apply(target, arguments);
     }
