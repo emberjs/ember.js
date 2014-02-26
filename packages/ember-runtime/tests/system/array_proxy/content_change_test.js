@@ -61,3 +61,17 @@ test("The `arrangedContentDidChange` method is invoked after `content` is change
   proxy.set('content', Ember.A(['a', 'b']));
   equal(callCount, 1, "replacing the content array triggers the hook");
 });
+
+
+test("The ArrayProxy doesn't explode when assigned a destroyed object", function() {
+  var arrayController = Ember.ArrayController.create();
+  var proxy = Ember.ArrayProxy.create();
+
+  Ember.run(function() {
+    arrayController.destroy();
+  });
+
+  Ember.set(proxy, 'content', arrayController);
+
+  ok(true, "No exception was raised");
+});
