@@ -11,22 +11,6 @@ var get = Ember.get,
     asyncHelper = Test.registerAsyncHelper,
     countAsync = 0;
 
-Test.pendingAjaxRequests = 0;
-
-Test.onInjectHelpers(function() {
-  Ember.$(document).ajaxSend(function() {
-    Test.pendingAjaxRequests++;
-  });
-
-  Ember.$(document).ajaxComplete(function() {
-    Ember.assert("An ajaxComplete event which would cause the number of pending AJAX " +
-                 "requests to be negative has been triggered. This is most likely " +
-                 "caused by AJAX events that were started before calling " +
-                 "`injectTestHelpers()`.", Test.pendingAjaxRequests !== 0);
-    Test.pendingAjaxRequests--;
-  });
-});
-
 function currentRouteName(app){
   var appController = app.__container__.lookup('controller:application');
 
