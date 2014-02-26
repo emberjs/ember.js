@@ -256,11 +256,6 @@ test("`click` triggers appropriate events in order", function() {
 test("Ember.Application#injectTestHelpers", function() {
   var documentEvents;
 
-  Ember.run(function() {
-    App = Ember.Application.create();
-    App.setupForTesting();
-  });
-
   documentEvents = Ember.$._data(document, 'events');
 
   if (!documentEvents) {
@@ -270,7 +265,10 @@ test("Ember.Application#injectTestHelpers", function() {
   ok(documentEvents['ajaxSend'] === undefined, 'there are no ajaxSend listers setup prior to calling injectTestHelpers');
   ok(documentEvents['ajaxComplete'] === undefined, 'there are no ajaxComplete listers setup prior to calling injectTestHelpers');
 
-  App.injectTestHelpers();
+  Ember.run(function() {
+    Ember.setupForTesting();
+  });
+
   documentEvents = Ember.$._data(document, 'events');
 
   equal(documentEvents['ajaxSend'].length, 1, 'calling injectTestHelpers registers an ajaxSend handler');
