@@ -207,17 +207,22 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
   });
 
   test("controllers won't be eagerly instantiated by internal query params logic", function() {
-    expect(6);
+    expect(9);
     Router.map(function() {
+      this.resource('cats', function() {
+        this.route('index', { path: '/' });
+      });
       this.route("home", { path: '/' });
       this.route("about");
     });
 
     Ember.TEMPLATES.home = compile("<h3>{{link-to 'About' 'about' (query-params lol='wat') id='link-to-about'}}</h3>");
     Ember.TEMPLATES.about = compile("<h3>{{link-to 'Home' 'home'  (query-params foo='naw')}}</h3>");
+    Ember.TEMPLATES['cats/index'] = compile("<h3>{{link-to 'Cats' 'cats'  (query-params name='domino') id='cats-link'}}</h3>");
 
     var homeShouldBeCreated = false,
-        aboutShouldBeCreated = false;
+        aboutShouldBeCreated = false,
+        catsIndexShouldBeCreated = false;
 
     App.HomeRoute = Ember.Route.extend({
       setup: function() {
@@ -251,6 +256,29 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       }
     });
 
+    App.CatsIndexRoute = Ember.Route.extend({
+      model: function(){
+        return [];
+      },
+      setup: function() {
+        catsIndexShouldBeCreated = true;
+        this._super.apply(this, arguments);
+      },
+      setupController: function(controller, context) {
+        controller.set('model', context);
+      }
+    });
+
+    App.CatsIndexController = Ember.Controller.extend({
+      queryParams: ['breed', 'name' ],
+      breed: 'Golden',
+      name: null,
+      init: function() {
+        this._super();
+        ok (catsIndexShouldBeCreated, "CatsIndexController should be created at this time");
+      }
+    });
+
     bootApplication();
 
     equal(router.get('location.path'), "/?foo=123", 'url is correct');
@@ -258,9 +286,15 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     Ember.run(controller, 'set', 'foo', '456');
     equal(router.get('location.path'), "/?foo=456", 'url is correct');
     equal(Ember.$('#link-to-about').attr('href'), "/about?lol=wat", "link to about is correct");
-    Ember.run(router, 'transitionTo', 'about');
 
+    Ember.run(router, 'transitionTo', 'about');
     equal(router.get('location.path'), "/about?lol=haha", 'url is correct');
+
+    Ember.run(router, 'transitionTo', 'cats');
+
+    equal(router.get('location.path'), "/cats?breed=Golden", 'url is correct');
+    Ember.run(Ember.$('#cats-link'), 'click');
+    equal(router.get('location.path'), "/cats?breed=Golden&name=domino", 'url is correct');
   });
 
   test("model hooks receives query params (overridden by incoming url value)", function() {
