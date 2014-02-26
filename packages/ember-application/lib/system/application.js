@@ -396,7 +396,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     @method register
     @param  fullName {String} type:name (e.g., 'model:user')
     @param  factory {Function} (e.g., App.Person)
-    @param  options {String} (optional)
+    @param  options {Object} (optional)
   **/
   register: function() {
     var container = this.__container__;
@@ -412,9 +412,9 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     App.inject('controller:application', 'email', 'model:email')
     App.inject('controller', 'source', 'source:main')
     ```
-    Please note that injections on models are currently disabled. 
+    Please note that injections on models are currently disabled.
     This was done because ember-data was not ready for fully a container aware ecosystem.
-    
+
     You can enable injections on models by setting `Ember.MODEL_FACTORY_INJECTIONS` flag to `true`
     If model factory injections are enabled, models should not be
     accessed globally (only through `container.lookupFactory('model:modelName'))`);
@@ -752,7 +752,7 @@ Ember.Application.reopenClass({
     if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
       container.register('location:auto', Ember.AutoLocation);
     }
-    
+
     container.register('location:hash', Ember.HashLocation);
     container.register('location:history', Ember.HistoryLocation);
     container.register('location:none', Ember.NoneLocation);
