@@ -354,6 +354,10 @@ EmberHandlebars.registerHelper('unboundIf', function unboundIfHelper(property, f
 
   Without the `as` operator, it would be impossible to reference `user.name` in the example above.
 
+  NOTE: The alias should not reuse a name from the bound property path.
+  For example: `{{#with foo.bar as foo}}` is not supported because it attempts to alias using
+  the first part of the property path, `foo`. Instead, use `{{#with foo.bar as baz}}`.
+
   ### `controller` option
 
   Adding `controller='something'` instructs the `{{with}}` helper to create and use an instance of
