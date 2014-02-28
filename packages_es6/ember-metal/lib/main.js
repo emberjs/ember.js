@@ -28,7 +28,9 @@ import {
   canInvoke,
   tryInvoke,
   tryFinally,
-  wrap
+  wrap,
+  apply,
+  applyStr
 } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
@@ -121,6 +123,8 @@ Ember.canInvoke       = canInvoke;
 Ember.tryInvoke       = tryInvoke;
 Ember.tryFinally      = tryFinally;
 Ember.wrap            = wrap;
+Ember.apply           = apply;
+Ember.applyStr        = applyStr;
 
 Ember.Logger = Logger;
 
@@ -200,7 +204,7 @@ Ember.beforeObserversFor = beforeObserversFor;
 Ember.removeBeforeObserver = removeBeforeObserver;
 
 Ember.IS_BINDING = IS_BINDING;
-Ember.require = required;
+Ember.required = required;
 Ember.aliasMethod = aliasMethod;
 Ember.observer = observer;
 Ember.immediateObserver = immediateObserver;

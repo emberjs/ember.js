@@ -1,4 +1,7 @@
-module('Ember.String.dasherize');
+import Ember from "ember-metal/core";
+import EmberStringUtils from "ember-runtime/system/string";
+
+module('EmberStringUtils.dasherize');
 
 if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
   test("String.prototype.dasherize is not modified without EXTEND_PROTOTYPES", function() {
@@ -7,53 +10,53 @@ if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
 }
 
 test("dasherize normal string", function() {
-  deepEqual(Ember.String.dasherize('my favorite items'), 'my-favorite-items');
+  deepEqual(EmberStringUtils.dasherize('my favorite items'), 'my-favorite-items');
   if (Ember.EXTEND_PROTOTYPES) {
     deepEqual('my favorite items'.dasherize(), 'my-favorite-items');
   }
 });
 
 test("does nothing with dasherized string", function() {
-  deepEqual(Ember.String.dasherize('css-class-name'), 'css-class-name');
+  deepEqual(EmberStringUtils.dasherize('css-class-name'), 'css-class-name');
   if (Ember.EXTEND_PROTOTYPES) {
     deepEqual('css-class-name'.dasherize(), 'css-class-name');
   }
 });
 
 test("dasherize underscored string", function() {
-  deepEqual(Ember.String.dasherize('action_name'), 'action-name');
+  deepEqual(EmberStringUtils.dasherize('action_name'), 'action-name');
   if (Ember.EXTEND_PROTOTYPES) {
     deepEqual('action_name'.dasherize(), 'action-name');
   }
 });
 
 test("dasherize camelcased string", function() {
-  deepEqual(Ember.String.dasherize('innerHTML'), 'inner-html');
+  deepEqual(EmberStringUtils.dasherize('innerHTML'), 'inner-html');
   if (Ember.EXTEND_PROTOTYPES) {
     deepEqual('innerHTML'.dasherize(), 'inner-html');
   }
 });
 
 test("dasherize string that is the property name of Object.prototype", function() {
-  deepEqual(Ember.String.dasherize('toString'), 'to-string');
+  deepEqual(EmberStringUtils.dasherize('toString'), 'to-string');
   if (Ember.EXTEND_PROTOTYPES) {
     deepEqual('toString'.dasherize(), 'to-string');
   }
 });
 
 test("after call with the same passed value take object from cache", function() {
-  var res = Ember.String.dasherize('innerHTML');
+  var res = EmberStringUtils.dasherize('innerHTML');
 
   var callCount = 0;
-  var decamelize = Ember.String.decamelize;
+  var decamelize = EmberStringUtils.decamelize;
 
   try {
-    Ember.String.decamelize = function() {
+    EmberStringUtils.decamelize = function() {
       callCount++;
     };
-    Ember.String.dasherize('innerHTML');
+    EmberStringUtils.dasherize('innerHTML');
   } finally {
-    Ember.String.decamelize = decamelize;
+    EmberStringUtils.decamelize = decamelize;
   }
 
   equal(callCount, 0, "decamelize is not called again");

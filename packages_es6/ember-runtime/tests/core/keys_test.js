@@ -3,11 +3,6 @@ import keys from "ember-runtime/keys";
 import {addObserver, removeObserver} from "ember-metal/observer";
 import EmberObject from "ember-runtime/system/object";
 
-// ========================================================================
-// keys Tests
-// ========================================================================
-/*globals module test */
-
 module("Fetch Keys ");
 
 test("should get a key array for a specified object", function() {

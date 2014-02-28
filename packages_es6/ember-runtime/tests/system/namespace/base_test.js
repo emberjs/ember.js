@@ -55,8 +55,6 @@ test("Classes under an Namespace are properly named", function() {
 });
 
 test("Classes under Ember are properly named", function() {
-  equal(EmberArray.toString(), "Ember.Array", "precond - existing classes are processed");
-
   Ember.TestObject = EmberObject.extend({});
   equal(Ember.TestObject.toString(), "Ember.TestObject", "class under Ember is given a string representation");
 });

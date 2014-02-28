@@ -1,7 +1,3 @@
-/*globals ENV */
-
-// require('ember-metal');
-
 /**
 @module ember
 @submodule ember-runtime

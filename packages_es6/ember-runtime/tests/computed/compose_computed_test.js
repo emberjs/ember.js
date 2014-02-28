@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core';
 import {metaFor} from 'ember-metal/utils';
 import {addObserver} from 'ember-metal/observer';
 import {computed} from 'ember-metal/computed';
+import {mapBy, union, sort} from 'ember-runtime/computed/reduce_computed_macros';
 import run from 'ember-metal/run_loop';
 import {defineProperty} from "ember-metal/properties";
 import compare from 'ember-runtime/compare';
@@ -164,10 +165,6 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('composable computed properties work with arrayComputed properties', function (get, set) {
-    var mapBy = computed.mapBy,
-        union = computed.union,
-        sort  = computed.sort;
-
     obj = EmberObject.extend({
       names: sort(
               union(mapBy('people', 'firstName'), mapBy('people', 'lastName'), 'cats'),

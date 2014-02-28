@@ -4,6 +4,13 @@
 */
 
 // Eliminate dependency on any Ember to simplify precompilation workflow
+if (typeof Ember === 'undefined') {
+  Ember = {};
+}
+
+if (typeof Ember.assert === 'undefined') { Ember.assert = function(){}; };
+if (typeof Ember.FEATURES === 'undefined') { Ember.FEATURES = { isEnabled: function(){} }; };
+
 var objectCreate = Object.create || function(parent) {
   function F() {}
   F.prototype = parent;

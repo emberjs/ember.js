@@ -1,9 +1,3 @@
-// require('ember-runtime/core');
-// require('ember-runtime/system/core_object');
-// require('ember-runtime/mixins/mutable_enumerable');
-// require('ember-runtime/mixins/copyable');
-// require('ember-runtime/mixins/freezable');
-
 /**
 @module ember
 @submodule ember-runtime

@@ -41,9 +41,13 @@ test('defining a read only property', function() {
     equal(obj.foo, 'BAR', 'simulated defineProperty should silently work');
   } else {
     // cannot set read-only property in strict-mode
-    raises(function(){
+    try {
       obj.foo = "BAR";
-    });
+    } catch(e) {
+      // do nothing (assertion still happens in finally)
+    }finally {
+      equal(obj.foo, 'FOO', 'real defined property should not be writable');
+    }
   }
 
 });

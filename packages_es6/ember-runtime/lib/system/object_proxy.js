@@ -1,5 +1,3 @@
-// require('ember-runtime/system/object');
-
 /**
 @module ember
 @submodule ember-runtime

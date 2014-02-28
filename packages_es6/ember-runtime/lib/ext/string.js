@@ -1,6 +1,3 @@
-// require('ember-runtime/core');
-// require('ember-runtime/system/string');
-
 /**
 @module ember
 @submodule ember-runtime

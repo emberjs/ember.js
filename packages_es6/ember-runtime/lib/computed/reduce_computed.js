@@ -1,7 +1,3 @@
-// require('ember-metal/expand_properties');
-// require('ember-metal/computed');
-// require('ember-runtime/mixins/array');
-
 import Ember from "ember-metal/core"; // Ember.assert
 import {get as e_get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";

@@ -1,6 +1,3 @@
-// require('ember-runtime/core');
-// require('ember-metal/expand_properties');
-
 /**
 @module ember
 @submodule ember-runtime
@@ -8,7 +5,7 @@
 
 import Ember from "ember-metal/core"; // Ember.EXTEND_PROTOTYPES, Ember.assert
 import expandProperties from "ember-metal/expand_properties";
-import computed from "ember-metal/computed";
+import {computed} from "ember-metal/computed";
 
 var a_slice = Array.prototype.slice;
 

@@ -2,7 +2,7 @@
 @module ember-metal
 */
 import Ember from "ember-metal/core";
-import {meta, META_KEY, tryFinally} from "ember-metal/utils";
+import {meta, META_KEY, tryFinally, apply, applyStr} from "ember-metal/utils";
 import {create} from "ember-metal/platform";
 
 var a_slice = [].slice,
@@ -322,13 +322,13 @@ function sendEvent(obj, eventName, params, actions) {
     if (!target) { target = obj; }
     if ('string' === typeof method) {
       if (params) {
-        Ember.applyStr(target, method, params);
+        applyStr(target, method, params);
       } else {
         target[method]();
       }
     } else {
       if (params) {
-        Ember.apply(target, method, params);
+        apply(target, method, params);
       } else {
         method.call(target);
       }

@@ -3,9 +3,6 @@ import Set from "ember-runtime/system/set";
 import {generateGuid} from 'ember-metal/utils';
 import {get} from 'ember-metal/property_get';
 
-// ..........................................................
-// COPYABLE TESTS
-//
 CopyableTests.extend({
   name: 'Ember.Set Copyable',
 

@@ -1,5 +1,3 @@
-// require('ember-runtime/mixins/enumerable');
-
 /**
 @module ember
 @submodule ember-runtime

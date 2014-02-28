@@ -1,5 +1,3 @@
-// require('ember-runtime/system/namespace');
-
 /**
   @module ember
   @submodule ember-runtime

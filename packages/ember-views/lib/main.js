@@ -1,6 +1,4 @@
 require("ember-runtime");
-requireModule('ember-runtime')
-
 require("container");
 
 /**

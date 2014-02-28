@@ -369,8 +369,13 @@ var EmberArray;
 */
 // ES6TODO: Move up to runtime? This is only use in ember-metal by concatenatedProperties
 function isArray(obj) {
-  if (typeof EmberArray === 'undefined') {
-    EmberArray = requireModule("ember-runtime/mixins/array")["default"];
+  var modulePath;
+
+  if (typeof EmberArray === "undefined") {
+    modulePath = 'ember-runtime/mixins/array';
+    if (requirejs._eak_seen[modulePath]) {
+      EmberArray = requireModule(modulePath)['default'];
+    }
   }
 
   if (!obj || obj.setInterval) { return false; }
@@ -672,11 +677,14 @@ var EmberObject;
   @return {String} the type
 */
 function typeOf(item) {
-  var ret;
+  var ret, modulePath;
 
   // ES6TODO: Depends on Ember.Object which is defined in runtime.
   if (typeof EmberObject === "undefined") {
-    EmberObject = requireModule('ember-runtime/system/object')['default'];
+    modulePath = 'ember-runtime/system/object';
+    if (requirejs._eak_seen[modulePath]) {
+      EmberObject = requireModule(modulePath)['default'];
+    }
   }
 
   ret = (item === null || item === undefined) ? String(item) : TYPE_MAP[toString.call(item)] || 'object';
@@ -725,7 +733,6 @@ function inspect(obj) {
   return "{" + ret.join(", ") + "}";
 };
 
-
 // The following functions are intentionally minified to keep the functions
 // below Chrome's function body size inlining limit of 600 chars.
 
@@ -755,4 +762,4 @@ function applyStr(t /* target */, m /* method */, a /* args */) {
   }
 };
 
-export {generateGuid, GUID_KEY, GUID_PREFIX, guidFor, META_DESC, EMPTY_META, MEAT_KEY, meta, getMeta, setMeta, metaPath, inspect, typeOf, tryCatchFinally, isArray, makeArray, canInvoke, tryInvoke, tryFinally, wrap, applyStr, apply};
+export {generateGuid, GUID_KEY, GUID_PREFIX, guidFor, META_DESC, EMPTY_META, META_KEY, meta, getMeta, setMeta, metaPath, inspect, typeOf, tryCatchFinally, isArray, makeArray, canInvoke, tryInvoke, tryFinally, wrap, applyStr, apply};

@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
-import {meta, META_KEY, guidFor, typeOf} from "ember-metal/utils";
+import {meta, META_KEY, guidFor, typeOf, inspect} from "ember-metal/utils";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import {create} from "ember-metal/platform";
 import {watch, unwatch} from "ember-metal/watching";
@@ -10,6 +10,7 @@ import EmberError from "ember-metal/error";
 import {Descriptor, defineProperty} from "ember-metal/properties";
 import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
 import isEmpty from 'ember-metal/is_empty';
+import {isNone} from 'ember-metal/is_none';
 
 /**
 @module ember-metal
@@ -443,7 +444,7 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
       funcArgLength, cachedValue, ret;
 
   if (this._readOnly) {
-    throw new EmberError('Cannot set read-only property "' + keyName + '" on object: ' + Ember.inspect(obj));
+    throw new EmberError('Cannot set read-only property "' + keyName + '" on object: ' + inspect(obj));
   }
 
   this._suspended = obj;
@@ -599,26 +600,24 @@ function getProperties(self, propertyNames) {
   return ret;
 }
 
-var registerComputed, registerComputedWithProperties;
-
-registerComputed = function (name, macro) {
-  Ember.computed[name] = function(dependentKey) {
+function registerComputed(name, macro) {
+  computed[name] = function(dependentKey) {
     var args = a_slice.call(arguments);
-    return Ember.computed(dependentKey, function() {
+    return computed(dependentKey, function() {
       return macro.apply(this, args);
     });
   };
 };
 
-registerComputedWithProperties = function(name, macro) {
-  Ember.computed[name] = function() {
+function registerComputedWithProperties(name, macro) {
+  computed[name] = function() {
     var properties = a_slice.call(arguments);
 
     var computedFunc = computed(function() {
       return macro.apply(this, [getProperties(this, properties)]);
     });
 
-    return computedFunc.property.apply(computed, args);
+    return computedFunc.property.apply(computedFunc, properties);
   };
 };
 
@@ -645,9 +644,9 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
     @return {Ember.ComputedProperty} computed property which negate
     the original value for property
   */
-  Ember.computed.empty = function (dependentKey) {
-    return Ember.computed(dependentKey + '.length', function () {
-      return Ember.isEmpty(get(this, dependentKey));
+  computed.empty = function (dependentKey) {
+    return computed(dependentKey + '.length', function () {
+      return isEmpty(get(this, dependentKey));
     });
   };
 } else {
@@ -738,7 +737,7 @@ registerComputed('notEmpty', function(dependentKey) {
   returns true if original value for property is null or undefined.
 */
 registerComputed('none', function(dependentKey) {
-  return Ember.isNone(get(this, dependentKey));
+  return isNone(get(this, dependentKey));
 });
 
 /**
@@ -1093,7 +1092,7 @@ registerComputedWithProperties('collect', function(properties) {
   var res = [];
   for (var key in properties) {
     if (properties.hasOwnProperty(key)) {
-      if (Ember.isNone(properties[key])) {
+      if (isNone(properties[key])) {
         res.push(null);
       } else {
         res.push(properties[key]);

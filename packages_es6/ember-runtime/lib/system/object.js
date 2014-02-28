@@ -1,6 +1,3 @@
-// require('ember-runtime/mixins/observable');
-// require('ember-runtime/system/core_object');
-
 /**
 @module ember
 @submodule ember-runtime

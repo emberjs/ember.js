@@ -1,5 +1,3 @@
-// require('ember-runtime/mixins/enumerable');
-
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import Enumerable from "ember-runtime/mixins/enumerable";
 import {Mixin, required} from "ember-metal/mixin";

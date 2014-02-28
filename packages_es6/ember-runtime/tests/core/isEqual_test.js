@@ -1,10 +1,5 @@
 import {isEqual} from "ember-runtime/core";
 
-// ========================================================================
-// isEqual Tests
-// ========================================================================
-/*globals module test */
-
 module("isEqual");
 
 test("undefined and null", function() {

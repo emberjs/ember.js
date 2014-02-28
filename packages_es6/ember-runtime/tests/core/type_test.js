@@ -18,4 +18,3 @@ test("Ember.typeOf", function() {
   equal(typeOf(EmberObject),     'class',     "item of type class");
   equal(typeOf(new Error()),   'error',     "item of type error");
 });
-

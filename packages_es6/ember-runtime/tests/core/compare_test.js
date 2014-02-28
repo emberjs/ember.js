@@ -2,8 +2,6 @@ import {typeOf} from "ember-metal/utils";
 import EmberObject from "ember-runtime/system/object";
 import compare from "ember-runtime/compare";
 
-/*globals module ok equals same test MyApp */
-
 // test parsing of query string
 var v = [];
 module("Ember.compare()", {

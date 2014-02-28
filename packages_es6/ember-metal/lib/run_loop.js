@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core';
+import {apply} from 'ember-metal/utils';
 import {beginPropertyChanges, endPropertyChanges} from 'ember-metal/property_events';
 
 var onBegin = function(current) {
@@ -21,8 +22,7 @@ var Backburner = requireModule('backburner').Backburner,
       onEnd: onEnd
     }),
     slice = [].slice,
-    concat = [].concat,
-    apply = Ember.apply;
+    concat = [].concat;
 
 // ..........................................................
 // run - this is ideally the only public API the dev sees

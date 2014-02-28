@@ -1,9 +1,6 @@
 import CopyableTests from 'ember-runtime/tests/suites/copyable';
 import {generateGuid} from 'ember-metal/utils';
 
-// ..........................................................
-// COPYABLE TESTS
-//
 CopyableTests.extend({
   name: 'NativeArray Copyable',
 

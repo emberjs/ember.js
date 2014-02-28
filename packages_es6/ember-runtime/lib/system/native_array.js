@@ -1,8 +1,3 @@
-// require('ember-metal/enumerable_utils');
-// require('ember-runtime/mixins/observable');
-// require('ember-runtime/mixins/mutable_array');
-// require('ember-runtime/mixins/copyable');
-
 /**
 @module ember
 @submodule ember-runtime

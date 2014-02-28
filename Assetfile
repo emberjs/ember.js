@@ -44,8 +44,8 @@ distros.each do |name, modules|
 
     # Add ember-testing to ember distro
     if name == "ember"
-      match "{ember-testing.js}" do
-        concat ["ember-testing.js"], "#{name}.js"
+      match "{ember-testing.js,ember-debug.js}" do
+        concat ["ember-testing.js", "ember-debug.js"], "#{name}.js"
       end
     end
 
@@ -56,24 +56,15 @@ distros.each do |name, modules|
 
     match "{#{name}.js,#{name}.prod.js}" do
       filter HandlebarsPrecompiler
-
       filter EmberDefeatureify
       filter AddMicroLoader unless name == "ember-template-compiler"
-      filter AddProjectVersionNumber
-    end
-
-    # Add debug to the main distro
-    match "{#{name}.js,ember-debug.js}" do
+      filter EmberStub if name == "ember-template-compiler"
       filter EmberLicenseFilter
       filter AddProjectVersionNumber
-      concat ["ember-debug.js"], "#{name}.js" unless name == "ember-template-compiler"
-      filter EmberStub if name == "ember-template-compiler"
     end
 
     # Strip dev code
     match "#{name}.prod.js" do
-      filter EmberLicenseFilter
-      filter AddProjectVersionNumber
       filter(EmberStripDebugMessagesFilter) { ["#{name}.prod.js", "min/#{name}.js"] }
     end
 

@@ -67,6 +67,12 @@ ES6Package.prototype = {
     this.compileDirectory(path.join(this.inputPath, 'lib'), function(results){
       var output = results['compiled'];
 
+      this.dependencies.forEach(function(dependency) {
+        if (!dependency.match(/~tests/)) {
+          output.unshift('require("' + dependency + '");');
+        }
+      });
+
       this.mkdirp(path.join(this.outputPath,'lib'));
       fs.writeFileSync(path.join(this.outputPath, 'lib', 'main.js'), output.join('\n'));
     }.bind(this))
@@ -79,16 +85,16 @@ ES6Package.prototype = {
           requireOutput = [],
           output;
 
-
       this.mkdirp(path.join(this.outputPath,'tests'));
       fs.writeFileSync(path.join(this.outputPath, 'tests', this.packageName + '.js'), compiledOutput.join('\n'));
 
       this.dependencies.forEach(function(dependency) {
-        requireOutput.push('require("' + dependency + '");')
+        if (dependency.match(/~tests/)) {
+          requireOutput.push('require("' + dependency + '");');
+        }
       });
 
-      requireOutput.push('require("' + this.packageName + '");')
-      requireOutput.push('require("' + this.packageName + '/~tests/' + this.packageName + '");')
+      requireOutput.push('require("' + this.packageName + '/~tests/' + this.packageName + '");');
 
 
       moduleNames.forEach(function(name) {

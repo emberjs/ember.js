@@ -1,8 +1,11 @@
+import Ember from "ember-metal/core";
+import EmberStringUtils from "ember-runtime/system/string";
+
 if (Ember.FEATURES.isEnabled("string-parameterize")) {
-  module('Ember.String.parameterize');
+  module('EmberStringUtils.parameterize');
 
   var runParameterizeTest = function(input, expected) {
-    deepEqual(Ember.String.parameterize(input), expected);
+    deepEqual(EmberStringUtils.parameterize(input), expected);
     if (Ember.EXTEND_PROTOTYPES) {
       deepEqual(input.parameterize(), expected);
     }

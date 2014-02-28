@@ -4,10 +4,6 @@ import {set} from "ember-metal/property_set";
 import {addObserver} from "ember-metal/observer";
 import Set from "ember-runtime/system/set";
 
-// ..........................................................
-// Set.init
-//
-
 module('Set.init');
 
 test('passing an array to new Set() should instantiate w/ items', function() {
@@ -23,11 +19,6 @@ test('passing an array to new Set() should instantiate w/ items', function() {
   });
   equal(count, 3, 'iterating should have returned three objects');
 });
-
-
-// ..........................................................
-// Set.clear
-//
 
 module('Set.clear');
 

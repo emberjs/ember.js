@@ -2,9 +2,6 @@ import MutableEnumerableTests from 'ember-runtime/tests/suites/mutable_enumerabl
 import Set from "ember-runtime/system/set";
 import {get} from "ember-metal/property_get";
 
-// ..........................................................
-// MUTABLE ENUMERABLE TESTS
-//
 MutableEnumerableTests.extend({
 
   name: 'Ember.Set',

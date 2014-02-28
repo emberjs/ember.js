@@ -205,8 +205,8 @@ testBoth('observing chain with overriden property', function(get, set) {
   var obj = mixin({bar: obj2}, MyMixin, MyMixin2);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
-  equal(Ember.isWatching(obj2, 'baz'), false, 'should not be watching baz');
-  equal(Ember.isWatching(obj3, 'baz'), true, 'should be watching baz');
+  equal(isWatching(obj2, 'baz'), false, 'should not be watching baz');
+  equal(isWatching(obj3, 'baz'), true, 'should be watching baz');
 
   set(obj2, 'baz', "BAZ");
   equal(get(obj, 'count'), 0, 'should not invoke observer after change');

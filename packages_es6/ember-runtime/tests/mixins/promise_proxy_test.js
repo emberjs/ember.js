@@ -211,7 +211,7 @@ test("should reset isFulfilled and isRejected when promise is reset", function()
   equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
   equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 
-  Ember.run(deferred, 'resolve');
+  run(deferred, 'resolve');
 
   equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is no longer loading');
   equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
@@ -226,7 +226,7 @@ test("should reset isFulfilled and isRejected when promise is reset", function()
   equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
   equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 
-  Ember.run(anotherDeferred, 'reject');
+  run(anotherDeferred, 'reject');
 
   equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is not longer loading');
   equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
