@@ -15,10 +15,11 @@ suite.test("should return receiver", function() {
 suite.test("[A,B,C].removeObject(B) => [A,C] + notify", function() {
   var obj, before, after, observer;
 
-  before = this.newFixture(3);
+  before = Ember.A(this.newFixture(3));
   after  = [before[0], before[2]];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', 'length');
+  obj = before;
+  observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); // Prime the cache
 
   obj.removeObject(before[1]);
 
@@ -37,13 +38,14 @@ suite.test("[A,B,C].removeObject(B) => [A,C] + notify", function() {
 suite.test("[A,B,C].removeObject(D) => [A,B,C]", function() {
   var obj, before, after, observer, item;
 
-  before = this.newFixture(3);
+  before = Ember.A(this.newFixture(3));
   after  = before;
   item   = this.newFixture(1)[0];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', 'length');
+  obj = before;
+  observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); // Prime the cache
 
-  obj.removeObject(item); // note: item not in set
+  obj.removeObject(item); // Note: item not in set
 
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(get(obj, 'length'), after.length, 'length');
@@ -51,13 +53,13 @@ suite.test("[A,B,C].removeObject(D) => [A,B,C]", function() {
   if (observer.isEnabled) {
     equal(observer.validate('[]'), false, 'should NOT have notified []');
     equal(observer.validate('length'), false, 'should NOT have notified length');
+
     equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject');
     equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
   }
 });
 
 suite.test('Removing object should notify enumerable observer', function() {
-
   var fixtures = this.newFixture(3);
   var obj = this.newObject(fixtures);
   var observer = this.newObserver(obj).observeEnumerable(obj);
