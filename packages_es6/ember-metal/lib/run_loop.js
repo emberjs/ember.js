@@ -1,3 +1,6 @@
+import Ember from 'ember-metal/core';
+import {beginPropertyChanges, endPropertyChanges} from 'ember-metal/property_events';
+
 var onBegin = function(current) {
   run.currentRunLoop = current;
 };
@@ -10,8 +13,8 @@ var onEnd = function(current, next) {
 var Backburner = requireModule('backburner').Backburner,
     backburner = new Backburner(['sync', 'actions', 'destroy'], {
       sync: {
-        before: Ember.beginPropertyChanges,
-        after: Ember.endPropertyChanges
+        before: beginPropertyChanges,
+        after: endPropertyChanges
       },
       defaultQueue: 'actions',
       onBegin: onBegin,
