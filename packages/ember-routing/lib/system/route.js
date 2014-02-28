@@ -1059,6 +1059,26 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     By default, the `setupController` hook sets the `content` property of
     the controller to the `model`.
 
+    If you implement the `setupController` hook in your Route, it will
+    prevent this default behavior. If you want to preserve that behavior
+    when implementing your `setupController` function, make sure to call
+    `_super`:
+
+    ```js
+    App.PhotosRoute = Ember.Route.extend({
+      model: function() {
+        return App.Photo.find();
+      },
+
+      setupController: function (controller, model) {
+        // Call _super for default behavior
+        this._super(controller, model);
+        // Implement your custom setup after
+        this.controllerFor('application').set('showingPhotos', true);
+      }
+    });
+    ```
+
     This means that your template will get a proxy for the model as its
     context, and you can act as though the model itself was the context.
 
