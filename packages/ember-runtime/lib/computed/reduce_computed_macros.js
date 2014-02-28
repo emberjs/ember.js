@@ -264,7 +264,7 @@ Ember.computed.filter = function(dependentKey, callback) {
     },
 
     addedItem: function(array, item, changeMeta, instanceMeta) {
-      var match = !!callback.call(this, item),
+      var match = !!callback.call(this, item, changeMeta.index, changeMeta.arrayChanged),
           filterIndex = instanceMeta.filteredArrayIndexes.addItem(changeMeta.index, match);
 
       if (match) {
@@ -741,5 +741,13 @@ Ember.computed.sort = function (itemsKey, sortDefinition) {
       array.removeAt(index);
       return array;
     }
+  });
+};
+
+
+Ember.computed.slice = function(dependentKey, begin, end) {
+  return Ember.computed.filter(dependentKey, function(item, index, array) {
+    console.log("Value:"+item+" Index:"+index+" Array:"+array);
+    return index >= begin && index < (end || get(array,'length'));
   });
 };
