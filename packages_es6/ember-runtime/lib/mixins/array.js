@@ -93,7 +93,7 @@ var EmberArray = Mixin.create(Enumerable, {
     @return {*} item at index or undefined
   */
   objectAt: function(idx) {
-    if ((idx < 0) || (idx>=get(this, 'length'))) return undefined ;
+    if ((idx < 0) || (idx >= get(this, 'length'))) return undefined;
     return get(this, idx);
   },
 
@@ -208,8 +208,8 @@ var EmberArray = Mixin.create(Enumerable, {
     if (startAt === undefined) startAt = 0;
     if (startAt < 0) startAt += len;
 
-    for(idx=startAt;idx<len;idx++) {
-      if (this.objectAt(idx) === object) return idx ;
+    for(idx = startAt; idx < len; idx++) {
+      if (this.objectAt(idx) === object) return idx;
     }
     return -1;
   },
@@ -241,8 +241,8 @@ var EmberArray = Mixin.create(Enumerable, {
     if (startAt === undefined || startAt >= len) startAt = len-1;
     if (startAt < 0) startAt += len;
 
-    for(idx=startAt;idx>=0;idx--) {
-      if (this.objectAt(idx) === object) return idx ;
+    for(idx = startAt; idx >= 0; idx--) {
+      if (this.objectAt(idx) === object) return idx;
     }
     return -1;
   },
