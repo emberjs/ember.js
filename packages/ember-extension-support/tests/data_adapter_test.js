@@ -13,7 +13,7 @@ module("Data Adapter", {
       App = Ember.Application.create();
       App.toString = function() { return 'App'; };
       App.deferReadiness();
-      App.__container__.register('dataAdapter:main', DataAdapter);
+      App.__container__.register('data-adapter:main', DataAdapter);
     });
   },
   teardown: function() {
@@ -27,7 +27,7 @@ module("Data Adapter", {
 test("Model types added with DefaultResolver", function() {
   App.Post = Model.extend();
 
-  adapter = App.__container__.lookup('dataAdapter:main');
+  adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
     getRecords: function() {
       return Ember.A([1,2,3]);
@@ -43,7 +43,7 @@ test("Model types added with DefaultResolver", function() {
 
     equal(types.length, 1);
     var postType = types[0];
-    equal(postType.name, 'App.Post', 'Correctly sets the name');
+    equal(postType.name, 'post', 'Correctly sets the name');
     equal(postType.count, 3, 'Correctly sets the record count');
     strictEqual(postType.object, App.Post, 'Correctly sets the object');
     deepEqual(postType.columns, [ {name: 'title', desc: 'Title'} ], 'Correctly sets the columns');
@@ -65,7 +65,7 @@ test("Model types added with custom container-debug-adapter", function() {
       });
   App.__container__.register('container-debug-adapter:main', StubContainerDebugAdapter);
 
-  adapter = App.__container__.lookup('dataAdapter:main');
+  adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
     getRecords: function() {
       return Ember.A([1,2,3]);
@@ -76,7 +76,7 @@ test("Model types added with custom container-debug-adapter", function() {
   });
 
   Ember.run(App, 'advanceReadiness');
- 
+
   var modelTypesAdded = function(types) {
 
     equal(types.length, 1);
@@ -94,7 +94,7 @@ test("Model types added with custom container-debug-adapter", function() {
 test("Model Types Updated", function() {
   App.Post = Model.extend();
 
-  adapter = App.__container__.lookup('dataAdapter:main');
+  adapter = App.__container__.lookup('data-adapter:main');
   var records = Ember.A([1,2,3]);
   adapter.reopen({
     getRecords: function() {
@@ -129,7 +129,7 @@ test("Records Added", function() {
   var post = App.Post.create();
   var recordList = Ember.A([post]);
 
-  adapter = App.__container__.lookup('dataAdapter:main');
+  adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
     getRecords: function() {
       return recordList;
@@ -166,7 +166,7 @@ test("Observes and releases a record correctly", function() {
   var post = App.Post.create({ title: 'Post' });
   var recordList = Ember.A([post]);
 
-  adapter = App.__container__.lookup('dataAdapter:main');
+  adapter = App.__container__.lookup('data-adapter:main');
   adapter.reopen({
     getRecords: function() {
       return recordList;
