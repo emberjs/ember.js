@@ -34,10 +34,10 @@ require('ember-application');
 
   ```javascript
   Application.initializer({
-    name: "dataAdapter",
+    name: "data-adapter",
 
     initialize: function(container, application) {
-      application.register('dataAdapter:main', DS.DataAdapter);
+      application.register('data-adapter:main', DS.DataAdapter);
     }
   });
   ```
@@ -61,6 +61,16 @@ Ember.DataAdapter = Ember.Object.extend({
     @default null
   */
   container: null,
+
+
+  /**
+    The container-debug-adapter which is used
+    to list all models.
+
+    @property containerDebugAdapter
+    @default undefined
+  **/
+  containerDebugAdapter: undefined,
 
   /**
     Number of attributes to send
@@ -115,8 +125,9 @@ Ember.DataAdapter = Ember.Object.extend({
         self = this, typesToSend, releaseMethods = Ember.A();
 
     typesToSend = modelTypes.map(function(type) {
-      var wrapped = self.wrapModelType(type);
-      releaseMethods.push(self.observeModelType(type, typesUpdated));
+      var klass = type.klass;
+      var wrapped = self.wrapModelType(klass, type.name);
+      releaseMethods.push(self.observeModelType(klass, typesUpdated));
       return wrapped;
     });
 
@@ -128,6 +139,13 @@ Ember.DataAdapter = Ember.Object.extend({
     };
     this.releaseMethods.pushObject(release);
     return release;
+  },
+
+  _nameToClass: function(type) {
+    if (typeof type === 'string') {
+      type = this.container.lookupFactory('model:' + type);
+    }
+    return type;
   },
 
   /**
@@ -272,7 +290,7 @@ Ember.DataAdapter = Ember.Object.extend({
     @private
     @method wrapModelType
     @param {Class} type A model class
-    @param {Function} typesUpdated callback to call when the type changes
+    @param {String}  Optional name of the class
     @return {Object} contains the wrapped type and the function to remove observers
     Format:
       type: {Object} the wrapped type
@@ -283,12 +301,12 @@ Ember.DataAdapter = Ember.Object.extend({
           object: {Class} the actual Model type class
       release: {Function} The function to remove observers
   */
-  wrapModelType: function(type, typesUpdated) {
+  wrapModelType: function(type, name) {
     var release, records = this.getRecords(type),
         typeToSend, self = this;
 
     typeToSend = {
-      name: type.toString(),
+      name: name || type.toString(),
       count: Ember.get(records, 'length'),
       columns: this.columnsForType(type),
       object: type
@@ -307,26 +325,44 @@ Ember.DataAdapter = Ember.Object.extend({
     @return {Array} Array of model types
   */
   getModelTypes: function() {
-    var containerDebugAdapter = this.container.lookup('container-debug-adapter:main');
+    var types, self = this,
+        containerDebugAdapter = this.get('containerDebugAdapter');
+
     if (containerDebugAdapter.canCatalogEntriesByType('model')) {
-      return containerDebugAdapter.catalogEntriesByType('model');
+      types = containerDebugAdapter.catalogEntriesByType('model');
+    } else {
+      types = this._getObjectsOnNamespaces();
     }
-    else
-    {
-      return this.getModelTypesViaNamespaces();
-    }
+    // New adapters return strings instead of classes
+    return types.map(function(name) {
+      return {
+        klass: self._nameToClass(name),
+        name: name
+      };
+    }).filter(function(type) {
+      return self.detect(type.klass);
+    });
   },
 
-  getModelTypesViaNamespaces: function() {
-    var namespaces = Ember.A(Ember.Namespace.NAMESPACES), types = Ember.A(), self = this;
+  /**
+    Loops over all namespaces and all objects
+    attached to them
+
+    @private
+    @method _getObjectsOnNamespaces
+    @return {Array} Array of model type strings
+  */
+  _getObjectsOnNamespaces: function() {
+    var namespaces = Ember.A(Ember.Namespace.NAMESPACES), types = Ember.A();
 
     namespaces.forEach(function(namespace) {
       for (var key in namespace) {
         if (!namespace.hasOwnProperty(key)) { continue; }
-        var klass = namespace[key];
-        if (self.detect(klass)) {
-          types.push(klass);
+        var name = Ember.String.dasherize(key);
+        if (!(namespace instanceof Ember.Application) && namespace.toString()) {
+          name = namespace + '/' + name;
         }
+        types.push(name);
       }
     });
     return types;

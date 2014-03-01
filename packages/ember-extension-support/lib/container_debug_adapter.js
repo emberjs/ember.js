@@ -77,12 +77,12 @@ Ember.ContainerDebugAdapter = Ember.Object.extend({
 
     @method catalogEntriesByType
     @param {string} type The type. e.g. "model", "controller", "route"
-    @return {Array} An array of classes.
+    @return {Array} An array of strings.
   */
   catalogEntriesByType: function(type) {
     var namespaces = Ember.A(Ember.Namespace.NAMESPACES), types = Ember.A(), self = this;
     var typeSuffixRegex = new RegExp(Ember.String.classify(type) + "$");
-     
+
     namespaces.forEach(function(namespace) {
       if (namespace !== Ember) {
         for (var key in namespace) {
@@ -90,12 +90,11 @@ Ember.ContainerDebugAdapter = Ember.Object.extend({
           if (typeSuffixRegex.test(key)) {
             var klass = namespace[key];
             if (Ember.typeOf(klass) === 'class') {
-              types.push(klass);
+              types.push(Ember.String.dasherize(key.replace(typeSuffixRegex, '')));
             }
           }
         }
       }
-      
     });
     return types;
   }
