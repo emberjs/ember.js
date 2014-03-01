@@ -1,3 +1,5 @@
+/* globals CustomEvent */
+
 module("Lazy Loading");
 
 test("if a load hook is registered, it is executed when runLoadHooks are exected", function() {
@@ -49,3 +51,18 @@ test("hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed", function() {
 
   equal(window.ENV.__test_hook_count__, 1, "the object was passed into the load hook");
 });
+
+if (typeof window === 'object' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === "function") {
+  test("load hooks trigger a custom event", function() {
+    var eventObject = "super duper awesome events";
+
+    window.addEventListener('__test_hook_for_events__', function(e) {
+      ok(true, 'custom event was fired');
+      equal(e.detail, eventObject, 'event details are provided properly');
+    });
+
+    Ember.run(function() {
+      Ember.runLoadHooks("__test_hook_for_events__", eventObject);
+    });
+  });
+}
