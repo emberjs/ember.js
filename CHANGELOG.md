@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### Ember 1.5.0-beta.3 (March 1, 2014)
+
+* [BUGFIX] PromiseProxyMixin reset isFulfilled and isRejected.
+* Use documentElement instead of body for ember-extension detection.
+* Many documentation updates.
 
 ### Ember 1.5.0-beta.2 (February 23, 2014)
 
