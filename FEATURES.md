@@ -5,6 +5,12 @@ for a detailed explanation.
 
 ## Feature Flags
 
+* `computed-slice`
+
+   Enables `Ember.computed.slice` which provides a one-way bound
+   slice of arrays.
+   Added in [#3953](https://github.com/emberjs/ember.js/pull/3953).
+
 * `string-parameterize`
 
   Transforms a string so that it may be used as part of a 'pretty' / SEO friendly URL.
@@ -97,7 +103,7 @@ for a detailed explanation.
   Adds `Ember.isBlank` method which returns true for an empty value or
   a whitespace string.
 
-  Added in [#4049](https://github.com/emberjs/ember.js/pull/4049).  
+  Added in [#4049](https://github.com/emberjs/ember.js/pull/4049).
 
 * `ember-eager-url-update`
 
@@ -140,9 +146,9 @@ for a detailed explanation.
     underlying test framework to start/stop between async steps.
 
   Added in [#4176](https://github.com/emberjs/ember.js/pull/4176)
-  
+
 * `ember-routing-inherits-parent-model`
 
   Ember routes and leaf resources (without nested routes) will inherit the parent route's model.
-  
+
   Added in [#4246](https://github.com/emberjs/ember.js/pull/4246)
