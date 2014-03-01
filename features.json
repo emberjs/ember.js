@@ -5,7 +5,6 @@
     "ember-routing-named-substates": null,
     "ember-handlebars-caps-lookup": null,
     "ember-handlebars-log-primitives": true,
-    "ember-testing-simple-setup": null,
     "ember-testing-routing-helpers": true,
     "ember-testing-triggerEvent-helper": true,
     "computed-read-only": true,

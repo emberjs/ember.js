@@ -362,10 +362,6 @@ Ember.Application.reopen({
     this.Router.reopen({
       location: 'none'
     });
-
-    if (Ember.FEATURES.isEnabled('ember-testing-simple-setup')){
-      this.testingSetup = true;
-    }
   },
 
   /**

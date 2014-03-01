@@ -25,26 +25,6 @@ for a detailed explanation.
 
   Added in [#3218](https://github.com/emberjs/ember.js/pull/3218)
 
-* `ember-testing-simple-setup`
-  Removes the need for most of the ceremony of setting up an application for testing. The following
-  examples are equivalent:
-
-  Ember 1.0.0 testing setup:
-
-  ```javascript
-  App = Ember.Application.create();
-  App.setupForTesting();
-  App.injectTestHelpers();
-  ```
-
-  New simple setup:
-
-  ```javascript
-  App = Ember.Application.create({testing: true});
-  ```
-
-  Added in [#3785](https://github.com/emberjs/ember.js/pull/3785).
-
 * `ember-testing-routing-helpers`
 
   Adds `currentRouteName`, `currentPath`, and `currentURL` testing helpers.
