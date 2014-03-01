@@ -1,3 +1,5 @@
+var get = Ember.get;
+
 /**
   The ComponentTemplateDeprecation mixin is used to provide a useful
   deprecation warning when using either `template` or `templateName` with
@@ -32,7 +34,7 @@ Ember.ComponentTemplateDeprecation = Ember.Mixin.create({
     this._super.apply(this, arguments);
 
     var deprecatedProperty, replacementProperty,
-        layoutSpecified = (props.layoutName || props.layout);
+        layoutSpecified = (props.layoutName || props.layout || get(this, 'layoutName'));
 
     if (props.templateName && !layoutSpecified) {
       deprecatedProperty = 'templateName';

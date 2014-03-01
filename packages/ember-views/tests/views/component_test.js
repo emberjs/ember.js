@@ -65,6 +65,16 @@ test("Specifying both templateName and layoutName to a component is NOT deprecat
   }).create();
 });
 
+test("Specifying a templateName on a component with a layoutName specified in a superclass is NOT deprecated", function(){
+  expectNoDeprecation();
+  var Parent = Ember.Component.extend({
+    layoutName: 'hum-drum'
+  });
+  component = Parent.extend({
+    templateName: 'blah-blah'
+  }).create();
+});
+
 module("Ember.Component - Actions", {
   setup: function() {
     actionCounts = {};
