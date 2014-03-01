@@ -170,7 +170,7 @@ if (!Ember.testing) {
 
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
     window.addEventListener("load", function() {
-      if (document.body && document.body.dataset && !document.body.dataset.emberExtension) {
+      if (document.documentElement && document.documentElement.dataset && !document.documentElement.dataset.emberExtension) {
         var downloadURL;
 
         if(isChrome) {
