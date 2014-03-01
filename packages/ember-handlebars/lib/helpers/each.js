@@ -401,8 +401,6 @@ Ember.Handlebars.registerHelper('each', function eachHelper(path, options) {
   }
 
   options.hash.dataSourceBinding = path;
-  // Set up emptyView as a metamorph with no tag
-  //options.hash.emptyViewClass = Ember._MetamorphView;
 
   if (options.data.insideGroup && !options.hash.groupedRows && !options.hash.itemViewClass) {
     new Ember.Handlebars.GroupedEach(this, path, options).render();

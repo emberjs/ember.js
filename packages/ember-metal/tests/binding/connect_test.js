@@ -48,6 +48,18 @@ testBoth('Connecting a binding between two objects', function(get, set) {
   performTest(binding, a, b, get, set);
 });
 
+testBoth('Connecting a binding to path with capital letters', function(get, set) {
+  var b = { bar: 'BAR' };
+  var a = { foo: 'FOO', B: b };
+
+  Ember.lookup.B = { bar: 'wrong' };
+
+  // b.bar -> a.foo
+  var binding = new Ember.Binding('foo', 'B.bar');
+
+  performTest(binding, a, b, get, set);
+});
+
 testBoth('Connecting a binding to path', function(get, set) {
   var a = { foo: 'FOO' };
   GlobalB = {

@@ -506,6 +506,38 @@ test("it works with the controller keyword", function() {
   equal(view.$().text(), "foobarbaz");
 });
 
+test("it looks up paths with capital letters on the controller", function() {
+  var controller = Ember.Object.create({
+    CONSTANT: Ember.A(["foo", "bar", "baz"])
+  });
+
+  Ember.run(function() { view.destroy(); });
+
+  view = Ember.View.create({
+    controller: controller,
+    template: templateFor("{{#view}}{{#each CONSTANT}}{{this}}{{/each}}{{/view}}")
+  });
+
+  append(view);
+
+  equal(view.$().text(), "foobarbaz");
+});
+
+test("it falls back to Ember.lookup for paths with capital letters", function() {
+  Ember.lookup.CONSTANT = Ember.A(["foo", "bar", "baz"]);
+
+  Ember.run(function() { view.destroy(); });
+
+  view = Ember.View.create({
+    controller: {},
+    template: templateFor("{{#view}}{{#each CONSTANT}}{{this}}{{/each}}{{/view}}")
+  });
+
+  append(view);
+
+  equal(view.$().text(), "foobarbaz");
+});
+
 module("{{#each foo in bar}}", {
   teardown: function() {
     Ember.run(function() {
