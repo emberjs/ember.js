@@ -188,13 +188,9 @@ function removeDependentKeys(desc, obj, keyName, meta) {
 */
 function ComputedProperty(func, opts) {
   this.func = func;
-  if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
-    setDependentKeys(this, opts && opts.dependentKeys);
-  } else {
-    this._dependentKeys = opts && opts.dependentKeys;
-  }
 
   this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : true;
+  this._dependentKeys = opts && opts.dependentKeys;
   this._readOnly = opts && (opts.readOnly !== undefined || !!opts.readOnly);
 }
 
@@ -206,18 +202,6 @@ var ComputedPropertyPrototype = ComputedProperty.prototype;
 ComputedPropertyPrototype._dependentKeys = undefined;
 ComputedPropertyPrototype._suspended = undefined;
 ComputedPropertyPrototype._meta = undefined;
-
-if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
-  ComputedPropertyPrototype._dependentCPs = undefined;
-  ComputedPropertyPrototype.implicitCPKey = undefined;
-
-  ComputedPropertyPrototype.toString = function() {
-    if (this.implicitCPKey) {
-      return this.implicitCPKey;
-    }
-    return Ember.Descriptor.prototype.toString.apply(this, arguments);
-  };
-}
 
 /**
   Properties are cacheable by default. Computed property will automatically
@@ -322,12 +306,7 @@ ComputedPropertyPrototype.property = function() {
     expandProperties(arguments[i], addArg);
   }
 
-  if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
-    setDependentKeys(this, args);
-  } else {
-    this._dependentKeys = args;
-  }
-
+  this._dependentKeys = args;
   return this;
 };
 
@@ -588,174 +567,55 @@ function getProperties(self, propertyNames) {
 
 var registerComputed, registerComputedWithProperties;
 
-if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
-  var guidFor = Ember.guidFor,
-      map = Ember.EnumerableUtils.map,
-      filter = Ember.EnumerableUtils.filter,
-      typeOf = Ember.typeOf;
-
-  var implicitKey = function (cp) {
-    return [guidFor(cp)].concat(cp._dependentKeys).join('_').replace(/\./g, '_DOT_');
-  };
-
-  var normalizeDependentKey = function (key) {
-    if (key instanceof Ember.ComputedProperty) {
-      return implicitKey(key);
-    } else {
-      return key;
-    }
-  };
-
-  var normalizeDependentKeys = function (keys) {
-    return map(keys, function (key) {
-      return normalizeDependentKey(key);
+registerComputed = function (name, macro) {
+  Ember.computed[name] = function(dependentKey) {
+    var args = a_slice.call(arguments);
+    return Ember.computed(dependentKey, function() {
+      return macro.apply(this, args);
     });
   };
+};
 
-  var selectDependentCPs = function (keys) {
-    return filter(keys, function (key) {
-      return key instanceof Ember.ComputedProperty;
+registerComputedWithProperties = function(name, macro) {
+  Ember.computed[name] = function() {
+    var properties = a_slice.call(arguments);
+
+    var computed = Ember.computed(function() {
+      return macro.apply(this, [getProperties(this, properties)]);
     });
+
+    return computed.property.apply(computed, properties);
   };
-
-  var setDependentKeys = function(cp, dependentKeys) {
-    if (dependentKeys) {
-      cp._dependentKeys = normalizeDependentKeys(dependentKeys);
-      cp._dependentCPs = selectDependentCPs(dependentKeys);
-    } else {
-      cp._dependentKeys = cp._dependentCPs = [];
-    }
-    cp.implicitCPKey = implicitKey(cp);
-  };
-  // expose `normalizeDependentKey[s]` so user CP macros can easily support
-  // composition
-  Ember.computed.normalizeDependentKey = normalizeDependentKey;
-  Ember.computed.normalizeDependentKeys = normalizeDependentKeys;
-
-  registerComputed = function (name, macro) {
-    Ember.computed[name] = function(dependentKey) {
-      var args = normalizeDependentKeys(a_slice.call(arguments));
-      return Ember.computed(dependentKey, function() {
-        return macro.apply(this, args);
-      });
-    };
-  };
-}
-
-if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
-  registerComputedWithProperties = function(name, macro) {
-    Ember.computed[name] = function() {
-      var args = a_slice.call(arguments);
-      var properties = normalizeDependentKeys(args);
-
-      var computed = Ember.computed(function() {
-        return macro.apply(this, [getProperties(this, properties)]);
-      });
-
-      return computed.property.apply(computed, args);
-    };
-  };
-} else {
-  registerComputed = function (name, macro) {
-    Ember.computed[name] = function(dependentKey) {
-      var args = a_slice.call(arguments);
-      return Ember.computed(dependentKey, function() {
-        return macro.apply(this, args);
-      });
-    };
-  };
-
-  registerComputedWithProperties = function(name, macro) {
-    Ember.computed[name] = function() {
-      var properties = a_slice.call(arguments);
-
-      var computed = Ember.computed(function() {
-        return macro.apply(this, [getProperties(this, properties)]);
-      });
-
-      return computed.property.apply(computed, properties);
-    };
-  };
-}
-
-
-if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
-  Ember.computed.literal = function (value) {
-    return Ember.computed(function () {
-      return value;
-    });
-  };
-}
+};
 
 if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
-  if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
-    /**
-      A computed property that returns true if the value of the dependent
-      property is null, an empty string, empty array, or empty function.
+  /**
+    A computed property that returns true if the value of the dependent
+    property is null, an empty string, empty array, or empty function.
 
-      Example
+    Example
 
-      ```javascript
-      var ToDoList = Ember.Object.extend({
-        done: Ember.computed.empty('todos')
-      });
-      var todoList = ToDoList.create({todos: ['Unit Test', 'Documentation', 'Release']});
-      todoList.get('done'); // false
-      todoList.get('todos').clear();
-      todoList.get('done'); // true
-      ```
+    ```javascript
+    var ToDoList = Ember.Object.extend({
+      done: Ember.computed.empty('todos')
+    });
+    var todoList = ToDoList.create({todos: ['Unit Test', 'Documentation', 'Release']});
+    todoList.get('done'); // false
+    todoList.get('todos').clear();
+    todoList.get('done'); // true
+    ```
 
-      @method computed.empty
-      @for Ember
-      @param {String} dependentKey
-      @return {Ember.ComputedProperty} computed property which negate
-      the original value for property
-    */
-    Ember.computed.empty = function (dependentKey) {
-      var args = a_slice.call(arguments),
-          normalizedKey = normalizeDependentKey(dependentKey);
-
-      // Ember.computed.empty('myArray')
-      if (typeof dependentKey === 'string' && ! lengthPattern.test(dependentKey)) {
-        args[0] = dependentKey + '.length';
-      // Ember.computed.empty(Ember.computed.alias('myArray'))
-      } else {
-        args.push(normalizedKey + '.length');
-      }
-
-      return Ember.computed.apply(Ember.computed, args.concat(function () {
-        return Ember.isEmpty(get(this, normalizedKey));
-      }));
-    };
-  } else {
-    /**
-      A computed property that returns true if the value of the dependent
-      property is null, an empty string, empty array, or empty function.
-
-      Example
-
-      ```javascript
-      var ToDoList = Ember.Object.extend({
-        done: Ember.computed.empty('todos')
-      });
-      var todoList = ToDoList.create({todos: ['Unit Test', 'Documentation', 'Release']});
-      todoList.get('done'); // false
-      todoList.get('todos').clear();
-      todoList.get('done'); // true
-      ```
-
-      @method computed.empty
-      @for Ember
-      @param {String} dependentKey
-      @return {Ember.ComputedProperty} computed property which negate
-      the original value for property
-    */
-    Ember.computed.empty = function (dependentKey) {
-      return Ember.computed(dependentKey + '.length', function () {
-        return Ember.isEmpty(get(this, dependentKey));
-      });
-    };
-  }
+    @method computed.empty
+    @for Ember
+    @param {String} dependentKey
+    @return {Ember.ComputedProperty} computed property which negate
+    the original value for property
+  */
+  Ember.computed.empty = function (dependentKey) {
+    return Ember.computed(dependentKey + '.length', function () {
+      return Ember.isEmpty(get(this, dependentKey));
+    });
+  };
 } else {
   /**
     A computed property that returns true if the value of the dependent

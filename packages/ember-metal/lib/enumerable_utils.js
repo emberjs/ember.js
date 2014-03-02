@@ -1,10 +1,10 @@
-var map, forEach, indexOf, splice, filter;
+var map, forEach, indexOf, filter, splice;
 require('ember-metal/array');
 
 map     = Array.prototype.map     || Ember.ArrayPolyfills.map;
 forEach = Array.prototype.forEach || Ember.ArrayPolyfills.forEach;
 indexOf = Array.prototype.indexOf || Ember.ArrayPolyfills.indexOf;
-filter = Array.prototype.filter || Ember.ArrayPolyfills.filter;
+filter  = Array.prototype.filter  || Ember.ArrayPolyfills.filter;
 splice = Array.prototype.splice;
 
 /**

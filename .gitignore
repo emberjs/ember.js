@@ -16,7 +16,6 @@ assets/bpm_libs.js
 assets/bpm_styles.css
 coverage
 dist
-distold
 docs/build
 docs/node_modules
 lib/*/tests/all.js
