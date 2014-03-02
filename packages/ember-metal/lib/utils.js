@@ -719,7 +719,7 @@ Ember.inspect = function(obj) {
 // below Chrome's function body size inlining limit of 600 chars.
 
 var apply = Ember.apply = function apply(t /* target */, m /* method */, a /* args */) {
-  var l = a.length;
+  var l = a && a.length;
   if (!a || !l) { return m.call(t); }
   switch (l) {
     case 1:  return m.call(t, a[0]);
@@ -732,7 +732,7 @@ var apply = Ember.apply = function apply(t /* target */, m /* method */, a /* ar
 };
 
 var applyStr = Ember.applyStr = function applyStr(t /* target */, m /* method */, a /* args */) {
-  var l = a.length;
+  var l = a && a.length;
   if (!a || !l) { return t[m](); }
   switch (l) {
     case 1:  return t[m](a[0]);
