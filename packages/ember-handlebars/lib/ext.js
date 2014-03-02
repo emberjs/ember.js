@@ -214,8 +214,6 @@ Ember.Handlebars.registerHelper('blockHelperMissing', function(path) {
   } else {
     return Handlebars.helpers.helperMissing.call(this, path);
   }
-
-  return Handlebars.helpers.blockHelperMissing.apply(this, arguments);
 });
 
 /**
