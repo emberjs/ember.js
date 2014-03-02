@@ -28,7 +28,8 @@ var set = Ember.set, get = Ember.get,
     finishPartial = Mixin.finishPartial,
     reopen = Mixin.prototype.reopen,
     MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
-    indexOf = Ember.EnumerableUtils.indexOf;
+    indexOf = Ember.EnumerableUtils.indexOf,
+    apply = Ember.apply;
 
 var undefinedDescriptor = {
   configurable: true,
@@ -64,7 +65,7 @@ function makeCtor() {
       // capture locally so we can clear the closed over variable
       var mixins = initMixins;
       initMixins = null;
-      this.reopen.apply(this, mixins);
+      apply(this, this.reopen, mixins);
     }
     if (initProperties) {
       // capture locally so we can clear the closed over variable
@@ -140,7 +141,7 @@ function makeCtor() {
       }
     }
     finishPartial(this, m);
-    this.init.apply(this, arguments);
+    apply(this, this.init, arguments);
     m.proto = proto;
     finishChains(this);
     sendEvent(this, "init");
@@ -612,7 +613,7 @@ var ClassMixin = Mixin.create({
   */
   reopen: function() {
     this.willReopen();
-    reopen.apply(this.PrototypeMixin, arguments);
+    apply(this.PrototypeMixin, reopen, arguments);
     return this;
   },
 
@@ -672,7 +673,7 @@ var ClassMixin = Mixin.create({
     @method reopenClass
   */
   reopenClass: function() {
-    reopen.apply(this.ClassMixin, arguments);
+    apply(this.ClassMixin, reopen, arguments);
     applyMixin(this, arguments, false);
     return this;
   },

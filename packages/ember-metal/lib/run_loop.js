@@ -19,7 +19,8 @@ var Backburner = requireModule('backburner').Backburner,
       onEnd: onEnd
     }),
     slice = [].slice,
-    concat = [].concat;
+    concat = [].concat,
+    apply = Ember.apply;
 
 // ..........................................................
 // Ember.run - this is ideally the only public API the dev sees
@@ -56,13 +57,13 @@ Ember.run = function() {
   if (Ember.onerror) {
     return onerror(arguments);
   } else {
-    return backburner.run.apply(backburner, arguments);
+    return apply(backburner, backburner.run, arguments);
   }
 };
 
 function onerror(args) {
   try {
-    return backburner.run.apply(backburner, args);
+    return apply(backburner, backburner.run, args);
   } catch(error) {
     Ember.onerror(error);
   }
@@ -106,12 +107,12 @@ function onerror(args) {
 */
 Ember.run.join = function(target, method /* args */) {
   if (!Ember.run.currentRunLoop) {
-    return Ember.run.apply(Ember.run, arguments);
+    return apply(Ember, Ember.run, arguments);
   }
 
   var args = slice.call(arguments);
   args.unshift('actions');
-  Ember.run.schedule.apply(Ember.run, args);
+  apply(Ember.run, Ember.run.schedule, args);
 };
 
 /**
@@ -157,7 +158,7 @@ Ember.run.join = function(target, method /* args */) {
 Ember.run.bind = function(target, method /* args*/) {
   var args = arguments;
   return function() {
-    return Ember.run.join.apply(Ember.run, args);
+    return apply(Ember.run, Ember.run.join, args);
   };
 };
 
@@ -255,7 +256,7 @@ Ember.run.end = function() {
 */
 Ember.run.schedule = function(queue, target, method) {
   checkAutoRun();
-  backburner.schedule.apply(backburner, arguments);
+  apply(backburner, backburner.schedule, arguments);
 };
 
 // Used by global test teardown
@@ -317,7 +318,7 @@ Ember.run.sync = function() {
     `Ember.run.cancel` later.
 */
 Ember.run.later = function(target, method) {
-  return backburner.later.apply(backburner, arguments);
+  return apply(backburner, backburner.later, arguments);
 };
 
 /**
@@ -336,7 +337,7 @@ Ember.run.once = function(target, method) {
   checkAutoRun();
   var args = slice.call(arguments);
   args.unshift('actions');
-  return backburner.scheduleOnce.apply(backburner, args);
+  return apply(backburner, backburner.scheduleOnce, args);
 };
 
 /**
@@ -385,7 +386,7 @@ Ember.run.once = function(target, method) {
 */
 Ember.run.scheduleOnce = function(queue, target, method) {
   checkAutoRun();
-  return backburner.scheduleOnce.apply(backburner, arguments);
+  return apply(backburner, backburner.scheduleOnce, arguments);
 };
 
 /**
@@ -449,7 +450,7 @@ Ember.run.scheduleOnce = function(queue, target, method) {
 Ember.run.next = function() {
   var args = slice.call(arguments);
   args.push(1);
-  return backburner.later.apply(backburner, args);
+  return apply(backburner, backburner.later, args);
 };
 
 /**
@@ -566,7 +567,7 @@ Ember.run.cancel = function(timer) {
   @return {Array} Timer information for use in cancelling, see `Ember.run.cancel`.
 */
 Ember.run.debounce = function() {
-  return backburner.debounce.apply(backburner, arguments);
+  return apply(backburner, backburner.debounce, arguments);
 };
 
 /**
@@ -602,7 +603,7 @@ Ember.run.debounce = function() {
   @return {Array} Timer information for use in cancelling, see `Ember.run.cancel`.
 */
 Ember.run.throttle = function() {
-  return backburner.throttle.apply(backburner, arguments);
+  return apply(backburner, backburner.throttle, arguments);
 };
 
 // Make sure it's not an autorun during testing

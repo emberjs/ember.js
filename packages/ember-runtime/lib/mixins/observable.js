@@ -6,7 +6,8 @@
 var get = Ember.get,
     set = Ember.set,
     slice = Array.prototype.slice,
-    getProperties = Ember.getProperties;
+    getProperties = Ember.getProperties,
+    apply = Ember.apply;
 
 /**
   ## Overview
@@ -136,7 +137,7 @@ Ember.Observable = Ember.Mixin.create({
     @return {Hash}
   */
   getProperties: function() {
-    return getProperties.apply(null, [this].concat(slice.call(arguments)));
+    return apply(null, getProperties, [this].concat(slice.call(arguments)));
   },
 
   /**

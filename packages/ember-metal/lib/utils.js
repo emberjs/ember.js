@@ -333,7 +333,7 @@ Ember.wrap = function(func, superFunc) {
   function superWrapper() {
     var ret, sup = this.__nextSuper;
     this.__nextSuper = superFunc;
-    ret = func.apply(this, arguments);
+    ret = apply(this, func, arguments);
     this.__nextSuper = sup;
     return ret;
   }
@@ -445,7 +445,7 @@ Ember.canInvoke = canInvoke;
 */
 Ember.tryInvoke = function(obj, methodName, args) {
   if (canInvoke(obj, methodName)) {
-    return obj[methodName].apply(obj, args || []);
+    return args ? applyStr(obj, methodName, args) : applyStr(obj, methodName);
   }
 };
 
@@ -715,24 +715,31 @@ Ember.inspect = function(obj) {
   return "{" + ret.join(", ") + "}";
 };
 
-Ember.apply = function(target, method, args) {
-  switch (args.length) {
-    case 0:  return method.call(target);
-    case 1:  return method.call(target, args[0]);
-    case 2:  return method.call(target, args[0], args[1]);
-    case 3:  return method.call(target, args[0], args[1], args[2]);
-    case 4:  return method.call(target, args[0], args[1], args[2], args[3]);
-    default: return method.apply(target, args);
+// The following functions are intentionally minified to keep the functions
+// below Chrome's function body size inlining limit of 600 chars.
+
+var apply = Ember.apply = function apply(t /* target */, m /* method */, a /* args */) {
+  var l = a.length;
+  if (!a || !l) { return m.call(t); }
+  switch (l) {
+    case 1:  return m.call(t, a[0]);
+    case 2:  return m.call(t, a[0], a[1]);
+    case 3:  return m.call(t, a[0], a[1], a[2]);
+    case 4:  return m.call(t, a[0], a[1], a[2], a[3]);
+    case 5:  return m.call(t, a[0], a[1], a[2], a[3], a[4]);
+    default: return m.apply(t, a);
   }
 };
 
-Ember.applyStr = function(target, methodStr, args) {
-  switch (args.length) {
-    case 0:  return target[methodStr]();
-    case 1:  return target[methodStr](args[0]);
-    case 2:  return target[methodStr](args[0], args[1]);
-    case 3:  return target[methodStr](args[0], args[1], args[2]);
-    case 4:  return target[methodStr](args[0], args[1], args[2], args[3]);
-    default: return target[methodStr].apply(target, args);
+var applyStr = Ember.applyStr = function applyStr(t /* target */, m /* method */, a /* args */) {
+  var l = a.length;
+  if (!a || !l) { return t[m](); }
+  switch (l) {
+    case 1:  return t[m](a[0]);
+    case 2:  return t[m](a[0], a[1]);
+    case 3:  return t[m](a[0], a[1], a[2]);
+    case 4:  return t[m](a[0], a[1], a[2], a[3]);
+    case 5:  return t[m](a[0], a[1], a[2], a[3], a[4]);
+    default: return t[m].apply(t, a);
   }
 };

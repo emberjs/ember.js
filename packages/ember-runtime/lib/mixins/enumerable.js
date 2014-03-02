@@ -10,6 +10,7 @@
 var get = Ember.get, set = Ember.set;
 var a_slice = Array.prototype.slice;
 var a_indexOf = Ember.EnumerableUtils.indexOf;
+var apply = Ember.apply;
 
 var contexts = [];
 
@@ -377,7 +378,7 @@ Ember.Enumerable = Ember.Mixin.create({
    */
   reject: function(callback, target) {
     return this.filter(function() {
-      return !(callback.apply(target, arguments));
+      return !(apply(target, callback, arguments));
     });
   },
 
@@ -392,7 +393,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @return {Array} filtered array
   */
   filterBy: function(key, value) {
-    return this.filter(iter.apply(this, arguments));
+    return this.filter(apply(this, iter, arguments));
   },
 
   /**
@@ -496,7 +497,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @return {Object} found item or `undefined`
   */
   findBy: function(key, value) {
-    return this.find(iter.apply(this, arguments));
+    return this.find(apply(this, iter, arguments));
   },
 
   /**
@@ -580,7 +581,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @return {Boolean}
   */
   isEvery: function(key, value) {
-    return this.every(iter.apply(this, arguments));
+    return this.every(apply(this, iter, arguments));
   },
 
   /**
@@ -682,7 +683,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @return {Boolean} `true` if the passed function returns `true` for any item
   */
   isAny: function(key, value) {
-    return this.any(iter.apply(this, arguments));
+    return this.any(apply(this, iter, arguments));
   },
 
   /**
@@ -765,7 +766,7 @@ Ember.Enumerable = Ember.Mixin.create({
     this.forEach(function(x, idx) {
       var method = x && x[methodName];
       if ('function' === typeof method) {
-        ret[idx] = args ? method.apply(x, args) : x[methodName]();
+        ret[idx] = args ? apply(x, method, args) : x[methodName]();
       }
     }, this);
 

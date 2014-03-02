@@ -22,7 +22,8 @@ var Mixin, REQUIRED, Alias,
     defineProperty = Ember.defineProperty,
     guidFor = Ember.guidFor,
     metaFor = Ember.meta,
-    META_KEY = Ember.META_KEY;
+    META_KEY = Ember.META_KEY,
+    apply = Ember.apply;
 
 var expandProperties = Ember.expandProperties;
 
@@ -30,7 +31,7 @@ function superFunction(){
   var ret, func = this.__nextSuper;
   if (func) {
     this.__nextSuper = null;
-    ret = func.apply(this, arguments);
+    ret = apply(this, func, arguments);
     this.__nextSuper = func;
   }
   return ret;

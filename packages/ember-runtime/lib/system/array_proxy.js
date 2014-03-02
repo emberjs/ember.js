@@ -9,7 +9,8 @@ require('ember-runtime/system/object');
 var OUT_OF_RANGE_EXCEPTION = "Index out of range";
 var EMPTY = [];
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set,
+    apply = Ember.apply;
 
 /**
   An ArrayProxy wraps any other object that implements `Ember.Array` and/or
@@ -227,7 +228,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray, {
 
   replace: function() {
     if (get(this, 'arrangedContent') === get(this, 'content')) {
-      this._replace.apply(this, arguments);
+      apply(this, this._replace, arguments);
     } else {
       throw new Ember.Error("Using replace on an arranged ArrayProxy is not allowed.");
     }
