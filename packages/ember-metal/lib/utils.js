@@ -715,4 +715,24 @@ Ember.inspect = function(obj) {
   return "{" + ret.join(", ") + "}";
 };
 
+Ember.apply = function(target, method, args) {
+  switch (args.length) {
+    case 0:  return method.call(target);
+    case 1:  return method.call(target, args[0]);
+    case 2:  return method.call(target, args[0], args[1]);
+    case 3:  return method.call(target, args[0], args[1], args[2]);
+    case 4:  return method.call(target, args[0], args[1], args[2], args[3]);
+    default: return method.apply(target, args);
+  }
+};
 
+Ember.applyStr = function(target, methodStr, args) {
+  switch (args.length) {
+    case 0:  return target[methodStr]();
+    case 1:  return target[methodStr](args[0]);
+    case 2:  return target[methodStr](args[0], args[1]);
+    case 3:  return target[methodStr](args[0], args[1], args[2]);
+    case 4:  return target[methodStr](args[0], args[1], args[2], args[3]);
+    default: return target[methodStr].apply(target, args);
+  }
+};

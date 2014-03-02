@@ -322,11 +322,18 @@ function sendEvent(obj, eventName, params, actions) {
     if (flags & SUSPENDED) { continue; }
     if (flags & ONCE) { removeListener(obj, eventName, target, method); }
     if (!target) { target = obj; }
-    if ('string' === typeof method) { method = target[method]; }
-    if (params) {
-      method.apply(target, params);
+    if ('string' === typeof method) {
+      if (params) {
+        Ember.applyStr(target, method, params);
+      } else {
+        target[method]();
+      }
     } else {
-      method.call(target);
+      if (params) {
+        Ember.apply(target, method, params);
+      } else {
+        method.call(target);
+      }
     }
   }
   return true;
