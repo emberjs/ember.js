@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core'; // deprecateFunc
-import {get} from 'ember-metal/property_get';
 
 /**
   Returns true if the passed value is null or undefined. This avoids errors

@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core'; // deprecateFunc
-import {get} from 'ember-metal/property_get';
 import isEmpty from 'ember-metal/is_empty';
 
 var isBlank;
