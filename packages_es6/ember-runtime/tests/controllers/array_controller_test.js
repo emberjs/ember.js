@@ -1,6 +1,6 @@
 import Ember from 'ember-metal/core';
 import MutableArrayTests from 'ember-runtime/tests/suites/mutable_array';
-import {ArrayController} from "ember-runtime/controllers";
+import ArrayController from "ember-runtime/controllers/array_controller";
 
 module("ember-runtime/controllers/array_controller_test");
 

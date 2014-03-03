@@ -8,7 +8,7 @@ import expandProperties from "ember-metal/expand_properties";
 import {computed} from "ember-metal/computed";
 
 var a_slice = Array.prototype.slice;
-
+var FunctionPrototype = Function.prototype;
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
 
@@ -72,7 +72,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @method property
     @for Function
   */
-  Function.prototype.property = function() {
+  FunctionPrototype.property = function() {
     var ret = computed(this);
     // ComputedProperty.prototype.property expands properties; no need for us to
     // do so here.
@@ -104,7 +104,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @method observes
     @for Function
   */
-  Function.prototype.observes = function() {
+  FunctionPrototype.observes = function() {
     var addWatchedProperty = function (obs) { watched.push(obs); };
     var watched = [];
 
@@ -142,7 +142,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @method observesImmediately
     @for Function
   */
-  Function.prototype.observesImmediately = function() {
+  FunctionPrototype.observesImmediately = function() {
     for (var i=0, l=arguments.length; i<l; i++) {
       var arg = arguments[i];
       Ember.assert("Immediate observers must observe internal properties only, not properties on other objects.", arg.indexOf('.') === -1);
@@ -174,7 +174,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @method observesBefore
     @for Function
   */
-  Function.prototype.observesBefore = function() {
+  FunctionPrototype.observesBefore = function() {
     var addWatchedProperty = function (obs) { watched.push(obs); };
     var watched = [];
 
@@ -208,7 +208,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @method on
     @for Function
   */
-  Function.prototype.on = function() {
+  FunctionPrototype.on = function() {
     var events = a_slice.call(arguments);
     this.__ember_listens__ = events;
     return this;

@@ -16,6 +16,8 @@ var fmt        = EmberStringUtils.fmt,
     capitalize = EmberStringUtils.capitalize,
     classify   = EmberStringUtils.classify;
 
+var StringPrototype = String.prototype;
+
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
   /**
@@ -24,7 +26,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     @method fmt
     @for String
   */
-  String.prototype.fmt = function() {
+  StringPrototype.fmt = function() {
     return fmt(this, arguments);
   };
 
@@ -34,7 +36,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     @method w
     @for String
   */
-  String.prototype.w = function() {
+  StringPrototype.w = function() {
     return w(this);
   };
 
@@ -44,7 +46,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     @method loc
     @for String
   */
-  String.prototype.loc = function() {
+  StringPrototype.loc = function() {
     return loc(this, arguments);
   };
 
@@ -54,7 +56,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     @method camelize
     @for String
   */
-  String.prototype.camelize = function() {
+  StringPrototype.camelize = function() {
     return camelize(this);
   };
 
@@ -64,7 +66,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     @method decamelize
     @for String
   */
-  String.prototype.decamelize = function() {
+  StringPrototype.decamelize = function() {
     return decamelize(this);
   };
 
@@ -74,7 +76,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     @method dasherize
     @for String
   */
-  String.prototype.dasherize = function() {
+  StringPrototype.dasherize = function() {
     return dasherize(this);
   };
 
@@ -84,7 +86,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     @method underscore
     @for String
   */
-  String.prototype.underscore = function() {
+  StringPrototype.underscore = function() {
     return underscore(this);
   };
 
@@ -94,7 +96,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     @method classify
     @for String
   */
-  String.prototype.classify = function() {
+  StringPrototype.classify = function() {
     return classify(this);
   };
 
@@ -104,7 +106,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     @method capitalize
     @for String
   */
-  String.prototype.capitalize = function() {
+  StringPrototype.capitalize = function() {
     return capitalize(this);
   };
 }

@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core";
-import {META_KEY} from "ember-metal/utils";
 import {_getPath as getPath} from "ember-metal/property_get";
+import {META_KEY} from "ember-metal/utils";
 import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
 import {defineProperty} from "ember-metal/properties";
 import EmberError from "ember-metal/error";

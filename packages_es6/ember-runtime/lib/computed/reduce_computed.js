@@ -1,8 +1,8 @@
 import Ember from "ember-metal/core"; // Ember.assert
 import {get as e_get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
-import EmberError from "ember-metal/error";
 import {guidFor, meta} from "ember-metal/utils";
+import EmberError from "ember-metal/error";
 import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
 import expandProperties from "ember-metal/expand_properties";
 import {addObserver, observersFor, removeObserver, addBeforeObserver, removeBeforeObserver} from "ember-metal/observer";
@@ -15,8 +15,7 @@ import run from "ember-metal/run_loop";
 import Set from "ember-runtime/system/set";
 import {isArray} from "ember-metal/utils";
 
-var e_get = get,
-    cacheSet = cacheFor.set,
+var cacheSet = cacheFor.set,
     cacheGet = cacheFor.get,
     cacheRemove = cacheFor.remove,
     a_slice = [].slice,

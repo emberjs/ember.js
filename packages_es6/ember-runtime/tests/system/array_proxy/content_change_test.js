@@ -1,6 +1,8 @@
 import Ember from "ember-metal/core";
+import {set} from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import ArrayProxy from "ember-runtime/system/array_proxy";
+import ArrayController from "ember-runtime/controllers/array_controller";
 
 module("ArrayProxy - content change");
 
@@ -67,14 +69,14 @@ test("The `arrangedContentDidChange` method is invoked after `content` is change
 });
 
 test("The ArrayProxy doesn't explode when assigned a destroyed object", function() {
-  var arrayController = Ember.ArrayController.create();
-  var proxy = Ember.ArrayProxy.create();
+  var arrayController = ArrayController.create();
+  var proxy = ArrayProxy.create();
 
-  Ember.run(function() {
+  run(function() {
     arrayController.destroy();
   });
 
-  Ember.set(proxy, 'content', arrayController);
+  set(proxy, 'content', arrayController);
 
   ok(true, "No exception was raised");
 });

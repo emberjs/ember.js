@@ -63,8 +63,8 @@ if (typeof window === 'object' && typeof window.dispatchEvent === 'function' && 
       equal(e.detail, eventObject, 'event details are provided properly');
     });
 
-    Ember.run(function() {
-      Ember.runLoadHooks("__test_hook_for_events__", eventObject);
+    run(function() {
+      runLoadHooks("__test_hook_for_events__", eventObject);
     });
   });
 }

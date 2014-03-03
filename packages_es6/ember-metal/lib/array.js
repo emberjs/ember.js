@@ -3,6 +3,8 @@
 @module ember-metal
 */
 
+var ArrayPrototype = Array.prototype;
+
 // NOTE: There is a bug in jshint that doesn't recognize `Object()` without `new`
 // as being ok unless both `newcap:false` and not `use strict`.
 // https://github.com/jshint/jshint/issues/392
@@ -15,7 +17,7 @@ var isNativeFunc = function(func) {
 };
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/map
-var map = isNativeFunc(Array.prototype.map) ? Array.prototype.map : function(fun /*, thisp */) {
+var map = isNativeFunc(ArrayPrototype.map) ? ArrayPrototype.map : function(fun /*, thisp */) {
   //"use strict";
 
   if (this === void 0 || this === null) {
@@ -40,7 +42,7 @@ var map = isNativeFunc(Array.prototype.map) ? Array.prototype.map : function(fun
 };
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/foreach
-var forEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEach : function(fun /*, thisp */) {
+var forEach = isNativeFunc(ArrayPrototype.forEach) ? ArrayPrototype.forEach : function(fun /*, thisp */) {
   //"use strict";
 
   if (this === void 0 || this === null) {
@@ -61,7 +63,7 @@ var forEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEach : 
   }
 };
 
-var indexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.indexOf : function (obj, fromIndex) {
+var indexOf = isNativeFunc(ArrayPrototype.indexOf) ? ArrayPrototype.indexOf : function (obj, fromIndex) {
   if (fromIndex === null || fromIndex === undefined) { fromIndex = 0; }
   else if (fromIndex < 0) { fromIndex = Math.max(0, this.length + fromIndex); }
   for (var i = fromIndex, j = this.length; i < j; i++) {
@@ -70,7 +72,7 @@ var indexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.indexOf : 
   return -1;
 };
 
-var filter = isNativeFunc(Array.prototype.filter) ? Array.prototype.filter : function (fn, context) {
+var filter = isNativeFunc(ArrayPrototype.filter) ? ArrayPrototype.filter : function (fn, context) {
   var i,
   value,
   result = [],
@@ -89,22 +91,28 @@ var filter = isNativeFunc(Array.prototype.filter) ? Array.prototype.filter : fun
 
 
 if (Ember.SHIM_ES5) {
-  if (!Array.prototype.map) {
-    Array.prototype.map = map;
+  if (!ArrayPrototype.map) {
+    ArrayPrototype.map = map;
   }
 
-  if (!Array.prototype.forEach) {
-    Array.prototype.forEach = forEach;
+  if (!ArrayPrototype.forEach) {
+    ArrayPrototype.forEach = forEach;
   }
 
-  if (!Array.prototype.filter) {
-    Array.prototype.filter = filter;
+  if (!ArrayPrototype.filter) {
+    ArrayPrototype.filter = filter;
   }
 
-  if (!Array.prototype.indexOf) {
-    Array.prototype.indexOf = indexOf;
+  if (!ArrayPrototype.indexOf) {
+    ArrayPrototype.indexOf = indexOf;
   }
 }
 
+/**
+  Array polyfills to support ES5 features in older browsers.
+
+  @namespace Ember
+  @property ArrayPolyfills
+*/
 export {map, forEach, filter, indexOf};
 

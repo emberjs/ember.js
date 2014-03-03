@@ -1,13 +1,13 @@
 import Ember from "ember-metal/core"; // Ember.K, Ember.assert
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
+import {isArray, apply} from "ember-metal/utils";
 import {computed} from "ember-metal/computed";
 import {beforeObserver, observer} from "ember-metal/mixin";
 import {beginPropertyChanges, endPropertyChanges} from "ember-metal/property_events";
 import EmberError from "ember-metal/error";
 import EmberObject from "ember-runtime/system/object"
 import MutableArray from "ember-runtime/mixins/mutable_array"
-import {isArray, apply} from "ember-metal/utils";
 import Enumerable from "ember-runtime/mixins/enumerable";
 import EmberStringUtils from "ember-runtime/system/string";
 
@@ -195,7 +195,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     if (arrangedContent) {
       Ember.assert(EmberStringUtils.fmt('ArrayProxy expects an Array or ' + 
         'Ember.ArrayProxy, but you passed %@', [typeof arrangedContent]), 
-        isArray(arrangedContent) || content.isDestroyed);
+        isArray(arrangedContent) || arrangedContent.isDestroyed);
 
       arrangedContent.addArrayObserver(this, {
         willChange: 'arrangedContentArrayWillChange',

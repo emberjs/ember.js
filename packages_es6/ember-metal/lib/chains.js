@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core"; // warn, assert, etc;
-import {meta, META_KEY} from "ember-metal/utils";
 import {get, normalizeTuple} from "ember-metal/property_get";
+import {meta, META_KEY} from "ember-metal/utils";
 import {forEach} from "ember-metal/array";
 import {watchKey, unwatchKey} from "ember-metal/watch_key";
 

@@ -22,9 +22,9 @@
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
 
-import {indexOf} from "ember-metal/array"
-import {guidFor} from "ember-metal/utils";
 import {set} from "ember-metal/property_set";
+import {guidFor} from "ember-metal/utils";
+import {indexOf} from "ember-metal/array"
 import {create} from "ember-metal/platform";
 
 var copy = function(obj) {

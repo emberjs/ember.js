@@ -20,9 +20,9 @@ var EMPTY = [];
 
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
-import {Mixin, required} from "ember-metal/mixin";
-import EmberError from "ember-metal/error";
 import {isArray} from "ember-metal/utils";
+import EmberError from "ember-metal/error";
+import {Mixin, required} from "ember-metal/mixin";
 import EmberArray from "ember-runtime/mixins/array";
 import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";
 import Enumerable from "ember-runtime/mixins/enumerable";

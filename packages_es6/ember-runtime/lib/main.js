@@ -6,34 +6,59 @@ Ember Runtime
 @requires ember-metal
 */
 
-// require('container');
-// require('ember-metal');
-// require('ember-runtime/core');
-// require('ember-runtime/computed/reduce_computed_macros');
-// require('ember-runtime/ext');
-// require('ember-runtime/system');
-// require('ember-runtime/controllers');
-
-// IMPORTS
-import "ember-runtime/ext"; // just for side effect of extending some native prototypes
-
+// BEGIN IMPORTS
 import Ember from "ember-metal";
 import {isEqual} from "ember-runtime/core";
 import keys from "ember-runtime/keys";
 import compare from "ember-runtime/compare";
 import copy from "ember-runtime/copy";
 
-import {Namespace, EmberObject, TrackedArray, SubArray, Container, Application, ArrayProxy, ObjectProxy, CoreObject, EachArray, EachProxy, NativeArray, A, Set, EmberStringUtils, Deferred, onLoad, runLoadHooks} from "ember-runtime/system";
-import {EmberArray, Enumerable, Comparable, Copyable, Freezable, FROZEN_ERROR, DeferredMixin, MutableEnumerable, MutableArray, TargetActionSupport, Evented, PromiseProxyMixin, SortableMixin, Observable, ActionHandler} from "ember-runtime/mixins";
+import Namespace from "ember-runtime/system/namespace";
+import EmberObject from "ember-runtime/system/object";
+import TrackedArray from "ember-runtime/system/tracked_array";
+import SubArray from "ember-runtime/system/subarray";
+import Container from "ember-runtime/system/container";
+import Application from "ember-runtime/system/application";
+import ArrayProxy from "ember-runtime/system/array_proxy";
+import ObjectProxy from "ember-runtime/system/object_proxy";
+import CoreObject from "ember-runtime/system/core_object";
+import {EachArray, EachProxy} from "ember-runtime/system/each_proxy";
+import NativeArray from "ember-runtime/system/native_array";
+import Set from "ember-runtime/system/set";
+import EmberStringUtils from "ember-runtime/system/string";
+import Deferred from "ember-runtime/system/deferred";
+import {onLoad, runLoadHooks} from "ember-runtime/system/lazy_load";
+
+import EmberArray from "ember-runtime/mixins/array";
+import {Comparable} from "ember-runtime/mixins/comparable";
+import {Copyable} from "ember-runtime/mixins/copyable";
+import Enumerable from "ember-runtime/mixins/enumerable";
+import {Freezable, FROZEN_ERROR} from "ember-runtime/mixins/freezable";
+import Observable from "ember-runtime/mixins/observable";
+import ActionHandler from "ember-runtime/mixins/action_handler";
+import DeferredMixin from "ember-runtime/mixins/deferred";
+import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";
+import MutableArray from "ember-runtime/mixins/mutable_array";
+import TargetActionSupport from "ember-runtime/mixins/target_action_support";
+import Evented from "ember-runtime/mixins/evented";
+import PromiseProxyMixin from "ember-runtime/mixins/promise_proxy";
+import SortableMixin from "ember-runtime/mixins/sortable";
 
 import {arrayComputed, ArrayComputedProperty} from "ember-runtime/computed/array_computed";
 import {reduceComputed, ReduceComputedProperty} from "ember-runtime/computed/reduce_computed";
 import {sum, min, max, map, sort, setDiff, mapBy, mapProperty, filter, filterBy, filterProperty, uniq, union, intersect} from 'ember-runtime/computed/reduce_computed_macros';
 
-import {ArrayController, ObjectController, Controller, ControllerMixin} from "ember-runtime/controllers";
+import ArrayController from "ember-runtime/controllers/array_controller";
+import ObjectController from "ember-runtime/controllers/object_controller";
+import {Controller, ControllerMixin} from "ember-runtime/controllers/controller";
+
+import "ember-runtime/ext/rsvp";     // just for side effect of extending Ember.RSVP
+import "ember-runtime/ext/string";   // just for side effect of extending String.prototype
+import "ember-runtime/ext/function"; // just for side effect of extending Function.prototype
+// END IMPORTS
 
 
-// Exports
+// BEGIN EXPORTS
 Ember.compare = compare;
 Ember.copy = copy;
 Ember.isEqual = isEqual;
@@ -67,20 +92,22 @@ Ember.reduceComputed = reduceComputed;
 Ember.ReduceComputedProperty = ReduceComputedProperty;
 
 // ES6TODO: this seems a less than ideal way/place to add properties to Ember.computed
-Ember.computed.sum = sum;
-Ember.computed.min = min;
-Ember.computed.max = max;
-Ember.computed.map = map;
-Ember.computed.sort = sort;
-Ember.computed.setDiff = setDiff;
-Ember.computed.mapBy = mapBy;
-Ember.computed.mapProperty = mapProperty;
-Ember.computed.filter = filter;
-Ember.computed.filterBy = filterBy;
-Ember.computed.filterProperty = filterProperty;
-Ember.computed.uniq = uniq;
-Ember.computed.union = union;
-Ember.computed.intersect = intersect;
+var EmComputed = Ember.computed;
+
+EmComputed.sum = sum;
+EmComputed.min = min;
+EmComputed.max = max;
+EmComputed.map = map;
+EmComputed.sort = sort;
+EmComputed.setDiff = setDiff;
+EmComputed.mapBy = mapBy;
+EmComputed.mapProperty = mapProperty;
+EmComputed.filter = filter;
+EmComputed.filterBy = filterBy;
+EmComputed.filterProperty = filterProperty;
+EmComputed.uniq = uniq;
+EmComputed.union = union;
+EmComputed.intersect = intersect;
 
 Ember.String = EmberStringUtils;
 Ember.Object = EmberObject;
@@ -108,3 +135,4 @@ Ember.ArrayController = ArrayController;
 Ember.ObjectController = ObjectController;
 Ember.Controller = Controller;
 Ember.ControllerMixin = ControllerMixin;
+// END EXPORTS

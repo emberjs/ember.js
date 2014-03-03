@@ -110,7 +110,6 @@ function onerror(args) {
 run.join = function(target, method /* args */) {
   if (!run.currentRunLoop) {
     return apply(Ember, run, arguments);
-    return run.apply(run, arguments);
   }
 
   var args = slice.call(arguments);

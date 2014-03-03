@@ -5,8 +5,7 @@ Ember Metal
 @submodule ember-metal
 */
 
-// IMPORTS
-
+// BEGIN IMPORTS
 import Ember from "ember-metal/core";
 import {instrument, subscribe, unsubscribe, reset} from "ember-metal/instrumentation";
 import {
@@ -81,15 +80,15 @@ import libraries from "ember-metal/libraries";
 import {isNone, none} from 'ember-metal/is_none';
 import {isEmpty, empty} from 'ember-metal/is_empty';
 import isBlank from 'ember-metal/is_blank';
+// END IMPORTS
 
-// EXPORTS to the global window Ember.
+// BEGIN EXPORTS
+var EmberInstrumentation = Ember.Instrumentation = {};
+EmberInstrumentation.instrument = instrument;
+EmberInstrumentation.subscribe = subscribe;
+EmberInstrumentation.unsubscribe = unsubscribe;
+EmberInstrumentation.reset  = reset;
 
-Ember.Instrumentation = {
-  instrument: instrument,
-  subscribe: subscribe,
-  unsubscribe: unsubscribe,
-  reset: reset
-};
 Ember.instrument = instrument;
 Ember.subscribe = subscribe;
 
@@ -99,13 +98,13 @@ Ember.GUID_PREFIX     = GUID_PREFIX;
 Ember.create          = create;
 Ember.platform        = platform;
 
-/**
-  Array polyfills to support ES5 features in older browsers.
+var EmberArrayPolyfills = Ember.ArrayPolyfills = {};
 
-  @namespace Ember
-  @property ArrayPolyfills
-*/
-Ember.ArrayPolyfills  = {map: map, forEach: forEach, filter: filter, indexOf: indexOf};
+EmberArrayPolyfills.map = map;
+EmberArrayPolyfills.forEach = forEach;
+EmberArrayPolyfills.filter = filter;
+EmberArrayPolyfills.indexOf = indexOf;
+
 Ember.Error           = EmberError;
 Ember.guidFor         = guidFor;
 Ember.META_DESC       = META_DESC;
@@ -249,29 +248,6 @@ Ember.isBlank = isBlank;
   @param {Exception} error the error object
 */
 Ember.onerror = null;
-
-// require('ember-metal/instrumentation');
-// require('ember-metal/map');
-// require('ember-metal/platform');
-// require('ember-metal/utils');
-// require('ember-metal/error');
-// require('ember-metal/logger');
-// require('ember-metal/property_get');
-// require('ember-metal/property_set');
-// require('ember-metal/properties');
-// require('ember-metal/property_events');
-// require('ember-metal/get_properties');
-// require('ember-metal/set_properties');
-// require('ember-metal/chains');
-// require('ember-metal/computed');
-// require('ember-metal/watching');
-// require('ember-metal/watch_key');
-// require('ember-metal/watch_path');
-// require('ember-metal/events');
-//require('ember-metal/observer');
-// require('ember-metal/mixin');
-// require('ember-metal/binding');
-// require('ember-metal/run_loop');
-// require('ember-metal/libraries');
+// END EXPORTS
 
 export default Ember;

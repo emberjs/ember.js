@@ -7,10 +7,10 @@ import Ember from "ember-metal/core"; // Ember.merge
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import {isArray, guidFor} from "ember-metal/utils";
+import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import run from 'ember-metal/run_loop';
 import {addObserver} from "ember-metal/observer";
-import EmberError from "ember-metal/error";
 import {arrayComputed} from "ember-runtime/computed/array_computed";
 import {reduceComputed} from "ember-runtime/computed/reduce_computed";
 import ObjectProxy from "ember-runtime/system/object_proxy";
