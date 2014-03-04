@@ -636,7 +636,8 @@ SearchProxy = Ember.ObjectProxy.extend();
   @for Ember
   @param {String} dependentKey
   @param {String or Function} sortDefinition a dependent key to an
-  array of sort properties or a function to use when sorting
+  object with keys denoting sortProperties and values denoting sort direction
+  or a function to use when sorting
   @return {Ember.ComputedProperty} computes a new sorted array based
   on the sort property array or callback function
 */
@@ -653,6 +654,7 @@ Ember.computed.sort = function (itemsKey, sortDefinition) {
   } else {
     sortPropertiesKey = sortDefinition;
     initFn = function (array, changeMeta, instanceMeta) {
+
       function setupSortProperties() {
         var sortPropertyDefinitions = get(this, sortPropertiesKey),
             sortProperty,
@@ -665,19 +667,49 @@ Ember.computed.sort = function (itemsKey, sortDefinition) {
 
         changeMeta.property.clearItemPropertyKeys(itemsKey);
 
-        forEach(sortPropertyDefinitions, function (sortPropertyDefinition) {
-          if ((idx = sortPropertyDefinition.indexOf(':')) !== -1) {
-            sortProperty = sortPropertyDefinition.substring(0, idx);
-            asc = sortPropertyDefinition.substring(idx+1).toLowerCase() !== 'desc';
+        /*
+        the current format is:
+        ['count:desc', 'name:asc']
+
+        we want to be able to define sortProperties like this:
+
+        {
+          'count':  {asc: true, priority: 1},
+          'name':   {asc: true, priority: 2}
+        }
+        */
+
+        for (var key in sortPropertyDefinitions) {
+          // the sortProperty is each key in the object
+          sortProperty = key;
+
+          // we'll inject the sortProperty into the sortProperties array
+          // based on the priority defined. If there isn't a priority, we'll
+          // push it onto the end
+          if (!(priority = sortPropertyDefinitions[key].priority)) {
+            priorty = sortProperties.length + 1;
+          }
+
+          sortProperties[priority] = sortProperty;
+
+          // just in case there are any undefined indicies after manual injections,
+          // we'll get rid of all the undefineds
+          // this is useful incase priority isn't defiend for some sortProperties
+          sortProperties = sortProperties.filter(function() { return true; })
+
+          // asc is true by default or if it is defined, use that instead
+          if (sortPropertyDefinitions[key].asc) {
+            asc = !!sortPropertyDefinitions[key].asc;
           } else {
-            sortProperty = sortPropertyDefinition;
             asc = true;
           }
 
-          sortProperties.push(sortProperty);
+          // so now we have:
+          // sortProperties is an array of ordered sortProperties based on priority
+
           sortPropertyAscending[sortProperty] = asc;
           changeMeta.property.itemPropertyKey(itemsKey, sortProperty);
-        });
+        }
 
         sortPropertyDefinitions.addObserver('@each', this, updateSortPropertiesOnce);
       }
