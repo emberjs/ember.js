@@ -21,6 +21,7 @@ function beforeEvent(keyName) {
 
 /**
   @method addObserver
+  @for Ember
   @param obj
   @param {String} path
   @param {Object|Function} targetOrMethod
@@ -39,6 +40,7 @@ Ember.observersFor = function(obj, path) {
 
 /**
   @method removeObserver
+  @for Ember
   @param obj
   @param {String} path
   @param {Object|Function} targetOrMethod
@@ -53,6 +55,7 @@ Ember.removeObserver = function(obj, _path, target, method) {
 
 /**
   @method addBeforeObserver
+  @for Ember
   @param obj
   @param {String} path
   @param {Object|Function} targetOrMethod
@@ -95,6 +98,7 @@ Ember.beforeObserversFor = function(obj, path) {
 
 /**
   @method removeBeforeObserver
+  @for Ember
   @param obj
   @param {String} path
   @param {Object|Function} targetOrMethod
