@@ -70,9 +70,12 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   sortProperties: null,
 
   /**
-    Specifies the arrangedContent's sort direction
+    Specifies the arrangedContent's sort direction.
+    Sorts the content in ascending order by default. Set to `false` to
+    use descending order.
 
     @property {Boolean} sortAscending
+    @default true
   */
   sortAscending: true,
 
