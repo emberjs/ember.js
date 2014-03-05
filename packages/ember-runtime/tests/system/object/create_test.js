@@ -73,7 +73,7 @@ test("throws if you try to define a computed property", function() {
     Ember.Object.create({
       foo: Ember.computed(function() {})
     });
-  }, 'Ember.Object.create no longer supports defining computed properties.');
+  }, 'Ember.Object.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().');
 });
 
 test("throws if you try to call _super in a method", function() {
