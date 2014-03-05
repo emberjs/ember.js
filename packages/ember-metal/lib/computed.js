@@ -24,6 +24,8 @@ var get = Ember.get,
     watch = Ember.watch,
     unwatch = Ember.unwatch;
 
+function UNDEFINED() { }
+
 var expandProperties = Ember.expandProperties;
 
 if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
@@ -187,11 +189,12 @@ function removeDependentKeys(desc, obj, keyName, meta) {
   @constructor
 */
 function ComputedProperty(func, opts) {
+  func.__ember_arity__ = func.length;
   this.func = func;
 
   this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : true;
   this._dependentKeys = opts && opts.dependentKeys;
-  this._readOnly = opts && (opts.readOnly !== undefined || !!opts.readOnly);
+  this._readOnly = opts && (opts.readOnly !== undefined || !!opts.readOnly) || false;
 }
 
 Ember.ComputedProperty = ComputedProperty;
@@ -350,8 +353,8 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
   // the cached value set by the setter
   if (this._cacheable && this._suspended !== obj) {
     var meta = metaFor(obj);
-    if (keyName in meta.cache) {
-      delete meta.cache[keyName];
+    if (meta.cache !== undefined) {
+      meta.cache[keyName] = undefined;
       removeDependentKeys(this, obj, keyName, meta);
     }
   }
@@ -396,8 +399,22 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   if (this._cacheable) {
     meta = metaFor(obj);
     cache = meta.cache;
-    if (keyName in cache) { return cache[keyName]; }
-    ret = cache[keyName] = this.func.call(obj, keyName);
+
+    var result = cache[keyName];
+
+    if (result === UNDEFINED) {
+      return undefined;
+    }  else if (result !== undefined) {
+      return result;
+    }
+
+    ret = this.func.call(obj, keyName);
+    if (ret === undefined) {
+      cache[keyName] = UNDEFINED;
+    } else {
+      cache[keyName] = ret;
+    }
+
     chainNodes = meta.chainWatchers && meta.chainWatchers[keyName];
     if (chainNodes) { finishChains(chainNodes); }
     addDependentKeys(this, obj, keyName, meta);
@@ -426,7 +443,6 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
   var cacheable = this._cacheable,
       func = this.func,
       meta = metaFor(obj, cacheable),
-      watched = meta.watching[keyName],
       oldSuspended = this._suspended,
       hadCachedValue = false,
       cache = meta.cache,
@@ -440,14 +456,15 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
 
   try {
 
-    if (cacheable && cache.hasOwnProperty(keyName)) {
+    if (cacheable && cache[keyName] !== undefined) {
       cachedValue = cache[keyName];
       hadCachedValue = true;
     }
 
     // Check if the CP has been wrapped. If if has, use the
     // length from the wrapped function.
-    funcArgLength = (func.wrappedFunction ? func.wrappedFunction.length : func.length);
+
+    funcArgLength = func.wrappedFunction ? func.wrappedFunction.__ember_arity__ : func.__ember_arity__;
 
     // For backwards-compatibility with computed properties
     // that check for arguments.length === 2 to determine if
@@ -466,17 +483,22 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
 
     if (hadCachedValue && cachedValue === ret) { return; }
 
+    var watched = meta.watching[keyName];
     if (watched) { Ember.propertyWillChange(obj, keyName); }
 
     if (hadCachedValue) {
-      delete cache[keyName];
+      cache[keyName] = undefined;
     }
 
     if (cacheable) {
       if (!hadCachedValue) {
         addDependentKeys(this, obj, keyName, meta);
       }
-      cache[keyName] = ret;
+      if (ret === undefined) {
+        cache[keyName] = UNDEFINED;
+      } else {
+        cache[keyName] = ret;
+      }
     }
 
     if (watched) { Ember.propertyDidChange(obj, keyName); }
@@ -548,13 +570,31 @@ Ember.computed = function(func) {
     to return
   @return {Object} the cached value
 */
-Ember.cacheFor = function cacheFor(obj, key) {
+var cacheFor = Ember.cacheFor = function cacheFor(obj, key) {
   var meta = obj[META_KEY],
-      cache = meta && meta.cache;
+      cache = meta && meta.cache,
+      ret = cache && cache[key];
 
-  if (cache && key in cache) {
-    return cache[key];
+  if (ret === UNDEFINED) { return undefined; }
+  return ret;
+};
+
+cacheFor.set = function(cache, key, value) {
+  if (value === undefined) {
+    cache[key] = UNDEFINED;
+  } else {
+    cache[key] = value;
   }
+};
+
+cacheFor.get = function(cache, key) {
+  var ret = cache[key];
+  if (ret === UNDEFINED) { return undefined; }
+  return ret;
+};
+
+cacheFor.remove = function(cache, key) {
+  cache[key] = undefined;
 };
 
 function getProperties(self, propertyNames) {

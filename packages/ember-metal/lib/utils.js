@@ -143,7 +143,7 @@ var META_DESC = Ember.META_DESC = {
   value: null
 };
 
-var META_KEY = Ember.GUID_KEY+'_meta';
+var META_KEY = '__ember_meta__';
 
 /**
   The key used to store meta information on object for property observing.
@@ -339,6 +339,7 @@ Ember.wrap = function(func, superFunc) {
   }
 
   superWrapper.wrappedFunction = func;
+  superWrapper.wrappedFunction.__ember_arity__ = func.length;
   superWrapper.__ember_observes__ = func.__ember_observes__;
   superWrapper.__ember_observesBefore__ = func.__ember_observesBefore__;
   superWrapper.__ember_listens__ = func.__ember_listens__;

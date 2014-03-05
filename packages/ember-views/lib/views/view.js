@@ -16,6 +16,11 @@ var get = Ember.get, set = Ember.set,
 
 function nullViewsBuffer(view) {
   view.buffer = null;
+
+}
+
+function clearCachedElement(view) {
+  meta(view).cache.element = undefined;
 }
 
 var childViewsProperty = Ember.computed(function() {
@@ -1809,9 +1814,7 @@ Ember.View = Ember.CoreView.extend({
     @private
   */
   _elementDidChange: Ember.observer('element', function() {
-    this.forEachChildView(function(view) {
-      delete meta(view).cache.element;
-    });
+    this.forEachChildView(clearCachedElement);
   }),
 
   /**
@@ -2264,7 +2267,7 @@ Ember.View = Ember.CoreView.extend({
 
     if (priorState && priorState.exit) { priorState.exit(this); }
     if (currentState.enter) { currentState.enter(this); }
-    if (state === 'inDOM') { delete Ember.meta(this).cache.element; }
+    if (state === 'inDOM') { Ember.meta(this).cache.element = undefined; }
 
     if (children !== false) {
       this.forEachChildView(function(view) {
