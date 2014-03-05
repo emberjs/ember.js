@@ -10,8 +10,8 @@ function cleanup(){
   }
 
   Ember.run(function(){
-    Ember.$(document).off('ajaxStart');
-    Ember.$(document).off('ajaxStop');
+    Ember.$(document).off('ajaxSend');
+    Ember.$(document).off('ajaxComplete');
   });
 
   Ember.TEMPLATES = {};
@@ -267,14 +267,14 @@ test("Ember.Application#injectTestHelpers", function() {
     documentEvents = {};
   }
 
-  ok(documentEvents['ajaxStart'] === undefined, 'there are no ajaxStart listers setup prior to calling injectTestHelpers');
-  ok(documentEvents['ajaxStop'] === undefined, 'there are no ajaxStop listers setup prior to calling injectTestHelpers');
+  ok(documentEvents['ajaxSend'] === undefined, 'there are no ajaxSend listers setup prior to calling injectTestHelpers');
+  ok(documentEvents['ajaxComplete'] === undefined, 'there are no ajaxComplete listers setup prior to calling injectTestHelpers');
 
   App.injectTestHelpers();
   documentEvents = Ember.$._data(document, 'events');
 
-  equal(documentEvents['ajaxStart'].length, 1, 'calling injectTestHelpers registers an ajaxStart handler');
-  equal(documentEvents['ajaxStop'].length, 1, 'calling injectTestHelpers registers an ajaxStop handler');
+  equal(documentEvents['ajaxSend'].length, 1, 'calling injectTestHelpers registers an ajaxSend handler');
+  equal(documentEvents['ajaxComplete'].length, 1, 'calling injectTestHelpers registers an ajaxComplete handler');
 });
 
 test("Ember.Application#injectTestHelpers calls callbacks registered with onInjectHelpers", function(){
@@ -482,32 +482,32 @@ module("ember-testing pendingAjaxRequests", {
   teardown: function() { cleanup(); }
 });
 
-test("pendingAjaxRequests is incremented on each document ajaxStart event", function() {
+test("pendingAjaxRequests is incremented on each document ajaxSend event", function() {
   Ember.Test.pendingAjaxRequests = 0;
 
   Ember.run(function(){
-    Ember.$(document).trigger('ajaxStart');
+    Ember.$(document).trigger('ajaxSend');
   });
 
   equal(Ember.Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
 });
 
-test("pendingAjaxRequests is decremented on each document ajaxStop event", function() {
+test("pendingAjaxRequests is decremented on each document ajaxComplete event", function() {
   Ember.Test.pendingAjaxRequests = 1;
 
   Ember.run(function(){
-    Ember.$(document).trigger('ajaxStop');
+    Ember.$(document).trigger('ajaxComplete');
   });
 
   equal(Ember.Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was decremented');
 });
 
-test("it should raise an assertion error if ajaxStop is called without pendingAjaxRequests", function() {
+test("it should raise an assertion error if ajaxComplete is called without pendingAjaxRequests", function() {
   Ember.Test.pendingAjaxRequests = 0;
 
   expectAssertion(function() {
     Ember.run(function(){
-      Ember.$(document).trigger('ajaxStop');
+      Ember.$(document).trigger('ajaxComplete');
     });
   });
 });
