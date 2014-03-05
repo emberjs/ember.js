@@ -23,7 +23,7 @@ this bug already.
 3. Provide JSFiddle or JSBin demo that specifically shows the problem. This
 demo should be fully operational with the exception of the bug you want to
 demonstrate. The more pared down, the better.
-Preconfigured starting points for the latest Ember: [JSFiddle](http://jsfiddle.net/NQKvy/) | [JSBin](http://jsbin.com/ucanam/239/edit) (may not work with older IE versions due to MIME type isses).
+Preconfigured starting points for the latest Ember: [JSFiddle](http://jsfiddle.net/NQKvy/) | [JSBin](http://jsbin.com/ucanam/239/edit) (may not work with older IE versions due to MIME type issues).
 Issues with fiddles are prioritized.
 
 4. Your issue will be verified. The provided fiddle will be tested for
@@ -126,7 +126,7 @@ updating or writing new documentation:
 7. Prefer a single space between sentences
 8. Reference Ember.js as Ember.
 9. Wrap long markdown blocks > 80 characters
-10. Don't include blank lines after `@param` defintions
+10. Don't include blank lines after `@param` definitions
 
 Code words are:
 
@@ -134,7 +134,7 @@ Code words are:
 * `Global.Class.attribute`
 * `thisFunction()`
 * `Global.CONSTANT_NAME`
-* `true`, `false`, `null`, `undefined` (when refering to programming values)
+* `true`, `false`, `null`, `undefined` (when referring to programming values)
 * references to other properties/methods
 
 And in case we didn't emphasize it enough: we love tests!
