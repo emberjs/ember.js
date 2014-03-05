@@ -762,6 +762,13 @@ Ember.Application.reopenClass({
 
     container.injection('route', 'router', 'router:main');
 
+    // DEBUGGING
+    container.register('resolver-for-debugging:main', container.resolver.__resolver__, { instantiate: false });
+    container.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
+    container.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
+    // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
+    container.register('container-debug-adapter:main', Ember.ContainerDebugAdapter);
+
     return container;
   }
 });
@@ -812,6 +819,8 @@ function resolverFor(namespace) {
       return fullName;
     }
   };
+
+  resolve.__resolver__ = resolver;
 
   return resolve;
 }

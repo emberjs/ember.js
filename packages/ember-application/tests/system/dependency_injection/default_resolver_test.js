@@ -12,6 +12,8 @@ module("Ember.Application Depedency Injection", {
     Ember.TEMPLATES = {};
     Ember.lookup = originalLookup;
     Ember.run(application, 'destroy');
+    var UserInterfaceNamespace = Ember.Namespace.NAMESPACES_BY_ID['UserInterface'];
+    if (UserInterfaceNamespace) { Ember.run(UserInterfaceNamespace, 'destroy'); }
   }
 });
 
@@ -27,7 +29,7 @@ test('the default resolver can look things up in other namespaces', function() {
 test('the default resolver looks up templates in Ember.TEMPLATES', function() {
   function fooTemplate() {}
   function fooBarTemplate() {}
-  function fooBarBazTemplate() {}
+  function fooBarBazTemplate() {} 
 
   Ember.TEMPLATES['foo'] = fooTemplate;
   Ember.TEMPLATES['fooBar'] = fooBarTemplate;
