@@ -6,6 +6,10 @@ var e_get = Ember.get,
     set = Ember.set,
     guidFor = Ember.guidFor,
     metaFor = Ember.meta,
+    cacheFor = Ember.cacheFor,
+    cacheSet = cacheFor.set,
+    cacheGet = cacheFor.get,
+    cacheRemove = cacheFor.remove,
     propertyWillChange = Ember.propertyWillChange,
     propertyDidChange = Ember.propertyDidChange,
     addBeforeObserver = Ember.addBeforeObserver,
@@ -411,8 +415,9 @@ function ReduceComputedPropertyInstanceMeta(context, propertyName, initialValue)
 
 ReduceComputedPropertyInstanceMeta.prototype = {
   getValue: function () {
-    if (this.propertyName in this.cache) {
-      return this.cache[this.propertyName];
+    var value = cacheGet(this.cache, this.propertyName);
+    if (value !== undefined) {
+      return value;
     } else {
       return this.initialValue;
     }
@@ -421,7 +426,7 @@ ReduceComputedPropertyInstanceMeta.prototype = {
   setValue: function(newValue, triggerObservers) {
     // This lets sugars force a recomputation, handy for very simple
     // implementations of eg max.
-    if (newValue === this.cache[this.propertyName]) {
+    if (newValue === cacheGet(this.cache, this.propertyName)) {
       return;
     }
 
@@ -430,9 +435,9 @@ ReduceComputedPropertyInstanceMeta.prototype = {
     }
 
     if (newValue === undefined) {
-      delete this.cache[this.propertyName];
+      cacheRemove(this.cache, this.propertyName);
     } else {
-      this.cache[this.propertyName] = newValue;
+      cacheSet(this.cache, this.propertyName, newValue);
     }
 
     if (triggerObservers) {

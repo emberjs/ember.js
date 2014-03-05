@@ -570,13 +570,31 @@ Ember.computed = function(func) {
     to return
   @return {Object} the cached value
 */
-Ember.cacheFor = function cacheFor(obj, key) {
+var cacheFor = Ember.cacheFor = function cacheFor(obj, key) {
   var meta = obj[META_KEY],
       cache = meta && meta.cache,
       ret = cache && cache[key];
 
   if (ret === UNDEFINED) { return undefined; }
   return ret;
+};
+
+cacheFor.set = function(cache, key, value) {
+  if (value === undefined) {
+    cache[key] = UNDEFINED;
+  } else {
+    cache[key] = value;
+  }
+};
+
+cacheFor.get = function(cache, key) {
+  var ret = cache[key];
+  if (ret === UNDEFINED) { return undefined; }
+  return ret;
+};
+
+cacheFor.remove = function(cache, key) {
+  cache[key] = undefined;
 };
 
 function getProperties(self, propertyNames) {
