@@ -86,3 +86,11 @@ test("the default resolver throws an error if the fullName to resolve is invalid
   raises(function(){ locator.resolve('model:'); }, TypeError, /Invalid fullName/ );
   raises(function(){ locator.resolve(':type');  }, TypeError, /Invalid fullName/ );
 });
+
+test("the default resolver identifies its own version", function() {
+  equal(1, locator.resolver.version, 'the resolver indicates its own version');
+});
+
+test("the default resolver identifies its own lookupType", function() {
+  equal(locator.resolver.lookupType, 'global', 'the resolver indicates its own lookupType');
+});

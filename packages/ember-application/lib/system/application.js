@@ -813,6 +813,9 @@ function resolverFor(namespace) {
     }
   };
 
+  resolve.version = resolver.version;
+  resolve.lookupType = resolver.lookupType;
+
   return resolve;
 }
 
