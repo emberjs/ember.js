@@ -176,7 +176,7 @@ if (!Ember.testing) {
         if(isChrome) {
           downloadURL = 'https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi';
         } else if(isFirefox) {
-          downloadURL = 'https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/'
+          downloadURL = 'https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/';
         }
 
         Ember.debug('For more advanced debugging, install the Ember Inspector from ' + downloadURL);
