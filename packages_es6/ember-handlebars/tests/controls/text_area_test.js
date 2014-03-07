@@ -189,6 +189,17 @@ test("input tabindex is updated when setting tabindex property of view", functio
   equal(textArea.$().attr('tabindex'), "1", "updates text area after tabindex changes");
 });
 
+test("input title is updated when setting title property of view", function() {
+  run(function() {
+    set(textArea, 'title', 'FooTitle');
+    textArea.append();
+  });
+  equal(textArea.$().attr('title'), "FooTitle", "renders text area with the title");
+
+  run(function() { set(textArea, 'title', 'BarTitle'); });
+  equal(textArea.$().attr('title'), 'BarTitle', "updates text area after title changes");
+});
+
 test("value binding works properly for inputs that haven't been created", function() {
   run(function() {
     textArea.destroy(); // destroy existing textarea
