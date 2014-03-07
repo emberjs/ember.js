@@ -1016,3 +1016,91 @@ testBoth('Ember.computed.readOnly', function(get, set) {
   equal(get(obj, 'nickName'), 'TEDDDDDDDDYYY');
 });
 }
+
+if (Ember.FEATURES.isEnabled('ember-metal-computed-instance')) {
+  module('Ember.computed - instance');
+  testBoth('Ember.computed.instance', function(get, set) {
+    var filledArray = [1 , 2],
+        emptyArray = [],
+        emptyObj = {},
+        filledObject = {name: 'HTMLBars'},
+        cfg = {
+          globalClass: Ember.computed.instance('Object'),
+          array1: Ember.computed.instance(filledArray),
+          array2: Ember.computed.instance(Array, 1, 2),
+          array3: Ember.computed.instance(emptyArray, filledArray),
+          obj1: Ember.computed.instance(filledObject),
+          obj2: Ember.computed.instance(emptyObj, filledObject),
+          instance1: Ember.computed.instance(Object, 'initialProjectConfig'),
+          instance2: Ember.computed.instance('configModel', 'initialProjectConfig'),
+          instance3: Ember.computed.instance('configModel', 'initialProjectConfig').volatile()
+        },
+        makeObject = function (hash) {
+          var newO = Ember.create({
+            configModel: Object,
+            initialProjectConfig: filledObject
+          });
+
+          for (var prop in hash) {
+              Ember.defineProperty(newO, prop, hash[prop]);
+          }
+          return newO;
+        },
+        inst1 = makeObject(cfg),
+        inst2 = makeObject(cfg);
+
+
+
+      var getProps = function (obj1, obj2) {
+        var props = {};
+        for (var prop in obj2) {
+          props[prop] = get(obj1, prop);
+        }
+        return props;
+      };
+
+      var deepHelper = function (key, obj, msg) {
+        var val = get(inst1, key),
+            insObj = (obj instanceof Array) ? val : getProps(val, obj);
+        deepEqual(insObj, obj, msg);
+      };
+
+      var checkRef = function (msg, key, origin) {
+        var test = true,
+            val1 = get(inst1, key),
+            val2 = get(inst2, key);
+          ok(val1 !== origin && val1 !== val2, msg);
+      };
+
+      expectAssertion(function () {
+            Ember.defineProperty(inst1, 'invalid', Ember.computed.instance());
+        }, 'Ember.computed.instance expects at least one argument');
+
+      expectAssertion(function () {
+            get(inst1, 'globalClass');
+        }, 'Class object for `Object` could not be resolved, make sure source is not a global path and that is defined');
+
+      //arrays
+      checkRef('creates different array instances in each object', 'array1', filledArray);
+      deepHelper('array1', filledArray, 'make a copy of non empty array');
+      deepHelper('array2', filledArray, 'invoked with class constructor followed with params');
+      deepHelper('array3', filledArray, 'new array with content of initialValue');
+
+      //plain objects
+      checkRef('creates different object instances in each object', 'obj1', filledObject);
+      deepHelper('obj1', filledObject, 'merges props from source obj');
+      deepHelper('obj2', filledObject, 'merges props from initialValue');
+
+      //Ember classes
+      checkRef('creates different class instances in each object', 'instance1');
+      deepHelper('instance1', filledObject, 'fills values from value at path');
+      ok(get(inst1, 'instance2') instanceof Object, 'new instance of Class submitted as path');
+
+      //volatile
+      var prop1 = get(inst1, 'instance3');
+      set(inst1, 'initialProjectConfig', {name: 'Ember'});
+      var prop2 = get(inst1, 'instance3');
+      ok(get(prop2, 'name') === 'Ember', 'instantiate with different init');
+      ok(prop1 !== prop2, 'making it volatile returns a new instance at each get');
+  });
+}

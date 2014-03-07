@@ -7,6 +7,7 @@
     "ember-handlebars-log-primitives": true,
     "ember-testing-routing-helpers": true,
     "ember-testing-triggerEvent-helper": true,
+    "ember-metal-computed-instance": null,
     "computed-read-only": true,
     "ember-routing-drop-deprecated-action-style": null,
     "ember-metal-is-blank": true,
