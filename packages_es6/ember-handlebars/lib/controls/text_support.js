@@ -21,7 +21,8 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   value: "",
 
   attributeBindings: ['placeholder', 'disabled', 'maxlength', 'tabindex', 'readonly',
-                      'autofocus', 'form', 'selectionDirection', 'spellcheck', 'required'],
+                      'autofocus', 'form', 'selectionDirection', 'spellcheck', 'required',
+                      'title'],
   placeholder: null,
   disabled: false,
   maxlength: null,
