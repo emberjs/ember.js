@@ -85,3 +85,11 @@ testBoth("should be able to retrieve cached values of computed properties withou
 
   equal(obj.cacheFor('bar'), undefined, "returns undefined if the value is not a computed property");
 });
+
+test('incrementProperty should work even if value is number in string', function() {
+  var obj = Ember.Object.create({
+    age: "24"
+  });
+  obj.incrementProperty('age');
+  equal(25, obj.get('age'));
+});
