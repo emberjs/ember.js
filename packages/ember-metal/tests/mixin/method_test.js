@@ -1,6 +1,14 @@
 /*globals raises */
 
-module('Mixin Methods');
+// NOTE: even though window.setTimeout isn't tampered with in this test suite,
+// without this teardown, the negative wait test in run_loop/later_test.js fails,
+// but only when using PhantomJS...
+var originalSetTimeout = window.setTimeout;
+module('Mixin Methods', {
+  teardown: function() {
+    window.setTimeout = originalSetTimeout;
+  }
+});
 
 test('defining simple methods', function() {
 
@@ -146,6 +154,32 @@ test('_super from a first-of-two mixins with no superclass function does not err
 
   obj.foo();
   ok(true);
+});
+
+asyncTest('_super invokes the correct function when called asynchronously', function() {
+  var cnt = 0;
+  var MixinA = Ember.Mixin.create({
+    foo: function() { cnt++; }
+  });
+
+  var MixinB = Ember.Mixin.create({
+    foo: function() {
+      var self = this;
+      var sup = this._super;
+
+      Ember.run.next(self, sup);
+    }
+  });
+
+  var obj = {};
+  Ember.mixin(obj, MixinA, MixinB);
+
+  Ember.run(obj, obj.foo);
+
+  setTimeout(function() {
+    start();
+    equal(cnt, 1, 'should have invoked super function');
+  }, 20);
 });
 
 // ..........................................................
