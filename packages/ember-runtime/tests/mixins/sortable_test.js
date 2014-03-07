@@ -79,6 +79,27 @@ test("changing sort order triggers observers", function() {
   Ember.run(function() { observer.destroy(); });
 });
 
+test("changing sort properties unbind old observers", function() {
+  equal(Ember.listenersFor(sortedArrayController.objectAt(0), 'name:change').length, 0,
+   "With no sortProperties, there should be no listeners for name change.");
+  equal(Ember.listenersFor(sortedArrayController.objectAt(0), 'id:change').length, 0,
+   "With no sortProperties, there should be no listeners for id change.");
+
+  sortedArrayController.set('sortProperties', ['id']);
+
+  equal(Ember.listenersFor(sortedArrayController.objectAt(0), 'name:change').length, 0,
+   "With sortProperties == ['id'], there should be no listeners for name change.");
+  equal(Ember.listenersFor(sortedArrayController.objectAt(0), 'id:change').length, 1,
+   "With sortProperties == ['id'], there should be 1 listener for id change.");
+
+  sortedArrayController.set('sortProperties', ['name']);
+
+  equal(Ember.listenersFor(sortedArrayController.objectAt(0), 'name:change').length, 1,
+   "With sortProperties == ['name'], there should be 1 listener for name change.");
+  equal(Ember.listenersFor(sortedArrayController.objectAt(0), 'id:change').length, 0,
+   "With sortProperties == ['name'], there should be no listeners for id change.");
+});
+
 module("Ember.Sortable with content and sortProperties", {
   setup: function() {
     Ember.run(function() {
