@@ -237,7 +237,7 @@ Ember.DefaultResolver = Ember.Object.extend({
   */
   useRouterNaming: function(parsedName) {
     parsedName.name = parsedName.name.replace(/\./g, '_');
-    if (parsedName.name === 'basic') {
+    if (parsedName.name === '-ember-basic') {
       parsedName.name = '';
     }
   },

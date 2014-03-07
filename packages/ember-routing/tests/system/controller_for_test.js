@@ -7,9 +7,9 @@ var buildContainer = function(namespace) {
 
   container.register('application:main', namespace, { instantiate: false });
 
-  container.register('controller:basic', Ember.Controller, { instantiate: false });
-  container.register('controller:object', Ember.ObjectController, { instantiate: false });
-  container.register('controller:array', Ember.ArrayController, { instantiate: false });
+  container.register('controller:-ember-basic', Ember.Controller, { instantiate: false });
+  container.register('controller:-ember-object', Ember.ObjectController, { instantiate: false });
+  container.register('controller:-ember-array', Ember.ArrayController, { instantiate: false });
 
   return container;
 };
@@ -18,6 +18,10 @@ function resolverFor(namespace) {
   return function(fullName) {
     var nameParts = fullName.split(":"),
         type = nameParts[0], name = nameParts[1];
+
+    if (name.match(/-ember-/)) {
+      name = name.substr(7);
+    }
 
     if (name === 'basic') {
       name = '';

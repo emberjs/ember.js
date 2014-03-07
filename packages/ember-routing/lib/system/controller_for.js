@@ -43,7 +43,7 @@ Ember.generateControllerFactory = function(container, controllerName, context) {
     controllerType = 'basic';
   }
 
-  factoryName = 'controller:' + controllerType;
+  factoryName = 'controller:-ember-' + controllerType;
 
   Factory = container.lookupFactory(factoryName).extend({
     isGenerated: true,
