@@ -367,7 +367,6 @@ var Observable = Mixin.create({
     @param {String} key The key to observer
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke.
-    @return {Ember.Object} self
   */
   addObserver: function(key, target, method) {
     addObserver(this, key, target, method);
@@ -382,7 +381,6 @@ var Observable = Mixin.create({
     @param {String} key The key to observer
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke.
-    @return {Ember.Observable} receiver
   */
   removeObserver: function(key, target, method) {
     removeObserver(this, key, target, method);
