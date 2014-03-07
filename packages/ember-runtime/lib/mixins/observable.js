@@ -358,7 +358,6 @@ Ember.Observable = Ember.Mixin.create({
     @param {String} key The key to observer
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke.
-    @return {Ember.Object} self
   */
   addObserver: function(key, target, method) {
     Ember.addObserver(this, key, target, method);
@@ -373,7 +372,6 @@ Ember.Observable = Ember.Mixin.create({
     @param {String} key The key to observer
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke.
-    @return {Ember.Observable} receiver
   */
   removeObserver: function(key, target, method) {
     Ember.removeObserver(this, key, target, method);
