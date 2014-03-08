@@ -1,13 +1,12 @@
-require('ember-views/views/view');
+import Ember from "ember-metal/core"; // Ember.K
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
 
 /**
 @module ember
 @submodule ember-views
 */
-
-var get = Ember.get, set = Ember.set;
-
-Ember.View.states._default = {
+var _default = {
   // appendChild is only legal while rendering the buffer.
   appendChild: function() {
     throw "You can't use appendChild outside of the rendering process";
@@ -42,3 +41,5 @@ Ember.View.states._default = {
   rerender: Ember.K,
   invokeObserver: Ember.K
 };
+
+export default _default;

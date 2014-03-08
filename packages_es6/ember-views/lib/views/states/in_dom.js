@@ -1,15 +1,16 @@
-require('ember-views/views/states/default');
-require('ember-views/views/states/has_element');
+import hasElement from "ember-views/views/states/has_element";
+import EmberError from "ember-metal/error";
 
+import Ember from "ember-metal/core"; // Ember.merge, Ember.create, Ember.$, Ember.assert
+var create = Ember.create, merge = Ember.merge;
 /**
 @module ember
 @submodule ember-views
 */
 
-var hasElement = Ember.View.states.hasElement;
-var inDOM = Ember.View.states.inDOM = Ember.create(hasElement);
+var inDOM = create(hasElement);
 
-Ember.merge(inDOM, {
+merge(inDOM, {
   enter: function(view) {
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
@@ -19,7 +20,7 @@ Ember.merge(inDOM, {
     }
 
     view.addBeforeObserver('elementId', function() {
-      throw new Ember.Error("Changing a view's elementId after creation is not allowed");
+      throw new EmberError("Changing a view's elementId after creation is not allowed");
     });
   },
 

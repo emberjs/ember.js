@@ -1,9 +1,17 @@
-require("ember-views/views/view");
-require("ember-views/mixins/component_template_deprecation");
+import Ember from "ember-metal/core"; // Ember.assert, Ember.Handlebars
 
-var get = Ember.get, set = Ember.set, isNone = Ember.isNone,
-    a_slice = Array.prototype.slice;
+import ComponentTemplateDeprecation from "ember-views/mixins/component_template_deprecation";
+import TargetActionSupport from "ember-runtime/mixins/target_action_support";
+import {View} from "ember-views/views/view"
 
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {isNone} from 'ember-metal/is_none';
+
+import {computed} from "ember-metal/computed";
+
+var a_slice = Array.prototype.slice;
+var helpers = Ember.Handlebars.helpers;
 
 /**
 @module ember
@@ -95,7 +103,7 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone,
   @namespace Ember
   @extends Ember.View
 */
-Ember.Component = Ember.View.extend(Ember.TargetActionSupport, Ember.ComponentTemplateDeprecation, {
+var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   init: function() {
     this._super();
     set(this, 'context', this);
@@ -103,7 +111,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, Ember.ComponentTe
   },
 
   defaultLayout: function(context, options){
-    Ember.Handlebars.helpers['yield'].call(context, options);
+    helpers['yield'].call(context, options);
   },
 
   /**
@@ -125,7 +133,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, Ember.ComponentTe
   @deprecated
   @property template
   */
-  template: Ember.computed(function(key, value) {
+  template: computed(function(key, value) {
     if (value !== undefined) { return value; }
 
     var templateName = get(this, 'templateName'),
@@ -181,7 +189,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, Ember.ComponentTe
     @type Ember.Controller
     @default null
   */
-  targetObject: Ember.computed(function(key) {
+  targetObject: computed(function(key) {
     var parentView = get(this, '_parentView');
     return parentView ? get(parentView, 'controller') : null;
   }).property('_parentView'),
@@ -218,7 +226,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, Ember.ComponentTe
     When the component receives a browser `click` event it translate this
     interaction into application-specific semantics ("play" or "stop") and
     triggers the specified action name on the controller for the template
-    where the component is used: 
+    where the component is used:
 
 
     ```javascript
@@ -293,3 +301,5 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, Ember.ComponentTe
     });
   }
 });
+
+export default Component;

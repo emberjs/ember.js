@@ -3,12 +3,17 @@
 @submodule ember-views
 */
 
-var get = Ember.get, set = Ember.set;
+import Ember from 'ember-metal/core'; // Ember.$
+
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {setInnerHTML} from "ember-views/system/utils"
 
 var ClassSet = function() {
   this.seen = {};
   this.list = [];
 };
+
 
 ClassSet.prototype = {
   add: function(string) {
@@ -89,15 +94,16 @@ var canSetNameOnInputs = (function() {
   @constructor
   @param {String} tagName tag name (such as 'div' or 'p') used for the buffer
 */
-Ember.RenderBuffer = function(tagName) {
-  return new Ember._RenderBuffer(tagName);
+var RenderBuffer = function(tagName) {
+  return new _RenderBuffer(tagName);
 };
 
-Ember._RenderBuffer = function(tagName) {
+var _RenderBuffer = function(tagName) {
   this.tagNames = [tagName || null];
   this.buffer = "";
 };
 
+var
 Ember._RenderBuffer.prototype = {
 
   // The root view's element
@@ -508,7 +514,7 @@ Ember._RenderBuffer.prototype = {
     var html = this.innerString();
 
     if (html) {
-      this._element = Ember.ViewUtils.setInnerHTML(this._element, html);
+      this._element = setInnerHTML(this._element, html);
     }
 
     return this._element;
@@ -537,3 +543,5 @@ Ember._RenderBuffer.prototype = {
     return this.buffer;
   }
 };
+
+export default RenderBuffer;

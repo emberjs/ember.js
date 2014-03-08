@@ -2,8 +2,22 @@
 @module ember
 @submodule ember-views
 */
+import Ember from "ember-metal/core"; // Ember.assert, Ember.$, Ember.Handlebars.ActionHelper
 
-var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {isNone} from 'ember-metal/is_none';
+
+// ES6TODO functions on EmberStringUtils should have their own export
+import EmberStringUtils from "ember-runtime/system/string";
+var fmt = EmberStringUtils.fmt;
+
+import EmberObject from "ember-runtime/system/object";
+
+var typeOf = Ember.typeOf, run = Ember.run;
+
+//ES6TODO:
+// find a better way to do Ember.View.views without global state
 
 /**
   `Ember.EventDispatcher` handles delegating browser events to their
@@ -16,7 +30,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   @private
   @extends Ember.Object
 */
-Ember.EventDispatcher = Ember.Object.extend({
+EventDispatcher = EmberObject.extend({
 
   /**
     The set of events names (and associated handler function names) to be setup
@@ -93,7 +107,7 @@ Ember.EventDispatcher = Ember.Object.extend({
     Ember.$.extend(events, addedEvents || {});
 
 
-    if (!Ember.isNone(rootElement)) {
+    if (!isNone(rootElement)) {
       set(this, 'rootElement', rootElement);
     }
 
@@ -185,8 +199,8 @@ Ember.EventDispatcher = Ember.Object.extend({
     var result = true;
 
     var handler = object[eventName];
-    if (Ember.typeOf(handler) === 'function') {
-      result = Ember.run(object, handler, evt, view);
+    if (typeOf(handler) === 'function') {
+      result = run(object, handler, evt, view);
       // Do not preventDefault in eventManagers.
       evt.stopPropagation();
     }
@@ -198,7 +212,7 @@ Ember.EventDispatcher = Ember.Object.extend({
   },
 
   _bubbleEvent: function(view, evt, eventName) {
-    return Ember.run(view, view.handleEvent, eventName, evt);
+    return run(view, view.handleEvent, eventName, evt);
   },
 
   destroy: function() {
@@ -207,3 +221,5 @@ Ember.EventDispatcher = Ember.Object.extend({
     return this._super();
   }
 });
+
+export default EventDispatcher;

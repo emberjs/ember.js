@@ -1,12 +1,21 @@
-require('ember-views/views/container_view');
-//require('ember-runtime/system/string');
 
 /**
 @module ember
 @submodule ember-views
 */
 
-var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
+import Ember from "ember-metal/core"; // Ember.assert
+var create = Ember.create, merge = Ember.merge;
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+
+import EmberStringUtils from "ember-runtime/system/string";
+var fmt = EmberStringUtils.fmt,
+
+import ContainerView from "ember-views/views/container_view"
+import {CoreView, View} from "ember-views/views/view"
+import {observer, beforeObserver} from "ember-metal/mixin";
+import EmberArray from "ember-runtime/mixins/array";
 
 /**
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing
@@ -156,7 +165,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   @extends Ember.ContainerView
   @since Ember 0.9
 */
-Ember.CollectionView = Ember.ContainerView.extend({
+var CollectionView = ContainerView.extend({
 
   /**
     A list of items to be displayed by the `Ember.CollectionView`.
@@ -175,7 +184,7 @@ Ember.CollectionView = Ember.ContainerView.extend({
     @private
     @property emptyViewClass
   */
-  emptyViewClass: Ember.View,
+  emptyViewClass: View,
 
   /**
     An optional view to display if content is set to an empty array.
@@ -191,7 +200,7 @@ Ember.CollectionView = Ember.ContainerView.extend({
     @type Ember.View
     @default Ember.View
   */
-  itemViewClass: Ember.View,
+  itemViewClass: View,
 
   /**
     Setup a CollectionView
@@ -211,7 +220,7 @@ Ember.CollectionView = Ember.ContainerView.extend({
     @private
     @method _contentWillChange
   */
-  _contentWillChange: Ember.beforeObserver('content', function() {
+  _contentWillChange: beforeObserver('content', function() {
     var content = this.get('content');
 
     if (content) { content.removeArrayObserver(this); }
@@ -228,7 +237,7 @@ Ember.CollectionView = Ember.ContainerView.extend({
     @private
     @method _contentDidChange
   */
-  _contentDidChange: Ember.observer('content', function() {
+  _contentDidChange: observer('content', function() {
     var content = get(this, 'content');
 
     if (content) {
@@ -247,7 +256,7 @@ Ember.CollectionView = Ember.ContainerView.extend({
     @method _assertArrayLike
   */
   _assertArrayLike: function(content) {
-    Ember.assert(fmt("an Ember.CollectionView's content must implement Ember.Array. You passed %@", [content]), Ember.Array.detect(content));
+    Ember.assert(fmt("an Ember.CollectionView's content must implement Ember.Array. You passed %@", [content]), EmberArray.detect(content));
   },
 
   /**
@@ -285,7 +294,7 @@ Ember.CollectionView = Ember.ContainerView.extend({
     // If the contents were empty before and this template collection has an
     // empty view remove it now.
     var emptyView = get(this, 'emptyView');
-    if (emptyView && emptyView instanceof Ember.View) {
+    if (emptyView && emptyView instanceof View) {
       emptyView.removeFromParent();
     }
 
@@ -340,7 +349,7 @@ Ember.CollectionView = Ember.ContainerView.extend({
 
       Ember.assert(fmt("itemViewClass must be a subclass of Ember.View, not %@",
                        [itemViewClass]),
-                       'string' === typeof itemViewClass || Ember.View.detect(itemViewClass));
+                       'string' === typeof itemViewClass || View.detect(itemViewClass));
 
       for (idx = start; idx < start+added; idx++) {
         item = content.objectAt(idx);
@@ -365,7 +374,7 @@ Ember.CollectionView = Ember.ContainerView.extend({
       addedViews.push(emptyView);
       set(this, 'emptyView', emptyView);
 
-      if (Ember.CoreView.detect(emptyView)) {
+      if (CoreView.detect(emptyView)) {
         this._createdEmptyView = emptyView;
       }
     }
@@ -394,7 +403,7 @@ Ember.CollectionView = Ember.ContainerView.extend({
     var itemTagName = get(view, 'tagName');
 
     if (itemTagName === null || itemTagName === undefined) {
-      itemTagName = Ember.CollectionView.CONTAINER_MAP[get(this, 'tagName')];
+      itemTagName = CollectionView.CONTAINER_MAP[get(this, 'tagName')];
       set(view, 'tagName', itemTagName);
     }
 
@@ -412,7 +421,7 @@ Ember.CollectionView = Ember.ContainerView.extend({
   @static
   @final
 */
-Ember.CollectionView.CONTAINER_MAP = {
+CollectionView.CONTAINER_MAP = {
   ul: 'li',
   ol: 'li',
   table: 'tr',
@@ -422,3 +431,5 @@ Ember.CollectionView.CONTAINER_MAP = {
   tr: 'td',
   select: 'option'
 };
+
+export default CollectionView;

@@ -1,3 +1,5 @@
+import Ember from 'ember-metal/core'; // Ember.assert
+
 /**
 @module ember
 @submodule ember-views
@@ -130,7 +132,5 @@ function isSimpleClick(event) {
   return !modifier && !secondaryClick;
 }
 
-Ember.ViewUtils = {
-  setInnerHTML: setInnerHTML,
-  isSimpleClick: isSimpleClick
-};
+export {setInnerHTML, isSimpleClick};
+

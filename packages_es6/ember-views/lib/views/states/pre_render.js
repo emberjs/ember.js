@@ -1,13 +1,14 @@
-require('ember-views/views/states/default');
+import _default from "ember-views/views/states/default";
 
+import Ember from "ember-metal/core"; // Ember.merge, Ember.create, Ember.$, Ember.assert
+var create = Ember.create, merge = Ember.merge;
 /**
 @module ember
 @submodule ember-views
 */
+var preRender = create(_default);
 
-var preRender = Ember.View.states.preRender = Ember.create(Ember.View.states._default);
-
-Ember.merge(preRender, {
+merge(preRender, {
   // a view leaves the preRender state once its element has been
   // created (createElement).
   insertElement: function(view, fn) {
@@ -40,3 +41,5 @@ Ember.merge(preRender, {
     return value;
   }
 });
+
+export default preRender;

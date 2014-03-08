@@ -1,18 +1,56 @@
-require("ember-views/system/render_buffer");
+// Ember.assert, Ember.deprecate, Ember.warn, Ember.TEMPLATES,
+// Ember.K, Ember.$, Ember.lookup,
+// Ember.ContainerView circular dependency
+// Ember.ENV
+import Ember from 'ember-metal/core';
 
-var states = {};
+import EmberError from "ember-metal/error";
+import EmberObject from "ember-runtime/system/object";
+import Evented from "ember-runtime/mixins/evented";
+import ActionHandler from "ember-runtime/mixins/action_handler";
+import RenderBuffer from "ember-views/system/render_buffer";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import setProperties from "ember-metal/set_properties";
+import run from "ember-metal/run_loop";
+import {addObserver, removeObserver} from "ember-metal/observer";
+
+import {defineProperty} from "ember-metal/properties";
+import {guidFor} from "ember-metal/utils";
+import {meta} from "ember-metal/utils";
+import {computed} from "ember-metal/computed";
+import {observer} from "ember-metal/mixin";
+
+import {typeOf} from "ember-metal/utils";
+import {isNone} from 'ember-metal/is_none';
+import {Mixin} from 'ember-metal/mixin';
+import Container from 'container/container';
+import {A} from "ember-runtime/system/native_array";
+
+import {instrument} from "ember-metal/instrumentation";
+
+// ES6TODO: functions on EmberStringUtils should get their own export
+import EmberStringUtils from "ember-runtime/system/string";
+var dasherize = EmberStringUtils.dasherize;
+
+// ES6TODO: functions on EnumerableUtils should get their own export
+import EnumerableUtils from "ember-metal/enumerable_utils";
+var a_forEach = EnumerableUtils.forEach,
+    a_addObject = EnumerableUtils.addObject,
+    a_removeObject = EnumerableUtils.removeObject;
+
+import {beforeObserver} from "ember-metal/mixin";
+import copy from "ember-runtime/copy";
+import {isGlobalPath} from "ember-metal/binding";
+
+import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
+
+import {cloneStates, states} from "ember-views/views/states";
 
 /**
 @module ember
 @submodule ember-views
 */
-
-var get = Ember.get, set = Ember.set,
-    guidFor = Ember.guidFor,
-    a_forEach = Ember.EnumerableUtils.forEach,
-    a_addObject = Ember.EnumerableUtils.addObject,
-    meta = Ember.meta,
-    defineProperty = Ember.defineProperty;
 
 function nullViewsBuffer(view) {
   view.buffer = null;
@@ -23,8 +61,8 @@ function clearCachedElement(view) {
   meta(view).cache.element = undefined;
 }
 
-var childViewsProperty = Ember.computed(function() {
-  var childViews = this._childViews, ret = Ember.A(), view = this;
+var childViewsProperty = computed(function() {
+  var childViews = this._childViews, ret = A(), view = this;
 
   a_forEach(childViews, function(view) {
     var currentChildViews;
@@ -42,7 +80,7 @@ var childViewsProperty = Ember.computed(function() {
       Ember.deprecate("Manipulating an Ember.ContainerView through its childViews property is deprecated. Please use the ContainerView instance itself as an Ember.MutableArray.");
       return view.replace(idx, removedCount, addedViews);
     }
-    throw new Ember.Error("childViews is immutable");
+    throw new EmberError("childViews is immutable");
   };
 
   return ret;
@@ -77,10 +115,10 @@ Ember.TEMPLATES = {};
   @uses Ember.ActionHandler
 */
 
-Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
+CoreView = EmberObject.extend(Evented, ActionHandler, {
   isView: true,
 
-  states: states,
+  states: cloneStates(states),
 
   init: function() {
     this._super();
@@ -96,7 +134,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
     @type Ember.View
     @default null
   */
-  parentView: Ember.computed('_parentView', function() {
+  parentView: computed('_parentView', function() {
     var parent = this._parentView;
 
     if (parent && parent.isVirtual) {
@@ -111,7 +149,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
   _parentView: null,
 
   // return the current view, not including virtual views
-  concreteView: Ember.computed('parentView', function() {
+  concreteView: computed('parentView', function() {
     if (!this.isVirtual) { return this; }
     else { return get(this, 'parentView'); }
   }),
@@ -145,7 +183,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
 
     this.instrumentDetails(details);
 
-    return Ember.instrument(name, details, function instrumentRenderToBuffer() {
+    return instrument(name, details, function instrumentRenderToBuffer() {
       return this._renderToBuffer(parentBuffer, bufferOperation);
     }, this);
   },
@@ -161,7 +199,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
       tagName = 'div';
     }
 
-    var buffer = this.buffer = parentBuffer && parentBuffer.begin(tagName) || Ember.RenderBuffer(tagName);
+    var buffer = this.buffer = parentBuffer && parentBuffer.begin(tagName) || RenderBuffer(tagName);
     this.transitionTo('inBuffer', false);
 
     this.beforeRender(buffer);
@@ -204,7 +242,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
   },
 
   has: function(name) {
-    return Ember.typeOf(this[name]) === 'function' || this._super(name);
+    return typeOf(this[name]) === 'function' || this._super(name);
   },
 
   destroy: function() {
@@ -233,7 +271,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, Ember.ActionHandler, {
   destroyElement: Ember.K
 });
 
-var ViewCollection = Ember._ViewCollection = function(initialViews) {
+var ViewCollection = function(initialViews) {
   var views = this.views = initialViews || [];
   this.length = views.length;
 };
@@ -863,7 +901,7 @@ var EMPTY_ARRAY = [];
   @namespace Ember
   @extends Ember.CoreView
 */
-Ember.View = Ember.CoreView.extend({
+var View = CoreView.extend({
 
   concatenatedProperties: ['classNames', 'classNameBindings', 'attributeBindings'],
 
@@ -914,7 +952,7 @@ Ember.View = Ember.CoreView.extend({
     @property template
     @type Function
   */
-  template: Ember.computed('templateName', function(key, value) {
+  template: computed('templateName', function(key, value) {
     if (value !== undefined) { return value; }
 
     var templateName = get(this, 'templateName'),
@@ -932,7 +970,7 @@ Ember.View = Ember.CoreView.extend({
     @property controller
     @type Object
   */
-  controller: Ember.computed('_parentView', function(key) {
+  controller: computed('_parentView', function(key) {
     var parentView = get(this, '_parentView');
     return parentView ? get(parentView, 'controller') : null;
   }),
@@ -951,7 +989,7 @@ Ember.View = Ember.CoreView.extend({
     @property layout
     @type Function
   */
-  layout: Ember.computed(function(key) {
+  layout: computed(function(key) {
     var layoutName = get(this, 'layoutName'),
         layout = this.templateForName(layoutName, 'layout');
 
@@ -970,7 +1008,7 @@ Ember.View = Ember.CoreView.extend({
     Ember.assert("templateNames are not allowed to contain periods: "+name, name.indexOf('.') === -1);
 
     // the defaultContainer is deprecated
-    var container = this.container || (Ember.Container && Ember.Container.defaultContainer);
+    var container = this.container || (Container && Container.defaultContainer);
     return container && container.lookup('template:' + name);
   },
 
@@ -986,7 +1024,7 @@ Ember.View = Ember.CoreView.extend({
     @property context
     @type Object
   */
-  context: Ember.computed(function(key, value) {
+  context: computed(function(key, value) {
     if (arguments.length === 2) {
       set(this, '_context', value);
       return value;
@@ -1013,7 +1051,7 @@ Ember.View = Ember.CoreView.extend({
     @property _context
     @private
   */
-  _context: Ember.computed(function(key) {
+  _context: computed(function(key) {
     var parentView, controller;
 
     if (controller = get(this, 'controller')) {
@@ -1035,7 +1073,7 @@ Ember.View = Ember.CoreView.extend({
     @method _contextDidChange
     @private
   */
-  _contextDidChange: Ember.observer('context', function() {
+  _contextDidChange: observer('context', function() {
     this.rerender();
   }),
 
@@ -1063,19 +1101,19 @@ Ember.View = Ember.CoreView.extend({
 
   // When it's a virtual view, we need to notify the parent that their
   // childViews will change.
-  _childViewsWillChange: Ember.beforeObserver('childViews', function() {
+  _childViewsWillChange: beforeObserver('childViews', function() {
     if (this.isVirtual) {
       var parentView = get(this, 'parentView');
-      if (parentView) { Ember.propertyWillChange(parentView, 'childViews'); }
+      if (parentView) { propertyWillChange(parentView, 'childViews'); }
     }
   }),
 
   // When it's a virtual view, we need to notify the parent that their
   // childViews did change.
-  _childViewsDidChange: Ember.observer('childViews', function() {
+  _childViewsDidChange: observer('childViews', function() {
     if (this.isVirtual) {
       var parentView = get(this, 'parentView');
-      if (parentView) { Ember.propertyDidChange(parentView, 'childViews'); }
+      if (parentView) { propertyDidChange(parentView, 'childViews'); }
     }
   }),
 
@@ -1109,7 +1147,7 @@ Ember.View = Ember.CoreView.extend({
   */
   nearestOfType: function(klass) {
     var view = get(this, 'parentView'),
-        isOfType = klass instanceof Ember.Mixin ?
+        isOfType = klass instanceof Mixin ?
                    function(view) { return klass.detect(view); } :
                    function(view) { return klass.detect(view.constructor); };
 
@@ -1158,7 +1196,7 @@ Ember.View = Ember.CoreView.extend({
     @method _parentViewDidChange
     @private
   */
-  _parentViewDidChange: Ember.observer('_parentView', function() {
+  _parentViewDidChange: observer('_parentView', function() {
     if (this.isDestroying) { return; }
 
     this.trigger('parentViewDidChange');
@@ -1168,7 +1206,7 @@ Ember.View = Ember.CoreView.extend({
     }
   }),
 
-  _controllerDidChange: Ember.observer('controller', function() {
+  _controllerDidChange: observer('controller', function() {
     if (this.isDestroying) { return; }
 
     this.rerender();
@@ -1181,7 +1219,7 @@ Ember.View = Ember.CoreView.extend({
   cloneKeywords: function() {
     var templateData = get(this, 'templateData');
 
-    var keywords = templateData ? Ember.copy(templateData.keywords) : {};
+    var keywords = templateData ? copy(templateData.keywords) : {};
     set(keywords, 'view', get(this, 'concreteView'));
     set(keywords, '_view', this);
     set(keywords, 'controller', get(this, 'controller'));
@@ -1295,7 +1333,7 @@ Ember.View = Ember.CoreView.extend({
       // the property changes.
       var oldClass;
       // Extract just the property name from bindings like 'foo:bar'
-      var parsedPath = Ember.View._parsePropertyPath(binding);
+      var parsedPath = View._parsePropertyPath(binding);
 
       // Set up an observer on the context. If the property changes, toggle the
       // class name.
@@ -1374,7 +1412,7 @@ Ember.View = Ember.CoreView.extend({
         // Determine the current value and add it to the render buffer
         // if necessary.
         attributeValue = get(this, property);
-        Ember.View.applyAttributeBindings(buffer, attributeName, attributeValue);
+        View.applyAttributeBindings(buffer, attributeName, attributeValue);
       } else {
         unspecifiedAttributeBindings[property] = attributeName;
       }
@@ -1394,7 +1432,7 @@ Ember.View = Ember.CoreView.extend({
 
       attributeValue = get(this, property);
 
-      Ember.View.applyAttributeBindings(elem, attributeName, attributeValue);
+      View.applyAttributeBindings(elem, attributeName, attributeValue);
     };
 
     this.registerObserver(this, property, observer);
@@ -1435,15 +1473,15 @@ Ember.View = Ember.CoreView.extend({
     @private
   */
   _classStringForProperty: function(property) {
-    var parsedPath = Ember.View._parsePropertyPath(property);
+    var parsedPath = View._parsePropertyPath(property);
     var path = parsedPath.path;
 
     var val = get(this, path);
-    if (val === undefined && Ember.isGlobalPath(path)) {
+    if (val === undefined && isGlobalPath(path)) {
       val = get(Ember.lookup, path);
     }
 
-    return Ember.View._classStringForValue(path, val, parsedPath.className, parsedPath.falsyClassName);
+    return View._classStringForValue(path, val, parsedPath.className, parsedPath.falsyClassName);
   },
 
   // ..........................................................
@@ -1456,7 +1494,7 @@ Ember.View = Ember.CoreView.extend({
     @property element
     @type DOMElement
   */
-  element: Ember.computed('_parentView', function(key, value) {
+  element: computed('_parentView', function(key, value) {
     if (value !== undefined) {
       return this.currentState.setElement(this, value);
     } else {
@@ -1589,7 +1627,7 @@ Ember.View = Ember.CoreView.extend({
     @private
   */
   _insertElementLater: function(fn) {
-    this._scheduledInsert = Ember.run.scheduleOnce('render', this, '_insertElement', fn);
+    this._scheduledInsert = run.scheduleOnce('render', this, '_insertElement', fn);
   },
 
   _insertElement: function (fn) {
@@ -1813,7 +1851,7 @@ Ember.View = Ember.CoreView.extend({
     @method _elementDidChange
     @private
   */
-  _elementDidChange: Ember.observer('element', function() {
+  _elementDidChange: observer('element', function() {
     this.forEachChildView(clearCachedElement);
   }),
 
@@ -2020,11 +2058,11 @@ Ember.View = Ember.CoreView.extend({
     // setup child views. be sure to clone the child views array first
     this._childViews = this._childViews.slice();
 
-    Ember.assert("Only arrays are allowed for 'classNameBindings'", Ember.typeOf(this.classNameBindings) === 'array');
-    this.classNameBindings = Ember.A(this.classNameBindings.slice());
+    Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(this.classNameBindings) === 'array');
+    this.classNameBindings = A(this.classNameBindings.slice());
 
-    Ember.assert("Only arrays are allowed for 'classNames'", Ember.typeOf(this.classNames) === 'array');
-    this.classNames = Ember.A(this.classNames.slice());
+    Ember.assert("Only arrays are allowed for 'classNames'", typeOf(this.classNames) === 'array');
+    this.classNames = A(this.classNames.slice());
   },
 
   appendChild: function(view, options) {
@@ -2050,7 +2088,7 @@ Ember.View = Ember.CoreView.extend({
     // remove view from childViews array.
     var childViews = this._childViews;
 
-    Ember.EnumerableUtils.removeObject(childViews, view);
+    a_removeObject(childViews, view);
 
     this.propertyDidChange('childViews'); // HUH?! what happened to will change?
 
@@ -2151,7 +2189,7 @@ Ember.View = Ember.CoreView.extend({
     attrs = attrs || {};
     attrs._parentView = this;
 
-    if (Ember.CoreView.detect(view)) {
+    if (CoreView.detect(view)) {
       attrs.templateData = attrs.templateData || get(this, 'templateData');
 
       attrs.container = this.container;
@@ -2178,7 +2216,7 @@ Ember.View = Ember.CoreView.extend({
         attrs.templateData = get(this, 'templateData');
       }
 
-      Ember.setProperties(view, attrs);
+      setProperties(view, attrs);
 
     }
 
@@ -2195,9 +2233,9 @@ Ember.View = Ember.CoreView.extend({
     @method _isVisibleDidChange
     @private
   */
-  _isVisibleDidChange: Ember.observer('isVisible', function() {
+  _isVisibleDidChange: observer('isVisible', function() {
     if (this._isVisible === get(this, 'isVisible')) { return ; }
-    Ember.run.scheduleOnce('render', this, this._toggleVisibility);
+    run.scheduleOnce('render', this, this._toggleVisibility);
   }),
 
   _toggleVisibility: function() {
@@ -2267,7 +2305,7 @@ Ember.View = Ember.CoreView.extend({
 
     if (priorState && priorState.exit) { priorState.exit(this); }
     if (currentState.enter) { currentState.enter(this); }
-    if (state === 'inDOM') { Ember.meta(this).cache.element = undefined; }
+    if (state === 'inDOM') { meta(this).cache.element = undefined; }
 
     if (children !== false) {
       this.forEachChildView(function(view) {
@@ -2307,13 +2345,13 @@ Ember.View = Ember.CoreView.extend({
           view.currentState.invokeObserver(this, observer);
         },
         scheduledObserver = function() {
-          Ember.run.scheduleOnce('render', this, stateCheckedObserver);
+          run.scheduleOnce('render', this, stateCheckedObserver);
         };
 
-    Ember.addObserver(root, path, target, scheduledObserver);
+    addObserver(root, path, target, scheduledObserver);
 
     this.one('willClearRender', function() {
-      Ember.removeObserver(root, path, target, scheduledObserver);
+      removeObserver(root, path, target, scheduledObserver);
     });
   }
 
@@ -2347,7 +2385,7 @@ Ember.View = Ember.CoreView.extend({
   // are done on the DOM element.
 
 function notifyMutationListeners() {
-  Ember.run.once(Ember.View, 'notifyMutationListeners');
+  run.once(View, 'notifyMutationListeners');
 }
 
 var DOMManager = {
@@ -2388,11 +2426,11 @@ var DOMManager = {
   }
 };
 
-Ember.View.reopen({
+View.reopen({
   domManager: DOMManager
 });
 
-Ember.View.reopenClass({
+View.reopenClass({
 
   /**
     Parse a path and return an object which holds the parsed properties.
@@ -2482,7 +2520,7 @@ Ember.View.reopenClass({
       // as a class name. For exaple, content.foo.barBaz
       // becomes bar-baz.
       var parts = path.split('.');
-      return Ember.String.dasherize(parts[parts.length-1]);
+      return dasherize(parts[parts.length-1]);
 
     // If the value is not false, undefined, or null, return the current
     // value of the property.
@@ -2497,17 +2535,17 @@ Ember.View.reopenClass({
   }
 });
 
-var mutation = Ember.Object.extend(Ember.Evented).create();
+var mutation = EmberObject.extend(Evented).create();
 
-Ember.View.addMutationListener = function(callback) {
+View.addMutationListener = function(callback) {
   mutation.on('change', callback);
 };
 
-Ember.View.removeMutationListener = function(callback) {
+View.removeMutationListener = function(callback) {
   mutation.off('change', callback);
 };
 
-Ember.View.notifyMutationListeners = function() {
+View.notifyMutationListeners = function() {
   mutation.trigger('change');
 };
 
@@ -2518,17 +2556,17 @@ Ember.View.notifyMutationListeners = function() {
   @static
   @type Hash
 */
-Ember.View.views = {};
+View.views = {};
 
 // If someone overrides the child views computed property when
 // defining their class, we want to be able to process the user's
 // supplied childViews and then restore the original computed property
 // at view initialization time. This happens in Ember.ContainerView's init
 // method.
-Ember.View.childViewsProperty = childViewsProperty;
+View.childViewsProperty = childViewsProperty;
 
-Ember.View.applyAttributeBindings = function(elem, name, value) {
-  var type = Ember.typeOf(value);
+View.applyAttributeBindings = function(elem, name, value) {
+  var type = typeOf(value);
 
   // if this changes, also change the logic in ember-handlebars/lib/helpers/binding.js
   if (name !== 'value' && (type === 'string' || (type === 'number' && !isNaN(value)))) {
@@ -2536,7 +2574,7 @@ Ember.View.applyAttributeBindings = function(elem, name, value) {
       elem.attr(name, value);
     }
   } else if (name === 'value' || type === 'boolean') {
-    if (Ember.isNone(value) || value === false) {
+    if (isNone(value) || value === false) {
       // `null`, `undefined` or `false` should remove attribute
       elem.removeAttr(name);
       elem.prop(name, '');
@@ -2549,4 +2587,4 @@ Ember.View.applyAttributeBindings = function(elem, name, value) {
   }
 };
 
-Ember.View.states = states;
+export {CoreView, View, ViewCollection}

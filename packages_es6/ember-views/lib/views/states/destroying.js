@@ -1,15 +1,21 @@
-require('ember-views/views/states/default');
+import Ember from "ember-metal/core"; // Ember.merge
+var merge = Ember.merge,
+    create = Ember.create;
 
+import EmberStringUtils from "ember-runtime/system/string";
+var fmt = EmberStringUtils.fmt;
+
+import _default from "ember-views/views/states/default";
 /**
 @module ember
 @submodule ember-views
 */
 
-var destroyingError = "You can't call %@ on a view being destroyed", fmt = Ember.String.fmt;
+var destroyingError = "You can't call %@ on a view being destroyed";
 
-var destroying = Ember.View.states.destroying = Ember.create(Ember.View.states._default);
+var destroying = create(_default);
 
-Ember.merge(destroying, {
+merge(destroying, {
   appendChild: function() {
     throw fmt(destroyingError, ['appendChild']);
   },
@@ -35,4 +41,6 @@ Ember.merge(destroying, {
   // the view has been destroyed between scheduling and execution
   insertElement: Ember.K
 });
+
+export default destroying;
 

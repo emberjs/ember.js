@@ -1,15 +1,19 @@
-require('ember-views/views/states/default');
+import _default from "ember-views/views/states/default";
+import run from "ember-metal/run_loop";
+import Ember from "ember-metal/core"; // Ember.merge, Ember.create, Ember.$
+var create = Ember.create, merge = Ember.merge;
 
 /**
 @module ember
 @submodule ember-views
 */
 
-var get = Ember.get, set = Ember.set;
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
 
-var hasElement = Ember.View.states.hasElement = Ember.create(Ember.View.states._default);
+var hasElement = create(_default);
 
-Ember.merge(hasElement, {
+merge(hasElement, {
   $: function(view, sel) {
     var elem = get(view, 'element');
     return sel ? Ember.$(sel, elem) : Ember.$(elem);
@@ -52,7 +56,7 @@ Ember.merge(hasElement, {
     view.domManager.remove(view);
     set(view, 'element', null);
     if (view._scheduledInsert) {
-      Ember.run.cancel(view._scheduledInsert);
+      run.cancel(view._scheduledInsert);
       view._scheduledInsert = null;
     }
     return view;
@@ -84,3 +88,5 @@ Ember.merge(hasElement, {
     observer.call(target);
   }
 });
+
+export default hasElement;

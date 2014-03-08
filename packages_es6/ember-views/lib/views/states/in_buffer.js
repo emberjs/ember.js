@@ -1,15 +1,17 @@
-require('ember-views/views/states/default');
+import _default from "ember-views/views/states/default";
+import EmberError from "ember-metal/error";
+
+import Ember from "ember-metal/core"; // Ember.merge, Ember.create, Ember.$, Ember.assert
+var create = Ember.create, merge = Ember.merge;
 
 /**
 @module ember
 @submodule ember-views
 */
 
-var get = Ember.get, set = Ember.set;
+var inBuffer = create(_default);
 
-var inBuffer = Ember.View.states.inBuffer = Ember.create(Ember.View.states._default);
-
-Ember.merge(inBuffer, {
+merge(inBuffer, {
   $: function(view, sel) {
     // if we don't have an element yet, someone calling this.$() is
     // trying to update an element that isn't in the DOM. Instead,
@@ -22,7 +24,7 @@ Ember.merge(inBuffer, {
   // when a view is rendered in a buffer, rerendering it simply
   // replaces the existing buffer with a new one
   rerender: function(view) {
-    throw new Ember.Error("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.");
+    throw new EmberError("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.");
   },
 
   // when a view is rendered in a buffer, appending a child
@@ -86,3 +88,4 @@ Ember.merge(inBuffer, {
   }
 });
 
+export default inBuffer;

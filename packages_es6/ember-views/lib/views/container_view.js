@@ -1,18 +1,31 @@
-require('ember-views/views/view');
-require('ember-views/views/states');
+import Ember from "ember-metal/core"; // Ember.assert, Ember.K, Ember.merge
+var merge = Ember.merge;
 
-var MutableArray = requireModule('ember-runtime/mixins/mutable_array')['default'];
+import MutableArray from "ember-runtime/mixins/mutable_array";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
 
-var states = Ember.View.cloneStates(Ember.View.states);
+import {View, ViewCollection} from "ember-views/views/view";
+import {cloneStates, states} from "ember-views/views/states";
+
+import EmberError from "ember-metal/error";
+
+// ES6TODO: functions on EnumerableUtils should get their own export
+import EnumerableUtils from "ember-metal/enumerable_utils";
+var forEach = EnumerableUtils.forEach;
+
+import {computed} from "ember-metal/computed";
+import run from "ember-metal/run_loop";
+import {defineProperty} from "ember-metal/properties";
+import RenderBuffer from "ember-views/system/render_buffer";
+import {observer, beforeObserver} from "ember-metal/mixin";
+import {A} from "ember-runtime/system/native_array";
 
 /**
 @module ember
 @submodule ember-views
 */
 
-var get = Ember.get, set = Ember.set;
-var forEach = Ember.EnumerableUtils.forEach;
-var ViewCollection = Ember._ViewCollection;
 
 /**
   A `ContainerView` is an `Ember.View` subclass that implements `Ember.MutableArray`
@@ -164,8 +177,8 @@ var ViewCollection = Ember._ViewCollection;
   @namespace Ember
   @extends Ember.View
 */
-Ember.ContainerView = Ember.View.extend(MutableArray, {
-  states: states,
+ContainerView = View.extend(MutableArray, {
+  states: cloneStates(states),
 
   init: function() {
     this._super();
@@ -173,7 +186,7 @@ Ember.ContainerView = Ember.View.extend(MutableArray, {
     var childViews = get(this, 'childViews');
 
     // redefine view's childViews property that was obliterated
-    Ember.defineProperty(this, 'childViews', Ember.View.childViewsProperty);
+    defineProperty(this, 'childViews', Ember.View.childViewsProperty);
 
     var _childViews = this._childViews;
 
@@ -201,7 +214,7 @@ Ember.ContainerView = Ember.View.extend(MutableArray, {
   replace: function(idx, removedCount, addedViews) {
     var addedCount = addedViews ? get(addedViews, 'length') : 0;
     var self = this;
-    Ember.assert("You can't add a child to a container that is already a child of another view", Ember.A(addedViews).every(function(item) { return !get(item, '_parentView') || get(item, '_parentView') === self; }));
+    Ember.assert("You can't add a child to a container that is already a child of another view", A(addedViews).every(function(item) { return !get(item, '_parentView') || get(item, '_parentView') === self; }));
 
     this.arrayContentWillChange(idx, removedCount, addedCount);
     this.childViewsWillChange(this._childViews, idx, removedCount);
@@ -224,7 +237,7 @@ Ember.ContainerView = Ember.View.extend(MutableArray, {
     return this._childViews[idx];
   },
 
-  length: Ember.computed(function () {
+  length: computed(function () {
     return this._childViews.length;
   }).volatile(),
 
@@ -313,14 +326,14 @@ Ember.ContainerView = Ember.View.extend(MutableArray, {
 
   currentView: null,
 
-  _currentViewWillChange: Ember.beforeObserver('currentView', function() {
+  _currentViewWillChange: beforeObserver('currentView', function() {
     var currentView = get(this, 'currentView');
     if (currentView) {
       currentView.destroy();
     }
   }),
 
-  _currentViewDidChange: Ember.observer('currentView', function() {
+  _currentViewDidChange: observer('currentView', function() {
     var currentView = get(this, 'currentView');
     if (currentView) {
       Ember.assert("You tried to set a current view that already has a parent. Make sure you don't have multiple outlets in the same view.", !get(currentView, '_parentView'));
@@ -333,19 +346,19 @@ Ember.ContainerView = Ember.View.extend(MutableArray, {
   }
 });
 
-Ember.merge(states._default, {
+merge(states._default, {
   childViewsWillChange: Ember.K,
   childViewsDidChange: Ember.K,
   ensureChildrenAreInDOM: Ember.K
 });
 
-Ember.merge(states.inBuffer, {
+merge(states.inBuffer, {
   childViewsDidChange: function(parentView, views, start, added) {
-    throw new Ember.Error('You cannot modify child views while in the inBuffer state');
+    throw new EmberError('You cannot modify child views while in the inBuffer state');
   }
 });
 
-Ember.merge(states.hasElement, {
+merge(states.hasElement, {
   childViewsWillChange: function(view, views, start, removed) {
     for (var i=start; i<start+removed; i++) {
       views[i].remove();
@@ -353,7 +366,7 @@ Ember.merge(states.hasElement, {
   },
 
   childViewsDidChange: function(view, views, start, added) {
-    Ember.run.scheduleOnce('render', view, '_ensureChildrenAreInDOM');
+    run.scheduleOnce('render', view, '_ensureChildrenAreInDOM');
   },
 
   ensureChildrenAreInDOM: function(view) {
@@ -362,7 +375,7 @@ Ember.merge(states.hasElement, {
     for (i = 0, len = childViews.length; i < len; i++) {
       childView = childViews[i];
 
-      if (!buffer) { buffer = Ember.RenderBuffer(); buffer._hasElement = false; }
+      if (!buffer) { buffer = RenderBuffer(); buffer._hasElement = false; }
 
       if (childView.renderToBufferIfNeeded(buffer)) {
         viewCollection.push(childView);
@@ -398,3 +411,5 @@ function insertViewCollection(view, viewCollection, previous, buffer) {
   });
 }
 
+
+export default ContainerView;
