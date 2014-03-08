@@ -115,6 +115,9 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   });
   ```
 
+  Explicitly returning `false` from `createChildView` prevents that item from
+  rendering in the collection.
+
   ## Empty View
 
   You can provide an `Ember.View` subclass to the `Ember.CollectionView`
@@ -350,7 +353,13 @@ Ember.CollectionView = Ember.ContainerView.extend({
           contentIndex: idx
         });
 
-        addedViews.push(view);
+        Ember.assert(fmt("Ember.CollectionView items must be an instance of Ember.View, not %@",
+                     [view]),
+                     Ember.View.detectInstance(view) || view === false);
+
+        if (Ember.View.detectInstance(view)) {
+            addedViews.push(view);
+        }
       }
     } else {
       emptyView = get(this, 'emptyView');
@@ -363,6 +372,7 @@ Ember.CollectionView = Ember.ContainerView.extend({
 
       emptyView = this.createChildView(emptyView);
       addedViews.push(emptyView);
+
       set(this, 'emptyView', emptyView);
 
       if (Ember.CoreView.detect(emptyView)) {

@@ -110,6 +110,40 @@ test("should allow custom item views by setting itemViewClass", function() {
   });
 });
 
+test("should allow override of createChildView to omit items by returning 'false'", function() {
+  var content = Ember.A([
+    { include: true, content: 'foo' },
+    { include: false, content: 'bar' },
+    { include: true, content: 'baz' }
+  ]);
+
+  var CollectionView = Ember.CollectionView.extend({
+    content: content,
+
+    itemViewClass: Ember.View.extend({
+      render: function(buf) {
+        buf.push(get(this, 'content.content'));
+      }
+    }),
+
+    createChildView: function (viewClass, attrs) {
+      if (attrs && !get(attrs.content, 'include')) {
+        return false;
+      }
+      return this._super(viewClass, attrs);
+    }
+  });
+
+  view = CollectionView.create();
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  equal(view.$().children().length, 2, "correct number of items");
+  equal(view.$(':contains(bar)').length, 0, "the falsy item did not render");
+});
+
 test("should insert a new item in DOM when an item is added to the content array", function() {
   var content = Ember.A(['foo', 'bar', 'baz']);
 
