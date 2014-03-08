@@ -1,6 +1,7 @@
 require('ember-views/views/view');
 require('ember-views/views/states');
-require('ember-runtime/mixins/mutable_array');
+
+var MutableArray = requireModule('ember-runtime/mixins/mutable_array')['default'];
 
 var states = Ember.View.cloneStates(Ember.View.states);
 
@@ -163,7 +164,7 @@ var ViewCollection = Ember._ViewCollection;
   @namespace Ember
   @extends Ember.View
 */
-Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
+Ember.ContainerView = Ember.View.extend(MutableArray, {
   states: states,
 
   init: function() {

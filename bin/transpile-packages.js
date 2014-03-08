@@ -6,8 +6,9 @@ var path = require('path');
 var glob = require('glob');
 
 
-function ES6Package(packageName){
+function ES6Package(packageName, dependencies){
   this.packageName = packageName;
+  this.dependencies = dependencies;
   this.inputPath   = path.join('packages_es6', packageName);
   this.outputPath  = path.join('packages', packageName);
 }
@@ -66,6 +67,12 @@ ES6Package.prototype = {
     this.compileDirectory(path.join(this.inputPath, 'lib'), function(results){
       var output = results['compiled'];
 
+      this.dependencies.forEach(function(dependency) {
+        if (!dependency.match(/~tests/)) {
+          output.unshift('require("' + dependency + '");');
+        }
+      });
+
       this.mkdirp(path.join(this.outputPath,'lib'));
       fs.writeFileSync(path.join(this.outputPath, 'lib', 'main.js'), output.join('\n'));
     }.bind(this))
@@ -75,8 +82,20 @@ ES6Package.prototype = {
     this.compileDirectory(path.join(this.inputPath, 'tests'), function(results){
       var compiledOutput = results['compiled'],
           moduleNames = results['moduleNames'],
-          requireOutput = ['require("container");'],
+          requireOutput = [],
           output;
+
+      this.mkdirp(path.join(this.outputPath,'tests'));
+      fs.writeFileSync(path.join(this.outputPath, 'tests', this.packageName + '.js'), compiledOutput.join('\n'));
+
+      this.dependencies.forEach(function(dependency) {
+        if (dependency.match(/~tests/)) {
+          requireOutput.push('require("' + dependency + '");');
+        }
+      });
+
+      requireOutput.push('require("' + this.packageName + '/~tests/' + this.packageName + '");');
+
 
       moduleNames.forEach(function(name) {
         if (name.match(/_test/)) {
@@ -84,10 +103,7 @@ ES6Package.prototype = {
         }
       });
 
-      this.mkdirp(path.join(this.outputPath,'tests'));
-
-      output = compiledOutput.join('\n') + '\n\n' + requireOutput.join('\n');
-      fs.writeFileSync(path.join(this.outputPath, 'tests', this.packageName + '_test.js'), output);
+      fs.writeFileSync(path.join(this.outputPath, 'tests', this.packageName + '_test.js'), requireOutput.join('\n'));
     }.bind(this))
   },
 
@@ -109,8 +125,19 @@ ES6Package.prototype = {
   }
 };
 
+// List the test dependencies for each package below
+// this is only for tests because, in actual builds
+// we do not need to use minispade.require to ensure
+// that the other packages are setup first.
+var packages = {
+  'container': [],
+  'ember-metal': [],
+  'ember-debug': [],
+  'ember-runtime': ['container', 'rsvp', 'ember-metal', 'ember-metal/~tests/ember-metal']
+};
 
-['container'].forEach(function(packageName) {
-  pkg = new ES6Package(packageName);
+
+Object.keys(packages).forEach(function (packageName) {
+  pkg = new ES6Package(packageName, packages[packageName]);
   pkg.process();
 });

@@ -1,3 +1,5 @@
+requireModule('ember-runtime'); // ES6TODO: This kinda sucks, but we need to ensure that Ember is setup at this point.
+
 /**
 @module ember
 @submodule ember-views
