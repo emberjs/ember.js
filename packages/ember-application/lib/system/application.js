@@ -222,6 +222,21 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   */
   customEvents: null,
 
+  /**
+    DOM events you don't want to listen to. This is often done for performance
+    reasons.
+
+    ```javascript
+    App = Ember.Application.create({
+      ignoredEvents: ['mouseenter']
+    });
+
+    @property ignoredEvents
+    @type Array
+    @default null
+  */
+  ignoredEvents: null,
+
   // Start off the number of deferrals at 1. This will be
   // decremented by the Application's own `initialize` method.
   _readinessDeferrals: 1,
@@ -612,11 +627,12 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   */
   setupEventDispatcher: function() {
     var customEvents = get(this, 'customEvents'),
+        ignoredEvents = get(this, 'ignoredEvents'),
         rootElement = get(this, 'rootElement'),
         dispatcher = this.__container__.lookup('event_dispatcher:main');
 
     set(this, 'eventDispatcher', dispatcher);
-    dispatcher.setup(customEvents, rootElement);
+    dispatcher.setup(customEvents, rootElement, ignoredEvents);
   },
 
   /**

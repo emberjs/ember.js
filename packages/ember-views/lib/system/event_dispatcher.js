@@ -86,9 +86,12 @@ Ember.EventDispatcher = Ember.Object.extend({
     @private
     @method setup
     @param addedEvents {Hash}
+    @param ignoredEvents {Array}
   */
-  setup: function(addedEvents, rootElement) {
+  setup: function(addedEvents, rootElement, ignoredEvents) {
     var event, events = get(this, 'events');
+
+    ignoredEvents = ignoredEvents || [];
 
     Ember.$.extend(events, addedEvents || {});
 
@@ -108,7 +111,7 @@ Ember.EventDispatcher = Ember.Object.extend({
     Ember.assert('Unable to add "ember-application" class to rootElement. Make sure you set rootElement to the body or an element in the body.', rootElement.is('.ember-application'));
 
     for (event in events) {
-      if (events.hasOwnProperty(event)) {
+      if (events.hasOwnProperty(event) && ignoredEvents.indexOf(event) === -1) {
         this.setupHandler(rootElement, event, events[event]);
       }
     }

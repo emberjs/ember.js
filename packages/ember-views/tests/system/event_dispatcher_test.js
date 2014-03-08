@@ -331,3 +331,26 @@ test("additional events and rootElement can be specified", function () {
 
   Ember.$("#leView").trigger("myevent");
 });
+
+test("should ignore events not of interest", function () {
+  var ignoredEvent = 'keydown',
+      keyDownCount = 0;
+
+  expect(1);
+
+  Ember.run(function () {
+    dispatcher.setup({}, null, [ignoredEvent]);
+
+    view = Ember.View.create({
+      elementId: 'leView',
+
+      keyDown: function () {
+        keyDownCount++;
+      }
+    }).appendTo(dispatcher.get('rootElement'));
+  });
+
+  Ember.$('#leView').trigger(ignoredEvent);
+
+  equal(keyDownCount, 0, 'does not ignore event');
+});
