@@ -154,6 +154,35 @@ test("should target the current controller inside an {{each}} loop", function() 
   ActionHelper.registerAction = originalRegisterAction;
 });
 
+test("should target the with-controller inside an {{#with controller='person'}}", function() {
+  var registeredTarget;
+
+  ActionHelper.registerAction = function(actionName, options) {
+    registeredTarget = options.target;
+  };
+
+  var PersonController = Ember.ObjectController.extend();
+  var container = new Ember.Container();
+  var parentController = Ember.Object.create({
+    container: container
+  });
+
+  view = Ember.View.create({
+    container: container,
+    template: Ember.Handlebars.compile('{{#with view.person controller="person"}}{{action "editTodo"}}{{/with}}'),
+    person: Ember.Object.create(),
+    controller: parentController
+  });
+
+  container.register('controller:person', PersonController);
+
+  appendView();
+
+  ok(registeredTarget.root instanceof PersonController, "the with-controller is the target of action");
+
+  ActionHelper.registerAction = originalRegisterAction;
+});
+
 test("should allow a target to be specified", function() {
   var registeredTarget;
 
