@@ -1,5 +1,5 @@
 // Ember.assert, Ember.deprecate, Ember.warn, Ember.TEMPLATES,
-// Ember.K, Ember.$, Ember.lookup,
+// Ember.K, jQuery, Ember.lookup,
 // Ember.ContainerView circular dependency
 // Ember.ENV
 import Ember from 'ember-metal/core';
@@ -46,11 +46,15 @@ import {isGlobalPath} from "ember-metal/binding";
 import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
 
 import {cloneStates, states} from "ember-views/views/states";
+import jQuery from "ember-views/system/jquery";
+import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 
 /**
 @module ember
 @submodule ember-views
 */
+
+var ContainerView;
 
 function nullViewsBuffer(view) {
   view.buffer = null;
@@ -76,7 +80,9 @@ var childViewsProperty = computed(function() {
   });
 
   ret.replace = function (idx, removedCount, addedViews) {
-    if (view instanceof Ember.ContainerView) {
+    if (!ContainerView) { ContainerView = requireModule('ember-views/views/container_view')['default']; } // ES6TODO: stupid circular dep
+
+    if (view instanceof ContainerView) {
       Ember.deprecate("Manipulating an Ember.ContainerView through its childViews property is deprecated. Please use the ContainerView instance itself as an Ember.MutableArray.");
       return view.replace(idx, removedCount, addedViews);
     }
@@ -115,7 +121,7 @@ Ember.TEMPLATES = {};
   @uses Ember.ActionHandler
 */
 
-CoreView = EmberObject.extend(Evented, ActionHandler, {
+var CoreView = EmberObject.extend(Evented, ActionHandler, {
   isView: true,
 
   states: cloneStates(states),
@@ -1571,8 +1577,8 @@ var View = CoreView.extend({
     // Schedule the DOM element to be created and appended to the given
     // element after bindings have synchronized.
     this._insertElementLater(function() {
-      Ember.assert("You tried to append to (" + target + ") but that isn't in the DOM", Ember.$(target).length > 0);
-      Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !Ember.$(target).is('.ember-view') && !Ember.$(target).parents().is('.ember-view'));
+      Ember.assert("You tried to append to (" + target + ") but that isn't in the DOM", jQuery(target).length > 0);
+      Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !jQuery(target).is('.ember-view') && !jQuery(target).parents().is('.ember-view'));
       this.$().appendTo(target);
     });
 
@@ -1593,11 +1599,11 @@ var View = CoreView.extend({
     @return {Ember.View} received
   */
   replaceIn: function(target) {
-    Ember.assert("You tried to replace in (" + target + ") but that isn't in the DOM", Ember.$(target).length > 0);
-    Ember.assert("You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.", !Ember.$(target).is('.ember-view') && !Ember.$(target).parents().is('.ember-view'));
+    Ember.assert("You tried to replace in (" + target + ") but that isn't in the DOM", jQuery(target).length > 0);
+    Ember.assert("You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.", !jQuery(target).is('.ember-view') && !jQuery(target).parents().is('.ember-view'));
 
     this._insertElementLater(function() {
-      Ember.$(target).empty();
+      jQuery(target).empty();
       this.$().appendTo(target);
     });
 
@@ -1688,7 +1694,7 @@ var View = CoreView.extend({
   */
   findElementInParentElement: function(parentElem) {
     var id = "#" + this.elementId;
-    return Ember.$(id)[0] || Ember.$(id, parentElem)[0];
+    return jQuery(id)[0] || jQuery(id, parentElem)[0];
   },
 
   /**
@@ -2202,12 +2208,12 @@ var View = CoreView.extend({
       }
     } else if ('string' === typeof view) {
       var fullName = 'view:' + view;
-      var View = this.container.lookupFactory(fullName);
+      var ViewKlass = this.container.lookupFactory(fullName);
 
-      Ember.assert("Could not find view: '" + fullName + "'", !!View);
+      Ember.assert("Could not find view: '" + fullName + "'", !!ViewKlass);
 
       attrs.templateData = get(this, 'templateData');
-      view = View.create(attrs);
+      view = ViewKlass.create(attrs);
     } else {
       Ember.assert('You must pass instance or subclass of View', view.isView);
       attrs.container = this.container;
@@ -2410,7 +2416,7 @@ var DOMManager = {
     set(view, 'element', null);
 
     view._insertElementLater(function() {
-      Ember.$(element).replaceWith(get(view, 'element'));
+      jQuery(element).replaceWith(get(view, 'element'));
       notifyMutationListeners();
     });
   },

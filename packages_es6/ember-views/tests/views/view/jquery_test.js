@@ -1,33 +1,36 @@
-var set = Ember.set, get = Ember.get;
+import {get} from "ember-metal/property_get";
+import run from "ember-metal/run_loop";
+import EmberObject from "ember-runtime/system/object";
+import {View as EmberView} from "ember-views/views/view";
 
 var view ;
-module("Ember.View#$", {
+module("EmberView#$", {
   setup: function() {
-    view = Ember.View.extend({
+    view = EmberView.extend({
       render: function(context, firstTime) {
         context.push('<span></span>');
       }
     }).create();
 
-    Ember.run(function() {
+    run(function() {
       view.append();
     });
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       view.destroy();
     });
   }
 });
 
 test("returns undefined if no element", function() {
-  var view = Ember.View.create();
+  var view = EmberView.create();
   ok(!get(view, 'element'), 'precond - should have no element');
   equal(view.$(), undefined, 'should return undefined');
   equal(view.$('span'), undefined, 'should undefined if filter passed');
 
-  Ember.run(function() {
+  run(function() {
     view.destroy();
   });
 });

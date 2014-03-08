@@ -1,10 +1,4 @@
 /**
-@module ember
-@submodule ember-views
-*/
-
-
-/**
 Ember Views
 
 @module ember
@@ -13,12 +7,22 @@ Ember Views
 @main ember-views
 */
 
-var jQuery = (Ember.imports && Ember.imports.jQuery) || (this && this.jQuery);
-if (!jQuery && typeof require === 'function') {
-  jQuery = require('jquery');
-}
+// BEGIN IMPORTS
+import Ember from "ember-runtime";
+import jQuery from "ember-views/system/jquery";
+import {setInnerHTML, isSimpleClick} from "ember-views/system/utils";
+import RenderBuffer from "ember-views/system/render_buffer";
+import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
+import {cloneStates, states} from "ember-views/views/states";
 
-Ember.assert("Ember Views require jQuery between 1.7 and 2.1", jQuery && (jQuery().jquery.match(/^((1\.(7|8|9|10|11))|(2\.(0|1)))(\.\d+)?(pre|rc\d?)?/) || Ember.ENV.FORCE_JQUERY));
+import {CoreView, View, ViewCollection} from "ember-views/views/view";
+import ContainerView from "ember-views/views/container_view";
+import CollectionView from "ember-views/views/collection_view";
+import Component from "ember-views/views/component";
+
+import EventDispatcher from "ember-views/system/event_dispatcher";
+import ViewTargetActionSupport from "ember-views/mixins/view_target_action_support";
+// END IMPORTS
 
 /**
   Alias for jQuery
@@ -26,35 +30,27 @@ Ember.assert("Ember Views require jQuery between 1.7 and 2.1", jQuery && (jQuery
   @method $
   @for Ember
 */
+
+// BEGIN EXPORTS
 Ember.$ = jQuery;
-
-
-import "ember-views/system/ext";  // for the side effect of extending jQuery
-import {setInnerHTML, isSimpleClick} from "ember-views/system/utils"
-import RenderBuffer from "ember-views/system/render_buffer";
-import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
-import {states} from "ember-views/views/states";
-
-import {CoreView, View, ViewCollection} from "ember-views/views/view";
-import ContainerView from "ember-views/views/container_view";
-import CollectionView from "ember-views/views/collection_view";
-import Component from "ember-views/views/component_view";
-
-import ViewTargetActionSupport from "ember-views/mixins/view_target_action_support"
-
-View.states = states;
 
 Ember.ViewTargetActionSupport = ViewTargetActionSupport;
 Ember.RenderBuffer = RenderBuffer;
 
-Ember.ViewUtils = {
-  setInnerHTML: setInnerHTML,
-  isSimpleClick: isSimpleClick
-};
+var ViewUtils = Ember.ViewUtils = {};
+ViewUtils.setInnerHTML = setInnerHTML;
+ViewUtils.isSimpleClick = isSimpleClick;
 
 Ember.CoreView = CoreView;
 Ember.View = View;
+Ember.View.states = states;
+Ember.View.cloneStates = cloneStates;
+
 Ember._ViewCollection = ViewCollection;
 Ember.ContainerView = ContainerView;
+Ember.CollectionView = CollectionView;
 Ember.Component = Component;
+Ember.EventDispatcher = EventDispatcher;
+// END EXPORTS
 
+export default Ember;

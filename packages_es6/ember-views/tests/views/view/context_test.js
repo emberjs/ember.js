@@ -1,25 +1,31 @@
-module("Ember.View - context property");
+import Ember from "ember-metal/core";
+import run from "ember-metal/run_loop";
+
+import {View as EmberView} from "ember-views/views/view";
+import ContainerView from "ember-views/views/container_view";
+
+module("EmberView - context property");
 
 test("setting a controller on an inner view should change it context", function() {
   var App = {};
   var a = { name: 'a' };
   var b = { name: 'b' };
 
-  var innerView = Ember.View.create();
-  var middleView = Ember.ContainerView.create();
-  var outerView = App.outerView = Ember.ContainerView.create({
+  var innerView = EmberView.create();
+  var middleView = ContainerView.create();
+  var outerView = App.outerView = ContainerView.create({
     controller: a
   });
 
-  Ember.run(function() {
+  run(function() {
     outerView.appendTo('#qunit-fixture');
   });
 
-  Ember.run(function () {
+  run(function () {
     outerView.set('currentView', middleView);
   });
 
-  Ember.run(function () {
+  run(function () {
     innerView.set('controller', b);
     middleView.set('currentView', innerView);
   });
@@ -29,7 +35,7 @@ test("setting a controller on an inner view should change it context", function(
   equal(middleView.get('context'), a, 'middle context correct');
   equal(innerView.get('context'), b, 'inner context correct');
 
-  Ember.run(function() {
+  run(function() {
     innerView.destroy();
     middleView.destroy();
     outerView.destroy();

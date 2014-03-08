@@ -1,19 +1,24 @@
-/*global Test:true*/
-var set = Ember.set, get = Ember.get;
+import Ember from "ember-metal/core";
+import {get} from "ember-metal/property_get";
+import run from "ember-metal/run_loop";
+import {observersFor} from "ember-metal/observer";
+import {changeProperties} from "ember-metal/property_events";
+
+import {View as EmberView} from "ember-views/views/view";
 
 var originalLookup = Ember.lookup, lookup, view;
 
 var appendView = function() {
-  Ember.run(function() { view.appendTo('#qunit-fixture'); });
+  run(function() { view.appendTo('#qunit-fixture'); });
 };
 
-module("Ember.View - Attribute Bindings", {
+module("EmberView - Attribute Bindings", {
   setup: function() {
     Ember.lookup = lookup = {};
   },
   teardown: function() {
     if (view) {
-      Ember.run(function() {
+      run(function() {
         view.destroy();
       });
       view = null;
@@ -23,7 +28,7 @@ module("Ember.View - Attribute Bindings", {
 });
 
 test("should render attribute bindings", function() {
-  view = Ember.View.create({
+  view = EmberView.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
     attributeBindings: ['type', 'isDisabled:disabled', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
 
@@ -37,7 +42,7 @@ test("should render attribute bindings", function() {
     notNumber: NaN
   });
 
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
 
@@ -52,7 +57,7 @@ test("should render attribute bindings", function() {
 });
 
 test("should update attribute bindings", function() {
-  view = Ember.View.create({
+  view = EmberView.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
     attributeBindings: ['type', 'isDisabled:disabled', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
 
@@ -67,7 +72,7 @@ test("should update attribute bindings", function() {
     explosions: 15
   });
 
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
 
@@ -81,7 +86,7 @@ test("should update attribute bindings", function() {
   ok(view.$().prop('notNumber'), "adds notNumber attribute when true");
   equal(view.$().attr('explosions'), "15", "adds integer attributes");
 
-  Ember.run(function() {
+  run(function() {
     view.set('type', 'submit');
     view.set('isDisabled', false);
     view.set('exploded', false);
@@ -106,20 +111,20 @@ test("should update attribute bindings", function() {
 // passed array item is a String, it will be converted into a
 // String object instead of a normal string.
 test("should allow binding to String objects", function() {
-  view = Ember.View.create({
+  view = EmberView.create({
     attributeBindings: ['foo'],
     // JSHint doesn't like `new String` so we'll create it the same way it gets created in practice
     foo: (function() { return this; }).call("bar")
   });
 
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
 
 
   equal(view.$().attr('foo'), 'bar', "should convert String object to bare string");
 
-  Ember.run(function() {
+  run(function() {
     view.set('foo', false);
   });
 
@@ -127,7 +132,7 @@ test("should allow binding to String objects", function() {
 });
 
 test("should teardown observers on rerender", function() {
-  view = Ember.View.create({
+  view = EmberView.create({
     attributeBindings: ['foo'],
     classNameBindings: ['foo'],
     foo: 'bar'
@@ -135,17 +140,17 @@ test("should teardown observers on rerender", function() {
 
   appendView();
 
-  equal(Ember.observersFor(view, 'foo').length, 2);
+  equal(observersFor(view, 'foo').length, 2);
 
-  Ember.run(function() {
+  run(function() {
     view.rerender();
   });
 
-  equal(Ember.observersFor(view, 'foo').length, 2);
+  equal(observersFor(view, 'foo').length, 2);
 });
 
 test("handles attribute bindings for properties", function() {
-  view = Ember.View.create({
+  view = EmberView.create({
     attributeBindings: ['checked'],
     checked: null
   });
@@ -154,13 +159,13 @@ test("handles attribute bindings for properties", function() {
 
   equal(!!view.$().prop('checked'), false, 'precond - is not checked');
 
-  Ember.run(function() {
+  run(function() {
     view.set('checked', true);
   });
 
   equal(view.$().prop('checked'), true, 'changes to checked');
 
-  Ember.run(function() {
+  run(function() {
     view.set('checked', false);
   });
 
@@ -168,7 +173,7 @@ test("handles attribute bindings for properties", function() {
 });
 
 test("handles `undefined` value for properties", function() {
-  view = Ember.View.create({
+  view = EmberView.create({
     attributeBindings: ['value'],
     value: "test"
   });
@@ -177,7 +182,7 @@ test("handles `undefined` value for properties", function() {
 
   equal(view.$().prop('value'), "test", "value is defined");
 
-  Ember.run(function() {
+  run(function() {
     view.set('value', undefined);
   });
 
@@ -185,7 +190,7 @@ test("handles `undefined` value for properties", function() {
 });
 
 test("handles null value for attributes on text fields", function() {
-  view = Ember.View.create({
+  view = EmberView.create({
     tagName: 'input',
     attributeBindings: ['value']
   });
@@ -196,7 +201,7 @@ test("handles null value for attributes on text fields", function() {
 
   equal(view.$().attr('value'), "test", "value is defined");
 
-  Ember.run(function() {
+  run(function() {
     view.set('value', null);
   });
 
@@ -204,7 +209,7 @@ test("handles null value for attributes on text fields", function() {
 });
 
 test("handles a 0 value attribute on text fields", function() {
-  view = Ember.View.create({
+  view = EmberView.create({
     tagName: 'input',
     attributeBindings: ['value']
   });
@@ -214,26 +219,26 @@ test("handles a 0 value attribute on text fields", function() {
   view.$().attr('value', 'test');
   equal(view.$().attr('value'), "test", "value is defined");
 
-  Ember.run(function() {
+  run(function() {
     view.set('value', 0);
   });
   strictEqual(view.$().prop('value'), "0", "value should be 0");
 });
 
 test("attributeBindings should not fail if view has been removed", function() {
-  Ember.run(function() {
-    view = Ember.View.create({
+  run(function() {
+    view = EmberView.create({
       attributeBindings: ['checked'],
       checked: true
     });
   });
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
   var error;
   try {
-    Ember.run(function() {
-      Ember.changeProperties(function() {
+    run(function() {
+      changeProperties(function() {
         view.set('checked', false);
         view.remove();
       });
@@ -245,19 +250,19 @@ test("attributeBindings should not fail if view has been removed", function() {
 });
 
 test("attributeBindings should not fail if view has been destroyed", function() {
-  Ember.run(function() {
-    view = Ember.View.create({
+  run(function() {
+    view = EmberView.create({
       attributeBindings: ['checked'],
       checked: true
     });
   });
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
   var error;
   try {
-    Ember.run(function() {
-      Ember.changeProperties(function() {
+    run(function() {
+      changeProperties(function() {
         view.set('checked', false);
         view.destroy();
       });

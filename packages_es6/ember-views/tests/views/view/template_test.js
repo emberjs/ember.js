@@ -1,12 +1,18 @@
-var set = Ember.set, get = Ember.get, container, view;
+import Container from "container";
+import {get} from "ember-metal/property_get";
+import run from "ember-metal/run_loop";
+import EmberObject from "ember-runtime/system/object";
+import {View as EmberView} from "ember-views/views/view";
 
-module("Ember.View - Template Functionality", {
+var container, view;
+
+module("EmberView - Template Functionality", {
   setup: function() {
-    container = new Ember.Container();
+    container = new Container();
     container.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if (view) { view.destroy(); }
     });
   }
@@ -17,12 +23,12 @@ test("should call the function of the associated template", function() {
     return "<h1 id='twas-called'>template was called</h1>";
   });
 
-  view = Ember.View.create({
+  view = EmberView.create({
     container: container,
     templateName: 'testTemplate'
   });
 
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
 
@@ -34,7 +40,7 @@ test("should call the function of the associated template with itself as the con
     return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
   });
 
-  view = Ember.View.create({
+  view = EmberView.create({
     container: container,
     templateName: 'testTemplate',
 
@@ -43,7 +49,7 @@ test("should call the function of the associated template with itself as the con
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
 
@@ -53,7 +59,7 @@ test("should call the function of the associated template with itself as the con
 test("should fall back to defaultTemplate if neither template nor templateName are provided", function() {
   var View;
 
-  View = Ember.View.extend({
+  View = EmberView.extend({
     defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
@@ -63,7 +69,7 @@ test("should fall back to defaultTemplate if neither template nor templateName a
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
 
@@ -73,13 +79,13 @@ test("should fall back to defaultTemplate if neither template nor templateName a
 test("should not use defaultTemplate if template is provided", function() {
   var View;
 
-  View = Ember.View.extend({
+  View = EmberView.extend({
     template:  function() { return "foo"; },
     defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
   view = View.create();
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
 
@@ -91,14 +97,14 @@ test("should not use defaultTemplate if template is provided", function() {
 
   container.register('template:foobar', function() { return 'foo'; });
 
-  View = Ember.View.extend({
+  View = EmberView.extend({
     container: container,
     templateName: 'foobar',
     defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
   view = View.create();
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
 
@@ -106,8 +112,8 @@ test("should not use defaultTemplate if template is provided", function() {
 });
 
 test("should render an empty element if no template is specified", function() {
-  view = Ember.View.create();
-  Ember.run(function() {
+  view = EmberView.create();
+  run(function() {
     view.createElement();
   });
 
@@ -117,11 +123,11 @@ test("should render an empty element if no template is specified", function() {
 test("should provide a controller to the template if a controller is specified on the view", function() {
   expect(7);
 
-  var Controller1 = Ember.Object.extend({
+  var Controller1 = EmberObject.extend({
     toString: function() { return "Controller1"; }
   });
 
-  var Controller2 = Ember.Object.extend({
+  var Controller2 = EmberObject.extend({
     toString: function() { return "Controller2"; }
   });
 
@@ -132,7 +138,7 @@ test("should provide a controller to the template if a controller is specified o
       contextForView,
       contextForControllerlessView;
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller1,
 
     template: function(buffer, options) {
@@ -140,21 +146,21 @@ test("should provide a controller to the template if a controller is specified o
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
   strictEqual(optionsDataKeywordsControllerForView, controller1, "passes the controller in the data");
 
-  Ember.run(function() {
+  run(function() {
     view.destroy();
   });
 
-  var parentView = Ember.View.create({
+  var parentView = EmberView.create({
     controller: controller1,
 
     template: function(buffer, options) {
-      options.data.view.appendChild(Ember.View.create({
+      options.data.view.appendChild(EmberView.create({
         controller: controller2,
         templateData: options.data,
         template: function(context, options) {
@@ -166,22 +172,22 @@ test("should provide a controller to the template if a controller is specified o
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     parentView.appendTo('#qunit-fixture');
   });
 
   strictEqual(optionsDataKeywordsControllerForView, controller1, "passes the controller in the data");
   strictEqual(optionsDataKeywordsControllerForChildView, controller2, "passes the child view's controller in the data");
 
-  Ember.run(function() {
+  run(function() {
     parentView.destroy();
   });
 
-  var parentViewWithControllerlessChild = Ember.View.create({
+  var parentViewWithControllerlessChild = EmberView.create({
     controller: controller1,
 
     template: function(buffer, options) {
-      options.data.view.appendChild(Ember.View.create({
+      options.data.view.appendChild(EmberView.create({
         templateData: options.data,
         template: function(context, options) {
           contextForControllerlessView = context;
@@ -192,7 +198,7 @@ test("should provide a controller to the template if a controller is specified o
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     parentViewWithControllerlessChild.appendTo('#qunit-fixture');
   });
 
@@ -201,7 +207,7 @@ test("should provide a controller to the template if a controller is specified o
   strictEqual(contextForView, controller2, "passes the controller in as the main context of the parent view");
   strictEqual(contextForControllerlessView, controller1, "passes the controller in as the main context of the child view");
 
-  Ember.run(function() {
+  run(function() {
     parentView.destroy();
     parentViewWithControllerlessChild.destroy();
   });

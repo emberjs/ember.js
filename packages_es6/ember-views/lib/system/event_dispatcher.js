@@ -2,19 +2,21 @@
 @module ember
 @submodule ember-views
 */
-import Ember from "ember-metal/core"; // Ember.assert, Ember.$, Ember.Handlebars.ActionHelper
+import Ember from "ember-metal/core"; // Ember.assert, jQuery, Ember.Handlebars.ActionHelper
 
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import {isNone} from 'ember-metal/is_none';
+import run from "ember-metal/run_loop";
+import {typeOf} from "ember-metal/utils";
 
 // ES6TODO functions on EmberStringUtils should have their own export
 import EmberStringUtils from "ember-runtime/system/string";
 var fmt = EmberStringUtils.fmt;
 
 import EmberObject from "ember-runtime/system/object";
-
-var typeOf = Ember.typeOf, run = Ember.run;
+import jQuery from "ember-views/system/jquery";
+import {View} from "ember-views/views/view";
 
 //ES6TODO:
 // find a better way to do Ember.View.views without global state
@@ -30,7 +32,7 @@ var typeOf = Ember.typeOf, run = Ember.run;
   @private
   @extends Ember.Object
 */
-EventDispatcher = EmberObject.extend({
+var EventDispatcher = EmberObject.extend({
 
   /**
     The set of events names (and associated handler function names) to be setup
@@ -104,14 +106,14 @@ EventDispatcher = EmberObject.extend({
   setup: function(addedEvents, rootElement) {
     var event, events = get(this, 'events');
 
-    Ember.$.extend(events, addedEvents || {});
+    jQuery.extend(events, addedEvents || {});
 
 
     if (!isNone(rootElement)) {
       set(this, 'rootElement', rootElement);
     }
 
-    rootElement = Ember.$(get(this, 'rootElement'));
+    rootElement = jQuery(get(this, 'rootElement'));
 
     Ember.assert(fmt('You cannot use the same root element (%@) multiple times in an Ember.Application', [rootElement.selector || rootElement[0].tagName]), !rootElement.is('.ember-application'));
     Ember.assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', !rootElement.closest('.ember-application').length);
@@ -153,7 +155,7 @@ EventDispatcher = EmberObject.extend({
     var self = this;
 
     rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
-      var view = Ember.View.views[this.id],
+      var view = View.views[this.id],
           result = true, manager = null;
 
       manager = self._findNearestEventManager(view, eventName);
@@ -170,7 +172,7 @@ EventDispatcher = EmberObject.extend({
     });
 
     rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
-      var actionId = Ember.$(evt.currentTarget).attr('data-ember-action'),
+      var actionId = jQuery(evt.currentTarget).attr('data-ember-action'),
           action   = Ember.Handlebars.ActionHelper.registeredActions[actionId];
 
       // We have to check for action here since in some cases, jQuery will trigger
@@ -217,7 +219,7 @@ EventDispatcher = EmberObject.extend({
 
   destroy: function() {
     var rootElement = get(this, 'rootElement');
-    Ember.$(rootElement).off('.ember', '**').removeClass('ember-application');
+    jQuery(rootElement).off('.ember', '**').removeClass('ember-application');
     return this._super();
   }
 });

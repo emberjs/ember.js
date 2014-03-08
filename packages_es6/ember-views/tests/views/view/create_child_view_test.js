@@ -1,20 +1,22 @@
-var set = Ember.set, get = Ember.get;
+import {get} from "ember-metal/property_get";
+import run from "ember-metal/run_loop";
+import {View as EmberView} from "ember-views/views/view";
 
 var view, myViewClass, newView, container;
 
-module("Ember.View#createChildView", {
+module("EmberView#createChildView", {
   setup: function() {
     container = { };
 
-    view = Ember.View.create({
+    view = EmberView.create({
       container: container
     });
 
-    myViewClass = Ember.View.extend({ isMyView: true, foo: 'bar' });
+    myViewClass = EmberView.extend({ isMyView: true, foo: 'bar' });
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       view.destroy();
       if(newView) { newView.destroy(); }
     });
@@ -68,7 +70,7 @@ test("should update a view instances attributes, including the _parentView and c
 });
 
 test("should create from string via container lookup", function() {
-  var ChildViewClass = Ember.View.extend(),
+  var ChildViewClass = EmberView.extend(),
   fullName = 'view:bro';
 
   view.container.lookupFactory = function(viewName) {

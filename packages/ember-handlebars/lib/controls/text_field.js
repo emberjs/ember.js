@@ -1,5 +1,5 @@
 require("ember-handlebars/ext");
-require("ember-views/views/view");
+//require("ember-views/views/view");
 require("ember-handlebars/controls/text_support");
 
 /**

@@ -1,31 +1,38 @@
-var set = Ember.set, get = Ember.get;
+import Ember from "ember-metal/core";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+
+import jQuery from "ember-views/system/jquery";
+import {View as EmberView} from "ember-views/views/view";
+import ContainerView from "ember-views/views/container_view";
 
 var View, view, willDestroyCalled, childView;
 
-module("Ember.View - append() and appendTo()", {
+module("EmberView - append() and appendTo()", {
   setup: function() {
-    View = Ember.View.extend({});
+    View = EmberView.extend({});
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if (!view.isDestroyed) { view.destroy(); }
     });
   }
 });
 
 test("should be added to the specified element when calling appendTo()", function() {
-  Ember.$("#qunit-fixture").html('<div id="menu"></div>');
+  jQuery("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
 
   ok(!get(view, 'element'), "precond - should not have an element");
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#menu');
   });
 
-  var viewElem = Ember.$('#menu').children();
+  var viewElem = jQuery('#menu').children();
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
@@ -38,11 +45,11 @@ test("should be added to the document body when calling append()", function() {
 
   ok(!get(view, 'element'), "precond - should not have an element");
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
-  var viewElem = Ember.$(document.body).find(':contains("foo bar baz")');
+  var viewElem = jQuery(document.body).find(':contains("foo bar baz")');
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
@@ -50,7 +57,7 @@ test("raises an assert when a target does not exist in the DOM", function() {
   view = View.create();
 
   expectAssertion(function() {
-    Ember.run(function() {
+    run(function() {
       view.appendTo('does-not-exist-in-dom');
     });
   });
@@ -69,7 +76,7 @@ test("append calls willInsertElement and didInsertElement callbacks", function()
       didInsertElementCalled = true;
     },
     render: function(buffer) {
-      this.appendChild(Ember.View.create({
+      this.appendChild(EmberView.create({
         willInsertElement: function() {
           willInsertElementCalledInChild = true;
         }
@@ -79,7 +86,7 @@ test("append calls willInsertElement and didInsertElement callbacks", function()
 
   view = ViewWithCallback.create();
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
@@ -99,18 +106,18 @@ test("remove removes an element from the DOM", function() {
 
   ok(!get(view, 'element'), "precond - should not have an element");
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
-  ok(Ember.$("#" + get(view, 'elementId')).length === 1, "precond - element was inserted");
+  ok(jQuery("#" + get(view, 'elementId')).length === 1, "precond - element was inserted");
 
-  Ember.run(function() {
+  run(function() {
     view.remove();
   });
 
-  ok(Ember.$("#" + get(view, 'elementId')).length === 0, "remove removes an element from the DOM");
-  ok(Ember.View.views[get(view, 'elementId')] === undefined, "remove does not remove the view from the view hash");
+  ok(jQuery("#" + get(view, 'elementId')).length === 0, "remove removes an element from the DOM");
+  ok(EmberView.views[get(view, 'elementId')] === undefined, "remove does not remove the view from the view hash");
   ok(!get(view, 'element'), "remove nulls out the element");
   equal(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
@@ -126,77 +133,77 @@ test("destroy more forcibly removes the view", function() {
 
   ok(!get(view, 'element'), "precond - should not have an element");
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
-  ok(Ember.$("#" + get(view, 'elementId')).length === 1, "precond - element was inserted");
+  ok(jQuery("#" + get(view, 'elementId')).length === 1, "precond - element was inserted");
 
-  Ember.run(function() {
+  run(function() {
     view.destroy();
   });
 
-  ok(Ember.$("#" + get(view, 'elementId')).length === 0, "destroy removes an element from the DOM");
-  ok(Ember.View.views[get(view, 'elementId')] === undefined, "destroy removes a view from the global views hash");
+  ok(jQuery("#" + get(view, 'elementId')).length === 0, "destroy removes an element from the DOM");
+  ok(EmberView.views[get(view, 'elementId')] === undefined, "destroy removes a view from the global views hash");
   equal(get(view, 'isDestroyed'), true, "the view is marked as destroyed");
   ok(!get(view, 'element'), "the view no longer has an element");
   equal(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
 
-module("Ember.View - append() and appendTo() in a view hierarchy", {
+module("EmberView - append() and appendTo() in a view hierarchy", {
   setup: function() {
-    View = Ember.ContainerView.extend({
+    View = ContainerView.extend({
       childViews: ['child'],
-      child: Ember.View.extend({
+      child: EmberView.extend({
         elementId: 'child'
       })
     });
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if (!view.isDestroyed) { view.destroy(); }
     });
   }
 });
 
 test("should be added to the specified element when calling appendTo()", function() {
-  Ember.$("#qunit-fixture").html('<div id="menu"></div>');
+  jQuery("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
 
   ok(!get(view, 'element'), "precond - should not have an element");
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#menu');
   });
 
-  var viewElem = Ember.$('#menu #child');
+  var viewElem = jQuery('#menu #child');
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
 test("should be added to the document body when calling append()", function() {
-  Ember.$("#qunit-fixture").html('<div id="menu"></div>');
+  jQuery("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
 
   ok(!get(view, 'element'), "precond - should not have an element");
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
-  var viewElem = Ember.$('#child');
+  var viewElem = jQuery('#child');
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
-module("Ember.View - removing views in a view hierarchy", {
+module("EmberView - removing views in a view hierarchy", {
   setup: function() {
     willDestroyCalled = 0;
 
-    view = Ember.ContainerView.create({
+    view = ContainerView.create({
       childViews: ['child'],
-      child: Ember.View.create({
+      child: EmberView.create({
         willDestroyElement: function() {
           willDestroyCalled++;
         }
@@ -207,7 +214,7 @@ module("Ember.View - removing views in a view hierarchy", {
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if (!view.isDestroyed) { view.destroy(); }
     });
   }
@@ -216,19 +223,19 @@ module("Ember.View - removing views in a view hierarchy", {
 test("remove removes child elements from the DOM", function() {
   ok(!get(childView, 'element'), "precond - should not have an element");
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
-  ok(Ember.$("#" + get(childView, 'elementId')).length === 1, "precond - element was inserted");
+  ok(jQuery("#" + get(childView, 'elementId')).length === 1, "precond - element was inserted");
 
   // remove parent view
-  Ember.run(function() {
+  run(function() {
     view.remove();
   });
 
-  ok(Ember.$("#" + get(childView, 'elementId')).length === 0, "remove removes child elements the DOM");
-  ok(Ember.View.views[get(childView, 'elementId')] === undefined, "remove does not remove child views from the view hash");
+  ok(jQuery("#" + get(childView, 'elementId')).length === 0, "remove removes child elements the DOM");
+  ok(EmberView.views[get(childView, 'elementId')] === undefined, "remove does not remove child views from the view hash");
   ok(!get(childView, 'element'), "remove nulls out child elements");
   equal(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
@@ -236,20 +243,20 @@ test("remove removes child elements from the DOM", function() {
 test("destroy more forcibly removes child views", function() {
   ok(!get(childView, 'element'), "precond - should not have an element");
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
-  ok(Ember.$("#" + get(childView, 'elementId')).length === 1, "precond - child element was inserted");
+  ok(jQuery("#" + get(childView, 'elementId')).length === 1, "precond - child element was inserted");
 
   willDestroyCalled = 0;
 
-  Ember.run(function() {
+  run(function() {
     view.destroy();
   });
 
-  ok(Ember.$("#" + get(childView, 'elementId')).length === 0, "destroy removes child elements from the DOM");
-  ok(Ember.View.views[get(childView, 'elementId')] === undefined, "destroy removes a child views from the global views hash");
+  ok(jQuery("#" + get(childView, 'elementId')).length === 0, "destroy removes child elements from the DOM");
+  ok(EmberView.views[get(childView, 'elementId')] === undefined, "destroy removes a child views from the global views hash");
   equal(get(childView, 'isDestroyed'), true, "child views are marked as destroyed");
   ok(!get(childView, 'element'), "child views no longer have an element");
   equal(willDestroyCalled, 1, "the willDestroyElement hook was called once on children");
@@ -258,13 +265,13 @@ test("destroy more forcibly removes child views", function() {
 test("destroy removes a child view from its parent", function() {
   ok(!get(childView, 'element'), "precond - should not have an element");
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
-  ok(Ember.$("#" + get(childView, 'elementId')).length === 1, "precond - child element was inserted");
+  ok(jQuery("#" + get(childView, 'elementId')).length === 1, "precond - child element was inserted");
 
-  Ember.run(function() {
+  run(function() {
     childView.destroy();
   });
 

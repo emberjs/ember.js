@@ -1,8 +1,13 @@
-var set = Ember.set, get = Ember.get, view;
+import {get} from "ember-metal/property_get";
+import run from "ember-metal/run_loop";
+import {View as EmberView} from "ember-views/views/view";
+import ContainerView from "ember-views/views/container_view";
+
+var view;
 
 module("Ember.View#createElement", {
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       view.destroy();
     });
   }
@@ -11,9 +16,9 @@ module("Ember.View#createElement", {
 test("returns the receiver", function() {
   var ret;
 
-  view = Ember.View.create();
+  view = EmberView.create();
 
-  Ember.run(function() {
+  run(function() {
     ret = view.createElement();
   });
 
@@ -21,7 +26,7 @@ test("returns the receiver", function() {
 });
 
 test("calls render and turns resultant string into element", function() {
-  view = Ember.View.create({
+  view = EmberView.create({
     tagName: 'span',
 
     render: function(buffer) {
@@ -30,7 +35,7 @@ test("calls render and turns resultant string into element", function() {
   });
 
   equal(get(view, 'element'), null, 'precondition - has no element');
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
 
@@ -42,11 +47,11 @@ test("calls render and turns resultant string into element", function() {
 });
 
 test("generated element include HTML from child views as well", function() {
-  view = Ember.ContainerView.create({
-    childViews: [ Ember.View.create({ elementId: "foo" })]
+  view = ContainerView.create({
+    childViews: [ EmberView.create({ elementId: "foo" })]
   });
 
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
 

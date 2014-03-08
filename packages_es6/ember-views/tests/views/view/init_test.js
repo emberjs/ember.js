@@ -1,14 +1,18 @@
-/*global TestApp:true*/
-var set = Ember.set, get = Ember.get;
+import Ember from "ember-metal/core";
+import {get} from "ember-metal/property_get";
+import run from "ember-metal/run_loop";
+import {computed} from "ember-metal/computed";
+import EmberObject from "ember-runtime/system/object";
+import {View as EmberView} from "ember-views/views/view";
 
 var originalLookup = Ember.lookup, lookup, view;
 
-module("Ember.View.create", {
+module("EmberView.create", {
   setup: function() {
     Ember.lookup = lookup = {};
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       view.destroy();
     });
 
@@ -17,20 +21,20 @@ module("Ember.View.create", {
 });
 
 test("registers view in the global views hash using layerId for event targeted", function() {
-  view = Ember.View.create();
-  Ember.run(function() {
+  view = EmberView.create();
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
-  equal(Ember.View.views[get(view, 'elementId')], view, 'registers view');
+  equal(EmberView.views[get(view, 'elementId')], view, 'registers view');
 });
 
-module("Ember.View.createWithMixins");
+module("EmberView.createWithMixins");
 
 test("should warn if a non-array is used for classNames", function() {
   expectAssertion(function() {
-    Ember.View.createWithMixins({
+    EmberView.createWithMixins({
       elementId: 'test',
-      classNames: Ember.computed(function() {
+      classNames: computed(function() {
         return ['className'];
       }).volatile()
     });
@@ -39,9 +43,9 @@ test("should warn if a non-array is used for classNames", function() {
 
 test("should warn if a non-array is used for classNamesBindings", function() {
   expectAssertion(function() {
-    Ember.View.createWithMixins({
+    EmberView.createWithMixins({
       elementId: 'test',
-      classNameBindings: Ember.computed(function() {
+      classNameBindings: computed(function() {
         return ['className'];
       }).volatile()
     });

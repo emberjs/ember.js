@@ -6,7 +6,7 @@ import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 
 import {View, ViewCollection} from "ember-views/views/view";
-import {cloneStates, states} from "ember-views/views/states";
+import {cloneStates, states as EmberViewStates} from "ember-views/views/states";
 
 import EmberError from "ember-metal/error";
 
@@ -26,6 +26,7 @@ import {A} from "ember-runtime/system/native_array";
 @submodule ember-views
 */
 
+var states = cloneStates(EmberViewStates);
 
 /**
   A `ContainerView` is an `Ember.View` subclass that implements `Ember.MutableArray`
@@ -177,8 +178,8 @@ import {A} from "ember-runtime/system/native_array";
   @namespace Ember
   @extends Ember.View
 */
-ContainerView = View.extend(MutableArray, {
-  states: cloneStates(states),
+var ContainerView = View.extend(MutableArray, {
+  states: states,
 
   init: function() {
     this._super();
@@ -186,7 +187,7 @@ ContainerView = View.extend(MutableArray, {
     var childViews = get(this, 'childViews');
 
     // redefine view's childViews property that was obliterated
-    defineProperty(this, 'childViews', Ember.View.childViewsProperty);
+    defineProperty(this, 'childViews', View.childViewsProperty);
 
     var _childViews = this._childViews;
 

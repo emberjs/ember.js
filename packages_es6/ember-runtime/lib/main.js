@@ -136,3 +136,5 @@ Ember.ObjectController = ObjectController;
 Ember.Controller = Controller;
 Ember.ControllerMixin = ControllerMixin;
 // END EXPORTS
+
+export default Ember;

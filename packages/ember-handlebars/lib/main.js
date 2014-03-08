@@ -1,6 +1,7 @@
 require("ember-runtime");
 require("ember-handlebars-compiler");
 require("ember-views");
+requireModule('ember-views');
 require("ember-handlebars/ext");
 require("ember-handlebars/string");
 require("ember-handlebars/helpers");

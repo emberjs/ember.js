@@ -1,8 +1,11 @@
+import run from "ember-metal/run_loop";
+import {View} from "ember-views/views/view";
+
 module("Ember.View additions to run queue");
 
 test("View hierarchy is done rendering to DOM when functions queued in afterRender execute", function() {
   var lookup1, lookup2;
-  var childView = Ember.View.create({
+  var childView = View.create({
     elementId: 'child_view',
     render: function(buffer) {
       buffer.push('child');
@@ -11,7 +14,7 @@ test("View hierarchy is done rendering to DOM when functions queued in afterRend
       this.$().addClass('extra-class');
     }
   });
-  var parentView = Ember.View.create({
+  var parentView = View.create({
     elementId: 'parent_view',
     render: function(buffer) {
       buffer.push('parent');
@@ -19,20 +22,20 @@ test("View hierarchy is done rendering to DOM when functions queued in afterRend
     },
     didInsertElement: function() {
       lookup1 = this.$('.extra-class');
-      Ember.run.scheduleOnce('afterRender', this, function() {
+      run.scheduleOnce('afterRender', this, function() {
         lookup2 = this.$('.extra-class');
       });
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     parentView.appendTo('#qunit-fixture');
   });
 
   equal(lookup1.length, 0, "doesn't not find child in DOM on didInsertElement");
   equal(lookup2.length, 1, "finds child in DOM afterRender");
 
-  Ember.run(function() {
+  run(function() {
     parentView.destroy();
   });
 });

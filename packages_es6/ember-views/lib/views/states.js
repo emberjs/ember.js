@@ -1,6 +1,6 @@
-import Ember from "ember-metal/core"; // Ember.merge, Ember.create
-var merge = Ember.merge,
-    create = Ember.create;
+import Ember from "ember-metal/core"; // Ember.merge
+import {create} from "ember-metal/platform";
+var merge = Ember.merge;
 
 import _default from "ember-views/views/states/default";
 import preRender from "ember-views/views/states/pre_render";
@@ -36,4 +36,4 @@ var states = {
   destroying: destroying
 };
 
-export default {cloneStates, states}
+export {cloneStates, states};

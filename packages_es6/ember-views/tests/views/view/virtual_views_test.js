@@ -1,8 +1,15 @@
-var get = Ember.get, set = Ember.set, rootView, childView;
+import Ember from "ember-metal/core";
+import {get} from "ember-metal/property_get";
+import run from "ember-metal/run_loop";
+import EmberObject from "ember-runtime/system/object";
+import jQuery from "ember-views/system/jquery";
+import {View as EmberView} from "ember-views/views/view";
+
+var rootView, childView;
 
 module("virtual views", {
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       rootView.destroy();
       childView.destroy();
     });
@@ -10,7 +17,7 @@ module("virtual views", {
 });
 
 test("a virtual view does not appear as a view's parentView", function() {
-  rootView = Ember.View.create({
+  rootView = EmberView.create({
     elementId: 'root-view',
 
     render: function(buffer) {
@@ -19,7 +26,7 @@ test("a virtual view does not appear as a view's parentView", function() {
     }
   });
 
-  var virtualView = Ember.View.create({
+  var virtualView = EmberView.create({
     isVirtual: true,
     tagName: '',
 
@@ -29,18 +36,18 @@ test("a virtual view does not appear as a view's parentView", function() {
     }
   });
 
-  childView = Ember.View.create({
+  childView = EmberView.create({
     render: function(buffer) {
       buffer.push("<p>Bye!</p>");
     }
   });
 
-  Ember.run(function() {
-    Ember.$("#qunit-fixture").empty();
+  run(function() {
+    jQuery("#qunit-fixture").empty();
     rootView.appendTo("#qunit-fixture");
   });
 
-  equal(Ember.$("#root-view > h2").length, 1, "nodes with '' tagName do not create wrappers");
+  equal(jQuery("#root-view > h2").length, 1, "nodes with '' tagName do not create wrappers");
   equal(get(childView, 'parentView'), rootView);
 
   var children = get(rootView, 'childViews');
@@ -50,7 +57,7 @@ test("a virtual view does not appear as a view's parentView", function() {
 });
 
 test("when a virtual view's child views change, the parent's childViews should reflect", function() {
-  rootView = Ember.View.create({
+  rootView = EmberView.create({
     elementId: 'root-view',
 
     render: function(buffer) {
@@ -59,7 +66,7 @@ test("when a virtual view's child views change, the parent's childViews should r
     }
   });
 
-  var virtualView = Ember.View.create({
+  var virtualView = EmberView.create({
     isVirtual: true,
     tagName: '',
 
@@ -69,21 +76,21 @@ test("when a virtual view's child views change, the parent's childViews should r
     }
   });
 
-  childView = Ember.View.create({
+  childView = EmberView.create({
     render: function(buffer) {
       buffer.push("<p>Bye!</p>");
     }
   });
 
-  Ember.run(function() {
-    Ember.$("#qunit-fixture").empty();
+  run(function() {
+    jQuery("#qunit-fixture").empty();
     rootView.appendTo("#qunit-fixture");
   });
 
   equal(virtualView.get('childViews.length'), 1, "has childView - precond");
   equal(rootView.get('childViews.length'), 1, "has childView - precond");
 
-  Ember.run(function() {
+  run(function() {
     childView.removeFromParent();
   });
 

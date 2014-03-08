@@ -1,6 +1,7 @@
 import Ember from "ember-metal/core"; // Ember.K
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
 
 /**
 @module ember
@@ -28,7 +29,7 @@ var _default = {
   destroyElement: function(view) {
     set(view, 'element', null);
     if (view._scheduledInsert) {
-      Ember.run.cancel(view._scheduledInsert);
+      run.cancel(view._scheduledInsert);
       view._scheduledInsert = null;
     }
     return view;

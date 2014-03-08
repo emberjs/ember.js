@@ -1,4 +1,4 @@
-require("ember-views/views/view");
+// require("ember-views/views/view");
 require("ember-handlebars/ext");
 
 /**

@@ -14,7 +14,7 @@ import {Mixin} from 'ember-metal/mixin';
   @class ComponentTemplateDeprecation
   @namespace Ember
 */
-ComponentTemplateDeprecation = Mixin.create({
+var ComponentTemplateDeprecation = Mixin.create({
   /**
     @private
 

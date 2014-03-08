@@ -3,13 +3,14 @@
 @submodule ember-views
 */
 
-import Ember from 'ember-metal/core'; // Ember.$
+import Ember from 'ember-metal/core'; // jQuery
 
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
-import {setInnerHTML} from "ember-views/system/utils"
+import {setInnerHTML} from "ember-views/system/utils";
+import jQuery from "ember-views/system/jquery";
 
-var ClassSet = function() {
+function ClassSet() {
   this.seen = {};
   this.list = [];
 };
@@ -103,8 +104,7 @@ var _RenderBuffer = function(tagName) {
   this.buffer = "";
 };
 
-var
-Ember._RenderBuffer.prototype = {
+_RenderBuffer.prototype = {
 
   // The root view's element
   _element: null,
@@ -458,7 +458,7 @@ Ember._RenderBuffer.prototype = {
     }
 
     var element = document.createElement(tagString),
-        $element = Ember.$(element);
+        $element = jQuery(element);
 
     if (id) {
       $element.attr('id', id);
@@ -531,7 +531,7 @@ Ember._RenderBuffer.prototype = {
       // Firefox versions < 11 do not have support for element.outerHTML.
       var thisElement = this.element(), outerHTML = thisElement.outerHTML;
       if (typeof outerHTML === 'undefined') {
-        return Ember.$('<div/>').append(thisElement).html();
+        return jQuery('<div/>').append(thisElement).html();
       }
       return outerHTML;
     } else {

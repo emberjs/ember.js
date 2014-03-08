@@ -14,7 +14,7 @@ import {Binding} from "ember-metal/binding";
 import {addObserver, removeObserver, addBeforeObserver, removeBeforeObserver} from "ember-metal/observer";
 import {addListener, removeListener} from "ember-metal/events";
 
-var Mixin, REQUIRED, Alias,
+var REQUIRED, Alias,
     a_map = map,
     a_indexOf = indexOf,
     a_forEach = forEach,

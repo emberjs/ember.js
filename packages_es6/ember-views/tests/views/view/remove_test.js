@@ -1,18 +1,25 @@
-var set = Ember.set, get = Ember.get;
-var indexOf = Ember.EnumerableUtils.indexOf;
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import EnumerableUtils from "ember-metal/enumerable_utils";
+import jQuery from "ember-views/system/jquery";
+import {View} from "ember-views/views/view";
+import ContainerView from "ember-views/views/container_view";
+
+var indexOf = EnumerableUtils.indexOf;
 
 // .......................................................
 // removeChild()
 //
 
 var parentView, child;
-module("Ember.View#removeChild", {
+module("View#removeChild", {
   setup: function() {
-    parentView = Ember.ContainerView.create({ childViews: [Ember.View] });
+    parentView = ContainerView.create({ childViews: [View] });
     child = get(parentView, 'childViews').objectAt(0);
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       parentView.destroy();
       child.destroy();
     });
@@ -39,15 +46,15 @@ test("sets parentView property to null", function() {
 // removeAllChildren()
 //
 var view, childViews;
-module("Ember.View#removeAllChildren", {
+module("View#removeAllChildren", {
   setup: function() {
-    view = Ember.ContainerView.create({
-      childViews: [Ember.View, Ember.View, Ember.View]
+    view = ContainerView.create({
+      childViews: [View, View, View]
     });
     childViews = view.get('childViews');
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       childViews.forEach(function(v) { v.destroy(); });
       view.destroy();
     });
@@ -68,9 +75,9 @@ test("returns receiver", function() {
 // .......................................................
 // removeFromParent()
 //
-module("Ember.View#removeFromParent", {
+module("View#removeFromParent", {
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if (parentView) { parentView.destroy(); }
       if (child) { child.destroy(); }
       if (view) { view.destroy(); }
@@ -79,17 +86,17 @@ module("Ember.View#removeFromParent", {
 });
 
 test("removes view from parent view", function() {
-  parentView = Ember.ContainerView.create({ childViews: [Ember.View] });
+  parentView = ContainerView.create({ childViews: [View] });
   child = get(parentView, 'childViews').objectAt(0);
   ok(get(child, 'parentView'), 'precond - has parentView');
 
-  Ember.run(function() {
+  run(function() {
     parentView.createElement();
   });
 
   ok(parentView.$('div').length, "precond - has a child DOM element");
 
-  Ember.run(function() {
+  run(function() {
     child.removeFromParent();
   });
 
@@ -99,9 +106,9 @@ test("removes view from parent view", function() {
 });
 
 test("returns receiver", function() {
-  parentView = Ember.ContainerView.create({ childViews: [Ember.View] });
+  parentView = ContainerView.create({ childViews: [View] });
   child = get(parentView, 'childViews').objectAt(0);
-  var removed = Ember.run(function() {
+  var removed = run(function() {
     return child.removeFromParent();
   });
 
@@ -110,40 +117,40 @@ test("returns receiver", function() {
 
 test("does nothing if not in parentView", function() {
   var callCount = 0;
-  child = Ember.View.create();
+  child = View.create();
 
   // monkey patch for testing...
   ok(!get(child, 'parentView'), 'precond - has no parent');
 
   child.removeFromParent();
 
-  Ember.run(function() {
+  run(function() {
     child.destroy();
   });
 });
 
 
 test("the DOM element is gone after doing append and remove in two separate runloops", function() {
-  view = Ember.View.create();
-  Ember.run(function() {
+  view = View.create();
+  run(function() {
     view.append();
   });
-  Ember.run(function() {
+  run(function() {
     view.remove();
   });
 
-  var viewElem = Ember.$('#'+get(view, 'elementId'));
+  var viewElem = jQuery('#'+get(view, 'elementId'));
   ok(viewElem.length === 0, "view's element doesn't exist in DOM");
 });
 
 test("the DOM element is gone after doing append and remove in a single runloop", function() {
-  view = Ember.View.create();
-  Ember.run(function() {
+  view = View.create();
+  run(function() {
     view.append();
     view.remove();
   });
 
-  var viewElem = Ember.$('#'+get(view, 'elementId'));
+  var viewElem = jQuery('#'+get(view, 'elementId'));
   ok(viewElem.length === 0, "view's element doesn't exist in DOM");
 });
 

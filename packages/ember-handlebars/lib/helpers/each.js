@@ -1,5 +1,5 @@
 require("ember-handlebars/ext");
-require("ember-views/views/collection_view");
+//require("ember-views/views/collection_view");
 require("ember-handlebars/views/metamorph_view");
 
 /**

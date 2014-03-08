@@ -1,14 +1,20 @@
-var get = Ember.get, set = Ember.set,
-    a_slice = Array.prototype.slice;
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import EmberObject from "ember-runtime/system/object";
+
+import {View as EmberView} from "ember-views/views/view";
+import Component from "ember-views/views/component";
+
+var a_slice = Array.prototype.slice;
 
 var component, controller, actionCounts, sendCount, actionArguments;
 
 module("Ember.Component", {
   setup: function(){
-    component = Ember.Component.create();
+    component = Component.create();
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if(component)  { component.destroy(); }
       if(controller) { controller.destroy(); }
     });
@@ -25,7 +31,7 @@ test("The controller (target of `action`) of an Ember.Component is itself", func
 
 test("A templateName specified to a component is moved to the layoutName", function(){
   expectDeprecation(/Do not specify templateName on a Component, use layoutName instead/);
-  component = Ember.Component.extend({
+  component = Component.extend({
     templateName: 'blah-blah'
   }).create();
 
@@ -34,7 +40,7 @@ test("A templateName specified to a component is moved to the layoutName", funct
 
 test("A template specified to a component is moved to the layout", function(){
   expectDeprecation(/Do not specify template on a Component, use layout instead/);
-  component = Ember.Component.extend({
+  component = Component.extend({
     template: 'blah-blah'
   }).create();
 
@@ -43,7 +49,7 @@ test("A template specified to a component is moved to the layout", function(){
 
 test("A template specified to a component is deprecated", function(){
   expectDeprecation(function(){
-    component = Ember.Component.extend({
+    component = Component.extend({
       template: 'blah-blah'
     }).create();
   }, 'Do not specify template on a Component, use layout instead.');
@@ -51,7 +57,7 @@ test("A template specified to a component is deprecated", function(){
 
 test("A templateName specified to a component is deprecated", function(){
   expectDeprecation(function(){
-    component = Ember.Component.extend({
+    component = Component.extend({
       templateName: 'blah-blah'
     }).create();
   }, 'Do not specify templateName on a Component, use layoutName instead.');
@@ -59,7 +65,7 @@ test("A templateName specified to a component is deprecated", function(){
 
 test("Specifying both templateName and layoutName to a component is NOT deprecated", function(){
   expectNoDeprecation();
-  component = Ember.Component.extend({
+  component = Component.extend({
     templateName: 'blah-blah',
     layoutName: 'hum-drum'
   }).create();
@@ -67,7 +73,7 @@ test("Specifying both templateName and layoutName to a component is NOT deprecat
 
 test("Specifying a templateName on a component with a layoutName specified in a superclass is NOT deprecated", function(){
   expectNoDeprecation();
-  var Parent = Ember.Component.extend({
+  var Parent = Component.extend({
     layoutName: 'hum-drum'
   });
   component = Parent.extend({
@@ -81,7 +87,7 @@ module("Ember.Component - Actions", {
     sendCount = 0;
     actionArguments = null;
 
-    controller = Ember.Object.create({
+    controller = EmberObject.create({
       send: function(actionName) {
         sendCount++;
         actionCounts[actionName] = actionCounts[actionName] || 0;
@@ -90,15 +96,15 @@ module("Ember.Component - Actions", {
       }
     });
 
-    component = Ember.Component.create({
-      _parentView: Ember.View.create({
+    component = Component.create({
+      _parentView: EmberView.create({
         controller: controller
       })
     });
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       component.destroy();
       controller.destroy();
     });

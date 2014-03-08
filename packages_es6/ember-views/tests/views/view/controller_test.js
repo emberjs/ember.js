@@ -1,15 +1,20 @@
+import Ember from "ember-metal/core";
+import run from "ember-metal/run_loop";
+
+import ContainerView from "ember-views/views/container_view";
+
 module("Ember.View - controller property");
 
 test("controller property should be inherited from nearest ancestor with controller", function() {
-  var grandparent = Ember.ContainerView.create();
-  var parent = Ember.ContainerView.create();
-  var child = Ember.ContainerView.create();
-  var grandchild = Ember.ContainerView.create();
+  var grandparent = ContainerView.create();
+  var parent = ContainerView.create();
+  var child = ContainerView.create();
+  var grandchild = ContainerView.create();
 
   var grandparentController = {};
   var parentController = {};
 
-  Ember.run(function() {
+  run(function() {
     grandparent.set('controller', grandparentController);
     parent.set('controller', parentController);
 
@@ -22,14 +27,14 @@ test("controller property should be inherited from nearest ancestor with control
   strictEqual(child.get('controller'), parentController);
   strictEqual(grandchild.get('controller'), null);
 
-  Ember.run(function() {
+  run(function() {
     child.pushObject(grandchild);
   });
 
   strictEqual(grandchild.get('controller'), parentController);
 
   var newController = {};
-  Ember.run(function() {
+  run(function() {
     parent.set('controller', newController);
   });
 
@@ -37,7 +42,7 @@ test("controller property should be inherited from nearest ancestor with control
   strictEqual(child.get('controller'), newController);
   strictEqual(grandchild.get('controller'), newController);
 
-  Ember.run(function() {
+  run(function() {
     grandparent.destroy();
     parent.destroy();
     child.destroy();

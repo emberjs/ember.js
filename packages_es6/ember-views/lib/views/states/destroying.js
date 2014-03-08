@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core"; // Ember.merge
-var merge = Ember.merge,
-    create = Ember.create;
+import {create} from "ember-metal/platform";
+var merge = Ember.merge;
 
 import EmberStringUtils from "ember-runtime/system/string";
 var fmt = EmberStringUtils.fmt;

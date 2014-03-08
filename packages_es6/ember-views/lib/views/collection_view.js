@@ -5,15 +5,16 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert
-var create = Ember.create, merge = Ember.merge;
+import {create} from "ember-metal/platform";
+var merge = Ember.merge; // ES6TODO: This should be removed from ember-metal/core
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 
 import EmberStringUtils from "ember-runtime/system/string";
-var fmt = EmberStringUtils.fmt,
+var fmt = EmberStringUtils.fmt;
 
-import ContainerView from "ember-views/views/container_view"
-import {CoreView, View} from "ember-views/views/view"
+import ContainerView from "ember-views/views/container_view";
+import {CoreView, View} from "ember-views/views/view";
 import {observer, beforeObserver} from "ember-metal/mixin";
 import EmberArray from "ember-runtime/mixins/array";
 

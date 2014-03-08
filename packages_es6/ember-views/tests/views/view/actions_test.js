@@ -1,8 +1,17 @@
-var set = Ember.set, get = Ember.get, view;
+import Ember from "ember-metal/core";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import {Mixin} from "ember-metal/mixin";
+import {Controller} from "ember-runtime/controllers/controller";
+import EmberObject from "ember-runtime/system/object";
+import {View} from "ember-views/views/view";
 
-module("Ember.View action handling", {
+var view;
+
+module("View action handling", {
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if (view) { view.destroy(); }
     });
   }
@@ -10,7 +19,7 @@ module("Ember.View action handling", {
 
 test("Action can be handled by a function on actions object", function() {
   expect(1);
-  view = Ember.View.extend({
+  view = View.extend({
     actions: {
       poke: function() {
         ok(true, 'poked');
@@ -24,7 +33,7 @@ if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
   test("Action can be handled by a function on the view (DEPRECATED)", function() {
     expect(2);
     expectDeprecation(/Action handlers implemented directly on views are deprecated/);
-    view = Ember.View.extend({
+    view = View.extend({
       poke: function() {
         ok(true, 'poked');
       }
@@ -35,14 +44,14 @@ if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
 
 test("A handled action can be bubbled to the target for continued processing", function() {
   expect(2);
-  view = Ember.View.extend({
+  view = View.extend({
     actions: {
       poke: function() {
         ok(true, 'poked 1');
         return true;
       }
     },
-    target: Ember.Controller.extend({
+    target: Controller.extend({
       actions: {
         poke: function() {
           ok(true, 'poked 2');
@@ -56,7 +65,7 @@ test("A handled action can be bubbled to the target for continued processing", f
 test("Action can be handled by a superclass' actions object", function() {
   expect(4);
 
-  var SuperView = Ember.View.extend({
+  var SuperView = View.extend({
     actions: {
       foo: function() {
         ok(true, 'foo');
@@ -67,7 +76,7 @@ test("Action can be handled by a superclass' actions object", function() {
     }
   });
 
-  var BarViewMixin = Ember.Mixin.create({
+  var BarViewMixin = Mixin.create({
     actions: {
       bar: function(msg) {
         equal(msg, "HELLO");
@@ -92,7 +101,7 @@ test("Action can be handled by a superclass' actions object", function() {
 
 test("Actions cannot be provided at create time", function() {
   expectAssertion(function() {
-    view = Ember.View.create({
+    view = View.create({
       actions: {
         foo: function() {
           ok(true, 'foo');
@@ -101,7 +110,7 @@ test("Actions cannot be provided at create time", function() {
     });
   });
   // but should be OK on an object that doesn't mix in Ember.ActionHandler
-  var obj = Ember.Object.create({
+  var obj = EmberObject.create({
     actions: ['foo']
   });
 });

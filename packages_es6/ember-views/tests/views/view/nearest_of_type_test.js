@@ -1,8 +1,14 @@
-var set = Ember.set, get = Ember.get, parentView, view;
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import {Mixin as EmberMixin} from "ember-metal/mixin";
+import {View} from "ember-views/views/view";
 
-module("Ember.View#nearest*", {
+var parentView, view;
+
+module("View#nearest*", {
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if (parentView) { parentView.destroy(); }
       if (view) { view.destroy(); }
     });
@@ -10,17 +16,17 @@ module("Ember.View#nearest*", {
 });
 
 (function() {
-  var Mixin = Ember.Mixin.create({}),
-      Parent = Ember.View.extend(Mixin, {
+  var Mixin = EmberMixin.create({}),
+      Parent = View.extend(Mixin, {
         render: function(buffer) {
-          this.appendChild( Ember.View.create() );
+          this.appendChild( View.create() );
         }
       });
 
   test("nearestOfType should find the closest view by view class", function() {
     var child;
 
-    Ember.run(function() {
+    run(function() {
       parentView = Parent.create();
       parentView.appendTo('#qunit-fixture');
     });
@@ -32,7 +38,7 @@ module("Ember.View#nearest*", {
   test("nearestOfType should find the closest view by mixin", function() {
     var child;
 
-    Ember.run(function() {
+    run(function() {
       parentView = Parent.create();
       parentView.appendTo('#qunit-fixture');
     });
@@ -44,15 +50,15 @@ module("Ember.View#nearest*", {
 test("nearestWithProperty should search immediate parent", function() {
   var childView;
 
-  view = Ember.View.create({
+  view = View.create({
     myProp: true,
 
     render: function(buffer) {
-      this.appendChild(Ember.View.create());
+      this.appendChild(View.create());
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 

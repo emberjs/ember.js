@@ -1,6 +1,8 @@
-module("Ember.View - _classStringForValue");
+import {View} from "ember-views/views/view";
 
-var cSFV = Ember.View._classStringForValue;
+module("View - _classStringForValue");
+
+var cSFV = View._classStringForValue;
 
 test("returns dasherized version of last path part if value is true", function() {
   equal(cSFV("propertyName", true), "property-name", "class is dasherized");

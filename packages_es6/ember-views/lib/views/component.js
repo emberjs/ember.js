@@ -11,7 +11,6 @@ import {isNone} from 'ember-metal/is_none';
 import {computed} from "ember-metal/computed";
 
 var a_slice = Array.prototype.slice;
-var helpers = Ember.Handlebars.helpers;
 
 /**
 @module ember
@@ -111,7 +110,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   },
 
   defaultLayout: function(context, options){
-    helpers['yield'].call(context, options);
+    Ember.Handlebars.helpers['yield'].call(context, options);
   },
 
   /**

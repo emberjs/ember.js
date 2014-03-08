@@ -1,7 +1,10 @@
 import _default from "ember-views/views/states/default";
 import run from "ember-metal/run_loop";
-import Ember from "ember-metal/core"; // Ember.merge, Ember.create, Ember.$
-var create = Ember.create, merge = Ember.merge;
+import Ember from "ember-metal/core"; // Ember.merge, Ember.create, jQuery
+import {create} from "ember-metal/platform";
+import jQuery from "ember-views/system/jquery";
+
+var merge = Ember.merge;
 
 /**
 @module ember
@@ -16,14 +19,14 @@ var hasElement = create(_default);
 merge(hasElement, {
   $: function(view, sel) {
     var elem = get(view, 'element');
-    return sel ? Ember.$(sel, elem) : Ember.$(elem);
+    return sel ? jQuery(sel, elem) : jQuery(elem);
   },
 
   getElement: function(view) {
     var parent = get(view, 'parentView');
     if (parent) { parent = get(parent, 'element'); }
     if (parent) { return view.findElementInParentElement(parent); }
-    return Ember.$("#" + get(view, 'elementId'))[0];
+    return jQuery("#" + get(view, 'elementId'))[0];
   },
 
   setElement: function(view, value) {

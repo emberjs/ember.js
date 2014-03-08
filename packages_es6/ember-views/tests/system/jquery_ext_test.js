@@ -1,3 +1,8 @@
+import run from "ember-metal/run_loop";
+import EventDispatcher from "ember-views/system/event_dispatcher";
+import jQuery from "ember-views/system/jquery";
+import {View} from "ember-views/views/view";
+
 var view, dispatcher;
 
 // Adapted from https://github.com/jquery/jquery/blob/f30f7732e7775b6e417c4c22ced7adb2bf76bf89/test/data/testinit.js
@@ -20,16 +25,16 @@ if (document.createEvent) {
   };
 }
 
-module("Ember.EventDispatcher", {
+module("EventDispatcher", {
   setup: function() {
-    Ember.run(function() {
-      dispatcher = Ember.EventDispatcher.create();
+    run(function() {
+      dispatcher = EventDispatcher.create();
       dispatcher.setup();
     });
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if (view) { view.destroy(); }
       dispatcher.destroy();
     });
@@ -47,7 +52,7 @@ if (canDataTransfer) {
       target: document.body
     };
 
-    receivedEvent = Ember.$.event.fix(originalEvent);
+    receivedEvent = jQuery.event.fix(originalEvent);
 
     ok(receivedEvent !== originalEvent, "attributes are copied to a new event object");
     equal(receivedEvent.dataTransfer, originalEvent.dataTransfer, "copies dataTransfer property to jQuery event");
@@ -57,7 +62,7 @@ if (canDataTransfer) {
     var receivedEvent;
     var dropCalled = 0;
 
-    view = Ember.View.createWithMixins({
+    view = View.createWithMixins({
       render: function(buffer) {
         buffer.push('please drop stuff on me');
         this._super(buffer);
@@ -69,7 +74,7 @@ if (canDataTransfer) {
       }
     });
 
-    Ember.run(function() {
+    run(function() {
       view.append();
     });
 
