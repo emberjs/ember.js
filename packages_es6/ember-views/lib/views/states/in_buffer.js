@@ -1,9 +1,9 @@
 import _default from "ember-views/views/states/default";
 import EmberError from "ember-metal/error";
 
-import Ember from "ember-metal/core"; // Ember.merge, Ember.create, Ember.$, Ember.assert
+import Ember from "ember-metal/core"; // Ember.assert
 import {create} from "ember-metal/platform";
-var merge = Ember.merge;
+import merge from "ember-metal/merge";
 
 /**
 @module ember

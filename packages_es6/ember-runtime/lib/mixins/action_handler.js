@@ -2,6 +2,7 @@
 @module ember
 @submodule ember-runtime
 */
+import merge from "ember-metal/merge";
 import {Mixin} from 'ember-metal/mixin';
 import {get} from "ember-metal/property_get";
 import {typeOf} from "ember-metal/utils";
@@ -162,7 +163,7 @@ var ActionHandler = Mixin.create({
       }
 
       if (hashName) {
-        props._actions = Ember.merge(props._actions || {}, props[hashName]);
+        props._actions = merge(props._actions || {}, props[hashName]);
       }
 
       delete props[hashName];

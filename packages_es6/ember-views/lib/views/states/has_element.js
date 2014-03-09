@@ -1,10 +1,8 @@
 import _default from "ember-views/views/states/default";
 import run from "ember-metal/run_loop";
-import Ember from "ember-metal/core"; // Ember.merge, Ember.create, jQuery
+import merge from "ember-metal/merge";
 import {create} from "ember-metal/platform";
 import jQuery from "ember-views/system/jquery";
-
-var merge = Ember.merge;
 
 /**
 @module ember

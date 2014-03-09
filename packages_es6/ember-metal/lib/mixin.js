@@ -4,6 +4,7 @@
 */
 
 import Ember from "ember-metal/core"; // warn, assert, wrap, et;
+import merge from "ember-metal/merge";
 import {map, indexOf, forEach} from "ember-metal/array";
 import {create} from "ember-metal/platform";
 import {guidFor, meta, META_KEY, wrap, makeArray, apply} from "ember-metal/utils";
@@ -158,7 +159,7 @@ function applyMergedProperties(obj, key, value, values) {
 
   if (!baseValue) { return value; }
 
-  var newBase = Ember.merge({}, baseValue),
+  var newBase = merge({}, baseValue),
       hasFunction = false;
 
   for (var prop in value) {
