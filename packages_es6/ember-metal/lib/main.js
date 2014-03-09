@@ -7,6 +7,7 @@ Ember Metal
 
 // BEGIN IMPORTS
 import Ember from "ember-metal/core";
+import merge from "ember-metal/merge";
 import {instrument, subscribe, unsubscribe, reset} from "ember-metal/instrumentation";
 import {
   generateGuid,
@@ -228,6 +229,8 @@ Ember.isEmpty = isEmpty;
 Ember.empty = empty;
 
 Ember.isBlank = isBlank;
+
+Ember.merge = merge;
 
 /**
   A function may be assigned to `Ember.onerror` to be called when Ember

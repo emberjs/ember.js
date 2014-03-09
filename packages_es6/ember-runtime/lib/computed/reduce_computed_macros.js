@@ -3,7 +3,8 @@
 @submodule ember-runtime
 */
 
-import Ember from "ember-metal/core"; // Ember.merge
+import Ember from "ember-metal/core"; // Ember.assert
+import merge from "ember-metal/merge";
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import {isArray, guidFor} from "ember-metal/utils";
@@ -18,8 +19,7 @@ import SubArray from "ember-runtime/system/subarray";
 import keys from "ember-runtime/keys";
 import compare from "ember-runtime/compare";
 
-var merge = Ember.merge,
-    a_slice = [].slice,
+var a_slice = [].slice,
     forEach = EnumerableUtils.forEach,
     SearchProxy;
 
