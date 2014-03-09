@@ -250,4 +250,10 @@ Ember.isBlank = isBlank;
 Ember.onerror = null;
 // END EXPORTS
 
+// do this for side-effects of updating Ember.assert, warn, etc when
+// ember-debug is present
+if (Ember.__loader.registry['ember-debug']) {
+  requireModule('ember-debug');
+}
+
 export default Ember;

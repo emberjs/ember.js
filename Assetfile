@@ -161,14 +161,20 @@ distros.each do |name, modules|
 
     # Add ember-testing to ember distro
     if name == "ember"
-      match "{ember-testing.js,ember-debug.js}" do
-        concat ["ember-testing.js", "ember-debug.js"], "#{name}.js"
+      match "{ember-testing.js}" do
+        concat ["ember-testing.js"], "#{name}.js"
       end
     end
 
     module_paths = modules.map{|m| "#{m}.js" }
     match "{#{module_paths.join(',')}}" do
       concat(module_paths){ ["#{name}.js", "#{name}.prod.js"] }
+    end
+
+    if name == "ember"
+      match "{ember-debug.js}" do
+        concat ["ember-debug.js"], "#{name}.js"
+      end
     end
 
     match "{#{name}.js,#{name}.prod.js}" do
