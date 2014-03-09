@@ -1,6 +1,6 @@
-import Ember from "ember-metal/core"; // Ember.assert, Ember.K, Ember.merge
-var merge = Ember.merge;
+import Ember from "ember-metal/core"; // Ember.assert, Ember.K
 
+import merge from "ember-metal/merge";
 import MutableArray from "ember-runtime/mixins/mutable_array";
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";

@@ -6,7 +6,7 @@
 
 import Ember from "ember-metal/core"; // Ember.assert
 import {create} from "ember-metal/platform";
-var merge = Ember.merge; // ES6TODO: This should be removed from ember-metal/core
+import merge from "ember-metal/merge";
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 
