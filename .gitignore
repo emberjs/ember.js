@@ -2,6 +2,7 @@ packages/container
 packages/ember-metal
 packages/ember-runtime
 packages/ember-debug
+packages/ember-views
 *.bpkg
 *.gem
 *.rbc

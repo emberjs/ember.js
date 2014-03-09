@@ -1,4 +1,5 @@
 require('ember-handlebars-compiler');
+requireModule('ember-views');
 
 var slice = Array.prototype.slice,
     originalTemplate = Ember.Handlebars.template;
