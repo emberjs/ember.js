@@ -16,9 +16,75 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   });
 
   var resolveParams = Ember.Router.resolveParams,
-      translateQueryParams = Ember.Router._translateQueryParams,
       resolvePaths  = Ember.Router.resolvePaths,
       isSimpleClick = Ember.ViewUtils.isSimpleClick;
+
+  function computeQueryParams(linkView, stripDefaultValues) {
+    var helperParameters = linkView.parameters,
+        queryParamsObject = get(linkView, 'queryParamsObject'),
+        suppliedParams = {};
+
+    if (queryParamsObject) {
+      Ember.merge(suppliedParams, queryParamsObject.values);
+    }
+
+    var resolvedParams = get(linkView, 'resolvedParams'),
+        router = get(linkView, 'router'),
+        routeName = resolvedParams[0],
+        paramsForRoute = router._queryParamsFor(routeName),
+        qps = paramsForRoute.qps,
+        paramsForRecognizer = {};
+
+    // We need to collect all non-default query params for this route.
+    for (var i = 0, len = qps.length; i < len; ++i) {
+      var qp = qps[i];
+
+      // Check if the link-to provides a value for this qp.
+      var providedType = null, value;
+      if (qp.prop in suppliedParams) {
+        value = suppliedParams[qp.prop];
+        providedType = queryParamsObject.types[qp.prop];
+        delete suppliedParams[qp.prop];
+      } else if (qp.urlKey in suppliedParams) {
+        value = suppliedParams[qp.urlKey];
+        providedType = queryParamsObject.types[qp.urlKey];
+        delete suppliedParams[qp.urlKey];
+      }
+
+      if (providedType) {
+        if (providedType === 'ID') {
+          var normalizedPath = Ember.Handlebars.normalizePath(helperParameters.context, value, helperParameters.options.data);
+          value = Ember.Handlebars.get(normalizedPath.root, normalizedPath.path, helperParameters.options);
+        }
+
+        value = qp.route.serializeQueryParam(value, qp.urlKey, qp.type);
+      } else {
+        value = qp.svalue;
+      }
+
+      if (stripDefaultValues && value === qp.sdef) {
+        continue;
+      }
+
+      paramsForRecognizer[qp.urlKey] = value;
+    }
+
+    return paramsForRecognizer;
+  }
+
+  function routeArgsWithoutDefaultQueryParams(linkView) {
+    var routeArgs = linkView.get('routeArgs');
+
+    if (!routeArgs[routeArgs.length-1].queryParams) {
+      return routeArgs;
+    }
+
+    routeArgs = routeArgs.slice();
+    routeArgs[routeArgs.length-1] = {
+      queryParams: computeQueryParams(linkView, true)
+    };
+    return routeArgs;
+  }
 
   function getResolvedPaths(options) {
 
@@ -361,7 +427,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
         // the href will include any rootURL set, but the router expects a URL
         // without it! Note that we don't use the first level router because it
         // calls location.formatURL(), which also would add the rootURL!
-        var url = router.router.generate.apply(router.router, get(this, 'routeArgs'));
+        var url = router.router.generate.apply(router.router, routeArgsWithoutDefaultQueryParams(this));
         Ember.run.scheduleOnce('routerTransitions', this, this._eagerUpdateUrl, transition, url);
       }
     },
@@ -474,48 +540,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     queryParamsObject: null,
     queryParams: Ember.computed(function computeLinkViewQueryParams() {
-
-      var queryParamsObject = get(this, 'queryParamsObject'),
-          suppliedParams = {};
-
-      if (queryParamsObject) {
-        Ember.merge(suppliedParams, queryParamsObject.values);
-      }
-
-      var resolvedParams = get(this, 'resolvedParams'),
-          router = get(this, 'router'),
-          routeName = resolvedParams[0],
-          paramsForRoute = router._queryParamNamesFor(routeName),
-          queryParams = paramsForRoute.queryParams,
-          translations = paramsForRoute.translations,
-          paramsForRecognizer = {};
-
-      // Normalize supplied params into their long-form name
-      // e.g. 'foo' -> 'controllername:foo'
-      translateQueryParams(suppliedParams, translations, routeName);
-
-      var helperParameters = this.parameters;
-      router._queryParamOverrides(paramsForRecognizer, queryParams, function(name, resultsName) {
-        if (!(name in suppliedParams)) { return; }
-
-        var parts = name.split(':');
-
-        var type = queryParamsObject.types[parts[1]];
-
-        var value;
-        if (type === 'ID') {
-          var normalizedPath = Ember.Handlebars.normalizePath(helperParameters.context, suppliedParams[name], helperParameters.options.data);
-          value = Ember.Handlebars.get(normalizedPath.root, normalizedPath.path, helperParameters.options);
-        } else {
-          value = suppliedParams[name];
-        }
-
-        delete suppliedParams[name];
-
-        paramsForRecognizer[resultsName] = value;
-      });
-
-      return paramsForRecognizer;
+      return computeQueryParams(this, false);
     }).property('resolvedParams.[]'),
 
     /**
@@ -533,7 +558,15 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       var router = get(this, 'router'),
           routeArgs = get(this, 'routeArgs');
 
-      return routeArgs ? router.generate.apply(router, routeArgs) : get(this, 'loadingHref');
+      if (!routeArgs) {
+        return get(this, 'loadingHref');
+      }
+
+      if (Ember.FEATURES.isEnabled("query-params-new")) {
+        routeArgs = routeArgsWithoutDefaultQueryParams(this);
+      }
+
+      return router.generate.apply(router, routeArgs);
     }).property('routeArgs'),
 
     /**

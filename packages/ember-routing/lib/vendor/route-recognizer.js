@@ -1,4 +1,4 @@
-define("route-recognizer",
+define("route-recognizer", 
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -424,7 +424,7 @@ define("route-recognizer",
         for (var i = 0, len = keys.length; i < len; i++) {
           key = keys[i];
           var value = params[key];
-          if (value === false || value == null) {
+          if (value == null) {
             continue;
           }
           var pair = key;
@@ -433,11 +433,8 @@ define("route-recognizer",
               var arrayPair = key + '[]' + '=' + encodeURIComponent(value[j]);
               pairs.push(arrayPair);
             }
-          }
-          else if (value !== true) {
-            pair += "=" + encodeURIComponent(value);
-            pairs.push(pair);
           } else {
+            pair += "=" + encodeURIComponent(value);
             pairs.push(pair);
           }
         }
@@ -456,7 +453,7 @@ define("route-recognizer",
               isArray = false,
               value;
           if (pair.length === 1) {
-            value = true;
+            value = 'true';
           } else {
             //Handle arrays
             if (keyLength > 2 && key.slice(keyLength -2) === '[]') {
@@ -471,9 +468,8 @@ define("route-recognizer",
           if (isArray) {
             queryParams[key].push(value);
           } else {
-            queryParams[key] = value;
+            queryParams[key] = decodeURIComponent(value);
           }
-
         }
         return queryParams;
       },

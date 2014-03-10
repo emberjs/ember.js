@@ -1047,7 +1047,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'index' id='the-link'}}Index{{/link-to}}");
     bootApplication();
-    equal(Ember.$('#the-link').attr('href'), "/?foo=123", "link has right href");
+    equal(Ember.$('#the-link').attr('href'), "/", "link has right href");
   });
 
   test("{{link-to}} populates href with default query param values with empty query-params object", function() {
@@ -1058,7 +1058,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}");
     bootApplication();
-    equal(Ember.$('#the-link').attr('href'), "/?foo=123", "link has right href");
+    equal(Ember.$('#the-link').attr('href'), "/", "link has right href");
   });
 
   test("{{link-to}} populates href with supplied query param values", function() {
@@ -1081,7 +1081,19 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'index' (query-params foo='456') id='the-link'}}Index{{/link-to}}");
     bootApplication();
-    equal(Ember.$('#the-link').attr('href'), "/?bar=yes&foo=456", "link has right href");
+    equal(Ember.$('#the-link').attr('href'), "/?foo=456", "link has right href");
+  });
+
+  test("{{link-to}} populates href with partially supplied query param values, but omits if value is default value", function() {
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo', 'bar'],
+      foo: '123',
+      bar: 'yes'
+    });
+
+    Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'index' (query-params foo='123') id='the-link'}}Index{{/link-to}}");
+    bootApplication();
+    equal(Ember.$('#the-link').attr('href'), "/", "link has right href");
   });
 
   test("{{link-to}} populates href with fully supplied query param values", function() {
@@ -1102,10 +1114,11 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
         sharedSetup();
 
         App.IndexController = Ember.Controller.extend({
-          queryParams: ['foo', 'bar'],
+          queryParams: ['foo', 'bar', 'abool'],
           foo: '123',
           bar: 'abc',
-          boundThing: "OMG"
+          boundThing: "OMG",
+          abool: true
         });
 
         App.AboutController = Ember.Controller.extend({
@@ -1183,7 +1196,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'about' (query-params baz='lol') id='the-link'}}About{{/link-to}}");
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/about?bat=borf&baz=lol');
+    equal(Ember.$('#the-link').attr('href'), '/about?baz=lol');
     Ember.run(Ember.$('#the-link'), 'click');
     var aboutController = container.lookup('controller:about');
     deepEqual(aboutController.getProperties('baz', 'bat'), { baz: 'lol', bat: 'borf' }, "about controller QP properties updated");
@@ -1197,24 +1210,24 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/?bar=abc&foo=OMG');
+    equal(Ember.$('#the-link').attr('href'), '/?foo=OMG');
     Ember.run(indexController, 'set', 'boundThing', "ASL");
-    equal(Ember.$('#the-link').attr('href'), '/?bar=abc&foo=ASL');
+    equal(Ember.$('#the-link').attr('href'), '/?foo=ASL');
   });
 
   test("supplied QP properties can be bound (booleans)", function() {
     var indexController = container.lookup('controller:index');
-    Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to (query-params foo=boundThing) id='the-link'}}Index{{/link-to}}");
+    Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to (query-params abool=boundThing) id='the-link'}}Index{{/link-to}}");
 
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/?bar=abc&foo=OMG');
+    equal(Ember.$('#the-link').attr('href'), '/?abool=OMG');
     Ember.run(indexController, 'set', 'boundThing', false);
-    equal(Ember.$('#the-link').attr('href'), '/?bar=abc');
+    equal(Ember.$('#the-link').attr('href'), '/?abool=false');
 
     Ember.run(Ember.$('#the-link'), 'click');
 
-    deepEqual(indexController.getProperties('foo', 'bar'), { foo: false, bar: 'abc' });
+    deepEqual(indexController.getProperties('foo', 'bar', 'abool'), { foo: '123', bar: 'abc', abool: false });
   });
 
   test("href updates when unsupplied controller QP props change", function() {
@@ -1223,7 +1236,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
 
-    equal(Ember.$('#the-link').attr('href'), '/?bar=abc&foo=lol');
+    equal(Ember.$('#the-link').attr('href'), '/?foo=lol');
     Ember.run(indexController, 'set', 'bar', 'BORF');
     equal(Ember.$('#the-link').attr('href'), '/?bar=BORF&foo=lol');
     Ember.run(indexController, 'set', 'foo', 'YEAH');
@@ -1359,15 +1372,15 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       bootApplication();
 
       shouldNotBeActive('#array-link');
-      Ember.run(router, 'handleURL', '/?pages[]=1&pages[]=2');
+      Ember.run(router, 'handleURL', '/?pages=%5B1%2C2%5D');
       shouldBeActive('#array-link');
       shouldNotBeActive('#bigger-link');
       shouldNotBeActive('#empty-link');
-      Ember.run(router, 'handleURL', '/?pages[]=2&pages[]=1');
+      Ember.run(router, 'handleURL', '/?pages=%5B2%2C1%5D');
       shouldNotBeActive('#array-link');
       shouldNotBeActive('#bigger-link');
       shouldNotBeActive('#empty-link');
-      Ember.run(router, 'handleURL', '/?pages[]=1&pages[]=2&pages[]=3');
+      Ember.run(router, 'handleURL', '/?pages=%5B1%2C2%2C3%5D');
       shouldBeActive('#bigger-link');
       shouldNotBeActive('#array-link');
       shouldNotBeActive('#empty-link');
@@ -1459,7 +1472,7 @@ if (Ember.FEATURES.isEnabled("ember-eager-url-update")) {
 
   test("when link-to eagerly updates url, the path it provides does NOT include the rootURL", function() {
     expect(2);
-    
+
     // HistoryLocation is the only Location class that will cause rootURL to be
     // prepended to link-to href's right now
     var HistoryTestLocation = Ember.HistoryLocation.extend({

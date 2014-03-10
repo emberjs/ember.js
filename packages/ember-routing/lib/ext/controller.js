@@ -6,8 +6,6 @@
 var get = Ember.get, set = Ember.set,
     map = Ember.EnumerableUtils.map;
 
-var queuedQueryParamChanges = {};
-
 Ember.ControllerMixin.reopen({
   /**
     Transition the application into another route. The route may
@@ -43,7 +41,7 @@ Ember.ControllerMixin.reopen({
         this.resource('blogComment', {path: ':blogCommentId'});
       });
     });
-    
+
     aController.transitionToRoute('blogComment', aPost, aComment);
     aController.transitionToRoute('blogComment', 1, 13);
     ```
@@ -117,7 +115,7 @@ Ember.ControllerMixin.reopen({
         this.resource('blogComment', {path: ':blogCommentId'});
       });
     });
-    
+
     aController.replaceRoute('blogComment', aPost, aComment);
     aController.replaceRoute('blogComment', 1, 13);
     ```
@@ -157,89 +155,9 @@ Ember.ControllerMixin.reopen({
 
 if (Ember.FEATURES.isEnabled("query-params-new")) {
   Ember.ControllerMixin.reopen({
-
     concatenatedProperties: ['queryParams'],
-
     queryParams: null,
-
-    _queryParamScope: null,
-
     _finalizingQueryParams: false,
-    _queryParamHash: Ember.computed(function computeQueryParamHash() {
-
-      // Given: queryParams: ['foo', 'bar:baz'] on controller:thing
-      // _queryParamHash should yield: { 'foo': 'thing[foo]' }
-
-      var result = {};
-      var queryParams = this.queryParams;
-      if (!queryParams) {
-        return result;
-      }
-
-      for (var i = 0, len = queryParams.length; i < len; ++i) {
-        var full = queryParams[i];
-        var parts = full.split(':');
-        var key = parts[0];
-        var urlKey = parts[1];
-        if (!urlKey) {
-          if (this._queryParamScope) {
-            urlKey = this._queryParamScope + '[' + key + ']';
-          } else {
-            urlKey = key;
-          }
-        }
-        result[key] = urlKey;
-      }
-
-      return result;
-    }),
-
-    _activateQueryParamObservers: function() {
-      var queryParams = get(this, '_queryParamHash');
-
-      for (var k in queryParams) {
-        if (queryParams.hasOwnProperty(k)) {
-          this.addObserver(k, this, this._queryParamChanged);
-          this.addObserver(k + '.[]', this, this._queryParamChanged);
-        }
-      }
-    },
-
-    _deactivateQueryParamObservers: function() {
-      var queryParams = get(this, '_queryParamHash');
-
-      for (var k in queryParams) {
-        if (queryParams.hasOwnProperty(k)) {
-          this.removeObserver(k, this, this._queryParamChanged);
-          this.removeObserver(k + '.[]', this, this._queryParamChanged);
-        }
-      }
-    },
-
-    _queryParamChanged: function(controller, key) {
-      // Normalize array observer firings.
-      if (key.slice(key.length - 3) === '.[]') {
-        key = key.substr(0, key.length-3);
-      }
-
-      if (this._finalizingQueryParams) {
-        var changes = this._queryParamChangesDuringSuspension;
-        if (changes) {
-          changes[key] = true;
-        }
-        return;
-      }
-
-      var queryParams = get(this, '_queryParamHash');
-      queuedQueryParamChanges[queryParams[key]] = Ember.copy(get(this, key));
-      Ember.run.once(this, this._fireQueryParamTransition);
-    },
-
-    _fireQueryParamTransition: function() {
-      this.transitionToRoute({ queryParams: queuedQueryParamChanges });
-      queuedQueryParamChanges = {};
-    },
-
     _queryParamChangesDuringSuspension: null
   });
 }

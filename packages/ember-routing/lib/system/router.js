@@ -3,9 +3,8 @@
 @submodule ember-routing
 */
 
-var routerJsModule = requireModule("router");
-var Router = routerJsModule.Router;
-var Transition = routerJsModule.Transition;
+var Router = requireModule("router")['default'];
+var Transition = requireModule("router/transition").Transition;
 var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 var defineProperty = Ember.defineProperty;
 var slice = Array.prototype.slice;
@@ -44,6 +43,8 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     this.router = this.constructor.router || this.constructor.map(Ember.K);
     this._activeViews = {};
     this._setupLocation();
+    this._qpCache = {};
+    this._queuedQPChanges = {};
 
     if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
       this.router.log = Ember.Logger.debug;
@@ -335,23 +336,22 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
         args.unshift(name);
       }
 
-      var qpMappings = this._queryParamNamesFor(name);
+      var qpCache = this._queryParamsFor(name), qps = qpCache.qps;
 
-
-      Ember.Router._translateQueryParams(queryParams, qpMappings.translations, name);
-      var value;
+      var finalParams = {};
       for (var key in queryParams) {
-        var descopedParam = Ember.Router._descopeQueryParam(key);
-        if (key in qpMappings.queryParams) {
-          value = queryParams[key];
-          delete queryParams[key];
-          queryParams[qpMappings.queryParams[key]] = value;
-        } else if (descopedParam in qpMappings.validQueryParams) {
-          value = queryParams[key];
-          delete queryParams[key];
-          queryParams[descopedParam] = value;
+        if (!queryParams.hasOwnProperty(key)) { continue; }
+        var inputValue = queryParams[key],
+            qp = qpCache.map[key];
+
+        if (!qp) {
+          throw new Ember.Error("Unrecognized query param " + key + " provided as transition argument");
         }
+        finalParams[qp.urlKey] = qp.route.serializeQueryParam(inputValue, qp.urlKey, qp.type);
       }
+
+      // Perform any necessary serialization.
+      args[args.length-1].queryParams = finalParams;
     }
 
     var transitionPromise = this.router[method].apply(this.router, args);
@@ -366,6 +366,36 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     // so that callers of this function can use `.method()` on it,
     // which obviously doesn't exist for normal RSVP promises.
     return transitionPromise;
+  },
+
+  _queryParamsFor: function(leafRouteName) {
+    if (this._qpCache[leafRouteName]) {
+      return this._qpCache[leafRouteName];
+    }
+
+    var map = {}, qps = [], qpCache = this._qpCache[leafRouteName] = {
+      map: map,
+      qps: qps
+    };
+
+    var routerjs = this.router,
+        recogHandlerInfos = routerjs.recognizer.handlersFor(leafRouteName);
+
+    for (var i = 0, len = recogHandlerInfos.length; i < len; ++i) {
+      var recogHandler = recogHandlerInfos[i],
+          route = routerjs.getHandler(recogHandler.handler),
+          qpMeta = get(route, '_qp');
+
+      if (!qpMeta) { continue; }
+
+      Ember.merge(map, qpMeta.map);
+      qps.push.apply(qps, qpMeta.qps);
+    }
+
+    return {
+      qps: qps,
+      map: map
+    };
   },
 
   _scheduleLoadingEvent: function(transition, originRoute) {
@@ -388,109 +418,12 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
       Ember.run.cancel(this._loadingStateTimer);
     }
     this._loadingStateTimer = null;
-  },
-
-  _queryParamNamesFor: function(routeName) {
-
-    // TODO: add caching
-
-    var handlerInfos = this.router.recognizer.handlersFor(routeName);
-    var result = { queryParams: Ember.create(null), translations: Ember.create(null), validQueryParams: Ember.create(null) };
-    var routerjs = this.router;
-    forEach(handlerInfos, function(recogHandler) {
-      var route = routerjs.getHandler(recogHandler.handler);
-      getQueryParamsForRoute(route, result);
-    });
-
-    descopeQueryParams(result.queryParams);
-
-    for (var k in result.queryParams) {
-      result.validQueryParams[result.queryParams[k]] = true;
-    }
-    return result;
-  },
-
-  _queryParamNamesForSingle: function(routeName) {
-
-    // TODO: add caching
-
-    var result = { queryParams: Ember.create(null), translations: Ember.create(null) };
-    var route = this.router.getHandler(routeName);
-
-    getQueryParamsForRoute(route, result);
-
-    // Descope non duplicate params.
-    if (routeName !== 'application') {
-      var allParams = this._queryParamNamesFor(routeName);
-      for (var k in result.queryParams) {
-        result.queryParams[k] = allParams.queryParams[k];
-      }
-    }
-
-    return result;
-  },
-
-  /**
-    @private
-
-    Utility function for fetching all the current query params
-    values from a controller.
-   */
-  _queryParamOverrides: function(results, queryParams, callback) {
-    for (var name in queryParams) {
-      var parts = name.split(':');
-
-      var controller = controllerOrProtoFor(parts[0], this.container);
-      Ember.assert(fmt("Could not lookup controller '%@' while setting up query params", [controller]), controller);
-
-      // Now assign the final URL-serialized key-value pair,
-      // e.g. "foo[propName]": "value"
-      results[queryParams[name]] = get(controller, parts[1]);
-
-      if (callback) {
-        // Give callback a chance to override.
-        callback(name, queryParams[name], name);
-      }
-    }
   }
 });
 
-/**
-  @private
- */
-function getQueryParamsForRoute(route, result) {
-  var controllerName = route.controllerName || route.routeName,
-      controller = controllerOrProtoFor(controllerName, route.container),
-      queryParams = get(controller, 'queryParams');
-
-  if (queryParams) {
-    forEach(queryParams, function(propName) {
-
-      var parts = propName.split(':');
-
-      var urlKeyName;
-      if (parts.length > 1) {
-        urlKeyName = parts[1];
-      } else {
-        // TODO: use _queryParamScope here?
-        if (controllerName !== 'application') {
-          urlKeyName = controllerName + '[' + propName + ']';
-        } else {
-          urlKeyName = propName;
-        }
-      }
-
-      var controllerFullname = controllerName + ':' + propName;
-
-      result.queryParams[controllerFullname] = urlKeyName;
-      result.translations[parts[0]] = controllerFullname;
-    });
-  }
-}
-
-function controllerOrProtoFor(controllerName, container) {
+function controllerOrProtoFor(controllerName, container, getProto) {
   var fullName = container.normalize('controller:' + controllerName);
-  if (container.cache.has(fullName)) {
+  if (!getProto && container.cache.has(fullName)) {
     return container.lookup(fullName);
   } else {
     // Controller hasn't been instantiated yet; just return its proto.
@@ -499,32 +432,6 @@ function controllerOrProtoFor(controllerName, container) {
       return controllerClass.proto();
     } else {
       return {};
-    }
-  }
-}
-
-function descopeQueryParams(params) {
-  var paramCounts = {},
-      descopedParam,
-      k;
-
-  // Loop through params and count the occurance of descoped param
-  for (k in params) {
-    descopedParam = Ember.Router._descopeQueryParam(params[k]);
-
-    if (!paramCounts[descopedParam]) {
-      paramCounts[descopedParam] = 1;
-    } else {
-      paramCounts[descopedParam] = paramCounts[descopedParam] + 1;
-    }
-  }
-
-  // Loop through again descoping params if the descoped key only occurs once
-  for (k in params) {
-    descopedParam = Ember.Router._descopeQueryParam(params[k]);
-
-    if (paramCounts[descopedParam] === 1) {
-      params[k] = descopedParam;
     }
   }
 }
@@ -766,31 +673,5 @@ Ember.Router.reopenClass({
     }
 
     return path.join(".");
-  },
-
-  _translateQueryParams: function(queryParams, translations, routeName) {
-    for (var name in queryParams) {
-      if (!queryParams.hasOwnProperty(name)) { continue; }
-
-      if (name in translations) {
-        queryParams[translations[name]] = queryParams[name];
-        delete queryParams[name];
-      } else {
-        Ember.assert(fmt("You supplied an unknown query param controller property '%@' for route '%@'. Only the following query param properties can be set for this route: %@", [name, routeName, Ember.keys(translations)]), name in queryParams);
-      }
-    }
-  },
-
-  _descopeQueryParam: function(param) {
-    var regex = /\[(.+)\]/,
-        result = param.match(regex);
-
-    if (!result) {
-      result = param;
-    } else {
-      result = result[1];
-    }
-
-    return result;
   }
 });
