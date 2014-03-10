@@ -135,7 +135,8 @@ var packages = {
   'ember-debug': [],
   'ember-runtime': ['container', 'rsvp', 'ember-metal', 'ember-metal/~tests/ember-metal'],
   'ember-views': ['ember-runtime'],
-  'ember-extension-support': ['ember-application']
+  'ember-extension-support': ['ember-application'],
+  'ember-testing': ['ember-application', 'ember-routing']
 };
 
 

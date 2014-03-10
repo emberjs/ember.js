@@ -1,17 +1,30 @@
-var set = Ember.set, get = Ember.get, App, originalAdapter = Ember.Test.adapter;
+import Ember from "ember-metal/core";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import EmberObject from "ember-runtime/system/object";
+import {View as EmberView} from "ember-views/views/view";
+import jQuery from "ember-views/system/jquery";
+
+import Test from "ember-testing/test";
+import "ember-testing/helpers";  // ensure that the helpers are loaded
+import "ember-testing/initializers"; // ensure the initializer is setup
+import setupForTesting from "ember-testing/setup_for_testing";
+
+var App, originalAdapter = Test.adapter;
 
 function cleanup(){
-  Ember.Test.adapter = originalAdapter;
+  Test.adapter = originalAdapter;
 
   if (App) {
-    Ember.run(App, App.destroy);
+    run(App, App.destroy);
     App.removeTestHelpers();
     App = null;
   }
 
-  Ember.run(function(){
-    Ember.$(document).off('ajaxSend');
-    Ember.$(document).off('ajaxComplete');
+  run(function(){
+    jQuery(document).off('ajaxSend');
+    jQuery(document).off('ajaxComplete');
   });
 
   Ember.TEMPLATES = {};
@@ -80,7 +93,7 @@ module("ember-testing Helpers", {
 });
 
 test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
-  App = Ember.run(Ember.Application, Ember.Application.create);
+  App = run(Ember.Application, Ember.Application.create);
   assertNoHelpers(App);
 
   App.injectTestHelpers();
@@ -91,7 +104,7 @@ test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
 });
 
 test("Ember.Application#setupForTesting", function() {
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
   });
@@ -100,7 +113,7 @@ test("Ember.Application#setupForTesting", function() {
 });
 
 test("Ember.Application.setupForTesting sets the application to `testing`.", function(){
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
   });
@@ -109,7 +122,7 @@ test("Ember.Application.setupForTesting sets the application to `testing`.", fun
 });
 
 test("Ember.Application.setupForTesting leaves the system in a deferred state.", function(){
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
   });
@@ -118,7 +131,7 @@ test("Ember.Application.setupForTesting leaves the system in a deferred state.",
 });
 
 test("App.reset() after Application.setupForTesting leaves the system in a deferred state.", function(){
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
   });
@@ -132,7 +145,7 @@ test("App.reset() after Application.setupForTesting leaves the system in a defer
 test("`visit` advances readiness.", function(){
   expect(2);
 
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
     App.injectTestHelpers();
@@ -151,17 +164,17 @@ test("`wait` helper can be passed a resolution value", function() {
   var promise, wait;
 
   promise = new Ember.RSVP.Promise(function(resolve) {
-    Ember.run(null, resolve, 'promise');
+    run(null, resolve, 'promise');
   });
 
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
   });
 
   App.injectTestHelpers();
 
-  Ember.run(App, App.advanceReadiness);
+  run(App, App.advanceReadiness);
 
   wait = App.testHelpers.wait;
 
@@ -185,12 +198,12 @@ test("`click` triggers appropriate events in order", function() {
 
   var click, wait, events;
 
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
   });
 
-  App.IndexView = Ember.View.extend({
+  App.IndexView = EmberView.extend({
     classNames: 'index-view',
 
     didInsertElement: function() {
@@ -214,7 +227,7 @@ test("`click` triggers appropriate events in order", function() {
 
   App.injectTestHelpers();
 
-  Ember.run(App, App.advanceReadiness);
+  run(App, App.advanceReadiness);
 
   click = App.testHelpers.click;
   wait  = App.testHelpers.wait;
@@ -242,7 +255,7 @@ test("`click` triggers appropriate events in order", function() {
       'fires focus events on textareas');
   }).then(function() {
     // In IE (< 8), the change event only fires when the value changes before element focused.
-    Ember.$('.index-view input[type=checkbox]').focus();
+    jQuery('.index-view input[type=checkbox]').focus();
     events = [];
     return click('.index-view input[type=checkbox]');
   }).then(function() {
@@ -256,7 +269,7 @@ test("`click` triggers appropriate events in order", function() {
 test("Ember.Application#injectTestHelpers", function() {
   var documentEvents;
 
-  documentEvents = Ember.$._data(document, 'events');
+  documentEvents = jQuery._data(document, 'events');
 
   if (!documentEvents) {
     documentEvents = {};
@@ -265,11 +278,11 @@ test("Ember.Application#injectTestHelpers", function() {
   ok(documentEvents['ajaxSend'] === undefined, 'there are no ajaxSend listers setup prior to calling injectTestHelpers');
   ok(documentEvents['ajaxComplete'] === undefined, 'there are no ajaxComplete listers setup prior to calling injectTestHelpers');
 
-  Ember.run(function() {
-    Ember.setupForTesting();
+  run(function() {
+    setupForTesting();
   });
 
-  documentEvents = Ember.$._data(document, 'events');
+  documentEvents = jQuery._data(document, 'events');
 
   equal(documentEvents['ajaxSend'].length, 1, 'calling injectTestHelpers registers an ajaxSend handler');
   equal(documentEvents['ajaxComplete'].length, 1, 'calling injectTestHelpers registers an ajaxComplete handler');
@@ -278,11 +291,11 @@ test("Ember.Application#injectTestHelpers", function() {
 test("Ember.Application#injectTestHelpers calls callbacks registered with onInjectHelpers", function(){
   var injected = 0;
 
-  Ember.Test.onInjectHelpers(function(){
+  Test.onInjectHelpers(function(){
     injected++;
   });
 
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
   });
@@ -297,7 +310,7 @@ test("Ember.Application#injectTestHelpers calls callbacks registered with onInje
 test("Ember.Application#injectTestHelpers adds helpers to provided object.", function(){
   var helpers = {};
 
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
   });
@@ -312,7 +325,7 @@ test("Ember.Application#injectTestHelpers adds helpers to provided object.", fun
 test("Ember.Application#removeTestHelpers resets the helperContainer's original values", function(){
   var helpers = {visit: 'snazzleflabber'};
 
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
   });
@@ -333,20 +346,20 @@ test("`wait` respects registerWaiters", function() {
     return ++counter > 2;
   }
 
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
   });
 
   App.injectTestHelpers();
 
-  Ember.run(App, App.advanceReadiness);
-  Ember.Test.registerWaiter(waiter);
+  run(App, App.advanceReadiness);
+  Test.registerWaiter(waiter);
 
   App.testHelpers.wait().then(function() {
     equal(waiter(), true, 'should not resolve until our waiter is ready');
-    Ember.Test.unregisterWaiter(waiter);
-    equal(Ember.Test.waiters.length, 0, 'should not leave a waiter registered');
+    Test.unregisterWaiter(waiter);
+    equal(Test.waiters.length, 0, 'should not leave a waiter registered');
   });
 });
 
@@ -355,16 +368,16 @@ test("`wait` waits for outstanding timers", function() {
 
   var wait_done = false;
 
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
   });
 
   App.injectTestHelpers();
 
-  Ember.run(App, App.advanceReadiness);
+  run(App, App.advanceReadiness);
 
-  Ember.run.later(this, function() {
+  run.later(this, function() {
     wait_done = true;
   }, 500);
 
@@ -384,20 +397,20 @@ test("`wait` respects registerWaiters with optional context", function() {
     }
   };
 
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
   });
 
   App.injectTestHelpers();
 
-  Ember.run(App, App.advanceReadiness);
-  Ember.Test.registerWaiter(obj, obj.ready);
+  run(App, App.advanceReadiness);
+  Test.registerWaiter(obj, obj.ready);
 
   App.testHelpers.wait().then(function() {
     equal(obj.ready(), true, 'should not resolve until our waiter is ready');
-    Ember.Test.unregisterWaiter(obj, obj.ready);
-    equal(Ember.Test.waiters.length, 0, 'should not leave a waiter registered');
+    Test.unregisterWaiter(obj, obj.ready);
+    equal(Test.waiters.length, 0, 'should not leave a waiter registered');
   });
 
 
@@ -409,7 +422,7 @@ if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
     setup: function(){
       cleanup();
 
-      Ember.run(function() {
+      run(function() {
         App = Ember.Application.create();
         App.Router = Ember.Router.extend({
           location: 'none'
@@ -425,7 +438,7 @@ if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
       });
 
       App.injectTestHelpers();
-      Ember.run(App, 'advanceReadiness');
+      run(App, 'advanceReadiness');
     },
 
     teardown: function(){
@@ -469,7 +482,7 @@ module("ember-testing pendingAjaxRequests", {
   setup: function(){
     cleanup();
 
-    Ember.run(function() {
+    run(function() {
       App = Ember.Application.create();
       App.setupForTesting();
     });
@@ -481,31 +494,31 @@ module("ember-testing pendingAjaxRequests", {
 });
 
 test("pendingAjaxRequests is incremented on each document ajaxSend event", function() {
-  Ember.Test.pendingAjaxRequests = 0;
+  Test.pendingAjaxRequests = 0;
 
-  Ember.run(function(){
-    Ember.$(document).trigger('ajaxSend');
+  run(function(){
+    jQuery(document).trigger('ajaxSend');
   });
 
-  equal(Ember.Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
+  equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
 });
 
 test("pendingAjaxRequests is decremented on each document ajaxComplete event", function() {
-  Ember.Test.pendingAjaxRequests = 1;
+  Test.pendingAjaxRequests = 1;
 
-  Ember.run(function(){
-    Ember.$(document).trigger('ajaxComplete');
+  run(function(){
+    jQuery(document).trigger('ajaxComplete');
   });
 
-  equal(Ember.Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was decremented');
+  equal(Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was decremented');
 });
 
 test("it should raise an assertion error if ajaxComplete is called without pendingAjaxRequests", function() {
-  Ember.Test.pendingAjaxRequests = 0;
+  Test.pendingAjaxRequests = 0;
 
   expectAssertion(function() {
-    Ember.run(function(){
-      Ember.$(document).trigger('ajaxComplete');
+    run(function(){
+      jQuery(document).trigger('ajaxComplete');
     });
   });
 });
@@ -516,12 +529,12 @@ if (Ember.FEATURES.isEnabled("ember-testing-triggerEvent-helper")) {
 
     var triggerEvent, wait, event;
 
-    Ember.run(function() {
+    run(function() {
       App = Ember.Application.create();
       App.setupForTesting();
     });
 
-    App.IndexView = Ember.View.extend({
+    App.IndexView = EmberView.extend({
       template: Ember.Handlebars.compile('{{input type="text" id="foo"}}'),
 
       didInsertElement: function() {
@@ -533,7 +546,7 @@ if (Ember.FEATURES.isEnabled("ember-testing-triggerEvent-helper")) {
 
     App.injectTestHelpers();
 
-    Ember.run(App, App.advanceReadiness);
+    run(App, App.advanceReadiness);
 
     triggerEvent = App.testHelpers.triggerEvent;
     wait         = App.testHelpers.wait;
@@ -551,7 +564,7 @@ module("ember-testing async router", {
   setup: function(){
     cleanup();
 
-    Ember.run(function() {
+    run(function() {
       App = Ember.Application.create();
       App.Router = Ember.Router.extend({
         location: 'none'
@@ -583,14 +596,14 @@ module("ember-testing async router", {
       function resolveLater() {
         var promise;
 
-        Ember.run(function() {
+        run(function() {
           promise = new Ember.RSVP.Promise(function(resolve) {
             // The wait() helper has a 10ms tick. We should resolve() after at least one tick
             // to test whether wait() held off while the async router was still loading. 20ms
             // should be enough.
             setTimeout(function() {
-              Ember.run(function() {
-                resolve(Ember.Object.create({firstName: 'Tom'}));
+              run(function() {
+                resolve(EmberObject.create({firstName: 'Tom'}));
               });
             }, 20);
           });
@@ -603,7 +616,7 @@ module("ember-testing async router", {
     });
 
     App.injectTestHelpers();
-    Ember.run(App, 'advanceReadiness');
+    run(App, 'advanceReadiness');
   },
 
   teardown: function(){

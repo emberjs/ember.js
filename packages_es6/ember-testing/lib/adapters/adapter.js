@@ -1,11 +1,11 @@
-require('ember-testing/test');
+import Ember from "ember-metal/core"; // Ember.K
+import {inspect} from "ember-metal/utils";
+import EmberObject from "ember-runtime/system/object";
 
 /**
  @module ember
  @submodule ember-testing
 */
-
-var Test = Ember.Test;
 
 /**
   The primary purpose of this class is to create hooks that can be implemented
@@ -14,7 +14,7 @@ var Test = Ember.Test;
   @class Adapter
   @namespace Ember.Test
 */
-Test.Adapter = Ember.Object.extend({
+var Adapter = EmberObject.extend({
   /**
     This callback will be called whenever an async operation is about to start.
 
@@ -56,22 +56,4 @@ Test.Adapter = Ember.Object.extend({
   }
 });
 
-/**
-  This class implements the methods defined by Ember.Test.Adapter for the
-  QUnit testing framework.
-
-  @class QUnitAdapter
-  @namespace Ember.Test
-  @extends Ember.Test.Adapter
-*/
-Test.QUnitAdapter = Test.Adapter.extend({
-  asyncStart: function() {
-    stop();
-  },
-  asyncEnd: function() {
-    start();
-  },
-  exception: function(error) {
-    ok(false, Ember.inspect(error));
-  }
-});
+export default Adapter;

@@ -1,24 +1,27 @@
+import run from "ember-metal/run_loop";
+import Test from "ember-testing/test";
+
 var App, appBooted, helperContainer;
 
 function registerHelper(){
-  Ember.Test.registerHelper('boot', function(app) {
-    Ember.run(app, app.advanceReadiness);
+  Test.registerHelper('boot', function(app) {
+    run(app, app.advanceReadiness);
     appBooted = true;
     return app.testHelpers.wait();
   });
 }
 
 function unregisterHelper(){
-  Ember.Test.unregisterHelper('boot');
+  Test.unregisterHelper('boot');
 }
 
-var originalAdapter = Ember.Test.adapter;
+var originalAdapter = Test.adapter;
 
 function setupApp(){
   appBooted = false;
   helperContainer = {};
 
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
     App.injectTestHelpers(helperContainer);
@@ -27,14 +30,14 @@ function setupApp(){
 
 function destroyApp(){
   if (App) {
-    Ember.run(App, 'destroy');
+    run(App, 'destroy');
     App = null;
   }
 }
 
-module("Ember.Test - registerHelper/unregisterHelper", {
+module("Test - registerHelper/unregisterHelper", {
   teardown: function(){
-    Ember.Test.adapter = originalAdapter;
+    Test.adapter = originalAdapter;
     destroyApp();
   }
 });

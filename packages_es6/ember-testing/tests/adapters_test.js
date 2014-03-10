@@ -1,15 +1,20 @@
+import run from "ember-metal/run_loop";
+import Test from "ember-testing/test";
+import Adapter from "ember-testing/adapters/adapter";
+import QUnitAdapter from "ember-testing/adapters/qunit";
+
 var App, originalAdapter;
 
 module("ember-testing Adapters", {
   setup: function() {
-    originalAdapter = Ember.Test.adapter;
+    originalAdapter = Test.adapter;
   },
   teardown: function() {
-    Ember.run(App, App.destroy);
+    run(App, App.destroy);
     App.removeTestHelpers();
     App = null;
 
-    Ember.Test.adapter = originalAdapter;
+    Test.adapter = originalAdapter;
   }
 });
 
@@ -17,30 +22,30 @@ test("Setting a test adapter manually", function() {
   expect(1);
   var CustomAdapter;
 
-  CustomAdapter = Ember.Test.Adapter.extend({
+  CustomAdapter = Adapter.extend({
     asyncStart: function() {
       ok(true, "Correct adapter was used");
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
-    Ember.Test.adapter = CustomAdapter.create();
+    Test.adapter = CustomAdapter.create();
     App.setupForTesting();
   });
 
-  Ember.Test.adapter.asyncStart();
+  Test.adapter.asyncStart();
 });
 
 test("QUnitAdapter is used by default", function() {
   expect(1);
 
-  Ember.Test.adapter = null;
+  Test.adapter = null;
 
-  Ember.run(function() {
+  run(function() {
     App = Ember.Application.create();
     App.setupForTesting();
   });
 
-  ok(Ember.Test.adapter instanceof Ember.Test.QUnitAdapter);
+  ok(Test.adapter instanceof QUnitAdapter);
 });
