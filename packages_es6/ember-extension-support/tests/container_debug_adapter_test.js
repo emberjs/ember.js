@@ -1,26 +1,31 @@
-var adapter, App, get = Ember.get,
-    set = Ember.set, Model = Ember.Object.extend();
+import Ember from "ember-metal/core";
+import run from "ember-metal/run_loop";
+import EmberObject from "ember-runtime/system/object";
+import {Controller as EmberController} from "ember-runtime/controllers/controller";
+import "ember-extension-support"; // Must be required to export Ember.ContainerDebugAdapter
+
+var adapter, App, Model = EmberObject.extend();
 
 
 function boot() {
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 }
 
 module("Container Debug Adapter", {
   setup:function() {
-    Ember.run(function() {
-      App = Ember.Application.create();
+    run(function() {
+      App = Ember.Application.create();  // ES6TODO: this comes from the ember-application package NOT ember-runtime
       App.toString = function() { return 'App'; };
       App.deferReadiness();
 
     });
     boot();
-    Ember.run(function() {
+    run(function() {
       adapter = App.__container__.lookup('container-debug-adapter:main');
     });
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       adapter.destroy();
       App.destroy();
       App = null;
@@ -40,7 +45,7 @@ test("the default ContainerDebugAdapter can catalog typical entries by type", fu
 });
 
 test("the default ContainerDebugAdapter catalogs controller entries", function(){
-  App.PostController = Ember.Controller.extend();
+  App.PostController = EmberController.extend();
   var controllerClasses = adapter.catalogEntriesByType('controller');
 
   equal(controllerClasses.length, 1, "found 1 class");

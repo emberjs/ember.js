@@ -1,9 +1,14 @@
+import Ember from "ember-metal/core";
+import {get} from "ember-metal/property_get";
+import run from "ember-metal/run_loop";
+import EmberStringUtils from "ember-runtime/system/string";
+import Namespace from "ember-runtime/system/namespace";
+import EmberObject from "ember-runtime/system/object";
+
 /**
 @module ember
 @submodule ember-extension-support
 */
-
-require('ember-application');
 
 /**
   The `DataAdapter` helps a data persistence library
@@ -44,9 +49,9 @@ require('ember-application');
 
   @class DataAdapter
   @namespace Ember
-  @extends Ember.Object
+  @extends EmberObject
 */
-Ember.DataAdapter = Ember.Object.extend({
+var DataAdapter = EmberObject.extend({
   init: function() {
     this._super();
     this.releaseMethods = Ember.A();
@@ -269,7 +274,7 @@ Ember.DataAdapter = Ember.Object.extend({
     };
     var observer = {
       didChange: function() {
-        Ember.run.scheduleOnce('actions', this, onChange);
+        run.scheduleOnce('actions', this, onChange);
       },
       willChange: Ember.K
     };
@@ -307,7 +312,7 @@ Ember.DataAdapter = Ember.Object.extend({
 
     typeToSend = {
       name: name || type.toString(),
-      count: Ember.get(records, 'length'),
+      count: get(records, 'length'),
       columns: this.columnsForType(type),
       object: type
     };
@@ -353,12 +358,12 @@ Ember.DataAdapter = Ember.Object.extend({
     @return {Array} Array of model type strings
   */
   _getObjectsOnNamespaces: function() {
-    var namespaces = Ember.A(Ember.Namespace.NAMESPACES), types = Ember.A();
+    var namespaces = Ember.A(Namespace.NAMESPACES), types = Ember.A();
 
     namespaces.forEach(function(namespace) {
       for (var key in namespace) {
         if (!namespace.hasOwnProperty(key)) { continue; }
-        var name = Ember.String.dasherize(key);
+        var name = EmberStringUtils.dasherize(key);
         if (!(namespace instanceof Ember.Application) && namespace.toString()) {
           name = namespace + '/' + name;
         }
@@ -466,3 +471,4 @@ Ember.DataAdapter = Ember.Object.extend({
 
 });
 
+export default DataAdapter;
