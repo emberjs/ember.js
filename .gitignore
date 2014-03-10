@@ -3,6 +3,7 @@ packages/ember-metal
 packages/ember-runtime
 packages/ember-debug
 packages/ember-views
+packages/ember-extension-support
 *.bpkg
 *.gem
 *.rbc

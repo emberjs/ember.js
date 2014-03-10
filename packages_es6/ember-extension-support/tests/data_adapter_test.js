@@ -1,7 +1,15 @@
-var adapter, App, get = Ember.get,
-    set = Ember.set, Model = Ember.Object.extend();
+import Ember from "ember-metal/core";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import {addObserver, removeObserver} from "ember-metal/observer";
+import EmberObject from "ember-runtime/system/object";
+import {Controller as EmberController} from "ember-runtime/controllers/controller";
+import EmberDataAdapter from "ember-extension-support/data_adapter";
 
-var DataAdapter = Ember.DataAdapter.extend({
+var adapter, App, Model = EmberObject.extend();
+
+var DataAdapter = EmberDataAdapter.extend({
   detect: function(klass) {
     return klass !== Model && Model.detect(klass);
   }
@@ -9,15 +17,15 @@ var DataAdapter = Ember.DataAdapter.extend({
 
 module("Data Adapter", {
   setup:function() {
-    Ember.run(function() {
-      App = Ember.Application.create();
+    run(function() {
+      App = Ember.Application.create();  // ES6TODO: this comes from the ember-application package NOT ember-runtime
       App.toString = function() { return 'App'; };
       App.deferReadiness();
       App.__container__.register('data-adapter:main', DataAdapter);
     });
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       adapter.destroy();
       App.destroy();
     });
@@ -37,7 +45,7 @@ test("Model types added with DefaultResolver", function() {
     }
   });
 
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 
   var modelTypesAdded = function(types) {
 
@@ -50,7 +58,6 @@ test("Model types added with DefaultResolver", function() {
   };
 
   adapter.watchModelTypes(modelTypesAdded);
-
 });
 
 test("Model types added with custom container-debug-adapter", function() {
@@ -75,7 +82,7 @@ test("Model types added with custom container-debug-adapter", function() {
     }
   });
 
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 
   var modelTypesAdded = function(types) {
 
@@ -102,10 +109,10 @@ test("Model Types Updated", function() {
     }
   });
 
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
 
   var modelTypesAdded = function() {
-    Ember.run(function() {
+    run(function() {
       records.pushObject(4);
     });
   };
@@ -176,9 +183,9 @@ test("Observes and releases a record correctly", function() {
       var callback = function() {
         recordUpdated(self.wrapRecord(record));
       };
-      Ember.addObserver(record, 'title', callback);
+      addObserver(record, 'title', callback);
       return function() {
-        Ember.removeObserver(record, 'title', callback);
+        removeObserver(record, 'title', callback);
       };
     },
     getRecordColumnValues: function(record) {

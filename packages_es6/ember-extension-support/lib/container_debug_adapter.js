@@ -1,9 +1,13 @@
+import Ember from "ember-metal/core";
+import {typeOf} from "ember-metal/utils";
+import EmberStringUtils from "ember-runtime/system/string";
+import Namespace from "ember-runtime/system/namespace";
+import EmberObject from "ember-runtime/system/object";
+
 /**
 @module ember
 @submodule ember-extension-support
 */
-
-require('ember-application');
 
 /**
   The `ContainerDebugAdapter` helps the container and resolver interface
@@ -36,9 +40,9 @@ require('ember-application');
 
   @class ContainerDebugAdapter
   @namespace Ember
-  @extends Ember.Object
+  @extends EmberObject
 */
-Ember.ContainerDebugAdapter = Ember.Object.extend({
+var ContainerDebugAdapter = EmberObject.extend({
   /**
     The container of the application being debugged.
     This property will be injected
@@ -80,8 +84,8 @@ Ember.ContainerDebugAdapter = Ember.Object.extend({
     @return {Array} An array of strings.
   */
   catalogEntriesByType: function(type) {
-    var namespaces = Ember.A(Ember.Namespace.NAMESPACES), types = Ember.A(), self = this;
-    var typeSuffixRegex = new RegExp(Ember.String.classify(type) + "$");
+    var namespaces = Ember.A(Namespace.NAMESPACES), types = Ember.A(), self = this;
+    var typeSuffixRegex = new RegExp(EmberStringUtils.classify(type) + "$");
 
     namespaces.forEach(function(namespace) {
       if (namespace !== Ember) {
@@ -89,8 +93,8 @@ Ember.ContainerDebugAdapter = Ember.Object.extend({
           if (!namespace.hasOwnProperty(key)) { continue; }
           if (typeSuffixRegex.test(key)) {
             var klass = namespace[key];
-            if (Ember.typeOf(klass) === 'class') {
-              types.push(Ember.String.dasherize(key.replace(typeSuffixRegex, '')));
+            if (typeOf(klass) === 'class') {
+              types.push(EmberStringUtils.dasherize(key.replace(typeSuffixRegex, '')));
             }
           }
         }
@@ -100,3 +104,4 @@ Ember.ContainerDebugAdapter = Ember.Object.extend({
   }
 });
 
+export default ContainerDebugAdapter;
