@@ -359,6 +359,8 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     transitionPromise.then(null, function(error) {
       if (error && error.name === "UnrecognizedURLError") {
         Ember.assert("The URL '" + error.message + "' did not match any routes in your application");
+      } else {
+        Ember.Logger.error("Problem transitioning: ", error.stack);
       }
     }, 'Ember: Check for Router unrecognized URL error');
 
