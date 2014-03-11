@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### Ember 1.5.0-beta.4 (March 10, 2014)
+
+* Allow Ember Inspector to access models with custom resolver.
+* [BUGFIX] Allow components with layoutName specified by parent class to specify templateName.
+* [BUGFIX] Don't raise error when a destroyed array is assigned to ArrayProxy.
+* [BUGFIX] Use better ajax events for ember-testing counters.
+* [BUGFIX] Move AJAX listeners into Ember.setupForTesting.
+
 ### Ember 1.5.0-beta.3 (March 1, 2014)
 
 * [BUGFIX] PromiseProxyMixin reset isFulfilled and isRejected.
