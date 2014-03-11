@@ -1,6 +1,7 @@
 /* globals XMLSerializer */
 
 import Ember from 'ember-metal/core'; // Ember.assert
+import jQuery from 'ember-views/system/jquery';
 
 /**
 @module ember
@@ -82,25 +83,44 @@ var setInnerHTMLWithoutFix = function(element, html) {
 
 /* END METAMORPH HELPERS */
 
+function setInnerHTMLTestFactory(tagName, childTagName, ChildConstructor) {
+  return function() {
+    var el = document.createElement(tagName);
+    setInnerHTMLWithoutFix(el, '<' + childTagName + '>Content</' + childTagName + '>');
+    return el.firstChild instanceof ChildConstructor;
+  };
+}
 
-var innerHTMLTags = {};
-var canSetInnerHTML = function(tagName) {
-  if (innerHTMLTags[tagName] !== undefined) {
-    return innerHTMLTags[tagName];
-  }
 
-  var canSet = true;
-
+var innerHTMLTags = {
   // IE 8 and earlier don't allow us to do innerHTML on select
-  if (tagName.toLowerCase() === 'select') {
+  select: function() {
     var el = document.createElement('select');
     setInnerHTMLWithoutFix(el, '<option value="test">Test</option>');
-    canSet = el.options.length === 1;
+    return el.options.length === 1;
+  },
+
+  // IE 9 and earlier don't allow us to set innerHTML on col, colgroup, frameset,
+  // html, style, table, tbody, tfoot, thead, title, tr.
+  col:      setInnerHTMLTestFactory('col',      'span',  window.HTMLSpanElement),
+  colgroup: setInnerHTMLTestFactory('colgroup', 'col',   window.HTMLTableColElement),
+  frameset: setInnerHTMLTestFactory('frameset', 'frame', window.HTMLFrameElement),
+  table:    setInnerHTMLTestFactory('table',    'tbody', window.HTMLTableSectionElement),
+  tbody:    setInnerHTMLTestFactory('tbody',    'tr',    window.HTMLTableRowElement),
+  tfoot:    setInnerHTMLTestFactory('tfoot',    'tr',    window.HTMLTableRowElement),
+  thead:    setInnerHTMLTestFactory('thead',    'tr',    window.HTMLTableRowElement),
+  tr:       setInnerHTMLTestFactory('tr',       'td',    window.HTMLTableCellElement)
+};
+
+var canSetInnerHTML = function(tagName) {
+  tagName = tagName.toLowerCase();
+  var canSet = innerHTMLTags[tagName];
+
+  if (typeof canSet === 'function') {
+    canSet = innerHTMLTags[tagName] = canSet();
   }
 
-  innerHTMLTags[tagName] = canSet;
-
-  return canSet;
+  return canSet === undefined ? true : canSet;
 };
 
 export function setInnerHTML(element, html) {
@@ -117,7 +137,7 @@ export function setInnerHTML(element, html) {
         endTag = '</'+tagName+'>';
 
     var wrapper = document.createElement('div');
-    setInnerHTMLWithoutFix(wrapper, startTag + html + endTag);
+    jQuery(startTag + html + endTag).appendTo(wrapper);
     element = wrapper.firstChild;
     while (element.tagName !== tagName) {
       element = element.nextSibling;
