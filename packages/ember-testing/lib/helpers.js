@@ -58,7 +58,7 @@ function click(app, selector, context) {
         if (!document.hasFocus || document.hasFocus()) {
           this.focus();
         } else {
-          this.trigger('focusin');
+          this.trigger('focus');
         }
       });
     }
