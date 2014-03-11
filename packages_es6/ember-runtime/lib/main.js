@@ -30,8 +30,8 @@ import Deferred from "ember-runtime/system/deferred";
 import {onLoad, runLoadHooks} from "ember-runtime/system/lazy_load";
 
 import EmberArray from "ember-runtime/mixins/array";
-import {Comparable} from "ember-runtime/mixins/comparable";
-import {Copyable} from "ember-runtime/mixins/copyable";
+import Comparable from "ember-runtime/mixins/comparable";
+import Copyable from "ember-runtime/mixins/copyable";
 import Enumerable from "ember-runtime/mixins/enumerable";
 import {Freezable, FROZEN_ERROR} from "ember-runtime/mixins/freezable";
 import Observable from "ember-runtime/mixins/observable";
