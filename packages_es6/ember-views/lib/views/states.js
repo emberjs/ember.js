@@ -1,7 +1,5 @@
-import Ember from "ember-metal/core"; // Ember.merge
 import {create} from "ember-metal/platform";
-var merge = Ember.merge;
-
+import merge from "ember-metal/merge";
 import _default from "ember-views/views/states/default";
 import preRender from "ember-views/views/states/pre_render";
 import inBuffer from "ember-views/views/states/in_buffer";

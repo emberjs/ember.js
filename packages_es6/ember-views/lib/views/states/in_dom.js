@@ -1,10 +1,9 @@
-import Ember from "ember-metal/core"; // Ember.merge, Ember.create, Ember.$, Ember.assert
+import Ember from "ember-metal/core"; // Ember.assert
 import {create} from "ember-metal/platform";
+import merge from "ember-metal/merge";
 import EmberError from "ember-metal/error";
 
 import hasElement from "ember-views/views/states/has_element";
-
-var merge = Ember.merge;
 /**
 @module ember
 @submodule ember-views
