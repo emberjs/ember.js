@@ -1,9 +1,17 @@
-var App, find, visit, originalAdapter = Ember.Test.adapter;
+import Ember from "ember-metal/core";
+import run from "ember-metal/run_loop";
+import EmberObject from "ember-runtime/system/object";
+import ArrayController from "ember-runtime/controllers/array_controller";
+import jQuery from "ember-views/system/jquery";
+import {View as EmberView} from "ember-views/views/view";
+import Test from "ember-testing/test";
+
+var App, find, visit, originalAdapter = Test.adapter;
 
 module("ember-testing Integration", {
   setup: function() {
-    Ember.$('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
-    Ember.run(function() {
+    jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
+    run(function() {
       App = Ember.Application.create({
         rootElement: '#ember-testing'
       });
@@ -18,13 +26,13 @@ module("ember-testing Integration", {
         }
       });
 
-      App.PeopleView = Ember.View.extend({
+      App.PeopleView = EmberView.extend({
         defaultTemplate: Ember.Handlebars.compile("{{#each person in controller}}<div class=\"name\">{{person.firstName}}</div>{{/each}}")
       });
 
-      App.PeopleController = Ember.ArrayController.extend({});
+      App.PeopleController = ArrayController.extend({});
 
-      App.Person = Ember.Object.extend({
+      App.Person = EmberObject.extend({
         firstName: ''
       });
 
@@ -34,14 +42,14 @@ module("ember-testing Integration", {
         }
       });
 
-      App.ApplicationView = Ember.View.extend({
+      App.ApplicationView = EmberView.extend({
         defaultTemplate: Ember.Handlebars.compile("{{outlet}}")
       });
 
       App.setupForTesting();
     });
 
-    Ember.run(function() {
+    run(function() {
       App.reset();
     });
 
@@ -53,10 +61,10 @@ module("ember-testing Integration", {
 
   teardown: function() {
     App.removeTestHelpers();
-    Ember.$('#ember-testing-container, #ember-testing').remove();
-    Ember.run(App, App.destroy);
+    jQuery('#ember-testing-container, #ember-testing').remove();
+    run(App, App.destroy);
     App = null;
-    Ember.Test.adapter = originalAdapter;
+    Test.adapter = originalAdapter;
   }
 });
 
@@ -64,7 +72,7 @@ test("template is bound to empty array of people", function() {
   App.Person.find = function() {
     return Ember.A();
   };
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
   visit("/").then(function() {
     var rows = find(".name").length;
     equal(rows, 0, "successfully stubbed an empty array of people");
@@ -76,11 +84,11 @@ test("template is bound to array of 2 people", function() {
     var people = Ember.A();
     var first = App.Person.create({firstName: "x"});
     var last = App.Person.create({firstName: "y"});
-    Ember.run(people, people.pushObject, first);
-    Ember.run(people, people.pushObject, last);
+    run(people, people.pushObject, first);
+    run(people, people.pushObject, last);
     return people;
   };
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
   visit("/").then(function() {
     var rows = find(".name").length;
     equal(rows, 2, "successfully stubbed a non empty array of people");
@@ -91,7 +99,7 @@ test("template is again bound to empty array of people", function() {
   App.Person.find = function() {
     return Ember.A();
   };
-  Ember.run(App, 'advanceReadiness');
+  run(App, 'advanceReadiness');
   visit("/").then(function() {
     var rows = find(".name").length;
     equal(rows, 0, "successfully stubbed another empty array of people");

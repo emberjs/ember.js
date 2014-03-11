@@ -1,3 +1,9 @@
+import Ember from "ember-metal/core";
+import run from "ember-metal/run_loop";
+import {create} from "ember-metal/platform";
+import compare from "ember-runtime/compare";
+import setupForTesting from "ember-testing/setup_for_testing";
+
 /**
   @module ember
   @submodule ember-testing
@@ -17,7 +23,7 @@ var slice = [].slice,
   @class Test
   @namespace Ember
 */
-Ember.Test = {
+var Test = {
 
   /**
     `registerHelper` is used to register a test helper that will be injected
@@ -117,7 +123,7 @@ Ember.Test = {
   */
   unregisterHelper: function(name) {
     delete helpers[name];
-    delete Ember.Test.Promise.prototype[name];
+    delete Test.Promise.prototype[name];
   },
 
   /**
@@ -160,7 +166,7 @@ Ember.Test = {
     @param {Function} resolver The function used to resolve the promise.
   */
   promise: function(resolver) {
-    return new Ember.Test.Promise(resolver);
+    return new Test.Promise(resolver);
   },
 
   /**
@@ -194,7 +200,7 @@ Ember.Test = {
     @param {Mixed} The value to resolve
   */
   resolve: function(val) {
-    return Ember.Test.promise(function(resolve) {
+    return Test.promise(function(resolve) {
       return resolve(val);
     });
   },
@@ -253,7 +259,7 @@ Ember.Test = {
     }
     pair = [context, callback];
     this.waiters = Ember.A(this.waiters.filter(function(elt) {
-      return Ember.compare(elt, pair)!==0;
+      return compare(elt, pair)!==0;
     }));
   }
 };
@@ -264,7 +270,7 @@ function helper(app, name) {
 
   return function() {
     var args = slice.call(arguments),
-        lastPromise = Ember.Test.lastPromise;
+        lastPromise = Test.lastPromise;
 
     args.unshift(app);
 
@@ -282,7 +288,7 @@ function helper(app, name) {
       // wait for last helper's promise to resolve
       // and then execute
       run(function() {
-        lastPromise = Ember.Test.resolve(lastPromise).then(function() {
+        lastPromise = Test.resolve(lastPromise).then(function() {
           return fn.apply(app, args);
         });
       });
@@ -293,8 +299,8 @@ function helper(app, name) {
 }
 
 function run(fn) {
-  if (!Ember.run.currentRunLoop) {
-    Ember.run(fn);
+  if (!run.currentRunLoop) {
+    run(fn);
   } else {
     fn();
   }
@@ -355,7 +361,7 @@ Ember.Application.reopen({
     @method setupForTesting
   */
   setupForTesting: function() {
-    Ember.setupForTesting();
+    setupForTesting();
 
     this.testing = true;
 
@@ -398,7 +404,7 @@ Ember.Application.reopen({
     for (var name in helpers) {
       this.originalMethods[name] = this.helperContainer[name];
       this.testHelpers[name] = this.helperContainer[name] = helper(this, name);
-      protoWrap(Ember.Test.Promise.prototype, name, helper(this, name), helpers[name].meta.wait);
+      protoWrap(Test.Promise.prototype, name, helper(this, name), helpers[name].meta.wait);
     }
 
     for(var i = 0, l = injectHelpersCallbacks.length; i < l; i++) {
@@ -444,18 +450,18 @@ function protoWrap(proto, name, callback, isAsync) {
   };
 }
 
-Ember.Test.Promise = function() {
+Test.Promise = function() {
   Ember.RSVP.Promise.apply(this, arguments);
-  Ember.Test.lastPromise = this;
+  Test.lastPromise = this;
 };
 
-Ember.Test.Promise.prototype = Ember.create(Ember.RSVP.Promise.prototype);
-Ember.Test.Promise.prototype.constructor = Ember.Test.Promise;
+Test.Promise.prototype = create(Ember.RSVP.Promise.prototype);
+Test.Promise.prototype.constructor = Test.Promise;
 
 // Patch `then` to isolate async methods
 // specifically `Ember.Test.lastPromise`
 var originalThen = Ember.RSVP.Promise.prototype.then;
-Ember.Test.Promise.prototype.then = function(onSuccess, onFailure) {
+Test.Promise.prototype.then = function(onSuccess, onFailure) {
   return originalThen.call(this, function(val) {
     return isolate(onSuccess, val);
   }, onFailure);
@@ -472,23 +478,25 @@ function isolate(fn, val) {
   var value, lastPromise;
 
   // Reset lastPromise for nested helpers
-  Ember.Test.lastPromise = null;
+  Test.lastPromise = null;
 
   value = fn(val);
 
-  lastPromise = Ember.Test.lastPromise;
+  lastPromise = Test.lastPromise;
 
   // If the method returned a promise
   // return that promise. If not,
   // return the last async helper's promise
-  if ((value && (value instanceof Ember.Test.Promise)) || !lastPromise) {
+  if ((value && (value instanceof Test.Promise)) || !lastPromise) {
     return value;
   } else {
     run(function() {
-      lastPromise = Ember.Test.resolve(lastPromise).then(function() {
+      lastPromise = Test.resolve(lastPromise).then(function() {
         return value;
       });
     });
     return lastPromise;
   }
 }
+
+export default Test;

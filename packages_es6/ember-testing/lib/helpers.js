@@ -1,13 +1,15 @@
-require('ember-testing/test');
+import {get} from "ember-metal/property_get";
+import EmberError from "ember-metal/error";
+import run from "ember-metal/run_loop";
+import jQuery from "ember-views/system/jquery";
+import Test from "ember-testing/test";
 
 /**
 * @module ember
 * @submodule ember-testing
 */
 
-var get = Ember.get,
-    Test = Ember.Test,
-    helper = Test.registerHelper,
+var helper = Test.registerHelper,
     asyncHelper = Test.registerAsyncHelper,
     countAsync = 0;
 
@@ -35,10 +37,10 @@ function visit(app, url) {
 
   if (app._readinessDeferrals > 0) {
     router['initialURL'] = url;
-    Ember.run(app, 'advanceReadiness');
+    run(app, 'advanceReadiness');
     delete router['initialURL'];
   } else {
-    Ember.run(app, app.handleURL, url);
+    run(app, app.handleURL, url);
   }
 
   return wait(app);
@@ -46,12 +48,12 @@ function visit(app, url) {
 
 function click(app, selector, context) {
   var $el = findWithAssert(app, selector, context);
-  Ember.run($el, 'mousedown');
+  run($el, 'mousedown');
 
   if ($el.is(':input')) {
     var type = $el.prop('type');
     if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
-      Ember.run($el, function(){
+      run($el, function(){
         // Firefox does not trigger the `focusin` event if the window
         // does not have focus. If the document doesn't have focus just
         // use trigger('focusin') instead.
@@ -64,8 +66,8 @@ function click(app, selector, context) {
     }
   }
 
-  Ember.run($el, 'mouseup');
-  Ember.run($el, 'click');
+  run($el, 'mouseup');
+  run($el, 'click');
 
   return wait(app);
 }
@@ -82,9 +84,9 @@ function triggerEvent(app, selector, context, type, options){
 
   var $el = findWithAssert(app, selector, context);
 
-  var event = Ember.$.Event(type, options);
+  var event = jQuery.Event(type, options);
 
-  Ember.run($el, 'trigger', event);
+  run($el, 'trigger', event);
 
   return wait(app);
 }
@@ -106,7 +108,7 @@ function fillIn(app, selector, context, text) {
     context = null;
   }
   $el = findWithAssert(app, selector, context);
-  Ember.run(function() {
+  run(function() {
     $el.val(text).change();
   });
   return wait(app);
@@ -115,7 +117,7 @@ function fillIn(app, selector, context, text) {
 function findWithAssert(app, selector, context) {
   var $el = find(app, selector, context);
   if ($el.length === 0) {
-    throw new Ember.Error("Element " + selector + " not found.");
+    throw new EmberError("Element " + selector + " not found.");
   }
   return $el;
 }
@@ -149,7 +151,7 @@ function wait(app, value) {
       if (Test.pendingAjaxRequests) { return; }
 
       // 3. If there are scheduled timers or we are inside of a run loop, keep polling
-      if (Ember.run.hasScheduledTimers() || Ember.run.currentRunLoop) { return; }
+      if (run.hasScheduledTimers() || run.currentRunLoop) { return; }
       if (Test.waiters && Test.waiters.any(function(waiter) {
         var context = waiter[0];
         var callback = waiter[1];
@@ -164,7 +166,7 @@ function wait(app, value) {
       }
 
       // Synchronously resolve the promise
-      Ember.run(null, resolve, value);
+      run(null, resolve, value);
     }, 10);
   });
 

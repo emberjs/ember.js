@@ -1,9 +1,12 @@
+import Ember from "ember-metal/core";
+import jQuery from "ember-views/system/jquery";
+
 /**
   @module ember
   @submodule ember-testing
  */
 
-var $ = Ember.$;
+var $ = jQuery;
 
 /**
   This method creates a checkbox and triggers the click event to fire the

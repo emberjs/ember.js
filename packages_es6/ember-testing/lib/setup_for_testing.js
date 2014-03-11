@@ -1,6 +1,8 @@
-require('ember-testing/test');
+import Ember from "ember-metal/core";
+// import Test from "ember-testing/test";  // ES6TODO: fix when cycles are supported
+import QUnitAdapter from "ember-testing/adapters/qunit";
 
-var Test = Ember.Test;
+var Test;
 
 /**
   Sets Ember up for testing. This is useful to perform
@@ -12,12 +14,14 @@ var Test = Ember.Test;
   @method setupForTesting
   @namespace Ember
 */
-Ember.setupForTesting = function() {
+function setupForTesting() {
+  if (!Test) { Test = requireModule('ember-testing/test')['default']; }
+
   Ember.testing = true;
 
   // if adapter is not manually set default to QUnit
-  if (!Ember.Test.adapter) {
-    Ember.Test.adapter = Ember.Test.QUnitAdapter.create();
+  if (!Test.adapter) {
+    Test.adapter = QUnitAdapter.create();
   }
 
   Test.pendingAjaxRequests = 0;
@@ -34,3 +38,5 @@ Ember.setupForTesting = function() {
     Test.pendingAjaxRequests--;
   });
 };
+
+export default setupForTesting;

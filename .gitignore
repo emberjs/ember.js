@@ -4,6 +4,7 @@ packages/ember-runtime
 packages/ember-debug
 packages/ember-views
 packages/ember-extension-support
+packages/ember-testing
 *.bpkg
 *.gem
 *.rbc

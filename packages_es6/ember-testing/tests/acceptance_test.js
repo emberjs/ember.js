@@ -1,10 +1,17 @@
+import run from "ember-metal/run_loop";
+import jQuery from "ember-views/system/jquery";
+import Test from "ember-testing/test";
+import QUnitAdapter from "ember-testing/adapters/qunit";
+import {View as EmberView} from "ember-views/views/view";
+import "ember-testing/initializers"; // ensure the initializer is setup
+
 var App, find, click, fillIn, currentRoute, visit, originalAdapter, andThen, indexHitCount;
 
 module("ember-testing Acceptance", {
   setup: function() {
-    Ember.$('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
-    Ember.$('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
-    Ember.run(function() {
+    jQuery('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
+    jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
+    run(function() {
       indexHitCount = 0;
 
       App = Ember.Application.create({
@@ -31,7 +38,7 @@ module("ember-testing Acceptance", {
         }
       });
 
-      App.PostsView = Ember.View.extend({
+      App.PostsView = EmberView.extend({
         defaultTemplate: Ember.Handlebars.compile("<a class=\"dummy-link\"></a><div id=\"comments-link\">{{#link-to 'comments'}}Comments{{/link-to}}</div>"),
         classNames: ['posts-view']
       });
@@ -43,7 +50,7 @@ module("ember-testing Acceptance", {
         }
       });
 
-      App.CommentsView = Ember.View.extend({
+      App.CommentsView = EmberView.extend({
         defaultTemplate: Ember.Handlebars.compile("{{input type=text}}")
       });
 
@@ -64,15 +71,15 @@ module("ember-testing Acceptance", {
     visit = window.visit;
     andThen = window.andThen;
 
-    originalAdapter = Ember.Test.adapter;
+    originalAdapter = Test.adapter;
   },
 
   teardown: function() {
     App.removeTestHelpers();
-    Ember.$('#ember-testing-container, #ember-testing').remove();
-    Ember.run(App, App.destroy);
+    jQuery('#ember-testing-container, #ember-testing').remove();
+    run(App, App.destroy);
     App = null;
-    Ember.Test.adapter = originalAdapter;
+    Test.adapter = originalAdapter;
     indexHitCount = 0;
   }
 });
@@ -89,10 +96,10 @@ test("helpers can be chained with then", function() {
     equal(currentRoute, 'comments', "visit chained with click");
     return fillIn('.ember-text-field', "yeah");
   }).then(function() {
-    equal(Ember.$('.ember-text-field').val(), 'yeah', "chained with fillIn");
+    equal(jQuery('.ember-text-field').val(), 'yeah', "chained with fillIn");
     return fillIn('.ember-text-field', '#ember-testing-container', "context working");
   }).then(function() {
-    equal(Ember.$('.ember-text-field').val(), 'context working', "chained with fillIn");
+    equal(jQuery('.ember-text-field').val(), 'context working', "chained with fillIn");
     return click(".does-not-exist");
   }).then(null, function(e) {
     equal(e.message, "Element .does-not-exist not found.", "Non-existent click exception caught");
@@ -113,7 +120,7 @@ test("helpers can be chained to each other", function() {
   .fillIn('.ember-text-field', "hello")
   .then(function() {
     equal(currentRoute, 'comments', "Successfully visited comments route");
-    equal(Ember.$('.ember-text-field').val(), 'hello', "Fillin successfully works");
+    equal(jQuery('.ember-text-field').val(), 'hello', "Fillin successfully works");
     find('.ember-text-field').one('keypress', function(e) {
       equal(e.keyCode, 13, "keyevent chained with correct keyCode.");
     });
@@ -201,7 +208,7 @@ test("Helpers nested in thens", function() {
 test("Aborted transitions are not logged via Ember.Test.adapter#exception", function () {
   expect(0);
 
-  Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
+  Test.adapter = QUnitAdapter.create({
     exception: function(error) {
       ok(false, "aborted transitions are not logged");
     }
@@ -214,7 +221,7 @@ test("Unhandled exceptions are logged via Ember.Test.adapter#exception", functio
   expect(2);
 
   var asyncHandled;
-  Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
+  Test.adapter = QUnitAdapter.create({
     exception: function(error) {
       equal(error.message, "Element .does-not-exist not found.", "Exception successfully caught and passed to Ember.Test.adapter.exception");
       asyncHandled['catch'](function(){ }); // handle the rejection so it doesn't leak later.
