@@ -137,17 +137,15 @@ export default Mixin.create(MutableEnumerable, {
     return result;
   },
 
-  destroy: function() {
-    var content = get(this, 'content'),
-        sortProperties = get(this, 'sortProperties');
+  init: function() {
+    this._setupSortProperties();
 
-    if (content && sortProperties) {
-      forEach(content, function(item) {
-        forEach(sortProperties, function(sortProperty) {
-          removeObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-        }, this);
-      }, this);
-    }
+    return this._super();
+  },
+
+  destroy: function() {
+    this._removeContentObservers();
+    this._teardownSortProperties();
 
     return this._super();
   },
@@ -164,7 +162,6 @@ export default Mixin.create(MutableEnumerable, {
   arrangedContent: computed('content', 'sortProperties.@each', function(key, value) {
     var content = get(this, 'content'),
         isSorted = get(this, 'isSorted'),
-        sortProperties = get(this, 'sortProperties'),
         self = this;
 
     if (content && isSorted) {
@@ -172,11 +169,9 @@ export default Mixin.create(MutableEnumerable, {
       content.sort(function(item1, item2) {
         return self.orderBy(item1, item2);
       });
-      forEach(content, function(item) {
-        forEach(sortProperties, function(sortProperty) {
-          addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-        }, this);
-      }, this);
+
+      this._addContentObservers(content);
+
       return Ember.A(content);
     }
 
@@ -184,19 +179,41 @@ export default Mixin.create(MutableEnumerable, {
   }),
 
   _contentWillChange: beforeObserver('content', function() {
+    this._removeContentObservers();
+
+    this._super();
+  }),
+
+  _addItemObservers: function( item, sortProperties ){
+    forEach(sortProperties, function(sortProperty) {
+      addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
+    }, this);
+  },
+
+  _removeItemObservers: function( item, sortProperties ){
+    forEach(sortProperties, function(sortProperty) {
+      removeObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
+    }, this);
+  },
+
+  _addContentObservers: function( content ){
+    var sortProperties = get(this, 'sortProperties');
+
+    forEach(content, function(item) {
+     this._addItemObservers( item, sortProperties );
+    }, this);
+  },
+
+  _removeContentObservers: function(){
     var content = get(this, 'content'),
         sortProperties = get(this, 'sortProperties');
 
     if (content && sortProperties) {
       forEach(content, function(item) {
-        forEach(sortProperties, function(sortProperty) {
-          removeObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-        }, this);
+        this._removeItemObservers( item, sortProperties );
       }, this);
     }
-
-    this._super();
-  }),
+  },
 
   sortPropertiesWillChange: beforeObserver('sortProperties', function() {
     this._lastSortAscending = undefined;
@@ -217,6 +234,60 @@ export default Mixin.create(MutableEnumerable, {
     }
   }),
 
+  _setupSortProperties: function() {
+    var sortProperties = get(this, 'sortProperties');
+
+    if (sortProperties && sortProperties.addArrayObserver) {
+      sortProperties.addArrayObserver(this, {
+        willChange: '_sortPropertiesArrayWillChange',
+        didChange: '_sortPropertiesArrayDidChange'
+      });
+    }
+  },
+
+  _teardownSortProperties: function() {
+    var sortProperties = get(this, 'sortProperties');
+    if (sortProperties && sortProperties.removeArrayObserver) {
+      sortProperties.removeArrayObserver(this, {
+        willChange: '_sortPropertiesArrayWillChange',
+        didChange: '_sortPropertiesArrayDidChange'
+      });
+    }
+  },
+
+  _sortPropertiesWillChange: beforeObserver('sortProperties', function() {
+    this._teardownSortProperties();
+    this._removeContentObservers();
+  }),
+
+  _sortPropertiesDidChange: observer('sortProperties', function() {
+    var content = get(this, 'content');
+    this._setupSortProperties();
+    this._addContentObservers(content);
+  }),
+
+  _sortPropertiesArrayWillChange: function(array, idx, removedCount, addedCount) {
+    var content = get(this, 'content');
+    var removedSortProperties = array.slice(idx, idx+removedCount);
+
+    if (content) {
+      forEach(content, function(item) {
+        this._removeItemObservers(item, removedSortProperties);
+      }, this);
+    }
+  },
+
+  _sortPropertiesArrayDidChange: function(array, idx, removedCount, addedCount) {
+    var content = get(this, 'content');
+    var addedSortProperties = array.slice(idx, idx+addedCount);
+
+    if (content) {
+      forEach(content, function(item) {
+        this._addItemObservers(item, addedSortProperties);
+      }, this);
+    }
+  },
+
   contentArrayWillChange: function(array, idx, removedCount, addedCount) {
     var isSorted = get(this, 'isSorted');
 
@@ -228,9 +299,7 @@ export default Mixin.create(MutableEnumerable, {
       forEach(removedObjects, function(item) {
         arrangedContent.removeObject(item);
 
-        forEach(sortProperties, function(sortProperty) {
-          removeObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-        }, this);
+        this._removeItemObservers(item, sortProperties);
       }, this);
     }
 
@@ -247,9 +316,7 @@ export default Mixin.create(MutableEnumerable, {
       forEach(addedObjects, function(item) {
         this.insertItemSorted(item);
 
-        forEach(sortProperties, function(sortProperty) {
-          addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
-        }, this);
+        this._addItemObservers(item, sortProperties);
       }, this);
     }
 
