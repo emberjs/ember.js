@@ -769,8 +769,8 @@ Ember.Application.reopenClass({
     // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
     // ES6TODO: resolve this via import once ember-application package is ES6'ed
-    var ContainerDebugAdapter = requireModule('ember-extension-support/container_debug_adapter')['default'];
-    container.register('container-debug-adapter:main', ContainerDebugAdapter);
+    requireModule('ember-extension-support');
+    container.register('container-debug-adapter:main', Ember.ContainerDebugAdapter);
 
     return container;
   }
