@@ -1,4 +1,8 @@
 require('ember-application');
+require('ember-extension-support');
+
+// ES6TODO: resolve this via import once ember-application package is ES6'ed
+requireModule('ember-extension-support');
 
 /**
 Ember
