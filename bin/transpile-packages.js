@@ -11,6 +11,7 @@ function ES6Package(packageName, dependencies){
   this.dependencies = dependencies;
   this.inputPath   = path.join('packages_es6', packageName);
   this.outputPath  = path.join('packages', packageName);
+  this.independentModulePath = 'dist/modules';
 }
 
 ES6Package.prototype = {
@@ -44,7 +45,7 @@ ES6Package.prototype = {
         dirname = path.dirname(filename.replace(basePath +'/', '')),
         isTest  = basePath.match(/\/tests$/),
         moduleName = path.join(this.packageName, isTest ? 'tests' : '', dirname, basenameNoExt),
-        compiler;
+        compiler, output;
 
     if (moduleName === path.join(this.packageName, 'main')) {
       moduleName = this.packageName;
@@ -52,15 +53,18 @@ ES6Package.prototype = {
 
     try {
       compiler = new Compiler(fs.readFileSync(filename), moduleName);
-      return {name: moduleName, compiled: compiler.toAMD()};
+      output = compiler.toAMD();
     } catch (e) {
       console.log('An error was raised while compiling "' + filename + '".');
       console.log('   ' + e.message);
       process.exit(1);
     }
 
-    var compiler = new Compiler(fs.readFileSync(filename), moduleName);
-    return {name: moduleName, compiled: compiler.toAMD()};
+    var modulePath = path.join(this.independentModulePath, this.packageName, dirname);
+    this.mkdirp(modulePath);
+    fs.writeFileSync(path.join(modulePath, path.basename(filename)), output);
+
+    return {name: moduleName, compiled: output};
   },
 
   processLib: function(){
