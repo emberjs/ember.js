@@ -4,6 +4,12 @@ require('ember-extension-support');
 // ES6TODO: resolve this via import once ember-application package is ES6'ed
 requireModule('ember-extension-support');
 
+// do this to ensure that Ember.Test is defined properly on the global
+// if it is present.
+if (Ember.__loader.registry['ember-testing']) {
+  requireModule('ember-testing');
+}
+
 /**
 Ember
 
