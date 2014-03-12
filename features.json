@@ -17,5 +17,16 @@
     "ember-routing-inherits-parent-model": true,
     "ember-routing-add-model-option": true
   },
-  "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info", "Ember.runInDebug"]
+  "debugStatements": [
+    "Ember.warn",
+    "emberWarn",
+    "Ember.assert",
+    "emberAssert",
+    "Ember.deprecate",
+    "emberDeprecate",
+    "Ember.debug",
+    "emberDebug",
+    "Ember.Logger.info",
+    "Ember.runInDebug"
+  ]
 }
