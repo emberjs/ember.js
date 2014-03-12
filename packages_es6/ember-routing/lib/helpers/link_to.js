@@ -272,7 +272,7 @@ var LinkView = Ember.LinkView = EmberView.extend({
     this._super.apply(this, arguments);
 
     // Map desired event name to invoke function
-    var eventName = get(this, 'eventName'), i;
+    var eventName = get(this, 'eventName');
     this.on(eventName, this, this._invoke);
   },
 
