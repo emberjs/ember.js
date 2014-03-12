@@ -1,7 +1,7 @@
 var define, requireModule, require, requirejs, Ember;
 
 (function() {
-  Ember = window.Ember = window.Ember || {};
+  Ember = this.Ember = this.Ember || {};
   if (typeof Ember === 'undefined') { Ember = {} };
 
   if (typeof Ember.__loader === 'undefined') {
