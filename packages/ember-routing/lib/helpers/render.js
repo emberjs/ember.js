@@ -5,7 +5,8 @@
 
 var get = Ember.get, set = Ember.set;
 
-require('ember-handlebars/helpers/view');
+// require('ember-handlebars/helpers/view');
+requireModule('ember-handlebars');
 
 Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 

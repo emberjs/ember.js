@@ -5,6 +5,8 @@ packages/ember-debug
 packages/ember-views
 packages/ember-extension-support
 packages/ember-testing
+packages/ember-handlebars-compiler
+packages/ember-handlebars
 *.bpkg
 *.gem
 *.rbc

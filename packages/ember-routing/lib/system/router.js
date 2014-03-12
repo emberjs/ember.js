@@ -3,8 +3,14 @@
 @submodule ember-routing
 */
 
+// side effect of loading some Ember globals, for now
+requireModule("ember-handlebars");
+requireModule("ember-runtime");
+requireModule("ember-views");
+
 var Router = requireModule("router")['default'];
 var Transition = requireModule("router/transition").Transition;
+
 var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 var defineProperty = Ember.defineProperty;
 var slice = Array.prototype.slice;

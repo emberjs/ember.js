@@ -7,7 +7,8 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
 var slice = Array.prototype.slice;
 
-require('ember-handlebars/helpers/view');
+// require('ember-handlebars/helpers/view');
+requireModule('ember-handlebars');
 
 Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
