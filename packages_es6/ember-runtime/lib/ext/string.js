@@ -9,7 +9,7 @@ import EmberStringUtils from "ember-runtime/system/string";
 var fmt        = EmberStringUtils.fmt,
     w          = EmberStringUtils.w,
     loc        = EmberStringUtils.loc,
-    camelize   = EmberStringUtils.capitalize,
+    camelize   = EmberStringUtils.camelize,
     decamelize = EmberStringUtils.decamelize,
     dasherize  = EmberStringUtils.dasherize,
     underscore = EmberStringUtils.underscore,
