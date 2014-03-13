@@ -8,6 +8,7 @@ module('EmberStringUtils.loc', {
     oldString = Ember.STRINGS;
     Ember.STRINGS = {
       '_Hello World': 'Bonjour le monde',
+      '_Hello %@': 'Bonjour %@',
       '_Hello %@ %@': 'Bonjour %@ %@',
       '_Hello %@# %@#': 'Bonjour %@2 %@1'
     };
@@ -52,4 +53,7 @@ test("'_Not In Strings'.loc() => '_Not In Strings'", function() {
   }
 });
 
-
+test("works with argument form", function() {
+  equal(loc('_Hello %@', 'John'), 'Bonjour John');
+  equal(loc('_Hello %@ %@', ['John'], 'Doe'), 'Bonjour [John] Doe');
+});

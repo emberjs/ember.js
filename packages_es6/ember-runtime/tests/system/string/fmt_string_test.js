@@ -37,3 +37,8 @@ test("'data: %@'.fmt({id: 3}) => 'data: {id: 3}'", function() {
     equal('data: %@'.fmt({id: 3}), 'data: {id: 3}');
   }
 });
+
+test("works with argument form", function() {
+  equal(fmt('%@', 'John'), 'John');
+  equal(fmt('%@ %@', ['John'], 'Doe'), '[John] Doe');
+});

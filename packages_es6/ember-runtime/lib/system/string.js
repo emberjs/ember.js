@@ -3,7 +3,7 @@
 @submodule ember-runtime
 */
 import Ember from "ember-metal/core"; // Ember.STRINGS, Ember.FEATURES
-import {inspect as EmberInspect} from "ember-metal/utils";
+import {isArray, inspect as EmberInspect} from "ember-metal/utils";
 
 
 var STRING_DASHERIZE_REGEXP = (/[ _]/g);
@@ -14,16 +14,24 @@ var STRING_UNDERSCORE_REGEXP_1 = (/([a-z\d])([A-Z]+)/g);
 var STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
 
 function fmt(str, formats) {
+  if (!isArray(formats) || arguments.length > 2) {
+    formats = Array.prototype.slice.call(arguments, 1);
+  }
+
   // first, replace any ORDERED replacements.
   var idx  = 0; // the current index for non-numerical replacements
   return str.replace(/%@([0-9]+)?/g, function(s, argIndex) {
     argIndex = (argIndex) ? parseInt(argIndex, 10) - 1 : idx++;
     s = formats[argIndex];
     return (s === null) ? '(null)' : (s === undefined) ? '' : EmberInspect(s);
-  }) ;
+  });
 }
 
 function loc(str, formats) {
+  if (!isArray(formats) || arguments.length > 2) {
+    formats = Array.prototype.slice.call(arguments, 1);
+  }
+
   str = Ember.STRINGS[str] || str;
   return fmt(str, formats);
 }

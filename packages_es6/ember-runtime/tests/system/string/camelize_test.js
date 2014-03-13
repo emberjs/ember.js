@@ -50,4 +50,3 @@ test("does nothing with camelcased string", function() {
     deepEqual('innerHTML'.camelize(), 'innerHTML');
   }
 });
-
