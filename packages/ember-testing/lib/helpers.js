@@ -43,11 +43,11 @@ function visit(app, url) {
     run(app, app.handleURL, url);
   }
 
-  return wait(app);
+  return app.testHelpers.wait();
 }
 
 function click(app, selector, context) {
-  var $el = findWithAssert(app, selector, context);
+  var $el = app.testHelpers.findWithAssert(selector, context);
   run($el, 'mousedown');
 
   if ($el.is(':input')) {
@@ -69,7 +69,7 @@ function click(app, selector, context) {
   run($el, 'mouseup');
   run($el, 'click');
 
-  return wait(app);
+  return app.testHelpers.wait();
 }
 
 function triggerEvent(app, selector, context, type, options){
@@ -82,13 +82,13 @@ function triggerEvent(app, selector, context, type, options){
     options = {};
   }
 
-  var $el = findWithAssert(app, selector, context);
+  var $el = app.testHelpers.findWithAssert(selector, context);
 
   var event = jQuery.Event(type, options);
 
   run($el, 'trigger', event);
 
-  return wait(app);
+  return app.testHelpers.wait();
 }
 
 function keyEvent(app, selector, context, type, keyCode) {
@@ -98,7 +98,7 @@ function keyEvent(app, selector, context, type, keyCode) {
     context = null;
   }
 
-  return triggerEvent(app, selector, context, type, { keyCode: keyCode, which: keyCode });
+  return app.testHelpers.triggerEvent(selector, context, type, { keyCode: keyCode, which: keyCode });
 }
 
 function fillIn(app, selector, context, text) {
@@ -107,15 +107,15 @@ function fillIn(app, selector, context, text) {
     text = context;
     context = null;
   }
-  $el = findWithAssert(app, selector, context);
+  $el = app.testHelpers.findWithAssert(selector, context);
   run(function() {
     $el.val(text).change();
   });
-  return wait(app);
+  return app.testHelpers.wait();
 }
 
 function findWithAssert(app, selector, context) {
-  var $el = find(app, selector, context);
+  var $el = app.testHelpers.find(selector, context);
   if ($el.length === 0) {
     throw new EmberError("Element " + selector + " not found.");
   }
@@ -131,7 +131,7 @@ function find(app, selector, context) {
 }
 
 function andThen(app, callback) {
-  return wait(app, callback(app));
+  return app.testHelpers.wait(callback(app));
 }
 
 function wait(app, value) {
@@ -298,7 +298,7 @@ helper('findWithAssert', findWithAssert);
     .fillIn('#password', username)
     .click('.submit')
 
-    return wait();
+    return app.testHelpers.wait();
   });
 
   @method wait
