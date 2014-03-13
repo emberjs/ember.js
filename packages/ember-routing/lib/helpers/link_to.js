@@ -12,7 +12,9 @@ require('ember-handlebars/helpers/view');
 Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
   var QueryParams = Ember.Object.extend({
-    values: null
+    values: null,
+    types: null,
+    reset: false
   });
 
   var resolveParams = Ember.Router.resolveParams,
@@ -22,6 +24,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   function computeQueryParams(linkView, stripDefaultValues) {
     var helperParameters = linkView.parameters,
         queryParamsObject = get(linkView, 'queryParamsObject'),
+        resetParams = queryParamsObject && queryParamsObject.reset,
         suppliedParams = {};
 
     if (queryParamsObject) {
@@ -41,6 +44,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
       // Check if the link-to provides a value for this qp.
       var providedType = null, value;
+
       if (qp.prop in suppliedParams) {
         value = suppliedParams[qp.prop];
         providedType = queryParamsObject.types[qp.prop];
@@ -49,6 +53,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
         value = suppliedParams[qp.urlKey];
         providedType = queryParamsObject.types[qp.urlKey];
         delete suppliedParams[qp.urlKey];
+      } else if (resetParams) {
+        // query-params-reset was invoked, so reset param to default value
+        value = qp.def;
+        providedType = qp.type;
       }
 
       if (providedType) {
@@ -883,6 +891,16 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       Ember.assert(fmt("The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName='%@') as opposed to just (query-params '%@')", [options, options]), arguments.length === 1);
 
       return QueryParams.create({
+        values: options.hash,
+        types: options.hashTypes
+      });
+    });
+
+    Ember.Handlebars.registerHelper('query-params-reset', function queryParamsHelper(options) {
+      Ember.assert(fmt("The `query-params-reset` helper only accepts hash parameters, e.g. (query-params-reset queryParamPropertyName='%@') as opposed to just (query-params-reset '%@')", [options, options]), arguments.length === 1);
+
+      return QueryParams.create({
+        reset: true,
         values: options.hash,
         types: options.hashTypes
       });
