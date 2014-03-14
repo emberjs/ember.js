@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core";
-import run from "ember-metal/run_loop";
+import emberRun from "ember-metal/run_loop";
 import {create} from "ember-metal/platform";
 import compare from "ember-runtime/compare";
 import setupForTesting from "ember-testing/setup_for_testing";
@@ -299,8 +299,8 @@ function helper(app, name) {
 }
 
 function run(fn) {
-  if (!run.currentRunLoop) {
-    run(fn);
+  if (!emberRun.currentRunLoop) {
+    emberRun(fn);
   } else {
     fn();
   }
