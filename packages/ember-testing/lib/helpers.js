@@ -96,7 +96,7 @@ function keyEvent(app, selector, context, type, keyCode) {
     context = null;
   }
 
-  return triggerEvent(app, selector, context, type, { keyCode: keyCode });
+  return triggerEvent(app, selector, context, type, { keyCode: keyCode, which: keyCode });
 }
 
 function fillIn(app, selector, context, text) {
