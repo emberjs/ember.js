@@ -585,6 +585,37 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     equal(router.get('location.path'), "/?omg=OVERRIDE");
   });
 
+  test("can override incoming QP array values in setupController", function() {
+    expect(3);
+
+    App.Router.map(function() {
+      this.route('about');
+    });
+
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['omg'],
+      omg: ['lol']
+    });
+
+    App.IndexRoute = Ember.Route.extend({
+      setupController: function(controller) {
+        ok(true, "setupController called");
+        controller.set('omg', ['OVERRIDE']);
+      },
+      actions: {
+        queryParamsDidChange: function() {
+          ok(false, "queryParamsDidChange shouldn't fire");
+        }
+      }
+    });
+
+    startingURL = "/about";
+    bootApplication();
+    equal(router.get('location.path'), "/about");
+    Ember.run(router, 'transitionTo', 'index');
+    equal(router.get('location.path'), "/?omg=" + encodeURIComponent(JSON.stringify(['OVERRIDE'])));
+  });
+
   test("URL transitions that remove QPs still register as QP changes", function() {
     expect(2);
 
