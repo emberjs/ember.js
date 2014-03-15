@@ -20,19 +20,16 @@ test('Ember.run.bind builds a run-loop wrapped callback handler', function() {
 
 test('Ember.run.bind keeps the async callback arguments', function() {
 
-  var obj = {
-    value: 0,
-    increment: function(increment, increment2, increment3) {
-      ok(run.currentRunLoop, 'expected a run-loop');
-      equal(increment, 1);
-      equal(increment2, 2);
-      equal(increment3, 3);
-    }
+  function asyncCallback = function(increment, increment2, increment3) {
+    ok(run.currentRunLoop, 'expected a run-loop');
+    equal(increment, 1);
+    equal(increment2, 2);
+    equal(increment3, 3);
   };
 
   var asyncFunction = function(fn) {
     fn(2, 3);
   };
 
-  asyncFunction(run.bind(obj, obj.increment, 1));
+  asyncFunction(run.bind(asyncCallback, 1));
 });
