@@ -488,8 +488,6 @@ run.next = function() {
   // the 100ms delay until this method can be called again will be cancelled
   run.cancel(debounceImmediate);
   ```
-  ```
-  ```
 
   @method cancel
   @param {Object} timer Timer object to cancel
