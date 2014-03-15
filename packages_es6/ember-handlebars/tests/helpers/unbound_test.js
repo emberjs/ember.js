@@ -1,9 +1,13 @@
 /*globals Foo */
 
-var get = Ember.get, set = Ember.set;
+import Ember from "ember-metal/core";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import EmberHandlebars from "ember-handlebars-compiler";
 
 var appendView = function(view) {
-  Ember.run(function() { view.appendTo('#qunit-fixture'); });
+  run(function() { view.appendTo('#qunit-fixture'); });
 };
 
 var view;
@@ -25,7 +29,7 @@ module("Handlebars {{#unbound}} helper -- classic single-property usage", {
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       view.destroy();
     });
     Ember.lookup = originalLookup;
@@ -37,7 +41,7 @@ test("it should render the current value of a property on the context", function
 });
 
 test("it should not re-render if the property changes", function() {
-  Ember.run(function() {
+  run(function() {
     view.set('context.foo', 'OOF');
   });
   equal(view.$().text(), "BORK BORK", "should not re-render if the property changes");
@@ -87,7 +91,7 @@ module("Handlebars {{#unbound boundHelper arg1 arg2... argN}} form: render unbou
     delete Ember.Handlebars.helpers['concat'];
     delete Ember.Handlebars.helpers['concatNames'];
 
-    Ember.run(function() {
+    run(function() {
       view.destroy();
     });
     Ember.lookup = originalLookup;
@@ -118,7 +122,7 @@ test("should be able to render an unbound helper invocation", function() {
 
     equal(view.$().text(), "XXXXX XXXXX XX XXXX", "first render is correct");
 
-    Ember.run(function() {
+    run(function() {
       set(view, 'context.bar', 1);
     });
 
@@ -140,7 +144,7 @@ test("should be able to render an bound helper invocation mixed with static valu
   appendView(view);
 
   equal(view.$().text(), "before-core-bar before-core-bar bar-core-after bar-core-after", "first render is correct");
-  Ember.run(function() {
+  run(function() {
     set(view, 'context.prefix', 'beforeChanged');
     set(view, 'context.value', 'coreChanged');
     set(view, 'context.suffix', 'afterChanged');
@@ -161,7 +165,7 @@ test("should be able to render unbound forms of multi-arg helpers", function() {
 
   equal(view.$().text(), "abc abc", "first render is correct");
 
-  Ember.run(function() {
+  run(function() {
     set(view, 'context.bar', 'X');
   });
 
@@ -183,7 +187,7 @@ test("should be able to render an unbound helper invocation for helpers with dep
 
   equal(view.$().text(), "SHOOBY SHOOBY shoobytaylor shoobytaylor", "first render is correct");
 
-  Ember.run(function() {
+  run(function() {
     set(view, 'context.person.firstName', 'sally');
   });
 
@@ -235,7 +239,7 @@ test("should be able to render an unbound helper invocation with bound hash opti
 
     equal(view.$().text(), "SHOOBY SHOOBY shoobytaylor shoobytaylor", "first render is correct");
 
-    Ember.run(function() {
+    run(function() {
       set(view, 'context.person.firstName', 'sally');
     });
 

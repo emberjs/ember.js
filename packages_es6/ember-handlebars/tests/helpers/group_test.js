@@ -1,32 +1,36 @@
+import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
+import {View as EmberView} from "ember-views/views/view";
+import EmberHandlebars from "ember-handlebars-compiler";
+
 var trim = jQuery.trim;
 
 var view;
 
-module("Ember.Handlebars - group flag", {
+module("EmberHandlebars - group flag", {
   setup: function() {},
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       view.destroy();
     });
-    Ember.run.cancelTimers();
+    run.cancelTimers();
   }
 });
 
 function createGroupedView(template, context) {
   var options = {
     context: context,
-    template: Ember.Handlebars.compile(template),
+    template: EmberHandlebars.compile(template),
     templateData: {insideGroup: true, keywords: {}}
   };
-  Ember.run(function() {
-    view = Ember.View.create(options);
+  run(function() {
+    view = EmberView.create(options);
   });
 }
 
 function appendView() {
-  Ember.run(function() { view.appendTo('#qunit-fixture'); });
+  run(function() { view.appendTo('#qunit-fixture'); });
 }
 
 test("should properly modify behavior inside the block", function() {
@@ -36,17 +40,17 @@ test("should properly modify behavior inside the block", function() {
   equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(view.$().text(), 'ohai', 'Original value was rendered');
 
-  Ember.run(function() {
+  run(function() {
     view.set('context.msg', 'ohbai');
   });
   equal(view.$().text(), 'ohbai', 'Updated value was rendered');
 
-  Ember.run(function() {
+  run(function() {
     view.set('context.msg', null);
   });
   equal(view.$().text(), '', 'null value properly rendered as a blank');
 
-  Ember.run(function() {
+  run(function() {
     view.set('context.msg', undefined);
   });
   equal(view.$().text(), '', 'undefined value properly rendered as a blank');
@@ -65,7 +69,7 @@ test("property changes inside views should only rerender their view", function()
   equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(trim(view.$().text()), 'ohai', 'Original value was rendered');
 
-  Ember.run(function() {
+  run(function() {
     view.set('context.msg', 'ohbai');
   });
   ok(!rerenderWasCalled, "The GroupView rerender method was not called");
@@ -80,12 +84,12 @@ test("should work with bind-attr", function() {
   appendView();
   equal(view.$('.magic').length, 1);
 
-  Ember.run(function() {
+  run(function() {
     view.set('context.innerClass', 'bindings');
   });
   equal(view.$('.bindings').length, 1);
 
-  Ember.run(function() {
+  run(function() {
     view.rerender();
   });
   equal(view.$('.bindings').length, 1);
@@ -101,7 +105,7 @@ test("should work with the #if helper", function() {
   equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(trim(view.$().text()), 'hooray', 'Truthy text was rendered');
 
-  Ember.run(function() {
+  run(function() {
     view.set('context.something', false);
   });
   equal(trim(view.$().text()), 'boo', "The falsy value was rendered");
@@ -124,7 +128,7 @@ test("#each's content can be changed right before a destroy", function() {
   );
   appendView();
 
-  Ember.run(function() {
+  run(function() {
     view.set('context.numbers', Ember.A([3,2,1]));
     view.destroy();
   });
@@ -139,13 +143,13 @@ test("#each can be nested", function() {
   equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(view.$().text(), '123', "The content was rendered");
 
-  Ember.run(function() {
+  run(function() {
     view.get('context.numbers').pushObject(4);
   });
 
   equal(view.$().text(), '1234', "The array observer properly updated the rendered output");
 
-  Ember.run(function() {
+  run(function() {
     view.set('context.numbers', Ember.A(['a', 'b', 'c']));
   });
 
@@ -172,7 +176,7 @@ test("an #each can be nested with a view inside", function() {
   equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(view.$().text(), 'YehudaTom', "The content was rendered");
 
-  Ember.run(function() {
+  run(function() {
     Ember.set(yehuda, 'name', 'Erik');
   });
 
@@ -188,7 +192,7 @@ test("#each with groupedRows=true behaves like a normal bound #each", function()
   equal(view.$('script').length, 8, "Correct number of Metamorph markers are output");
   equal(view.$().text(), '123');
 
-  Ember.run(function() {
+  run(function() {
     view.get('context.numbers').pushObject(4);
   });
 
@@ -198,7 +202,7 @@ test("#each with groupedRows=true behaves like a normal bound #each", function()
 
 test("#each with itemViewClass behaves like a normal bound #each", function() {
   createGroupedView(
-    '{{#each people itemViewClass="Ember.View"}}{{name}}{{/each}}',
+    '{{#each people itemViewClass="EmberView"}}{{name}}{{/each}}',
     {people: Ember.A([{name: 'Erik'}, {name: 'Peter'}])}
   );
   appendView();
@@ -206,7 +210,7 @@ test("#each with itemViewClass behaves like a normal bound #each", function() {
   equal(view.$('.ember-view').length, 2, "Correct number of views are output");
   equal(view.$().text(), 'ErikPeter');
 
-  Ember.run(function() {
+  run(function() {
     view.get('context.people').pushObject({name: 'Tom'});
   });
 
