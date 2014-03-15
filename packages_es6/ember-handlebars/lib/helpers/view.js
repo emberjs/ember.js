@@ -16,6 +16,8 @@ import jQuery from "ember-views/system/jquery";
 import {View} from "ember-views/views/view";
 import {isGlobalPath} from "ember-metal/binding";
 import {normalizePath, handlebarsGet} from "ember-handlebars/ext";
+import EmberString from "ember-runtime/system/string";
+
 
 var LOWERCASE_A_Z = /^[a-z]/,
     VIEW_PREFIX = /^view\./;
@@ -178,7 +180,7 @@ var ViewHelper = EmberObject.create({
       newView = path;
     }
 
-    emberAssert(Ember.String.fmt('You must pass a view to the #view helper, not %@ (%@)', [path, newView]), View.detect(newView) || View.detectInstance(newView));
+    emberAssert(EmberString.fmt('You must pass a view to the #view helper, not %@ (%@)', [path, newView]), View.detect(newView) || View.detectInstance(newView));
 
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;

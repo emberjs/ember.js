@@ -6,10 +6,10 @@ import {View} from "ember-views/views/view";
 import TextArea from "ember-handlebars/controls/text_area";
 import EmberHandlebars from "ember-handlebars";
 import {get} from "ember-metal/property_get";
-import set from "ember-metal/property_set";
+import {set as o_set} from "ember-metal/property_set";
 
-var textArea, controller, TestObject, o_set = set;
-set = function(object, key, value) {
+var textArea, controller, TestObject;
+var set = function(object, key, value) {
   run(function() { o_set(object, key, value); });
 };
 
