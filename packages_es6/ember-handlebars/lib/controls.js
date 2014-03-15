@@ -3,7 +3,7 @@ import TextField from "ember-handlebars/controls/text_field";
 import TextArea from "ember-handlebars/controls/text_area";
 
 import Ember from "ember-metal/core"; // Ember.assert
-var emberAssert = Ember.assert;
+// var emberAssert = Ember.assert;
 
 import EmberHandlebars from "ember-handlebars-compiler";
 var helpers = EmberHandlebars.helpers;
@@ -159,7 +159,7 @@ var helpers = EmberHandlebars.helpers;
   @param {Hash} options
 */
 function inputHelper(options) {
-  emberAssert('You can only pass attributes to the `input` helper, not arguments', arguments.length < 2);
+  Ember.assert('You can only pass attributes to the `input` helper, not arguments', arguments.length < 2);
 
   var hash = options.hash,
       types = options.hashTypes,
@@ -170,7 +170,7 @@ function inputHelper(options) {
   delete hash.on;
 
   if (inputType === 'checkbox') {
-    emberAssert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`; you must use `checked=someBooleanValue` instead.", options.hashTypes.value !== 'ID');
+    Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`; you must use `checked=someBooleanValue` instead.", options.hashTypes.value !== 'ID');
     return helpers.view.call(this, Checkbox, options);
   } else {
     if (inputType) { hash.type = inputType; }
@@ -336,7 +336,7 @@ function inputHelper(options) {
   @param {Hash} options
 */
 function textareaHelper(options) {
-  emberAssert('You can only pass attributes to the `textarea` helper, not arguments', arguments.length < 2);
+  Ember.assert('You can only pass attributes to the `textarea` helper, not arguments', arguments.length < 2);
 
   var hash = options.hash,
       types = options.hashTypes;

@@ -1,19 +1,29 @@
-
-var set = Ember.set, get = Ember.get;
+/*jshint newcap:false*/
+import run from "ember-metal/run_loop";
+import {View as EmberView} from "ember-views/views/view";
+import {computed} from "ember-metal/computed";
+import Namespace from "ember-runtime/system/namespace";
+import Container from "ember-runtime/system/container";
+import EmberHandlebars from "ember-handlebars-compiler";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {A} from "ember-runtime/system/native_array";
+import Component from "ember-views/views/component";
+import EmberError from "ember-metal/error";
 
 var originalLookup = Ember.lookup, lookup, TemplateTests, view, container;
 
-module("Support for {{yield}} helper (#307)", {
+module("Support for {{yield}} helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
-    lookup.TemplateTests = TemplateTests = Ember.Namespace.create();
+    lookup.TemplateTests = TemplateTests = Namespace.create();
 
-    container = new Ember.Container();
+    container = new Container();
     container.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       Ember.TEMPLATES = {};
       if (view) {
         view.destroy();
@@ -25,15 +35,15 @@ module("Support for {{yield}} helper (#307)", {
 });
 
 test("a view with a layout set renders its template where the {{yield}} helper appears", function() {
-  TemplateTests.ViewWithLayout = Ember.View.extend({
-    layout: Ember.Handlebars.compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>')
+  TemplateTests.ViewWithLayout = EmberView.extend({
+    layout: EmberHandlebars.compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>')
   });
 
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#view TemplateTests.ViewWithLayout title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}')
+  view = EmberView.create({
+    template: EmberHandlebars.compile('{{#view TemplateTests.ViewWithLayout title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}')
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -41,20 +51,20 @@ test("a view with a layout set renders its template where the {{yield}} helper a
 });
 
 test("block should work properly even when templates are not hard-coded", function() {
-  container.register('template:nester', Ember.Handlebars.compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>'));
-  container.register('template:nested', Ember.Handlebars.compile('{{#view TemplateTests.ViewWithLayout title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}'));
+  container.register('template:nester', EmberHandlebars.compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>'));
+  container.register('template:nested', EmberHandlebars.compile('{{#view TemplateTests.ViewWithLayout title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}'));
 
-  TemplateTests.ViewWithLayout = Ember.View.extend({
+  TemplateTests.ViewWithLayout = EmberView.extend({
     container: container,
     layoutName: 'nester'
   });
 
-  view = Ember.View.create({
+  view = EmberView.create({
     container: container,
     templateName: 'nested'
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -63,11 +73,11 @@ test("block should work properly even when templates are not hard-coded", functi
 });
 
 test("templates should yield to block, when the yield is embedded in a hierarchy of virtual views", function() {
-  TemplateTests.TimesView = Ember.View.extend({
-    layout: Ember.Handlebars.compile('<div class="times">{{#each view.index}}{{yield}}{{/each}}</div>'),
+  TemplateTests.TimesView = EmberView.extend({
+    layout: EmberHandlebars.compile('<div class="times">{{#each view.index}}{{yield}}{{/each}}</div>'),
     n: null,
-    index: Ember.computed(function() {
-      var n = Ember.get(this, 'n'), indexArray = Ember.A();
+    index: computed(function() {
+      var n = get(this, 'n'), indexArray = A();
       for (var i=0; i < n; i++) {
         indexArray[i] = i;
       }
@@ -75,11 +85,11 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
     })
   });
 
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('<div id="container"><div class="title">Counting to 5</div>{{#view TemplateTests.TimesView n=5}}<div class="times-item">Hello</div>{{/view}}</div>')
+  view = EmberView.create({
+    template: EmberHandlebars.compile('<div id="container"><div class="title">Counting to 5</div>{{#view TemplateTests.TimesView n=5}}<div class="times-item">Hello</div>{{/view}}</div>')
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -87,15 +97,15 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
 });
 
 test("templates should yield to block, when the yield is embedded in a hierarchy of non-virtual views", function() {
-  TemplateTests.NestingView = Ember.View.extend({
-    layout: Ember.Handlebars.compile('{{#view Ember.View tagName="div" classNames="nesting"}}{{yield}}{{/view}}')
+  TemplateTests.NestingView = EmberView.extend({
+    layout: EmberHandlebars.compile('{{#view Ember.View tagName="div" classNames="nesting"}}{{yield}}{{/view}}')
   });
 
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('<div id="container">{{#view TemplateTests.NestingView}}<div id="block">Hello</div>{{/view}}</div>')
+  view = EmberView.create({
+    template: EmberHandlebars.compile('<div id="container">{{#view TemplateTests.NestingView}}<div id="block">Hello</div>{{/view}}</div>')
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -103,15 +113,15 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
 });
 
 test("block should not be required", function() {
-  TemplateTests.YieldingView = Ember.View.extend({
-    layout: Ember.Handlebars.compile('{{#view Ember.View tagName="div" classNames="yielding"}}{{yield}}{{/view}}')
+  TemplateTests.YieldingView = EmberView.extend({
+    layout: EmberHandlebars.compile('{{#view Ember.View tagName="div" classNames="yielding"}}{{yield}}{{/view}}')
   });
 
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('<div id="container">{{view TemplateTests.YieldingView}}</div>')
+  view = EmberView.create({
+    template: EmberHandlebars.compile('<div id="container">{{view TemplateTests.YieldingView}}</div>')
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -119,17 +129,17 @@ test("block should not be required", function() {
 });
 
 test("yield uses the outer context", function() {
-  var component = Ember.Component.extend({
+  var component = Component.extend({
     boundText: "inner",
-    layout: Ember.Handlebars.compile("<p>{{boundText}}</p><p>{{yield}}</p>")
+    layout: EmberHandlebars.compile("<p>{{boundText}}</p><p>{{yield}}</p>")
   });
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: { boundText: "outer", component: component },
-    template: Ember.Handlebars.compile('{{#view component}}{{boundText}}{{/view}}')
+    template: EmberHandlebars.compile('{{#view component}}{{boundText}}{{/view}}')
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -137,19 +147,19 @@ test("yield uses the outer context", function() {
 });
 
 test("yield inside a conditional uses the outer context", function() {
-  var component = Ember.Component.extend({
+  var component = Component.extend({
     boundText: "inner",
     truthy: true,
     obj: {},
-    layout: Ember.Handlebars.compile("<p>{{boundText}}</p><p>{{#if truthy}}{{#with obj}}{{yield}}{{/with}}{{/if}}</p>")
+    layout: EmberHandlebars.compile("<p>{{boundText}}</p><p>{{#if truthy}}{{#with obj}}{{yield}}{{/with}}{{/if}}</p>")
   });
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: { boundText: "outer", truthy: true, obj: { component: component, truthy: true, boundText: 'insideWith' } },
-    template: Ember.Handlebars.compile('{{#with obj}}{{#if truthy}}{{#view component}}{{#if truthy}}{{boundText}}{{/if}}{{/view}}{{/if}}{{/with}}')
+    template: EmberHandlebars.compile('{{#with obj}}{{#if truthy}}{{#view component}}{{#if truthy}}{{boundText}}{{/if}}{{/view}}{{/if}}{{/with}}')
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -157,17 +167,17 @@ test("yield inside a conditional uses the outer context", function() {
 });
 
 test("outer keyword doesn't mask inner component property", function () {
-  var component = Ember.Component.extend({
+  var component = Component.extend({
     item: "inner",
-    layout: Ember.Handlebars.compile("<p>{{item}}</p><p>{{yield}}</p>")
+    layout: EmberHandlebars.compile("<p>{{item}}</p><p>{{yield}}</p>")
   });
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: { boundText: "outer", component: component },
-    template: Ember.Handlebars.compile('{{#with boundText as item}}{{#view component}}{{item}}{{/view}}{{/with}}')
+    template: EmberHandlebars.compile('{{#with boundText as item}}{{#view component}}{{item}}{{/view}}{{/with}}')
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -175,17 +185,17 @@ test("outer keyword doesn't mask inner component property", function () {
 });
 
 test("inner keyword doesn't mask yield property", function() {
-  var component = Ember.Component.extend({
+  var component = Component.extend({
     boundText: "inner",
-    layout: Ember.Handlebars.compile("{{#with boundText as item}}<p>{{item}}</p><p>{{yield}}</p>{{/with}}")
+    layout: EmberHandlebars.compile("{{#with boundText as item}}<p>{{item}}</p><p>{{yield}}</p>{{/with}}")
   });
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: { item: "outer", component: component },
-    template: Ember.Handlebars.compile('{{#view component}}{{item}}{{/view}}')
+    template: EmberHandlebars.compile('{{#view component}}{{item}}{{/view}}')
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -193,23 +203,23 @@ test("inner keyword doesn't mask yield property", function() {
 });
 
 test("can bind a keyword to a component and use it in yield", function() {
-  var component = Ember.Component.extend({
+  var component = Component.extend({
     content: null,
-    layout: Ember.Handlebars.compile("<p>{{content}}</p><p>{{yield}}</p>")
+    layout: EmberHandlebars.compile("<p>{{content}}</p><p>{{yield}}</p>")
   });
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: { boundText: "outer", component: component },
-    template: Ember.Handlebars.compile('{{#with boundText as item}}{{#view component contentBinding="item"}}{{item}}{{/view}}{{/with}}')
+    template: EmberHandlebars.compile('{{#with boundText as item}}{{#view component contentBinding="item"}}{{item}}{{/view}}{{/with}}')
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
   equal(view.$('div p:contains(outer) + p:contains(outer)').length, 1, "component and yield have keyword");
 
-  Ember.run(function() {
+  run(function() {
     view.set('controller.boundText', 'update');
   });
 
@@ -217,18 +227,18 @@ test("can bind a keyword to a component and use it in yield", function() {
 });
 
 test("yield uses the layout context for non component", function() {
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: {
       boundText: "outer",
       inner: {
         boundText: "inner"
       }
     },
-    layout: Ember.Handlebars.compile("<p>{{boundText}}</p>{{#with inner}}<p>{{yield}}</p>{{/with}}"),
-    template: Ember.Handlebars.compile('{{boundText}}')
+    layout: EmberHandlebars.compile("<p>{{boundText}}</p>{{#with inner}}<p>{{yield}}</p>{{/with}}"),
+    template: EmberHandlebars.compile('{{boundText}}')
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -236,17 +246,17 @@ test("yield uses the layout context for non component", function() {
 });
 
 test("yield view should be a virtual view", function() {
-  var component = Ember.Component.extend({
+  var component = Component.extend({
     isParentComponent: true,
 
-    layout: Ember.Handlebars.compile('{{yield}}')
+    layout: EmberHandlebars.compile('{{yield}}')
   });
 
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#view component}}{{view includedComponent}}{{/view}}'),
+  view = EmberView.create({
+    template: EmberHandlebars.compile('{{#view component}}{{view includedComponent}}{{/view}}'),
     controller: {
       component: component,
-      includedComponent: Ember.Component.extend({
+      includedComponent: Component.extend({
         didInsertElement: function() {
           var parentView = this.get('parentView');
 
@@ -256,51 +266,51 @@ test("yield view should be a virtual view", function() {
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 });
 
 
 test("adding a layout should not affect the context of normal views", function() {
-  var parentView = Ember.View.create({
+  var parentView = EmberView.create({
     context: "ParentContext"
   });
 
-  view = Ember.View.create({
-    template:     Ember.Handlebars.compile("View context: {{this}}"),
+  view = EmberView.create({
+    template:     EmberHandlebars.compile("View context: {{this}}"),
     context:      "ViewContext",
     _parentView:  parentView
   });
 
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
 
   equal(view.$().text(), "View context: ViewContext");
 
 
-  set(view, 'layout', Ember.Handlebars.compile("Layout: {{yield}}"));
+  set(view, 'layout', EmberHandlebars.compile("Layout: {{yield}}"));
 
-  Ember.run(function() {
+  run(function() {
     view.destroyElement();
     view.createElement();
   });
 
   equal(view.$().text(), "Layout: View context: ViewContext");
 
-  Ember.run(function() {
+  run(function() {
     parentView.destroy();
   });
 });
 
 test("yield should work for views even if _parentView is null", function() {
-  view = Ember.View.create({
-    layout:   Ember.Handlebars.compile('Layout: {{yield}}'),
-    template: Ember.Handlebars.compile("View Content")
+  view = EmberView.create({
+    layout:   EmberHandlebars.compile('Layout: {{yield}}'),
+    template: EmberHandlebars.compile("View Content")
   });
 
-  Ember.run(function() {
+  run(function() {
     view.createElement();
   });
 
@@ -311,42 +321,42 @@ test("yield should work for views even if _parentView is null", function() {
 module("Component {{yield}}", {
   setup: function() {},
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if (view) {
         view.destroy();
       }
-      delete Ember.Handlebars.helpers['inner-component'];
-      delete Ember.Handlebars.helpers['outer-component'];
+      delete EmberHandlebars.helpers['inner-component'];
+      delete EmberHandlebars.helpers['outer-component'];
     });
   }
 });
 
 test("yield with nested components (#3220)", function(){
   var count = 0;
-  var InnerComponent = Ember.Component.extend({
-    layout: Ember.Handlebars.compile("{{yield}}"),
+  var InnerComponent = Component.extend({
+    layout: EmberHandlebars.compile("{{yield}}"),
     _yield: function (context, options) {
       count++;
-      if (count > 1) throw new Ember.Error('is looping');
+      if (count > 1) throw new EmberError('is looping');
       return this._super(context, options);
     }
   });
 
-  Ember.Handlebars.helper('inner-component', InnerComponent);
+  EmberHandlebars.helper('inner-component', InnerComponent);
 
-  var OuterComponent = Ember.Component.extend({
-    layout: Ember.Handlebars.compile("{{#inner-component}}<span>{{yield}}</span>{{/inner-component}}")
+  var OuterComponent = Component.extend({
+    layout: EmberHandlebars.compile("{{#inner-component}}<span>{{yield}}</span>{{/inner-component}}")
   });
 
-  Ember.Handlebars.helper('outer-component', OuterComponent);
+  EmberHandlebars.helper('outer-component', OuterComponent);
 
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile(
+  view = EmberView.create({
+    template: EmberHandlebars.compile(
       "{{#outer-component}}Hello world{{/outer-component}}"
     )
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 

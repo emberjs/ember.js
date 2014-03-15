@@ -19,17 +19,17 @@ var objectCreate = Object.create || function(parent) {
 var View, Component;
 
 // ES6Todo: when ember-debug is es6'ed import this.
-var emberAssert = Ember.assert;
+// var emberAssert = Ember.assert;
 var Handlebars = (Ember.imports && Ember.imports.Handlebars) || (this && this.Handlebars);
 if (!Handlebars && typeof require === 'function') {
   Handlebars = requireModule('handlebars');
 }
 
-emberAssert("Ember Handlebars requires Handlebars version 1.0 or 1.1. Include " +
+Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1. Include " +
              "a SCRIPT tag in the HTML HEAD linking to the Handlebars file " +
              "before you link to Ember.", Handlebars);
 
-emberAssert("Ember Handlebars requires Handlebars version 1.0 or 1.1, " +
+Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1, " +
              "COMPILER_REVISION expected: 4, got: " +  Handlebars.COMPILER_REVISION +
              " - Please note: Builds of master may have other COMPILER_REVISION values.",
              Handlebars.COMPILER_REVISION === 4);
@@ -107,7 +107,7 @@ EmberHandlebars.helper = function(name, value) {
   if (!View) { View = requireModule('ember-views/views/view')['View']; } // ES6TODO: stupid circular dep
   if (!Component) { Component = requireModule('ember-views/views/component')['default']; } // ES6TODO: stupid circular dep
 
-  emberAssert("You tried to register a component named '" + name + "', but component names must include a '-'", !Component.detect(value) || name.match(/-/));
+  Ember.assert("You tried to register a component named '" + name + "', but component names must include a '-'", !Component.detect(value) || name.match(/-/));
 
   if (View.detect(value)) {
     EmberHandlebars.registerHelper(name, EmberHandlebars.makeViewHelper(value));
@@ -129,7 +129,7 @@ EmberHandlebars.helper = function(name, value) {
 */
 EmberHandlebars.makeViewHelper = function(ViewClass) {
   return function(options) {
-    emberAssert("You can only pass attributes (such as name=value) not bare values to a helper for a View found in '" + ViewClass.toString() + "'", arguments.length < 2);
+    Ember.assert("You can only pass attributes (such as name=value) not bare values to a helper for a View found in '" + ViewClass.toString() + "'", arguments.length < 2);
     return EmberHandlebars.helpers.view.call(this, ViewClass, options);
   };
 };

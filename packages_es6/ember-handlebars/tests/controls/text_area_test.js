@@ -64,7 +64,7 @@ test("Should bind its contents to the specified value", function() {
 
 module("TextArea", {
   setup: function() {
-    TestObject = EmberObject.create({
+   TestObject = window.TestObject = EmberObject.create({
       value: null
     });
 
@@ -75,7 +75,8 @@ module("TextArea", {
     run(function() {
       textArea.destroy();
     });
-    TestObject = textArea = null;
+
+    TestObject = window.TestObject = textArea = null;
   }
 });
 
@@ -189,7 +190,6 @@ test("input tabindex is updated when setting tabindex property of view", functio
 });
 
 test("value binding works properly for inputs that haven't been created", function() {
-
   run(function() {
     textArea.destroy(); // destroy existing textarea
     textArea = TextArea.createWithMixins({

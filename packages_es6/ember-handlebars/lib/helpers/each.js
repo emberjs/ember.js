@@ -4,7 +4,8 @@
 @submodule ember-handlebars
 */
 import Ember from "ember-metal/core"; // Ember.assert;, Ember.K
-var emberAssert = Ember.assert, K = Ember.K;
+// var emberAssert = Ember.assert,
+var K = Ember.K;
 
 import EmberHandlebars from "ember-handlebars-compiler";
 var helpers = EmberHandlebars.helpers;
@@ -19,6 +20,7 @@ import CollectionView from "ember-views/views/collection_view";
 import {Binding} from "ember-metal/binding";
 import {ControllerMixin} from "ember-runtime/controllers/controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
+import EmberArray from "ember-runtime/mixins/array";
 import copy from "ember-runtime/copy";
 import run from "ember-metal/run_loop";
 import {addObserver, removeObserver, addBeforeObserver, removeBeforeObserver} from "ember-metal/observer";
@@ -58,13 +60,13 @@ var EachView = CollectionView.extend(_Metamorph, {
   },
 
   _assertArrayLike: function(content) {
-    emberAssert(fmt("The value that #each loops over must be an Array. You " +
+    Ember.assert(fmt("The value that #each loops over must be an Array. You " +
                      "passed %@, but it should have been an ArrayController",
                      [content.constructor]),
                      !ControllerMixin.detect(content) ||
                        (content && content.isGenerated) ||
                        content instanceof ArrayController);
-    emberAssert(fmt("The value that #each loops over must be an Array. You passed %@", [(ControllerMixin.detect(content) && content.get('model') !== undefined) ? fmt("'%@' (wrapped in %@)", [content.get('model'), content]) : content]), Ember.Array.detect(content));
+    Ember.assert(fmt("The value that #each loops over must be an Array. You passed %@", [(ControllerMixin.detect(content) && content.get('model') !== undefined) ? fmt("'%@' (wrapped in %@)", [content.get('model'), content]) : content]), EmberArray.detect(content));
   },
 
   disableContentObservers: function(callback) {
@@ -127,7 +129,7 @@ var EachView = CollectionView.extend(_Metamorph, {
 function _addMetamorphCheck() {
   EachView.reopen({
     _checkMetamorph: on('didInsertElement', function() {
-      emberAssert("The metamorph tags, " +
+      Ember.assert("The metamorph tags, " +
                    this.morph.start + " and " + this.morph.end +
                    ", have different parents.\nThe browser has fixed your template to output valid HTML (for example, check that you have properly closed all tags and have used a TBODY tag when creating a table with '{{#each}}')",
         document.getElementById( this.morph.start ).parentNode ===
@@ -420,7 +422,7 @@ GroupedEach.prototype = {
 */
 function eachHelper(path, options) {
   if (arguments.length === 4) {
-    emberAssert("If you pass more than one argument to the each helper, it must be in the form #each foo in bar", arguments[1] === "in");
+    Ember.assert("If you pass more than one argument to the each helper, it must be in the form #each foo in bar", arguments[1] === "in");
 
     var keywordName = arguments[0];
 

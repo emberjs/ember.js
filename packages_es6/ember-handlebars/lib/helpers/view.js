@@ -6,7 +6,7 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.warn, Ember.assert
-var emberWarn = Ember.warn, emberAssert = Ember.assert;
+// var emberWarn = Ember.warn, emberAssert = Ember.assert;
 
 import EmberObject from "ember-runtime/system/object";
 import {get} from "ember-metal/property_get";
@@ -32,7 +32,7 @@ function makeBindings(thisContext, options) {
       var value = hash[prop];
 
       if (IS_BINDING.test(prop)) {
-        emberWarn("You're attempting to render a view by passing " + prop + "=" + value + " to a view helper, but this syntax is ambiguous. You should either surround " + value + " in quotes or remove `Binding` from " + prop + ".");
+        Ember.warn("You're attempting to render a view by passing " + prop + "=" + value + " to a view helper, but this syntax is ambiguous. You should either surround " + value + " in quotes or remove `Binding` from " + prop + ".");
       } else {
         hash[prop + 'Binding'] = value;
         hashType[prop + 'Binding'] = 'STRING';
@@ -87,7 +87,7 @@ var ViewHelper = EmberObject.create({
     }
 
     if (hash.attributeBindings) {
-      emberAssert("Setting 'attributeBindings' via Handlebars is not allowed. Please subclass Ember.View and set it there instead.");
+      Ember.assert("Setting 'attributeBindings' via Handlebars is not allowed. Please subclass Ember.View and set it there instead.");
       extensions.attributeBindings = null;
       dup = true;
     }
@@ -169,18 +169,18 @@ var ViewHelper = EmberObject.create({
       // as deprecation warnings
       //
       if (options.types[0] === 'STRING' && LOWERCASE_A_Z.test(path) && !VIEW_PREFIX.test(path)) {
-        emberAssert("View requires a container", !!data.view.container);
+        Ember.assert("View requires a container", !!data.view.container);
         newView = data.view.container.lookupFactory('view:' + path);
       } else {
         newView = handlebarsGet(thisContext, path, options);
       }
 
-      emberAssert("Unable to find view at path '" + path + "'", !!newView);
+      Ember.assert("Unable to find view at path '" + path + "'", !!newView);
     } else {
       newView = path;
     }
 
-    emberAssert(EmberString.fmt('You must pass a view to the #view helper, not %@ (%@)', [path, newView]), View.detect(newView) || View.detectInstance(newView));
+    Ember.assert(EmberString.fmt('You must pass a view to the #view helper, not %@ (%@)', [path, newView]), View.detect(newView) || View.detectInstance(newView));
 
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;
@@ -188,7 +188,7 @@ var ViewHelper = EmberObject.create({
     var newViewProto = newView.proto ? newView.proto() : newView;
 
     if (fn) {
-      emberAssert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !get(newViewProto, 'templateName'));
+      Ember.assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !get(newViewProto, 'templateName'));
       viewOptions.template = fn;
     }
 
@@ -368,7 +368,7 @@ var ViewHelper = EmberObject.create({
   @return {String} HTML string
 */
 function viewHelper(path, options) {
-  emberAssert("The view helper only takes a single argument", arguments.length <= 2);
+  Ember.assert("The view helper only takes a single argument", arguments.length <= 2);
 
   // If no path is provided, treat path param as options.
   // ES6TODO: find a way to do this without global lookup
