@@ -31,5 +31,5 @@ test('Ember.run.bind keeps the async callback arguments', function() {
     fn(2, 3);
   };
 
-  asyncFunction(run.bind(asyncCallback, 1));
+  asyncFunction(run.bind(asyncCallback, asyncCallback, 1));
 });
