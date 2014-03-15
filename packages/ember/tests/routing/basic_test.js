@@ -1607,6 +1607,49 @@ if (Ember.FEATURES.isEnabled("ember-routing-inherits-parent-model")) {
     currentPost = post3;
     handleURL("/posts/3/comments");
   });
+
+  test("Resource with no function passed does not inherit model from parent resource", function() {
+    expect(6);
+
+    Router.map(function() {
+      this.resource("the_post", { path: "/posts/:post_id" }, function() {
+        this.resource("comments");
+      });
+    });
+
+    var post1 = {}, post2 = {}, post3 = {}, currentPost;
+
+    var posts = {
+      1: post1,
+      2: post2,
+      3: post3
+    };
+
+    App.ThePostRoute = Ember.Route.extend({
+      model: function(params) {
+        return posts[params.post_id];
+      }
+    });
+
+    App.CommentsRoute = Ember.Route.extend({
+      afterModel: function(post, transition) {
+        var parent_model = this.modelFor('thePost');
+
+        notEqual(post, parent_model);
+      }
+    });
+
+    bootApplication();
+
+    currentPost = post1;
+    handleURL("/posts/1/comments");
+
+    currentPost = post2;
+    handleURL("/posts/2/comments");
+
+    currentPost = post3;
+    handleURL("/posts/3/comments");
+  });
 }
 
 test("It is possible to get the model from a parent route", function() {
