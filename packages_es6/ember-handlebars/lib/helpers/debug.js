@@ -5,15 +5,11 @@
 @submodule ember-handlebars
 */
 import Ember from "ember-metal/core"; // Ember.FEATURES,
-
 import {inspect} from "ember-metal/utils";
-
-// We can't do the following: tests expect
-// direct path access to Ember.Logger :(
-// import Logger from "ember-metal/logger";
+import Logger from "ember-metal/logger";
 
 import {get} from "ember-metal/property_get";
-export {normalizePath, handlebarsGet} from "ember-handlebars/ext";
+import {normalizePath, handlebarsGet} from "ember-handlebars/ext";
 
 var a_slice = [].slice;
 
@@ -32,7 +28,7 @@ var a_slice = [].slice;
 function logHelper() {
   var params = a_slice.call(arguments, 0, -1),
       options = arguments[arguments.length - 1],
-      logger = Ember.Logger.log,
+      logger = Logger.log,
       values = [],
       allowPrimitives = false;
 
@@ -104,5 +100,3 @@ function debuggerHelper(options) {
 }
 
 export {logHelper, debuggerHelper};
-
-
