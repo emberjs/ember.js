@@ -489,8 +489,6 @@ Ember.run.next = function() {
   // the 100ms delay until this method can be called again will be cancelled
   Ember.run.cancel(debounceImmediate);
   ```
-  ```
-  ```
 
   @method cancel
   @param {Object} timer Timer object to cancel
