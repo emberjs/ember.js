@@ -4,7 +4,7 @@
 */
 
 import Ember from "ember-metal/core";
-var emberAssert = Ember.assert;
+// var emberAssert = Ember.assert;
 
 import {get} from "ember-metal/property_get";
 
@@ -101,7 +101,7 @@ function yieldHelper(options) {
     }
   }
 
-  emberAssert("You called yield in a template that was not a layout", !!view);
+  Ember.assert("You called yield in a template that was not a layout", !!view);
 
   view._yield(this, options);
 }

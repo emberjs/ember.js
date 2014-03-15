@@ -1,9 +1,16 @@
+/*jshint newcap:false*/
+
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import {View as EmberView} from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars-compiler";
+import ArrayProxy from "ember-runtime/system/array_proxy";
+import {A} from "ember-runtime/system/native_array";
 
 var trim = jQuery.trim;
+
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
 
 var view;
 
@@ -124,12 +131,12 @@ test("#each's content can be changed right before a destroy", function() {
 
   createGroupedView(
     "{{#each numbers}}{{this}}{{/each}}",
-    {numbers: Ember.A([1,2,3])}
+    {numbers: A([1,2,3])}
   );
   appendView();
 
   run(function() {
-    view.set('context.numbers', Ember.A([3,2,1]));
+    view.set('context.numbers', A([3,2,1]));
     view.destroy();
   });
 });
@@ -137,7 +144,7 @@ test("#each's content can be changed right before a destroy", function() {
 test("#each can be nested", function() {
   createGroupedView(
     "{{#each numbers}}{{this}}{{/each}}",
-    {numbers: Ember.A([1, 2, 3])}
+    {numbers: A([1, 2, 3])}
   );
   appendView();
   equal(view.$('script').length, 0, "No Metamorph markers are output");
@@ -150,7 +157,7 @@ test("#each can be nested", function() {
   equal(view.$().text(), '1234', "The array observer properly updated the rendered output");
 
   run(function() {
-    view.set('context.numbers', Ember.A(['a', 'b', 'c']));
+    view.set('context.numbers', A(['a', 'b', 'c']));
   });
 
   equal(view.$().text(), 'abc', "Replacing the array properly updated the rendered output");
@@ -159,7 +166,7 @@ test("#each can be nested", function() {
 test("#each can be used with an ArrayProxy", function() {
   createGroupedView(
     "{{#each numbers}}{{this}}{{/each}}",
-    {numbers: Ember.ArrayProxy.create({content: Ember.A([1, 2, 3])})}
+    {numbers: ArrayProxy.create({content: A([1, 2, 3])})}
   );
   appendView();
   equal(view.$('script').length, 0, "No Metamorph markers are output");
@@ -170,14 +177,14 @@ test("an #each can be nested with a view inside", function() {
   var yehuda = {name: 'Yehuda'};
   createGroupedView(
     '{{#each people}}{{#view}}{{name}}{{/view}}{{/each}}',
-    {people: Ember.A([yehuda, {name: 'Tom'}])}
+    {people: A([yehuda, {name: 'Tom'}])}
   );
   appendView();
   equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(view.$().text(), 'YehudaTom', "The content was rendered");
 
   run(function() {
-    Ember.set(yehuda, 'name', 'Erik');
+    set(yehuda, 'name', 'Erik');
   });
 
   equal(view.$().text(), 'ErikTom', "The updated object's view was rerendered");
@@ -186,7 +193,7 @@ test("an #each can be nested with a view inside", function() {
 test("#each with groupedRows=true behaves like a normal bound #each", function() {
   createGroupedView(
     '{{#each numbers groupedRows=true}}{{this}}{{/each}}',
-    {numbers: Ember.A([1, 2, 3])}
+    {numbers: A([1, 2, 3])}
   );
   appendView();
   equal(view.$('script').length, 8, "Correct number of Metamorph markers are output");
@@ -202,8 +209,8 @@ test("#each with groupedRows=true behaves like a normal bound #each", function()
 
 test("#each with itemViewClass behaves like a normal bound #each", function() {
   createGroupedView(
-    '{{#each people itemViewClass="EmberView"}}{{name}}{{/each}}',
-    {people: Ember.A([{name: 'Erik'}, {name: 'Peter'}])}
+    '{{#each people itemViewClass="Ember.View"}}{{name}}{{/each}}',
+    {people: A([{name: 'Erik'}, {name: 'Peter'}])}
   );
   appendView();
   equal(view.$('script').length, 2, "Correct number of Metamorph markers are output");

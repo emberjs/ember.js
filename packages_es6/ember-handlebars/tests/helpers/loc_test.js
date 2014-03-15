@@ -1,18 +1,20 @@
+import run from "ember-metal/run_loop";
+import {View as EmberView} from "ember-views/views/view";
 var buildView = function(template, context) {
-  return Ember.View.create({
+  return EmberView.create({
     template: Ember.Handlebars.compile(template),
     context: (context || {})
   });
 };
 
 var appendView = function(view) {
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 };
 
 var destroyView = function(view) {
-  Ember.run(function() {
+  run(function() {
     view.destroy();
   });
 };

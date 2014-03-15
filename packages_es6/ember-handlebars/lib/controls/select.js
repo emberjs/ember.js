@@ -1,4 +1,4 @@
-/*jshint eqeqeq:false */
+/*jshint eqeqeq:false newcap:false */
 
 /**
 @module ember

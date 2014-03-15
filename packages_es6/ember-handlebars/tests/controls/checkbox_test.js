@@ -1,13 +1,12 @@
 import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import {set as o_set} from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
-import {View} from "ember-views/views/view";
+import {View as EmberView} from "ember-views/views/view";
+import EventDispatcher from "ember-views/system/event_dispatcher";
 
-import {expectAssertion} from "ember-metal/tests/debug_helpers";
+// import {expectAssertion} from "ember-metal/tests/debug_helpers";
 
-var o_set = set;
-
-set = function(obj, key, value) {
+var set = function(obj, key, value) {
   run(function() { o_set(obj, key, value); });
 };
 
@@ -30,7 +29,7 @@ module("{{input type='checkbox'}}", {
       val: false
     };
 
-    checkboxView = View.extend({
+    checkboxView = EmberView.extend({
       controller: controller,
       template: compile('{{input type="checkbox" disabled=disabled tabindex=tab name=name checked=val}}')
     }).create();
@@ -73,7 +72,7 @@ test("checkbox checked property is updated", function() {
 
 module("{{input type='checkbox'}} - prevent value= usage", {
   setup: function() {
-    checkboxView = Ember.View.extend({
+    checkboxView = EmberView.extend({
       controller: controller,
       template: compile('{{input type="checkbox" disabled=disabled tabindex=tab name=name value=val}}')
     }).create();
@@ -98,7 +97,7 @@ module("{{input type='checkbox'}} - static values", {
       val: false
     };
 
-    checkboxView = Ember.View.extend({
+    checkboxView = EmberView.extend({
       controller: controller,
       template: compile('{{input type="checkbox" disabled=true tabindex=6 name="hello" checked=false}}')
     }).create();
@@ -129,12 +128,12 @@ test("checkbox checked property is updated", function() {
 
 module("Ember.Checkbox", {
   setup: function() {
-    dispatcher = Ember.EventDispatcher.create();
+    dispatcher = EventDispatcher.create();
     dispatcher.setup();
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       dispatcher.destroy();
       checkboxView.destroy();
     });
@@ -142,7 +141,7 @@ module("Ember.Checkbox", {
 });
 
 function append() {
-  Ember.run(function() {
+  run(function() {
     checkboxView.appendTo('#qunit-fixture');
   });
 }
@@ -162,10 +161,10 @@ test("should become disabled if the disabled attribute is changed", function() {
   append();
   ok(checkboxView.$().is(":not(:disabled)"));
 
-  Ember.run(function() { checkboxView.set('disabled', true); });
+  run(function() { checkboxView.set('disabled', true); });
   ok(checkboxView.$().is(":disabled"));
 
-  Ember.run(function() { checkboxView.set('disabled', false); });
+  run(function() { checkboxView.set('disabled', false); });
   ok(checkboxView.$().is(":not(:disabled)"));
 });
 
@@ -185,41 +184,41 @@ test("should become indeterminate if the indeterminate attribute is changed", fu
 
   equal(checkboxView.$().prop('indeterminate'), false, "Checkbox should not be indeterminate");
 
-  Ember.run(function() { checkboxView.set('indeterminate', true); });
+  run(function() { checkboxView.set('indeterminate', true); });
   equal(checkboxView.$().prop('indeterminate'), true, "Checkbox should be indeterminate");
 
-  Ember.run(function() { checkboxView.set('indeterminate', false); });
+  run(function() { checkboxView.set('indeterminate', false); });
   equal(checkboxView.$().prop('indeterminate'), false, "Checkbox should not be indeterminate");
 });
 
 test("should support the tabindex property", function() {
   checkboxView = Ember.Checkbox.create({});
 
-  Ember.run(function() { checkboxView.set('tabindex', 6); });
+  run(function() { checkboxView.set('tabindex', 6); });
   append();
 
   equal(checkboxView.$().prop('tabindex'), '6', 'the initial checkbox tabindex is set in the DOM');
 
-  Ember.run(function() { checkboxView.set('tabindex', 3); });
+  run(function() { checkboxView.set('tabindex', 3); });
   equal(checkboxView.$().prop('tabindex'), '3', 'the checkbox tabindex changes when it is changed in the view');
 });
 
 test("checkbox name is updated when setting name property of view", function() {
   checkboxView = Ember.Checkbox.create({});
 
-  Ember.run(function() { checkboxView.set('name', 'foo'); });
+  run(function() { checkboxView.set('name', 'foo'); });
   append();
 
   equal(checkboxView.$().attr('name'), "foo", "renders checkbox with the name");
 
-  Ember.run(function() { checkboxView.set('name', 'bar'); });
+  run(function() { checkboxView.set('name', 'bar'); });
 
   equal(checkboxView.$().attr('name'), "bar", "updates checkbox after name changes");
 });
 
 test("checked property mirrors input value", function() {
   checkboxView = Ember.Checkbox.create({});
-  Ember.run(function() { checkboxView.append(); });
+  run(function() { checkboxView.append(); });
 
   equal(get(checkboxView, 'checked'), false, "initially starts with a false value");
   equal(!!checkboxView.$().prop('checked'), false, "the initial checked property is false");
@@ -228,14 +227,14 @@ test("checked property mirrors input value", function() {
 
   equal(checkboxView.$().prop('checked'), true, "changing the value property changes the DOM");
 
-  Ember.run(function() { checkboxView.remove(); });
-  Ember.run(function() { checkboxView.append(); });
+  run(function() { checkboxView.remove(); });
+  run(function() { checkboxView.append(); });
 
   equal(checkboxView.$().prop('checked'), true, "changing the value property changes the DOM");
 
-  Ember.run(function() { checkboxView.remove(); });
-  Ember.run(function() { set(checkboxView, 'checked', false); });
-  Ember.run(function() { checkboxView.append(); });
+  run(function() { checkboxView.remove(); });
+  run(function() { set(checkboxView, 'checked', false); });
+  run(function() { checkboxView.append(); });
 
   equal(checkboxView.$().prop('checked'), false, "changing the value property changes the DOM");
 });

@@ -1,17 +1,26 @@
 /*globals TemplateTests*/
+import {View as EmberView} from "ember-views/views/view";
+import run from "ember-metal/run_loop";
+import EmberObject from "ember-runtime/system/object";
+import Namespace from "ember-runtime/system/namespace";
+import EmberHandlebars from "ember-handlebars-compiler";
 
-var view, get = Ember.get, set = Ember.set;
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
 
 var appendView = function() {
-  Ember.run(function() { view.appendTo('#qunit-fixture'); });
+  run(function() { view.appendTo('#qunit-fixture'); });
 };
+
+var view;
+
 
 module("Handlebars custom view helpers", {
   setup: function() {
-    window.TemplateTests = Ember.Namespace.create();
+    window.TemplateTests = Namespace.create();
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if (view) {
         view.destroy();
       }
@@ -21,15 +30,15 @@ module("Handlebars custom view helpers", {
 });
 
 test("should render an instance of the specified view", function() {
-  TemplateTests.OceanView = Ember.View.extend({
-    template: Ember.Handlebars.compile('zomg, nice view')
+  TemplateTests.OceanView = EmberView.extend({
+    template: EmberHandlebars.compile('zomg, nice view')
   });
 
-  Ember.Handlebars.helper('oceanView', TemplateTests.OceanView);
+  EmberHandlebars.helper('oceanView', TemplateTests.OceanView);
 
-  view = Ember.View.create({
-    controller: Ember.Object.create(),
-    template: Ember.Handlebars.compile('{{oceanView tagName="strong"}}')
+  view = EmberView.create({
+    controller: EmberObject.create(),
+    template: EmberHandlebars.compile('{{oceanView tagName="strong"}}')
   });
 
   appendView();
@@ -40,17 +49,17 @@ test("should render an instance of the specified view", function() {
 });
 
 test("Should bind to this keyword", function() {
-  TemplateTests.OceanView = Ember.View.extend({
+  TemplateTests.OceanView = EmberView.extend({
     model: null,
-    template: Ember.Handlebars.compile('{{view.model}}')
+    template: EmberHandlebars.compile('{{view.model}}')
   });
 
-  Ember.Handlebars.helper('oceanView', TemplateTests.OceanView);
+  EmberHandlebars.helper('oceanView', TemplateTests.OceanView);
 
-  view = Ember.View.create({
+  view = EmberView.create({
     context: 'foo',
-    controller: Ember.Object.create(),
-    template: Ember.Handlebars.compile('{{oceanView tagName="strong" viewName="ocean" model=this}}')
+    controller: EmberObject.create(),
+    template: EmberHandlebars.compile('{{oceanView tagName="strong" viewName="ocean" model=this}}')
   });
 
   appendView();
@@ -59,7 +68,7 @@ test("Should bind to this keyword", function() {
 
   equal(oceanViews.length, 1, "helper rendered an instance of the view");
 
-  Ember.run(function() {
+  run(function() {
     set(view, 'ocean.model', 'bar');
   });
 

@@ -6,7 +6,7 @@
 import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
 import {inspect} from "ember-metal/utils";
 
-var emberAssert = Ember.assert;
+// var emberAssert = Ember.assert;
     // emberDeprecate = Ember.deprecate;
 
 import EmberHandlebars from "ember-handlebars-compiler";
@@ -19,6 +19,7 @@ import {get} from "ember-metal/property_get";
 import {handlebarsGet} from "ember-handlebars/ext";
 import {ViewHelper} from "ember-handlebars/helpers/view";
 import {computed} from "ember-metal/computed";
+import CollectionView from "ember-views/views/collection_view";
 
 var alias = computed.alias;
 /**
@@ -150,9 +151,9 @@ function collectionHelper(path, options) {
   if (path && path.data && path.data.isRenderData) {
     options = path;
     path = undefined;
-    emberAssert("You cannot pass more than one argument to the collection helper", arguments.length === 1);
+    Ember.assert("You cannot pass more than one argument to the collection helper", arguments.length === 1);
   } else {
-    emberAssert("You cannot pass more than one argument to the collection helper", arguments.length === 2);
+    Ember.assert("You cannot pass more than one argument to the collection helper", arguments.length === 2);
   }
 
   var fn = options.fn;
@@ -169,10 +170,10 @@ function collectionHelper(path, options) {
     controller = data.keywords.controller;
     container = controller && controller.container;
     collectionClass = handlebarsGet(this, path, options) || container.lookupFactory('view:' + path);
-    emberAssert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
+    Ember.assert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
   }
   else {
-    collectionClass = Ember.CollectionView;
+    collectionClass = CollectionView;
   }
 
   var hash = options.hash, itemHash = {}, match;
@@ -182,7 +183,7 @@ function collectionHelper(path, options) {
 
   if (hash.itemView) {
     controller = data.keywords.controller;
-    emberAssert('You specified an itemView, but the current context has no ' +
+    Ember.assert('You specified an itemView, but the current context has no ' +
                  'container to look the itemView up in. This probably means ' +
                  'that you created a view manually, instead of through the ' +
                  'container. Instead, use container.lookup("view:viewName"), ' +
@@ -190,7 +191,7 @@ function collectionHelper(path, options) {
                  controller && controller.container);
     container = controller.container;
     itemViewClass = container.lookupFactory('view:' + hash.itemView);
-    emberAssert('You specified the itemView ' + hash.itemView + ", but it was " +
+    Ember.assert('You specified the itemView ' + hash.itemView + ", but it was " +
                  "not found at " + container.describe("view:" + hash.itemView) +
                  " (and it was not registered in the container)", !!itemViewClass);
   } else if (hash.itemViewClass) {
@@ -199,7 +200,7 @@ function collectionHelper(path, options) {
     itemViewClass = collectionPrototype.itemViewClass;
   }
 
-  emberAssert(fmt("%@ #collection: Could not find itemViewClass %@", [data.view, itemViewClass]), !!itemViewClass);
+  Ember.assert(fmt("%@ #collection: Could not find itemViewClass %@", [data.view, itemViewClass]), !!itemViewClass);
 
   delete hash.itemViewClass;
   delete hash.itemView;

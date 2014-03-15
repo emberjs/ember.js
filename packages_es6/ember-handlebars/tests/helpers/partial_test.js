@@ -1,5 +1,11 @@
+import EmberObject from "ember-runtime/system/object";
+import run from "ember-metal/run_loop";
+import {View as EmberView} from "ember-views/views/view";
 import jQuery from "ember-views/system/jquery";
 var trim = jQuery.trim;
+import Container from "ember-runtime/system/container";
+import EmberHandlebars from "ember-handlebars-compiler";
+var compile = EmberHandlebars.compile;
 
 var MyApp;
 var originalLookup = Ember.lookup, lookup, TemplateTests, view, container;
@@ -7,12 +13,12 @@ var originalLookup = Ember.lookup, lookup, TemplateTests, view, container;
 module("Support for {{partial}} helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
-    MyApp = lookup.MyApp = Ember.Object.create({});
-    container = new Ember.Container();
+    MyApp = lookup.MyApp = EmberObject.create({});
+    container = new Container();
     container.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if (view) {
         view.destroy();
       }
@@ -22,14 +28,14 @@ module("Support for {{partial}} helper", {
 });
 
 test("should render other templates registered with the container", function() {
-  container.register('template:_subTemplateFromContainer', Ember.Handlebars.compile('sub-template'));
+  container.register('template:_subTemplateFromContainer', EmberHandlebars.compile('sub-template'));
 
-  view = Ember.View.create({
+  view = EmberView.create({
     container: container,
-    template: Ember.Handlebars.compile('This {{partial "subTemplateFromContainer"}} is pretty great.')
+    template: EmberHandlebars.compile('This {{partial "subTemplateFromContainer"}} is pretty great.')
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -37,14 +43,14 @@ test("should render other templates registered with the container", function() {
 });
 
 test("should render other slash-separated templates registered with the container", function() {
-  container.register('template:child/_subTemplateFromContainer', Ember.Handlebars.compile("sub-template"));
+  container.register('template:child/_subTemplateFromContainer', EmberHandlebars.compile("sub-template"));
 
-  view = Ember.View.create({
+  view = EmberView.create({
     container: container,
-    template: Ember.Handlebars.compile('This {{partial "child/subTemplateFromContainer"}} is pretty great.')
+    template: EmberHandlebars.compile('This {{partial "child/subTemplateFromContainer"}} is pretty great.')
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -52,18 +58,18 @@ test("should render other slash-separated templates registered with the containe
 });
 
 test("should use the current view's context", function() {
-  container.register('template:_person_name', Ember.Handlebars.compile("{{firstName}} {{lastName}}"));
+  container.register('template:_person_name', EmberHandlebars.compile("{{firstName}} {{lastName}}"));
 
-  view = Ember.View.create({
+  view = EmberView.create({
     container: container,
-    template: Ember.Handlebars.compile('Who is {{partial "person_name"}}?')
+    template: EmberHandlebars.compile('Who is {{partial "person_name"}}?')
   });
-  view.set('controller', Ember.Object.create({
+  view.set('controller', EmberObject.create({
     firstName: 'Kris',
     lastName: 'Selden'
   }));
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -71,28 +77,28 @@ test("should use the current view's context", function() {
 });
 
 test("Quoteless parameters passed to {{template}} perform a bound property lookup of the partial name", function() {
-  container.register('template:_subTemplate', Ember.Handlebars.compile("sub-template"));
-  container.register('template:_otherTemplate', Ember.Handlebars.compile("other-template"));
+  container.register('template:_subTemplate', EmberHandlebars.compile("sub-template"));
+  container.register('template:_otherTemplate', EmberHandlebars.compile("other-template"));
 
-  view = Ember.View.create({
+  view = EmberView.create({
     container: container,
-    template: Ember.Handlebars.compile('This {{partial view.partialName}} is pretty {{partial nonexistent}}great.'),
+    template: EmberHandlebars.compile('This {{partial view.partialName}} is pretty {{partial nonexistent}}great.'),
     partialName: 'subTemplate'
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
   equal(trim(view.$().text()), "This sub-template is pretty great.");
 
-  Ember.run(function() {
+  run(function() {
     view.set('partialName', 'otherTemplate');
   });
 
   equal(trim(view.$().text()), "This other-template is pretty great.");
 
-  Ember.run(function() {
+  run(function() {
     view.set('partialName', null);
   });
 

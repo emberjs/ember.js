@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.assert, Ember.Handlebars, Ember.lookup
-var emberAssert = Ember.assert;
+// var emberAssert = Ember.assert;
 
 import EmberStringUtils from "ember-runtime/system/string";
 var fmt = EmberStringUtils.fmt;
@@ -221,7 +221,7 @@ function blockHelperMissingHelper(path) {
 
   var options = arguments[arguments.length - 1];
 
-  emberAssert("`blockHelperMissing` was invoked without a helper name, which " +
+  Ember.assert("`blockHelperMissing` was invoked without a helper name, which " +
                "is most likely due to a mismatch between the version of " +
                "Ember.js you're running now and the one used to precompile your " +
                "templates. Please make sure the version of " +
@@ -397,7 +397,7 @@ function makeBoundHelper(fn) {
       boundOption, property,
       normalizedValue = SimpleHandlebarsView.prototype.normalizedValue;
 
-    emberAssert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !options.fn);
+    Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !options.fn);
 
     // Detect bound options (e.g. countBinding="otherCount")
     var boundOptions = hash.boundOptions = {};
