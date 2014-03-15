@@ -26,7 +26,7 @@ test('Ember.run.bind keeps the async callback arguments', function() {
       ok(run.currentRunLoop, 'expected a run-loop');
       equal(increment, 1);
       equal(increment2, 2);
-      equal(increment2, 3);
+      equal(increment3, 3);
     }
   };
 
