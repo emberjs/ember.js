@@ -4,7 +4,7 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert, Ember.warn, uuid
-var emberAssert = Ember.assert, emberWarn = Ember.warn;
+// var emberAssert = Ember.assert, Ember.warn = Ember.warn;
 
 import EmberHandlebars from "ember-handlebars-compiler";
 var helpers = EmberHandlebars.helpers;
@@ -45,8 +45,12 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
       fn = options.fn,
       inverse = options.inverse,
       view = data.view,
-      currentContext = this,
       normalized, observer, i;
+
+  // we relied on the behavior of calling without
+  // context to mean this === window, but when running
+  // "use strict", it's possible for this to === undefined;
+  var currentContext = this || window;
 
   normalized = normalizePath(currentContext, property, data);
 
@@ -193,7 +197,7 @@ function shouldDisplayIfHelperContent(result) {
   @return {String} HTML string
 */
 function _triageMustacheHelper(property, options) {
-  emberAssert("You cannot pass more than one argument to the _triageMustache helper", arguments.length <= 2);
+  Ember.assert("You cannot pass more than one argument to the _triageMustache helper", arguments.length <= 2);
 
   if (helpers[property]) {
     return helpers[property].call(this, options);
@@ -215,7 +219,7 @@ function resolveHelper(container, name) {
   var helper = container.lookup('helper:' + name);
   if (!helper) {
     var componentLookup = container.lookup('component-lookup:main');
-    emberAssert("Could not find 'component-lookup:main' on the provided container, which is necessary for performing component lookups", componentLookup);
+    Ember.assert("Could not find 'component-lookup:main' on the provided container, which is necessary for performing component lookups", componentLookup);
 
     var Component = componentLookup.lookupFactory(name, container);
     if (Component) {
@@ -251,7 +255,7 @@ function resolveHelper(container, name) {
   @return {String} HTML string
 */
 function bindHelper(property, options) {
-  emberAssert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
+  Ember.assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
 
   var context = (options.contexts && options.contexts.length) ? options.contexts[0] : this;
 
@@ -402,12 +406,12 @@ function withHelper(context, options) {
   if (arguments.length === 4) {
     var keywordName, path, rootPath, normalized, contextPath;
 
-    emberAssert("If you pass more than one argument to the with helper, it must be in the form #with foo as bar", arguments[1] === "as");
+    Ember.assert("If you pass more than one argument to the with helper, it must be in the form #with foo as bar", arguments[1] === "as");
     options = arguments[3];
     keywordName = arguments[2];
     path = arguments[0];
 
-    emberAssert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
+    Ember.assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
 
     var localizedOptions = o_create(options);
     localizedOptions.data = o_create(options.data);
@@ -432,8 +436,8 @@ function withHelper(context, options) {
 
     return bind.call(this, path, localizedOptions, true, exists);
   } else {
-    emberAssert("You must pass exactly one argument to the with helper", arguments.length === 2);
-    emberAssert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
+    Ember.assert("You must pass exactly one argument to the with helper", arguments.length === 2);
+    Ember.assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
     return helpers.bind.call(options.contexts[0], context, options);
   }
 }
@@ -450,8 +454,8 @@ function withHelper(context, options) {
   @return {String} HTML string
 */
 function ifHelper(context, options) {
-  emberAssert("You must pass exactly one argument to the if helper", arguments.length === 2);
-  emberAssert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
+  Ember.assert("You must pass exactly one argument to the if helper", arguments.length === 2);
+  Ember.assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
   if (options.data.isUnbound) {
     return helpers.unboundIf.call(options.contexts[0], context, options);
   } else {
@@ -467,8 +471,8 @@ function ifHelper(context, options) {
   @return {String} HTML string
 */
 function unlessHelper(context, options) {
-  emberAssert("You must pass exactly one argument to the unless helper", arguments.length === 2);
-  emberAssert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
+  Ember.assert("You must pass exactly one argument to the unless helper", arguments.length === 2);
+  Ember.assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   var fn = options.fn, inverse = options.inverse;
 
@@ -606,14 +610,17 @@ function unlessHelper(context, options) {
   @return {String} HTML string
 */
 function bindAttrHelper(options) {
-
   var attrs = options.hash;
 
-  emberAssert("You must specify at least one hash argument to bind-attr", !!keys(attrs).length);
+  Ember.assert("You must specify at least one hash argument to bind-attr", !!keys(attrs).length);
 
   var view = options.data.view;
   var ret = [];
-  var ctx = this;
+
+  // we relied on the behavior of calling without
+  // context to mean this === window, but when running
+  // "use strict", it's possible for this to === undefined;
+  var ctx = this || window;
 
   // Generate a unique id for this element. This will be added as a
   // data attribute to the element so it can be looked up when
@@ -623,7 +630,7 @@ function bindAttrHelper(options) {
   // Handle classes differently, as we can bind multiple classes
   var classBindings = attrs['class'];
   if (classBindings != null) {
-    var classResults = bindClasses(this, classBindings, view, dataId, options);
+    var classResults = bindClasses(ctx, classBindings, view, dataId, options);
 
     ret.push('class="' + Handlebars.Utils.escapeExpression(classResults.join(' ')) + '"');
     delete attrs['class'];
@@ -637,21 +644,21 @@ function bindAttrHelper(options) {
     var path = attrs[attr],
         normalized;
 
-    emberAssert(fmt("You must provide an expression as the value of bound attribute. You specified: %@=%@", [attr, path]), typeof path === 'string');
+    Ember.assert(fmt("You must provide an expression as the value of bound attribute. You specified: %@=%@", [attr, path]), typeof path === 'string');
 
     normalized = normalizePath(ctx, path, options.data);
 
     var value = (path === 'this') ? normalized.root : handlebarsGet(ctx, path, options),
         type = typeOf(value);
 
-    emberAssert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
+    Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
 
     var observer, invoker;
 
     observer = function observer() {
       var result = handlebarsGet(ctx, path, options);
 
-      emberAssert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]),
+      Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]),
                    result === null || result === undefined || typeof result === 'number' ||
                      typeof result === 'string' || typeof result === 'boolean');
 
@@ -704,7 +711,7 @@ function bindAttrHelper(options) {
   @return {String} HTML string
 */
 function bindAttrHelperDeprecated() {
-  emberWarn("The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
+  Ember.warn("The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
   return helpers['bind-attr'].apply(this, arguments);
 }
 

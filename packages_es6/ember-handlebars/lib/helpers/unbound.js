@@ -33,18 +33,19 @@ var slice = [].slice;
   @return {String} HTML string
 */
 function unboundHelper(property, fn) {
-  var options = arguments[arguments.length - 1], helper, context, out;
+  var options = arguments[arguments.length - 1], helper, context, out, ctx;
 
+  ctx = this || window;
   if (arguments.length > 2) {
     // Unbound helper call.
     options.data.isUnbound = true;
     helper = helpers[arguments[0]] || helpers.helperMissing;
-    out = helper.apply(this, slice.call(arguments, 1));
+    out = helper.apply(ctx, slice.call(arguments, 1));
     delete options.data.isUnbound;
     return out;
   }
 
-  context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : this;
+  context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : ctx;
   return handlebarsGet(context, property, fn);
 }
 

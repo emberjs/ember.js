@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core"; // Ember.assert
-var emberAssert = Ember.assert;
+// var emberAssert = Ember.assert;
 
 import {isNone} from 'ember-metal/is_none';
 import {handlebarsGet} from "ember-handlebars/ext";
@@ -95,7 +95,7 @@ function renderPartial(context, name, options) {
       template = view.templateForName(underscoredName),
       deprecatedTemplate = !template && view.templateForName(name);
 
-  emberAssert("Unable to find partial with name '"+name+"'.", template || deprecatedTemplate);
+  Ember.assert("Unable to find partial with name '"+name+"'.", template || deprecatedTemplate);
 
   template = template || deprecatedTemplate;
 

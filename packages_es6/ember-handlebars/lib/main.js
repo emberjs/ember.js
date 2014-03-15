@@ -6,7 +6,7 @@ import bootstrap from "ember-handlebars/loader";
 
 import {normalizePath, template, makeBoundHelper, registerBoundHelper,
     resolveHash, resolveParams, getEscaped, handlebarsGet, evaluateUnboundHelper,
-    helperMissing, blockHelperMissingHelper
+    helperMissingHelper, blockHelperMissingHelper
 } from "ember-handlebars/ext";
 
 
@@ -86,7 +86,7 @@ Ember.TextField = TextField;
 Ember.TextSupport = TextSupport;
 
 // register helpers
-EmberHandlebars.registerHelper('helperMissing', helperMissing);
+EmberHandlebars.registerHelper('helperMissing', helperMissingHelper);
 EmberHandlebars.registerHelper('blockHelperMissing', blockHelperMissingHelper);
 EmberHandlebars.registerHelper('bind', bindHelper);
 EmberHandlebars.registerHelper('boundIf', boundIfHelper);

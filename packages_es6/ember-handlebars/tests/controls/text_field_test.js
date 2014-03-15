@@ -178,7 +178,7 @@ test("should have the default type", function() {
 
 module("Ember.TextField", {
   setup: function() {
-    TestObject = EmberObject.create({
+    TestObject = window.TestObject = EmberObject.create({
       value: null
     });
 
@@ -189,7 +189,7 @@ module("Ember.TextField", {
     run(function() {
       textField.destroy();
     });
-    TestObject = textField = null;
+    TestObject = window.TestObject = textField = null;
   }
 });
 

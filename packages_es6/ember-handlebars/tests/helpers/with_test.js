@@ -1,7 +1,17 @@
 /*globals Foo */
+/*jshint newcap:false*/
+import {View as EmberView} from "ember-views/views/view";
+import run from "ember-metal/run_loop";
+import EmberObject from "ember-runtime/system/object";
+import {computed} from "ember-metal/computed";
+import EmberHandlebars from "ember-handlebars-compiler";
+import {set} from "ember-metal/property_set";
+import ObjectController from "ember-runtime/controllers/object_controller";
+import Container from "ember-runtime/system/container";
+import {A} from "ember-runtime/system/native_array";
 
 var appendView = function(view) {
-  Ember.run(function() { view.appendTo('#qunit-fixture'); });
+  run(function() { view.appendTo('#qunit-fixture'); });
 };
 
 var view;
@@ -11,8 +21,8 @@ module("Handlebars {{#with}} helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
-    view = Ember.View.create({
-      template: Ember.Handlebars.compile("{{#with person as tom}}{{title}}: {{tom.name}}{{/with}}"),
+    view = EmberView.create({
+      template: EmberHandlebars.compile("{{#with person as tom}}{{title}}: {{tom.name}}{{/with}}"),
       context: {
         title: "Señor Engineer",
         person: { name: "Tom Dale" }
@@ -23,7 +33,7 @@ module("Handlebars {{#with}} helper", {
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       view.destroy();
     });
     Ember.lookup = originalLookup;
@@ -35,7 +45,7 @@ test("it should support #with foo as bar", function() {
 });
 
 test("updating the context should update the alias", function() {
-  Ember.run(function() {
+  run(function() {
     view.set('context.person', {
       name: "Yehuda Katz"
     });
@@ -45,15 +55,15 @@ test("updating the context should update the alias", function() {
 });
 
 test("updating a property on the context should update the HTML", function() {
-  Ember.run(function() {
-    Ember.set(view, 'context.person.name', "Yehuda Katz");
+  run(function() {
+    set(view, 'context.person.name', "Yehuda Katz");
   });
 
   equal(view.$().text(), "Señor Engineer: Yehuda Katz", "should be properly scoped after updating");
 });
 
 test("updating a property on the view should update the HTML", function() {
-  Ember.run(function() {
+  run(function() {
     view.set('context.title', "Señorette Engineer");
   });
 
@@ -64,8 +74,8 @@ module("Multiple Handlebars {{with}} helpers with 'as'", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
-    view = Ember.View.create({
-      template: Ember.Handlebars.compile("Admin: {{#with admin as person}}{{person.name}}{{/with}} User: {{#with user as person}}{{person.name}}{{/with}}"),
+    view = EmberView.create({
+      template: EmberHandlebars.compile("Admin: {{#with admin as person}}{{person.name}}{{/with}} User: {{#with user as person}}{{person.name}}{{/with}}"),
       context: {
         admin: { name: "Tom Dale" },
         user: { name: "Yehuda Katz"}
@@ -76,7 +86,7 @@ module("Multiple Handlebars {{with}} helpers with 'as'", {
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       view.destroy();
     });
     Ember.lookup = originalLookup;
@@ -88,8 +98,8 @@ test("re-using the same variable with different #with blocks does not override e
 });
 
 test("the scoped variable is not available outside the {{with}} block.", function(){
-  Ember.run(function() {
-    view.set('template', Ember.Handlebars.compile("{{name}}-{{#with other as name}}{{name}}{{/with}}-{{name}}"));
+  run(function() {
+    view.set('template', EmberHandlebars.compile("{{name}}-{{#with other as name}}{{name}}{{/with}}-{{name}}"));
     view.set('context', {
       name: 'Stef',
       other: 'Yehuda'
@@ -100,8 +110,8 @@ test("the scoped variable is not available outside the {{with}} block.", functio
 });
 
 test("nested {{with}} blocks shadow the outer scoped variable properly.", function(){
-  Ember.run(function() {
-    view.set('template', Ember.Handlebars.compile("{{#with first as ring}}{{ring}}-{{#with fifth as ring}}{{ring}}-{{#with ninth as ring}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
+  run(function() {
+    view.set('template', EmberHandlebars.compile("{{#with first as ring}}{{ring}}-{{#with fifth as ring}}{{ring}}-{{#with ninth as ring}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
     view.set('context', {
       first: 'Limbo',
       fifth: 'Wrath',
@@ -116,15 +126,15 @@ module("Handlebars {{#with}} globals helper", {
     Ember.lookup = lookup = { Ember: Ember };
 
     lookup.Foo = { bar: 'baz' };
-    view = Ember.View.create({
-      template: Ember.Handlebars.compile("{{#with Foo.bar as qux}}{{qux}}{{/with}}")
+    view = EmberView.create({
+      template: EmberHandlebars.compile("{{#with Foo.bar as qux}}{{qux}}{{/with}}")
     });
 
     appendView(view);
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       view.destroy();
     });
     Ember.lookup = originalLookup;
@@ -134,8 +144,8 @@ module("Handlebars {{#with}} globals helper", {
 test("it should support #with Foo.bar as qux", function() {
   equal(view.$().text(), "baz", "should be properly scoped");
 
-  Ember.run(function() {
-    Ember.set(lookup.Foo, 'bar', 'updated');
+  run(function() {
+    set(lookup.Foo, 'bar', 'updated');
   });
 
   equal(view.$().text(), "updated", "should update");
@@ -144,41 +154,41 @@ test("it should support #with Foo.bar as qux", function() {
 module("Handlebars {{#with keyword as foo}}");
 
 test("it should support #with view as foo", function() {
-  var view = Ember.View.create({
-    template: Ember.Handlebars.compile("{{#with view as myView}}{{myView.name}}{{/with}}"),
+  var view = EmberView.create({
+    template: EmberHandlebars.compile("{{#with view as myView}}{{myView.name}}{{/with}}"),
     name: "Sonics"
   });
 
   appendView(view);
   equal(view.$().text(), "Sonics", "should be properly scoped");
 
-  Ember.run(function() {
-    Ember.set(view, 'name', "Thunder");
+  run(function() {
+    set(view, 'name', "Thunder");
   });
 
   equal(view.$().text(), "Thunder", "should update");
 
-  Ember.run(function() {
+  run(function() {
     view.destroy();
   });
 });
 
 test("it should support #with name as food, then #with foo as bar", function() {
-  var view = Ember.View.create({
-    template: Ember.Handlebars.compile("{{#with name as foo}}{{#with foo as bar}}{{bar}}{{/with}}{{/with}}"),
+  var view = EmberView.create({
+    template: EmberHandlebars.compile("{{#with name as foo}}{{#with foo as bar}}{{bar}}{{/with}}{{/with}}"),
     context: { name: "caterpillar" }
   });
 
   appendView(view);
   equal(view.$().text(), "caterpillar", "should be properly scoped");
 
-  Ember.run(function() {
-    Ember.set(view, 'context.name', "butterfly");
+  run(function() {
+    set(view, 'context.name', "butterfly");
   });
 
   equal(view.$().text(), "butterfly", "should update");
 
-  Ember.run(function() {
+  run(function() {
     view.destroy();
   });
 });
@@ -186,21 +196,21 @@ test("it should support #with name as food, then #with foo as bar", function() {
 module("Handlebars {{#with this as foo}}");
 
 test("it should support #with this as qux", function() {
-  var view = Ember.View.create({
-    template: Ember.Handlebars.compile("{{#with this as person}}{{person.name}}{{/with}}"),
-    controller: Ember.Object.create({ name: "Los Pivots" })
+  var view = EmberView.create({
+    template: EmberHandlebars.compile("{{#with this as person}}{{person.name}}{{/with}}"),
+    controller: EmberObject.create({ name: "Los Pivots" })
   });
 
   appendView(view);
   equal(view.$().text(), "Los Pivots", "should be properly scoped");
 
-  Ember.run(function() {
-    Ember.set(view, 'controller.name', "l'Pivots");
+  run(function() {
+    set(view, 'controller.name', "l'Pivots");
   });
 
   equal(view.$().text(), "l'Pivots", "should update");
 
-  Ember.run(function() {
+  run(function() {
     view.destroy();
   });
 });
@@ -208,10 +218,10 @@ test("it should support #with this as qux", function() {
 module("Handlebars {{#with foo}} insideGroup");
 
 test("it should render without fail", function() {
-  var View = Ember.View.extend({
-    template: Ember.Handlebars.compile("{{#view view.childView}}{{#with person}}{{name}}{{/with}}{{/view}}"),
-    controller: Ember.Object.create({ person: { name: "Ivan IV Vasilyevich" } }),
-    childView: Ember.View.extend({
+  var View = EmberView.extend({
+    template: EmberHandlebars.compile("{{#view view.childView}}{{#with person}}{{name}}{{/with}}{{/view}}"),
+    controller: EmberObject.create({ person: { name: "Ivan IV Vasilyevich" } }),
+    childView: EmberView.extend({
       render: function(){
         this.set('templateData.insideGroup', true);
         return this._super.apply(this, arguments);
@@ -223,13 +233,13 @@ test("it should render without fail", function() {
   appendView(view);
   equal(view.$().text(), "Ivan IV Vasilyevich", "should be properly scoped");
 
-  Ember.run(function() {
-    Ember.set(view, 'controller.person.name', "Ivan the Terrible");
+  run(function() {
+    set(view, 'controller.person.name', "Ivan the Terrible");
   });
 
   equal(view.$().text(), "Ivan the Terrible", "should update");
 
-  Ember.run(function() {
+  run(function() {
     view.destroy();
   });
 });
@@ -237,23 +247,23 @@ test("it should render without fail", function() {
 module("Handlebars {{#with foo}} with defined controller");
 
 test("it should wrap context with object controller", function() {
-  var Controller = Ember.ObjectController.extend({
-    controllerName: Ember.computed(function() {
+  var Controller = ObjectController.extend({
+    controllerName: computed(function() {
       return "controller:"+this.get('content.name') + ' and ' + this.get('parentController.name');
     })
   });
 
-  var person = Ember.Object.create({name: 'Steve Holt'});
-  var container = new Ember.Container();
+  var person = EmberObject.create({name: 'Steve Holt'});
+  var container = new Container();
 
-  var parentController = Ember.Object.create({
+  var parentController = EmberObject.create({
     container: container,
     name: 'Bob Loblaw'
   });
 
-  view = Ember.View.create({
+  view = EmberView.create({
     container: container,
-    template: Ember.Handlebars.compile('{{#with view.person controller="person"}}{{controllerName}}{{/with}}'),
+    template: EmberHandlebars.compile('{{#with view.person controller="person"}}{{controllerName}}{{/with}}'),
     person: person,
     controller: parentController
   });
@@ -264,20 +274,20 @@ test("it should wrap context with object controller", function() {
 
   equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
 
-  Ember.run(function() {
+  run(function() {
     view.rerender();
   });
 
   equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
 
-  Ember.run(function() {
+  run(function() {
     parentController.set('name', 'Carl Weathers');
     view.rerender();
   });
 
   equal(view.$().text(), "controller:Steve Holt and Carl Weathers");
 
-  Ember.run(function() {
+  run(function() {
     person.set('name', 'Gob');
     view.rerender();
   });
@@ -286,27 +296,27 @@ test("it should wrap context with object controller", function() {
 
   strictEqual(view.get('_childViews')[0].get('_contextController.target'), parentController, "the target property of the child controllers are set correctly");
 
-  Ember.run(function() { view.destroy(); }); // destroy existing view
+  run(function() { view.destroy(); }); // destroy existing view
 });
 
 test("it should still have access to original parentController within an {{#each}}", function() {
-  var Controller = Ember.ObjectController.extend({
-    controllerName: Ember.computed(function() {
+  var Controller = ObjectController.extend({
+    controllerName: computed(function() {
       return "controller:"+this.get('content.name') + ' and ' + this.get('parentController.name');
     })
   });
 
-  var people = Ember.A([{ name: "Steve Holt" }, { name: "Carl Weathers" }]);
-  var container = new Ember.Container();
+  var people = A([{ name: "Steve Holt" }, { name: "Carl Weathers" }]);
+  var container = new Container();
 
-  var parentController = Ember.Object.create({
+  var parentController = EmberObject.create({
     container: container,
     name: 'Bob Loblaw'
   });
 
-  view = Ember.View.create({
+  view = EmberView.create({
     container: container,
-    template: Ember.Handlebars.compile('{{#each person in people}}{{#with person controller="person"}}{{controllerName}}{{/with}}{{/each}}'),
+    template: EmberHandlebars.compile('{{#each person in people}}{{#with person controller="person"}}{{controllerName}}{{/with}}{{/each}}'),
     context: { people: people },
     controller: parentController
   });
@@ -317,5 +327,5 @@ test("it should still have access to original parentController within an {{#each
 
   equal(view.$().text(), "controller:Steve Holt and Bob Loblawcontroller:Carl Weathers and Bob Loblaw");
 
-  Ember.run(function() { view.destroy(); }); // destroy existing view
+  run(function() { view.destroy(); }); // destroy existing view
 });
