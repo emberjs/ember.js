@@ -1,13 +1,17 @@
-var application, locator, forEach = Ember.ArrayPolyfills.forEach;
+import run from "ember-metal/run_loop";
+import {forEach} from "ember-metal/array";
+import Application from "ember-application/system/application";
+
+var application, locator;
 
 module("Ember.Application Depedency Injection – normalization", {
   setup: function() {
-    application = Ember.run(Ember.Application, 'create');
+    application = run(Application, 'create');
     locator = application.__container__;
   },
 
   teardown: function() {
-    Ember.run(application, 'destroy');
+    run(application, 'destroy');
   }
 });
 

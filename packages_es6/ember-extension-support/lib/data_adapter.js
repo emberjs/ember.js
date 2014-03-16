@@ -4,6 +4,7 @@ import run from "ember-metal/run_loop";
 import EmberStringUtils from "ember-runtime/system/string";
 import Namespace from "ember-runtime/system/namespace";
 import EmberObject from "ember-runtime/system/object";
+import {A} from "ember-runtime/system/native_array";
 
 /**
 @module ember
@@ -54,7 +55,7 @@ import EmberObject from "ember-runtime/system/object";
 var DataAdapter = EmberObject.extend({
   init: function() {
     this._super();
-    this.releaseMethods = Ember.A();
+    this.releaseMethods = A();
   },
 
   /**
@@ -95,7 +96,7 @@ var DataAdapter = EmberObject.extend({
     @private
     @property releaseMethods
   */
-  releaseMethods: Ember.A(),
+  releaseMethods: A(),
 
   /**
     Specifies how records can be filtered.
@@ -108,7 +109,7 @@ var DataAdapter = EmberObject.extend({
      The object should have a `name` and `desc` property.
   */
   getFilters: function() {
-    return Ember.A();
+    return A();
   },
 
   /**
@@ -127,7 +128,7 @@ var DataAdapter = EmberObject.extend({
   */
   watchModelTypes: function(typesAdded, typesUpdated) {
     var modelTypes = this.getModelTypes(),
-        self = this, typesToSend, releaseMethods = Ember.A();
+        self = this, typesToSend, releaseMethods = A();
 
     typesToSend = modelTypes.map(function(type) {
       var klass = type.klass;
@@ -176,7 +177,7 @@ var DataAdapter = EmberObject.extend({
     @return {Function} Method to call to remove all observers
   */
   watchRecords: function(type, recordsAdded, recordsUpdated, recordsRemoved) {
-    var self = this, releaseMethods = Ember.A(), records = this.getRecords(type), release;
+    var self = this, releaseMethods = A(), records = this.getRecords(type), release;
 
     var recordUpdated = function(updatedRecord) {
       recordsUpdated([updatedRecord]);
@@ -253,7 +254,7 @@ var DataAdapter = EmberObject.extend({
      desc: {String} Humanized description (what would show in a table column name)
   */
   columnsForType: function(type) {
-    return Ember.A();
+    return A();
   },
 
   /**
@@ -358,13 +359,13 @@ var DataAdapter = EmberObject.extend({
     @return {Array} Array of model type strings
   */
   _getObjectsOnNamespaces: function() {
-    var namespaces = Ember.A(Namespace.NAMESPACES), types = Ember.A();
+    var namespaces = A(Namespace.NAMESPACES), types = A();
 
     namespaces.forEach(function(namespace) {
       for (var key in namespace) {
         if (!namespace.hasOwnProperty(key)) { continue; }
         var name = EmberStringUtils.dasherize(key);
-        if (!(namespace instanceof Ember.Application) && namespace.toString()) {
+        if (!(namespace instanceof Application) && namespace.toString()) {
           name = namespace + '/' + name;
         }
         types.push(name);
@@ -383,7 +384,7 @@ var DataAdapter = EmberObject.extend({
      so it should update when new records are added/removed.
   */
   getRecords: function(type) {
-    return Ember.A();
+    return A();
   },
 
   /**
@@ -427,7 +428,7 @@ var DataAdapter = EmberObject.extend({
     @return {Array} Relevant keywords for search.
   */
   getRecordKeywords: function(record) {
-    return Ember.A();
+    return A();
   },
 
   /**
