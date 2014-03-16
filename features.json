@@ -27,6 +27,7 @@
     "Ember.debug",
     "emberDebug",
     "Ember.Logger.info",
-    "Ember.runInDebug"
+    "Ember.runInDebug",
+    "runInDebug"
   ]
 }

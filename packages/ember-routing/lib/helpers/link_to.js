@@ -490,9 +490,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       } else {
         return resolveParams(parameters.context, parameters.params, { types: types, data: data });
       }
-
-      // Original implementation if query params not enabled
-      return resolveParams(parameters.context, parameters.params, { types: types, data: data });
     }).property('router.url'),
 
     /**

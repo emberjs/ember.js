@@ -421,6 +421,8 @@ GroupedEach.prototype = {
   @param [options.groupedRows] {boolean} enable normal item-by-item rendering when inside a `#group` helper
 */
 function eachHelper(path, options) {
+  var ctx;
+
   if (arguments.length === 4) {
     Ember.assert("If you pass more than one argument to the each helper, it must be in the form #each foo in bar", arguments[1] === "in");
 
@@ -442,11 +444,13 @@ function eachHelper(path, options) {
   // Set up emptyView as a metamorph with no tag
   //options.hash.emptyViewClass = Ember._MetamorphView;
 
+  // can't rely on this default behavior when use strict
+  ctx = this || window;
   if (options.data.insideGroup && !options.hash.groupedRows && !options.hash.itemViewClass) {
-    new GroupedEach(this, path, options).render();
+    new GroupedEach(ctx, path, options).render();
   } else {
     // ES6TODO: figure out how to do this without global lookup.
-    return helpers.collection.call(this, 'Ember.Handlebars.EachView', options);
+    return helpers.collection.call(ctx, 'Ember.Handlebars.EachView', options);
   }
 }
 
