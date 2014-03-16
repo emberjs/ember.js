@@ -118,13 +118,13 @@ test("should work with the #if helper", function() {
   equal(trim(view.$().text()), 'boo', "The falsy value was rendered");
 });
 
-// test("#each with no content", function() {
-//   expect(0);
-//   createGroupedView(
-//     "{{#each missing}}{{this}}{{/each}}"
-//   );
-//   appendView();
-// });
+test("#each with no content", function() {
+  expect(0);
+  createGroupedView(
+    "{{#each missing}}{{this}}{{/each}}"
+  );
+  appendView();
+});
 
 test("#each's content can be changed right before a destroy", function() {
   expect(0);
