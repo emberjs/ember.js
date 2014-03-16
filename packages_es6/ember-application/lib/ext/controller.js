@@ -3,7 +3,16 @@
 @submodule ember-application
 */
 
-var get = Ember.get, set = Ember.set;
+import Ember from "ember-metal/core"; // Ember.assert
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import EmberError from "ember-metal/error";
+import {inspect} from "ember-metal/utils";
+import {computed} from "ember-metal/computed";
+import {ControllerMixin} from "ember-runtime/controllers/controller";
+import {meta} from "ember-metal/utils";
+import {controllerFor} from "ember-routing/system/controller_for";
+import {meta} from "ember-metal/utils";
 
 function verifyNeedsDependencies(controller, container, needs) {
   var dependency, i, l, missing = [];
@@ -11,7 +20,7 @@ function verifyNeedsDependencies(controller, container, needs) {
   for (i=0, l=needs.length; i<l; i++) {
     dependency = needs[i];
 
-    Ember.assert(Ember.inspect(controller) + "#needs must not specify dependencies with periods in their names (" + dependency + ")", dependency.indexOf('.') === -1);
+    Ember.assert(inspect(controller) + "#needs must not specify dependencies with periods in their names (" + dependency + ")", dependency.indexOf('.') === -1);
 
     if (dependency.indexOf(':') === -1) {
       dependency = "controller:" + dependency;
@@ -23,11 +32,11 @@ function verifyNeedsDependencies(controller, container, needs) {
     }
   }
   if (missing.length) {
-    throw new Ember.Error(Ember.inspect(controller) + " needs [ " + missing.join(', ') + " ] but " + (missing.length > 1 ? 'they' : 'it') + " could not be found");
+    throw new EmberError(inspect(controller) + " needs [ " + missing.join(', ') + " ] but " + (missing.length > 1 ? 'they' : 'it') + " could not be found");
   }
 }
 
-var defaultControllersComputedProperty = Ember.computed(function() {
+var defaultControllersComputedProperty = computed(function() {
   var controller = this;
 
   return {
@@ -43,11 +52,11 @@ var defaultControllersComputedProperty = Ember.computed(function() {
         }
       }
 
-      var errorMessage = Ember.inspect(controller) + '#needs does not include `' + controllerName + '`. To access the ' + controllerName + ' controller from ' + Ember.inspect(controller) + ', ' + Ember.inspect(controller) + ' should have a `needs` property that is an array of the controllers it has access to.';
+      var errorMessage = inspect(controller) + '#needs does not include `' + controllerName + '`. To access the ' + controllerName + ' controller from ' + inspect(controller) + ', ' + inspect(controller) + ' should have a `needs` property that is an array of the controllers it has access to.';
       throw new ReferenceError(errorMessage);
     },
     setUnknownProperty: function (key, value) {
-      throw new Error("You cannot overwrite the value of `controllers." + key + "` of " + Ember.inspect(controller));
+      throw new Error("You cannot overwrite the value of `controllers." + key + "` of " + inspect(controller));
     }
   };
 });
@@ -56,7 +65,7 @@ var defaultControllersComputedProperty = Ember.computed(function() {
   @class ControllerMixin
   @namespace Ember
 */
-Ember.ControllerMixin.reopen({
+ControllerMixin.reopen({
   concatenatedProperties: ['needs'],
 
   /**
@@ -113,10 +122,10 @@ Ember.ControllerMixin.reopen({
     length = get(needs, 'length');
 
     if (length > 0) {
-      Ember.assert(' `' + Ember.inspect(this) + ' specifies `needs`, but does ' +
+      Ember.assert(' `' + inspect(this) + ' specifies `needs`, but does ' +
                    "not have a container. Please ensure this controller was " +
                    "instantiated with a container.",
-                   this.container || Ember.meta(this, false).descs.controllers !== defaultControllersComputedProperty);
+                   this.container || meta(this, false).descs.controllers !== defaultControllersComputedProperty);
 
       if (this.container) {
         verifyNeedsDependencies(this, this.container, needs);
@@ -136,7 +145,7 @@ Ember.ControllerMixin.reopen({
   */
   controllerFor: function(controllerName) {
     Ember.deprecate("Controller#controllerFor is deprecated, please use Controller#needs instead");
-    return Ember.controllerFor(get(this, 'container'), controllerName);
+    return controllerFor(get(this, 'container'), controllerName);
   },
 
   /**
