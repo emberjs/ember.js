@@ -2,7 +2,9 @@ import Ember from "ember-metal/core";
 import emberRun from "ember-metal/run_loop";
 import {create} from "ember-metal/platform";
 import compare from "ember-runtime/compare";
+import RSVP from "ember-runtime/ext/rsvp";
 import setupForTesting from "ember-testing/setup_for_testing";
+import EmberApplication from "ember-application/system/application";
 
 /**
   @module ember
@@ -306,7 +308,7 @@ function run(fn) {
   }
 }
 
-Ember.Application.reopen({
+EmberApplication.reopen({
   /**
    This property contains the testing helpers for the current application. These
    are created once you call `injectTestHelpers` on your `Ember.Application`
@@ -451,16 +453,16 @@ function protoWrap(proto, name, callback, isAsync) {
 }
 
 Test.Promise = function() {
-  Ember.RSVP.Promise.apply(this, arguments);
+  RSVP.Promise.apply(this, arguments);
   Test.lastPromise = this;
 };
 
-Test.Promise.prototype = create(Ember.RSVP.Promise.prototype);
+Test.Promise.prototype = create(RSVP.Promise.prototype);
 Test.Promise.prototype.constructor = Test.Promise;
 
 // Patch `then` to isolate async methods
 // specifically `Ember.Test.lastPromise`
-var originalThen = Ember.RSVP.Promise.prototype.then;
+var originalThen = RSVP.Promise.prototype.then;
 Test.Promise.prototype.then = function(onSuccess, onFailure) {
   return originalThen.call(this, function(val) {
     return isolate(onSuccess, val);

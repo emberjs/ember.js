@@ -6,6 +6,8 @@ import {addObserver, removeObserver} from "ember-metal/observer";
 import EmberObject from "ember-runtime/system/object";
 import {Controller as EmberController} from "ember-runtime/controllers/controller";
 import EmberDataAdapter from "ember-extension-support/data_adapter";
+import EmberApplication from "ember-application/system/application";
+import {DefaultResolver} from "ember-application/system/resolver";
 
 var adapter, App, Model = EmberObject.extend();
 
@@ -18,7 +20,7 @@ var DataAdapter = EmberDataAdapter.extend({
 module("Data Adapter", {
   setup:function() {
     run(function() {
-      App = Ember.Application.create();  // ES6TODO: this comes from the ember-application package NOT ember-runtime
+      App = EmberApplication.create();
       App.toString = function() { return 'App'; };
       App.deferReadiness();
       App.__container__.register('data-adapter:main', DataAdapter);
@@ -62,7 +64,7 @@ test("Model types added with DefaultResolver", function() {
 
 test("Model types added with custom container-debug-adapter", function() {
   var PostClass = Model.extend() ,
-      StubContainerDebugAdapter = Ember.DefaultResolver.extend({
+      StubContainerDebugAdapter = DefaultResolver.extend({
         canCatalogEntriesByType: function(type){
           return true;
         },

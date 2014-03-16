@@ -1,8 +1,11 @@
+require('ember-metal');
+require('ember-runtime');
+require('ember-handlebars-compiler');
+require('ember-handlebars');
+require('ember-views');
+require('ember-routing');
 require('ember-application');
 require('ember-extension-support');
-
-// ES6TODO: resolve this via import once ember-application package is ES6'ed
-requireModule('ember-extension-support');
 
 // do this to ensure that Ember.Test is defined properly on the global
 // if it is present.
@@ -35,7 +38,7 @@ Ember.StateManager = generateRemovedClass("Ember.StateManager");
 
 /**
   This was exported to ember-states plugin for v 1.0.0 release. See: https://github.com/emberjs/ember-states
-  
+
   @class StateManager
   @namespace Ember
 */
@@ -44,7 +47,7 @@ Ember.State = generateRemovedClass("Ember.State");
 
 /**
   This was exported to ember-states plugin for v 1.0.0 release. See: https://github.com/emberjs/ember-states
-  
+
   @class State
   @namespace Ember
 */
