@@ -52,7 +52,7 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import {Controller, ControllerMixin} from "ember-runtime/controllers/controller";
 
-import "ember-runtime/ext/rsvp";     // just for side effect of extending Ember.RSVP
+import RSVP from "ember-runtime/ext/rsvp";     // just for side effect of extending Ember.RSVP
 import "ember-runtime/ext/string";   // just for side effect of extending String.prototype
 import "ember-runtime/ext/function"; // just for side effect of extending Function.prototype
 // END IMPORTS
@@ -135,6 +135,8 @@ Ember.ArrayController = ArrayController;
 Ember.ObjectController = ObjectController;
 Ember.Controller = Controller;
 Ember.ControllerMixin = ControllerMixin;
+
+Ember.RSVP = RSVP;
 // END EXPORTS
 
 export default Ember;

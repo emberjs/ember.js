@@ -1,5 +1,6 @@
 import run from "ember-metal/run_loop";
 import Test from "ember-testing/test";
+import EmberApplication from "ember-application/system/application";
 
 var App, appBooted, helperContainer;
 
@@ -22,7 +23,7 @@ function setupApp(){
   helperContainer = {};
 
   run(function() {
-    App = Ember.Application.create();
+    App = EmberApplication.create();
     App.setupForTesting();
     App.injectTestHelpers(helperContainer);
   });

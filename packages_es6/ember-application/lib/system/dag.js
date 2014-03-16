@@ -1,8 +1,3 @@
-requireModule('ember-runtime');
-requireModule('ember-views');
-requireModule('ember-handlebars');
-requireModule('ember-routing');
-
 function visit(vertex, fn, visited, path) {
   var name = vertex.name,
     vertices = vertex.incoming,
@@ -59,7 +54,7 @@ DAG.prototype.addEdge = function(fromName, toName) {
   }
   function checkCycle(vertex, path) {
     if (vertex.name === toName) {
-      throw new Ember.Error("cycle detected: " + toName + " <- " + path.join(" <- "));
+      throw new EmberError("cycle detected: " + toName + " <- " + path.join(" <- "));
     }
   }
   visit(from, checkCycle);
@@ -105,4 +100,4 @@ DAG.prototype.addEdges = function(name, value, before, after) {
   }
 };
 
-Ember.DAG = DAG;
+export default DAG;

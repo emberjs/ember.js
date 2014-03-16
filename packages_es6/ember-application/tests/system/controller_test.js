@@ -1,23 +1,33 @@
+/*jshint newcap:false */
+
+import {Controller} from "ember-runtime/controllers/controller";
+import "ember-application/ext/controller";
+
+import Container from "ember-runtime/system/container";
+import {A} from "ember-runtime/system/native_array";
+import ArrayController from "ember-runtime/controllers/array_controller";
+import {computed} from "ember-metal/computed";
+
 module("Controller dependencies");
 
 test("If a controller specifies a dependency, but does not have a container it should error", function(){
-  var Controller = Ember.Controller.extend({
+  var AController = Controller.extend({
     needs: 'posts'
   });
 
   expectAssertion(function(){
-    Controller.create();
+    AController.create();
   }, /specifies `needs`, but does not have a container. Please ensure this controller was instantiated with a container./);
 });
 
 test("If a controller specifies a dependency, it is accessible", function() {
-  var container = new Ember.Container();
+  var container = new Container();
 
-  container.register('controller:post', Ember.Controller.extend({
+  container.register('controller:post', Controller.extend({
     needs: 'posts'
   }));
 
-  container.register('controller:posts', Ember.Controller.extend());
+  container.register('controller:posts', Controller.extend());
 
   var postController = container.lookup('controller:post'),
       postsController = container.lookup('controller:posts');
@@ -26,9 +36,9 @@ test("If a controller specifies a dependency, it is accessible", function() {
 });
 
 test("If a controller specifies an unavailable dependency, it raises", function() {
-  var container = new Ember.Container();
+  var container = new Container();
 
-  container.register('controller:post', Ember.Controller.extend({
+  container.register('controller:post', Controller.extend({
     needs: ['comments']
   }));
 
@@ -36,7 +46,7 @@ test("If a controller specifies an unavailable dependency, it raises", function(
     container.lookup('controller:post');
   }, /controller:comments/);
 
-  container.register('controller:blog', Ember.Controller.extend({
+  container.register('controller:blog', Controller.extend({
     needs: ['posts', 'comments']
   }));
 
@@ -46,31 +56,31 @@ test("If a controller specifies an unavailable dependency, it raises", function(
 });
 
 test("Mixin sets up controllers if there is needs before calling super", function() {
-  var container = new Ember.Container();
+  var container = new Container();
 
-  container.register('controller:other', Ember.ArrayController.extend({
+  container.register('controller:other', ArrayController.extend({
     needs: 'posts',
-    content: Ember.computed.alias('controllers.posts')
+    content: computed.alias('controllers.posts')
   }));
 
-  container.register('controller:another', Ember.ArrayController.extend({
+  container.register('controller:another', ArrayController.extend({
     needs: 'posts',
     contentBinding: 'controllers.posts'
   }));
 
-  container.register('controller:posts', Ember.ArrayController.extend());
+  container.register('controller:posts', ArrayController.extend());
 
-  container.lookup('controller:posts').set('content', Ember.A(['a','b','c']));
+  container.lookup('controller:posts').set('content', A(['a','b','c']));
 
   deepEqual(['a','b','c'], container.lookup('controller:other').toArray());
   deepEqual(['a','b','c'], container.lookup('controller:another').toArray());
 });
 
 test("raises if trying to get a controller that was not pre-defined in `needs`", function() {
-  var container = new Ember.Container();
+  var container = new Container();
 
-  container.register('controller:foo', Ember.Controller.extend());
-  container.register('controller:bar', Ember.Controller.extend({
+  container.register('controller:foo', Controller.extend());
+  container.register('controller:bar', Controller.extend({
     needs: 'foo'
   }));
 
@@ -91,13 +101,13 @@ test("raises if trying to get a controller that was not pre-defined in `needs`",
 });
 
 test ("setting the value of a controller dependency should not be possible", function(){
-  var container = new Ember.Container();
+  var container = new Container();
 
-  container.register('controller:post', Ember.Controller.extend({
+  container.register('controller:post', Controller.extend({
     needs: 'posts'
   }));
 
-  container.register('controller:posts', Ember.Controller.extend());
+  container.register('controller:posts', Controller.extend());
 
   var postController = container.lookup('controller:post'),
       postsController = container.lookup('controller:posts');
@@ -113,10 +123,10 @@ test ("setting the value of a controller dependency should not be possible", fun
 });
 
 test("raises if a dependency with a period is requested", function() {
-  var container = new Ember.Container();
+  var container = new Container();
 
-  container.register('controller:big.bird', Ember.Controller.extend());
-  container.register('controller:foo', Ember.Controller.extend({
+  container.register('controller:big.bird', Controller.extend());
+  container.register('controller:foo', Controller.extend({
     needs: 'big.bird'
   }));
 
@@ -129,9 +139,9 @@ test("raises if a dependency with a period is requested", function() {
 test("can unit test controllers with `needs` dependencies by stubbing their `controllers` properties", function() {
   expect(1);
 
-  var BrotherController = Ember.Controller.extend({
+  var BrotherController = Controller.extend({
     needs: 'sister',
-    foo: Ember.computed.alias('controllers.sister.foo')
+    foo: computed.alias('controllers.sister.foo')
   });
 
   var broController = BrotherController.create({

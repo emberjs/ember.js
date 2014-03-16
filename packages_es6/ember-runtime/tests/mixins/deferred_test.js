@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import Deferred from "ember-runtime/mixins/deferred";
+import RSVP from "ember-runtime/ext/rsvp";
 
 module("Deferred");
 
@@ -320,7 +321,7 @@ test("can handle fulfillment without  fulfillment handler", function() {
 if (Ember.FEATURES['ember-runtime-test-friendly-promises']) {
   var asyncStarted = 0;
   var asyncEnded = 0;
-  var Promise = Ember.RSVP.Promise;
+  var Promise = RSVP.Promise;
 
   var EmberTest;
   var EmberTesting;
