@@ -209,4 +209,6 @@ if ('undefined' === typeof Ember.deprecateFunc) {
 */
 Ember.uuid = 0;
 
+window.Em = window.Ember = Ember;
+
 export default Ember;
