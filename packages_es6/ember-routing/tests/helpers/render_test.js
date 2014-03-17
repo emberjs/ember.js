@@ -9,7 +9,7 @@ import Container from 'container/container';
 import Namespace from "ember-runtime/system/namespace";
 import EmberStringUtils from "ember-runtime/system/string";
 
-import {EmberController} from "ember-runtime/controllers/controller";
+import {Controller as EmberController} from "ember-runtime/controllers/controller";
 import EmberObjectController from "ember-runtime/controllers/object_controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
 

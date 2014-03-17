@@ -13,6 +13,7 @@ import {View as EmberView} from "ember-views/views/view";
 import EmberComponent from "ember-views/views/component";
 import jQuery from "ember-views/system/jquery";
 
+import "ember-routing/helpers/shared";
 import "ember-routing/helpers/action";
 
 var dispatcher, view,

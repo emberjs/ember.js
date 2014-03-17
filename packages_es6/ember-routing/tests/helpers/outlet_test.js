@@ -19,6 +19,7 @@ import {View as EmberView} from "ember-views/views/view";
 import EmberContainerView from "ember-views/views/container_view";
 import jQuery from "ember-views/system/jquery";
 
+import "ember-routing/ext/view";
 import "ember-routing/helpers/outlet";
 
 var buildContainer = function(namespace) {
