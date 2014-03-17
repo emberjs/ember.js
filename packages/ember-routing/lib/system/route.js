@@ -1340,6 +1340,7 @@ var Route = EmberObject.extend(ActionHandler, {
     }
 
     options = options || {};
+    options.namePassed = namePassed;
 
     var templateName;
 
@@ -1707,12 +1708,10 @@ function normalizeOptions(route, name, template, options) {
 
   if (options.controller) {
     controller = options.controller;
-  } else if (route.controllerName) {
-    controller = route.controllerName;
-  } else if (namedController = route.container.lookup('controller:' + name)) {
-    controller = namedController;
+  } else if (options.namePassed) {
+    controller = route.container.lookup('controller:' + name) || route.controllerName || route.routeName;
   } else {
-    controller = route.routeName;
+    controller = route.controllerName || route.container.lookup('controller:' + name);
   }
 
   if (typeof controller === 'string') {
