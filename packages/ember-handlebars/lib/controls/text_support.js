@@ -21,7 +21,7 @@ Ember.TextSupport = Ember.Mixin.create(Ember.TargetActionSupport, {
   value: "",
 
   attributeBindings: ['placeholder', 'disabled', 'maxlength', 'tabindex', 'readonly',
-                      'autofocus', 'form', 'selectionDirection', 'spellcheck', 'required'],
+                      'autofocus', 'form', 'selectionDirection', 'spellcheck', 'autocapitalize', 'autocorrect', 'required'],
   placeholder: null,
   disabled: false,
   maxlength: null,
