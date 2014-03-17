@@ -3,8 +3,9 @@
 @submodule ember-routing
 */
 
-require('ember-handlebars/ext');
-require('ember-handlebars/helpers/view');
+requireModule('ember-handlebars');
+// require('ember-handlebars/ext');
+// require('ember-handlebars/helpers/view');
 
 Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
