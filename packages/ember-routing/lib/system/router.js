@@ -244,7 +244,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
   _getHandlerFunction: function() {
     var seen = {}, container = this.container,
-        DefaultRoute = container.lookupFactory('route:basic'),
+        DefaultRoute = container.lookupFactory('route:-ember-basic'),
         self = this;
 
     return function(name) {

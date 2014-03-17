@@ -740,10 +740,10 @@ Ember.Application.reopenClass({
 
     container.register('application:main', namespace, { instantiate: false });
 
-    container.register('controller:basic', Ember.Controller, { instantiate: false });
-    container.register('controller:object', Ember.ObjectController, { instantiate: false });
-    container.register('controller:array', Ember.ArrayController, { instantiate: false });
-    container.register('route:basic', Ember.Route, { instantiate: false });
+    container.register('controller:-ember-basic', Ember.Controller, { instantiate: false });
+    container.register('controller:-ember-object', Ember.ObjectController, { instantiate: false });
+    container.register('controller:-ember-array', Ember.ArrayController, { instantiate: false });
+    container.register('route:-ember-basic', Ember.Route, { instantiate: false });
     container.register('event_dispatcher:main', Ember.EventDispatcher);
 
     container.register('router:main',  Ember.Router);

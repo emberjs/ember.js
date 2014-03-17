@@ -41,7 +41,7 @@ test('the default resolver looks up templates in Ember.TEMPLATES', function() {
 });
 
 test('the default resolver looks up basic name as no prefix', function() {
-  ok(Ember.Controller.detect(locator.lookup('controller:basic')), 'locator looksup correct controller');
+  ok(Ember.Controller.detect(locator.lookup('controller:-ember-basic')), 'locator looksup correct controller');
 });
 
 function detectEqual(first, second, message) {
