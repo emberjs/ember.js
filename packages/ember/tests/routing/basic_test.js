@@ -218,6 +218,31 @@ test("An alternate template will pull in an alternate controller", function() {
   equal(Ember.$('h3:contains(Megatroll) + p:contains(Comes from homepage)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
+test("An alternate template will pull in an alternate controller instead of controllerName", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    controllerName: 'foo',
+    renderTemplate: function() {
+      this.render('homepage');
+    }
+  });
+
+  App.FooController = Ember.Controller.extend({
+    home: "Comes from Foo"
+  });
+
+  App.HomepageController = Ember.Controller.extend({
+    home: "Comes from homepage"
+  });
+
+  bootApplication();
+
+  equal(Ember.$('h3:contains(Megatroll) + p:contains(Comes from homepage)', '#qunit-fixture').length, 1, "The homepage template was rendered");
+});
+
 test("The template will pull in an alternate controller via key/value", function() {
   Router.map(function() {
     this.route("homepage", { path: "/" });
