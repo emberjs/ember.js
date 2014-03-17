@@ -18,7 +18,7 @@ var forEach = Ember.EnumerableUtils.forEach;
 
 var DefaultView = Ember._MetamorphView;
 
-require("ember-routing/system/dsl");
+// require("ember-routing/system/dsl");
 
 /**
   The `Ember.Router` class manages the application state and URLs. Refer to

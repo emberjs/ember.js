@@ -1,4 +1,4 @@
-require('ember-routing/system/router');
+// require('ember-routing/system/router');
 
 Ember.onLoad('Ember.Handlebars', function() {
   var handlebarsResolve = Ember.Handlebars.resolveParams,

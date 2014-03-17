@@ -1,5 +1,5 @@
-require('ember-routing/ext/controller');
-require('ember-routing/ext/view');
+// require('ember-routing/ext/controller');
+// require('ember-routing/ext/view');
 
 /**
 @module ember
