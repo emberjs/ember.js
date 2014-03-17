@@ -4,8 +4,8 @@
 */
 
 var get = Ember.get, set = Ember.set;
-
-require('ember-handlebars/helpers/view');
+requireModule('ember-handlebars');
+// require('ember-handlebars/helpers/view');
 
 Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   /**
@@ -79,7 +79,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @return {String} HTML string
   */
   Handlebars.registerHelper('outlet', function outletHelper(property, options) {
-   
+
     var outletSource,
         container,
         viewName,

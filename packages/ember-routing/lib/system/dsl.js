@@ -1,3 +1,5 @@
+requireModule('ember-runtime');
+
 /**
 @module ember
 @submodule ember-routing
