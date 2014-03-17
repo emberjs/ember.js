@@ -194,7 +194,7 @@ define("rsvp/defer",
 
        deferred.resolve("Success!");
 
-       defered.promise.then(function(value){
+       deferred.promise.then(function(value){
          // value here is "Success!"
        });
        ```
