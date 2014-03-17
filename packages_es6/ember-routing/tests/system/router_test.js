@@ -1,15 +1,21 @@
+import run from "ember-metal/run_loop";
+import EnumerableUtils from "ember-metal/enumerable_utils";
+import Container from 'container/container';
+import HashLocation from "ember-routing/location/hash_location";
+import EmberRouter from "ember-routing/system/router";
+
 var Router, container, router;
 
-var map = Ember.EnumerableUtils.map;
+var map = EnumerableUtils.map;
 
 module("Ember Router", {
   setup: function() {
-    container = new Ember.Container();
+    container = new Container();
 
     //register the HashLocation (the default)
-    container.register('location:hash', Ember.HashLocation);
+    container.register('location:hash', HashLocation);
 
-    Router = Ember.Router.extend();
+    Router = EmberRouter.extend();
 
     router = Router.create({container: container});
   },
@@ -25,7 +31,7 @@ test("should create a router if one does not exist on the constructor", function
 test("should destroy its location upon destroying the routers container.", function(){
   var location = router.get('location');
 
-  Ember.run(container, 'destroy');
+  run(container, 'destroy');
 
   ok(location.isDestroyed, "location should be destroyed");
 });
@@ -40,7 +46,7 @@ test("Ember.Router._routePath should consume identical prefixes", function() {
     });
     handlerInfos.unshift({ name: 'ignored' });
 
-    return Ember.Router._routePath(handlerInfos);
+    return EmberRouter._routePath(handlerInfos);
   }
 
   equal(routePath('foo'), 'foo');

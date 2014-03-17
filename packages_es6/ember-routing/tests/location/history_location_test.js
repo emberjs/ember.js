@@ -1,6 +1,9 @@
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import HistoryLocation from "ember-routing/location/history_location";
+
 var FakeHistory, HistoryTestLocation, location,
-    get = Ember.get,
-    set = Ember.set,
     rootURL = window.location.pathname;
 
 function createLocation(options){
@@ -23,13 +26,13 @@ module("History Location", {
       }
     };
 
-    HistoryTestLocation = Ember.HistoryLocation.extend({
+    HistoryTestLocation = HistoryLocation.extend({
       history: FakeHistory
     });
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if (location) { location.destroy(); }
     });
   }

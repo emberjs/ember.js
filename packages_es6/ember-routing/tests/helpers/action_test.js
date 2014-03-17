@@ -1,19 +1,36 @@
+import Ember from 'ember-metal/core'; // A, FEATURES, assert, TESTING_DEPRECATION
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop"; 
+import EventDispatcher from "ember-views/system/event_dispatcher";
+
+import EmberObject from "ember-runtime/system/object";
+import {Controller as EmberController} from "ember-runtime/controllers/controller";
+import EmberObjectController from "ember-runtime/controllers/object_controller";
+import EmberArrayController from "ember-runtime/controllers/array_controller";
+
+import EmberHandlebars from "ember-handlebars";
+import {View as EmberView} from "ember-views/views/view";
+import EmberComponent from "ember-views/views/component";
+import jQuery from "ember-views/system/jquery";
+
+import "ember-routing/helpers/action";
+
 var dispatcher, view,
-    ActionHelper = Ember.Handlebars.ActionHelper,
+    ActionHelper = EmberHandlebars.ActionHelper,
     originalRegisterAction = ActionHelper.registerAction;
 
 var appendView = function() {
-  Ember.run(function() { view.appendTo('#qunit-fixture'); });
+  run(function() { view.appendTo('#qunit-fixture'); });
 };
 
 module("Ember.Handlebars - action helper", {
   setup: function() {
-    dispatcher = Ember.EventDispatcher.create();
+    dispatcher = EventDispatcher.create();
     dispatcher.setup();
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       dispatcher.destroy();
       if (view) { view.destroy(); }
     });
@@ -23,8 +40,8 @@ module("Ember.Handlebars - action helper", {
 });
 
 test("should output a data attribute with a guid", function() {
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>edit</a>')
+  view = EmberView.create({
+    template: EmberHandlebars.compile('<a href="#" {{action "edit"}}>edit</a>')
   });
 
   appendView();
@@ -39,8 +56,8 @@ test("should by default register a click event", function() {
     registeredEventName = options.eventName;
   };
 
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>edit</a>')
+  view = EmberView.create({
+    template: EmberHandlebars.compile('<a href="#" {{action "edit"}}>edit</a>')
   });
 
   appendView();
@@ -57,8 +74,8 @@ test("should allow alternative events to be handled", function() {
     registeredEventName = options.eventName;
   };
 
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit" on="mouseUp"}}>edit</a>')
+  view = EmberView.create({
+    template: EmberHandlebars.compile('<a href="#" {{action "edit" on="mouseUp"}}>edit</a>')
   });
 
   appendView();
@@ -75,9 +92,9 @@ test("should by default target the view's controller", function() {
     registeredTarget = options.target;
   };
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>edit</a>')
+    template: EmberHandlebars.compile('<a href="#" {{action "edit"}}>edit</a>')
   });
 
   appendView();
@@ -90,14 +107,14 @@ test("should by default target the view's controller", function() {
 test("Inside a yield, the target points at the original target", function() {
   var controller = {}, watted = false;
 
-  var component = Ember.Component.extend({
+  var component = EmberComponent.extend({
     boundText: "inner",
     truthy: true,
     obj: {},
-    layout: Ember.Handlebars.compile("<p>{{boundText}}</p><p>{{#if truthy}}{{#with obj}}{{yield}}{{/with}}{{/if}}</p>")
+    layout: EmberHandlebars.compile("<p>{{boundText}}</p><p>{{#if truthy}}{{#with obj}}{{yield}}{{/with}}{{/if}}</p>")
   });
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: {
       boundText: "outer",
       truthy: true,
@@ -110,12 +127,12 @@ test("Inside a yield, the target points at the original target", function() {
         boundText: 'insideWith'
       }
     },
-    template: Ember.Handlebars.compile('{{#with obj}}{{#if truthy}}{{#view component}}{{#if truthy}}<p {{action "wat"}} class="wat">{{boundText}}</p>{{/if}}{{/view}}{{/if}}{{/with}}')
+    template: EmberHandlebars.compile('{{#with obj}}{{#if truthy}}{{#view component}}{{#if truthy}}<p {{action "wat"}} class="wat">{{boundText}}</p>{{/if}}{{/view}}{{/if}}{{/with}}')
   });
 
   appendView();
 
-  Ember.run(function() {
+  run(function() {
     view.$(".wat").click();
   });
 
@@ -129,9 +146,9 @@ test("should target the current controller inside an {{each}} loop", function() 
     registeredTarget = options.target;
   };
 
-  var itemController = Ember.ObjectController.create();
+  var itemController = EmberObjectController.create();
 
-  var ArrayController = Ember.ArrayController.extend({
+  var ArrayController = EmberArrayController.extend({
     itemController: 'stub',
     controllerAt: function(idx, object) {
       return itemController;
@@ -142,9 +159,9 @@ test("should target the current controller inside an {{each}} loop", function() 
     model: Ember.A([1])
   });
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
-    template: Ember.Handlebars.compile('{{#each controller}}{{action "editTodo"}}{{/each}}')
+    template: EmberHandlebars.compile('{{#each controller}}{{action "editTodo"}}{{/each}}')
   });
 
   appendView();
@@ -161,11 +178,11 @@ test("should allow a target to be specified", function() {
     registeredTarget = options.target;
   };
 
-  var anotherTarget = Ember.View.create();
+  var anotherTarget = EmberView.create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: {},
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="view.anotherTarget"}}>edit</a>'),
+    template: EmberHandlebars.compile('<a href="#" {{action "edit" target="view.anotherTarget"}}>edit</a>'),
     anotherTarget: anotherTarget
   });
 
@@ -176,7 +193,7 @@ test("should allow a target to be specified", function() {
 
   ActionHelper.registerAction = originalRegisterAction;
 
-  Ember.run(function() {
+  run(function() {
     anotherTarget.destroy();
   });
 });
@@ -199,23 +216,23 @@ test("should lazily evaluate the target", function() {
 
   controller.theTarget = first;
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="theTarget"}}>edit</a>')
+    template: EmberHandlebars.compile('<a href="#" {{action "edit" target="theTarget"}}>edit</a>')
   });
 
   appendView();
 
-  Ember.run(function() {
-    Ember.$('a').trigger('click');
+  run(function() {
+    jQuery('a').trigger('click');
   });
 
   equal(firstEdit, 1);
 
-  Ember.set(controller, 'theTarget', second);
+  set(controller, 'theTarget', second);
 
-  Ember.run(function() {
-    Ember.$('a').trigger('click');
+  run(function() {
+    jQuery('a').trigger('click');
   });
 
   equal(firstEdit, 1);
@@ -225,20 +242,20 @@ test("should lazily evaluate the target", function() {
 test("should register an event handler", function() {
   var eventHandlerWasCalled = false;
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>click me</a>')
+    template: EmberHandlebars.compile('<a href="#" {{action "edit"}}>click me</a>')
   });
 
   appendView();
 
   var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
-  ok(Ember.Handlebars.ActionHelper.registeredActions[actionId], "The action was registered");
+  ok(EmberHandlebars.ActionHelper.registeredActions[actionId], "The action was registered");
 
   view.$('a').trigger('click');
 
@@ -248,31 +265,31 @@ test("should register an event handler", function() {
 test("handles whitelisted modifier keys", function() {
   var eventHandlerWasCalled = false, shortcutHandlerWasCalled = false;
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: {
       edit: function() { eventHandlerWasCalled = true; },
       shortcut: function() { shortcutHandlerWasCalled = true; }
     }
   }).create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit" allowedKeys="alt"}}>click me</a> <div {{action "shortcut" allowedKeys="any"}}>click me too</div>')
+    template: EmberHandlebars.compile('<a href="#" {{action "edit" allowedKeys="alt"}}>click me</a> <div {{action "shortcut" allowedKeys="any"}}>click me too</div>')
   });
 
   appendView();
 
   var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
-  ok(Ember.Handlebars.ActionHelper.registeredActions[actionId], "The action was registered");
+  ok(EmberHandlebars.ActionHelper.registeredActions[actionId], "The action was registered");
 
-  var e = Ember.$.Event('click');
+  var e = jQuery.Event('click');
   e.altKey = true;
   view.$('a').trigger(e);
 
   ok(eventHandlerWasCalled, "The event handler was called");
 
-  e = Ember.$.Event('click');
+  e = jQuery.Event('click');
   e.ctrlKey = true;
   view.$('div').trigger(e);
 
@@ -284,16 +301,16 @@ test("should be able to use action more than once for the same event within a vi
       deleteWasCalled = false,
       originalEventHandlerWasCalled = false;
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: {
       edit: function() { editWasCalled = true; },
       "delete": function() { deleteWasCalled = true; }
     }
   }).create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
-    template: Ember.Handlebars.compile(
+    template: EmberHandlebars.compile(
       '<a id="edit" href="#" {{action "edit"}}>edit</a><a id="delete" href="#" {{action "delete"}}>delete</a>'
     ),
     click: function() { originalEventHandlerWasCalled = true; }
@@ -326,16 +343,16 @@ test("the event should not bubble if `bubbles=false` is passed", function() {
       deleteWasCalled = false,
       originalEventHandlerWasCalled = false;
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: {
       edit: function() { editWasCalled = true; },
       "delete": function() { deleteWasCalled = true; }
     }
   }).create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
-    template: Ember.Handlebars.compile(
+    template: EmberHandlebars.compile(
       '<a id="edit" href="#" {{action "edit" bubbles=false}}>edit</a><a id="delete" href="#" {{action "delete" bubbles=false}}>delete</a>'
     ),
     click: function() { originalEventHandlerWasCalled = true; }
@@ -369,14 +386,14 @@ test("the event should not bubble if `bubbles=false` is passed", function() {
 test("should work properly in an #each block", function() {
   var eventHandlerWasCalled = false;
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
     items: Ember.A([1, 2, 3, 4]),
-    template: Ember.Handlebars.compile('{{#each view.items}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
+    template: EmberHandlebars.compile('{{#each view.items}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
   });
 
   appendView();
@@ -389,14 +406,14 @@ test("should work properly in an #each block", function() {
 test("should work properly in a #with block", function() {
   var eventHandlerWasCalled = false;
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
     something: {ohai: 'there'},
-    template: Ember.Handlebars.compile('{{#with view.something}}<a href="#" {{action "edit"}}>click me</a>{{/with}}')
+    template: EmberHandlebars.compile('{{#with view.something}}<a href="#" {{action "edit"}}>click me</a>{{/with}}')
   });
 
   appendView();
@@ -409,8 +426,8 @@ test("should work properly in a #with block", function() {
 test("should unregister event handlers on rerender", function() {
   var eventHandlerWasCalled = false;
 
-  view = Ember.View.extend({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>click me</a>'),
+  view = EmberView.extend({
+    template: EmberHandlebars.compile('<a href="#" {{action "edit"}}>click me</a>'),
     actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
@@ -418,15 +435,15 @@ test("should unregister event handlers on rerender", function() {
 
   var previousActionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
-  Ember.run(function() {
+  run(function() {
     view.rerender();
   });
 
-  ok(!Ember.Handlebars.ActionHelper.registeredActions[previousActionId], "On rerender, the event handler was removed");
+  ok(!EmberHandlebars.ActionHelper.registeredActions[previousActionId], "On rerender, the event handler was removed");
 
   var newActionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
-  ok(Ember.Handlebars.ActionHelper.registeredActions[newActionId], "After rerender completes, a new event handler was added");
+  ok(EmberHandlebars.ActionHelper.registeredActions[newActionId], "After rerender completes, a new event handler was added");
 });
 
 test("should unregister event handlers on inside virtual views", function() {
@@ -435,8 +452,8 @@ test("should unregister event handlers on inside virtual views", function() {
       name: 'Thingy'
     }
   ]);
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#each view.things}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
+  view = EmberView.create({
+    template: EmberHandlebars.compile('{{#each view.things}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
     things: things
   });
 
@@ -444,23 +461,23 @@ test("should unregister event handlers on inside virtual views", function() {
 
   var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
-  Ember.run(function() {
+  run(function() {
     things.removeAt(0);
   });
 
-  ok(!Ember.Handlebars.ActionHelper.registeredActions[actionId], "After the virtual view was destroyed, the action was unregistered");
+  ok(!EmberHandlebars.ActionHelper.registeredActions[actionId], "After the virtual view was destroyed, the action was unregistered");
 });
 
 test("should properly capture events on child elements of a container with an action", function() {
   var eventHandlerWasCalled = false;
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
-    template: Ember.Handlebars.compile('<div {{action "edit"}}><button>click me</button></div>')
+    template: EmberHandlebars.compile('<div {{action "edit"}}><button>click me</button></div>')
   });
 
   appendView();
@@ -474,13 +491,13 @@ test("should allow bubbling of events from action helper to original parent even
   var eventHandlerWasCalled = false,
       originalEventHandlerWasCalled = false;
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>click me</a>'),
+    template: EmberHandlebars.compile('<a href="#" {{action "edit"}}>click me</a>'),
     click: function() { originalEventHandlerWasCalled = true; }
   });
 
@@ -495,13 +512,13 @@ test("should not bubble an event from action helper to original parent event if 
   var eventHandlerWasCalled = false,
       originalEventHandlerWasCalled = false;
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: { edit: function() { eventHandlerWasCalled = true; } }
   }).create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit" bubbles=false}}>click me</a>'),
+    template: EmberHandlebars.compile('<a href="#" {{action "edit" bubbles=false}}>click me</a>'),
     click: function() { originalEventHandlerWasCalled = true; }
   });
 
@@ -517,13 +534,13 @@ test("should allow 'send' as action name (#594)", function() {
   var eventHandlerWasCalled = false;
   var eventObjectSent;
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     send: function() { eventHandlerWasCalled = true; }
   }).create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
-    template: Ember.Handlebars.compile('<a href="#" {{action "send" }}>send</a>')
+    template: EmberHandlebars.compile('<a href="#" {{action "send" }}>send</a>')
   });
 
   appendView();
@@ -538,7 +555,7 @@ test("should send the view, event and current Handlebars context to the action",
   var passedTarget;
   var passedContext;
 
-  var aTarget = Ember.Controller.extend({
+  var aTarget = EmberController.extend({
     actions: {
       edit: function(context) {
         passedTarget = this;
@@ -549,9 +566,9 @@ test("should send the view, event and current Handlebars context to the action",
 
   var aContext = { aTarget: aTarget };
 
-  view = Ember.View.create({
+  view = EmberView.create({
     aContext: aContext,
-    template: Ember.Handlebars.compile('{{#with view.aContext}}<a id="edit" href="#" {{action "edit" this target="aTarget"}}>edit</a>{{/with}}')
+    template: EmberHandlebars.compile('{{#with view.aContext}}<a id="edit" href="#" {{action "edit" this target="aTarget"}}>edit</a>{{/with}}')
   });
 
   appendView();
@@ -565,8 +582,8 @@ test("should send the view, event and current Handlebars context to the action",
 test("should only trigger actions for the event they were registered on", function() {
   var editWasCalled = false;
 
-  view = Ember.View.extend({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>edit</a>'),
+  view = EmberView.extend({
+    template: EmberHandlebars.compile('<a href="#" {{action "edit"}}>edit</a>'),
     actions: { edit: function() { editWasCalled = true; } }
   }).create();
 
@@ -579,8 +596,8 @@ test("should only trigger actions for the event they were registered on", functi
 
 test("should unwrap controllers passed as a context", function() {
   var passedContext,
-      model = Ember.Object.create(),
-      controller = Ember.ObjectController.extend({
+      model = EmberObject.create(),
+      controller = EmberObjectController.extend({
         model: model,
         actions: {
           edit: function(context) {
@@ -589,9 +606,9 @@ test("should unwrap controllers passed as a context", function() {
         }
       }).create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
-    template: Ember.Handlebars.compile('<button {{action "edit" this}}>edit</button>')
+    template: EmberHandlebars.compile('<button {{action "edit" this}}>edit</button>')
   });
 
   appendView();
@@ -603,9 +620,9 @@ test("should unwrap controllers passed as a context", function() {
 
 test("should allow multiple contexts to be specified", function() {
   var passedContexts,
-      models = [Ember.Object.create(), Ember.Object.create()];
+      models = [EmberObject.create(), EmberObject.create()];
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: {
       edit: function() {
         passedContexts = [].slice.call(arguments);
@@ -613,11 +630,11 @@ test("should allow multiple contexts to be specified", function() {
     }
   }).create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
     modelA: models[0],
     modelB: models[1],
-    template: Ember.Handlebars.compile('<button {{action "edit" view.modelA view.modelB}}>edit</button>')
+    template: EmberHandlebars.compile('<button {{action "edit" view.modelA view.modelB}}>edit</button>')
   });
 
   appendView();
@@ -629,9 +646,9 @@ test("should allow multiple contexts to be specified", function() {
 
 test("should allow multiple contexts to be specified mixed with string args", function() {
   var passedParams,
-      model = Ember.Object.create();
+      model = EmberObject.create();
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: {
       edit: function() {
         passedParams = [].slice.call(arguments);
@@ -639,10 +656,10 @@ test("should allow multiple contexts to be specified mixed with string args", fu
     }
   }).create();
 
-  view = Ember.View.create({
+  view = EmberView.create({
     controller: controller,
     modelA: model,
-    template: Ember.Handlebars.compile('<button {{action "edit" "herp" view.modelA}}>edit</button>')
+    template: EmberHandlebars.compile('<button {{action "edit" "herp" view.modelA}}>edit</button>')
   });
 
   appendView();
@@ -660,17 +677,17 @@ var namespace = {
 };
 
 var compile = function(string) {
-  return Ember.Handlebars.compile(string);
+  return EmberHandlebars.compile(string);
 };
 
 test("it does not trigger action with special clicks", function() {
   var showCalled = false;
 
-  view = Ember.View.create({
+  view = EmberView.create({
     template: compile("<a {{action 'show' href=true}}>Hi</a>")
   });
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: {
       show: function() {
         showCalled = true;
@@ -678,13 +695,13 @@ test("it does not trigger action with special clicks", function() {
     }
   }).create();
 
-  Ember.run(function() {
+  run(function() {
     view.set('controller', controller);
     view.appendTo('#qunit-fixture');
   });
 
   function checkClick(prop, value, expected) {
-    var event = Ember.$.Event("click");
+    var event = jQuery.Event("click");
     event[prop] = value;
     view.$('a').trigger(event);
     if (expected) {
@@ -709,11 +726,11 @@ test("it does not trigger action with special clicks", function() {
 test("it can trigger actions for keyboard events", function() {
   var showCalled = false;
 
-  view = Ember.View.create({
+  view = EmberView.create({
     template: compile("<input type='text' {{action 'show' on='keyUp'}}>")
   });
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: {
       show: function() {
         showCalled = true;
@@ -721,12 +738,12 @@ test("it can trigger actions for keyboard events", function() {
     }
   }).create();
 
-  Ember.run(function() {
+  run(function() {
     view.set('controller', controller);
     view.appendTo('#qunit-fixture');
   });
 
-  var event = Ember.$.Event("keyup");
+  var event = jQuery.Event("keyup");
   event.char = 'a';
   event.which = 65;
   view.$('input').trigger(event);
@@ -738,11 +755,11 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
     expect(4);
     var lastAction, actionOrder = [];
 
-    view = Ember.View.create({
+    view = EmberView.create({
       template: compile("<a id='woot-bound-param'' {{action hookMeUp}}>Hi</a>")
     });
 
-    var controller = Ember.Controller.extend({
+    var controller = EmberController.extend({
       hookMeUp: 'biggityBoom',
       actions: {
         biggityBoom: function() {
@@ -760,7 +777,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
       }
     }).create();
 
-    Ember.run(function() {
+    run(function() {
       view.set('controller', controller);
       view.appendTo('#qunit-fixture');
     });
@@ -768,7 +785,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
     var testBoundAction = function(propertyValue){
       controller.set('hookMeUp', propertyValue);
 
-      Ember.run(function(){
+      run(function(){
         view.$("#woot-bound-param").click();
       });
 
@@ -786,11 +803,11 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
     Ember.TESTING_DEPRECATION = true;
     var triggeredAction;
 
-    view = Ember.View.create({
+    view = EmberView.create({
       template: compile("<a id='oops-bound-param'' {{action ohNoeNotValid}}>Hi</a>")
     });
 
-    var controller = Ember.Controller.extend({
+    var controller = EmberController.extend({
       actions: {
         ohNoeNotValid: function() {
           triggeredAction = true;
@@ -798,12 +815,12 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
       }
     }).create();
 
-    Ember.run(function() {
+    run(function() {
       view.set('controller', controller);
       view.appendTo('#qunit-fixture');
     });
 
-    Ember.run(function(){
+    run(function(){
       view.$("#oops-bound-param").click();
     });
 
@@ -813,11 +830,11 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
   test("a quoteless parameter that also exists as an action name results in an assertion", function(){
     var triggeredAction;
 
-    view = Ember.View.create({
+    view = EmberView.create({
       template: compile("<a id='oops-bound-param' {{action ohNoeNotValid}}>Hi</a>")
     });
 
-    var controller = Ember.Controller.extend({
+    var controller = EmberController.extend({
       actions: {
         ohNoeNotValid: function() {
           triggeredAction = true;
@@ -825,7 +842,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
       }
     }).create();
 
-    Ember.run(function() {
+    run(function() {
       view.set('controller', controller);
       view.appendTo('#qunit-fixture');
     });
@@ -835,7 +852,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
       ok(test, message + " -- was properly asserted");
     };
 
-    Ember.run(function(){
+    run(function(){
       view.$("#oops-bound-param").click();
     });
 
@@ -850,17 +867,17 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
 
     var triggeredAction;
 
-    view = Ember.View.create({
+    view = EmberView.create({
       template: compile("<a id='oops-bound-param' {{action ohNoeNotValid}}>Hi</a>")
     });
 
-    var controller = Ember.Controller.extend({
+    var controller = EmberController.extend({
       ohNoeNotValid: function() {
         triggeredAction = true;
       }
     }).create();
 
-    Ember.run(function() {
+    run(function() {
       view.set('controller', controller);
       view.appendTo('#qunit-fixture');
     });
@@ -870,7 +887,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
       ok(test, message + " -- was properly asserted");
     };
 
-    Ember.run(function(){
+    run(function(){
       view.$("#oops-bound-param").click();
     });
 
@@ -887,11 +904,11 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
 
     var triggeredAction;
 
-    view = Ember.View.create({
+    view = EmberView.create({
       template: compile("<a id='oops-bound-param'' {{action ohNoeNotValid}}>Hi</a>")
     });
 
-    var controller = Ember.Controller.extend({
+    var controller = EmberController.extend({
       actions: {
         ohNoeNotValid: function() {
           triggeredAction = true;
@@ -899,12 +916,12 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
       }
     }).create();
 
-    Ember.run(function() {
+    run(function() {
       view.set('controller', controller);
       view.appendTo('#qunit-fixture');
     });
 
-    Ember.run(function(){
+    run(function(){
       view.$("#oops-bound-param").click();
     });
 
@@ -914,12 +931,12 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
 
 module("Ember.Handlebars - action helper - deprecated invoking directly on target", {
   setup: function() {
-    dispatcher = Ember.EventDispatcher.create();
+    dispatcher = EventDispatcher.create();
     dispatcher.setup();
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       dispatcher.destroy();
       if (view) { view.destroy(); }
     });
@@ -929,17 +946,17 @@ module("Ember.Handlebars - action helper - deprecated invoking directly on targe
 if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
   test("should invoke a handler defined directly on the target (DEPRECATED)", function() {
     var eventHandlerWasCalled,
-        model = Ember.Object.create();
+        model = EmberObject.create();
 
-    var controller = Ember.Controller.extend({
+    var controller = EmberController.extend({
       edit: function() {
         eventHandlerWasCalled = true;
       }
     }).create();
 
-    view = Ember.View.create({
+    view = EmberView.create({
       controller: controller,
-      template: Ember.Handlebars.compile('<button {{action "edit"}}>edit</button>')
+      template: EmberHandlebars.compile('<button {{action "edit"}}>edit</button>')
     });
 
     appendView();
@@ -953,22 +970,22 @@ if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
 }
 
 test("should respect preventDefault=false option if provided", function(){
-  view = Ember.View.create({
+  view = EmberView.create({
     template: compile("<a {{action 'show' preventDefault=false}}>Hi</a>")
   });
 
-  var controller = Ember.Controller.extend({
+  var controller = EmberController.extend({
     actions: {
       show: function() { }
     }
   }).create();
 
-  Ember.run(function() {
+  run(function() {
     view.set('controller', controller);
     view.appendTo('#qunit-fixture');
   });
 
-  var event = Ember.$.Event("click");
+  var event = jQuery.Event("click");
   view.$('a').trigger(event);
 
   equal(event.isDefaultPrevented(), false, "should not preventDefault");

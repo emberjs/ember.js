@@ -1,5 +1,7 @@
-var copy = Ember.copy, AutoLocation = Ember.AutoLocation,
-    AutoLocationTest;
+import copy from "ember-runtime/copy";
+import AutoLocation from "ember-routing/location/auto_location";
+
+var AutoLocationTest;
 
 module("Auto Location", {
   setup: function() {

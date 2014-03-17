@@ -1,11 +1,17 @@
+import Ember from 'ember-metal/core'; // assert
+import run from "ember-metal/run_loop";
+import Container from 'container/container';
+import EmberObject from "ember-runtime/system/object";
+import EmberRoute from "ember-routing/system/route";
+
 var route, routeOne, routeTwo, router, container, lookupHash;
 
 function createRoute(){
-  route = Ember.Route.create();
+  route = EmberRoute.create();
 }
 
 function cleanupRoute(){
-  Ember.run(route, 'destroy');
+  run(route, 'destroy');
 }
 
 module("Ember.Route", {
@@ -20,7 +26,7 @@ test("default store utilizes the container to acquire the model factory", functi
 
   post = {};
 
-  Post = Ember.Object.extend();
+  Post = EmberObject.extend();
   Post.reopenClass({
     find: function(id) {
       return post;
@@ -47,14 +53,14 @@ test("default store utilizes the container to acquire the model factory", functi
 
 test("'store' can be injected by data persistence frameworks", function() {
   expect(8);
-  Ember.run(route, 'destroy'); 
+  run(route, 'destroy'); 
 
-  var container = new Ember.Container();
+  var container = new Container();
   var post = {
     id: 1
   };
 
-  var Store = Ember.Object.extend({
+  var Store = EmberObject.extend({
     find: function(type, value){
       ok(true, 'injected model was called');
       equal(type, 'post', 'correct type was called');
@@ -63,7 +69,7 @@ test("'store' can be injected by data persistence frameworks", function() {
     }
   });
 
-  container.register('route:index',  Ember.Route);
+  container.register('route:index',  EmberRoute);
   container.register('store:main', Store);
 
   container.injection('route', 'store', 'store:main');
@@ -76,10 +82,10 @@ test("'store' can be injected by data persistence frameworks", function() {
 
 test("asserts if model class is not found", function() {
   expect(1);
-  Ember.run(route, 'destroy');
+  run(route, 'destroy');
 
-  var container = new Ember.Container();
-  container.register('route:index',  Ember.Route);
+  var container = new Container();
+  container.register('route:index', EmberRoute);
 
   route = container.lookup('route:index');
 
@@ -91,11 +97,11 @@ test("asserts if model class is not found", function() {
 test("'store' does not need to be injected", function() {
   expect(1);
 
-  Ember.run(route, 'destroy');
+  run(route, 'destroy');
   var originalAssert = Ember.assert;
 
-  var container = new Ember.Container();
-  container.register('route:index',  Ember.Route);
+  var container = new Container();
+  container.register('route:index',  EmberRoute);
 
   route = container.lookup('route:index');
 
@@ -135,8 +141,8 @@ module("Ember.Route interaction", {
       }
     };
 
-    routeOne = Ember.Route.create({ container: container, routeName: 'one' });
-    routeTwo = Ember.Route.create({ container: container, routeName: 'two' });
+    routeOne = EmberRoute.create({ container: container, routeName: 'one' });
+    routeTwo = EmberRoute.create({ container: container, routeName: 'two' });
 
     lookupHash = {
       'route:one': routeOne,
@@ -145,7 +151,7 @@ module("Ember.Route interaction", {
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       routeOne.destroy();
       routeTwo.destroy();
     });
