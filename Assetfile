@@ -154,6 +154,23 @@ class RemoveUseStrict< Rake::Pipeline::Filter
   end
 end
 
+class EmberTemplateCompiler < Rake::Pipeline::Filter
+  def generate_output(inputs, output)
+    inputs.each do |input|
+      out = "(function() {\nvar Ember = { assert: function() {}, FEATURES: { isEnabled: function() {} } };\n"
+      out << File.read('packages_es6/ember-handlebars-compiler/lib/main.js')
+
+      out.gsub!('import Ember from "ember-metal/core";', '')
+      out.gsub!('export default EmberHandlebars;', '')
+
+      out << "\nexports.precompile = EmberHandlebars.precompile;"
+      out << "\nexports.EmberHandlebars = EmberHandlebars;"
+      out << "\n})();"
+      output.write out
+    end
+  end
+end
+
 distros.each do |name, modules|
   name = name == "full" ? "ember" : "ember-#{name}"
 
@@ -181,7 +198,7 @@ distros.each do |name, modules|
       filter HandlebarsPrecompiler
       filter EmberDefeatureify
       filter AddMicroLoader unless name == "ember-template-compiler"
-      filter EmberStub if name == "ember-template-compiler"
+      filter EmberTemplateCompiler if name == "ember-template-compiler"
       filter DetangleTranspiledGlobalsFilter
       filter EmberLicenseFilter
       filter AddProjectVersionNumber

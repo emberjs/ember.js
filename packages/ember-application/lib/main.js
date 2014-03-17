@@ -1,3 +1,4 @@
+require('ember-runtime');
 require('ember-views');
 require('ember-routing');
 require('ember-extension-support');

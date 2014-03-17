@@ -22,7 +22,7 @@ var View, Component;
 // var emberAssert = Ember.assert;
 var Handlebars = (Ember.imports && Ember.imports.Handlebars) || (this && this.Handlebars);
 if (!Handlebars && typeof require === 'function') {
-  Handlebars = requireModule('handlebars');
+  Handlebars = require('handlebars');
 }
 
 Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1. Include " +
@@ -217,7 +217,7 @@ EmberHandlebars.JavaScriptCompiler.stringifyLastBlockHelperMissingInvocation = f
 
 var stringifyBlockHelperMissing = EmberHandlebars.JavaScriptCompiler.stringifyLastBlockHelperMissingInvocation;
 
-var originalBlockValue = Ember.Handlebars.JavaScriptCompiler.prototype.blockValue;
+var originalBlockValue = EmberHandlebars.JavaScriptCompiler.prototype.blockValue;
 EmberHandlebars.JavaScriptCompiler.prototype.blockValue = function() {
   originalBlockValue.apply(this, arguments);
   stringifyBlockHelperMissing(this.source);
