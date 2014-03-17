@@ -1,4 +1,4 @@
-requireModule('ember-runtime');
+import Ember from "ember-metal/core"; // FEATURES, assert
 
 /**
 @module ember
@@ -99,4 +99,4 @@ DSL.map = function(callback) {
   return dsl;
 };
 
-Ember.RouterDSL = DSL;
+export default DSL;

@@ -1,4 +1,6 @@
-var get = Ember.get;
+import Ember from "ember-metal/core"; // Logger
+import {get} from "ember-metal/property_get";
+import {isArray} from "ember-metal/utils";
 
 /**
 @module ember
@@ -13,7 +15,7 @@ var get = Ember.get;
   @method controllerFor
   @private
 */
-Ember.controllerFor = function(container, controllerName, lookupOptions) {
+var controllerFor = function(container, controllerName, lookupOptions) {
   return container.lookup('controller:' + controllerName, lookupOptions);
 };
 
@@ -32,10 +34,10 @@ Ember.controllerFor = function(container, controllerName, lookupOptions) {
   @method generateControllerFactory
   @private
 */
-Ember.generateControllerFactory = function(container, controllerName, context) {
+var generateControllerFactory = function(container, controllerName, context) {
   var Factory, fullName, instance, name, factoryName, controllerType;
 
-  if (context && Ember.isArray(context)) {
+  if (context && isArray(context)) {
     controllerType = 'array';
   } else if (context) {
     controllerType = 'object';
@@ -71,8 +73,8 @@ Ember.generateControllerFactory = function(container, controllerName, context) {
   @method generateController
   @private
 */
-Ember.generateController = function(container, controllerName, context) {
-  Ember.generateControllerFactory(container, controllerName, context);
+var generateController = function(container, controllerName, context) {
+  generateControllerFactory(container, controllerName, context);
   var fullName = 'controller:' + controllerName;
   var instance = container.lookup(fullName);
 
@@ -82,3 +84,5 @@ Ember.generateController = function(container, controllerName, context) {
 
   return instance;
 };
+
+export {controllerFor, generateControllerFactory, generateController};

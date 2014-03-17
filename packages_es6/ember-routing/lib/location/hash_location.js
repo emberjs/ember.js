@@ -1,10 +1,18 @@
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import {guidFor} from "ember-metal/utils";
+
+import EmberObject from "ember-runtime/system/object";
+import EmberLocation from "ember-routing/location/api";
+import jQuery from "ember-views/system/jquery";
+
 /**
 @module ember
 @submodule ember-routing
 */
 
-var get = Ember.get, set = Ember.set,
-    getHash = Ember.Location.getHash;
+var getHash = EmberLocation.getHash;
 
 /**
   `Ember.HashLocation` implements the location API using the browser's
@@ -15,7 +23,7 @@ var get = Ember.get, set = Ember.set,
   @namespace Ember
   @extends Ember.Object
 */
-Ember.HashLocation = Ember.Object.extend({
+var HashLocation = EmberObject.extend({
   implementation: 'hash',
 
   init: function() {
@@ -70,10 +78,10 @@ Ember.HashLocation = Ember.Object.extend({
   */
   onUpdateURL: function(callback) {
     var self = this;
-    var guid = Ember.guidFor(this);
+    var guid = guidFor(this);
 
-    Ember.$(window).on('hashchange.ember-location-'+guid, function() {
-      Ember.run(function() {
+    jQuery(window).on('hashchange.ember-location-'+guid, function() {
+      run(function() {
         var path = self.getURL();
         if (get(self, 'lastSetURL') === path) { return; }
 
@@ -106,8 +114,10 @@ Ember.HashLocation = Ember.Object.extend({
     @method willDestroy
   */
   willDestroy: function() {
-    var guid = Ember.guidFor(this);
+    var guid = guidFor(this);
 
-    Ember.$(window).off('hashchange.ember-location-'+guid);
+    jQuery(window).off('hashchange.ember-location-'+guid);
   }
 });
+
+export default HashLocation;

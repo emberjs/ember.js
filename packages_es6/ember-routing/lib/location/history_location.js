@@ -1,9 +1,16 @@
+import Ember from "ember-metal/core"; // FEATURES
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {guidFor} from "ember-metal/utils";
+
+import EmberObject from "ember-runtime/system/object";
+import jQuery from "ember-views/system/jquery";
+
 /**
 @module ember
 @submodule ember-routing
 */
 
-var get = Ember.get, set = Ember.set;
 var popstateFired = false;
 var supportsHistoryState = window.history && 'state' in window.history;
 
@@ -15,12 +22,12 @@ var supportsHistoryState = window.history && 'state' in window.history;
   @namespace Ember
   @extends Ember.Object
 */
-Ember.HistoryLocation = Ember.Object.extend({
+var HistoryLocation = EmberObject.extend({
   implementation: 'history',
 
   init: function() {
     set(this, 'location', get(this, 'location') || window.location);
-    set(this, 'baseURL', Ember.$('base').attr('href') || '');
+    set(this, 'baseURL', jQuery('base').attr('href') || '');
   },
 
   /**
@@ -165,10 +172,10 @@ Ember.HistoryLocation = Ember.Object.extend({
     @param callback {Function}
   */
   onUpdateURL: function(callback) {
-    var guid = Ember.guidFor(this),
+    var guid = guidFor(this),
         self = this;
 
-    Ember.$(window).on('popstate.ember-location-'+guid, function(e) {
+    jQuery(window).on('popstate.ember-location-'+guid, function(e) {
       // Ignore initial page load popstate event in Chrome
       if (!popstateFired) {
         popstateFired = true;
@@ -207,8 +214,10 @@ Ember.HistoryLocation = Ember.Object.extend({
     @method willDestroy
   */
   willDestroy: function() {
-    var guid = Ember.guidFor(this);
+    var guid = guidFor(this);
 
-    Ember.$(window).off('popstate.ember-location-'+guid);
+    jQuery(window).off('popstate.ember-location-'+guid);
   }
 });
+
+export default HistoryLocation;

@@ -1,10 +1,13 @@
-// require('ember-routing/system/router');
+import {get} from "ember-metal/property_get";
+import {map} from "ember-metal/array";
+import {onLoad} from "ember-runtime/system/lazy_load";
+import {ControllerMixin} from "ember-runtime/controllers/controller";
+import EmberRouter from "ember-routing/system/router";
+import EmberHandlebars from "ember-handlebars";
 
-Ember.onLoad('Ember.Handlebars', function() {
-  var handlebarsResolve = Ember.Handlebars.resolveParams,
-      map = Ember.ArrayPolyfills.map,
-      get = Ember.get,
-      handlebarsGet = Ember.Handlebars.get;
+onLoad('Ember.Handlebars', function() {
+  var handlebarsResolve = EmberHandlebars.resolveParams,
+      handlebarsGet = EmberHandlebars.get;
 
   function resolveParams(context, params, options) {
     return map.call(resolvePaths(context, params, options), function(path, i) {
@@ -32,7 +35,7 @@ Ember.onLoad('Ember.Handlebars', function() {
     function unwrap(object, path) {
       if (path === 'controller') { return path; }
 
-      if (Ember.ControllerMixin.detect(object)) {
+      if (ControllerMixin.detect(object)) {
         return unwrap(get(object, 'model'), path ? path + '.model' : 'model');
       } else {
         return path;
@@ -40,6 +43,6 @@ Ember.onLoad('Ember.Handlebars', function() {
     }
   }
 
-  Ember.Router.resolveParams = resolveParams;
-  Ember.Router.resolvePaths = resolvePaths;
+  EmberRouter.resolveParams = resolveParams;
+  EmberRouter.resolvePaths = resolvePaths;
 });

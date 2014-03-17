@@ -1,14 +1,30 @@
+import Ember from "ember-metal/core"; // FEATURES, K, A, deprecate, assert, Logger
+import EmberError from "ember-metal/error";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import getProperties from "ember-metal/get_properties";
+import EnumerableUtils from "ember-metal/enumerable_utils";
+import {isNone} from "ember-metal/is_none";
+import {computed} from "ember-metal/computed";
+import {typeOf} from "ember-metal/utils";
+import run from "ember-metal/run_loop";
+
+import keys from "ember-runtime/keys";
+import copy from "ember-runtime/copy";
+import EmberStringUtils from "ember-runtime/system/string";
+import EmberObject from "ember-runtime/system/object";
+import ActionHandler from "ember-runtime/mixins/action_handler";
+import {generateController} from "ember-routing/system/controller_for";
+
 /**
 @module ember
 @submodule ember-routing
 */
 
-var get = Ember.get, set = Ember.set,
-    getProperties = Ember.getProperties,
-    classify = Ember.String.classify,
-    fmt = Ember.String.fmt,
-    a_forEach = Ember.EnumerableUtils.forEach,
-    a_replace = Ember.EnumerableUtils.replace;
+var classify = EmberStringUtils.classify,
+    fmt = EmberStringUtils.fmt,
+    a_forEach = EnumerableUtils.forEach,
+    a_replace = EnumerableUtils.replace;
 
 /**
   The `Ember.Route` class is used to define individual routes. Refer to
@@ -19,7 +35,7 @@ var get = Ember.get, set = Ember.set,
   @extends Ember.Object
   @uses Ember.ActionHandler
 */
-Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
+var Route = EmberObject.extend(ActionHandler, {
 
   /**
     @private
@@ -322,7 +338,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     queryParamsDidChange: function(changed, totalPresent, removed) {
       if (Ember.FEATURES.isEnabled("query-params-new")) {
-        var totalChanged = Ember.keys(changed).concat(Ember.keys(removed));
+        var totalChanged = keys(changed).concat(keys(removed));
         for (var i = 0, len = totalChanged.length; i < len; ++i) {
           var urlKey = totalChanged[i],
               options = this.queryParams[urlKey] || {};
@@ -934,7 +950,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
       sawParams = true;
     }
 
-    if (!name && sawParams) { return Ember.copy(params); }
+    if (!name && sawParams) { return copy(params); }
     else if (!name) {
       if (Ember.FEATURES.isEnabled("ember-routing-inherits-parent-model")) {
         if (transition.resolveIndex !== transition.state.handlerInfos.length-1) { return; }
@@ -987,7 +1003,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @method store
     @param {Object} store
   */
-  store: Ember.computed(function(){
+  store: computed(function(){
     var container = this.container;
     var routeName = this.routeName;
     var namespace = get(this, 'router.namespace');
@@ -1201,7 +1217,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     model = model || this.modelFor(name);
 
-    return Ember.generateController(container, name, model);
+    return generateController(container, name, model);
   },
 
   /**
@@ -1336,7 +1352,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     @param {Object} options the options
   */
   render: function(name, options) {
-    Ember.assert("The name in the given arguments is undefined", arguments.length > 0 ? !Ember.isNone(arguments[0]) : true);
+    Ember.assert("The name in the given arguments is undefined", arguments.length > 0 ? !isNone(arguments[0]) : true);
 
     var namePassed = !!name;
 
@@ -1466,7 +1482,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
 
 if (Ember.FEATURES.isEnabled("query-params-new")) {
-  Ember.Route.reopen({
+  Route.reopen({
     /**
       Configuration hash for this route's queryParams. The possible
       configuration options and their defaults are as follows
@@ -1505,7 +1521,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     */
     queryParams: {},
 
-    _qp: Ember.computed(function() {
+    _qp: computed(function() {
       var controllerName = this.controllerName || this.routeName,
           fullName = this.container.normalize('controller:' + controllerName),
           controllerClass = this.container.lookupFactory(fullName);
@@ -1524,7 +1540,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
             propName = parts[0],
             urlKey = parts[1] || propName,
             defaultValue = get(controllerProto, propName),
-            type = Ember.typeOf(defaultValue),
+            type = typeOf(defaultValue),
             defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type),
             qp = {
               def: defaultValue,
@@ -1658,10 +1674,10 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
         return;
       }
 
-      var value = Ember.copy(get(controller, propName));
+      var value = copy(get(controller, propName));
 
       this.router._queuedQPChanges[qp.prop] = value;
-      Ember.run.once(this, this._fireQueryParamTransition);
+      run.once(this, this._fireQueryParamTransition);
     },
 
     _fireQueryParamTransition: function() {
@@ -1723,7 +1739,7 @@ function normalizeOptions(route, name, template, options) {
     var controllerName = controller;
     controller = route.container.lookup('controller:' + controllerName);
     if (!controller) {
-      throw new Ember.Error("You passed `controller: '" + controllerName + "'` into the `render` method, but no such controller could be found.");
+      throw new EmberError("You passed `controller: '" + controllerName + "'` into the `render` method, but no such controller could be found.");
     }
   }
 
@@ -1801,3 +1817,4 @@ function toggleQueryParamObservers(route, controller, enable) {
   }
 }
 
+export default Route;

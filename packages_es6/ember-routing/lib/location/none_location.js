@@ -1,9 +1,11 @@
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import EmberObject from "ember-runtime/system/object";
+
 /**
 @module ember
 @submodule ember-routing
 */
-
-var get = Ember.get, set = Ember.set;
 
 /**
   Ember.NoneLocation does not interact with the browser. It is useful for
@@ -15,7 +17,7 @@ var get = Ember.get, set = Ember.set;
   @namespace Ember
   @extends Ember.Object
 */
-Ember.NoneLocation = Ember.Object.extend({
+var NoneLocation = EmberObject.extend({
   implementation: 'none',
   path: '',
 
@@ -86,3 +88,5 @@ Ember.NoneLocation = Ember.Object.extend({
     return url;
   }
 });
+
+export default NoneLocation;

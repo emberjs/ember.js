@@ -1,9 +1,11 @@
+import Ember from "ember-metal/core"; // deprecate, assert
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+
 /**
 @module ember
 @submodule ember-routing
 */
-
-var get = Ember.get, set = Ember.set;
 
 /**
   Ember.Location returns an instance of the correct implementation of
@@ -117,7 +119,7 @@ var get = Ember.get, set = Ember.set;
   @namespace Ember
   @static
 */
-Ember.Location = {
+var EmberLocation = {
   /**
    This is deprecated in favor of using the container to lookup the location
    implementation as desired.
@@ -198,3 +200,5 @@ Ember.Location = {
     }
   }
 };
+
+export default EmberLocation;

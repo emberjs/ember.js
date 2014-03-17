@@ -1,22 +1,29 @@
+import Ember from "ember-metal/core"; // Handlebars, uuid, FEATURES, assert, deprecate
+import {get} from "ember-metal/property_get";
+import {forEach} from "ember-metal/array";
+import run from "ember-metal/run_loop";
+
+import {onLoad} from "ember-runtime/system/lazy_load";
+import {isSimpleClick} from "ember-views/system/utils";
+import EmberRouter from "ember-routing/system/router";
+import EmberHandlebars from "ember-handlebars";
+
+import "ember-handlebars/ext";
+import "ember-handlebars/helpers/view";
+
+// requireModule('ember-handlebars');
+
 /**
 @module ember
 @submodule ember-routing
 */
 
-requireModule('ember-handlebars');
-// require('ember-handlebars/ext');
-// require('ember-handlebars/helpers/view');
+onLoad('Ember.Handlebars', function(Handlebars) {
 
-Ember.onLoad('Ember.Handlebars', function(Handlebars) {
+  var resolveParams = EmberRouter.resolveParams;
 
-  var resolveParams = Ember.Router.resolveParams,
-      isSimpleClick = Ember.ViewUtils.isSimpleClick;
-
-  var EmberHandlebars = Ember.Handlebars,
-      handlebarsGet = EmberHandlebars.get,
+  var handlebarsGet = EmberHandlebars.get,
       SafeString = EmberHandlebars.SafeString,
-      forEach = Ember.ArrayPolyfills.forEach,
-      get = Ember.get,
       a_slice = Array.prototype.slice;
 
   function args(options, actionName) {
@@ -105,7 +112,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           actionName = actionNameOrPath;
         }
 
-        Ember.run(function runRegisteredAction() {
+        run(function runRegisteredAction() {
           if (target.send) {
             target.send.apply(target, args(options.parameters, actionName));
           } else {

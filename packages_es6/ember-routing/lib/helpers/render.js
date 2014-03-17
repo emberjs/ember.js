@@ -1,14 +1,22 @@
+import Ember from "ember-metal/core"; // assert, deprecate
+import EmberError from "ember-metal/error";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {onLoad} from "ember-runtime/system/lazy_load";
+import EmberStringUtils from "ember-runtime/system/string";
+import {generateControllerFactory, generateController} from "ember-routing/system/controller_for";
+import EmberHandlebars from "ember-handlebars";
+
+import "ember-handlebars/helpers/view";
+
+// requireModule('ember-handlebars');
+
 /**
 @module ember
 @submodule ember-routing
 */
 
-var get = Ember.get, set = Ember.set;
-
-// require('ember-handlebars/helpers/view');
-requireModule('ember-handlebars');
-
-Ember.onLoad('Ember.Handlebars', function(Handlebars) {
+onLoad('Ember.Handlebars', function(Handlebars) {
 
   /**
     Calling ``{{render}}`` from within a template will insert another
@@ -80,7 +88,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @param {Hash} options
     @return {String} HTML string
   */
-  Ember.Handlebars.registerHelper('render', function renderHelper(name, contextString, options) {
+  EmberHandlebars.registerHelper('render', function renderHelper(name, contextString, options) {
     var length = arguments.length;
 
     var contextProvided = length === 3,
@@ -96,9 +104,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       Ember.assert("You can only use the {{render}} helper once without a model object as its second argument, as in {{render \"post\" post}}.", !router || !router._lookupActiveView(name));
     } else if (length === 3) {
       // create a new controller
-      context = Ember.Handlebars.get(options.contexts[1], contextString, options);
+      context = EmberHandlebars.get(options.contexts[1], contextString, options);
     } else {
-      throw Ember.Error("You must pass a templateName to render");
+      throw EmberError("You must pass a templateName to render");
     }
 
     Ember.deprecate("Using a quoteless parameter with {{render}} is deprecated. Please update to quoted usage '{{render \"" + name + "\"}}.", options.types[0] !== 'ID');
@@ -123,7 +131,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     // choose name
     if (length > 2) {
       var factory = container.lookupFactory(controllerFullName) ||
-                    Ember.generateControllerFactory(container, controllerName, context);
+                    generateControllerFactory(container, controllerName, context);
 
       controller = factory.create({
         model: context,
@@ -133,7 +141,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     } else {
       controller = container.lookup(controllerFullName) ||
-                   Ember.generateController(container, controllerName);
+                   generateController(container, controllerName);
 
       controller.setProperties({
         target: parentController,
@@ -145,11 +153,11 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     if (root) {
       view.registerObserver(root, contextString, function() {
-        controller.set('model', Ember.Handlebars.get(root, contextString, options));
+        controller.set('model', EmberHandlebars.get(root, contextString, options));
       });
     }
 
-    options.hash.viewName = Ember.String.camelize(name);
+    options.hash.viewName = EmberStringUtils.camelize(name);
 
     var templateName = 'template:' + name;
     Ember.assert("You used `{{render '" + name + "'}}`, but '" + name + "' can not be found as either a template or a view.", container.has("view:" + name) || container.has(templateName) || options.fn);
@@ -161,6 +169,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       router._connectActiveView(name, view);
     }
 
-    Ember.Handlebars.helpers.view.call(this, view, options);
+    EmberHandlebars.helpers.view.call(this, view, options);
   });
 });

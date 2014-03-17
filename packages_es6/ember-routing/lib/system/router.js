@@ -1,24 +1,44 @@
+import Ember from "ember-metal/core"; // FEATURES, Logger, K, assert
+import EmberError from "ember-metal/error";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {forEach} from "ember-metal/array";
+import {defineProperty} from "ember-metal/properties";
+import {computed} from "ember-metal/computed";
+import merge from "ember-metal/merge";
+import run from "ember-metal/run_loop";
+import EnumerableUtils from "ember-metal/enumerable_utils";
+
+import EmberStringUtils from "ember-runtime/system/string";
+import EmberObject from "ember-runtime/system/object";
+import Evented from "ember-runtime/mixins/evented";
+import EmberRouterDSL from "ember-routing/system/dsl";
+import {View as EmberView} from "ember-views/views/view";
+import EmberLocation from "ember-routing/location/api";
+import {_MetamorphView} from "ember-handlebars/views/metamorph_view";
+
+// requireModule("ember-handlebars");
+// requireModule("ember-runtime");
+// requireModule("ember-views");
+
 /**
 @module ember
 @submodule ember-routing
 */
 
-// side effect of loading some Ember globals, for now
-requireModule("ember-handlebars");
-requireModule("ember-runtime");
-requireModule("ember-views");
+// // side effect of loading some Ember globals, for now
+// requireModule("ember-handlebars");
+// requireModule("ember-runtime");
+// requireModule("ember-views");
 
 var Router = requireModule("router")['default'];
 var Transition = requireModule("router/transition").Transition;
 
-var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
-var defineProperty = Ember.defineProperty;
+var fmt = EmberStringUtils.fmt;
 var slice = Array.prototype.slice;
-var forEach = Ember.EnumerableUtils.forEach;
+var forEach = EnumerableUtils.forEach;
 
-var DefaultView = Ember._MetamorphView;
-
-// require("ember-routing/system/dsl");
+var DefaultView = _MetamorphView;
 
 /**
   The `Ember.Router` class manages the application state and URLs. Refer to
@@ -28,7 +48,7 @@ var DefaultView = Ember._MetamorphView;
   @namespace Ember
   @extends Ember.Object
 */
-Ember.Router = Ember.Object.extend(Ember.Evented, {
+var EmberRouter = EmberObject.extend(Evented, {
   /**
     The `location` property determines the type of URL's that your
     application will use.
@@ -63,7 +83,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     @method url
     @returns {String} The current URL.
   */
-  url: Ember.computed(function() {
+  url: computed(function() {
     return get(this, 'location').getURL();
   }),
 
@@ -97,7 +117,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     this._setupRouter(router, location);
 
     container.register('view:default', DefaultView);
-    container.register('view:toplevel', Ember.View.extend());
+    container.register('view:toplevel', EmberView.extend());
 
     location.onUpdateURL(function(url) {
       self.handleURL(url);
@@ -128,10 +148,10 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
     // Put this in the runloop so url will be accurate. Seems
     // less surprising than didTransition being out of sync.
-    Ember.run.once(this, this.trigger, 'didTransition');
+    run.once(this, this.trigger, 'didTransition');
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
-      Ember.Logger.log("Transitioned into '" + Ember.Router._routePath(infos) + "'");
+      Ember.Logger.log("Transitioned into '" + EmberRouter._routePath(infos) + "'");
     }
   },
 
@@ -150,7 +170,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
     var infos = this.router.currentHandlerInfos;
     if (get(this, 'namespace').LOG_TRANSITIONS) {
-      Ember.Logger.log("Intermediate-transitioned into '" + Ember.Router._routePath(infos) + "'");
+      Ember.Logger.log("Intermediate-transitioned into '" + EmberRouter._routePath(infos) + "'");
     }
   },
 
@@ -235,7 +255,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
         // Allow for deprecated registration of custom location API's
         var options = {implementation: location};
 
-        location = set(this, 'location', Ember.Location.create(options));
+        location = set(this, 'location', EmberLocation.create(options));
       }
     }
 
@@ -286,7 +306,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
     router.updateURL = function(path) {
       lastURL = path;
-      Ember.run.once(doUpdateURL);
+      run.once(doUpdateURL);
     };
 
     if (location.replaceURL) {
@@ -296,7 +316,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
       router.replaceURL = function(path) {
         lastURL = path;
-        Ember.run.once(doReplaceURL);
+        run.once(doReplaceURL);
       };
     }
 
@@ -351,7 +371,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
             qp = qpCache.map[key];
 
         if (!qp) {
-          throw new Ember.Error("Unrecognized query param " + key + " provided as transition argument");
+          throw new EmberError("Unrecognized query param " + key + " provided as transition argument");
         }
         finalParams[qp.urlKey] = qp.route.serializeQueryParam(inputValue, qp.urlKey, qp.type);
       }
@@ -394,7 +414,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
       if (!qpMeta) { continue; }
 
-      Ember.merge(map, qpMeta.map);
+      merge(map, qpMeta.map);
       qps.push.apply(qps, qpMeta.qps);
     }
 
@@ -406,7 +426,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
   _scheduleLoadingEvent: function(transition, originRoute) {
     this._cancelLoadingEvent();
-    this._loadingStateTimer = Ember.run.scheduleOnce('routerTransitions', this, '_fireLoadingEvent', transition, originRoute);
+    this._loadingStateTimer = run.scheduleOnce('routerTransitions', this, '_fireLoadingEvent', transition, originRoute);
   },
 
   _fireLoadingEvent: function(transition, originRoute) {
@@ -421,7 +441,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
 
   _cancelLoadingEvent: function () {
     if (this._loadingStateTimer) {
-      Ember.run.cancel(this._loadingStateTimer);
+      run.cancel(this._loadingStateTimer);
     }
     this._loadingStateTimer = null;
   }
@@ -568,7 +588,7 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
 
   if (!handlerInfos) {
     if (ignoreFailure) { return; }
-    throw new Ember.Error("Can't trigger action '" + name + "' because your app hasn't finished transitioning into its first route. To trigger an action on destination routes during a transition, you can call `.send()` on the `Transition` object passed to the `model/beforeModel/afterModel` hooks.");
+    throw new EmberError("Can't trigger action '" + name + "' because your app hasn't finished transitioning into its first route. To trigger an action on destination routes during a transition, you can call `.send()` on the `Transition` object passed to the `model/beforeModel/afterModel` hooks.");
   }
 
   var eventWasHandled = false;
@@ -592,7 +612,7 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
   }
 
   if (!eventWasHandled && !ignoreFailure) {
-    throw new Ember.Error("Nothing handled the action '" + name + "'. If you did handle the action, this error can be caused by returning true from an action handler in a controller, causing the action to bubble.");
+    throw new EmberError("Nothing handled the action '" + name + "'. If you did handle the action, this error can be caused by returning true from an action handler in a controller, causing the action to bubble.");
   }
 }
 
@@ -607,7 +627,7 @@ function updatePaths(router) {
   }
 
   var infos = router.router.currentHandlerInfos,
-      path = Ember.Router._routePath(infos);
+      path = EmberRouter._routePath(infos);
 
   if (!('currentPath' in appController)) {
     defineProperty(appController, 'currentPath');
@@ -622,7 +642,7 @@ function updatePaths(router) {
   set(appController, 'currentRouteName', infos[infos.length - 1].name);
 }
 
-Ember.Router.reopenClass({
+EmberRouter.reopenClass({
   router: null,
   map: function(callback) {
     var router = this.router;
@@ -633,7 +653,7 @@ Ember.Router.reopenClass({
       this.reopenClass({ router: router });
     }
 
-    var dsl = Ember.RouterDSL.map(function() {
+    var dsl = EmberRouterDSL.map(function() {
       this.resource('application', { path: "/" }, function() {
         for (var i=0; i < router.callbacks.length; i++) {
           router.callbacks[i].call(this);
@@ -681,3 +701,5 @@ Ember.Router.reopenClass({
     return path.join(".");
   }
 });
+
+export default EmberRouter;

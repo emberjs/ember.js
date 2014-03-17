@@ -1,12 +1,18 @@
+import Ember from "ember-metal/core"; // FEATURES, deprecate
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import EnumerableUtils from "ember-metal/enumerable_utils";
+var map = EnumerableUtils.map;
+
+import {ControllerMixin} from "ember-runtime/controllers/controller";
+
 /**
 @module ember
 @submodule ember-routing
 */
 
-var get = Ember.get, set = Ember.set,
-    map = Ember.EnumerableUtils.map;
 
-Ember.ControllerMixin.reopen({
+ControllerMixin.reopen({
   /**
     Transition the application into another route. The route may
     be either a single route or route path:
@@ -154,7 +160,7 @@ Ember.ControllerMixin.reopen({
 });
 
 if (Ember.FEATURES.isEnabled("query-params-new")) {
-  Ember.ControllerMixin.reopen({
+  ControllerMixin.reopen({
     concatenatedProperties: ['queryParams'],
     queryParams: null,
     _finalizingQueryParams: false,

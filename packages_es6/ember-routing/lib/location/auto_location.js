@@ -1,14 +1,22 @@
+import Ember from "ember-metal/core"; // FEATURES
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+
+import EmberLocation from "ember-routing/location/api";
+import HistoryLocation from "ember-routing/location/history_location";
+import HashLocation from "ember-routing/location/hash_location";
+import NoneLocation from "ember-routing/location/none_location";
+
 if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
   /**
   @module ember
   @submodule ember-routing
   */
 
-  var get = Ember.get, set = Ember.set;
   var documentMode = document.documentMode,
       history = window.history,
       location = window.location,
-      getHash = Ember.Location.getHash;
+      getHash = EmberLocation.getHash;
 
   /**
     Ember.AutoLocation will select the best location option based off browser
@@ -24,7 +32,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
     @namespace Ember
     @static
   */
-  var AutoLocation = Ember.AutoLocation = {
+  var AutoLocation = {
 
     /**
       Will be pre-pended to path upon state change.
@@ -118,7 +126,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
         // Since we support history paths, let's be sure we're using them else 
         // switch the location over to it.
         if (currentPath === historyPath) {
-          implementationClass = Ember.HistoryLocation;
+          implementationClass = HistoryLocation;
         } else {
           cancelRouterSetup = true;
           this.replacePath(historyPath);
@@ -130,7 +138,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
         // Be sure we're using a hashed path, otherwise let's switch over it to so
         // we start off clean and consistent.
         if (currentPath === hashPath) {
-          implementationClass = Ember.HashLocation;
+          implementationClass = HashLocation;
         } else {
           cancelRouterSetup = true;
           this.replacePath(hashPath);
@@ -139,7 +147,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
 
       // If none has been set
       if (!implementationClass) {
-        implementationClass = Ember.NoneLocation;
+        implementationClass = NoneLocation;
       }
 
       var implementation = implementationClass.create.apply(implementationClass, arguments);
@@ -230,3 +238,5 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
 
   };
 }
+
+export default AutoLocation;

@@ -1,19 +1,26 @@
+import Ember from "ember-metal/core"; // assert
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {onLoad} from "ember-runtime/system/lazy_load";
+import ContainerView from "ember-views/views/container_view";
+import {_Metamorph} from "ember-handlebars/views/metamorph_view";
+
+import "ember-handlebars/helpers/view";
+
+// requireModule('ember-handlebars');
+
 /**
 @module ember
 @submodule ember-routing
 */
 
-var get = Ember.get, set = Ember.set;
-requireModule('ember-handlebars');
-// require('ember-handlebars/helpers/view');
-
-Ember.onLoad('Ember.Handlebars', function(Handlebars) {
+onLoad('Ember.Handlebars', function(Handlebars) {
   /**
   @module ember
   @submodule ember-routing
   */
 
-  Handlebars.OutletView = Ember.ContainerView.extend(Ember._Metamorph);
+  Handlebars.OutletView = ContainerView.extend(_Metamorph);
 
   /**
     The `outlet` helper is a placeholder that the router will fill in with

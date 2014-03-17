@@ -1,11 +1,14 @@
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import {View as EmberView} from "ember-views/views/view";
+
 /**
 @module ember
 @submodule ember-routing
 */
 
-var get = Ember.get, set = Ember.set;
-
-Ember.View.reopen({
+EmberView.reopen({
 
   /**
     Sets the private `_outlets` object on the view.
@@ -124,7 +127,7 @@ Ember.View.reopen({
       this._pendingDisconnections = {};
     }
     this._pendingDisconnections[outletName] = true;
-    Ember.run.once(this, '_finishDisconnections');
+    run.once(this, '_finishDisconnections');
   },
 
   /**
