@@ -158,9 +158,9 @@ run.join = function(target, method /* args */) {
   when called within an existing loop, no return value is possible.
 */
 run.bind = function(target, method /* args*/) {
-  var args = arguments;
+  var args = slice.call(arguments);
   return function() {
-    return apply(run, run.join, args);
+    return apply(run, run.join, args.concat(slice.call(arguments)));
   };
 };
 
@@ -558,7 +558,7 @@ run.cancel = function(timer) {
     then it will be looked up on the passed target.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @param {Number} wait Number of milliseconds to wait.
-  @param {Boolean} immediate Trigger the function on the leading instead 
+  @param {Boolean} immediate Trigger the function on the leading instead
     of the trailing edge of the wait interval. Defaults to false.
   @return {Array} Timer information for use in cancelling, see `run.cancel`.
 */
