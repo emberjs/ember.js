@@ -1,7 +1,16 @@
 var set = Ember.set, get = Ember.get, App, originalAdapter = Ember.Test.adapter;
 
 function cleanup(){
+  // Teardown setupForTesting
+
   Ember.Test.adapter = originalAdapter;
+  Ember.run(function(){
+    Ember.$(document).off('ajaxSend');
+    Ember.$(document).off('ajaxComplete');
+  });
+  Ember.Test.pendingAjaxRequests = null;
+
+  // Other cleanup
 
   if (App) {
     Ember.run(App, App.destroy);
@@ -515,6 +524,14 @@ test("pendingAjaxRequests is decremented on each document ajaxComplete event", f
   Ember.Test.pendingAjaxRequests = 1;
   Ember.$(document).trigger('ajaxComplete');
   equal(Ember.Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was decremented');
+});
+
+test("pendingAjaxRequests is not reset by setupForTesting", function() {
+  Ember.Test.pendingAjaxRequests = 1;
+  Ember.run(function(){
+    Ember.setupForTesting();
+  });
+  equal(Ember.Test.pendingAjaxRequests, 1, 'pendingAjaxRequests is not reset');
 });
 
 test("it should raise an assertion error if ajaxComplete is called without pendingAjaxRequests", function() {
