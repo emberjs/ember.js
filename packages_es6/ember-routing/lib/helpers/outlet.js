@@ -4,8 +4,7 @@ import {set} from "ember-metal/property_set";
 import {onLoad} from "ember-runtime/system/lazy_load";
 import ContainerView from "ember-views/views/container_view";
 import {_Metamorph} from "ember-handlebars/views/metamorph_view";
-
-import "ember-handlebars/helpers/view";
+import {viewHelper} from "ember-handlebars/helpers/view";
 
 // requireModule('ember-handlebars');
 
@@ -14,13 +13,12 @@ import "ember-handlebars/helpers/view";
 @submodule ember-routing
 */
 
-onLoad('Ember.Handlebars', function(Handlebars) {
   /**
   @module ember
   @submodule ember-routing
   */
 
-  Handlebars.OutletView = ContainerView.extend(_Metamorph);
+  var OutletView = ContainerView.extend(_Metamorph);
 
   /**
     The `outlet` helper is a placeholder that the router will fill in with
@@ -85,7 +83,7 @@ onLoad('Ember.Handlebars', function(Handlebars) {
       that holds the view for this outlet
     @return {String} HTML string
   */
-  Handlebars.registerHelper('outlet', function outletHelper(property, options) {
+  function outletHelper(property, options) {
 
     var outletSource,
         container,
@@ -114,11 +112,12 @@ onLoad('Ember.Handlebars', function(Handlebars) {
       Ember.assert("The view name you supplied '" + viewName + "' did not resolve to a view.", container.has(viewFullName));
     }
 
-    viewClass = viewName ? container.lookupFactory(viewFullName) : options.hash.viewClass || Handlebars.OutletView;
+    viewClass = viewName ? container.lookupFactory(viewFullName) : options.hash.viewClass || OutletView;
 
     options.data.view.set('outletSource', outletSource);
     options.hash.currentViewBinding = '_view.outletSource._outlets.' + property;
 
-    return Handlebars.helpers.view.call(this, viewClass, options);
-  });
-});
+    return viewHelper.call(this, viewClass, options);
+  };
+
+export {outletHelper, OutletView};

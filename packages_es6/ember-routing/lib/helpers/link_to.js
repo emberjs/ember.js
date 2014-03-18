@@ -11,10 +11,10 @@ import EmberObject from "ember-runtime/system/object";
 import keys from "ember-runtime/keys";
 import {isSimpleClick} from "ember-views/system/utils";
 import {View as EmberView} from "ember-views/views/view";
-import EmberRouter from "ember-routing/system/router";
 import EmberHandlebars from "ember-handlebars";
-
-import "ember-handlebars/helpers/view";
+import {viewHelper} from "ember-handlebars/helpers/view";
+import EmberRouter from "ember-routing/system/router";
+import {resolveParams, resolvePaths} from "ember-routing/helpers/shared";
 
 // requireModule('ember-handlebars');
 
@@ -45,14 +45,9 @@ var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
   return req;
 };
 
-onLoad('Ember.Handlebars', function(Handlebars) {
-
   var QueryParams = EmberObject.extend({
     values: null
   });
-
-  var resolveParams = EmberRouter.resolveParams,
-      resolvePaths  = EmberRouter.resolvePaths;
 
   function computeQueryParams(linkView, stripDefaultValues) {
     var helperParameters = linkView.parameters,
@@ -874,7 +869,7 @@ onLoad('Ember.Handlebars', function(Handlebars) {
     @return {String} HTML string
     @see {Ember.LinkView}
   */
-  EmberHandlebars.registerHelper('link-to', function linkToHelper(name) {
+  function linkToHelper(name) {
     var options = slice.call(arguments, -1)[0],
         params = slice.call(arguments, 0, -1),
         hash = options.hash;
@@ -907,8 +902,8 @@ onLoad('Ember.Handlebars', function(Handlebars) {
       params: params
     };
 
-    return EmberHandlebars.helpers.view.call(this, LinkView, options);
-  });
+    return viewHelper.call(this, LinkView, options);
+  };
 
 
   if (Ember.FEATURES.isEnabled("query-params-new")) {
@@ -932,10 +927,9 @@ onLoad('Ember.Handlebars', function(Handlebars) {
     @param {Object} [context]*
     @return {String} HTML string
   */
-  EmberHandlebars.registerHelper('linkTo', function linkToHelper() {
+  function deprecatedLinkToHelper() {
     Ember.warn("The 'linkTo' view helper is deprecated in favor of 'link-to'");
-    return EmberHandlebars.helpers['link-to'].apply(this, arguments);
-  });
-});
+    return linkToHelper.apply(this, arguments);
+  };
 
-
+export {LinkView, deprecatedLinkToHelper, linkToHelper}

@@ -1,3 +1,8 @@
+requireModule('ember-runtime');
+requireModule('ember-views');
+requireModule('ember-handlebars');
+requireModule('ember-routing');
+
 function visit(vertex, fn, visited, path) {
   var name = vertex.name,
     vertices = vertex.incoming,

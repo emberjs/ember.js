@@ -5,7 +5,6 @@ import {ControllerMixin} from "ember-runtime/controllers/controller";
 import EmberRouter from "ember-routing/system/router";
 import EmberHandlebars from "ember-handlebars";
 
-onLoad('Ember.Handlebars', function() {
   var handlebarsResolve = EmberHandlebars.resolveParams,
       handlebarsGet = EmberHandlebars.get;
 
@@ -43,6 +42,4 @@ onLoad('Ember.Handlebars', function() {
     }
   }
 
-  EmberRouter.resolveParams = resolveParams;
-  EmberRouter.resolvePaths = resolvePaths;
-});
+export {resolveParams, resolvePaths};

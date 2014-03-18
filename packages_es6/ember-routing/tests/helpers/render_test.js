@@ -17,10 +17,11 @@ import EmberRouter from "ember-routing/system/router";
 import HashLocation from "ember-routing/location/hash_location";
 
 import EmberHandlebars from "ember-handlebars";
-import {View as EmberView} from "ember-views/views/view";
+import EmberView from "ember-routing/ext/view";
 import jQuery from "ember-views/system/jquery";
 
-import "ember-routing/helpers/render";
+import renderHelper from "ember-routing/helpers/render";
+import {ActionHelper, actionHelper} from "ember-routing/helpers/action";
 
 var appendView = function(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
@@ -74,16 +75,29 @@ function resolverFor(namespace) {
   };
 }
 
-var view, container;
+var view, container, originalRenderHelper, originalActionHelper;
 
 module("Handlebars {{render}} helper", {
   setup: function() {
+    originalRenderHelper = EmberHandlebars.helpers['render'];
+    EmberHandlebars.registerHelper('render', renderHelper);
+
+    originalActionHelper = EmberHandlebars.helpers['action'];
+    EmberHandlebars.registerHelper('action', actionHelper);
+
+
     var namespace = Namespace.create();
     container = buildContainer(namespace);
     container.register('view:default', EmberView.extend());
     container.register('router:main', EmberRouter.extend());
   },
   teardown: function() {
+    delete EmberHandlebars.helpers['render'];
+    EmberHandlebars.helpers['render'] = originalRenderHelper;
+
+    delete EmberHandlebars.helpers['action'];
+    EmberHandlebars.helpers['action'] = originalActionHelper;
+
     run(function () {
       if (container) {
         container.destroy();
@@ -415,7 +429,7 @@ test("{{render}} helper should link child controllers to the parent controller",
 
   var button = jQuery("#parent-action"),
       actionId = button.data('ember-action'),
-      action = EmberHandlebars.ActionHelper.registeredActions[actionId],
+      action = ActionHelper.registeredActions[actionId],
       handler = action.handler;
 
   equal(button.text(), "Go to Mom", "The parentController property is set on the child controller");

@@ -15,12 +15,11 @@ import HashLocation from "ember-routing/location/hash_location";
 
 import EmberHandlebars from "ember-handlebars";
 import {_MetamorphView} from "ember-handlebars/views/metamorph_view";
-import {View as EmberView} from "ember-views/views/view";
+import EmberView from "ember-routing/ext/view";
 import EmberContainerView from "ember-views/views/container_view";
 import jQuery from "ember-views/system/jquery";
 
-import "ember-routing/ext/view";
-import "ember-routing/helpers/outlet";
+import {outletHelper} from "ember-routing/helpers/outlet";
 
 var buildContainer = function(namespace) {
   var container = new Container();
@@ -69,17 +68,23 @@ var appendView = function(view) {
 var compile = EmberHandlebars.compile;
 var trim = jQuery.trim;
 
-var view, container;
+var view, container, originalOutletHelper;
 
 module("Handlebars {{outlet}} helpers", {
 
   setup: function() {
+    originalOutletHelper = EmberHandlebars.helpers['outlet'];
+    EmberHandlebars.registerHelper('outlet', outletHelper);
+
     var namespace = Namespace.create();
     container = buildContainer(namespace);
     container.register('view:default', EmberView.extend());
     container.register('router:main', EmberRouter.extend());
   },
   teardown: function() {
+    delete EmberHandlebars.helpers['outlet'];
+    EmberHandlebars.helpers['outlet'] = originalOutletHelper;
+
     run(function () {
       if (container) {
         container.destroy();
