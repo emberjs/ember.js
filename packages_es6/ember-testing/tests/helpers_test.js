@@ -520,31 +520,20 @@ module("ember-testing pendingAjaxRequests", {
 
 test("pendingAjaxRequests is incremented on each document ajaxSend event", function() {
   Test.pendingAjaxRequests = 0;
-
-  run(function(){
-    jQuery(document).trigger('ajaxSend');
-  });
-
+  jQuery(document).trigger('ajaxSend');
   equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
 });
 
 test("pendingAjaxRequests is decremented on each document ajaxComplete event", function() {
   Test.pendingAjaxRequests = 1;
-
-  run(function(){
-    jQuery(document).trigger('ajaxComplete');
-  });
-
+  jQuery(document).trigger('ajaxComplete');
   equal(Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was decremented');
 });
 
 test("it should raise an assertion error if ajaxComplete is called without pendingAjaxRequests", function() {
   Test.pendingAjaxRequests = 0;
-
   expectAssertion(function() {
-    run(function(){
-      jQuery(document).trigger('ajaxComplete');
-    });
+    jQuery(document).trigger('ajaxComplete');
   });
 });
 
