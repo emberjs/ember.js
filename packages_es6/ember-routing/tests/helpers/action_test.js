@@ -14,10 +14,9 @@ import EmberComponent from "ember-views/views/component";
 import jQuery from "ember-views/system/jquery";
 
 import "ember-routing/helpers/shared";
-import "ember-routing/helpers/action";
+import {ActionHelper, actionHelper} from "ember-routing/helpers/action";
 
-var dispatcher, view,
-    ActionHelper = EmberHandlebars.ActionHelper,
+var dispatcher, view, originalActionHelper,
     originalRegisterAction = ActionHelper.registerAction;
 
 var appendView = function() {
@@ -26,6 +25,9 @@ var appendView = function() {
 
 module("Ember.Handlebars - action helper", {
   setup: function() {
+    originalActionHelper = EmberHandlebars.helpers['action'];
+    EmberHandlebars.registerHelper('action', actionHelper);
+
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
   },
@@ -35,6 +37,9 @@ module("Ember.Handlebars - action helper", {
       dispatcher.destroy();
       if (view) { view.destroy(); }
     });
+
+    delete EmberHandlebars.helpers['action'];
+    EmberHandlebars.helpers['action'] = originalActionHelper;
 
     Ember.TESTING_DEPRECATION = false;
   }
@@ -256,7 +261,7 @@ test("should register an event handler", function() {
 
   var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
-  ok(EmberHandlebars.ActionHelper.registeredActions[actionId], "The action was registered");
+  ok(ActionHelper.registeredActions[actionId], "The action was registered");
 
   view.$('a').trigger('click');
 
@@ -282,7 +287,7 @@ test("handles whitelisted modifier keys", function() {
 
   var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
-  ok(EmberHandlebars.ActionHelper.registeredActions[actionId], "The action was registered");
+  ok(ActionHelper.registeredActions[actionId], "The action was registered");
 
   var e = jQuery.Event('click');
   e.altKey = true;
@@ -440,11 +445,11 @@ test("should unregister event handlers on rerender", function() {
     view.rerender();
   });
 
-  ok(!EmberHandlebars.ActionHelper.registeredActions[previousActionId], "On rerender, the event handler was removed");
+  ok(!ActionHelper.registeredActions[previousActionId], "On rerender, the event handler was removed");
 
   var newActionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
-  ok(EmberHandlebars.ActionHelper.registeredActions[newActionId], "After rerender completes, a new event handler was added");
+  ok(ActionHelper.registeredActions[newActionId], "After rerender completes, a new event handler was added");
 });
 
 test("should unregister event handlers on inside virtual views", function() {
@@ -466,7 +471,7 @@ test("should unregister event handlers on inside virtual views", function() {
     things.removeAt(0);
   });
 
-  ok(!EmberHandlebars.ActionHelper.registeredActions[actionId], "After the virtual view was destroyed, the action was unregistered");
+  ok(!ActionHelper.registeredActions[actionId], "After the virtual view was destroyed, the action was unregistered");
 });
 
 test("should properly capture events on child elements of a container with an action", function() {
@@ -932,11 +937,17 @@ if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
 
 module("Ember.Handlebars - action helper - deprecated invoking directly on target", {
   setup: function() {
+    originalActionHelper = EmberHandlebars.helpers['action'];
+    EmberHandlebars.registerHelper('action', actionHelper);
+
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
   },
 
   teardown: function() {
+    delete EmberHandlebars.helpers['action'];
+    EmberHandlebars.helpers['action'] = originalActionHelper;
+
     run(function() {
       dispatcher.destroy();
       if (view) { view.destroy(); }

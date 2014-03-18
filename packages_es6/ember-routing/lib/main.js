@@ -10,18 +10,17 @@ Ember Routing
 @requires ember-views
 */
 
-// BEGIN IMPORTS
+import EmberHandlebars from "ember-handlebars";
 import Ember from "ember-metal/core";
 
 // ES6TODO: Cleanup modules with side-effects below
-import "ember-routing/ext";
+import "ember-routing/ext/run_loop";
 import "ember-routing/ext/controller";
 import "ember-routing/ext/view";
-import "ember-routing/helpers/shared";
-import "ember-routing/helpers/link_to";
-import "ember-routing/helpers/outlet";
-import "ember-routing/helpers/render";
-import "ember-routing/helpers/action";
+
+import {resolvePaths, resolveParams} from "ember-routing/helpers/shared";
+import {deprecatedLinkToHelper, linkToHelper, LinkView} from "ember-routing/helpers/link_to";
+
 
 // require('ember-views');
 import EmberLocation from "ember-routing/location/api";
@@ -34,10 +33,11 @@ import {controllerFor, generateControllerFactory, generateController} from "embe
 import RouterDSL from "ember-routing/system/dsl";
 import Router from "ember-routing/system/router";
 import Route from "ember-routing/system/route";
-// END IMPORTS
+import {outletHelper, OutletView} from "ember-routing/helpers/outlet";
+import renderHelper from "ember-routing/helpers/render";
+import {ActionHelper, actionHelper} from "ember-routing/helpers/action";
 
 
-// BEGIN EXPORTS
 Ember.Location = EmberLocation;
 Ember.AutoLocation = AutoLocation;
 Ember.HashLocation = HashLocation;
@@ -50,6 +50,18 @@ Ember.generateController = generateController;
 Ember.RouterDSL = RouterDSL;
 Ember.Router = Router;
 Ember.Route = Route;
-// END EXPORTS
+Ember.LinkView = LinkView;
+
+Router.resolveParams = resolveParams;
+Router.resolvePaths = resolvePaths;
+
+EmberHandlebars.ActionHelper = ActionHelper;
+EmberHandlebars.OutletView = OutletView;
+
+EmberHandlebars.registerHelper('render', renderHelper)
+EmberHandlebars.registerHelper('action', actionHelper);
+EmberHandlebars.registerHelper('outlet', outletHelper);
+EmberHandlebars.registerHelper('link-to', linkToHelper);
+EmberHandlebars.registerHelper('linkTo', deprecatedLinkToHelper);
 
 export default Ember;

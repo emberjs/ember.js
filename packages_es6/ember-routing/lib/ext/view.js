@@ -148,3 +148,5 @@ EmberView.reopen({
     }
   }
 });
+
+export default EmberView;
