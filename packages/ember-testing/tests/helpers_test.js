@@ -507,21 +507,13 @@ module("ember-testing pendingAjaxRequests", {
 
 test("pendingAjaxRequests is incremented on each document ajaxSend event", function() {
   Ember.Test.pendingAjaxRequests = 0;
-
-  Ember.run(function(){
-    Ember.$(document).trigger('ajaxSend');
-  });
-
+  Ember.$(document).trigger('ajaxSend');
   equal(Ember.Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
 });
 
 test("pendingAjaxRequests is decremented on each document ajaxComplete event", function() {
   Ember.Test.pendingAjaxRequests = 1;
-
-  Ember.run(function(){
-    Ember.$(document).trigger('ajaxComplete');
-  });
-
+  Ember.$(document).trigger('ajaxComplete');
   equal(Ember.Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was decremented');
 });
 
@@ -529,9 +521,7 @@ test("it should raise an assertion error if ajaxComplete is called without pendi
   Ember.Test.pendingAjaxRequests = 0;
 
   expectAssertion(function() {
-    Ember.run(function(){
-      Ember.$(document).trigger('ajaxComplete');
-    });
+    Ember.$(document).trigger('ajaxComplete');
   });
 });
 
