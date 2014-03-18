@@ -36,7 +36,9 @@ function setupForTesting() {
     Test.adapter = QUnitAdapter.create();
   }
 
-  Test.pendingAjaxRequests = 0;
+  if (!Test.pendingAjaxRequests) {
+    Test.pendingAjaxRequests = 0;
+  }
 
   Ember.$(document).off('ajaxSend', incrementAjaxPendingRequests);
   Ember.$(document).off('ajaxComplete', decrementAjaxPendingRequests);
