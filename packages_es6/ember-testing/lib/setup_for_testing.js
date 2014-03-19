@@ -3,18 +3,20 @@ import Ember from "ember-metal/core";
 import QUnitAdapter from "ember-testing/adapters/qunit";
 import jQuery from "ember-views/system/jquery";
 
-var Test;
+var Test, requests;
 
-function incrementAjaxPendingRequests(){
-  Test.pendingAjaxRequests++;
+function incrementAjaxPendingRequests(_, xhr){
+  requests.push(xhr);
+  Test.pendingAjaxRequests = requests.length;
 }
 
-function decrementAjaxPendingRequests(){
-  Ember.assert("An ajaxComplete event which would cause the number of pending AJAX " +
-               "requests to be negative has been triggered. This is most likely " +
-               "caused by AJAX events that were started before calling " +
-               "`injectTestHelpers()`.", Test.pendingAjaxRequests !== 0);
-  Test.pendingAjaxRequests--;
+function decrementAjaxPendingRequests(_, xhr){
+  for (var i=0;i<requests.length;i++) {
+    if (xhr === requests[i]) {
+      requests.splice(i, 1);
+    }
+  }
+  Test.pendingAjaxRequests = requests.length;
 }
 
 /**
@@ -38,9 +40,8 @@ export default function setupForTesting() {
     Test.adapter = QUnitAdapter.create();
   }
 
-  if (!Test.pendingAjaxRequests) {
-    Test.pendingAjaxRequests = 0;
-  }
+  requests = [];
+  Test.pendingAjaxRequests = requests.length;
 
   jQuery(document).off('ajaxSend', incrementAjaxPendingRequests);
   jQuery(document).off('ajaxComplete', decrementAjaxPendingRequests);
