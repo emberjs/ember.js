@@ -8,6 +8,7 @@ import {View} from "ember-views/views/view";
 import {Controller} from "ember-runtime/controllers/controller";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import jQuery from "ember-views/system/jquery";
+import Container from 'container/container';
 
 var application, EmberApplication = Application;
 
@@ -81,25 +82,31 @@ test("When an application is reset, new instances of controllers are generated",
 });
 
 test("When an application is reset, the eventDispatcher is destroyed and recreated", function() {
-  var eventDispatcherWasSetup, eventDispatcherWasDestroyed, stubEventDispatcher;
+  var eventDispatcherWasSetup, eventDispatcherWasDestroyed;
 
   eventDispatcherWasSetup = 0;
   eventDispatcherWasDestroyed = 0;
 
-  var originalDispatcher = EventDispatcher;
-
-  stubEventDispatcher = {
-    setup: function() {
-      eventDispatcherWasSetup++;
-    },
-    destroy: function() {
-      eventDispatcherWasDestroyed++;
+  var mock_event_dispatcher = {
+    create: function() {
+      return {
+        setup: function() {
+          eventDispatcherWasSetup++;
+        },
+        destroy: function() {
+          eventDispatcherWasDestroyed++;
+        }
+      };
     }
   };
 
-  EventDispatcher = {
-    create: function() {
-      return stubEventDispatcher;
+  // this is pretty awful. We should make this less Global-ly.
+  var originalRegister = Container.prototype.register;
+  Container.prototype.register = function(name, type, options){
+    if (name === "event_dispatcher:main") {
+      return mock_event_dispatcher;
+    } else {
+      return originalRegister.call(this, name, type, options);
     }
   };
 
@@ -116,11 +123,11 @@ test("When an application is reset, the eventDispatcher is destroyed and recreat
 
     application.reset();
 
-    equal(eventDispatcherWasSetup, 2);
     equal(eventDispatcherWasDestroyed, 1);
-  } catch (error) { }
+    equal(eventDispatcherWasSetup, 2, "setup called after reset");
+  } catch (error) { Container.prototype.register = originalRegister; }
 
-  EventDispatcher = originalDispatcher;
+  Container.prototype.register = originalRegister;
 });
 
 test("When an application is reset, the ApplicationView is torn down", function() {
