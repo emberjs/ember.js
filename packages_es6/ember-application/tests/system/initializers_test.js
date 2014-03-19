@@ -18,8 +18,8 @@ module("Ember.Application initializers", {
 
 test("initializers can be registered in a specified order", function() {
   var order = [];
-  var Application = Application.extend();
-  Application.initializer({
+  var MyApplication = Application.extend();
+  MyApplication.initializer({
     name: 'fourth',
     after: 'third',
     initialize: function(container) {
@@ -27,7 +27,7 @@ test("initializers can be registered in a specified order", function() {
     }
   });
 
-  Application.initializer({
+  MyApplication.initializer({
     name: 'second',
     before: 'third',
     initialize: function(container) {
@@ -35,7 +35,7 @@ test("initializers can be registered in a specified order", function() {
     }
   });
 
-  Application.initializer({
+  MyApplication.initializer({
     name: 'fifth',
     after: 'fourth',
     initialize: function(container) {
@@ -43,7 +43,7 @@ test("initializers can be registered in a specified order", function() {
     }
   });
 
-  Application.initializer({
+  MyApplication.initializer({
     name: 'first',
     before: 'second',
     initialize: function(container) {
@@ -51,7 +51,7 @@ test("initializers can be registered in a specified order", function() {
     }
   });
 
-  Application.initializer({
+  MyApplication.initializer({
     name: 'third',
     initialize: function(container) {
       order.push('third');
@@ -59,7 +59,7 @@ test("initializers can be registered in a specified order", function() {
   });
 
   run(function() {
-    app = Application.create({
+    app = MyApplication.create({
       router: false,
       rootElement: '#qunit-fixture'
     });

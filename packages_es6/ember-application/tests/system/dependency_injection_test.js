@@ -1,8 +1,12 @@
 import run from "ember-metal/run_loop";
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
-import Application from "ember-application/system/application";
 import {forEach} from "ember-metal/array";
+import EmberObject from "ember-runtime/system/object";
+import Application from "ember-application/system/application";
+import Container from "ember-runtime/system/container";
+
+var EmberApplication = Application;
 
 var locator, originalLookup = Ember.lookup, lookup,
     application, originalModelInjections;
@@ -12,13 +16,13 @@ module("Ember.Application Dependency Injection", {
     originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
     Ember.MODEL_FACTORY_INJECTIONS = true;
 
-    application = run(Ember.Application, 'create');
+    application = run(EmberApplication, 'create');
 
-    application.Person              = Ember.Object.extend({});
-    application.Orange              = Ember.Object.extend({});
-    application.Email               = Ember.Object.extend({});
-    application.User                = Ember.Object.extend({});
-    application.PostIndexController = Ember.Object.extend({});
+    application.Person              = EmberObject.extend({});
+    application.Orange              = EmberObject.extend({});
+    application.Email               = EmberObject.extend({});
+    application.User                = EmberObject.extend({});
+    application.PostIndexController = EmberObject.extend({});
 
     application.register('model:person', application.Person, {singleton: false });
     application.register('model:user', application.User, {singleton: false });
@@ -48,10 +52,10 @@ test('container lookup is normalized', function() {
   equal(dotNotationController, camelCaseController);
 });
 
-test('Ember.Container.defaultContainer is the same as the Apps container, but emits deprecation warnings', function() {
+test('Container.defaultContainer is the same as the Apps container, but emits deprecation warnings', function() {
   expectDeprecation(/Using the defaultContainer is no longer supported./);
   var routerFromContainer = locator.lookup('router:main'),
-    routerFromDefaultContainer = Ember.Container.defaultContainer.lookup('router:main');
+    routerFromDefaultContainer = Container.defaultContainer.lookup('router:main');
 
   equal(routerFromContainer, routerFromDefaultContainer, 'routers from both containers are equal');
 });

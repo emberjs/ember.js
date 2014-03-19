@@ -81,8 +81,7 @@ test("When an application is reset, new instances of controllers are generated",
 });
 
 test("When an application is reset, the eventDispatcher is destroyed and recreated", function() {
-  var eventDispatcherWasSetup, eventDispatcherWasDestroyed,
-  stubEventDispatcher;
+  var eventDispatcherWasSetup, eventDispatcherWasDestroyed, stubEventDispatcher;
 
   eventDispatcherWasSetup = 0;
   eventDispatcherWasDestroyed = 0;

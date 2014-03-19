@@ -169,3 +169,5 @@ ControllerMixin.reopen({
   */
   controllers: defaultControllersComputedProperty
 });
+
+export default ControllerMixin;
