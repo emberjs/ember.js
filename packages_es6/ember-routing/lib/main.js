@@ -10,20 +10,17 @@ Ember Routing
 @requires ember-views
 */
 
-// BEGIN IMPORTS
+import EmberHandlebars from "ember-handlebars";
 import Ember from "ember-metal/core";
 
 // ES6TODO: Cleanup modules with side-effects below
 import "ember-routing/ext/run_loop";
 import "ember-routing/ext/controller";
 import "ember-routing/ext/view";
+
 import {resolvePaths, resolveParams} from "ember-routing/helpers/shared";
 import {deprecatedLinkToHelper, linkToHelper, LinkView} from "ember-routing/helpers/link_to";
-import {outletHelper, OutletView} from "ember-routing/helpers/outlet";
-import renderHelper from "ember-routing/helpers/render";
-import {ActionHelper, actionHelper} from "ember-routing/helpers/action";
 
-import EmberHandlebars from "ember-handlebars";
 
 // require('ember-views');
 import EmberLocation from "ember-routing/location/api";
@@ -36,10 +33,11 @@ import {controllerFor, generateControllerFactory, generateController} from "embe
 import RouterDSL from "ember-routing/system/dsl";
 import Router from "ember-routing/system/router";
 import Route from "ember-routing/system/route";
-// END IMPORTS
+import {outletHelper, OutletView} from "ember-routing/helpers/outlet";
+import renderHelper from "ember-routing/helpers/render";
+import {ActionHelper, actionHelper} from "ember-routing/helpers/action";
 
 
-// BEGIN EXPORTS
 Ember.Location = EmberLocation;
 Ember.AutoLocation = AutoLocation;
 Ember.HashLocation = HashLocation;
@@ -53,10 +51,10 @@ Ember.RouterDSL = RouterDSL;
 Ember.Router = Router;
 Ember.Route = Route;
 Ember.LinkView = LinkView;
-// END EXPORTS
 
 Router.resolveParams = resolveParams;
 Router.resolvePaths = resolvePaths;
+
 EmberHandlebars.ActionHelper = ActionHelper;
 EmberHandlebars.OutletView = OutletView;
 
