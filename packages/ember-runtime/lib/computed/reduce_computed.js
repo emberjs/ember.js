@@ -16,6 +16,9 @@ var e_get = Ember.get,
     a_slice = [].slice,
     o_create = Ember.create,
     forEach = Ember.EnumerableUtils.forEach,
+    cacheSet = Ember.cacheFor.set,
+    cacheGet = Ember.cacheFor.get,
+    cacheRemove = Ember.cacheFor.remove,
     // Here we explicitly don't allow `@each.foo`; it would require some special
     // testing, but there's no particular reason why it should be disallowed.
     eachPropertyPattern = /^(.*)\.@each\.(.*)/,
@@ -454,7 +457,6 @@ function ReduceComputedProperty(options) {
   var cp = this;
 
   this.options = options;
-  this._instanceMetas = {};
 
   this._dependentKeys = null;
   // A map of dependentKey -> [itemProperty, ...] that tracks what properties of
@@ -551,19 +553,15 @@ ReduceComputedProperty.prototype._callbacks = function () {
 };
 
 ReduceComputedProperty.prototype._hasInstanceMeta = function (context, propertyName) {
-  var guid = guidFor(context),
-      key = guid + ':' + propertyName;
-
-  return !!this._instanceMetas[key];
+  return !!metaFor(context).cacheMeta[propertyName];
 };
 
 ReduceComputedProperty.prototype._instanceMeta = function (context, propertyName) {
-  var guid = guidFor(context),
-      key = guid + ':' + propertyName,
-      meta = this._instanceMetas[key];
+  var cacheMeta = metaFor(context).cacheMeta,
+      meta = cacheMeta[propertyName];
 
   if (!meta) {
-    meta = this._instanceMetas[key] = new ReduceComputedPropertyInstanceMeta(context, propertyName, this.initialValue());
+    meta = cacheMeta[propertyName] = new ReduceComputedPropertyInstanceMeta(context, propertyName, this.initialValue());
     meta.dependentArraysObserver = new DependentArraysObserver(this._callbacks(), this, meta, context, propertyName, meta.sugarMeta);
   }
 

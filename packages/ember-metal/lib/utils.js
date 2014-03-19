@@ -162,6 +162,7 @@ function Meta(obj) {
   this.descs = {};
   this.watching = {};
   this.cache = {};
+  this.cacheMeta = {};
   this.source = obj;
 }
 
@@ -171,6 +172,7 @@ Meta.prototype = {
   watching: null,
   listeners: null,
   cache: null,
+  cacheMeta: null,
   source: null,
   mixins: null,
   bindings: null,
@@ -238,10 +240,11 @@ Ember.meta = function meta(obj, writable) {
     if (!isDefinePropertySimulated) o_defineProperty(obj, META_KEY, META_DESC);
 
     ret = o_create(ret);
-    ret.descs    = o_create(ret.descs);
-    ret.watching = o_create(ret.watching);
-    ret.cache    = {};
-    ret.source   = obj;
+    ret.descs     = o_create(ret.descs);
+    ret.watching  = o_create(ret.watching);
+    ret.cache     = {};
+    ret.cacheMeta = {};
+    ret.source    = obj;
 
     if (MANDATORY_SETTER) { ret.values = o_create(ret.values); }
 
