@@ -7,6 +7,7 @@ packages/ember-extension-support
 packages/ember-testing
 packages/ember-handlebars-compiler
 packages/ember-handlebars
+packages/ember-routing
 *.bpkg
 *.gem
 *.rbc

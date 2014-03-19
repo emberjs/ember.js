@@ -718,22 +718,30 @@ test("The {{link-to}} helper's bound parameter functionality works as expected i
 });
 
 test("{{linkTo}} is aliased", function() {
-  var originalLinkTo = Ember.Handlebars.helpers['link-to'],
-    originalWarn = Ember.warn;
+  var originalWarn = Ember.warn;
 
   Ember.warn = function(msg) {
     equal(msg, "The 'linkTo' view helper is deprecated in favor of 'link-to'", 'Warning called');
   };
 
-  Ember.Handlebars.helpers['link-to'] = function() {
-    equal(arguments[0], 'foo', 'First arg match');
-    equal(arguments[1], 'bar', 'Second arg match');
-    return 'result';
-  };
-  var result = Ember.Handlebars.helpers.linkTo('foo', 'bar');
-  equal(result, 'result', 'Result match');
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo 'about' id='about-link' replace=true}}About{{/linkTo}}");
 
-  Ember.Handlebars.helpers['link-to'] = originalLinkTo;
+  Router.map(function() {
+    this.route("about");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  Ember.run(function() {
+    Ember.$('#about-link', '#qunit-fixture').click();
+  });
+
+  equal(container.lookup('controller:application').get('currentRouteName'), 'about', 'linkTo worked properly');
+
   Ember.warn = originalWarn;
 });
 
