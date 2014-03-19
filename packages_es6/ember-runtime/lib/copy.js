@@ -27,6 +27,8 @@ function _copy(obj, deep, seen, copies) {
     }
   } else if (Copyable && Copyable.detect(obj)) {
     ret = obj.copy(deep, seen, copies);
+  } else if (obj instanceof Date) {
+    ret = new Date(obj.getTime());
   } else {
     ret = {};
     for(key in obj) {

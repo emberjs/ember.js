@@ -4,10 +4,22 @@ import QUnitAdapter from "ember-testing/adapters/qunit";
 
 var Test;
 
+function incrementAjaxPendingRequests(){
+  Test.pendingAjaxRequests++;
+}
+
+function decrementAjaxPendingRequests(){
+  Ember.assert("An ajaxComplete event which would cause the number of pending AJAX " +
+               "requests to be negative has been triggered. This is most likely " +
+               "caused by AJAX events that were started before calling " +
+               "`injectTestHelpers()`.", Test.pendingAjaxRequests !== 0);
+  Test.pendingAjaxRequests--;
+}
+
 /**
   Sets Ember up for testing. This is useful to perform
   basic setup steps in order to unit test.
-  
+
   Use `App.setupForTesting` to perform integration tests (full
   application testing).
 
@@ -24,19 +36,14 @@ function setupForTesting() {
     Test.adapter = QUnitAdapter.create();
   }
 
-  Test.pendingAjaxRequests = 0;
+  if (!Test.pendingAjaxRequests) {
+    Test.pendingAjaxRequests = 0;
+  }
 
-  Ember.$(document).ajaxSend(function() {
-    Test.pendingAjaxRequests++;
-  });
-
-  Ember.$(document).ajaxComplete(function() {
-    Ember.assert("An ajaxComplete event which would cause the number of pending AJAX " +
-                 "requests to be negative has been triggered. This is most likely " +
-                 "caused by AJAX events that were started before calling " +
-                 "`injectTestHelpers()`.", Test.pendingAjaxRequests !== 0);
-    Test.pendingAjaxRequests--;
-  });
+  Ember.$(document).off('ajaxSend', incrementAjaxPendingRequests);
+  Ember.$(document).off('ajaxComplete', decrementAjaxPendingRequests);
+  Ember.$(document).on('ajaxSend', incrementAjaxPendingRequests);
+  Ember.$(document).on('ajaxComplete', decrementAjaxPendingRequests);
 };
 
 export default setupForTesting;

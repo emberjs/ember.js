@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-views
 */
-import Ember from "ember-metal/core"; // Ember.assert, jQuery, Ember.Handlebars.ActionHelper
+import Ember from "ember-metal/core"; // Ember.assert
 
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
@@ -17,6 +17,8 @@ var fmt = EmberStringUtils.fmt;
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
 import {View} from "ember-views/views/view";
+
+var ActionHelper;
 
 //ES6TODO:
 // find a better way to do Ember.View.views without global state
@@ -172,8 +174,11 @@ var EventDispatcher = EmberObject.extend({
     });
 
     rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
+      //ES6TODO: Needed for ActionHelper (generally not available in ember-views test suite)
+      if (!ActionHelper) { ActionHelper = requireModule("ember-routing/helpers/action")["ActionHelper"]; };
+
       var actionId = jQuery(evt.currentTarget).attr('data-ember-action'),
-          action   = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+          action   = ActionHelper.registeredActions[actionId];
 
       // We have to check for action here since in some cases, jQuery will trigger
       // an event on `removeChild` (i.e. focusout) after we've already torn down the

@@ -718,22 +718,32 @@ test("The {{link-to}} helper's bound parameter functionality works as expected i
 });
 
 test("{{linkTo}} is aliased", function() {
-  var originalLinkTo = Ember.Handlebars.helpers['link-to'],
-    originalWarn = Ember.warn;
+  expect(2);
+
+  var originalWarn = Ember.warn;
 
   Ember.warn = function(msg) {
     equal(msg, "The 'linkTo' view helper is deprecated in favor of 'link-to'", 'Warning called');
   };
 
-  Ember.Handlebars.helpers['link-to'] = function() {
-    equal(arguments[0], 'foo', 'First arg match');
-    equal(arguments[1], 'bar', 'Second arg match');
-    return 'result';
-  };
-  var result = Ember.Handlebars.helpers.linkTo('foo', 'bar');
-  equal(result, 'result', 'Result match');
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo 'about' id='about-link' replace=true}}About{{/linkTo}}");
 
-  Ember.Handlebars.helpers['link-to'] = originalLinkTo;
+  Router.map(function() {
+    this.route("about");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  Ember.run(function() {
+    Ember.$('#about-link', '#qunit-fixture').click();
+  });
+
+  equal(container.lookup('controller:application').get('currentRouteName'), 'about', 'linkTo worked properly');
+
   Ember.warn = originalWarn;
 });
 
@@ -1035,6 +1045,30 @@ test("the {{link-to}} helper does not throw an error if its route has exited", f
   Ember.run(function() {
     Ember.$('#home-link', '#qunit-fixture').click();
   });
+});
+
+test("{{link-to}} active property respects changing parent route context", function() {
+  Ember.TEMPLATES.application = Ember.Handlebars.compile(
+    "{{link-to 'OMG' 'things' 'omg' id='omg-link'}} " +
+    "{{link-to 'LOL' 'things' 'lol' id='lol-link'}} ");
+
+
+  Router.map(function() {
+    this.resource('things', { path: '/things/:name' }, function() {
+      this.route('other');
+    });
+  });
+
+  bootApplication();
+
+  Ember.run(router, 'handleURL', '/things/omg');
+  shouldBeActive('#omg-link');
+  shouldNotBeActive('#lol-link');
+
+  Ember.run(router, 'handleURL', '/things/omg/other');
+  shouldBeActive('#omg-link');
+  shouldNotBeActive('#lol-link');
+
 });
 
 if (Ember.FEATURES.isEnabled("query-params-new")) {
