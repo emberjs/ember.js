@@ -1132,6 +1132,48 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     equal(Ember.$('#the-link').attr('href'), "/?bar=NAW&foo=456", "link has right href");
   });
 
+  test("query-params-reset restores unspecified QPs on target route to default values", function() {
+    expect(4);
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo', 'bar'],
+      foo: 'FOO',
+      bar: 'BAR'
+    });
+
+    Ember.TEMPLATES.index = Ember.Handlebars.compile("{{link-to 'Home' 'index' id='the-link'}}{{link-to 'Home' 'index' (query-params-reset) id='the-reset-link'}}");
+    bootApplication();
+
+    equal(Ember.$('#the-link').attr('href'), "/", "link has right starting href");
+    equal(Ember.$('#the-reset-link').attr('href'), "/", "reset link has right starting href");
+
+    var indexController = container.lookup('controller:index');
+    Ember.run(indexController, 'set', 'foo', 'OOF');
+
+    equal(Ember.$('#the-link').attr('href'), "/?foo=OOF", "link has right href");
+    equal(Ember.$('#the-reset-link').attr('href'), "/", "reset link's href properly restored to default foo value");
+  });
+
+  test("query-params-reset accepts params", function() {
+    expect(4);
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo', 'bar'],
+      foo: 'FOO',
+      bar: 'BAR'
+    });
+
+    Ember.TEMPLATES.index = Ember.Handlebars.compile("{{link-to 'Home' 'index' (query-params bar='RAB') id='the-link'}}{{link-to 'Home' 'index' (query-params-reset bar='RAB') id='the-reset-link'}}");
+    bootApplication();
+
+    equal(Ember.$('#the-link').attr('href'), "/?bar=RAB", "link has right starting href");
+    equal(Ember.$('#the-reset-link').attr('href'), "/?bar=RAB", "reset link has right starting href");
+
+    var indexController = container.lookup('controller:index');
+    Ember.run(indexController, 'set', 'foo', 'OOF');
+
+    equal(Ember.$('#the-link').attr('href'), "/?bar=RAB&foo=OOF", "link has right href");
+    equal(Ember.$('#the-reset-link').attr('href'), "/?bar=RAB", "reset link's href properly restored to default foo value");
+  });
+
   module("The {{link-to}} helper: invoking with query params", {
     setup: function() {
       Ember.run(function() {
