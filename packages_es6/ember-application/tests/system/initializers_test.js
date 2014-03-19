@@ -135,7 +135,7 @@ test("initializers set on Application subclasses should not be shared between ap
       secondInitializerRunCount++;
     }
   });
-  Ember.$('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
+  jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
   Ember.run(function() {
     var firstApp = FirstApp.create({
       router: false,
@@ -172,7 +172,7 @@ test("initializers are concatenated", function(){
     }
   });
 
-  Ember.$('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
+  jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
   Ember.run(function() {
     var firstApp = FirstApp.create({
       router: false,

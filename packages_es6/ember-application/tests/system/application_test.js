@@ -1,27 +1,26 @@
 /*globals EmberDev */
 
-var view;
-var app;
-var application;
-var set = Ember.set, get = Ember.get;
-var forEach = Ember.ArrayPolyfills.forEach;
-var trim = Ember.$.trim;
-var originalLookup;
-var originalDebug;
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {forEach} from "ember-metal/array";
+import jQuery from "ember-views/system/jquery";
+var trim = jQuery.trim,
+
+var view, app, application, originalLookup, originalDebug;
 
 module("Ember.Application", {
   setup: function() {
     originalLookup = Ember.lookup;
     originalDebug = Ember.debug;
 
-    Ember.$("#qunit-fixture").html("<div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>");
+    jQuery("#qunit-fixture").html("<div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>");
     Ember.run(function() {
       application = Ember.Application.create({ rootElement: '#one', router: null });
     });
   },
 
   teardown: function() {
-    Ember.$("#qunit-fixture").empty();
+    jQuery("#qunit-fixture").empty();
     Ember.debug = originalDebug;
 
     Ember.lookup = originalLookup;
@@ -117,7 +116,7 @@ test('initialized application go to initial route', function() {
     );
   });
 
-  equal(Ember.$('#qunit-fixture h1').text(), "Hi from index");
+  equal(jQuery('#qunit-fixture h1').text(), "Hi from index");
 });
 
 test("initialize application via initialize call", function() {
@@ -159,7 +158,7 @@ test("initialize application with stateManager via initialize call from Router c
 
   var router = app.__container__.lookup('router:main');
   equal(router instanceof Ember.Router, true, "Router was set from initialize call");
-  equal(Ember.$("#qunit-fixture h1").text(), "Hello!");
+  equal(jQuery("#qunit-fixture h1").text(), "Hello!");
 });
 
 test("ApplicationView is inserted into the page", function() {
@@ -181,18 +180,18 @@ test("ApplicationView is inserted into the page", function() {
     });
   });
 
-  equal(Ember.$("#qunit-fixture h1").text(), "Hello!");
+  equal(jQuery("#qunit-fixture h1").text(), "Hello!");
 });
 
 test("Minimal Application initialized with just an application template", function() {
-  Ember.$('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
+  jQuery('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
   Ember.run(function () {
     app = Ember.Application.create({
       rootElement: '#qunit-fixture'
     });
   });
 
-  equal(trim(Ember.$('#qunit-fixture').text()), 'Hello World');
+  equal(trim(jQuery('#qunit-fixture').text()), 'Hello World');
 });
 
 test('enable log of libraries with an ENV var', function() {
@@ -220,7 +219,7 @@ test('enable log of libraries with an ENV var', function() {
 
   equal(messages[1], "Ember      : " + Ember.VERSION);
   equal(messages[2], "Handlebars : " + Handlebars.VERSION);
-  equal(messages[3], "jQuery     : " + Ember.$().jquery);
+  equal(messages[3], "jQuery     : " + jQuery().jquery);
   equal(messages[4], "my-lib     : " + "2.0.0a");
 
   Ember.libraries.deRegister("my-lib");
@@ -237,7 +236,7 @@ test('disable log version of libraries with an ENV var', function() {
     logged = true;
   };
 
-  Ember.$("#qunit-fixture").empty();
+  jQuery("#qunit-fixture").empty();
 
   Ember.run(function() {
     app = Ember.Application.create({

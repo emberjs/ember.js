@@ -1,3 +1,5 @@
+import jQuery from "ember-views/system/jquery";
+
 var application;
 
 module("Ember.Application Depedency Injection – customResolver",{
@@ -26,6 +28,6 @@ module("Ember.Application Depedency Injection – customResolver",{
 });
 
 test("a resolver can be supplied to application", function() {
-  equal(Ember.$("h1", application.rootElement).text(), "Fallback");
+  equal(jQuery("h1", application.rootElement).text(), "Fallback");
 });
 

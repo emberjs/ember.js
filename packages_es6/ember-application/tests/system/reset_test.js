@@ -124,7 +124,7 @@ test("When an application is reset, the ApplicationView is torn down", function(
     });
   });
 
-  equal(Ember.$('#qunit-fixture #application-view').length, 1, "precond - the application view is rendered");
+  equal(jQuery('#qunit-fixture #application-view').length, 1, "precond - the application view is rendered");
 
   var originalView = Ember.View.views['application-view'];
 
@@ -132,7 +132,7 @@ test("When an application is reset, the ApplicationView is torn down", function(
 
   var resettedView = Ember.View.views['application-view'];
 
-  equal(Ember.$('#qunit-fixture #application-view').length, 1, "the application view is rendered");
+  equal(jQuery('#qunit-fixture #application-view').length, 1, "the application view is rendered");
 
   notStrictEqual(originalView, resettedView, "The view object has changed");
 });
@@ -252,17 +252,17 @@ test("With ember-data like initializer and constant", function() {
 test("Ensure that the hashchange event listener is removed", function(){
   var listeners;
 
-  Ember.$(window).off('hashchange'); // ensure that any previous listeners are cleared
+  jQuery(window).off('hashchange'); // ensure that any previous listeners are cleared
 
   Ember.run(function() {
     application = Application.create();
   });
 
-  listeners = Ember.$._data(Ember.$(window)[0], 'events');
+  listeners = jQuery._data(jQuery(window)[0], 'events');
   equal(listeners['hashchange'].length, 1, 'hashchange event listener was setup');
 
   application.reset();
 
-  listeners = Ember.$._data(Ember.$(window)[0], 'events');
+  listeners = jQuery._data(jQuery(window)[0], 'events');
   equal(listeners['hashchange'].length, 1, 'hashchange event only exists once');
 });

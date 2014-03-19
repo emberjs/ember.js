@@ -143,7 +143,8 @@ var packages = {
   'ember-testing': ['ember-application', 'ember-routing'],
   'ember-handlebars-compiler': ['ember-views'],
   'ember-handlebars': ['metamorph', 'ember-views', 'ember-handlebars-compiler', 'ember-metal/~tests/ember-metal'],
-  'ember-routing': ['ember-runtime', 'ember-views', 'ember-handlebars']
+  'ember-routing': ['ember-runtime', 'ember-views', 'ember-handlebars'],
+  'ember-application': ['ember-routing']
 };
 
 
