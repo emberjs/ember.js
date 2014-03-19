@@ -22,6 +22,7 @@ import jQuery from "ember-views/system/jquery";
 
 import renderHelper from "ember-routing/helpers/render";
 import {ActionHelper, actionHelper} from "ember-routing/helpers/action";
+import {outletHelper} from "ember-routing/helpers/outlet";
 
 var appendView = function(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
@@ -75,10 +76,13 @@ function resolverFor(namespace) {
   };
 }
 
-var view, container, originalRenderHelper, originalActionHelper;
+var view, container, originalRenderHelper, originalActionHelper, originalOutletHelper;
 
 module("Handlebars {{render}} helper", {
   setup: function() {
+    originalOutletHelper = EmberHandlebars.helpers['outlet'];
+    EmberHandlebars.registerHelper('outlet', outletHelper);
+
     originalRenderHelper = EmberHandlebars.helpers['render'];
     EmberHandlebars.registerHelper('render', renderHelper);
 
@@ -98,6 +102,9 @@ module("Handlebars {{render}} helper", {
     delete EmberHandlebars.helpers['action'];
     EmberHandlebars.helpers['action'] = originalActionHelper;
 
+    delete EmberHandlebars.helpers['outlet'];
+    EmberHandlebars.helpers['outlet'] = originalOutletHelper;
+
     run(function () {
       if (container) {
         container.destroy();
@@ -116,7 +123,7 @@ test("{{render}} helper should render given template", function() {
   var controller = EmberController.extend({container: container});
   view = EmberView.create({
     controller: controller.create(),
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
@@ -132,7 +139,7 @@ test("{{render}} helper should have assertion if neither template nor view exist
   var controller = EmberController.extend({container: container});
   view = EmberView.create({
     controller: controller.create(),
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   expectAssertion(function() {
@@ -146,7 +153,7 @@ test("{{render}} helper should not have assertion if template is supplied in blo
   container.register('controller:good', EmberController.extend({ name: 'Rob'}));
   view = EmberView.create({
     controller: controller.create(),
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   appendView(view);
@@ -159,7 +166,7 @@ test("{{render}} helper should not have assertion if view exists without a templ
   var controller = EmberController.extend({container: container});
   view = EmberView.create({
     controller: controller.create(),
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   container.register('view:oops', EmberView.extend());
@@ -185,7 +192,7 @@ test("{{render}} helper should render given template with a supplied model", fun
 
   view = EmberView.create({
     controller: controller,
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   var PostController = EmberObjectController.extend();
@@ -221,7 +228,7 @@ test("{{render}} helper with a supplied model should not fire observers on the c
       container: container,
       post: post
     }),
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   var PostController = EmberObjectController.extend({
@@ -246,7 +253,7 @@ test("{{render}} helper should raise an error when a given controller name does 
   container.register('controller:posts', EmberArrayController.extend());
   view = EmberView.create({
     controller: controller.create(),
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
@@ -262,7 +269,7 @@ test("{{render}} helper should render with given controller", function() {
   container.register('controller:posts', EmberArrayController.extend());
   view = EmberView.create({
     controller: controller.create(),
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
@@ -278,7 +285,7 @@ test("{{render}} helper should render a template without a model only once", fun
   var controller = EmberController.extend({container: container});
   view = EmberView.create({
     controller: controller.create(),
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
@@ -307,7 +314,7 @@ test("{{render}} helper should render templates with models multiple times", fun
 
   view = EmberView.create({
     controller: controller,
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   var PostController = EmberObjectController.extend();
@@ -342,7 +349,7 @@ test("{{render}} helper should not treat invocations with falsy contexts as cont
       container: container,
       zero: false
     }),
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   var PostController = EmberObjectController.extend();
@@ -375,7 +382,7 @@ test("{{render}} helper should render templates both with and without models", f
 
   view = EmberView.create({
     controller: controller,
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   var PostController = EmberObjectController.extend();
@@ -420,7 +427,7 @@ test("{{render}} helper should link child controllers to the parent controller",
 
   view = EmberView.create({
     controller: controller.create(),
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   Ember.TEMPLATES['posts'] = compile('<button id="parent-action" {{action "parentPlease"}}>Go to {{parentController.role}}</button>');
@@ -443,7 +450,7 @@ test("{{render}} helper should be able to render a template again when it was re
   var template = "<h1>HI</h1>{{outlet}}";
   var controller = EmberController.extend({container: container});
   view = EmberView.create({
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
@@ -477,7 +484,7 @@ test("{{render}} works with dot notation", function() {
 
   view = EmberView.create({
     controller: controller.create(),
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   Ember.TEMPLATES['blog.post'] = compile("<p>POST</p>");
@@ -497,7 +504,7 @@ test("{{render}} works with slash notation", function() {
 
   view = EmberView.create({
     controller: controller.create(),
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   Ember.TEMPLATES['blog.post'] = compile("<p>POST</p>");
@@ -514,7 +521,7 @@ test("Using quoteless templateName works properly (DEPRECATED)", function(){
   var controller = EmberController.extend({container: container});
   view = EmberView.create({
     controller: controller.create(),
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");

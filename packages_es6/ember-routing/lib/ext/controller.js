@@ -167,3 +167,5 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     _queryParamChangesDuringSuspension: null
   });
 }
+
+export default ControllerMixin;
