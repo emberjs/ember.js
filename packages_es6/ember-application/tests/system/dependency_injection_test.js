@@ -1,5 +1,10 @@
+import run from "ember-metal/run_loop";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import Application from "ember-application/system/application";
+
 var locator, originalLookup = Ember.lookup, lookup,
-    application, set = Ember.set, get = Ember.get,
+    application,
     forEach = Ember.ArrayPolyfills.forEach, originalModelInjections;
 
 module("Ember.Application Dependency Injection", {
@@ -7,7 +12,7 @@ module("Ember.Application Dependency Injection", {
     originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
     Ember.MODEL_FACTORY_INJECTIONS = true;
 
-    application = Ember.run(Ember.Application, 'create');
+    application = run(Ember.Application, 'create');
 
     application.Person              = Ember.Object.extend({});
     application.Orange              = Ember.Object.extend({});
@@ -26,7 +31,7 @@ module("Ember.Application Dependency Injection", {
     lookup = Ember.lookup = {};
   },
   teardown: function() {
-    Ember.run(application, 'destroy');
+    run(application, 'destroy');
     application = locator = null;
     Ember.lookup = originalLookup;
     Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;

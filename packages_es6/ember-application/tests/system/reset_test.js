@@ -1,11 +1,18 @@
-var get = Ember.get, set = Ember.set;
+import run from "ember-metal/run_loop";
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import Application from "ember-application/system/application";
+import EmberObject from "ember-runtime/system/object";
+import Router from "ember-routing/system/router";
+import {View} from "ember-views/views/view";
+import {Controller} from "ember-runtime/controllers/controller";
+import EventDispatcher from "ember-views/system/event_dispatcher";
 
 var application;
-var Application;
 
 module("Ember.Application - resetting", {
   setup: function() {
-    Application = Ember.Application.extend({
+    Application = Application.extend({
       name: "App",
       rootElement: "#qunit-fixture"
     });
@@ -13,17 +20,17 @@ module("Ember.Application - resetting", {
   teardown: function() {
     Application = null;
     if (application) {
-      Ember.run(application, 'destroy');
+      run(application, 'destroy');
     }
   }
 });
 
 test("Brings it's own run-loop if not provided", function() {
-  application = Ember.run(Application, 'create');
+  application = run(Application, 'create');
 
   application.reset();
 
-  Ember.run(application,'then', function() {
+  run(application,'then', function() {
     ok(true, 'app booted');
   });
 });
@@ -33,9 +40,9 @@ test("does not bring it's own run loop if one is already provided", function() {
 
   var didBecomeReady = false;
 
-  application = Ember.run(Application, 'create');
+  application = run(Application, 'create');
 
-  Ember.run(function() {
+  run(function() {
 
     application.ready = function() {
       didBecomeReady = true;
@@ -48,14 +55,14 @@ test("does not bring it's own run loop if one is already provided", function() {
   });
 
   ok(!didBecomeReady, 'app is not ready');
-  Ember.run(application, 'advanceReadiness');
+  run(application, 'advanceReadiness');
   ok(didBecomeReady, 'app is ready');
 });
 
 test("When an application is reset, new instances of controllers are generated", function() {
-  Ember.run(function() {
+  run(function() {
     application = Application.create();
-    application.AcademicController = Ember.Controller.extend();
+    application.AcademicController = Controller.extend();
   });
 
   var firstController = application.__container__.lookup('controller:academic');
@@ -79,7 +86,7 @@ test("When an application is reset, the eventDispatcher is destroyed and recreat
   eventDispatcherWasSetup = 0;
   eventDispatcherWasDestroyed = 0;
 
-  var originalDispatcher = Ember.EventDispatcher;
+  var originalDispatcher = EventDispatcher;
 
   stubEventDispatcher = {
     setup: function() {
@@ -90,14 +97,14 @@ test("When an application is reset, the eventDispatcher is destroyed and recreat
     }
   };
 
-  Ember.EventDispatcher = {
+  EventDispatcher = {
     create: function() {
       return stubEventDispatcher;
     }
   };
 
   try {
-    Ember.run(function() {
+    run(function() {
       application = Application.create();
 
       equal(eventDispatcherWasSetup, 0);
@@ -113,24 +120,24 @@ test("When an application is reset, the eventDispatcher is destroyed and recreat
     equal(eventDispatcherWasDestroyed, 1);
   } catch (error) { }
 
-  Ember.EventDispatcher = originalDispatcher;
+  EventDispatcher = originalDispatcher;
 });
 
 test("When an application is reset, the ApplicationView is torn down", function() {
-  Ember.run(function() {
+  run(function() {
     application = Application.create();
-    application.ApplicationView = Ember.View.extend({
+    application.ApplicationView = View.extend({
       elementId: "application-view"
     });
   });
 
   equal(jQuery('#qunit-fixture #application-view').length, 1, "precond - the application view is rendered");
 
-  var originalView = Ember.View.views['application-view'];
+  var originalView = View.views['application-view'];
 
   application.reset();
 
-  var resettedView = Ember.View.views['application-view'];
+  var resettedView = View.views['application-view'];
 
   equal(jQuery('#qunit-fixture #application-view').length, 1, "the application view is rendered");
 
@@ -140,9 +147,9 @@ test("When an application is reset, the ApplicationView is torn down", function(
 test("When an application is reset, the router URL is reset to `/`", function() {
   var location, router;
 
-  Ember.run(function() {
+  run(function() {
     application = Application.create();
-    application.Router = Ember.Router.extend({
+    application.Router = Router.extend({
       location: 'none'
     });
 
@@ -156,7 +163,7 @@ test("When an application is reset, the router URL is reset to `/`", function() 
 
   location = router.get('location');
 
-  Ember.run(function() {
+  run(function() {
     location.handleURL('/one');
   });
 
@@ -171,7 +178,7 @@ test("When an application is reset, the router URL is reset to `/`", function() 
   equal(get(applicationController, 'currentPath'), "index");
 
   location = application.__container__.lookup('router:main').get('location');
-  Ember.run(function() {
+  run(function() {
     location.handleURL('/one');
   });
 
@@ -183,7 +190,7 @@ test("When an application with advance/deferReadiness is reset, the app does cor
 
   readyCallCount = 0;
 
-  Ember.run(function() {
+  run(function() {
     application = Application.create({
       ready: function() {
         readyCallCount++;
@@ -194,7 +201,7 @@ test("When an application with advance/deferReadiness is reset, the app does cor
     equal(readyCallCount, 0, 'ready has not yet been called');
   });
 
-  Ember.run(function() {
+  run(function() {
     application.advanceReadiness();
   });
 
@@ -211,7 +218,7 @@ test("With ember-data like initializer and constant", function() {
   readyCallCount = 0;
 
   var DS = {
-    Store: Ember.Object.extend({
+    Store: EmberObject.extend({
       init: function() {
          if (!get(DS, 'defaultStore')) {
           set(DS, 'defaultStore', this);
@@ -236,7 +243,7 @@ test("With ember-data like initializer and constant", function() {
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     application = Application.create();
     application.Store = DS.Store;
   });
@@ -254,7 +261,7 @@ test("Ensure that the hashchange event listener is removed", function(){
 
   jQuery(window).off('hashchange'); // ensure that any previous listeners are cleared
 
-  Ember.run(function() {
+  run(function() {
     application = Application.create();
   });
 

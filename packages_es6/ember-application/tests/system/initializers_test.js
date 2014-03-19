@@ -1,5 +1,8 @@
+import run from "ember-metal/run_loop";
+import Application from "ember-application/system/application";
+import {indexOf} from "ember-metal/array"
+
 var oldInitializers, app;
-var indexOf = Ember.ArrayPolyfills.indexOf;
 
 module("Ember.Application initializers", {
   setup: function() {
@@ -7,14 +10,14 @@ module("Ember.Application initializers", {
 
   teardown: function() {
     if (app) {
-      Ember.run(function() { app.destroy(); });
+      run(function() { app.destroy(); });
     }
   }
 });
 
 test("initializers can be registered in a specified order", function() {
   var order = [];
-  var Application = Ember.Application.extend();
+  var Application = Application.extend();
   Application.initializer({
     name: 'fourth',
     after: 'third',
@@ -54,7 +57,7 @@ test("initializers can be registered in a specified order", function() {
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     app = Application.create({
       router: false,
       rootElement: '#qunit-fixture'
@@ -100,14 +103,14 @@ test("initializers can have multiple dependencies", function () {
           order.push("after c");
         }
       };
-  Ember.Application.initializer(b);
-  Ember.Application.initializer(a);
-  Ember.Application.initializer(afterC);
-  Ember.Application.initializer(afterB);
-  Ember.Application.initializer(c);
+  Application.initializer(b);
+  Application.initializer(a);
+  Application.initializer(afterC);
+  Application.initializer(afterB);
+  Application.initializer(c);
 
-  Ember.run(function() {
-    app = Ember.Application.create({
+  run(function() {
+    app = Application.create({
       router: false,
       rootElement: '#qunit-fixture'
     });
@@ -121,14 +124,14 @@ test("initializers can have multiple dependencies", function () {
 
 test("initializers set on Application subclasses should not be shared between apps", function(){
   var firstInitializerRunCount = 0, secondInitializerRunCount = 0;
-  var FirstApp = Ember.Application.extend();
+  var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'first',
     initialize: function(container) {
       firstInitializerRunCount++;
     }
   });
-  var SecondApp = Ember.Application.extend();
+  var SecondApp = Application.extend();
   SecondApp.initializer({
     name: 'second',
     initialize: function(container) {
@@ -136,7 +139,7 @@ test("initializers set on Application subclasses should not be shared between ap
     }
   });
   jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
-  Ember.run(function() {
+  run(function() {
     var firstApp = FirstApp.create({
       router: false,
       rootElement: '#qunit-fixture #first'
@@ -144,7 +147,7 @@ test("initializers set on Application subclasses should not be shared between ap
   });
   equal(firstInitializerRunCount, 1, 'first initializer only was run');
   equal(secondInitializerRunCount, 0, 'first initializer only was run');
-  Ember.run(function() {
+  run(function() {
     var secondApp = SecondApp.create({
       router: false,
       rootElement: '#qunit-fixture #second'
@@ -156,7 +159,7 @@ test("initializers set on Application subclasses should not be shared between ap
 
 test("initializers are concatenated", function(){
   var firstInitializerRunCount = 0, secondInitializerRunCount = 0;
-  var FirstApp = Ember.Application.extend();
+  var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'first',
     initialize: function(container) {
@@ -173,7 +176,7 @@ test("initializers are concatenated", function(){
   });
 
   jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
-  Ember.run(function() {
+  run(function() {
     var firstApp = FirstApp.create({
       router: false,
       rootElement: '#qunit-fixture #first'
@@ -182,7 +185,7 @@ test("initializers are concatenated", function(){
   equal(firstInitializerRunCount, 1, 'first initializer only was run when base class created');
   equal(secondInitializerRunCount, 0, 'first initializer only was run when base class created');
   firstInitializerRunCount = 0;
-  Ember.run(function() {
+  run(function() {
     var secondApp = SecondApp.create({
       router: false,
       rootElement: '#qunit-fixture #second'
@@ -194,13 +197,13 @@ test("initializers are concatenated", function(){
 
 test("initializers are per-app", function(){
   expect(0);
-  var FirstApp = Ember.Application.extend();
+  var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'shouldNotCollide',
     initialize: function(container) {}
   });
 
-  var SecondApp = Ember.Application.extend();
+  var SecondApp = Application.extend();
   SecondApp.initializer({
     name: 'shouldNotCollide',
     initialize: function(container) {}
