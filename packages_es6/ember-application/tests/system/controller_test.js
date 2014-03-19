@@ -1,3 +1,5 @@
+/*jshint newcap:false */
+
 import {Controller} from "ember-runtime/controllers/controller";
 import Container from "ember-runtime/system/container";
 import {A} from "ember-runtime/system/native_array";
@@ -7,12 +9,12 @@ import {computed} from "ember-metal/computed";
 module("Controller dependencies");
 
 test("If a controller specifies a dependency, but does not have a container it should error", function(){
-  var Controller = Controller.extend({
+  var AController = Controller.extend({
     needs: 'posts'
   });
 
   expectAssertion(function(){
-    Controller.create();
+    AController.create();
   }, /specifies `needs`, but does not have a container. Please ensure this controller was instantiated with a container./);
 });
 

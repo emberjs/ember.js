@@ -1,6 +1,7 @@
 import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
-import {indexOf} from "ember-metal/array"
+import {indexOf} from "ember-metal/array";
+import jQuery from "ember-views/system/jquery";
 
 var oldInitializers, app;
 

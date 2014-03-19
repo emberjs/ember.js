@@ -2,10 +2,10 @@ import run from "ember-metal/run_loop";
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import Application from "ember-application/system/application";
+import {forEach} from "ember-metal/array";
 
 var locator, originalLookup = Ember.lookup, lookup,
-    application,
-    forEach = Ember.ArrayPolyfills.forEach, originalModelInjections;
+    application, originalModelInjections;
 
 module("Ember.Application Dependency Injection", {
   setup: function() {

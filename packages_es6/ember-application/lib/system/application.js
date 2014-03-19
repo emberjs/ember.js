@@ -3,7 +3,7 @@
 @submodule ember-application
 */
 
-import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
+import Ember from "ember-metal"; // Ember.FEATURES, Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import {runLoadHooks} from "ember-runtime/system/lazy_load";
@@ -27,8 +27,11 @@ import Router from "ember-routing/system/router";
 import HashLocation from "ember-routing/location/hash_location";
 import HistoryLocation from "ember-routing/location/history_location";
 import AutoLocation from "ember-routing/location/auto_location";
+import NoneLocation from "ember-routing/location/none_location";
+
 import EmberHandlebars from "ember-handlebars-compiler";
 
+var K = Ember.K;
 
 function DeprecatedContainer(container) {
   this._container = container;
@@ -377,7 +380,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @method deferReadiness
   */
   deferReadiness: function() {
-    Ember.assert("You must call deferReadiness on an instance of Ember.Application", this instanceof Ember.Application);
+    Ember.assert("You must call deferReadiness on an instance of Ember.Application", this instanceof Application);
     Ember.assert("You cannot defer readiness since the `ready()` hook has already been called.", this._readinessDeferrals > 0);
     this._readinessDeferrals++;
   },
@@ -391,7 +394,7 @@ var Application = Namespace.extend(DeferredMixin, {
     @see {Ember.Application#deferReadiness}
   */
   advanceReadiness: function() {
-    Ember.assert("You must call advanceReadiness on an instance of Ember.Application", this instanceof Ember.Application);
+    Ember.assert("You must call advanceReadiness on an instance of Ember.Application", this instanceof Application);
     this._readinessDeferrals--;
 
     if (this._readinessDeferrals === 0) {

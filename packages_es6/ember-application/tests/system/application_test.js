@@ -1,6 +1,6 @@
 /*globals EmberDev */
-import Ember from "ember-metal/core";
 
+import Ember from "ember-metal/core";
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import {forEach} from "ember-metal/array";
@@ -12,6 +12,7 @@ import {View} from "ember-views/views/view";
 import {Controller} from "ember-runtime/controllers/controller";
 import NoneLocation from "ember-routing/location/none_location";
 import EmberHandlebars from "ember-handlebars";
+import EmberObject from "ember-runtime/system/object";
 
 import jQuery from "ember-views/system/jquery";
 var trim = jQuery.trim;
@@ -94,7 +95,7 @@ test("acts like a namespace", function() {
   });
 
   Ember.BOOTED = false;
-  app.Foo = Ember.Object.extend();
+  app.Foo = EmberObject.extend();
   equal(app.Foo.toString(), "TestApp.Foo", "Classes pick up their parent namespace");
 });
 

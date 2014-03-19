@@ -1,7 +1,8 @@
 import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
+var EmberApplication = Application;
 
-var jQuery, Application, application;
+var jQuery, application;
 var readyWasCalled, domReady, readyCallbacks;
 
 // We are using a small mock of jQuery because jQuery is third-party code with
@@ -38,7 +39,7 @@ module("Application readiness", {
       }
     };
 
-    Application = Application.extend({
+    Application = EmberApplication.extend({
       $: jQuery,
 
       ready: function() {

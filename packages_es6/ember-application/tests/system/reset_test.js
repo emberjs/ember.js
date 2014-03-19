@@ -7,12 +7,13 @@ import Router from "ember-routing/system/router";
 import {View} from "ember-views/views/view";
 import {Controller} from "ember-runtime/controllers/controller";
 import EventDispatcher from "ember-views/system/event_dispatcher";
+import jQuery from "ember-views/system/jquery";
 
-var application;
+var application, EmberApplication = Application;
 
 module("Ember.Application - resetting", {
   setup: function() {
-    Application = Application.extend({
+    Application = EmberApplication.extend({
       name: "App",
       rootElement: "#qunit-fixture"
     });

@@ -8,7 +8,7 @@ import {get} from "ember-metal/property_get";
 import EmberStringUtils from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import Namespace from "ember-runtime/system/namespace";
-import EmberHandlebars from "ember-hanldebars-runtime";
+import EmberHandlebars from "ember-handlebars";
 
 var classify = EmberStringUtils.classify,
     capitalize = EmberStringUtils.capitalize,
