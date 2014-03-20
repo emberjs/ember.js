@@ -480,6 +480,45 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     Ember.run(appController, 'set', 'alex', 'wallace');
   });
 
+  test("can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent", function() {
+    Ember.TEMPLATES.parent = Ember.Handlebars.compile('{{outlet}}');
+    Ember.TEMPLATES['parent/child'] = Ember.Handlebars.compile("{{link-to 'Parent' 'parent' (query-params foo='change') id='parent-link'}}");
+
+    App.Router.map(function() {
+      this.resource('parent', function() {
+        this.route('child');
+      });
+    });
+
+    var parentModelCount = 0;
+    App.ParentRoute = Ember.Route.extend({
+      model: function() {
+        parentModelCount++;
+      },
+      queryParams: {
+        foo: {
+          refreshModel: true
+        }
+      }
+    });
+
+    App.ParentController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: 'abc'
+    });
+
+    startingURL = '/parent/child?foo=lol';
+    bootApplication();
+
+    equal(parentModelCount, 1);
+
+    var parentController = container.lookup('controller:parent');
+
+    Ember.run(Ember.$('#parent-link'), 'click');
+
+    equal(parentModelCount, 2);
+  });
+
   test("can override incoming QP values in setupController", function() {
     expect(3);
 
