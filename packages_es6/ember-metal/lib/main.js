@@ -246,8 +246,6 @@ Ember.merge = merge;
   };
   ```
 
-  Internally, `Ember.onerror` is used as Backburner's error handler.
-
   @event onerror
   @for Ember
   @param {Exception} error the error object
