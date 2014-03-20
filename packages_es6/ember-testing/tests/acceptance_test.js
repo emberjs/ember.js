@@ -4,6 +4,12 @@ import Test from "ember-testing/test";
 import QUnitAdapter from "ember-testing/adapters/qunit";
 import {View as EmberView} from "ember-views/views/view";
 import "ember-testing/initializers"; // ensure the initializer is setup
+import EmberApplication from "ember-application/system/application";
+import EmberRoute from "ember-routing/system/route";
+import EmberHandlebars from "ember-handlebars";
+
+//ES6TODO: we need {{link-to}}  and {{outlet}} to exist here
+import "ember-routing"; //ES6TODO: fixme?
 
 var App, find, click, fillIn, currentRoute, visit, originalAdapter, andThen, indexHitCount;
 
@@ -14,7 +20,7 @@ module("ember-testing Acceptance", {
     run(function() {
       indexHitCount = 0;
 
-      App = Ember.Application.create({
+      App = EmberApplication.create({
         rootElement: '#ember-testing'
       });
 
@@ -25,13 +31,13 @@ module("ember-testing Acceptance", {
         this.route('abort_transition');
       });
 
-      App.IndexRoute = Ember.Route.extend({
+      App.IndexRoute = EmberRoute.extend({
         model: function(){
           indexHitCount += 1;
         }
       });
 
-      App.PostsRoute = Ember.Route.extend({
+      App.PostsRoute = EmberRoute.extend({
         renderTemplate: function() {
           currentRoute = 'posts';
           this._super();
@@ -39,11 +45,11 @@ module("ember-testing Acceptance", {
       });
 
       App.PostsView = EmberView.extend({
-        defaultTemplate: Ember.Handlebars.compile("<a class=\"dummy-link\"></a><div id=\"comments-link\">{{#link-to 'comments'}}Comments{{/link-to}}</div>"),
+        defaultTemplate: EmberHandlebars.compile("<a class=\"dummy-link\"></a><div id=\"comments-link\">{{#link-to 'comments'}}Comments{{/link-to}}</div>"),
         classNames: ['posts-view']
       });
 
-      App.CommentsRoute = Ember.Route.extend({
+      App.CommentsRoute = EmberRoute.extend({
         renderTemplate: function() {
           currentRoute = 'comments';
           this._super();
@@ -51,10 +57,10 @@ module("ember-testing Acceptance", {
       });
 
       App.CommentsView = EmberView.extend({
-        defaultTemplate: Ember.Handlebars.compile("{{input type=text}}")
+        defaultTemplate: EmberHandlebars.compile("{{input type=text}}")
       });
 
-      App.AbortTransitionRoute = Ember.Route.extend({
+      App.AbortTransitionRoute = EmberRoute.extend({
         beforeModel: function(transition) {
           transition.abort();
         }

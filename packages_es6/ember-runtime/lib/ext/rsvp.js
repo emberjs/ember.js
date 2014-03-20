@@ -26,6 +26,4 @@ RSVP.onerrorDefault = function(error) {
 
 RSVP.on('error', RSVP.onerrorDefault);
 
-Ember.RSVP = RSVP;
-
 export default RSVP;

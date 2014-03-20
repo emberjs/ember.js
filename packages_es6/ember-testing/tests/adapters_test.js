@@ -2,6 +2,7 @@ import run from "ember-metal/run_loop";
 import Test from "ember-testing/test";
 import Adapter from "ember-testing/adapters/adapter";
 import QUnitAdapter from "ember-testing/adapters/qunit";
+import EmberApplication from "ember-application/system/application";
 
 var App, originalAdapter;
 
@@ -29,7 +30,7 @@ test("Setting a test adapter manually", function() {
   });
 
   run(function() {
-    App = Ember.Application.create();
+    App = EmberApplication.create();
     Test.adapter = CustomAdapter.create();
     App.setupForTesting();
   });
@@ -43,7 +44,7 @@ test("QUnitAdapter is used by default", function() {
   Test.adapter = null;
 
   run(function() {
-    App = Ember.Application.create();
+    App = EmberApplication.create();
     App.setupForTesting();
   });
 
