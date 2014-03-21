@@ -699,7 +699,9 @@ const EmberRouter = EmberObject.extend(Evented, {
     @param {String} type
   */
   _serializeQueryParam(value, type) {
-    if (type === 'array') {
+    if (value === null || value === undefined) {
+      return null;
+    } else if (type === 'array') {
       return JSON.stringify(value);
     }
 
