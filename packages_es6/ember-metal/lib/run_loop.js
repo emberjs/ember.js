@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import {apply} from 'ember-metal/utils';
+import {indexOf} from "ember-metal/array";
 import {beginPropertyChanges, endPropertyChanges} from 'ember-metal/property_events';
 
 var onBegin = function(current) {
@@ -606,6 +607,22 @@ run.throttle = function() {
 function checkAutoRun() {
   if (!run.currentRunLoop) {
     Ember.assert("You have turned on testing mode, which disabled the run-loop's autorun. You will need to wrap any code with asynchronous side-effects in an run", !Ember.testing);
+  }
+}
+
+/**
+  Add a new named queue after the specified queue.
+
+  The queue to add will only be added once.
+
+  @method _addQueue
+  @param {String} name the name of the queue to add.
+  @param {String} after the name of the queue to add after.
+  @private
+*/
+run._addQueue = function(name, after) {
+  if (indexOf.call(run.queues, name) === -1) {
+    run.queues.splice(indexOf.call(run.queues, after)+1, 0, name);
   }
 }
 
