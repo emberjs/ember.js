@@ -412,6 +412,10 @@ Container.prototype = {
     validateFullName(fullName);
     if (this.parent) { illegalChildOperation('typeInjection'); }
 
+    var fullNameType = fullName.split(':')[0];        
+    if(fullNameType === type) {
+      throw new Error('Cannot inject a `' + fullName + '` on other ' + type + '(s). Register the `' + fullName + '` as a different type and perform the typeInjection.');
+    }
     addTypeInjection(this.typeInjections, type, property, fullName);
   },
 
