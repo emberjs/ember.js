@@ -1,4 +1,3 @@
-import {indexOf} from "ember-metal/array";
 import run from "ember-metal/run_loop";
 
 /**
@@ -12,4 +11,4 @@ import run from "ember-metal/run_loop";
 // 'actions' queue first.
 
 var queues = run.queues;
-queues.splice(indexOf.call(queues, 'actions') + 1, 0, 'routerTransitions');
+run._addQueue('routerTransitions', 'actions');
