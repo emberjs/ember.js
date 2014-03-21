@@ -1636,7 +1636,9 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       // urlKey isn't used here, but anyone overriding
       // can use it to provide serialization specific
       // to a certain query param.
-      if (defaultValueType === 'array') {
+      if (value === null || value === undefined) {
+        return null;
+      } else if (defaultValueType === 'array') {
         return JSON.stringify(value);
       }
       return '' + value;
