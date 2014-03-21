@@ -4,8 +4,10 @@ import {get} from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 import PromiseProxyMixin from "ember-runtime/mixins/promise_proxy";
+import RSVP from "ember-runtime/ext/rsvp";
+var EmberRSVP = RSVP;
+RSVP = requireModule("rsvp");
 
-var RSVP = requireModule("rsvp");
 var ObjectPromiseProxy;
 
 test("present on ember namespace", function(){
@@ -200,7 +202,7 @@ test("should work with promise inheritance", function(){
 });
 
 test("should reset isFulfilled and isRejected when promise is reset", function() {
-  var deferred = Ember.RSVP.defer();
+  var deferred = EmberRSVP.defer();
 
   var proxy = ObjectPromiseProxy.create({
     promise: deferred.promise
@@ -218,7 +220,7 @@ test("should reset isFulfilled and isRejected when promise is reset", function()
   equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
   equal(get(proxy, 'isFulfilled'), true,  'expects the proxy to indicate that it is fulfilled');
 
-  var anotherDeferred = Ember.RSVP.defer();
+  var anotherDeferred = EmberRSVP.defer();
   proxy.set('promise', anotherDeferred.promise);
 
   equal(get(proxy, 'isPending'),   true,  'expects the proxy to indicate that it is loading');

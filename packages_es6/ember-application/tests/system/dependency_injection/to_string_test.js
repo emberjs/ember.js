@@ -1,3 +1,10 @@
+import Ember from "ember-metal/core"; // lookup, etc
+import run from "ember-metal/run_loop";
+import Application from "ember-application/system/application";
+import EmberObject from "ember-runtime/system/object";
+import {DefaultResolver} from "ember-application/system/resolver";
+import {guidFor} from "ember-metal/utils";
+
 var originalLookup, App, originalModelInjections;
 
 module("Ember.Application Dependency Injection – toString",{
@@ -7,20 +14,20 @@ module("Ember.Application Dependency Injection – toString",{
 
     originalLookup = Ember.lookup;
 
-    Ember.run(function(){
-      App = Ember.Application.create();
+    run(function(){
+      App = Application.create();
       Ember.lookup = {
         App: App
       };
     });
 
-    App.Post = Ember.Object.extend();
+    App.Post = EmberObject.extend();
 
   },
 
   teardown: function() {
     Ember.lookup = originalLookup;
-    Ember.run(App, 'destroy');
+    run(App, 'destroy');
     Ember.MODEL_FACTORY_INJECTIONS = originalModelInjections;
   }
 });
@@ -32,17 +39,17 @@ test("factories", function() {
 
 test("instances", function() {
   var post = App.__container__.lookup('model:post');
-  var guid = Ember.guidFor(post);
+  var guid = guidFor(post);
 
   equal(post.toString(), '<App.Post:' + guid + '>', 'expecting the model to be post');
 });
 
 test("with a custom resolver", function() {
-  Ember.run(App,'destroy');
+  run(App,'destroy');
 
-  Ember.run(function(){
-    App = Ember.Application.create({
-      Resolver: Ember.DefaultResolver.extend({
+  run(function(){
+    App = Application.create({
+      Resolver: DefaultResolver.extend({
         makeToString: function(factory, fullName) {
           return fullName;
         }
@@ -50,10 +57,10 @@ test("with a custom resolver", function() {
     });
   });
 
-  App.__container__.register('model:peter', Ember.Object.extend());
+  App.__container__.register('model:peter', EmberObject.extend());
 
   var peter = App.__container__.lookup('model:peter');
-  var guid = Ember.guidFor(peter);
+  var guid = guidFor(peter);
 
   equal(peter.toString(), '<model:peter:' + guid + '>', 'expecting the supermodel to be peter');
 });

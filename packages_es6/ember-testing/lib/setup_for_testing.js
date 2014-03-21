@@ -1,6 +1,7 @@
 import Ember from "ember-metal/core";
 // import Test from "ember-testing/test";  // ES6TODO: fix when cycles are supported
 import QUnitAdapter from "ember-testing/adapters/qunit";
+import jQuery from "ember-views/system/jquery";
 
 var Test;
 
@@ -40,10 +41,10 @@ function setupForTesting() {
     Test.pendingAjaxRequests = 0;
   }
 
-  Ember.$(document).off('ajaxSend', incrementAjaxPendingRequests);
-  Ember.$(document).off('ajaxComplete', decrementAjaxPendingRequests);
-  Ember.$(document).on('ajaxSend', incrementAjaxPendingRequests);
-  Ember.$(document).on('ajaxComplete', decrementAjaxPendingRequests);
+  jQuery(document).off('ajaxSend', incrementAjaxPendingRequests);
+  jQuery(document).off('ajaxComplete', decrementAjaxPendingRequests);
+  jQuery(document).on('ajaxSend', incrementAjaxPendingRequests);
+  jQuery(document).on('ajaxComplete', decrementAjaxPendingRequests);
 };
 
 export default setupForTesting;
