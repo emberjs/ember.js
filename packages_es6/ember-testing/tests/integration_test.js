@@ -4,17 +4,20 @@ import EmberObject from "ember-runtime/system/object";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import jQuery from "ember-views/system/jquery";
 import {View as EmberView} from "ember-views/views/view";
-import EmberHandlebars from "ember-handlebars-compiler";
-
 import Test from "ember-testing/test";
-
 import EmberRoute from "ember-routing/system/route";
 import EmberApplication from "ember-application/system/application";
+EmberApplication.initializers = {};
+import EmberHandlebars from "ember-handlebars";
+
+import 'ember-application';
 
 var App, find, visit, originalAdapter = Test.adapter;
 
 module("ember-testing Integration", {
   setup: function() {
+    EmberApplication.initializers = {};
+
     jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
     run(function() {
       App = EmberApplication.create({
@@ -43,7 +46,7 @@ module("ember-testing Integration", {
 
       App.Person.reopenClass({
         find: function() {
-          return Ember.A(); 
+          return Ember.A();
         }
       });
 
@@ -66,6 +69,7 @@ module("ember-testing Integration", {
 
   teardown: function() {
     App.removeTestHelpers();
+    EmberApplication.initializers = {};
     jQuery('#ember-testing-container, #ember-testing').remove();
     run(App, App.destroy);
     App = null;
@@ -95,6 +99,7 @@ test("template is bound to array of 2 people", function() {
   };
   run(App, 'advanceReadiness');
   visit("/").then(function() {
+    console.log("!!!");
     var rows = find(".name").length;
     equal(rows, 2, "successfully stubbed a non empty array of people");
   });
