@@ -1153,6 +1153,63 @@ moduleFor('Query Params - main', class extends QueryParamTestCase {
     });
   }
 
+  test("Setting bound query pram property to null or undefined do not seralize to url", function() {
+    Router.map(function() {
+      this.route("home", { path: '/home' });
+    });
+
+    App.HomeController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: [1, 2]
+    });
+
+    startingURL = '/home';
+    bootApplication();
+
+    var controller = container.lookup('controller:home');
+
+    deepEqual(controller.get('foo'), [1,2]);
+    equal(router.get('location.path'), "/home");
+
+    Ember.run(controller, 'set', 'foo', [1,3]);
+    equal(router.get('location.path'), "/home?foo=%5B1%2C3%5D");
+
+    Ember.run(router, 'transitionTo', '/home');
+    deepEqual(controller.get('foo'), [1,2]);
+
+    Ember.run(controller, 'set', 'foo', null);
+    equal(router.get('location.path'), "/home", "Setting property to null");
+
+    Ember.run(controller, 'set', 'foo', [1,3]);
+    equal(router.get('location.path'), "/home?foo=%5B1%2C3%5D");
+
+    Ember.run(controller, 'set', 'foo', undefined);
+    equal(router.get('location.path'), "/home", "Setting property to undefined");
+  });
+
+  test("{{link-to}} with null or undefined qps do not get serialized into url", function() {
+    Ember.TEMPLATES.home = Ember.Handlebars.compile(
+      "{{link-to 'Home' 'home' (query-params foo=nullValue) id='null-link'}}" +
+      "{{link-to 'Home' 'home' (query-params foo=undefinedValue) id='undefined-link'}}");
+    Router.map(function() {
+      this.route("home", { path: '/home' });
+    });
+
+    App.HomeController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: [],
+      nullValue: null,
+      undefinedValue: undefined
+    });
+
+    startingURL = '/home';
+    bootApplication();
+
+    var controller = container.lookup('controller:home');
+    equal(Ember.$('#null-link').attr('href'), "/home");
+    equal(Ember.$('#undefined-link').attr('href'), "/home");
+  });
+
   ['@test A child of a resource route still defaults to parent route\'s model even if the child route has a query param'](assert) {
     assert.expect(2);
 
