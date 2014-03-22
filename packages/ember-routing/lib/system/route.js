@@ -994,6 +994,8 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
         if (!modelClass) { return; }
 
+        Ember.assert(classify(name) + ' has no method `find`.', typeof modelClass.find === 'function');
+
         return modelClass.find(value);
       }
     };
