@@ -894,8 +894,9 @@ var EMPTY_ARRAY = [];
   * `drag`
   * `dragEnter`
   * `dragLeave`
-  * `drop`
+  * `dragOver`
   * `dragEnd`
+  * `drop`
 
   ## Handlebars `{{view}}` Helper
 
