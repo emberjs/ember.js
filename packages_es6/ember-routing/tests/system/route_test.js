@@ -53,7 +53,7 @@ test("default store utilizes the container to acquire the model factory", functi
 
 test("'store' can be injected by data persistence frameworks", function() {
   expect(8);
-  run(route, 'destroy'); 
+  run(route, 'destroy');
 
   var container = new Container();
   var post = {
@@ -78,6 +78,23 @@ test("'store' can be injected by data persistence frameworks", function() {
 
   equal(route.model({ post_id: 1}), post, '#model returns the correct post');
   equal(route.findModel('post', 1), post, '#findModel returns the correct post');
+});
+
+test("assert if 'store.find' method is not found", function() {
+  expect(1);
+  run(route, 'destroy');
+
+  var container = new Container();
+  var Post = EmberObject.extend();
+
+  container.register('route:index', EmberRoute);
+  container.register('model:post',  Post);
+
+  route = container.lookup('route:index');
+
+  expectAssertion(function() {
+    route.findModel('post', 1);
+  }, 'Post has no method `find`.');
 });
 
 test("asserts if model class is not found", function() {
