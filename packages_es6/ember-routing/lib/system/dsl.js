@@ -12,6 +12,8 @@ function DSL(name) {
 
 DSL.prototype = {
   resource: function(name, options, callback) {
+    Ember.assert("'basic' cannot be used as a resource name.", name !== 'basic');
+
     if (arguments.length === 2 && typeof options === 'function') {
       callback = options;
       options = {};
@@ -54,6 +56,8 @@ DSL.prototype = {
   },
 
   route: function(name, options) {
+    Ember.assert("'basic' cannot be used as a route name.", name !== 'basic');
+
     route(this, name, options);
     if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
       route(this, name + '_loading');
