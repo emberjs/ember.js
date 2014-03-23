@@ -106,11 +106,13 @@ test('test auto insertion of text nodes for needed edges a fragment with placeho
   var hydrate = hydratorFor(ast);
 
   var placeholders = [];
-  function FakePlaceholder() {
-    Placeholder.apply(this, arguments);
-    placeholders.push(this);
-  }
-  FakePlaceholder.prototype = Object.create(Placeholder.prototype);
+  var FakePlaceholder = {
+    create: function (start, startIndex, endIndex) {
+      var placeholder = Placeholder.create(start, startIndex, endIndex);
+      placeholders.push(placeholder);
+      return placeholder;
+    }
+  };
 
   var contentResolves = [];
   var context = {};

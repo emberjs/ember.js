@@ -160,21 +160,21 @@ function placeholderListTests(factory) {
     html = startHTML+'<p>A</p><p>B</p><p>C</p><p>D</p><p>E</p><p>F</p>'+endHTML;
     equalHTML(fragment, html);
 
-    equal(placeholderList.list[0].start, placeholder.start);
-    equal(placeholderList.list[0].end, D);
-    equal(placeholderList.list[1].start, C);
-    equal(placeholderList.list[1].end, E);
-    equal(placeholderList.list[2].start, D);
-    equal(placeholderList.list[2].end, placeholder.end);
+    equal(placeholderList.placeholders[0].start, placeholder.start);
+    equal(placeholderList.placeholders[0].end, D);
+    equal(placeholderList.placeholders[1].start, C);
+    equal(placeholderList.placeholders[1].end, E);
+    equal(placeholderList.placeholders[2].start, D);
+    equal(placeholderList.placeholders[2].end, placeholder.end);
 
     placeholderList.replace(1,2);
 
     html = startHTML+'<p>A</p><p>B</p><p>C</p>'+endHTML;
     equalHTML(fragment, html);
 
-    equal(placeholderList.list.length, 1);
-    equal(placeholderList.list[0].start, placeholder.start);
-    equal(placeholderList.list[0].end, placeholder.end);
+    equal(placeholderList.placeholders.length, 1);
+    equal(placeholderList.placeholders[0].start, placeholder.start);
+    equal(placeholderList.placeholders[0].end, placeholder.end);
   });
 }
 
@@ -306,7 +306,7 @@ function iterateCombinations(parents, starts, ends, contents, callback) {
 
         return {
           fragment: fragment,
-          placeholder: new Placeholder(parent, startIndex, endIndex),
+          placeholder: Placeholder.create(parent, startIndex, endIndex),
           startHTML: parentFactory.startHTML + startFactory.HTML,
           contentHTML: contentFactory.HTML,
           endHTML: endFactory.HTML + parentFactory.endHTML
