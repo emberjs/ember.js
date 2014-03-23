@@ -94,8 +94,8 @@ test('hydrates a fragment with placeholder mustaches', function () {
   equal(baz.params.length, 0);
   equal(baz.options.escaped, true);
 
-  foo.placeholder.appendChild(document.createTextNode('A'));
-  baz.placeholder.appendChild(document.createTextNode('B'));
+  foo.placeholder.update('A');
+  baz.placeholder.update('B');
 
   equalHTML(fragment, "<div>A bar B</div>");
 });
@@ -142,9 +142,9 @@ test('test auto insertion of text nodes for needed edges a fragment with placeho
   equal(placeholders[2].end.nodeType, 3);
   equal(placeholders[2].end.textContent, '');
 
-  placeholders[0].appendText('A');
-  placeholders[1].appendText('B');
-  placeholders[2].appendText('C');
+  placeholders[0].update('A');
+  placeholders[1].update('B');
+  placeholders[2].update('C');
 
   equalHTML(fragment, "A<p>B</p>C");
 });

@@ -28,13 +28,11 @@ var helpers = {
     if (helperName === 'if') {
       if (context[params[0]]) {
         options.helpers = helpers;
-        placeholder.appendChild(
-          options.render(context, options)
-        );
+        placeholder.update(options.render(context, options));
       }
       return;
     }
-    placeholder.appendText(context[helperName]);
+    placeholder.update(context[helperName]);
   }
 };
 

@@ -1,8 +1,9 @@
 import { Placeholder } from "htmlbars/runtime/placeholder";
 import { PlaceholderList } from "htmlbars/runtime/placeholder_list";
+import SafeString from 'handlebars/safe-string';
 
 function placeholderTests(factory) {
-  test('appendChild '+factory.name, function () {
+  test('updateNode '+factory.name, function () {
     var fixture = document.getElementById('qunit-fixture'),
       setup = factory.create(),
       fragment = setup.fragment,
@@ -10,29 +11,24 @@ function placeholderTests(factory) {
       startHTML = setup.startHTML,
       contentHTML = setup.contentHTML,
       endHTML = setup.endHTML,
-      p, html;
+      html;
 
-    p = document.createElement('p');
-    p.appendChild(document.createTextNode('appended'));
+    placeholder.updateNode(element('p', 'updated'));
 
-    placeholder.appendChild(p);
-
-    html = startHTML+contentHTML+'<p>appended</p>'+endHTML;
+    html = startHTML+'<p>updated</p>'+endHTML;
 
     equalHTML(fragment, html);
 
     fixture.appendChild(setup.fragment);
 
-    p = document.createElement('p');
-    p.appendChild(document.createTextNode('more'));
-    placeholder.appendChild(p);
+    placeholder.updateNode(element('p', 'updated again'));
 
-    html = startHTML+contentHTML+'<p>appended</p><p>more</p>'+endHTML;
+    html = startHTML+'<p>updated again</p>'+endHTML;
 
     equal(fixture.innerHTML, html);
   });
 
-  test('appendText '+factory.name, function () {
+  test('updateText '+factory.name, function () {
     var fixture = document.getElementById('qunit-fixture'),
       setup = factory.create(),
       fragment = setup.fragment,
@@ -42,22 +38,22 @@ function placeholderTests(factory) {
       endHTML = setup.endHTML,
       html;
 
-    placeholder.appendText('appended text');
+    placeholder.updateText('updated');
 
-    html = startHTML+contentHTML+'appended text'+endHTML;
+    html = startHTML+'updated'+endHTML;
 
     equalHTML(fragment, html);
 
     fixture.appendChild(fragment);
 
-    placeholder.appendText(' more');
+    placeholder.updateText('updated again');
 
-    html = startHTML+contentHTML+'appended text more'+endHTML;
+    html = startHTML+'updated again'+endHTML;
 
     equal(fixture.innerHTML, html);
   });
 
-  test('appendHTML '+factory.name, function () {
+  test('updateHTML '+factory.name, function () {
     var fixture = document.getElementById('qunit-fixture'),
       setup = factory.create(),
       fragment = setup.fragment,
@@ -67,17 +63,17 @@ function placeholderTests(factory) {
       endHTML = setup.endHTML,
       html;
 
-    placeholder.appendHTML('<p>A</p><p>B</p><p>C</p>');
+    placeholder.updateHTML('<p>A</p><p>B</p><p>C</p>');
 
-    html = startHTML+contentHTML+'<p>A</p><p>B</p><p>C</p>'+endHTML;
+    html = startHTML+'<p>A</p><p>B</p><p>C</p>'+endHTML;
 
     equalHTML(fragment, html);
 
     fixture.appendChild(fragment);
 
-    placeholder.appendHTML('<p>A</p><p>B</p><p>C</p>');
+    placeholder.updateHTML('<p>updated</p>');
 
-    html = startHTML+contentHTML+'<p>A</p><p>B</p><p>C</p><p>A</p><p>B</p><p>C</p>'+endHTML;
+    html = startHTML+'<p>updated</p>'+endHTML;
 
     equal(fixture.innerHTML, html);
   });
@@ -115,21 +111,31 @@ function placeholderTests(factory) {
     equal(fixture.innerHTML, html);
   });
 
-  test('replace '+factory.name, function () {
+  test('update '+factory.name, function () {
     var setup = factory.create(),
       fragment = setup.fragment,
       placeholder = setup.placeholder,
       startHTML = setup.startHTML,
       endHTML = setup.endHTML,
-      p = document.createElement('p'),
       html;
 
-    p.appendChild(document.createTextNode('replaced'));
+    placeholder.update(element('p', 'updated'));
+    html = startHTML+'<p>updated</p>'+endHTML;
+    equalHTML(fragment, html);
 
-    placeholder.replace(p);
+    placeholder.update('updated');
+    html = startHTML+'updated'+endHTML;
+    equalHTML(fragment, html);
 
-    html = startHTML+'<p>replaced</p>'+endHTML;
+    placeholder.update(new SafeString('<p>updated</p>'));
+    html = startHTML+'<p>updated</p>'+endHTML;
+    equalHTML(fragment, html);
 
+    var duckTypedSafeString = {
+      string: '<div>updated</div>'
+    };
+    placeholder.update(duckTypedSafeString);
+    html = startHTML+'<div>updated</div>'+endHTML;
     equalHTML(fragment, html);
   });
 }

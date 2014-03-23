@@ -227,19 +227,10 @@ test("Simple data binding using text nodes", function() {
   var callback;
 
   hooks.CONTENT = function(placeholder, path, context, params, options) {
-    var textNode = document.createTextNode(context[path]);
-
     callback = function() {
-      var value = context[path],
-          parent = textNode.parentNode,
-          originalText = textNode;
-
-      textNode = document.createTextNode(value);
-      parent.insertBefore(textNode, originalText);
-      parent.removeChild(originalText);
+      placeholder.updateText(context[path]);
     };
-
-    placeholder.appendChild(textNode);
+    callback();
   };
 
   var object = { title: 'hello' };
@@ -260,27 +251,10 @@ test("Simple data binding on fragments", function() {
   var callback;
 
   hooks.CONTENT = function(placeholder, path, context, params, options) {
-    var fragment = frag(placeholder.parent(), context[path]);
-
-    var firstChild = fragment.firstChild,
-        lastChild = fragment.lastChild;
-
     callback = function() {
-      var range = document.createRange();
-      range.setStartBefore(firstChild);
-      range.setEndAfter(lastChild);
-
-      var value = context[path],
-          fragment = range.createContextualFragment(value);
-
-      firstChild = fragment.firstChild;
-      lastChild = fragment.lastChild;
-
-      range.deleteContents();
-      range.insertNode(fragment);
+      placeholder.updateHTML(context[path]);
     };
-
-    placeholder.appendChild(fragment);
+    callback();
   };
 
   var object = { title: '<p>hello</p> to the' };
@@ -307,7 +281,7 @@ test("CONTENT hook receives escaping information", function() {
       equal(options.escaped, false);
     }
 
-    placeholder.appendChild(document.createTextNode(path));
+    placeholder.updateText(path);
   };
 
   // so we NEED a reference to div. because it's passed in twice.
@@ -561,7 +535,7 @@ test("Attribute runs can contain helpers", function() {
 test("A simple block helper can return the default document fragment", function() {
 
   hooks.CONTENT = function(placeholder, path, context, params, options) {
-    placeholder.replace(options.render(context));
+    placeholder.update(options.render(context));
   };
 
   compilesTo('{{#testing}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
@@ -569,7 +543,7 @@ test("A simple block helper can return the default document fragment", function(
 
 test("A simple block helper can return text", function() {
   hooks.CONTENT = function(placeholder, path, context, params, options) {
-    placeholder.replace(options.render(context));
+    placeholder.update(options.render(context));
   };
 
   compilesTo('{{#testing}}test{{else}}not shown{{/testing}}', 'test');
@@ -577,7 +551,7 @@ test("A simple block helper can return text", function() {
 
 test("A block helper can have an else block", function() {
   hooks.CONTENT = function(placeholder, path, context, params, options) {
-    placeholder.replace(options.inverse(context));
+    placeholder.update(options.inverse(context));
   };
 
   compilesTo('{{#testing}}Nope{{else}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
@@ -591,7 +565,7 @@ test("A block helper can pass a context to be used in the child", function() {
       // TODO: this sucks
       options.helpers = hooks;
 
-      placeholder.replace(options.render({ title: 'Rails is omakase' }, options));
+      placeholder.update(options.render({ title: 'Rails is omakase' }, options));
     } else {
       CONTENT.apply(this, arguments);
     }
@@ -606,7 +580,7 @@ test("A block helper can insert the document fragment manually", function() {
     if (path === 'testing') {
       options.helpers = hooks;
       var frag = options.render({ title: 'Rails is omakase' }, options);
-      placeholder.appendChild(frag);
+      placeholder.update(frag);
     } else {
       CONTENT.apply(this, arguments);
     }
@@ -619,7 +593,7 @@ test("Block helpers receive hash arguments", function() {
   hooks.CONTENT = function(placeholder, path, context, params, options) {
     if (options.hash.truth) {
       options.helpers = hooks;
-      placeholder.replace(options.render(context, options));
+      placeholder.update(options.render(context, options));
     }
   };
 
