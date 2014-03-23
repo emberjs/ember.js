@@ -169,12 +169,12 @@ var utils = {
    * @param {Array} array The array the objects should be inserted into.
    * @param {Number} idx Starting index in the array to replace. If *idx* >=
    * length, then append to the end of the array.
-   * @param {Number} amt Number of elements that should be remove from the array,
+   * @param {Number} amt Number of elements that should be removed from the array,
    * starting at *idx*
    * @param {Array} objects An array of zero or more objects that should be
    * inserted into the array at *idx*
    *
-   * @return {Array} The changed array.
+   * @return {Array} The modified array.
    */
   replace: function(array, idx, amt, objects) {
     if (array.replace) {
