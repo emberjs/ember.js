@@ -9,7 +9,7 @@ import EmberError from "ember-metal/error";
 import EmberObject from "ember-runtime/system/object"
 import MutableArray from "ember-runtime/mixins/mutable_array"
 import Enumerable from "ember-runtime/mixins/enumerable";
-import EmberStringUtils from "ember-runtime/system/string";
+import {fmt} from "ember-runtime/system/string";
 
 /**
 @module ember
@@ -156,8 +156,8 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     var content = get(this, 'content');
 
     if (content) {
-      Ember.assert(EmberStringUtils.fmt('ArrayProxy expects an Array or ' + 
-        'Ember.ArrayProxy, but you passed %@', [typeof content]), 
+      Ember.assert(fmt('ArrayProxy expects an Array or ' +
+        'Ember.ArrayProxy, but you passed %@', [typeof content]),
         isArray(content) || content.isDestroyed);
 
       content.addArrayObserver(this, {
@@ -193,8 +193,8 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     var arrangedContent = get(this, 'arrangedContent');
 
     if (arrangedContent) {
-      Ember.assert(EmberStringUtils.fmt('ArrayProxy expects an Array or ' + 
-        'Ember.ArrayProxy, but you passed %@', [typeof arrangedContent]), 
+      Ember.assert(fmt('ArrayProxy expects an Array or ' +
+        'Ember.ArrayProxy, but you passed %@', [typeof arrangedContent]),
         isArray(arrangedContent) || arrangedContent.isDestroyed);
 
       arrangedContent.addArrayObserver(this, {

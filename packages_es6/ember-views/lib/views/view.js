@@ -29,9 +29,7 @@ import {A} from "ember-runtime/system/native_array";
 
 import {instrument} from "ember-metal/instrumentation";
 
-// ES6TODO: functions on EmberStringUtils should get their own export
-import EmberStringUtils from "ember-runtime/system/string";
-var dasherize = EmberStringUtils.dasherize;
+import {dasherize} from "ember-runtime/system/string";
 
 // ES6TODO: functions on EnumerableUtils should get their own export
 import EnumerableUtils from "ember-metal/enumerable_utils";

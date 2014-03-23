@@ -10,9 +10,7 @@ var K = Ember.K;
 import EmberHandlebars from "ember-handlebars-compiler";
 var helpers = EmberHandlebars.helpers;
 
-import EmberStringUtils from "ember-runtime/system/string";
-var fmt = EmberStringUtils.fmt;
-
+import {fmt} from "ember-runtime/system/string";
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import {_Metamorph, _MetamorphView} from "ember-handlebars/views/metamorph_view";

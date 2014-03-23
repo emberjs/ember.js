@@ -5,7 +5,7 @@ import run from "ember-metal/run_loop";
 
 import Container from 'container/container';
 import Namespace from "ember-runtime/system/namespace";
-import EmberStringUtils from "ember-runtime/system/string";
+import {decamelize, classify} from "ember-runtime/system/string";
 import {Controller} from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
@@ -48,13 +48,13 @@ function resolverFor(namespace) {
         type = nameParts[0], name = nameParts[1];
 
     if (type === 'template') {
-      var templateName = EmberStringUtils.decamelize(name);
+      var templateName = decamelize(name);
       if (Ember.TEMPLATES[templateName]) {
         return Ember.TEMPLATES[templateName];
       }
     }
 
-    var className = EmberStringUtils.classify(name) + EmberStringUtils.classify(type);
+    var className = classify(name) + classify(type);
     var factory = get(namespace, className);
 
     if (factory) { return factory; }

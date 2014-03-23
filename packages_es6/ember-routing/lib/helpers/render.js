@@ -2,7 +2,7 @@ import Ember from "ember-metal/core"; // assert, deprecate
 import EmberError from "ember-metal/error";
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
-import EmberStringUtils from "ember-runtime/system/string";
+import {camelize} from "ember-runtime/system/string";
 import {generateControllerFactory, generateController} from "ember-routing/system/controller_for";
 import {handlebarsGet} from "ember-handlebars/ext";
 import {viewHelper} from "ember-handlebars/helpers/view";
@@ -155,7 +155,7 @@ function renderHelper(name, contextString, options) {
     });
   }
 
-  options.hash.viewName = EmberStringUtils.camelize(name);
+  options.hash.viewName = camelize(name);
 
   var templateName = 'template:' + name;
   Ember.assert("You used `{{render '" + name + "'}}`, but '" + name + "' can not be found as either a template or a view.", container.has("view:" + name) || container.has(templateName) || options.fn);

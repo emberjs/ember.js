@@ -11,7 +11,7 @@ import run from "ember-metal/run_loop";
 
 import keys from "ember-runtime/keys";
 import copy from "ember-runtime/copy";
-import EmberStringUtils from "ember-runtime/system/string";
+import {classify, fmt} from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import {generateController} from "ember-routing/system/controller_for";
@@ -21,9 +21,7 @@ import {generateController} from "ember-routing/system/controller_for";
 @submodule ember-routing
 */
 
-var classify = EmberStringUtils.classify,
-    fmt = EmberStringUtils.fmt,
-    a_forEach = EnumerableUtils.forEach,
+var a_forEach = EnumerableUtils.forEach,
     a_replace = EnumerableUtils.replace;
 
 /**

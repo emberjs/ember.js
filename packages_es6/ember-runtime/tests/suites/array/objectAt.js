@@ -1,5 +1,5 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
-import EmberStringUtils from "ember-runtime/system/string";
+import {fmt} from "ember-runtime/system/string";
 
 var suite = SuiteModuleBuilder.create();
 
@@ -12,7 +12,7 @@ suite.test("should return object at specified index", function() {
       idx;
 
   for(idx=0;idx<len;idx++) {
-    equal(obj.objectAt(idx), expected[idx], EmberStringUtils.fmt('obj.objectAt(%@) should match', [idx]));
+    equal(obj.objectAt(idx), expected[idx], fmt('obj.objectAt(%@) should match', [idx]));
   }
 
 });

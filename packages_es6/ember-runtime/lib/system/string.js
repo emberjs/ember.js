@@ -13,6 +13,73 @@ var STRING_CAMELIZE_REGEXP = (/(\-|_|\.|\s)+(.)?/g);
 var STRING_UNDERSCORE_REGEXP_1 = (/([a-z\d])([A-Z]+)/g);
 var STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
 
+function fmt(str, formats) {
+  // first, replace any ORDERED replacements.
+  var idx  = 0; // the current index for non-numerical replacements
+  return str.replace(/%@([0-9]+)?/g, function(s, argIndex) {
+    argIndex = (argIndex) ? parseInt(argIndex, 10) - 1 : idx++;
+    s = formats[argIndex];
+    return (s === null) ? '(null)' : (s === undefined) ? '' : EmberInspect(s);
+  }) ;
+}
+
+function loc(str, formats) {
+  str = Ember.STRINGS[str] || str;
+  return fmt(str, formats);
+}
+
+function w(str) {
+  return str.split(/\s+/);
+}
+
+function decamelize(str) {
+  return str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase();
+}
+
+function dasherize(str) {
+  var cache = STRING_DASHERIZE_CACHE,
+      hit   = cache.hasOwnProperty(str),
+      ret;
+
+  if (hit) {
+    return cache[str];
+  } else {
+    ret = decamelize(str).replace(STRING_DASHERIZE_REGEXP,'-');
+    cache[str] = ret;
+  }
+
+  return ret;
+}
+
+function camelize(str) {
+  return str.replace(STRING_CAMELIZE_REGEXP, function(match, separator, chr) {
+    return chr ? chr.toUpperCase() : '';
+  }).replace(/^([A-Z])/, function(match, separator, chr) {
+    return match.toLowerCase();
+  });
+}
+
+function classify(str) {
+  var parts = str.split("."),
+      out = [];
+
+  for (var i=0, l=parts.length; i<l; i++) {
+    var camelized = camelize(parts[i]);
+    out.push(camelized.charAt(0).toUpperCase() + camelized.substr(1));
+  }
+
+  return out.join(".");
+}
+
+function underscore(str) {
+  return str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').
+    replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase();
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.substr(1);
+}
+
 /**
   Defines the hash of localized strings for the current language. Used by
   the `Ember.String.loc()` helper. To localize, add string values to this
@@ -55,15 +122,7 @@ var EmberStringUtils = {
     @param {Array} formats An array of parameters to interpolate into string.
     @return {String} formatted string
   */
-  fmt: function(str, formats) {
-    // first, replace any ORDERED replacements.
-    var idx  = 0; // the current index for non-numerical replacements
-    return str.replace(/%@([0-9]+)?/g, function(s, argIndex) {
-      argIndex = (argIndex) ? parseInt(argIndex, 10) - 1 : idx++;
-      s = formats[argIndex];
-      return (s === null) ? '(null)' : (s === undefined) ? '' : EmberInspect(s);
-    }) ;
-  },
+  fmt: fmt,
 
   /**
     Formats the passed string, but first looks up the string in the localized
@@ -89,10 +148,7 @@ var EmberStringUtils = {
     @param {Array} formats Optional array of parameters to interpolate into string.
     @return {String} formatted string
   */
-  loc: function(str, formats) {
-    str = Ember.STRINGS[str] || str;
-    return EmberStringUtils.fmt(str, formats) ;
-  },
+  loc: loc,
 
   /**
     Splits a string into separate units separated by spaces, eliminating any
@@ -113,7 +169,7 @@ var EmberStringUtils = {
     @param {String} str The string to split
     @return {String} split string
   */
-  w: function(str) { return str.split(/\s+/); },
+  w: w,
 
   /**
     Converts a camelized string into all lower case separated by underscores.
@@ -129,9 +185,7 @@ var EmberStringUtils = {
     @param {String} str The string to decamelize.
     @return {String} the decamelized string.
   */
-  decamelize: function(str) {
-    return str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase();
-  },
+  decamelize: decamelize,
 
   /**
     Replaces underscores, spaces, or camelCase with dashes.
@@ -147,20 +201,7 @@ var EmberStringUtils = {
     @param {String} str The string to dasherize.
     @return {String} the dasherized string.
   */
-  dasherize: function(str) {
-    var cache = STRING_DASHERIZE_CACHE,
-        hit   = cache.hasOwnProperty(str),
-        ret;
-
-    if (hit) {
-      return cache[str];
-    } else {
-      ret = EmberStringUtils.decamelize(str).replace(STRING_DASHERIZE_REGEXP,'-');
-      cache[str] = ret;
-    }
-
-    return ret;
-  },
+  dasherize: dasherize,
 
   /**
     Returns the lowerCamelCase form of a string.
@@ -177,13 +218,7 @@ var EmberStringUtils = {
     @param {String} str The string to camelize.
     @return {String} the camelized string.
   */
-  camelize: function(str) {
-    return str.replace(STRING_CAMELIZE_REGEXP, function(match, separator, chr) {
-      return chr ? chr.toUpperCase() : '';
-    }).replace(/^([A-Z])/, function(match, separator, chr) {
-      return match.toLowerCase();
-    });
-  },
+  camelize: camelize,
 
   /**
     Returns the UpperCamelCase form of a string.
@@ -199,17 +234,7 @@ var EmberStringUtils = {
     @param {String} str the string to classify
     @return {String} the classified string
   */
-  classify: function(str) {
-    var parts = str.split("."),
-        out = [];
-
-    for (var i=0, l=parts.length; i<l; i++) {
-      var camelized = EmberStringUtils.camelize(parts[i]);
-      out.push(camelized.charAt(0).toUpperCase() + camelized.substr(1));
-    }
-
-    return out.join(".");
-  },
+  classify: classify,
 
   /**
     More general than decamelize. Returns the lower\_case\_and\_underscored
@@ -226,10 +251,7 @@ var EmberStringUtils = {
     @param {String} str The string to underscore.
     @return {String} the underscored string.
   */
-  underscore: function(str) {
-    return str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').
-      replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase();
-  },
+  underscore: underscore,
 
   /**
     Returns the Capitalized form of a string
@@ -245,9 +267,8 @@ var EmberStringUtils = {
     @param {String} str The string to capitalize.
     @return {String} The capitalized string.
   */
-  capitalize: function(str) {
-    return str.charAt(0).toUpperCase() + str.substr(1);
-  }
+  capitalize: capitalize
 };
 
 export default EmberStringUtils;
+export {fmt, loc, w, decamelize, dasherize, camelize, classify, underscore, capitalize}

@@ -12,9 +12,7 @@ import {inspect} from "ember-metal/utils";
 import EmberHandlebars from "ember-handlebars-compiler";
 var helpers = EmberHandlebars.helpers;
 
-import EmberStringUtils from "ember-runtime/system/string";
-var fmt = EmberStringUtils.fmt;
-
+import {fmt} from "ember-runtime/system/string";
 import {get} from "ember-metal/property_get";
 import {handlebarsGet} from "ember-handlebars/ext";
 import {ViewHelper} from "ember-handlebars/helpers/view";

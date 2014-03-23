@@ -5,7 +5,7 @@ import {computed} from 'ember-metal/computed';
 import run from 'ember-metal/run_loop';
 import {typeOf} from 'ember-metal/utils';
 import {observer} from 'ember-metal/mixin';
-import EmberStringUtils from "ember-runtime/system/string";
+import {fmt, w} from "ember-runtime/system/string";
 import EmberObject from 'ember-runtime/system/object';
 import Observable from 'ember-runtime/mixins/observable';
 
@@ -391,20 +391,20 @@ module("Computed properties", {
 test("getting values should call function return value", function() {
 
   // get each property twice. Verify return.
-  var keys = EmberStringUtils.w('computed computedCached dependent dependentFront dependentCached');
+  var keys = w('computed computedCached dependent dependentFront dependentCached');
 
   forEach(keys, function(key) {
-    equal(object.get(key), key, EmberStringUtils.fmt('Try #1: object.get(%@) should run function', [key]));
-    equal(object.get(key), key, EmberStringUtils.fmt('Try #2: object.get(%@) should run function', [key]));
+    equal(object.get(key), key, fmt('Try #1: object.get(%@) should run function', [key]));
+    equal(object.get(key), key, fmt('Try #2: object.get(%@) should run function', [key]));
   });
 
   // verify each call count.  cached should only be called once
-  forEach(EmberStringUtils.w('computedCalls dependentFrontCalls dependentCalls'), function(key) {
-    equal(object[key].length, 2, EmberStringUtils.fmt('non-cached property %@ should be called 2x', [key]));
+  forEach(w('computedCalls dependentFrontCalls dependentCalls'), function(key) {
+    equal(object[key].length, 2, fmt('non-cached property %@ should be called 2x', [key]));
   });
 
-  forEach(EmberStringUtils.w('computedCachedCalls dependentCachedCalls'), function(key) {
-    equal(object[key].length, 1, EmberStringUtils.fmt('non-cached property %@ should be called 1x', [key]));
+  forEach(w('computedCachedCalls dependentCachedCalls'), function(key) {
+    equal(object[key].length, 1, fmt('non-cached property %@ should be called 1x', [key]));
   });
 
 });
@@ -412,16 +412,16 @@ test("getting values should call function return value", function() {
 test("setting values should call function return value", function() {
 
   // get each property twice. Verify return.
-  var keys = EmberStringUtils.w('computed dependent dependentFront computedCached dependentCached');
-  var values = EmberStringUtils.w('value1 value2');
+  var keys = w('computed dependent dependentFront computedCached dependentCached');
+  var values = w('value1 value2');
 
   forEach(keys, function(key) {
 
-    equal(object.set(key, values[0]), object, EmberStringUtils.fmt('Try #1: object.set(%@, %@) should run function', [key, values[0]]));
+    equal(object.set(key, values[0]), object, fmt('Try #1: object.set(%@, %@) should run function', [key, values[0]]));
 
-    equal(object.set(key, values[1]), object, EmberStringUtils.fmt('Try #2: object.set(%@, %@) should run function', [key, values[1]]));
+    equal(object.set(key, values[1]), object, fmt('Try #2: object.set(%@, %@) should run function', [key, values[1]]));
 
-    equal(object.set(key, values[1]), object, EmberStringUtils.fmt('Try #3: object.set(%@, %@) should not run function since it is setting same value as before', [key, values[1]]));
+    equal(object.set(key, values[1]), object, fmt('Try #3: object.set(%@, %@) should not run function since it is setting same value as before', [key, values[1]]));
 
   });
 
@@ -434,9 +434,9 @@ test("setting values should call function return value", function() {
     // Cached properties first check their cached value before setting the
     // property. Other properties blindly call set.
     expectedLength = 3;
-    equal(calls.length, expectedLength, EmberStringUtils.fmt('set(%@) should be called the right amount of times', [key]));
+    equal(calls.length, expectedLength, fmt('set(%@) should be called the right amount of times', [key]));
     for(idx=0;idx<2;idx++) {
-      equal(calls[idx], values[idx], EmberStringUtils.fmt('call #%@ to set(%@) should have passed value %@', [idx+1, key, values[idx]]));
+      equal(calls[idx], values[idx], fmt('call #%@ to set(%@) should have passed value %@', [idx+1, key, values[idx]]));
     }
   });
 
@@ -869,7 +869,7 @@ test("removing an observer inside of an observer shouldn’t cause any problems"
     ObjectD.addObserver('observableValue', null, 'observer2');
     ObjectD.addObserver('observableValue', null, 'observer3');
     run(function() {
-      ObjectD.set('observableValue', "hi world"); 
+      ObjectD.set('observableValue', "hi world");
     });
   }
   catch(e) {

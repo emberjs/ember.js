@@ -9,7 +9,7 @@ import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 
-import EmberStringUtils from "ember-runtime/system/string";
+import {fmt} from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import Evented from "ember-runtime/mixins/evented";
 import EmberRouterDSL from "ember-routing/system/dsl";
@@ -34,8 +34,7 @@ import {_MetamorphView} from "ember-handlebars/views/metamorph_view";
 var Router = requireModule("router")['default'];
 var Transition = requireModule("router/transition").Transition;
 
-var fmt = EmberStringUtils.fmt;
-var slice = Array.prototype.slice;
+var slice = [].slice;
 var forEach = EnumerableUtils.forEach;
 
 var DefaultView = _MetamorphView;

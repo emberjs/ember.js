@@ -1,8 +1,6 @@
 import merge from "ember-metal/merge";
 import {create} from "ember-metal/platform";
-import EmberStringUtils from "ember-runtime/system/string";
-var fmt = EmberStringUtils.fmt;
-
+import {fmt} from "ember-runtime/system/string";
 import _default from "ember-views/views/states/default";
 /**
 @module ember

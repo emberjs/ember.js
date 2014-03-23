@@ -1,5 +1,5 @@
 import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
-import EmberStringUtils from "ember-runtime/system/string";
+import {fmt} from "ember-runtime/system/string";
 
 var suite = SuiteModuleBuilder.create();
 
@@ -13,7 +13,7 @@ suite.test("should return index of object's last occurrence", function() {
 
   for(idx=0;idx<len;idx++) {
     equal(obj.lastIndexOf(expected[idx]), idx,
-      EmberStringUtils.fmt('obj.lastIndexOf(%@) should match idx', [expected[idx]]));
+      fmt('obj.lastIndexOf(%@) should match idx', [expected[idx]]));
   }
 
 });
@@ -26,7 +26,7 @@ suite.test("should return index of object's last occurrence even startAt search 
 
   for(idx=0;idx<len;idx++) {
     equal(obj.lastIndexOf(expected[idx], len), idx,
-      EmberStringUtils.fmt('obj.lastIndexOfs(%@) should match idx', [expected[idx]]));
+      fmt('obj.lastIndexOfs(%@) should match idx', [expected[idx]]));
   }
 
 });
@@ -39,7 +39,7 @@ suite.test("should return index of object's last occurrence even startAt search 
 
   for(idx=0;idx<len;idx++) {
     equal(obj.lastIndexOf(expected[idx], len + 1), idx,
-      EmberStringUtils.fmt('obj.lastIndexOf(%@) should match idx', [expected[idx]]));
+      fmt('obj.lastIndexOf(%@) should match idx', [expected[idx]]));
   }
 
 });

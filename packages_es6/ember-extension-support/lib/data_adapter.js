@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import {get} from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
-import EmberStringUtils from "ember-runtime/system/string";
+import {dasherize} from "ember-runtime/system/string";
 import Namespace from "ember-runtime/system/namespace";
 import EmberObject from "ember-runtime/system/object";
 import {A} from "ember-runtime/system/native_array";
@@ -365,7 +365,7 @@ var DataAdapter = EmberObject.extend({
     namespaces.forEach(function(namespace) {
       for (var key in namespace) {
         if (!namespace.hasOwnProperty(key)) { continue; }
-        var name = EmberStringUtils.dasherize(key);
+        var name = dasherize(key);
         if (!(namespace instanceof Application) && namespace.toString()) {
           name = namespace + '/' + name;
         }

@@ -1,3 +1,4 @@
+// required so we can extend this object.
 import EmberStringUtils from "ember-runtime/system/string";
 
 /**
@@ -38,3 +39,5 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     return htmlSafe(this);
   };
 }
+
+export default htmlSafe;

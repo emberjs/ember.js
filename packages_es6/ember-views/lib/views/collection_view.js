@@ -9,10 +9,7 @@ import {create} from "ember-metal/platform";
 import merge from "ember-metal/merge";
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
-
-import EmberStringUtils from "ember-runtime/system/string";
-var fmt = EmberStringUtils.fmt;
-
+import {fmt} from "ember-runtime/system/string";
 import ContainerView from "ember-views/views/container_view";
 import {CoreView, View} from "ember-views/views/view";
 import {observer, beforeObserver} from "ember-metal/mixin";

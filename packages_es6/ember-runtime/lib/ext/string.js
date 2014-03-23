@@ -4,18 +4,7 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.EXTEND_PROTOTYPES, Ember.assert, Ember.FEATURES
-import EmberStringUtils from "ember-runtime/system/string";
-
-var fmt        = EmberStringUtils.fmt,
-    w          = EmberStringUtils.w,
-    loc        = EmberStringUtils.loc,
-    camelize   = EmberStringUtils.camelize,
-    decamelize = EmberStringUtils.decamelize,
-    dasherize  = EmberStringUtils.dasherize,
-    underscore = EmberStringUtils.underscore,
-    capitalize = EmberStringUtils.capitalize,
-    classify   = EmberStringUtils.classify;
-
+import {fmt, w, loc, camelize, decamelize, dasherize, underscore, capitalize, classify} from "ember-runtime/system/string";
 var StringPrototype = String.prototype;
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
