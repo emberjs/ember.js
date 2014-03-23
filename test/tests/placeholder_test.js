@@ -149,7 +149,7 @@ function placeholderListTests(factory) {
       endHTML = setup.endHTML,
       html;
 
-    var placeholderList = new PlaceholderList(placeholder);
+    var placeholderList = placeholder;
 
     var A = element('p', 'A');
     var B = element('p', 'B');
@@ -161,7 +161,7 @@ function placeholderListTests(factory) {
     var fragmentABC = fragmentFor(A,B,C);
     var fragmentEF = fragmentFor(E,F);
 
-    placeholderList.append([fragmentABC, D, fragmentEF]);
+    placeholderList.replace(0, 0, [fragmentABC, D, fragmentEF]);
 
     html = startHTML+'<p>A</p><p>B</p><p>C</p><p>D</p><p>E</p><p>F</p>'+endHTML;
     equalHTML(fragment, html);
