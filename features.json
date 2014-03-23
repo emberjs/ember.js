@@ -15,7 +15,8 @@
     "ember-routing-bound-action-name": true,
     "ember-runtime-test-friendly-promises": true,
     "ember-routing-inherits-parent-model": true,
-    "ember-routing-add-model-option": true
+    "ember-routing-add-model-option": true,
+    "ember-routing-nested-resource-can-inherit-namespace": null
   },
   "debugStatements": [
     "Ember.warn",
