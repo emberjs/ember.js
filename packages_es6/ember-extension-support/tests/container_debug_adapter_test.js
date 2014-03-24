@@ -3,6 +3,7 @@ import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import {Controller as EmberController} from "ember-runtime/controllers/controller";
 import "ember-extension-support"; // Must be required to export Ember.ContainerDebugAdapter
+import Application from "ember-application/system/application";
 
 var adapter, App, Model = EmberObject.extend();
 
@@ -14,7 +15,7 @@ function boot() {
 module("Container Debug Adapter", {
   setup:function() {
     run(function() {
-      App = Ember.Application.create();  // ES6TODO: this comes from the ember-application package NOT ember-runtime
+      App = Application.create();  // ES6TODO: this comes from the ember-application package NOT ember-runtime
       App.toString = function() { return 'App'; };
       App.deferReadiness();
 

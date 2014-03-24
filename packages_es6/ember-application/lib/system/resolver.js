@@ -3,12 +3,18 @@
 @submodule ember-application
 */
 
-var get = Ember.get,
-    classify = Ember.String.classify,
-    capitalize = Ember.String.capitalize,
-    decamelize = Ember.String.decamelize;
+import Ember from "ember-metal/core"; // Ember.TEMPLATES, Ember.assert
+import {get} from "ember-metal/property_get";
+import EmberStringUtils from "ember-runtime/system/string";
+import EmberObject from "ember-runtime/system/object";
+import Namespace from "ember-runtime/system/namespace";
+import EmberHandlebars from "ember-handlebars";
 
-Ember.Resolver = Ember.Object.extend({
+var classify = EmberStringUtils.classify,
+    capitalize = EmberStringUtils.capitalize,
+    decamelize = EmberStringUtils.decamelize;
+
+var Resolver = EmberObject.extend({
   /**
     This will be set to the Application instance when it is
     created.
@@ -108,7 +114,7 @@ Ember.Resolver = Ember.Object.extend({
   @namespace Ember
   @extends Ember.Object
 */
-Ember.DefaultResolver = Ember.Object.extend({
+var DefaultResolver = EmberObject.extend({
   /**
     This will be set to the Application instance when it is
     created.
@@ -185,7 +191,7 @@ Ember.DefaultResolver = Ember.Object.extend({
       var parts = name.split('/');
       name = parts[parts.length - 1];
       var namespaceName = capitalize(parts.slice(0, -1).join('.'));
-      root = Ember.Namespace.byName(namespaceName);
+      root = Namespace.byName(namespaceName);
 
       Ember.assert('You are looking for a ' + name + ' ' + type + ' in the ' + namespaceName + ' namespace, but the namespace could not be found', root);
     }
@@ -322,7 +328,7 @@ Ember.DefaultResolver = Ember.Object.extend({
     @method resolveHelper
   */
   resolveHelper: function(parsedName) {
-    return this.resolveOther(parsedName) || Ember.Handlebars.helpers[parsedName.fullNameWithoutType];
+    return this.resolveOther(parsedName) || EmberHandlebars.helpers[parsedName.fullNameWithoutType];
   },
   /**
     Look up the specified object (from parsedName) on the appropriate
@@ -339,3 +345,5 @@ Ember.DefaultResolver = Ember.Object.extend({
     if (factory) { return factory; }
   }
 });
+
+export {Resolver, DefaultResolver};

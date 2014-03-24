@@ -1,3 +1,12 @@
+requireModule('ember-metal');
+requireModule('ember-runtime');
+requireModule('ember-handlebars-compiler');
+requireModule('ember-handlebars');
+requireModule('ember-views');
+requireModule('ember-routing');
+requireModule('ember-application');
+requireModule('ember-extension-support');
+
 var App, container;
 var compile = Ember.Handlebars.compile;
 var originalHelpers;

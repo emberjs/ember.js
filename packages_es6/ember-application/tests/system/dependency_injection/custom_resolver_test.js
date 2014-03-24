@@ -1,10 +1,15 @@
+import jQuery from "ember-views/system/jquery";
+import run from "ember-metal/run_loop";
+import Application from "ember-application/system/application";
+import {DefaultResolver} from "ember-application/system/resolver";
+
 var application;
 
 module("Ember.Application Depedency Injection – customResolver",{
   setup: function() {
     function fallbackTemplate() { return "<h1>Fallback</h1>"; }
 
-    var Resolver = Ember.DefaultResolver.extend({
+    var Resolver = DefaultResolver.extend({
       resolveTemplate: function(resolvable) {
         var resolvedTemplate = this._super(resolvable);
         if (resolvedTemplate) { return resolvedTemplate; }
@@ -12,8 +17,8 @@ module("Ember.Application Depedency Injection – customResolver",{
       }
     });
 
-    application = Ember.run(function() {
-      return Ember.Application.create({
+    application = run(function() {
+      return Application.create({
         Resolver: Resolver,
         rootElement: '#qunit-fixture'
 
@@ -21,11 +26,11 @@ module("Ember.Application Depedency Injection – customResolver",{
     });
   },
   teardown: function() {
-    Ember.run(application, 'destroy');
+    run(application, 'destroy');
   }
 });
 
 test("a resolver can be supplied to application", function() {
-  equal(Ember.$("h1", application.rootElement).text(), "Fallback");
+  equal(jQuery("h1", application.rootElement).text(), "Fallback");
 });
 

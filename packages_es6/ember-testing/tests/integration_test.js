@@ -5,6 +5,11 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import jQuery from "ember-views/system/jquery";
 import {View as EmberView} from "ember-views/views/view";
 import Test from "ember-testing/test";
+import EmberRoute from "ember-routing/system/route";
+import EmberApplication from "ember-application/system/application";
+import EmberHandlebars from "ember-handlebars";
+
+import 'ember-application';
 
 var App, find, visit, originalAdapter = Test.adapter;
 
@@ -12,7 +17,7 @@ module("ember-testing Integration", {
   setup: function() {
     jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
     run(function() {
-      App = Ember.Application.create({
+      App = EmberApplication.create({
         rootElement: '#ember-testing'
       });
 
@@ -20,14 +25,14 @@ module("ember-testing Integration", {
         this.resource("people", { path: "/" });
       });
 
-      App.PeopleRoute = Ember.Route.extend({
+      App.PeopleRoute = EmberRoute.extend({
         model: function() {
           return App.Person.find();
         }
       });
 
       App.PeopleView = EmberView.extend({
-        defaultTemplate: Ember.Handlebars.compile("{{#each person in controller}}<div class=\"name\">{{person.firstName}}</div>{{/each}}")
+        defaultTemplate: EmberHandlebars.compile("{{#each person in controller}}<div class=\"name\">{{person.firstName}}</div>{{/each}}")
       });
 
       App.PeopleController = ArrayController.extend({});
@@ -38,12 +43,12 @@ module("ember-testing Integration", {
 
       App.Person.reopenClass({
         find: function() {
-          return Ember.A(); 
+          return Ember.A();
         }
       });
 
       App.ApplicationView = EmberView.extend({
-        defaultTemplate: Ember.Handlebars.compile("{{outlet}}")
+        defaultTemplate: EmberHandlebars.compile("{{outlet}}")
       });
 
       App.setupForTesting();
