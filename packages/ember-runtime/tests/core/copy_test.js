@@ -7,6 +7,6 @@ test("Ember.copy null", function() {
 
 test("Ember.copy date", function() {
   var date = new Date(2014, 7, 22),
-  dateCopy = copy(date);
+  dateCopy = Ember.copy(date);
   equal(date.getTime(), dateCopy.getTime(), "dates should be equivalent");
 });

@@ -278,7 +278,7 @@ test("Ember.Application#setupForTesting attaches ajax listeners", function() {
 test("Ember.Application#setupForTesting attaches ajax listeners only once", function() {
   var documentEvents;
 
-  documentEvents = jQuery._data(document, 'events');
+  documentEvents = Ember.$._data(document, 'events');
 
   if (!documentEvents) {
     documentEvents = {};
@@ -287,14 +287,14 @@ test("Ember.Application#setupForTesting attaches ajax listeners only once", func
   ok(documentEvents['ajaxSend'] === undefined, 'there are no ajaxSend listers setup prior to calling injectTestHelpers');
   ok(documentEvents['ajaxComplete'] === undefined, 'there are no ajaxComplete listers setup prior to calling injectTestHelpers');
 
-  run(function() {
-    setupForTesting();
+  Ember.run(function() {
+    Ember.setupForTesting();
   });
-  run(function() {
-    setupForTesting();
+  Ember.run(function() {
+    Ember.setupForTesting();
   });
 
-  documentEvents = jQuery._data(document, 'events');
+  documentEvents = Ember.$._data(document, 'events');
 
   equal(documentEvents['ajaxSend'].length, 1, 'calling injectTestHelpers registers an ajaxSend handler');
   equal(documentEvents['ajaxComplete'].length, 1, 'calling injectTestHelpers registers an ajaxComplete handler');
