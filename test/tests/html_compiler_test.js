@@ -1,7 +1,6 @@
 import { compile } from "htmlbars/compiler";
 import { tokenize } from "simple-html-tokenizer";
 import { CONTENT, ELEMENT, ATTRIBUTE, SUBEXPR, LOOKUP_HELPER, SIMPLE } from "htmlbars/runtime/helpers";
-import SafeString from 'handlebars/safe-string';
 
 function frag(element, string) {
   if (element instanceof DocumentFragment) {
@@ -252,8 +251,9 @@ test("Simple data binding on fragments", function() {
   var callback;
 
   hooks.CONTENT = function(placeholder, path, context, params, options) {
+    placeholder.escaped = false;
     callback = function() {
-      placeholder.update(new SafeString(context[path]));
+      placeholder.update(context[path]);
     };
     callback();
   };
