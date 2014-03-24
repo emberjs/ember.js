@@ -1,6 +1,7 @@
 import { compile } from "htmlbars/compiler";
 import { tokenize } from "simple-html-tokenizer";
 import { CONTENT, ELEMENT, ATTRIBUTE, SUBEXPR, LOOKUP_HELPER, SIMPLE } from "htmlbars/runtime/helpers";
+import SafeString from 'handlebars/safe-string';
 
 function frag(element, string) {
   if (element instanceof DocumentFragment) {
@@ -228,7 +229,7 @@ test("Simple data binding using text nodes", function() {
 
   hooks.CONTENT = function(placeholder, path, context, params, options) {
     callback = function() {
-      placeholder.updateText(context[path]);
+      placeholder.update(context[path]);
     };
     callback();
   };
@@ -252,7 +253,7 @@ test("Simple data binding on fragments", function() {
 
   hooks.CONTENT = function(placeholder, path, context, params, options) {
     callback = function() {
-      placeholder.updateHTML(context[path]);
+      placeholder.update(new SafeString(context[path]));
     };
     callback();
   };
@@ -281,7 +282,7 @@ test("CONTENT hook receives escaping information", function() {
       equal(options.escaped, false);
     }
 
-    placeholder.updateText(path);
+    placeholder.update(path);
   };
 
   // so we NEED a reference to div. because it's passed in twice.

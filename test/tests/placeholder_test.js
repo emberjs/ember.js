@@ -1,5 +1,4 @@
 import { Placeholder } from "htmlbars/runtime/placeholder";
-import { PlaceholderList } from "htmlbars/runtime/placeholder_list";
 import SafeString from 'handlebars/safe-string';
 
 function placeholderTests(factory) {
@@ -78,7 +77,7 @@ function placeholderTests(factory) {
     equal(fixture.innerHTML, html);
   });
 
-  test('clear '+factory.name, function () {
+  test('destroy '+factory.name, function () {
     var setup = factory.create(),
       fragment = setup.fragment,
       placeholder = setup.placeholder,
@@ -86,14 +85,14 @@ function placeholderTests(factory) {
       endHTML = setup.endHTML,
       html;
 
-    placeholder.clear();
+    placeholder.destroy();
 
     html = startHTML+endHTML;
 
     equalHTML(fragment, html);
   });
 
-  test('clear after insert '+factory.name, function () {
+  test('destroy after insert '+factory.name, function () {
     var fixture = document.getElementById('qunit-fixture'),
       setup = factory.create(),
       fragment = setup.fragment,
@@ -104,7 +103,7 @@ function placeholderTests(factory) {
 
     fixture.appendChild(fragment);
 
-    placeholder.clear();
+    placeholder.destroy();
 
     html = startHTML+endHTML;
 
@@ -142,14 +141,13 @@ function placeholderTests(factory) {
 
 function placeholderListTests(factory) {
   test('various list operations with fragments '+factory.name, function () {
-    var setup = factory.create(),
+    var fixture = document.getElementById('qunit-fixture'),
+      setup = factory.create(),
       fragment = setup.fragment,
       placeholder = setup.placeholder,
       startHTML = setup.startHTML,
       endHTML = setup.endHTML,
       html;
-
-    var placeholderList = placeholder;
 
     var A = element('p', 'A');
     var B = element('p', 'B');
@@ -161,26 +159,86 @@ function placeholderListTests(factory) {
     var fragmentABC = fragmentFor(A,B,C);
     var fragmentEF = fragmentFor(E,F);
 
-    placeholderList.replace(0, 0, [fragmentABC, D, fragmentEF]);
+    placeholder.replace(0, 0, [fragmentABC, D, fragmentEF]);
+
+    var placeholders = placeholder.placeholders;
 
     html = startHTML+'<p>A</p><p>B</p><p>C</p><p>D</p><p>E</p><p>F</p>'+endHTML;
     equalHTML(fragment, html);
+    equal(placeholders[0].start, placeholder.start);
+    equal(placeholders[0].end, D);
+    equal(placeholders[1].start, C);
+    equal(placeholders[1].end, E);
+    equal(placeholders[2].start, D);
+    equal(placeholders[2].end, placeholder.end);
 
-    equal(placeholderList.placeholders[0].start, placeholder.start);
-    equal(placeholderList.placeholders[0].end, D);
-    equal(placeholderList.placeholders[1].start, C);
-    equal(placeholderList.placeholders[1].end, E);
-    equal(placeholderList.placeholders[2].start, D);
-    equal(placeholderList.placeholders[2].end, placeholder.end);
-
-    placeholderList.replace(1,2);
+    placeholder.replace(1,2);
 
     html = startHTML+'<p>A</p><p>B</p><p>C</p>'+endHTML;
     equalHTML(fragment, html);
+    equal(placeholders.length, 1);
+    equal(placeholders[0].start, placeholder.start);
+    equal(placeholders[0].end, placeholder.end);
 
-    equal(placeholderList.placeholders.length, 1);
-    equal(placeholderList.placeholders[0].start, placeholder.start);
-    equal(placeholderList.placeholders[0].end, placeholder.end);
+    placeholder.replace(1,0,['D', '', null, 'E', new SafeString('<p>F</p>')]);
+    html = startHTML+'<p>A</p><p>B</p><p>C</p>DE<p>F</p>'+endHTML;
+    equalHTML(fragment, html);
+
+    equal(placeholder.placeholders.length, 6);
+    equal(placeholders[0].start, placeholder.start);
+    equal(placeholders[0].end,   placeholders[1].start.nextSibling);
+    equal(placeholders[1].start, placeholders[0].end.previousSibling);
+    equal(placeholders[1].end,   placeholders[2].start.nextSibling);
+    equal(placeholders[2].start, placeholders[1].end.previousSibling);
+    equal(placeholders[2].end,   placeholders[3].start.nextSibling);
+    equal(placeholders[3].start, placeholders[2].end.previousSibling);
+    equal(placeholders[3].end,   placeholders[4].start.nextSibling);
+    equal(placeholders[4].start, placeholders[3].end.previousSibling);
+    equal(placeholders[4].end,   placeholders[5].start.nextSibling);
+    equal(placeholders[5].start, placeholders[4].end.previousSibling);
+    equal(placeholders[5].end,   placeholder.end);
+
+    placeholders[3].destroy();
+    placeholders[3].update(element('i', 'E'));
+    placeholders[1].update(element('b', 'D'));
+    placeholders[2].destroy();
+
+    html = startHTML+'<p>A</p><p>B</p><p>C</p><b>D</b><i>E</i><p>F</p>'+endHTML;
+    equalHTML(fragment, html);
+    equal(placeholder.placeholders.length, 4);
+    equal(placeholders[0].start, placeholder.start);
+    equal(placeholders[0].end,   placeholders[1].start.nextSibling);
+    equal(placeholders[1].start, placeholders[0].end.previousSibling);
+    equal(placeholders[1].end,   placeholders[2].start.nextSibling);
+    equal(placeholders[2].start, placeholders[1].end.previousSibling);
+    equal(placeholders[2].end,   placeholders[3].start.nextSibling);
+    equal(placeholders[3].start, placeholders[2].end.previousSibling);
+    equal(placeholders[3].end,   placeholder.end);
+
+    fixture.appendChild(fragment);
+
+    placeholder.replace(2,2);
+
+    placeholders[1].update(
+      fragmentFor(
+        element('p','D'),
+        element('p','E'),
+        element('p','F')
+      )
+    );
+
+    html = startHTML+'<p>A</p><p>B</p><p>C</p><p>D</p><p>E</p><p>F</p>'+endHTML;
+    equal(fixture.innerHTML, html);
+
+    equal(placeholder.placeholders.length, 2);
+    equal(placeholders[0].start,  placeholder.start);
+    equal(placeholders[0].end,    placeholders[1].start.nextSibling);
+    equal(placeholders[0].before, null);
+    equal(placeholders[0].after,  placeholders[1]);
+    equal(placeholders[1].start,  placeholders[0].end.previousSibling);
+    equal(placeholders[1].end,    placeholder.end);
+    equal(placeholders[1].before, placeholders[0]);
+    equal(placeholders[1].after,  null);
   });
 }
 
