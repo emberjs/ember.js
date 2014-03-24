@@ -1,3 +1,4 @@
+import Ember from "ember-metal/core";
 import {runLoadHooks} from "ember-runtime/system/lazy_load";
 
 /**
