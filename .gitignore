@@ -47,3 +47,4 @@ tests/source
 node_modules
 bundle/
 *~
+publish_to_bower/
