@@ -770,35 +770,39 @@ test("non-array dependencies completely invalidate a reduceComputed CP", functio
   var dependentArray = Ember.A();
 
   obj = EmberObject.extend({
-    nonArray: 'v0',
+    nonArray: 0,
     dependentArray: dependentArray,
 
     computed: arrayComputed('dependentArray', 'nonArray', {
-      addedItem: function (array) {
+      addedItem: function (array, item) {
         ++addCalls;
+        if (item % 2 === this.get('nonArray')) {
+          array.pushObject(item);
+        }
         return array;
       },
 
-      removedItem: function (array) {
+      removedItem: function (array, item) {
         --removeCalls;
+        array.removeObject(item);
         return array;
       }
     })
   }).create();
 
-  get(obj, 'computed');
+  deepEqual(get(obj, 'computed'), []);
 
   equal(addCalls, 0, "precond - add has not initially been called");
   equal(removeCalls, 0, "precond - remove has not initially been called");
 
   dependentArray.pushObjects([1, 2]);
+  deepEqual(get(obj, 'computed'), [2]);
 
   equal(addCalls, 2, "add called one-at-a-time for dependent array changes");
   equal(removeCalls, 0, "remove not called");
 
-  run(function() {
-    set(obj, 'nonArray', 'v1');
-  });
+  set(obj, 'nonArray', 1);
+  deepEqual(get(obj, 'computed'), [1], "array is recomputed synchronously");
 
   equal(addCalls, 4, "array completely recomputed when non-array dependency changed");
   equal(removeCalls, 0, "remove not called");
