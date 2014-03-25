@@ -6,20 +6,30 @@ import {View as EmberView} from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars-compiler";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import {A} from "ember-runtime/system/native_array";
+import Container from "ember-runtime/system/container";
 
 var trim = jQuery.trim;
 
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 
-var view;
+var container, view;
 
 module("EmberHandlebars - group flag", {
-  setup: function() {},
+  setup: function() {
+    container = new Container();
+    container.register('view:default', EmberView.extend());
+  },
 
   teardown: function() {
     run(function() {
-      view.destroy();
+      if (view) {
+        view.destroy();
+      }
+      if (container) {
+        container.destroy();
+      }
+      container = view = null;
     });
     run.cancelTimers();
   }
@@ -27,6 +37,7 @@ module("EmberHandlebars - group flag", {
 
 function createGroupedView(template, context) {
   var options = {
+    container: container,
     context: context,
     template: EmberHandlebars.compile(template),
     templateData: {insideGroup: true, keywords: {}}
