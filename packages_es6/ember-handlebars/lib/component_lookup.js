@@ -1,9 +1,12 @@
-import EmberObject from "ember-runtime/system/object";
+import EmberObject from 'ember-runtime/system/object';
 
 var ComponentLookup = EmberObject.extend({
   lookupFactory: function(name, container) {
 
     container = container || this.container;
+
+    Ember.assert('Components must have a `-` in their name to avoid conflicts with built-in controls that wrap HTML ' +
+                 'elements. This is consistent with the same requirement in web components.', name.indexOf('-') > -1);
 
     var fullName = 'component:' + name,
         templateFullName = 'template:components/' + name,
