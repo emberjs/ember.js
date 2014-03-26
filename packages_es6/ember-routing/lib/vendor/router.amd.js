@@ -291,24 +291,14 @@ define("router/router",
 
         try {
           var newState = intent.applyToState(oldState, this.recognizer, this.getHandler, isIntermediate);
+          var queryParamChangelist = getChangelist(oldState.queryParams, newState.queryParams);
 
           if (handlerInfosEqual(newState.handlerInfos, oldState.handlerInfos)) {
 
             // This is a no-op transition. See if query params changed.
-            var queryParamChangelist = getChangelist(oldState.queryParams, newState.queryParams);
             if (queryParamChangelist) {
 
-              // This is a little hacky but we need some way of storing
-              // changed query params given that no activeTransition
-              // is guaranteed to have occurred.
-              this._changedQueryParams = queryParamChangelist.changed;
-              for (var k in queryParamChangelist.removed) {
-                if (queryParamChangelist.removed.hasOwnProperty(k)) {
-                  this._changedQueryParams[k] = null;
-                }
-              }
-              trigger(this, newState.handlerInfos, true, ['queryParamsDidChange', queryParamChangelist.changed, queryParamChangelist.all, queryParamChangelist.removed]);
-              this._changedQueryParams = null;
+              fireQueryParamDidChange(this, newState, queryParamChangelist);
 
               if (!wasTransitioning && this.activeTransition) {
                 // One of the handlers in queryParamsDidChange
@@ -367,6 +357,9 @@ define("router/router",
           if (!wasTransitioning) {
             trigger(this, this.state.handlerInfos, true, ['willTransition', newTransition]);
           }
+
+          // If fireQueryParamsDidChange
+          fireQueryParamDidChange(this, newState, queryParamChangelist);
 
           return newTransition;
         } catch(e) {
@@ -600,6 +593,29 @@ define("router/router",
       */
       log: null
     };
+
+    /**
+      @private
+
+      Fires queryParamsDidChange event
+    */
+    function fireQueryParamDidChange(router, newState, queryParamChangelist) {
+      // If queryParams changed trigger event
+      if (queryParamChangelist) {
+
+        // This is a little hacky but we need some way of storing
+        // changed query params given that no activeTransition
+        // is guaranteed to have occurred.
+        router._changedQueryParams = queryParamChangelist.changed;
+        for (var i in queryParamChangelist.removed) {
+          if (queryParamChangelist.removed.hasOwnProperty(i)) {
+            router._changedQueryParams[i] = null;
+          }
+        }
+        trigger(router, newState.handlerInfos, true, ['queryParamsDidChange', queryParamChangelist.changed, queryParamChangelist.all, queryParamChangelist.removed]);
+        router._changedQueryParams = null;
+      }
+    }
 
     /**
       @private
