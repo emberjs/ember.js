@@ -19,6 +19,11 @@ test("numericals should be equal",function() {
   ok( !isEqual(24, 21), "different numbers are inequal" );
 });
 
+test("dates should be equal",function() {
+  ok (  isEqual(new Date(1985, 7, 22), new Date(1985, 7, 22)), "same dates are equal" );
+  ok ( !isEqual(new Date(2014, 7, 22), new Date(1985, 7, 22)), "different dates are not equal" );
+});
+
 test("array should be equal",function() {
   // NOTE: We don't test for array contents -- that would be too expensive.
   ok( !isEqual( [1,2], [1,2] ), 'two array instances with the same values should not be equal' );
@@ -31,5 +36,3 @@ test("first object implements isEqual should use it", function() {
   var obj = { isEqual: function() { return false; } };
   equal(isEqual(obj, obj), false, 'should return false because isEqual returns false');
 });
-
-
