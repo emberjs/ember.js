@@ -341,8 +341,8 @@ var Route = EmberObject.extend(ActionHandler, {
         var totalChanged = keys(changed).concat(keys(removed));
         for (var i = 0, len = totalChanged.length; i < len; ++i) {
           var urlKey = totalChanged[i],
-              options = this.queryParams[urlKey] || {};
-          if (options.refreshModel) {
+              options = get(this.queryParams, urlKey) || {};
+          if (get(options, 'refreshModel')) {
             this.refresh();
           }
         }
@@ -398,8 +398,8 @@ var Route = EmberObject.extend(ActionHandler, {
 
             // Now check if this value actually changed.
             if (svalue !== qp.svalue) {
-              var options = this.queryParams[qp.urlKey] || {};
-              if (options.replace) {
+              var options = get(this.queryParams, qp.urlKey) || {};
+              if (get(options, 'replace')) {
                 transition.method('replace');
               }
 

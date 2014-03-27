@@ -418,6 +418,55 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     equal(indexModelCount, 2);
   });
 
+  test("Use Ember.get to retrieve query params 'refreshModel' configuration", function() {
+    expect(6);
+    App.ApplicationController = Ember.Controller.extend({
+      queryParams: ['appomg'],
+      appomg: 'applol'
+    });
+
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['omg'],
+      omg: 'lol'
+    });
+
+    var appModelCount = 0;
+    App.ApplicationRoute = Ember.Route.extend({
+      model: function(params) {
+        appModelCount++;
+      }
+    });
+
+    var indexModelCount = 0;
+    App.IndexRoute = Ember.Route.extend({
+      queryParams: Ember.Object.create({
+        unknownProperty: function(keyName) {
+          return {refreshModel: true};
+        }
+      }),
+      model: function(params) {
+        indexModelCount++;
+
+        if (indexModelCount === 1) {
+          deepEqual(params, { omg: 'lol' });
+        } else if (indexModelCount === 2) {
+          deepEqual(params, { omg: 'lex' });
+        }
+      }
+    });
+
+    bootApplication();
+
+    equal(appModelCount, 1);
+    equal(indexModelCount, 1);
+
+    var indexController = container.lookup('controller:index');
+    Ember.run(indexController, 'set', 'omg', 'lex');
+
+    equal(appModelCount, 1);
+    equal(indexModelCount, 2);
+  });
+
   test("can use refreshModel even w URL changes that remove QPs from address bar", function() {
     expect(4);
 
@@ -469,6 +518,31 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
           replace: true
         }
       }
+    });
+
+    bootApplication();
+
+    equal(router.get('location.path'), "");
+
+    var appController = container.lookup('controller:application');
+    expectedReplaceURL = "/?alex=wallace";
+    Ember.run(appController, 'set', 'alex', 'wallace');
+  });
+
+  test("Use Ember.get to retrieve query params 'replace' configuration", function() {
+    expect(2);
+    App.ApplicationController = Ember.Controller.extend({
+      queryParams: ['alex'],
+      alex: 'matchneer'
+    });
+
+    App.ApplicationRoute = Ember.Route.extend({
+      queryParams: Ember.Object.create({
+        unknownProperty: function(keyName) {
+          // We are simulating all qps requiring refress
+          return { replace: true };
+        }
+      })
     });
 
     bootApplication();
