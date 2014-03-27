@@ -111,7 +111,7 @@ var EmberStringUtils = {
 
     @method w
     @param {String} str The string to split
-    @return {String} split string
+    @return {Array} array containing the split strings
   */
   w: function(str) { return str.split(/\s+/); },
 
