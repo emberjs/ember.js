@@ -9,11 +9,7 @@ import {set} from "ember-metal/property_set";
 import {isNone} from 'ember-metal/is_none';
 import run from "ember-metal/run_loop";
 import {typeOf} from "ember-metal/utils";
-
-// ES6TODO functions on EmberStringUtils should have their own export
-import EmberStringUtils from "ember-runtime/system/string";
-var fmt = EmberStringUtils.fmt;
-
+import {fmt} from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
 import {View} from "ember-views/views/view";

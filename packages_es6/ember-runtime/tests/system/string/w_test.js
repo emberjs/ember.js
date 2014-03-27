@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core";
-import EmberStringUtils from "ember-runtime/system/string";
+import {w} from "ember-runtime/system/string";
 
 module('EmberStringUtils.w');
 
@@ -10,21 +10,21 @@ if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
 }
 
 test("'one two three'.w() => ['one','two','three']", function() {
-  deepEqual(EmberStringUtils.w('one two three'), ['one','two','three']);
+  deepEqual(w('one two three'), ['one','two','three']);
   if (Ember.EXTEND_PROTOTYPES) {
     deepEqual('one two three'.w(), ['one','two','three']);
   }
 });
 
 test("'one    two    three'.w() with extra spaces between words => ['one','two','three']", function() {
-  deepEqual(EmberStringUtils.w('one   two  three'), ['one','two','three']);
+  deepEqual(w('one   two  three'), ['one','two','three']);
   if (Ember.EXTEND_PROTOTYPES) {
     deepEqual('one   two  three'.w(), ['one','two','three']);
   }
 });
 
 test("'one two three'.w() with tabs", function() {
-  deepEqual(EmberStringUtils.w('one\ttwo  three'), ['one','two','three']);
+  deepEqual(w('one\ttwo  three'), ['one','two','three']);
   if (Ember.EXTEND_PROTOTYPES) {
     deepEqual('one\ttwo  three'.w(), ['one','two','three']);
   }

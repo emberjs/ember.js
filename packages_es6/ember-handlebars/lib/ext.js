@@ -1,8 +1,7 @@
 import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.assert, Ember.Handlebars, Ember.lookup
 // var emberAssert = Ember.assert;
 
-import EmberStringUtils from "ember-runtime/system/string";
-var fmt = EmberStringUtils.fmt;
+import {fmt} from "ember-runtime/system/string";
 
 import EmberHandlebars from "ember-handlebars-compiler";
 var helpers = EmberHandlebars.helpers;

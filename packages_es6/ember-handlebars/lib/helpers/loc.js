@@ -1,5 +1,4 @@
-import EmberStringUtils from "ember-runtime/system/string";
-var loc = EmberStringUtils.loc;
+import {loc} from "ember-runtime/system/string";
 
 /**
 @module ember

@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core";
-import EmberStringUtils from "ember-runtime/system/string";
+import {loc} from "ember-runtime/system/string";
 
 var oldString;
 
@@ -25,28 +25,28 @@ if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
 }
 
 test("'_Hello World'.loc() => 'Bonjour le monde'", function() {
-  equal(EmberStringUtils.loc('_Hello World'), 'Bonjour le monde');
+  equal(loc('_Hello World'), 'Bonjour le monde');
   if (Ember.EXTEND_PROTOTYPES) {
     equal('_Hello World'.loc(), 'Bonjour le monde');
   }
 });
 
 test("'_Hello %@ %@'.loc('John', 'Doe') => 'Bonjour John Doe'", function() {
-  equal(EmberStringUtils.loc('_Hello %@ %@', ['John', 'Doe']), 'Bonjour John Doe');
+  equal(loc('_Hello %@ %@', ['John', 'Doe']), 'Bonjour John Doe');
   if (Ember.EXTEND_PROTOTYPES) {
     equal('_Hello %@ %@'.loc('John', 'Doe'), 'Bonjour John Doe');
   }
 });
 
 test("'_Hello %@# %@#'.loc('John', 'Doe') => 'Bonjour Doe John'", function() {
-  equal(EmberStringUtils.loc('_Hello %@# %@#', ['John', 'Doe']), 'Bonjour Doe John');
+  equal(loc('_Hello %@# %@#', ['John', 'Doe']), 'Bonjour Doe John');
   if (Ember.EXTEND_PROTOTYPES) {
     equal('_Hello %@# %@#'.loc('John', 'Doe'), 'Bonjour Doe John');
   }
 });
 
 test("'_Not In Strings'.loc() => '_Not In Strings'", function() {
-  equal(EmberStringUtils.loc('_Not In Strings'), '_Not In Strings');
+  equal(loc('_Not In Strings'), '_Not In Strings');
   if (Ember.EXTEND_PROTOTYPES) {
     equal('_Not In Strings'.loc(), '_Not In Strings');
   }

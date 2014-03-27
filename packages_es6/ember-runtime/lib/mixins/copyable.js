@@ -9,7 +9,7 @@ import {set} from "ember-metal/property_set";
 import {required} from "ember-metal/mixin";
 import {Freezable} from "ember-runtime/mixins/freezable";
 import {Mixin} from 'ember-metal/mixin';
-import EmberStringUtils from "ember-runtime/system/string";
+import {fmt} from "ember-runtime/system/string";
 import EmberError from 'ember-metal/error';
 
 
@@ -58,7 +58,7 @@ var Copyable = Mixin.create({
     if (Freezable && Freezable.detect(this)) {
       return get(this, 'isFrozen') ? this : this.copy().freeze();
     } else {
-      throw new EmberError(EmberStringUtils.fmt("%@ does not support freezing", [this]));
+      throw new EmberError(fmt("%@ does not support freezing", [this]));
     }
   }
 });

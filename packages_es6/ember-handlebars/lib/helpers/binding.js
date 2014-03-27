@@ -12,8 +12,8 @@ var SafeString = EmberHandlebars.SafeString;
 
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
-import EmberStringUtils from "ember-runtime/system/string";
-import {create} from "ember-metal/platform";
+import {fmt} from "ember-runtime/system/string";
+import {create as o_create} from "ember-metal/platform";
 import isNone from 'ember-metal/is_none';
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import {forEach} from "ember-metal/array";
@@ -28,11 +28,7 @@ import jQuery from "ember-views/system/jquery";
 import {isArray} from "ember-metal/utils";
 import {normalizePath, handlebarsGet, getEscaped} from "ember-handlebars/ext";
 import {getEscaped as handlebarsGetEscaped} from "ember-handlebars/ext";
-
 import keys from "ember-runtime/keys";
-
-var fmt = EmberStringUtils.fmt;
-var o_create = create;
 
 function exists(value) {
   return !isNone(value);

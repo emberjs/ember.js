@@ -1,8 +1,5 @@
 import Ember from 'ember-metal/core'; // Ember.assert
-
-// ES6TODO: the functions on EmberStringUtils need their own exports
-import EmberStringUtils from "ember-runtime/system/string";
-var w = EmberStringUtils.w;
+import {w} from "ember-runtime/system/string";
 
 // ES6TODO: the functions on EnumerableUtils need their own exports
 import EnumerableUtils from "ember-metal/enumerable_utils";

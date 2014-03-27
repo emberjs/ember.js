@@ -10,7 +10,8 @@ import {normalizePath, template, makeBoundHelper, registerBoundHelper,
 } from "ember-handlebars/ext";
 
 
-import "ember-handlebars/string"; // side effect of extending StringUtils
+// side effect of extending StringUtils of htmlSafe
+import "ember-handlebars/string";
 
 import resolvePaths from "ember-handlebars/helpers/shared";
 import {bind, _triageMustacheHelper, resolveHelper, bindHelper, boundIfHelper, unboundIfHelper, withHelper, ifHelper, unlessHelper, bindAttrHelper, bindAttrHelperDeprecated, bindClasses} from "ember-handlebars/helpers/binding";

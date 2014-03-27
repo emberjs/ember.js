@@ -11,7 +11,7 @@ import {propertyWillChange, propertyDidChange} from "ember-metal/property_events
 import {computed} from "ember-metal/computed";
 import {defineProperty} from "ember-metal/properties";
 import {observer} from "ember-metal/mixin";
-import EmberStringUtils from "ember-runtime/system/string";
+import {fmt} from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 
 function contentPropertyWillChange(content, contentKey) {
@@ -139,7 +139,7 @@ var ObjectProxy = EmberObject.extend({
     }
 
     var content = get(this, 'content');
-    Ember.assert(EmberStringUtils.fmt("Cannot delegate set('%@', %@) to the 'content' property of object proxy %@: its 'content' is undefined.", [key, value, this]), content);
+    Ember.assert(fmt("Cannot delegate set('%@', %@) to the 'content' property of object proxy %@: its 'content' is undefined.", [key, value, this]), content);
     return set(content, key, value);
   }
 

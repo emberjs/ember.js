@@ -6,7 +6,7 @@ import run from "ember-metal/run_loop";
 import {computed} from "ember-metal/computed";
 
 import {onLoad} from "ember-runtime/system/lazy_load";
-import EmberStringUtils from "ember-runtime/system/string";
+import {fmt} from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import keys from "ember-runtime/keys";
 import {isSimpleClick} from "ember-views/system/utils";
@@ -23,11 +23,8 @@ import {resolveParams, resolvePaths} from "ember-routing/helpers/shared";
 @submodule ember-routing
 */
 
-var fmt = EmberStringUtils.fmt;
+var slice = [].slice;
 
-var slice = Array.prototype.slice;
-
-// require('ember-handlebars/helpers/view');
 requireModule('ember-handlebars');
 
 var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
@@ -387,7 +384,7 @@ var LinkView = Ember.LinkView = EmberView.extend({
     // this is because the leaf route will use one of the contexts
     if (contexts.length > maximumContexts)
       currentWhen = routeArgs[0];
-    
+
     var isActive = router.isActive.apply(router, [currentWhen].concat(contexts));
 
     if (isActive) { return get(this, 'activeClass'); }

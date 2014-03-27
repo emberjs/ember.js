@@ -12,7 +12,7 @@ import EmberObject from "ember-runtime/system/object";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import {A} from "ember-runtime/system/native_array";
 import {computed} from "ember-metal/computed";
-import EmberStringUtils from "ember-runtime/system/string";
+import {fmt} from "ember-runtime/system/string";
 import {typeOf} from "ember-metal/utils";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import CollectionView from "ember-views/views/collection_view";
@@ -22,6 +22,8 @@ import {observersFor} from "ember-metal/observer";
 import TextField from "ember-handlebars/controls/text_field";
 import Container from "ember-runtime/system/container";
 import Logger from "ember-metal/logger";
+
+import htmlSafe from "ember-handlebars/string";
 
 // for global lookups in template. :(
 Ember.View = EmberView;
@@ -170,7 +172,7 @@ test("should allow values from normal JavaScript hash objects to be used", funct
 });
 
 test("htmlSafe should return an instance of Handlebars.SafeString", function() {
-  var safeString = EmberStringUtils.htmlSafe("you need to be more <b>bold</b>");
+  var safeString = htmlSafe("you need to be more <b>bold</b>");
 
   ok(safeString instanceof Handlebars.SafeString, "should return SafeString");
 });
@@ -632,7 +634,7 @@ test("should update the block when object passed to #if helper changes", functio
       set(view, 'inception', val);
     });
 
-    equal(view.$('h1').text(), '', EmberStringUtils.fmt("hides block when conditional is '%@'", [String(val)]));
+    equal(view.$('h1').text(), '', fmt("hides block when conditional is '%@'", [String(val)]));
 
     run(function() {
       set(view, 'inception', true);
@@ -664,7 +666,7 @@ test("should update the block when object passed to #unless helper changes", fun
       set(view, 'onDrugs', val);
     });
 
-    equal(view.$('h1').text(), 'Eat your vegetables', EmberStringUtils.fmt("renders block when conditional is '%@'; %@", [String(val), typeOf(val)]));
+    equal(view.$('h1').text(), 'Eat your vegetables', fmt("renders block when conditional is '%@'; %@", [String(val), typeOf(val)]));
 
     run(function() {
       set(view, 'onDrugs', true);
@@ -699,7 +701,7 @@ test("should update the block when object passed to #if helper changes and an in
       set(view, 'inception', val);
     });
 
-    equal(view.$('h1').text(), 'BOONG?', EmberStringUtils.fmt("renders alternate if %@", [String(val)]));
+    equal(view.$('h1').text(), 'BOONG?', fmt("renders alternate if %@", [String(val)]));
 
     run(function() {
       set(view, 'inception', true);

@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core";
 import {typeOf} from "ember-metal/utils";
-import EmberStringUtils from "ember-runtime/system/string";
+import {dasherize, classify} from "ember-runtime/system/string";
 import Namespace from "ember-runtime/system/namespace";
 import EmberObject from "ember-runtime/system/object";
 
@@ -85,7 +85,7 @@ var ContainerDebugAdapter = EmberObject.extend({
   */
   catalogEntriesByType: function(type) {
     var namespaces = Ember.A(Namespace.NAMESPACES), types = Ember.A(), self = this;
-    var typeSuffixRegex = new RegExp(EmberStringUtils.classify(type) + "$");
+    var typeSuffixRegex = new RegExp(classify(type) + "$");
 
     namespaces.forEach(function(namespace) {
       if (namespace !== Ember) {
@@ -94,7 +94,7 @@ var ContainerDebugAdapter = EmberObject.extend({
           if (typeSuffixRegex.test(key)) {
             var klass = namespace[key];
             if (typeOf(klass) === 'class') {
-              types.push(EmberStringUtils.dasherize(key.replace(typeSuffixRegex, '')));
+              types.push(dasherize(key.replace(typeSuffixRegex, '')));
             }
           }
         }
