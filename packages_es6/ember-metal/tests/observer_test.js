@@ -3,6 +3,7 @@
 import Ember from 'ember-metal/core';
 import testBoth from 'ember-metal/tests/props_helper';
 import {addObserver, removeObserver, addBeforeObserver, _suspendObserver, _suspendObservers, removeBeforeObserver} from "ember-metal/observer";
+import {propertyWillChange, propertyDidChange} from 'ember-metal/property_events'
 import {create} from 'ember-metal/platform';
 import {defineProperty} from 'ember-metal/properties';
 import {computed, cacheFor} from 'ember-metal/computed';
@@ -48,6 +49,24 @@ testBoth('observer should fire when dependent property is modified', function(ge
 
   set(obj, 'bar', 'baz');
   equal(count, 1, 'should have invoked observer');
+});
+
+testBoth('observer should continue to fire after dependent properties are accessed', function(get, set) {
+  var observerCount = 0, obj = {};
+
+  defineProperty(obj, 'prop', Ember.computed(function () { return Math.random(); }));
+  defineProperty(obj, 'anotherProp', Ember.computed('prop', function () { return get(this, 'prop') + Math.random(); }));
+
+  addObserver(obj, 'prop', function () { observerCount++; });
+
+  get(obj, 'anotherProp');
+
+  for (var i = 0; i < 10; i++) {
+    propertyWillChange(obj, 'prop');
+    propertyDidChange(obj, 'prop');
+  }
+
+  equal(observerCount, 10, 'should continue to fire indefinitely');
 });
 
 if (Ember.EXTEND_PROTOTYPES) {

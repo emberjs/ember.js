@@ -348,7 +348,7 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
   // the cached value set by the setter
   if (this._cacheable && this._suspended !== obj) {
     var meta = metaFor(obj);
-    if (meta.cache !== undefined) {
+    if (meta.cache[keyName] !== undefined) {
       meta.cache[keyName] = undefined;
       removeDependentKeys(this, obj, keyName, meta);
     }
