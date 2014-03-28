@@ -184,10 +184,8 @@ task :publish_build => [:dist, :docs, 'ember:generate_static_test_site'] do
 end
 
 def setup_private_key
-  sh "openssl aes-256-cbc -k $DEPLOY_PASSWORD -in id_private.enc -d -a -out id_private"
-  sh "ssh-add -D"
-  sh "chmod 600 id_private"
-  sh "ssh-add ./id_private"
+  sh "openssl aes-256-cbc -k $DEPLOY_PASSWORD -in bin/id_private.enc -d -a -out bin/id_private"
+  sh "chmod 600 bin/id_private"
 end
 
 #task :publish_to_bower => :dist do
@@ -235,9 +233,12 @@ task :publish_to_bower do
       File.write(file, JSON.pretty_generate(hash))
     end
 
+    system 'ssh-add -D'
+    system 'git config user.email "tomster@emberjs.com"'
+    system 'git config user.name "Tomster"'
     system "git add -A"
     system "git commit -m 'Update for #{channel} SHA: https://github.com/emberjs/ember.js/commits/#{ember_git_support.current_revision}'"
-    system "git push origin #{channel}" unless ENV['NODEPLOY']
+    system "GIT_SSH=../bin/git_wrapper git push origin #{channel}" unless ENV['NODEPLOY']
   end
 end
 

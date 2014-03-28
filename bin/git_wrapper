@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ssh -i id_private $@
