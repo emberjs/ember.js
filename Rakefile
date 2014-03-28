@@ -212,7 +212,7 @@ task :publish_to_bower do
       system "git remote add origin git@github.com:components/ember.git"
     end
 
-    system "git fetch origin"
+    system "GIT_SSH=../bin/git_wrapper git fetch origin"
     system "git reset --hard origin/master"
     system "git checkout #{channel}"
 
