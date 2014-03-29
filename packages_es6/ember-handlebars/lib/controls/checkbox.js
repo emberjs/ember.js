@@ -37,7 +37,7 @@ var Checkbox = View.extend({
   tagName: 'input',
 
   attributeBindings: ['type', 'checked', 'indeterminate', 'disabled', 'tabindex', 'name',
-                      'autofocus', 'form'],
+                      'autofocus', 'required', 'form'],
 
   type: "checkbox",
   checked: false,
