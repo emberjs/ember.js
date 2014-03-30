@@ -308,61 +308,59 @@ asyncHelper('wait', wait);
 asyncHelper('andThen', andThen);
 
 
-if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
-  /**
-    Returns the currently active route name.
+/**
+  Returns the currently active route name.
 
-    Example:
+Example:
 
-    ```javascript
-    function validateRouteName(){
-      equal(currentRouteName(), 'some.path', "correct route was transitioned into.");
-    }
-
-    visit('/some/path').then(validateRouteName)
-    ```
-
-    @method currentRouteName
-    @return {Object} The name of the currently active route.
-  */
-  helper('currentRouteName', currentRouteName);
-
-  /**
-    Returns the current path.
-
-    Example:
-
-    ```javascript
-    function validateURL(){
-      equal(currentPath(), 'some.path.index', "correct path was transitioned into.");
-    }
-
-    click('#some-link-id').then(validateURL);
-    ```
-
-    @method currentPath
-    @return {Object} The currently active path.
-  */
-  helper('currentPath', currentPath);
-
-  /**
-    Returns the current URL.
-
-    Example:
-
-    ```javascript
-    function validateURL(){
-      equal(currentURL(), '/some/path', "correct URL was transitioned into.");
-    }
-
-    click('#some-link-id').then(validateURL);
-    ```
-
-    @method currentURL
-    @return {Object} The currently active URL.
-  */
-  helper('currentURL', currentURL);
+```javascript
+function validateRouteName(){
+equal(currentRouteName(), 'some.path', "correct route was transitioned into.");
 }
+
+visit('/some/path').then(validateRouteName)
+```
+
+@method currentRouteName
+@return {Object} The name of the currently active route.
+*/
+helper('currentRouteName', currentRouteName);
+
+/**
+  Returns the current path.
+
+Example:
+
+```javascript
+function validateURL(){
+equal(currentPath(), 'some.path.index', "correct path was transitioned into.");
+}
+
+click('#some-link-id').then(validateURL);
+```
+
+@method currentPath
+@return {Object} The currently active path.
+*/
+helper('currentPath', currentPath);
+
+/**
+  Returns the current URL.
+
+Example:
+
+```javascript
+function validateURL(){
+equal(currentURL(), '/some/path', "correct URL was transitioned into.");
+}
+
+click('#some-link-id').then(validateURL);
+```
+
+@method currentURL
+@return {Object} The currently active URL.
+*/
+helper('currentURL', currentURL);
 
 if (Ember.FEATURES.isEnabled('ember-testing-triggerEvent-helper')) {
   /**
