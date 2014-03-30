@@ -44,13 +44,6 @@ for a detailed explanation.
 
   Added in [#4008](https://github.com/emberjs/ember.js/pull/4008).
 
-* `ember-routing-bound-action-name`
-
-  Enables using a bound property lookup to determine the action name to
-  be fired.
-
-  Added in [#3936](https://github.com/emberjs/ember.js/pull/3936)
-
 * `ember-runtime-test-friendly-promises`
   Ember.RSVP.Promise's are now ember testing aware
 
