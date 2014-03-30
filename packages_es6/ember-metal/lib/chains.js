@@ -6,7 +6,7 @@ import {watchKey, unwatchKey} from "ember-metal/watch_key";
 
 var metaFor = meta,
     warn = Ember.warn,
-    FIRST_KEY = /^([^\.\*]+)/;
+    FIRST_KEY = /^([^\.]+)/;
 
 function firstKey(path) {
   return path.match(FIRST_KEY)[0];

@@ -10,9 +10,9 @@ var get;
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
-var IS_GLOBAL_PATH = /^([A-Z$]|([0-9][A-Z$])).*[\.\*]/;
-var HAS_THIS  = /^this[\.\*]/;
-var FIRST_KEY = /^([^\.\*]+)/;
+var IS_GLOBAL_PATH = /^([A-Z$]|([0-9][A-Z$])).*[\.]/;
+var HAS_THIS  = 'this.';
+var FIRST_KEY = /^([^\.]+)/;
 
 // ..........................................................
 // GET AND SET
@@ -96,7 +96,7 @@ if (Ember.config.overrideAccessors) {
   Normalizes a target/path pair to reflect that actual target/path that should
   be observed, etc. This takes into account passing in global property
   paths (i.e. a path beginning with a captial letter not defined on the
-  target) and * separators.
+  target).
 
   @private
   @method normalizeTuple
@@ -106,7 +106,7 @@ if (Ember.config.overrideAccessors) {
   @return {Array} a temporary array with the normalized target/path pair.
 */
 function normalizeTuple(target, path) {
-  var hasThis  = HAS_THIS.test(path),
+  var hasThis  = path.indexOf(HAS_THIS) === 0,
       isGlobal = !hasThis && IS_GLOBAL_PATH.test(path),
       key;
 
@@ -134,7 +134,7 @@ function _getPath(root, path) {
   if (root === null && path.indexOf('.') === -1) { return get(Ember.lookup, path); }
 
   // detect complicated paths and normalize them
-  hasThis  = HAS_THIS.test(path);
+  hasThis = path.indexOf(HAS_THIS) === 0;
 
   if (!root || hasThis) {
     tuple = normalizeTuple(root, path);
