@@ -44,14 +44,6 @@ for a detailed explanation.
 
   Added in [#4008](https://github.com/emberjs/ember.js/pull/4008).
 
-* `ember-eager-url-update`
-
-  Invoking (clicking) `link-to` tags will immediately update the URL
-  instead of waiting for the transition to run to completion, unless
-  the transition was aborted/redirected within the same run loop.
-
-  Added in [#4122](https://github.com/emberjs/ember.js/pull/4122).
-
 * `ember-routing-auto-location`
 
   Adds `auto` as a `location` option for the app's `Router`.

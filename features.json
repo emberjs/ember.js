@@ -5,7 +5,6 @@
     "ember-routing-named-substates": null,
     "ember-handlebars-caps-lookup": null,
     "ember-routing-drop-deprecated-action-style": null,
-    "ember-eager-url-update": true,
     "ember-routing-auto-location": true,
     "ember-routing-bound-action-name": true,
     "ember-runtime-test-friendly-promises": true,
