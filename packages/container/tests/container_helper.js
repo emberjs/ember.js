@@ -43,6 +43,7 @@ var factory = function() {
   Klass.extend = extend;
   Klass.reopen = extend;
   Klass.reopenClass = reopenClass;
+  Klass.__ember_meta__ = {};
 
   return Klass;
 

@@ -694,6 +694,13 @@ function option(container, fullName, optionName) {
   }
 }
 
+function isExtendable(factory) {
+  // Check that this is an ember object and has an extend
+  // function. Other libraries (mootools) may add the own
+  // `extend` to functions or other factories in the container.
+  return factory && factory.__ember_meta__ && (typeof factory.extend === 'function');
+}
+
 function factoryFor(container, fullName) {
   var name = fullName;
   var factory = container.resolve(name);
@@ -707,7 +714,7 @@ function factoryFor(container, fullName) {
     return cache.get(fullName);
   }
 
-  if (!factory || typeof factory.extend !== 'function' || (!Ember.MODEL_FACTORY_INJECTIONS && type === 'model')) {
+  if (!isExtendable(factory) || (!Ember.MODEL_FACTORY_INJECTIONS && type === 'model')) {
     // TODO: think about a 'safe' merge style extension
     // for now just fallback to create time injection
     return factory;
@@ -768,7 +775,7 @@ function instantiate(container, fullName) {
         'Most likely an improperly defined class or an invalid module export.');
     }
 
-    if (typeof factory.extend === 'function') {
+    if (isExtendable(factory)) {
       // assume the factory was extendable and is already injected
       return factory.create();
     } else {
