@@ -25,13 +25,6 @@ for a detailed explanation.
 
   Added in [#3218](https://github.com/emberjs/ember.js/pull/3218)
 
-* `computed-read-only`
-
-  Enables `Ember.computed.readOnly` which is the shortHand for
-  Ember.computed.oneWay('foo').readOnly().
-
-  Added in [#3879](https://github.com/emberjs/ember.js/pull/3879)
-
 * `composable-computed-properties`
 
   This feature allows you to combine (compose) different computed

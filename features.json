@@ -4,8 +4,6 @@
     "query-params-new": null,
     "ember-routing-named-substates": null,
     "ember-handlebars-caps-lookup": null,
-    "ember-testing-triggerEvent-helper": true,
-    "computed-read-only": true,
     "ember-routing-drop-deprecated-action-style": null,
     "ember-metal-is-blank": true,
     "ember-eager-url-update": true,

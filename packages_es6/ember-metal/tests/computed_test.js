@@ -1005,7 +1005,6 @@ if (Ember.FEATURES.isEnabled('query-params-new')) {
   testBoth('computed.reads', oneWayTest('reads'));
 }
 
-if (Ember.FEATURES.isEnabled('computed-read-only')) {
 testBoth('computed.readOnly', function(get, set) {
   var obj = {
     firstName: 'Teddy',
@@ -1031,4 +1030,3 @@ testBoth('computed.readOnly', function(get, set) {
 
   equal(get(obj, 'nickName'), 'TEDDDDDDDDYYY');
 });
-}
