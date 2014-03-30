@@ -52,9 +52,3 @@ for a detailed explanation.
     underlying test framework to start/stop between async steps.
 
   Added in [#4176](https://github.com/emberjs/ember.js/pull/4176)
-  
-* `ember-routing-inherits-parent-model`
-
-  Ember routes and leaf resources (without nested routes) will inherit the parent route's model.
-  
-  Added in [#4246](https://github.com/emberjs/ember.js/pull/4246)
