@@ -11,7 +11,7 @@
 // CONSTANTS
 //
 
-var OUT_OF_RANGE_EXCEPTION = "Index out of range" ;
+var OUT_OF_RANGE_EXCEPTION = "Index out of range";
 var EMPTY = [];
 
 // ..........................................................
@@ -66,7 +66,7 @@ var MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   replace: required(),
 
   /**
-    Remove all elements from self. This is useful if you
+    Remove all elements from the array. This is useful if you
     want to reuse an existing array without having to recreate it.
 
     ```javascript
@@ -99,12 +99,12 @@ var MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @method insertAt
     @param {Number} idx index of insert the object at.
     @param {Object} object object to insert
-    @return this
+    @return {Ember.Array} receiver
   */
   insertAt: function(idx, object) {
-    if (idx > get(this, 'length')) throw new EmberError(OUT_OF_RANGE_EXCEPTION) ;
-    this.replace(idx, 0, [object]) ;
-    return this ;
+    if (idx > get(this, 'length')) throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+    this.replace(idx, 0, [object]);
+    return this;
   },
 
   /**
@@ -124,7 +124,7 @@ var MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @method removeAt
     @param {Number} start index, start of range
     @param {Number} len length of passing range
-    @return {Object} receiver
+    @return {Ember.Array} receiver
   */
   removeAt: function(start, len) {
     if ('number' === typeof start) {
@@ -138,7 +138,7 @@ var MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
       this.replace(start, len, EMPTY);
     }
 
-    return this ;
+    return this;
   },
 
   /**
@@ -153,10 +153,10 @@ var MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
 
     @method pushObject
     @param {*} obj object to push
-    @return The same obj passed as param
+    @return object same object passed as a param
   */
   pushObject: function(obj) {
-    this.insertAt(get(this, 'length'), obj) ;
+    this.insertAt(get(this, 'length'), obj);
     return obj;
   },
 
@@ -195,12 +195,12 @@ var MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return object
   */
   popObject: function() {
-    var len = get(this, 'length') ;
-    if (len === 0) return null ;
+    var len = get(this, 'length');
+    if (len === 0) return null;
 
-    var ret = this.objectAt(len-1) ;
-    this.removeAt(len-1, 1) ;
-    return ret ;
+    var ret = this.objectAt(len-1);
+    this.removeAt(len-1, 1);
+    return ret;
   },
 
   /**
@@ -217,10 +217,10 @@ var MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return object
   */
   shiftObject: function() {
-    if (get(this, 'length') === 0) return null ;
-    var ret = this.objectAt(0) ;
-    this.removeAt(0) ;
-    return ret ;
+    if (get(this, 'length') === 0) return null;
+    var ret = this.objectAt(0);
+    this.removeAt(0);
+    return ret;
   },
 
   /**
@@ -235,11 +235,11 @@ var MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
 
     @method unshiftObject
     @param {*} obj object to unshift
-    @return The same obj passed as param
+    @return object same object passed as a param
   */
   unshiftObject: function(obj) {
-    this.insertAt(0, obj) ;
-    return obj ;
+    this.insertAt(0, obj);
+    return obj;
   },
 
   /**
@@ -303,18 +303,46 @@ var MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   // IMPLEMENT Ember.MutableEnumerable
   //
 
+  /**
+    Remove all occurances of an object in the array.
+
+    ```javascript
+    var cities = ["Chicago", "Berlin", "Lima", "Chicago"];
+    cities.removeObject("Chicago");  // ["Berlin", "Lima"]
+    cities.removeObject("Lima");     // ["Berlin"]
+    cities.removeObject("Tokyo")     // ["Berlin"]
+    ```
+
+    @method removeObject
+    @param {*} obj object to remove
+    @return {Ember.Array} receiver
+  */
   removeObject: function(obj) {
     var loc = get(this, 'length') || 0;
     while(--loc >= 0) {
-      var curObject = this.objectAt(loc) ;
-      if (curObject === obj) this.removeAt(loc) ;
+      var curObject = this.objectAt(loc);
+      if (curObject === obj) this.removeAt(loc);
     }
-    return this ;
+    return this;
   },
 
+  /**
+    Push the object onto the end of the array if it is not already
+    present in the array.
+
+    ```javascript
+    var cities = ["Chicago", "Berlin"];
+    cities.addObject("Lima");    // ["Chicago", "Berlin", "Lima"]
+    cities.addObject("Berlin");  // ["Chicago", "Berlin", "Lima"]
+    ```
+
+    @method addObject
+    @param {*} obj object to add, if not already present
+    @return {Ember.Array} receiver
+  */
   addObject: function(obj) {
     if (!this.contains(obj)) this.pushObject(obj);
-    return this ;
+    return this;
   }
 
 });

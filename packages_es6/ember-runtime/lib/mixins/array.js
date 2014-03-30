@@ -47,8 +47,7 @@ var map = EnumerableUtils.map;
 
   You can use the methods defined in this module to access and modify array
   contents in a KVO-friendly way. You can also be notified whenever the
-  membership of an array changes by changing the syntax of the property to
-  `.observes('*myProperty.[]')`.
+  membership of an array changes by using `.observes('myArray.[]')`.
 
   To support `Ember.Array` in your own class, you must override two
   primitives to use it: `replace()` and `objectAt()`.
