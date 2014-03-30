@@ -362,27 +362,25 @@ click('#some-link-id').then(validateURL);
 */
 helper('currentURL', currentURL);
 
-if (Ember.FEATURES.isEnabled('ember-testing-triggerEvent-helper')) {
-  /**
-    Triggers the given event on the element identified by the provided selector.
+/**
+  Triggers the given event on the element identified by the provided selector.
 
-    Example:
+  Example:
 
-    ```javascript
-    triggerEvent('#some-elem-id', 'blur');
-    ```
+  ```javascript
+  triggerEvent('#some-elem-id', 'blur');
+  ```
 
-    This is actually used internally by the `keyEvent` helper like so:
+  This is actually used internally by the `keyEvent` helper like so:
 
-    ```javascript
-    triggerEvent('#some-elem-id', 'keypress', { keyCode: 13 });
-    ```
+  ```javascript
+  triggerEvent('#some-elem-id', 'keypress', { keyCode: 13 });
+  ```
 
-   @method triggerEvent
-   @param {String} selector jQuery selector for finding element on the DOM
-   @param {String} type The event type to be triggered.
-   @param {String} options The options to be passed to jQuery.Event.
-   @return {RSVP.Promise}
-  */
-  asyncHelper('triggerEvent', triggerEvent);
-}
+ @method triggerEvent
+ @param {String} selector jQuery selector for finding element on the DOM
+ @param {String} type The event type to be triggered.
+ @param {String} options The options to be passed to jQuery.Event.
+ @return {RSVP.Promise}
+*/
+asyncHelper('triggerEvent', triggerEvent);

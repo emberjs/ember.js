@@ -25,14 +25,6 @@ for a detailed explanation.
 
   Added in [#3218](https://github.com/emberjs/ember.js/pull/3218)
 
-* `ember-testing-triggerEvent-helper`
-
-  Adds `triggerEvent` testing helper to allow triggering of arbitrary events on an
-  element.
-
-  Added in [#3792](https://github.com/emberjs/ember.js/pull/3792).
-  Updated in [#4177](https://github.com/emberjs/ember.js/pull/4177).
-
 * `computed-read-only`
 
   Enables `Ember.computed.readOnly` which is the shortHand for
