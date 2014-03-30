@@ -59,25 +59,23 @@ test("should be able to log multiple properties", function() {
   equal(logCalls[1], 'two');
 });
 
-if (Ember.FEATURES.isEnabled("ember-handlebars-log-primitives")) {
-  test("should be able to log primitives", function() {
-    var context = {
-      value: 'one',
-      valueTwo: 'two'
-    };
+test("should be able to log primitives", function() {
+  var context = {
+    value: 'one',
+    valueTwo: 'two'
+  };
 
-    view = EmberView.create({
-      context: context,
-      template: EmberHandlebars.compile('{{log value "foo" 0 valueTwo true}}')
-    });
-
-    appendView();
-
-    equal(view.$().text(), "", "shouldn't render any text");
-    strictEqual(logCalls[0], 'one');
-    strictEqual(logCalls[1], 'foo');
-    strictEqual(logCalls[2], 0);
-    strictEqual(logCalls[3], 'two');
-    strictEqual(logCalls[4], true);
+  view = EmberView.create({
+    context: context,
+    template: EmberHandlebars.compile('{{log value "foo" 0 valueTwo true}}')
   });
-}
+
+  appendView();
+
+  equal(view.$().text(), "", "shouldn't render any text");
+  strictEqual(logCalls[0], 'one');
+  strictEqual(logCalls[1], 'foo');
+  strictEqual(logCalls[2], 0);
+  strictEqual(logCalls[3], 'two');
+  strictEqual(logCalls[4], true);
+});
