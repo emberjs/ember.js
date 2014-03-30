@@ -119,3 +119,22 @@ for a detailed explanation.
   Ember routes and leaf resources (without nested routes) will inherit the parent route's model.
   
   Added in [#4246](https://github.com/emberjs/ember.js/pull/4246)
+
+* `ember-routing-nested-resource-can-inherit-namespace`
+
+  Specifying `resetNamespace: false` in a nested resource declaration will automatically prefix the
+  new route with the parent's name (similar to `route`).
+
+  Example:
+
+  ```javascript
+  var router = Router.map(function(){
+    this.resource('bleep', function(){
+      this.resource('bloop', {resetNamespace: false});
+    });
+  });
+
+  // will create `bleep.bloop` route (without resetNamespace it would create `bloop` route)
+  ```
+
+  Added in [#4590](https://github.com/emberjs/ember.js/pull/4590).

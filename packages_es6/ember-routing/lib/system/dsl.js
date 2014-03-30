@@ -27,6 +27,12 @@ DSL.prototype = {
       options.path = "/" + name;
     }
 
+    if (Ember.FEATURES.isEnabled('ember-routing-nested-resource-can-inherit-namespace')) {
+      if (canNest(this) && options.resetNamespace === false) {
+        name = this.parent + "." + name;
+      }
+    }
+
     if (callback) {
       var dsl = new DSL(name);
       route(dsl, 'loading');
@@ -90,11 +96,15 @@ function route(dsl, name, options) {
     options.path = "/" + name;
   }
 
-  if (dsl.parent && dsl.parent !== 'application') {
+  if (canNest(dsl)) {
     name = dsl.parent + "." + name;
   }
 
   dsl.push(options.path, name, null);
+}
+
+function canNest(dsl) {
+  return dsl.parent && dsl.parent !== 'application'
 }
 
 DSL.map = function(callback) {
