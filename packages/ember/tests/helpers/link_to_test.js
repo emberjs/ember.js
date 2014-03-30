@@ -1468,112 +1468,110 @@ function basicEagerURLUpdateTest(setTagName) {
   equal(router.get('location.path'), '/about');
 }
 
-if (Ember.FEATURES.isEnabled("ember-eager-url-update")) {
-  var aboutDefer;
-  module("The {{link-to}} helper: eager URL updating", {
-    setup: function() {
-      Ember.run(function() {
-        sharedSetup();
+var aboutDefer;
+module("The {{link-to}} helper: eager URL updating", {
+  setup: function() {
+    Ember.run(function() {
+      sharedSetup();
 
-        container.register('router:main', Router);
+      container.register('router:main', Router);
 
-        Router.map(function() {
-          this.route('about');
-        });
-
-        App.AboutRoute = Ember.Route.extend({
-          model: function() {
-            aboutDefer = Ember.RSVP.defer();
-            return aboutDefer.promise;
-          }
-        });
-
-        Ember.TEMPLATES.application = Ember.Handlebars.compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link'}}");
+      Router.map(function() {
+        this.route('about');
       });
+
+      App.AboutRoute = Ember.Route.extend({
+        model: function() {
+          aboutDefer = Ember.RSVP.defer();
+          return aboutDefer.promise;
+        }
+      });
+
+      Ember.TEMPLATES.application = Ember.Handlebars.compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link'}}");
+    });
+  },
+
+  teardown: function() {
+    sharedTeardown();
+    aboutDefer = null;
+  }
+});
+
+test("invoking a link-to with a slow promise eager updates url", function() {
+  basicEagerURLUpdateTest(false);
+});
+
+test("when link-to eagerly updates url, the path it provides does NOT include the rootURL", function() {
+  expect(2);
+
+  // HistoryLocation is the only Location class that will cause rootURL to be
+  // prepended to link-to href's right now
+  var HistoryTestLocation = Ember.HistoryLocation.extend({
+    // Don't actually touch the URL
+    replaceState: function(path) {},
+    pushState: function(path) {},
+
+    setURL: function(path) {
+      set(this, 'path', path);
     },
 
-    teardown: function() {
-      sharedTeardown();
-      aboutDefer = null;
+    replaceURL: function(path) {
+      set(this, 'path', path);
     }
   });
 
-  test("invoking a link-to with a slow promise eager updates url", function() {
-    basicEagerURLUpdateTest(false);
+  container.register('location:historyTest', HistoryTestLocation);
+
+  Router.reopen({
+    location: 'historyTest',
+    rootURL: '/app/'
   });
 
-  test("when link-to eagerly updates url, the path it provides does NOT include the rootURL", function() {
-    expect(2);
+  bootApplication();
 
-    // HistoryLocation is the only Location class that will cause rootURL to be
-    // prepended to link-to href's right now
-    var HistoryTestLocation = Ember.HistoryLocation.extend({
-      // Don't actually touch the URL
-      replaceState: function(path) {},
-      pushState: function(path) {},
+  // href should have rootURL prepended
+  equal(Ember.$('#about-link').attr('href'), '/app/about');
 
-      setURL: function(path) {
-        set(this, 'path', path);
-      },
+  Ember.run(Ember.$('#about-link'), 'click');
 
-      replaceURL: function(path) {
-        set(this, 'path', path);
+  // Actual path provided to Location class should NOT have rootURL
+  equal(router.get('location.path'), '/about');
+});
+
+test("non `a` tags also eagerly update URL", function() {
+  basicEagerURLUpdateTest(true);
+});
+
+test("invoking a link-to with a promise that rejects on the run loop doesn't update url", function() {
+  App.AboutRoute = Ember.Route.extend({
+    model: function() {
+      return Ember.RSVP.reject();
+    }
+  });
+
+  bootApplication();
+  Ember.run(Ember.$('#about-link'), 'click');
+
+  // Shouldn't have called update url.
+  equal(updateCount, 0);
+  equal(router.get('location.path'), '', 'url was not updated');
+});
+
+test("invoking a link-to whose transition gets aborted in will transition doesn't update the url", function() {
+  App.IndexRoute = Ember.Route.extend({
+    actions: {
+      willTransition: function(transition) {
+        ok(true, "aborting transition");
+        transition.abort();
       }
-    });
-
-    container.register('location:historyTest', HistoryTestLocation);
-
-    Router.reopen({
-      location: 'historyTest',
-      rootURL: '/app/'
-    });
-
-    bootApplication();
-
-    // href should have rootURL prepended
-    equal(Ember.$('#about-link').attr('href'), '/app/about');
-
-    Ember.run(Ember.$('#about-link'), 'click');
-
-    // Actual path provided to Location class should NOT have rootURL
-    equal(router.get('location.path'), '/about');
+    }
   });
 
-  test("non `a` tags also eagerly update URL", function() {
-    basicEagerURLUpdateTest(true);
-  });
+  bootApplication();
+  Ember.run(Ember.$('#about-link'), 'click');
 
-  test("invoking a link-to with a promise that rejects on the run loop doesn't update url", function() {
-    App.AboutRoute = Ember.Route.extend({
-      model: function() {
-        return Ember.RSVP.reject();
-      }
-    });
-
-    bootApplication();
-    Ember.run(Ember.$('#about-link'), 'click');
-
-    // Shouldn't have called update url.
-    equal(updateCount, 0);
-    equal(router.get('location.path'), '', 'url was not updated');
-  });
-
-  test("invoking a link-to whose transition gets aborted in will transition doesn't update the url", function() {
-    App.IndexRoute = Ember.Route.extend({
-      actions: {
-        willTransition: function(transition) {
-          ok(true, "aborting transition");
-          transition.abort();
-        }
-      }
-    });
-
-    bootApplication();
-    Ember.run(Ember.$('#about-link'), 'click');
-
-    // Shouldn't have called update url.
-    equal(updateCount, 0);
-    equal(router.get('location.path'), '', 'url was not updated');
-  });
-}
+  // Shouldn't have called update url.
+  equal(updateCount, 0);
+  equal(router.get('location.path'), '', 'url was not updated');
+});
 

@@ -756,184 +756,151 @@ test("it can trigger actions for keyboard events", function() {
   ok(showCalled, "should call action with keyup");
 });
 
-if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
-  test("a quoteless parameter should allow dynamic lookup of the actionName", function(){
-    expect(4);
-    var lastAction, actionOrder = [];
+test("a quoteless parameter should allow dynamic lookup of the actionName", function(){
+  expect(4);
+  var lastAction, actionOrder = [];
 
-    view = EmberView.create({
-      template: compile("<a id='woot-bound-param'' {{action hookMeUp}}>Hi</a>")
-    });
-
-    var controller = EmberController.extend({
-      hookMeUp: 'biggityBoom',
-      actions: {
-        biggityBoom: function() {
-          lastAction = 'biggityBoom';
-          actionOrder.push(lastAction);
-        },
-        whompWhomp: function() {
-          lastAction = 'whompWhomp';
-          actionOrder.push(lastAction);
-        },
-        sloopyDookie: function(){
-          lastAction = 'sloopyDookie';
-          actionOrder.push(lastAction);
-        }
-      }
-    }).create();
-
-    run(function() {
-      view.set('controller', controller);
-      view.appendTo('#qunit-fixture');
-    });
-
-    var testBoundAction = function(propertyValue){
-      controller.set('hookMeUp', propertyValue);
-
-      run(function(){
-        view.$("#woot-bound-param").click();
-      });
-
-      equal(lastAction, propertyValue, 'lastAction set to ' + propertyValue);
-    };
-
-    testBoundAction('whompWhomp');
-    testBoundAction('sloopyDookie');
-    testBoundAction('biggityBoom');
-
-    deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
+  view = EmberView.create({
+    template: compile("<a id='woot-bound-param'' {{action hookMeUp}}>Hi</a>")
   });
 
-  test("a quoteless parameter that also exists as an action name functions properly", function(){
-    Ember.TESTING_DEPRECATION = true;
-    var triggeredAction;
-
-    view = EmberView.create({
-      template: compile("<a id='oops-bound-param'' {{action ohNoeNotValid}}>Hi</a>")
-    });
-
-    var controller = EmberController.extend({
-      actions: {
-        ohNoeNotValid: function() {
-          triggeredAction = true;
-        }
+  var controller = EmberController.extend({
+    hookMeUp: 'biggityBoom',
+    actions: {
+      biggityBoom: function() {
+        lastAction = 'biggityBoom';
+        actionOrder.push(lastAction);
+      },
+      whompWhomp: function() {
+        lastAction = 'whompWhomp';
+        actionOrder.push(lastAction);
+      },
+      sloopyDookie: function(){
+        lastAction = 'sloopyDookie';
+        actionOrder.push(lastAction);
       }
-    }).create();
+    }
+  }).create();
 
-    run(function() {
-      view.set('controller', controller);
-      view.appendTo('#qunit-fixture');
-    });
+  run(function() {
+    view.set('controller', controller);
+    view.appendTo('#qunit-fixture');
+  });
+
+  var testBoundAction = function(propertyValue){
+    controller.set('hookMeUp', propertyValue);
 
     run(function(){
-      view.$("#oops-bound-param").click();
+      view.$("#woot-bound-param").click();
     });
 
-    ok(triggeredAction, 'the action was triggered');
+    equal(lastAction, propertyValue, 'lastAction set to ' + propertyValue);
+  };
+
+  testBoundAction('whompWhomp');
+  testBoundAction('sloopyDookie');
+  testBoundAction('biggityBoom');
+
+  deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
+});
+
+test("a quoteless parameter that also exists as an action name functions properly", function(){
+  Ember.TESTING_DEPRECATION = true;
+  var triggeredAction;
+
+  view = EmberView.create({
+    template: compile("<a id='oops-bound-param'' {{action ohNoeNotValid}}>Hi</a>")
   });
 
-  test("a quoteless parameter that also exists as an action name results in an assertion", function(){
-    var triggeredAction;
-
-    view = EmberView.create({
-      template: compile("<a id='oops-bound-param' {{action ohNoeNotValid}}>Hi</a>")
-    });
-
-    var controller = EmberController.extend({
-      actions: {
-        ohNoeNotValid: function() {
-          triggeredAction = true;
-        }
-      }
-    }).create();
-
-    run(function() {
-      view.set('controller', controller);
-      view.appendTo('#qunit-fixture');
-    });
-
-    var oldAssert = Ember.assert;
-    Ember.assert = function(message, test){
-      ok(test, message + " -- was properly asserted");
-    };
-
-    run(function(){
-      view.$("#oops-bound-param").click();
-    });
-
-    ok(triggeredAction, 'the action was triggered');
-
-    Ember.assert = oldAssert;
-  });
-
-  test("a quoteless parameter that also exists as an action name in deprecated action in controller style results in an assertion", function(){
-    var dropDeprecatedActionStyleOrig = Ember.FEATURES['ember-routing-drop-deprecated-action-style'];
-    Ember.FEATURES['ember-routing-drop-deprecated-action-style'] = false;
-
-    var triggeredAction;
-
-    view = EmberView.create({
-      template: compile("<a id='oops-bound-param' {{action ohNoeNotValid}}>Hi</a>")
-    });
-
-    var controller = EmberController.extend({
+  var controller = EmberController.extend({
+    actions: {
       ohNoeNotValid: function() {
         triggeredAction = true;
       }
-    }).create();
+    }
+  }).create();
 
-    run(function() {
-      view.set('controller', controller);
-      view.appendTo('#qunit-fixture');
-    });
-
-    var oldAssert = Ember.assert;
-    Ember.assert = function(message, test){
-      ok(test, message + " -- was properly asserted");
-    };
-
-    run(function(){
-      view.$("#oops-bound-param").click();
-    });
-
-    ok(triggeredAction, 'the action was triggered');
-
-    Ember.assert = oldAssert;
-    Ember.FEATURES['ember-routing-drop-deprecated-action-style'] = dropDeprecatedActionStyleOrig;
+  run(function() {
+    view.set('controller', controller);
+    view.appendTo('#qunit-fixture');
   });
-} else {
-  test("a quoteless parameter as an action name", function(){
-    expect(2);
 
-    expectDeprecation("Using a quoteless parameter with {{action}} is deprecated. Please update to quoted usage '{{action \"ohNoeNotValid\"}}.");
+  run(function(){
+    view.$("#oops-bound-param").click();
+  });
 
-    var triggeredAction;
+  ok(triggeredAction, 'the action was triggered');
+});
 
-    view = EmberView.create({
-      template: compile("<a id='oops-bound-param'' {{action ohNoeNotValid}}>Hi</a>")
-    });
+test("a quoteless parameter that also exists as an action name results in an assertion", function(){
+  var triggeredAction;
 
-    var controller = EmberController.extend({
-      actions: {
-        ohNoeNotValid: function() {
-          triggeredAction = true;
-        }
+  view = EmberView.create({
+    template: compile("<a id='oops-bound-param' {{action ohNoeNotValid}}>Hi</a>")
+  });
+
+  var controller = EmberController.extend({
+    actions: {
+      ohNoeNotValid: function() {
+        triggeredAction = true;
       }
-    }).create();
+    }
+  }).create();
 
-    run(function() {
-      view.set('controller', controller);
-      view.appendTo('#qunit-fixture');
-    });
-
-    run(function(){
-      view.$("#oops-bound-param").click();
-    });
-
-    ok(triggeredAction, 'the action was triggered');
+  run(function() {
+    view.set('controller', controller);
+    view.appendTo('#qunit-fixture');
   });
-}
+
+  var oldAssert = Ember.assert;
+  Ember.assert = function(message, test){
+    ok(test, message + " -- was properly asserted");
+  };
+
+  run(function(){
+    view.$("#oops-bound-param").click();
+  });
+
+  ok(triggeredAction, 'the action was triggered');
+
+  Ember.assert = oldAssert;
+});
+
+test("a quoteless parameter that also exists as an action name in deprecated action in controller style results in an assertion", function(){
+  var dropDeprecatedActionStyleOrig = Ember.FEATURES['ember-routing-drop-deprecated-action-style'];
+  Ember.FEATURES['ember-routing-drop-deprecated-action-style'] = false;
+
+  var triggeredAction;
+
+  view = EmberView.create({
+    template: compile("<a id='oops-bound-param' {{action ohNoeNotValid}}>Hi</a>")
+  });
+
+  var controller = EmberController.extend({
+    ohNoeNotValid: function() {
+      triggeredAction = true;
+    }
+  }).create();
+
+  run(function() {
+    view.set('controller', controller);
+    view.appendTo('#qunit-fixture');
+  });
+
+  var oldAssert = Ember.assert;
+  Ember.assert = function(message, test){
+    ok(test, message + " -- was properly asserted");
+  };
+
+  run(function(){
+    view.$("#oops-bound-param").click();
+  });
+
+  ok(triggeredAction, 'the action was triggered');
+
+  Ember.assert = oldAssert;
+  Ember.FEATURES['ember-routing-drop-deprecated-action-style'] = dropDeprecatedActionStyleOrig;
+});
 
 module("Ember.Handlebars - action helper - deprecated invoking directly on target", {
   setup: function() {

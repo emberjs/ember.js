@@ -56,10 +56,7 @@ function assertHelpers(application, helperContainer, expected){
   checkHelperPresent('keyEvent', expected);
   checkHelperPresent('fillIn', expected);
   checkHelperPresent('wait', expected);
-
-  if (Ember.FEATURES.isEnabled("ember-testing-triggerEvent-helper")) {
-    checkHelperPresent('triggerEvent', expected);
-  }
+  checkHelperPresent('triggerEvent', expected);
 }
 
 function assertNoHelpers(application, helperContainer) {
@@ -450,67 +447,64 @@ test("`wait` respects registerWaiters with optional context", function() {
 
 });
 
-if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
+module("ember-testing routing helpers", {
+  setup: function(){
+    cleanup();
 
-  module("ember-testing routing helpers", {
-    setup: function(){
-      cleanup();
-
-      run(function() {
-        App = EmberApplication.create();
-        App.Router = EmberRouter.extend({
-          location: 'none'
-        });
-
-        App.Router.map(function() {
-          this.resource("posts", function() {
-            this.route("new");
-          });
-        });
-
-        App.setupForTesting();
+    run(function() {
+      App = EmberApplication.create();
+      App.Router = EmberRouter.extend({
+        location: 'none'
       });
 
-      App.injectTestHelpers();
-      run(App, 'advanceReadiness');
-    },
+      App.Router.map(function() {
+        this.resource("posts", function() {
+          this.route("new");
+        });
+      });
 
-    teardown: function(){
-      cleanup();
-    }
-  });
-
-  test("currentRouteName for '/'", function(){
-    expect(3);
-
-    App.testHelpers.visit('/').then(function(){
-      equal(App.testHelpers.currentRouteName(), 'index', "should equal 'index'.");
-      equal(App.testHelpers.currentPath(), 'index', "should equal 'index'.");
-      equal(App.testHelpers.currentURL(), '/', "should equal '/'.");
+      App.setupForTesting();
     });
+
+    App.injectTestHelpers();
+    run(App, 'advanceReadiness');
+  },
+
+  teardown: function(){
+    cleanup();
+  }
+});
+
+test("currentRouteName for '/'", function(){
+  expect(3);
+
+  App.testHelpers.visit('/').then(function(){
+    equal(App.testHelpers.currentRouteName(), 'index', "should equal 'index'.");
+    equal(App.testHelpers.currentPath(), 'index', "should equal 'index'.");
+    equal(App.testHelpers.currentURL(), '/', "should equal '/'.");
   });
+});
 
 
-  test("currentRouteName for '/posts'", function(){
-    expect(3);
+test("currentRouteName for '/posts'", function(){
+  expect(3);
 
-    App.testHelpers.visit('/posts').then(function(){
-      equal(App.testHelpers.currentRouteName(), 'posts.index', "should equal 'posts.index'.");
-      equal(App.testHelpers.currentPath(), 'posts.index', "should equal 'posts.index'.");
-      equal(App.testHelpers.currentURL(), '/posts', "should equal '/posts'.");
-    });
+  App.testHelpers.visit('/posts').then(function(){
+    equal(App.testHelpers.currentRouteName(), 'posts.index', "should equal 'posts.index'.");
+    equal(App.testHelpers.currentPath(), 'posts.index', "should equal 'posts.index'.");
+    equal(App.testHelpers.currentURL(), '/posts', "should equal '/posts'.");
   });
+});
 
-  test("currentRouteName for '/posts/new'", function(){
-    expect(3);
+test("currentRouteName for '/posts/new'", function(){
+  expect(3);
 
-    App.testHelpers.visit('/posts/new').then(function(){
-      equal(App.testHelpers.currentRouteName(), 'posts.new', "should equal 'posts.new'.");
-      equal(App.testHelpers.currentPath(), 'posts.new', "should equal 'posts.new'.");
-      equal(App.testHelpers.currentURL(), '/posts/new', "should equal '/posts/new'.");
-    });
+  App.testHelpers.visit('/posts/new').then(function(){
+    equal(App.testHelpers.currentRouteName(), 'posts.new', "should equal 'posts.new'.");
+    equal(App.testHelpers.currentPath(), 'posts.new', "should equal 'posts.new'.");
+    equal(App.testHelpers.currentURL(), '/posts/new', "should equal '/posts/new'.");
   });
-}
+});
 
 module("ember-testing pendingAjaxRequests", {
   setup: function(){
@@ -554,42 +548,40 @@ test("it should raise an assertion error if ajaxComplete is called without pendi
   });
 });
 
-if (Ember.FEATURES.isEnabled("ember-testing-triggerEvent-helper")) {
-  test("`trigger` can be used to trigger arbitrary events", function() {
-    expect(2);
+test("`trigger` can be used to trigger arbitrary events", function() {
+  expect(2);
 
-    var triggerEvent, wait, event;
+  var triggerEvent, wait, event;
 
-    run(function() {
-      App = EmberApplication.create();
-      App.setupForTesting();
-    });
-
-    App.IndexView = EmberView.extend({
-      template: Ember.Handlebars.compile('{{input type="text" id="foo"}}'),
-
-      didInsertElement: function() {
-        this.$('#foo').on('blur change', function(e) {
-          event = e;
-        });
-      }
-    });
-
-    App.injectTestHelpers();
-
-    run(App, App.advanceReadiness);
-
-    triggerEvent = App.testHelpers.triggerEvent;
-    wait         = App.testHelpers.wait;
-
-    wait().then(function() {
-      return triggerEvent('#foo', 'blur');
-    }).then(function() {
-      equal(event.type, 'blur', 'correct event was triggered');
-      equal(event.target.getAttribute('id'), 'foo', 'triggered on the correct element');
-    });
+  run(function() {
+    App = EmberApplication.create();
+    App.setupForTesting();
   });
-}
+
+  App.IndexView = EmberView.extend({
+    template: Ember.Handlebars.compile('{{input type="text" id="foo"}}'),
+
+    didInsertElement: function() {
+      this.$('#foo').on('blur change', function(e) {
+        event = e;
+      });
+    }
+  });
+
+  App.injectTestHelpers();
+
+  run(App, App.advanceReadiness);
+
+  triggerEvent = App.testHelpers.triggerEvent;
+  wait         = App.testHelpers.wait;
+
+  wait().then(function() {
+    return triggerEvent('#foo', 'blur');
+  }).then(function() {
+    equal(event.type, 'blur', 'correct event was triggered');
+    equal(event.target.getAttribute('id'), 'foo', 'triggered on the correct element');
+  });
+});
 
 module("ember-testing async router", {
   setup: function(){

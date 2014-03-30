@@ -105,12 +105,10 @@ var EmberRouter = EmberObject.extend(Evented, {
         self = this,
         initialURL = get(this, 'initialURL');
 
-    if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
-      // Allow the Location class to cancel the router setup while it refreshes
-      // the page
-      if (get(location, 'cancelRouterSetup')) {
-        return;
-      }
+    // Allow the Location class to cancel the router setup while it refreshes
+    // the page
+    if (get(location, 'cancelRouterSetup')) {
+      return;
     }
 
     this._setupRouter(router, location);

@@ -308,83 +308,79 @@ asyncHelper('wait', wait);
 asyncHelper('andThen', andThen);
 
 
-if (Ember.FEATURES.isEnabled('ember-testing-routing-helpers')){
-  /**
-    Returns the currently active route name.
+/**
+  Returns the currently active route name.
 
-    Example:
+Example:
 
-    ```javascript
-    function validateRouteName(){
-      equal(currentRouteName(), 'some.path', "correct route was transitioned into.");
-    }
-
-    visit('/some/path').then(validateRouteName)
-    ```
-
-    @method currentRouteName
-    @return {Object} The name of the currently active route.
-  */
-  helper('currentRouteName', currentRouteName);
-
-  /**
-    Returns the current path.
-
-    Example:
-
-    ```javascript
-    function validateURL(){
-      equal(currentPath(), 'some.path.index', "correct path was transitioned into.");
-    }
-
-    click('#some-link-id').then(validateURL);
-    ```
-
-    @method currentPath
-    @return {Object} The currently active path.
-  */
-  helper('currentPath', currentPath);
-
-  /**
-    Returns the current URL.
-
-    Example:
-
-    ```javascript
-    function validateURL(){
-      equal(currentURL(), '/some/path', "correct URL was transitioned into.");
-    }
-
-    click('#some-link-id').then(validateURL);
-    ```
-
-    @method currentURL
-    @return {Object} The currently active URL.
-  */
-  helper('currentURL', currentURL);
+```javascript
+function validateRouteName(){
+equal(currentRouteName(), 'some.path', "correct route was transitioned into.");
 }
 
-if (Ember.FEATURES.isEnabled('ember-testing-triggerEvent-helper')) {
-  /**
-    Triggers the given event on the element identified by the provided selector.
+visit('/some/path').then(validateRouteName)
+```
 
-    Example:
+@method currentRouteName
+@return {Object} The name of the currently active route.
+*/
+helper('currentRouteName', currentRouteName);
 
-    ```javascript
-    triggerEvent('#some-elem-id', 'blur');
-    ```
+/**
+  Returns the current path.
 
-    This is actually used internally by the `keyEvent` helper like so:
+Example:
 
-    ```javascript
-    triggerEvent('#some-elem-id', 'keypress', { keyCode: 13 });
-    ```
-
-   @method triggerEvent
-   @param {String} selector jQuery selector for finding element on the DOM
-   @param {String} type The event type to be triggered.
-   @param {String} options The options to be passed to jQuery.Event.
-   @return {RSVP.Promise}
-  */
-  asyncHelper('triggerEvent', triggerEvent);
+```javascript
+function validateURL(){
+equal(currentPath(), 'some.path.index', "correct path was transitioned into.");
 }
+
+click('#some-link-id').then(validateURL);
+```
+
+@method currentPath
+@return {Object} The currently active path.
+*/
+helper('currentPath', currentPath);
+
+/**
+  Returns the current URL.
+
+Example:
+
+```javascript
+function validateURL(){
+equal(currentURL(), '/some/path', "correct URL was transitioned into.");
+}
+
+click('#some-link-id').then(validateURL);
+```
+
+@method currentURL
+@return {Object} The currently active URL.
+*/
+helper('currentURL', currentURL);
+
+/**
+  Triggers the given event on the element identified by the provided selector.
+
+  Example:
+
+  ```javascript
+  triggerEvent('#some-elem-id', 'blur');
+  ```
+
+  This is actually used internally by the `keyEvent` helper like so:
+
+  ```javascript
+  triggerEvent('#some-elem-id', 'keypress', { keyCode: 13 });
+  ```
+
+ @method triggerEvent
+ @param {String} selector jQuery selector for finding element on the DOM
+ @param {String} type The event type to be triggered.
+ @param {String} options The options to be passed to jQuery.Event.
+ @return {RSVP.Promise}
+*/
+asyncHelper('triggerEvent', triggerEvent);

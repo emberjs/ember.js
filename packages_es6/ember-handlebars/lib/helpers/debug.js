@@ -30,11 +30,7 @@ function logHelper() {
       options = arguments[arguments.length - 1],
       logger = Logger.log,
       values = [],
-      allowPrimitives = false;
-
-  if (Ember.FEATURES.isEnabled("ember-handlebars-log-primitives")) {
-    allowPrimitives = true;
-  }
+      allowPrimitives = true;
 
   for (var i = 0; i < params.length; i++) {
     var type = options.types[i];

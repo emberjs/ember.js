@@ -1194,7 +1194,6 @@ if (Ember.FEATURES.isEnabled('query-params-new')) {
   computed.reads = computed.oneWay;
 }
 
-if (Ember.FEATURES.isEnabled('computed-read-only')) {
 /**
   Where `computed.oneWay` provides oneWay bindings, `computed.readOnly` provides
   a readOnly one way binding. Very often when using `computed.oneWay` one does
@@ -1238,7 +1237,6 @@ computed.readOnly = function(dependentKey) {
     return get(this, dependentKey);
   }).readOnly();
 };
-}
 /**
   A computed property that acts like a standard getter and setter,
   but returns the value at the provided `defaultPath` if the

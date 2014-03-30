@@ -950,15 +950,11 @@ var Route = EmberObject.extend(ActionHandler, {
 
     if (!name && sawParams) { return copy(params); }
     else if (!name) {
-      if (Ember.FEATURES.isEnabled("ember-routing-inherits-parent-model")) {
-        if (transition.resolveIndex !== transition.state.handlerInfos.length-1) { return; }
+      if (transition.resolveIndex !== transition.state.handlerInfos.length-1) { return; }
 
-        var parentModel = transition.state.handlerInfos[transition.resolveIndex-1].context;
+      var parentModel = transition.state.handlerInfos[transition.resolveIndex-1].context;
 
-        return parentModel;
-      } else {
-        return;
-      }
+      return parentModel;
     }
 
     return this.findModel(name, value);

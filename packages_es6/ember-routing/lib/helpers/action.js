@@ -90,18 +90,12 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
         target = target.root;
       }
 
-      if (Ember.FEATURES.isEnabled("ember-routing-bound-action-name")) {
-        if (options.boundProperty) {
-          actionName = handlebarsGet(target, actionNameOrPath, options.options);
+      if (options.boundProperty) {
+        actionName = handlebarsGet(target, actionNameOrPath, options.options);
 
-          if(typeof actionName === 'undefined' || typeof actionName === 'function') {
-            Ember.assert("You specified a quoteless path to the {{action}} helper '" + actionNameOrPath + "' which did not resolve to an actionName. Perhaps you meant to use a quoted actionName? (e.g. {{action '" + actionNameOrPath + "'}}).", true);
-            actionName = actionNameOrPath;
-          }
-        }
-      } else {
-        if (options.boundProperty) {
-          Ember.deprecate("Using a quoteless parameter with {{action}} is deprecated. Please update to quoted usage '{{action \"" + actionNameOrPath + "\"}}.", false);
+        if(typeof actionName === 'undefined' || typeof actionName === 'function') {
+          Ember.assert("You specified a quoteless path to the {{action}} helper '" + actionNameOrPath + "' which did not resolve to an actionName. Perhaps you meant to use a quoted actionName? (e.g. {{action '" + actionNameOrPath + "'}}).", true);
+          actionName = actionNameOrPath;
         }
       }
 
