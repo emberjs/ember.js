@@ -1,5 +1,40 @@
 # Ember Changelog
 
+### Ember 1.5.0-beta.4 (March 10, 2014)
+
+* Allow Ember Inspector to access models with custom resolver.
+* [BUGFIX] Allow components with layoutName specified by parent class to specify templateName.
+* [BUGFIX] Don't raise error when a destroyed array is assigned to ArrayProxy.
+* [BUGFIX] Use better ajax events for ember-testing counters.
+* [BUGFIX] Move AJAX listeners into Ember.setupForTesting.
+
+### Ember 1.5.0-beta.3 (March 1, 2014)
+
+* [BUGFIX] PromiseProxyMixin reset isFulfilled and isRejected.
+* Use documentElement instead of body for ember-extension detection.
+* Many documentation updates.
+
+### Ember 1.5.0-beta.2 (February 23, 2014)
+
+* [SECURITY] Ensure that `ember-routing-auto-location` cannot be forced to redirect to another domain.
+* [BUGFIX beta] Handle ES6 transpiler errors.
+* [BUGFIX beta] Ensure namespaces are cleaned up.
+* Many documentation updates.
+
+### Ember 1.5.0-beta.1 (February 14, 2014)
+
+* [FEATURE ember-handlebars-log-primitives]
+* [FEATURE ember-testing-routing-helpers]
+* [FEATURE ember-testing-triggerEvent-helper]
+* [FEATURE computed-read-only]
+* [FEATURE ember-metal-is-blank]
+* [FEATURE ember-eager-url-update]
+* [FEATURE ember-routing-auto-location]
+* [FEATURE ember-routing-bound-action-name]
+* [FEATURE ember-routing-inherits-parent-model]
+* [BREAKING CHANGE] `Ember.run.throttle` now supports leading edge execution. To follow industry standard leading edge is the default.
+* [BUGFIX] Fixed how parentController property of an itemController when nested. Breaking for apps that rely on previous broken behavior of an itemController's `parentController` property skipping its ArrayController when nested.
+
 ### Ember 1.4.0 (February 13, 2014)
 
 * [SECURITY] Ensure link-to non-block escapes title.
@@ -84,6 +119,11 @@
 * Components are lazily looked up.
 * Renaming everyBy and anyBy to isEvery and isAny.
 
+###Ember 1.2.1 _(January 14, 2014)_
+
+* [SECURITY] Ensure primitive value contexts are escaped.
+* [SECURITY] Ensure {{group}} helper escapes properly.
+
 ###Ember 1.2.0 _(November 22, 2013)_
 
 * [BUGFIX] Publish ember-handlebars-compiler along with builds.
@@ -138,6 +178,19 @@
 * Update route recognizer
 * Allow apps with custom jquery builds to exclude the event-alias module
 * Removes long-deprecated getPath/setPath
+
+###Ember 1.1.3 _(January 13, 2014)_
+
+* [SECURITY] Ensure primitive value contexts are escaped.
+* [SECURITY] Ensure {{group}} helper escapes properly.
+
+###Ember 1.1.2 _(October 25, 2013)
+
+* [BUGFIX] Fix failures in component rendering. - Fixes #3637
+
+###Ember 1.1.1 _(October 23, 2013)_
+
+* [BUGFIX] Allow Ember.Object.create to accept an Ember.Object.
 
 ### Ember 1.1.0 _(October 21, 2013)_
 

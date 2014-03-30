@@ -334,10 +334,19 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
         for (var k in queryParams) {
           if (queryParams.hasOwnProperty(k)) {
 
+            var key = false,
+                descopedKey = Ember.Router._descopeQueryParam(k);
+
+            if (queryParams[k] in params) {
+              key = queryParams[k];
+            } else if (params[descopedKey] !== undefined) {
+              key = descopedKey;
+            }
+
             // Do a reverse lookup to see if the changed query
             // param URL key corresponds to a QP property on
             // this controller.
-            if (queryParams[k] in params) {
+            if (key) {
               // Update this controller property in a way that
               // won't fire observers.
               controller._finalizingQueryParams = true;
@@ -346,7 +355,7 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
                 // value wasn't overriden in setupController.
 
                 // Arrays coming from router.js should be Emberized.
-                var newValue = params[queryParams[k]];
+                var newValue = params[key];
                 newValue = Ember.isArray(newValue) ? Ember.A(newValue) : newValue;
                 set(controller, k, newValue);
               }
@@ -355,19 +364,32 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
               // Delete from params so that child routes
               // don't also try to respond to changes to
               // non-fully-qualified query param name changes.
-              delete params[queryParams[k]];
+              delete params[key];
             }
 
             // Query params are ordered. This action bubbles up
             // the route hierarchy so we unshift so that the final
             // order of query params goes from root to leaf.
-            finalParams.unshift({
-              key: queryParams[k],
-              value: get(controller, k)
-            });
+            var param = {
+              longform: queryParams[k],
+              shortform: descopedKey,
+              value: Ember.copy(get(controller, k))
+            };
+
+            var useLongform = false;
+
+            for (var i = 0, l = finalParams.length; i < l; i++) {
+              if (finalParams[i].key === descopedKey) {
+                useLongform = true;
+                finalParams[i].key = finalParams[i].longform;
+              }
+            }
+
+            param.key = useLongform ? queryParams[k] : descopedKey;
+
+            finalParams.unshift(param);
           }
         }
-
         controller._queryParamChangesDuringSuspension = null;
 
         // Bubble so that parent routes can claim QPs.
@@ -403,11 +425,54 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
   activate: Ember.K,
 
   /**
-    Transition into another route. Optionally supply model(s) for the
-    route in question. If multiple models are supplied they will be applied
-    last to first recursively up the resource tree (see Multiple Models Example
-    below). The model(s) will be serialized into the URL using the appropriate
-    route's `serialize` hook. See also 'replaceWith'.
+    Transition the application into another route. The route may
+    be either a single route or route path:
+
+    ```javascript
+    this.transitionTo('blogPosts');
+    this.transitionTo('blogPosts.recentEntries');
+    ```
+
+    Optionally supply a model for the route in question. The model
+    will be serialized into the URL using the `serialize` hook of
+    the route:
+
+    ```javascript
+    this.transitionTo('blogPost', aPost);
+    ```
+
+    If a literal is passed (such as a number or a string), it will
+    be treated as an identifier instead. In this case, the `model`
+    hook of the route will be triggered:
+
+    ```javascript
+    this.transitionTo('blogPost', 1);
+    ```
+
+    Multiple models will be applied last to first recursively up the
+    resource tree.
+
+    ```javascript
+    App.Router.map(function() {
+      this.resource('blogPost', {path:':blogPostId'}, function(){
+        this.resource('blogComment', {path: ':blogCommentId'});
+      });
+    });
+    
+    this.transitionTo('blogComment', aPost, aComment);
+    this.transitionTo('blogComment', 1, 13);
+    ```
+
+    It is also possible to pass a URL (a string that starts with a
+    `/`). This is intended for testing and debugging purposes and
+    should rarely be used in production code.
+
+    ```javascript
+    this.transitionTo('/');
+    this.transitionTo('/blog/post/1/comment/13');
+    ```
+
+    See also 'replaceWith'.
 
     Simple Transition Example
 
@@ -430,23 +495,23 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     });
     ```
 
-   Transition to a nested route
+    Transition to a nested route
 
-   ```javascript
-   App.Router.map(function() {
-     this.resource('articles', { path: '/articles' }, function() {
-       this.route('new');
-     });
-   });
+    ```javascript
+    App.Router.map(function() {
+      this.resource('articles', { path: '/articles' }, function() {
+        this.route('new');
+      });
+    });
 
-   App.IndexRoute = Ember.Route.extend({
-     actions: {
-       transitionToNewArticle: function() {
-         this.transitionTo('articles.new');
-       }
-     }
-   });
-   ```
+    App.IndexRoute = Ember.Route.extend({
+      actions: {
+        transitionToNewArticle: function() {
+          this.transitionTo('articles.new');
+        }
+      }
+    });
+    ```
 
     Multiple Models Example
 
@@ -468,11 +533,12 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
         }
       }
     });
+    ```
 
     @method transitionTo
-    @param {String} name the name of the route
-    @param {...Object} models the model(s) to be used while transitioning
-    to the route.
+    @param {String} name the name of the route or a URL
+    @param {...Object} models the model(s) or identifier(s) to be used while
+      transitioning to the route.
     @return {Transition} the transition object associated with this
       attempted transition
   */
@@ -549,9 +615,9 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     ```
 
     @method replaceWith
-    @param {String} name the name of the route
-    @param {...Object} models the model(s) to be used while transitioning
-    to the route.
+    @param {String} name the name of the route or a URL
+    @param {...Object} models the model(s) or identifier(s) to be used while
+      transitioning to the route.
     @return {Transition} the transition object associated with this
       attempted transition
   */
@@ -859,8 +925,18 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
       sawParams = true;
     }
 
-    if (!name && sawParams) { return params; }
-    else if (!name) { return; }
+    if (!name && sawParams) { return Ember.copy(params); }
+    else if (!name) {
+      if (Ember.FEATURES.isEnabled("ember-routing-inherits-parent-model")) {
+        if (transition.resolveIndex !== transition.state.handlerInfos.length-1) { return; }
+
+        var parentModel = transition.state.handlerInfos[transition.resolveIndex-1].context;
+
+        return parentModel;
+      } else {
+        return;
+      }
+    }
 
     return this.findModel(name, value);
   },
@@ -917,6 +993,8 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
                      "hook.", modelClass);
 
         if (!modelClass) { return; }
+
+        Ember.assert(classify(name) + ' has no method `find`.', typeof modelClass.find === 'function');
 
         return modelClass.find(value);
       }
@@ -982,6 +1060,26 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
 
     By default, the `setupController` hook sets the `content` property of
     the controller to the `model`.
+
+    If you implement the `setupController` hook in your Route, it will
+    prevent this default behavior. If you want to preserve that behavior
+    when implementing your `setupController` function, make sure to call
+    `_super`:
+
+    ```js
+    App.PhotosRoute = Ember.Route.extend({
+      model: function() {
+        return App.Photo.find();
+      },
+
+      setupController: function (controller, model) {
+        // Call _super for default behavior
+        this._super(controller, model);
+        // Implement your custom setup after
+        this.controllerFor('application').set('showingPhotos', true);
+      }
+    });
+    ```
 
     This means that your template will get a proxy for the model as its
     context, and you can act as though the model itself was the context.
@@ -1308,11 +1406,25 @@ Ember.Route = Ember.Object.extend(Ember.ActionHandler, {
     });
     ```
 
+    Alternatively, you can pass the `outlet` name directly as a string.
+
+    Example:
+
+    ```js
+    hideModal: function(evt) {
+      this.disconnectOutlet('modal');
+    }
+    ```
+
     @method disconnectOutlet
-    @param {Object} options the options
+    @param {Object|String} options the options hash or outlet name
   */
   disconnectOutlet: function(options) {
-    options = options || {};
+    if (!options || typeof options === "string") {
+      var outletName = options;
+      options = {};
+      options.outlet = outletName;
+    }
     options.parentView = options.parentView ? options.parentView.replace(/\//g, '.') : parentTemplate(this);
     options.outlet = options.outlet || 'main';
 

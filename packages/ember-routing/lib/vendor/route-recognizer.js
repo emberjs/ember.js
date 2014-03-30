@@ -1,4 +1,4 @@
-define("route-recognizer", 
+define("route-recognizer",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -8,6 +8,10 @@ define("route-recognizer",
     ];
 
     var escapeRegex = new RegExp('(\\' + specials.join('|\\') + ')', 'g');
+
+    function isArray(test) {
+      return Object.prototype.toString.call(test) === "[object Array]";
+    }
 
     // A Segment represents a segment in the original route description.
     // Each Segment type provides an `eachChar` and `regex` method.
@@ -227,10 +231,24 @@ define("route-recognizer",
     END IF **/
 
     // This is a somewhat naive strategy, but should work in a lot of cases
-    // A better strategy would properly resolve /posts/:id/new and /posts/edit/:id
+    // A better strategy would properly resolve /posts/:id/new and /posts/edit/:id.
+    //
+    // This strategy generally prefers more static and less dynamic matching.
+    // Specifically, it
+    //
+    //  * prefers fewer stars to more, then
+    //  * prefers using stars for less of the match to more, then
+    //  * prefers fewer dynamic segments to more, then
+    //  * prefers more static segments to more
     function sortSolutions(states) {
       return states.sort(function(a, b) {
         if (a.types.stars !== b.types.stars) { return a.types.stars - b.types.stars; }
+
+        if (a.types.stars) {
+          if (a.types.statics !== b.types.statics) { return b.types.statics - a.types.statics; }
+          if (a.types.dynamics !== b.types.dynamics) { return b.types.dynamics - a.types.dynamics; }
+        }
+
         if (a.types.dynamics !== b.types.dynamics) { return a.types.dynamics - b.types.dynamics; }
         if (a.types.statics !== b.types.statics) { return b.types.statics - a.types.statics; }
 
@@ -396,25 +414,31 @@ define("route-recognizer",
 
       generateQueryString: function(params, handlers) {
         var pairs = [];
+        var keys = [];
         for(var key in params) {
           if (params.hasOwnProperty(key)) {
-            var value = params[key];
-            if (value === false || value == null) {
-              continue;
+            keys.push(key);
+          }
+        }
+        keys.sort();
+        for (var i = 0, len = keys.length; i < len; i++) {
+          key = keys[i];
+          var value = params[key];
+          if (value === false || value == null) {
+            continue;
+          }
+          var pair = key;
+          if (isArray(value)) {
+            for (var j = 0, l = value.length; j < l; j++) {
+              var arrayPair = key + '[]' + '=' + encodeURIComponent(value[j]);
+              pairs.push(arrayPair);
             }
-            var pair = key;
-            if (Array.isArray(value)) {
-              for (var i = 0, l = value.length; i < l; i++) {
-                var arrayPair = key + '[]' + '=' + encodeURIComponent(value[i]);
-                pairs.push(arrayPair);
-              }
-            }
-            else if (value !== true) {
-              pair += "=" + encodeURIComponent(value);
-              pairs.push(pair);
-            } else {
-              pairs.push(pair);
-            }
+          }
+          else if (value !== true) {
+            pair += "=" + encodeURIComponent(value);
+            pairs.push(pair);
+          } else {
+            pairs.push(pair);
           }
         }
 
@@ -449,15 +473,17 @@ define("route-recognizer",
           } else {
             queryParams[key] = value;
           }
-          
+
         }
         return queryParams;
       },
 
       recognize: function(path) {
         var states = [ this.rootState ],
-            pathLen, i, l, queryStart, queryParams = {}, 
+            pathLen, i, l, queryStart, queryParams = {},
             isSlashDropped = false;
+
+        path = decodeURI(path);
 
         queryStart = path.indexOf('?');
         if (queryStart !== -1) {
@@ -493,7 +519,7 @@ define("route-recognizer",
         var state = solutions[0];
 
         if (state && state.handlers) {
-          // if a trailing slash was dropped and a star segment is the last segment 
+          // if a trailing slash was dropped and a star segment is the last segment
           // specified, put the trailing slash back
           if (isSlashDropped && state.regex.source.slice(-5) === "(.+)$") {
             path = path + "/";

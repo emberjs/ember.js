@@ -112,6 +112,42 @@ test('Including the same mixin more than once will only run once', function() {
   equal(cnt, 1, 'should invoke MixinA.foo one time');
 });
 
+test('_super from a single mixin with no superclass does not error', function() {
+  var MixinA = Ember.Mixin.create({
+    foo: function() {
+      this._super();
+    }
+  });
+
+  var obj = {};
+  MixinA.apply(obj);
+
+  obj.foo();
+  ok(true);
+});
+
+test('_super from a first-of-two mixins with no superclass function does not error', function() {
+  // _super was previously calling itself in the second assertion.
+  // Use remaining count of calls to ensure it doesn't loop indefinitely.
+  var remaining = 3;
+  var MixinA = Ember.Mixin.create({
+    foo: function() {
+      if (remaining-- > 0) this._super();
+    }
+  });
+
+  var MixinB = Ember.Mixin.create({
+    foo: function() { this._super(); }
+  });
+
+  var obj = {};
+  MixinA.apply(obj);
+  MixinB.apply(obj);
+
+  obj.foo();
+  ok(true);
+});
+
 // ..........................................................
 // CONFLICTS
 //

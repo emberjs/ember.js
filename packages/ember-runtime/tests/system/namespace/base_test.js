@@ -13,17 +13,8 @@ module('Ember.Namespace', {
   teardown: function() {
     Ember.BOOTED = false;
 
-    if (lookup.NamespaceA) { Ember.run(function() { lookup.NamespaceA.destroy(); }); }
-    if (lookup.NamespaceB) { Ember.run(function() { lookup.NamespaceB.destroy(); }); }
-    if (lookup.namespaceC) {
-      try {
-        Ember.TESTING_DEPRECATION = true;
-        Ember.run(function() {
-          lookup.namespaceC.destroy();
-        });
-      } finally {
-        Ember.TESTING_DEPRECATION = false;
-      }
+    for(var prop in lookup) {
+      if (lookup[prop]) { Ember.run(lookup[prop], 'destroy'); }
     }
 
     Ember.lookup = originalLookup;
@@ -69,19 +60,15 @@ test("Classes under Ember are properly named", function() {
 test("Lowercase namespaces should be deprecated", function() {
   lookup.namespaceC = Ember.Namespace.create();
 
-  var originalWarn = Ember.Logger.warn,
-      loggerWarning;
-
-  Ember.Logger.warn = function(msg) { loggerWarning = msg; };
-
-  try {
+  expectDeprecation(function(){
     lookup.namespaceC.toString();
-  } finally {
-    Ember.Logger.warn = originalWarn;
-  }
+  }, "Namespaces should not begin with lowercase.");
 
-  // Ignore backtrace
-  equal(loggerWarning.split("\n")[0], "DEPRECATION: Namespaces should not begin with lowercase.");
+  expectDeprecation(function(){
+    Ember.run(function() {
+      lookup.namespaceC.destroy();
+    });
+  }, "Namespaces should not begin with lowercase.");
 });
 
 test("A namespace can be assigned a custom name", function() {
@@ -129,4 +116,20 @@ test("A nested namespace can be looked up by its name", function() {
   UI.Nav = Ember.Namespace.create();
 
   equal(Ember.Namespace.byName('UI.Nav'), UI.Nav);
+});
+
+test("Destroying a namespace before caching lookup removes it from the list of namespaces", function(){
+  var CF = lookup.CF = Ember.Namespace.create();
+
+  Ember.run(CF,'destroy');
+  equal(Ember.Namespace.byName('CF'), undefined, "namespace can not be found after destroyed");
+});
+
+test("Destroying a namespace after looking up removes it from the list of namespaces", function(){
+  var CF = lookup.CF = Ember.Namespace.create();
+
+  equal(Ember.Namespace.byName('CF'), CF, "precondition - namespace can be looked up by name");
+
+  Ember.run(CF,'destroy');
+  equal(Ember.Namespace.byName('CF'), undefined, "namespace can not be found after destroyed");
 });

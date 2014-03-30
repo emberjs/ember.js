@@ -118,22 +118,17 @@ test("Action can be handled by a superclass' actions object", function() {
   controller.send("baz");
 });
 
-module('Ember.Controller deprecations',{
-  setup: function() {
-    Ember.TESTING_DEPRECATION = true;
-  },
-  teardown: function() {
-    Ember.TESTING_DEPRECATION = false;
-  }
-});
+module('Ember.Controller deprecations');
 
-test("Action can be handled by method directly on controller (DEPRECATED)", function() {
-  expect(1);
-  var TestController = Ember.Controller.extend({
-    poke: function() {
-      ok(true, 'poked');
-    }
+if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
+  test("Action can be handled by method directly on controller (DEPRECATED)", function() {
+    expectDeprecation(/Action handlers implemented directly on controllers are deprecated/);
+    var TestController = Ember.Controller.extend({
+      poke: function() {
+        ok(true, 'poked');
+      }
+    });
+    var controller = TestController.create({});
+    controller.send("poke");
   });
-  var controller = TestController.create({});
-  controller.send("poke");
-});
+}

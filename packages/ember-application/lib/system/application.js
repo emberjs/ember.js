@@ -119,17 +119,23 @@ DeprecatedContainer.prototype = {
 
   ### Initializers
 
-  Libraries on top of Ember can register additional initializers, like so:
+  Libraries on top of Ember can add initializers, like so:
 
   ```javascript
   Ember.Application.initializer({
-    name: "store",
+    name: 'api-adapter',
 
     initialize: function(container, application) {
-      container.register('store:main', application.Store);
+      application.register('api-adapter:main', ApiAdapter);
     }
   });
   ```
+
+  Initializers provide an opportunity to access the container, which
+  organizes the different components of an Ember application. Additionally
+  they provide a chance to access the instantiated application. Beyond
+  being used for libraries, initializers are also a great way to organize
+  dependency injection or setup in your own application.
 
   ### Routing
 
@@ -375,17 +381,50 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   },
 
   /**
-    registers a factory for later injection
+    Registers a factory that can be used for dependency injection (with
+    `App.inject`) or for service lookup. Each factory is registered with
+    a full name including two parts: `type:name`.
 
-    Example:
+    A simple example:
 
     ```javascript
-    App = Ember.Application.create();
+    var App = Ember.Application.create();
+    App.Orange  = Ember.Object.extend();
+    App.register('fruit:favorite', App.Orange);
+    ```
 
-    App.Person  = Ember.Object.extend({});
-    App.Orange  = Ember.Object.extend({});
-    App.Email   = Ember.Object.extend({});
-    App.session = Ember.Object.create({});
+    Ember will resolve factories from the `App` namespace automatically.
+    For example `App.CarsController` will be discovered and returned if
+    an application requests `controller:cars`.
+
+    An example of registering a controller with a non-standard name:
+
+    ```javascript
+    var App = Ember.Application.create(),
+        Session  = Ember.Controller.extend();
+
+    App.register('controller:session', Session);
+
+    // The Session controller can now be treated like a normal controller,
+    // despite its non-standard name.
+    App.ApplicationController = Ember.Controller.extend({
+      needs: ['session']
+    });
+    ```
+
+    Registered factories are **instantiated** by having `create`
+    called on them. Additionally they are **singletons**, each time
+    they are looked up they return the same instance.
+
+    Some examples modifying that default behavior:
+
+    ```javascript
+    var App = Ember.Application.create();
+
+    App.Person  = Ember.Object.extend();
+    App.Orange  = Ember.Object.extend();
+    App.Email   = Ember.Object.extend();
+    App.session = Ember.Object.create();
 
     App.register('model:user', App.Person, {singleton: false });
     App.register('fruit:favorite', App.Orange);
@@ -396,28 +435,56 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     @method register
     @param  fullName {String} type:name (e.g., 'model:user')
     @param  factory {Function} (e.g., App.Person)
-    @param  options {String} (optional)
+    @param  options {Object} (optional) disable instantiation or singleton usage
   **/
   register: function() {
     var container = this.__container__;
     container.register.apply(container, arguments);
   },
-  /**
-    defines an injection or typeInjection
 
-    Example:
+  /**
+    Define a dependency injection onto a specific factory or all factories
+    of a type.
+
+    When Ember instantiates a controller, view, or other framework component
+    it can attach a dependency to that component. This is often used to
+    provide services to a set of framework components.
+
+    An example of providing a session object to all controllers:
+
+    ```javascript
+    var App = Ember.Application.create(),
+        Session = Ember.Object.extend({ isAuthenticated: false });
+
+    // A factory must be registered before it can be injected
+    App.register('session:main', Session);
+
+    // Inject 'session:main' onto all factories of the type 'controller'
+    // with the name 'session'
+    App.inject('controller', 'session', 'session:main');
+
+    App.IndexController = Ember.Controller.extend({
+      isLoggedIn: Ember.computed.alias('session.isAuthenticated')
+    });
+    ```
+
+    Injections can also be performed on specific factories.
 
     ```javascript
     App.inject(<full_name or type>, <property name>, <full_name>)
-    App.inject('controller:application', 'email', 'model:email')
-    App.inject('controller', 'source', 'source:main')
+    App.inject('route', 'source', 'source:main')
+    App.inject('route:application', 'email', 'model:email')
     ```
-    Please note that injections on models are currently disabled. 
-    This was done because ember-data was not ready for fully a container aware ecosystem.
-    
-    You can enable injections on models by setting `Ember.MODEL_FACTORY_INJECTIONS` flag to `true`
-    If model factory injections are enabled, models should not be
-    accessed globally (only through `container.lookupFactory('model:modelName'))`);
+
+    It is important to note that injections can only be performed on
+    classes that are instantiated by Ember itself. Instantiating a class
+    directly (via `create` or `new`) bypasses the dependency injection
+    system.
+
+    Ember-Data instantiates its models in a unique manner, and consequently
+    injections onto models (or all models) will not work as expected. Injections
+    on models can be enabled by setting `Ember.MODEL_FACTORY_INJECTIONS`
+    to `true`.
 
     @method inject
     @param  factoryNameOrType {String}
@@ -442,6 +509,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   initialize: function() {
     Ember.deprecate('Calling initialize manually is not supported. Please see Ember.Application#advanceReadiness and Ember.Application#deferReadiness');
   },
+
   /**
     Initialize the application. This happens automatically.
 
@@ -749,6 +817,10 @@ Ember.Application.reopenClass({
     container.register('router:main',  Ember.Router);
     container.injection('router:main', 'namespace', 'application:main');
 
+    if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
+      container.register('location:auto', Ember.AutoLocation);
+    }
+
     container.register('location:hash', Ember.HashLocation);
     container.register('location:history', Ember.HistoryLocation);
     container.register('location:none', Ember.NoneLocation);
@@ -757,6 +829,13 @@ Ember.Application.reopenClass({
     container.injection('controller', 'namespace', 'application:main');
 
     container.injection('route', 'router', 'router:main');
+
+    // DEBUGGING
+    container.register('resolver-for-debugging:main', container.resolver.__resolver__, { instantiate: false });
+    container.injection('container-debug-adapter:main', 'resolver', 'resolver-for-debugging:main');
+    container.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
+    // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
+    container.register('container-debug-adapter:main', Ember.ContainerDebugAdapter);
 
     return container;
   }
@@ -808,6 +887,8 @@ function resolverFor(namespace) {
       return fullName;
     }
   };
+
+  resolve.__resolver__ = resolver;
 
   return resolve;
 }

@@ -52,22 +52,21 @@ var Backburner = requireModule('backburner').Backburner,
   @param {Object} [args*] Any additional arguments you wish to pass to the method.
   @return {Object} return value from invoking the passed function.
 */
-Ember.run = function(target, method) {
-  var ret;
-
+Ember.run = function() {
   if (Ember.onerror) {
-    try {
-      ret = backburner.run.apply(backburner, arguments);
-    } catch (e) {
-      Ember.onerror(e);
-    }
+    return onerror(arguments);
   } else {
-    ret = backburner.run.apply(backburner, arguments);
+    return backburner.run.apply(backburner, arguments);
   }
-
-  return ret;
 };
 
+function onerror(args) {
+  try {
+    return backburner.run.apply(backburner, args);
+  } catch(error) {
+    Ember.onerror(error);
+  }
+}
 /**
   If no run-loop is present, it creates a new one. If a run loop is
   present it will queue itself to run on the existing run-loops action
@@ -142,7 +141,7 @@ Ember.run.join = function(target, method /* args */) {
   run-loop-wrapped callback handler.
 
   ```javascript
-  jQuery(window).on('resize', Ember.run.bind(this, this.triggerResize));
+  jQuery(window).on('resize', Ember.run.bind(this, this.handleResize));
   ```
 
   @method bind
@@ -156,9 +155,9 @@ Ember.run.join = function(target, method /* args */) {
   when called within an existing loop, no return value is possible.
 */
 Ember.run.bind = function(target, method /* args*/) {
-  var args = arguments;
+  var args = slice.call(arguments);
   return function() {
-    return Ember.run.join.apply(Ember.run, args);
+    return Ember.run.join.apply(Ember.run, args.concat(slice.call(arguments)));
   };
 };
 
@@ -476,7 +475,7 @@ Ember.run.next = function() {
 
   var throttle = Ember.run.throttle(myContext, function() {
     // will not be executed
-  }, 1);
+  }, 1, false);
   Ember.run.cancel(throttle);
 
   var debounce = Ember.run.debounce(myContext, function() {
@@ -489,8 +488,6 @@ Ember.run.next = function() {
   }, 100, true);
   // the 100ms delay until this method can be called again will be cancelled
   Ember.run.cancel(debounceImmediate);
-  ```
-  ```
   ```
 
   @method cancel
@@ -530,7 +527,7 @@ Ember.run.cancel = function(timer) {
   Immediate allows you to run the function immediately, but debounce
   other calls for this function until the wait time has elapsed. If
   `debounce` is called again before the specified time has elapsed,
-  the timer is reset and the entire period msut pass again before
+  the timer is reset and the entire period must pass again before
   the method can be called again.
 
   ```javascript
@@ -562,7 +559,8 @@ Ember.run.cancel = function(timer) {
     then it will be looked up on the passed target.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @param {Number} wait Number of milliseconds to wait.
-  @param {Boolean} immediate Trigger the function on the leading instead of the trailing edge of the wait interval.
+  @param {Boolean} immediate Trigger the function on the leading instead
+    of the trailing edge of the wait interval. Defaults to false.
   @return {Array} Timer information for use in cancelling, see `Ember.run.cancel`.
 */
 Ember.run.debounce = function() {
@@ -578,9 +576,7 @@ Ember.run.debounce = function() {
     var myContext = {name: 'throttle'};
 
     Ember.run.throttle(myContext, myFunc, 150);
-
-    // 50ms passes
-    Ember.run.throttle(myContext, myFunc, 150);
+    // myFunc is invoked with context myContext
 
     // 50ms passes
     Ember.run.throttle(myContext, myFunc, 150);
@@ -589,8 +585,9 @@ Ember.run.debounce = function() {
     Ember.run.throttle(myContext, myFunc, 150);
 
     // 150ms passes
+    Ember.run.throttle(myContext, myFunc, 150);
     // myFunc is invoked with context myContext
-    // console logs 'throttle ran.' twice, 150ms apart.
+    // console logs 'throttle ran.' twice, 250ms apart.
   ```
 
   @method throttle

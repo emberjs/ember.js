@@ -105,9 +105,6 @@ Ember.debug = function(message) {
     will be displayed.
 */
 Ember.deprecate = function(message, test) {
-  if (Ember.TESTING_DEPRECATION) { return; }
-
-  if (arguments.length === 1) { test = false; }
   if (test) { return; }
 
   if (Ember.ENV.RAISE_ON_DEPRECATION) { throw new Ember.Error(message); }
@@ -166,6 +163,27 @@ Ember.deprecateFunc = function(message, func) {
 };
 
 
+/**
+  Run a function meant for debugging. Ember build tools will remove any calls to
+  `Ember.runInDebug()` when doing a production build.
+
+  ```javascript
+  Ember.runInDebug( function() {
+    Ember.Handlebars.EachView.reopen({
+      didInsertElement: function() {
+        console.log("I'm happy");
+      }
+    });
+  });
+  ```
+
+  @method runInDebug
+  @param {Function} func The function to be executed.
+*/
+Ember.runInDebug = function(func) {
+  func()
+};
+
 // Inform the developer about the Ember Inspector if not installed.
 if (!Ember.testing) {
   var isFirefox = typeof InstallTrigger !== 'undefined';
@@ -173,13 +191,13 @@ if (!Ember.testing) {
 
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
     window.addEventListener("load", function() {
-      if (document.body && document.body.dataset && !document.body.dataset.emberExtension) {
+      if (document.documentElement && document.documentElement.dataset && !document.documentElement.dataset.emberExtension) {
         var downloadURL;
 
         if(isChrome) {
           downloadURL = 'https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi';
         } else if(isFirefox) {
-          downloadURL = 'https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/'
+          downloadURL = 'https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/';
         }
 
         Ember.debug('For more advanced debugging, install the Ember Inspector from ' + downloadURL);

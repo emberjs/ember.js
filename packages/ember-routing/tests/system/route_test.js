@@ -74,6 +74,23 @@ test("'store' can be injected by data persistence frameworks", function() {
   equal(route.findModel('post', 1), post, '#findModel returns the correct post');
 });
 
+test("assert if 'store.find' method is not found", function() {
+  expect(1);
+  Ember.run(route, 'destroy');
+
+  var container = new Ember.Container();
+  var Post = Ember.Object.extend();
+
+  container.register('route:index', Ember.Route);
+  container.register('model:post',  Post);
+
+  route = container.lookup('route:index');
+
+  expectAssertion(function() {
+    route.findModel('post', 1);
+  }, 'Post has no method `find`.');
+});
+
 test("asserts if model class is not found", function() {
   expect(1);
   Ember.run(route, 'destroy');

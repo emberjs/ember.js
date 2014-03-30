@@ -1,3 +1,5 @@
+/*globals EmberDev */
+
 var App, logs, originalLogger;
 
 module("Ember.Application – logging of generated classes", {
@@ -66,6 +68,11 @@ function visit(path) {
 }
 
 test("log class generation if logging enabled", function() {
+  if (EmberDev && EmberDev.runningProdBuild){
+    ok(true, 'Logging does not occur in production builds');
+    return;
+  }
+
   Ember.run(App, 'advanceReadiness');
 
   visit('/posts').then(function() {
@@ -86,6 +93,11 @@ test("do NOT log class generation if logging disabled", function() {
 });
 
 test("actively generated classes get logged", function() {
+  if (EmberDev && EmberDev.runningProdBuild){
+    ok(true, 'Logging does not occur in production builds');
+    return;
+  }
+
   Ember.run(App, 'advanceReadiness');
 
   visit('/posts').then(function() {
@@ -155,6 +167,11 @@ module("Ember.Application – logging of view lookups", {
 });
 
 test("log when template and view are missing when flag is active", function() {
+  if (EmberDev && EmberDev.runningProdBuild){
+    ok(true, 'Logging does not occur in production builds');
+    return;
+  }
+
   App.register('template:application', function() { return ''; });
   Ember.run(App, 'advanceReadiness');
 
@@ -178,6 +195,11 @@ test("do not log when template and view are missing when flag is not true", func
 });
 
 test("log which view is used with a template", function() {
+  if (EmberDev && EmberDev.runningProdBuild){
+    ok(true, 'Logging does not occur in production builds');
+    return;
+  }
+
   App.register('template:application', function() { return 'Template with default view'; });
   App.register('template:foo', function() { return 'Template with custom view'; });
   App.register('view:posts', Ember.View.extend({templateName: 'foo'}));

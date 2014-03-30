@@ -308,7 +308,7 @@ Ember.computed.filter = function(dependentKey, callback) {
   @for Ember
   @param {String} dependentKey
   @param {String} propertyKey
-  @param {String} value
+  @param {*} value
   @return {Ember.ComputedProperty} the filtered array
 */
 Ember.computed.filterBy = function(dependentKey, propertyKey, value) {
@@ -603,9 +603,12 @@ SearchProxy = Ember.ObjectProxy.extend();
   - `itemA` the first item to compare.
   - `itemB` the second item to compare.
 
-  This function should return `-1` when `itemA` should come before
-  `itemB`. It should return `1` when `itemA` should come after
+  This function should return negative number (e.g. `-1`) when `itemA` should come before
+  `itemB`. It should return positive number (e.g. `1`) when `itemA` should come after
   `itemB`. If the `itemA` and `itemB` are equal this function should return `0`.
+  
+  Therefore, if this function is comparing some numeric values, simple `itemA - itemB` or
+  `itemA.get( 'foo' ) - itemB.get( 'foo' )` can be used instead of series of `if`.
 
   Example
 
@@ -697,10 +700,12 @@ Ember.computed.sort = function (itemsKey, sortDefinition) {
 
 
       instanceMeta.order = function (itemA, itemB) {
-        var sortProperty, result, asc;
+        var isProxy = itemB instanceof SearchProxy,
+            sortProperty, result, asc;
+
         for (var i = 0; i < this.sortProperties.length; ++i) {
           sortProperty = this.sortProperties[i];
-          result = Ember.compare(get(itemA, sortProperty), get(itemB, sortProperty));
+          result = Ember.compare(get(itemA, sortProperty), isProxy ? itemB[sortProperty] : get(itemB, sortProperty));
 
           if (result !== 0) {
             asc = this.sortPropertyAscending[sortProperty];

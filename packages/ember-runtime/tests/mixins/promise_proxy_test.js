@@ -191,3 +191,38 @@ test("should work with promise inheritance", function(){
 
   ok(proxy.then() instanceof PromiseSubclass, 'promise proxy respected inheritence');
 });
+
+test("should reset isFulfilled and isRejected when promise is reset", function() {
+  var deferred = Ember.RSVP.defer();
+
+  var proxy = ObjectPromiseProxy.create({
+    promise: deferred.promise
+  });
+
+  equal(get(proxy, 'isPending'),   true,  'expects the proxy to indicate that it is loading');
+  equal(get(proxy, 'isSettled'),   false, 'expects the proxy to indicate that it is not settled');
+  equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
+  equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
+
+  Ember.run(deferred, 'resolve');
+
+  equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is no longer loading');
+  equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
+  equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
+  equal(get(proxy, 'isFulfilled'), true,  'expects the proxy to indicate that it is fulfilled');
+
+  var anotherDeferred = Ember.RSVP.defer();
+  proxy.set('promise', anotherDeferred.promise);
+
+  equal(get(proxy, 'isPending'),   true,  'expects the proxy to indicate that it is loading');
+  equal(get(proxy, 'isSettled'),   false, 'expects the proxy to indicate that it is not settled');
+  equal(get(proxy, 'isRejected'),  false, 'expects the proxy to indicate that it is not rejected');
+  equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
+
+  Ember.run(anotherDeferred, 'reject');
+
+  equal(get(proxy, 'isPending'),   false, 'expects the proxy to indicate that it is not longer loading');
+  equal(get(proxy, 'isSettled'),   true,  'expects the proxy to indicate that it is settled');
+  equal(get(proxy, 'isRejected'),  true,  'expects the proxy to indicate that it is  rejected');
+  equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
+});

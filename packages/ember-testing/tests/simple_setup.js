@@ -10,26 +10,3 @@ module('Simple Testing Setup', {
     }
   }
 });
-
-if (Ember.FEATURES.isEnabled('ember-testing-simple-setup')){
-  test('testing is setup automatically, if the application is created with testing = true', function(){
-    Ember.run(function(){
-      App = Ember.Application.create({testing: true});
-    });
-
-    ok(Ember.keys(App.testHelpers).length > 0);
-  });
-
-  test('the test helper container can be supplied when creating the application', function(){
-    var container = {};
-
-    Ember.run(function(){
-      App = Ember.Application.create({
-        testing: true,
-        helperContainer: container
-      });
-    });
-
-    ok(Ember.keys(container).length > 0);
-  });
-}

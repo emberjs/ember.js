@@ -87,7 +87,7 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
 
     // If {{#each}} is looping over an array of controllers,
     // point each child view at their respective controller.
-    if (content && get(content, 'isController')) {
+    if (content && content.isController) {
       set(view, 'controller', content);
     }
 
@@ -105,6 +105,24 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
 
     return this;
   }
+});
+
+// Defeatureify doesn't seem to like nested functions that need to be removed
+function _addMetamorphCheck() {
+  Ember.Handlebars.EachView.reopen({
+    _checkMetamorph: Ember.on('didInsertElement', function() {
+      Ember.assert("The metamorph tags, " +
+                   this.morph.start + " and " + this.morph.end +
+                   ", have different parents.\nThe browser has fixed your template to output valid HTML (for example, check that you have properly closed all tags and have used a TBODY tag when creating a table with '{{#each}}')",
+        document.getElementById( this.morph.start ).parentNode ===
+        document.getElementById( this.morph.end ).parentNode
+      );
+    })
+  });
+}
+
+Ember.runInDebug( function() {
+  _addMetamorphCheck();
 });
 
 var GroupedEach = Ember.Handlebars.GroupedEach = function(context, path, options) {

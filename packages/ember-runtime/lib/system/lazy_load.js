@@ -1,3 +1,5 @@
+/*globals CustomEvent */
+
 var forEach = Ember.ArrayPolyfills.forEach;
 
 /**
@@ -48,6 +50,11 @@ Ember.onLoad = function(name, callback) {
 */
 Ember.runLoadHooks = function(name, object) {
   loaded[name] = object;
+
+  if (typeof window === 'object' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === "function") {
+    var event = new CustomEvent(name, {detail: object, name: name});
+    window.dispatchEvent(event);
+  }
 
   if (loadHooks[name]) {
     forEach.call(loadHooks[name], function(callback) {

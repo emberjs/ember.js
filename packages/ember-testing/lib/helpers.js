@@ -11,22 +11,6 @@ var get = Ember.get,
     asyncHelper = Test.registerAsyncHelper,
     countAsync = 0;
 
-Test.pendingAjaxRequests = 0;
-
-Test.onInjectHelpers(function() {
-  Ember.$(document).ajaxStart(function() {
-    Test.pendingAjaxRequests++;
-  });
-
-  Ember.$(document).ajaxStop(function() {
-    Ember.assert("An ajaxStop event which would cause the number of pending AJAX " +
-                 "requests to be negative has been triggered. This is most likely " +
-                 "caused by AJAX events that were started before calling " +
-                 "`injectTestHelpers()`.", Test.pendingAjaxRequests !== 0);
-    Test.pendingAjaxRequests--;
-  });
-});
-
 function currentRouteName(app){
   var appController = app.__container__.lookup('controller:application');
 
@@ -86,13 +70,19 @@ function click(app, selector, context) {
   return wait(app);
 }
 
-function triggerEvent(app, selector, context, event){
-  if (typeof method === 'undefined') {
-    event = context;
+function triggerEvent(app, selector, context, type, options){
+  if (arguments.length === 3) {
+    type = context;
     context = null;
   }
 
+  if (typeof options === 'undefined') {
+    options = {};
+  }
+
   var $el = findWithAssert(app, selector, context);
+
+  var event = Ember.$.Event(type, options);
 
   Ember.run($el, 'trigger', event);
 
@@ -100,16 +90,13 @@ function triggerEvent(app, selector, context, event){
 }
 
 function keyEvent(app, selector, context, type, keyCode) {
-  var $el;
   if (typeof keyCode === 'undefined') {
     keyCode = type;
     type = context;
     context = null;
   }
-  $el = findWithAssert(app, selector, context);
-  var event = Ember.$.Event(type, { keyCode: keyCode });
-  Ember.run($el, 'trigger', event);
-  return wait(app);
+
+  return triggerEvent(app, selector, context, type, { keyCode: keyCode, which: keyCode });
 }
 
 function fillIn(app, selector, context, text) {
@@ -234,8 +221,8 @@ asyncHelper('click', click);
 *
 * @method keyEvent
 * @param {String} selector jQuery selector for finding element on the DOM
-* @param {String} the type of key event, e.g. `keypress`, `keydown`, `keyup`
-* @param {Number} the keyCode of the simulated key event
+* @param {String} type the type of key event, e.g. `keypress`, `keydown`, `keyup`
+* @param {Number} keyCode the keyCode of the simulated key event
 * @return {RSVP.Promise}
 */
 asyncHelper('keyEvent', keyEvent);
@@ -385,9 +372,16 @@ if (Ember.FEATURES.isEnabled('ember-testing-triggerEvent-helper')) {
     triggerEvent('#some-elem-id', 'blur');
     ```
 
+    This is actually used internally by the `keyEvent` helper like so:
+
+    ```javascript
+    triggerEvent('#some-elem-id', 'keypress', { keyCode: 13 });
+    ```
+
    @method triggerEvent
    @param {String} selector jQuery selector for finding element on the DOM
-   @param {String} event The event to be triggered.
+   @param {String} type The event type to be triggered.
+   @param {String} options The options to be passed to jQuery.Event.
    @return {RSVP.Promise}
   */
   asyncHelper('triggerEvent', triggerEvent);

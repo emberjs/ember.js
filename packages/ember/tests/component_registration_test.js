@@ -76,9 +76,11 @@ test("If a component is registered, it is used", function() {
 });
 
 
-test("Late-registered components can be rendered with custom `template` property", function() {
+test("Late-registered components can be rendered with custom `template` property (DEPRECATED)", function() {
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>there goes {{my-hero}}</div>");
+
+  expectDeprecation(/Do not specify template on a Component/);
 
   boot(function() {
     container.register('component:my-hero', Ember.Component.extend({
@@ -149,11 +151,13 @@ test("Component lookups should take place on components' subcontainers", functio
   });
 });
 
-test("Assigning templateName to a component should setup the template as a layout", function(){
-  expect(1);
+test("Assigning templateName to a component should setup the template as a layout (DEPRECATED)", function(){
+  expect(2);
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>");
   Ember.TEMPLATES['foo-bar-baz'] = compile("{{text}}-{{yield}}");
+
+  expectDeprecation(/Do not specify templateName on a Component/);
 
   boot(function() {
     container.register('controller:application', Ember.Controller.extend({

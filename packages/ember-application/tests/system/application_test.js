@@ -1,3 +1,5 @@
+/*globals EmberDev */
+
 var view;
 var app;
 var application;
@@ -89,7 +91,9 @@ test("acts like a namespace", function() {
 
 module("Ember.Application initialization", {
   teardown: function() {
-    Ember.run(app, 'destroy');
+    if (app) {
+      Ember.run(app, 'destroy');
+    }
     Ember.TEMPLATES = {};
   }
 });
@@ -192,6 +196,11 @@ test("Minimal Application initialized with just an application template", functi
 });
 
 test('enable log of libraries with an ENV var', function() {
+  if (EmberDev && EmberDev.runningProdBuild){
+    ok(true, 'Logging does not occur in production builds');
+    return;
+  }
+
   var debug = Ember.debug;
   var messages = [];
 

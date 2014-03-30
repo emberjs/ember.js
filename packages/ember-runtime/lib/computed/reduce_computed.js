@@ -16,6 +16,9 @@ var e_get = Ember.get,
     a_slice = [].slice,
     o_create = Ember.create,
     forEach = Ember.EnumerableUtils.forEach,
+    cacheSet = Ember.cacheFor.set,
+    cacheGet = Ember.cacheFor.get,
+    cacheRemove = Ember.cacheFor.remove,
     // Here we explicitly don't allow `@each.foo`; it would require some special
     // testing, but there's no particular reason why it should be disallowed.
     eachPropertyPattern = /^(.*)\.@each\.(.*)/,
@@ -91,8 +94,6 @@ DependentArraysObserver.prototype = {
   },
 
   setupObservers: function (dependentArray, dependentKey) {
-    Ember.assert("dependent array must be an `Ember.Array`", Ember.Array.detect(dependentArray));
-
     this.dependentKeysByGuid[guidFor(dependentArray)] = dependentKey;
 
     dependentArray.addArrayObserver(this, {
@@ -456,7 +457,6 @@ function ReduceComputedProperty(options) {
   var cp = this;
 
   this.options = options;
-  this._instanceMetas = {};
 
   this._dependentKeys = null;
   // A map of dependentKey -> [itemProperty, ...] that tracks what properties of
@@ -468,11 +468,10 @@ function ReduceComputedProperty(options) {
   this.cacheable();
 
   this.recomputeOnce = function(propertyName) {
-    // What we really want to do is coalesce by <cp, propertyName>.
-    // We need a form of `scheduleOnce` that accepts an arbitrary token to
-    // coalesce by, in addition to the target and method.
-    Ember.run.once(this, recompute, propertyName);
+    // TODO: Coalesce recomputation by <this, propertyName, cp>.
+    recompute.call(this, propertyName);
   };
+
   var recompute = function(propertyName) {
     var dependentKeys = cp._dependentKeys,
         meta = cp._instanceMeta(this, propertyName),
@@ -482,6 +481,11 @@ function ReduceComputedProperty(options) {
 
     meta.dependentArraysObserver.suspendArrayObservers(function () {
       forEach(cp._dependentKeys, function (dependentKey) {
+        Ember.assert(
+          "dependent array " + dependentKey + " must be an `Ember.Array`.  " +
+          "If you are not extending arrays, you will need to wrap native arrays with `Ember.A`",
+          !(Ember.isArray(get(this, dependentKey)) && !Ember.Array.detect(get(this, dependentKey))));
+
         if (!partiallyRecomputeFor(this, dependentKey)) { return; }
 
         var dependentArray = get(this, dependentKey),
@@ -549,19 +553,15 @@ ReduceComputedProperty.prototype._callbacks = function () {
 };
 
 ReduceComputedProperty.prototype._hasInstanceMeta = function (context, propertyName) {
-  var guid = guidFor(context),
-      key = guid + ':' + propertyName;
-
-  return !!this._instanceMetas[key];
+  return !!metaFor(context).cacheMeta[propertyName];
 };
 
 ReduceComputedProperty.prototype._instanceMeta = function (context, propertyName) {
-  var guid = guidFor(context),
-      key = guid + ':' + propertyName,
-      meta = this._instanceMetas[key];
+  var cacheMeta = metaFor(context).cacheMeta,
+      meta = cacheMeta[propertyName];
 
   if (!meta) {
-    meta = this._instanceMetas[key] = new ReduceComputedPropertyInstanceMeta(context, propertyName, this.initialValue());
+    meta = cacheMeta[propertyName] = new ReduceComputedPropertyInstanceMeta(context, propertyName, this.initialValue());
     meta.dependentArraysObserver = new DependentArraysObserver(this._callbacks(), this, meta, context, propertyName, meta.sugarMeta);
   }
 
@@ -601,7 +601,7 @@ ReduceComputedProperty.prototype.property = function () {
       dependentArrayKey,
       itemPropertyKey;
 
-  forEach(a_slice.call(arguments), function (dependentKey) {
+  forEach(args, function (dependentKey) {
     if (doubleEachPropertyPattern.test(dependentKey)) {
       throw new Ember.Error("Nested @each properties not supported: " + dependentKey);
     } else if (match = eachPropertyPattern.exec(dependentKey)) {

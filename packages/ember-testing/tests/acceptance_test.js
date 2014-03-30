@@ -104,7 +104,7 @@ test("helpers can be chained with then", function() {
 // Keep this for backwards compatibility
 
 test("helpers can be chained to each other", function() {
-  expect(4);
+  expect(5);
 
   currentRoute = 'index';
 
@@ -116,6 +116,7 @@ test("helpers can be chained to each other", function() {
     equal(Ember.$('.ember-text-field').val(), 'hello', "Fillin successfully works");
     find('.ember-text-field').one('keypress', function(e) {
       equal(e.keyCode, 13, "keyevent chained with correct keyCode.");
+      equal(e.which, 13, "keyevent chained with correct which.");
     });
   })
   .keyEvent('.ember-text-field', 'keypress', 13)
