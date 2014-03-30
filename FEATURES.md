@@ -44,13 +44,6 @@ for a detailed explanation.
 
   Added in [#4008](https://github.com/emberjs/ember.js/pull/4008).
 
-* `ember-metal-is-blank`
-
-  Adds `Ember.isBlank` method which returns true for an empty value or
-  a whitespace string.
-
-  Added in [#4049](https://github.com/emberjs/ember.js/pull/4049).  
-
 * `ember-eager-url-update`
 
   Invoking (clicking) `link-to` tags will immediately update the URL
