@@ -44,24 +44,6 @@ for a detailed explanation.
 
   Added in [#4008](https://github.com/emberjs/ember.js/pull/4008).
 
-* `ember-routing-auto-location`
-
-  Adds `auto` as a `location` option for the app's `Router`.
-
-  ```javascript
-  App.Router.reopen({
-    location: 'auto'
-  });
-  ```
-
-  When used, Ember will select the best location option based off browser
-  support with the priority order: history, hash, none.
-
-  Clean pushState paths accessed by hashchange-only browsers will be redirected
-  to the hash-equivalent and vice versa so future transitions look consistent.
-
-  Added in [#3725](https://github.com/emberjs/ember.js/pull/3725).
-
 * `ember-routing-bound-action-name`
 
   Enables using a bound property lookup to determine the action name to

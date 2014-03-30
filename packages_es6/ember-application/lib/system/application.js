@@ -845,10 +845,7 @@ Application.reopenClass({
     container.register('router:main',  Router);
     container.injection('router:main', 'namespace', 'application:main');
 
-    if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
-      container.register('location:auto', AutoLocation);
-    }
-
+    container.register('location:auto', AutoLocation);
     container.register('location:hash', HashLocation);
     container.register('location:history', HistoryLocation);
     container.register('location:none', NoneLocation);
