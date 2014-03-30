@@ -82,7 +82,7 @@ import {get} from "ember-metal/property_get";
   ```html
   <label>
     First name: <input type="text" />
-  <label>
+  </label>
   ```
 
   @method yield
