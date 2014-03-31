@@ -1,13 +1,16 @@
 import {Mixin} from 'ember-metal/mixin';
 
-test('without should create a new mixin excluding named properties', function() {
+test('without should create a new mixin excluding named properties - DEPRECATED', function() {
 
   var MixinA = Mixin.create({
-    foo: 'FOO',
-    bar: 'BAR'
-  });
+        foo: 'FOO',
+        bar: 'BAR'
+      }),
+      MixinB;
 
-  var MixinB = MixinA.without('bar');
+  expectDeprecation(function(){
+    MixinB = MixinA.without('bar');
+  }, /Mixin#without will be removed/);
 
   var obj = {};
   MixinB.apply(obj);

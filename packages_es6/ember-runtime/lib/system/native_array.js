@@ -36,7 +36,7 @@ var replace = EnumerableUtils._replace,
   @uses Ember.Observable
   @uses Ember.Copyable
 */
-var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
+var nativeArrayProperties = {
 
   // because length is a built-in property we need to know to just get the
   // original property.
@@ -81,9 +81,19 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
     return ret ;
   },
 
+  copy: function(deep) {
+    if (deep) {
+      return this.map(function(item) { return copy(item, true); });
+    }
+
+    return this.slice();
+  }
+};
+
+if (!Array.prototype.indexOf) {
   // If browser did not implement indexOf natively, then override with
   // specialized version
-  indexOf: function(object, startAt) {
+  nativeArrayProperties.indexOf = function(object, startAt) {
     var idx, len = this.length;
 
     if (startAt === undefined) startAt = 0;
@@ -94,9 +104,13 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
       if (this[idx] === object) return idx ;
     }
     return -1;
-  },
+  }
+}
 
-  lastIndexOf: function(object, startAt) {
+if (!Array.prototype.lastIndexOf) {
+  // If browser did not implement indexOf natively, then override with
+  // specialized version
+  nativeArrayProperties.lastIndexOf = function(object, startAt) {
     var idx, len = this.length;
 
     if (startAt === undefined) startAt = len-1;
@@ -107,26 +121,10 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
       if (this[idx] === object) return idx ;
     }
     return -1;
-  },
-
-  copy: function(deep) {
-    if (deep) {
-      return this.map(function(item) { return copy(item, true); });
-    }
-
-    return this.slice();
   }
-});
-
-// Remove any methods implemented natively so we don't override them
-var ignore = ['length'];
-forEach(NativeArray.keys(), function(methodName) {
-  if (Array.prototype[methodName]) ignore.push(methodName);
-});
-
-if (ignore.length>0) {
-  NativeArray = NativeArray.without.apply(NativeArray, ignore);
 }
+
+var NativeArray = Mixin.create(MutableArray, Observable, Copyable, nativeArrayProperties);
 
 /**
   Creates an `Ember.NativeArray` from an Array like object.
