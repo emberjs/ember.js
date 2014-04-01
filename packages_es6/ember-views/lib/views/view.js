@@ -1407,9 +1407,9 @@ var View = CoreView.extend({
         unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
 
     a_forEach(attributeBindings, function(binding) {
-      var split = binding.split(':'),
-          property = split[0],
-          attributeName = split[1] || property;
+      var match = binding.match(/([^:]*):?(.*)/),
+          property = match[1],
+          attributeName = match[2] || property;
 
       if (property in this) {
         this._setupAttributeBindingObservation(property, attributeName);
