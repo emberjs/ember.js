@@ -669,3 +669,81 @@ test("it doesn't assert when the morph tags have the same parent", function() {
 
   ok(true, "No assertion from valid template");
 });
+
+test("itemController specified in template with name binding does not change context", function() {
+  var Controller = EmberController.extend({
+    controllerName: computed(function() {
+      return "controller:"+this.get('content.name');
+    })
+  });
+
+  var container = new Container();
+
+  people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
+
+  var parentController = {
+    container: container,
+    people: people,
+    controllerName: 'controller:parentController'
+  };
+
+  container.register('controller:array', ArrayController.extend());
+
+  view = EmberView.create({
+    container: container,
+    template: templateFor('{{#each person in people itemController="person"}}{{controllerName}} - {{person.controllerName}} - {{/each}}'),
+    controller: parentController
+  });
+
+  container.register('controller:person', Controller);
+
+  append(view);
+
+  equal(view.$().text(), "controller:parentController - controller:Steve Holt - controller:parentController - controller:Annabelle - ");
+
+  run(function() {
+    people.pushObject({ name: "Yehuda Katz" });
+  });
+
+  assertText(view, "controller:parentController - controller:Steve Holt - controller:parentController - controller:Annabelle - controller:parentController - controller:Yehuda Katz - ");
+
+  run(function() {
+    set(parentController, 'people', A([{ name: "Trek Glowacki" }, { name: "Geoffrey Grosenbach" }]));
+  });
+
+  assertText(view, "controller:parentController - controller:Trek Glowacki - controller:parentController - controller:Geoffrey Grosenbach - ");
+
+  var controller = view.get('_childViews')[0].get('controller');
+  strictEqual(view.get('_childViews')[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
+});
+
+test("itemController specified in ArrayController with name binding does not change context", function() {
+  people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
+
+  var PersonController = ObjectController.extend({
+        controllerName: computed(function() {
+          return "controller:" + get(this, 'content.name') + ' of ' + get(this, 'parentController.company');
+        })
+      }),
+      PeopleController = ArrayController.extend({
+        content: people,
+        itemController: 'person',
+        company: 'Yapp',
+        controllerName: 'controller:people'
+      }),
+      container = new Container();
+
+  container.register('controller:people', PeopleController);
+  container.register('controller:person', PersonController);
+
+  view = EmberView.create({
+    container: container,
+    template: templateFor('{{#each person in this}}{{controllerName}} - {{person.controllerName}} - {{/each}}'),
+    controller: container.lookup('controller:people')
+  });
+
+
+  append(view);
+
+  equal(view.$().text(), "controller:people - controller:Steve Holt of Yapp - controller:people - controller:Annabelle of Yapp - ");
+});
