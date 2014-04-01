@@ -236,7 +236,9 @@ function collectionHelper(path, options) {
   }
   if (emptyViewClass) { hash.emptyView = emptyViewClass; }
 
-  if (!hash.keyword) {
+  if (hash.keyword) {
+    itemHash._context = this;
+  } else {
     itemHash._context = alias('content');
   }
 
