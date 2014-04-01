@@ -1,28 +1,34 @@
 # Ember Changelog
 
-### Ember 1.5.0-beta.4 (March 10, 2014)
+### Ember 1.6.0-beta.1 (March 31, 2014)
 
+* [BUGFIX] Add `which` attribute to event triggered by keyEvent test helper.
+* [Performance] Improve cache lookup throughput.
+* [FEATURE ember-routing-add-model-option]
+* [FEATURE ember-runtime-test-friendly-promises]
+* [FEATURE ember-metal-computed-empty-array]
+
+### Ember 1.5.0 (March 29, 2014)
+
+* [BUGFIX beta] Move reduceComputed instanceMetas into object's meta.
+* [BUGFIX beta] Total invalidation of arrayComputed by non-array dependencies should be synchronous.
+* [BUGFIX] run.bind keeps the arguments from the callback.
+* [BUGFIX] Do not attach new listeners on each setupForTesting call.
+* [BUGFIX] Ember.copy now supports Date.
+* [BUGFIX] Add `which` attribute to event triggered by test helper.
+* [BUGFIX beta] The `each` helper checks that the metamorph tags have the same parent.
 * Allow Ember Inspector to access models with custom resolver.
 * [BUGFIX] Allow components with layoutName specified by parent class to specify templateName.
 * [BUGFIX] Don't raise error when a destroyed array is assigned to ArrayProxy.
 * [BUGFIX] Use better ajax events for ember-testing counters.
 * [BUGFIX] Move AJAX listeners into Ember.setupForTesting.
-
-### Ember 1.5.0-beta.3 (March 1, 2014)
-
 * [BUGFIX] PromiseProxyMixin reset isFulfilled and isRejected.
 * Use documentElement instead of body for ember-extension detection.
 * Many documentation updates.
-
-### Ember 1.5.0-beta.2 (February 23, 2014)
-
 * [SECURITY] Ensure that `ember-routing-auto-location` cannot be forced to redirect to another domain.
 * [BUGFIX beta] Handle ES6 transpiler errors.
 * [BUGFIX beta] Ensure namespaces are cleaned up.
 * Many documentation updates.
-
-### Ember 1.5.0-beta.1 (February 14, 2014)
-
 * [FEATURE ember-handlebars-log-primitives]
 * [FEATURE ember-testing-routing-helpers]
 * [FEATURE ember-testing-triggerEvent-helper]
