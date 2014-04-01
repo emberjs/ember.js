@@ -28,7 +28,6 @@
 * [SECURITY] Ensure that `ember-routing-auto-location` cannot be forced to redirect to another domain.
 * [BUGFIX beta] Handle ES6 transpiler errors.
 * [BUGFIX beta] Ensure namespaces are cleaned up.
-* Many documentation updates.
 * [FEATURE ember-handlebars-log-primitives]
 * [FEATURE ember-testing-routing-helpers]
 * [FEATURE ember-testing-triggerEvent-helper]
