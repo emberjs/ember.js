@@ -420,6 +420,45 @@ test('defining templateName allows other templates to be rendered', function() {
 
 });
 
+test('Specifying a name to render should have precedence over everything else', function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeController = Ember.Controller.extend();
+  App.HomeRoute = Ember.Route.extend({
+    templateName: 'home',
+    controllerName: 'home',
+    viewName: 'home',
+
+    renderTemplate: function() {
+      this.render('homepage');
+    }
+  });
+
+  App.HomeView = Ember.View.extend({
+    template: Ember.Handlebars.compile("<h3>This should not be rendered</h3><p>{{home}}</p>")
+  });
+
+  App.HomepageController = Ember.ObjectController.extend({
+    content: {
+      home: 'Tinytroll'
+    }
+  });
+  App.HomepageView = Ember.View.extend({
+    layout: Ember.Handlebars.compile(
+      "<span>Outer</span>{{yield}}<span>troll</span>"
+    ),
+    templateName: 'homepage'
+  });
+
+  bootApplication();
+
+  equal(Ember.$('h3', '#qunit-fixture').text(), "Megatroll", "The homepage template was rendered");
+  equal(Ember.$('p', '#qunit-fixture').text(), "Tinytroll", "The homepage controller was used");
+  equal(Ember.$('span', '#qunit-fixture').text(), "Outertroll", "The homepage view was used");
+});
+
 test("The Homepage with a `setupController` hook", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
