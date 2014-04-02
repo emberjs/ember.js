@@ -52,3 +52,36 @@ for a detailed explanation.
     underlying test framework to start/stop between async steps.
 
   Added in [#4176](https://github.com/emberjs/ember.js/pull/4176)
+
+* `ember-routing-custom-link-view`
+
+  Allow usage of a custom view class from the `link-to` helper. This allows easier
+  customization of things like `classNameBindings`, `attributeBindings`, `active` state, etc
+  without having to reopen the core `Ember.LinkView` class.
+
+  Example:
+
+  ```handlebars
+  {{#link-to 'post' view="alternate-active"}}Post{{/link-to}}
+  ```
+
+  ```javascript
+  App.AlternateActiveView = Ember.LinkView.extend({
+    target: Ember.computed.alias('controller'),
+    active: Ember.computed('resolvedParams', 'routeArgs', function(){
+      var isActive = this._super();
+
+      this.send('active', isActive);
+
+      return isActive;
+    })
+  });
+  ```
+
+  This would send an `active` action when the views active/inactive state changes. If you
+  couple this with a component you very easily handle having a parent DOM element receive
+  an active class (think link-to nested inside an li for example).
+
+  Functional example: http://emberjs.jsbin.com/juzay/2/edit
+
+  Added in [#4647](https://github.com/emberjs/ember.js/pull/4647).
