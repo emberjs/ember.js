@@ -713,6 +713,32 @@ test("changeMeta includes item and index", function() {
   deepEqual(callbackItems, expected, "items removed from the array had observers removed");
 });
 
+test("changeMeta includes changedCount and arrayChanged", function() {
+  var callbackLetters = [];
+  var obj = EmberObject.createWithMixins({
+    letters: Ember.A(['a', 'b']),
+    lettersArrayComputed: arrayComputed('letters', {
+      addedItem: function (array, item, changeMeta, instanceMeta) {
+        callbackItems.push('add:' + changeMeta.changedCount + ":" + changeMeta.arrayChanged.join(''));
+      },
+      removedItem: function (array, item, changeMeta, instanceMeta) {
+        callbackItems.push('remove:' + changeMeta.changedCount + ":" + changeMeta.arrayChanged.join(''));
+      }
+    })
+  });
+
+  var letters = get(obj, 'letters');
+
+  obj.get('lettersArrayComputed');
+  letters.pushObject('c');
+  letters.popObject();
+  letters.replace(0, 1, ['d']);
+  letters.removeAt(0, letters.length);
+
+  var expected = ["add:2:ab", "add:2:ab", "add:1:abc", "remove:1:abc", "remove:1:ab", "add:1:db", "remove:2:db", "remove:2:db"];
+  deepEqual(callbackItems, expected, "changeMeta has count and changed");
+});
+
 test("when initialValue is undefined, everything works as advertised", function() {
   var chars = EmberObject.createWithMixins({
     letters: Ember.A(),

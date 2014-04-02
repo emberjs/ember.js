@@ -262,7 +262,7 @@ DependentArraysObserver.prototype = {
 
       forEach(itemPropertyKeys, removeObservers, this);
 
-      changeMeta = createChangeMeta(dependentArray, item, itemIndex, this.instanceMeta.propertyName, this.cp);
+      changeMeta = new ChangeMeta(dependentArray, item, itemIndex, this.instanceMeta.propertyName, this.cp, normalizedRemoveCount);
       this.setValue( removedItem.call(
         this.instanceMeta.context, this.getValue(), item, changeMeta, this.instanceMeta.sugarMeta));
     }
@@ -292,7 +292,7 @@ DependentArraysObserver.prototype = {
         }, this);
       }
 
-      changeMeta = createChangeMeta(dependentArray, item, normalizedIndex + sliceIndex, this.instanceMeta.propertyName, this.cp);
+      changeMeta = new ChangeMeta(dependentArray, item, normalizedIndex + sliceIndex, this.instanceMeta.propertyName, this.cp, addedCount);
       this.setValue( addedItem.call(
         this.instanceMeta.context, this.getValue(), item, changeMeta, this.instanceMeta.sugarMeta));
     }, this);
@@ -328,7 +328,7 @@ DependentArraysObserver.prototype = {
 
       this.updateIndexes(c.observerContext.trackedArray, c.observerContext.dependentArray);
 
-      changeMeta = createChangeMeta(c.array, c.obj, c.observerContext.index, this.instanceMeta.propertyName, this.cp, c.previousValues);
+      changeMeta = new ChangeMeta(c.array, c.obj, c.observerContext.index, this.instanceMeta.propertyName, this.cp, changedItems.length, c.previousValues);
       this.setValue(
         this.callbacks.removedItem.call(this.instanceMeta.context, this.getValue(), c.obj, changeMeta, this.instanceMeta.sugarMeta));
       this.setValue(
@@ -352,27 +352,24 @@ function normalizeRemoveCount(index, length, removedCount) {
   return Math.min(removedCount, length - index);
 }
 
-function createChangeMeta(dependentArray, item, index, propertyName, property, previousValues) {
-  var meta = {
-    arrayChanged: dependentArray,
-    index: index,
-    item: item,
-    propertyName: propertyName,
-    property: property
-  };
+function ChangeMeta(dependentArray, item, index, propertyName, property, changedCount, previousValues){
+  this.arrayChanged = dependentArray;
+  this.index = index;
+  this.item = item;
+  this.propertyName = propertyName;
+  this.property = property;
+  this.changedCount = changedCount;
 
   if (previousValues) {
     // previous values only available for item property changes
-    meta.previousValues = previousValues;
+    this.previousValues = previousValues;
   }
-
-  return meta;
 }
 
 function addItems (dependentArray, callbacks, cp, propertyName, meta) {
   forEach(dependentArray, function (item, index) {
     meta.setValue( callbacks.addedItem.call(
-      this, meta.getValue(), item, createChangeMeta(dependentArray, item, index, propertyName, cp), meta.sugarMeta));
+      this, meta.getValue(), item, new ChangeMeta(dependentArray, item, index, propertyName, cp, dependentArray.length), meta.sugarMeta));
   }, this);
 }
 
