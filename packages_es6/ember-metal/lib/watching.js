@@ -7,12 +7,11 @@ import {removeChainWatcher, flushPendingChains} from "ember-metal/chains";
 import {watchKey, unwatchKey} from "ember-metal/watch_key";
 import {watchPath, unwatchPath} from "ember-metal/watch_path";
 
-var metaFor = meta, // utils.js
-    IS_PATH = /[\.\*]/;
+var metaFor = meta; // utils.js
 
 // returns true if the passed path is just a keyName
 function isKeyName(path) {
-  return path==='*' || !IS_PATH.test(path);
+  return path.indexOf('.') === -1;
 }
 
 /**
