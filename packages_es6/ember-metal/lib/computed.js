@@ -707,12 +707,16 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
   @return {Ember.ComputedProperty} computed property which returns true if
   original value for property is not empty.
 */
-registerComputed('notEmpty', function() {
-  var properties = Array.prototype.slice.call(arguments, 0);
+registerComputed('notEmpty', function(dependentKey) {
+  if (Ember.FEATURES.isEnabled('ember-metal-computed-not-empty-infinite-params')) {
+    var properties = Array.prototype.slice.call(arguments, 0);
 
-  return properties.some(function(property) {
-    return !isEmpty(this.get(property));
-  }, this);
+    return properties.some(function(property) {
+      return !isEmpty(this.get(property));
+    }, this);
+  } else {
+    return !isEmpty(get(this, dependentKey));
+  }
 });
 
 /**
