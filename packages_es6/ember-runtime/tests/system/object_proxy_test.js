@@ -182,3 +182,13 @@ testBoth("should transition between watched and unwatched strategies", function(
   equal(get(content, 'foo'), 'foo');
   equal(get(proxy, 'foo'), 'foo');
 });
+
+testBoth('setting `undefined` to a proxied content property should override its existing value', function(get, set) {
+  var proxyObject = ObjectProxy.create({
+    content: {
+      prop: 'emberjs'
+    }
+  });
+  set(proxyObject, 'prop', undefined);
+  equal(get(proxyObject, 'prop'), undefined, 'sets the `undefined` value to the proxied content');
+});
