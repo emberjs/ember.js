@@ -113,7 +113,7 @@ test("AutoLocation.create() should return a HistoryLocation instance when pushSt
 
 test("AutoLocation.create() should return a HashLocation instance when pushStates are not supported, but hashchange events are and the URL is already in the HashLocation format", function() {
   expect(2);
-  
+
   supportsHistory = false;
   supportsHashChange = true;
 
@@ -127,7 +127,7 @@ test("AutoLocation.create() should return a HashLocation instance when pushState
 
 test("AutoLocation.create() should return a NoneLocation instance when neither history nor hashchange is supported.", function() {
   expect(2);
-  
+
   supportsHistory = false;
   supportsHashChange = false;
 
@@ -141,7 +141,7 @@ test("AutoLocation.create() should return a NoneLocation instance when neither h
 
 test("AutoLocation.create() should consider an index path (i.e. '/\') without any location.hash as OK for HashLocation", function() {
   expect(2);
-  
+
   supportsHistory = false;
   supportsHashChange = true;
 
@@ -163,10 +163,10 @@ test("AutoLocation.create() should consider an index path (i.e. '/\') without an
 
 test("AutoLocation._getSupportsHistory() should use `history.pushState` existance as proof of support", function() {
   expect(3);
-  
+
   AutoTestLocation._history.pushState = function () {};
   equal(AutoTestLocation._getSupportsHistory(), true, 'Returns true if `history.pushState` exists');
-  
+
   delete AutoTestLocation._history.pushState;
   equal(AutoTestLocation._getSupportsHistory(), false, 'Returns false if `history.pushState` does not exist');
 
@@ -176,7 +176,7 @@ test("AutoLocation._getSupportsHistory() should use `history.pushState` existanc
 
 test("AutoLocation.create() should transform the URL for hashchange-only browsers viewing a HistoryLocation-formatted path", function() {
   expect(4);
-  
+
   supportsHistory = false;
   supportsHashChange = true;
 
@@ -203,7 +203,7 @@ test("AutoLocation.create() should transform the URL for hashchange-only browser
 
 test("AutoLocation.create() should transform the URL for pushState-supported browsers viewing a HashLocation-formatted url", function() {
   expect(4);
-  
+
   supportsHistory = true;
   supportsHashChange = true;
 
@@ -230,7 +230,7 @@ test("AutoLocation.create() should transform the URL for pushState-supported bro
 
 test("AutoLocation._getSupportsHistory() should handle false positive for Android 2.2/2.3, returning false", function() {
   expect(1);
-  
+
   var fakeNavigator = {
     userAgent: 'Mozilla/5.0 (Linux; U; Android 2.3.6; en-us; Nexus S Build/GRK39F) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1'
   };
@@ -242,10 +242,10 @@ test("AutoLocation._getSupportsHistory() should handle false positive for Androi
 
 test("AutoLocation._getSupportsHashChange() should use `onhashchange` event existance as proof of support", function() {
   expect(2);
-  
+
   AutoTestLocation._window.onhashchange = null;
   equal(AutoTestLocation._getSupportsHashChange(), true, 'Returns true if `onhashchange` exists');
-  
+
   AutoTestLocation._window = {
     navigator: window.navigator,
     document: {}
@@ -256,7 +256,7 @@ test("AutoLocation._getSupportsHashChange() should use `onhashchange` event exis
 
 test("AutoLocation._getSupportsHashChange() should handle false positive for IE8 running in IE7 compatibility mode, returning false", function() {
   expect(1);
-  
+
   AutoTestLocation._window = {
     onhashchange: null,
     document: {
@@ -269,7 +269,7 @@ test("AutoLocation._getSupportsHashChange() should handle false positive for IE8
 
 test("AutoLocation._getPath() should normalize location.pathname, making sure it always returns a leading slash", function() {
   expect(2);
-  
+
   AutoTestLocation._location = { pathname: 'test' };
   equal(AutoTestLocation._getPath(), '/test', 'When there is no leading slash, one is added.');
 
@@ -279,20 +279,20 @@ test("AutoLocation._getPath() should normalize location.pathname, making sure it
 
 test("AutoLocation._getHash() should be an alias to Ember.Location._getHash, otherwise it needs its own test!", function() {
   expect(1);
-  
+
   equal(AutoTestLocation._getHash, EmberLocation._getHash);
 });
 
 test("AutoLocation._getQuery() should return location.search as-is", function() {
   expect(1);
-  
+
   AutoTestLocation._location = { search: '?foo=bar' };
   equal(AutoTestLocation._getQuery(), '?foo=bar');
 });
 
 test("AutoLocation._getFullPath() should return full pathname including query and hash", function() {
   expect(1);
-  
+
   AutoTestLocation._location = {
     href: 'http://test.com/about?foo=bar#foo',
     pathname: '/about',
@@ -305,7 +305,7 @@ test("AutoLocation._getFullPath() should return full pathname including query an
 
 test("AutoLocation._getHistoryPath() should return a normalized, HistoryLocation-supported path", function() {
   expect(3);
-  
+
   AutoTestLocation._rootURL = '/app/';
 
   AutoTestLocation._location = {
@@ -335,7 +335,7 @@ test("AutoLocation._getHistoryPath() should return a normalized, HistoryLocation
 
 test("AutoLocation._getHashPath() should return a normalized, HashLocation-supported path", function() {
   expect(3);
-  
+
   AutoTestLocation._rootURL = '/app/';
 
   AutoTestLocation._location = {

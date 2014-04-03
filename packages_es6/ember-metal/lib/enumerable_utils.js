@@ -101,7 +101,7 @@ var utils = {
     });
   },
 
-  /** 
+  /**
    * Adds an object to an array. If the array already includes the object this
    * method has no effect.
    *
@@ -164,7 +164,7 @@ var utils = {
    *   var array = [1,2,3];
    *   Ember.EnumerableUtils.replace(array, 10, 1, [4, 5]); // [1, 2, 3, 4, 5]
    * ```
-   * 
+   *
    * @method replace
    * @param {Array} array The array the objects should be inserted into.
    * @param {Number} idx Starting index in the array to replace. If *idx* >=
@@ -186,7 +186,7 @@ var utils = {
 
   /**
    * Calculates the intersection of two arrays. This method returns a new array
-   * filled with the records that the two passed arrays share with each other. 
+   * filled with the records that the two passed arrays share with each other.
    * If there is no intersection, an empty array will be returned.
    *
    * ```javascript

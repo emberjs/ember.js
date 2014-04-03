@@ -167,9 +167,9 @@ test("Throw exception when trying to inject `type:thing` on all type(s)", functi
     PostController = factory();
 
   container.register('controller:post', PostController);
-  
+
   throws(function(){
-    container.typeInjection('controller', 'injected', 'controller:post');      
+    container.typeInjection('controller', 'injected', 'controller:post');
   }, 'Cannot inject a `controller:post` on other controller(s). Register the `controller:post` as a different type and perform the typeInjection.');
 });
 

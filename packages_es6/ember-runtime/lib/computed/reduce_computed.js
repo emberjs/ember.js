@@ -776,7 +776,7 @@ ReduceComputedProperty.prototype.property = function () {
   semantics.  Dependent keys which end in `.[]` do not use "one at a time"
   semantics.  When an item is added or removed from such a dependency, the
   computed property is completely recomputed.
-  
+
   When the computed property is completely recomputed, the `accumulatedValue`
   is discarded, it starts with `initialValue` again, and each item is passed
   to `addedItem` in turn.
