@@ -122,7 +122,7 @@ function testMap(nameAndFunc) {
 
     mapHasEntries([ ], map2);
   });
-    
+
   test("length", function() {
     //Add a key twice
     equal(map.length, 0);
@@ -130,25 +130,25 @@ function testMap(nameAndFunc) {
     equal(map.length, 1);
     map.set(string, "the same string");
     equal(map.length, 1);
-    
+
     //Add another
     map.set(number, "a number");
     equal(map.length, 2);
-    
+
     //Remove one that doesn't exist
     map.remove('does not exist');
     equal(map.length, 2);
-    
+
     //Check copy
     var copy = map.copy();
     equal(copy.length, 2);
-    
+
     //Remove a key twice
     map.remove(number);
     equal(map.length, 1);
     map.remove(number);
     equal(map.length, 1);
-    
+
     //Remove the last key
     map.remove(string);
     equal(map.length, 0);
