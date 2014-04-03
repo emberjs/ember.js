@@ -518,10 +518,11 @@ test("The {{link-to}} helper unwraps controllers", function() {
 test("The {{link-to}} helper doesn't change view context", function() {
   App.IndexView = Ember.View.extend({
     elementId: 'index',
-    name: 'test'
+    name: 'test',
+    isTrue: true
   });
 
-  Ember.TEMPLATES.index = Ember.Handlebars.compile("{{view.name}}-{{#link-to 'index' id='self-link'}}Link: {{view.name}}{{/link-to}}");
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("{{view.name}}-{{#link-to 'index' id='self-link'}}Link: {{view.name}}-{{#if view.isTrue}}{{view.name}}{{/if}}{{/link-to}}");
 
   bootApplication();
 
@@ -529,7 +530,7 @@ test("The {{link-to}} helper doesn't change view context", function() {
     router.handleURL("/");
   });
 
-  equal(Ember.$('#index', '#qunit-fixture').text(), 'test-Link: test', "accesses correct view");
+  equal(Ember.$('#index', '#qunit-fixture').text(), 'test-Link: test-test', "accesses correct view");
 });
 
 test("Quoteless route param performs property lookup", function() {
