@@ -5,6 +5,7 @@
 
 import Ember from "ember-metal/core"; // Ember.TEMPLATES, Ember.assert
 import {get} from "ember-metal/property_get";
+import Logger from "ember-metal/logger";
 import {classify, capitalize, decamelize} from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import Namespace from "ember-runtime/system/namespace";
@@ -35,6 +36,9 @@ var Resolver = EmberObject.extend({
   },
   resolveOther: function(parsedName) {
    throw new Error("Invalid call to `resolver.resolveDefault(parsedName)`. Please override the 'resolveDefault' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");
+  },
+  _logLookup: function(found, parsedName) {
+   throw new Error("Invalid call to `resolver._logLookup(found, parsedName)`. Please override the '_logLookup' method in subclass of `Ember.AbstractResolver` to prevent falling through to this error.");
   }
 });
 
@@ -155,17 +159,26 @@ var DefaultResolver = EmberObject.extend({
   */
   resolve: function(fullName) {
     var parsedName = this.parseName(fullName),
-        resolveMethodName = parsedName.resolveMethodName;
+        resolveMethodName = parsedName.resolveMethodName,
+        resolved;
 
     if (!(parsedName.name && parsedName.type)) {
       throw new TypeError("Invalid fullName: `" + fullName + "`, must be of the form `type:name` ");
     }
 
     if (this[resolveMethodName]) {
-      var resolved = this[resolveMethodName](parsedName);
-      if (resolved) { return resolved; }
+      resolved = this[resolveMethodName](parsedName);
     }
-    return this.resolveOther(parsedName);
+
+    if (!resolved) {
+      resolved = this.resolveOther(parsedName);
+    }
+
+    if (parsedName.root.LOG_RESOLVER) {
+      this._logLookup(resolved, parsedName);
+    }
+
+    return resolved;
   },
   /**
     Convert the string name of the form "type:name" to
@@ -339,6 +352,27 @@ var DefaultResolver = EmberObject.extend({
     var className = classify(parsedName.name) + classify(parsedName.type),
         factory = get(parsedName.root, className);
     if (factory) { return factory; }
+  },
+
+  /**
+   @method _logLookup
+   @param {Boolean} found
+   @param {Object} parsedName
+   @private
+  */
+  _logLookup: function(found, parsedName) {
+    var symbol, padding;
+
+    if (found) { symbol = '[✓]'; }
+    else          { symbol = '[ ]'; }
+
+    if (parsedName.fullName.length > 60) {
+      padding = '.';
+    } else {
+      padding = new Array(60 - parsedName.fullName.length).join('.');
+    }
+
+    Logger.info(symbol, parsedName.fullName, padding, this.lookupDescription(parsedName.fullName));
   }
 });
 
