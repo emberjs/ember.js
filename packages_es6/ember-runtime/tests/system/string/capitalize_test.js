@@ -43,4 +43,3 @@ test("does nothing with capitalized string", function() {
     deepEqual('Capitalized string'.capitalize(), 'Capitalized string');
   }
 });
-

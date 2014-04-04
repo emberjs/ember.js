@@ -36,4 +36,3 @@ test("with camelcased string", function() {
     deepEqual('innerHTML'.underscore(), 'inner_html');
   }
 });
-
