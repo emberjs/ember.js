@@ -1576,3 +1576,32 @@ test("invoking a link-to whose transition gets aborted in will transition doesn'
   equal(router.get('location.path'), '', 'url was not updated');
 });
 
+if (Ember.FEATURES.isEnabled("ember-routing-custom-link-view")) {
+  test("The {{link-to}} helper allows specifying a custom linkView", function() {
+    var customLinkInstantiated = false;
+
+    Ember.TEMPLATES.application = Ember.Handlebars.compile("{{#link-to 'about' view='random'}}About{{/link-to}}");
+
+    Router.map(function() {
+      this.route("about");
+    });
+
+    container.register('view:random', Ember.LinkView.extend({
+      init: function(){
+        customLinkInstantiated = true;
+        this._super.apply(this, arguments);
+      },
+      classNameBindings: ['blammo'],
+      blammo: 'super-duper-awesome'
+    }));
+
+    bootApplication();
+
+    Ember.run(function() {
+      router.handleURL("/");
+    });
+
+    ok(customLinkInstantiated, 'The custom LinkView was instantiated.');
+    equal(Ember.$('.super-duper-awesome', '#qunit-fixture').length, 1, "The custom LinkView was used.");
+  });
+}

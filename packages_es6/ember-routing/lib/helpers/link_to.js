@@ -856,6 +856,38 @@ LinkView.toString = function() { return "LinkView"; };
   });
   ```
 
+  ### Specifying a custom View
+
+  NOTE: requires the `ember-routing-custom-link-view` feature.
+
+  You can override the default view that is used by the `{{link-to}}` helper. Generally, you
+  implement this as a sub-class of `Ember.LinkView` to add customized implementation for only
+  a specific set of links (as opposed to the `Ember.LinkView.reopen` technique described above).
+
+  Example:
+
+  ```handlebars
+  {{#link-to 'post' view="alternate-active"}}Post{{/link-to}}
+  ```
+
+  ```javascript
+  App.AlternateActiveView = Ember.LinkView.extend({
+    target: Ember.computed.alias('controller'),
+    active: Ember.computed('resolvedParams', 'routeArgs', function(){
+      var isActive = this._super();
+
+      this.send('active', isActive);
+
+      return isActive;
+    })
+  });
+  ```
+
+  This would send an active action when the views active/inactive state changes. If you
+  couple this with a component you very easily handle having a parent DOM element receive
+  an active class (think link-to nested inside an `li` where you want the `li` to receive an
+  `active` class also).
+
   @method link-to
   @for Ember.Handlebars.helpers
   @param {String} routeName
@@ -867,7 +899,8 @@ LinkView.toString = function() { return "LinkView"; };
 function linkToHelper(name) {
   var options = slice.call(arguments, -1)[0],
       params = slice.call(arguments, 0, -1),
-      hash = options.hash;
+      hash = options.hash,
+      linkViewClass;
 
   if (params[params.length - 1] instanceof QueryParams) {
     hash.queryParamsObject = params.pop();
@@ -891,13 +924,21 @@ function linkToHelper(name) {
     }
   }
 
+  if (Ember.FEATURES.isEnabled("ember-routing-custom-link-view")) {
+    if (hash.view) {
+      var container = get(options, 'data.view.container');
+      linkViewClass = container && container.lookupFactory('view:' + hash.view);
+    }
+  }
+  linkViewClass = linkViewClass || LinkView;
+
   hash.parameters = {
     context: this,
     options: options,
     params: params
   };
 
-  return viewHelper.call(this, LinkView, options);
+  return viewHelper.call(this, linkViewClass, options);
 };
 
 
