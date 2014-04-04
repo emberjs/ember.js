@@ -344,7 +344,7 @@ test("select with group can group options", function() {
   ]);
 
   run(function() {
-    select.set('content', content),
+    select.set('content', content);
     select.set('optionGroupPath', 'organization');
     select.set('optionLabelPath', 'content.firstName');
   });
@@ -371,7 +371,7 @@ test("select with group doesn't break options", function() {
   ]);
 
   run(function() {
-    select.set('content', content),
+    select.set('content', content);
     select.set('optionGroupPath', 'organization');
     select.set('optionLabelPath', 'content.firstName');
     select.set('optionValuePath', 'content.id');
@@ -399,7 +399,7 @@ test("select with group observes its content", function() {
   ]);
 
   run(function() {
-    select.set('content', content),
+    select.set('content', content);
     select.set('optionGroupPath', 'organization');
     select.set('optionLabelPath', 'content.firstName');
   });
@@ -427,7 +427,7 @@ test("select with group whose content is undefined doesn't breaks", function() {
 
   var content;
   run(function() {
-    select.set('content', content),
+    select.set('content', content);
     select.set('optionGroupPath', 'organization');
     select.set('optionLabelPath', 'content.firstName');
   });
