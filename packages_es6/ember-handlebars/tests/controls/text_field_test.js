@@ -289,6 +289,19 @@ test("input tabindex is updated when setting tabindex property of view", functio
   equal(textField.$().attr('tabindex'), "3", "updates text field after tabindex changes");
 });
 
+test("input title is updated when setting title property of view", function() {
+  run(function() {
+    set(textField, 'title', 'FooTitle');
+    textField.append();
+  });
+
+  equal(textField.$().attr('title'), "FooTitle", "renders text field with the title");
+
+  run(function() { set(textField, 'title', 'BarTitle'); });
+
+  equal(textField.$().attr('title'), "BarTitle", "updates text field after title changes");
+});
+
 test("input type is configurable when creating view", function() {
   run(function() {
     set(textField, 'type', 'password');
