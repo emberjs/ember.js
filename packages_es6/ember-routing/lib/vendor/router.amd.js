@@ -1414,7 +1414,7 @@ define("router/transition",
 
         this.sequence = Transition.currentSequence++;
         this.promise = state.resolve(router.async, checkForAbort, this)['catch'](function(result) {
-          if (result.wasAborted) {
+          if (result.wasAborted || transition.isAborted) {
             return Promise.reject(logAbort(transition));
           } else {
             transition.trigger('error', result.error, transition, result.handlerWithError);
