@@ -1,4 +1,4 @@
-define("router/handler-info", 
+define("router/handler-info",
   ["./utils","rsvp/promise","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
@@ -223,7 +223,7 @@ define("router/handler-info",
     __exports__.UnresolvedHandlerInfoByParam = UnresolvedHandlerInfoByParam;
     __exports__.UnresolvedHandlerInfoByObject = UnresolvedHandlerInfoByObject;
   });
-define("router/router", 
+define("router/router",
   ["route-recognizer","rsvp/promise","./utils","./transition-state","./transition","./transition-intent/named-transition-intent","./transition-intent/url-transition-intent","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
     "use strict";
@@ -968,7 +968,7 @@ define("router/router",
 
     __exports__["default"] = Router;
   });
-define("router/transition-intent", 
+define("router/transition-intent",
   ["./utils","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -988,7 +988,7 @@ define("router/transition-intent",
 
     __exports__["default"] = TransitionIntent;
   });
-define("router/transition-intent/named-transition-intent", 
+define("router/transition-intent/named-transition-intent",
   ["../transition-intent","../transition-state","../handler-info","../utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
@@ -1180,7 +1180,7 @@ define("router/transition-intent/named-transition-intent",
 
     __exports__["default"] = NamedTransitionIntent;
   });
-define("router/transition-intent/url-transition-intent", 
+define("router/transition-intent/url-transition-intent",
   ["../transition-intent","../transition-state","../handler-info","../utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
@@ -1248,7 +1248,7 @@ define("router/transition-intent/url-transition-intent",
 
     __exports__["default"] = URLTransitionIntent;
   });
-define("router/transition-state", 
+define("router/transition-state",
   ["./handler-info","./utils","rsvp/promise","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
@@ -1361,7 +1361,7 @@ define("router/transition-state",
 
     __exports__["default"] = TransitionState;
   });
-define("router/transition", 
+define("router/transition",
   ["rsvp/promise","./handler-info","./utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
@@ -1619,7 +1619,7 @@ define("router/transition",
     __exports__.logAbort = logAbort;
     __exports__.TransitionAborted = TransitionAborted;
   });
-define("router/utils", 
+define("router/utils",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -1843,7 +1843,7 @@ define("router/utils",
     __exports__.isParam = isParam;
     __exports__.coerceQueryParamsToString = coerceQueryParamsToString;
   });
-define("router", 
+define("router",
   ["./router/router","exports"],
   function(__dependency1__, __exports__) {
     "use strict";

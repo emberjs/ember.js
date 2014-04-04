@@ -20,14 +20,14 @@
   "dependencies:development": {
     "spade-qunit": "~> 1.0.0"
   },
-  
+
   "bpm:build": {
-    
+
     "bpm_libs.js": {
       "files": ["lib"],
       "modes":        "*"
     },
-    
+
     "ember-runtime/bpm_tests.js": {
       "files": ["tests"],
       "modes": ["debug"]

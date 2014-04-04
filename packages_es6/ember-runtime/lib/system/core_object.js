@@ -3,7 +3,7 @@
   @submodule ember-runtime
 */
 
-import Ember from "ember-metal/core"; 
+import Ember from "ember-metal/core";
 // Ember.ENV.MANDATORY_SETTER, Ember.assert, Ember.K, Ember.config
 
 // NOTE: this object should never be included directly. Instead use `Ember.Object`.

@@ -17,7 +17,7 @@ test('defining mergedProperties should merge future version', function() {
   });
 
   var obj = mixin({}, MixinA, MixinB);
-  deepEqual(get(obj, 'foo'), 
+  deepEqual(get(obj, 'foo'),
     { a: true, b: true, c: true, d: true, e: true, f: true });
 });
 
@@ -33,7 +33,7 @@ test('defining mergedProperties on future mixin should merged into past', functi
   });
 
   var obj = mixin({}, MixinA, MixinB);
-  deepEqual(get(obj, 'foo'), 
+  deepEqual(get(obj, 'foo'),
     { a: true, b: true, c: true, d: true, e: true, f: true });
 });
 

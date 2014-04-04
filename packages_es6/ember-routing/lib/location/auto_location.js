@@ -112,7 +112,7 @@ var AutoLocation = {
     // Older browsers, especially IE, don't have origin
     if (!origin) {
       origin = location.protocol + '//' + location.hostname;
-      
+
       if (location.port) {
         origin += ':' + location.port;
       }
@@ -234,7 +234,7 @@ var AutoLocation = {
     @private
 
     Returns the current path as it should appear for HistoryLocation supported
-    browsers. This may very well differ from the real current path (e.g. if it 
+    browsers. This may very well differ from the real current path (e.g. if it
     starts off as a hashed URL)
 
     @method _getHistoryPath
@@ -307,7 +307,7 @@ var AutoLocation = {
   /**
     Selects the best location option based off browser support and returns an
     instance of that Location class.
-  
+
     @see Ember.AutoLocation
     @method create
   */
@@ -324,7 +324,7 @@ var AutoLocation = {
     if (this._getSupportsHistory()) {
       historyPath = this._getHistoryPath();
 
-      // Since we support history paths, let's be sure we're using them else 
+      // Since we support history paths, let's be sure we're using them else
       // switch the location over to it.
       if (currentPath === historyPath) {
         implementationClass = this._HistoryLocation;
