@@ -1,12 +1,13 @@
 import Ember from "ember-metal/core"; // Ember.TEMPLATES
 import run from "ember-metal/run_loop";
+import Logger from "ember-metal/logger";
 import {Controller} from "ember-runtime/controllers/controller";
 import EmberObject from "ember-runtime/system/object";
 import EmberHandlebars from "ember-handlebars";
 import Namespace from "ember-runtime/system/namespace";
 import Application from "ember-application/system/application";
 
-var locator, application, lookup, originalLookup;
+var locator, application, lookup, originalLookup, originalLoggerInfo;
 
 module("Ember.Application Depedency Injection", {
   setup: function() {
@@ -14,6 +15,7 @@ module("Ember.Application Depedency Injection", {
     application = run(Application, 'create');
 
     locator = application.__container__;
+    originalLoggerInfo = Logger.info;
   },
 
   teardown: function() {
@@ -22,6 +24,8 @@ module("Ember.Application Depedency Injection", {
     run(application, 'destroy');
     var UserInterfaceNamespace = Namespace.NAMESPACES_BY_ID['UserInterface'];
     if (UserInterfaceNamespace) { run(UserInterfaceNamespace, 'destroy'); }
+
+    Logger.info = originalLoggerInfo;
   }
 });
 
@@ -95,4 +99,49 @@ test("the default resolver throws an error if the fullName to resolve is invalid
   raises(function(){ locator.resolve('model');  }, TypeError, /Invalid fullName/ );
   raises(function(){ locator.resolve('model:'); }, TypeError, /Invalid fullName/ );
   raises(function(){ locator.resolve(':type');  }, TypeError, /Invalid fullName/ );
+});
+
+test("the default resolver logs hits if `LOG_RESOLVER` is set", function() {
+  expect(3);
+
+  application.LOG_RESOLVER = true;
+  application.ScoobyDoo = EmberObject.extend();
+  application.toString = function() { return 'App'; };
+
+  Logger.info = function(symbol, name, padding, lookupDescription) {
+    equal(symbol, '[✓]', 'proper symbol is printed when a module is found');
+    equal(name, 'doo:scooby', 'proper lookup value is logged');
+    equal(lookupDescription, 'App.ScoobyDoo');
+  };
+
+  locator.resolve('doo:scooby');
+});
+
+test("the default resolver logs misses if `LOG_RESOLVER` is set", function() {
+  expect(3);
+
+  application.LOG_RESOLVER = true;
+  application.toString = function() { return 'App'; };
+
+  Logger.info = function(symbol, name, padding, lookupDescription) {
+    equal(symbol, '[ ]', 'proper symbol is printed when a module is not found');
+    equal(name, 'doo:scooby', 'proper lookup value is logged');
+    equal(lookupDescription, 'App.ScoobyDoo');
+  };
+
+  locator.resolve('doo:scooby');
+});
+
+test("doesn't log without LOG_RESOLVER", function(){
+  var infoCount = 0;
+
+  application.ScoobyDoo = EmberObject.extend();
+
+  Logger.info = function(symbol, name) {
+    infoCount = infoCount + 1;
+  };
+
+  locator.resolve('doo:scooby');
+  locator.resolve('doo:scrappy');
+  equal(infoCount, 0, 'Logger.info should not be called if LOG_RESOLVER is not set');
 });
