@@ -97,7 +97,7 @@ function yieldHelper(options) {
     if (view._contextView) {
       view = view._contextView;
     } else {
-      view = get(view, 'parentView');
+      view = get(view, '_parentView');
     }
   }
 

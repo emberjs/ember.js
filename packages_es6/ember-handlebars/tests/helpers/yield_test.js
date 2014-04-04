@@ -362,3 +362,21 @@ test("yield with nested components (#3220)", function(){
 
   equal(view.$('div > span').text(), "Hello world");
 });
+
+test("yield works inside a conditional in a component that has Ember._Metamorph mixed in", function() {
+  var component = Component.extend(Ember._Metamorph, {
+    item: "inner",
+    layout: Ember.Handlebars.compile("<p>{{item}}</p>{{#if item}}<p>{{yield}}</p>{{/if}}")
+  });
+
+  view = Ember.View.create({
+    controller: { item: "outer", component: component },
+    template: Ember.Handlebars.compile('{{#view component}}{{item}}{{/view}}')
+  });
+
+  run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$().text(), 'innerouter', "{{yield}} renders yielded content inside metamorph component");
+});
