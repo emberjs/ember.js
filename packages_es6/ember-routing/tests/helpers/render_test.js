@@ -112,6 +112,7 @@ module("Handlebars {{render}} helper", {
       if (view) {
         view.destroy();
       }
+      container = view = null;
     });
 
     Ember.TEMPLATES = {};

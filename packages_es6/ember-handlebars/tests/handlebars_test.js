@@ -105,15 +105,19 @@ module("View - handlebars integration", {
 
     container = new Container();
     container.optionsForType('template', { instantiate: false });
+    container.register('view:default', EmberView.extend());
   },
 
   teardown: function() {
-    if (view) {
-      run(function() {
-        view.destroy();
-      });
-      view = null;
-    }
+    run(function() {
+        if (container) {
+          container.destroy();
+        }
+        if (view) {
+          view.destroy();
+        }
+        container = view = null;
+    });
     Ember.lookup = originalLookup;
     window.TemplateTests = TemplateTests = undefined;
   }
@@ -1859,6 +1863,7 @@ test("should work with precompiled templates", function() {
 test("should expose a controller keyword when present on the view", function() {
   var templateString = "{{controller.foo}}{{#view}}{{controller.baz}}{{/view}}";
   view = EmberView.create({
+    container: container,
     controller: EmberObject.create({
       foo: "bar",
       baz: "bang"
@@ -1897,6 +1902,7 @@ test("should expose a controller keyword when present on the view", function() {
 test("should expose a controller keyword that can be used in conditionals", function() {
   var templateString = "{{#view}}{{#if controller}}{{controller.foo}}{{/if}}{{/view}}";
   view = EmberView.create({
+    container: container,
     controller: EmberObject.create({
       foo: "bar"
     }),
@@ -1918,6 +1924,7 @@ test("should expose a controller keyword that can be used in conditionals", func
 test("should expose a controller keyword that persists through Ember.ContainerView", function() {
   var templateString = "{{view Ember.ContainerView}}";
   view = EmberView.create({
+    container: container,
     controller: EmberObject.create({
       foo: "bar"
     }),
@@ -1942,6 +1949,7 @@ test("should expose a controller keyword that persists through Ember.ContainerVi
 test("should expose a view keyword", function() {
   var templateString = '{{#with view.differentContent}}{{view.foo}}{{#view baz="bang"}}{{view.baz}}{{/view}}{{/with}}';
   view = EmberView.create({
+    container: container,
     differentContent: {
       view: {
         foo: "WRONG",

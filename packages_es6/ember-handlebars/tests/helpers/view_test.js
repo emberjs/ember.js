@@ -17,7 +17,6 @@ function viewClass(options) {
 module("Handlebars {{#view}} helper", {
   setup: function() {
     originalLookup = Ember.lookup;
-
   },
 
   teardown: function() {
@@ -29,6 +28,31 @@ module("Handlebars {{#view}} helper", {
   }
 });
 
+test("By default view:default is used", function() {
+  var DefaultView = viewClass({
+    elementId: 'default-view',
+    template: Ember.Handlebars.compile('hello world')
+  });
+
+  var container = {
+    lookupFactory: lookupFactory
+  };
+
+  view = EmberView.extend({
+    template: Ember.Handlebars.compile('{{view}}'),
+    container: container
+  }).create();
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  equal(jQuery('#default-view').text(), 'hello world');
+
+  function lookupFactory(fullName) {
+    equal(fullName, 'view:default');
+
+    return DefaultView;
+  }
+});
 
 test("View lookup - App.FuView", function() {
   Ember.lookup = {

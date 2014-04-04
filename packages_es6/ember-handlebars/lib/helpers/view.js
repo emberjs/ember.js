@@ -203,7 +203,7 @@ var ViewHelper = EmberObject.create({
 });
 
 /**
-  `{{view}}` inserts a new instance of `Ember.View` into a template passing its
+  `{{view}}` inserts a new instance of an `Ember.View` into a template passing its
   options to the `Ember.View`'s `create` method and using the supplied block as
   the view's own template.
 
@@ -370,11 +370,12 @@ var ViewHelper = EmberObject.create({
 function viewHelper(path, options) {
   Ember.assert("The view helper only takes a single argument", arguments.length <= 2);
 
-  // If no path is provided, treat path param as options.
-  // ES6TODO: find a way to do this without global lookup
+  // If no path is provided, treat path param as options
+  // and get an instance of the registered `view:default`
   if (path && path.data && path.data.isRenderData) {
     options = path;
-    path = "Ember.View";
+    Ember.assert('{{view}} helper requires parent view to have a container but none was found. This usually happens when you are manually-managing views.', !!options.data.view.container);
+    path = options.data.view.container.lookupFactory('view:default');
   }
 
   return ViewHelper.helper(this, path, options);

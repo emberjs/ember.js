@@ -15,7 +15,7 @@ import Container from "ember-runtime/system/container";
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 
-var people, view;
+var people, view, container;
 var template, templateMyView;
 var templateFor = function(template) {
   return EmberHandlebars.compile(template);
@@ -30,11 +30,14 @@ module("the #each helper", {
     template = templateFor("{{#each view.people}}{{name}}{{/each}}");
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
+    container = new Container();
+    container.register('view:default', EmberView.extend());
+
     view = EmberView.create({
+      container: container,
       template: template,
       people: people
     });
-
 
     templateMyView = templateFor("{{name}}");
     lookup.MyView = EmberView.extend({
@@ -46,8 +49,13 @@ module("the #each helper", {
 
   teardown: function() {
     run(function() {
-      view.destroy();
-      view = null;
+        if (container) {
+          container.destroy();
+        }
+        if (view) {
+          view.destroy();
+        }
+        container = view = null;
     });
     Ember.lookup = originalLookup;
   }
@@ -215,8 +223,6 @@ test("it supports itemController", function() {
     })
   });
 
-  var container = new Container();
-
   run(function() { view.destroy(); }); // destroy existing view
 
   var parentController = {
@@ -268,7 +274,6 @@ test("itemController specified in template gets a parentController property", fu
           return "controller:" + get(this, 'content.name') + ' of ' + get(this, 'parentController.company');
         })
       }),
-      container = new Container(),
       parentController = {
         container: container,
         company: 'Yapp'
@@ -301,8 +306,7 @@ test("itemController specified in ArrayController gets a parentController proper
         content: people,
         itemController: 'person',
         company: 'Yapp'
-      }),
-      container = new Container();
+      });
 
   container.register('controller:people', PeopleController);
   container.register('controller:person', PersonController);
@@ -334,8 +338,7 @@ test("itemController's parentController property, when the ArrayController has a
         }),
         company: 'Yapp'
       }),
-      CompanyController = EmberController.extend(),
-      container = new Container();
+      CompanyController = EmberController.extend();
 
   container.register('controller:company', CompanyController);
   container.register('controller:people', PeopleController);
@@ -361,7 +364,6 @@ test("it supports itemController when using a custom keyword", function() {
     })
   });
 
-  var container = new Container();
   container.register('controller:array', ArrayController.extend());
 
   run(function() { view.destroy(); }); // destroy existing view
@@ -388,8 +390,6 @@ test("it supports itemController when using a custom keyword", function() {
 });
 
 test("it supports {{itemView=}}", function() {
-  var container = new Container();
-
   var itemView = EmberView.extend({
     template: templateFor('itemView:{{name}}')
   });
@@ -412,8 +412,6 @@ test("it supports {{itemView=}}", function() {
 
 
 test("it defers all normalization of itemView names to the resolver", function() {
-  var container = new Container();
-
   var itemView = EmberView.extend({
     template: templateFor('itemView:{{name}}')
   });
@@ -513,6 +511,7 @@ test("it works with the controller keyword", function() {
 
   run(function() { view.destroy(); }); // destroy existing view
   view = EmberView.create({
+    container: container,
     controller: controller,
     template: templateFor("{{#view}}{{#each controller}}{{this}}{{/each}}{{/view}}")
   });
@@ -523,9 +522,19 @@ test("it works with the controller keyword", function() {
 });
 
 module("{{#each foo in bar}}", {
+  setup: function() {
+    container = new Container();
+    container.register('view:default', EmberView.extend());
+  },
   teardown: function() {
     run(function() {
-      view.destroy();
+        if (container) {
+          container.destroy();
+        }
+        if (view) {
+          view.destroy();
+        }
+        container = view = null;
     });
   }
 });
@@ -591,6 +600,7 @@ test("views inside #each preserve the new context", function() {
   var controller = A([ { name: "Adam" }, { name: "Steve" } ]);
 
   view = EmberView.create({
+    container: container,
     controller: controller,
     template: templateFor('{{#each controller}}{{#view}}{{name}}{{/view}}{{/each}}')
   });
@@ -606,6 +616,7 @@ test("controller is assignable inside an #each", function() {
   });
 
   view = EmberView.create({
+    container: container,
     controller: controller,
     template: templateFor('{{#each personController in this}}{{#view controllerBinding="personController"}}{{name}}{{/view}}{{/each}}')
   });
