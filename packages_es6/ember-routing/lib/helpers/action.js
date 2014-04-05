@@ -82,7 +82,8 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
       }
 
       var target = options.target,
-          actionName, context;
+          parameters = options.parameters,
+          actionName;
 
       if (target.target) {
         target = handlebarsGet(target.root, target.target, target.options);
@@ -91,8 +92,7 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
       }
 
       if (options.boundProperty) {
-        context = options.parameters.context;
-        actionName = handlebarsGet(context, actionNameOrPath, options.options);
+        actionName = resolveParams(parameters.context, [actionNameOrPath], { types: ['ID'], data: parameters.options.data })[0];
 
         if(typeof actionName === 'undefined' || typeof actionName === 'function') {
           Ember.assert("You specified a quoteless path to the {{action}} helper '" + actionNameOrPath + "' which did not resolve to an actionName. Perhaps you meant to use a quoted actionName? (e.g. {{action '" + actionNameOrPath + "'}}).", true);
@@ -106,10 +106,10 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
 
       run(function runRegisteredAction() {
         if (target.send) {
-          target.send.apply(target, args(options.parameters, actionName));
+          target.send.apply(target, args(parameters, actionName));
         } else {
           Ember.assert("The action '" + actionName + "' did not exist on " + target, typeof target[actionName] === 'function');
-          target[actionName].apply(target, args(options.parameters));
+          target[actionName].apply(target, args(parameters));
         }
       });
     }
