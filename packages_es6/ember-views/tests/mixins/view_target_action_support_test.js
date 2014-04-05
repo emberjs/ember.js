@@ -3,16 +3,7 @@ import EmberObject from "ember-runtime/system/object";
 import {View} from "ember-views/views/view";
 import ViewTargetActionSupport from "ember-views/mixins/view_target_action_support";
 
-var originalLookup;
-
-module("ViewTargetActionSupport", {
-  setup: function() {
-    originalLookup = Ember.lookup;
-  },
-  teardown: function() {
-    Ember.lookup = originalLookup;
-  }
-});
+module("ViewTargetActionSupport");
 
 test("it should return false if no action is specified", function() {
   expect(1);
