@@ -122,6 +122,38 @@ test('duplicated template data-template-name should throw exception', function()
 });
 
 if (Ember.component) {
+  test('generated component name must contain a dash', function(){
+    Ember.TEMPLATES['components/tester'] = 'asdf';
+    Ember.TEMPLATES['components/my-tester'] = 'asdf';
+
+    App = run(Ember.Application, 'create');
+
+    expectAssertion(function () {
+      App.__container__.lookup('component:tester'); 
+    });
+    ok(App.__container__.lookup('component:my-tester'));
+  });
+
+  test('non-generated component name must contain a dash', function(){
+    Ember.TEMPLATES['components/hello'] = 'hello';
+    Ember.TEMPLATES['components/hello-world'] = 'hello world';
+
+    run(function(){
+      App = Ember.Application.create();
+
+      // currently Component code must be loaded before initializers
+      // this is mostly due to how they are bootstrapped. We will hopefully
+      // sort this out soon.
+      App.HelloComponent = Ember.Component.extend({});
+      App.HelloWorldComponent = Ember.Component.extend({});
+    });
+
+    expectAssertion(function () {
+      App.__container__.lookup('component:hello'); 
+    });
+    ok(App.__container__.lookup('component:hello-world'));
+  });
+
   test('registerComponents initializer', function(){
     Ember.TEMPLATES['components/x-apple'] = 'asdf';
 
