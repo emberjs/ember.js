@@ -852,6 +852,54 @@ test("a quoteless parameter should lookup actionName in context", function(){
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
+test("a quoteless parameter should resolve actionName, including path", function(){
+  expect(4);
+  var lastAction, actionOrder = [];
+
+  view = EmberView.create({
+    template: compile("{{#each item in allactions}}<a {{bind-attr id='item.name'}} {{action item.name}}>{{item.title}}</a>{{/each}}")
+  });
+
+  var controller = EmberController.extend({
+    allactions: Ember.A([{title: 'Biggity Boom',name: 'biggityBoom'},
+                         {title: 'Whomp Whomp',name: 'whompWhomp'},
+                         {title: 'Sloopy Dookie',name: 'sloopyDookie'}]),
+    actions: {
+      biggityBoom: function() {
+        lastAction = 'biggityBoom';
+        actionOrder.push(lastAction);
+      },
+      whompWhomp: function() {
+        lastAction = 'whompWhomp';
+        actionOrder.push(lastAction);
+      },
+      sloopyDookie: function(){
+        lastAction = 'sloopyDookie';
+        actionOrder.push(lastAction);
+      }
+    }
+  }).create();
+
+  run(function() {
+    view.set('controller', controller);
+    view.appendTo('#qunit-fixture');
+  });
+
+  var testBoundAction = function(propertyValue){
+    run(function(){
+      view.$("#"+propertyValue).click();
+    });
+
+    equal(lastAction, propertyValue, 'lastAction set to ' + propertyValue);
+  };
+
+  testBoundAction('whompWhomp');
+  testBoundAction('sloopyDookie');
+  testBoundAction('biggityBoom');
+
+  deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
+});
+
 test("a quoteless parameter that also exists as an action name functions properly", function(){
   Ember.TESTING_DEPRECATION = true;
   var triggeredAction;
