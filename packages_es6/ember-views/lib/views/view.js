@@ -21,7 +21,7 @@ import {meta} from "ember-metal/utils";
 import {computed} from "ember-metal/computed";
 import {observer} from "ember-metal/mixin";
 
-import {typeOf} from "ember-metal/utils";
+import {typeOf, isArray} from "ember-metal/utils";
 import {isNone} from 'ember-metal/is_none';
 import {Mixin} from 'ember-metal/mixin';
 import Container from 'container/container';
@@ -2522,6 +2522,10 @@ View.reopenClass({
     @private
   */
   _classStringForValue: function(path, val, className, falsyClassName) {
+    if(isArray(val)) {
+      val = get(val, 'length') !== 0;  
+    }
+    
     // When using the colon syntax, evaluate the truthiness or falsiness
     // of the value to determine which className to return
     if (className || falsyClassName) {

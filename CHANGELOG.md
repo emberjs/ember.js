@@ -1,5 +1,7 @@
 # Ember Changelog
 
+* [BREAKING BUGFIX] An empty array are treated as falsy value in `bind-attr` to be in consistent with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty array as truthy value in `bind-attr`.
+
 ### Ember 1.6.0-beta.2 (April, 8, 2014)
 
 * [BUGFIX] Allow setting of `undefined` value to a `content` property.
