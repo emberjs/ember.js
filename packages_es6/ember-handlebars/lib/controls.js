@@ -1,6 +1,8 @@
 import Checkbox from "ember-handlebars/controls/checkbox";
 import TextField from "ember-handlebars/controls/text_field";
 import TextArea from "ember-handlebars/controls/text_area";
+import {RadioButton, RadioButtonGroup} from "ember-handlebars/controls/radio_button";
+import RadioButtonGroup from "ember-handlebars/controls/radio_button";
 
 import Ember from "ember-metal/core"; // Ember.assert
 // var emberAssert = Ember.assert;
@@ -344,4 +346,23 @@ function textareaHelper(options) {
   return helpers.view.call(this, TextArea, options);
 }
 
-export {inputHelper, textareaHelper}
+
+function radiobuttonHelper(options) {
+  Ember.assert('You can only pass attributes to the `radio` helper, not arguments', arguments.length < 2);
+
+  var hash = options.hash,
+      types = options.hashTypes;
+
+  return helpers.view.call(this, 'view.RadioButton', options);
+}
+
+function radiogroupHelper(options) {
+  Ember.assert('You can only pass attributes to the `radiogroup` helper, not arguments', arguments.length < 2);
+
+  var hash = options.hash,
+      types = options.hashTypes;
+
+  return helpers.view.call(this, RadioButtonGroup, options);
+}
+
+export {inputHelper, textareaHelper, radiobuttonHelper, radiogroupHelper}
