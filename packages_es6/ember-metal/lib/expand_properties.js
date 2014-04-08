@@ -1,18 +1,19 @@
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import EmberError from 'ember-metal/error';
+import EnumerableUtils from 'ember-metal/enumerable_utils';
 
 /**
   @module ember-metal
   */
 
 var forEach = EnumerableUtils.forEach,
-BRACE_EXPANSION = /^((?:[^\.]*\.)*)\{(.*)\}$/;
+  BRACE_EXPANSION = /^((?:[^\.]*\.)*)\{(.*)\}$/;
 
 /**
   Expands `pattern`, invoking `callback` for each expansion.
 
   The only pattern supported is brace-expansion, anything else will be passed
   once to `callback` directly. Brace expansion can only appear at the end of a
-  pattern, for example as the last item in a chain.
+  pattern, for an example see the last call below.
 
   Example
   ```js
@@ -33,12 +34,17 @@ BRACE_EXPANSION = /^((?:[^\.]*\.)*)\{(.*)\}$/;
 export default function expandProperties(pattern, callback) {
   var match, prefix, list;
 
+  if (pattern.indexOf(' ') > -1) {
+    throw new EmberError('Brace expanded properties cannot contain spaces, ' + 
+      'e.g. `user.{firstName, lastName}` should be `user.{firstName,lastName}`');
+  }
+
   if (match = BRACE_EXPANSION.exec(pattern)) {
     prefix = match[1];
     list = match[2];
 
     forEach(list.split(','), function (suffix) {
-      callback(prefix + suffix);
+        callback(prefix + suffix);
     });
   } else {
     callback(pattern);
