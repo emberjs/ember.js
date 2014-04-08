@@ -813,7 +813,7 @@ asyncTest("The Special page returning an error fires the error hook on SpecialRo
     actions: {
       error: function(reason) {
         equal(reason, 'Setup error');
-        start();
+        QUnit.start();
       }
     }
   });
@@ -949,7 +949,7 @@ asyncTest("Moving from one page to another triggers the correct callbacks", func
       return router.transitionTo('special', promiseContext);
     }).then(function(result) {
       deepEqual(router.location.path, '/specials/1');
-      start();
+      QUnit.start();
     });
   });
 });
@@ -1054,7 +1054,7 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
       deepEqual(router.location.path, '/specials/1');
       equal(currentPath, 'root.special');
 
-      start();
+      QUnit.start();
     });
   });
 });
@@ -1088,7 +1088,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
       showStuff: function(context) {
         ok (stateIsNotCalled, "an event on the state is not triggered");
         deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
-        start();
+        QUnit.start();
       }
     }
   });
@@ -1120,7 +1120,7 @@ asyncTest("Events are triggered on the current state when defined in `actions` o
         ok(this instanceof App.HomeRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
-        start();
+        QUnit.start();
       }
     }
   });
@@ -1152,7 +1152,7 @@ asyncTest("Events defined in `actions` object are triggered on the current state
         ok(this instanceof App.RootRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
-        start();
+        QUnit.start();
       }
     }
   });
@@ -1192,7 +1192,7 @@ asyncTest("Events are triggered on the current state when defined in `events` ob
         ok(this instanceof App.HomeRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
-        start();
+        QUnit.start();
       }
     }
   });
@@ -1225,7 +1225,7 @@ asyncTest("Events defined in `events` object are triggered on the current state 
         ok(this instanceof App.RootRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
-        start();
+        QUnit.start();
       }
     }
   });
@@ -1306,7 +1306,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
         showStuff: function(context) {
           ok (stateIsNotCalled, "an event on the state is not triggered");
           deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
-          start();
+          QUnit.start();
         }
       }
     });
@@ -1361,7 +1361,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
       showStuff: function(context) {
         ok (stateIsNotCalled, "an event on the state is not triggered");
         deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
-        start();
+        QUnit.start();
       }
     });
 
@@ -1394,7 +1394,7 @@ asyncTest("actions can be triggered with multiple arguments", function() {
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj1, true), { name: "Tilde" }, "the first context is correct");
         deepEqual(Ember.copy(obj2, true), { name: "Tom Dale" }, "the second context is correct");
-        start();
+        QUnit.start();
       }
     }
   });
@@ -3020,5 +3020,3 @@ test("Redirecting with null model doesn't error out", function() {
 
   equal(router.get('location.path'), "/about/TreeklesMcGeekles");
 });
-
-

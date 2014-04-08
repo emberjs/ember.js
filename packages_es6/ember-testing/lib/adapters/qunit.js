@@ -11,10 +11,10 @@ import {inspect} from "ember-metal/utils";
 */
 var QUnitAdapter = Adapter.extend({
   asyncStart: function() {
-    stop();
+    QUnit.stop();
   },
   asyncEnd: function() {
-    start();
+    QUnit.start();
   },
   exception: function(error) {
     ok(false, inspect(error));
