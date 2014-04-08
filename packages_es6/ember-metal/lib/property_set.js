@@ -49,7 +49,7 @@ var set = function set(obj, keyName, value, tolerant) {
     desc.set(obj, keyName, value);
   } else {
 
-    if (typeof obj === 'object' && obj !== null && obj[keyName] === value) {
+    if (typeof obj === 'object' && obj !== null && value !== undefined && obj[keyName] === value) {
       return value;
     }
 

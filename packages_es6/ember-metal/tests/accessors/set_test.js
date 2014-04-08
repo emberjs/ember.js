@@ -9,17 +9,19 @@ test('should set arbitrary properties on an object', function() {
     number: 23,
     boolTrue: true,
     boolFalse: false,
-    nullValue: null
+    nullValue: null,
+    undefinedValue: undefined
   };
 
-  var newObj = {};
+  var newObj = {
+    undefinedValue: 'emberjs'
+  };
 
   for(var key in obj) {
     if (!obj.hasOwnProperty(key)) continue;
     equal(set(newObj, key, obj[key]), obj[key], 'should return value');
     equal(get(newObj, key), obj[key], 'should set value');
   }
-
 });
 
 test('should call setUnknownProperty if defined and value is undefined', function() {
