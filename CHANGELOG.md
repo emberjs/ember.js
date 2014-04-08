@@ -1,5 +1,18 @@
 # Ember Changelog
 
+### Ember 1.6.0-beta.2 (April, 8, 2014)
+
+* [BUGFIX] Allow setting of `undefined` value to a `content` property.
+* [BUGFIX] Resolve bound actionName in Handlebars context instead of direct lookup on target.
+* [BUGFIX] isEqual now supports dates.
+* [BUGFIX] Add better debugging for DefaultResolver.
+* [BUGFIX] {{yield}} works inside a Metamorph'ed component.
+* [BUGFIX] Add `title` attribute binding to Ember.TextSupport.
+* [BUGFIX] Ember.View's concreteView now asks its parentView's concreteView.
+* [BUGFIX] Drop dead code for * in paths.
+* [BUGFIX] Route#render name vs viewName precedence fix.
+* [BUGFIX] Use parseFloat before incrementing via incrementProperty.
+
 ### Ember 1.6.0-beta.1 (March 31, 2014)
 
 * [BUGFIX] Add `which` attribute to event triggered by keyEvent test helper.
