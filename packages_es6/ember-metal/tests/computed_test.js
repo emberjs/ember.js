@@ -425,6 +425,15 @@ testBoth('can watch multiple dependent keys specified declaratively via brace ex
   equal(get(obj, 'foo'), 'foo 3', "foo not invalidated by quux");
 });
 
+testBoth('throws assertion if brace expansion notation has spaces', function (get, set) {
+  throws(function () {
+    defineProperty(obj, 'roo', computed(function (key, value) {
+      count++;
+      return 'roo ' + count;
+    }).property('fee.{bar, baz,bop , }'));
+  }, /cannot contain spaces/);
+});
+
 // ..........................................................
 // CHAINED DEPENDENT KEYS
 //
