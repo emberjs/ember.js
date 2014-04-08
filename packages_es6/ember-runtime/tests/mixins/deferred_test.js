@@ -386,9 +386,9 @@ if (Ember.FEATURES['ember-runtime-test-friendly-promises']) {
       equal(asyncEnded, 1);
 
       return new Promise(function(resolve){
-        stop(); // raw async, we must inform the test framework manually
+        QUnit.stop(); // raw async, we must inform the test framework manually
         setTimeout(function(){
-          start(); // raw async, we must inform the test framework manually
+          QUnit.start(); // raw async, we must inform the test framework manually
 
           equal(asyncStarted, 1);
           equal(asyncEnded, 1);

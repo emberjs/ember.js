@@ -14,7 +14,7 @@ asyncTest("Can resolve a promise", function() {
   });
 
   promise.then(function(resolveValue) {
-    start();
+    QUnit.start();
     equal(resolveValue, value, "The resolved value should be correct");
   });
 });
@@ -29,9 +29,7 @@ asyncTest("Can reject a promise", function() {
   });
 
   promise.then(null, function(rejectedValue) {
-    start();
+    QUnit.start();
     equal(rejectedValue, rejected, "The resolved value should be correct");
   });
 });
-
-

@@ -14,26 +14,26 @@ module("ember-testing QUnitAdapter", {
 });
 
 test("asyncStart calls stop", function() {
-  var originalStop = window.stop;
+  var originalStop = QUnit.stop;
   try {
-    window.stop = function(){
+    QUnit.stop = function(){
       ok(true, "stop called");
     };
     adapter.asyncStart();
   } finally {
-    window.stop = originalStop;
+    QUnit.stop = originalStop;
   }
 });
 
 test("asyncEnd calls start", function() {
-  var originalStart = window.start;
+  var originalStart = QUnit.start;
   try {
-    window.start = function(){
+    QUnit.start = function(){
       ok(true, "start called");
     };
     adapter.asyncEnd();
   } finally {
-    window.start = originalStart;
+    QUnit.start = originalStart;
   }
 });
 

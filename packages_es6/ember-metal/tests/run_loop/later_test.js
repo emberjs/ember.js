@@ -34,7 +34,7 @@ asyncTest('should invoke after specified period of time - function only', functi
   });
 
   wait(function() {
-    start();
+    QUnit.start();
     equal(invoked, true, 'should have invoked later item');
   });
 });
@@ -48,7 +48,7 @@ asyncTest('should invoke after specified period of time - target/method', functi
   });
 
   wait(function() {
-    start();
+    QUnit.start();
     equal(obj.invoked, true, 'should have invoked later item');
   });
 });
@@ -62,7 +62,7 @@ asyncTest('should invoke after specified period of time - target/method/args', f
   });
 
   wait(function() {
-    start();
+    QUnit.start();
     equal(obj.invoked, 10, 'should have invoked later item');
   });
 });
@@ -94,7 +94,7 @@ asyncTest('should always invoke within a separate runloop', function() {
   equal(obj.invoked, 0, "shouldn't have invoked later item yet");
 
   wait(function() {
-    start();
+    QUnit.start();
     equal(obj.invoked, 10, "should have invoked later item");
     ok(secondRunLoop, "second run loop took place");
     ok(secondRunLoop !== firstRunLoop, "two different run loops took place");
@@ -120,7 +120,7 @@ asyncTest('should always invoke within a separate runloop', function() {
 //   deepEqual(array, []);
 
 //   wait(function() {
-//     start();
+//     QUnit.start();
 //     deepEqual(array, [1,2,3,4,5], 'callbacks were called in expected order');
 //   });
 // });
@@ -151,7 +151,7 @@ asyncTest('should always invoke within a separate runloop', function() {
 //   deepEqual(array, []);
 
 //   wait(function() {
-//     start();
+//     QUnit.start();
 //     equal(array.length, 3, 'all callbacks called');
 //     ok(array[0] !== array[1], 'first two callbacks have different run loops');
 //     ok(array[0], 'first runloop present');
@@ -182,7 +182,7 @@ asyncTest('inception calls to run.later should run callbacks in separate run loo
   });
 
   wait(function() {
-    start();
+    QUnit.start();
     ok(finished, 'all .later callbacks run');
   });
 });
@@ -228,7 +228,7 @@ asyncTest('setTimeout should never run with a negative wait', function() {
 
   wait(function() {
     window.setTimeout = originalSetTimeout;
-    start();
+    QUnit.start();
     ok(newSetTimeoutUsed, 'stub setTimeout was used');
   });
 });

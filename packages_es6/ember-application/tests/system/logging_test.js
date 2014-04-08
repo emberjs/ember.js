@@ -52,18 +52,18 @@ module("Ember.Application – logging of generated classes", {
 });
 
 function visit(path) {
-  stop();
+  QUnit.stop();
 
   var promise = run(function(){
     return new RSVP.Promise(function(resolve, reject){
       var router = App.__container__.lookup('router:main');
 
       resolve(router.handleURL(path).then(function(value){
-        start();
+        QUnit.start();
         ok(true, 'visited: `' + path + '`');
         return value;
       }, function(reason) {
-        start();
+        QUnit.start();
         ok(false, 'failed to visit:`' + path + '` reason: `' + QUnit.jsDump.parse(reason));
         throw reason;
       }));
