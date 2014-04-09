@@ -20,7 +20,9 @@ var Backburner = requireModule('backburner').Backburner,
       },
       defaultQueue: 'actions',
       onBegin: onBegin,
-      onEnd: onEnd
+      onEnd: onEnd,
+      onErrorTarget: Ember,
+      onErrorMethod: 'onerror'
     }),
     slice = [].slice,
     concat = [].concat;
@@ -57,20 +59,9 @@ var Backburner = requireModule('backburner').Backburner,
   @return {Object} return value from invoking the passed function.
 */
 var run = function() {
-  if (Ember.onerror) {
-    return onerror(arguments);
-  } else {
-    return apply(backburner, backburner.run, arguments);
-  }
+  return apply(backburner, backburner.run, arguments);
 };
 
-function onerror(args) {
-  try {
-    return apply(backburner, backburner.run, args);
-  } catch(error) {
-    Ember.onerror(error);
-  }
-}
 /**
   If no run-loop is present, it creates a new one. If a run loop is
   present it will queue itself to run on the existing run-loops action
