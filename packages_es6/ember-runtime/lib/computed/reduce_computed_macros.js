@@ -761,5 +761,46 @@ function sort(itemsKey, sortDefinition) {
   });
 };
 
+var reverse;
+if (Ember.FEATURES.isEnabled('ember-runtime-array-computed-reverse')) {
+  /**
+    A computed property which returns a reversed array without 
+    recreating a new array on each replace action.
 
-export {sum, min, max, map, sort, setDiff, mapBy, mapProperty, filter, filterBy, filterProperty, uniq, union, intersect}
+    Example
+
+    ```javascript
+    App.Timeline = Ember.Object.extend({
+      reverseChronPosts: Ember.computed.reverse('posts')
+    });
+
+    var timeline = App.Timeline.create({posts: [
+      'good morning',
+      'grabbing lunch',
+      'making dinner'
+    ]});
+    timeline.get('reverseChronPosts'); // ['making dinner', 'grabbing lunch', 'good morning']
+    ```
+
+    @method computed.reverse
+    @for Ember
+    @param {String} dependentKey
+    @return {Ember.ComputedProperty} computes an array with the elements 
+    from the dependent array reversed
+  */
+  reverse = function(dependentKey) {
+    return arrayComputed(dependentKey, {
+      addedItem: function(array, item, changeMeta) {
+        array.insertAt(get(array, 'length') - changeMeta.index, item);
+        return array;
+      },
+
+      removedItem: function(array, item, changeMeta) {
+        array.removeAt(get(array, 'length') - changeMeta.index - 1);
+        return array;
+      }
+    });
+  };
+}
+
+export {sum, min, max, map, sort, setDiff, mapBy, mapProperty, filter, filterBy, filterProperty, uniq, union, intersect, reverse}
