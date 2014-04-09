@@ -12,7 +12,7 @@ import {create} from "ember-metal/platform";
   @return {Array} Array containing keys of obj
 */
 var keys = Object.keys;
-if (keys || create.isSimulated) {
+if (!keys || create.isSimulated) {
   var prototypeProperties = [
     'constructor',
     'hasOwnProperty',
