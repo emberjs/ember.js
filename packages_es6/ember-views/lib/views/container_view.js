@@ -300,7 +300,7 @@ var ContainerView = View.extend(MutableArray, {
     @param {Ember.Array} views the array of child views after the mutation has occurred
     @param {Number} start the start position of the mutation
     @param {Number} removed the number of child views removed
-    @param {Number} the number of child views added
+    @param {Number} added the number of child views added
   */
   childViewsDidChange: function(views, start, removed, added) {
     if (added > 0) {
