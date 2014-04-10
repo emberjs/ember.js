@@ -26,6 +26,7 @@ var ComponentTemplateDeprecation = Mixin.create({
     future.
 
     @method willMergeMixin
+    @since 1.4.0
   */
   willMergeMixin: function(props) {
     // must call _super here to ensure that the ActionHandler

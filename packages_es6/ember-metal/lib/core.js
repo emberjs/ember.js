@@ -95,6 +95,7 @@ MetamorphENV.DISABLE_RANGE_API = Ember.ENV.DISABLE_RANGE_API;
 
   @property FEATURES
   @type Hash
+  @since 1.1.0
 */
 
 Ember.FEATURES = Ember.ENV.FEATURES || {};
@@ -111,6 +112,7 @@ Ember.FEATURES = Ember.ENV.FEATURES || {};
 
   @method isEnabled
   @param {string} feature
+  @since 1.1.0
 */
 
 Ember.FEATURES.isEnabled = function(feature) {

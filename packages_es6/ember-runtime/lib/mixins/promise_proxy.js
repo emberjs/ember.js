@@ -176,6 +176,7 @@ var PromiseProxyMixin = Mixin.create({
     @method catch
     @param {Function} callback
     @return {RSVP.Promise}
+    @since 1.3.0
   */
   'catch': promiseAlias('catch'),
 
@@ -187,6 +188,7 @@ var PromiseProxyMixin = Mixin.create({
     @method finally
     @param {Function} callback
     @return {RSVP.Promise}
+    @since 1.3.0
   */
   'finally': promiseAlias('finally')
 

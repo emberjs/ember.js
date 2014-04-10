@@ -189,6 +189,7 @@ var EmberLocation = {
 
     @private
     @method getHash
+    @since 1.4.0
   */
   _getHash: function () {
     // AutoLocation has it at _location, HashLocation at .location.

@@ -135,6 +135,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     @method didTransition
     @private
+    @since 1.2.0
   */
   didTransition: function(infos) {
     updatePaths(this);
