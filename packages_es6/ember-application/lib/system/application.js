@@ -16,7 +16,7 @@ import run from "ember-metal/run_loop";
 import {canInvoke} from "ember-metal/utils";
 import Container from 'container/container';
 import {Controller} from "ember-runtime/controllers/controller";
-import {A} from "ember-runtime/system/native_array";
+import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import EventDispatcher from "ember-views/system/event_dispatcher";
@@ -275,7 +275,12 @@ var Application = Namespace.extend(DeferredMixin, {
 
     if ( Ember.LOG_VERSION ) {
       Ember.LOG_VERSION = false; // we only need to see this once per Application#init
-      var maxNameLength = Math.max.apply(this, A(Ember.libraries).mapBy("name.length"));
+
+      var nameLengths = EnumerableUtils.map(Ember.libraries, function(item) {
+        return get(item, "name.length");
+      });
+
+      var maxNameLength = Math.max.apply(this, nameLengths);
 
       Ember.debug('-------------------------------');
       Ember.libraries.each(function(name, version) {
