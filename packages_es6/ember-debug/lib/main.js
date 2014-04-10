@@ -124,7 +124,7 @@ Ember.deprecate = function(message, test) {
   no warnings will be shown in production.
 
   ```javascript
-  Ember.oldMethod = Ember.deprecateFunc("Please use the new, updated method", Ember.newMethod);
+  Ember.oldMethod = Ember.deprecateFunc('Please use the new, updated method', Ember.newMethod);
   ```
 
   @method deprecateFunc
@@ -145,7 +145,7 @@ Ember.deprecateFunc = function(message, func) {
   `Ember.runInDebug()` when doing a production build.
 
   ```javascript
-  Ember.runInDebug( function() {
+  Ember.runInDebug(function() {
     Ember.Handlebars.EachView.reopen({
       didInsertElement: function() {
         console.log("I'm happy");

@@ -135,11 +135,11 @@ function removeDependentKeys(desc, obj, keyName, meta) {
   });
 
   var tom = Person.create({
-    firstName: "Tom",
-    lastName: "Dale"
+    firstName: 'Tom',
+    lastName: 'Dale'
   });
 
-  tom.get('fullName') // "Tom Dale"
+  tom.get('fullName') // 'Tom Dale'
   ```
 
   You can also define what Ember should do when setting a computed property.
@@ -175,9 +175,9 @@ function removeDependentKeys(desc, obj, keyName, meta) {
   });
 
   var person = Person.create();
-  person.set('fullName', "Peter Wagenet");
-  person.get('firstName') // Peter
-  person.get('lastName') // Wagenet
+  person.set('fullName', 'Peter Wagenet');
+  person.get('firstName') // 'Peter'
+  person.get('lastName') // 'Wagenet'
   ```
 
   @class ComputedProperty
@@ -284,7 +284,8 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
     firstName: 'Barack',
     lastName: 'Obama',
   });
-  MyApp.president.get('fullName'); // Barack Obama
+
+  MyApp.president.get('fullName'); // 'Barack Obama'
   ```
 
   @method property
@@ -378,11 +379,11 @@ function finishChains(chainNodes)
 
 
   var tom = Person.create({
-    firstName: "Tom",
-    lastName: "Dale"
+    firstName: 'Tom',
+    lastName: 'Dale'
   });
 
-  tom.get('fullName') // "Tom Dale"
+  tom.get('fullName') // 'Tom Dale'
   ```
 
   @method get
@@ -526,6 +527,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   The function should accept two parameters, key and value. If value is not
   undefined you should set the value first. In either case return the
   current value of the property.
+
   @method computed
   @for Ember
   @param {Function} func The computed property function.
@@ -632,7 +634,9 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
     var ToDoList = Ember.Object.extend({
       done: Ember.computed.empty('todos')
     });
+
     var todoList = ToDoList.create({todos: ['Unit Test', 'Documentation', 'Release']});
+
     todoList.get('done'); // false
     todoList.get('todos').clear();
     todoList.get('done'); // true
@@ -662,9 +666,11 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
 
     ```javascript
     var ToDoList = Ember.Object.extend({
-      done: computed.empty('todos.[]') // detect array changes
+      done: Ember.computed.empty('todos.[]') // detect array changes
     });
+
     var todoList = ToDoList.create({todos: ['Unit Test', 'Documentation', 'Release']});
+
     todoList.get('done'); // false
     todoList.get('todos').clear(); // []
     todoList.get('done'); // true
@@ -693,9 +699,11 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    hasStuff: computed.notEmpty('backpack.[]')
+    hasStuff: Ember.computed.notEmpty('backpack.[]')
   });
+
   var hamster = Hamster.create({backpack: ['Food', 'Sleeping Bag', 'Tent']});
+
   hamster.get('hasStuff'); // true
   hamster.get('backpack').clear(); // []
   hamster.get('hasStuff'); // false
@@ -720,9 +728,11 @@ registerComputed('notEmpty', function(dependentKey) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    isHungry: computed.none('food')
+    isHungry: Ember.computed.none('food')
   });
+
   var hamster = Hamster.create();
+
   hamster.get('isHungry'); // true
   hamster.set('food', 'Banana');
   hamster.get('isHungry'); // false
@@ -748,9 +758,11 @@ registerComputed('none', function(dependentKey) {
 
   ```javascript
   var User = Ember.Object.extend({
-    isAnonymous: computed.not('loggedIn')
+    isAnonymous: Ember.computed.not('loggedIn')
   });
+
   var user = User.create({loggedIn: false});
+
   user.get('isAnonymous'); // true
   user.set('loggedIn', true);
   user.get('isAnonymous'); // false
@@ -772,9 +784,11 @@ registerComputed('not', function(dependentKey) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    hasBananas: computed.bool('numBananas')
+    hasBananas: Ember.computed.bool('numBananas')
   });
+
   var hamster = Hamster.create();
+
   hamster.get('hasBananas'); // false
   hamster.set('numBananas', 0);
   hamster.get('hasBananas'); // false
@@ -803,9 +817,11 @@ registerComputed('bool', function(dependentKey) {
 
   ```javascript
   var User = Ember.Object.extend({
-    hasValidEmail: computed.match('email', /^.+@.+\..+$/)
+    hasValidEmail: Ember.computed.match('email', /^.+@.+\..+$/)
   });
+
   var user = User.create({loggedIn: false});
+
   user.get('hasValidEmail'); // false
   user.set('email', '');
   user.get('hasValidEmail'); // false
@@ -833,9 +849,11 @@ registerComputed('match', function(dependentKey, regexp) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    napTime: computed.equal('state', 'sleepy')
+    napTime: Ember.computed.equal('state', 'sleepy')
   });
+
   var hamster = Hamster.create();
+
   hamster.get('napTime'); // false
   hamster.set('state', 'sleepy');
   hamster.get('napTime'); // true
@@ -862,9 +880,11 @@ registerComputed('equal', function(dependentKey, value) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    hasTooManyBananas: computed.gt('numBananas', 10)
+    hasTooManyBananas: Ember.computed.gt('numBananas', 10)
   });
+
   var hamster = Hamster.create();
+
   hamster.get('hasTooManyBananas'); // false
   hamster.set('numBananas', 3);
   hamster.get('hasTooManyBananas'); // false
@@ -891,9 +911,11 @@ registerComputed('gt', function(dependentKey, value) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    hasTooManyBananas: computed.gte('numBananas', 10)
+    hasTooManyBananas: Ember.computed.gte('numBananas', 10)
   });
+
   var hamster = Hamster.create();
+
   hamster.get('hasTooManyBananas'); // false
   hamster.set('numBananas', 3);
   hamster.get('hasTooManyBananas'); // false
@@ -920,9 +942,11 @@ registerComputed('gte', function(dependentKey, value) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    needsMoreBananas: computed.lt('numBananas', 3)
+    needsMoreBananas: Ember.computed.lt('numBananas', 3)
   });
+
   var hamster = Hamster.create();
+
   hamster.get('needsMoreBananas'); // true
   hamster.set('numBananas', 3);
   hamster.get('needsMoreBananas'); // false
@@ -949,9 +973,11 @@ registerComputed('lt', function(dependentKey, value) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    needsMoreBananas: computed.lte('numBananas', 3)
+    needsMoreBananas: Ember.computed.lte('numBananas', 3)
   });
+
   var hamster = Hamster.create();
+
   hamster.get('needsMoreBananas'); // true
   hamster.set('numBananas', 5);
   hamster.get('needsMoreBananas'); // false
@@ -978,9 +1004,11 @@ registerComputed('lte', function(dependentKey, value) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    readyForCamp: computed.and('hasTent', 'hasBackpack')
+    readyForCamp: Ember.computed.and('hasTent', 'hasBackpack')
   });
+
   var hamster = Hamster.create();
+
   hamster.get('readyForCamp'); // false
   hamster.set('hasTent', true);
   hamster.get('readyForCamp'); // false
@@ -1011,9 +1039,11 @@ registerComputedWithProperties('and', function(properties) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    readyForRain: computed.or('hasJacket', 'hasUmbrella')
+    readyForRain: Ember.computed.or('hasJacket', 'hasUmbrella')
   });
+
   var hamster = Hamster.create();
+
   hamster.get('readyForRain'); // false
   hamster.set('hasJacket', true);
   hamster.get('readyForRain'); // true
@@ -1042,9 +1072,11 @@ registerComputedWithProperties('or', function(properties) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    hasClothes: computed.any('hat', 'shirt')
+    hasClothes: Ember.computed.any('hat', 'shirt')
   });
+
   var hamster = Hamster.create();
+
   hamster.get('hasClothes'); // null
   hamster.set('shirt', 'Hawaiian Shirt');
   hamster.get('hasClothes'); // 'Hawaiian Shirt'
@@ -1073,9 +1105,11 @@ registerComputedWithProperties('any', function(properties) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    clothes: computed.collect('hat', 'shirt')
+    clothes: Ember.computed.collect('hat', 'shirt')
   });
+
   var hamster = Hamster.create();
+
   hamster.get('clothes'); // [null, null]
   hamster.set('hat', 'Camp Hat');
   hamster.set('shirt', 'Camp Shirt');
@@ -1110,16 +1144,18 @@ registerComputedWithProperties('collect', function(properties) {
   ```javascript
   Person = Ember.Object.extend({
     name: 'Alex Matchneer',
-    nomen: computed.alias('name')
+    nomen: Ember.computed.alias('name')
   });
 
   alex = Person.create();
+
   alex.get('nomen'); // 'Alex Matchneer'
   alex.get('name');  // 'Alex Matchneer'
 
   alex.set('nomen', '@machty');
   alex.get('name');  // '@machty'
   ```
+
   @method computed.alias
   @for Ember
   @param {String} dependentKey
@@ -1141,31 +1177,26 @@ computed.alias = function(dependentKey) {
   Where `computed.alias` aliases `get` and `set`, and allows for bidirectional
   data flow, `computed.oneWay` only provides an aliased `get`. The `set` will
   not mutate the upstream property, rather causes the current property to
-  become the value set. This causes the downstream property to permentantly
+  become the value set. This causes the downstream property to permanently
   diverge from the upstream property.
 
   Example
 
   ```javascript
-  User = Ember.Object.extend({
+  var User = Ember.Object.extend({
     firstName: null,
     lastName: null,
-    nickName: computed.oneWay('firstName')
+    nickName: Ember.computed.oneWay('firstName')
   });
 
-  user = User.create({
+  var teddy = User.create({
     firstName: 'Teddy',
     lastName:  'Zeenny'
   });
 
-  user.get('nickName');
-  # 'Teddy'
-
-  user.set('nickName', 'TeddyBear');
-  # 'TeddyBear'
-
-  user.get('firstName');
-  # 'Teddy'
+  teddy.get('nickName'); // 'Teddy'
+  teddy.set('nickName', 'TeddyBear'); // 'TeddyBear'
+  teddy.get('firstName'); // 'Teddy'
   ```
 
   @method computed.oneWay
@@ -1205,26 +1236,21 @@ if (Ember.FEATURES.isEnabled('computed-read-only')) {
   Example
 
   ```javascript
-  User = Ember.Object.extend({
+  var User = Ember.Object.extend({
     firstName: null,
     lastName: null,
-    nickName: computed.readOnly('firstName')
+    nickName: Ember.computed.readOnly('firstName')
   });
 
-  user = User.create({
+  var teddy = User.create({
     firstName: 'Teddy',
     lastName:  'Zeenny'
   });
 
-  user.get('nickName');
-  # 'Teddy'
-
-  user.set('nickName', 'TeddyBear');
-  # throws Exception
-  # throw new Ember.Error('Cannot Set: nickName on: <User:ember27288>' );`
-
-  user.get('firstName');
-  # 'Teddy'
+  teddy.get('nickName'); // 'Teddy'
+  teddy.set('nickName', 'TeddyBear'); // throws Exception
+  // throw new Ember.Error('Cannot Set: nickName on: <User:ember27288>' );`
+  teddy.get('firstName'); // 'Teddy'
   ```
 
   @method computed.readOnly
@@ -1248,9 +1274,11 @@ computed.readOnly = function(dependentKey) {
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    wishList: computed.defaultTo('favoriteFood')
+    wishList: Ember.computed.defaultTo('favoriteFood')
   });
+
   var hamster = Hamster.create({favoriteFood: 'Banana'});
+
   hamster.get('wishList'); // 'Banana'
   hamster.set('wishList', 'More Unit Tests');
   hamster.get('wishList'); // 'More Unit Tests'
