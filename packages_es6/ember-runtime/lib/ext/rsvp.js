@@ -17,6 +17,8 @@ RSVP.onerrorDefault = function(error) {
       } else {
         throw error;
       }
+    } else if (Ember.onerror) {
+      Ember.onerror(error);
     } else {
       Logger.error(error.stack);
       Ember.assert(error, false);
