@@ -20,8 +20,6 @@
         "raises",
         "throws",
         "deepEqual",
-        "start",
-        "stop",
         "ok",
         "strictEqual",
         "module",
