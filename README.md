@@ -21,7 +21,7 @@ Here's how you create a binding between two objects:
 
 ```javascript
 MyApp.president = Ember.Object.create({
-  name: "Barack Obama"
+  name: 'Barack Obama'
 });
 
 MyApp.country = Ember.Object.create({
@@ -32,7 +32,7 @@ MyApp.country = Ember.Object.create({
 
 // Later, after Ember has resolved bindings...
 MyApp.country.get('presidentName');
-// "Barack Obama"
+// 'Barack Obama'
 ```
 Bindings allow you to architect your application using the MVC
 (Model-View-Controller) pattern, then rest easy knowing that data will
@@ -44,8 +44,8 @@ Computed properties allow you to treat a function like a property:
 
 ``` javascript
 MyApp.President = Ember.Object.extend({
-  firstName: "Barack",
-  lastName: "Obama",
+  firstName: 'Barack',
+  lastName: 'Obama',
 
   fullName: function() {
     return this.get('firstName') + ' ' + this.get('lastName');
@@ -56,7 +56,7 @@ MyApp.President = Ember.Object.extend({
 
 MyApp.president = MyApp.President.create();
 MyApp.president.get('fullName');
-// "Barack Obama"
+// 'Barack Obama'
 ```
 
 Treating a function like a property is useful because they can work with
@@ -69,8 +69,8 @@ about these dependencies like this:
 
 ``` javascript
 MyApp.President = Ember.Object.extend({
-  firstName: "Barack",
-  lastName: "Obama",
+  firstName: 'Barack',
+  lastName: 'Obama',
 
   fullName: function() {
     return this.get('firstName') + ' ' + this.get('lastName');
