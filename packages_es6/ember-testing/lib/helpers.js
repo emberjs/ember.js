@@ -226,6 +226,7 @@ asyncHelper('click', click);
 * @param {String} type the type of key event, e.g. `keypress`, `keydown`, `keyup`
 * @param {Number} keyCode the keyCode of the simulated key event
 * @return {RSVP.Promise}
+* @since 1.5.0
 */
 asyncHelper('keyEvent', keyEvent);
 
@@ -323,6 +324,7 @@ visit('/some/path').then(validateRouteName)
 
 @method currentRouteName
 @return {Object} The name of the currently active route.
+@since 1.5.0
 */
 helper('currentRouteName', currentRouteName);
 
@@ -341,6 +343,7 @@ click('#some-link-id').then(validateURL);
 
 @method currentPath
 @return {Object} The currently active path.
+@since 1.5.0
 */
 helper('currentPath', currentPath);
 
@@ -359,6 +362,7 @@ click('#some-link-id').then(validateURL);
 
 @method currentURL
 @return {Object} The currently active URL.
+@since 1.5.0
 */
 helper('currentURL', currentURL);
 
@@ -382,5 +386,6 @@ helper('currentURL', currentURL);
  @param {String} type The event type to be triggered.
  @param {String} options The options to be passed to jQuery.Event.
  @return {RSVP.Promise}
+ @since 1.5.0
 */
 asyncHelper('triggerEvent', triggerEvent);

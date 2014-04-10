@@ -156,6 +156,7 @@ Ember.deprecateFunc = function(message, func) {
 
   @method runInDebug
   @param {Function} func The function to be executed.
+  @since 1.5.0
 */
 Ember.runInDebug = function(func) {
   func()

@@ -116,6 +116,7 @@ function handlebarsGet(root, path, options) {
   @param {Object} root The object to look up the property on
   @param {String} path The path to be lookedup
   @param {Object} options The template's option hash
+  @since 1.4.0
 */
 function getEscaped(root, path, options) {
   var result = handlebarsGet(root, path, options);
@@ -374,6 +375,7 @@ function registerBoundHelper(name, fn) {
   @for Ember.Handlebars
   @param {Function} function
   @param {String} dependentKeys*
+  @since 1.2.0
 */
 function makeBoundHelper(fn) {
   if (!SimpleHandlebarsView) { SimpleHandlebarsView = requireModule('ember-handlebars/views/handlebars_bound_view')['SimpleHandlebarsView']; } // ES6TODO: stupid circular dep

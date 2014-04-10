@@ -31,6 +31,7 @@ var a_slice = [].slice,
  @for Ember
  @param {String} dependentKey
  @return {Ember.ComputedProperty} computes the sum of all values in the dependentKey's array
+ @since 1.4.0
 */
 
 function sum(dependentKey){

@@ -1257,6 +1257,7 @@ if (Ember.FEATURES.isEnabled('query-params-new')) {
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which creates a
   one way computed property to the original value for property.
+  @since 1.5.0
 */
 computed.readOnly = function(dependentKey) {
   return computed(dependentKey, function() {

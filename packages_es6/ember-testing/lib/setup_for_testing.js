@@ -26,6 +26,7 @@ function decrementAjaxPendingRequests(){
 
   @method setupForTesting
   @namespace Ember
+  @since 1.5.0
 */
 function setupForTesting() {
   if (!Test) { Test = requireModule('ember-testing/test')['default']; }

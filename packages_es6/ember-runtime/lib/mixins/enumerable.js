@@ -588,6 +588,7 @@ var Enumerable = Mixin.create({
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Boolean}
+    @since 1.3.0
   */
   isEvery: function(key, value) {
     return this.every(apply(this, iter, arguments));
@@ -690,6 +691,7 @@ var Enumerable = Mixin.create({
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Boolean} `true` if the passed function returns `true` for any item
+    @since 1.3.0
   */
   isAny: function(key, value) {
     return this.any(apply(this, iter, arguments));
@@ -1008,6 +1010,7 @@ var Enumerable = Mixin.create({
     @method sortBy
     @param {String} property name(s) to sort on
     @return {Array} The sorted array.
+    @since 1.2.0
     */
   sortBy: function() {
     var sortKeys = arguments;

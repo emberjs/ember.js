@@ -22,6 +22,7 @@ import isEmpty from 'ember-metal/is_empty';
   @for Ember
   @param {Object} obj Value to test
   @return {Boolean}
+  @since 1.5.0
   */
 function isBlank(obj) {
   return isEmpty(obj) || (typeof obj === 'string' && obj.match(/\S/) === null);

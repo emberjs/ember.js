@@ -148,6 +148,7 @@ run.join = function(target, method /* args */) {
   @param {Object} [args*] Any additional arguments you wish to pass to the method.
   @return {Object} return value from invoking the passed function. Please note,
   when called within an existing loop, no return value is possible.
+  @since 1.4.0
 */
 run.bind = function(target, method /* args*/) {
   var args = slice.call(arguments);
