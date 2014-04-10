@@ -649,7 +649,7 @@ function bindAttrHelper(options) {
 
     Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
 
-    var observer, invoker;
+    var observer;
 
     observer = function observer() {
       var result = handlebarsGet(ctx, path, options);
@@ -665,7 +665,7 @@ function bindAttrHelper(options) {
       // In that case, we can assume the template has been re-rendered
       // and we need to clean up the observer.
       if (!elem || elem.length === 0) {
-        removeObserver(normalized.root, normalized.path, invoker);
+        removeObserver(normalized.root, normalized.path, observer);
         return;
       }
 
@@ -764,7 +764,7 @@ function bindClasses(context, classBindings, view, bindAttrId, options) {
     // the property changes.
     var oldClass;
 
-    var observer, invoker;
+    var observer;
 
     var parsedPath = View._parsePropertyPath(binding),
         path = parsedPath.path,
@@ -788,7 +788,7 @@ function bindClasses(context, classBindings, view, bindAttrId, options) {
       // If we can't find the element anymore, a parent template has been
       // re-rendered and we've been nuked. Remove the observer.
       if (!elem || elem.length === 0) {
-        removeObserver(pathRoot, path, invoker);
+        removeObserver(pathRoot, path, observer);
       } else {
         // If we had previously added a class to the element, remove it.
         if (oldClass) {
