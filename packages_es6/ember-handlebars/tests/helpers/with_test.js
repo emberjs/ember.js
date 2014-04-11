@@ -311,13 +311,13 @@ test("it should still have access to original parentController within an {{#each
 
   var parentController = EmberObject.create({
     container: container,
-    name: 'Bob Loblaw'
+    name: 'Bob Loblaw',
+    people: people
   });
 
   view = EmberView.create({
     container: container,
     template: EmberHandlebars.compile('{{#each person in people}}{{#with person controller="person"}}{{controllerName}}{{/with}}{{/each}}'),
-    context: { people: people },
     controller: parentController
   });
 
