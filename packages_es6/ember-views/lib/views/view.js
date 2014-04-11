@@ -1165,7 +1165,7 @@ var View = CoreView.extend({
   /**
     Return the nearest ancestor that has a given property.
 
-    @function nearestWithProperty
+    @method nearestWithProperty
     @param {String} property A property name
     @return Ember.View
   */

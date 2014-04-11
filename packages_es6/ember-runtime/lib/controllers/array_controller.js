@@ -199,6 +199,7 @@ var ArrayController = ArrayProxy.extend(ControllerMixin, SortableMixin, {
    * from participating in the parentController hierarchy.
    *
    * @private
+   * @property _isVirtual
    * @type Boolean
    */
   _isVirtual: false,
