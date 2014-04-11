@@ -221,13 +221,15 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     @param name {String}
     @private
   */
-  trigger: function(name) {
+  trigger: function() {
     this._super.apply(this, arguments);
+    var name = arguments[0];
     var method = this[name];
     if (method) {
-      var args = [], i, l;
-      for (i = 1, l = arguments.length; i < l; i++) {
-        args.push(arguments[i]);
+      var length = arguments.length;
+      var args = new Array(length - 1);
+      for (var i = 1; i < length; i++) {
+        args[i - 1] = arguments[i];
       }
       return method.apply(this, args);
     }

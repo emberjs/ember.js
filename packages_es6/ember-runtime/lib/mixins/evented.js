@@ -112,10 +112,13 @@ var Evented = Mixin.create({
     @param {Object...} args Optional arguments to pass on
   */
   trigger: function(name) {
-    var args = [], i, l;
-    for (i = 1, l = arguments.length; i < l; i++) {
-      args.push(arguments[i]);
+    var length = arguments.length;
+    var args = new Array(length - 1);
+
+    for (var i = 1; i < length; i++) {
+      args[i - 1] = arguments[i];
     }
+
     sendEvent(this, name, args);
   },
 
