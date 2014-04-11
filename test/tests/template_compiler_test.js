@@ -20,6 +20,9 @@ var dom = {
   },
   appendText: function (node, string) {
     node.appendChild(document.createTextNode(string));
+  },
+  createTextNode: function(string) {
+    return document.createTextNode(string);
   }
 };
 
