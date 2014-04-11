@@ -540,7 +540,10 @@ var LinkView = Ember.LinkView = EmberView.extend({
     var handlers = router.router.recognizer.handlersFor(namedRoute);
     var normalizedPath = handlers[handlers.length - 1].handler;
     if (namedRoute !== normalizedPath) {
-      this.set('currentWhen', namedRoute);
+      //set namedRoute as currentWhen only when currentWhen is not given explicitly
+      if (!this.currentWhen) {
+        this.set('currentWhen', namedRoute);
+      }
       namedRoute = handlers[handlers.length - 1].handler;
       resolvedParams[0] = namedRoute;
     }

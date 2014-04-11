@@ -286,6 +286,29 @@ test("The {{link-to}} helper supports custom, nested, currentWhen", function() {
   equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, "The link is active since currentWhen is a parent route");
 });
 
+test("The {{link-to}} helper does not disregards currentWhen when it is given explicitly for a resource", function() {
+  Router.map(function(match) {
+    this.resource("index", { path: "/" }, function() {
+      this.route("about");
+    });
+
+    this.resource("items",function(){
+      this.route('item');
+    });
+  });
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{outlet}}");
+  Ember.TEMPLATES['index/about'] = Ember.Handlebars.compile("{{#link-to 'items' id='other-link' currentWhen='index'}}ITEM{{/link-to}}");
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/about");
+  });
+
+  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, "The link is active when currentWhen is given for explicitly for a resource");
+});
+
 test("The {{link-to}} helper defaults to bubbling", function() {
   Ember.TEMPLATES.about = Ember.Handlebars.compile("<div {{action 'hide'}}>{{#link-to 'about.contact' id='about-contact'}}About{{/link-to}}</div>{{outlet}}");
   Ember.TEMPLATES['about/contact'] = Ember.Handlebars.compile("<h1 id='contact'>Contact</h1>");
