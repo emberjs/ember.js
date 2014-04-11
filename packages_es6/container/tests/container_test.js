@@ -557,3 +557,36 @@ test('once resolved, always return the same result', function(){
 
   equal(container.resolve('models:bar'), Bar);
 });
+
+test('once looked up, assert if an injection is registered for the entry', function(){
+  expect(1);
+
+  var container = new Container(),
+      Apple = factory(),
+      Worm = factory();
+
+  container.register('apple:main', Apple);
+  container.register('worm:main', Worm);
+  var apple = container.lookup('apple:main');
+  throws(function() {
+    container.injection('apple:main', 'worm', 'worm:main');
+  }, "Attempted to register an injection for a type that has already been looked up. ('apple:main', 'worm', 'worm:main')");
+});
+
+test("Once looked up, assert if a factoryInjection is registered for the factory", function() {
+  expect(1);
+
+  var container = new Container(),
+      Apple = factory(),
+      Worm = factory();
+
+  container.register('apple:main', Apple);
+  container.register('worm:main', Worm);
+
+  var AppleFactory = container.lookupFactory('apple:main');
+  throws(function() {
+    container.factoryInjection('apple:main', 'worm', 'worm:main');
+  }, "Attempted to register a factoryInjection for a type that has already been looked up. ('apple:main', 'worm', 'worm:main')");
+});
+
+
