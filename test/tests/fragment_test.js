@@ -50,8 +50,8 @@ test('converts entities to their char/string equivalent', function () {
   var ast = preprocess("<div title=\"&quot;Foo &amp; Bar&quot;\">lol &lt; &#60;&#x3c; &#x3C; &LT; &NotGreaterFullEqual; &Borksnorlax;</div>");
   var fragment = fragmentFor(ast);
 
-  equal(fragment.childNodes[0].getAttribute('title'), '"Foo & Bar"');
-  equal(fragment.childNodes[0].textContent, "lol < << < < ≧̸ &Borksnorlax;");
+  equal(fragment.getAttribute('title'), '"Foo & Bar"');
+  equal(fragment.textContent, "lol < << < < ≧̸ &Borksnorlax;");
 });
 
 test('hydrates a fragment with placeholder mustaches', function () {
@@ -78,7 +78,7 @@ test('hydrates a fragment with placeholder mustaches', function () {
   equal(contentResolves.length, 2);
 
   var foo = contentResolves[0];
-  equal(foo.placeholder.parent(), fragment.childNodes[0]);
+  equal(foo.placeholder.parent(), fragment);
   equal(foo.context, context);
   equal(foo.path, 'foo');
   deepEqual(foo.params, ["foo",3,"blah"]);
@@ -88,7 +88,7 @@ test('hydrates a fragment with placeholder mustaches', function () {
   equal(foo.options.escaped, true);
 
   var baz = contentResolves[1];
-  equal(baz.placeholder.parent(), fragment.childNodes[0]);
+  equal(baz.placeholder.parent(), fragment);
   equal(baz.context, context);
   equal(baz.path, 'baz');
   equal(baz.params.length, 0);
