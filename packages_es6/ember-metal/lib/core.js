@@ -93,8 +93,9 @@ MetamorphENV.DISABLE_RANGE_API = Ember.ENV.DISABLE_RANGE_API;
 
   You can also define `ENV.FEATURES` if you need to enable features flagged at runtime.
 
-  @property FEATURES
-  @type Hash
+  @class FEATURES
+  @namespace Ember
+  @static
   @since 1.1.0
 */
 
@@ -111,7 +112,9 @@ Ember.FEATURES = Ember.ENV.FEATURES || {};
     enabled/disabled.
 
   @method isEnabled
-  @param {string} feature
+  @param {String} feature
+  @return {Boolean}
+  @for Ember.FEATURES
   @since 1.1.0
 */
 
@@ -146,6 +149,7 @@ Ember.FEATURES.isEnabled = function(feature) {
   @property EXTEND_PROTOTYPES
   @type Boolean
   @default true
+  @for Ember
 */
 Ember.EXTEND_PROTOTYPES = Ember.ENV.EXTEND_PROTOTYPES;
 
