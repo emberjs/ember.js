@@ -9,6 +9,10 @@ import {forEach} from "ember-metal/array";
 /**
   Prefix used for guids through out Ember.
   @private
+  @property GUID_PREFIX
+  @for Ember
+  @type String
+  @final
 */
 var GUID_PREFIX = 'ember';
 

@@ -80,7 +80,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     Represents the current URL.
 
     @method url
-    @returns {String} The current URL.
+    @return {String} The current URL.
   */
   url: computed(function() {
     return get(this, 'location').getURL();
@@ -186,7 +186,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     @method isActive
     @param routeName
-    @returns {Boolean}
+    @return {Boolean}
     @private
   */
   isActive: function(routeName) {
@@ -202,7 +202,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     Does this router instance have the given route.
 
     @method hasRoute
-    @returns {Boolean}
+    @return {Boolean}
     @private
   */
   hasRoute: function(route) {
@@ -460,7 +460,7 @@ function controllerOrProtoFor(controllerName, container, getProto) {
   }
 }
 
-/**
+/*
   Helper function for iterating root-ward, starting
   from (but not including) the provided `originRoute`.
 
