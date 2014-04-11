@@ -967,6 +967,10 @@ var Route = EmberObject.extend(ActionHandler, {
 
   /**
     @private
+    @method deserialize
+    @param {Object} params the parameters extracted from the URL
+    @param {Transition} transition
+    @return {Object|Promise} the model for this route.
 
     Router.js hook.
    */

@@ -225,6 +225,7 @@ var DataAdapter = EmberObject.extend({
   /**
     Clear all observers before destruction
     @private
+    @method willDestroy
   */
   willDestroy: function() {
     this._super();

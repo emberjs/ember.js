@@ -459,6 +459,9 @@ var LinkView = Ember.LinkView = EmberView.extend({
 
   /**
     @private
+    @method _eagerUpdateUrl
+    @param transition
+    @param href
    */
   _eagerUpdateUrl: function(transition, href) {
     if (!transition.isActive || !transition.urlMethod) {
