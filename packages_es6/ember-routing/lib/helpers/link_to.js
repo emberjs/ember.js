@@ -279,6 +279,7 @@ var LinkView = Ember.LinkView = EmberView.extend({
 
     @private
     @method _paramsChanged
+    @since 1.3.0
    */
   _paramsChanged: function() {
     this.notifyPropertyChange('resolvedParams');
@@ -289,6 +290,7 @@ var LinkView = Ember.LinkView = EmberView.extend({
 
    @private
    @method _setupPathObservers
+   @since 1.3.0
   **/
   _setupPathObservers: function(){
     var helperParameters = this.parameters,

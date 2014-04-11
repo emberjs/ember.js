@@ -102,6 +102,7 @@ var Test = {
     @method registerAsyncHelper
     @param {String} name The name of the helper method to add.
     @param {Function} helperMethod
+    @since 1.2.0
   */
   registerAsyncHelper: function(name, helperMethod) {
     helpers[name] = {
@@ -200,6 +201,7 @@ var Test = {
     @public
     @method resolve
     @param {Mixed} The value to resolve
+    @since 1.2.0
   */
   resolve: function(val) {
     return Test.promise(function(resolve) {
@@ -232,6 +234,7 @@ var Test = {
      @method registerWaiter
      @param {Object} context (optional)
      @param {Function} callback
+     @since 1.2.0
   */
   registerWaiter: function(context, callback) {
     if (arguments.length === 1) {
@@ -251,6 +254,7 @@ var Test = {
      @method unregisterWaiter
      @param {Object} context (optional)
      @param {Function} callback
+     @since 1.2.0
   */
   unregisterWaiter: function(context, callback) {
     var pair;
@@ -332,6 +336,7 @@ EmberApplication.reopen({
     @type {Object}
     @default {}
     @private
+    @since 1.3.0
   */
   originalMethods: {},
 
@@ -344,6 +349,7 @@ EmberApplication.reopen({
   @property testing
   @type {Boolean}
   @default false
+  @since 1.3.0
   */
   testing: false,
 
@@ -377,8 +383,9 @@ EmberApplication.reopen({
     default the helpers are injected into `window`.
 
     @property helperContainer
-   @type {Object} The object to be used for test helpers.
-   @default window
+    @type {Object} The object to be used for test helpers.
+    @default window
+    @since 1.2.0
   */
   helperContainer: window,
 

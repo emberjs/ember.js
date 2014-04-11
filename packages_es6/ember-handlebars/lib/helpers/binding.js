@@ -302,6 +302,7 @@ function boundIfHelper(property, fn) {
   @param {String} property Property to bind
   @param {Function} fn Context to provide for rendering
   @return {String} HTML string
+  @since 1.4.0
 */
 function unboundIfHelper(property, fn) {
   var context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : this,

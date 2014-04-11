@@ -57,6 +57,7 @@ var utils = {
    * @param {Object} thisArg Value to use as this when executing *callback*
    *
    * @return {Array} An array containing the filtered values
+   * @since 1.4.0
    */
   filter: function(obj, callback, thisArg) {
     return obj.filter ? obj.filter.call(obj, callback, thisArg) : filter.call(obj, callback, thisArg);

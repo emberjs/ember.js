@@ -79,6 +79,7 @@ var TextField = Component.extend(TextSupport, {
     @property min
     @type String
     @default null
+    @since 1.4.0
   */
   min: null,
 
@@ -88,6 +89,7 @@ var TextField = Component.extend(TextSupport, {
     @property max
     @type String
     @default null
+    @since 1.4.0
   */
   max: null
 });

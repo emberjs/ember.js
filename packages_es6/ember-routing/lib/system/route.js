@@ -80,6 +80,7 @@ var Route = EmberObject.extend(ActionHandler, {
     @property viewName
     @type String
     @default null
+    @since 1.4.0
   */
   viewName: null,
 
@@ -102,6 +103,7 @@ var Route = EmberObject.extend(ActionHandler, {
     @property templateName
     @type String
     @default null
+    @since 1.4.0
   */
   templateName: null,
 
@@ -122,6 +124,7 @@ var Route = EmberObject.extend(ActionHandler, {
     @property controllerName
     @type String
     @default null
+    @since 1.4.0
   */
   controllerName: null,
 
@@ -588,6 +591,7 @@ var Route = EmberObject.extend(ActionHandler, {
     @param {String} name the name of the route
     @param {...Object} models the model(s) to be used while transitioning
     to the route.
+    @since 1.2.0
    */
   intermediateTransitionTo: function() {
     var router = this.router;
@@ -613,6 +617,7 @@ var Route = EmberObject.extend(ActionHandler, {
     @method refresh
     @return {Transition} the transition object associated with this
       attempted transition
+    @since 1.4.0
    */
   refresh: function() {
     return this.router.router.refresh(this);

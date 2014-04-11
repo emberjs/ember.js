@@ -714,6 +714,7 @@ function typeOf(item) {
   @for Ember
   @param {Object} obj The object you want to inspect.
   @return {String} A description of the object
+  @since 1.4.0
 */
 function inspect(obj) {
   var type = typeOf(obj);

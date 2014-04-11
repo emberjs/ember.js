@@ -367,6 +367,7 @@ var Select = View.extend({
     @property required
     @type Boolean
     @default false
+    @since 1.5.0
   */
   required: false,
 

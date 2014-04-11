@@ -126,6 +126,7 @@ EmberHandlebars.helper = function(name, value) {
   @method makeViewHelper
   @for Ember.Handlebars
   @param {Function} ViewClass view class constructor
+  @since 1.2.0
 */
 EmberHandlebars.makeViewHelper = function(ViewClass) {
   return function(options) {

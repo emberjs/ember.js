@@ -72,6 +72,7 @@ var generateControllerFactory = function(container, controllerName, context) {
   @for Ember
   @method generateController
   @private
+  @since 1.3.0
 */
 var generateController = function(container, controllerName, context) {
   generateControllerFactory(container, controllerName, context);

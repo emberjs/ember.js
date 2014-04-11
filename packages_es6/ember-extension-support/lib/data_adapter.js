@@ -66,6 +66,7 @@ var DataAdapter = EmberObject.extend({
 
     @property container
     @default null
+    @since 1.3.0
   */
   container: null,
 
@@ -76,6 +77,7 @@ var DataAdapter = EmberObject.extend({
 
     @property containerDebugAdapter
     @default undefined
+    @since 1.5.0
   **/
   containerDebugAdapter: undefined,
 
@@ -87,6 +89,7 @@ var DataAdapter = EmberObject.extend({
     @private
     @property attributeLimit
     @default 3
+    @since 1.3.0
   */
   attributeLimit: 3,
 
@@ -96,6 +99,7 @@ var DataAdapter = EmberObject.extend({
 
     @private
     @property releaseMethods
+    @since 1.3.0
   */
   releaseMethods: A(),
 
