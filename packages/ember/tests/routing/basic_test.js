@@ -3020,3 +3020,75 @@ test("Redirecting with null model doesn't error out", function() {
 
   equal(router.get('location.path'), "/about/TreeklesMcGeekles");
 });
+
+test("rejecting the model hooks promise with a non-error prints the `message` property", function() {
+  var rejectedMessage = 'OMG!! SOOOOOO BAD!!!!',
+      rejectedStack   = 'Yeah, buddy: stack gets printed too.',
+      originalLoggerError = Ember.Logger.error;
+
+  Router.map(function() {
+    this.route("yippie", { path: "/" });
+  });
+
+  Ember.Logger.error = function(initialMessage, errorMessage, errorStack) {
+    equal(initialMessage, 'Error while loading route: yippie', 'a message with the current route name is printed');
+    equal(errorMessage, rejectedMessage, "the rejected reason's message property is logged");
+    equal(errorStack, rejectedStack, "the rejected reason's stack property is logged");
+  };
+
+  App.YippieRoute = Ember.Route.extend({
+    model: function(){
+      return Ember.RSVP.reject({message: rejectedMessage, stack: rejectedStack});
+    }
+  });
+
+  bootApplication();
+
+  Ember.Logger.error = originalLoggerError;
+});
+
+test("rejecting the model hooks promise with no reason still logs error", function() {
+  var originalLoggerError = Ember.Logger.error;
+
+  Router.map(function() {
+    this.route("wowzers", { path: "/" });
+  });
+
+  Ember.Logger.error = function(initialMessage) {
+    equal(initialMessage, 'Error while loading route: wowzers', 'a message with the current route name is printed');
+  };
+
+  App.WowzersRoute = Ember.Route.extend({
+    model: function(){
+      return Ember.RSVP.reject();
+    }
+  });
+
+  bootApplication();
+
+  Ember.Logger.error = originalLoggerError;
+});
+
+test("rejecting the model hooks promise with a string shows a good error", function() {
+  var originalLoggerError = Ember.Logger.error,
+      rejectedMessage = "Supercalifragilisticexpialidocious";
+
+  Router.map(function() {
+    this.route("yondo", { path: "/" });
+  });
+
+  Ember.Logger.error = function(initialMessage, errorMessage) {
+    equal(initialMessage, 'Error while loading route: yondo', 'a message with the current route name is printed');
+    equal(errorMessage, rejectedMessage, "the rejected reason's message property is logged");
+  };
+
+  App.YondoRoute = Ember.Route.extend({
+    model: function(){
+      return Ember.RSVP.reject(rejectedMessage);
+    }
+  });
+
+  bootApplication();
+
+  Ember.Logger.error = originalLoggerError;
+});
