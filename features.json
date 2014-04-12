@@ -6,7 +6,8 @@
     "ember-handlebars-caps-lookup": null,
     "ember-routing-drop-deprecated-action-style": null,
     "ember-runtime-test-friendly-promises": true,
-    "ember-routing-add-model-option": true
+    "ember-routing-add-model-option": true,
+    "ember-routing-linkto-target-attribute": null 
   },
   "debugStatements": [
     "Ember.warn",

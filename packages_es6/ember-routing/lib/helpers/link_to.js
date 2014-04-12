@@ -427,7 +427,17 @@ var LinkView = Ember.LinkView = EmberView.extend({
   _invoke: function(event) {
     if (!isSimpleClick(event)) { return true; }
 
-    if (this.preventDefault !== false) { event.preventDefault(); }
+    if (this.preventDefault !== false) { 
+      if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
+        var targetAttribute = get(this, 'target');
+        if (!targetAttribute || targetAttribute === '_self') {
+          event.preventDefault();
+        }
+      } else {
+        event.preventDefault();
+      }
+    }
+    
     if (this.bubbles === false) { event.stopPropagation(); }
 
     if (get(this, '_isDisabled')) { return false; }
@@ -609,6 +619,20 @@ var LinkView = Ember.LinkView = EmberView.extend({
 });
 
 LinkView.toString = function() { return "LinkView"; };
+
+if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
+  LinkView.reopen({
+    attributeBindings: ['target'],
+    
+    /**
+      Sets the `target` attribute of the `LinkView`'s anchor element.
+
+      @property target
+      @default null
+    **/
+    target: null    
+  });
+}
 
 /**
   The `{{link-to}}` helper renders a link to the supplied
