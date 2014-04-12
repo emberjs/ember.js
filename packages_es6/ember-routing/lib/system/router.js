@@ -64,6 +64,15 @@ var EmberRouter = EmberObject.extend(Evented, {
   */
   location: 'hash',
 
+  /**
+   Represents the URL of the root of the application, often '/'. This prefix is
+   assumed on all routes defined on this router.
+
+   @property rootURL
+   @default null
+  */
+  rootURL: null,
+
   init: function() {
     this.router = this.constructor.router || this.constructor.map(Ember.K);
     this._activeViews = {};
@@ -243,6 +252,10 @@ var EmberRouter = EmberObject.extend(Evented, {
   _setupLocation: function() {
     var location = get(this, 'location'),
         rootURL = get(this, 'rootURL');
+
+    if (rootURL !== undefined && !this.container.has('setting:root-url')) {
+      this.container.register('setting:root-url', rootURL);
+    }
 
     if ('string' === typeof location && this.container) {
       var resolvedLocation = this.container.lookup('location:' + location);
