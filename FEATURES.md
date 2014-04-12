@@ -52,3 +52,12 @@ for a detailed explanation.
     underlying test framework to start/stop between async steps.
 
   Added in [#4176](https://github.com/emberjs/ember.js/pull/4176)
+
+* `ember-runtime-array-computed-reverse`
+  A reduce computed macro for reversing an array.
+  Simply using toArray().reverse() will recreate a new array every time.
+  With a large array of items, or complex DOM representation of these items,
+  rerendering becomes expensive.  This leverages reduce computed arrays to
+  perform replace actions one at a time.
+
+  Added in [#4680](https://github.com/emberjs/ember.js/pull/4680)
