@@ -523,7 +523,16 @@ var defaultActionHandlers = {
       return;
     }
 
-    Ember.Logger.error('Error while loading route: ' + (error && error.stack));
+    var errorArgs = ['Error while loading route: ' + transition.targetName];
+
+    if (error) {
+      if (error.message) { errorArgs.push(error.message); }
+      if (error.stack)   { errorArgs.push(error.stack); }
+
+      if (typeof error === "string") { errorArgs.push(error); }
+    }
+
+    Ember.Logger.error.apply(this, errorArgs);
   },
 
   loading: function(transition, originRoute) {
