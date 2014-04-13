@@ -245,7 +245,7 @@ function blockHelperMissingHelper(path) {
 
   ```javascript
   Ember.Handlebars.registerBoundHelper('capitalize', function(value) {
-    return value.toUpperCase();
+    return Ember.String.capitalize(value);
   });
   ```
 
@@ -285,7 +285,7 @@ function blockHelperMissingHelper(path) {
   Bound hash options are also supported. Example:
 
   ```handlebars
-  {{repeat text countBinding="numRepeats"}}
+  {{repeat text count=numRepeats}}
   ```
 
   In this example, count will be bound to the value of
