@@ -352,7 +352,7 @@ function registerBoundHelper(name, fn) {
 };
 
 /**
-  A (mostly) private helper function to `registerBoundHelper`. Takes the
+  A helper function used by `registerBoundHelper`. Takes the
   provided Handlebars helper function fn and returns it in wrapped
   bound helper form.
 
@@ -370,7 +370,6 @@ function registerBoundHelper(name, fn) {
   In the above example, if the helper function hadn't been wrapped in
   `makeBoundHelper`, the registered helper would be unbound.
 
-  @private
   @method makeBoundHelper
   @for Ember.Handlebars
   @param {Function} function
