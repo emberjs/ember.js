@@ -107,7 +107,9 @@ var MutableEnumerable = Mixin.create(Enumerable, {
   */
   removeObjects: function(objects) {
     beginPropertyChanges(this);
-    forEach(objects, function(obj) { this.removeObject(obj); }, this);
+    for (var i = objects.length - 1; i >= 0; i--) {
+      this.removeObject(objects[i]);
+    }
     endPropertyChanges(this);
     return this;
   }
