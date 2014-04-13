@@ -195,10 +195,6 @@ function shouldDisplayIfHelperContent(result) {
 function _triageMustacheHelper(property, options) {
   Ember.assert("You cannot pass more than one argument to the _triageMustache helper", arguments.length <= 2);
 
-  if (helpers[property]) {
-    return helpers[property].call(this, options);
-  }
-
   var helper = EmberHandlebars.resolveHelper(options.data.view.container, property);
   if (helper) {
     return helper.call(this, options);
@@ -207,7 +203,26 @@ function _triageMustacheHelper(property, options) {
   return helpers.bind.call(this, property, options);
 }
 
+/**
+  Used to lookup/resolve handlebars helpers. The lookup order is:
+
+  * Look for a registered helper
+  * If a dash exists in the name:
+    * Look for a helper registed in the container
+    * Use Ember.ComponentLookup to find an Ember.Component that resolves
+      to the given name
+
+  @private
+  @method resolveHelper
+  @param {Container} container
+  @param {String} name the name of the helper to lookup
+  @return {Handlebars Helper}
+*/
 function resolveHelper(container, name) {
+  if (helpers[name]) {
+    return helpers[name];
+  }
+
   if (!container || name.indexOf('-') === -1) {
     return;
   }
