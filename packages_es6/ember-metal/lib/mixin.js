@@ -555,6 +555,7 @@ MixinPrototype.detect = function(obj) {
 };
 
 MixinPrototype.without = function() {
+  Ember.deprecate("Mixin#without will be removed");
   var ret = new Mixin(this);
   ret._without = a_slice.call(arguments);
   return ret;
