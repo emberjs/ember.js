@@ -4,7 +4,11 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
   @submodule ember-routing
   */
 
-  var get = Ember.get, set = Ember.set;
+  var get = Ember.get, set = Ember.set,
+      HistoryLocation = Ember.HistoryLocation,
+      HashLocation = Ember.HashLocation,
+      NoneLocation = Ember.NoneLocation,
+      EmberLocation = Ember.Location;
 
   /**
     Ember.AutoLocation will select the best location option based off browser
@@ -25,12 +29,23 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
     /**
       @private
 
+      This property is used by router:main to know whether to cancel the routing
+      setup process, which is needed while we redirect the browser.
+
+      @property cancelRouterSetup
+      @default false
+    */
+    cancelRouterSetup: false,
+
+    /**
+      @private
+
       Will be pre-pended to path upon state change.
 
       @property rootURL
       @default '/'
     */
-    _rootURL: '/',
+    rootURL: '/',
 
     /**
       @private
@@ -70,7 +85,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
       @property _HistoryLocation
       @default Ember.HistoryLocation
     */
-    _HistoryLocation: Ember.HistoryLocation,
+    _HistoryLocation: HistoryLocation,
 
     /**
       @private
@@ -80,7 +95,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
       @property _HashLocation
       @default Ember.HashLocation
     */
-    _HashLocation: Ember.HashLocation,
+    _HashLocation: HashLocation,
 
     /**
       @private
@@ -90,7 +105,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
       @property _NoneLocation
       @default Ember.NoneLocation
     */
-    _NoneLocation: Ember.NoneLocation,
+    _NoneLocation: NoneLocation,
 
     /**
       @private
@@ -106,7 +121,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
       // Older browsers, especially IE, don't have origin
       if (!origin) {
         origin = location.protocol + '//' + location.hostname;
-        
+
         if (location.port) {
           origin += ':' + location.port;
         }
@@ -173,7 +188,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
       @method _getRootURL
     */
     _getRootURL: function () {
-      return this._rootURL;
+      return this.rootURL;
     },
 
     /**
@@ -200,7 +215,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
 
       @method _getHash
     */
-    _getHash: Ember.Location._getHash,
+    _getHash: EmberLocation._getHash,
 
     /**
       @private
@@ -228,7 +243,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
       @private
 
       Returns the current path as it should appear for HistoryLocation supported
-      browsers. This may very well differ from the real current path (e.g. if it 
+      browsers. This may very well differ from the real current path (e.g. if it
       starts off as a hashed URL)
 
       @method _getHistoryPath
@@ -301,13 +316,14 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
     /**
       Selects the best location option based off browser support and returns an
       instance of that Location class.
-    
+
       @see Ember.AutoLocation
       @method create
     */
     create: function (options) {
       if (options && options.rootURL) {
-        this._rootURL = options.rootURL;
+        Ember.assert('rootURL must end with a trailing forward slash e.g. "/app/"', options.rootURL.charAt(options.rootURL.length-1) === '/');
+        this.rootURL = options.rootURL;
       }
 
       var historyPath, hashPath,
@@ -318,7 +334,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
       if (this._getSupportsHistory()) {
         historyPath = this._getHistoryPath();
 
-        // Since we support history paths, let's be sure we're using them else 
+        // Since we support history paths, let's be sure we're using them else
         // switch the location over to it.
         if (currentPath === historyPath) {
           implementationClass = this._HistoryLocation;
@@ -348,7 +364,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-auto-location")) {
       if (cancelRouterSetup) {
         set(implementation, 'cancelRouterSetup', true);
       }
-      
+
       return implementation;
     }
   };

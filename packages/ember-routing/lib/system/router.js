@@ -45,9 +45,9 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
    assumed on all routes defined on this router.
 
    @property rootURL
-   @default null
+   @default '/'
   */
-  rootURL: null,
+  rootURL: '/',
 
   init: function() {
     this.router = this.constructor.router || this.constructor.map(Ember.K);
@@ -228,8 +228,8 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
     var location = get(this, 'location'),
         rootURL = get(this, 'rootURL');
 
-    if (rootURL !== undefined && !this.container.has('setting:root-url')) {
-      this.container.register('setting:root-url', rootURL);
+    if (rootURL && !this.container.has('-location-setting:root-url')) {
+      this.container.register('-location-setting:root-url', rootURL, { instantiate: false });
     }
 
     if ('string' === typeof location && this.container) {
@@ -245,7 +245,7 @@ Ember.Router = Ember.Object.extend(Ember.Evented, {
       }
     }
 
-    if (typeof rootURL === 'string') {
+    if (rootURL && typeof rootURL === 'string') {
       location.rootURL = rootURL;
     }
 
