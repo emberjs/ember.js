@@ -153,34 +153,34 @@ test("changing sortProperties and sortAscending with setProperties, sortAscendin
 });
 
 test("changing sort properties unbind old observers", function() {
-  function listenersFor(eventName) {
-    return Ember.listenersFor(sortedArrayController.objectAt(0), eventName);
+  function listenersForEvent(eventName) {
+    return listenersFor(sortedArrayController.objectAt(0), eventName);
   }
 
-  equal(listenersFor('name:change').length, 0,
+  equal(listenersForEvent('name:change').length, 0,
    "With no sortProperties, there should be no listeners for name change.");
-  equal(listenersFor('id:change').length, 0,
+  equal(listenersForEvent('id:change').length, 0,
    "With no sortProperties, there should be no listeners for id change.");
 
   var idSortProperties = Ember.A(['id']);
   sortedArrayController.set('sortProperties', idSortProperties);
 
-  equal(Ember.listenersFor(idSortProperties, '@array:before').length, 1,
+  equal(listenersFor(idSortProperties, '@array:before').length, 1,
     "ArrayObserver added to idSortProperties");
 
-  equal(listenersFor('name:change').length, 0,
+  equal(listenersForEvent('name:change').length, 0,
    "With sortProperties == ['id'], there should be no listeners for name change.");
-  equal(listenersFor('id:change').length, 1,
+  equal(listenersForEvent('id:change').length, 1,
    "With sortProperties == ['id'], there should be 1 listener for id change.");
 
   sortedArrayController.set('sortProperties', ['name']);
 
-  equal(Ember.listenersFor(idSortProperties, '@array:before').length, 0,
+  equal(listenersFor(idSortProperties, '@array:before').length, 0,
     "ArrayObserver removed from idSortProperties when no longer used");
 
-  equal(listenersFor('name:change').length, 1,
+  equal(listenersForEvent('name:change').length, 1,
    "With sortProperties == ['name'], there should be 1 listener for name change.");
-  equal(listenersFor('id:change').length, 0,
+  equal(listenersForEvent('id:change').length, 0,
    "With sortProperties == ['name'], there should be no listeners for id change.");
 });
 
