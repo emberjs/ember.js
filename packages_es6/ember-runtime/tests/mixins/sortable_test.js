@@ -88,6 +88,64 @@ test("changing sort order triggers observers", function() {
   run(function() { observer.destroy(); });
 });
 
+test("changing sortProperties and sortAscending with setProperties, sortProperties appearing first", function() {
+  sortedArrayController.set('sortProperties', ['name']);
+  sortedArrayController.set('sortAscending', false);
+
+  equal(sortedArrayController.objectAt(0).name, 'Scumbag Katz', 'array is sorted by name in DESC order');
+  equal(sortedArrayController.objectAt(2).name, 'Scumbag Bryn', 'array is sorted by name in DESC order');
+
+  sortedArrayController.setProperties({ sortProperties: ['id'], sortAscending: true });
+
+  equal(sortedArrayController.objectAt(0).id, 1, 'array is sorted by id in ASC order after setting sortAscending and sortProperties');
+  equal(sortedArrayController.objectAt(2).id, 3, 'array is sorted by id in ASC order after setting sortAscending and sortProperties');
+
+  sortedArrayController.setProperties({ sortProperties: ['name'], sortAscending: false });
+
+  equal(sortedArrayController.objectAt(0).name, 'Scumbag Katz', 'array is sorted by name in DESC order after setting sortAscending and sortProperties');
+  equal(sortedArrayController.objectAt(2).name, 'Scumbag Bryn', 'array is sorted by name in DESC order after setting sortAscending and sortProperties');
+
+  sortedArrayController.setProperties({ sortProperties: ['id'], sortAscending: false });
+
+  equal(sortedArrayController.objectAt(0).id, 3, 'array is sorted by id in DESC order after setting sortAscending and sortProperties');
+  equal(sortedArrayController.objectAt(2).id, 1, 'array is sorted by id in DESC order after setting sortAscending and sortProperties');
+
+  sortedArrayController.setProperties({ sortProperties: ['id'], sortAscending: true });
+
+  equal(sortedArrayController.objectAt(0).id, 1, 'array is sorted by id in ASC order after setting sortAscending and sortProperties');
+  equal(sortedArrayController.objectAt(2).id, 3, 'array is sorted by id in ASC order after setting sortAscending and sortProperties');
+
+});
+
+test("changing sortProperties and sortAscending with setProperties, sortAscending appearing first", function() {
+  sortedArrayController.set('sortProperties', ['name']);
+  sortedArrayController.set('sortAscending', false);
+
+  equal(sortedArrayController.objectAt(0).name, 'Scumbag Katz', 'array is sorted by name in DESC order');
+  equal(sortedArrayController.objectAt(2).name, 'Scumbag Bryn', 'array is sorted by name in DESC order');
+
+  sortedArrayController.setProperties({ sortAscending: true, sortProperties: ['id'] });
+
+  equal(sortedArrayController.objectAt(0).id, 1, 'array is sorted by id in ASC order after setting sortAscending and sortProperties');
+  equal(sortedArrayController.objectAt(2).id, 3, 'array is sorted by id in ASC order after setting sortAscending and sortProperties');
+
+  sortedArrayController.setProperties({ sortAscending: false, sortProperties: ['name'] });
+
+  equal(sortedArrayController.objectAt(0).name, 'Scumbag Katz', 'array is sorted by name in DESC order after setting sortAscending and sortProperties');
+  equal(sortedArrayController.objectAt(2).name, 'Scumbag Bryn', 'array is sorted by name in DESC order after setting sortAscending and sortProperties');
+
+  sortedArrayController.setProperties({ sortAscending: false, sortProperties: ['id'] });
+
+  equal(sortedArrayController.objectAt(0).id, 3, 'array is sorted by id in DESC order after setting sortAscending and sortProperties');
+  equal(sortedArrayController.objectAt(2).id, 1, 'array is sorted by id in DESC order after setting sortAscending and sortProperties');
+
+  sortedArrayController.setProperties({ sortAscending: true, sortProperties: ['id'] });
+
+  equal(sortedArrayController.objectAt(0).id, 1, 'array is sorted by id in ASC order after setting sortAscending and sortProperties');
+  equal(sortedArrayController.objectAt(2).id, 3, 'array is sorted by id in ASC order after setting sortAscending and sortProperties');
+
+});
+
 module("Ember.Sortable with content and sortProperties", {
   setup: function() {
     run(function() {
