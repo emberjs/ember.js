@@ -19,7 +19,7 @@ module('AutoLocation', {
       });
       App.Router.reopen({
         location: 'none',
-        rootURL: '/rootdir'
+        rootURL: '/rootdir/'
       });
       App.deferReadiness();
     });
@@ -39,5 +39,5 @@ test('has the rootURL from the main router', function() {
   Ember.run(App, 'advanceReadiness');
 
   var location = App.__container__.lookup('location:auto');
-  equal(Ember.get(location, 'rootURL'), '/rootdir');
+  equal(Ember.get(location, 'rootURL'), '/rootdir/');
 });

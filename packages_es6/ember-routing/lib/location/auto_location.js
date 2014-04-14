@@ -31,12 +31,23 @@ var AutoLocation = {
   /**
     @private
 
+    This property is used by router:main to know whether to cancel the routing
+    setup process, which is needed while we redirect the browser.
+
+    @property cancelRouterSetup
+    @default false
+  */
+  cancelRouterSetup: false,
+
+  /**
+    @private
+
     Will be pre-pended to path upon state change.
 
     @property rootURL
     @default '/'
   */
-  _rootURL: '/',
+  rootURL: '/',
 
   /**
     @private
@@ -179,7 +190,7 @@ var AutoLocation = {
     @method _getRootURL
   */
   _getRootURL: function () {
-    return this._rootURL;
+    return this.rootURL;
   },
 
   /**
@@ -313,7 +324,8 @@ var AutoLocation = {
   */
   create: function (options) {
     if (options && options.rootURL) {
-      this._rootURL = options.rootURL;
+      Ember.assert('rootURL must end with a trailing forward slash e.g. "/app/"', options.rootURL.charAt(options.rootURL.length-1) === '/');
+      this.rootURL = options.rootURL;
     }
 
     var historyPath, hashPath,

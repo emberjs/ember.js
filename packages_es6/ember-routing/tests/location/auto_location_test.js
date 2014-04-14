@@ -53,6 +53,13 @@ module("Ember.AutoLocation", {
       }
     };
 
+    AutoTestLocation._window = {
+      document: {},
+      navigator: {
+        userAgent: ''
+      }
+    };
+
     AutoTestLocation._location = {
       href: 'http://test.com/',
       pathname: '/',
@@ -75,13 +82,13 @@ module("Ember.AutoLocation", {
 
   teardown: function() {
     run(function() {
-      if (location) { location.destroy(); }
-      AutoTestLocation = null;
+      if (location && location.destroy) { location.destroy(); }
+      location = AutoTestLocation = null;
     });
   }
 });
 
-test("replacePath cannot be used to redirect to a different origin (website)", function() {
+test("_replacePath cannot be used to redirect to a different origin (website)", function() {
   expect(1);
 
   var expectedURL;
@@ -306,7 +313,7 @@ test("AutoLocation._getFullPath() should return full pathname including query an
 test("AutoLocation._getHistoryPath() should return a normalized, HistoryLocation-supported path", function() {
   expect(3);
 
-  AutoTestLocation._rootURL = '/app/';
+  AutoTestLocation.rootURL = '/app/';
 
   AutoTestLocation._location = {
     href: 'http://test.com/app/about?foo=bar#foo',
@@ -336,7 +343,7 @@ test("AutoLocation._getHistoryPath() should return a normalized, HistoryLocation
 test("AutoLocation._getHashPath() should return a normalized, HashLocation-supported path", function() {
   expect(3);
 
-  AutoTestLocation._rootURL = '/app/';
+  AutoTestLocation.rootURL = '/app/';
 
   AutoTestLocation._location = {
     href: 'http://test.com/app/#/about?foo=bar#foo',
@@ -362,4 +369,23 @@ test("AutoLocation._getHashPath() should return a normalized, HashLocation-suppo
   };
 
   equal(AutoTestLocation._getHashPath(), '/app/#/#about?foo=bar#foo', 'URLs with a hash not following #/ convention shouldn\'t be normalized as a route');
+});
+
+test("AutoLocation.create requires any rootURL given to end in a trailing forward slash", function() {
+  expect(3);
+
+  var expectedMsg = /rootURL must end with a trailing forward slash e.g. "\/app\/"/;
+
+  expectAssertion(function() {
+    createLocation({ rootURL: 'app' });
+  }, expectedMsg);
+
+  expectAssertion(function() {
+    createLocation({ rootURL: '/app' });
+  }, expectedMsg);
+
+  expectAssertion(function() {
+    // Note the trailing whitespace
+    createLocation({ rootURL: '/app/ ' });
+  }, expectedMsg);
 });
