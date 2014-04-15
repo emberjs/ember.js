@@ -801,4 +801,4 @@ function beforeObserver() {
   return func;
 };
 
-export {IS_BINDING, mixin, Mixin, required, aliasMethod, observer, immediateObserver, beforeObserver}
+export {IS_BINDING, mixin, Mixin, required, aliasMethod, observer, immediateObserver, beforeObserver, replaceObserversAndListeners}

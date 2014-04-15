@@ -16,7 +16,7 @@ import {generateGuid, GUID_KEY, meta, META_KEY, makeArray} from "ember-metal/uti
 import {rewatch} from "ember-metal/watching";
 import {finishChains} from "ember-metal/chains";
 import {sendEvent} from "ember-metal/events";
-import {IS_BINDING, Mixin, required} from "ember-metal/mixin";
+import {IS_BINDING, Mixin, replaceObserversAndListeners, required} from "ember-metal/mixin";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import EmberError from "ember-metal/error";
 import {platform} from "ember-metal/platform";
@@ -98,6 +98,8 @@ function makeCtor() {
         for (var j = 0, ll = keyNames.length; j < ll; j++) {
           var keyName = keyNames[j];
           if (!properties.hasOwnProperty(keyName)) { continue; }
+
+          replaceObserversAndListeners(this, keyName, null);
 
           var value = properties[keyName];
 

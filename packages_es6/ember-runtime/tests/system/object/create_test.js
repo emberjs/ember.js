@@ -153,6 +153,19 @@ test("EmberObject.create can take null as a parameter", function(){
   deepEqual(EmberObject.create(), o);
 });
 
+test("overwrites observers and listeners", function() {
+  var MyClass = EmberObject.extend({
+    foo: on('init', function() { throw 'wrong'; }),
+    bar: observer('baz', function() { throw 'wrong'; })
+  });
+
+  var o = MyClass.create({ foo: 'foo', bar: 'bar' });
+  o.set('baz', 'baz');
+
+  equal(o.get('foo'), 'foo');
+  equal(o.get('bar'), 'bar');
+});
+
 module('EmberObject.createWithMixins', moduleOptions);
 
 test("Creates a new object that contains passed properties", function() {
