@@ -35,7 +35,7 @@
         "window", "location", "document", "XMLSerializer",
         "setTimeout", "clearTimeout", "setInterval", "clearInterval"
     ],
-
+    "esnext": true,
     "node" : false,
     "browser" : false,
 
