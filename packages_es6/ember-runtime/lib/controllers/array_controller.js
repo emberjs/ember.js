@@ -23,16 +23,16 @@ var forEach = EnumerableUtils.forEach,
 
   The advantage of using an `ArrayController` is that you only have to set up
   your view bindings once; to change what's displayed, simply swap out the
-  `content` property on the controller.
+  `model` property on the controller.
 
   For example, imagine you wanted to display a list of items fetched via an XHR
-  request. Create an `Ember.ArrayController` and set its `content` property:
+  request. Create an `Ember.ArrayController` and set its `model` property:
 
   ```javascript
   MyApp.listController = Ember.ArrayController.create();
 
   $.get('people.json', function(data) {
-    MyApp.listController.set('content', data);
+    MyApp.listController.set('model', data);
   });
   ```
 
@@ -49,7 +49,7 @@ var forEach = EnumerableUtils.forEach,
   capability comes from `Ember.ArrayProxy`, which this class inherits from.
 
   Sometimes you want to display computed properties within the body of an
-  `#each` helper that depend on the underlying items in `content`, but are not
+  `#each` helper that depend on the underlying items in `model`, but are not
   present on those items.   To do this, set `itemController` to the name of a
   controller (probably an `ObjectController`) that will wrap each individual item.
 
@@ -190,7 +190,7 @@ var ArrayController = ArrayProxy.extend(ControllerMixin, SortableMixin, {
     this.set('_subControllers', Ember.A());
   },
 
-  content: computed(function () {
+  model: computed(function () {
     return Ember.A();
   }),
 
@@ -225,7 +225,7 @@ var ArrayController = ArrayProxy.extend(ControllerMixin, SortableMixin, {
     subController = container.lookupFactory(fullName).create({
       target: this,
       parentController: parentController,
-      content: object
+      model: object
     });
 
     subControllers[idx] = subController;
