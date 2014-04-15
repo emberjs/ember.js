@@ -194,12 +194,20 @@ var SortableMixin = Mixin.create(MutableEnumerable, {
     this._super();
   }),
 
+  sortPropertiesWillChange: beforeObserver('sortProperties', function() {
+    this._lastSortAscending = undefined;
+  }),
+
+  sortPropertiesDidChange: observer('sortProperties', function() {
+    this._lastSortAscending = undefined;
+  }),
+
   sortAscendingWillChange: beforeObserver('sortAscending', function() {
     this._lastSortAscending = get(this, 'sortAscending');
   }),
 
   sortAscendingDidChange: observer('sortAscending', function() {
-    if (get(this, 'sortAscending') !== this._lastSortAscending) {
+    if (this._lastSortAscending !== undefined && get(this, 'sortAscending') !== this._lastSortAscending) {
       var arrangedContent = get(this, 'arrangedContent');
       arrangedContent.reverseObjects();
     }
