@@ -1,12 +1,19 @@
 import run from "ember-metal/run_loop";
+import copy from "ember-runtime/copy";
+import merge from "ember-metal/merge";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import Container from 'container/container';
 import HashLocation from "ember-routing/location/hash_location";
+import AutoLocation from "ember-routing/location/auto_location";
 import EmberRouter from "ember-routing/system/router";
 
-var Router, container, router;
+var map = EnumerableUtils.map,
+    container, Router, router;
 
-var map = EnumerableUtils.map;
+function createRouter(overrides) {
+  var opts = merge({ container: container }, overrides);
+  router = Router.create(opts);
+}
 
 module("Ember Router", {
   setup: function() {
@@ -15,20 +22,25 @@ module("Ember Router", {
     //register the HashLocation (the default)
     container.register('location:hash', HashLocation);
 
-    Router = EmberRouter.extend();
+    // ensure rootURL is injected into any locations
+    container.injection('location', 'rootURL', '-location-setting:root-url');
 
-    router = Router.create({container: container});
+    Router = EmberRouter.extend();
   },
   teardown: function() {
-    Router = null;
+    container = Router = router = null;
   }
 });
 
 test("should create a router if one does not exist on the constructor", function() {
+  createRouter();
+
   ok(router.router);
 });
 
-test("should destroy its location upon destroying the routers container.", function(){
+test("should destroy its location upon destroying the routers container.", function() {
+  createRouter();
+
   var location = router.get('location');
 
   run(container, 'destroy');
@@ -36,7 +48,43 @@ test("should destroy its location upon destroying the routers container.", funct
   ok(location.isDestroyed, "location should be destroyed");
 });
 
+test("should instantiate its location with its `rootURL`", function() {
+  createRouter({
+    rootURL: '/rootdir/'
+  });
+
+  var location = router.get('location');
+
+  equal(location.get('rootURL'), '/rootdir/');
+});
+
+test("Ember.AutoLocation._replacePath should be called with the right path", function() {
+  expect(1);
+
+  var AutoTestLocation = copy(AutoLocation);
+
+  AutoTestLocation._location = {
+    href: 'http://test.com/rootdir/welcome',
+    origin: 'http://test.com',
+    pathname: '/rootdir/welcome',
+    hash: '',
+    search: '',
+    replace: function(url) {
+      equal(url, 'http://test.com/rootdir/#/welcome');
+    }
+  };
+  AutoTestLocation._getSupportsHistory = function() { return false; };
+
+  container.register('location:auto', AutoTestLocation);
+
+  createRouter({
+    location: 'auto',
+    rootURL: '/rootdir/'
+  });
+});
+
 test("Ember.Router._routePath should consume identical prefixes", function() {
+  createRouter();
 
   expect(8);
 
@@ -62,3 +110,50 @@ test("Ember.Router._routePath should consume identical prefixes", function() {
   equal(routePath('foo.bar.baz', 'foo'), 'foo.bar.baz.foo');
 });
 
+test("Router should cancel routing setup when the Location class says so via cancelRouterSetup", function() {
+  expect(0);
+
+  var FakeLocation = {
+    cancelRouterSetup: true,
+    create: function () { return this; }
+  };
+
+  container.register('location:fake', FakeLocation);
+
+  router = Router.create({
+    container: container,
+    location: 'fake',
+
+    _setupRouter: function () {
+      ok(false, '_setupRouter should not be called');
+    }
+  });
+
+  router.startRouting();
+});
+
+test("AutoLocation should replace the url when it's not in the preferred format", function() {
+  expect(1);
+
+  var AutoTestLocation = copy(AutoLocation);
+
+  AutoTestLocation._location = {
+    href: 'http://test.com/rootdir/welcome',
+    origin: 'http://test.com',
+    pathname: '/rootdir/welcome',
+    hash: '',
+    search: '',
+    replace: function(url) {
+      equal(url, 'http://test.com/rootdir/#/welcome');
+    }
+  };
+
+  AutoTestLocation._getSupportsHistory = function() { return false; };
+
+  container.register('location:auto', AutoTestLocation);
+
+  createRouter({
+    location: 'auto',
+    rootURL: '/rootdir/'
+  });
+});

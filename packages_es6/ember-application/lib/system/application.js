@@ -859,6 +859,7 @@ Application.reopenClass({
     container.injection('controller', 'namespace', 'application:main');
 
     container.injection('route', 'router', 'router:main');
+    container.injection('location', 'rootURL', '-location-setting:root-url');
 
     // DEBUGGING
     container.register('resolver-for-debugging:main', container.resolver.__resolver__, { instantiate: false });
