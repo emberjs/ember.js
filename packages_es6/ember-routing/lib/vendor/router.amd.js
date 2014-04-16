@@ -282,7 +282,7 @@ define("router/handler-info/unresolved-handler-info-by-object",
 
         var name = names[0];
 
-        if (/_id$/.test(name)) {
+        if (/.+_id$/.test(name)) {
           object[name] = model.id;
         } else {
           object[name] = model;
