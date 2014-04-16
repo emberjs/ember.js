@@ -946,7 +946,7 @@ var Route = EmberObject.extend(ActionHandler, {
     for (var prop in params) {
       if (prop === 'queryParams') { continue; }
 
-      if (match = prop.match(/^(.*)_id$/)) {
+      if (match = prop.match(/^(.+)_id$/)) {
         name = match[1];
         value = params[prop];
       }
@@ -1071,7 +1071,7 @@ var Route = EmberObject.extend(ActionHandler, {
 
     var name = params[0], object = {};
 
-    if (/_id$/.test(name) && params.length === 1) {
+    if (/.+_id$/.test(name) && params.length === 1) {
       object[name] = get(model, "id");
     } else {
       object = getProperties(model, params);
