@@ -1,17 +1,24 @@
-var Router, container, router;
+var map = Ember.EnumerableUtils.map,
+    copy = Ember.copy,
+    run = Ember.run,
+    EmberRouter = Ember.Router,
+    HashLocation = Ember.HashLocation,
+    AutoLocation = Ember.AutoLocation;
 
-var map = Ember.EnumerableUtils.map;
+var Router, container, router;
 
 module("Ember Router", {
   setup: function() {
     container = new Ember.Container();
 
-    //register the HashLocation (the default)
-    container.register('location:hash', Ember.HashLocation);
+    // register the HashLocation (the default)
+    container.register('location:hash', HashLocation);
 
-    Router = Ember.Router.extend();
+    // ensure rootURL is injected into any locations
+    container.optionsForType('setting', { instantiate: false });
+    container.injection('location', 'rootURL', 'setting:root-url');
 
-    router = Router.create({container: container});
+    Router = EmberRouter.extend();
   },
   teardown: function() {
     Router = null;
@@ -19,10 +26,14 @@ module("Ember Router", {
 });
 
 test("should create a router if one does not exist on the constructor", function() {
+  router = Router.create({container: container});
+
   ok(router.router);
 });
 
-test("should destroy its location upon destroying the routers container.", function(){
+test("should destroy its location upon destroying the routers container.", function() {
+  router = Router.create({container: container});
+
   var location = router.get('location');
 
   Ember.run(container, 'destroy');
@@ -30,7 +41,43 @@ test("should destroy its location upon destroying the routers container.", funct
   ok(location.isDestroyed, "location should be destroyed");
 });
 
+test("should instantiate its location with its `rootURL`", function() {
+  router = Router.create({container: container, rootURL: '/rootdir'});
+
+  var location = router.get('location');
+
+  equal(location.get('rootURL'), '/rootdir');
+});
+
+test("Ember.AutoLocation._replacePath should be called with the right path", function() {
+  expect(1);
+
+  var AutoTestLocation = copy(AutoLocation);
+  AutoTestLocation.supportsHistory = false;
+
+  AutoTestLocation._location = {
+    href: 'http://test.com/rootdir/welcome',
+    origin: 'http://test.com',
+    pathname: '/rootdir/welcome',
+    hash: '',
+    search: '',
+    replace: function(url) {
+      equal(url, 'http://test.com/rootdir#/welcome');
+    }
+  };
+  AutoTestLocation._getSupportsHistory = function() { return false; };
+
+  container.register('location:auto', AutoTestLocation);
+
+  router = Router.create({
+    container: container,
+    location: 'auto',
+    rootURL: '/rootdir'
+  });
+});
+
 test("Ember.Router._routePath should consume identical prefixes", function() {
+  router = Router.create({container: container});
 
   expect(8);
 
@@ -55,4 +102,3 @@ test("Ember.Router._routePath should consume identical prefixes", function() {
   // making sure it doesn't go boom.
   equal(routePath('foo.bar.baz', 'foo'), 'foo.bar.baz.foo');
 });
-

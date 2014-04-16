@@ -177,4 +177,3 @@ test("controllerFor uses route's controllerName if specified", function() {
 
   equal(routeTwo.controllerFor('one'), testController);
 });
-

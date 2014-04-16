@@ -805,6 +805,7 @@ Ember.Application.reopenClass({
     container.optionsForType('view', { singleton: false });
     container.optionsForType('template', { instantiate: false });
     container.optionsForType('helper', { instantiate: false });
+    container.optionsForType('setting', { instantiate: false });
 
     container.register('application:main', namespace, { instantiate: false });
 
@@ -829,6 +830,7 @@ Ember.Application.reopenClass({
     container.injection('controller', 'namespace', 'application:main');
 
     container.injection('route', 'router', 'router:main');
+    container.injection('location', 'rootURL', 'setting:root-url');
 
     // DEBUGGING
     container.register('resolver-for-debugging:main', container.resolver.__resolver__, { instantiate: false });
