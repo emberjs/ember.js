@@ -76,13 +76,13 @@ var helpers = EmberHandlebars.helpers;
   Internally, `{{input type="text"}}` creates an instance of `Ember.TextField`, passing
   arguments from the helper to `Ember.TextField`'s `create` method. You can extend the
   capablilties of text inputs in your applications by reopening this class. For example,
-  if you are deploying to browsers where the `required` attribute is used, you
-  can add this to the `TextField`'s `attributeBindings` property:
+  if you are building a Bootstrap 3 project where `data-*` attributes are used, you
+  can add one to the `TextField`'s `attributeBindings` property:
 
 
   ```javascript
   Ember.TextField.reopen({
-    attributeBindings: ['required']
+    attributeBindings: ['data-error']
   });
   ```
 
