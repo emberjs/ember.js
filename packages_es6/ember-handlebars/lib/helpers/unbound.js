@@ -8,6 +8,7 @@
 import EmberHandlebars from "ember-handlebars-compiler";
 var helpers = EmberHandlebars.helpers;
 
+import {resolveHelper} from "ember-handlebars/helpers/binding";
 import {handlebarsGet} from "ember-handlebars/ext";
 
 var slice = [].slice;
@@ -33,13 +34,15 @@ var slice = [].slice;
   @return {String} HTML string
 */
 function unboundHelper(property, fn) {
-  var options = arguments[arguments.length - 1], helper, context, out, ctx;
+  var options = arguments[arguments.length - 1],
+      container = options.data.view.container,
+      helper, context, out, ctx;
 
-  ctx = this || window;
+  ctx = this;
   if (arguments.length > 2) {
     // Unbound helper call.
     options.data.isUnbound = true;
-    helper = helpers[arguments[0]] || helpers.helperMissing;
+    helper = resolveHelper(container, property) || helpers.helperMissing;
     out = helper.apply(ctx, slice.call(arguments, 1));
     delete options.data.isUnbound;
     return out;
