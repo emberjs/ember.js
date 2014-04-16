@@ -10,7 +10,9 @@ import {loc} from "ember-runtime/system/string";
 // var locHelper EmberStringUtils.loc ?
 
 /**
-  `loc` looks up the string in the localized strings hash.
+  Calls [Ember.String.loc](/api/classes/Ember.String.html#method_loc) with the
+  provided string.
+
   This is a convenient way to localize text. For example:
 
   ```html
@@ -22,9 +24,13 @@ import {loc} from "ember-runtime/system/string";
   Take note that `"welcome"` is a string and not an object
   reference.
 
+  See [Ember.String.loc](/api/classes/Ember.String.html#method_loc) for how to 
+  set up localized string references.
+
   @method loc
   @for Ember.Handlebars.helpers
   @param {String} str The string to format
+  @see {Ember.String#loc}
 */
 function locHelper(str) {
   return loc(str);
