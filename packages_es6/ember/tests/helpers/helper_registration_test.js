@@ -1,3 +1,5 @@
+import "ember";
+
 var App, container;
 var compile = Ember.Handlebars.compile;
 

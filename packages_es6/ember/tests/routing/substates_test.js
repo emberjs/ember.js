@@ -1,3 +1,5 @@
+import "ember";
+
 var Router, App, AppView, templates, router, container, counter;
 var get = Ember.get, set = Ember.set, compile = Ember.Handlebars.compile;
 

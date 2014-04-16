@@ -1,3 +1,5 @@
+import "ember";
+
 var App, $fixture;
 
 function setupExample() {

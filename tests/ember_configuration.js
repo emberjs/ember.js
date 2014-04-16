@@ -5,6 +5,7 @@
     testing: true
   };
   window.ENV = window.ENV || {};
+  ENV.FEATURES = {{FEATURES}};
 
   // Test for "hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed"
   ENV.EMBER_LOAD_HOOKS = ENV.EMBER_LOAD_HOOKS || {};
@@ -15,9 +16,10 @@
   });
 
   // Handle extending prototypes
-  QUnit.config.urlConfig.push({ id: 'extendprototypes', label: 'Extend Prototypes'});
-  var extendPrototypes  = QUnit.urlParams.extendprototypes;
-  ENV['EXTEND_PROTOTYPES'] = !!extendPrototypes;
+  ENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.extendprototypes;
+
+  // Handle testing feature flags
+  ENV['ENABLE_OPTIONAL_FEATURES'] = !!QUnit.urlParams.enableoptionalfeatures;
 
   // Don't worry about jQuery version
   ENV['FORCE_JQUERY'] = true;
@@ -26,14 +28,4 @@
     // jsHint makes its own Object.create stub, we don't want to use this
     ENV['STUB_OBJECT_CREATE'] = !Object.create;
   }
-
-  EmberDev.distros = {
-    spade:   'ember-spade.js',
-    build:   'ember.js',
-    prod:    'ember.prod.js',
-    runtime: 'ember-runtime.js',
-    min:     'ember.min.js'
-  };
-
-
 })();

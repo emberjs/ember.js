@@ -13,4 +13,4 @@ export default function(testname, callback) {
   //   if (Ember.USES_ACCESSORS) callback(aget, aset);
   //   else ok('SKIPPING ACCESSORS');
   // });
-};
+}

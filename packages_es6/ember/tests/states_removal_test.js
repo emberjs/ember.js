@@ -1,3 +1,5 @@
+import "ember";
+
 /*globals EmberDev */
 
 module("ember-states removal");

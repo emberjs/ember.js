@@ -1,23 +1,12 @@
-// ensure that minispade loads the following modules first
-require('ember-metal');
-require('ember-runtime');
-require('ember-handlebars-compiler');
-require('ember-handlebars');
-require('ember-views');
-require('ember-routing');
-require('ember-application');
-require('ember-extension-support');
-
-
-// ensure that the global exports have occurred for above
-// required packages
-requireModule('ember-metal');
-requireModule('ember-runtime');
-requireModule('ember-handlebars');
-requireModule('ember-views');
-requireModule('ember-routing');
-requireModule('ember-application');
-requireModule('ember-extension-support');
+// require the main entry points for each of these packages
+// this is so that the global exports occur properly
+import "ember-metal";
+import "ember-runtime";
+import "ember-handlebars";
+import "ember-views";
+import "ember-routing";
+import "ember-application";
+import "ember-extension-support";
 
 // do this to ensure that Ember.Test is defined properly on the global
 // if it is present.
