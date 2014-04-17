@@ -1,15 +1,16 @@
-import { preprocess } from "htmlbars/parser";
-import AST from "handlebars/compiler/ast";
-import { HTMLElement, BlockElement } from "htmlbars/ast";
+import { preprocess, buildClose } from "htmlbars/parser";
+import { ProgramNode, BlockNode, ElementNode, MustacheNode, SexprNode, HashNode, IdNode, StringNode } from "htmlbars/ast";
 
 module("HTML-based compiler (AST)");
 
+var stripNone = { left: false, right: false };
+
 function id(string) {
-  return new AST.IdNode([{ part: string }]);
+  return new IdNode([{ part: string }]);
 }
 
 function sexpr(params) {
-  var sexprNode = new AST.SexprNode(params);
+  var sexprNode = new SexprNode(params);
 
   // normalize 1 -> true for the sake of comparison; not sure
   // why they come in differently...
@@ -18,7 +19,7 @@ function sexpr(params) {
 }
 
 function hash(pairs) {
-  return pairs ? new AST.HashNode(pairs) : undefined;
+  return pairs ? new HashNode(pairs) : undefined;
 }
 
 function mustache(string, pairs, raw) {
@@ -30,24 +31,31 @@ function mustache(string, pairs, raw) {
     params = [id(string)];
   }
 
-  return new AST.MustacheNode(params, hash(pairs), raw ? '{{{' : '{{', { left: false, right: false });
+  return new MustacheNode(params, hash(pairs), raw ? '{{{' : '{{', { left: false, right: false });
 }
 
 function string(data) {
-  return new AST.StringNode(data);
+  return new StringNode(data);
 }
 
-function element(tagName, attrs, children, helpers) {
-  if (arguments.length === 2) {
-    children = attrs;
-    attrs = [];
-  }
-
-  return new HTMLElement(tagName, attrs, children, helpers);
+function element(tagName, a, b, c) {
+  var l = arguments.length;
+  if (l == 2) return new ElementNode(tagName, [], [], a);
+  if (l == 3) return new ElementNode(tagName, a, [], b);
+  if (l == 4) return new ElementNode(tagName, a, b, c);
 }
 
-function block(helper, children) {
-  return new BlockElement(helper, children);
+function attr(name, value) {
+  return [name, value];
+}
+
+function block(mustache, program, inverse, stripRight) {
+  var close = buildClose(mustache, program, inverse, stripRight);
+  return new BlockNode(mustache, program, inverse || null, close);
+}
+
+function program(children, strip) {
+  return new ProgramNode(children, strip || stripNone);
 }
 
 function removeLocInfo(obj) {
@@ -63,119 +71,150 @@ function removeLocInfo(obj) {
   }
 }
 
-function astEqual(result, expected, message) {
+function astEqual(template, expected, message) {
   // Perform a deepEqual but recursively remove the locInfo stuff
   // (e.g. line/column information about the compiled template)
   // that we don't want to have to write into our test cases.
-  removeLocInfo(result);
+  var actual = preprocess(template);
+  removeLocInfo(actual);
   removeLocInfo(expected);
 
-  deepEqual(result, expected, message);
+  deepEqual(actual, expected, message);
 }
 
 test("a simple piece of content", function() {
-  deepEqual(preprocess('some content'), ['some content']);
+  var t = 'some content';
+  astEqual(t, program(['some content']));
 });
 
 test("a piece of content with HTML", function() {
-  deepEqual(preprocess('some <div>content</div> done'), [
+  var t = 'some <div>content</div> done';
+  astEqual(t, program([
     "some ",
-    element("div", [ "content" ]),
+    element("div", [
+      "content" 
+    ]),
     " done"
-  ]);
+  ]));
 });
 
 test("a piece of Handlebars with HTML", function() {
-  var preprocessed = preprocess('some <div>{{content}}</div> done');
-  astEqual(preprocessed, [
+  var t = 'some <div>{{content}}</div> done';
+  astEqual(t, program([
     "some ",
-    element("div", [ mustache('content') ]),
+    element("div", [
+      mustache('content')
+    ]),
     " done"
-  ]);
+  ]));
 });
 
 test("Handlebars embedded in an attribute", function() {
-  astEqual(preprocess('some <div class="{{foo}}">content</div> done'), [
+  var t = 'some <div class="{{foo}}">content</div> done';
+  astEqual(t, program([
     "some ",
-      element("div", [[ "class", [mustache('foo')] ]], [
+    element("div", [attr("class", [mustache('foo')])], [
       "content"
     ]),
     " done"
-  ]);
+  ]));
 });
 
 test("Handlebars embedded in an attribute (sexprs)", function() {
-  var preprocessed = preprocess('some <div class="{{foo (foo "abc")}}">content</div> done');
-  var expected = [
+  var t = 'some <div class="{{foo (foo "abc")}}">content</div> done';
+  astEqual(t, program([
     "some ",
-      element("div", [[ "class", [mustache([id('foo'), sexpr([id('foo'), string('abc')])])] ]], [
+    element("div", [attr("class", [
+      mustache([id('foo'), sexpr([id('foo'), string('abc')])])
+    ])], [
       "content"
     ]),
     " done"
-  ];
-  astEqual(preprocessed, expected);
+  ]));
 });
 
 
 test("Handlebars embedded in an attribute with other content surrounding it", function() {
-  astEqual(preprocess('some <a href="http://{{link}}/">content</a> done'), [
+  var t = 'some <a href="http://{{link}}/">content</a> done';
+  astEqual(t, program([
     "some ",
-      element("a", [[ "href", ["http://", mustache('link'), "/"] ]], [
+    element("a", [attr("href", ["http://", mustache('link'), "/"])], [
       "content"
     ]),
     " done"
-  ]);
+  ]));
 });
 
 test("A more complete embedding example", function() {
-  var html = "{{embed}} {{some 'content'}} " +
-             "<div class='{{foo}} {{bind-class isEnabled truthy='enabled'}}'>{{ content }}</div>" +
-             " {{more 'embed'}}";
-
-  astEqual(preprocess(html), [
+  var t = "{{embed}} {{some 'content'}} " +
+          "<div class='{{foo}} {{bind-class isEnabled truthy='enabled'}}'>{{ content }}</div>" +
+          " {{more 'embed'}}";
+  astEqual(t, program([
     '',
-    mustache('embed'), ' ',
-    mustache([id('some'), string('content')]), ' ',
+    mustache('embed'),
+    ' ',
+    mustache([id('some'), string('content')]),
+    ' ',
     element("div", [
-      ["class", [mustache('foo'), ' ', mustache([id('bind-class'), id('isEnabled')], [['truthy', string('enabled')]])]]
+      attr("class", [mustache('foo'), ' ', mustache([id('bind-class'), id('isEnabled')], [['truthy', string('enabled')]])])
     ], [
       mustache('content')
     ]),
-    ' ', mustache([id('more'), string('embed')]),
+    ' ',
+    mustache([id('more'), string('embed')]),
     ''
-  ]);
+  ]));
 });
 
 test("Simple embedded block helpers", function() {
-  var html = "{{#if foo}}<div>{{content}}</div>{{/if}}";
-
-  astEqual(preprocess(html), ['',
-    block(mustache([id('if'), id('foo')]), [
-      element('div', [ mustache('content') ])
-    ]),
+  var t = "{{#if foo}}<div>{{content}}</div>{{/if}}";
+  astEqual(t, program([
+    '',
+    block(mustache([id('if'), id('foo')]), program([
+      element('div', [
+        mustache('content')
+      ])
+    ])),
     ''
-  ]);
+  ]));
 });
 
 test("Involved block helper", function() {
-  var html = '<p>hi</p> content {{#testing shouldRender}}<p>Appears!</p>{{/testing}} more <em>content</em> here';
-
-  astEqual(preprocess(html), [
+  var t = '<p>hi</p> content {{#testing shouldRender}}<p>Appears!</p>{{/testing}} more <em>content</em> here';
+  astEqual(t, program([
     element('p', ['hi']),
     ' content ',
-    block(mustache([id('testing'), id('shouldRender')]), [
+    block(mustache([id('testing'), id('shouldRender')]), program([
       element('p', ['Appears!'])
-    ]),
+    ])),
     ' more ',
     element('em', ['content']),
     ' here'
-  ]);
+  ]));
 });
 
 test("Node helpers", function() {
-  var html = "<p {{action 'boom'}} class='bar'>Some content</p>";
+  var t = "<p {{action 'boom'}} class='bar'>Some content</p>";
+  astEqual(t, program([
+    element('p', [attr('class', ['bar'])], [mustache([id('action'), string('boom')])], [
+      'Some content'
+    ])
+  ]));
+});
 
-  astEqual(preprocess(html), [
-    element('p', [['class', ['bar']]], ['Some content'], [mustache([id('action'), string('boom')])])
-  ]);
+test('Auto insertion of text nodes between blocks and mustaches', function () {
+  var t = "{{one}}{{two}}{{#three}}{{/three}}{{#four}}{{/four}}{{five}}";
+  astEqual(t, program([
+    '',
+    mustache([id('one')]),
+    '',
+    mustache([id('two')]),
+    '',
+    block(mustache([id('three')]), program([])),
+    '',
+    block(mustache([id('four')]), program([])),
+    '',
+    mustache([id('five')]),
+    ''
+  ]));
 });

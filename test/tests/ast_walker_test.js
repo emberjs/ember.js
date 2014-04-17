@@ -12,9 +12,9 @@ test("visits ast in an order friendly to opcode generation", function () {
   var visitor = {
     opcodes: [],
     templateId: 0,
-    startTemplate: function (block) {
+    startTemplate: function (program, childTemplateCount) {
       this.templateId = 0;
-      this.opcodes.push(['startTemplate', block.count]);
+      this.opcodes.push(['startTemplate', childTemplateCount]);
     },
     endTemplate: function () {
       this.opcodes.push(['pushTemplate']);
