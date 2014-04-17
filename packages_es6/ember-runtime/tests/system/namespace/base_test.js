@@ -59,18 +59,9 @@ test("Classes under Ember are properly named", function() {
   equal(Ember.TestObject.toString(), "Ember.TestObject", "class under Ember is given a string representation");
 });
 
-test("Lowercase namespaces should be deprecated", function() {
-  lookup.namespaceC = Namespace.create();
-
-  expectDeprecation(function(){
-    lookup.namespaceC.toString();
-  }, "Namespaces should not begin with lowercase.");
-
-  expectDeprecation(function(){
-    run(function() {
-      lookup.namespaceC.destroy();
-    });
-  }, "Namespaces should not begin with lowercase.");
+test("Lowercase namespaces are no longer supported", function() {
+  var nsC = lookup.namespaceC = Namespace.create();
+  equal(nsC.toString(), undefined);
 });
 
 test("A namespace can be assigned a custom name", function() {
