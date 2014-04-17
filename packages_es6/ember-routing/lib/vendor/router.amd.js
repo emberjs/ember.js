@@ -1158,7 +1158,7 @@ define("router/transition-intent/named-transition-intent",
             if (i >= invalidateIndex) {
               newHandlerInfo = this.createParamHandlerInfo(name, handler, result.names, objects, oldHandlerInfo);
             } else {
-              newHandlerInfo = this.getHandlerInfoForDynamicSegment(name, handler, result.names, objects, oldHandlerInfo, targetRouteName);
+              newHandlerInfo = this.getHandlerInfoForDynamicSegment(name, handler, result.names, objects, oldHandlerInfo, targetRouteName, i);
             }
           } else {
             // This route has no dynamic segment.
@@ -1217,7 +1217,7 @@ define("router/transition-intent/named-transition-intent",
         }
       },
 
-      getHandlerInfoForDynamicSegment: function(name, handler, names, objects, oldHandlerInfo, targetRouteName) {
+      getHandlerInfoForDynamicSegment: function(name, handler, names, objects, oldHandlerInfo, targetRouteName, i) {
 
         var numNames = names.length;
         var objectToUse;
@@ -1234,14 +1234,19 @@ define("router/transition-intent/named-transition-intent",
           // Reuse the matching oldHandlerInfo
           return oldHandlerInfo;
         } else {
-          // Ideally we should throw this error to provide maximal
-          // information to the user that not enough context objects
-          // were provided, but this proves too cumbersome in Ember
-          // in cases where inner template helpers are evaluated
-          // before parent helpers un-render, in which cases this
-          // error somewhat prematurely fires.
-          //throw new Error("Not enough context objects were provided to complete a transition to " + targetRouteName + ". Specifically, the " + name + " route needs an object that can be serialized into its dynamic URL segments [" + names.join(', ') + "]");
-          return oldHandlerInfo;
+          if (this.preTransitionState) {
+            var preTransitionHandlerInfo = this.preTransitionState.handlerInfos[i];
+            objectToUse = preTransitionHandlerInfo && preTransitionHandlerInfo.context;
+          } else {
+            // Ideally we should throw this error to provide maximal
+            // information to the user that not enough context objects
+            // were provided, but this proves too cumbersome in Ember
+            // in cases where inner template helpers are evaluated
+            // before parent helpers un-render, in which cases this
+            // error somewhat prematurely fires.
+            //throw new Error("Not enough context objects were provided to complete a transition to " + targetRouteName + ". Specifically, the " + name + " route needs an object that can be serialized into its dynamic URL segments [" + names.join(', ') + "]");
+            return oldHandlerInfo;
+          }
         }
 
         return handlerInfoFactory('object', {
@@ -1607,6 +1612,7 @@ define("router/transition",
       abort: function() {
         if (this.isAborted) { return this; }
         log(this.router, this.sequence, this.targetName + ": transition was aborted");
+        this.intent.preTransitionState = this.router.state;
         this.isAborted = true;
         this.isActive = false;
         this.router.activeTransition = null;
