@@ -42,7 +42,7 @@ var Namespace = EmberObject.extend({
     if (name) { return name; }
 
     findNamespaces();
-    return this[GUID_KEY+'_name'];
+    return this[NAME_KEY];
   },
 
   nameClasses: function() {
@@ -118,32 +118,30 @@ function processNamespace(paths, root, seen) {
   paths.length = idx; // cut out last item
 }
 
+var STARTS_WITH_UPPERCASE = /^[A-Z]/;
+
 function findNamespaces() {
   var lookup = Ember.lookup, obj, isNamespace;
 
   if (Namespace.PROCESSED) { return; }
 
   for (var prop in lookup) {
-    // These don't raise exceptions but can cause warnings
-    if (prop === "parent" || prop === "top" || prop === "frameElement" || prop === "webkitStorageInfo") { continue; }
+    // Only process entities that start with uppercase A-Z
+    if (!STARTS_WITH_UPPERCASE.test(prop)) { continue; }
 
-    //  get(window.globalStorage, 'isNamespace') would try to read the storage for domain isNamespace and cause exception in Firefox.
-    // globalStorage is a storage obsoleted by the WhatWG storage specification. See https://developer.mozilla.org/en/DOM/Storage#globalStorage
-    if (prop === "globalStorage" && lookup.StorageList && lookup.globalStorage instanceof lookup.StorageList) { continue; }
     // Unfortunately, some versions of IE don't support window.hasOwnProperty
     if (lookup.hasOwnProperty && !lookup.hasOwnProperty(prop)) { continue; }
 
     // At times we are not allowed to access certain properties for security reasons.
     // There are also times where even if we can access them, we are not allowed to access their properties.
     try {
-      obj = Ember.lookup[prop];
+      obj = lookup[prop];
       isNamespace = obj && obj.isNamespace;
     } catch (e) {
       continue;
     }
 
     if (isNamespace) {
-      Ember.deprecate("Namespaces should not begin with lowercase.", /^[A-Z]/.test(prop));
       obj[NAME_KEY] = prop;
     }
   }
