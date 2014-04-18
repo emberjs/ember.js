@@ -75,8 +75,8 @@ var helpers = EmberHandlebars.helpers;
 
   Internally, `{{input type="text"}}` creates an instance of `Ember.TextField`, passing
   arguments from the helper to `Ember.TextField`'s `create` method. You can extend the
-  capablilties of text inputs in your applications by reopening this class. For example,
-  if you are building a Bootstrap 3 project where `data-*` attributes are used, you
+  capabilities of text inputs in your applications by reopening this class. For example,
+  if you are building a Bootstrap project where `data-*` attributes are used, you
   can add one to the `TextField`'s `attributeBindings` property:
 
 
@@ -313,15 +313,15 @@ export function inputHelper(options) {
   Internally, `{{textarea}}` creates an instance of `Ember.TextArea`, passing
   arguments from the helper to `Ember.TextArea`'s `create` method. You can
   extend the capabilities of text areas in your application by reopening this
-  class. For example, if you are deploying to browsers where the `required`
-  attribute is used, you can globally add support for the `required` attribute
+  class. For example, if you are building a Bootstrap project where `data-*` 
+  attributes are used, you can globally add support for a `data-*` attribute
   on all `{{textarea}}`s' in your app by reopening `Ember.TextArea` or
   `Ember.TextSupport` and adding it to the `attributeBindings` concatenated
   property:
 
   ```javascript
   Ember.TextArea.reopen({
-    attributeBindings: ['required']
+    attributeBindings: ['data-error']
   });
   ```
 
