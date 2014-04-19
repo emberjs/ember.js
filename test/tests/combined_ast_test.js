@@ -1,5 +1,6 @@
 import { preprocess, buildClose } from "htmlbars/parser";
-import { ProgramNode, BlockNode, ElementNode, MustacheNode, SexprNode, HashNode, IdNode, StringNode } from "htmlbars/ast";
+import { ProgramNode, BlockNode, ElementNode, MustacheNode, SexprNode,
+  HashNode, IdNode, StringNode, AttrNode } from "htmlbars/ast";
 
 module("HTML-based compiler (AST)");
 
@@ -46,7 +47,7 @@ function element(tagName, a, b, c) {
 }
 
 function attr(name, value) {
-  return [name, value];
+  return new AttrNode(name, value);
 }
 
 function block(mustache, program, inverse, stripRight) {
