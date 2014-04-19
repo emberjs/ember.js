@@ -1,6 +1,6 @@
 import { preprocess, buildClose } from "htmlbars/parser";
 import { ProgramNode, BlockNode, ElementNode, MustacheNode, SexprNode,
-  HashNode, IdNode, StringNode, AttrNode } from "htmlbars/ast";
+  HashNode, IdNode, StringNode, AttrNode, TextNode } from "htmlbars/ast";
 
 module("HTML-based compiler (AST)");
 
@@ -50,6 +50,10 @@ function attr(name, value) {
   return new AttrNode(name, value);
 }
 
+function text(chars) {
+  return new TextNode(chars);
+}
+
 function block(mustache, program, inverse, stripRight) {
   var close = buildClose(mustache, program, inverse, stripRight);
   return new BlockNode(mustache, program, inverse || null, close);
@@ -85,52 +89,54 @@ function astEqual(template, expected, message) {
 
 test("a simple piece of content", function() {
   var t = 'some content';
-  astEqual(t, program(['some content']));
+  astEqual(t, program([
+    text('some content')
+  ]));
 });
 
 test("a piece of content with HTML", function() {
   var t = 'some <div>content</div> done';
   astEqual(t, program([
-    "some ",
+    text("some "),
     element("div", [
-      "content" 
+      text("content")
     ]),
-    " done"
+    text(" done")
   ]));
 });
 
 test("a piece of Handlebars with HTML", function() {
   var t = 'some <div>{{content}}</div> done';
   astEqual(t, program([
-    "some ",
+    text("some "),
     element("div", [
       mustache('content')
     ]),
-    " done"
+    text(" done")
   ]));
 });
 
 test("Handlebars embedded in an attribute", function() {
   var t = 'some <div class="{{foo}}">content</div> done';
   astEqual(t, program([
-    "some ",
+    text("some "),
     element("div", [attr("class", [mustache('foo')])], [
-      "content"
+      text("content")
     ]),
-    " done"
+    text(" done")
   ]));
 });
 
 test("Handlebars embedded in an attribute (sexprs)", function() {
   var t = 'some <div class="{{foo (foo "abc")}}">content</div> done';
   astEqual(t, program([
-    "some ",
+    text("some "),
     element("div", [attr("class", [
       mustache([id('foo'), sexpr([id('foo'), string('abc')])])
     ])], [
-      "content"
+      text("content")
     ]),
-    " done"
+    text(" done")
   ]));
 });
 
@@ -138,11 +144,14 @@ test("Handlebars embedded in an attribute (sexprs)", function() {
 test("Handlebars embedded in an attribute with other content surrounding it", function() {
   var t = 'some <a href="http://{{link}}/">content</a> done';
   astEqual(t, program([
-    "some ",
-    element("a", [attr("href", ["http://", mustache('link'), "/"])], [
-      "content"
+    text("some "),
+    element("a", [attr("href", [
+      text("http://"),
+      mustache('link'), text("/")
+    ])], [
+      text("content")
     ]),
-    " done"
+    text(" done")
   ]));
 });
 
@@ -151,54 +160,64 @@ test("A more complete embedding example", function() {
           "<div class='{{foo}} {{bind-class isEnabled truthy='enabled'}}'>{{ content }}</div>" +
           " {{more 'embed'}}";
   astEqual(t, program([
-    '',
+    text(''),
     mustache('embed'),
-    ' ',
+    text(' '),
     mustache([id('some'), string('content')]),
-    ' ',
+    text(' '),
     element("div", [
-      attr("class", [mustache('foo'), ' ', mustache([id('bind-class'), id('isEnabled')], [['truthy', string('enabled')]])])
+      attr("class", [
+        mustache('foo'),
+        text(' '),
+        mustache([id('bind-class'), id('isEnabled')], [['truthy', string('enabled')]])
+      ])
     ], [
       mustache('content')
     ]),
-    ' ',
+    text(' '),
     mustache([id('more'), string('embed')]),
-    ''
+    text('')
   ]));
 });
 
 test("Simple embedded block helpers", function() {
   var t = "{{#if foo}}<div>{{content}}</div>{{/if}}";
   astEqual(t, program([
-    '',
+    text(''),
     block(mustache([id('if'), id('foo')]), program([
       element('div', [
         mustache('content')
       ])
     ])),
-    ''
+    text('')
   ]));
 });
 
 test("Involved block helper", function() {
   var t = '<p>hi</p> content {{#testing shouldRender}}<p>Appears!</p>{{/testing}} more <em>content</em> here';
   astEqual(t, program([
-    element('p', ['hi']),
-    ' content ',
+    element('p', [
+      text('hi')
+    ]),
+    text(' content '),
     block(mustache([id('testing'), id('shouldRender')]), program([
-      element('p', ['Appears!'])
+      element('p', [
+        text('Appears!')
+      ])
     ])),
-    ' more ',
-    element('em', ['content']),
-    ' here'
+    text(' more '),
+    element('em', [
+      text('content')
+    ]),
+    text(' here')
   ]));
 });
 
 test("Node helpers", function() {
   var t = "<p {{action 'boom'}} class='bar'>Some content</p>";
   astEqual(t, program([
-    element('p', [attr('class', ['bar'])], [mustache([id('action'), string('boom')])], [
-      'Some content'
+    element('p', [attr('class', [text('bar')])], [mustache([id('action'), string('boom')])], [
+      text('Some content')
     ])
   ]));
 });
@@ -206,16 +225,16 @@ test("Node helpers", function() {
 test('Auto insertion of text nodes between blocks and mustaches', function () {
   var t = "{{one}}{{two}}{{#three}}{{/three}}{{#four}}{{/four}}{{five}}";
   astEqual(t, program([
-    '',
+    text(''),
     mustache([id('one')]),
-    '',
+    text(''),
     mustache([id('two')]),
-    '',
+    text(''),
     block(mustache([id('three')]), program([])),
-    '',
+    text(''),
     block(mustache([id('four')]), program([])),
-    '',
+    text(''),
     mustache([id('five')]),
-    ''
+    text('')
   ]));
 });

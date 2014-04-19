@@ -22,8 +22,8 @@ test("visits ast in an order friendly to opcode generation", function () {
     openElement: function (element, a, b, mustacheCount) {
       this.opcodes.push(['openTag', element.tag, mustacheCount]);
     },
-    text: function (str) {
-      this.opcodes.push(['text', str]);
+    text: function (text) {
+      this.opcodes.push(['text', text.chars]);
     },
     closeElement: function (element) {
       this.opcodes.push(['closeTag', element.tag]);
