@@ -342,6 +342,38 @@ test("{{render}} helper should render templates with models multiple times", fun
   }
 });
 
+test("{{render}} helper should not leak controllers", function() {
+  var template = "<h1>HI</h1> {{render 'post' post1}}";
+  var post1 = {
+    title: "Me first"
+  };
+
+  var Controller = EmberController.extend({
+    container: container,
+    post1: post1
+  });
+
+  var controller = Controller.create();
+
+  view = EmberView.create({
+    controller: controller,
+    template: compile(template)
+  });
+
+  var PostController = EmberObjectController.extend();
+  container.register('controller:post', PostController);
+
+  Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
+
+  appendView(view);
+
+  var postController1 = view.get('_childViews')[0].get('controller');
+
+  run(view, 'destroy');
+
+  ok(postController1.isDestroyed, 'expected postController to be destroyed');
+});
+
 test("{{render}} helper should not treat invocations with falsy contexts as context-less", function() {
   var template = "<h1>HI</h1> {{render 'post' zero}} {{render 'post' nonexistent}}";
 
