@@ -1,5 +1,7 @@
 # Ember Changelog
 
+* [BREAKING BUGFIX] An empty array are treated as falsy value in `bind-attr` to be in consistent with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty array as truthy value in `bind-attr`.
+
 ### Ember 1.6.0-beta.1 (March 31, 2014)
 
 * [BUGFIX] Add `which` attribute to event triggered by keyEvent test helper.
