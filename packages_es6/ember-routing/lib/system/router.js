@@ -241,12 +241,12 @@ var EmberRouter = EmberObject.extend(Evented, {
       existing[0].off('willDestroyElement', this, existing[1]);
     }
 
-    var disconnect = function() {
+    function disconnectActiveView() {
       delete this._activeViews[templateName];
-    };
+    }
 
-    this._activeViews[templateName] = [view, disconnect];
-    view.one('willDestroyElement', this, disconnect);
+    this._activeViews[templateName] = [view, disconnectActiveView];
+    view.one('willDestroyElement', this, disconnectActiveView);
   },
 
   _setupLocation: function() {
