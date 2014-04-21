@@ -457,7 +457,7 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
       hadCachedValue = true;
     }
 
-    // Check if the CP has been wrapped. If if has, use the
+    // Check if the CP has been wrapped. If it has, use the
     // length from the wrapped function.
 
     funcArgLength = func.wrappedFunction ? func.wrappedFunction.__ember_arity__ : func.__ember_arity__;
