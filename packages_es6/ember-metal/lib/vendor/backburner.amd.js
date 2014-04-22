@@ -1,4 +1,4 @@
-define("backburner",
+define("backburner", 
   ["backburner/deferred_action_queues","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -12,6 +12,15 @@ define("backburner",
         autorun, laterTimer, laterTimerExpiresAt,
         global = this,
         NUMBER = /\d+/;
+
+    // In IE 6-8, try/finally doesn't work without a catch.
+    // Unfortunately, this is impossible to test for since wrapping it in a parent try/catch doesn't trigger the bug.
+    // This tests for another broken try/catch behavior that only exhibits in the same versions of IE.
+    var needsIETryCatchFix = (function(e,x){
+      try{ x(); }
+      catch(e) { } // jshint ignore:line
+      return !!e;
+    })();
 
     function isCoercableNumber(number) {
       return typeof number === 'number' || NUMBER.test(number);
@@ -53,25 +62,32 @@ define("backburner",
             currentInstance = this.currentInstance,
             nextInstance = null;
 
+        // Prevent double-finally bug in Safari 6.0.2 and iOS 6
+        // This bug appears to be resolved in Safari 6.0.5 and iOS 7
+        var finallyAlreadyCalled = false;
         try {
           currentInstance.flush();
         } finally {
-          this.currentInstance = null;
+          if (!finallyAlreadyCalled) {
+            finallyAlreadyCalled = true;
 
-          if (this.instanceStack.length) {
-            nextInstance = this.instanceStack.pop();
-            this.currentInstance = nextInstance;
-          }
+            this.currentInstance = null;
 
-          if (onEnd) {
-            onEnd(currentInstance, nextInstance);
+            if (this.instanceStack.length) {
+              nextInstance = this.instanceStack.pop();
+              this.currentInstance = nextInstance;
+            }
+
+            if (onEnd) {
+              onEnd(currentInstance, nextInstance);
+            }
           }
         }
       },
 
       run: function(target, method /*, args */) {
         var options = this.options,
-            ret;
+            ret, length = arguments.length;
 
         this.begin();
 
@@ -85,40 +101,32 @@ define("backburner",
         }
 
         var onError = options.onError || (options.onErrorTarget && options.onErrorTarget[options.onErrorMethod]);
+        var args = slice.call(arguments, 2);
 
-        // Prevent Safari double-finally.
-        var finallyAlreadyCalled = false;
-        try {
-          if (arguments.length > 2) {
-            if (onError) {
-              // Do we need this double try?
-              try {
-                ret = method.apply(target, slice.call(arguments, 2));
-              } catch (e) {
-                onError(e);
-              }
-            } else {
-              ret = method.apply(target, slice.call(arguments, 2));
-            }
-          } else {
-            if (onError) {
-              // Do we need this double try?
-              try {
-                ret = method.call(target);
-              } catch (e) {
-                onError(e);
-              }
-            } else {
-              ret = method.call(target);
+        // guard against Safari 6's double-finally bug
+        var didFinally = false;
+
+        if (onError) {
+          try {
+            return method.apply(target, args);
+          } catch(error) {
+            onError(error);
+          } finally {
+            if (!didFinally) {
+              didFinally = true;
+              this.end();
             }
           }
-        } finally {
-          if (!finallyAlreadyCalled) {
-            finallyAlreadyCalled = true;
-            this.end();
+        } else {
+          try {
+            return method.apply(target, args);
+          } finally {
+            if (!didFinally) {
+              didFinally = true;
+              this.end();
+            }
           }
         }
-        return ret;
       },
 
       defer: function(queueName, target, method /* , args */) {
@@ -390,12 +398,32 @@ define("backburner",
 
         return false;
       }
-
     };
 
     Backburner.prototype.schedule = Backburner.prototype.defer;
     Backburner.prototype.scheduleOnce = Backburner.prototype.deferOnce;
     Backburner.prototype.later = Backburner.prototype.setTimeout;
+
+    if (needsIETryCatchFix) {
+      var originalRun = Backburner.prototype.run;
+      Backburner.prototype.run = function() {
+        try {
+          originalRun.apply(this, arguments);
+        } catch (e) {
+          throw e;
+        }
+      };
+
+      var originalEnd = Backburner.prototype.end;
+      Backburner.prototype.end = function() {
+        try {
+          originalEnd.apply(this, arguments);
+        } catch (e) {
+          throw e;
+        }
+      };
+    }
+
 
     function createAutorun(backburner) {
       backburner.begin();
@@ -494,7 +522,7 @@ define("backburner",
 
     __exports__.Backburner = Backburner;
   });
-define("backburner/deferred_action_queues",
+define("backburner/deferred_action_queues", 
   ["backburner/queue","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -531,11 +559,34 @@ define("backburner/deferred_action_queues",
         }
       },
 
+      invoke: function(target, method, args, _) {
+        if (args && args.length > 0) {
+          method.apply(target, args);
+        } else {
+          method.call(target);
+        }
+      },
+
+      invokeWithOnError: function(target, method, args, onError) {
+        try {
+          if (args && args.length > 0) {
+            method.apply(target, args);
+          } else {
+            method.call(target);
+          }
+        } catch(error) {
+          onError(error);
+        }
+      },
+
       flush: function() {
         var queues = this.queues,
             queueNames = this.queueNames,
             queueName, queue, queueItems, priorQueueNameIndex,
-            queueNameIndex = 0, numberOfQueues = queueNames.length;
+            queueNameIndex = 0, numberOfQueues = queueNames.length,
+            options = this.options,
+            onError = options.onError || (options.onErrorTarget && options.onErrorTarget[options.onErrorMethod]),
+            invoke = onError ? this.invokeWithOnError : this.invoke;
 
         outerloop:
         while (queueNameIndex < numberOfQueues) {
@@ -545,14 +596,13 @@ define("backburner/deferred_action_queues",
           queue._queue = [];
 
           var queueOptions = queue.options, // TODO: write a test for this
-              options = this.options,
               before = queueOptions && queueOptions.before,
               after = queueOptions && queueOptions.after,
-              onError = options.onError || (options.onErrorTarget && options.onErrorTarget[options.onErrorMethod]),
               target, method, args, stack,
               queueIndex = 0, numberOfQueueItems = queueItems.length;
 
           if (numberOfQueueItems && before) { before(); }
+
           while (queueIndex < numberOfQueueItems) {
             target = queueItems[queueIndex];
             method = queueItems[queueIndex+1];
@@ -563,32 +613,12 @@ define("backburner/deferred_action_queues",
 
             // method could have been nullified / canceled during flush
             if (method) {
-              // TODO: error handling
-              if (args && args.length > 0) {
-                if (onError) {
-                  try {
-                    method.apply(target, args);
-                  } catch (e) {
-                    onError(e);
-                  }
-                } else {
-                  method.apply(target, args);
-                }
-              } else {
-                if (onError) {
-                  try {
-                    method.call(target);
-                  } catch(e) {
-                    onError(e);
-                  }
-                } else {
-                  method.call(target);
-                }
-              }
+              invoke(target, method, args, onError);
             }
 
             queueIndex += 4;
           }
+
           queue._queueBeingFlushed = null;
           if (numberOfQueueItems && after) { after(); }
 
@@ -616,7 +646,7 @@ define("backburner/deferred_action_queues",
 
     __exports__.DeferredActionQueues = DeferredActionQueues;
   });
-define("backburner/queue",
+define("backburner/queue", 
   ["exports"],
   function(__exports__) {
     "use strict";
