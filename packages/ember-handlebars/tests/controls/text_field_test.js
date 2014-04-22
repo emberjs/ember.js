@@ -9,6 +9,8 @@ import EmberHandlebars from "ember-handlebars";
 import EmberObject from "ember-runtime/system/object";
 import View from "ember-views/views/view";
 import TextField from "ember-handlebars/controls/text_field";
+import EventDispatcher from "ember-views/system/event_dispatcher";
+import jQuery from "ember-views/system/jquery";
 
 var textField;
 var K = Ember.K;
@@ -473,3 +475,137 @@ test("bubbling of handled actions can be enabled via bubbles property", function
   textField.trigger('keyUp', event);
   equal(stopPropagationCount, 1, "propagation was prevented if bubbles is false");
 });
+
+
+var dispatcher, StubController;
+QUnit.module("Ember.TextField - Action events", {
+  setup: function() {
+
+    dispatcher = EventDispatcher.create();
+    dispatcher.setup();
+
+    StubController = EmberObject.extend({
+      send: function(actionName, value, sender) {
+        equal(actionName, 'doSomething', "text field sent correct action name");
+      }
+    });
+ 
+  },
+ 
+  teardown: function() {
+    run(function() {
+      dispatcher.destroy();
+
+      if (textField) {
+        textField.destroy();
+      }
+    });
+  }
+});
+ 
+test("when the text field is blurred, the `focus-out` action is sent to the controller", function() {
+  expect(1);
+
+  textField = TextField.create({
+    'focus-out': 'doSomething',
+    targetObject: StubController.create({})
+  });
+
+  append();
+
+  run(function() { 
+    textField.$().blur();
+  });
+
+});
+
+test("when the text field is focused, the `focus-in` action is sent to the controller", function() {
+  expect(1);
+
+  textField = TextField.create({
+    'focus-in': 'doSomething',
+    targetObject: StubController.create({})
+  });
+
+  append();
+
+  run(function() { 
+    textField.$().focusin();
+  });
+
+
+});
+
+test("when the user presses a key, the `key-press` action is sent to the controller", function() {
+  expect(1);
+
+  textField = TextField.create({
+    'key-press': 'doSomething',
+    targetObject: StubController.create({})
+  });
+
+  append();
+  
+  run(function() { 
+    var event = jQuery.Event("keypress");
+    event.keyCode = event.which = 13;
+    textField.$().trigger(event);
+  });
+
+});
+
+test("when the user inserts a new line, the `insert-newline` action is sent to the controller", function() {
+  expect(1);
+
+  textField = TextField.create({
+    'insert-newline': 'doSomething',
+    targetObject: StubController.create({})
+  });
+
+  append();
+  
+  run(function() { 
+    var event = jQuery.Event("keyup");
+    event.keyCode = event.which = 13;
+    textField.$().trigger(event);
+  });
+
+});
+
+
+test("when the user presses the `enter` key, the `enter` action is sent to the controller", function() {
+  expect(1);
+
+  textField = TextField.create({
+    'enter': 'doSomething',
+    targetObject: StubController.create({})
+  });
+
+  append();
+  
+  run(function() { 
+    var event = jQuery.Event("keyup");
+    event.keyCode = event.which = 13;
+    textField.$().trigger(event);
+  });
+
+});
+
+test("when the user hits escape, the `escape-press` action is sent to the controller", function() {
+  expect(1);
+
+  textField = TextField.create({
+    'escape-press': 'doSomething',
+    targetObject: StubController.create({})
+  });
+
+  append();
+  
+  run(function() { 
+    var event = jQuery.Event("keyup");
+    event.keyCode = event.which = 27;
+    textField.$().trigger(event);
+  });
+
+});
+

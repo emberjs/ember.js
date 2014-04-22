@@ -71,6 +71,35 @@ var helpers = EmberHandlebars.helpers;
   <input type="text" value="Stanley" disabled="disabled" size="50"/>
   ```
 
+  ## Actions
+
+  The helper can send multiple actions based on user events.
+
+  The action property defines the action which is send when
+  the user presses the return key.
+
+  ```handlebars
+  {{input action="submit"}}
+  ```
+
+  The helper allows some user events to send actions.
+
+* `enter`
+* `insert-newline`
+* `escape-press`
+* `focus-in`
+* `focus-out`
+* `key-press`
+
+  For example, if you desire an action to be sent when the input is blurred,
+  you only need to setup the action name to the event name property.
+
+  ```handlebars
+  {{input focus-in="alertMessage"}}
+  ```
+
+  See more about [Text Support Actions](api/classes/Ember.TextField.html)
+
   ## Extension
 
   Internally, `{{input type="text"}}` creates an instance of `Ember.TextField`, passing
@@ -307,6 +336,35 @@ export function inputHelper(options) {
     Lots of text that IS bound
   </textarea>
   ```
+
+  ## Actions
+
+  The helper can send multiple actions based on user events.
+
+  The action property defines the action which is send when
+  the user presses the return key.
+
+  ```handlebars
+  {{input action="submit"}}
+  ```
+
+  The helper allows some user events to send actions.
+
+* `enter`
+* `insert-newline`
+* `escape-press`
+* `focus-in`
+* `focus-out`
+* `key-press`
+
+  For example, if you desire an action to be sent when the input is blurred,
+  you only need to setup the action name to the event name property.
+
+  ```handlebars
+  {{textarea focus-in="alertMessage"}}
+  ```
+
+  See more about [Text Support Actions](api/classes/Ember.TextArea.html)
 
   ## Extension
 
