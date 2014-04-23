@@ -27,7 +27,7 @@ function TrackedArray(items) {
   } else {
     this._operations = [];
   }
-};
+}
 
 TrackedArray.RETAIN = RETAIN;
 TrackedArray.INSERT = INSERT;
@@ -125,8 +125,8 @@ TrackedArray.prototype = {
     var items = [],
         offset = 0;
 
-    forEach(this._operations, function (arrayOperation) {
-      callback(arrayOperation.items, offset, arrayOperation.type);
+    forEach(this._operations, function (arrayOperation, operationIndex) {
+      callback(arrayOperation.items, offset, arrayOperation.type, operationIndex);
 
       if (arrayOperation.type !== DELETE) {
         offset += arrayOperation.count;

@@ -214,11 +214,11 @@ DependentArraysObserver.prototype = {
     var length = get(array, 'length');
     // OPTIMIZE: we could stop updating once we hit the object whose observer
     // fired; ie partially apply the transformations
-    trackedArray.apply(function (observerContexts, offset, operation) {
+    trackedArray.apply(function (observerContexts, offset, operation, operationIndex) {
       // we don't even have observer contexts for removed items, even if we did,
       // they no longer have any index in the array
       if (operation === TrackedArray.DELETE) { return; }
-      if (operation === TrackedArray.RETAIN && observerContexts.length === length && offset === 0) {
+      if (operationIndex === 0 && operation === TrackedArray.RETAIN && observerContexts.length === length && offset === 0) {
         // If we update many items we don't want to walk the array each time: we
         // only need to update the indexes at most once per run loop.
         return;
@@ -829,6 +829,6 @@ function reduceComputed(options) {
   }
 
   return cp;
-};
+}
 
-export {reduceComputed, ReduceComputedProperty}
+export {reduceComputed, ReduceComputedProperty};
