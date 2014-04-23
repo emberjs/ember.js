@@ -326,3 +326,26 @@ test("Stripping - removes unnecessary text nodes", function() {
     text('')
   ]));
 });
+
+
+test("Mustache in unquoted attribute value", function() {
+  var t = "<div class=a{{foo}}></div>";
+  astEqual(t, root([
+    element('div', [attr('class', [text('a'), mustache('foo')])], [])
+  ]));
+
+  t = "<div class={{foo}}></div>";
+  astEqual(t, root([
+    element('div', [attr('class', [mustache('foo')])], [])
+  ]));
+
+  t = "<div class=a{{foo}}b></div>";
+  astEqual(t, root([
+    element('div', [attr('class', [text('a'), mustache('foo'), text('b')])], [])
+  ]));
+
+  t = "<div class={{foo}}b></div>";
+  astEqual(t, root([
+    element('div', [attr('class', [mustache('foo'), text('b')])], [])
+  ]));
+});
