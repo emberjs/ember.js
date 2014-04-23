@@ -1,9 +1,12 @@
-import { preprocess, buildClose } from "htmlbars/parser";
+import { preprocess } from "htmlbars/parser";
 import { ProgramNode, BlockNode, ElementNode, MustacheNode, SexprNode,
   HashNode, IdNode, StringNode, AttrNode, TextNode } from "htmlbars/ast";
 
 module("HTML-based compiler (AST)");
 
+var stripLeft = { left: true, right: false };
+var stripRight = { left: false, right: true };
+var stripBoth = { left: true, right: true };
 var stripNone = { left: false, right: false };
 
 function id(string) {
@@ -23,7 +26,7 @@ function hash(pairs) {
   return pairs ? new HashNode(pairs) : undefined;
 }
 
-function mustache(string, pairs, raw) {
+function mustache(string, pairs, strip, raw) {
   var params;
 
   if (({}).toString.call(string) === '[object Array]') {
@@ -32,7 +35,7 @@ function mustache(string, pairs, raw) {
     params = [id(string)];
   }
 
-  return new MustacheNode(params, hash(pairs), raw ? '{{{' : '{{', { left: false, right: false });
+  return new MustacheNode(params, hash(pairs), raw ? '{{{' : '{{', strip || stripNone);
 }
 
 function string(data) {
@@ -54,13 +57,16 @@ function text(chars) {
   return new TextNode(chars);
 }
 
-function block(mustache, program, inverse, stripRight) {
-  var close = buildClose(mustache, program, inverse, stripRight);
-  return new BlockNode(mustache, program, inverse || null, close);
+function block(mustache, program, inverse, strip) {
+  return new BlockNode(mustache, program, inverse || null, strip || stripNone);
 }
 
 function program(children, strip) {
-  return new ProgramNode(children, strip || stripNone);
+  return new ProgramNode(children || [], strip || stripNone);
+}
+
+function root(children) {
+  return program(children || [], {});
 }
 
 function removeLocInfo(obj) {
@@ -89,14 +95,14 @@ function astEqual(template, expected, message) {
 
 test("a simple piece of content", function() {
   var t = 'some content';
-  astEqual(t, program([
+  astEqual(t, root([
     text('some content')
   ]));
 });
 
 test("a piece of content with HTML", function() {
   var t = 'some <div>content</div> done';
-  astEqual(t, program([
+  astEqual(t, root([
     text("some "),
     element("div", [
       text("content")
@@ -107,7 +113,7 @@ test("a piece of content with HTML", function() {
 
 test("a piece of Handlebars with HTML", function() {
   var t = 'some <div>{{content}}</div> done';
-  astEqual(t, program([
+  astEqual(t, root([
     text("some "),
     element("div", [
       mustache('content')
@@ -118,7 +124,7 @@ test("a piece of Handlebars with HTML", function() {
 
 test("Handlebars embedded in an attribute", function() {
   var t = 'some <div class="{{foo}}">content</div> done';
-  astEqual(t, program([
+  astEqual(t, root([
     text("some "),
     element("div", [attr("class", [mustache('foo')])], [
       text("content")
@@ -129,7 +135,7 @@ test("Handlebars embedded in an attribute", function() {
 
 test("Handlebars embedded in an attribute (sexprs)", function() {
   var t = 'some <div class="{{foo (foo "abc")}}">content</div> done';
-  astEqual(t, program([
+  astEqual(t, root([
     text("some "),
     element("div", [attr("class", [
       mustache([id('foo'), sexpr([id('foo'), string('abc')])])
@@ -143,7 +149,7 @@ test("Handlebars embedded in an attribute (sexprs)", function() {
 
 test("Handlebars embedded in an attribute with other content surrounding it", function() {
   var t = 'some <a href="http://{{link}}/">content</a> done';
-  astEqual(t, program([
+  astEqual(t, root([
     text("some "),
     element("a", [attr("href", [
       text("http://"),
@@ -159,7 +165,7 @@ test("A more complete embedding example", function() {
   var t = "{{embed}} {{some 'content'}} " +
           "<div class='{{foo}} {{bind-class isEnabled truthy='enabled'}}'>{{ content }}</div>" +
           " {{more 'embed'}}";
-  astEqual(t, program([
+  astEqual(t, root([
     text(''),
     mustache('embed'),
     text(' '),
@@ -182,7 +188,7 @@ test("A more complete embedding example", function() {
 
 test("Simple embedded block helpers", function() {
   var t = "{{#if foo}}<div>{{content}}</div>{{/if}}";
-  astEqual(t, program([
+  astEqual(t, root([
     text(''),
     block(mustache([id('if'), id('foo')]), program([
       element('div', [
@@ -195,7 +201,7 @@ test("Simple embedded block helpers", function() {
 
 test("Involved block helper", function() {
   var t = '<p>hi</p> content {{#testing shouldRender}}<p>Appears!</p>{{/testing}} more <em>content</em> here';
-  astEqual(t, program([
+  astEqual(t, root([
     element('p', [
       text('hi')
     ]),
@@ -215,7 +221,7 @@ test("Involved block helper", function() {
 
 test("Node helpers", function() {
   var t = "<p {{action 'boom'}} class='bar'>Some content</p>";
-  astEqual(t, program([
+  astEqual(t, root([
     element('p', [attr('class', [text('bar')])], [mustache([id('action'), string('boom')])], [
       text('Some content')
     ])
@@ -224,17 +230,99 @@ test("Node helpers", function() {
 
 test('Auto insertion of text nodes between blocks and mustaches', function () {
   var t = "{{one}}{{two}}{{#three}}{{/three}}{{#four}}{{/four}}{{five}}";
-  astEqual(t, program([
+  astEqual(t, root([
     text(''),
     mustache([id('one')]),
     text(''),
     mustache([id('two')]),
     text(''),
-    block(mustache([id('three')]), program([])),
+    block(mustache([id('three')]), program()),
     text(''),
-    block(mustache([id('four')]), program([])),
+    block(mustache([id('four')]), program()),
     text(''),
     mustache([id('five')]),
+    text('')
+  ]));
+});
+
+test("Stripping - mustaches", function() {
+  var t = "foo {{~content}} bar";
+  astEqual(t, root([
+    text('foo'),
+    mustache([id('content')], null, stripLeft),
+    text(' bar')
+  ]));
+
+  t = "foo {{content~}} bar";
+  astEqual(t, root([
+    text('foo '),
+    mustache([id('content')], null, stripRight),
+    text('bar')
+  ]));
+});
+
+test("Stripping - blocks", function() {
+  var t = "foo {{~#wat}}{{/wat}} bar";
+  astEqual(t, root([
+    text('foo'),
+    block(mustache([id('wat')], null, stripLeft), program(), null, stripLeft),
+    text(' bar')
+  ]));
+
+  t = "foo {{#wat}}{{/wat~}} bar";
+  astEqual(t, root([
+    text('foo '),
+    block(mustache([id('wat')]), program(), null, stripRight),
+    text('bar')
+  ]));
+});
+
+
+test("Stripping - programs", function() {
+  var t = "{{#wat~}} foo {{else}}{{/wat}}";
+  astEqual(t, root([
+    text(''),
+    block(mustache([id('wat')], null, stripRight), program([
+      text('foo ')
+    ], stripLeft), program()),
+    text('')
+  ]));
+
+  t = "{{#wat}} foo {{~else}}{{/wat}}";
+  astEqual(t, root([
+    text(''),
+    block(mustache([id('wat')]), program([
+      text(' foo')
+    ], stripRight), program()),
+    text('')
+  ]));
+
+  t = "{{#wat}}{{else~}} foo {{/wat}}";
+  astEqual(t, root([
+    text(''),
+    block(mustache([id('wat')]), program(), program([
+      text('foo ')
+    ], stripLeft)),
+    text('')
+  ]));
+
+  t = "{{#wat}}{{else}} foo {{~/wat}}";
+  astEqual(t, root([
+    text(''),
+    block(mustache([id('wat')]), program(), program([
+      text(' foo')
+    ], stripRight)),
+    text('')
+  ]));
+});
+
+test("Stripping - removes unnecessary text nodes", function() {
+  var t = "{{#each~}}\n  <li> foo </li>\n{{~/each}}";
+  astEqual(t, root([
+    text(''),
+    block(mustache([id('each')], null, stripRight), program([
+      element('li', [text(' foo ')])
+    ], stripBoth)),
     text('')
   ]));
 });
