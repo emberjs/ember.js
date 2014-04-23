@@ -388,7 +388,7 @@ function isArray(obj) {
   if (!obj || obj.setInterval) { return false; }
   if (Array.isArray && Array.isArray(obj)) { return true; }
   if (EmberArray && EmberArray.detect(obj)) { return true; }
-  if ((obj.length !== undefined) && 'object'===typeof obj) { return true; }
+  if ((obj.length !== undefined) && 'object'=== typeOf(obj)) { return true; }
   return false;
 };
 

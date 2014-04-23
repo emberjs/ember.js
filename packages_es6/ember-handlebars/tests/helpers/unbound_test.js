@@ -9,12 +9,17 @@ import run from "ember-metal/run_loop";
 import EmberHandlebars from "ember-handlebars-compiler";
 import EmberError from "ember-metal/error";
 
+import Container from "ember-runtime/system/container";
+
+import {makeBoundHelper} from "ember-handlebars/ext";
+
 var appendView = function(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 };
 
 var view;
 var originalLookup = Ember.lookup, lookup;
+var container;
 
 module("Handlebars {{#unbound}} helper -- classic single-property usage", {
   setup: function() {
@@ -252,3 +257,41 @@ test("should be able to render an unbound helper invocation with bound hash opti
   }
 });
 
+module("Handlebars {{#unbound}} helper -- Container Lookup", {
+  setup: function() {
+    Ember.lookup = lookup = { Ember: Ember };
+    container = new Container();
+    container.optionsForType('helper', { instantiate: false });
+  },
+
+  teardown: function() {
+    if (view) {
+      run(view, 'destroy');
+    }
+    Ember.lookup = originalLookup;
+  }
+});
+
+test("should lookup helpers in the container", function() {
+  container.register('helper:up-case', makeBoundHelper(function(value) {
+    return value.toUpperCase();
+  }));
+
+  view = EmberView.create({
+    template: Ember.Handlebars.compile("{{unbound up-case displayText}}"),
+    container: container,
+    context: {
+      displayText: 'such awesome'
+    }
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), "SUCH AWESOME", "proper values were rendered");
+
+  run(function() {
+    set(view, 'context.displayText', 'no changes');
+  });
+
+  equal(view.$().text(), "SUCH AWESOME", "only bound values change");
+});
