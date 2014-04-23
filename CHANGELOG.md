@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### Ember 1.5.1 (April 22, 2014)
+
+* Fixes for AutoLocation. See [#4717](https://github.com/emberjs/ember.js/pull/4717).
+* Fixes for HistoryLocation. See [#4730](https://github.com/emberjs/ember.js/pull/4730).
+* Fixes for ArrayComputed Performance Regression. See [#4740](https://github.com/emberjs/ember.js/issues/4740).
+
 ### Ember 1.5.0 (March 29, 2014)
 
 * [BUGFIX beta] Move reduceComputed instanceMetas into object's meta.
