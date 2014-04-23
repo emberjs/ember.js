@@ -52,3 +52,19 @@ for a detailed explanation.
     underlying test framework to start/stop between async steps.
 
   Added in [#4176](https://github.com/emberjs/ember.js/pull/4176)
+
+* `ember-routing-will-change-hooks`
+  Finer-grained `willTransition`-esque actions:
+
+  - `willLeave`: fires on routes that will no longer be active after
+    the transition
+  - `willChangeModel`: fires on routes that will still be active
+    but will re-resolve their models
+
+  Both of these hooks act like willTransition in the sense that they
+  give you an opportunity to abort the transition before it happens.
+  Common use cases include animating things away or prompting to user
+  to deal with unsaved changes.
+
+  Added in [#4760](https://github.com/emberjs/ember.js/pull/4760)
+
