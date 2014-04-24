@@ -739,6 +739,43 @@ test("changeMeta includes changedCount and arrayChanged", function() {
   deepEqual(callbackItems, expected, "changeMeta has count and changed");
 });
 
+test("`updateIndexes` is not over-eager about skipping retain:n (#4620)", function() {
+  var tracked = Ember.A();
+  obj = EmberObject.extend({
+    content: Ember.A([{ n: "one" }, { n: "two" }]),
+    items: arrayComputed('content.@each.n', {
+      addedItem: function (array, item, changeMeta) {
+        tracked.push('+' + get(item, 'n') + '@' + changeMeta.index);
+        array.insertAt(changeMeta.index, item);
+        return array;
+      },
+      removedItem: function (array, item, changeMeta) {
+        tracked.push('-' + (changeMeta.previousValues ? changeMeta.previousValues.n : get(item, 'n')) + '@' + changeMeta.index);
+        array.removeAt(changeMeta.index);
+        return array;
+      }
+    })
+  }).create();
+
+  run(function () {
+    obj.get('items');
+  });
+
+  deepEqual(tracked, ["+one@0", "+two@1"], "precond - array is set up correctly");
+
+  run(function () {
+    obj.get('content').shiftObject();
+  });
+
+  deepEqual(tracked, ["+one@0", "+two@1", "-one@0"], "array handles unshift correctly");
+
+  run(function () {
+    set(obj, 'content.lastObject.n', 'three');
+  });
+
+  deepEqual(tracked, ["+one@0", "+two@1", "-one@0", "-two@0", "+three@0"], "array handles a change when operations are delete:m retain:n-m");
+});
+
 test("when initialValue is undefined, everything works as advertised", function() {
   var chars = EmberObject.createWithMixins({
     letters: Ember.A(),
