@@ -721,8 +721,8 @@ var Application = Namespace.extend(DeferredMixin, {
   },
 
   /**
-    trigger a new call to `route` whenever the URL changes.
     If the application has a router, use it to route to the current URL, and
+    trigger a new call to `route` whenever the URL changes.
 
     @private
     @method startRouting
