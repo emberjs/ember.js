@@ -101,6 +101,12 @@ test("the default resolver throws an error if the fullName to resolve is invalid
   raises(function(){ locator.resolve(':type');  }, TypeError, /Invalid fullName/ );
 });
 
+test("the default resolver throws an error when the model name is not in lowerCamelCase", function() {
+  expectAssertion(function() {
+    locator.resolve("model:MyClass");
+  }, "Model names should be lowerCamelCase: you passed `MyClass`, but you should pass `myClass` instead.");
+});
+
 test("the default resolver logs hits if `LOG_RESOLVER` is set", function() {
   expect(3);
 
