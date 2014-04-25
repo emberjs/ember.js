@@ -26,8 +26,38 @@ import {sum as computedSum,
         intersect as computedIntersect} from 'ember-runtime/computed/reduce_computed_macros';
 
 import NativeArray from "ember-runtime/system/native_array";
+import ArrayProxy from "ember-runtime/system/array_proxy";
 
 var obj, sorted, sortProps, items, userFnCalls, todos, filtered;
+
+module('filterBy delete', {
+  setup: function() {
+    obj = ArrayProxy.createWithMixins({
+      checkedContent: Ember.computed.filterBy('@this', 'isChecked'),
+      content: Ember.A([
+        {name: "one", isChecked: false},
+        {name: "two", isChecked: false}
+      ]);
+    });
+  },
+  teardown: function() {
+    run(function() {
+      obj.destroy();
+    });
+  }
+});
+
+test('deleting a filtered property does not create an extra delete operation', function() {
+  obj.set('firstObject.isChecked', true);
+
+  equal(1, obj.get('checkedContent.length'), 'precon - filterBy returns 1 object');
+
+  obj.removeObject(obj.get('firstObject'));
+
+  obj.set('firstObject.isChecked', true);
+
+  equal(1, obj.get('checkedContent.length'), 'filterBy filters after removing object from array');
+});
 
 module('computedMap', {
   setup: function() {
