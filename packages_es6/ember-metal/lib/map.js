@@ -24,10 +24,10 @@
 
 import {set} from "ember-metal/property_set";
 import {guidFor} from "ember-metal/utils";
-import {indexOf} from "ember-metal/array"
+import {indexOf} from "ember-metal/array";
 import {create} from "ember-metal/platform";
 
-var copy = function(obj) {
+function copy(obj) {
   var output = {};
 
   for (var prop in obj) {
@@ -35,9 +35,9 @@ var copy = function(obj) {
   }
 
   return output;
-};
+}
 
-var copyMap = function(original, newObject) {
+function copyMap(original, newObject) {
   var keys = original.keys.copy(),
       values = copy(original.values);
 
@@ -46,7 +46,7 @@ var copyMap = function(original, newObject) {
   newObject.length = original.length;
 
   return newObject;
-};
+}
 
 /**
   This class is used internally by Ember and Ember Data.
@@ -60,7 +60,7 @@ var copyMap = function(original, newObject) {
 */
 function OrderedSet() {
   this.clear();
-};
+}
 
 /**
   @method create
@@ -189,10 +189,12 @@ OrderedSet.prototype = {
   @private
   @constructor
 */
-var Map = Ember.Map = function() {
+function Map() {
   this.keys = OrderedSet.create();
   this.values = {};
-};
+}
+
+Ember.Map = Map;
 
 /**
   @method create
@@ -211,7 +213,6 @@ Map.prototype = {
     @default 0
   */
   length: 0,
-
 
   /**
     Retrieve the value associated with a given key.
@@ -325,7 +326,7 @@ Map.prototype = {
 function MapWithDefault(options) {
   Map.call(this);
   this.defaultValue = options.defaultValue;
-};
+}
 
 /**
   @method create
