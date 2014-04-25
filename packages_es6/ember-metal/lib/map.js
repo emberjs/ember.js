@@ -314,6 +314,25 @@ Map.prototype = {
   }
 };
 
+if (Ember.FEATURES.isEnabled('ember-metal-map-to-array')) {
+/**
+   @method toArray
+   @return {Array}
+*/
+Map.prototype.toArray = function() {
+  var keys = this.keys.list;
+  var values = this.values;
+  var length = keys.length;
+  var result = new Array(length);
+
+  for (var i = 0; i < length; i++) {
+    result[i] = this.get(keys[i]);
+  }
+
+  return result;
+};
+}
+
 /**
   @class MapWithDefault
   @namespace Ember
