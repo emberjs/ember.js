@@ -1657,7 +1657,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       } else if (defaultValueType === 'number') {
         return (Number(value)).valueOf();
       } else if (defaultValueType === 'array') {
-        return Ember.A(JSON.parse(value));
+        return Ember.A(eval("(function(){return " + value + ";})()"));
       }
       return value;
     },
