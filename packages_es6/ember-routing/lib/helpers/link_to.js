@@ -10,7 +10,7 @@ import {fmt} from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import keys from "ember-runtime/keys";
 import {isSimpleClick} from "ember-views/system/utils";
-import {View as EmberView} from "ember-views/views/view";
+import EmberComponent from "ember-views/views/component";
 import EmberHandlebars from "ember-handlebars";
 import {viewHelper} from "ember-handlebars/helpers/view";
 import EmberRouter from "ember-routing/system/router";
@@ -135,7 +135,7 @@ function getResolvedPaths(options) {
   @extends Ember.View
   @see {Handlebars.helpers.link-to}
 **/
-var LinkView = Ember.LinkView = EmberView.extend({
+var LinkView = Ember.LinkView = EmberComponent.extend({
   tagName: 'a',
   currentWhen: null,
 
@@ -338,17 +338,6 @@ var LinkView = Ember.LinkView = EmberView.extend({
   },
 
   /**
-    Even though this isn't a virtual view, we want to treat it as if it is
-    so that you can access the parent with {{view.prop}}
-
-    @private
-    @method concreteView
-  **/
-  concreteView: computed(function() {
-    return get(this, 'parentView');
-  }).property('parentView'),
-
-  /**
 
     Accessed as a classname binding to apply the `LinkView`'s `disabledClass`
     CSS `class` to the element when the link is disabled.
@@ -427,7 +416,7 @@ var LinkView = Ember.LinkView = EmberView.extend({
   _invoke: function(event) {
     if (!isSimpleClick(event)) { return true; }
 
-    if (this.preventDefault !== false) { 
+    if (this.preventDefault !== false) {
       if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
         var targetAttribute = get(this, 'target');
         if (!targetAttribute || targetAttribute === '_self') {
@@ -437,7 +426,7 @@ var LinkView = Ember.LinkView = EmberView.extend({
         event.preventDefault();
       }
     }
-    
+
     if (this.bubbles === false) { event.stopPropagation(); }
 
     if (get(this, '_isDisabled')) { return false; }
@@ -623,14 +612,14 @@ LinkView.toString = function() { return "LinkView"; };
 if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
   LinkView.reopen({
     attributeBindings: ['target'],
-    
+
     /**
       Sets the `target` attribute of the `LinkView`'s anchor element.
 
       @property target
       @default null
     **/
-    target: null    
+    target: null
   });
 }
 

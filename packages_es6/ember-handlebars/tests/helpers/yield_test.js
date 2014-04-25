@@ -380,3 +380,21 @@ test("yield works inside a conditional in a component that has Ember._Metamorph 
 
   equal(view.$().text(), 'innerouter', "{{yield}} renders yielded content inside metamorph component");
 });
+
+test("view keyword works inside component yield", function () {
+  var component = Component.extend({
+    layout: EmberHandlebars.compile("<p>{{yield}}</p>")
+  });
+
+  view = EmberView.create({
+    dummyText: 'hello',
+    component: component,
+    template: EmberHandlebars.compile('{{#view view.component}}{{view.dummyText}}{{/view}}')
+  });
+
+  run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$('div > p').text(), "hello", "view keyword inside component yield block should refer to the correct view");
+});

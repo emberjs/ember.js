@@ -545,10 +545,10 @@ var EMPTY_ARRAY = [];
   ```html
   <a id="ember1" class="ember-view" href="http://google.com"></a>
   ```
-  
-  One property can be mapped on to another by placing a ":" between 
+
+  One property can be mapped on to another by placing a ":" between
   the source property and the destination property:
-  
+
   ```javascript
   AnchorView = Ember.View.extend({
     tagName: 'a',
@@ -556,13 +556,13 @@ var EMPTY_ARRAY = [];
     url: 'http://google.com'
   });
   ```
-  
+
   Will result in view instances with an HTML representation of:
 
   ```html
   <a id="ember1" class="ember-view" href="http://google.com"></a>
   ```
-  
+
   If the return value of an `attributeBindings` monitored property is a boolean
   the property will follow HTML's pattern of repeating the attribute's name as
   its value:
@@ -1244,7 +1244,7 @@ var View = CoreView.extend({
     var templateData = get(this, 'templateData');
 
     var keywords = templateData ? copy(templateData.keywords) : {};
-    set(keywords, 'view', get(this, 'concreteView'));
+    set(keywords, 'view', this.isVirtual ? keywords.view : this);
     set(keywords, '_view', this);
     set(keywords, 'controller', get(this, 'controller'));
 
@@ -2525,9 +2525,9 @@ View.reopenClass({
   */
   _classStringForValue: function(path, val, className, falsyClassName) {
     if(isArray(val)) {
-      val = get(val, 'length') !== 0;  
+      val = get(val, 'length') !== 0;
     }
-    
+
     // When using the colon syntax, evaluate the truthiness or falsiness
     // of the value to determine which className to return
     if (className || falsyClassName) {
