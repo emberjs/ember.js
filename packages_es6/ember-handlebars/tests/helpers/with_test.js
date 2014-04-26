@@ -299,7 +299,7 @@ test("it should wrap context with object controller", function() {
   run(function() { view.destroy(); }); // destroy existing view
 });
 
-test("it should still have access to original parentController within an {{#each}}", function() {
+test("it should still have access to original parentController within an {{#each var in context}}", function() {
   var Controller = ObjectController.extend({
     controllerName: computed(function() {
       return "controller:"+this.get('content.name') + ' and ' + this.get('parentController.name');
@@ -318,6 +318,37 @@ test("it should still have access to original parentController within an {{#each
   view = EmberView.create({
     container: container,
     template: EmberHandlebars.compile('{{#each person in people}}{{#with person controller="person"}}{{controllerName}}{{/with}}{{/each}}'),
+    controller: parentController
+  });
+
+  container.register('controller:person', Controller);
+
+  appendView(view);
+
+  equal(view.$().text(), "controller:Steve Holt and Bob Loblawcontroller:Carl Weathers and Bob Loblaw");
+
+  run(function() { view.destroy(); }); // destroy existing view
+});
+
+test("it should still have access to original parentController within an {{#each}}", function() {
+  var Controller = ObjectController.extend({
+    controllerName: computed(function() {
+      return "controller:"+this.get('content.name') + ' and ' + this.get('parentController.name');
+    })
+  });
+
+  var people = A([{ name: "Steve Holt" }, { name: "Carl Weathers" }]);
+  var container = new Container();
+
+  var parentController = EmberObject.create({
+    container: container,
+    name: 'Bob Loblaw',
+    people: people
+  });
+
+  view = EmberView.create({
+    container: container,
+    template: EmberHandlebars.compile('{{#each people}}{{#with this controller="person"}}{{controllerName}}{{/with}}{{/each}}'),
     controller: parentController
   });
 

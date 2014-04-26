@@ -100,10 +100,11 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
       });
 
       if (options.hash.controller) {
-        bindView.set('_contextController', this.container.lookupFactory('controller:'+options.hash.controller).create({
-          container: currentContext.container,
-          parentController: currentContext,
-          target: currentContext
+        var parentController = data.keywords.controller;
+        bindView.set('_contextController', parentController.container.lookupFactory('controller:'+options.hash.controller).create({
+          container: parentController.container,
+          parentController: parentController,
+          target: parentController
         }));
       }
 
