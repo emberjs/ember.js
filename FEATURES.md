@@ -68,8 +68,3 @@ for a detailed explanation.
 
   Added in [#4760](https://github.com/emberjs/ember.js/pull/4760)
 
-* `ember-metal-map-to-array`
-  simply add toArray to maps
-
-  Added in [#4772](https://github.com/emberjs/ember.js/pull/4772)
-

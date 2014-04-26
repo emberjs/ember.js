@@ -155,51 +155,6 @@ function testMap(nameAndFunc) {
     map.remove(string);
     equal(map.length, 0);
   });
-
-if (Ember.FEATURES.isEnabled('ember-metal-map-to-array')) {
-  test("toArray", function() {
-    //Add a key twice
-    map.set(string, "a string");
-    deepEqual(map.toArray(), ["a string"]);
-    map.set(string, "the same string");
-    deepEqual(map.toArray(), ["the same string"]);
-    equal(map.length, 1);
-
-    //Add another
-    map.set(number, "a number");
-    deepEqual(map.toArray(), ["the same string", "a number"]);
-    equal(map.length, 2);
-
-    //Remove one that doesn't exist
-    map.remove('does not exist');
-    deepEqual(map.toArray(), ["the same string", "a number"]);
-    equal(map.length, 2);
-
-    //Check copy
-    var copy = map.copy();
-    equal(copy.length, 2);
-    deepEqual(copy.toArray(), ["the same string", "a number"]);
-
-    //Remove a key twice
-    map.remove(number);
-    equal(map.length, 1);
-    equal(copy.length, 2);
-    deepEqual(copy.toArray(), ["the same string", "a number"]);
-
-    map.remove(number);
-    equal(map.length, 1);
-    equal(copy.length, 2);
-    deepEqual(copy.toArray(), ["the same string", "a number"]);
-
-    //Remove the last key
-    map.remove(string);
-    equal(map.length, 0);
-    deepEqual(copy.toArray(), []);
-    map.remove(string);
-    equal(map.length, 0);
-    deepEqual(copy.toArray(), []);
-  });
-}
 }
 
 for (var i = 0;  i < varieties.length;  i++) {
