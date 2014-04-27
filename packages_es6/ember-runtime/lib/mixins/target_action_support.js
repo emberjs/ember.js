@@ -85,7 +85,7 @@ var TargetActionSupport = Mixin.create({
   });
   ```
 
-  The `actionContext` defaults to the object you mixing `TargetActionSupport` into.
+  The `actionContext` defaults to the object you are mixing `TargetActionSupport` into.
   But `target` and `action` must be specified either as properties or with the argument
   to `triggerAction`, or a combination:
 
