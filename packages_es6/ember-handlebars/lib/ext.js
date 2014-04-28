@@ -318,7 +318,7 @@ function blockHelperMissingHelper(path) {
 
   Which allows for template syntax such as `{{concatenate prop1 prop2}}` or
   `{{concatenate prop1 prop2 prop3}}`. If any of the properties change,
-  the helpr will re-render.  Note that dependency keys cannot be
+  the helper will re-render.  Note that dependency keys cannot be
   using in conjunction with multi-property helpers, since it is ambiguous
   which property the dependent keys would belong to.
 
