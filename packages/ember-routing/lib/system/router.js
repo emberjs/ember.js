@@ -290,7 +290,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     var location = get(this, 'location');
     var rootURL = get(this, 'rootURL');
 
-    if (rootURL && !this.container.has('-location-setting:root-url')) {
+    if (rootURL && this.container && !this.container.has('-location-setting:root-url')) {
       this.container.register('-location-setting:root-url', rootURL, { instantiate: false });
     }
 
