@@ -123,7 +123,7 @@ var EventDispatcher = EmberObject.extend({
 
     for (event in events) {
       if (events.hasOwnProperty(event)) {
-        this.setupHandler(rootElement, event, events[event]);
+        this._setupHandler(rootElement, event, events[event]);
       }
     }
   },
@@ -140,9 +140,41 @@ var EventDispatcher = EmberObject.extend({
     a `mousedown` event is received from the browser, do the following:
 
     ```javascript
-    setupHandler('mousedown', 'mouseDown');
+    this.addHandler('mousedown', 'mouseDown');
     ```
 
+    @method addHandler
+    @param {String} event the browser-originated event to listen to
+    @param {String} eventName the name of the method to call on the view
+  */
+  addHandler: function(event, eventName) {
+    var rootElement = jQuery(get(this, 'rootElement'));
+    this._setupHandler(rootElement, event, eventName);
+  },
+
+  /**
+    Remove an event listener on the document. The eventDispatcher will 
+    not dispatch those events to their corresponding `Ember.Views`.
+
+    If this event needs to be re-enabled, the `addHandler` method must be called.
+
+    ```javascript
+    this.removeHandler('mousedown');
+    ```
+
+    @method removeHandler
+    @param {String} event the browser-originated event to listen to
+  */
+  removeHandler: function(event) {
+    var rootElement = jQuery(get(this, 'rootElement'));
+    rootElement.off(event + '.ember', '.ember-view');
+    rootElement.off(event + '.ember', '[data-ember-action]');
+  },
+
+  /**
+    Registers an event listener on the document. 
+
+    @deprecated
     @private
     @method setupHandler
     @param {Element} rootElement
@@ -150,6 +182,20 @@ var EventDispatcher = EmberObject.extend({
     @param {String} eventName the name of the method to call on the view
   */
   setupHandler: function(rootElement, event, eventName) {
+    Ember.deprecate('EventDispatcher.setupHandler is deprecated in favor of addHandler', false);
+    this._setupHandler(rootElement, event, eventName);
+  },
+
+  /**
+    Registers an event listener on the document. 
+
+    @private
+    @method _setupHandler
+    @param {Element} rootElement
+    @param {String} event the browser-originated event to listen to
+    @param {String} eventName the name of the method to call on the view
+  */
+  _setupHandler: function(rootElement, event, eventName) {
     var self = this;
 
     rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {

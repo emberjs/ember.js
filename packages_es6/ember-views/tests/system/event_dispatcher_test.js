@@ -286,6 +286,43 @@ test("event handlers should be wrapped in a run loop", function() {
   jQuery('#test-view').trigger('mousedown');
 });
 
+test("should be able to enable and disable an event type on execution", function () {
+  expect(6);
+  
+  var counter = 0;
+  view = ContainerView.create({
+    elementId: 'test-view',
+    mouseDown: function() {
+      counter++;
+    }
+  });
+
+  run(function() {
+    view.append();
+  });
+
+  var el$ = jQuery('#test-view');
+  el$.trigger('mousedown');
+  equal(counter, 1, "first event was received");
+  el$.trigger('mousedown');
+  equal(counter, 2, "second event was received");
+
+  dispatcher.removeHandler('mousedown');
+
+  el$.trigger('mousedown');
+  equal(counter, 2, "third event was NOT received because removeHandler was called");
+  el$.trigger('mousedown');
+  equal(counter, 2, "fourth event was NOT received because removeHandler was called");
+
+  dispatcher.addHandler('mousedown', 'mouseDown');
+  el$.trigger('mousedown');
+  equal(counter, 3, "fifth event was received because addHandler was called");
+  el$.trigger('mousedown');
+  equal(counter, 4, "sixth event was received because addHandler was called");
+
+
+});
+
 module("EventDispatcher#setup", {
   setup: function() {
     run(function() {
