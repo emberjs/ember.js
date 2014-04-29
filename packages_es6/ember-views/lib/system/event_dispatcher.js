@@ -133,61 +133,68 @@ var EventDispatcher = EmberObject.extend({
     }
   },
 
-  if (Ember.FEATURES.isEnabled("event-dispatcher-toggle-handlers")) {
 
-    /**
-      Registers an event listener on the document. If the given event is
-      triggered, the provided event handler will be triggered on the target view.
+  /**
+    Registers an event listener on the document. If the given event is
+    triggered, the provided event handler will be triggered on the target view.
 
-      If the target view does not implement the event handler, or if the handler
-      returns `false`, the parent view will be called. The event will continue to
-      bubble to each successive parent view until it reaches the top.
+    If the target view does not implement the event handler, or if the handler
+    returns `false`, the parent view will be called. The event will continue to
+    bubble to each successive parent view until it reaches the top.
 
-      For example, to have the `mouseDown` method called on the target view when
-      a `mousedown` event is received from the browser, do the following:
+    For example, to have the `mouseDown` method called on the target view when
+    a `mousedown` event is received from the browser, do the following:
 
-      ```javascript
-      this.addHandler('mousedown', 'mouseDown');
-      ```
-
-      @method addHandler
-      @param {String} event the browser-originated event (`mousedown`) to listen to
-      @param {String} eventName the name of the method (`mouseDown`) to call on the view
-    */
-    addHandler: function(event, eventName) {
+    ```javascript
+    this.addHandler('mousedown', 'mouseDown');
+    ```
+    @private
+    @method addHandler
+    @param {String} event the browser-originated event (`mousedown`) to listen to
+    @param {String} eventName the name of the method (`mouseDown`) to call on the view
+  */
+  addHandler: function(event, eventName) {
+    if (Ember.FEATURES.isEnabled("event-dispatcher-toggle-handlers")) {
       var rootElement = jQuery(get(this, 'rootElement'));
       this._setupHandler(rootElement, event, eventName);
-    },
+    }
+  },
 
-    /**
-      Remove an event listener on the document. The eventDispatcher will 
-      not dispatch those events to their corresponding `Ember.Views`.
+  /**
+    Remove an event listener on the document. The eventDispatcher will 
+    not dispatch those events to their corresponding `Ember.Views`.
 
-      If this event needs to be re-enabled, the `addHandler` method must be called.
+    If this event needs to be re-enabled, the `addHandler` method must be called.
 
-      ```javascript
-      this.removeHandler('mousedown');
-      ```
+    ```javascript
+    this.removeHandler('mousedown');
+    ```
 
-      @method removeHandler
-      @param {String} event the browser-originated event (`mousedown`) to listen to
-    */
-    removeHandler: function(event) {
+    @private
+    @method removeHandler
+    @param {String} event the browser-originated event (`mousedown`) to listen to
+  */
+  removeHandler: function(event) {
+
+    if (Ember.FEATURES.isEnabled("event-dispatcher-toggle-handlers")) {
       var rootElement = jQuery(get(this, 'rootElement'));
       rootElement.off(event + '.ember', '.ember-view');
       rootElement.off(event + '.ember', '[data-ember-action]');
-    },
+    }
+  },
 
-    /**
-      Registers an event listener on the document.
+  /**
+    Registers an event listener on the document.
 
-      @private
-      @method _setupHandler
-      @param {Element} rootElement
-      @param {String} event the browser-originated event (`mousedown`) to listen to
-      @param {String} eventName the name of the method (`mouseDown`) to call on the view
-    */
-    _setupHandler: function(rootElement, event, eventName) {
+    @private
+    @method _setupHandler
+    @param {Element} rootElement
+    @param {String} event the browser-originated event (`mousedown`) to listen to
+    @param {String} eventName the name of the method (`mouseDown`) to call on the view
+  */
+  _setupHandler: function(rootElement, event, eventName) {
+
+    if (Ember.FEATURES.isEnabled("event-dispatcher-toggle-handlers")) {
       var self = this;
 
       rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
@@ -221,45 +228,30 @@ var EventDispatcher = EmberObject.extend({
           return action.handler(evt);
         }
       });
-    },
+    }
+  },
 
-  }
+  /**
+    Registers an event listener on the document. If the given event is
+    triggered, the provided event handler will be triggered on the target view.
 
+    If the target view does not implement the event handler, or if the handler
+    returns `false`, the parent view will be called. The event will continue to
+    bubble to each successive parent view until it reaches the top.
 
-  if (Ember.FEATURES.isEnabled("event-dispatcher-toggle-handlers")) {
-    /**
-      Registers an event listener on the document. 
+    For example, to have the `mouseDown` method called on the target view when
+    a `mousedown` event is received from the browser, do the following:
 
-      @deprecated
-      @private
-      @method setupHandler
-      @param {Element} rootElement
-      @param {String} event the browser-originated event to listen to
-      @param {String} eventName the name of the method to call on the view
-    */
-  } else {
-    /**
-      Registers an event listener on the document. If the given event is
-      triggered, the provided event handler will be triggered on the target view.
+    ```javascript
+    setupHandler('mousedown', 'mouseDown');
+    ```
 
-      If the target view does not implement the event handler, or if the handler
-      returns `false`, the parent view will be called. The event will continue to
-      bubble to each successive parent view until it reaches the top.
-
-      For example, to have the `mouseDown` method called on the target view when
-      a `mousedown` event is received from the browser, do the following:
-
-      ```javascript
-      setupHandler('mousedown', 'mouseDown');
-      ```
-
-      @private
-      @method setupHandler
-      @param {Element} rootElement
-      @param {String} event the browser-originated event to listen to
-      @param {String} eventName the name of the method to call on the view
-    */
-  }
+    @private
+    @method setupHandler
+    @param {Element} rootElement
+    @param {String} event the browser-originated event to listen to
+    @param {String} eventName the name of the method to call on the view
+  */
   setupHandler: function(rootElement, event, eventName) {
 
     if (Ember.FEATURES.isEnabled("event-dispatcher-toggle-handlers")) {
