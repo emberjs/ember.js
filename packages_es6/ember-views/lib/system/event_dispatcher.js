@@ -123,113 +123,187 @@ var EventDispatcher = EmberObject.extend({
 
     for (event in events) {
       if (events.hasOwnProperty(event)) {
-        this._setupHandler(rootElement, event, events[event]);
+
+        if (Ember.FEATURES.isEnabled("event-dispatcher-toggle-handlers")) {
+          this._setupHandler(rootElement, event, events[event]);
+        } else {
+          this.setupHandler(rootElement, event, events[event]);
+        }
       }
     }
   },
 
-  /**
-    Registers an event listener on the document. If the given event is
-    triggered, the provided event handler will be triggered on the target view.
+  if (Ember.FEATURES.isEnabled("event-dispatcher-toggle-handlers")) {
 
-    If the target view does not implement the event handler, or if the handler
-    returns `false`, the parent view will be called. The event will continue to
-    bubble to each successive parent view until it reaches the top.
+    /**
+      Registers an event listener on the document. If the given event is
+      triggered, the provided event handler will be triggered on the target view.
 
-    For example, to have the `mouseDown` method called on the target view when
-    a `mousedown` event is received from the browser, do the following:
+      If the target view does not implement the event handler, or if the handler
+      returns `false`, the parent view will be called. The event will continue to
+      bubble to each successive parent view until it reaches the top.
 
-    ```javascript
-    this.addHandler('mousedown', 'mouseDown');
-    ```
+      For example, to have the `mouseDown` method called on the target view when
+      a `mousedown` event is received from the browser, do the following:
 
-    @method addHandler
-    @param {String} event the browser-originated event (`mousedown`) to listen to
-    @param {String} eventName the name of the method (`mouseDown`) to call on the view
-  */
-  addHandler: function(event, eventName) {
-    var rootElement = jQuery(get(this, 'rootElement'));
-    this._setupHandler(rootElement, event, eventName);
-  },
+      ```javascript
+      this.addHandler('mousedown', 'mouseDown');
+      ```
 
-  /**
-    Remove an event listener on the document. The eventDispatcher will 
-    not dispatch those events to their corresponding `Ember.Views`.
+      @method addHandler
+      @param {String} event the browser-originated event (`mousedown`) to listen to
+      @param {String} eventName the name of the method (`mouseDown`) to call on the view
+    */
+    addHandler: function(event, eventName) {
+      var rootElement = jQuery(get(this, 'rootElement'));
+      this._setupHandler(rootElement, event, eventName);
+    },
 
-    If this event needs to be re-enabled, the `addHandler` method must be called.
+    /**
+      Remove an event listener on the document. The eventDispatcher will 
+      not dispatch those events to their corresponding `Ember.Views`.
 
-    ```javascript
-    this.removeHandler('mousedown');
-    ```
+      If this event needs to be re-enabled, the `addHandler` method must be called.
 
-    @method removeHandler
-    @param {String} event the browser-originated event (`mousedown`) to listen to
-  */
-  removeHandler: function(event) {
-    var rootElement = jQuery(get(this, 'rootElement'));
-    rootElement.off(event + '.ember', '.ember-view');
-    rootElement.off(event + '.ember', '[data-ember-action]');
-  },
+      ```javascript
+      this.removeHandler('mousedown');
+      ```
 
-  /**
-    Registers an event listener on the document. 
+      @method removeHandler
+      @param {String} event the browser-originated event (`mousedown`) to listen to
+    */
+    removeHandler: function(event) {
+      var rootElement = jQuery(get(this, 'rootElement'));
+      rootElement.off(event + '.ember', '.ember-view');
+      rootElement.off(event + '.ember', '[data-ember-action]');
+    },
 
-    @deprecated
-    @private
-    @method setupHandler
-    @param {Element} rootElement
-    @param {String} event the browser-originated event (`mousedown`) to listen to
-    @param {String} eventName the name of the method (`mouseDown`) to call on the view
-  */
+    /**
+      Registers an event listener on the document.
+
+      @private
+      @method _setupHandler
+      @param {Element} rootElement
+      @param {String} event the browser-originated event (`mousedown`) to listen to
+      @param {String} eventName the name of the method (`mouseDown`) to call on the view
+    */
+    _setupHandler: function(rootElement, event, eventName) {
+      var self = this;
+
+      rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
+        var view = View.views[this.id],
+            result = true, manager = null;
+
+        manager = self._findNearestEventManager(view, eventName);
+
+        if (manager && manager !== triggeringManager) {
+          result = self._dispatchEvent(manager, evt, eventName, view);
+        } else if (view) {
+          result = self._bubbleEvent(view, evt, eventName);
+        } else {
+          evt.stopPropagation();
+        }
+
+        return result;
+      });
+
+      rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
+        //ES6TODO: Needed for ActionHelper (generally not available in ember-views test suite)
+        if (!ActionHelper) { ActionHelper = requireModule("ember-routing/helpers/action")["ActionHelper"]; };
+
+        var actionId = jQuery(evt.currentTarget).attr('data-ember-action'),
+            action   = ActionHelper.registeredActions[actionId];
+
+        // We have to check for action here since in some cases, jQuery will trigger
+        // an event on `removeChild` (i.e. focusout) after we've already torn down the
+        // action handlers for the view.
+        if (action && action.eventName === eventName) {
+          return action.handler(evt);
+        }
+      });
+    },
+
+  }
+
+
+  if (Ember.FEATURES.isEnabled("event-dispatcher-toggle-handlers")) {
+    /**
+      Registers an event listener on the document. 
+
+      @deprecated
+      @private
+      @method setupHandler
+      @param {Element} rootElement
+      @param {String} event the browser-originated event to listen to
+      @param {String} eventName the name of the method to call on the view
+    */
+  } else {
+    /**
+      Registers an event listener on the document. If the given event is
+      triggered, the provided event handler will be triggered on the target view.
+
+      If the target view does not implement the event handler, or if the handler
+      returns `false`, the parent view will be called. The event will continue to
+      bubble to each successive parent view until it reaches the top.
+
+      For example, to have the `mouseDown` method called on the target view when
+      a `mousedown` event is received from the browser, do the following:
+
+      ```javascript
+      setupHandler('mousedown', 'mouseDown');
+      ```
+
+      @private
+      @method setupHandler
+      @param {Element} rootElement
+      @param {String} event the browser-originated event to listen to
+      @param {String} eventName the name of the method to call on the view
+    */
+  }
   setupHandler: function(rootElement, event, eventName) {
-    Ember.deprecate('EventDispatcher.setupHandler is deprecated in favor of addHandler', false);
-    this._setupHandler(rootElement, event, eventName);
+
+    if (Ember.FEATURES.isEnabled("event-dispatcher-toggle-handlers")) {
+      Ember.deprecate('EventDispatcher.setupHandler is deprecated in favor of addHandler', false);
+      this._setupHandler(rootElement, event, eventName);
+    } else {
+
+      var self = this;
+
+      rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
+        var view = View.views[this.id],
+            result = true, manager = null;
+
+        manager = self._findNearestEventManager(view, eventName);
+
+        if (manager && manager !== triggeringManager) {
+          result = self._dispatchEvent(manager, evt, eventName, view);
+        } else if (view) {
+          result = self._bubbleEvent(view, evt, eventName);
+        } else {
+          evt.stopPropagation();
+        }
+
+        return result;
+      });
+
+      rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
+        //ES6TODO: Needed for ActionHelper (generally not available in ember-views test suite)
+        if (!ActionHelper) { ActionHelper = requireModule("ember-routing/helpers/action")["ActionHelper"]; };
+
+        var actionId = jQuery(evt.currentTarget).attr('data-ember-action'),
+            action   = ActionHelper.registeredActions[actionId];
+
+        // We have to check for action here since in some cases, jQuery will trigger
+        // an event on `removeChild` (i.e. focusout) after we've already torn down the
+        // action handlers for the view.
+        if (action && action.eventName === eventName) {
+          return action.handler(evt);
+        }
+      });
+
+    }
   },
 
-  /**
-    Registers an event listener on the document. 
-
-    @private
-    @method _setupHandler
-    @param {Element} rootElement
-    @param {String} event the browser-originated event (`mousedown`) to listen to
-    @param {String} eventName the name of the method (`mouseDown`) to call on the view
-  */
-  _setupHandler: function(rootElement, event, eventName) {
-    var self = this;
-
-    rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
-      var view = View.views[this.id],
-          result = true, manager = null;
-
-      manager = self._findNearestEventManager(view, eventName);
-
-      if (manager && manager !== triggeringManager) {
-        result = self._dispatchEvent(manager, evt, eventName, view);
-      } else if (view) {
-        result = self._bubbleEvent(view, evt, eventName);
-      } else {
-        evt.stopPropagation();
-      }
-
-      return result;
-    });
-
-    rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
-      //ES6TODO: Needed for ActionHelper (generally not available in ember-views test suite)
-      if (!ActionHelper) { ActionHelper = requireModule("ember-routing/helpers/action")["ActionHelper"]; };
-
-      var actionId = jQuery(evt.currentTarget).attr('data-ember-action'),
-          action   = ActionHelper.registeredActions[actionId];
-
-      // We have to check for action here since in some cases, jQuery will trigger
-      // an event on `removeChild` (i.e. focusout) after we've already torn down the
-      // action handlers for the view.
-      if (action && action.eventName === eventName) {
-        return action.handler(evt);
-      }
-    });
-  },
 
   _findNearestEventManager: function(view, eventName) {
     var manager = null;
