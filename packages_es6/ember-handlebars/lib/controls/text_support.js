@@ -161,7 +161,7 @@ TextSupport.KEY_EVENTS = {
 };
 
 // In principle, this shouldn't be necessary, but the legacy
-// sectionAction semantics for TextField are different from
+// sendAction semantics for TextField are different from
 // the component semantics so this method normalizes them.
 function sendAction(eventName, view, event) {
   var action = get(view, eventName),
