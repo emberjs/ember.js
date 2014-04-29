@@ -144,8 +144,8 @@ var EventDispatcher = EmberObject.extend({
     ```
 
     @method addHandler
-    @param {String} event the browser-originated event to listen to
-    @param {String} eventName the name of the method to call on the view
+    @param {String} event the browser-originated event (`mousedown`) to listen to
+    @param {String} eventName the name of the method (`mouseDown`) to call on the view
   */
   addHandler: function(event, eventName) {
     var rootElement = jQuery(get(this, 'rootElement'));
@@ -163,7 +163,7 @@ var EventDispatcher = EmberObject.extend({
     ```
 
     @method removeHandler
-    @param {String} event the browser-originated event to listen to
+    @param {String} event the browser-originated event (`mousedown`) to listen to
   */
   removeHandler: function(event) {
     var rootElement = jQuery(get(this, 'rootElement'));
@@ -178,8 +178,8 @@ var EventDispatcher = EmberObject.extend({
     @private
     @method setupHandler
     @param {Element} rootElement
-    @param {String} event the browser-originated event to listen to
-    @param {String} eventName the name of the method to call on the view
+    @param {String} event the browser-originated event (`mousedown`) to listen to
+    @param {String} eventName the name of the method (`mouseDown`) to call on the view
   */
   setupHandler: function(rootElement, event, eventName) {
     Ember.deprecate('EventDispatcher.setupHandler is deprecated in favor of addHandler', false);
@@ -192,8 +192,8 @@ var EventDispatcher = EmberObject.extend({
     @private
     @method _setupHandler
     @param {Element} rootElement
-    @param {String} event the browser-originated event to listen to
-    @param {String} eventName the name of the method to call on the view
+    @param {String} event the browser-originated event (`mousedown`) to listen to
+    @param {String} eventName the name of the method (`mouseDown`) to call on the view
   */
   _setupHandler: function(rootElement, event, eventName) {
     var self = this;
