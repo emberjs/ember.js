@@ -1,8 +1,21 @@
 # Ember Changelog
-* [Bugfix beta] sync back burner: workaround IE's issue with try/finally
-  without Catch. Also no longer force deoptimization of the run loop
-  queue flush.
+
+### Ember 1.6.0-beta.3 (April, 29, 2014)
+
+* [BUGFIX] sync back burner: workaround IE's issue with try/finally without Catch. Also no longer force deoptimization of the run loop queue flush.
 * [BREAKING BUGFIX] An empty array are treated as falsy value in `bind-attr` to be in consistent with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty array as truthy value in `bind-attr`.
+* [BUGFIX] Ember.onerror now uses Backburner's error handler.
+* [BUGFIX] Do not rely on Array.prototype.map for logging version.
+* [BUGFIX] RSVP errors go to Ember.onerror if present.
+* [BUGFIX] Ensure context is unchanged when using keywords with itemController.
+* [BUGFIX] Does not disregard currentWhen when given explicitly.
+* [DOC] Remove private wording from makeBoundHelper.
+* [BUGFIX] Invalidate previous sorting if sortProperties changes.
+* [BUGFIX] Properly resolve helpers from {{unbound}}.
+* [BUGFIX] reduceComputed detect retain:n better. Fixes issue with `Ember.computed.filterBy` erroring when items removed from dependent array.
+* [BUGFIX] Namespaces are now required to start with uppercase A-Z.
+* [BUGFIX] pass context to sortFunction to avoid calling `__nextSuper` on `undefined`.
+
 
 ### Ember 1.6.0-beta.2 (April, 8, 2014)
 
