@@ -856,4 +856,26 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     Ember.run(router, 'transitionTo', 'other');
   });
+
+  test("A child of a resource route still defaults to parent route's model even if the child route has a query param", function() {
+    expect(1);
+
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['woot']
+    });
+
+    App.ApplicationRoute = Ember.Route.extend({
+      model: function(p, trans) {
+        return { woot: true };
+      }
+    });
+
+    App.IndexRoute = Ember.Route.extend({
+      setupController: function(controller, model) {
+        deepEqual(model, { woot: true }, "index route inherited model route from parent route");
+      }
+    });
+
+    bootApplication();
+  });
 }
