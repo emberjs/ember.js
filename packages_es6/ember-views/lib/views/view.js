@@ -728,6 +728,9 @@ var EMPTY_ARRAY = [];
   A context can also be explicitly supplied through the view's `context`
   property. If the view has neither `context` nor `controller` properties, the
   `parentView`'s context will be used.
+  
+  If you do not want your view to automatically insert a 'div' into the dom, you can specify 
+  specify  `tagName: ''` on your view. Doing so will prevent the view from automatically wrapping its generated  html in the default `div`. 
 
   ## Layouts
 
