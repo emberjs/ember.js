@@ -1414,17 +1414,21 @@ define("router/transition-state",
         }
 
         function proceed(resolvedHandlerInfo) {
+          var wasAlreadyResolved = currentState.handlerInfos[payload.resolveIndex].isResolved;
+
           // Swap the previously unresolved handlerInfo with
           // the resolved handlerInfo
           currentState.handlerInfos[payload.resolveIndex++] = resolvedHandlerInfo;
 
-          // Call the redirect hook. The reason we call it here
-          // vs. afterModel is so that redirects into child
-          // routes don't re-run the model hooks for this
-          // already-resolved route.
-          var handler = resolvedHandlerInfo.handler;
-          if (handler && handler.redirect) {
-            handler.redirect(resolvedHandlerInfo.context, payload);
+          if (!wasAlreadyResolved) {
+            // Call the redirect hook. The reason we call it here
+            // vs. afterModel is so that redirects into child
+            // routes don't re-run the model hooks for this
+            // already-resolved route.
+            var handler = resolvedHandlerInfo.handler;
+            if (handler && handler.redirect) {
+              handler.redirect(resolvedHandlerInfo.context, payload);
+            }
           }
 
           // Proceed after ensuring that the redirect hook
