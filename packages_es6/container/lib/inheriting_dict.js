@@ -1,7 +1,8 @@
 // A safe and simple inheriting object.
-function InheritingDict(parent) {
+function InheritingDict(parent, prefix) {
   this.parent = parent;
   this.dict = {};
+  this._prefix = prefix || '';
 }
 
 InheritingDict.prototype = {
@@ -34,6 +35,7 @@ InheritingDict.prototype = {
   */
   get: function(key) {
     var dict = this.dict;
+    key = this._prefix + key;
 
     if (dict.hasOwnProperty(key)) {
       return dict[key];
@@ -52,7 +54,7 @@ InheritingDict.prototype = {
     @param {Any} value
   */
   set: function(key, value) {
-    this.dict[key] = value;
+    this.dict[this._prefix + key] = value;
   },
 
   /**
@@ -62,7 +64,7 @@ InheritingDict.prototype = {
     @param {String} key
   */
   remove: function(key) {
-    delete this.dict[key];
+    delete this.dict[this._prefix + key];
   },
 
   /**
@@ -76,6 +78,7 @@ InheritingDict.prototype = {
   */
   has: function(key) {
     var dict = this.dict;
+    key = this._prefix + key;
 
     if (dict.hasOwnProperty(key)) {
       return true;
@@ -96,11 +99,12 @@ InheritingDict.prototype = {
     @param {Object} binding
   */
   eachLocal: function(callback, binding) {
-    var dict = this.dict;
+    var dict = this.dict,
+        pl = this._prefix.length;
 
     for (var prop in dict) {
       if (dict.hasOwnProperty(prop)) {
-        callback.call(binding, prop, dict[prop]);
+        callback.call(binding, prop.slice(pl), dict[prop]);
       }
     }
   }
