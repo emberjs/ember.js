@@ -237,6 +237,10 @@ Container.prototype = {
     @return {string} described fullName
   */
   describe: function(fullName) {
+    var resolver = this.resolver;
+    if (resolver && resolver.describe) {
+      return resolver.describe(fullName);
+    }
     return fullName;
   },
 
@@ -248,6 +252,10 @@ Container.prototype = {
     @return {string} normalized fullName
   */
   normalize: function(fullName) {
+    var resolver = this.resolver;
+    if (resolver && resolver.normalize) {
+      return resolver.normalize(fullName);
+    }
     return fullName;
   },
 
@@ -259,6 +267,10 @@ Container.prototype = {
     @return {function} toString function
   */
   makeToString: function(factory, fullName) {
+    var resolver = this.resolver;
+    if (resolver && resolver.makeToString) {
+      return resolver.makeToString(factory, fullName);
+    }
     return factory.toString();
   },
 
