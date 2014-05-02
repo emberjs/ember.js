@@ -9,7 +9,7 @@ install:
 after_success:
   - bundle exec rake publish_build
   - bundle exec rake publish_to_bower
-script: rake test\[$TEST_SUITE]
+script: bundle exec rake test\[$TEST_SUITE]
 notifications:
   campfire:
     rooms:
