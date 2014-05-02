@@ -57,7 +57,7 @@ var forEach = EnumerableUtils.forEach,
 
   ```handlebars
     {{#each post in controller}}
-      <li>{{title}} ({{titleLength}} characters)</li>
+      <li>{{post.title}} ({{post.titleLength}} characters)</li>
     {{/each}}
   ```
 
