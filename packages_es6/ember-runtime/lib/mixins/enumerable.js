@@ -794,7 +794,7 @@ var Enumerable = Mixin.create({
   toArray: function() {
     var ret = Ember.A();
     this.forEach(function(o, idx) { ret[idx] = o; });
-    return ret ;
+    return ret;
   },
 
   /**
