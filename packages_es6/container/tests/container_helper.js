@@ -77,4 +77,20 @@ var factory = function() {
   }
 };
 
-export {factory, o_create, setProperties};
+function makeResolver(resolverFn) {
+  resolverFn.describe = function(fullName) {
+    return fullName;
+  };
+
+  resolverFn.normalize = function (fullName) {
+    return fullName;
+  };
+
+  resolverFn.makeToString = function(factory, fullName) {
+    return factory.toString();
+  };
+
+  return resolverFn;
+}
+
+export {factory, o_create, setProperties, makeResolver };

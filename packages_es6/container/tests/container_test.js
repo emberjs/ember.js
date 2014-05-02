@@ -1,5 +1,6 @@
 import { factory,
          o_create,
+         makeResolver,
          setProperties} from 'container/tests/container_helper';
 
 import Container from 'container';
@@ -337,11 +338,11 @@ test("The container can take a hook to resolve factories lazily", function() {
   var container = new Container();
   var PostController = factory();
 
-  container.resolver = function(fullName) {
+  container.resolver = makeResolver(function(fullName) {
     if (fullName === 'controller:post') {
       return PostController;
     }
-  };
+  });
 
   var postController = container.lookup('controller:post');
 
@@ -352,11 +353,11 @@ test("The container respect the resolver hook for `has`", function() {
   var container = new Container();
   var PostController = factory();
 
-  container.resolver = function(fullName) {
+  container.resolver = makeResolver(function(fullName) {
     if (fullName === 'controller:post') {
       return PostController;
     }
-  };
+  });
 
   ok(container.has('controller:post'), "the `has` method uses the resolver hook");
 });
@@ -470,11 +471,11 @@ test("The container can get options that should be applied to all factories for 
   var container = new Container();
   var PostView = factory();
 
-  container.resolver = function(fullName) {
+  container.resolver = makeResolver(function(fullName) {
     if (fullName === 'view:post') {
       return PostView;
     }
-  };
+  });
 
   container.optionsForType('view', { singleton: false });
 
@@ -545,15 +546,15 @@ test('once resolved, always return the same result', function(){
 
   var container = new Container();
 
-  container.resolver = function() {
+  container.resolver = makeResolver(function() {
     return 'bar';
-  };
+  });
 
   var Bar = container.resolve('models:bar');
 
-  container.resolver = function() {
+  container.resolver = makeResolver(function() {
     return 'not bar';
-  };
+  });
 
   equal(container.resolve('models:bar'), Bar);
 });
