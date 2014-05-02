@@ -2,6 +2,7 @@ import Ember from "ember-metal/core"; // Ember.K
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
+import EmberError from "ember-metal/error";
 
 /**
 @module ember
@@ -10,7 +11,7 @@ import run from "ember-metal/run_loop";
 var _default = {
   // appendChild is only legal while rendering the buffer.
   appendChild: function() {
-    throw "You can't use appendChild outside of the rendering process";
+    throw new EmberError("You can't use appendChild outside of the rendering process");
   },
 
   $: function() {
