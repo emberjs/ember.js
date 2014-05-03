@@ -1,10 +1,10 @@
 {
   "features": {
     "ember-metal-computed-empty-array": true,
-    "query-params-new": null,
-    "ember-routing-named-substates": null,
-    "ember-handlebars-caps-lookup": null,
-    "ember-routing-drop-deprecated-action-style": null,
+    "query-params-new": false,
+    "ember-routing-named-substates": false,
+    "ember-handlebars-caps-lookup": false,
+    "ember-routing-drop-deprecated-action-style": false,
     "ember-runtime-test-friendly-promises": true,
     "ember-routing-add-model-option": true
   },
