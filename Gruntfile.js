@@ -74,10 +74,6 @@ module.exports = function(grunt) {
     transpile: {
       amd: {
         type: "amd",
-        moduleName: function (moduleName) {
-          moduleName = moduleName.replace(/^vendor\//, '');
-          return moduleName;
-        },
         files: [{
           expand: true,
           cwd: 'lib/',
@@ -119,6 +115,7 @@ module.exports = function(grunt) {
           'wrap/browser.start',
           'vendor/loader.js',
           'vendor/handlebars.amd.js',
+          'vendor/simple-html-tokenizer.amd.js',
           'tmp/<%= pkg.name %>.amd.js',
           'wrap/browser.end'
         ],
