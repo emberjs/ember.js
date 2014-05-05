@@ -36,7 +36,7 @@ merge(inDOM, {
   },
 
   insertElement: function(view, fn) {
-    throw "You can't insert an element into the DOM that has already been inserted";
+    throw new EmberError("You can't insert an element into the DOM that has already been inserted");
   }
 });
 

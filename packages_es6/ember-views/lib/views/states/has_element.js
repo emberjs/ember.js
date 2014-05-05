@@ -3,6 +3,7 @@ import run from "ember-metal/run_loop";
 import merge from "ember-metal/merge";
 import {create} from "ember-metal/platform";
 import jQuery from "ember-views/system/jquery";
+import EmberError from "ember-metal/error";
 
 /**
 @module ember
@@ -31,7 +32,7 @@ merge(hasElement, {
     if (value === null) {
       view.transitionTo('preRender');
     } else {
-      throw "You cannot set an element to a non-null value when the element is already in the DOM.";
+      throw new EmberError("You cannot set an element to a non-null value when the element is already in the DOM.");
     }
 
     return value;

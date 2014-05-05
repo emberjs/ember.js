@@ -70,7 +70,7 @@ merge(inBuffer, {
   // It should be impossible for a rendered view to be scheduled for
   // insertion.
   insertElement: function() {
-    throw "You can't insert an element that has already been rendered";
+    throw new EmberError("You can't insert an element that has already been rendered");
   },
 
   setElement: function(view, value) {
