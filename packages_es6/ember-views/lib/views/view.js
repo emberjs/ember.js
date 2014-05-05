@@ -138,8 +138,9 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     @type Ember.View
     @default null
   */
-  parentView: computed('_parentView', function() {
-    var parent = this._parentView;
+  parentView: computed('_parentView', '_contextView', function() {
+    // _contextView take the priority over _parentView
+    var parent = get(this, '_contextView') || get(this, '_parentView');
 
     if (parent && parent.isVirtual) {
       return get(parent, 'parentView');
@@ -545,10 +546,10 @@ var EMPTY_ARRAY = [];
   ```html
   <a id="ember1" class="ember-view" href="http://google.com"></a>
   ```
-  
-  One property can be mapped on to another by placing a ":" between 
+
+  One property can be mapped on to another by placing a ":" between
   the source property and the destination property:
-  
+
   ```javascript
   AnchorView = Ember.View.extend({
     tagName: 'a',
@@ -556,13 +557,13 @@ var EMPTY_ARRAY = [];
     url: 'http://google.com'
   });
   ```
-  
+
   Will result in view instances with an HTML representation of:
 
   ```html
   <a id="ember1" class="ember-view" href="http://google.com"></a>
   ```
-  
+
   If the return value of an `attributeBindings` monitored property is a boolean
   the property will follow HTML's pattern of repeating the attribute's name as
   its value:
@@ -2525,9 +2526,9 @@ View.reopenClass({
   */
   _classStringForValue: function(path, val, className, falsyClassName) {
     if(isArray(val)) {
-      val = get(val, 'length') !== 0;  
+      val = get(val, 'length') !== 0;
     }
-    
+
     // When using the colon syntax, evaluate the truthiness or falsiness
     // of the value to determine which className to return
     if (className || falsyClassName) {
