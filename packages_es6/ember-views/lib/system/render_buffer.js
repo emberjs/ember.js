@@ -71,7 +71,7 @@ function escapeAttribute(value) {
 // IE 6/7 have bugs around setting names on inputs during creation.
 // From http://msdn.microsoft.com/en-us/library/ie/ms536389(v=vs.85).aspx:
 // "To include the NAME attribute at run time on objects created with the createElement method, use the eTag."
-var canSetNameOnInputs = (function() {
+var canSetNameOnInputs = typeof document !== 'undefined' && (function() {
   var div = document.createElement('div'),
       el = document.createElement('input');
 
