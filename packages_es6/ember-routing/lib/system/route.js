@@ -943,8 +943,15 @@ var Route = EmberObject.extend(ActionHandler, {
   model: function(params, transition) {
     var match, name, sawParams, value;
 
+    var queryParams;
+    if (Ember.FEATURES.isEnabled("query-params-new")) {
+      queryParams = get(this, '_qp.map');
+    }
+
     for (var prop in params) {
-      if (prop === 'queryParams') { continue; }
+      if (prop === 'queryParams' || (queryParams && prop in queryParams)) {
+        continue;
+      }
 
       if (match = prop.match(/^(.*)_id$/)) {
         name = match[1];
