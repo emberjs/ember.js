@@ -33,7 +33,6 @@ import {Select, SelectOption, SelectOptgroup} from "ember-handlebars/controls/se
 import TextArea from "ember-handlebars/controls/text_area";
 import TextField from "ember-handlebars/controls/text_field";
 import TextSupport from "ember-handlebars/controls/text_support";
-import TextSupport from "ember-handlebars/controls/text_support";
 import {inputHelper, textareaHelper} from "ember-handlebars/controls"
 
 

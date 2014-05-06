@@ -12,7 +12,6 @@ import {computed} from "ember-metal/computed";
 import {ControllerMixin} from "ember-runtime/controllers/controller";
 import {meta} from "ember-metal/utils";
 import {controllerFor} from "ember-routing/system/controller_for";
-import {meta} from "ember-metal/utils";
 
 function verifyNeedsDependencies(controller, container, needs) {
   var dependency, i, l, missing = [];

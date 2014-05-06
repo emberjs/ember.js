@@ -4,7 +4,6 @@ import {forEach} from "ember-metal/array";
 import run from "ember-metal/run_loop";
 
 import {isSimpleClick} from "ember-views/system/utils";
-import EmberHandlebars from "ember-handlebars";
 import EmberRouter from "ember-routing/system/router";
 
 

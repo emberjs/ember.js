@@ -131,7 +131,7 @@ SimpleHandlebarsView.prototype = {
   }
 };
 
-var states = cloneStates(viewStates);
+states = cloneStates(viewStates);
 
 merge(states._default, {
   rerenderIfNeeded: K
