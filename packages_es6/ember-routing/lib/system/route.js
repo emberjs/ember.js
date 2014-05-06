@@ -377,8 +377,8 @@ var Route = EmberObject.extend(ActionHandler, {
             var value, svalue;
             if (changes && qp.urlKey in changes) {
               // Controller overrode this value in setupController
-              svalue = get(controller, qp.prop);
-              value = this.deserializeQueryParam(svalue, qp.urlKey, qp.type);
+              value = get(controller, qp.prop);
+              svalue = this.serializeQueryParam(value, qp.urlKey, qp.type);
             } else {
               if (qpProvided) {
                 svalue = params[qp.urlKey];
