@@ -19,7 +19,7 @@ A compiled HTMLbars template function contains the following:
 3. Code that is invoked every time the compiled template is rendered. 
    This code calls `build` and caches the resulting fragment (so that `build` 
    only needs to ever be called once), clones the fragment,
-   then calls `hydrate` and and loops through each mustache, 
+   then calls `hydrate` and loops through each mustache, 
    passing each to runtime helpers `RESOLVE` or `ATTRIBUTE` 
    which can be overridden to perform data-binding, invoke 
    user-defined helpers, etc.
@@ -30,7 +30,7 @@ In order to construct the above compiled template function, HTMLbars must:
 2. Convert vanilla Handlebars AST into HTML-aware HTMLbars AST.
 3. Build up document fragment generator function from HTMLBars AST.
 4. Build up hydrating function from the HTMLBars AST.
-5. Generate the final template code performs the basic cloning logic,
+5. Generate the final template code that performs the basic cloning logic,
    invokes `build` and `hydrate`, and loops through each mustache.
 
 ## Compiling an HTMLbars template
