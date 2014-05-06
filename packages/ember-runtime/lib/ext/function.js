@@ -6,6 +6,7 @@
 import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES, Ember.assert
 import expandProperties from 'ember-metal/expand_properties';
 import { computed } from 'ember-metal/computed';
+import { observer } from "ember-metal/mixin";
 
 var a_slice = Array.prototype.slice;
 var FunctionPrototype = Function.prototype;
@@ -102,19 +103,13 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @method observes
     @for Function
   */
-  FunctionPrototype.observes = function () {
-    var watched = [];
-    var addWatchedProperty = function (obs) {
-      watched.push(obs);
-    };
-
-    for (var i = 0; i < arguments.length; ++i) {
-      expandProperties(arguments[i], addWatchedProperty);
+  FunctionPrototype.observes = function() {
+    var length = arguments.length;
+    var args = new Array(length);
+    for (var x = 0; x < length; x++) {
+      args[x] = arguments[x];
     }
-
-    this.__ember_observes__ = watched;
-
-    return this;
+    return observer.apply(this, args.concat(this));
   };
 
   /**
