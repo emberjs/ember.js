@@ -3,6 +3,10 @@
   without Catch. Also no longer force deoptimization of the run loop
   queue flush.
 * [BREAKING BUGFIX] An empty array are treated as falsy value in `bind-attr` to be in consistent with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty array as truthy value in `bind-attr`.
+* [Bugfix beta] On Controllers, the content property is now derived from
+  model. This reduces many caveats with model/content, and also sets a
+  simple ground rule: Never set a controllers content, rather always set
+  it's model and ember will do the right thing.
 
 ### Ember 1.6.0-beta.1 (March 31, 2014)
 

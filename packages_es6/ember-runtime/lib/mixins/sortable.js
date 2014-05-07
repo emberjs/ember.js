@@ -21,7 +21,7 @@ var forEach = EnumerableUtils.forEach;
   `Ember.SortableMixin` provides a standard interface for array proxies
   to specify a sort order and maintain this sorting when objects are added,
   removed, or updated without changing the implicit order of their underlying
-  content array:
+  modelarray:
 
   ```javascript
   songs = [
@@ -31,7 +31,7 @@ var forEach = EnumerableUtils.forEach;
   ];
 
   songsController = Ember.ArrayController.create({
-    content: songs,
+    model: songs,
     sortProperties: ['trackNumber'],
     sortAscending: true
   });
@@ -42,7 +42,7 @@ var forEach = EnumerableUtils.forEach;
   songsController.get('firstObject');  // {trackNumber: 1, title: 'Dear Prudence'}
   ```
 
-  If you add or remove the properties to sort by or change the sort direction the content
+  If you add or remove the properties to sort by or change the sort direction the model
   sort order will be automatically updated.
 
   ```javascript

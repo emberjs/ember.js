@@ -99,7 +99,7 @@ var PromiseProxyMixin = Mixin.create({
     @property reason
     @default null
   */
-  reason:    null,
+  reason:  null,
 
   /**
     Once the proxied promise has settled this will become `false`.
