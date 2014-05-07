@@ -154,7 +154,7 @@ function chainsDidChange(obj, keyName, m, suppressEvents) {
 
 function overrideChains(obj, keyName, m) {
   chainsDidChange(obj, keyName, m, true);
-};
+}
 
 /**
   @method beginPropertyChanges
@@ -195,7 +195,7 @@ function endPropertyChanges() {
 function changeProperties(cb, binding) {
   beginPropertyChanges();
   tryFinally(cb, endPropertyChanges, binding);
-};
+}
 
 function notifyBeforeObservers(obj, keyName) {
   if (obj.isDestroying) { return; }

@@ -1,4 +1,4 @@
-/*globals TemplateTests:true App:true */
+/*globals TemplateTests:true,App:true */
 /*jshint newcap:false*/
 
 import {View as EmberView} from "ember-views/views/view";

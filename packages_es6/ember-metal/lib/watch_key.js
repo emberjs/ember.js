@@ -32,7 +32,7 @@ function watchKey(obj, keyName, meta) {
   } else {
     watching[keyName] = (watching[keyName] || 0) + 1;
   }
-};
+}
 
 function unwatchKey(obj, keyName, meta) {
   var m = meta || metaFor(obj), watching = m.watching;
@@ -64,6 +64,6 @@ function unwatchKey(obj, keyName, meta) {
   } else if (watching[keyName] > 1) {
     watching[keyName]--;
   }
-};
+}
 
 export {watchKey, unwatchKey};

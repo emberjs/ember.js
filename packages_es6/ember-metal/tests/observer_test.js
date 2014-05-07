@@ -3,7 +3,7 @@
 import Ember from 'ember-metal/core';
 import testBoth from 'ember-metal/tests/props_helper';
 import {addObserver, removeObserver, addBeforeObserver, _suspendObserver, _suspendObservers, removeBeforeObserver} from "ember-metal/observer";
-import {propertyWillChange, propertyDidChange} from 'ember-metal/property_events'
+import {propertyWillChange, propertyDidChange} from 'ember-metal/property_events';
 import {create} from 'ember-metal/platform';
 import {defineProperty} from 'ember-metal/properties';
 import {computed, cacheFor} from 'ember-metal/computed';

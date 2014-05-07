@@ -23,7 +23,7 @@ function cloneStates(from) {
   }
 
   return into;
-};
+}
 
 var states = {
   _default: _default,

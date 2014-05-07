@@ -385,7 +385,7 @@ function mixin(obj) {
   var args = a_slice.call(arguments, 1);
   applyMixin(obj, args, false);
   return obj;
-};
+}
 
 /**
   The `Ember.Mixin` class allows you to create mixins, whose properties can be
@@ -441,7 +441,7 @@ function mixin(obj) {
   @class Mixin
   @namespace Ember
 */
-function Mixin() { return initMixin(this, arguments); };
+function Mixin() { return initMixin(this, arguments); }
 
 Mixin.prototype = {
   properties: null,
@@ -611,7 +611,7 @@ REQUIRED.toString = function() { return '(Required Property)'; };
 */
 function required() {
   return REQUIRED;
-};
+}
 
 Alias = function(methodName) {
   this.methodName = methodName;
@@ -639,7 +639,7 @@ Alias.prototype = new Descriptor();
 */
 function aliasMethod(methodName) {
   return new Alias(methodName);
-};
+}
 
 // ..........................................................
 // OBSERVER HELPER
@@ -694,7 +694,7 @@ function observer() {
 
   func.__ember_observes__ = paths;
   return func;
-};
+}
 
 /**
   Specify a method that observes property changes.
@@ -726,7 +726,7 @@ function immediateObserver() {
   }
 
   return observer.apply(this, arguments);
-};
+}
 
 /**
   When observers fire, they are called with the arguments `obj`, `keyName`.
@@ -798,6 +798,6 @@ function beforeObserver() {
 
   func.__ember_observesBefore__ = paths;
   return func;
-};
+}
 
-export {IS_BINDING, mixin, Mixin, required, aliasMethod, observer, immediateObserver, beforeObserver}
+export {IS_BINDING, mixin, Mixin, required, aliasMethod, observer, immediateObserver, beforeObserver};

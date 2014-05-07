@@ -1,3 +1,5 @@
+/* global Handlebars:true */
+
 /**
 @module ember
 @submodule ember-handlebars-compiler
@@ -6,8 +8,8 @@
 import Ember from "ember-metal/core";
 
 // ES6Todo: you'll need to import debugger once debugger is es6'd.
-if (typeof Ember.assert === 'undefined')   { Ember.assert = function(){}; };
-if (typeof Ember.FEATURES === 'undefined') { Ember.FEATURES = { isEnabled: function(){} }; };
+if (typeof Ember.assert === 'undefined')   { Ember.assert = function(){}; }
+if (typeof Ember.FEATURES === 'undefined') { Ember.FEATURES = { isEnabled: function(){} }; }
 
 var objectCreate = Object.create || function(parent) {
   function F() {}

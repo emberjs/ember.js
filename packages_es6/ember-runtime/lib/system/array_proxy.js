@@ -6,8 +6,8 @@ import {computed} from "ember-metal/computed";
 import {beforeObserver, observer} from "ember-metal/mixin";
 import {beginPropertyChanges, endPropertyChanges} from "ember-metal/property_events";
 import EmberError from "ember-metal/error";
-import EmberObject from "ember-runtime/system/object"
-import MutableArray from "ember-runtime/mixins/mutable_array"
+import EmberObject from "ember-runtime/system/object";
+import MutableArray from "ember-runtime/mixins/mutable_array";
 import Enumerable from "ember-runtime/mixins/enumerable";
 import {fmt} from "ember-runtime/system/string";
 

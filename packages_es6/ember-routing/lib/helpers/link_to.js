@@ -919,7 +919,7 @@ function linkToHelper(name) {
   };
 
   return viewHelper.call(this, LinkView, options);
-};
+}
 
 
 if (Ember.FEATURES.isEnabled("query-params-new")) {
@@ -946,6 +946,6 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 function deprecatedLinkToHelper() {
   Ember.warn("The 'linkTo' view helper is deprecated in favor of 'link-to'");
   return linkToHelper.apply(this, arguments);
-};
+}
 
-export {LinkView, deprecatedLinkToHelper, linkToHelper}
+export {LinkView, deprecatedLinkToHelper, linkToHelper};

@@ -69,6 +69,6 @@ function copy(obj, deep) {
   if ('object' !== typeof obj || obj===null) return obj; // can't copy primitives
   if (Copyable && Copyable.detect(obj)) return obj.copy(deep);
   return _copy(obj, deep, deep ? [] : null, deep ? [] : null);
-};
+}
 
 export default copy;

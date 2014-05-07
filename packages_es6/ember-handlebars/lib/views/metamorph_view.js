@@ -1,3 +1,5 @@
+/* global Metamorph:true */
+
 /*jshint newcap:false*/
 import Ember from "ember-metal/core"; // Ember.deprecate
 // var emberDeprecate = Ember.deprecate;
@@ -134,4 +136,4 @@ var _MetamorphView = View.extend(_Metamorph);
 */
 var _SimpleMetamorphView = CoreView.extend(_Metamorph);
 
-export {_SimpleMetamorphView, _MetamorphView, _Metamorph}
+export {_SimpleMetamorphView, _MetamorphView, _Metamorph};

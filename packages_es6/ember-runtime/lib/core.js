@@ -27,6 +27,6 @@ function isEqual(a, b) {
     return a.getTime() === b.getTime();
   } 
   return a === b;
-};
+}
 
-export {isEqual}
+export {isEqual};

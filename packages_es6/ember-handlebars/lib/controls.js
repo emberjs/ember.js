@@ -344,4 +344,4 @@ function textareaHelper(options) {
   return helpers.view.call(this, TextArea, options);
 }
 
-export {inputHelper, textareaHelper}
+export {inputHelper, textareaHelper};

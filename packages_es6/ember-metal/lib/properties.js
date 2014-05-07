@@ -26,7 +26,7 @@ var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
   @private
   @constructor
 */
-function Descriptor() {};
+function Descriptor() {}
 
 // ..........................................................
 // DEFINING PROPERTIES API
@@ -147,6 +147,6 @@ function defineProperty(obj, keyName, desc, data, meta) {
   if (obj.didDefineProperty) { obj.didDefineProperty(obj, keyName, value); }
 
   return this;
-};
+}
 
 export {Descriptor, defineProperty};

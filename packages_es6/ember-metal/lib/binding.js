@@ -41,7 +41,7 @@ var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
 */
 function isGlobalPath(path) {
   return IS_GLOBAL.test(path);
-};
+}
 
 function getWithGlobals(obj, path) {
   return get(isGlobalPath(path) ? Ember.lookup : obj, path);
@@ -455,7 +455,7 @@ mixinProperties(Binding, {
 */
 function bind(obj, to, from) {
   return new Binding(to, from).connect(obj);
-};
+}
 
 /**
   @method oneWay
@@ -469,6 +469,6 @@ function bind(obj, to, from) {
 */
 function oneWay(obj, to, from) {
   return new Binding(to, from).oneWay().connect(obj);
-};
+}
 
-export {Binding, bind, oneWay, isGlobalPath}
+export {Binding, bind, oneWay, isGlobalPath};

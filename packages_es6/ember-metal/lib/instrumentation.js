@@ -128,7 +128,7 @@ function instrument(name, payload, callback, binding) {
   }
 
   return tryCatchFinally(tryable, catchable, finalizer);
-};
+}
 
 /**
   Subscribes to a particular event or instrumented block of code.
@@ -166,7 +166,7 @@ function subscribe(pattern, object) {
   cache = {};
 
   return subscriber;
-};
+}
 
 /**
   Unsubscribes from a particular event or instrumented block of code.
@@ -187,7 +187,7 @@ function unsubscribe(subscriber) {
 
   subscribers.splice(index, 1);
   cache = {};
-};
+}
 
 /**
   Resets `Ember.Instrumentation` by flushing list of subscribers.
@@ -198,6 +198,6 @@ function unsubscribe(subscriber) {
 function reset() {
   subscribers = [];
   cache = {};
-};
+}
 
 export {instrument, subscribe, unsubscribe, reset};

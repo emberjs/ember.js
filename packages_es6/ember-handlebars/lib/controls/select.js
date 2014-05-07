@@ -1,5 +1,3 @@
-/*jshint eqeqeq:false newcap:false */
-
 /**
 @module ember
 @submodule ember-handlebars
@@ -14,7 +12,7 @@ import CollectionView from "ember-views/views/collection_view";
 import {isArray} from "ember-metal/utils";
 import isNone from 'ember-metal/is_none';
 import {computed} from "ember-metal/computed";
-import {A} from "ember-runtime/system/native_array";
+import {A as emberA} from "ember-runtime/system/native_array";
 import {observer} from "ember-metal/mixin";
 import {defineProperty} from "ember-metal/properties";
 
@@ -48,7 +46,7 @@ var SelectOption = View.extend({
     } else {
       // Primitives get passed through bindings as objects... since
       // `new Number(4) !== 4`, we use `==` below
-      return content == selection;
+      return content == selection; // jshint ignore:line
     }
   }).property('content', 'parentView.selection'),
 
@@ -381,7 +379,7 @@ var Select = View.extend({
 
     ```javascript
     Ember.Select.create({
-      content: A([
+      content: Ember.A([
           { id: 1, firstName: 'Yehuda' },
           { id: 2, firstName: 'Tom' }
         ]),
@@ -473,7 +471,7 @@ var Select = View.extend({
 
   groupedContent: computed(function() {
     var groupPath = get(this, 'optionGroupPath');
-    var groupedContent = A();
+    var groupedContent = emberA();
     var content = get(this, 'content') || [];
 
     forEach(content, function(item) {
@@ -482,7 +480,7 @@ var Select = View.extend({
       if (get(groupedContent, 'lastObject.label') !== label) {
         groupedContent.pushObject({
           label: label,
-          content: A()
+          content: emberA()
         });
       }
 
@@ -513,7 +511,7 @@ var Select = View.extend({
     var selection = get(this, 'selection');
     if (get(this, 'multiple')) {
       if (!isArray(selection)) {
-        set(this, 'selection', A([selection]));
+        set(this, 'selection', emberA([selection]));
         return;
       }
       this._selectionDidChangeMultiple();
@@ -621,5 +619,5 @@ var Select = View.extend({
   }
 });
 
-export default Select
-export {Select, SelectOption, SelectOptgroup}
+export default Select;
+export {Select, SelectOption, SelectOptgroup};

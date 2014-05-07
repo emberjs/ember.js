@@ -137,6 +137,6 @@ function setPath(root, path, value, tolerant) {
 */
 function trySet(root, path, value) {
   return set(root, path, value, true);
-};
+}
 
 export {set, trySet};

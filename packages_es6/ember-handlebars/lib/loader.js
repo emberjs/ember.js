@@ -56,7 +56,7 @@ function bootstrap(ctx) {
     // Remove script tag from DOM
     script.remove();
   });
-};
+}
 
 function _bootstrap() {
   bootstrap( jQuery(document) );

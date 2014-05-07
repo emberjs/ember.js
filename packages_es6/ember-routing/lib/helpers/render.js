@@ -104,7 +104,7 @@ function renderHelper(name, contextString, options) {
     // create a new controller
     context = handlebarsGet(options.contexts[1], contextString, options);
   } else {
-    throw EmberError("You must pass a templateName to render");
+    throw new EmberError("You must pass a templateName to render");
   }
 
   Ember.deprecate("Using a quoteless parameter with {{render}} is deprecated. Please update to quoted usage '{{render \"" + name + "\"}}.", options.types[0] !== 'ID');
@@ -171,6 +171,6 @@ function renderHelper(name, contextString, options) {
   }
 
   viewHelper.call(this, view, options);
-};
+}
 
 export default renderHelper;

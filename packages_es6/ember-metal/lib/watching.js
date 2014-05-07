@@ -36,12 +36,12 @@ function watch(obj, _keyPath, m) {
   } else {
     watchPath(obj, _keyPath, m);
   }
-};
+}
 
 function isWatching(obj, key) {
   var meta = obj[META_KEY];
   return (meta && meta.watching[key]) > 0;
-};
+}
 
 watch.flushPending = flushPendingChains;
 
@@ -54,7 +54,7 @@ function unwatch(obj, _keyPath, m) {
   } else {
     unwatchPath(obj, _keyPath, m);
   }
-};
+}
 
 /**
   Call on an object when you first beget it from another object. This will
@@ -78,7 +78,7 @@ function rewatch(obj) {
   if (chains && chains.value() !== obj) {
     m.chains = chains.copy(obj);
   }
-};
+}
 
 var NODE_STACK = [];
 
@@ -121,6 +121,6 @@ function destroy(obj) {
       }
     }
   }
-};
+}
 
 export {watch, isWatching, unwatch, rewatch, destroy};

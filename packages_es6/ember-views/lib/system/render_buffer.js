@@ -13,7 +13,7 @@ import jQuery from "ember-views/system/jquery";
 function ClassSet() {
   this.seen = {};
   this.list = [];
-};
+}
 
 
 ClassSet.prototype = {
@@ -96,7 +96,7 @@ var canSetNameOnInputs = (function() {
   @param {String} tagName tag name (such as 'div' or 'p') used for the buffer
 */
 var RenderBuffer = function(tagName) {
-  return new _RenderBuffer(tagName);
+  return new _RenderBuffer(tagName); // jshint ignore:line
 };
 
 var _RenderBuffer = function(tagName) {

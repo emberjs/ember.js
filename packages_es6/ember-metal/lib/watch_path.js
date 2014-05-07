@@ -28,7 +28,7 @@ function watchPath(obj, keyPath, meta) {
   } else {
     watching[keyPath] = (watching[keyPath] || 0) + 1;
   }
-};
+}
 
 function unwatchPath(obj, keyPath, meta) {
   var m = meta || metaFor(obj), watching = m.watching;
@@ -39,6 +39,6 @@ function unwatchPath(obj, keyPath, meta) {
   } else if (watching[keyPath] > 1) {
     watching[keyPath]--;
   }
-};
+}
 
 export {watchPath, unwatchPath};

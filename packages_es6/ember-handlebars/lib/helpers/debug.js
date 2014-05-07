@@ -50,7 +50,7 @@ function logHelper() {
   }
 
   logger.apply(logger, values);
-};
+}
 
 /**
   Execute the `debugger` statement in the current context.

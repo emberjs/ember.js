@@ -91,4 +91,4 @@ var Freezable = Mixin.create({
 
 var FROZEN_ERROR = "Frozen object cannot be modified.";
 
-export {Freezable, FROZEN_ERROR}
+export {Freezable, FROZEN_ERROR};

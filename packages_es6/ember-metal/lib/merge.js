@@ -19,6 +19,6 @@ function merge(original, updates) {
     original[prop] = updates[prop];
   }
   return original;
-};
+}
 
 export default merge;

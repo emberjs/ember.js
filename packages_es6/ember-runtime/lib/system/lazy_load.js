@@ -39,7 +39,7 @@ function onLoad(name, callback) {
   if (object = loaded[name]) {
     callback(object);
   }
-};
+}
 
 /**
   Called when an Ember.js package (e.g Ember.Handlebars) has finished
@@ -63,6 +63,6 @@ function runLoadHooks(name, object) {
       callback(object);
     });
   }
-};
+}
 
-export {onLoad, runLoadHooks}
+export {onLoad, runLoadHooks};

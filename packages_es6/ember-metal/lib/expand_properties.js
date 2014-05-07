@@ -43,6 +43,6 @@ function expandProperties(pattern, callback) {
   } else {
     callback(pattern);
   }
-};
+}
 
 export default expandProperties;

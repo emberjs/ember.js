@@ -552,7 +552,7 @@ function computed(func) {
   }
 
   return cp;
-};
+}
 
 /**
   Returns the cached value for a property, if one exists.
@@ -574,7 +574,7 @@ function cacheFor(obj, key) {
 
   if (ret === UNDEFINED) { return undefined; }
   return ret;
-};
+}
 
 cacheFor.set = function(cache, key, value) {
   if (value === undefined) {
@@ -609,7 +609,7 @@ function registerComputed(name, macro) {
       return macro.apply(this, args);
     });
   };
-};
+}
 
 function registerComputedWithProperties(name, macro) {
   computed[name] = function() {
@@ -621,7 +621,7 @@ function registerComputedWithProperties(name, macro) {
 
     return computedFunc.property.apply(computedFunc, properties);
   };
-};
+}
 
 if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
   /**
