@@ -5,6 +5,14 @@ for a detailed explanation.
 
 ## Feature Flags
 
+* `event-dispatcher-toggle-handlers`
+
+  Add `addHandler` and `removeHandler` methods to  `eventDispatcher` 
+  providing a public API to enable or disable specific events during
+  execution.
+
+  Added in [#4783](https://github.com/emberjs/ember.js/pull/4783).
+
 * `ember-routing-named-substates`
 
   Add named substates; e.g. when resolving a `loading` or `error`
