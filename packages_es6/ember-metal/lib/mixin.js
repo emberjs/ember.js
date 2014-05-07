@@ -21,7 +21,6 @@ var REQUIRED, Alias,
     a_forEach = forEach,
     a_slice = [].slice,
     o_create = create,
-    defineProperty = defineProperty,
     metaFor = meta;
 
 function superFunction(){

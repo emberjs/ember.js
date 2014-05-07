@@ -1,12 +1,7 @@
-var map, forEach, indexOf, splice, filter;
+var splice;
 
 import {map, forEach, indexOf, filter} from "ember-metal/array";
 
-// ES6TODO: doesn't array polyfills already do this?
-map     = Array.prototype.map     || map;
-forEach = Array.prototype.forEach || forEach;
-indexOf = Array.prototype.indexOf || indexOf;
-filter  = Array.prototype.filter   || filter;
 splice  = Array.prototype.splice;
 
 /**
