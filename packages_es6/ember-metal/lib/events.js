@@ -400,6 +400,6 @@ function on(){
       events = a_slice.call(arguments, 0, -1);
   func.__ember_listens__ = events;
   return func;
-};
+}
 
 export {on, addListener, removeListener, suspendListener, suspendListeners, sendEvent, hasListeners, watchedEvents, listenersFor, listenersDiff, listenersUnion};

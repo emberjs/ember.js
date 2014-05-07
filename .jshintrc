@@ -15,8 +15,6 @@
         "notStrictEqual",
         "test",
         "asyncTest",
-        "testBoth",
-        "testWithDefault",
         "raises",
         "throws",
         "deepEqual",
@@ -32,7 +30,7 @@
         "ignoreDeprecation",
 
         // A safe subset of "browser:true":
-        "window", "location", "document", "XMLSerializer",
+        "window", "document",
         "setTimeout", "clearTimeout", "setInterval", "clearInterval"
     ],
     "esnext": true,

@@ -7,7 +7,7 @@ import Ember from "ember-metal"; // Ember.FEATURES, Ember.deprecate, Ember.asser
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import {runLoadHooks} from "ember-runtime/system/lazy_load";
-import DAG from "ember-application/system/dag"
+import DAG from "ember-application/system/dag";
 import Namespace from "ember-runtime/system/namespace";
 import DeferredMixin from "ember-runtime/mixins/deferred";
 import {DefaultResolver} from "ember-application/system/resolver";

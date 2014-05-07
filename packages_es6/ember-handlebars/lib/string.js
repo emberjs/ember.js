@@ -17,7 +17,7 @@ import EmberStringUtils from "ember-runtime/system/string";
 */
 function htmlSafe(str) {
   return new Handlebars.SafeString(str);
-};
+}
 
 EmberStringUtils.htmlSafe = htmlSafe;
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {

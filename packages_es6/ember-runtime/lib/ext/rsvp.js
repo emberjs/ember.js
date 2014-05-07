@@ -1,3 +1,5 @@
+/* globals RSVP:true */
+
 import Ember from "ember-metal/core";
 import Logger from "ember-metal/logger";
 

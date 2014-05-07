@@ -21,7 +21,7 @@ import {sendEvent} from "ember-metal/events";
 */
 function ObserverSet() {
   this.clear();
-};
+}
 
 ObserverSet.prototype.add = function(sender, keyName, eventName) {
   var observerSet = this.observerSet,

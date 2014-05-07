@@ -1,3 +1,5 @@
+/* globals XMLSerializer */
+
 import Ember from 'ember-metal/core'; // Ember.assert
 
 /**

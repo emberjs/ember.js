@@ -116,7 +116,7 @@ import {computed} from "ember-metal/computed";
   @uses Ember.Freezable
   @since Ember 0.9
 */
-var Set = CoreObject.extend(MutableEnumerable, Copyable, Freezable,
+export default CoreObject.extend(MutableEnumerable, Copyable, Freezable,
   {
 
   // ..........................................................
@@ -463,6 +463,3 @@ var Set = CoreObject.extend(MutableEnumerable, Copyable, Freezable,
   }
 
 });
-
-
-export default Set;

@@ -138,7 +138,7 @@ function _addMetamorphCheck() {
 }
 
 // until ember-debug is es6ed
-var runInDebug = function(f){f()};
+var runInDebug = function(f){ f(); };
 runInDebug( function() {
   _addMetamorphCheck();
 });
@@ -452,5 +452,5 @@ function eachHelper(path, options) {
   }
 }
 
-export {EachView, GroupedEach, eachHelper}
+export {EachView, GroupedEach, eachHelper};
 

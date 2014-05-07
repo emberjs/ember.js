@@ -123,7 +123,7 @@ function normalizeTuple(target, path) {
   if (!path || path.length===0) throw new EmberError('Path cannot be empty');
 
   return [ target, path ];
-};
+}
 
 function _getPath(root, path) {
   var hasThis, parts, tuple, idx, len;
@@ -150,14 +150,14 @@ function _getPath(root, path) {
     if (root && root.isDestroyed) { return undefined; }
   }
   return root;
-};
+}
 
 function getWithDefault(root, key, defaultValue) {
   var value = get(root, key);
 
   if (value === undefined) { return defaultValue; }
   return value;
-};
+}
 
 export default get;
 export {get, getWithDefault, normalizeTuple, _getPath};

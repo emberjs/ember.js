@@ -58,7 +58,7 @@ function normalizePath(root, path, data) {
   }
 
   return { root: root, path: path, isKeyword: isKeyword };
-};
+}
 
 
 /**
@@ -131,7 +131,7 @@ function getEscaped(root, path, options) {
   }
 
   return result;
-};
+}
 
 function resolveParams(context, params, options) {
   var resolvedParams = [], types = options.types, param, type;
@@ -148,7 +148,7 @@ function resolveParams(context, params, options) {
   }
 
   return resolvedParams;
-};
+}
 
 function resolveHash(context, hash, options) {
   var resolvedHash = {}, types = options.hashTypes, type;
@@ -166,7 +166,7 @@ function resolveHash(context, hash, options) {
   }
 
   return resolvedHash;
-};
+}
 
 /**
   Registers a helper in Handlebars that will be called if no property with the
@@ -349,7 +349,7 @@ function registerBoundHelper(name, fn) {
   var boundHelperArgs = slice.call(arguments, 1),
       boundFn = makeBoundHelper.apply(this, boundHelperArgs);
   EmberHandlebars.registerHelper(name, boundFn);
-};
+}
 
 /**
   A helper function used by `registerBoundHelper`. Takes the
@@ -497,7 +497,7 @@ function makeBoundHelper(fn) {
 
   helper._rawFunction = fn;
   return helper;
-};
+}
 
 /**
   Renders the unbound form of an otherwise bound helper function.
@@ -551,6 +551,6 @@ function template(spec) {
   var t = originalTemplate(spec);
   t.isTop = true;
   return t;
-};
+}
 
-export {normalizePath, template, makeBoundHelper, registerBoundHelper, resolveHash, resolveParams, handlebarsGet, getEscaped, evaluateUnboundHelper, helperMissingHelper, blockHelperMissingHelper}
+export {normalizePath, template, makeBoundHelper, registerBoundHelper, resolveHash, resolveParams, handlebarsGet, getEscaped, evaluateUnboundHelper, helperMissingHelper, blockHelperMissingHelper};

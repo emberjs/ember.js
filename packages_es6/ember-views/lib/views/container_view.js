@@ -17,9 +17,9 @@ var forEach = EnumerableUtils.forEach;
 import {computed} from "ember-metal/computed";
 import run from "ember-metal/run_loop";
 import {defineProperty} from "ember-metal/properties";
-import RenderBuffer from "ember-views/system/render_buffer";
+import renderBuffer from "ember-views/system/render_buffer";
 import {observer, beforeObserver} from "ember-metal/mixin";
-import {A} from "ember-runtime/system/native_array";
+import {A as emberA} from "ember-runtime/system/native_array";
 
 /**
 @module ember
@@ -215,7 +215,7 @@ var ContainerView = View.extend(MutableArray, {
   replace: function(idx, removedCount, addedViews) {
     var addedCount = addedViews ? get(addedViews, 'length') : 0;
     var self = this;
-    Ember.assert("You can't add a child to a container that is already a child of another view", A(addedViews).every(function(item) { return !get(item, '_parentView') || get(item, '_parentView') === self; }));
+    Ember.assert("You can't add a child to a container that is already a child of another view", emberA(addedViews).every(function(item) { return !get(item, '_parentView') || get(item, '_parentView') === self; }));
 
     this.arrayContentWillChange(idx, removedCount, addedCount);
     this.childViewsWillChange(this._childViews, idx, removedCount);
@@ -376,7 +376,7 @@ merge(states.hasElement, {
     for (i = 0, len = childViews.length; i < len; i++) {
       childView = childViews[i];
 
-      if (!buffer) { buffer = RenderBuffer(); buffer._hasElement = false; }
+      if (!buffer) { buffer = renderBuffer(); buffer._hasElement = false; }
 
       if (childView.renderToBufferIfNeeded(buffer)) {
         viewCollection.push(childView);

@@ -26,6 +26,6 @@ function setProperties(self, hash) {
     }
   });
   return self;
-};
+}
 
 export default setProperties;

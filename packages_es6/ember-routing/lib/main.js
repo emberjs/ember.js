@@ -58,7 +58,7 @@ Router.resolvePaths = resolvePaths;
 EmberHandlebars.ActionHelper = ActionHelper;
 EmberHandlebars.OutletView = OutletView;
 
-EmberHandlebars.registerHelper('render', renderHelper)
+EmberHandlebars.registerHelper('render', renderHelper);
 EmberHandlebars.registerHelper('action', actionHelper);
 EmberHandlebars.registerHelper('outlet', outletHelper);
 EmberHandlebars.registerHelper('link-to', linkToHelper);

@@ -321,6 +321,6 @@ function actionHelper(actionName) {
 
   var actionId = ActionHelper.registerAction(actionName, action, hash.allowedKeys);
   return new SafeString('data-ember-action="' + actionId + '"');
-};
+}
 
 export {ActionHelper, actionHelper};

@@ -190,5 +190,5 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Array) {
 }
 
 Ember.A = A; // ES6TODO: Setting A onto the object returned by ember-metal/core to avoid circles
-export {A, NativeArray}
+export {A, NativeArray};
 export default NativeArray;

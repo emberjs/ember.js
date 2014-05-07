@@ -132,7 +132,7 @@ function guidFor(obj) {
       }
       return ret;
   }
-};
+}
 
 // ..........................................................
 // META
@@ -250,18 +250,18 @@ function meta(obj, writable) {
     obj[META_KEY] = ret;
   }
   return ret;
-};
+}
 
 function getMeta(obj, property) {
   var _meta = meta(obj, false);
   return _meta[property];
-};
+}
 
 function setMeta(obj, property, value) {
   var _meta = meta(obj, true);
   _meta[property] = value;
   return value;
-};
+}
 
 /**
   @deprecated
@@ -317,7 +317,7 @@ function metaPath(obj, path, writable) {
   }
 
   return value;
-};
+}
 
 /**
   Wraps the passed function so that `this._super` will point to the superFunc
@@ -347,7 +347,7 @@ function wrap(func, superFunc) {
   superWrapper.__ember_listens__ = func.__ember_listens__;
 
   return superWrapper;
-};
+}
 
 var EmberArray;
 
@@ -380,8 +380,8 @@ function isArray(obj) {
 
   if (typeof EmberArray === "undefined") {
     modulePath = 'ember-runtime/mixins/array';
-    if (requirejs._eak_seen[modulePath]) {
-      EmberArray = requireModule(modulePath)['default'];
+    if (Ember.__loader.registry[modulePath]) {
+      EmberArray = Ember.__loader.require(modulePath)['default'];
     }
   }
 
@@ -390,7 +390,7 @@ function isArray(obj) {
   if (EmberArray && EmberArray.detect(obj)) { return true; }
   if ((obj.length !== undefined) && 'object'=== typeOf(obj)) { return true; }
   return false;
-};
+}
 
 /**
   Forces the passed object to be part of an array. If the object is already
@@ -416,7 +416,7 @@ function isArray(obj) {
 function makeArray(obj) {
   if (obj === null || obj === undefined) { return []; }
   return isArray(obj) ? obj : [obj];
-};
+}
 
 /**
   Checks to see if the `methodName` exists on the `obj`.
@@ -460,7 +460,7 @@ function tryInvoke(obj, methodName, args) {
   if (canInvoke(obj, methodName)) {
     return args ? applyStr(obj, methodName, args) : applyStr(obj, methodName);
   }
-};
+}
 
 // https://github.com/emberjs/ember.js/pull/1617
 var needsFinallyFix = (function() {
@@ -689,8 +689,8 @@ function typeOf(item) {
   // ES6TODO: Depends on Ember.Object which is defined in runtime.
   if (typeof EmberObject === "undefined") {
     modulePath = 'ember-runtime/system/object';
-    if (requirejs._eak_seen[modulePath]) {
-      EmberObject = requireModule(modulePath)['default'];
+    if (Ember.__loader.registry[modulePath]) {
+      EmberObject = Ember.__loader.require(modulePath)['default'];
     }
   }
 
@@ -705,7 +705,7 @@ function typeOf(item) {
   }
 
   return ret;
-};
+}
 
 /**
   Convenience method to inspect an object. This method will attempt to
@@ -739,7 +739,7 @@ function inspect(obj) {
     }
   }
   return "{" + ret.join(", ") + "}";
-};
+}
 
 // The following functions are intentionally minified to keep the functions
 // below Chrome's function body size inlining limit of 600 chars.
@@ -755,7 +755,7 @@ function apply(t /* target */, m /* method */, a /* args */) {
     case 5:  return m.call(t, a[0], a[1], a[2], a[3], a[4]);
     default: return m.apply(t, a);
   }
-};
+}
 
 function applyStr(t /* target */, m /* method */, a /* args */) {
   var l = a && a.length;
@@ -768,6 +768,6 @@ function applyStr(t /* target */, m /* method */, a /* args */) {
     case 5:  return t[m](a[0], a[1], a[2], a[3], a[4]);
     default: return t[m].apply(t, a);
   }
-};
+}
 
 export {generateGuid, GUID_KEY, GUID_PREFIX, guidFor, META_DESC, EMPTY_META, META_KEY, meta, getMeta, setMeta, metaPath, inspect, typeOf, tryCatchFinally, isArray, makeArray, canInvoke, tryInvoke, tryFinally, wrap, applyStr, apply};

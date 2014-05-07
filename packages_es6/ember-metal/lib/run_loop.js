@@ -616,6 +616,6 @@ run._addQueue = function(name, after) {
   if (indexOf.call(run.queues, name) === -1) {
     run.queues.splice(indexOf.call(run.queues, after)+1, 0, name);
   }
-}
+};
 
-export default run
+export default run;

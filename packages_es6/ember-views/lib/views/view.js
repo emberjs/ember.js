@@ -8,7 +8,7 @@ import EmberError from "ember-metal/error";
 import EmberObject from "ember-runtime/system/object";
 import Evented from "ember-runtime/mixins/evented";
 import ActionHandler from "ember-runtime/mixins/action_handler";
-import RenderBuffer from "ember-views/system/render_buffer";
+import renderBuffer from "ember-views/system/render_buffer";
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import setProperties from "ember-metal/set_properties";
@@ -25,7 +25,7 @@ import {typeOf, isArray} from "ember-metal/utils";
 import {isNone} from 'ember-metal/is_none';
 import {Mixin} from 'ember-metal/mixin';
 import Container from 'container/container';
-import {A} from "ember-runtime/system/native_array";
+import {A as emberA} from "ember-runtime/system/native_array";
 
 import {instrument} from "ember-metal/instrumentation";
 
@@ -64,7 +64,7 @@ function clearCachedElement(view) {
 }
 
 var childViewsProperty = computed(function() {
-  var childViews = this._childViews, ret = A(), view = this;
+  var childViews = this._childViews, ret = emberA(), view = this;
 
   a_forEach(childViews, function(view) {
     var currentChildViews;
@@ -203,7 +203,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
       tagName = 'div';
     }
 
-    var buffer = this.buffer = parentBuffer && parentBuffer.begin(tagName) || RenderBuffer(tagName);
+    var buffer = this.buffer = parentBuffer && parentBuffer.begin(tagName) || renderBuffer(tagName);
     this.transitionTo('inBuffer', false);
 
     this.beforeRender(buffer);
@@ -2083,10 +2083,10 @@ var View = CoreView.extend({
     this._childViews = this._childViews.slice();
 
     Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(this.classNameBindings) === 'array');
-    this.classNameBindings = A(this.classNameBindings.slice());
+    this.classNameBindings = emberA(this.classNameBindings.slice());
 
     Ember.assert("Only arrays are allowed for 'classNames'", typeOf(this.classNames) === 'array');
-    this.classNames = A(this.classNames.slice());
+    this.classNames = emberA(this.classNames.slice());
   },
 
   appendChild: function(view, options) {
@@ -2615,4 +2615,4 @@ View.applyAttributeBindings = function(elem, name, value) {
   }
 };
 
-export {CoreView, View, ViewCollection}
+export {CoreView, View, ViewCollection};

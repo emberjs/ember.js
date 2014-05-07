@@ -118,6 +118,6 @@ function outletHelper(property, options) {
   options.hash.currentViewBinding = '_view.outletSource._outlets.' + property;
 
   return viewHelper.call(this, viewClass, options);
-};
+}
 
 export {outletHelper, OutletView};

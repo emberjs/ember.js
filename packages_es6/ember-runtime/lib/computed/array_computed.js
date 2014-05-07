@@ -181,6 +181,6 @@ function arrayComputed (options) {
   }
 
   return cp;
-};
+}
 
-export {arrayComputed, ArrayComputedProperty}
+export {arrayComputed, ArrayComputedProperty};

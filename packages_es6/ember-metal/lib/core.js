@@ -1,4 +1,4 @@
-/*globals Em:true ENV EmberENV MetamorphENV:true */
+/*globals Ember:true,Em:true,ENV,EmberENV,MetamorphENV:true */
 
 /**
 @module ember

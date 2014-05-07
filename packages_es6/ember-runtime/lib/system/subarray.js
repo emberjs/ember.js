@@ -26,7 +26,7 @@ function SubArray (length) {
   } else {
     this._operations = [];
   }
-};
+}
 
 SubArray.prototype = {
   /**
@@ -170,7 +170,7 @@ SubArray.prototype = {
 
   toString: function () {
     var str = "";
-    forEach(this._operations, function (operation) {
+    EnumerableUtils.forEach(this._operations, function (operation) {
       str += " " + operation.type + ":" + operation.count;
     });
     return str.substring(1);

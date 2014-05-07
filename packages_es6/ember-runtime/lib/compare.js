@@ -126,6 +126,6 @@ function compare(v, w) {
     default:
       return 0;
   }
-};
+}
 
 export default compare;

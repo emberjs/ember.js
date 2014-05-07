@@ -1,4 +1,5 @@
-/*globals TemplateTests:true MyApp:true App:true */
+/*globals TemplateTests:true,MyApp:true,App:true,Ember:true */
+
 /*jshint newcap:false*/
 import Ember from "ember-metal/core"; // Ember.lookup
 import jQuery from "ember-views/system/jquery";

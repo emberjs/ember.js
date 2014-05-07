@@ -1,4 +1,4 @@
-/*globals Handlebars */
+/*globals Handlebars, Metamorph:true */
 /*jshint newcap:false*/
 
 
@@ -11,7 +11,7 @@ import EmberHandlebars from "ember-handlebars-compiler"; // EmberHandlebars.Safe
 var SafeString = EmberHandlebars.SafeString;
 
 import Ember from "ember-metal/core"; // Ember.K
-var K = Ember.K
+var K = Ember.K;
 
 var Metamorph = requireModule('metamorph');
 
@@ -349,4 +349,4 @@ var _HandlebarsBoundView = _MetamorphView.extend({
   }
 });
 
-export {_HandlebarsBoundView, SimpleHandlebarsView}
+export {_HandlebarsBoundView, SimpleHandlebarsView};

@@ -26,7 +26,7 @@ function flushPendingChains() {
   forEach.call(queue, function(q) { q[0].add(q[1]); });
 
   warn('Watching an undefined global, Ember expects watched globals to be setup by the time the run loop is flushed, check for typos', pendingQueue.length === 0);
-};
+}
 
 
 function addChainWatcher(obj, keyName, node) {
@@ -58,7 +58,7 @@ function removeChainWatcher(obj, keyName, node) {
     }
   }
   unwatchKey(obj, keyName, m);
-};
+}
 
 // A ChainNode watches a single key on an object. If you provide a starting
 // value for the key then the node won't actually watch it. For a root node
@@ -90,7 +90,7 @@ function ChainNode(parent, key, value) {
   if (this._parent && this._parent._key === '@each') {
     this.value();
   }
-};
+}
 
 var ChainNodePrototype = ChainNode.prototype;
 
@@ -325,6 +325,6 @@ function finishChains(obj) {
       chains.didChange(null);
     }
   }
-};
+}
 
 export {flushPendingChains, removeChainWatcher, ChainNode, finishChains};

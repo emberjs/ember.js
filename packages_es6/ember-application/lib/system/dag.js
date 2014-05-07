@@ -1,3 +1,5 @@
+import EmberError from "ember-metal/error";
+
 function visit(vertex, fn, visited, path) {
   var name = vertex.name,
     vertices = vertex.incoming,

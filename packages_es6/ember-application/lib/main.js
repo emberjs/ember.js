@@ -9,7 +9,7 @@ Ember Application
 @requires ember-views, ember-routing
 */
 
-import DAG from "ember-application/system/dag"
+import DAG from "ember-application/system/dag";
 import {Resolver, DefaultResolver} from "ember-application/system/resolver";
 import Application from "ember-application/system/application";
 import "ember-application/ext/controller"; // side effect of extending ControllerMixin

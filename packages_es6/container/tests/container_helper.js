@@ -1,5 +1,3 @@
-/*jshint validthis:true */
-
 var setProperties = function(object, properties) {
   for (var key in properties) {
     if (properties.hasOwnProperty(key)) {
@@ -25,6 +23,8 @@ var guids = 0;
 var passedOptions;
 
 var factory = function() {
+  /*jshint validthis: true */
+
   var Klass = function(options) {
     setProperties(this, options);
     this._guid = guids++;

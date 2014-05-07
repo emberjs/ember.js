@@ -46,6 +46,6 @@ function setupForTesting() {
   jQuery(document).off('ajaxComplete', decrementAjaxPendingRequests);
   jQuery(document).on('ajaxSend', incrementAjaxPendingRequests);
   jQuery(document).on('ajaxComplete', decrementAjaxPendingRequests);
-};
+}
 
 export default setupForTesting;

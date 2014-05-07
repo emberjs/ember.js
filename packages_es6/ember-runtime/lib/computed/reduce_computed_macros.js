@@ -46,7 +46,7 @@ function sum(dependentKey){
       return accumulatedValue - item;
     }
   });
-};
+}
 
 /**
   A computed property that calculates the maximum value in the
@@ -94,7 +94,7 @@ function max (dependentKey) {
       }
     }
   });
-};
+}
 
 /**
   A computed property that calculates the minimum value in the
@@ -142,7 +142,7 @@ function min(dependentKey) {
       }
     }
   });
-};
+}
 
 /**
   Returns an array mapped via the callback
@@ -189,7 +189,7 @@ function map(dependentKey, callback) {
   };
 
   return arrayComputed(dependentKey, options);
-};
+}
 
 /**
   Returns an array mapped to the specified key.
@@ -222,7 +222,7 @@ function map(dependentKey, callback) {
 function mapBy (dependentKey, propertyKey) {
   var callback = function(item) { return get(item, propertyKey); };
   return map(dependentKey + '.@each.' + propertyKey, callback);
-};
+}
 
 /**
   @method computed.mapProperty
@@ -293,7 +293,7 @@ function filter(dependentKey, callback) {
   };
 
   return arrayComputed(dependentKey, options);
-};
+}
 
 /**
   Filters the array by the property and value
@@ -332,7 +332,7 @@ function filterBy (dependentKey, propertyKey, value) {
   }
 
   return filter(dependentKey + '.@each.' + propertyKey, callback);
-};
+}
 
 /**
   @method computed.filterProperty
@@ -399,7 +399,7 @@ function uniq() {
     }
   });
   return arrayComputed.apply(null, args);
-};
+}
 
 /**
   Alias for [Ember.computed.uniq](/api/#method_computed_uniq).
@@ -486,7 +486,7 @@ function intersect() {
     }
   });
   return arrayComputed.apply(null, args);
-};
+}
 
 /**
   A computed property which returns a new array with all the
@@ -549,7 +549,7 @@ function setDiff(setAProperty, setBProperty) {
       return array;
     }
   });
-};
+}
 
 function binarySearch(array, item, low, high) {
   var mid, midItem, res, guidMid, guidItem;
@@ -760,7 +760,7 @@ function sort(itemsKey, sortDefinition) {
       return array;
     }
   });
-};
+}
 
 
-export {sum, min, max, map, sort, setDiff, mapBy, mapProperty, filter, filterBy, filterProperty, uniq, union, intersect}
+export {sum, min, max, map, sort, setDiff, mapBy, mapProperty, filter, filterBy, filterProperty, uniq, union, intersect};

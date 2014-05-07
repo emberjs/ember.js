@@ -3,7 +3,7 @@
 @submodule ember-runtime
 */
 import Ember from "ember-metal/core"; // Ember.STRINGS, Ember.FEATURES
-import {isArray, inspect as EmberInspect} from "ember-metal/utils";
+import {isArray, inspect as emberInspect} from "ember-metal/utils";
 
 
 var STRING_DASHERIZE_REGEXP = (/[ _]/g);
@@ -23,7 +23,7 @@ function fmt(str, formats) {
   return str.replace(/%@([0-9]+)?/g, function(s, argIndex) {
     argIndex = (argIndex) ? parseInt(argIndex, 10) - 1 : idx++;
     s = formats[argIndex];
-    return (s === null) ? '(null)' : (s === undefined) ? '' : EmberInspect(s);
+    return (s === null) ? '(null)' : (s === undefined) ? '' : emberInspect(s);
   });
 }
 
@@ -279,4 +279,4 @@ var EmberStringUtils = {
 };
 
 export default EmberStringUtils;
-export {fmt, loc, w, decamelize, dasherize, camelize, classify, underscore, capitalize}
+export {fmt, loc, w, decamelize, dasherize, camelize, classify, underscore, capitalize};

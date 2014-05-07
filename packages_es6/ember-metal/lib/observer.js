@@ -29,11 +29,11 @@ function addObserver(obj, _path, target, method) {
   watch(obj, _path);
 
   return this;
-};
+}
 
 function observersFor(obj, path) {
   return listenersFor(obj, changeEvent(path));
-};
+}
 
 /**
   @method removeObserver
@@ -48,7 +48,7 @@ function removeObserver(obj, _path, target, method) {
   removeListener(obj, changeEvent(_path), target, method);
 
   return this;
-};
+}
 
 /**
   @method addBeforeObserver
@@ -63,7 +63,7 @@ function addBeforeObserver(obj, _path, target, method) {
   watch(obj, _path);
 
   return this;
-};
+}
 
 // Suspend observer during callback.
 //
@@ -71,25 +71,25 @@ function addBeforeObserver(obj, _path, target, method) {
 // while it is setting the observed path.
 function _suspendBeforeObserver(obj, path, target, method, callback) {
   return suspendListener(obj, beforeEvent(path), target, method, callback);
-};
+}
 
 function _suspendObserver(obj, path, target, method, callback) {
   return suspendListener(obj, changeEvent(path), target, method, callback);
-};
+}
 
 function _suspendBeforeObservers(obj, paths, target, method, callback) {
   var events = map.call(paths, beforeEvent);
   return suspendListeners(obj, events, target, method, callback);
-};
+}
 
 function _suspendObservers(obj, paths, target, method, callback) {
   var events = map.call(paths, changeEvent);
   return suspendListeners(obj, events, target, method, callback);
-};
+}
 
 function beforeObserversFor(obj, path) {
   return listenersFor(obj, beforeEvent(path));
-};
+}
 
 /**
   @method removeBeforeObserver
@@ -104,6 +104,6 @@ function removeBeforeObserver(obj, _path, target, method) {
   removeListener(obj, beforeEvent(_path), target, method);
 
   return this;
-};
+}
 
 export {addObserver, observersFor, removeObserver, addBeforeObserver, _suspendBeforeObserver, _suspendObserver,_suspendBeforeObservers, _suspendObservers, beforeObserversFor, removeBeforeObserver};
