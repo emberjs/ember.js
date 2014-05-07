@@ -39,6 +39,7 @@ test("default store utilizes the container to acquire the model factory", functi
   };
 
   route.container = container;
+  route.set('_qp', null);
 
   equal(route.model({ post_id: 1}), post);
   equal(route.findModel('post', 1), post, '#findModel returns the correct post');
