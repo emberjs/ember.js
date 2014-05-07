@@ -137,6 +137,9 @@ function renderHelper(name, contextString, options) {
       target: parentController
     });
 
+    view.one('willDestroyElement', function() {
+      controller.destroy();
+    });
   } else {
     controller = container.lookup(controllerFullName) ||
                  generateController(container, controllerName);
