@@ -176,13 +176,18 @@ var AutoLocation = {
   /**
     @private
 
-    Redirects the browser using location.replace, prepending the locatin.origin
+    If currently using a hash path, uses replaceState to simply update the URL in place -
+    otherwise redirects the browser using location.replace, prepending the locatin.origin
     to prevent phishing attempts
 
     @method _replacePath
   */
   _replacePath: function (path) {
-    this._location.replace(this._getOrigin() + path);
+    if (this._getHash().substr(0, 2) === '#/') {
+      this._history.replaceState({ path: path }, null, path);
+    } else {
+      this._location.replace(this._getOrigin() + path);
+    }
   },
 
   /**
