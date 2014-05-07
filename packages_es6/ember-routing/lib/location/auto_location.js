@@ -346,7 +346,6 @@ var AutoLocation = {
       if (currentPath === historyPath) {
         implementationClass = this._HistoryLocation;
       } else {
-        cancelRouterSetup = true;
         this._replacePath(historyPath);
       }
 
