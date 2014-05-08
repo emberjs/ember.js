@@ -129,6 +129,33 @@ var Route = EmberObject.extend(ActionHandler, {
   controllerName: null,
 
   /**
+    The controller associated with this route.
+
+    Example
+
+    ```javascript
+    App.FormRoute = Ember.Route.extend({
+      actions: {
+        willTransition: function(transition) {
+          if (this.controller.get('userHasEnteredData') &&
+              !confirm("Are you sure you want to abandon progress?")) {
+            transition.abort();
+          } else {
+            // Bubble the `willTransition` action so that
+            // parent routes can decide whether or not to abort.
+            return true;
+          }
+        }
+      }
+    });
+    ```
+
+    @property controller
+    @type Ember.Controller
+    @since 1.6.0
+  */
+
+  /**
     The collection of functions, keyed by name, available on this route as
     action targets.
 
