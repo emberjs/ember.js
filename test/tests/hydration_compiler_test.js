@@ -128,6 +128,8 @@ test("attribute mustache", function() {
   deepEqual(opcodes, [
     [ "program", [null, null] ],
     [ "stringLiteral", ["class"] ],
+    [ "string", ["sexpr"] ],
+    [ "program", [null, null] ],
     [ "stringLiteral", ["before "] ],
     [ "string", ["sexpr"] ],
     [ "program", [null, null] ],
@@ -135,7 +137,9 @@ test("attribute mustache", function() {
     [ "sexpr", [ "foo", 0 ] ],
     [ "stringLiteral", [" after"] ],
     [ "stackLiteral", [0] ],
-    [ "nodeHelper", [ "ATTRIBUTE", 4, [ 0 ] ] ]
+    [ "sexpr", [ "CONCAT", 3 ] ],
+    [ "stackLiteral", [0] ],
+    [ "nodeHelper", [ "ATTRIBUTE", 2, [ 0 ] ] ]
   ]);
 });
 
@@ -145,6 +149,8 @@ test("attribute helper", function() {
   deepEqual(opcodes, [
     [ "program", [ null, null ] ],
     [ "stringLiteral", [ "class" ] ],
+    [ "string", [ "sexpr" ] ],
+    [ "program", [ null, null ] ],
     [ "stringLiteral", [ "before " ] ],
     [ "string", [ "sexpr" ] ],
     [ "program", [ null, null ] ],
@@ -153,6 +159,8 @@ test("attribute helper", function() {
     [ "sexpr", [ "foo", 1 ] ],
     [ "stringLiteral", [ " after" ] ],
     [ "stackLiteral", [ 0 ] ],
-    [ "nodeHelper", [ "ATTRIBUTE", 4, [ 0 ] ] ]
+    [ "sexpr", [ "CONCAT", 3 ] ],
+    [ "stackLiteral", [ 0 ] ],
+    [ "nodeHelper", [ "ATTRIBUTE", 2, [ 0 ] ] ]
   ]);
 });

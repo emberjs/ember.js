@@ -1,6 +1,6 @@
 import { compile } from "htmlbars/compiler";
 import { tokenize } from "simple-html-tokenizer";
-import { CONTENT, ELEMENT, ATTRIBUTE, SUBEXPR, LOOKUP_HELPER, SIMPLE } from "htmlbars/runtime/helpers";
+import { CONTENT, ELEMENT, ATTRIBUTE, CONCAT, SUBEXPR, SIMPLE } from "htmlbars/runtime/helpers";
 
 function frag(element, string) {
   if (element instanceof DocumentFragment) {
@@ -22,6 +22,8 @@ function registerHelper(name, callback) {
 function lookupHelper(helperName, context, options) {
   if (helperName === 'ATTRIBUTE') {
     return this.ATTRIBUTE;
+  } else if (helperName === 'CONCAT') {
+    return this.CONCAT;
   } else {
     return helpers[helperName];
   }
@@ -30,7 +32,7 @@ function lookupHelper(helperName, context, options) {
 module("HTML-based compiler (output)", {
   setup: function() {
     helpers = [];
-    hooks = { CONTENT: CONTENT, ELEMENT: ELEMENT, ATTRIBUTE: ATTRIBUTE, SUBEXPR: SUBEXPR, LOOKUP_HELPER: lookupHelper, SIMPLE: SIMPLE };
+    hooks = { CONTENT: CONTENT, ELEMENT: ELEMENT, ATTRIBUTE: ATTRIBUTE, CONCAT: CONCAT, SUBEXPR: SUBEXPR, LOOKUP_HELPER: lookupHelper, SIMPLE: SIMPLE };
   }
 });
 

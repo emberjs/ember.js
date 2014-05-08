@@ -13,12 +13,11 @@ function id(string) {
   return new IdNode([{ part: string }]);
 }
 
-function sexpr(params) {
-  var sexprNode = new SexprNode(params);
-
-  // normalize 1 -> true for the sake of comparison; not sure
-  // why they come in differently...
-  sexprNode.isHelper = sexprNode.isHelper === 1 ? true : sexprNode.isHelper;
+function sexpr(params, hash) {
+  var sexprNode = new SexprNode(params, hash || undefined);
+  if (sexprNode.isHelper) {
+    sexprNode.isHelper = true;
+  }
   return sexprNode;
 }
 
@@ -36,6 +35,10 @@ function mustache(string, pairs, strip, raw) {
   }
 
   return new MustacheNode(params, hash(pairs), raw ? '{{{' : '{{', strip || stripNone);
+}
+
+function concat(params) {
+  return mustache([id('CONCAT')].concat(params));
 }
 
 function string(data) {
@@ -126,7 +129,7 @@ test("Handlebars embedded in an attribute", function() {
   var t = 'some <div class="{{foo}}">content</div> done';
   astEqual(t, root([
     text("some "),
-    element("div", [attr("class", [mustache('foo')])], [
+    element("div", [ attr("class", mustache('foo')) ], [
       text("content")
     ]),
     text(" done")
@@ -137,9 +140,9 @@ test("Handlebars embedded in an attribute (sexprs)", function() {
   var t = 'some <div class="{{foo (foo "abc")}}">content</div> done';
   astEqual(t, root([
     text("some "),
-    element("div", [attr("class", [
-      mustache([id('foo'), sexpr([id('foo'), string('abc')])])
-    ])], [
+    element("div", [
+      attr("class", mustache([id('foo'), sexpr([id('foo'), string('abc')])]))
+    ], [
       text("content")
     ]),
     text(" done")
@@ -151,10 +154,13 @@ test("Handlebars embedded in an attribute with other content surrounding it", fu
   var t = 'some <a href="http://{{link}}/">content</a> done';
   astEqual(t, root([
     text("some "),
-    element("a", [attr("href", [
-      text("http://"),
-      mustache('link'), text("/")
-    ])], [
+    element("a", [
+      attr("href", concat([
+        string("http://"),
+        sexpr([id('link')]),
+        string("/")
+      ]))
+    ], [
       text("content")
     ]),
     text(" done")
@@ -172,11 +178,11 @@ test("A more complete embedding example", function() {
     mustache([id('some'), string('content')]),
     text(' '),
     element("div", [
-      attr("class", [
-        mustache('foo'),
-        text(' '),
-        mustache([id('bind-class'), id('isEnabled')], [['truthy', string('enabled')]])
-      ])
+      attr("class", concat([
+        sexpr([id('foo')]),
+        string(' '),
+        sexpr([id('bind-class'), id('isEnabled')], hash([['truthy', string('enabled')]]))
+      ]))
     ], [
       mustache('content')
     ]),
@@ -222,7 +228,7 @@ test("Involved block helper", function() {
 test("Node helpers", function() {
   var t = "<p {{action 'boom'}} class='bar'>Some content</p>";
   astEqual(t, root([
-    element('p', [attr('class', [text('bar')])], [mustache([id('action'), string('boom')])], [
+    element('p', [attr('class', text('bar'))], [mustache([id('action'), string('boom')])], [
       text('Some content')
     ])
   ]));
@@ -331,21 +337,21 @@ test("Stripping - removes unnecessary text nodes", function() {
 test("Mustache in unquoted attribute value", function() {
   var t = "<div class=a{{foo}}></div>";
   astEqual(t, root([
-    element('div', [attr('class', [text('a'), mustache('foo')])], [])
+    element('div', [ attr('class', concat([string("a"), sexpr([id('foo')])])) ], [])
   ]));
 
   t = "<div class={{foo}}></div>";
   astEqual(t, root([
-    element('div', [attr('class', [mustache('foo')])], [])
+    element('div', [ attr('class', mustache('foo')) ], [])
   ]));
 
   t = "<div class=a{{foo}}b></div>";
   astEqual(t, root([
-    element('div', [attr('class', [text('a'), mustache('foo'), text('b')])], [])
+    element('div', [ attr('class', concat([string("a"), sexpr([id('foo')]), string("b")])) ], [])
   ]));
 
   t = "<div class={{foo}}b></div>";
   astEqual(t, root([
-    element('div', [attr('class', [mustache('foo'), text('b')])], [])
+    element('div', [ attr('class', concat([sexpr([id('foo')]), string("b")])) ], [])
   ]));
 });
