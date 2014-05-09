@@ -1,5 +1,5 @@
 import { preprocess } from "htmlbars/parser";
-import { ProgramNode, BlockNode, ElementNode, MustacheNode, SexprNode,
+import { ProgramNode, BlockNode, ComponentNode, ElementNode, MustacheNode, SexprNode,
   HashNode, IdNode, StringNode, AttrNode, TextNode } from "htmlbars/ast";
 
 module("HTML-based compiler (AST)");
@@ -45,11 +45,12 @@ function string(data) {
   return new StringNode(data);
 }
 
-function element(tagName, a, b, c) {
-  var l = arguments.length;
-  if (l == 2) return new ElementNode(tagName, [], [], a);
-  if (l == 3) return new ElementNode(tagName, a, [], b);
-  if (l == 4) return new ElementNode(tagName, a, b, c);
+function element(tagName, attributes, helpers, children) {
+  return new ElementNode(tagName, attributes || [], helpers || [], children || []);
+}
+
+function component(tagName, attributes, children) {
+  return new ComponentNode(tagName, attributes || [], children || []);
 }
 
 function attr(name, value) {
@@ -85,11 +86,14 @@ function removeLocInfo(obj) {
   }
 }
 
-function astEqual(template, expected, message) {
+function astEqual(actual, expected, message) {
   // Perform a deepEqual but recursively remove the locInfo stuff
   // (e.g. line/column information about the compiled template)
   // that we don't want to have to write into our test cases.
-  var actual = preprocess(template);
+
+  if (typeof actual === 'string') actual = preprocess(actual);
+  if (typeof expected === 'string') expected = preprocess(expected);
+
   removeLocInfo(actual);
   removeLocInfo(expected);
 
@@ -107,7 +111,7 @@ test("a piece of content with HTML", function() {
   var t = 'some <div>content</div> done';
   astEqual(t, root([
     text("some "),
-    element("div", [
+    element("div", [], [], [
       text("content")
     ]),
     text(" done")
@@ -118,7 +122,7 @@ test("a piece of Handlebars with HTML", function() {
   var t = 'some <div>{{content}}</div> done';
   astEqual(t, root([
     text("some "),
-    element("div", [
+    element("div", [], [], [
       mustache('content')
     ]),
     text(" done")
@@ -129,7 +133,7 @@ test("Handlebars embedded in an attribute", function() {
   var t = 'some <div class="{{foo}}">content</div> done';
   astEqual(t, root([
     text("some "),
-    element("div", [ attr("class", mustache('foo')) ], [
+    element("div", [ attr("class", mustache('foo')) ], [], [
       text("content")
     ]),
     text(" done")
@@ -142,7 +146,7 @@ test("Handlebars embedded in an attribute (sexprs)", function() {
     text("some "),
     element("div", [
       attr("class", mustache([id('foo'), sexpr([id('foo'), string('abc')])]))
-    ], [
+    ], [], [
       text("content")
     ]),
     text(" done")
@@ -160,7 +164,7 @@ test("Handlebars embedded in an attribute with other content surrounding it", fu
         sexpr([id('link')]),
         string("/")
       ]))
-    ], [
+    ], [], [
       text("content")
     ]),
     text(" done")
@@ -183,7 +187,7 @@ test("A more complete embedding example", function() {
         string(' '),
         sexpr([id('bind-class'), id('isEnabled')], hash([['truthy', string('enabled')]]))
       ]))
-    ], [
+    ], [], [
       mustache('content')
     ]),
     text(' '),
@@ -197,7 +201,7 @@ test("Simple embedded block helpers", function() {
   astEqual(t, root([
     text(''),
     block(mustache([id('if'), id('foo')]), program([
-      element('div', [
+      element('div', [], [], [
         mustache('content')
       ])
     ])),
@@ -208,17 +212,17 @@ test("Simple embedded block helpers", function() {
 test("Involved block helper", function() {
   var t = '<p>hi</p> content {{#testing shouldRender}}<p>Appears!</p>{{/testing}} more <em>content</em> here';
   astEqual(t, root([
-    element('p', [
+    element('p', [], [], [
       text('hi')
     ]),
     text(' content '),
     block(mustache([id('testing'), id('shouldRender')]), program([
-      element('p', [
+      element('p', [], [], [
         text('Appears!')
       ])
     ])),
     text(' more '),
-    element('em', [
+    element('em', [], [], [
       text('content')
     ]),
     text(' here')
@@ -327,31 +331,52 @@ test("Stripping - removes unnecessary text nodes", function() {
   astEqual(t, root([
     text(''),
     block(mustache([id('each')], null, stripRight), program([
-      element('li', [text(' foo ')])
+      element('li', [], [], [text(' foo ')])
     ], stripBoth)),
     text('')
   ]));
 });
 
-
 test("Mustache in unquoted attribute value", function() {
   var t = "<div class=a{{foo}}></div>";
   astEqual(t, root([
-    element('div', [ attr('class', concat([string("a"), sexpr([id('foo')])])) ], [])
+    element('div', [ attr('class', concat([string("a"), sexpr([id('foo')])])) ])
   ]));
 
   t = "<div class={{foo}}></div>";
   astEqual(t, root([
-    element('div', [ attr('class', mustache('foo')) ], [])
+    element('div', [ attr('class', mustache('foo')) ])
   ]));
 
   t = "<div class=a{{foo}}b></div>";
   astEqual(t, root([
-    element('div', [ attr('class', concat([string("a"), sexpr([id('foo')]), string("b")])) ], [])
+    element('div', [ attr('class', concat([string("a"), sexpr([id('foo')]), string("b")])) ])
   ]));
 
   t = "<div class={{foo}}b></div>";
   astEqual(t, root([
-    element('div', [ attr('class', concat([sexpr([id('foo')]), string("b")])) ], [])
+    element('div', [ attr('class', concat([sexpr([id('foo')]), string("b")])) ])
+  ]));
+});
+
+test("Web components", function() {
+  var t = "<x-foo id='{{bar}}' class='foo-{{bar}}'>{{a}}{{b}}c{{d}}</x-foo>{{e}}";
+  astEqual(t, root([
+    text(''),
+    component('x-foo', [
+      attr('id', mustache('bar')),
+      attr('class', concat([ string('foo-'), sexpr([id('bar')]) ]))
+    ], program([
+      text(''),
+      mustache('a'),
+      text(''),
+      mustache('b'),
+      text('c'),
+      mustache('d'),
+      text('')
+    ])),
+    text(''),
+    mustache('e'),
+    text('')
   ]));
 });

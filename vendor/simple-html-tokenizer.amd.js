@@ -1,27 +1,21 @@
 define("simple-html-tokenizer",
-  ["simple-html-tokenizer/char-refs","exports"],
-  function(__dependency1__, __exports__) {
+  ["simple-html-tokenizer/char-refs","simple-html-tokenizer/helpers","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     /*jshint boss:true*/
 
     var namedCodepoints = __dependency1__.namedCodepoints;
+    var objectCreate = __dependency2__.objectCreate;
+    var isSpace = __dependency2__.isSpace;
+    var isAlpha = __dependency2__.isAlpha;
+    var isUpper = __dependency2__.isUpper;
 
-    var objectCreate = Object.create || function(obj) {
-      function F() {}
-      F.prototype = obj;
-      return new F();
-    };
-
-    function isSpace(char) {
-      return (/[\n\r\t ]/).test(char);
-    }
-
-    function isAlpha(char) {
-      return (/[A-Za-z]/).test(char);
+    function preprocessInput(input) {
+      return input.replace(/\r\n?/g, "\n");
     }
 
     function Tokenizer(input) {
-      this.input = input;
+      this.input = preprocessInput(input);
       this.char = 0;
       this.line = 1;
       this.column = 0;
@@ -48,7 +42,7 @@ define("simple-html-tokenizer",
       },
 
       tokenizePart: function(string) {
-        this.input += string;
+        this.input += preprocessInput(string);
         var tokens = [], token;
 
         while (this.char < this.input.length) {
@@ -69,8 +63,6 @@ define("simple-html-tokenizer",
       },
 
       tag: function(Type, char) {
-        char = char.toLowerCase();
-
         var lastToken = this.token;
         this.token = new Type(char);
         this.state = 'tagName';
@@ -202,8 +194,8 @@ define("simple-html-tokenizer",
             this.state = 'markupDeclaration';
           } else if (char === "/") {
             this.state = 'endTagOpen';
-          } else if (!isSpace(char)) {
-            return this.tag(StartTag, char);
+          } else if (isAlpha(char)) {
+            return this.tag(StartTag, char.toLowerCase());
           }
         },
 
@@ -265,10 +257,14 @@ define("simple-html-tokenizer",
         tagName: function(char) {
           if (isSpace(char)) {
             this.state = 'beforeAttributeName';
-          } else if(/[A-Za-z0-9]/.test(char)) {
-            this.token.addToTagName(char);
+          } else if (char === "/") {
+            this.state = 'selfClosingStartTag';
           } else if (char === ">") {
             return this.emitToken();
+          } else if (isUpper(char)) {
+            this.token.addToTagName(char.toLowerCase());
+          } else {
+            this.token.addToTagName(char);
           }
         },
 
@@ -384,7 +380,7 @@ define("simple-html-tokenizer",
 
         endTagOpen: function(char) {
           if (isAlpha(char)) {
-            this.tag(EndTag, char);
+            this.tag(EndTag, char.toLowerCase());
           }
         }
       }
@@ -2709,7 +2705,25 @@ define("simple-html-tokenizer/helpers",
       }
     }
 
-    __exports__.makeArray = makeArray;function removeLocInfo(tokens) {
+    __exports__.makeArray = makeArray;var objectCreate = Object.create || function objectCreate(obj) {
+      function F() {}
+      F.prototype = obj;
+      return new F();
+    };
+    __exports__.objectCreate = objectCreate;
+    function isSpace(char) {
+      return (/[\t\n\f ]/).test(char);
+    }
+
+    __exports__.isSpace = isSpace;function isAlpha(char) {
+      return (/[A-Za-z]/).test(char);
+    }
+
+    __exports__.isAlpha = isAlpha;function isUpper(char) {
+      return (/[A-Z]/).test(char);
+    }
+
+    __exports__.isUpper = isUpper;function removeLocInfo(tokens) {
       for (var i = 0; i < tokens.length; i++) {
         var token = tokens[i];
         delete token.firstLine;
