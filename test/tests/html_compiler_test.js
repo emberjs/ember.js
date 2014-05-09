@@ -714,3 +714,12 @@ test('Web components - Unknown helpers fall back to elements', function () {
   var object = { size: 'med', foo: 'b' };
   compilesTo('<x-bar class="btn-{{size}}">a{{foo}}c</x-bar>','<x-bar class="btn-med">abc</x-bar>', object);
 });
+
+test('Web components - Text-only attributes work', function () {
+  var object = { foo: 'qux' };
+  compilesTo('<x-bar id="test">{{foo}}</x-bar>','<x-bar id="test">qux</x-bar>', object);
+});
+
+test('Web components - Empty components work', function () {
+  compilesTo('<x-bar></x-bar>','<x-bar></x-bar>', {});
+});
