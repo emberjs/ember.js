@@ -61,8 +61,7 @@ The above vanilla HB AST looks something like:
       Mustache: `onclick` params=[`"like"`]
       Content: '>Like</button> </p>'
 
-See [parser.js](lib/htmlbars/parser.js) and 
-[process-token.js](lib/htmlbars/html-parser/process-token.js).
+See [parser.js](lib/htmlbars/parser.js)
 
 ### 2. Convert to HTMLBars AST
 
@@ -80,11 +79,11 @@ with two main features that make it distinct from the vanilla HB AST:
 So the above example is restructured into an HTMLbars AST that looks
 something like:
 
-    HTMLElement tag='p' attributes=[['class', ['user ', Mustache(`user.cssClass`)]]]
+    Element tag='p' attributes=[Attr('class', Mustache(`CONCAT "user " user.cssClass`))]
       "User: "
       Mustache(`user.name`)
       " "
-      HTMLElement tag='button' helpers=[Mustache(`onclick "like"`)]
+      Element tag='button' helpers=[Mustache(`onclick "like"`)]
         "Like"
 
 See [parser.js](lib/htmlbars/parser.js) and 
@@ -149,7 +148,7 @@ build up this fragment (i.e. the `createDocumentFragment`, `createElement`,
 `createTextNode`, etc., code from above). HTMLbars accomplishes this in
 two passes (on the compile side): 
 
-1. In [fragment_opcode.js](lib/compiler/fragment_opcode.js), 
+1. In [fragment_opcode.js](lib/htmlbars/compiler/fragment_opcode.js),
    the HTMLbars AST is recursively walked and a flattened 
    array of opcodes (used in step 2) is generated. 
    The intent of this phase is to flatten the recursive structure of the 
@@ -163,4 +162,3 @@ two passes (on the compile side):
 #### Build Hydrate function
 
 TODO: this.
-
