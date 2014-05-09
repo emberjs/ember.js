@@ -115,7 +115,7 @@ var PromiseProxyMixin = Mixin.create({
     @property isSettled
     @default false
   */
-  isSettled:  or('isRejected', 'isFulfilled').readOnly(),
+  isSettled:  or('isRejected', 'isFulfilled').readOnly(), 
 
   /**
     Will become `true` if the proxied promise is rejected.
