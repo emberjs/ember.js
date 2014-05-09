@@ -128,7 +128,7 @@ var PromiseProxyMixin = Mixin.create({
   /**
     Will become `true` if the proxied promise is fulfilled.
 
-    @property isFullfilled
+    @property isFulfilled
     @default false
   */
   isFulfilled: false,
