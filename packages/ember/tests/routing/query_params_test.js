@@ -909,4 +909,51 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     bootApplication();
   });
+
+  test("opting into replace does not affect transitions between routes", function() {
+    expect(5);
+    Ember.TEMPLATES.application = Ember.Handlebars.compile(
+      "{{link-to 'Foo' 'foo' id='foo-link'}}" +
+      "{{link-to 'Bar' 'bar' id='bar-no-qp-link'}}" +
+      "{{link-to 'Bar' 'bar' (query-params raytiley='isanerd') id='bar-link'}}" +
+      "{{outlet}}"
+    );
+    App.Router.map(function() {
+      this.route('foo');
+      this.route('bar');
+    });
+
+    App.BarController = Ember.Controller.extend({
+      queryParams: ['raytiley'],
+      raytiley: 'isadork'
+    });
+
+    App.BarRoute = Ember.Route.extend({
+      queryParams: {
+        raytiley: {
+          replace: true
+        }
+      }
+    });
+
+    bootApplication();
+    var controller = container.lookup('controller:bar');
+
+    expectedPushURL = '/foo';
+    Ember.run(Ember.$('#foo-link'), 'click');
+
+    expectedPushURL = '/bar';
+    Ember.run(Ember.$('#bar-no-qp-link'), 'click');
+
+    expectedReplaceURL = '/bar?raytiley=boo';
+    Ember.run(controller, 'set', 'raytiley', 'boo');
+
+    expectedPushURL = '/foo';
+    Ember.run(Ember.$('#foo-link'), 'click');
+
+    expectedPushURL = '/bar?raytiley=isanerd';
+    Ember.run(Ember.$('#bar-link'), 'click');
+
+  });
+
 }

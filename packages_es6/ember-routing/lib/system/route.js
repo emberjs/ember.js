@@ -427,7 +427,9 @@ var Route = EmberObject.extend(ActionHandler, {
             // Now check if this value actually changed.
             if (svalue !== qp.svalue) {
               var options = get(this.queryParams, qp.urlKey) || {};
-              if (get(options, 'replace')) {
+
+              // Only use replace if transition wouldn't otherwise change the url
+              if (!transition.targetName && get(options, 'replace')) {
                 transition.method('replace');
               }
 
