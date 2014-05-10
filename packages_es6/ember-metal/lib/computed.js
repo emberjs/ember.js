@@ -537,8 +537,8 @@ function computed(func) {
   var args;
 
   if (arguments.length > 1) {
-    args = a_slice.call(arguments, 0, -1);
-    func = a_slice.call(arguments, -1)[0];
+    args = a_slice.call(arguments);
+    func = args.pop();
   }
 
   if (typeof func !== "function") {
