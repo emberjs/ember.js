@@ -209,8 +209,10 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
   }
 }
 
-function mergeMixins(mixins, m, descs, values, base, keys) {
+function mergeMixins(mixins, m, descs, values, base, keys, without) {
   var mixin, props, key, concats, mergings, meta;
+  
+  without = without || [];
 
   function removeKeys(keyName) {
     delete descs[keyName];
@@ -227,7 +229,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
 
     if (props) {
       meta = metaFor(base);
-      if (base.willMergeMixin) { base.willMergeMixin(props); }
+      if (base.willMergeMixin) { base.willMergeMixin(props, without); }
       concats = concatenatedMixinProperties('concatenatedProperties', props, values, base);
       mergings = concatenatedMixinProperties('mergedProperties', props, values, base);
 
@@ -240,7 +242,10 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
       // manually copy toString() because some JS engines do not enumerate it
       if (props.hasOwnProperty('toString')) { base.toString = props.toString; }
     } else if (mixin.mixins) {
-      mergeMixins(mixin.mixins, m, descs, values, base, keys);
+      // This is so nested mixins can know about `without` exclusions
+      without.push.apply(without, mixin._without);
+
+      mergeMixins(mixin.mixins, m, descs, values, base, keys, without);
       if (mixin._without) { a_forEach.call(mixin._without, removeKeys); }
     }
   }
