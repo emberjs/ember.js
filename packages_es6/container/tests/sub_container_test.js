@@ -1,5 +1,6 @@
 import { factory,
          o_create,
+         makeResolver,
          setProperties} from 'container/tests/container_helper';
 
 import Container from 'container';
@@ -60,13 +61,28 @@ test("Destroying a parent container destroys the sub-containers", function() {
 
 test("Resolver is inherited from parent container", function() {
   var otherController = factory();
-  container.resolver = function(fullName) {
+  container.resolver = makeResolver(function(fullName) {
     return otherController;
-  };
+  });
   var subContainer = container.child();
 
   equal(subContainer.resolve('controller:post'), otherController, 'should use parent resolver');
   equal(container.resolve('controller:post'), otherController, 'should use resolver');
+});
+
+test("Resolver-delegating methods should be inherited", function() {
+  function resolver() { return {}; }
+  function K() { return "val"; }
+  resolver.normalize = K;
+  resolver.describe = K;
+  resolver.makeToString = K;
+
+  container.resolver = resolver;
+  var subContainer = container.child();
+
+  equal(subContainer.normalize(),    "val");
+  equal(subContainer.describe(),     "val");
+  equal(subContainer.makeToString(), "val");
 });
 
 test("Type injections should be inherited", function() {
@@ -86,3 +102,5 @@ test("Type injections should be inherited", function() {
 
   equal(postController.store, store);
 });
+
+

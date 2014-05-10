@@ -1,5 +1,19 @@
 import InheritingDict from 'container/inheriting_dict';
 
+function identityResolver() {}
+
+identityResolver.describe = function(fullName) {
+  return fullName;
+};
+
+identityResolver.normalize = function (fullName) {
+  return fullName;
+};
+
+identityResolver.makeToString = function(factory, fullName) {
+  return factory.toString();
+};
+
 // A lightweight container that helps to assemble and decouple components.
 // Public api for the container is still in flux.
 // The public api, specified on the application namespace should be considered the stable api.
@@ -7,7 +21,7 @@ function Container(parent) {
   this.parent = parent;
   this.children = [];
 
-  this.resolver = parent && parent.resolver || function() {};
+  this.resolver = parent && parent.resolver || identityResolver;
 
   this.registry = new InheritingDict(parent && parent.registry);
   this.cache = new InheritingDict(parent && parent.cache);
@@ -237,7 +251,7 @@ Container.prototype = {
     @return {string} described fullName
   */
   describe: function(fullName) {
-    return fullName;
+    return this.resolver.describe(fullName);
   },
 
   /**
@@ -248,7 +262,7 @@ Container.prototype = {
     @return {string} normalized fullName
   */
   normalize: function(fullName) {
-    return fullName;
+    return this.resolver.normalize(fullName);
   },
 
   /**
@@ -259,7 +273,7 @@ Container.prototype = {
     @return {function} toString function
   */
   makeToString: function(factory, fullName) {
-    return factory.toString();
+    return this.resolver.makeToString(factory, fullName);
   },
 
   /**
