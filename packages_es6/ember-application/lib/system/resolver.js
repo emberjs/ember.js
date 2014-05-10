@@ -6,7 +6,7 @@
 import Ember from "ember-metal/core"; // Ember.TEMPLATES, Ember.assert
 import {get} from "ember-metal/property_get";
 import Logger from "ember-metal/logger";
-import {classify, capitalize, decamelize} from "ember-runtime/system/string";
+import {camelize, capitalize, classify, decamelize, fmt} from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import Namespace from "ember-runtime/system/namespace";
 import EmberHandlebars from "ember-handlebars";
@@ -325,7 +325,9 @@ var DefaultResolver = EmberObject.extend({
     var className = classify(parsedName.name),
         factory = get(parsedName.root, className);
 
-     if (factory) { return factory; }
+    Ember.assert(fmt("Model names should be lowerCamelCase: you passed `%@1`, but you should pass `%@2` instead.", [parsedName.name, camelize(parsedName.name)]), !/^[A-Z]/.test(parsedName.name));
+
+    if (factory) { return factory; }
   },
   /**
     Look up the specified object (from parsedName) on the appropriate
