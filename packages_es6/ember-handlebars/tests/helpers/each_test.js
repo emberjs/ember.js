@@ -5,6 +5,7 @@ import run from "ember-metal/run_loop";
 import {View as EmberView} from "ember-views/views/view";
 import {computed} from "ember-metal/computed";
 import ArrayController from "ember-runtime/controllers/array_controller";
+import EachArrayController from "ember-handlebars/helpers/each_array_controller";
 import EmberHandlebars from "ember-handlebars-compiler";
 // import {expectAssertion} from "ember-metal/tests/debug_helpers";
 import {A} from "ember-runtime/system/native_array";
@@ -223,13 +224,16 @@ test("it supports itemController", function() {
     })
   });
 
-  run(function() { view.destroy(); }); // destroy existing view
+  var container = new Ember.Container();
+
+  Ember.run(view, 'destroy');
 
   var parentController = {
     container: container
   };
 
   container.register('controller:array', ArrayController.extend());
+  container.register('controller:-each-array', EachArrayController.extend());
 
   view = EmberView.create({
     container: container,
@@ -280,6 +284,8 @@ test("itemController specified in template gets a parentController property", fu
       };
 
   container.register('controller:array', ArrayController.extend());
+  container.register('controller:-each-array', EachArrayController.extend());
+
   run(function() { view.destroy(); }); // destroy existing view
 
   view = EmberView.create({
@@ -365,6 +371,7 @@ test("it supports itemController when using a custom keyword", function() {
   });
 
   container.register('controller:array', ArrayController.extend());
+  container.register('controller:-each-array', EachArrayController.extend());
 
   run(function() { view.destroy(); }); // destroy existing view
   view = EmberView.create({
@@ -688,6 +695,7 @@ test("itemController specified in template with name binding does not change con
   };
 
   container.register('controller:array', ArrayController.extend());
+  container.register('controller:-each-array', EachArrayController.extend());
 
   view = EmberView.create({
     container: container,

@@ -2241,7 +2241,6 @@ var View = CoreView.extend({
       }
 
       setProperties(view, attrs);
-
     }
 
     return view;
