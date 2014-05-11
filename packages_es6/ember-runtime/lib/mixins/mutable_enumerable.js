@@ -49,7 +49,7 @@ var forEach = EnumerableUtils.forEach;
   @namespace Ember
   @uses Ember.Enumerable
 */
-var MutableEnumerable = Mixin.create(Enumerable, {
+export default Mixin.create(Enumerable, {
 
   /**
     __Required.__ You must implement this method to apply this mixin.
@@ -112,5 +112,3 @@ var MutableEnumerable = Mixin.create(Enumerable, {
     return this;
   }
 });
-
-export default MutableEnumerable;

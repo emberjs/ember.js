@@ -1,20 +1,23 @@
 /*globals TestObject:true */
 
-var textField;
 import Ember from "ember-metal/core"; // Ember.K
-var K = Ember.K;
 
 import run from "ember-metal/run_loop";
-import {get} from "ember-metal/property_get";
-import {set as o_set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set as o_set } from "ember-metal/property_set";
 import EmberHandlebars from "ember-handlebars";
 import EmberObject from "ember-runtime/system/object";
-import {View} from "ember-views/views/view";
-
+import { View } from "ember-views/views/view";
 import TextField from "ember-handlebars/controls/text_field";
-var set = function(object, key, value) {
+
+var textField;
+var K = Ember.K;
+var controller;
+var TestObject;
+
+function set(object, key, value) {
   run(function() { o_set(object, key, value); });
-};
+}
 
 function append() {
   run(function() {
@@ -27,8 +30,6 @@ function destroy(view) {
     view.destroy();
   });
 }
-
-var controller, TestObject;
 
 module("{{input type='text'}}", {
   setup: function() {

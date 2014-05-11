@@ -1,15 +1,18 @@
 import Ember from 'ember-metal/core'; // TEMPLATES
-import {get} from "ember-metal/property_get";
-import {set as emberSet} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set as emberSet } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
-import {create} from 'ember-metal/platform';
-import {observer} from 'ember-metal/mixin';
+import { create } from 'ember-metal/platform';
+import { observer } from 'ember-metal/mixin';
 
 import Container from 'container/container';
 import Namespace from "ember-runtime/system/namespace";
-import {classify, decamelize} from "ember-runtime/system/string";
+import {
+  classify,
+  decamelize
+} from "ember-runtime/system/string";
 
-import {Controller as EmberController} from "ember-runtime/controllers/controller";
+import { Controller as EmberController } from "ember-runtime/controllers/controller";
 import EmberObjectController from "ember-runtime/controllers/object_controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
 
@@ -21,22 +24,25 @@ import EmberView from "ember-routing/ext/view";
 import jQuery from "ember-views/system/jquery";
 
 import renderHelper from "ember-routing/helpers/render";
-import {ActionHelper, actionHelper} from "ember-routing/helpers/action";
-import {outletHelper} from "ember-routing/helpers/outlet";
+import {
+  ActionHelper,
+  actionHelper
+} from "ember-routing/helpers/action";
+import { outletHelper } from "ember-routing/helpers/outlet";
 
-var appendView = function(view) {
+function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
-};
+}
 
-var set = function(object, key, value) {
+function set(object, key, value) {
   run(function() { emberSet(object, key, value); });
-};
+}
 
-var compile = function(template) {
+function compile(template) {
   return EmberHandlebars.compile(template);
-};
+}
 
-var buildContainer = function(namespace) {
+function buildContainer(namespace) {
   var container = new Container();
 
   container.set = emberSet;
@@ -55,7 +61,7 @@ var buildContainer = function(namespace) {
   container.typeInjection('route', 'router', 'router:main');
 
   return container;
-};
+}
 
 function resolverFor(namespace) {
   return function(fullName) {

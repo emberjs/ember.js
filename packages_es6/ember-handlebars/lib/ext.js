@@ -1,15 +1,15 @@
 import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.assert, Ember.Handlebars, Ember.lookup
 // var emberAssert = Ember.assert;
 
-import {fmt} from "ember-runtime/system/string";
+import { fmt } from "ember-runtime/system/string";
 
 import EmberHandlebars from "ember-handlebars-compiler";
 var helpers = EmberHandlebars.helpers;
 
-import {get} from "ember-metal/property_get";
-import {isGlobalPath} from "ember-metal/binding";
+import { get } from "ember-metal/property_get";
+import { isGlobalPath } from "ember-metal/binding";
 import EmberError from "ember-metal/error";
-import {IS_BINDING} from "ember-metal/mixin";
+import { IS_BINDING } from "ember-metal/mixin";
 
 // late bound via requireModule because of circular dependencies.
 var resolveHelper,
@@ -118,7 +118,7 @@ function handlebarsGet(root, path, options) {
   @param {Object} options The template's option hash
   @since 1.4.0
 */
-function getEscaped(root, path, options) {
+export function getEscaped(root, path, options) {
   var result = handlebarsGet(root, path, options);
 
   if (result === null || result === undefined) {
@@ -133,7 +133,7 @@ function getEscaped(root, path, options) {
   return result;
 }
 
-function resolveParams(context, params, options) {
+export function resolveParams(context, params, options) {
   var resolvedParams = [], types = options.types, param, type;
 
   for (var i=0, l=params.length; i<l; i++) {
@@ -150,7 +150,7 @@ function resolveParams(context, params, options) {
   return resolvedParams;
 }
 
-function resolveHash(context, hash, options) {
+export function resolveHash(context, hash, options) {
   var resolvedHash = {}, types = options.hashTypes, type;
 
   for (var key in hash) {
@@ -182,7 +182,7 @@ function resolveHash(context, hash, options) {
   @param {String} path
   @param {Hash} options
 */
-function helperMissingHelper(path) {
+export function helperMissingHelper(path) {
   if (!resolveHelper) { resolveHelper = requireModule('ember-handlebars/helpers/binding')['resolveHelper']; } // ES6TODO: stupid circular dep
 
   var error, view = "";
@@ -216,7 +216,7 @@ function helperMissingHelper(path) {
   @param {String} path
   @param {Hash} options
 */
-function blockHelperMissingHelper(path) {
+export function blockHelperMissingHelper(path) {
   if (!resolveHelper) { resolveHelper = requireModule('ember-handlebars/helpers/binding')['resolveHelper']; } // ES6TODO: stupid circular dep
 
   var options = arguments[arguments.length - 1];
@@ -345,7 +345,7 @@ function blockHelperMissingHelper(path) {
   @param {Function} function
   @param {String} dependentKeys*
 */
-function registerBoundHelper(name, fn) {
+export function registerBoundHelper(name, fn) {
   var boundHelperArgs = slice.call(arguments, 1),
       boundFn = makeBoundHelper.apply(this, boundHelperArgs);
   EmberHandlebars.registerHelper(name, boundFn);
@@ -547,10 +547,15 @@ function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
   @for Ember.Handlebars
   @param {String} spec
 */
-function template(spec) {
+export function template(spec) {
   var t = originalTemplate(spec);
   t.isTop = true;
   return t;
 }
 
-export {normalizePath, template, makeBoundHelper, registerBoundHelper, resolveHash, resolveParams, handlebarsGet, getEscaped, evaluateUnboundHelper, helperMissingHelper, blockHelperMissingHelper};
+export {
+  normalizePath,
+  makeBoundHelper,
+  handlebarsGet,
+  evaluateUnboundHelper
+};

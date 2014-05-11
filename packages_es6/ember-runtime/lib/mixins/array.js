@@ -8,16 +8,33 @@
 //
 import Ember from "ember-metal/core"; // ES6TODO: Ember.A
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {computed, cacheFor} from "ember-metal/computed";
-import {isNone, none} from 'ember-metal/is_none';
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import {
+  computed,
+  cacheFor
+} from "ember-metal/computed";
+import {
+  isNone,
+  none
+} from 'ember-metal/is_none';
 import Enumerable from "ember-runtime/mixins/enumerable";
 import EnumerableUtils from "ember-metal/enumerable_utils";
-import {Mixin, required} from "ember-metal/mixin";
-import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
-import {addListener, removeListener, sendEvent, hasListeners } from "ember-metal/events";
-import {isWatching} from "ember-metal/watching";
+import {
+  Mixin,
+  required
+} from "ember-metal/mixin";
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
+import {
+  addListener,
+  removeListener,
+  sendEvent,
+  hasListeners
+} from "ember-metal/events";
+import { isWatching } from "ember-metal/watching";
 
 var map = EnumerableUtils.map;
 
@@ -60,7 +77,7 @@ var map = EnumerableUtils.map;
   @uses Ember.Enumerable
   @since Ember 0.9.0
 */
-var EmberArray = Mixin.create(Enumerable, {
+export default Mixin.create(Enumerable, {
 
   /**
     Your array must support the `length` property. Your replace methods should
@@ -441,7 +458,4 @@ var EmberArray = Mixin.create(Enumerable, {
 
     return this.__each;
   })
-
 });
-
-export default EmberArray;

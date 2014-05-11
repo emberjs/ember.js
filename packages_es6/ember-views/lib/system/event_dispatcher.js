@@ -4,15 +4,15 @@
 */
 import Ember from "ember-metal/core"; // Ember.assert
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {isNone} from 'ember-metal/is_none';
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { isNone } from 'ember-metal/is_none';
 import run from "ember-metal/run_loop";
-import {typeOf} from "ember-metal/utils";
-import {fmt} from "ember-runtime/system/string";
+import { typeOf } from "ember-metal/utils";
+import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
-import {View} from "ember-views/views/view";
+import { View } from "ember-views/views/view";
 
 var ActionHelper;
 
@@ -30,7 +30,7 @@ var ActionHelper;
   @private
   @extends Ember.Object
 */
-var EventDispatcher = EmberObject.extend({
+export default EmberObject.extend({
 
   /**
     The set of events names (and associated handler function names) to be setup
@@ -224,5 +224,3 @@ var EventDispatcher = EmberObject.extend({
     return this._super();
   }
 });
-
-export default EventDispatcher;

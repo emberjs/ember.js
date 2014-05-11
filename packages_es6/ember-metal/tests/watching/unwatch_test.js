@@ -1,11 +1,17 @@
 import testBoth from 'ember-metal/tests/props_helper';
-import {watch, unwatch} from "ember-metal/watching";
-import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
-import {defineProperty} from 'ember-metal/properties';
+import {
+  watch,
+  unwatch
+} from "ember-metal/watching";
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
+import { defineProperty } from 'ember-metal/properties';
 import { addListener } from "ember-metal/events";
-import {computed} from 'ember-metal/computed';
-import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
+import { computed } from 'ember-metal/computed';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 
 var willCount, didCount;
 

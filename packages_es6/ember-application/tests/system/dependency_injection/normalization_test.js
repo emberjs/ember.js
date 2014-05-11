@@ -1,5 +1,5 @@
 import run from "ember-metal/run_loop";
-import {forEach} from "ember-metal/array";
+import { forEach } from "ember-metal/array";
 import Application from "ember-application/system/application";
 
 var application, locator;

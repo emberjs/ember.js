@@ -1,29 +1,31 @@
 /*globals TemplateTests:true,App:true */
 /*jshint newcap:false*/
 
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import EmberObject from "ember-runtime/system/object";
-import {computed} from "ember-metal/computed";
+import { computed } from "ember-metal/computed";
 import Namespace from "ember-runtime/system/namespace";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import CollectionView from "ember-views/views/collection_view";
-import {A} from "ember-runtime/system/native_array";
+import { A } from "ember-runtime/system/native_array";
 import Container from "ember-runtime/system/container";
 import EmberHandlebars from "ember-handlebars-compiler";
 
 var trim = jQuery.trim;
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 
-var firstGrandchild = function(view) {
+function firstGrandchild(view) {
   return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
-};
-var nthChild = function(view, nth) {
+}
+
+function nthChild(view, nth) {
   return get(view, 'childViews').objectAt(nth || 0);
-};
+}
+
 var firstChild = nthChild;
 
 var originalLookup = Ember.lookup, lookup, TemplateTests, view;

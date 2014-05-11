@@ -2,11 +2,18 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.K
 
 import merge from "ember-metal/merge";
 import MutableArray from "ember-runtime/mixins/mutable_array";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 
-import {View, ViewCollection} from "ember-views/views/view";
-import {cloneStates, states as EmberViewStates} from "ember-views/views/states";
+import {
+  View,
+  ViewCollection
+} from "ember-views/views/view";
+
+import {
+  cloneStates,
+  states as EmberViewStates
+} from "ember-views/views/states";
 
 import EmberError from "ember-metal/error";
 
@@ -14,12 +21,15 @@ import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 var forEach = EnumerableUtils.forEach;
 
-import {computed} from "ember-metal/computed";
+import { computed } from "ember-metal/computed";
 import run from "ember-metal/run_loop";
-import {defineProperty} from "ember-metal/properties";
+import { defineProperty } from "ember-metal/properties";
 import renderBuffer from "ember-views/system/render_buffer";
-import {observer, beforeObserver} from "ember-metal/mixin";
-import {A as emberA} from "ember-runtime/system/native_array";
+import {
+  observer,
+  beforeObserver
+} from "ember-metal/mixin";
+import { A as emberA } from "ember-runtime/system/native_array";
 
 /**
 @module ember

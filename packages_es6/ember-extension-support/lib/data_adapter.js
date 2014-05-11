@@ -1,10 +1,10 @@
 import Ember from "ember-metal/core";
-import {get} from "ember-metal/property_get";
+import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
-import {dasherize} from "ember-runtime/system/string";
+import { dasherize } from "ember-runtime/system/string";
 import Namespace from "ember-runtime/system/namespace";
 import EmberObject from "ember-runtime/system/object";
-import {A as emberA} from "ember-runtime/system/native_array";
+import { A as emberA } from "ember-runtime/system/native_array";
 import Application from "ember-application/system/application";
 
 /**
@@ -53,7 +53,7 @@ import Application from "ember-application/system/application";
   @namespace Ember
   @extends EmberObject
 */
-var DataAdapter = EmberObject.extend({
+export default EmberObject.extend({
   init: function() {
     this._super();
     this.releaseMethods = emberA();
@@ -475,7 +475,4 @@ var DataAdapter = EmberObject.extend({
   observeRecord: function(record, recordUpdated) {
     return function(){};
   }
-
 });
-
-export default DataAdapter;

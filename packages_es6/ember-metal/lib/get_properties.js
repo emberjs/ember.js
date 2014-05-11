@@ -1,5 +1,5 @@
-import {get} from "ember-metal/property_get";
-import {typeOf} from "ember-metal/utils";
+import { get } from "ember-metal/property_get";
+import { typeOf } from "ember-metal/utils";
 
 /**
   To get multiple properties at once, call `Ember.getProperties`
@@ -22,7 +22,7 @@ import {typeOf} from "ember-metal/utils";
   @param {String...|Array} list of keys to get
   @return {Hash}
 */
-function getProperties(obj) {
+export default function getProperties(obj) {
   var ret = {},
       propertyNames = arguments,
       i = 1;
@@ -35,6 +35,4 @@ function getProperties(obj) {
     ret[propertyNames[i]] = get(obj, propertyNames[i]);
   }
   return ret;
-}
-
-export default getProperties;
+};

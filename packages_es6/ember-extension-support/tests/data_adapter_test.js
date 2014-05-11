@@ -1,13 +1,16 @@
 import Ember from "ember-metal/core";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
-import {addObserver, removeObserver} from "ember-metal/observer";
+import {
+  addObserver,
+  removeObserver
+} from "ember-metal/observer";
 import EmberObject from "ember-runtime/system/object";
-import {Controller as EmberController} from "ember-runtime/controllers/controller";
+import { Controller as EmberController } from "ember-runtime/controllers/controller";
 import EmberDataAdapter from "ember-extension-support/data_adapter";
 import EmberApplication from "ember-application/system/application";
-import {DefaultResolver} from "ember-application/system/resolver";
+import { DefaultResolver } from "ember-application/system/resolver";
 
 var adapter, App, Model = EmberObject.extend();
 

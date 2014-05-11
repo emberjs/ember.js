@@ -1,10 +1,10 @@
 import isNone from 'ember-metal/is_none';
 import run from 'ember-metal/run_loop';
 
-var originalSetTimeout = window.setTimeout,
-    originalDateValueOf = Date.prototype.valueOf;
+var originalSetTimeout = window.setTimeout;
+var originalDateValueOf = Date.prototype.valueOf;
 
-var wait = function(callback, maxWaitCount) {
+function wait(callback, maxWaitCount) {
   maxWaitCount = isNone(maxWaitCount) ? 100 : maxWaitCount;
 
   originalSetTimeout(function() {
@@ -16,7 +16,7 @@ var wait = function(callback, maxWaitCount) {
 
     callback();
   }, 10);
-};
+}
 
 module('run.later', {
   teardown: function() {

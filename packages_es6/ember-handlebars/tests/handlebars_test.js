@@ -7,19 +7,19 @@ import jQuery from "ember-views/system/jquery";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import run from "ember-metal/run_loop";
 import Namespace from "ember-runtime/system/namespace";
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars";
 import EmberObject from "ember-runtime/system/object";
 import ObjectController from "ember-runtime/controllers/object_controller";
-import {A} from "ember-runtime/system/native_array";
-import {computed} from "ember-metal/computed";
-import {fmt} from "ember-runtime/system/string";
-import {typeOf} from "ember-metal/utils";
+import { A } from "ember-runtime/system/native_array";
+import { computed } from "ember-metal/computed";
+import { fmt } from "ember-runtime/system/string";
+import { typeOf } from "ember-metal/utils";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import CollectionView from "ember-views/views/collection_view";
 import ContainerView from "ember-views/views/container_view";
-import {Binding} from "ember-metal/binding";
-import {observersFor} from "ember-metal/observer";
+import { Binding } from "ember-metal/binding";
+import { observersFor } from "ember-metal/observer";
 import TextField from "ember-handlebars/controls/text_field";
 import Container from "ember-runtime/system/container";
 import Logger from "ember-metal/logger";
@@ -34,15 +34,17 @@ Ember.Logger = Logger;
 var trim = jQuery.trim;
 var forEach = EnumerableUtils.forEach;
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 
-var firstGrandchild = function(view) {
+function firstGrandchild(view) {
   return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
-};
-var nthChild = function(view, nth) {
+}
+
+function nthChild(view, nth) {
   return get(view, 'childViews').objectAt(nth || 0);
-};
+}
+
 var firstChild = nthChild;
 
 var originalLog, logCalls;

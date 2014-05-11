@@ -1,12 +1,12 @@
 import jQuery from "ember-views/system/jquery";
 import run from "ember-metal/run_loop";
-import {View as EmberView} from "ember-views/views/view";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {observer} from "ember-metal/mixin";
+import { View as EmberView } from "ember-views/views/view";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { observer } from "ember-metal/mixin";
 import EmberHandlebars from "ember-handlebars-compiler";
 
-import {_MetamorphView} from "ember-handlebars/views/metamorph_view";
+import { _MetamorphView } from "ember-handlebars/views/metamorph_view";
 
 var view, childView, metamorphView;
 

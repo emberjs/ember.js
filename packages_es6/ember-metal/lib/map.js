@@ -22,10 +22,10 @@
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
 
-import {set} from "ember-metal/property_set";
-import {guidFor} from "ember-metal/utils";
-import {indexOf} from "ember-metal/array";
-import {create} from "ember-metal/platform";
+import { set } from "ember-metal/property_set";
+import { guidFor } from "ember-metal/utils";
+import { indexOf } from "ember-metal/array";
+import { create } from "ember-metal/platform";
 
 function copy(obj) {
   var output = {};
@@ -375,4 +375,8 @@ MapWithDefault.prototype.copy = function() {
   }));
 };
 
-export {OrderedSet, Map, MapWithDefault};
+export {
+  OrderedSet,
+  Map,
+  MapWithDefault
+};

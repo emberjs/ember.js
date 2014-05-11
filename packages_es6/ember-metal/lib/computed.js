@@ -1,16 +1,31 @@
 import Ember from "ember-metal/core";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {meta, META_KEY, guidFor, typeOf, inspect} from "ember-metal/utils";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import {
+  meta,
+  META_KEY,
+  guidFor,
+  typeOf,
+  inspect
+} from "ember-metal/utils";
 import EnumerableUtils from "ember-metal/enumerable_utils";
-import {create} from "ember-metal/platform";
-import {watch, unwatch} from "ember-metal/watching";
+import { create } from "ember-metal/platform";
+import {
+  watch,
+  unwatch
+} from "ember-metal/watching";
 import expandProperties from "ember-metal/expand_properties";
 import EmberError from "ember-metal/error";
-import {Descriptor, defineProperty} from "ember-metal/properties";
-import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
+import {
+  Descriptor,
+  defineProperty
+} from "ember-metal/properties";
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
 import isEmpty from 'ember-metal/is_empty';
-import {isNone} from 'ember-metal/is_none';
+import { isNone } from 'ember-metal/is_none';
 
 /**
 @module ember-metal
@@ -1300,4 +1315,8 @@ computed.defaultTo = function(defaultPath) {
   });
 };
 
-export {ComputedProperty, computed, cacheFor};
+export {
+  ComputedProperty,
+  computed,
+  cacheFor
+};

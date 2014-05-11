@@ -1,10 +1,10 @@
 import Ember from "ember-metal/core"; // assert
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {onLoad} from "ember-runtime/system/lazy_load";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { onLoad } from "ember-runtime/system/lazy_load";
 import ContainerView from "ember-views/views/container_view";
-import {_Metamorph} from "ember-handlebars/views/metamorph_view";
-import {viewHelper} from "ember-handlebars/helpers/view";
+import { _Metamorph } from "ember-handlebars/views/metamorph_view";
+import { viewHelper } from "ember-handlebars/helpers/view";
 
 // requireModule('ember-handlebars');
 
@@ -19,7 +19,7 @@ import {viewHelper} from "ember-handlebars/helpers/view";
   */
 
 var OutletView = ContainerView.extend(_Metamorph);
-
+export { OutletView };
 /**
   The `outlet` helper is a placeholder that the router will fill in with
   the appropriate template based on the current state of the application.
@@ -83,13 +83,12 @@ var OutletView = ContainerView.extend(_Metamorph);
     that holds the view for this outlet
   @return {String} HTML string
 */
-function outletHelper(property, options) {
-
-  var outletSource,
-      container,
-      viewName,
-      viewClass,
-      viewFullName;
+export function outletHelper(property, options) {
+  var outletSource;
+  var container;
+  var viewName;
+  var viewClass;
+  var viewFullName;
 
   if (property && property.data && property.data.isRenderData) {
     options = property;
@@ -119,5 +118,3 @@ function outletHelper(property, options) {
 
   return viewHelper.call(this, viewClass, options);
 }
-
-export {outletHelper, OutletView};

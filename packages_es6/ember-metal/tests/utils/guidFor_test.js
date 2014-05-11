@@ -1,5 +1,8 @@
-import {guidFor, generateGuid} from "ember-metal/utils";
-import {rewatch} from "ember-metal/watching";
+import {
+  guidFor,
+  generateGuid
+} from "ember-metal/utils";
+import { rewatch } from "ember-metal/watching";
 
 module("guidFor");
 

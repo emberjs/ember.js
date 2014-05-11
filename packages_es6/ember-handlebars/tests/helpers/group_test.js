@@ -2,18 +2,20 @@
 
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars-compiler";
 import ArrayProxy from "ember-runtime/system/array_proxy";
-import {A} from "ember-runtime/system/native_array";
+import { A } from "ember-runtime/system/native_array";
 import Container from "ember-runtime/system/container";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 
 var trim = jQuery.trim;
-
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-
 var container, view;
+
+function appendView() {
+  run(function() { view.appendTo('#qunit-fixture'); });
+}
 
 module("EmberHandlebars - group flag", {
   setup: function() {
@@ -45,10 +47,6 @@ function createGroupedView(template, context) {
   run(function() {
     view = EmberView.create(options);
   });
-}
-
-function appendView() {
-  run(function() { view.appendTo('#qunit-fixture'); });
 }
 
 test("should properly modify behavior inside the block", function() {

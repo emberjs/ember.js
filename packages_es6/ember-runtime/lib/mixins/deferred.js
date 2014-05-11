@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.Test
-import {get} from "ember-metal/property_get";
-import {Mixin} from "ember-metal/mixin";
-import {computed} from "ember-metal/computed";
+import { get } from "ember-metal/property_get";
+import { Mixin } from "ember-metal/mixin";
+import { computed } from "ember-metal/computed";
 import run from "ember-metal/run_loop";
 import RSVP from "ember-runtime/ext/rsvp";
 
@@ -52,7 +52,7 @@ RSVP.Promise.prototype.fail = function(callback, label){
   @class Deferred
   @namespace Ember
  */
-var DeferredMixin = Mixin.create({
+export default Mixin.create({
   /**
     Add handlers to be called when the Deferred object is resolved or rejected.
 
@@ -109,5 +109,3 @@ var DeferredMixin = Mixin.create({
     return RSVP.defer('Ember: DeferredMixin - ' + this);
   })
 });
-
-export default DeferredMixin;

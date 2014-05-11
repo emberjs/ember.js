@@ -1,17 +1,18 @@
 /*globals TestObject:true */
 import EmberObject from "ember-runtime/system/object";
-import {forEach} from "ember-metal/array";
+import { forEach } from "ember-metal/array";
 import run from "ember-metal/run_loop";
-import {View} from "ember-views/views/view";
+import { View } from "ember-views/views/view";
 import TextArea from "ember-handlebars/controls/text_area";
 import EmberHandlebars from "ember-handlebars";
-import {get} from "ember-metal/property_get";
-import {set as o_set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set as o_set } from "ember-metal/property_set";
 
 var textArea, controller, TestObject;
-var set = function(object, key, value) {
+
+function set(object, key, value) {
   run(function() { o_set(object, key, value); });
-};
+}
 
 var compile = EmberHandlebars.compile;
 

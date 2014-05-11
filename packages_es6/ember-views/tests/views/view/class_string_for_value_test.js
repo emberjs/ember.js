@@ -1,4 +1,4 @@
-import {View} from "ember-views/views/view";
+import { View } from "ember-views/views/view";
 
 module("View - _classStringForValue");
 

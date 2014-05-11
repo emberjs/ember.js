@@ -4,7 +4,18 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.EXTEND_PROTOTYPES, Ember.assert, Ember.FEATURES
-import {fmt, w, loc, camelize, decamelize, dasherize, underscore, capitalize, classify} from "ember-runtime/system/string";
+import {
+  fmt,
+  w,
+  loc,
+  camelize,
+  decamelize,
+  dasherize,
+  underscore,
+  capitalize,
+  classify
+} from "ember-runtime/system/string";
+
 var StringPrototype = String.prototype;
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {

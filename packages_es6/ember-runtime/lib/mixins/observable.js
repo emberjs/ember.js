@@ -4,17 +4,30 @@
 */
 import Ember from "ember-metal/core"; // Ember.assert
 
-import {get, getWithDefault} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {apply} from "ember-metal/utils";
+import {
+  get,
+  getWithDefault
+} from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { apply } from "ember-metal/utils";
 import getProperties from "ember-metal/get_properties";
 import setProperties from "ember-metal/set_properties";
-import {Mixin} from "ember-metal/mixin";
-import {hasListeners} from "ember-metal/events";
-import {beginPropertyChanges, propertyWillChange, propertyDidChange, endPropertyChanges} from "ember-metal/property_events";
-import {addObserver, addBeforeObserver, removeObserver, observersFor} from "ember-metal/observer";
-import {cacheFor} from "ember-metal/computed";
-import {isNone} from "ember-metal/is_none";
+import { Mixin } from "ember-metal/mixin";
+import { hasListeners } from "ember-metal/events";
+import {
+  beginPropertyChanges,
+  propertyWillChange,
+  propertyDidChange,
+  endPropertyChanges
+} from "ember-metal/property_events";
+import {
+  addObserver,
+  addBeforeObserver,
+  removeObserver,
+  observersFor
+} from "ember-metal/observer";
+import { cacheFor } from "ember-metal/computed";
+import { isNone } from "ember-metal/is_none";
 
 
 var slice = Array.prototype.slice;
@@ -83,7 +96,7 @@ var slice = Array.prototype.slice;
   @class Observable
   @namespace Ember
 */
-var Observable = Mixin.create({
+export default Mixin.create({
 
   /**
     Retrieves the value of a property from the object.
@@ -493,5 +506,3 @@ var Observable = Mixin.create({
     return observersFor(this, keyName);
   }
 });
-
-export default Observable;

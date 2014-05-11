@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core"; // deprecate, assert
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 
 /**
 @module ember
@@ -119,7 +119,7 @@ import {set} from "ember-metal/property_set";
   @namespace Ember
   @static
 */
-var EmberLocation = {
+export default {
   /**
    This is deprecated in favor of using the container to lookup the location
    implementation as desired.
@@ -204,5 +204,3 @@ var EmberLocation = {
     }
   }
 };
-
-export default EmberLocation;

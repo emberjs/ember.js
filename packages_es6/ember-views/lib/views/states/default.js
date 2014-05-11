@@ -8,7 +8,7 @@ import EmberError from "ember-metal/error";
 @module ember
 @submodule ember-views
 */
-var _default = {
+export default {
   // appendChild is only legal while rendering the buffer.
   appendChild: function() {
     throw new EmberError("You can't use appendChild outside of the rendering process");
@@ -43,5 +43,3 @@ var _default = {
   rerender: Ember.K,
   invokeObserver: Ember.K
 };
-
-export default _default;

@@ -1,6 +1,6 @@
-import {Mixin} from 'ember-metal/mixin';
-import {create} from 'ember-metal/platform';
-import {meta} from 'ember-metal/utils';
+import { Mixin } from 'ember-metal/mixin';
+import { create } from 'ember-metal/platform';
+import { meta } from 'ember-metal/utils';
 
 import {
   on,

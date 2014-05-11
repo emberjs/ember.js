@@ -1,19 +1,18 @@
 import Ember from "ember-metal/core"; // Ember.lookup
 import EmberLogger from "ember-metal/logger";
 import run from "ember-metal/run_loop";
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars-compiler";
-import {logHelper} from "ember-handlebars/helpers/debug";
+import { logHelper } from "ember-handlebars/helpers/debug";
 
 var originalLookup = Ember.lookup, lookup;
 var originalLog, logCalls;
 var originalLogHelper;
 var view;
 
-var appendView = function() {
+function appendView() {
   run(function() { view.appendTo('#qunit-fixture'); });
-};
-
+}
 
 module("Handlebars {{log}} helper", {
   setup: function() {

@@ -1,4 +1,4 @@
-import {isArray} from 'ember-metal/utils';
+import { isArray } from 'ember-metal/utils';
 module("Ember Type Checking");
 
 var global = this;

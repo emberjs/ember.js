@@ -1,4 +1,4 @@
-import {loc} from "ember-runtime/system/string";
+import { loc } from "ember-runtime/system/string";
 
 /**
 @module ember
@@ -32,8 +32,6 @@ import {loc} from "ember-runtime/system/string";
   @param {String} str The string to format
   @see {Ember.String#loc}
 */
-function locHelper(str) {
+export default function locHelper(str) {
   return loc(str);
 }
-
-export default locHelper;

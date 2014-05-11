@@ -5,19 +5,30 @@
 
 import Ember from "ember-metal/core"; // Ember.assert
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {guidFor} from "ember-metal/utils";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { guidFor } from "ember-metal/utils";
 import EnumerableUtils from "ember-metal/enumerable_utils";
-import {indexOf} from "ember-metal/array";
+import { indexOf } from "ember-metal/array";
 import EmberArray from "ember-runtime/mixins/array"; // ES6TODO: WAT? Circular dep?
 import EmberObject from "ember-runtime/system/object";
-import {computed} from "ember-metal/computed";
-import {addObserver, addBeforeObserver, removeBeforeObserver, removeObserver} from "ember-metal/observer";
-import {typeOf} from "ember-metal/utils";
-import {watchedEvents} from "ember-metal/events";
-import {defineProperty} from "ember-metal/properties";
-import {beginPropertyChanges, propertyDidChange, propertyWillChange, endPropertyChanges, changeProperties} from "ember-metal/property_events";
+import { computed } from "ember-metal/computed";
+import {
+  addObserver,
+  addBeforeObserver,
+  removeBeforeObserver,
+  removeObserver
+} from "ember-metal/observer";
+import { typeOf } from "ember-metal/utils";
+import { watchedEvents } from "ember-metal/events";
+import { defineProperty } from "ember-metal/properties";
+import {
+  beginPropertyChanges,
+  propertyDidChange,
+  propertyWillChange,
+  endPropertyChanges,
+  changeProperties
+} from "ember-metal/property_events";
 
 var forEach = EnumerableUtils.forEach;
 
@@ -213,4 +224,7 @@ var EachProxy = EmberObject.extend({
 
 });
 
-export {EachArray, EachProxy};
+export {
+  EachArray,
+  EachProxy
+};

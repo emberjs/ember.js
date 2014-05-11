@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core"; // Ember.assert
-import {create} from "ember-metal/platform";
+import { create } from "ember-metal/platform";
 import merge from "ember-metal/merge";
 import EmberError from "ember-metal/error";
 

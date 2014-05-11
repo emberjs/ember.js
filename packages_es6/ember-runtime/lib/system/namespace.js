@@ -5,10 +5,13 @@
 
 // Ember.lookup, Ember.BOOTED, Ember.deprecate, Ember.NAME_KEY, Ember.anyUnprocessedMixins
 import Ember from "ember-metal/core";
-import {get} from "ember-metal/property_get";
-import {indexOf} from "ember-metal/array";
-import {GUID_KEY, guidFor} from "ember-metal/utils";
-import {Mixin} from "ember-metal/mixin";
+import { get } from "ember-metal/property_get";
+import { indexOf } from "ember-metal/array";
+import {
+  GUID_KEY,
+  guidFor
+} from "ember-metal/utils";
+import { Mixin } from "ember-metal/mixin";
 
 import EmberObject from "ember-runtime/system/object";
 

@@ -1,7 +1,8 @@
 import run from 'ember-metal/run_loop';
-import {indexOf} from "ember-metal/array";
+import { indexOf } from "ember-metal/array";
 
-var originalQueues = run.queues, queues;
+var originalQueues = run.queues;
+var queues;
 
 module('system/run_loop/add_queue_test',{
   setup: function(){

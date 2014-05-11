@@ -1,9 +1,9 @@
 import Ember from "ember-metal/core"; // Ember.assert
 // var emberAssert = Ember.assert;
 
-import {isNone} from 'ember-metal/is_none';
-import {handlebarsGet} from "ember-handlebars/ext";
-import {bind} from "ember-handlebars/helpers/binding";
+import { isNone } from 'ember-metal/is_none';
+import { handlebarsGet } from "ember-handlebars/ext";
+import { bind } from "ember-handlebars/helpers/binding";
 
 /**
 @module ember
@@ -60,7 +60,7 @@ import {bind} from "ember-handlebars/helpers/binding";
   @param {String} partialName the name of the template to render minus the leading underscore
 */
 
-function partialHelper(name, options) {
+export default function partialHelper(name, options) {
 
   var context = (options.contexts && options.contexts.length) ? options.contexts[0] : this;
 
@@ -101,5 +101,3 @@ function renderPartial(context, name, options) {
 
   template(context, { data: options.data });
 }
-
-export default partialHelper;

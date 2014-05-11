@@ -18,11 +18,14 @@ var EMPTY = [];
 // HELPERS
 //
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {isArray} from "ember-metal/utils";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { isArray } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
-import {Mixin, required} from "ember-metal/mixin";
+import {
+  Mixin,
+  required
+} from "ember-metal/mixin";
 import EmberArray from "ember-runtime/mixins/array";
 import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";
 import Enumerable from "ember-runtime/mixins/enumerable";
@@ -46,7 +49,7 @@ import Enumerable from "ember-runtime/mixins/enumerable";
   @uses Ember.Array
   @uses Ember.MutableEnumerable
 */
-var MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
+export default Mixin.create(EmberArray, MutableEnumerable, {
 
   /**
     __Required.__ You must implement this method to apply this mixin.
@@ -346,5 +349,3 @@ var MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   }
 
 });
-
-export default MutableArray;

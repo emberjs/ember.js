@@ -2,13 +2,15 @@ import {get} from "ember-metal/property_get";
 import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 
-var RETAIN = 'r',
-    FILTER = 'f';
+var RETAIN = 'r';
+var FILTER = 'f';
 
-function Operation (type, count) {
+function Operation(type, count) {
   this.type = type;
   this.count = count;
 }
+
+export default SubArray;
 
 /**
   An `Ember.SubArray` tracks an array in a way similar to, but more specialized
@@ -27,6 +29,7 @@ function SubArray (length) {
     this._operations = [];
   }
 }
+
 
 SubArray.prototype = {
   /**
@@ -176,5 +179,3 @@ SubArray.prototype = {
     return str.substring(1);
   }
 };
-
-export default SubArray;

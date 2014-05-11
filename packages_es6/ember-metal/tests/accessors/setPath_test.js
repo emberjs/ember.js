@@ -1,5 +1,8 @@
-import {set, trySet} from 'ember-metal/property_set';
-import {get} from 'ember-metal/property_get';
+import {
+  set,
+  trySet
+} from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
 
 var originalLookup = Ember.lookup;
 

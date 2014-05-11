@@ -1,28 +1,30 @@
 import Ember from "ember-metal/core"; // FEATURES, K, A, deprecate, assert, Logger
 import EmberError from "ember-metal/error";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import getProperties from "ember-metal/get_properties";
 import EnumerableUtils from "ember-metal/enumerable_utils";
-import {isNone} from "ember-metal/is_none";
-import {computed} from "ember-metal/computed";
-import {typeOf} from "ember-metal/utils";
+import { isNone } from "ember-metal/is_none";
+import { computed } from "ember-metal/computed";
+import { typeOf } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
-
 import keys from "ember-runtime/keys";
 import copy from "ember-runtime/copy";
-import {classify, fmt} from "ember-runtime/system/string";
+import {
+  classify,
+  fmt
+} from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import ActionHandler from "ember-runtime/mixins/action_handler";
-import {generateController} from "ember-routing/system/controller_for";
+import { generateController } from "ember-routing/system/controller_for";
 
 /**
 @module ember
 @submodule ember-routing
 */
 
-var a_forEach = EnumerableUtils.forEach,
-    a_replace = EnumerableUtils.replace;
+var a_forEach = EnumerableUtils.forEach;
+var a_replace = EnumerableUtils.replace;
 
 /**
   The `Ember.Route` class is used to define individual routes. Refer to

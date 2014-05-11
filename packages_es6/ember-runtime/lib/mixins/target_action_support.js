@@ -4,11 +4,11 @@
 */
 import Ember from "ember-metal/core"; // Ember.lookup, Ember.assert
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {typeOf} from "ember-metal/utils";
-import {Mixin} from "ember-metal/mixin";
-import {computed} from "ember-metal/computed";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { typeOf } from "ember-metal/utils";
+import { Mixin } from "ember-metal/mixin";
+import { computed } from "ember-metal/computed";
 
 /**
 `Ember.TargetActionSupport` is a mixin that can be included in a class

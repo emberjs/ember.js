@@ -1,20 +1,23 @@
 import Ember from 'ember-metal/core'; // A, FEATURES, assert, TESTING_DEPRECATION
-import {set} from "ember-metal/property_set";
+import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 
 import EmberObject from "ember-runtime/system/object";
-import {Controller as EmberController} from "ember-runtime/controllers/controller";
+import { Controller as EmberController } from "ember-runtime/controllers/controller";
 import EmberObjectController from "ember-runtime/controllers/object_controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
 
 import EmberHandlebars from "ember-handlebars";
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 import EmberComponent from "ember-views/views/component";
 import jQuery from "ember-views/system/jquery";
 
 import "ember-routing/helpers/shared";
-import {ActionHelper, actionHelper} from "ember-routing/helpers/action";
+import {
+  ActionHelper,
+  actionHelper
+} from "ember-routing/helpers/action";
 
 var dispatcher, view, originalActionHelper,
     originalRegisterAction = ActionHelper.registerAction;

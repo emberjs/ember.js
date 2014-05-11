@@ -3,8 +3,8 @@
 @submodule ember-handlebars
 */
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import Component from "ember-views/views/component";
 import TextSupport from "ember-handlebars/controls/text_support";
 
@@ -26,7 +26,7 @@ import TextSupport from "ember-handlebars/controls/text_support";
   @extends Ember.Component
   @uses Ember.TextSupport
 */
-var TextField = Component.extend(TextSupport, {
+export default Component.extend(TextSupport, {
 
   classNames: ['ember-text-field'],
   tagName: "input",
@@ -93,5 +93,3 @@ var TextField = Component.extend(TextSupport, {
   */
   max: null
 });
-
-export default TextField;

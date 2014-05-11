@@ -1,9 +1,9 @@
 import Ember from "ember-metal/core"; // Ember.K
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {Mixin} from "ember-metal/mixin";
-import {computed} from "ember-metal/computed";
-import {defineProperty} from "ember-metal/properties";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { Mixin } from "ember-metal/mixin";
+import { computed } from "ember-metal/computed";
+import { defineProperty } from "ember-metal/properties";
 
 module('Mixin.detect');
 

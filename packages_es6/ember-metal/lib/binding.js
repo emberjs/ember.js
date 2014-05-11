@@ -1,9 +1,13 @@
 import Ember from "ember-metal/core"; // Ember.Logger, Ember.LOG_BINDINGS, assert
-import {get} from "ember-metal/property_get";
-import {set, trySet} from "ember-metal/property_set";
-import {guidFor} from "ember-metal/utils";
-import {Map} from "ember-metal/map";
-import {addObserver, removeObserver, _suspendObserver} from "ember-metal/observer";
+import { get } from "ember-metal/property_get";
+import { set, trySet } from "ember-metal/property_set";
+import { guidFor } from "ember-metal/utils";
+import { Map } from "ember-metal/map";
+import {
+  addObserver,
+  removeObserver,
+  _suspendObserver
+} from "ember-metal/observer";
 import run from "ember-metal/run_loop";
 
 // ES6TODO: where is Ember.lookup defined?
@@ -453,7 +457,7 @@ mixinProperties(Binding, {
     Must be relative to obj or a global path.
   @return {Ember.Binding} binding instance
 */
-function bind(obj, to, from) {
+export function bind(obj, to, from) {
   return new Binding(to, from).connect(obj);
 }
 
@@ -467,8 +471,11 @@ function bind(obj, to, from) {
     Must be relative to obj or a global path.
   @return {Ember.Binding} binding instance
 */
-function oneWay(obj, to, from) {
+export function oneWay(obj, to, from) {
   return new Binding(to, from).oneWay().connect(obj);
 }
 
-export {Binding, bind, oneWay, isGlobalPath};
+export {
+  Binding,
+  isGlobalPath
+};

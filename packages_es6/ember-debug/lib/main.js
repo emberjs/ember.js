@@ -159,7 +159,7 @@ Ember.deprecateFunc = function(message, func) {
   @since 1.5.0
 */
 Ember.runInDebug = function(func) {
-  func()
+  func();
 };
 
 // Inform the developer about the Ember Inspector if not installed.

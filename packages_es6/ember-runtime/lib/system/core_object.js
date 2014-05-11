@@ -8,36 +8,48 @@ import Ember from "ember-metal/core";
 
 // NOTE: this object should never be included directly. Instead use `Ember.Object`.
 // We only define this separately so that `Ember.Set` can depend on it.
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {guidFor, apply} from "ember-metal/utils";
-import {create} from "ember-metal/platform";
-import {generateGuid, GUID_KEY, meta, META_KEY, makeArray} from "ember-metal/utils";
-import {rewatch} from "ember-metal/watching";
-import {finishChains} from "ember-metal/chains";
-import {sendEvent} from "ember-metal/events";
-import {IS_BINDING, Mixin, required} from "ember-metal/mixin";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import {
+  guidFor,
+  apply
+} from "ember-metal/utils";
+import { create } from "ember-metal/platform";
+import {
+  generateGuid,
+  GUID_KEY,
+  meta,
+  META_KEY,
+  makeArray
+} from "ember-metal/utils";
+import { rewatch } from "ember-metal/watching";
+import { finishChains } from "ember-metal/chains";
+import { sendEvent } from "ember-metal/events";
+import {
+  IS_BINDING,
+  Mixin,
+  required
+} from "ember-metal/mixin";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import EmberError from "ember-metal/error";
-import {platform} from "ember-metal/platform";
+import { platform } from "ember-metal/platform";
 import keys from "ember-runtime/keys";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import {defineProperty} from "ember-metal/properties";
-import {Binding} from "ember-metal/binding";
-import {ComputedProperty} from "ember-metal/computed";
+import { Binding } from "ember-metal/binding";
+import { ComputedProperty } from "ember-metal/computed";
 import run from 'ember-metal/run_loop';
-import {destroy} from "ember-metal/watching";
+import { destroy } from "ember-metal/watching";
 
-
-var o_create = create,
-    o_defineProperty = platform.defineProperty,
-    schedule = run.schedule,
-    applyMixin = Mixin._apply,
-    finishPartial = Mixin.finishPartial,
-    reopen = Mixin.prototype.reopen,
-    MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
-    indexOf = EnumerableUtils.indexOf,
-    K = Ember.K;
+var o_create = create;
+var o_defineProperty = platform.defineProperty;
+var schedule = run.schedule;
+var applyMixin = Mixin._apply;
+var finishPartial = Mixin.finishPartial;
+var reopen = Mixin.prototype.reopen;
+var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
+var indexOf = EnumerableUtils.indexOf;
+var K = Ember.K;
 
 var undefinedDescriptor = {
   configurable: true,

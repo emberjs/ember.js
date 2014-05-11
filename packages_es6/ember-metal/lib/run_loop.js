@@ -1,31 +1,34 @@
 import Ember from 'ember-metal/core';
-import {apply} from 'ember-metal/utils';
-import {indexOf} from "ember-metal/array";
-import {beginPropertyChanges, endPropertyChanges} from 'ember-metal/property_events';
+import { apply } from 'ember-metal/utils';
+import { indexOf } from "ember-metal/array";
+import {
+  beginPropertyChanges,
+  endPropertyChanges
+} from 'ember-metal/property_events';
 
-var onBegin = function(current) {
+function onBegin(current) {
   run.currentRunLoop = current;
-};
+}
 
-var onEnd = function(current, next) {
+function onEnd(current, next) {
   run.currentRunLoop = next;
-};
+}
 
 // ES6TODO: should Backburner become es6?
-var Backburner = requireModule('backburner').Backburner,
-    backburner = new Backburner(['sync', 'actions', 'destroy'], {
-      sync: {
-        before: beginPropertyChanges,
-        after: endPropertyChanges
-      },
-      defaultQueue: 'actions',
-      onBegin: onBegin,
-      onEnd: onEnd,
-      onErrorTarget: Ember,
-      onErrorMethod: 'onerror'
-    }),
-    slice = [].slice,
-    concat = [].concat;
+var Backburner = requireModule('backburner').Backburner;
+var backburner = new Backburner(['sync', 'actions', 'destroy'], {
+  sync: {
+    before: beginPropertyChanges,
+    after: endPropertyChanges
+  },
+  defaultQueue: 'actions',
+  onBegin: onBegin,
+  onEnd: onEnd,
+  onErrorTarget: Ember,
+  onErrorMethod: 'onerror'
+});
+var slice = [].slice;
+var concat = [].concat;
 
 // ..........................................................
 // run - this is ideally the only public API the dev sees
@@ -58,9 +61,10 @@ var Backburner = requireModule('backburner').Backburner,
   @param {Object} [args*] Any additional arguments you wish to pass to the method.
   @return {Object} return value from invoking the passed function.
 */
-var run = function() {
+export default run;
+function run() {
   return apply(backburner, backburner.run, arguments);
-};
+}
 
 /**
   If no run-loop is present, it creates a new one. If a run loop is
@@ -617,5 +621,3 @@ run._addQueue = function(name, after) {
     run.queues.splice(indexOf.call(run.queues, after)+1, 0, name);
   }
 };
-
-export default run;

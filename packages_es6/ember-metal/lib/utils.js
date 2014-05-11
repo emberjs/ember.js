@@ -1,6 +1,12 @@
 import Ember from "ember-metal/core";
-import {platform, create} from "ember-metal/platform";
-import {forEach} from "ember-metal/array";
+import {
+  platform,
+  create
+} from "ember-metal/platform";
+
+import {
+  forEach
+} from "ember-metal/array";
 
 /**
 @module ember-metal
@@ -16,13 +22,12 @@ import {forEach} from "ember-metal/array";
 */
 var GUID_PREFIX = 'ember';
 
-
-var o_defineProperty = platform.defineProperty,
-    o_create = create,
-    // Used for guid generation...
-    numberCache  = [],
-    stringCache  = {},
-    uuid = 0;
+var o_defineProperty = platform.defineProperty;
+var o_create = create;
+// Used for guid generation...
+var numberCache  = [];
+var stringCache  = {};
+var uuid = 0;
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
@@ -66,7 +71,7 @@ var GUID_DESC = {
     separate the guid into separate namespaces.
   @return {String} the guid
 */
-function generateGuid(obj, prefix) {
+export function generateGuid(obj, prefix) {
   if (!prefix) prefix = GUID_PREFIX;
   var ret = (prefix + (uuid++));
   if (obj) {
@@ -94,7 +99,7 @@ function generateGuid(obj, prefix) {
   @param {Object} obj any object, string, number, Element, or primitive
   @return {String} the unique guid for this instance.
 */
-function guidFor(obj) {
+export function guidFor(obj) {
 
   // special cases where we don't want to add a key to object
   if (obj === undefined) return "(undefined)";
@@ -139,12 +144,11 @@ function guidFor(obj) {
 //
 
 var META_DESC = {
-  writable:    true,
+  writable: true,
   configurable: false,
-  enumerable:  false,
+  enumerable: false,
   value: null
 };
-
 
 /**
   The key used to store meta information on object for property observing.
@@ -252,12 +256,12 @@ function meta(obj, writable) {
   return ret;
 }
 
-function getMeta(obj, property) {
+export function getMeta(obj, property) {
   var _meta = meta(obj, false);
   return _meta[property];
 }
 
-function setMeta(obj, property, value) {
+export function setMeta(obj, property, value) {
   var _meta = meta(obj, true);
   _meta[property] = value;
   return value;
@@ -296,7 +300,7 @@ function setMeta(obj, property, value) {
     (or meta property) if one does not already exist or if it's
     shared with its constructor
 */
-function metaPath(obj, path, writable) {
+export function metaPath(obj, path, writable) {
   Ember.deprecate("Ember.metaPath is deprecated and will be removed from future releases.");
   var _meta = meta(obj, writable), keyName, value;
 
@@ -331,7 +335,7 @@ function metaPath(obj, path, writable) {
   @param {Function} superFunc The super function.
   @return {Function} wrapped function.
 */
-function wrap(func, superFunc) {
+export function wrap(func, superFunc) {
   function superWrapper() {
     var ret, sup = this.__nextSuper;
     this.__nextSuper = superFunc;
@@ -413,7 +417,7 @@ function isArray(obj) {
   @param {Object} obj the object
   @return {Array}
 */
-function makeArray(obj) {
+export function makeArray(obj) {
   if (obj === null || obj === undefined) { return []; }
   return isArray(obj) ? obj : [obj];
 }
@@ -456,7 +460,7 @@ function canInvoke(obj, methodName) {
   @param {Array} [args] The arguments to pass to the method
   @return {*} the return value of the invoked method or undefined if it cannot be invoked
 */
-function tryInvoke(obj, methodName, args) {
+export function tryInvoke(obj, methodName, args) {
   if (canInvoke(obj, methodName)) {
     return args ? applyStr(obj, methodName, args) : applyStr(obj, methodName);
   }
@@ -720,7 +724,7 @@ function typeOf(item) {
   @return {String} A description of the object
   @since 1.4.0
 */
-function inspect(obj) {
+export function inspect(obj) {
   var type = typeOf(obj);
   if (type === 'array') {
     return '[' + obj + ']';
@@ -744,7 +748,7 @@ function inspect(obj) {
 // The following functions are intentionally minified to keep the functions
 // below Chrome's function body size inlining limit of 600 chars.
 
-function apply(t /* target */, m /* method */, a /* args */) {
+export function apply(t /* target */, m /* method */, a /* args */) {
   var l = a && a.length;
   if (!a || !l) { return m.call(t); }
   switch (l) {
@@ -757,7 +761,7 @@ function apply(t /* target */, m /* method */, a /* args */) {
   }
 }
 
-function applyStr(t /* target */, m /* method */, a /* args */) {
+export function applyStr(t /* target */, m /* method */, a /* args */) {
   var l = a && a.length;
   if (!a || !l) { return t[m](); }
   switch (l) {
@@ -770,4 +774,16 @@ function applyStr(t /* target */, m /* method */, a /* args */) {
   }
 }
 
-export {generateGuid, GUID_KEY, GUID_PREFIX, guidFor, META_DESC, EMPTY_META, META_KEY, meta, getMeta, setMeta, metaPath, inspect, typeOf, tryCatchFinally, isArray, makeArray, canInvoke, tryInvoke, tryFinally, wrap, applyStr, apply};
+export {
+  GUID_KEY,
+  GUID_PREFIX,
+  META_DESC,
+  EMPTY_META,
+  META_KEY,
+  meta,
+  typeOf,
+  tryCatchFinally,
+  isArray,
+  canInvoke,
+  tryFinally
+};

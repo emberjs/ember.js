@@ -2,8 +2,14 @@
 @module ember-metal
 */
 import Ember from "ember-metal/core";
-import {meta, META_KEY, tryFinally, apply, applyStr} from "ember-metal/utils";
-import {create} from "ember-metal/platform";
+import {
+  meta,
+  META_KEY,
+  tryFinally,
+  apply,
+  applyStr
+} from "ember-metal/utils";
+import { create } from "ember-metal/platform";
 
 var a_slice = [].slice,
     metaFor = meta,
@@ -65,7 +71,7 @@ function actionsFor(obj, eventName) {
   return actions;
 }
 
-function listenersUnion(obj, eventName, otherActions) {
+export function listenersUnion(obj, eventName, otherActions) {
   var meta = obj[META_KEY],
       actions = meta && meta.listeners && meta.listeners[eventName];
 
@@ -82,7 +88,7 @@ function listenersUnion(obj, eventName, otherActions) {
   }
 }
 
-function listenersDiff(obj, eventName, otherActions) {
+export function listenersDiff(obj, eventName, otherActions) {
   var meta = obj[META_KEY],
       actions = meta && meta.listeners && meta.listeners[eventName],
       diffActions = [];
@@ -114,7 +120,7 @@ function listenersDiff(obj, eventName, otherActions) {
   @param {Function|String} method A function or the name of a function to be called on `target`
   @param {Boolean} once A flag whether a function should only be called once
 */
-function addListener(obj, eventName, target, method, once) {
+export function addListener(obj, eventName, target, method, once) {
   Ember.assert("You must pass at least an object and event name to Ember.addListener", !!obj && !!eventName);
 
   if (!method && 'function' === typeof target) {
@@ -202,7 +208,7 @@ function removeListener(obj, eventName, target, method) {
   @param {Function|String} method A function or the name of a function to be called on `target`
   @param {Function} callback
 */
-function suspendListener(obj, eventName, target, method, callback) {
+export function suspendListener(obj, eventName, target, method, callback) {
   if (!method && 'function' === typeof target) {
     method = target;
     target = null;
@@ -234,7 +240,7 @@ function suspendListener(obj, eventName, target, method, callback) {
   @param {Function|String} method A function or the name of a function to be called on `target`
   @param {Function} callback
 */
-function suspendListeners(obj, eventNames, target, method, callback) {
+export function suspendListeners(obj, eventNames, target, method, callback) {
   if (!method && 'function' === typeof target) {
     method = target;
     target = null;
@@ -276,7 +282,7 @@ function suspendListeners(obj, eventNames, target, method, callback) {
   @for Ember
   @param obj
 */
-function watchedEvents(obj) {
+export function watchedEvents(obj) {
   var listeners = obj[META_KEY].listeners, ret = [];
 
   if (listeners) {
@@ -301,7 +307,7 @@ function watchedEvents(obj) {
   @param {Array} actions Optional array of actions (listeners).
   @return true
 */
-function sendEvent(obj, eventName, params, actions) {
+export function sendEvent(obj, eventName, params, actions) {
   // first give object a chance to handle it
   if (obj !== Ember && 'function' === typeof obj.sendEvent) {
     obj.sendEvent(eventName, params);
@@ -344,7 +350,7 @@ function sendEvent(obj, eventName, params, actions) {
   @param obj
   @param {String} eventName
 */
-function hasListeners(obj, eventName) {
+export function hasListeners(obj, eventName) {
   var meta = obj[META_KEY],
       actions = meta && meta.listeners && meta.listeners[eventName];
 
@@ -358,7 +364,7 @@ function hasListeners(obj, eventName) {
   @param obj
   @param {String} eventName
 */
-function listenersFor(obj, eventName) {
+export function listenersFor(obj, eventName) {
   var ret = [];
   var meta = obj[META_KEY],
       actions = meta && meta.listeners && meta.listeners[eventName];
@@ -395,11 +401,13 @@ function listenersFor(obj, eventName) {
   @param {Function} func
   @return func
 */
-function on(){
+export function on(){
   var func = a_slice.call(arguments, -1)[0],
       events = a_slice.call(arguments, 0, -1);
   func.__ember_listens__ = events;
   return func;
 }
 
-export {on, addListener, removeListener, suspendListener, suspendListeners, sendEvent, hasListeners, watchedEvents, listenersFor, listenersDiff, listenersUnion};
+export {
+  removeListener
+};

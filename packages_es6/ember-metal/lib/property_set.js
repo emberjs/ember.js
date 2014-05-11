@@ -1,12 +1,15 @@
 import Ember from "ember-metal/core";
-import {_getPath as getPath} from "ember-metal/property_get";
-import {META_KEY} from "ember-metal/utils";
-import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
-import {defineProperty} from "ember-metal/properties";
+import { _getPath as getPath } from "ember-metal/property_get";
+import { META_KEY } from "ember-metal/utils";
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
+import { defineProperty } from "ember-metal/properties";
 import EmberError from "ember-metal/error";
 
-var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
-    IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
+var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
+var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
 
 /**
   Sets the value of a property on an object, respecting computed properties
@@ -135,8 +138,10 @@ function setPath(root, path, value, tolerant) {
   @param {String} path The property path to set
   @param {Object} value The value to set
 */
-function trySet(root, path, value) {
+export function trySet(root, path, value) {
   return set(root, path, value, true);
 }
 
-export {set, trySet};
+export {
+  set
+};

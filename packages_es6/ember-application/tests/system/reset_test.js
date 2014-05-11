@@ -1,10 +1,10 @@
 import run from "ember-metal/run_loop";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import Application from "ember-application/system/application";
 import EmberObject from "ember-runtime/system/object";
 import Router from "ember-routing/system/router";
-import {View} from "ember-views/views/view";
+import { View } from "ember-views/views/view";
 import {Controller} from "ember-runtime/controllers/controller";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import jQuery from "ember-views/system/jquery";

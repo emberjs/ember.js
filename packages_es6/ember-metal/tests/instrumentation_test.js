@@ -1,4 +1,9 @@
-import {instrument, subscribe, unsubscribe, reset} from "ember-metal/instrumentation";
+import {
+  instrument,
+  subscribe,
+  unsubscribe,
+  reset
+} from "ember-metal/instrumentation";
 
 module("Ember Instrumentation", {
   setup: function() {

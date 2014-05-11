@@ -1,31 +1,46 @@
 import Ember from "ember-metal/core"; // Ember.assert
-import {get as e_get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {guidFor, meta as metaFor} from "ember-metal/utils";
+import { get as e_get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import {
+  guidFor,
+  meta as metaFor
+} from "ember-metal/utils";
 import EmberError from "ember-metal/error";
-import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
 import expandProperties from "ember-metal/expand_properties";
-import {addObserver, observersFor, removeObserver, addBeforeObserver, removeBeforeObserver} from "ember-metal/observer";
-import {ComputedProperty, cacheFor} from "ember-metal/computed";
-import {create} from "ember-metal/platform";
+import {
+  addObserver,
+  observersFor,
+  removeObserver,
+  addBeforeObserver,
+  removeBeforeObserver
+} from "ember-metal/observer";
+import {
+  ComputedProperty,
+  cacheFor
+} from "ember-metal/computed";
+import { create } from "ember-metal/platform";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import TrackedArray from "ember-runtime/system/tracked_array";
 import EmberArray from "ember-runtime/mixins/array";
 import run from "ember-metal/run_loop";
 import Set from "ember-runtime/system/set";
-import {isArray} from "ember-metal/utils";
+import { isArray } from "ember-metal/utils";
 
-var cacheSet = cacheFor.set,
-    cacheGet = cacheFor.get,
-    cacheRemove = cacheFor.remove,
-    a_slice = [].slice,
-    o_create = create,
-    forEach = EnumerableUtils.forEach,
-    // Here we explicitly don't allow `@each.foo`; it would require some special
-    // testing, but there's no particular reason why it should be disallowed.
-    eachPropertyPattern = /^(.*)\.@each\.(.*)/,
-    doubleEachPropertyPattern = /(.*\.@each){2,}/,
-    arrayBracketPattern = /\.\[\]$/;
+var cacheSet = cacheFor.set;
+var cacheGet = cacheFor.get;
+var cacheRemove = cacheFor.remove;
+var a_slice = [].slice;
+var o_create = create;
+var forEach = EnumerableUtils.forEach;
+// Here we explicitly don't allow `@each.foo`; it would require some special
+// testing, but there's no particular reason why it should be disallowed.
+var eachPropertyPattern = /^(.*)\.@each\.(.*)/;
+var doubleEachPropertyPattern = /(.*\.@each){2,}/;
+var arrayBracketPattern = /\.\[\]$/;
 
 function get(obj, key) {
   if (key === '@this') {
@@ -451,6 +466,8 @@ ReduceComputedPropertyInstanceMeta.prototype = {
   @extends Ember.ComputedProperty
   @constructor
 */
+
+export { ReduceComputedProperty }; // TODO: default export
 function ReduceComputedProperty(options) {
   var cp = this;
 
@@ -806,7 +823,7 @@ ReduceComputedProperty.prototype.property = function () {
   @param {Object} options
   @return {Ember.ComputedProperty}
 */
-function reduceComputed(options) {
+export function reduceComputed(options) {
   var args;
 
   if (arguments.length > 1) {
@@ -830,5 +847,3 @@ function reduceComputed(options) {
 
   return cp;
 }
-
-export {reduceComputed, ReduceComputedProperty};

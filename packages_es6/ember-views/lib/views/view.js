@@ -9,27 +9,30 @@ import EmberObject from "ember-runtime/system/object";
 import Evented from "ember-runtime/mixins/evented";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import renderBuffer from "ember-views/system/render_buffer";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import setProperties from "ember-metal/set_properties";
 import run from "ember-metal/run_loop";
-import {addObserver, removeObserver} from "ember-metal/observer";
+import { addObserver, removeObserver } from "ember-metal/observer";
 
-import {defineProperty} from "ember-metal/properties";
-import {guidFor} from "ember-metal/utils";
-import {meta} from "ember-metal/utils";
-import {computed} from "ember-metal/computed";
-import {observer} from "ember-metal/mixin";
+import { defineProperty } from "ember-metal/properties";
+import { guidFor } from "ember-metal/utils";
+import { meta } from "ember-metal/utils";
+import { computed } from "ember-metal/computed";
+import { observer } from "ember-metal/mixin";
 
-import {typeOf, isArray} from "ember-metal/utils";
-import {isNone} from 'ember-metal/is_none';
-import {Mixin} from 'ember-metal/mixin';
+import {
+  typeOf,
+  isArray
+} from "ember-metal/utils";
+import { isNone } from 'ember-metal/is_none';
+import { Mixin } from 'ember-metal/mixin';
 import Container from 'container/container';
-import {A as emberA} from "ember-runtime/system/native_array";
+import { A as emberA } from "ember-runtime/system/native_array";
 
-import {instrument} from "ember-metal/instrumentation";
+import { instrument } from "ember-metal/instrumentation";
 
-import {dasherize} from "ember-runtime/system/string";
+import { dasherize } from "ember-runtime/system/string";
 
 // ES6TODO: functions on EnumerableUtils should get their own export
 import EnumerableUtils from "ember-metal/enumerable_utils";
@@ -37,13 +40,19 @@ var a_forEach = EnumerableUtils.forEach,
     a_addObject = EnumerableUtils.addObject,
     a_removeObject = EnumerableUtils.removeObject;
 
-import {beforeObserver} from "ember-metal/mixin";
+import { beforeObserver } from "ember-metal/mixin";
 import copy from "ember-runtime/copy";
-import {isGlobalPath} from "ember-metal/binding";
+import { isGlobalPath } from "ember-metal/binding";
 
-import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
 
-import {cloneStates, states} from "ember-views/views/states";
+import {
+  cloneStates,
+  states
+} from "ember-views/views/states";
 import jQuery from "ember-views/system/jquery";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 
@@ -2615,4 +2624,8 @@ View.applyAttributeBindings = function(elem, name, value) {
   }
 };
 
-export {CoreView, View, ViewCollection};
+export {
+  CoreView,
+  View,
+  ViewCollection
+};

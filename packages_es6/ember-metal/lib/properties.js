@@ -3,9 +3,12 @@
 */
 
 import Ember from "ember-metal/core";
-import {META_KEY, meta} from "ember-metal/utils";
-import {platform} from "ember-metal/platform";
-import {overrideChains} from "ember-metal/property_events";
+import {
+  META_KEY,
+  meta
+} from "ember-metal/utils";
+import { platform } from "ember-metal/platform";
+import { overrideChains } from "ember-metal/property_events";
 var metaFor = meta,
     objectDefineProperty = platform.defineProperty;
 
@@ -27,6 +30,7 @@ var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
   @constructor
 */
 function Descriptor() {}
+export var Descriptor = Descriptor;
 
 // ..........................................................
 // DEFINING PROPERTIES API
@@ -36,7 +40,7 @@ var MANDATORY_SETTER_FUNCTION = Ember.MANDATORY_SETTER_FUNCTION = function(value
   Ember.assert("You must use Ember.set() to access this property (of " + this + ")", false);
 };
 
-var DEFAULT_GETTER_FUNCTION = Ember.DEFAULT_GETTER_FUNCTION = function(name) {
+var DEFAULT_GETTER_FUNCTION = Ember.DEFAULT_GETTER_FUNCTION = function DEFAULT_GETTER_FUNCTION(name) {
   return function() {
     var meta = this[META_KEY];
     return meta && meta.values[name];
@@ -88,7 +92,7 @@ var DEFAULT_GETTER_FUNCTION = Ember.DEFAULT_GETTER_FUNCTION = function(name) {
   @param {*} [data] something other than a descriptor, that will
     become the explicit value of this property.
 */
-function defineProperty(obj, keyName, desc, data, meta) {
+export function defineProperty(obj, keyName, desc, data, meta) {
   var descs, existingDesc, watching, value;
 
   if (!meta) meta = metaFor(obj);
@@ -148,5 +152,3 @@ function defineProperty(obj, keyName, desc, data, meta) {
 
   return this;
 }
-
-export {Descriptor, defineProperty};

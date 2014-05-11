@@ -2,8 +2,11 @@
 // as well as methods vs props.  We are just keeping these for testing; the
 // current impl doesn't care about the differences as much...
 
-import {guidFor} from 'ember-metal/utils';
-import {mixin, Mixin} from 'ember-metal/mixin';
+import { guidFor } from 'ember-metal/utils';
+import {
+  mixin,
+  Mixin
+} from 'ember-metal/mixin';
 import EnumerableUtils from 'ember-metal/enumerable_utils';
 
 var PrivateProperty = Mixin.create({

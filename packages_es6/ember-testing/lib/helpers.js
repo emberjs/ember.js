@@ -1,4 +1,4 @@
-import {get} from "ember-metal/property_get";
+import { get } from "ember-metal/property_get";
 import EmberError from "ember-metal/error";
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
@@ -9,9 +9,9 @@ import Test from "ember-testing/test";
 * @submodule ember-testing
 */
 
-var helper = Test.registerHelper,
-    asyncHelper = Test.registerAsyncHelper,
-    countAsync = 0;
+var helper = Test.registerHelper;
+var asyncHelper = Test.registerAsyncHelper;
+var countAsync = 0;
 
 function currentRouteName(app){
   var appController = app.__container__.lookup('controller:application');

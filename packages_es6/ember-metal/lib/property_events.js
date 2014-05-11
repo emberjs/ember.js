@@ -1,10 +1,18 @@
-import { META_KEY, guidFor, tryFinally} from "ember-metal/utils";
-import {sendEvent, listenersUnion, listenersDiff} from "ember-metal/events";
+import {
+  META_KEY,
+  guidFor,
+  tryFinally
+} from "ember-metal/utils";
+import {
+  sendEvent,
+  listenersUnion,
+  listenersDiff
+} from "ember-metal/events";
 import ObserverSet from "ember-metal/observer_set";
 
-var beforeObserverSet = new ObserverSet(),
-    observerSet = new ObserverSet(),
-    deferred = 0;
+var beforeObserverSet = new ObserverSet();
+var observerSet = new ObserverSet();
+var deferred = 0;
 
 // ..........................................................
 // PROPERTY CHANGES
@@ -222,4 +230,11 @@ function notifyObservers(obj, keyName) {
   }
 }
 
-export {propertyWillChange, propertyDidChange, overrideChains, beginPropertyChanges, endPropertyChanges, changeProperties};
+export {
+  propertyWillChange,
+  propertyDidChange,
+  overrideChains,
+  beginPropertyChanges,
+  endPropertyChanges,
+  changeProperties
+};

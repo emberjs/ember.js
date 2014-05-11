@@ -1,16 +1,18 @@
 import Ember from "ember-metal/core"; // Handlebars, uuid, FEATURES, assert, deprecate
-import {get} from "ember-metal/property_get";
-import {forEach} from "ember-metal/array";
+import { get } from "ember-metal/property_get";
+import { forEach } from "ember-metal/array";
 import run from "ember-metal/run_loop";
 
-import {isSimpleClick} from "ember-views/system/utils";
+import { isSimpleClick } from "ember-views/system/utils";
 import EmberRouter from "ember-routing/system/router";
 
-
 import EmberHandlebars from "ember-handlebars";
-import {handlebarsGet} from "ember-handlebars/ext";
-import {viewHelper} from "ember-handlebars/helpers/view";
-import {resolveParams, resolvePath} from "ember-routing/helpers/shared";
+import { handlebarsGet } from "ember-handlebars/ext";
+import { viewHelper } from "ember-handlebars/helpers/view";
+import {
+  resolveParams,
+  resolvePath
+} from "ember-routing/helpers/shared";
 
 // requireModule('ember-handlebars');
 
@@ -19,8 +21,8 @@ import {resolveParams, resolvePath} from "ember-routing/helpers/shared";
 @submodule ember-routing
 */
 
-var SafeString = EmberHandlebars.SafeString,
-    a_slice = Array.prototype.slice;
+var SafeString = EmberHandlebars.SafeString;
+var a_slice = Array.prototype.slice;
 
 function args(options, actionName) {
   var ret = [];
@@ -35,6 +37,8 @@ function args(options, actionName) {
 var ActionHelper = {
   registeredActions: {}
 };
+
+export { ActionHelper };
 
 var keys = ["alt", "shift", "meta", "ctrl"];
 
@@ -290,7 +294,7 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
   @param {Object} [context]*
   @param {Hash} options
 */
-function actionHelper(actionName) {
+export function actionHelper(actionName) {
   var options = arguments[arguments.length - 1],
       contexts = a_slice.call(arguments, 1, -1);
 
@@ -322,5 +326,3 @@ function actionHelper(actionName) {
   var actionId = ActionHelper.registerAction(actionName, action, hash.allowedKeys);
   return new SafeString('data-ember-action="' + actionId + '"');
 }
-
-export {ActionHelper, actionHelper};

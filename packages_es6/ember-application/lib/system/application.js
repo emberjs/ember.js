@@ -4,18 +4,18 @@
 */
 
 import Ember from "ember-metal"; // Ember.FEATURES, Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {runLoadHooks} from "ember-runtime/system/lazy_load";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { runLoadHooks } from "ember-runtime/system/lazy_load";
 import DAG from "ember-application/system/dag";
 import Namespace from "ember-runtime/system/namespace";
 import DeferredMixin from "ember-runtime/mixins/deferred";
-import {DefaultResolver} from "ember-application/system/resolver";
-import {create} from "ember-metal/platform";
+import { DefaultResolver } from "ember-application/system/resolver";
+import { create } from "ember-metal/platform";
 import run from "ember-metal/run_loop";
-import {canInvoke} from "ember-metal/utils";
+import { canInvoke } from "ember-metal/utils";
 import Container from 'container/container';
-import {Controller} from "ember-runtime/controllers/controller";
+import { Controller } from "ember-runtime/controllers/controller";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";

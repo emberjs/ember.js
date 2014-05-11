@@ -77,4 +77,8 @@ var factory = function() {
   }
 };
 
-export {factory, o_create, setProperties};
+export {
+  factory,
+  o_create,
+  setProperties
+};

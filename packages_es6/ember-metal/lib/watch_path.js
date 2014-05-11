@@ -1,5 +1,8 @@
-import {meta, typeOf} from "ember-metal/utils";
-import {ChainNode} from "ember-metal/chains";
+import {
+  meta,
+  typeOf
+} from "ember-metal/utils";
+import { ChainNode } from "ember-metal/chains";
 
 var metaFor = meta;
 
@@ -16,7 +19,7 @@ function chainsFor(obj, meta) {
   return ret;
 }
 
-function watchPath(obj, keyPath, meta) {
+export function watchPath(obj, keyPath, meta) {
   // can't watch length on Array - it is special...
   if (keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
@@ -30,7 +33,7 @@ function watchPath(obj, keyPath, meta) {
   }
 }
 
-function unwatchPath(obj, keyPath, meta) {
+export function unwatchPath(obj, keyPath, meta) {
   var m = meta || metaFor(obj), watching = m.watching;
 
   if (watching[keyPath] === 1) {
@@ -40,5 +43,3 @@ function unwatchPath(obj, keyPath, meta) {
     watching[keyPath]--;
   }
 }
-
-export {watchPath, unwatchPath};

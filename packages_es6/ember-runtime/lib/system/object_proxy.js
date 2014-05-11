@@ -3,15 +3,23 @@
 @submodule ember-runtime
 */
 import Ember from "ember-metal/core"; // Ember.assert
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {meta} from "ember-metal/utils";
-import {addObserver, removeObserver, addBeforeObserver, removeBeforeObserver} from "ember-metal/observer";
-import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
-import {computed} from "ember-metal/computed";
-import {defineProperty} from "ember-metal/properties";
-import {observer} from "ember-metal/mixin";
-import {fmt} from "ember-runtime/system/string";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { meta } from "ember-metal/utils";
+import {
+  addObserver,
+  removeObserver,
+  addBeforeObserver,
+  removeBeforeObserver
+} from "ember-metal/observer";
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
+import { computed } from "ember-metal/computed";
+import { defineProperty } from "ember-metal/properties";
+import { observer } from "ember-metal/mixin";
+import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 
 function contentPropertyWillChange(content, contentKey) {

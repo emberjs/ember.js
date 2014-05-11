@@ -1,13 +1,16 @@
 import Ember from "ember-metal/core";
-import {reduceComputed, ReduceComputedProperty } from "ember-runtime/computed/reduce_computed";
+import {
+  reduceComputed,
+  ReduceComputedProperty
+} from "ember-runtime/computed/reduce_computed";
 import EnumerableUtils from "ember-metal/enumerable_utils";
-import {create} from "ember-metal/platform";
-import {addObserver} from "ember-metal/observer";
+import { create } from "ember-metal/platform";
+import { addObserver } from "ember-metal/observer";
 import EmberError from "ember-metal/error";
 
-var a_slice = [].slice,
-    o_create = create,
-    forEach = EnumerableUtils.forEach;
+var a_slice = [].slice;
+var o_create = create;
+var forEach = EnumerableUtils.forEach;
 
 function ArrayComputedProperty() {
   var cp = this;
@@ -183,4 +186,7 @@ function arrayComputed (options) {
   return cp;
 }
 
-export {arrayComputed, ArrayComputedProperty};
+export {
+  arrayComputed,
+  ArrayComputedProperty
+};

@@ -1,6 +1,6 @@
 import Ember from 'ember-metal/core'; // Ember.deprecate
-import {get} from "ember-metal/property_get";
-import {Mixin} from 'ember-metal/mixin';
+import { get } from "ember-metal/property_get";
+import { Mixin } from 'ember-metal/mixin';
 
 /**
   The ComponentTemplateDeprecation mixin is used to provide a useful
@@ -14,7 +14,7 @@ import {Mixin} from 'ember-metal/mixin';
   @class ComponentTemplateDeprecation
   @namespace Ember
 */
-var ComponentTemplateDeprecation = Mixin.create({
+export default Mixin.create({
   /**
     @private
 
@@ -60,6 +60,3 @@ var ComponentTemplateDeprecation = Mixin.create({
     }
   }
 });
-
-export default ComponentTemplateDeprecation;
-

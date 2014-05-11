@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core"; // Ember.K
-import {inspect} from "ember-metal/utils";
+import { inspect } from "ember-metal/utils";
 import EmberObject from "ember-runtime/system/object";
 
 /**

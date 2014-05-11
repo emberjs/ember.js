@@ -2,10 +2,25 @@
 @module ember-metal
 */
 
-import {meta, META_KEY, GUID_KEY, typeOf, generateGuid} from "ember-metal/utils";
-import {removeChainWatcher, flushPendingChains} from "ember-metal/chains";
-import {watchKey, unwatchKey} from "ember-metal/watch_key";
-import {watchPath, unwatchPath} from "ember-metal/watch_path";
+import {
+  meta,
+  META_KEY,
+  GUID_KEY,
+  typeOf,
+  generateGuid
+} from "ember-metal/utils";
+import {
+  removeChainWatcher,
+  flushPendingChains
+} from "ember-metal/chains";
+import {
+  watchKey,
+  unwatchKey
+} from "ember-metal/watch_key";
+import {
+  watchPath,
+  unwatchPath
+} from "ember-metal/watch_path";
 
 var metaFor = meta; // utils.js
 
@@ -38,14 +53,16 @@ function watch(obj, _keyPath, m) {
   }
 }
 
-function isWatching(obj, key) {
+export { watch };
+
+export function isWatching(obj, key) {
   var meta = obj[META_KEY];
   return (meta && meta.watching[key]) > 0;
 }
 
 watch.flushPending = flushPendingChains;
 
-function unwatch(obj, _keyPath, m) {
+export function unwatch(obj, _keyPath, m) {
   // can't watch length on Array - it is special...
   if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
@@ -66,7 +83,7 @@ function unwatch(obj, _keyPath, m) {
   @for Ember
   @param obj
 */
-function rewatch(obj) {
+export function rewatch(obj) {
   var m = obj[META_KEY], chains = m && m.chains;
 
   // make sure the object has its own guid.
@@ -91,7 +108,7 @@ var NODE_STACK = [];
   @param {Object} obj  the object to destroy
   @return {void}
 */
-function destroy(obj) {
+export function destroy(obj) {
   var meta = obj[META_KEY], node, nodes, key, nodeObject;
   if (meta) {
     obj[META_KEY] = null;
@@ -122,5 +139,3 @@ function destroy(obj) {
     }
   }
 }
-
-export {watch, isWatching, unwatch, rewatch, destroy};

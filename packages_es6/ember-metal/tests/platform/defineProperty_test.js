@@ -1,4 +1,4 @@
-import {platform} from 'ember-metal/platform';
+import { platform } from 'ember-metal/platform';
 import EnumerableUtils from 'ember-metal/enumerable_utils';
 
 function isEnumerable(obj, keyName) {

@@ -8,8 +8,8 @@
 import EmberHandlebars from "ember-handlebars-compiler";
 var helpers = EmberHandlebars.helpers;
 
-import {resolveHelper} from "ember-handlebars/helpers/binding";
-import {handlebarsGet} from "ember-handlebars/ext";
+import { resolveHelper } from "ember-handlebars/helpers/binding";
+import { handlebarsGet } from "ember-handlebars/ext";
 
 var slice = [].slice;
 
@@ -33,7 +33,7 @@ var slice = [].slice;
   @param {String} property
   @return {String} HTML string
 */
-function unboundHelper(property, fn) {
+export default function unboundHelper(property, fn) {
   var options = arguments[arguments.length - 1],
       container = options.data.view.container,
       helper, context, out, ctx;
@@ -51,5 +51,3 @@ function unboundHelper(property, fn) {
   context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : ctx;
   return handlebarsGet(context, property, fn);
 }
-
-export default unboundHelper;

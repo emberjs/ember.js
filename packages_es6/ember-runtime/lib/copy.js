@@ -1,8 +1,8 @@
 import EnumerableUtils from "ember-metal/enumerable_utils";
-import {typeOf} from "ember-metal/utils";
+import { typeOf } from "ember-metal/utils";
 import EmberObject from "ember-runtime/system/object";
 import Copyable from "ember-runtime/mixins/copyable";
-import {create} from "ember-metal/platform";
+import { create } from "ember-metal/platform";
 
 var indexOf = EnumerableUtils.indexOf;
 
@@ -64,11 +64,9 @@ function _copy(obj, deep, seen, copies) {
   @param {Boolean} deep If true, a deep copy of the object is made
   @return {Object} The cloned object
 */
-function copy(obj, deep) {
+export default function copy(obj, deep) {
   // fast paths
   if ('object' !== typeof obj || obj===null) return obj; // can't copy primitives
   if (Copyable && Copyable.detect(obj)) return obj.copy(deep);
   return _copy(obj, deep, deep ? [] : null, deep ? [] : null);
 }
-
-export default copy;

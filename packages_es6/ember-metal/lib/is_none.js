@@ -19,10 +19,11 @@ import Ember from 'ember-metal/core'; // deprecateFunc
   @param {Object} obj Value to test
   @return {Boolean}
 */
-var isNone = function(obj) {
+function isNone(obj) {
   return obj === null || obj === undefined;
-};
-var none = Ember.deprecateFunc("Ember.none is deprecated. Please use Ember.isNone instead.", isNone);
+}
+
+export var none = Ember.deprecateFunc("Ember.none is deprecated. Please use Ember.isNone instead.", isNone);
 
 export default isNone;
-export {isNone, none};
+export { isNone };

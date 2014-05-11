@@ -28,7 +28,7 @@ function decrementAjaxPendingRequests(){
   @namespace Ember
   @since 1.5.0
 */
-function setupForTesting() {
+export default function setupForTesting() {
   if (!Test) { Test = requireModule('ember-testing/test')['default']; }
 
   Ember.testing = true;
@@ -46,6 +46,4 @@ function setupForTesting() {
   jQuery(document).off('ajaxComplete', decrementAjaxPendingRequests);
   jQuery(document).on('ajaxSend', incrementAjaxPendingRequests);
   jQuery(document).on('ajaxComplete', decrementAjaxPendingRequests);
-}
-
-export default setupForTesting;
+};

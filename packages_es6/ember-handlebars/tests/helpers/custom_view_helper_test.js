@@ -1,19 +1,18 @@
 /*globals TemplateTests*/
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import Namespace from "ember-runtime/system/namespace";
 import EmberHandlebars from "ember-handlebars-compiler";
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 
-var appendView = function() {
+function appendView() {
   run(function() { view.appendTo('#qunit-fixture'); });
-};
+}
 
 var view;
-
 
 module("Handlebars custom view helpers", {
   setup: function() {

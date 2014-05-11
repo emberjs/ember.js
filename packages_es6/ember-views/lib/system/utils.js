@@ -103,7 +103,7 @@ var canSetInnerHTML = function(tagName) {
   return canSet;
 };
 
-var setInnerHTML = function(element, html) {
+export function setInnerHTML(element, html) {
   var tagName = element.tagName;
 
   if (canSetInnerHTML(tagName)) {
@@ -125,14 +125,11 @@ var setInnerHTML = function(element, html) {
   }
 
   return element;
-};
+}
 
-function isSimpleClick(event) {
+export function isSimpleClick(event) {
   var modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey,
       secondaryClick = event.which > 1; // IE9 may return undefined
 
   return !modifier && !secondaryClick;
 }
-
-export {setInnerHTML, isSimpleClick};
-

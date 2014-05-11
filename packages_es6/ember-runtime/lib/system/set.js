@@ -4,20 +4,26 @@
 */
 import Ember from "ember-metal/core"; // Ember.isNone
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {guidFor} from "ember-metal/utils";
-import {isNone} from 'ember-metal/is_none';
-import {fmt} from "ember-runtime/system/string";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { guidFor } from "ember-metal/utils";
+import { isNone } from 'ember-metal/is_none';
+import { fmt } from "ember-runtime/system/string";
 import CoreObject from "ember-runtime/system/core_object";
 import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";
 import Enumerable from "ember-runtime/mixins/enumerable";
 import Copyable from "ember-runtime/mixins/copyable";
-import {Freezable, FROZEN_ERROR} from "ember-runtime/mixins/freezable";
+import {
+  Freezable,
+  FROZEN_ERROR
+} from "ember-runtime/mixins/freezable";
 import EmberError from "ember-metal/error";
-import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
-import {aliasMethod} from "ember-metal/mixin";
-import {computed} from "ember-metal/computed";
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
+import { aliasMethod } from "ember-metal/mixin";
+import { computed } from "ember-metal/computed";
 
 /**
   An unordered collection of objects.
@@ -116,8 +122,7 @@ import {computed} from "ember-metal/computed";
   @uses Ember.Freezable
   @since Ember 0.9
 */
-export default CoreObject.extend(MutableEnumerable, Copyable, Freezable,
-  {
+export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
   // ..........................................................
   // IMPLEMENT ENUMERABLE APIS
@@ -461,5 +466,4 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable,
     }
     return fmt("Ember.Set<%@>", [array.join(',')]);
   }
-
 });

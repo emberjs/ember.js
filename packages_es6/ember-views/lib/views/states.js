@@ -1,4 +1,4 @@
-import {create} from "ember-metal/platform";
+import { create } from "ember-metal/platform";
 import merge from "ember-metal/merge";
 import _default from "ember-views/views/states/default";
 import preRender from "ember-views/views/states/pre_render";
@@ -7,7 +7,7 @@ import hasElement from "ember-views/views/states/has_element";
 import inDOM from "ember-views/views/states/in_dom";
 import destroying from "ember-views/views/states/destroying";
 
-function cloneStates(from) {
+export function cloneStates(from) {
   var into = {};
 
   into._default = {};
@@ -25,7 +25,7 @@ function cloneStates(from) {
   return into;
 }
 
-var states = {
+export var states = {
   _default: _default,
   preRender: preRender,
   inDOM: inDOM,
@@ -33,5 +33,3 @@ var states = {
   hasElement: hasElement,
   destroying: destroying
 };
-
-export {cloneStates, states};

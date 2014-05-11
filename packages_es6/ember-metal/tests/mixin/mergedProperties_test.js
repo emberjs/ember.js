@@ -1,7 +1,10 @@
 /*globals setup */
 
-import {get} from 'ember-metal/property_get';
-import {mixin, Mixin} from 'ember-metal/mixin';
+import { get } from 'ember-metal/property_get';
+import {
+  mixin,
+  Mixin
+} from 'ember-metal/mixin';
 
 module('Mixin mergedProperties');
 

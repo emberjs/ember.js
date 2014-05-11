@@ -1,8 +1,11 @@
 /*globals raises */
 
-import {get} from 'ember-metal/property_get';
-import {create} from 'ember-metal/platform';
-import {mixin, Mixin} from 'ember-metal/mixin';
+import { get } from 'ember-metal/property_get';
+import { create } from 'ember-metal/platform';
+import {
+  mixin,
+  Mixin
+} from 'ember-metal/mixin';
 
 module('Mixin Methods');
 

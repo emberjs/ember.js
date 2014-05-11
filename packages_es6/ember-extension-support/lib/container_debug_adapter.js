@@ -1,6 +1,9 @@
 import Ember from "ember-metal/core";
-import {typeOf} from "ember-metal/utils";
-import {dasherize, classify} from "ember-runtime/system/string";
+import { typeOf } from "ember-metal/utils";
+import {
+  dasherize,
+  classify
+} from "ember-runtime/system/string";
 import Namespace from "ember-runtime/system/namespace";
 import EmberObject from "ember-runtime/system/object";
 

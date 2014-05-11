@@ -3,8 +3,10 @@
 @submodule ember-runtime
 */
 import Ember from "ember-metal/core"; // Ember.STRINGS, Ember.FEATURES
-import {isArray, inspect as emberInspect} from "ember-metal/utils";
-
+import {
+  isArray,
+  inspect as emberInspect
+} from "ember-metal/utils";
 
 var STRING_DASHERIZE_REGEXP = (/[ _]/g);
 var STRING_DASHERIZE_CACHE = {};
@@ -108,8 +110,7 @@ Ember.STRINGS = {};
   @namespace Ember
   @static
 */
-var EmberStringUtils = {
-
+export default {
   /**
     Apply formatting options to the string. This will look for occurrences
     of "%@" in your string and substitute them with the arguments you pass into
@@ -278,5 +279,14 @@ var EmberStringUtils = {
   capitalize: capitalize
 };
 
-export default EmberStringUtils;
-export {fmt, loc, w, decamelize, dasherize, camelize, classify, underscore, capitalize};
+export {
+  fmt,
+  loc,
+  w,
+  decamelize,
+  dasherize,
+  camelize,
+  classify,
+  underscore,
+  capitalize
+};

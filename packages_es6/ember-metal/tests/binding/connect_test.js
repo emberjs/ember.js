@@ -1,11 +1,14 @@
 import Ember from 'ember-metal/core';
 import testBoth from 'ember-metal/tests/props_helper';
-import {Binding, bind} from "ember-metal/binding";
+import {
+  Binding,
+  bind
+} from "ember-metal/binding";
 import run from 'ember-metal/run_loop';
-import {create} from 'ember-metal/platform';
-import {set} from 'ember-metal/property_set';
-import {get} from 'ember-metal/property_get';
-import {rewatch} from "ember-metal/watching";
+import { create } from 'ember-metal/platform';
+import { set } from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
+import { rewatch } from "ember-metal/watching";
 
 function performTest(binding, a, b, get, set, connect) {
   if (connect === undefined) connect = function() {binding.connect(a);};

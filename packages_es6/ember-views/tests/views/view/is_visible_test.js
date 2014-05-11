@@ -1,8 +1,8 @@
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 
 var View, view, parentBecameVisible, childBecameVisible, grandchildBecameVisible;

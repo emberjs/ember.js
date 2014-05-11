@@ -1,18 +1,18 @@
 /*globals Foo */
 /*jshint newcap:false*/
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
-import {computed} from "ember-metal/computed";
+import { computed } from "ember-metal/computed";
 import EmberHandlebars from "ember-handlebars-compiler";
-import {set} from "ember-metal/property_set";
+import { set } from "ember-metal/property_set";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import Container from "ember-runtime/system/container";
-import {A} from "ember-runtime/system/native_array";
+import { A } from "ember-runtime/system/native_array";
 
-var appendView = function(view) {
+function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
-};
+}
 
 var view;
 var originalLookup = Ember.lookup, lookup;

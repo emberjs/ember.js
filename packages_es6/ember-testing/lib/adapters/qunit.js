@@ -1,5 +1,5 @@
 import Adapter from "ember-testing/adapters/adapter";
-import {inspect} from "ember-metal/utils";
+import { inspect } from "ember-metal/utils";
 
 /**
   This class implements the methods defined by Ember.Test.Adapter for the
@@ -9,7 +9,7 @@ import {inspect} from "ember-metal/utils";
   @namespace Ember.Test
   @extends Ember.Test.Adapter
 */
-var QUnitAdapter = Adapter.extend({
+export default Adapter.extend({
   asyncStart: function() {
     QUnit.stop();
   },
@@ -20,5 +20,3 @@ var QUnitAdapter = Adapter.extend({
     ok(false, inspect(error));
   }
 });
-
-export default QUnitAdapter;

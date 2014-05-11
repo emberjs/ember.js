@@ -1,6 +1,6 @@
 import jQuery from "ember-views/system/jquery";
 import run from "ember-metal/run_loop";
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 var trim = jQuery.trim;
 
 var originalLookup = Ember.lookup, lookup, Tobias, App, view;

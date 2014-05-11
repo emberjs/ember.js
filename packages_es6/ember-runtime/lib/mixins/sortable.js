@@ -5,15 +5,21 @@
 
 import Ember from "ember-metal/core"; // Ember.assert, Ember.A
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import EnumerableUtils from "ember-metal/enumerable_utils";
-import {Mixin} from "ember-metal/mixin";
+import { Mixin } from "ember-metal/mixin";
 import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";
 import compare from "ember-runtime/compare";
-import {addObserver, removeObserver} from "ember-metal/observer";
-import {computed} from "ember-metal/computed";
-import {beforeObserver, observer} from "ember-metal/mixin"; //ES6TODO: should we access these directly from their package or from how thier exposed in ember-metal?
+import {
+  addObserver,
+  removeObserver
+} from "ember-metal/observer";
+import { computed } from "ember-metal/computed";
+import {
+  beforeObserver,
+  observer
+} from "ember-metal/mixin"; //ES6TODO: should we access these directly from their package or from how thier exposed in ember-metal?
 
 var forEach = EnumerableUtils.forEach;
 
@@ -69,7 +75,7 @@ var forEach = EnumerableUtils.forEach;
   @namespace Ember
   @uses Ember.MutableEnumerable
 */
-var SortableMixin = Mixin.create(MutableEnumerable, {
+export default Mixin.create(MutableEnumerable, {
 
   /**
     Specifies which properties dictate the arrangedContent's sort order.
@@ -297,5 +303,3 @@ var SortableMixin = Mixin.create(MutableEnumerable, {
     return mid;
   }
 });
-
-export default SortableMixin;

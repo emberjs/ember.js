@@ -1,10 +1,10 @@
 import Ember from "ember-metal/core";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import RSVP from "ember-runtime/ext/rsvp";
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 import jQuery from "ember-views/system/jquery";
 
 import Test from "ember-testing/test";
@@ -18,7 +18,6 @@ import EmberApplication from "ember-application/system/application";
 var App, originalAdapter = Test.adapter;
 
 function cleanup(){
-
   // Teardown setupForTesting
 
   Test.adapter = originalAdapter;
