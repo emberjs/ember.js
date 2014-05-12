@@ -182,6 +182,33 @@ test("#each can be used with an ArrayProxy", function() {
   equal(view.$().text(), '123', "The content was rendered");
 });
 
+test("should allow `#each item in array` format", function() {
+  var yehuda = {name: 'Yehuda'};
+  createGroupedView(
+    '{{#each person in people}}{{person.name}}{{/each}}',
+    {people: A([yehuda, {name: 'Tom'}])}
+  );
+  appendView();
+  equal(view.$('script').length, 0, "No Metamorph markers are output");
+  equal(view.$().text(), 'YehudaTom', "The content was rendered");
+
+  run(function() {
+    set(yehuda, 'name', 'Erik');
+  });
+  equal(view.$().text(), 'ErikTom', "The updated object value was rendered");
+
+  run(function() {
+    view.get('context.people').pushObject({name: 'Alex'});
+    view.get('context.people').removeObject(yehuda);
+  });
+  equal(view.$().text(), 'TomAlex', "The updated array content was rendered");
+
+  run(function() {
+    view.set('context.people', A([{name: 'Sarah'},{name: 'Gavin'}]));
+  });
+  equal(view.$().text(), 'SarahGavin', "The replaced array content was rendered");
+});
+
 test("an #each can be nested with a view inside", function() {
   var yehuda = {name: 'Yehuda'};
   createGroupedView(

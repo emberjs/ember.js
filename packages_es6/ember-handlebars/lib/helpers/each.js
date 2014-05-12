@@ -227,12 +227,15 @@ GroupedEach.prototype = {
 
     var content = this.content,
         contentLength = get(content, 'length'),
-        data = this.options.data,
+        options = this.options,
+        data = options.data,
         template = this.template;
 
     data.insideEach = true;
     for (var i = 0; i < contentLength; i++) {
-      template(content.objectAt(i), { data: data });
+      var context = content.objectAt(i);
+      options.data.keywords[options.hash.keyword] = context;
+      template(context, { data: data });
     }
   },
 
