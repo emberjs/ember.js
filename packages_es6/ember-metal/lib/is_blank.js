@@ -26,4 +26,4 @@ import isEmpty from 'ember-metal/is_empty';
   */
 export default function isBlank(obj) {
   return isEmpty(obj) || (typeof obj === 'string' && obj.match(/\S/) === null);
-};
+}

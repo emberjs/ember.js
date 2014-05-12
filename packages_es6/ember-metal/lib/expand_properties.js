@@ -43,4 +43,4 @@ export default function expandProperties(pattern, callback) {
   } else {
     callback(pattern);
   }
-};
+}
