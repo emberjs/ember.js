@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core";  // for Ember.ORDER_DEFINITION
-import {typeOf} from "ember-metal/utils";
+import { typeOf } from "ember-metal/utils";
 import Comparable from "ember-runtime/mixins/comparable";
 
 // Used by Ember.compare
@@ -40,7 +40,7 @@ Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
  @param {Object} w Second value to compare
  @return {Number} -1 if v < w, 0 if v = w and 1 if v > w.
 */
-function compare(v, w) {
+export default function compare(v, w) {
   if (v === w) { return 0; }
 
   var type1 = typeOf(v);
@@ -127,5 +127,3 @@ function compare(v, w) {
       return 0;
   }
 }
-
-export default compare;

@@ -1,12 +1,18 @@
-import {get} from 'ember-metal/property_get';
-import {defineProperty} from "ember-metal/properties";
-import {Mixin, observer} from 'ember-metal/mixin';
-import {addObserver, removeObserver} from "ember-metal/observer";
-import {isWatching} from 'ember-metal/watching';
+import { get } from 'ember-metal/property_get';
+import { defineProperty } from "ember-metal/properties";
+import {
+  Mixin,
+  observer
+} from 'ember-metal/mixin';
+import {
+  addObserver,
+  removeObserver
+} from "ember-metal/observer";
+import { isWatching } from 'ember-metal/watching';
 
 module('isWatching');
 
-var testObserver = function(setup, teardown, key) {
+function testObserver(setup, teardown, key) {
   var obj = {}, fn = function() {};
   key = key || 'foo';
 
@@ -15,7 +21,7 @@ var testObserver = function(setup, teardown, key) {
   equal(isWatching(obj, key), true, "isWatching is true when observers are added");
   teardown(obj, key, fn);
   equal(isWatching(obj, key), false, "isWatching is false after observers are removed");
-};
+}
 
 test("isWatching is true for regular local observers", function() {
   testObserver(function(obj, key, fn) {

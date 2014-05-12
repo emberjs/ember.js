@@ -5,16 +5,15 @@
 
 import Ember from 'ember-metal/core'; // jQuery
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {setInnerHTML} from "ember-views/system/utils";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { setInnerHTML } from "ember-views/system/utils";
 import jQuery from "ember-views/system/jquery";
 
 function ClassSet() {
   this.seen = {};
   this.list = [];
 }
-
 
 ClassSet.prototype = {
   add: function(string) {
@@ -95,14 +94,14 @@ var canSetNameOnInputs = (function() {
   @constructor
   @param {String} tagName tag name (such as 'div' or 'p') used for the buffer
 */
-var RenderBuffer = function(tagName) {
+export default function RenderBuffer(tagName) {
   return new _RenderBuffer(tagName); // jshint ignore:line
-};
+}
 
-var _RenderBuffer = function(tagName) {
+function _RenderBuffer(tagName) {
   this.tagNames = [tagName || null];
   this.buffer = "";
-};
+}
 
 _RenderBuffer.prototype = {
 
@@ -543,5 +542,3 @@ _RenderBuffer.prototype = {
     return this.buffer;
   }
 };
-
-export default RenderBuffer;

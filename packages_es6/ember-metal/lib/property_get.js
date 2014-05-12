@@ -3,7 +3,7 @@
 */
 
 import Ember from "ember-metal/core";
-import {META_KEY} from "ember-metal/utils";
+import { META_KEY } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
 
 var get;
@@ -45,7 +45,7 @@ var FIRST_KEY = /^([^\.]+)/;
   @param {String} keyName The property key to retrieve
   @return {Object} the property value or `null`.
 */
-get = function get(obj, keyName) {
+var get = function get(obj, keyName) {
   // Helpers that operate with 'this' within an #each
   if (keyName === '') {
     return obj;
@@ -152,7 +152,7 @@ function _getPath(root, path) {
   return root;
 }
 
-function getWithDefault(root, key, defaultValue) {
+export function getWithDefault(root, key, defaultValue) {
   var value = get(root, key);
 
   if (value === undefined) { return defaultValue; }
@@ -160,4 +160,8 @@ function getWithDefault(root, key, defaultValue) {
 }
 
 export default get;
-export {get, getWithDefault, normalizeTuple, _getPath};
+export {
+  get,
+  normalizeTuple,
+  _getPath
+};

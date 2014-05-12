@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core";
 import EmberObject from "ember-runtime/system/object";
-import {View} from "ember-views/views/view";
+import { View } from "ember-views/views/view";
 import ViewTargetActionSupport from "ember-views/mixins/view_target_action_support";
 
 module("ViewTargetActionSupport");

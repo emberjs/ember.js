@@ -2,24 +2,25 @@
 import Ember from "ember-metal/core"; // Ember.lookup;
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
-import {View as EmberView} from "ember-views/views/view";
-import {computed} from "ember-metal/computed";
+import { View as EmberView } from "ember-views/views/view";
+import { computed } from "ember-metal/computed";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import EmberHandlebars from "ember-handlebars-compiler";
 // import {expectAssertion} from "ember-metal/tests/debug_helpers";
-import {A} from "ember-runtime/system/native_array";
-import {Controller as EmberController} from "ember-runtime/controllers/controller";
+import { A } from "ember-runtime/system/native_array";
+import { Controller as EmberController } from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import Container from "ember-runtime/system/container";
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 
 var people, view, container;
 var template, templateMyView;
-var templateFor = function(template) {
+
+function templateFor(template) {
   return EmberHandlebars.compile(template);
-};
+}
 
 var originalLookup = Ember.lookup, lookup;
 

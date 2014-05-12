@@ -161,4 +161,7 @@ if (Ember.ENV.MANDATORY_SETTER && !platform.hasPropertyAccessors) {
   Ember.ENV.MANDATORY_SETTER = false;
 }
 
-export {create, platform};
+export {
+  create,
+  platform
+};

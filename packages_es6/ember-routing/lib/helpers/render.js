@@ -1,11 +1,14 @@
 import Ember from "ember-metal/core"; // assert, deprecate
 import EmberError from "ember-metal/error";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {camelize} from "ember-runtime/system/string";
-import {generateControllerFactory, generateController} from "ember-routing/system/controller_for";
-import {handlebarsGet} from "ember-handlebars/ext";
-import {viewHelper} from "ember-handlebars/helpers/view";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { camelize } from "ember-runtime/system/string";
+import {
+  generateControllerFactory,
+  generateController
+} from "ember-routing/system/controller_for";
+import { handlebarsGet } from "ember-handlebars/ext";
+import { viewHelper } from "ember-handlebars/helpers/view";
 
 import "ember-handlebars/helpers/view";
 
@@ -86,7 +89,7 @@ You could render it inside the `post` template using the `render` helper.
   @param {Hash} options
   @return {String} HTML string
 */
-function renderHelper(name, contextString, options) {
+export default function renderHelper(name, contextString, options) {
   var length = arguments.length;
 
   var contextProvided = length === 3,
@@ -172,5 +175,3 @@ function renderHelper(name, contextString, options) {
 
   viewHelper.call(this, view, options);
 }
-
-export default renderHelper;

@@ -4,12 +4,12 @@
 */
 
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {required} from "ember-metal/mixin";
-import {Freezable} from "ember-runtime/mixins/freezable";
-import {Mixin} from 'ember-metal/mixin';
-import {fmt} from "ember-runtime/system/string";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { required } from "ember-metal/mixin";
+import { Freezable } from "ember-runtime/mixins/freezable";
+import { Mixin } from 'ember-metal/mixin';
+import { fmt } from "ember-runtime/system/string";
 import EmberError from 'ember-metal/error';
 
 
@@ -28,8 +28,7 @@ import EmberError from 'ember-metal/error';
   @namespace Ember
   @since Ember 0.9
 */
-var Copyable = Mixin.create({
-
+export default Mixin.create({
   /**
     Override to return a copy of the receiver. Default implementation raises
     an exception.
@@ -62,5 +61,3 @@ var Copyable = Mixin.create({
     }
   }
 });
-
-export default Copyable;

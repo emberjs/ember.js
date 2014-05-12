@@ -1,6 +1,6 @@
 /*globals Foo:true $foo:true */
 
-import {get} from 'ember-metal/property_get';
+import { get } from 'ember-metal/property_get';
 
 var obj, moduleOpts = {
   setup: function() {

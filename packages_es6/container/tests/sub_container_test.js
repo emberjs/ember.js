@@ -1,6 +1,8 @@
-import { factory,
-         o_create,
-         setProperties} from 'container/tests/container_helper';
+import {
+  factory,
+  o_create,
+  setProperties
+} from 'container/tests/container_helper';
 
 import Container from 'container';
 var container;

@@ -30,7 +30,7 @@ BRACE_EXPANSION = /^((?:[^\.]*\.)*)\{(.*)\}$/;
   @param {function} callback The callback to invoke.  It is invoked once per
   expansion, and is passed the expansion.
   */
-function expandProperties(pattern, callback) {
+export default function expandProperties(pattern, callback) {
   var match, prefix, list;
 
   if (match = BRACE_EXPANSION.exec(pattern)) {
@@ -43,6 +43,4 @@ function expandProperties(pattern, callback) {
   } else {
     callback(pattern);
   }
-}
-
-export default expandProperties;
+};

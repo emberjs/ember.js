@@ -8,14 +8,26 @@
 //
 
 import Ember from "ember-metal/core";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {apply} from "ember-metal/utils";
-import {Mixin, required, aliasMethod} from "ember-metal/mixin";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { apply } from "ember-metal/utils";
+import {
+  Mixin,
+  required,
+  aliasMethod
+} from "ember-metal/mixin";
 import EnumerableUtils from "ember-metal/enumerable_utils";
-import {computed} from "ember-metal/computed";
-import {propertyWillChange, propertyDidChange} from "ember-metal/property_events";
-import {addListener, removeListener, sendEvent, hasListeners} from "ember-metal/events";
+import { computed } from "ember-metal/computed";
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
+import {
+  addListener,
+  removeListener,
+  sendEvent,
+  hasListeners
+} from "ember-metal/events";
 import compare from "ember-runtime/compare";
 
 var a_slice = Array.prototype.slice;
@@ -79,7 +91,7 @@ function iter(key, value) {
   @namespace Ember
   @since Ember 0.9
 */
-var Enumerable = Mixin.create({
+export default Mixin.create({
 
   /**
     Implement this method to make your class enumerable.
@@ -1027,5 +1039,3 @@ var Enumerable = Mixin.create({
     });
   }
 });
-
-export default Enumerable;

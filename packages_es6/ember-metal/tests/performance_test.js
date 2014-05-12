@@ -1,9 +1,13 @@
-import {set} from 'ember-metal/property_set';
-import {get} from 'ember-metal/property_get';
-import {computed} from 'ember-metal/computed';
-import {defineProperty} from "ember-metal/properties";
-import {propertyDidChange, beginPropertyChanges, endPropertyChanges} from "ember-metal/property_events";
-import {addObserver} from "ember-metal/observer";
+import { set } from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
+import { computed } from 'ember-metal/computed';
+import { defineProperty } from "ember-metal/properties";
+import {
+  propertyDidChange,
+  beginPropertyChanges,
+  endPropertyChanges
+} from "ember-metal/property_events";
+import { addObserver } from "ember-metal/observer";
 
 /*
   This test file is designed to capture performance regressions related to

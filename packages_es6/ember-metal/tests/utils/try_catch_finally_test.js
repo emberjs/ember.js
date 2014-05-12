@@ -1,4 +1,4 @@
-import {tryCatchFinally} from 'ember-metal/utils';
+import { tryCatchFinally } from 'ember-metal/utils';
 
 var tryCount, catchCount, finalizeCount, tryable, catchable, finalizer, error,
 tryableResult, catchableResult, finalizerResult;

@@ -1,13 +1,23 @@
 import Ember from 'ember-metal/core';
 import testBoth from 'ember-metal/tests/props_helper';
-import {create} from 'ember-metal/platform';
-import {ComputedProperty, computed, cacheFor} from "ember-metal/computed";
-import {Descriptor, defineProperty} from "ember-metal/properties";
-import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
-import {meta} from 'ember-metal/utils';
-import {isWatching} from "ember-metal/watching";
-import {addObserver, addBeforeObserver} from "ember-metal/observer";
+import { create } from 'ember-metal/platform';
+import {
+  ComputedProperty,
+  computed,
+  cacheFor
+} from "ember-metal/computed";
+import {
+  Descriptor,
+  defineProperty
+} from "ember-metal/properties";
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { meta } from 'ember-metal/utils';
+import { isWatching } from "ember-metal/watching";
+import {
+  addObserver,
+  addBeforeObserver
+} from "ember-metal/observer";
 import EnumerableUtils from 'ember-metal/enumerable_utils';
 
 var originalLookup = Ember.lookup, lookup;

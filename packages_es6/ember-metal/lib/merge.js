@@ -13,12 +13,10 @@
   @param {Object} updates The object to copy properties from
   @return {Object}
 */
-function merge(original, updates) {
+export default function merge(original, updates) {
   for (var prop in updates) {
     if (!updates.hasOwnProperty(prop)) { continue; }
     original[prop] = updates[prop];
   }
   return original;
-}
-
-export default merge;
+};

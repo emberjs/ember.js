@@ -10,21 +10,30 @@ var K = Ember.K;
 import EmberHandlebars from "ember-handlebars-compiler";
 var helpers = EmberHandlebars.helpers;
 
-import {fmt} from "ember-runtime/system/string";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {_Metamorph, _MetamorphView} from "ember-handlebars/views/metamorph_view";
+import { fmt } from "ember-runtime/system/string";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import CollectionView from "ember-views/views/collection_view";
-import {Binding} from "ember-metal/binding";
-import {ControllerMixin} from "ember-runtime/controllers/controller";
+import { Binding } from "ember-metal/binding";
+import { ControllerMixin } from "ember-runtime/controllers/controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import EmberArray from "ember-runtime/mixins/array";
 import copy from "ember-runtime/copy";
 import run from "ember-metal/run_loop";
-import {addObserver, removeObserver, addBeforeObserver, removeBeforeObserver} from "ember-metal/observer";
-import {on} from "ember-metal/events";
+import { on } from "ember-metal/events";
+import { handlebarsGet } from "ember-handlebars/ext";
 
-import {handlebarsGet} from "ember-handlebars/ext";
+import {
+  addObserver,
+  removeObserver,
+  addBeforeObserver,
+  removeBeforeObserver
+} from "ember-metal/observer";
+
+import {
+  _Metamorph,
+  _MetamorphView
+} from "ember-handlebars/views/metamorph_view";
 
 var EachView = CollectionView.extend(_Metamorph, {
   init: function() {
@@ -452,5 +461,9 @@ function eachHelper(path, options) {
   }
 }
 
-export {EachView, GroupedEach, eachHelper};
+export {
+  EachView,
+  GroupedEach,
+  eachHelper
+};
 

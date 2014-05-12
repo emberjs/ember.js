@@ -1,10 +1,12 @@
-import {Mixin, required} from "ember-metal/mixin";
+import {
+  Mixin,
+  required
+} from "ember-metal/mixin";
 
 /**
 @module ember
 @submodule ember-runtime
 */
-
 
 /**
   Implements some standard methods for comparing objects. Add this mixin to
@@ -16,7 +18,7 @@ import {Mixin, required} from "ember-metal/mixin";
   @namespace Ember
   @since Ember 0.9
 */
-var Comparable = Mixin.create({
+export default Mixin.create({
 
   /**
     Override to return the result of the comparison of the two parameters. The
@@ -34,7 +36,4 @@ var Comparable = Mixin.create({
     @return {Integer} the result of the comparison
   */
   compare: required(Function)
-
 });
-
-export default Comparable;

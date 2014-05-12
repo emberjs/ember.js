@@ -158,7 +158,7 @@ var helpers = EmberHandlebars.helpers;
   @for Ember.Handlebars.helpers
   @param {Hash} options
 */
-function inputHelper(options) {
+export function inputHelper(options) {
   Ember.assert('You can only pass attributes to the `input` helper, not arguments', arguments.length < 2);
 
   var hash = options.hash,
@@ -335,7 +335,7 @@ function inputHelper(options) {
   @for Ember.Handlebars.helpers
   @param {Hash} options
 */
-function textareaHelper(options) {
+export function textareaHelper(options) {
   Ember.assert('You can only pass attributes to the `textarea` helper, not arguments', arguments.length < 2);
 
   var hash = options.hash,
@@ -343,5 +343,3 @@ function textareaHelper(options) {
 
   return helpers.view.call(this, TextArea, options);
 }
-
-export {inputHelper, textareaHelper};

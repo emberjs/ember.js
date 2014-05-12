@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core";
-import {runLoadHooks} from "ember-runtime/system/lazy_load";
+import { runLoadHooks } from "ember-runtime/system/lazy_load";
 
 /**
 Ember Application
@@ -10,7 +10,10 @@ Ember Application
 */
 
 import DAG from "ember-application/system/dag";
-import {Resolver, DefaultResolver} from "ember-application/system/resolver";
+import {
+  Resolver,
+  DefaultResolver
+} from "ember-application/system/resolver";
 import Application from "ember-application/system/application";
 import "ember-application/ext/controller"; // side effect of extending ControllerMixin
 

@@ -9,13 +9,16 @@ import Ember from "ember-metal/core"; // Ember.warn, Ember.assert
 // var emberWarn = Ember.warn, emberAssert = Ember.assert;
 
 import EmberObject from "ember-runtime/system/object";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {IS_BINDING} from "ember-metal/mixin";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { IS_BINDING } from "ember-metal/mixin";
 import jQuery from "ember-views/system/jquery";
-import {View} from "ember-views/views/view";
-import {isGlobalPath} from "ember-metal/binding";
-import {normalizePath, handlebarsGet} from "ember-handlebars/ext";
+import { View } from "ember-views/views/view";
+import { isGlobalPath } from "ember-metal/binding";
+import {
+  normalizePath,
+  handlebarsGet
+} from "ember-handlebars/ext";
 import EmberString from "ember-runtime/system/string";
 
 
@@ -51,7 +54,7 @@ function makeBindings(thisContext, options) {
   }
 }
 
-var ViewHelper = EmberObject.create({
+export var ViewHelper = EmberObject.create({
 
   propertiesFromHTMLOptions: function(options) {
     var hash = options.hash, data = options.data;
@@ -367,7 +370,7 @@ var ViewHelper = EmberObject.create({
   @param {Hash} options
   @return {String} HTML string
 */
-function viewHelper(path, options) {
+export function viewHelper(path, options) {
   Ember.assert("The view helper only takes a single argument", arguments.length <= 2);
 
   // If no path is provided, treat path param as options
@@ -380,5 +383,3 @@ function viewHelper(path, options) {
 
   return ViewHelper.helper(this, path, options);
 }
-
-export {ViewHelper, viewHelper};

@@ -1,6 +1,11 @@
 var splice;
 
-import {map, forEach, indexOf, filter} from "ember-metal/array";
+import {
+  map,
+  forEach,
+  indexOf,
+  filter
+} from "ember-metal/array";
 
 splice  = Array.prototype.splice;
 

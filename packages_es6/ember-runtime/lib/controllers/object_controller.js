@@ -1,4 +1,4 @@
-import {ControllerMixin} from "ember-runtime/controllers/controller";
+import { ControllerMixin } from "ember-runtime/controllers/controller";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 
 /**
@@ -19,5 +19,4 @@ import ObjectProxy from "ember-runtime/system/object_proxy";
   @extends Ember.ObjectProxy
   @uses Ember.ControllerMixin
 **/
-var ObjectController = ObjectProxy.extend(ControllerMixin);
-export default ObjectController;
+export default ObjectProxy.extend(ControllerMixin);

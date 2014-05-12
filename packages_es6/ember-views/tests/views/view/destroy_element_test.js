@@ -1,6 +1,6 @@
-import {get} from "ember-metal/property_get";
+import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 
 var view;

@@ -5,11 +5,14 @@
 @submodule ember-handlebars
 */
 import Ember from "ember-metal/core"; // Ember.FEATURES,
-import {inspect} from "ember-metal/utils";
+import { inspect } from "ember-metal/utils";
 import Logger from "ember-metal/logger";
 
-import {get} from "ember-metal/property_get";
-import {normalizePath, handlebarsGet} from "ember-handlebars/ext";
+import { get } from "ember-metal/property_get";
+import {
+  normalizePath,
+  handlebarsGet
+} from "ember-handlebars/ext";
 
 var a_slice = [].slice;
 

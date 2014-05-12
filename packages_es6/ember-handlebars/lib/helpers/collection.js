@@ -4,7 +4,7 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
-import {inspect} from "ember-metal/utils";
+import { inspect } from "ember-metal/utils";
 
 // var emberAssert = Ember.assert;
     // emberDeprecate = Ember.deprecate;
@@ -12,11 +12,11 @@ import {inspect} from "ember-metal/utils";
 import EmberHandlebars from "ember-handlebars-compiler";
 var helpers = EmberHandlebars.helpers;
 
-import {fmt} from "ember-runtime/system/string";
-import {get} from "ember-metal/property_get";
-import {handlebarsGet} from "ember-handlebars/ext";
-import {ViewHelper} from "ember-handlebars/helpers/view";
-import {computed} from "ember-metal/computed";
+import { fmt } from "ember-runtime/system/string";
+import { get } from "ember-metal/property_get";
+import { handlebarsGet } from "ember-handlebars/ext";
+import { ViewHelper } from "ember-handlebars/helpers/view";
+import { computed } from "ember-metal/computed";
 import CollectionView from "ember-views/views/collection_view";
 
 var alias = computed.alias;

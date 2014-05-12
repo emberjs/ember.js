@@ -1,5 +1,5 @@
 /*globals EmberDev */
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 

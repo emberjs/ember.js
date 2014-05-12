@@ -18,10 +18,15 @@ import "ember-routing/ext/run_loop";
 import "ember-routing/ext/controller";
 import "ember-routing/ext/view";
 
-import {resolvePaths, resolveParams} from "ember-routing/helpers/shared";
-import {deprecatedLinkToHelper, linkToHelper, LinkView} from "ember-routing/helpers/link_to";
-
-
+import {
+  resolvePaths,
+  resolveParams
+} from "ember-routing/helpers/shared";
+import {
+  deprecatedLinkToHelper,
+  linkToHelper,
+  LinkView
+} from "ember-routing/helpers/link_to";
 // require('ember-views');
 import EmberLocation from "ember-routing/location/api";
 import NoneLocation from "ember-routing/location/none_location";
@@ -29,14 +34,23 @@ import HashLocation from "ember-routing/location/hash_location";
 import HistoryLocation from "ember-routing/location/history_location";
 import AutoLocation from "ember-routing/location/auto_location";
 
-import {controllerFor, generateControllerFactory, generateController} from "ember-routing/system/controller_for";
+import {
+  controllerFor,
+  generateControllerFactory,
+  generateController
+} from "ember-routing/system/controller_for";
 import RouterDSL from "ember-routing/system/dsl";
 import Router from "ember-routing/system/router";
 import Route from "ember-routing/system/route";
-import {outletHelper, OutletView} from "ember-routing/helpers/outlet";
+import {
+  outletHelper,
+  OutletView
+} from "ember-routing/helpers/outlet";
 import renderHelper from "ember-routing/helpers/render";
-import {ActionHelper, actionHelper} from "ember-routing/helpers/action";
-
+import {
+  ActionHelper,
+  actionHelper
+} from "ember-routing/helpers/action";
 
 Ember.Location = EmberLocation;
 Ember.AutoLocation = AutoLocation;

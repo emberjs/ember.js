@@ -22,7 +22,7 @@ var supportsHistoryState = window.history && 'state' in window.history;
   @namespace Ember
   @extends Ember.Object
 */
-var HistoryLocation = EmberObject.extend({
+export default EmberObject.extend({
   implementation: 'history',
 
   init: function() {
@@ -219,5 +219,3 @@ var HistoryLocation = EmberObject.extend({
     jQuery(window).off('popstate.ember-location-'+guid);
   }
 });
-
-export default HistoryLocation;

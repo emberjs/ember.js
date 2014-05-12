@@ -3,10 +3,10 @@
 @module ember
 @submodule ember-handlebars
 */
-import {get} from "ember-metal/property_get";
+import { get } from "ember-metal/property_get";
 import Component from "ember-views/views/component";
 import TextSupport from "ember-handlebars/controls/text_support";
-import {observer} from "ember-metal/mixin";
+import { observer } from "ember-metal/mixin";
 
 /**
   The internal class used to create textarea element when the `{{textarea}}`
@@ -25,7 +25,7 @@ import {observer} from "ember-metal/mixin";
   @extends Ember.Component
   @uses Ember.TextSupport
 */
-var TextArea = Component.extend(TextSupport, {
+export default Component.extend(TextSupport, {
   classNames: ['ember-text-area'],
 
   tagName: "textarea",
@@ -46,7 +46,4 @@ var TextArea = Component.extend(TextSupport, {
     this._super();
     this.on("didInsertElement", this, this._updateElementValue);
   }
-
 });
-
-export default TextArea;

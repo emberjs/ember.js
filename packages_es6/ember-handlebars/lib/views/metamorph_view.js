@@ -4,11 +4,14 @@
 import Ember from "ember-metal/core"; // Ember.deprecate
 // var emberDeprecate = Ember.deprecate;
 
-import {get} from "ember-metal/property_get";
+import { get } from "ember-metal/property_get";
 import set from "ember-metal/property_set";
 
-import {CoreView, View} from "ember-views/views/view";
-import {Mixin} from "ember-metal/mixin";
+import {
+  CoreView,
+  View
+} from "ember-views/views/view";
+import { Mixin } from "ember-metal/mixin";
 import run from "ember-metal/run_loop";
 
 /**
@@ -87,7 +90,7 @@ var DOMManager = {
   @namespace Ember
   @private
 */
-var _Metamorph = Mixin.create({
+export var _Metamorph = Mixin.create({
   isVirtual: true,
   tagName: '',
 
@@ -125,7 +128,7 @@ var _Metamorph = Mixin.create({
   @uses Ember._Metamorph
   @private
 */
-var _MetamorphView = View.extend(_Metamorph);
+export var _MetamorphView = View.extend(_Metamorph);
 
 /**
   @class _SimpleMetamorphView
@@ -134,6 +137,4 @@ var _MetamorphView = View.extend(_Metamorph);
   @uses Ember._Metamorph
   @private
 */
-var _SimpleMetamorphView = CoreView.extend(_Metamorph);
-
-export {_SimpleMetamorphView, _MetamorphView, _Metamorph};
+export var _SimpleMetamorphView = CoreView.extend(_Metamorph);

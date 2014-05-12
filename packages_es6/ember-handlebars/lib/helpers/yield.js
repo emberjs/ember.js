@@ -6,7 +6,7 @@
 import Ember from "ember-metal/core";
 // var emberAssert = Ember.assert;
 
-import {get} from "ember-metal/property_get";
+import { get } from "ember-metal/property_get";
 
 /**
   `{{yield}}` denotes an area of a template that will be rendered inside
@@ -90,7 +90,7 @@ import {get} from "ember-metal/property_get";
   @param {Hash} options
   @return {String} HTML string
 */
-function yieldHelper(options) {
+export default function yieldHelper(options) {
   var view = options.data.view;
 
   while (view && !get(view, 'layout')) {
@@ -105,5 +105,3 @@ function yieldHelper(options) {
 
   view._yield(this, options);
 }
-
-export default yieldHelper;

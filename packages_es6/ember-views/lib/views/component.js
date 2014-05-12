@@ -2,13 +2,13 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.Handlebars
 
 import ComponentTemplateDeprecation from "ember-views/mixins/component_template_deprecation";
 import TargetActionSupport from "ember-runtime/mixins/target_action_support";
-import {View} from "ember-views/views/view";
+import { View } from "ember-views/views/view";
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {isNone} from 'ember-metal/is_none';
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { isNone } from 'ember-metal/is_none';
 
-import {computed} from "ember-metal/computed";
+import { computed } from "ember-metal/computed";
 
 var a_slice = Array.prototype.slice;
 

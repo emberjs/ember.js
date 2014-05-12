@@ -17,7 +17,7 @@ var pendingQueue = [];
 // attempts to add the pendingQueue chains again. If some of them end up
 // back in the queue and reschedule is true, schedules a timeout to try
 // again.
-function flushPendingChains() {
+export function flushPendingChains() {
   if (pendingQueue.length === 0) { return; } // nothing to do
 
   var queue = pendingQueue;
@@ -27,7 +27,6 @@ function flushPendingChains() {
 
   warn('Watching an undefined global, Ember expects watched globals to be setup by the time the run loop is flushed, check for typos', pendingQueue.length === 0);
 }
-
 
 function addChainWatcher(obj, keyName, node) {
   if (!obj || ('object' !== typeof obj)) { return; } // nothing to do
@@ -315,7 +314,7 @@ ChainNodePrototype.didChange = function(events) {
   if (this._parent) { this._parent.chainDidChange(this, this._key, 1, events); }
 };
 
-function finishChains(obj) {
+export function finishChains(obj) {
   // We only create meta if we really have to
   var m = obj[META_KEY], chains = m && m.chains;
   if (chains) {
@@ -327,4 +326,7 @@ function finishChains(obj) {
   }
 }
 
-export {flushPendingChains, removeChainWatcher, ChainNode, finishChains};
+export {
+  removeChainWatcher,
+  ChainNode
+};

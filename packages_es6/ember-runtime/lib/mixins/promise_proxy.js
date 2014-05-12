@@ -1,10 +1,11 @@
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {computed} from "ember-metal/computed";
-import {Mixin} from "ember-metal/mixin";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { computed } from "ember-metal/computed";
+import { Mixin } from "ember-metal/mixin";
 import EmberError from "ember-metal/error";
 
-var not = computed.not, or = computed.or;
+var not = computed.not;
+var or = computed.or;
 
 /**
   @module ember
@@ -91,7 +92,7 @@ function tap(proxy, promise) {
   ```
   @class Ember.PromiseProxyMixin
 */
-var PromiseProxyMixin = Mixin.create({
+export default Mixin.create({
   /**
     If the proxied promise is rejected this will contain the reason
     provided.
@@ -200,5 +201,3 @@ function promiseAlias(name) {
     return promise[name].apply(promise, arguments);
   };
 }
-
-export default PromiseProxyMixin;

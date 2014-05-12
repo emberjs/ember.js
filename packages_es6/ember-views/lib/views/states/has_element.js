@@ -1,7 +1,7 @@
 import _default from "ember-views/views/states/default";
 import run from "ember-metal/run_loop";
 import merge from "ember-metal/merge";
-import {create} from "ember-metal/platform";
+import { create } from "ember-metal/platform";
 import jQuery from "ember-views/system/jquery";
 import EmberError from "ember-metal/error";
 
@@ -10,8 +10,8 @@ import EmberError from "ember-metal/error";
 @submodule ember-views
 */
 
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 
 var hasElement = create(_default);
 

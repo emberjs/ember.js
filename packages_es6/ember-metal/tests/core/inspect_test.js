@@ -1,4 +1,4 @@
-import {inspect} from "ember-metal/utils";
+import { inspect } from "ember-metal/utils";
 import Ember from 'ember-metal/core';
 
 module("Ember.inspect");

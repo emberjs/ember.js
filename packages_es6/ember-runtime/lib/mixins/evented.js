@@ -1,5 +1,10 @@
-import {Mixin} from "ember-metal/mixin";
-import {addListener, removeListener, hasListeners, sendEvent} from "ember-metal/events";
+import { Mixin } from "ember-metal/mixin";
+import {
+  addListener,
+  removeListener,
+  hasListeners,
+  sendEvent
+} from "ember-metal/events";
 
 /**
 @module ember
@@ -41,7 +46,7 @@ import {addListener, removeListener, hasListeners, sendEvent} from "ember-metal/
   @class Evented
   @namespace Ember
  */
-var Evented = Mixin.create({
+export default Mixin.create({
 
   /**
    Subscribes to a named event with given function.
@@ -147,5 +152,3 @@ var Evented = Mixin.create({
     return hasListeners(this, name);
   }
 });
-
-export default Evented;

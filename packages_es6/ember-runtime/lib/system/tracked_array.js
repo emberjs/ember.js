@@ -1,11 +1,12 @@
 import {get} from "ember-metal/property_get";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 
-var forEach = EnumerableUtils.forEach,
-    RETAIN = 'r',
-    INSERT = 'i',
-    DELETE = 'd';
+var forEach = EnumerableUtils.forEach;
+var RETAIN = 'r';
+var INSERT = 'i';
+var DELETE = 'd';
 
+export default TrackedArray;
 
 /**
   An `Ember.TrackedArray` tracks array operations.  It's useful when you want to
@@ -332,5 +333,3 @@ function ArrayOperationMatch(operation, index, split, rangeStart) {
   this.split = split;
   this.rangeStart = rangeStart;
 }
-
-export default TrackedArray;

@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core";
-import {tryCatchFinally} from "ember-metal/utils";
+import { tryCatchFinally } from "ember-metal/utils";
 
 /**
   The purpose of the Ember Instrumentation module is
@@ -81,7 +81,7 @@ var time = (function() {
   @param {Function} callback Function that you're instrumenting.
   @param {Object} binding Context that instrument function is called with.
 */
-function instrument(name, payload, callback, binding) {
+export function instrument(name, payload, callback, binding) {
   var listeners = cache[name], timeName, ret;
 
   // ES6TODO: Docs. What is this?
@@ -141,7 +141,7 @@ function instrument(name, payload, callback, binding) {
 
   @return {Subscriber}
 */
-function subscribe(pattern, object) {
+export function subscribe(pattern, object) {
   var paths = pattern.split("."), path, regex = [];
 
   for (var i=0, l=paths.length; i<l; i++) {
@@ -176,7 +176,7 @@ function subscribe(pattern, object) {
 
   @param {Object} [subscriber]
 */
-function unsubscribe(subscriber) {
+export function unsubscribe(subscriber) {
   var index;
 
   for (var i=0, l=subscribers.length; i<l; i++) {
@@ -195,9 +195,7 @@ function unsubscribe(subscriber) {
   @method reset
   @namespace Ember.Instrumentation
 */
-function reset() {
+export function reset() {
   subscribers = [];
   cache = {};
 }
-
-export {instrument, subscribe, unsubscribe, reset};

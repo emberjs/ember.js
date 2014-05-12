@@ -1,12 +1,15 @@
 import Ember from "ember-metal/core";
-import {meta, typeOf} from "ember-metal/utils";
-import {platform} from "ember-metal/platform";
+import {
+  meta,
+  typeOf
+} from "ember-metal/utils";
+import { platform } from "ember-metal/platform";
 
-var metaFor = meta, // utils.js
-    MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
-    o_defineProperty = platform.defineProperty;
+var metaFor = meta; // utils.js
+var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
+var o_defineProperty = platform.defineProperty;
 
-function watchKey(obj, keyName, meta) {
+export function watchKey(obj, keyName, meta) {
   // can't watch length on Array - it is special...
   if (keyName === 'length' && typeOf(obj) === 'array') { return; }
 
@@ -34,7 +37,7 @@ function watchKey(obj, keyName, meta) {
   }
 }
 
-function unwatchKey(obj, keyName, meta) {
+export function unwatchKey(obj, keyName, meta) {
   var m = meta || metaFor(obj), watching = m.watching;
 
   if (watching[keyName] === 1) {
@@ -65,5 +68,3 @@ function unwatchKey(obj, keyName, meta) {
     watching[keyName]--;
   }
 }
-
-export {watchKey, unwatchKey};

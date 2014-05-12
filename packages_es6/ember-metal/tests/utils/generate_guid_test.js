@@ -1,4 +1,4 @@
-import {generateGuid} from "ember-metal/utils";
+import { generateGuid } from "ember-metal/utils";
 
 module("Ember.generateGuid");
 

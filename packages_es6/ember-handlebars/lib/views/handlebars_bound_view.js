@@ -16,16 +16,19 @@ var K = Ember.K;
 var Metamorph = requireModule('metamorph');
 
 import EmberError from "ember-metal/error";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
-import {View} from "ember-views/views/view";
-import {cloneStates, states} from "ember-views/views/states";
+import { View } from "ember-views/views/view";
+import {
+  cloneStates,
+  states
+} from "ember-views/views/states";
 var viewStates = states;
 
-import {_MetamorphView} from "ember-handlebars/views/metamorph_view";
-import {handlebarsGet} from "ember-handlebars/ext";
+import { _MetamorphView } from "ember-handlebars/views/metamorph_view";
+import { handlebarsGet } from "ember-handlebars/ext";
 
 function SimpleHandlebarsView(path, pathRoot, isEscaped, templateData) {
   this.path = path;
@@ -349,4 +352,7 @@ var _HandlebarsBoundView = _MetamorphView.extend({
   }
 });
 
-export {_HandlebarsBoundView, SimpleHandlebarsView};
+export {
+  _HandlebarsBoundView,
+  SimpleHandlebarsView
+};

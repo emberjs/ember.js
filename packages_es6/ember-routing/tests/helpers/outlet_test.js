@@ -1,12 +1,15 @@
 import Ember from 'ember-metal/core'; // TEMPLATES
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
 import Container from 'container/container';
 import Namespace from "ember-runtime/system/namespace";
-import {decamelize, classify} from "ember-runtime/system/string";
-import {Controller} from "ember-runtime/controllers/controller";
+import {
+  decamelize,
+  classify
+} from "ember-runtime/system/string";
+import { Controller } from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 
@@ -19,7 +22,7 @@ import EmberView from "ember-routing/ext/view";
 import EmberContainerView from "ember-views/views/container_view";
 import jQuery from "ember-views/system/jquery";
 
-import {outletHelper} from "ember-routing/helpers/outlet";
+import { outletHelper } from "ember-routing/helpers/outlet";
 
 var buildContainer = function(namespace) {
   var container = new Container();

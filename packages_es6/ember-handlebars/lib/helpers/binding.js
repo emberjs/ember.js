@@ -7,28 +7,41 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.warn, uuid
 // var emberAssert = Ember.assert, Ember.warn = Ember.warn;
 
 import EmberHandlebars from "ember-handlebars-compiler";
-var helpers = EmberHandlebars.helpers;
-var SafeString = EmberHandlebars.SafeString;
-
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {fmt} from "ember-runtime/system/string";
-import {create as o_create} from "ember-metal/platform";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { fmt } from "ember-runtime/system/string";
+import { create as o_create } from "ember-metal/platform";
 import isNone from 'ember-metal/is_none';
 import EnumerableUtils from "ember-metal/enumerable_utils";
-import {forEach} from "ember-metal/array";
-import {View} from "ember-views/views/view";
+import { forEach } from "ember-metal/array";
+import { View } from "ember-views/views/view";
 import run from "ember-metal/run_loop";
-import {_HandlebarsBoundView, SimpleHandlebarsView} from "ember-handlebars/views/handlebars_bound_view";
-import {removeObserver} from "ember-metal/observer";
-import {isGlobalPath} from "ember-metal/binding";
-import {bind as emberBind} from "ember-metal/binding";
-import {guidFor, typeOf} from "ember-metal/utils";
+import { removeObserver } from "ember-metal/observer";
+import { isGlobalPath } from "ember-metal/binding";
+import { bind as emberBind } from "ember-metal/binding";
 import jQuery from "ember-views/system/jquery";
-import {isArray} from "ember-metal/utils";
-import {normalizePath, handlebarsGet, getEscaped} from "ember-handlebars/ext";
-import {getEscaped as handlebarsGetEscaped} from "ember-handlebars/ext";
+import { isArray } from "ember-metal/utils";
+import { getEscaped as handlebarsGetEscaped } from "ember-handlebars/ext";
 import keys from "ember-runtime/keys";
+
+import {
+  _HandlebarsBoundView,
+  SimpleHandlebarsView
+} from "ember-handlebars/views/handlebars_bound_view";
+
+import {
+  normalizePath,
+  handlebarsGet,
+  getEscaped
+} from "ember-handlebars/ext";
+
+import {
+  guidFor,
+  typeOf
+} from "ember-metal/utils";
+
+var helpers = EmberHandlebars.helpers;
+var SafeString = EmberHandlebars.SafeString;
 
 function exists(value) {
   return !isNone(value);
@@ -842,4 +855,17 @@ function bindClasses(context, classBindings, view, bindAttrId, options) {
   return ret;
 }
 
-export {bind, _triageMustacheHelper, resolveHelper, bindHelper, boundIfHelper, unboundIfHelper, withHelper, ifHelper, unlessHelper, bindAttrHelper, bindAttrHelperDeprecated, bindClasses};
+export {
+  bind,
+  _triageMustacheHelper,
+  resolveHelper,
+  bindHelper,
+  boundIfHelper,
+  unboundIfHelper,
+  withHelper,
+  ifHelper,
+  unlessHelper,
+  bindAttrHelper,
+  bindAttrHelperDeprecated,
+  bindClasses
+};

@@ -1,11 +1,11 @@
 import Ember from "ember-metal/core";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
-import {changeProperties} from "ember-metal/property_events";
-import {isWatching} from "ember-metal/watching";
+import { changeProperties } from "ember-metal/property_events";
+import { isWatching } from "ember-metal/watching";
 import EmberObject from "ember-runtime/system/object";
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 
 var view;
 

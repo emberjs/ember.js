@@ -9,6 +9,7 @@ function DSL(name) {
   this.parent = name;
   this.matches = [];
 }
+export default DSL;
 
 DSL.prototype = {
   resource: function(name, options, callback) {
@@ -103,4 +104,3 @@ DSL.map = function(callback) {
   return dsl;
 };
 
-export default DSL;

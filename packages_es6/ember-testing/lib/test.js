@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core";
 import emberRun from "ember-metal/run_loop";
-import {create} from "ember-metal/platform";
+import { create } from "ember-metal/platform";
 import compare from "ember-runtime/compare";
 import RSVP from "ember-runtime/ext/rsvp";
 import setupForTesting from "ember-testing/setup_for_testing";
@@ -10,9 +10,9 @@ import EmberApplication from "ember-application/system/application";
   @module ember
   @submodule ember-testing
  */
-var slice = [].slice,
-    helpers = {},
-    injectHelpersCallbacks = [];
+var slice = [].slice;
+var helpers = {};
+var injectHelpersCallbacks = [];
 
 /**
   This is a container for an assortment of testing related functionality:

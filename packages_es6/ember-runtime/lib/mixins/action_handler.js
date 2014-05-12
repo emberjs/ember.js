@@ -3,9 +3,9 @@
 @submodule ember-runtime
 */
 import merge from "ember-metal/merge";
-import {Mixin} from 'ember-metal/mixin';
-import {get} from "ember-metal/property_get";
-import {typeOf} from "ember-metal/utils";
+import { Mixin } from 'ember-metal/mixin';
+import { get } from "ember-metal/property_get";
+import { typeOf } from "ember-metal/utils";
 
 /**
   The `Ember.ActionHandler` mixin implements support for moving an `actions`

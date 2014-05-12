@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core"; // Logger
-import {get} from "ember-metal/property_get";
-import {isArray} from "ember-metal/utils";
+import { get } from "ember-metal/property_get";
+import { isArray } from "ember-metal/utils";
 
 /**
 @module ember
@@ -15,9 +15,9 @@ import {isArray} from "ember-metal/utils";
   @method controllerFor
   @private
 */
-var controllerFor = function(container, controllerName, lookupOptions) {
+export function controllerFor(container, controllerName, lookupOptions) {
   return container.lookup('controller:' + controllerName, lookupOptions);
-};
+}
 
 /**
   Generates a controller factory
@@ -34,7 +34,9 @@ var controllerFor = function(container, controllerName, lookupOptions) {
   @method generateControllerFactory
   @private
 */
-var generateControllerFactory = function(container, controllerName, context) {
+
+export { generateControllerFactory };
+function generateControllerFactory(container, controllerName, context) {
   var Factory, fullName, instance, name, factoryName, controllerType;
 
   if (context && isArray(context)) {
@@ -59,7 +61,7 @@ var generateControllerFactory = function(container, controllerName, context) {
   container.register(fullName,  Factory);
 
   return Factory;
-};
+}
 
 /**
   Generates and instantiates a controller.
@@ -74,7 +76,7 @@ var generateControllerFactory = function(container, controllerName, context) {
   @private
   @since 1.3.0
 */
-var generateController = function(container, controllerName, context) {
+export function generateController(container, controllerName, context) {
   generateControllerFactory(container, controllerName, context);
   var fullName = 'controller:' + controllerName;
   var instance = container.lookup(fullName);
@@ -84,6 +86,4 @@ var generateController = function(container, controllerName, context) {
   }
 
   return instance;
-};
-
-export {controllerFor, generateControllerFactory, generateController};
+}

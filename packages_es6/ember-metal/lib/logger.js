@@ -48,7 +48,7 @@ function assertPolyfill(test, message) {
   @class Logger
   @namespace Ember
 */
-var Logger = {
+export default {
   /**
    Logs the arguments to the console.
    You can pass as many arguments as you want and they will be joined together with a space.
@@ -141,5 +141,3 @@ var Logger = {
   */
   assert: consoleMethod('assert') || assertPolyfill
 };
-
-export default Logger;

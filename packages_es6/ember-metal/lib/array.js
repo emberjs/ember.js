@@ -114,5 +114,10 @@ if (Ember.SHIM_ES5) {
   @namespace Ember
   @property ArrayPolyfills
 */
-export {map, forEach, filter, indexOf};
+export {
+  map,
+  forEach,
+  filter,
+  indexOf
+};
 

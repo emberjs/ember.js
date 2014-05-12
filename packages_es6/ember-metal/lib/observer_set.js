@@ -1,5 +1,5 @@
-import {guidFor} from "ember-metal/utils";
-import {sendEvent} from "ember-metal/events";
+import { guidFor } from "ember-metal/utils";
+import { sendEvent } from "ember-metal/events";
 
 /*
   this.observerSet = {
@@ -19,9 +19,11 @@ import {sendEvent} from "ember-metal/events";
     ...
   ]
 */
+export default ObserverSet;
 function ObserverSet() {
   this.clear();
 }
+
 
 ObserverSet.prototype.add = function(sender, keyName, eventName) {
   var observerSet = this.observerSet,
@@ -62,4 +64,3 @@ ObserverSet.prototype.clear = function() {
   this.observers = [];
 };
 
-export default ObserverSet;

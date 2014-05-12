@@ -21,7 +21,7 @@ import jQuery from "ember-views/system/jquery";
   @namespace Ember
   @extends Ember.Object
 */
-var HashLocation = EmberObject.extend({
+export default EmberObject.extend({
   implementation: 'hash',
 
   init: function() {
@@ -126,5 +126,3 @@ var HashLocation = EmberObject.extend({
     jQuery(window).off('hashchange.ember-location-'+guid);
   }
 });
-
-export default HashLocation;

@@ -1,10 +1,10 @@
 import Ember from "ember-metal/core"; // FEATURES, deprecate
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 var map = EnumerableUtils.map;
 
-import {ControllerMixin} from "ember-runtime/controllers/controller";
+import { ControllerMixin } from "ember-runtime/controllers/controller";
 
 /**
 @module ember

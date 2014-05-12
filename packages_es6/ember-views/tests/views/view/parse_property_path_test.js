@@ -1,4 +1,4 @@
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 
 module("EmberView - _parsePropertyPath");
 

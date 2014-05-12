@@ -1,6 +1,14 @@
-import {create} from "ember-metal/platform";
+import { create } from "ember-metal/platform";
 
-var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
+var errorProps = [
+  'description',
+  'fileName',
+  'lineNumber',
+  'message',
+  'name',
+  'number',
+  'stack'
+];
 
 /**
   A subclass of the JavaScript Error object for use in Ember.
@@ -10,7 +18,7 @@ var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'n
   @extends Error
   @constructor
 */
-var EmberError = function() {
+function EmberError() {
   var tmp = Error.apply(this, arguments);
 
   // Adds a `stack` property to the given error object that will yield the
@@ -27,7 +35,7 @@ var EmberError = function() {
   for (var idx = 0; idx < errorProps.length; idx++) {
     this[errorProps[idx]] = tmp[errorProps[idx]];
   }
-};
+}
 
 EmberError.prototype = create(Error.prototype);
 

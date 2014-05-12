@@ -2,8 +2,11 @@ import Ember from 'ember-metal/core';
 import testBoth from 'ember-metal/tests/props_helper';
 import EnumerableUtils from 'ember-metal/enumerable_utils';
 import { addListener } from "ember-metal/events";
-import {watch, unwatch, destroy} from "ember-metal/watching";
-
+import {
+  watch,
+  unwatch,
+  destroy
+} from "ember-metal/watching";
 
 var willCount, didCount,
     willKeys, didKeys,

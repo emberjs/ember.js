@@ -1,12 +1,12 @@
 /*jshint newcap:false */
 
-import {Controller} from "ember-runtime/controllers/controller";
+import { Controller } from "ember-runtime/controllers/controller";
 import "ember-application/ext/controller";
 
 import Container from "ember-runtime/system/container";
-import {A} from "ember-runtime/system/native_array";
+import { A } from "ember-runtime/system/native_array";
 import ArrayController from "ember-runtime/controllers/array_controller";
-import {computed} from "ember-metal/computed";
+import { computed } from "ember-metal/computed";
 
 module("Controller dependencies");
 

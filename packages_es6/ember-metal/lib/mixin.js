@@ -5,15 +5,37 @@
 
 import Ember from "ember-metal/core"; // warn, assert, wrap, et;
 import merge from "ember-metal/merge";
-import {map, indexOf, forEach} from "ember-metal/array";
-import {create} from "ember-metal/platform";
-import {guidFor, meta, META_KEY, wrap, makeArray, apply} from "ember-metal/utils";
+import {
+  map,
+  indexOf,
+  forEach
+} from "ember-metal/array";
+import { create } from "ember-metal/platform";
+import {
+  guidFor,
+  meta,
+  META_KEY,
+  wrap,
+  makeArray,
+  apply
+} from "ember-metal/utils";
 import expandProperties from "ember-metal/expand_properties";
-import {Descriptor, defineProperty} from "ember-metal/properties";
-import {ComputedProperty} from "ember-metal/computed";
-import {Binding} from "ember-metal/binding";
-import {addObserver, removeObserver, addBeforeObserver, removeBeforeObserver} from "ember-metal/observer";
-import {addListener, removeListener} from "ember-metal/events";
+import {
+  Descriptor,
+  defineProperty
+} from "ember-metal/properties";
+import { ComputedProperty } from "ember-metal/computed";
+import { Binding } from "ember-metal/binding";
+import {
+  addObserver,
+  removeObserver,
+  addBeforeObserver,
+  removeBeforeObserver
+} from "ember-metal/observer";
+import {
+  addListener,
+  removeListener
+} from "ember-metal/events";
 
 var REQUIRED, Alias,
     a_map = map,
@@ -381,7 +403,7 @@ function applyMixin(obj, mixins, partial) {
   @param mixins*
   @return obj
 */
-function mixin(obj) {
+export function mixin(obj) {
   var args = a_slice.call(arguments, 1);
   applyMixin(obj, args, false);
   return obj;
@@ -441,8 +463,8 @@ function mixin(obj) {
   @class Mixin
   @namespace Ember
 */
+export default Mixin;
 function Mixin() { return initMixin(this, arguments); }
-
 Mixin.prototype = {
   properties: null,
   mixins: null,
@@ -609,13 +631,14 @@ REQUIRED.toString = function() { return '(Required Property)'; };
   @method required
   @for Ember
 */
-function required() {
+export function required() {
   return REQUIRED;
 }
 
-Alias = function(methodName) {
+function Alias(methodName) {
   this.methodName = methodName;
-};
+}
+
 Alias.prototype = new Descriptor();
 
 /**
@@ -637,7 +660,7 @@ Alias.prototype = new Descriptor();
   @param {String} methodName name of the method to alias
   @return {Ember.Descriptor}
 */
-function aliasMethod(methodName) {
+export function aliasMethod(methodName) {
   return new Alias(methodName);
 }
 
@@ -668,7 +691,7 @@ function aliasMethod(methodName) {
   @param {Function} func
   @return func
 */
-function observer() {
+export function observer() {
   var func  = a_slice.call(arguments, -1)[0];
   var paths;
 
@@ -719,7 +742,7 @@ function observer() {
   @param {Function} func
   @return func
 */
-function immediateObserver() {
+export function immediateObserver() {
   for (var i=0, l=arguments.length; i<l; i++) {
     var arg = arguments[i];
     Ember.assert("Immediate observers must observe internal properties only, not properties on other objects.", typeof arg !== "string" || arg.indexOf('.') === -1);
@@ -771,7 +794,7 @@ function immediateObserver() {
   @param {Function} func
   @return func
 */
-function beforeObserver() {
+export function beforeObserver() {
   var func  = a_slice.call(arguments, -1)[0];
   var paths;
 
@@ -800,4 +823,7 @@ function beforeObserver() {
   return func;
 }
 
-export {IS_BINDING, mixin, Mixin, required, aliasMethod, observer, immediateObserver, beforeObserver};
+export {
+  IS_BINDING,
+  Mixin
+};

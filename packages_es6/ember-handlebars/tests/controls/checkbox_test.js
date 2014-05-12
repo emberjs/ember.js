@@ -1,18 +1,18 @@
-import {get} from "ember-metal/property_get";
-import {set as o_set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set as o_set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
-import {View as EmberView} from "ember-views/views/view";
+import { View as EmberView } from "ember-views/views/view";
 import EventDispatcher from "ember-views/system/event_dispatcher";
+import EmberHandlebars from "ember-handlebars-compiler";
 
 // import {expectAssertion} from "ember-metal/tests/debug_helpers";
 
-var set = function(obj, key, value) {
+function set(obj, key, value) {
   run(function() { o_set(obj, key, value); });
-};
+}
 
 var checkboxView, dispatcher, controller;
 
-import EmberHandlebars from "ember-handlebars-compiler";
 var compile = EmberHandlebars.compile;
 
 function destroy(view) {

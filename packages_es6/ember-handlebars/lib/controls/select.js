@@ -5,16 +5,16 @@
 
 import EmberHandlebars from "ember-handlebars-compiler";
 import EnumerableUtils from "ember-metal/enumerable_utils";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {View} from "ember-views/views/view";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { View } from "ember-views/views/view";
 import CollectionView from "ember-views/views/collection_view";
-import {isArray} from "ember-metal/utils";
+import { isArray } from "ember-metal/utils";
 import isNone from 'ember-metal/is_none';
-import {computed} from "ember-metal/computed";
-import {A as emberA} from "ember-runtime/system/native_array";
-import {observer} from "ember-metal/mixin";
-import {defineProperty} from "ember-metal/properties";
+import { computed } from "ember-metal/computed";
+import { A as emberA } from "ember-runtime/system/native_array";
+import { observer } from "ember-metal/mixin";
+import { defineProperty } from "ember-metal/properties";
 
 var indexOf = EnumerableUtils.indexOf,
     indexesOf = EnumerableUtils.indexesOf,
@@ -620,4 +620,8 @@ var Select = View.extend({
 });
 
 export default Select;
-export {Select, SelectOption, SelectOptgroup};
+export {
+  Select,
+  SelectOption,
+  SelectOptgroup
+};

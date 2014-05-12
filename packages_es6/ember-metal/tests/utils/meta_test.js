@@ -1,7 +1,15 @@
 /*global jQuery*/
 import Ember from 'ember-metal/core';
-import {create, platform} from 'ember-metal/platform';
-import {getMeta, setMeta, meta, metaPath} from 'ember-metal/utils';
+import {
+  create,
+  platform
+} from 'ember-metal/platform';
+import {
+  getMeta,
+  setMeta,
+  meta,
+  metaPath
+} from 'ember-metal/utils';
 
 module("Ember.meta");
 

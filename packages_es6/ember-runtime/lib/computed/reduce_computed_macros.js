@@ -5,23 +5,26 @@
 
 import Ember from "ember-metal/core"; // Ember.assert
 import merge from "ember-metal/merge";
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {isArray, guidFor} from "ember-metal/utils";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import {
+  isArray,
+  guidFor
+} from "ember-metal/utils";
 import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import run from 'ember-metal/run_loop';
-import {addObserver} from "ember-metal/observer";
-import {arrayComputed} from "ember-runtime/computed/array_computed";
-import {reduceComputed} from "ember-runtime/computed/reduce_computed";
+import { addObserver } from "ember-metal/observer";
+import { arrayComputed } from "ember-runtime/computed/array_computed";
+import { reduceComputed } from "ember-runtime/computed/reduce_computed";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 import SubArray from "ember-runtime/system/subarray";
 import keys from "ember-runtime/keys";
 import compare from "ember-runtime/compare";
 
-var a_slice = [].slice,
-    forEach = EnumerableUtils.forEach,
-    SearchProxy;
+var a_slice = [].slice;
+var forEach = EnumerableUtils.forEach;
+var SearchProxy;
 
 /**
  A computed property that returns the sum of the value
@@ -34,7 +37,7 @@ var a_slice = [].slice,
  @since 1.4.0
 */
 
-function sum(dependentKey){
+export function sum(dependentKey){
   return reduceComputed(dependentKey, {
     initialValue: 0,
 
@@ -80,7 +83,7 @@ function sum(dependentKey){
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computes the largest value in the dependentKey's array
 */
-function max (dependentKey) {
+export function max (dependentKey) {
   return reduceComputed(dependentKey, {
     initialValue: -Infinity,
 
@@ -128,7 +131,7 @@ function max (dependentKey) {
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computes the smallest value in the dependentKey's array
 */
-function min(dependentKey) {
+export function min(dependentKey) {
   return reduceComputed(dependentKey, {
     initialValue: Infinity,
 
@@ -175,7 +178,7 @@ function min(dependentKey) {
   @param {Function} callback
   @return {Ember.ComputedProperty} an array mapped via the callback
 */
-function map(dependentKey, callback) {
+export function map(dependentKey, callback) {
   var options = {
     addedItem: function(array, item, changeMeta, instanceMeta) {
       var mapped = callback.call(this, item);
@@ -231,7 +234,8 @@ function mapBy (dependentKey, propertyKey) {
   @param dependentKey
   @param propertyKey
 */
-var mapProperty = mapBy;
+export var mapProperty = mapBy;
+export var mapBy = mapProperty;
 
 /**
   Filters the array by the callback.
@@ -264,6 +268,7 @@ var mapProperty = mapBy;
   @param {Function} callback
   @return {Ember.ComputedProperty} the filtered array
 */
+export var filter = filter;
 function filter(dependentKey, callback) {
   var options = {
     initialize: function (array, changeMeta, instanceMeta) {
@@ -318,6 +323,7 @@ function filter(dependentKey, callback) {
   @param {*} value
   @return {Ember.ComputedProperty} the filtered array
 */
+export var filterBy = filterBy;
 function filterBy (dependentKey, propertyKey, value) {
   var callback;
 
@@ -342,7 +348,7 @@ function filterBy (dependentKey, propertyKey, value) {
   @param value
   @deprecated Use `Ember.computed.filterBy` instead
 */
-var filterProperty = filterBy;
+export var filterProperty = filterBy;
 
 /**
   A computed property which returns a new array with all the unique
@@ -370,6 +376,7 @@ var filterProperty = filterBy;
   @return {Ember.ComputedProperty} computes a new array with all the
   unique elements from the dependent array
 */
+export var uniq = uniq;
 function uniq() {
   var args = a_slice.call(arguments);
   args.push({
@@ -410,7 +417,7 @@ function uniq() {
   @return {Ember.ComputedProperty} computes a new array with all the
   unique elements from the dependent array
 */
-var union = uniq;
+export var union = uniq;
 
 /**
   A computed property which returns a new array with all the duplicated
@@ -434,7 +441,7 @@ var union = uniq;
   @return {Ember.ComputedProperty} computes a new array with all the
   duplicated elements from the dependent arrays
 */
-function intersect() {
+export function intersect() {
   var getDependentKeyGuids = function (changeMeta) {
     return EnumerableUtils.map(changeMeta.property._dependentKeys, function (dependentKey) {
       return guidFor(dependentKey);
@@ -516,7 +523,7 @@ function intersect() {
   items from the first dependent array that are not in the second
   dependent array
 */
-function setDiff(setAProperty, setBProperty) {
+export function setDiff(setAProperty, setBProperty) {
   if (arguments.length !== 2) {
     throw new EmberError("setDiff requires exactly two dependent arrays.");
   }
@@ -658,7 +665,7 @@ var SearchProxy = ObjectProxy.extend();
   @return {Ember.ComputedProperty} computes a new sorted array based
   on the sort property array or callback function
 */
-function sort(itemsKey, sortDefinition) {
+export function sort(itemsKey, sortDefinition) {
   Ember.assert("Ember.computed.sort requires two arguments: an array key to sort and either a sort properties key or sort function", arguments.length === 2);
 
   var initFn, sortPropertiesKey;
@@ -761,6 +768,3 @@ function sort(itemsKey, sortDefinition) {
     }
   });
 }
-
-
-export {sum, min, max, map, sort, setDiff, mapBy, mapProperty, filter, filterBy, filterProperty, uniq, union, intersect};

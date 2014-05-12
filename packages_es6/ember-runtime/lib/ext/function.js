@@ -5,7 +5,7 @@
 
 import Ember from "ember-metal/core"; // Ember.EXTEND_PROTOTYPES, Ember.assert
 import expandProperties from "ember-metal/expand_properties";
-import {computed} from "ember-metal/computed";
+import { computed } from "ember-metal/computed";
 
 var a_slice = Array.prototype.slice;
 var FunctionPrototype = Function.prototype;
@@ -214,4 +214,3 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     return this;
   };
 }
-

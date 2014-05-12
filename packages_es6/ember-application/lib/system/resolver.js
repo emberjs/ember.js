@@ -4,14 +4,18 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.TEMPLATES, Ember.assert
-import {get} from "ember-metal/property_get";
+import { get } from "ember-metal/property_get";
 import Logger from "ember-metal/logger";
-import {classify, capitalize, decamelize} from "ember-runtime/system/string";
+import {
+  classify,
+  capitalize,
+  decamelize
+} from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import Namespace from "ember-runtime/system/namespace";
 import EmberHandlebars from "ember-handlebars";
 
-var Resolver = EmberObject.extend({
+export var Resolver = EmberObject.extend({
   /**
     This will be set to the Application instance when it is
     created.
@@ -114,7 +118,7 @@ var Resolver = EmberObject.extend({
   @namespace Ember
   @extends Ember.Object
 */
-var DefaultResolver = EmberObject.extend({
+export var DefaultResolver = EmberObject.extend({
   /**
     This will be set to the Application instance when it is
     created.
@@ -375,5 +379,3 @@ var DefaultResolver = EmberObject.extend({
     Logger.info(symbol, parsedName.fullName, padding, this.lookupDescription(parsedName.fullName));
   }
 });
-
-export {Resolver, DefaultResolver};

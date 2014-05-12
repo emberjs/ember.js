@@ -17,7 +17,7 @@ import EmberObject from "ember-runtime/system/object";
   @namespace Ember
   @extends Ember.Object
 */
-var NoneLocation = EmberObject.extend({
+export default EmberObject.extend({
   implementation: 'none',
   path: '',
 
@@ -88,5 +88,3 @@ var NoneLocation = EmberObject.extend({
     return url;
   }
 });
-
-export default NoneLocation;

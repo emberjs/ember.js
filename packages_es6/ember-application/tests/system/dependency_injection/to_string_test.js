@@ -2,8 +2,8 @@ import Ember from "ember-metal/core"; // lookup, etc
 import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
 import EmberObject from "ember-runtime/system/object";
-import {DefaultResolver} from "ember-application/system/resolver";
-import {guidFor} from "ember-metal/utils";
+import { DefaultResolver } from "ember-application/system/resolver";
+import { guidFor } from "ember-metal/utils";
 
 var originalLookup, App, originalModelInjections;
 

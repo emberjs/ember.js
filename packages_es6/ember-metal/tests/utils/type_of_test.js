@@ -1,4 +1,4 @@
-import {typeOf} from 'ember-metal/utils';
+import { typeOf } from 'ember-metal/utils';
 
 module("Ember Type Checking");
 

@@ -10,12 +10,22 @@ Ember Views
 // BEGIN IMPORTS
 import Ember from "ember-runtime";
 import jQuery from "ember-views/system/jquery";
-import {setInnerHTML, isSimpleClick} from "ember-views/system/utils";
+import {
+  setInnerHTML,
+  isSimpleClick
+} from "ember-views/system/utils";
 import RenderBuffer from "ember-views/system/render_buffer";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
-import {cloneStates, states} from "ember-views/views/states";
+import {
+  cloneStates,
+  states
+} from "ember-views/views/states";
 
-import {CoreView, View, ViewCollection} from "ember-views/views/view";
+import {
+  CoreView,
+  View,
+  ViewCollection
+} from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 import CollectionView from "ember-views/views/collection_view";
 import Component from "ember-views/views/component";

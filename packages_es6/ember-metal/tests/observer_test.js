@@ -2,16 +2,39 @@
 
 import Ember from 'ember-metal/core';
 import testBoth from 'ember-metal/tests/props_helper';
-import {addObserver, removeObserver, addBeforeObserver, _suspendObserver, _suspendObservers, removeBeforeObserver} from "ember-metal/observer";
-import {propertyWillChange, propertyDidChange} from 'ember-metal/property_events';
-import {create} from 'ember-metal/platform';
-import {defineProperty} from 'ember-metal/properties';
-import {computed, cacheFor} from 'ember-metal/computed';
-import {Mixin, mixin, observer, beforeObserver, immediateObserver} from 'ember-metal/mixin';
+import {
+  addObserver,
+  removeObserver,
+  addBeforeObserver,
+  _suspendObserver,
+  _suspendObservers,
+  removeBeforeObserver
+} from "ember-metal/observer";
+import {
+  propertyWillChange,
+  propertyDidChange
+} from 'ember-metal/property_events';
+import { create } from 'ember-metal/platform';
+import { defineProperty } from 'ember-metal/properties';
+import {
+  computed,
+  cacheFor
+} from 'ember-metal/computed';
+import {
+  Mixin,
+  mixin,
+  observer,
+  beforeObserver,
+  immediateObserver
+} from 'ember-metal/mixin';
 import run from 'ember-metal/run_loop';
-import { beginPropertyChanges, endPropertyChanges, changeProperties} from "ember-metal/property_events";
-import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
+import {
+  beginPropertyChanges,
+  endPropertyChanges,
+  changeProperties
+} from "ember-metal/property_events";
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 
 // ..........................................................
 // ADD OBSERVER

@@ -8,7 +8,7 @@ Ember Runtime
 
 // BEGIN IMPORTS
 import Ember from "ember-metal";
-import {isEqual} from "ember-runtime/core";
+import { isEqual } from "ember-runtime/core";
 import keys from "ember-runtime/keys";
 import compare from "ember-runtime/compare";
 import copy from "ember-runtime/copy";
@@ -33,7 +33,7 @@ import EmberArray from "ember-runtime/mixins/array";
 import Comparable from "ember-runtime/mixins/comparable";
 import Copyable from "ember-runtime/mixins/copyable";
 import Enumerable from "ember-runtime/mixins/enumerable";
-import {Freezable, FROZEN_ERROR} from "ember-runtime/mixins/freezable";
+import { Freezable, FROZEN_ERROR } from "ember-runtime/mixins/freezable";
 import Observable from "ember-runtime/mixins/observable";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import DeferredMixin from "ember-runtime/mixins/deferred";
@@ -44,19 +44,42 @@ import Evented from "ember-runtime/mixins/evented";
 import PromiseProxyMixin from "ember-runtime/mixins/promise_proxy";
 import SortableMixin from "ember-runtime/mixins/sortable";
 
-import {arrayComputed, ArrayComputedProperty} from "ember-runtime/computed/array_computed";
-import {reduceComputed, ReduceComputedProperty} from "ember-runtime/computed/reduce_computed";
-import {sum, min, max, map, sort, setDiff, mapBy, mapProperty, filter, filterBy, filterProperty, uniq, union, intersect} from 'ember-runtime/computed/reduce_computed_macros';
+import {
+  arrayComputed,
+  ArrayComputedProperty
+} from "ember-runtime/computed/array_computed";
+import {
+  reduceComputed,
+  ReduceComputedProperty
+} from "ember-runtime/computed/reduce_computed";
+import {
+  sum,
+  min,
+  max,
+  map,
+  sort,
+  setDiff,
+  mapBy,
+  mapProperty,
+  filter,
+  filterBy,
+  filterProperty,
+  uniq,
+  union,
+  intersect
+} from 'ember-runtime/computed/reduce_computed_macros';
 
 import ArrayController from "ember-runtime/controllers/array_controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
-import {Controller, ControllerMixin} from "ember-runtime/controllers/controller";
+import {
+  Controller,
+  ControllerMixin
+} from "ember-runtime/controllers/controller";
 
 import RSVP from "ember-runtime/ext/rsvp";     // just for side effect of extending Ember.RSVP
 import "ember-runtime/ext/string";   // just for side effect of extending String.prototype
 import "ember-runtime/ext/function"; // just for side effect of extending Function.prototype
 // END IMPORTS
-
 
 // BEGIN EXPORTS
 Ember.compare = compare;
