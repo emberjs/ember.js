@@ -71,7 +71,7 @@ import TextSupport from "ember-handlebars/controls/text_support";
 import {
   inputHelper,
   textareaHelper
-} from "ember-handlebars/controls"
+} from "ember-handlebars/controls";
 
 
 import ComponentLookup from "ember-handlebars/component_lookup";

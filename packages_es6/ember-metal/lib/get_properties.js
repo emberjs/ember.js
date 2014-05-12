@@ -35,4 +35,4 @@ export default function getProperties(obj) {
     ret[propertyNames[i]] = get(obj, propertyNames[i]);
   }
   return ret;
-};
+}

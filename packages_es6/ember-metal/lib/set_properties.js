@@ -26,4 +26,4 @@ export default function setProperties(self, hash) {
     }
   });
   return self;
-};
+}
