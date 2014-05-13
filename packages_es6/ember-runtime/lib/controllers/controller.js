@@ -4,6 +4,7 @@ import EmberObject from "ember-runtime/system/object";
 import { Mixin } from "ember-metal/mixin";
 import { computed } from "ember-metal/computed";
 import ActionHandler from "ember-runtime/mixins/action_handler";
+import ControllerContentModelAliasDeprecation from "ember-runtime/mixins/controller_content_model_alias_deprecation";
 
 /**
 @module ember
@@ -19,7 +20,7 @@ import ActionHandler from "ember-runtime/mixins/action_handler";
   @namespace Ember
   @uses Ember.ActionHandler
 */
-var ControllerMixin = Mixin.create(ActionHandler, {
+var ControllerMixin = Mixin.create(ActionHandler, ControllerContentModelAliasDeprecation, {
   /* ducktype as a controller */
   isController: true,
 
