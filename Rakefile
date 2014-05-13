@@ -160,12 +160,10 @@ namespace :release do
 end
 
 def files_to_publish
-  %w{ember.js ember-runtime.js ember-docs.json
-     ember-spade.js ember-tests.js ember-tests.html
-     ember-template-compiler.js}
+  %w{ember.js ember-docs.json ember-tests.js ember-template-compiler.js}
 end
 
-task :publish_build => [:dist, :docs, 'ember:generate_static_test_site'] do
+task :publish_build => [:docs] do
   root_dir = Pathname.new(__FILE__).dirname
   dist_dir = root_dir.join('dist')
 
