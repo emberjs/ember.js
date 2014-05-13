@@ -341,3 +341,38 @@ test("additional events and rootElement can be specified", function () {
 
   jQuery("#leView").trigger("myevent");
 });
+
+
+if (Ember.FEATURES.isEnabled("classname-can-disable-handlers")) {
+  test("disabledHandlerClassName stops the event delivery to views with that className", function () {
+    expect(2);
+
+    var receivedEvent=0;
+
+    run(function () {
+
+      dispatcher.set('disabledHandlerClassName', 'disabled');
+      dispatcher.setup({});
+
+      view = View.create({
+        elementId: "leView",
+        classNameBindings: ['disabled'],
+        disabled: true,
+        mouseDown: function() {
+          receivedEvent++;
+        }
+      }).appendTo( dispatcher.get("rootElement") );
+    });
+
+
+    jQuery("#leView").trigger("mousedown");
+    equal(receivedEvent,0, 'should not deliver the event because the disabled className is present');
+
+    run(function () {
+      view.set('disabled', false);
+    });
+
+    jQuery("#leView").trigger("mousedown");
+    equal(receivedEvent,1, 'should deliver the event when the disabled className is not present');
+  });
+}

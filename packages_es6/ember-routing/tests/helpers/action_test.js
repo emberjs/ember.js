@@ -759,6 +759,64 @@ test("it can trigger actions for keyboard events", function() {
   ok(showCalled, "should call action with keyup");
 });
 
+
+if (Ember.FEATURES.isEnabled("classname-can-disable-handlers")) {
+
+  test("it does not trigger actions when the disabledHandlerClassName property on the eventDispatcher has been setup and the action view has that className", function() {
+
+    expect(2);
+    var receivedEvent=0;
+
+    run(function() {
+      dispatcher.destroy();
+    });
+
+    dispatcher = EventDispatcher.create();
+    dispatcher.set('disabledHandlerClassName', 'disabled');
+    dispatcher.setup({});
+
+
+    view = EmberView.create({
+      template: compile("<div id='action-view' {{bind-attr class='disabled'}} {{action 'show' }}></div>")
+    });
+
+    var controller = EmberController.extend({
+      disabled: true,
+      actions: {
+        show: function() {
+          receivedEvent++;
+        }
+      }
+    }).create();
+
+    run(function() {
+      view.set('controller', controller);
+      view.appendTo('#qunit-fixture');
+    });
+
+    run(function(){
+      view.$("#action-view").click();
+    });
+
+
+    equal(receivedEvent,0, 'should not call action because the disabled className is present');
+
+    run(function(){
+      controller.set('disabled', false);
+    });
+
+    run(function(){
+      view.$("#action-view").click();
+    });
+
+
+    equal(receivedEvent,1, 'should call action when the disabled className is not present');
+
+
+  });
+
+}
+
 test("a quoteless parameter should allow dynamic lookup of the actionName", function(){
   expect(4);
   var lastAction, actionOrder = [];
