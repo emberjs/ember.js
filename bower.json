@@ -1,0 +1,9 @@
+{
+  "name": "ember",
+  "dependencies": {
+    "handlebars": "~1.3.0",
+    "jquery": "~1.9.1",
+    "qunit": "~1.12.0",
+    "loader": "git://github.com/stefanpenner/loader.js#1.0.0"
+  }
+}

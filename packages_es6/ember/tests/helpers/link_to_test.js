@@ -1,3 +1,5 @@
+import "ember";
+
 var Router, App, AppView, templates, router, eventDispatcher, container;
 var get = Ember.get, set = Ember.set, map = Ember.ArrayPolyfills.map;
 
@@ -1573,6 +1575,16 @@ test("when link-to eagerly updates url, the path it provides does NOT include th
   // HistoryLocation is the only Location class that will cause rootURL to be
   // prepended to link-to href's right now
   var HistoryTestLocation = Ember.HistoryLocation.extend({
+    location: {
+      hash: '',
+      hostname: 'emberjs.com',
+      href: 'http://emberjs.com/app/',
+      pathname: '/app/',
+      protocol: 'http:',
+      port: '',
+      search: '',
+    },
+
     // Don't actually touch the URL
     replaceState: function(path) {},
     pushState: function(path) {},

@@ -1,3 +1,5 @@
+import "ember";
+
 var Router, App, AppView, templates, router, container;
 var get = Ember.get,
     set = Ember.set,

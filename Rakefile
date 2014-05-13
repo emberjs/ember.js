@@ -243,7 +243,3 @@ task :publish_to_bower do
 end
 
 task :docs => "ember:docs"
-task :clean => "ember:clean"
-task :dist => "ember:dist"
-task :test, [:suite] => "ember:test"
-task :default => "ember:test"

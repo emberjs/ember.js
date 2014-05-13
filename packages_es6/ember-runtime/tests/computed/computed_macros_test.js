@@ -25,22 +25,4 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
     equal(get(obj, 'bestLannisterUnspecified'), false, "empty respects strings");
     equal(get(obj, 'noLannistersKnown'), false, "empty respects array mutations");
   });
-
-  if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
-    testBoth('Ember.computed.empty with composable computed properties', function (get, set) {
-      var obj = EmberObject.extend({
-        lannisters: null,
-
-        noPeopleKnown: computed.empty(computed.alias('lannisters'))
-      }).create({
-        lannisters: Ember.A([])
-      });
-
-      equal(get(obj, 'noPeopleKnown'), true, "lannisters initially empty");
-
-      get(obj, 'lannisters').pushObject('Tyrion');
-
-      equal(get(obj, 'noPeopleKnown'), false, "empty respects array mutations");
-    });
-  }
 }

@@ -138,7 +138,6 @@ Ember.TrackedArray = TrackedArray;
 Ember.SubArray = SubArray;
 Ember.Container = Container;
 Ember.Namespace = Namespace;
-Ember.Application = Application;
 Ember.Enumerable = Enumerable;
 Ember.ArrayProxy = ArrayProxy;
 Ember.ObjectProxy = ObjectProxy;
