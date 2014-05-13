@@ -393,7 +393,7 @@ mixinProperties(Binding, {
   something like this on your binding:
 
   ```javascript
-  binding = Ember.Binding.from(this.valueBinding).to("value");
+  binding = Ember.Binding.from("valueBinding").to("value");
   ```
 
   This creates a new binding instance based on the template you provide, and
