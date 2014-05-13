@@ -33,7 +33,7 @@ export default Component.extend(TextSupport, {
   attributeBindings: ['type', 'value', 'size', 'pattern', 'name', 'min', 'max',
                       'accept', 'autocomplete', 'autosave', 'formaction',
                       'formenctype', 'formmethod', 'formnovalidate', 'formtarget',
-                      'height', 'inputmode', 'list', 'multiple', 'pattern', 'step',
+                      'height', 'inputmode', 'list', 'multiple', 'step',
                       'width'],
 
   /**
