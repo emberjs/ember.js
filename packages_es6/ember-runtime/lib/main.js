@@ -76,6 +76,8 @@ import {
   ControllerMixin
 } from "ember-runtime/controllers/controller";
 
+import Service from "ember-runtime/system/service";
+
 import RSVP from "ember-runtime/ext/rsvp";     // just for side effect of extending Ember.RSVP
 import "ember-runtime/ext/string";   // just for side effect of extending String.prototype
 import "ember-runtime/ext/function"; // just for side effect of extending Function.prototype
@@ -157,6 +159,10 @@ Ember.ArrayController = ArrayController;
 Ember.ObjectController = ObjectController;
 Ember.Controller = Controller;
 Ember.ControllerMixin = ControllerMixin;
+
+if (Ember.FEATURES.isEnabled('services')) {
+  Ember.Service = Service;
+}
 
 Ember.RSVP = RSVP;
 // END EXPORTS

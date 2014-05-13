@@ -1,6 +1,7 @@
 /*jshint newcap:false */
 
 import { Controller } from "ember-runtime/controllers/controller";
+import Service from "ember-runtime/system/service";
 import "ember-application/ext/controller";
 
 import Container from "ember-runtime/system/container";
@@ -153,3 +154,38 @@ test("can unit test controllers with `needs` dependencies by stubbing their `con
   equal(broController.get('foo'), 5, "`needs` dependencies can be stubbed");
 });
 
+if (Ember.FEATURES.isEnabled('services')) {
+  test("controllers have access to services", function() {
+    expect(2);
+
+    var container = new Container();
+
+    container.register('controller:post', Controller.extend());
+    container.register('service:geolocation', Service.extend());
+
+    var postController = container.lookup('controller:post'),
+        geolocationService = container.lookup('service:geolocation');
+
+    equal(geolocationService, postController.get('services.geolocation'), "registered service is available");
+
+    raises(function() {
+      postController.get('services.nonexistent');
+    }, ReferenceError, "accessing a non-existent service raises an error");
+  });
+
+  test("can unit test controllers with services dependencies by stubbing their `services` property", function() {
+    expect(1);
+
+    var BrotherController = Controller.extend({
+      foo: computed.alias('services.sister.foo')
+    });
+
+    var broController = BrotherController.create({
+      services: {
+        sister: { foo: 5 }
+      }
+    });
+
+    equal(broController.get('foo'), 5, "services can be stubbed");
+});
+}
