@@ -222,7 +222,7 @@ export function map(dependentKey, callback) {
   @param {String} propertyKey
   @return {Ember.ComputedProperty} an array mapped to the specified key
 */
-function mapBy (dependentKey, propertyKey) {
+export function mapBy (dependentKey, propertyKey) {
   var callback = function(item) { return get(item, propertyKey); };
   return map(dependentKey + '.@each.' + propertyKey, callback);
 }
@@ -235,7 +235,6 @@ function mapBy (dependentKey, propertyKey) {
   @param propertyKey
 */
 export var mapProperty = mapBy;
-export var mapBy = mapProperty;
 
 /**
   Filters the array by the callback.
@@ -268,8 +267,7 @@ export var mapBy = mapProperty;
   @param {Function} callback
   @return {Ember.ComputedProperty} the filtered array
 */
-export var filter = filter;
-function filter(dependentKey, callback) {
+export function filter(dependentKey, callback) {
   var options = {
     initialize: function (array, changeMeta, instanceMeta) {
       instanceMeta.filteredArrayIndexes = new SubArray();
@@ -323,8 +321,7 @@ function filter(dependentKey, callback) {
   @param {*} value
   @return {Ember.ComputedProperty} the filtered array
 */
-export var filterBy = filterBy;
-function filterBy (dependentKey, propertyKey, value) {
+export function filterBy (dependentKey, propertyKey, value) {
   var callback;
 
   if (arguments.length === 2) {
@@ -376,8 +373,7 @@ export var filterProperty = filterBy;
   @return {Ember.ComputedProperty} computes a new array with all the
   unique elements from the dependent array
 */
-export var uniq = uniq;
-function uniq() {
+export function uniq() {
   var args = a_slice.call(arguments);
   args.push({
     initialize: function(array, changeMeta, instanceMeta) {
