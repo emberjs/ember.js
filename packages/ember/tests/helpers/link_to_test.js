@@ -379,6 +379,59 @@ test("The {{link-to}} helper supports bubbles=false", function() {
   equal(hidden, 0, "The link didn't bubble");
 });
 
+test("The {{link-to}} with nested object", function() {
+  Router.map(function(match) {
+    this.route("item", { path: "/item/:id" });
+  });
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("{{link-to 'item' 'item' model.item id='item-link'}}");
+
+  App.ApplicationRoute = Ember.Route.extend({
+    model: function() {
+      var item = Ember.Object.create({ id: 2 });
+      return Ember.Object.create({item: item});
+    }
+  });
+
+  bootApplication();
+
+  equal(normalizeUrl(Ember.$('#item-link', '#qunit-fixture').attr('href')), '/item/2');
+
+  Ember.run(function() {
+    var item = Ember.Object.create({ id: 3 });
+    App.__container__.lookup('controller:application').set('model.item', item);
+  });
+
+  equal(normalizeUrl(Ember.$('#item-link', '#qunit-fixture').attr('href')), '/item/3');
+});
+
+test("The {{link-to}} with promise", function() {
+  Router.map(function(match) {
+    this.route("item", { path: "/item/:id" });
+  });
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("{{link-to 'item' 'item' model id='item-link'}}");
+
+  var resolver;
+
+  App.ApplicationRoute = Ember.Route.extend({
+    model: function() {
+      var promise = new Ember.RSVP.Promise(function(resolve) {
+        resolver = resolve;
+      });
+      return promise;
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    resolver(Ember.Object.create({id: 123}));
+  });
+
+  equal(normalizeUrl(Ember.$('#item-link', '#qunit-fixture').attr('href')), '/item/123');
+});
+
 test("The {{link-to}} helper moves into the named route with context", function() {
   Router.map(function(match) {
     this.route("about");
@@ -451,40 +504,40 @@ if(Ember.FEATURES.isEnabled('ember-routing-linkto-target-attribute')) {
   test("The {{link-to}} helper supports `target` attribute", function() {
     Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}");
     bootApplication();
-    
+
     Ember.run(function() {
       router.handleURL("/");
     });
-    
+
     var link = Ember.$('#self-link', '#qunit-fixture');
     equal(link.attr('target'), '_blank', "The self-link contains `target` attribute");
   });
-  
+
   test("The {{link-to}} helper does not call preventDefault if `target` attribute is provided", function() {
     Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}");
     bootApplication();
-    
+
     Ember.run(function() {
       router.handleURL("/");
     });
-    
+
     var event = Ember.$.Event("click");
     Ember.$('#self-link', '#qunit-fixture').trigger(event);
-    
+
     equal(event.isDefaultPrevented(), false, "should not preventDefault when target attribute is specified");
   });
 
   test("The {{link-to}} helper should preventDefault when `target = _self`", function() {
     Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#link-to 'index' id='self-link' target='_self'}}Self{{/link-to}}");
     bootApplication();
-    
+
     Ember.run(function() {
       router.handleURL("/");
     });
-    
+
     var event = Ember.$.Event("click");
     Ember.$('#self-link', '#qunit-fixture').trigger(event);
-    
+
     equal(event.isDefaultPrevented(), true, "should preventDefault when target attribute is `_self`");
   });
 }

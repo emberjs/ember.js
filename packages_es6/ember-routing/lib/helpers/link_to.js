@@ -288,6 +288,11 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     this.notifyPropertyChange('resolvedParams');
   },
 
+  rerender: function () {
+    this._paramsChanged();
+    this._super.apply(this, arguments);
+  },
+
   /**
    This is called to setup observers that will trigger a rerender.
 
