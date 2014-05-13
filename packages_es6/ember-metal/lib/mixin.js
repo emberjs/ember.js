@@ -37,7 +37,7 @@ import {
   removeListener
 } from "ember-metal/events";
 
-var REQUIRED, Alias,
+var REQUIRED,
     a_map = map,
     a_indexOf = indexOf,
     a_forEach = forEach,
