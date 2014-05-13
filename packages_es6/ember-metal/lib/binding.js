@@ -410,6 +410,19 @@ mixinProperties(Binding, {
   to side of the binding when inspecting relative paths. This allows the
   binding to be automatically inherited by subclassed objects as well.
 
+  This also allows you to bind between objects using the paths you declare in
+  `from` and `to`:
+
+  ```javascript
+  // Example 1
+  binding = Ember.Binding.from("App.someObject.value").to("value");
+  binding.connect(this);
+
+  // Example 2
+  binding = Ember.Binding.from("parentView.value").to("App.someObject.value");
+  binding.connect(this);
+  ```
+
   Now that the binding is connected, it will observe both the from and to side
   and relay changes.
 
