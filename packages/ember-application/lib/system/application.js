@@ -28,6 +28,7 @@ import HashLocation from "ember-routing/location/hash_location";
 import HistoryLocation from "ember-routing/location/history_location";
 import AutoLocation from "ember-routing/location/auto_location";
 import NoneLocation from "ember-routing/location/none_location";
+import BucketCache from "ember-routing/system/cache";
 
 import EmberHandlebars from "ember-handlebars-compiler";
 
@@ -980,6 +981,11 @@ Application.reopenClass({
 
     container.injection('controller', 'target', 'router:main');
     container.injection('controller', 'namespace', 'application:main');
+
+    container.register('-bucket-cache:main', BucketCache);
+    container.injection('router', '_bucketCache', '-bucket-cache:main');
+    container.injection('route',  '_bucketCache', '-bucket-cache:main');
+    container.injection('controller',  '_bucketCache', '-bucket-cache:main');
 
     container.injection('route', 'router', 'router:main');
     container.injection('location', 'rootURL', '-location-setting:root-url');
