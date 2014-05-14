@@ -7,6 +7,8 @@ var ncp      = RSVP.denodeify(require('ncp'));
 var mkdir    = RSVP.denodeify(require('fs').mkdir);
 var chalk    = require('chalk');
 
+
+process.env.BROCCOLI_ENV = process.env.BROCCOLI_ENV || 'production';
 var tree    = broccoli.loadBrocfile();
 var builder = new broccoli.Builder(tree);
 
