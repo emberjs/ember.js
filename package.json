@@ -3,9 +3,11 @@
   "license": "MIT",
   "version": "1.7.0-beta.1+canary",
   "scripts": {
+    "build": "bin/build.js",
     "postinstall": "bower install",
-    "build": "broccoli build dist",
-    "test": "bin/run-tests.js"
+    "pretest": "bin/build.js",
+    "test": "bin/run-tests.js",
+    "start": "broccoli serve"
   },
   "devDependencies": {
     "defeatureify": "~0.2.0",
@@ -33,6 +35,8 @@
     "broccoli-cli": "0.0.1",
     "broccoli-file-creator": "~0.1.0",
     "handlebars": "^1.3",
-    "broccoli-filter": "~0.1.6"
+    "broccoli-filter": "~0.1.6",
+    "ncp": "~0.5.1",
+    "rimraf": "~2.2.8"
   }
 }
