@@ -120,13 +120,9 @@ everything you need to get started.
 
 # Building Ember.js
 
-1. Ensure that you have a recent Ruby (>= 1.9.3). There are many resources that can help;
-   one of the best is [rvm](https://rvm.io/).
-2. Ensure that [Bundler](http://bundler.io/) is installed (`gem install bundler`).
-3. Ensure that [Node.js](http://nodejs.org/) is installed.
-4. Run `bundle install` to install the necessary ruby gems.
-5. Run `npm install`.
-6. Run `rake dist` to build Ember.js. The builds will be placed in the `dist/` directory.
+1. Ensure that [Node.js](http://nodejs.org/) is installed.
+2. Run `npm install` to ensure the required dependencies are installed.
+3. Run `bin/build.js` to build Ember.js. The builds will be placed in the `dist/` directory.
 
 # Contribution
 
@@ -137,33 +133,30 @@ everything you need to get started.
 
 1. Follow the setup steps listed above under [Building Ember.js](#building-emberjs).
 
-2. To start the development server, run `rackup`.
+2. To start the development server, run `npm start`.
 
-3. Then visit: `http://localhost:9292/?package=PACKAGE_NAME`. Replace
+3. Then visit: `http://localhost:4200/tests/index.html?package=PACKAGE_NAME`. Replace
 `PACKAGE_NAME` with the name of the package you want to run. For
 example:
 
-  * [Ember.js Runtime](http://localhost:9292/?package=ember-runtime)
-  * [Ember.js Views](http://localhost:9292/?package=ember-views)
-  * [Ember.js Handlebars](http://localhost:9292/?package=ember-handlebars)
+  * [Ember.js Runtime](http://localhost:4200/tests/index.html?package=ember-runtime)
+  * [Ember.js Views](http://localhost:4200/tests/index.html?package=ember-views)
+  * [Ember.js Handlebars](http://localhost:4200/tests/index.html?package=ember-handlebars)
 
 To run multiple packages, you can separate them with commas. You can run
-all the tests using the `all` package:
+all the tests by not specifying a `package` param:
 
-<http://localhost:9292/?package=all>
+<http://localhost:4200/tests/index.html>
 
 You can also pass `jquery=VERSION` in the test URL to test different
-versions of jQuery. Default is 1.9.0.
+versions of jQuery.
 
 ## From the CLI
 
 1. Install phantomjs from http://phantomjs.org
 
-2. Run `rake test` to run a basic test suite or run `rake test[all]` to
+2. Run `npm test` to run a basic test suite or run `TEST_SUITE=all npm test` to
    run a more comprehensive suite.
-
-3. (Mac OS X Only) Run `rake ember:autotest` to automatically re-run tests
-   when any files are changed.
 
 # Building API Docs
 
