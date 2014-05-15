@@ -291,6 +291,18 @@ test("array observers can invoke `objectAt` without overwriting existing item co
   equal(tywinController.get('name'), "Tywin", "Array observers calling `objectAt` does not overwrite existing controllers' content");
 });
 
+test("`itemController`'s life cycle should be entangled with its parent controller", function() {
+  createDynamicArrayController();
+
+  var tywinController = arrayController.objectAtContent(0),
+      jaimeController = arrayController.objectAtContent(1);
+
+  Ember.run(arrayController, 'destroy');
+
+  equal(tywinController.get('isDestroyed'), true);
+  equal(jaimeController.get('isDestroyed'), true);
+});
+
 module('Ember.ArrayController - itemController with arrayComputed', {
   setup: function() {
     container = new Container();
