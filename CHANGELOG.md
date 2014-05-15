@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### Ember 1.6.0-beta.4 (May, 15, 2014)
+
+* [BUGFIX] Don't fire redirect on parent routes during transitions from one child route to another.
+* [BUGFIX] Make errors thrown by Ember use `Ember.Error` consistently.
+* [BUGFIX] Ensure controllers instantiated by the `{{render}}` helper are properly torn down.
+
 ### Ember 1.6.0-beta.3 (April, 29, 2014)
 
 * [BUGFIX] sync back burner: workaround IE's issue with try/finally without Catch. Also no longer force deoptimization of the run loop queue flush.
