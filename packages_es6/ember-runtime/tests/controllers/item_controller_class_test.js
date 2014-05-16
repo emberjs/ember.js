@@ -265,6 +265,35 @@ test("if `lookupItemController` returns a string, it must be resolvable by the c
     "`lookupItemController` must return either null or a valid controller name");
 });
 
+test("target and parentController are set to the concrete parentController", function() {
+  var parent = ArrayController.create({
+
+  });
+
+  // typically controller created for {{each itemController="foo"}}
+  var virtual = ArrayController.create({
+    itemController: 'Item',
+    container: container,
+    target: parent,
+    parentController: parent,
+    _isVirtual: true,
+    model: Ember.A([
+      { name: 'kris seldenator' }
+    ])
+  });
+
+  var itemController = virtual.objectAtContent(0);
+
+  equal(itemController.get('parentController'), parent);
+  equal(itemController.get('target'), parent);
+
+  Ember.run(function() {
+    parent.destroy();
+    virtual.destroy();
+  });
+
+});
+
 test("array observers can invoke `objectAt` without overwriting existing item controllers", function() {
   createArrayController();
 

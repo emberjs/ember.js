@@ -228,13 +228,15 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     if (!container.has(fullName)) {
       throw new EmberError('Could not resolve itemController: "' + controllerClass + '"');
     }
-    var parentController;
+
     if (this._isVirtual) {
       parentController = get(this, 'parentController');
+    } else {
+      parentController = this;
     }
-    parentController = parentController || this;
+
     subController = container.lookupFactory(fullName).create({
-      target: this,
+      target: parentController,
       parentController: parentController,
       model: object
     });
