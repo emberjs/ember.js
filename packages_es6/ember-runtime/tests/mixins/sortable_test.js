@@ -372,3 +372,13 @@ test("Ember.Sortable with sortFunction on ArrayProxy should work like ArrayContr
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
   equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'array is sorted by name');
 });
+
+test("sortable array can be cleared with clear method", function() {
+  run(function() {
+    sortedArrayController.set('content', unsortedArray);
+  });
+
+  equal(sortedArrayController.get('length'), 3, 'array has 3 items');
+  sortedArrayController.clear();
+  equal(sortedArrayController.get('length'), 0, 'array has 0 items after clear');
+});

@@ -244,8 +244,8 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     return this;
   },
 
-  replace: function() {
-    if (get(this, 'arrangedContent') === get(this, 'content')) {
+  replace: function(idx, amt, objects) {
+    if (get(this, 'arrangedContent') === get(this, 'content') || objects.length === 0) {
       apply(this, this._replace, arguments);
     } else {
       throw new EmberError("Using replace on an arranged ArrayProxy is not allowed.");
