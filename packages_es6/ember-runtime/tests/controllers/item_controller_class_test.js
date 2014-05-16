@@ -287,7 +287,7 @@ test("target and parentController are set to the concrete parentController", fun
   equal(itemController.get('parentController'), parent);
   equal(itemController.get('target'), parent);
 
-  Ember.run(function() {
+  run(function() {
     parent.destroy();
     virtual.destroy();
   });
@@ -326,7 +326,7 @@ test("`itemController`'s life cycle should be entangled with its parent controll
   var tywinController = arrayController.objectAtContent(0),
       jaimeController = arrayController.objectAtContent(1);
 
-  Ember.run(arrayController, 'destroy');
+  run(arrayController, 'destroy');
 
   equal(tywinController.get('isDestroyed'), true);
   equal(jaimeController.get('isDestroyed'), true);
