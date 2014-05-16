@@ -297,7 +297,7 @@ test("`itemController`'s life cycle should be entangled with its parent controll
   var tywinController = arrayController.objectAtContent(0),
       jaimeController = arrayController.objectAtContent(1);
 
-  Ember.run(arrayController, 'destroy');
+  run(arrayController, 'destroy');
 
   equal(tywinController.get('isDestroyed'), true);
   equal(jaimeController.get('isDestroyed'), true);
