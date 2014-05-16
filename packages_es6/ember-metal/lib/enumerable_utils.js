@@ -1,5 +1,3 @@
-var splice;
-
 import {
   map,
   forEach,
@@ -7,7 +5,7 @@ import {
   filter
 } from "ember-metal/array";
 
-splice  = Array.prototype.splice;
+var splice = Array.prototype.splice;
 
 /**
  * Defines some convenience methods for working with Enumerables.
