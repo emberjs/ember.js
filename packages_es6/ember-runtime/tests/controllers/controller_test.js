@@ -137,3 +137,49 @@ if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
     controller.send("poke");
   });
 }
+
+module('Controller Content -> Model Alias');
+
+test("`model` is aliased as `content`", function() {
+  expect(1);
+  var controller = Controller.extend({
+    model: 'foo-bar'
+  }).create();
+
+  equal(controller.get('content'), 'foo-bar', 'content is an alias of model');
+});
+
+test("`content` is moved to `model` when `model` is unset", function() {
+  expect(2);
+  var controller;
+
+  ignoreDeprecation(function() {
+    controller = Controller.extend({
+      content: 'foo-bar'
+    }).create();
+  });
+
+  equal(controller.get('model'), 'foo-bar', 'model is set properly');
+  equal(controller.get('content'), 'foo-bar', 'content is set properly');
+});
+
+test("specifying `content` (without `model` specified) results in deprecation", function() {
+  expect(1);
+  var controller;
+
+  expectDeprecation(function() {
+    controller = Controller.extend({
+      content: 'foo-bar'
+    }).create();
+  }, 'Do not specify `content` on a Controller, use `model` instead.');
+});
+
+test("specifying `content` (with `model` specified) does not result in deprecation", function() {
+  expect(1);
+  expectNoDeprecation();
+
+  Controller.extend({
+    content: 'foo-bar',
+    model: 'blammo'
+  }).create();
+});
