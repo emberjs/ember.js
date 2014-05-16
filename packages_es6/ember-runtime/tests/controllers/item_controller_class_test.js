@@ -265,6 +265,35 @@ test("if `lookupItemController` returns a string, it must be resolvable by the c
     "`lookupItemController` must return either null or a valid controller name");
 });
 
+test("target and parentController are set to the concrete parentController", function() {
+  var parent = ArrayController.create({
+
+  });
+
+  // typically controller created for {{each itemController="foo"}}
+  var virtual = ArrayController.create({
+    itemController: 'Item',
+    container: container,
+    target: parent,
+    parentController: parent,
+    _isVirtual: true,
+    model: Ember.A([
+      { name: 'kris seldenator' }
+    ])
+  });
+
+  var itemController = virtual.objectAtContent(0);
+
+  equal(itemController.get('parentController'), parent);
+  equal(itemController.get('target'), parent);
+
+  Ember.run(function() {
+    parent.destroy();
+    virtual.destroy();
+  });
+
+});
+
 test("array observers can invoke `objectAt` without overwriting existing item controllers", function() {
   createArrayController();
 
@@ -289,6 +318,18 @@ test("array observers can invoke `objectAt` without overwriting existing item co
 
   equal(arrayObserverCalled, true, "Array observers are called normally");
   equal(tywinController.get('name'), "Tywin", "Array observers calling `objectAt` does not overwrite existing controllers' content");
+});
+
+test("`itemController`'s life cycle should be entangled with its parent controller", function() {
+  createDynamicArrayController();
+
+  var tywinController = arrayController.objectAtContent(0),
+      jaimeController = arrayController.objectAtContent(1);
+
+  Ember.run(arrayController, 'destroy');
+
+  equal(tywinController.get('isDestroyed'), true);
+  equal(jaimeController.get('isDestroyed'), true);
 });
 
 module('Ember.ArrayController - itemController with arrayComputed', {

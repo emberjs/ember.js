@@ -103,7 +103,7 @@ var replace = EnumerableUtils.replace;
   @uses Ember.ControllerMixin
 */
 
-var ArrayController = ArrayProxy.extend(ControllerMixin, SortableMixin, {
+export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
 
   /**
     The controller used to wrap items, if any.
@@ -143,12 +143,13 @@ var ArrayController = ArrayProxy.extend(ControllerMixin, SortableMixin, {
   },
 
   objectAtContent: function(idx) {
-    var length = get(this, 'length'),
-        arrangedContent = get(this,'arrangedContent'),
-        object = arrangedContent && arrangedContent.objectAt(idx);
+    var length = get(this, 'length');
+    var arrangedContent = get(this, 'arrangedContent');
+    var object = arrangedContent && arrangedContent.objectAt(idx);
+    var controllerClass;
 
     if (idx >= 0 && idx < length) {
-      var controllerClass = this.lookupItemController(object);
+      controllerClass = this.lookupItemController(object);
       if (controllerClass) {
         return this.controllerAt(idx, object, controllerClass);
       }
@@ -169,14 +170,19 @@ var ArrayController = ArrayProxy.extend(ControllerMixin, SortableMixin, {
   },
 
   arrayContentDidChange: function(idx, removedCnt, addedCnt) {
-    var subControllers = get(this, '_subControllers'),
-        subControllersToRemove = subControllers.slice(idx, idx+removedCnt);
+    var subControllers = this._subControllers;
 
-    forEach(subControllersToRemove, function(subController) {
-      if (subController) { subController.destroy(); }
-    });
+    if (subControllers.length) {
+      var subControllersToRemove = subControllers.slice(idx, idx + removedCnt);
 
-    replace(subControllers, idx, removedCnt, new Array(addedCnt));
+      forEach(subControllersToRemove, function(subController) {
+        if (subController) {
+          subController.destroy();
+        }
+      });
+
+      replace(subControllers, idx, removedCnt, new Array(addedCnt));
+    }
 
     // The shadow array of subcontrollers must be updated before we trigger
     // observers, otherwise observers will get the wrong subcontainer when
@@ -186,8 +192,7 @@ var ArrayController = ArrayProxy.extend(ControllerMixin, SortableMixin, {
 
   init: function() {
     this._super();
-
-    this.set('_subControllers', Ember.A());
+    this._subControllers = [];
   },
 
   model: computed(function () {
@@ -205,25 +210,33 @@ var ArrayController = ArrayProxy.extend(ControllerMixin, SortableMixin, {
   _isVirtual: false,
 
   controllerAt: function(idx, object, controllerClass) {
-    var container = get(this, 'container'),
-        subControllers = get(this, '_subControllers'),
-        subController = subControllers[idx],
-        fullName;
+    var fullName, subController, parentController;
 
-    if (subController) { return subController; }
+    var container = get(this, 'container');
+    var subControllers = this._subControllers;
 
-    fullName = "controller:" + controllerClass;
+    if (subControllers.length > idx) {
+      subController = subControllers[idx];
+
+      if (subController) {
+        return subController;
+      }
+    }
+
+    fullName = 'controller:' + controllerClass;
 
     if (!container.has(fullName)) {
       throw new EmberError('Could not resolve itemController: "' + controllerClass + '"');
     }
-    var parentController;
+
     if (this._isVirtual) {
       parentController = get(this, 'parentController');
+    } else {
+      parentController = this;
     }
-    parentController = parentController || this;
+
     subController = container.lookupFactory(fullName).create({
-      target: this,
+      target: parentController,
       parentController: parentController,
       model: object
     });
@@ -236,15 +249,23 @@ var ArrayController = ArrayProxy.extend(ControllerMixin, SortableMixin, {
   _subControllers: null,
 
   _resetSubControllers: function() {
-    var subControllers = get(this, '_subControllers');
-    if (subControllers) {
-      forEach(subControllers, function(subController) {
-        if (subController) { subController.destroy(); }
-      });
-    }
+    var controller;
+    var subControllers = this._subControllers;
 
-    this.set('_subControllers', Ember.A());
+    if (subControllers.length) {
+      for (var i = 0, length = subControllers.length; length > i; i++) {
+        controller = subControllers[i];
+        if (controller) {
+          controller.destroy();
+        }
+      }
+
+      subControllers.length = 0;
+    }
+  },
+
+  willDestroy: function() {
+    this._resetSubControllers();
+    this._super();
   }
 });
-
-export default ArrayController;
