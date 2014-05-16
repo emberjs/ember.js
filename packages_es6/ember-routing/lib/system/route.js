@@ -863,8 +863,8 @@ var Route = EmberObject.extend(ActionHandler, {
     ```js
     App.PostsRoute = Ember.Route.extend({
       afterModel: function(posts, transition) {
-        if (posts.length === 1) {
-          this.transitionTo('post.show', posts[0]);
+        if (posts.get('length') === 1) {
+          this.transitionTo('post.show', posts.get('firstObject'));
         }
       }
     });
