@@ -68,7 +68,7 @@ test("should move the view to the inDOM state after replacing", function() {
     view.replaceIn('#menu');
   });
 
-  equal(view.currentState, view.states.inDOM, "the view is in the inDOM state");
+  equal(view.currentState, view._states.inDOM, "the view is in the inDOM state");
 });
 
 QUnit.module("EmberView - replaceIn() in a view hierarchy", {

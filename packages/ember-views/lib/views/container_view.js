@@ -189,7 +189,7 @@ var states = cloneStates(EmberViewStates);
   @extends Ember.View
 */
 var ContainerView = View.extend(MutableArray, {
-  states: states,
+  _states: states,
 
   init: function() {
     this._super();

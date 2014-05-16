@@ -15,7 +15,7 @@ import setProperties from "ember-metal/set_properties";
 import run from "ember-metal/run_loop";
 import { addObserver, removeObserver } from "ember-metal/observer";
 
-import { defineProperty } from "ember-metal/properties";
+import { defineProperty, deprecateProperty } from "ember-metal/properties";
 import { guidFor } from "ember-metal/utils";
 import { meta } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
@@ -131,12 +131,15 @@ Ember.TEMPLATES = {};
 var CoreView = EmberObject.extend(Evented, ActionHandler, {
   isView: true,
 
-  states: cloneStates(states),
+  _states: cloneStates(states),
 
   init: function() {
     this._super();
     this.transitionTo('preRender');
     this._isVisible = get(this, 'isVisible');
+
+    deprecateProperty(this, 'states', '_states');
+    deprecateProperty(this, 'state', '_state');
   },
 
   /**
@@ -157,7 +160,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     }
   }),
 
-  state: null,
+  _state: null,
 
   _parentView: null,
 
@@ -2333,8 +2336,8 @@ var View = CoreView.extend({
 
   transitionTo: function(state, children) {
     var priorState = this.currentState,
-        currentState = this.currentState = this.states[state];
-    this.state = state;
+        currentState = this.currentState = this._states[state];
+    this._state = state;
 
     if (priorState && priorState.exit) { priorState.exit(this); }
     if (currentState.enter) { currentState.enter(this); }

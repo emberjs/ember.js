@@ -9,6 +9,9 @@ import {
 } from "ember-metal/utils";
 import { platform } from "ember-metal/platform";
 import { overrideChains } from "ember-metal/property_events";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+
 var metaFor = meta,
     objectDefineProperty = platform.defineProperty;
 
@@ -150,4 +153,30 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   if (obj.didDefineProperty) { obj.didDefineProperty(obj, keyName, value); }
 
   return this;
+}
+
+/**
+  Used internally to allow changing properties in a backwards compatible way, and print a helpful
+  deprecation warning.
+
+  @method deprecateProperty
+  @param {Object} object The object to add the deprecated property to.
+  @param {String} deprecatedKey The property to add (and print deprecation warnings upon accessing).
+  @param {String} newKey The property that will be aliased.
+  @private
+*/
+
+export function deprecateProperty(object, deprecatedKey, newKey) {
+  function deprecate() {
+    Ember.deprecate('Usage of `' + deprecatedKey + '` is deprecated, use `' + newKey + '` instead.');
+  }
+
+  if (platform.hasPropertyAccessors) {
+    defineProperty(object, deprecatedKey, {
+        configurable: true,
+        enumerable: false,
+        set: function(value) { deprecate(); set(object, newKey, value); },
+        get: function() { deprecate(); return get(object, newKey); }
+    });
+  }
 }

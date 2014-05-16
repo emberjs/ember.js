@@ -175,7 +175,7 @@ test("createElement puts the view into the hasElement state", function() {
     view.createElement();
   });
 
-  equal(view.currentState, view.states.hasElement, "the view is in the hasElement state");
+  equal(view.currentState, view._states.hasElement, "the view is in the hasElement state");
 });
 
 test("trigger rerender on a view in the hasElement state doesn't change its state to inDOM", function() {
@@ -188,7 +188,7 @@ test("trigger rerender on a view in the hasElement state doesn't change its stat
     view.rerender();
   });
 
-  equal(view.currentState, view.states.hasElement, "the view is still in the hasElement state");
+  equal(view.currentState, view._states.hasElement, "the view is still in the hasElement state");
 });
 
 
@@ -371,7 +371,7 @@ test("trigger rerender on a view in the inDOM state keeps its state as inDOM", f
     view.rerender();
   });
 
-  equal(view.currentState, view.states.inDOM, "the view is still in the inDOM state");
+  equal(view.currentState, view._states.inDOM, "the view is still in the inDOM state");
 
   run(function() {
     view.destroy();

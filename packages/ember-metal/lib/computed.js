@@ -1316,6 +1316,31 @@ computed.defaultTo = function(defaultPath) {
   });
 };
 
+/**
+  Creates a new property that is an alias for another property
+  on an object. Calls to `get` or `set` this property behave as
+  though they were called on the original property, but also
+  print a deprecation warning.
+
+  @method computed.deprecatingAlias
+  @for Ember
+  @param {String} dependentKey
+  @return {Ember.ComputedProperty} computed property which creates an
+  alias with a deprecation to the original value for property.
+*/
+computed.deprecatingAlias = function(dependentKey) {
+  return computed(dependentKey, function(key, value) {
+    Ember.deprecate('Usage of `' + key + '` is deprecated, use `' + dependentKey + '` instead.');
+
+    if (arguments.length > 1) {
+      set(this, dependentKey, value);
+      return value;
+    } else {
+      return get(this, dependentKey);
+    }
+  });
+};
+
 export {
   ComputedProperty,
   computed,
