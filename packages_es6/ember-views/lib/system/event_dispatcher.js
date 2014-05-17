@@ -74,6 +74,14 @@ export default EmberObject.extend({
   },
 
   /**
+ 
+    @property disabledHandlerClassName
+    @type String
+    @default null
+  */
+  disabledHandlerClassName: null,
+
+  /**
     The root DOM element to which event listeners should be attached. Event
     listeners will be attached to the document unless this is overridden.
 
@@ -150,9 +158,27 @@ export default EmberObject.extend({
     @param {String} eventName the name of the method to call on the view
   */
   setupHandler: function(rootElement, event, eventName) {
-    var self = this;
+    var self = this,
+        eventSelector = '.ember-view',
+        actionSelector = '[data-ember-action]';
 
-    rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
+
+    if (Ember.FEATURES.isEnabled("classname-can-disable-handlers")) {
+      var disabledClass = get(this, 'disabledHandlerClassName');
+
+      if (disabledClass) {
+
+        if (disabledClass.charAt(0) !== '.') {
+          disabledClass = '.'+disabledClass;
+        }
+
+        eventSelector += fmt(":not(%@)", disabledClass);
+        actionSelector += fmt(":not(%@)", disabledClass);
+
+      }
+    }
+
+    rootElement.on(event + '.ember', eventSelector, function(evt, triggeringManager) {
       var view = View.views[this.id],
           result = true, manager = null;
 
@@ -169,7 +195,7 @@ export default EmberObject.extend({
       return result;
     });
 
-    rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
+    rootElement.on(event + '.ember', actionSelector, function(evt) {
       //ES6TODO: Needed for ActionHelper (generally not available in ember-views test suite)
       if (!ActionHelper) { ActionHelper = requireModule("ember-routing/helpers/action")["ActionHelper"]; }
 
