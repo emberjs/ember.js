@@ -159,17 +159,37 @@ var EnumerableTests = Suite.extend({
   newObject: required(Function),
 
   /**
-    Implement to return a set of new fixture objects that can be applied to
+    Implement to return a set of new fixture strings that can be applied to
     the enumerable.  This may be passed into the newObject method.
 
     @param {Number} count
       The number of items required.
 
-    @returns {Array} array of items
+    @returns {Array} array of strings
   */
   newFixture: function(cnt) {
     var ret = [];
-    while(--cnt>=0) ret.push(generateGuid());
+    while(--cnt >= 0) ret.push(generateGuid());
+    return ret;
+  },
+
+  /**
+    Implement to return a set of new fixture objects that can be applied to
+    the enumerable.  This may be passed into the newObject method.
+
+    @param {Number} cnt
+      The number of items required.
+
+    @returns {Array} array of objects
+  */
+  newObjectsFixture: function(cnt) {
+    var ret = [];
+    var item;
+    while(--cnt >= 0) {
+      item = {};
+      guidFor(item);
+      ret.push(item);
+    }
     return ret;
   },
 
