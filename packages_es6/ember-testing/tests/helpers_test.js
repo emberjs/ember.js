@@ -520,31 +520,39 @@ module("ember-testing pendingAjaxRequests", {
   teardown: function() { cleanup(); }
 });
 
-test("pendingAjaxRequests is incremented on each document ajaxSend event", function() {
-  Test.pendingAjaxRequests = 0;
-  jQuery(document).trigger('ajaxSend');
+test("pendingAjaxRequests is maintained for ajaxSend and ajaxComplete events", function() {
+  equal(Test.pendingAjaxRequests, 0);
+  var xhr = {some: 'xhr'};
+  jQuery(document).trigger('ajaxSend', xhr);
   equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
-});
-
-test("pendingAjaxRequests is decremented on each document ajaxComplete event", function() {
-  Test.pendingAjaxRequests = 1;
-  jQuery(document).trigger('ajaxComplete');
+  jQuery(document).trigger('ajaxComplete', xhr);
   equal(Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was decremented');
 });
 
-test("pendingAjaxRequests is not reset by setupForTesting", function() {
+test("pendingAjaxRequests is ignores ajaxComplete events from past setupForTesting calls", function() {
+  equal(Test.pendingAjaxRequests, 0);
+  var xhr = {some: 'xhr'};
+  jQuery(document).trigger('ajaxSend', xhr);
+  equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
+
+  Ember.run(function(){
+    setupForTesting();
+  });
+  equal(Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was reset');
+
+  var altXhr = {some: 'more xhr'};
+  jQuery(document).trigger('ajaxSend', altXhr);
+  equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
+  jQuery(document).trigger('ajaxComplete', xhr);
+  equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests is not impressed with your unexpected complete');
+});
+
+test("pendingAjaxRequests is reset by setupForTesting", function() {
   Test.pendingAjaxRequests = 1;
   Ember.run(function(){
     setupForTesting();
   });
-  equal(Test.pendingAjaxRequests, 1, 'pendingAjaxRequests is not reset');
-});
-
-test("it should raise an assertion error if ajaxComplete is called without pendingAjaxRequests", function() {
-  Test.pendingAjaxRequests = 0;
-  expectAssertion(function() {
-    jQuery(document).trigger('ajaxComplete');
-  });
+  equal(Test.pendingAjaxRequests, 0, 'pendingAjaxRequests is reset');
 });
 
 test("`trigger` can be used to trigger arbitrary events", function() {
