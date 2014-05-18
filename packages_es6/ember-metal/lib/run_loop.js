@@ -565,7 +565,7 @@ run.debounce = function() {
 
 /**
   Ensure that the target method is never called more frequently than
-  the specified spacing period.
+  the specified spacing period. The target method is called immediately.
 
   ```javascript
     var myFunc = function() { console.log(this.name + ' ran.'); };
@@ -573,6 +573,7 @@ run.debounce = function() {
 
     run.throttle(myContext, myFunc, 150);
     // myFunc is invoked with context myContext
+    // console logs 'throttle ran.'
 
     // 50ms passes
     run.throttle(myContext, myFunc, 150);
@@ -583,7 +584,7 @@ run.debounce = function() {
     // 150ms passes
     run.throttle(myContext, myFunc, 150);
     // myFunc is invoked with context myContext
-    // console logs 'throttle ran.' twice, 250ms apart.
+    // console logs 'throttle ran.'
   ```
 
   @method throttle
@@ -593,6 +594,8 @@ run.debounce = function() {
     then it will be looked up on the passed target.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @param {Number} spacing Number of milliseconds to space out requests.
+  @param {Boolean} immediate Trigger the function on the leading instead
+    of the trailing edge of the wait interval. Defaults to true.
   @return {Array} Timer information for use in cancelling, see `run.cancel`.
 */
 run.throttle = function() {
