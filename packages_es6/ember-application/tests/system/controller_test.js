@@ -60,7 +60,7 @@ test("Mixin sets up controllers if there is needs before calling super", functio
 
   container.register('controller:other', ArrayController.extend({
     needs: 'posts',
-    content: computed.alias('controllers.posts')
+    model: computed.alias('controllers.posts')
   }));
 
   container.register('controller:another', ArrayController.extend({

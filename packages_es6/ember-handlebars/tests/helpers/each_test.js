@@ -304,7 +304,7 @@ test("itemController specified in ArrayController gets a parentController proper
         })
       }),
       PeopleController = ArrayController.extend({
-        content: people,
+        model: people,
         itemController: 'person',
         company: 'Yapp'
       });
@@ -332,7 +332,7 @@ test("itemController's parentController property, when the ArrayController has a
         })
       }),
       PeopleController = ArrayController.extend({
-        content: people,
+        model: people,
         itemController: 'person',
         parentController: computed(function(){
           return this.container.lookup('controller:company');
@@ -507,7 +507,7 @@ test("it supports {{else}}", function() {
 
 test("it works with the controller keyword", function() {
   var controller = ArrayController.create({
-    content: A(["foo", "bar", "baz"])
+    model: A(["foo", "bar", "baz"])
   });
 
   run(function() { view.destroy(); }); // destroy existing view
@@ -613,7 +613,7 @@ test("views inside #each preserve the new context", function() {
 
 test("controller is assignable inside an #each", function() {
   var controller = ArrayController.create({
-    content: A([ { name: "Adam" }, { name: "Steve" } ])
+    model: A([ { name: "Adam" }, { name: "Steve" } ])
   });
 
   view = EmberView.create({
@@ -727,7 +727,7 @@ test("itemController specified in ArrayController with name binding does not cha
         })
       }),
       PeopleController = ArrayController.extend({
-        content: people,
+        model: people,
         itemController: 'person',
         company: 'Yapp',
         controllerName: 'controller:people'
