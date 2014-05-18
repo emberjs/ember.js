@@ -60,6 +60,29 @@ var defaultControllersComputedProperty = computed(function() {
   };
 });
 
+if (Ember.FEATURES.isEnabled('services')) {
+  var defaultServicesComputedProperty = computed(function() {
+    var controller = this;
+
+    return {
+      container: get(controller, 'container'),
+      unknownProperty: function(serviceName) {
+        var service = this.container.lookup('service:' + serviceName);
+
+        if (!service) {
+          var errorMessage = "The " + serviceName + " service was accessed from the " + inspect(controller) + " controller, but no service with that name was found.";
+          throw new ReferenceError(errorMessage);
+        }
+
+        return service;
+      },
+      setUnknownProperty: function (key, value) {
+        throw new Error("You cannot overwrite the value of `services." + key + "` of " + inspect(controller));
+      }
+    };
+  });
+}
+
 /**
   @class ControllerMixin
   @namespace Ember
@@ -166,7 +189,24 @@ ControllerMixin.reopen({
     @property {Object} controllers
     @default null
   */
-  controllers: defaultControllersComputedProperty
+  controllers: defaultControllersComputedProperty,
+
+  /**
+   Stores instances of services available for this controller to use.
+   Controllers have access to all services defined in the application.
+   Services provide model information to routes and controllers.
+
+   ```javascript
+   App.NearbyTweetsController = Ember.ArrayController.extend({
+     currentLatitude: function() {
+       return this.get('services.geolocation.location.latitude');
+     }.property('services.geolocation.location')
+   });
+   ```
+
+   @property {Object} services
+ */
+  services: defaultServicesComputedProperty
 });
 
 export default ControllerMixin;
