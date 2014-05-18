@@ -443,7 +443,7 @@ test('Specifying a name to render should have precedence over everything else', 
   });
 
   App.HomepageController = Ember.ObjectController.extend({
-    content: {
+    model: {
       home: 'Tinytroll'
     }
   });
@@ -583,7 +583,7 @@ test("The Homepage with a computed context that does not get overridden", functi
   });
 
   App.HomeController = Ember.ArrayController.extend({
-    content: Ember.computed(function() {
+    model: Ember.computed(function() {
       return Ember.A([
         "Monday through Friday: 9am to 5pm",
         "Saturday: Noon to Midnight",

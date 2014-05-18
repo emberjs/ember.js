@@ -50,7 +50,7 @@ test("When `_actions` is provided, `actions` is left alone", function() {
 
 test("Actions object doesn't shadow a proxied object's 'actions' property", function() {
   var TestController = ObjectController.extend({
-    content: {
+    model: {
       actions: 'foo'
     },
     actions: {
