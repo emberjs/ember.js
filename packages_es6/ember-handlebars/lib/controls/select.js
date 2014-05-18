@@ -102,7 +102,7 @@ var SelectOptgroup = CollectionView.extend({
   Example:
 
   ```javascript
-  App.ApplicationController = Ember.Controller.extend({
+  App.ApplicationController = Ember.ObjectController.extend({
     names: ["Yehuda", "Tom"]
   });
   ```
@@ -124,7 +124,7 @@ var SelectOptgroup = CollectionView.extend({
   `value` property:
 
   ```javascript
-  App.ApplicationController = Ember.Controller.extend({
+  App.ApplicationController = Ember.ObjectController.extend({
     selectedName: 'Tom',
     names: ["Yehuda", "Tom"]
   });
@@ -164,7 +164,7 @@ var SelectOptgroup = CollectionView.extend({
   element's text. Both paths must reference each object itself as `content`:
 
   ```javascript
-  App.ApplicationController = Ember.Controller.extend({
+  App.ApplicationController = Ember.ObjectController.extend({
     programmers: [
       {firstName: "Yehuda", id: 1},
       {firstName: "Tom",    id: 2}
@@ -192,7 +192,7 @@ var SelectOptgroup = CollectionView.extend({
   can be bound to a property on another object:
 
   ```javascript
-  App.ApplicationController = Ember.Controller.extend({
+  App.ApplicationController = Ember.ObjectController.extend({
     programmers: [
       {firstName: "Yehuda", id: 1},
       {firstName: "Tom",    id: 2}
@@ -231,11 +231,15 @@ var SelectOptgroup = CollectionView.extend({
   element:
 
   ```javascript
-  App.ApplicationController = Ember.Controller.extend({
-    selectedPerson: null,
+
+  var yehuda = {firstName: "Yehuda", id: 1, bff4eva: 'tom'}
+  var tom = {firstName: "Tom", id: 2, bff4eva: 'yehuda'};
+
+  App.ApplicationController = Ember.ObjectController.extend({
+    selectedPerson: tom,
     programmers: [
-      {firstName: "Yehuda", id: 1},
-      {firstName: "Tom",    id: 2}
+      yehuda,
+      tom
     ]
   });
   ```
@@ -268,7 +272,7 @@ var SelectOptgroup = CollectionView.extend({
   results in there being no `<option>` with a `selected` attribute:
 
   ```javascript
-  App.ApplicationController = Ember.Controller.extend({
+  App.ApplicationController = Ember.ObjectController.extend({
     selectedProgrammer: null,
     programmers: [
       "Yehuda",
@@ -300,7 +304,7 @@ var SelectOptgroup = CollectionView.extend({
   with the `prompt` option:
 
   ```javascript
-  App.ApplicationController = Ember.Controller.extend({
+  App.ApplicationController = Ember.ObjectController.extend({
     selectedProgrammer: null,
     programmers: [
       "Yehuda",
