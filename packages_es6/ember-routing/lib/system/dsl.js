@@ -28,11 +28,20 @@ DSL.prototype = {
       options.path = "/" + name;
     }
 
-    if (callback) {
+    var createSubRoutes = false;
+    if (Ember.FEATURES.isEnabled('ember-routing-consistent-resources')) {
+      createSubRoutes = true;
+    } else {
+      if (callback) { createSubRoutes = true; }
+    }
+
+    if (createSubRoutes) {
       var dsl = new DSL(name);
       route(dsl, 'loading');
       route(dsl, 'error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
-      callback.call(dsl);
+
+      if (callback) { callback.call(dsl); }
+
       this.push(options.path, name, dsl.generate());
     } else {
       this.push(options.path, name, null);
