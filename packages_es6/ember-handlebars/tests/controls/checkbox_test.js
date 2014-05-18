@@ -21,7 +21,7 @@ function destroy(view) {
   });
 }
 
-module("{{input type='checkbox'}}", {
+QUnit.module("{{input type='checkbox'}}", {
   setup: function() {
     controller = {
       tab: 6,
@@ -70,7 +70,7 @@ test("checkbox checked property is updated", function() {
   equal(checkboxView.$('input').prop('checked'), true, "the checkbox is checked now");
 });
 
-module("{{input type='checkbox'}} - prevent value= usage", {
+QUnit.module("{{input type='checkbox'}} - prevent value= usage", {
   setup: function() {
     checkboxView = EmberView.extend({
       controller: controller,
@@ -89,7 +89,7 @@ test("It works", function() {
   }, /you must use `checked=/);
 });
 
-module("{{input type='checkbox'}} - static values", {
+QUnit.module("{{input type='checkbox'}} - static values", {
   setup: function() {
     controller = {
       tab: 6,
@@ -126,7 +126,7 @@ test("checkbox checked property is updated", function() {
   equal(checkboxView.$('input').prop('checked'), false, "the checkbox isn't checked yet");
 });
 
-module("Ember.Checkbox", {
+QUnit.module("Ember.Checkbox", {
   setup: function() {
     dispatcher = EventDispatcher.create();
     dispatcher.setup();

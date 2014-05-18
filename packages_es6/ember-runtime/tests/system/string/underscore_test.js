@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import {underscore} from "ember-runtime/system/string";
 
-module('EmberStringUtils.underscore');
+QUnit.module('EmberStringUtils.underscore');
 
 if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
   test("String.prototype.underscore is not available without EXTEND_PROTOTYPES", function() {

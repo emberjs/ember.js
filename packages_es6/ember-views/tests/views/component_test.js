@@ -9,7 +9,7 @@ var a_slice = Array.prototype.slice;
 
 var component, controller, actionCounts, sendCount, actionArguments;
 
-module("Ember.Component", {
+QUnit.module("Ember.Component", {
   setup: function(){
     component = Component.create();
   },
@@ -81,7 +81,7 @@ test("Specifying a templateName on a component with a layoutName specified in a 
   }).create();
 });
 
-module("Ember.Component - Actions", {
+QUnit.module("Ember.Component - Actions", {
   setup: function() {
     actionCounts = {};
     sendCount = 0;

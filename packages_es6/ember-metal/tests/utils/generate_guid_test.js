@@ -1,6 +1,6 @@
 import { generateGuid } from "ember-metal/utils";
 
-module("Ember.generateGuid");
+QUnit.module("Ember.generateGuid");
 
 test("Prefix", function() {
   var a = {};

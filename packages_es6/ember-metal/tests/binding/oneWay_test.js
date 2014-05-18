@@ -5,7 +5,7 @@ import { oneWay } from "ember-metal/binding";
 
 var MyApp;
 
-module('system/mixin/binding/oneWay_test', {
+QUnit.module('system/mixin/binding/oneWay_test', {
   setup: function() {
     MyApp = {
       foo: { value: 'FOO' },

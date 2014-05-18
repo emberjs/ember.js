@@ -5,7 +5,7 @@ import ContainerView from "ember-views/views/container_view";
 
 var view;
 
-module("EmberView#destroyElement", {
+QUnit.module("EmberView#destroyElement", {
   teardown: function() {
     run(function() {
       view.destroy();

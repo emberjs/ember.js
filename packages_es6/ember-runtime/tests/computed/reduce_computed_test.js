@@ -17,7 +17,7 @@ var map = EnumerableUtils.map,
     metaFor = meta,
     obj, addCalls, removeCalls, callbackItems;
 
-module('arrayComputed', {
+QUnit.module('arrayComputed', {
   setup: function () {
     addCalls = removeCalls = 0;
 
@@ -508,7 +508,7 @@ test("removedItem is not erroneously called for dependent arrays during a recomp
   ok(true, "removedItem not invoked with invalid index");
 });
 
-module('arrayComputed - recomputation DKs', {
+QUnit.module('arrayComputed - recomputation DKs', {
   setup: function() {
     obj = EmberObject.extend({
       people: Ember.A([{
@@ -565,7 +565,7 @@ test("recomputations from `arrayComputed` observers add back dependent keys", fu
   equal(meta.watching.people, 2, "watching.people is unchanged");
 });
 
-module('Ember.arryComputed - self chains', {
+QUnit.module('Ember.arryComputed - self chains', {
   setup: function() {
     var a = EmberObject.create({ name: 'a' }),
     b = EmberObject.create({ name: 'b' });
@@ -610,7 +610,7 @@ test("@this can be used to treat the object as the array itself", function() {
   deepEqual(names, ['a', 'c', 'd'], "@this observes new items");
 });
 
-module('arrayComputed - changeMeta property observers', {
+QUnit.module('arrayComputed - changeMeta property observers', {
   setup: function() {
     callbackItems = [];
     run(function() {
@@ -823,7 +823,7 @@ test("when initialValue is undefined, everything works as advertised", function(
   equal(get(chars, 'firstUpper'), 'B', "result is the next match when the first matching object is removed");
 });
 
-module('arrayComputed - completely invalidating dependencies', {
+QUnit.module('arrayComputed - completely invalidating dependencies', {
   setup: function () {
     addCalls = removeCalls = 0;
   }

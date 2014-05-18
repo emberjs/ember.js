@@ -26,7 +26,7 @@ var appendView = function() {
   run(function() { view.appendTo('#qunit-fixture'); });
 };
 
-module("Ember.Handlebars - action helper", {
+QUnit.module("Ember.Handlebars - action helper", {
   setup: function() {
     originalActionHelper = EmberHandlebars.helpers['action'];
     EmberHandlebars.registerHelper('action', actionHelper);
@@ -1001,7 +1001,7 @@ test("a quoteless parameter that also exists as an action name in deprecated act
   Ember.FEATURES['ember-routing-drop-deprecated-action-style'] = dropDeprecatedActionStyleOrig;
 });
 
-module("Ember.Handlebars - action helper - deprecated invoking directly on target", {
+QUnit.module("Ember.Handlebars - action helper - deprecated invoking directly on target", {
   setup: function() {
     originalActionHelper = EmberHandlebars.helpers['action'];
     EmberHandlebars.registerHelper('action', actionHelper);

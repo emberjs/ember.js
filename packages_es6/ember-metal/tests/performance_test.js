@@ -16,7 +16,7 @@ import { addObserver } from "ember-metal/observer";
   bugs that cause them to get evaluated more than necessary should be put here.
 */
 
-module("Computed Properties - Number of times evaluated");
+QUnit.module("Computed Properties - Number of times evaluated");
 
 test("computed properties that depend on multiple properties should run only once per run loop", function() {
   var obj = {a: 'a', b: 'b', c: 'c'};

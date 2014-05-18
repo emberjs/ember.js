@@ -1,7 +1,7 @@
 import {typeOf} from "ember-metal/utils";
 import EmberObject from "ember-runtime/system/object";
 
-module("Ember Type Checking");
+QUnit.module("Ember Type Checking");
 
 test("Ember.typeOf", function() {
   var a = null,

@@ -13,7 +13,7 @@ import Container from "container";
 var lannisters, arrayController, controllerClass, otherControllerClass, container, itemControllerCount,
     tywin, jaime, cersei, tyrion;
 
-module("Ember.ArrayController - itemController", {
+QUnit.module("Ember.ArrayController - itemController", {
   setup: function() {
     container = new Container();
 
@@ -332,7 +332,7 @@ test("`itemController`'s life cycle should be entangled with its parent controll
   equal(jaimeController.get('isDestroyed'), true);
 });
 
-module('Ember.ArrayController - itemController with arrayComputed', {
+QUnit.module('Ember.ArrayController - itemController with arrayComputed', {
   setup: function() {
     container = new Container();
 

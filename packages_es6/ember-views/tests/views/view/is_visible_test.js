@@ -8,7 +8,7 @@ import ContainerView from "ember-views/views/container_view";
 var View, view, parentBecameVisible, childBecameVisible, grandchildBecameVisible;
 var parentBecameHidden, childBecameHidden, grandchildBecameHidden;
 
-module("EmberView#isVisible", {
+QUnit.module("EmberView#isVisible", {
   setup: function() {
     parentBecameVisible=0;
     childBecameVisible=0;

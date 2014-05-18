@@ -31,7 +31,7 @@ function cleanupHandlebarsHelpers(){
   });
 }
 
-module("Application Lifecycle - Component Registration", {
+QUnit.module("Application Lifecycle - Component Registration", {
   setup: prepare,
   teardown: cleanup
 });
@@ -197,7 +197,7 @@ test("Assigning templateName and layoutName should use the templates specified",
   equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
 });
 
-module("Application Lifecycle - Component Context", {
+QUnit.module("Application Lifecycle - Component Context", {
   setup: prepare,
   teardown: cleanup
 });

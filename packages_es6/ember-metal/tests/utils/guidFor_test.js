@@ -4,7 +4,7 @@ import {
 } from "ember-metal/utils";
 import { rewatch } from "ember-metal/watching";
 
-module("guidFor");
+QUnit.module("guidFor");
 
 var sameGuid = function(a, b, message) {
   equal( guidFor(a), guidFor(b), message );

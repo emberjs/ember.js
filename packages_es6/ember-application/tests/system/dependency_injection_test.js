@@ -11,7 +11,7 @@ var EmberApplication = Application;
 var locator, originalLookup = Ember.lookup, lookup,
     application, originalModelInjections;
 
-module("Ember.Application Dependency Injection", {
+QUnit.module("Ember.Application Dependency Injection", {
   setup: function() {
     originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
     Ember.MODEL_FACTORY_INJECTIONS = true;

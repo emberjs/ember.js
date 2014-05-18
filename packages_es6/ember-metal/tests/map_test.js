@@ -11,7 +11,7 @@ var varieties = [['Map', Map], ['MapWithDefault', MapWithDefault]], variety;
 function testMap(nameAndFunc) {
   variety = nameAndFunc[0];
 
-  module("Ember." + variety + " (forEach and get are implicitly tested)", {
+  QUnit.module("Ember." + variety + " (forEach and get are implicitly tested)", {
     setup: function() {
       object = {};
       number = 42;
@@ -165,7 +165,7 @@ for (var i = 0;  i < varieties.length;  i++) {
   testMap(varieties[i]);
 }
 
-module("MapWithDefault - default values");
+QUnit.module("MapWithDefault - default values");
 
 test("Retrieving a value that has not been set returns and sets a default value", function() {
   var map = MapWithDefault.create({

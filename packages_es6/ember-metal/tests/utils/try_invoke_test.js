@@ -2,7 +2,7 @@ import { tryInvoke } from 'ember-metal/utils';
 
 var obj;
 
-module("Ember.tryInvoke", {
+QUnit.module("Ember.tryInvoke", {
   setup: function() {
     obj = {
       aMethodThatExists: function() { return true; },

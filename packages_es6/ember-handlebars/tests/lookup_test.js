@@ -1,4 +1,4 @@
-module("Ember.Handlebars.resolveParams");
+QUnit.module("Ember.Handlebars.resolveParams");
 
 test("Raw string parameters should be returned as Strings", function() {
   var params = Ember.Handlebars.resolveParams({}, ["foo", "bar", "baz"], { types: ["STRING", "STRING", "STRING"] });
@@ -66,7 +66,7 @@ test("ID parameters can look up keywords", function() {
   deepEqual(params, ["Mr", "Tom", "Dale", "State Charts"]);
 });
 
-module("Ember.Handlebars.resolveHash");
+QUnit.module("Ember.Handlebars.resolveHash");
 
 test("Raw string parameters should be returned as Strings", function() {
   var hash = Ember.Handlebars.resolveHash({}, { string: "foo" }, { hashTypes: { string: "STRING" } });

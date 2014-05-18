@@ -20,7 +20,6 @@
         "deepEqual",
         "ok",
         "strictEqual",
-        "module",
         "expect",
         "minispade",
         "expectAssertion",

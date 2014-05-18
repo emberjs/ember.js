@@ -13,7 +13,7 @@ import 'ember-application';
 
 var App, find, visit, originalAdapter = Test.adapter;
 
-module("ember-testing Integration", {
+QUnit.module("ember-testing Integration", {
   setup: function() {
     jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
     run(function() {

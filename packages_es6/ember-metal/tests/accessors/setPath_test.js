@@ -37,7 +37,7 @@ var obj, moduleOpts = {
   }
 };
 
-module('set with path', moduleOpts);
+QUnit.module('set with path', moduleOpts);
 
 test('[Foo, bar] -> Foo.bar', function() {
   Ember.lookup.Foo = {toString: function() { return 'Foo'; }}; // Behave like an Ember.Namespace
@@ -83,7 +83,7 @@ test('[null, Foo.bar] -> Foo.bar', function() {
 // DEPRECATED
 //
 
-module("set with path - deprecated", {
+QUnit.module("set with path - deprecated", {
   setup: function() {
     moduleOpts.setup();
   },

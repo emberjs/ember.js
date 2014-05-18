@@ -6,7 +6,7 @@ import EmberApplication from "ember-application/system/application";
 
 var App, originalAdapter;
 
-module("ember-testing Adapters", {
+QUnit.module("ember-testing Adapters", {
   setup: function() {
     originalAdapter = Test.adapter;
   },

@@ -8,7 +8,7 @@ var trim = jQuery.trim;
 // .......................................................
 //  render()
 //
-module("RenderBuffer");
+QUnit.module("RenderBuffer");
 
 test("RenderBuffers combine strings", function() {
   var buffer = new RenderBuffer('div');
@@ -137,7 +137,7 @@ test("lets `setClasses` and `addClass` work together", function() {
   equal(buffer.string(), '<div class="foo bar baz"></div>');
 });
 
-module("RenderBuffer - without tagName");
+QUnit.module("RenderBuffer - without tagName");
 
 test("It is possible to create a RenderBuffer without a tagName", function() {
   var buffer = new RenderBuffer();
@@ -148,7 +148,7 @@ test("It is possible to create a RenderBuffer without a tagName", function() {
   equal(buffer.string(), "abc", "Buffers without tagNames do not wrap the content in a tag");
 });
 
-module("RenderBuffer#element");
+QUnit.module("RenderBuffer#element");
 
 test("properly handles old IE's zero-scope bug", function() {
   var buffer = new RenderBuffer('div');

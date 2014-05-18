@@ -2,7 +2,7 @@ import "ember";
 
 var App;
 
-module('AutoLocation', {
+QUnit.module('AutoLocation', {
   setup: function() {
     Ember.AutoLocation._location = {
       href: 'http://test.com/',

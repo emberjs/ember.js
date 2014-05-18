@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 
-module('system/run_loop/once_test');
+QUnit.module('system/run_loop/once_test');
 
 test('calling invokeOnce more than once invokes only once', function() {
 

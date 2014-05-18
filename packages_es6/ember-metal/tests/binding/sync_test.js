@@ -11,7 +11,7 @@ import { rewatch } from "ember-metal/watching";
 import { computed } from "ember-metal/computed";
 import { defineProperty } from "ember-metal/properties";
 
-module("system/binding/sync_test.js");
+QUnit.module("system/binding/sync_test.js");
 
 testBoth("bindings should not sync twice in a single run loop", function(get, set) {
   var a, b, setValue, setCalled=0, getCalled=0;

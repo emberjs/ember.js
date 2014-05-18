@@ -12,7 +12,7 @@ import ContainerView from "ember-views/views/container_view";
 var view;
 var dispatcher;
 
-module("EventDispatcher", {
+QUnit.module("EventDispatcher", {
   setup: function() {
     run(function() {
       dispatcher = EventDispatcher.create();
@@ -286,7 +286,7 @@ test("event handlers should be wrapped in a run loop", function() {
   jQuery('#test-view').trigger('mousedown');
 });
 
-module("EventDispatcher#setup", {
+QUnit.module("EventDispatcher#setup", {
   setup: function() {
     run(function() {
       dispatcher = EventDispatcher.create({

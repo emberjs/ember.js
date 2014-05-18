@@ -1,7 +1,7 @@
 import {get} from "ember-metal/property_get";
 import EmberObject from "ember-runtime/system/object";
 
-module('EmberObject.extend');
+QUnit.module('EmberObject.extend');
 
 test('Basic extend', function() {
   var SomeClass = EmberObject.extend({ foo: 'BAR' });

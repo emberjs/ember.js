@@ -9,7 +9,7 @@ import Application from "ember-application/system/application";
 
 var locator, application, lookup, originalLookup, originalLoggerInfo;
 
-module("Ember.Application Depedency Injection", {
+QUnit.module("Ember.Application Depedency Injection", {
   setup: function() {
     originalLookup = Ember.lookup;
     application = run(Application, 'create');

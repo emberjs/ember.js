@@ -31,7 +31,7 @@ function registerRepeatHelper() {
   });
 }
 
-module("Handlebars bound helpers", {
+QUnit.module("Handlebars bound helpers", {
   setup: function() {
     window.TemplateTests = Namespace.create();
   },

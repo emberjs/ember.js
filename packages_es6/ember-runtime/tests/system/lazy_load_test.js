@@ -2,7 +2,7 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import {onLoad, runLoadHooks} from "ember-runtime/system/lazy_load";
 
-module("Lazy Loading");
+QUnit.module("Lazy Loading");
 
 test("if a load hook is registered, it is executed when runLoadHooks are exected", function() {
   var count = 0;

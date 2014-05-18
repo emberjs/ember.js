@@ -11,7 +11,7 @@ function createLocation(options){
   location = HistoryTestLocation.create(options);
 }
 
-module("Ember.HistoryLocation", {
+QUnit.module("Ember.HistoryLocation", {
   setup: function() {
     FakeHistory = {
       state: null,

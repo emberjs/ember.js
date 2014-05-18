@@ -4,7 +4,7 @@ import compare from "ember-runtime/compare";
 
 // test parsing of query string
 var v = [];
-module("Ember.compare()", {
+QUnit.module("Ember.compare()", {
   setup: function() {
     // setup dummy data
     v[0]  = null;

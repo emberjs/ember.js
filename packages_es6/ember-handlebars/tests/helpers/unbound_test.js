@@ -21,7 +21,7 @@ var view;
 var originalLookup = Ember.lookup, lookup;
 var container;
 
-module("Handlebars {{#unbound}} helper -- classic single-property usage", {
+QUnit.module("Handlebars {{#unbound}} helper -- classic single-property usage", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
@@ -67,7 +67,7 @@ test("it should throw the helper missing error if multiple properties are provid
     }, EmberError);
 });
 
-module("Handlebars {{#unbound boundHelper arg1 arg2... argN}} form: render unbound helper invocations", {
+QUnit.module("Handlebars {{#unbound boundHelper arg1 arg2... argN}} form: render unbound helper invocations", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
@@ -257,7 +257,7 @@ test("should be able to render an unbound helper invocation with bound hash opti
   }
 });
 
-module("Handlebars {{#unbound}} helper -- Container Lookup", {
+QUnit.module("Handlebars {{#unbound}} helper -- Container Lookup", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
     container = new Container();

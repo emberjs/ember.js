@@ -27,7 +27,7 @@ function createLocation(options) {
   location = AutoTestLocation.create(options);
 }
 
-module("Ember.AutoLocation", {
+QUnit.module("Ember.AutoLocation", {
   setup: function() {
     supportsHistory = supportsHashChange = null;
 

@@ -31,7 +31,7 @@ function destroy(view) {
   });
 }
 
-module("{{input type='text'}}", {
+QUnit.module("{{input type='text'}}", {
   setup: function() {
     controller = {
       val: "hello",
@@ -107,7 +107,7 @@ test("input tabindex is updated when setting tabindex property of view", functio
   equal(textField.$('input').attr('tabindex'), "3", "updates text field after tabindex changes");
 });
 
-module("{{input type='text'}} - static values", {
+QUnit.module("{{input type='text'}} - static values", {
   setup: function() {
     controller = {};
 
@@ -156,7 +156,7 @@ test("input tabindex is updated when setting tabindex property of view", functio
   equal(textField.$('input').attr('tabindex'), "5", "renders text field with the tabindex");
 });
 
-module("{{input}} - default type", {
+QUnit.module("{{input}} - default type", {
   setup: function() {
     controller = {};
 
@@ -177,7 +177,7 @@ test("should have the default type", function() {
   equal(textField.$('input').attr('type'), 'text', "Has a default text type");
 });
 
-module("Ember.TextField", {
+QUnit.module("Ember.TextField", {
   setup: function() {
     TestObject = window.TestObject = EmberObject.create({
       value: null

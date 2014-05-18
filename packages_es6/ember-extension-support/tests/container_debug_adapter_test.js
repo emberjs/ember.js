@@ -12,7 +12,7 @@ function boot() {
   run(App, 'advanceReadiness');
 }
 
-module("Container Debug Adapter", {
+QUnit.module("Container Debug Adapter", {
   setup:function() {
     run(function() {
       App = Application.create();  // ES6TODO: this comes from the ember-application package NOT ember-runtime

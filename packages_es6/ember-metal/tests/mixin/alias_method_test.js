@@ -1,4 +1,4 @@
-module('Ember.aliasMethod');
+QUnit.module('Ember.aliasMethod');
 
 function validateAliasMethod(obj) {
   equal(obj.fooMethod(), 'FOO', 'obj.fooMethod()');

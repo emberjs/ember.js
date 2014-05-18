@@ -4,7 +4,7 @@ import run from "ember-metal/run_loop";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import ArrayController from "ember-runtime/controllers/array_controller";
 
-module("ArrayProxy - content change");
+QUnit.module("ArrayProxy - content change");
 
 test("should update length for null content", function() {
   var proxy = ArrayProxy.create({

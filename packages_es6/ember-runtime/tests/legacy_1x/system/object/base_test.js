@@ -29,7 +29,7 @@ import EmberObject from 'ember-runtime/system/object';
 var obj, obj1, don, don1 ; // global variables
 var TestNamespace, originalLookup, lookup;
 
-module("A new EmberObject instance", {
+QUnit.module("A new EmberObject instance", {
 
   setup: function() {
     obj = EmberObject.create({
@@ -65,7 +65,7 @@ test("Should allow changing of those properties by calling EmberObject#set", fun
 });
 
 
-module("EmberObject observers", {
+QUnit.module("EmberObject observers", {
   setup: function() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
@@ -122,7 +122,7 @@ test("Global+Local observer works", function() {
 
 
 
-module("EmberObject superclass and subclasses", {
+QUnit.module("EmberObject superclass and subclasses", {
   setup: function() {
     obj = EmberObject.extend ({
     method1: function() {

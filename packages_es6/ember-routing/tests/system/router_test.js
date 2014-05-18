@@ -15,7 +15,7 @@ function createRouter(overrides) {
   router = Router.create(opts);
 }
 
-module("Ember Router", {
+QUnit.module("Ember Router", {
   setup: function() {
     container = new Container();
 

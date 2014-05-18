@@ -2,7 +2,7 @@ import "ember";
 
 var App, container, router;
 
-module("Application Lifecycle", {
+QUnit.module("Application Lifecycle", {
   setup: function() {
     Ember.run(function() {
       App = Ember.Application.create({

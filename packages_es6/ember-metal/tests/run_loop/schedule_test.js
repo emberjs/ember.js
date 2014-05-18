@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 
-module('system/run_loop/schedule_test');
+QUnit.module('system/run_loop/schedule_test');
 
 test('scheduling item in queue should defer until finished', function() {
   var cnt = 0;

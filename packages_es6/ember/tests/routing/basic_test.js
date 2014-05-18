@@ -43,7 +43,7 @@ function handleURLRejectsWith(path, expectedReason) {
   });
 }
 
-module("Basic Routing", {
+QUnit.module("Basic Routing", {
   setup: function() {
     Ember.run(function() {
       App = Ember.Application.create({

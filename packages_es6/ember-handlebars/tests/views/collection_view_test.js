@@ -30,7 +30,7 @@ var firstChild = nthChild;
 
 var originalLookup = Ember.lookup, lookup, TemplateTests, view;
 
-module("ember-handlebars/tests/views/collection_view_test", {
+QUnit.module("ember-handlebars/tests/views/collection_view_test", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
     lookup.TemplateTests = TemplateTests = Namespace.create();

@@ -37,7 +37,7 @@ function handleURL(path) {
   });
 }
 
-module("Loading/Error Substates", {
+QUnit.module("Loading/Error Substates", {
   setup: function() {
     counter = 1;
 

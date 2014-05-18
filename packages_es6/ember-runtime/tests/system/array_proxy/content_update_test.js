@@ -2,7 +2,7 @@ import Ember from "ember-metal/core";
 import {computed} from "ember-metal/computed";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 
-module("Ember.ArrayProxy - content update");
+QUnit.module("Ember.ArrayProxy - content update");
 
 test("The `contentArrayDidChange` method is invoked after `content` is updated.", function() {
 

@@ -3,7 +3,7 @@ import {addObserver} from "ember-metal/observer";
 import EmberObject from 'ember-runtime/system/object';
 import {testBoth} from 'ember-runtime/tests/props_helper';
 
-module('mixins/observable');
+QUnit.module('mixins/observable');
 
 test('should be able to use getProperties to get a POJO of provided keys', function() {
   var obj = EmberObject.create({

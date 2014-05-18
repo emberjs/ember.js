@@ -7,7 +7,7 @@ import {
 import Container from 'container';
 var container;
 
-module("Container (sub-containers)", {
+QUnit.module("Container (sub-containers)", {
   setup: function() {
     container = new Container();
     var PostController = factory();

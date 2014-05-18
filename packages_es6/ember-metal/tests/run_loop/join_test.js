@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 
-module('system/run_loop/join_test');
+QUnit.module('system/run_loop/join_test');
 
 test('run.join brings its own run loop if none provided', function() {
   ok(!run.currentRunLoop, 'expects no existing run-loop');

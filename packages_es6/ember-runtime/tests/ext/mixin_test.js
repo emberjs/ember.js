@@ -5,7 +5,7 @@ import {create, platform} from "ember-metal/platform";
 import {Binding, isGlobalPath, bind, oneWay} from "ember-metal/binding";
 import run from "ember-metal/run_loop";
 
-module('system/mixin/binding_test');
+QUnit.module('system/mixin/binding_test');
 
 test('Defining a property ending in Binding should setup binding when applied', function() {
 

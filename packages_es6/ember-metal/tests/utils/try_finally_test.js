@@ -2,7 +2,7 @@ import { tryFinally } from 'ember-metal/utils';
 
 var tryCount, finalizeCount, tryable, finalizer, error, tryableResult, finalizerResult;
 
-module("Ember.tryFinally", {
+QUnit.module("Ember.tryFinally", {
   setup: function() {
     error = new Error('Test Error');
     tryCount = 0;

@@ -10,7 +10,7 @@ import { _MetamorphView } from "ember-handlebars/views/metamorph_view";
 
 var view, childView, metamorphView;
 
-module("Metamorph views", {
+QUnit.module("Metamorph views", {
   setup: function() {
     view = EmberView.create({
       render: function(buffer) {
@@ -60,7 +60,7 @@ test("a Metamorph view is not a view's parentView", function() {
   equal(children.objectAt(0), childView, "... and it is not the metamorph");
 });
 
-module("Metamorph views correctly handle DOM", {
+QUnit.module("Metamorph views correctly handle DOM", {
   setup: function() {
     view = EmberView.create({
       render: function(buffer) {
@@ -120,7 +120,7 @@ test("a metamorph view can be rerendered", function() {
 
 
 // Redefining without setup/teardown
-module("Metamorph views correctly handle DOM");
+QUnit.module("Metamorph views correctly handle DOM");
 
 test("a metamorph view calls its childrens' willInsertElement and didInsertElement", function() {
   var parentView;

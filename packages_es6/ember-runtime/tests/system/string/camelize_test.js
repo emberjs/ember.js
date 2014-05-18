@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import {camelize} from "ember-runtime/system/string";
 
-module('EmberStringUtils.camelize');
+QUnit.module('EmberStringUtils.camelize');
 
 if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
   test("String.prototype.camelize is not modified without EXTEND_PROTOTYPES", function() {

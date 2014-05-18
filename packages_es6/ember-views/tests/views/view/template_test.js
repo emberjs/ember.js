@@ -6,7 +6,7 @@ import { View as EmberView } from "ember-views/views/view";
 
 var container, view;
 
-module("EmberView - Template Functionality", {
+QUnit.module("EmberView - Template Functionality", {
   setup: function() {
     container = new Container();
     container.optionsForType('template', { instantiate: false });

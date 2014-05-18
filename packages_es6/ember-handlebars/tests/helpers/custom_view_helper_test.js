@@ -14,7 +14,7 @@ function appendView() {
 
 var view;
 
-module("Handlebars custom view helpers", {
+QUnit.module("Handlebars custom view helpers", {
   setup: function() {
     window.TemplateTests = Namespace.create();
   },

@@ -40,7 +40,7 @@ import { set } from 'ember-metal/property_set';
 // ADD OBSERVER
 //
 
-module('addObserver');
+QUnit.module('addObserver');
 
 testBoth('observer should fire when property is modified', function(get,set) {
 
@@ -573,7 +573,7 @@ testBoth('addObserver should allow multiple objects to observe a property', func
 // REMOVE OBSERVER
 //
 
-module('removeObserver');
+QUnit.module('removeObserver');
 
 testBoth('removing observer should stop firing', function(get,set) {
 
@@ -657,7 +657,7 @@ testBoth('removeObserver should respect targets with methods', function(get,set)
 // BEFORE OBSERVER
 //
 
-module('addBeforeObserver');
+QUnit.module('addBeforeObserver');
 
 testBoth('observer should fire before a property is modified', function(get,set) {
 
@@ -848,7 +848,7 @@ testBoth('addBeforeObserver should respect targets with methods', function(get,s
 var obj, count;
 var originalLookup = Ember.lookup, lookup;
 
-module('addObserver - dependentkey with chained properties', {
+QUnit.module('addObserver - dependentkey with chained properties', {
   setup: function() {
     obj = {
       foo: {
@@ -975,13 +975,13 @@ testBoth('depending on a Global chain', function(get, set) {
   equal(count, 6, 'should be not have invoked observer');
 });
 
-module('removeBeforeObserver');
+QUnit.module('removeBeforeObserver');
 
 // ..........................................................
 // SETTING IDENTICAL VALUES
 //
 
-module('props/observer_test - setting identical values');
+QUnit.module('props/observer_test - setting identical values');
 
 testBoth('setting simple prop should not trigger', function(get, set) {
 
@@ -1029,7 +1029,7 @@ testBoth('setting a cached computed property whose value has changed should trig
   equal(get(obj, 'foo'), 'bar');
 });
 
-module("Ember.immediateObserver");
+QUnit.module("Ember.immediateObserver");
 
 testBoth("immediate observers should fire synchronously", function(get, set) {
   var obj = {},
@@ -1139,7 +1139,7 @@ testBoth("immediate observers are for internal properties only", function(get, s
   }, 'Immediate observers must observe internal properties only, not properties on other objects.');
 });
 
-module("changeProperties");
+QUnit.module("changeProperties");
 
 testBoth("observers added/removed during changeProperties should do the right thing.", function(get,set) {
   var obj = {

@@ -4,7 +4,7 @@ import run from "ember-metal/run_loop";
 import {View as EmberView} from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 
-module("EmberView - context property");
+QUnit.module("EmberView - context property");
 
 test("setting a controller on an inner view should change it context", function() {
   var App = {};

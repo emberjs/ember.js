@@ -4,7 +4,7 @@ import run from "ember-metal/run_loop";
 import {testWithDefault, testBoth} from 'ember-runtime/tests/props_helper';
 import EmberObject from "ember-runtime/system/object";
 
-module('EmberObject observer');
+QUnit.module('EmberObject observer');
 
 testBoth('observer on class', function(get, set) {
 

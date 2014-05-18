@@ -1,5 +1,5 @@
 import { isArray } from 'ember-metal/utils';
-module("Ember Type Checking");
+QUnit.module("Ember Type Checking");
 
 var global = this;
 

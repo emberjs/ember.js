@@ -7,7 +7,7 @@ import { guidFor } from "ember-metal/utils";
 
 var originalLookup, App, originalModelInjections;
 
-module("Ember.Application Dependency Injection – toString",{
+QUnit.module("Ember.Application Dependency Injection – toString",{
   setup: function() {
     originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
     Ember.MODEL_FACTORY_INJECTIONS = true;

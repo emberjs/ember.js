@@ -6,7 +6,7 @@ import { View } from "ember-views/views/view";
 
 var parentView, view;
 
-module("View#nearest*", {
+QUnit.module("View#nearest*", {
   teardown: function() {
     run(function() {
       if (parentView) { parentView.destroy(); }

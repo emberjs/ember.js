@@ -3,7 +3,7 @@ import {Controller, ControllerMixin} from "ember-runtime/controllers/controller"
 import ObjectController from "ember-runtime/controllers/object_controller";
 import {Mixin} from "ember-metal/mixin";
 
-module('Controller event handling');
+QUnit.module('Controller event handling');
 
 test("Action can be handled by a function on actions object", function() {
   expect(1);
@@ -123,7 +123,7 @@ test("Action can be handled by a superclass' actions object", function() {
   controller.send("baz");
 });
 
-module('Controller deprecations');
+QUnit.module('Controller deprecations');
 
 if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
   test("Action can be handled by method directly on controller (DEPRECATED)", function() {
@@ -138,7 +138,7 @@ if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
   });
 }
 
-module('Controller Content -> Model Alias');
+QUnit.module('Controller Content -> Model Alias');
 
 test("`model` is aliased as `content`", function() {
   expect(1);

@@ -14,7 +14,7 @@ function appendView() {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-module("Handlebars {{log}} helper", {
+QUnit.module("Handlebars {{log}} helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 

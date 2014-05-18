@@ -9,7 +9,7 @@ import ContainerView from "ember-views/views/container_view";
 
 var View, view, willDestroyCalled, childView;
 
-module("EmberView - append() and appendTo()", {
+QUnit.module("EmberView - append() and appendTo()", {
   setup: function() {
     View = EmberView.extend({});
   },
@@ -150,7 +150,7 @@ test("destroy more forcibly removes the view", function() {
   equal(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
 
-module("EmberView - append() and appendTo() in a view hierarchy", {
+QUnit.module("EmberView - append() and appendTo() in a view hierarchy", {
   setup: function() {
     View = ContainerView.extend({
       childViews: ['child'],
@@ -197,7 +197,7 @@ test("should be added to the document body when calling append()", function() {
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
-module("EmberView - removing views in a view hierarchy", {
+QUnit.module("EmberView - removing views in a view hierarchy", {
   setup: function() {
     willDestroyCalled = 0;
 

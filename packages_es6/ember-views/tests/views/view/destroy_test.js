@@ -2,7 +2,7 @@ import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import { View as EmberView } from "ember-views/views/view";
 
-module("Ember.View#destroy");
+QUnit.module("Ember.View#destroy");
 
 test("should teardown viewName on parentView when childView is destroyed", function() {
   var viewName = "someChildView",

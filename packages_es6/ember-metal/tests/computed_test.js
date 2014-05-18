@@ -23,7 +23,7 @@ import EnumerableUtils from 'ember-metal/enumerable_utils';
 var originalLookup = Ember.lookup, lookup;
 var obj, count, Global;
 
-module('computed');
+QUnit.module('computed');
 
 test('computed property should be an instance of descriptor', function() {
   ok(computed(function() {}) instanceof Descriptor);
@@ -60,7 +60,7 @@ test('defining computed property should invoke property on set', function() {
 });
 
 var objA, objB;
-module('computed should inherit through prototype', {
+QUnit.module('computed should inherit through prototype', {
   setup: function() {
     objA = { __foo: 'FOO' } ;
     defineProperty(objA, 'foo', computed(function(key, value) {
@@ -96,7 +96,7 @@ testBoth('using get() and set()', function(get, set) {
   equal(get(objB, 'foo'), 'computed bar', 'should NOT change B');
 });
 
-module('redefining computed property to normal', {
+QUnit.module('redefining computed property to normal', {
   setup: function() {
     objA = { __foo: 'FOO' } ;
     defineProperty(objA, 'foo', computed(function(key, value) {
@@ -132,7 +132,7 @@ testBoth('using get() and set()', function(get, set) {
   equal(get(objB, 'foo'), 'bar', 'should NOT change B');
 });
 
-module('redefining computed property to another property', {
+QUnit.module('redefining computed property to another property', {
   setup: function() {
     objA = { __foo: 'FOO' } ;
     defineProperty(objA, 'foo', computed(function(key, value) {
@@ -174,7 +174,7 @@ testBoth('using get() and set()', function(get, set) {
   equal(get(objB, 'foo'), 'B bar', 'should NOT change B');
 });
 
-module('computed - metadata');
+QUnit.module('computed - metadata');
 
 test("can set metadata on a computed property", function() {
   var computedProperty = computed(function() { });
@@ -192,7 +192,7 @@ test("meta should return an empty hash if no meta is set", function() {
 // CACHEABLE
 //
 
-module('computed - cacheable', {
+QUnit.module('computed - cacheable', {
   setup: function() {
     obj = {};
     count = 0;
@@ -304,7 +304,7 @@ testBoth("the old value is only passed in if the computed property specifies thr
 // DEPENDENT KEYS
 //
 
-module('computed - dependentkey', {
+QUnit.module('computed - dependentkey', {
   setup: function() {
     obj = { bar: 'baz' };
     count = 0;
@@ -489,7 +489,7 @@ var func, moduleOpts = {
   }
 };
 
-module('computed - dependentkey with chained properties', moduleOpts);
+QUnit.module('computed - dependentkey with chained properties', moduleOpts);
 
 testBoth('depending on simple chain', function(get, set) {
 
@@ -596,7 +596,7 @@ testBoth('chained dependent keys should evaluate computed properties lazily', fu
 // BUGS
 //
 
-module('computed edge cases');
+QUnit.module('computed edge cases');
 
 test('adding a computed property should show up in key iteration',function() {
 
@@ -610,7 +610,7 @@ test('adding a computed property should show up in key iteration',function() {
 });
 
 
-module('computed - setter');
+QUnit.module('computed - setter');
 
 testBoth('setting a watched computed property', function(get, set) {
   var obj = {
@@ -709,7 +709,7 @@ testBoth('setting a cached computed property that modifies the value you give it
   equal(plusOneDidChange, 2);
 });
 
-module('computed - default setter');
+QUnit.module('computed - default setter');
 
 testBoth("when setting a value on a computed property that doesn't handle sets", function(get, set) {
   var obj = {}, observerFired = false;
@@ -729,7 +729,7 @@ testBoth("when setting a value on a computed property that doesn't handle sets",
   ok(observerFired, 'The observer was still notified');
 });
 
-module('computed - readOnly');
+QUnit.module('computed - readOnly');
 
 test('is chainable', function() {
   var cp = computed(function() {}).readOnly();
@@ -754,7 +754,7 @@ testBoth('protects against setting', function(get, set) {
   equal(get(obj, 'bar'), 'barValue');
 });
 
-module('CP macros');
+QUnit.module('CP macros');
 
 testBoth('computed.not', function(get, set) {
   var obj = {foo: true};

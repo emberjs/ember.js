@@ -3,7 +3,7 @@ var precompile = EmberHandlebars.precompile,
     template = 'Hello World',
     result;
 
-module("Ember.Handlebars.precompileType");
+QUnit.module("Ember.Handlebars.precompileType");
 
 test("precompile creates a function when asObject isn't defined", function(){
   result = precompile(template);

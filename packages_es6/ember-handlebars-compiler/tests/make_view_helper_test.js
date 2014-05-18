@@ -1,6 +1,6 @@
 import EmberHandlebars from "ember-handlebars-compiler";
 
-module("Ember.Handlebars.makeViewHelper");
+QUnit.module("Ember.Handlebars.makeViewHelper");
 
 test("makes helpful assertion when called with invalid arguments", function(){
   var viewClass = {toString: function(){ return 'Some Random Class';}};

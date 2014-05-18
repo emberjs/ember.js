@@ -1,7 +1,7 @@
 import {get} from "ember-metal/property_get";
 import EmberObject from "ember-runtime/system/object";
 
-module('system/object/reopenClass');
+QUnit.module('system/object/reopenClass');
 
 test('adds new properties to subclass', function() {
 

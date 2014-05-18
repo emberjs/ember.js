@@ -64,7 +64,7 @@ EnumerableTests.extend({
 
 }).run();
 
-module('Ember.Enumerable');
+QUnit.module('Ember.Enumerable');
 
 test("should apply Ember.Array to return value of map", function() {
   var x = EmberObject.createWithMixins(Enumerable);
@@ -175,7 +175,7 @@ var obj, observer;
 // NOTIFY ENUMERABLE PROPERTY
 //
 
-module('mixins/enumerable/enumerableContentDidChange');
+QUnit.module('mixins/enumerable/enumerableContentDidChange');
 
 test('should notify observers of []', function() {
 
@@ -199,7 +199,7 @@ test('should notify observers of []', function() {
 // NOTIFY CHANGES TO LENGTH
 //
 
-module('notify observers of length', {
+QUnit.module('notify observers of length', {
   setup: function() {
     obj = DummyEnum.createWithMixins({
       _after: 0,
@@ -266,7 +266,7 @@ test('should notify when passed old index API with delta', function() {
 // NOTIFY ENUMERABLE OBSERVER
 //
 
-module('notify enumerable observers', {
+QUnit.module('notify enumerable observers', {
   setup: function() {
     obj = DummyEnum.create();
 

@@ -6,7 +6,7 @@ import { View as EmberView } from "ember-views/views/view";
 
 var parentView, childView, childViews;
 
-module('tests/views/view/child_views_tests.js', {
+QUnit.module('tests/views/view/child_views_tests.js', {
   setup: function() {
     parentView = EmberView.create({
       render: function(buffer) {

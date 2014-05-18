@@ -20,7 +20,7 @@ var trim = jQuery.trim;
 
 var view, app, application, originalLookup, originalDebug;
 
-module("Ember.Application", {
+QUnit.module("Ember.Application", {
   setup: function() {
     originalLookup = Ember.lookup;
     originalDebug = Ember.debug;
@@ -100,7 +100,7 @@ test("acts like a namespace", function() {
   equal(app.Foo.toString(), "TestApp.Foo", "Classes pick up their parent namespace");
 });
 
-module("Ember.Application initialization", {
+QUnit.module("Ember.Application initialization", {
   teardown: function() {
     if (app) {
       run(app, 'destroy');

@@ -7,7 +7,7 @@ import { View as EmberView } from "ember-views/views/view";
 
 var originalLookup = Ember.lookup, lookup, view;
 
-module("views/view/view_lifecycle_test - pre-render", {
+QUnit.module("views/view/view_lifecycle_test - pre-render", {
   setup: function() {
     Ember.lookup = lookup = {};
   },
@@ -90,7 +90,7 @@ test("should not affect rendering if destroyElement is called before initial ren
   equal(view.$().text(), "Don't destroy me!", "renders correctly if destroyElement is called first");
 });
 
-module("views/view/view_lifecycle_test - in render", {
+QUnit.module("views/view/view_lifecycle_test - in render", {
   setup: function() {
 
   },
@@ -156,7 +156,7 @@ test("rerender should throw inside a template", function() {
   }, /Something you did caused a view to re-render after it rendered but before it was inserted into the DOM./);
 });
 
-module("views/view/view_lifecycle_test - hasElement", {
+QUnit.module("views/view/view_lifecycle_test - hasElement", {
   teardown: function() {
     if (view) {
       run(function() {
@@ -192,7 +192,7 @@ test("trigger rerender on a view in the hasElement state doesn't change its stat
 });
 
 
-module("views/view/view_lifecycle_test - in DOM", {
+QUnit.module("views/view/view_lifecycle_test - in DOM", {
   teardown: function() {
     if (view) {
       run(function() {
@@ -300,7 +300,7 @@ test("should throw an exception if trying to append an element that is already i
   }, null, "raises an exception on second append");
 });
 
-module("views/view/view_lifecycle_test - destroyed");
+QUnit.module("views/view/view_lifecycle_test - destroyed");
 
 test("should throw an exception when calling appendChild after view is destroyed", function() {
   run(function() {

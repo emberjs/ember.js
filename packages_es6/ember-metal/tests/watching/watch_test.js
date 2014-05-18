@@ -13,7 +13,7 @@ var willCount, didCount,
     indexOf = EnumerableUtils.indexOf,
     originalLookup, lookup, Global;
 
-module('watch', {
+QUnit.module('watch', {
   setup: function() {
     willCount = didCount = 0;
     willKeys = [];

@@ -31,7 +31,7 @@ var obj, moduleOpts = {
   }
 };
 
-module('normalizeTuple', moduleOpts);
+QUnit.module('normalizeTuple', moduleOpts);
 
 // ..........................................................
 // LOCAL PATHS

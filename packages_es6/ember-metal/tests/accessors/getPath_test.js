@@ -33,7 +33,7 @@ var obj, moduleOpts = {
   }
 };
 
-module('Ember.get with path', moduleOpts);
+QUnit.module('Ember.get with path', moduleOpts);
 
 // ..........................................................
 // LOCAL PATHS

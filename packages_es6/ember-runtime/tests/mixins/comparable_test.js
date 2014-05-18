@@ -19,7 +19,7 @@ var Rectangle = EmberObject.extend(Comparable, {
 
 var r1, r2;
 
-module("Comparable", {
+QUnit.module("Comparable", {
 
   setup: function() {
     r1 = Rectangle.create({length: 6, width: 12});

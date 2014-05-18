@@ -8,7 +8,7 @@ import { get } from 'ember-metal/property_get';
 
 var PartialMixin, FinalMixin, obj;
 
-module('Module.required', {
+QUnit.module('Module.required', {
   setup: function() {
     PartialMixin = Mixin.create({
       foo: required(),

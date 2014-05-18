@@ -101,7 +101,7 @@ var TemplateTests, container;
   If you add additional template support to View, you should create a new
   file in which to test.
 */
-module("View - handlebars integration", {
+QUnit.module("View - handlebars integration", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
     lookup.TemplateTests = window.TemplateTests = TemplateTests = Namespace.create();
@@ -2018,7 +2018,7 @@ test("should not escape HTML in primitive value contexts when using triple musta
   equal(view.$('i').length, 2, "creates an element when value is updated");
 });
 
-module("Ember.View - handlebars integration", {
+QUnit.module("Ember.View - handlebars integration", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
@@ -2087,7 +2087,7 @@ test("should be able to log `this`", function() {
 
 var MyApp;
 
-module("Templates redrawing and bindings", {
+QUnit.module("Templates redrawing and bindings", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
     MyApp = lookup.MyApp = EmberObject.create({});

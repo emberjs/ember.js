@@ -5,7 +5,7 @@ import {
   reset
 } from "ember-metal/instrumentation";
 
-module("Ember Instrumentation", {
+QUnit.module("Ember Instrumentation", {
   setup: function() {
 
   },

@@ -10,7 +10,7 @@ var readyWasCalled, domReady, readyCallbacks;
 // in a more minimal server environment that implements this behavior will be
 // sufficient for Ember's requirements.
 
-module("Application readiness", {
+QUnit.module("Application readiness", {
   setup: function() {
     readyWasCalled = 0;
     readyCallbacks = [];

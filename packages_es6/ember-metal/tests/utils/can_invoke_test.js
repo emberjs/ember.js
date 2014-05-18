@@ -2,7 +2,7 @@ import { canInvoke } from "ember-metal/utils";
 
 var obj;
 
-module("Ember.canInvoke", {
+QUnit.module("Ember.canInvoke", {
   setup: function() {
     obj = {
       foobar: "foobar",

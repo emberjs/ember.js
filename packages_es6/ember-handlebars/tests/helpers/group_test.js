@@ -17,7 +17,7 @@ function appendView() {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-module("EmberHandlebars - group flag", {
+QUnit.module("EmberHandlebars - group flag", {
   setup: function() {
     container = new Container();
     container.register('view:default', EmberView.extend());

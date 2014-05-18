@@ -3,7 +3,7 @@ import { tryCatchFinally } from 'ember-metal/utils';
 var tryCount, catchCount, finalizeCount, tryable, catchable, finalizer, error,
 tryableResult, catchableResult, finalizerResult;
 
-module("Ember.tryFinally", {
+QUnit.module("Ember.tryFinally", {
   setup: function() {
     error = new Error('Test Error');
     tryCount = 0;

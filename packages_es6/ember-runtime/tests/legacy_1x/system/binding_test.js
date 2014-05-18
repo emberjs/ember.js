@@ -47,7 +47,7 @@ import EmberObject from 'ember-runtime/system/object';
 var TestNamespace, fromObject, toObject, binding, Bon1, bon2, root; // global variables
 var originalLookup, lookup;
 
-module("basic object binding", {
+QUnit.module("basic object binding", {
   setup: function() {
     fromObject = EmberObject.create({ value: 'start' }) ;
     toObject = EmberObject.create({ value: 'end' }) ;
@@ -125,7 +125,7 @@ test("binding disconnection actually works", function() {
 // one way binding
 //
 
-module("one way binding", {
+QUnit.module("one way binding", {
 
   setup: function() {
     run(function() {
@@ -162,7 +162,7 @@ var first, second, third, binding1, binding2; // global variables
 // chained binding
 //
 
-module("chained binding", {
+QUnit.module("chained binding", {
 
   setup: function() {
     run(function() {
@@ -206,7 +206,7 @@ test("changing first output should propograte to third after flush", function() 
 // Custom Binding
 //
 
-module("Custom Binding", {
+QUnit.module("Custom Binding", {
   setup: function() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
@@ -272,7 +272,7 @@ test("two bindings to the same value should sync in the order they are initializ
 // propertyNameBinding with longhand
 //
 
-module("propertyNameBinding with longhand", {
+QUnit.module("propertyNameBinding with longhand", {
   setup: function() {
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};

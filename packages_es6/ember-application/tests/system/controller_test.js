@@ -8,7 +8,7 @@ import { A } from "ember-runtime/system/native_array";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import { computed } from "ember-metal/computed";
 
-module("Controller dependencies");
+QUnit.module("Controller dependencies");
 
 test("If a controller specifies a dependency, but does not have a container it should error", function(){
   var AController = Controller.extend({

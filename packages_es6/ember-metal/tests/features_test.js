@@ -3,7 +3,7 @@ import Ember from 'ember-metal/core';
 var isEnabled = Ember.FEATURES.isEnabled,
     origFeatures, origEnableAll, origEnableOptional;
 
-module("Ember.FEATURES.isEnabled", {
+QUnit.module("Ember.FEATURES.isEnabled", {
   setup: function(){
     origFeatures       = Ember.FEATURES;
     origEnableAll      = Ember.ENV.ENABLE_ALL_FEATURES;

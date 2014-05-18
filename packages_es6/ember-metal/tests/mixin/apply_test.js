@@ -1,6 +1,6 @@
 /*globals raises */
 
-module('Ember.Mixin.apply');
+QUnit.module('Ember.Mixin.apply');
 
 function K() {}
 

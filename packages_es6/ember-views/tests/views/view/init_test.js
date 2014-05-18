@@ -7,7 +7,7 @@ import { View as EmberView } from "ember-views/views/view";
 
 var originalLookup = Ember.lookup, lookup, view;
 
-module("EmberView.create", {
+QUnit.module("EmberView.create", {
   setup: function() {
     Ember.lookup = lookup = {};
   },
@@ -28,7 +28,7 @@ test("registers view in the global views hash using layerId for event targeted",
   equal(EmberView.views[get(view, 'elementId')], view, 'registers view');
 });
 
-module("EmberView.createWithMixins");
+QUnit.module("EmberView.createWithMixins");
 
 test("should warn if a non-array is used for classNames", function() {
   expectAssertion(function() {

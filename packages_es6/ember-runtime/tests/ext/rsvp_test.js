@@ -1,7 +1,7 @@
 import run from "ember-metal/run_loop";
 import RSVP from "ember-runtime/ext/rsvp";
 
-module('Ember.RSVP');
+QUnit.module('Ember.RSVP');
 
 test('Ensure that errors thrown from within a promise are sent to the console', function(){
   var error = new Error('Error thrown in a promise for testing purposes.');

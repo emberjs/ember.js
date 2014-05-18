@@ -6,7 +6,7 @@ import ContainerView from "ember-views/views/container_view";
 
 var View, view, willDestroyCalled, childView;
 
-module("EmberView - replaceIn()", {
+QUnit.module("EmberView - replaceIn()", {
   setup: function() {
     View = EmberView.extend({});
   },
@@ -71,7 +71,7 @@ test("should move the view to the inDOM state after replacing", function() {
   equal(view.currentState, view.states.inDOM, "the view is in the inDOM state");
 });
 
-module("EmberView - replaceIn() in a view hierarchy", {
+QUnit.module("EmberView - replaceIn() in a view hierarchy", {
   setup: function() {
     View = ContainerView.extend({
       childViews: ['child'],

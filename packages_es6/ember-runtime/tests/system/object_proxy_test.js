@@ -4,7 +4,7 @@ import {isWatching} from "ember-metal/watching";
 import {testBoth} from 'ember-runtime/tests/props_helper';
 import ObjectProxy from "ember-runtime/system/object_proxy";
 
-module("ObjectProxy");
+QUnit.module("ObjectProxy");
 
 testBoth("should not proxy properties passed to create", function (get, set) {
   var Proxy = ObjectProxy.extend({

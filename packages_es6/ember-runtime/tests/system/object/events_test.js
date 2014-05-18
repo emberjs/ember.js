@@ -1,7 +1,7 @@
 import EmberObject from "ember-runtime/system/object";
 import Evented from "ember-runtime/mixins/evented";
 
-module("Object events");
+QUnit.module("Object events");
 
 test("a listener can be added to an object", function() {
   var count = 0;

@@ -3,7 +3,7 @@ import EmberHandlebars from "ember-handlebars-compiler";
 var stringify = EmberHandlebars.JavaScriptCompiler.stringifyLastBlockHelperMissingInvocation,
     s;
 
-module("stringifyLastBlockHelperMissingInvocation", {
+QUnit.module("stringifyLastBlockHelperMissingInvocation", {
   setup: function() {
   },
 

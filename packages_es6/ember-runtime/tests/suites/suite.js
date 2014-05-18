@@ -68,7 +68,7 @@ Suite.reopenClass({
       run: function() {
         this._super();
         var title = get(this, 'name')+': '+desc, ctx = this;
-        module(title, {
+        QUnit.module(title, {
           setup: function() {
             if (setup) setup.call(ctx);
           },

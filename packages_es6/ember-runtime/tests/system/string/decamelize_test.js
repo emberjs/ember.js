@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import {decamelize} from "ember-runtime/system/string";
 
-module('EmberStringUtils.decamelize');
+QUnit.module('EmberStringUtils.decamelize');
 
 if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
   test("String.prototype.decamelize is not modified without EXTEND_PROTOTYPES", function() {

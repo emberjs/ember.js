@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 
-module('system/run_loop/run_test');
+QUnit.module('system/run_loop/run_test');
 
 test('Ember.run invokes passed function, returning value', function() {
   var obj = {
