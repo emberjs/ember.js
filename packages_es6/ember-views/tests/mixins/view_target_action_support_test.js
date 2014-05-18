@@ -3,7 +3,7 @@ import EmberObject from "ember-runtime/system/object";
 import { View } from "ember-views/views/view";
 import ViewTargetActionSupport from "ember-views/mixins/view_target_action_support";
 
-module("ViewTargetActionSupport");
+QUnit.module("ViewTargetActionSupport");
 
 test("it should return false if no action is specified", function() {
   expect(1);

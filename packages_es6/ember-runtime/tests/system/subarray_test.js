@@ -3,7 +3,7 @@ import SubArray from "ember-runtime/system/subarray";
 
 var forEach = EnumerableUtils.forEach, subarray;
 
-module('SubArray', {
+QUnit.module('SubArray', {
   setup: function () {
     subarray = new SubArray();
   }

@@ -36,7 +36,7 @@ function destroyApp(){
   }
 }
 
-module("Test - registerHelper/unregisterHelper", {
+QUnit.module("Test - registerHelper/unregisterHelper", {
   teardown: function(){
     Test.adapter = originalAdapter;
     destroyApp();

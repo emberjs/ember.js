@@ -1,6 +1,6 @@
 import { isGlobalPath } from "ember-metal/binding";
 
-module('Ember.isGlobalPath');
+QUnit.module('Ember.isGlobalPath');
 
 test("global path's are recognized", function() {
   ok( isGlobalPath('App.myProperty') );

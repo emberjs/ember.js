@@ -5,7 +5,7 @@ import Namespace from "ember-runtime/system/namespace";
 
 var originalLookup, lookup;
 
-module('system/object/toString', {
+QUnit.module('system/object/toString', {
   setup: function() {
     originalLookup = Ember.lookup;
     lookup = Ember.lookup = {};

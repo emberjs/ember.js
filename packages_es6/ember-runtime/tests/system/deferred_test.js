@@ -2,7 +2,7 @@ import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import Deferred from "ember-runtime/system/deferred";
 
-module("Ember.Deferred all-in-one");
+QUnit.module("Ember.Deferred all-in-one");
 
 asyncTest("Can resolve a promise", function() {
   var value = { value: true };

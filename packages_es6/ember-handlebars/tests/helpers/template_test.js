@@ -10,7 +10,7 @@ import EmberHandlebars from "ember-handlebars-compiler";
 var MyApp;
 var originalLookup = Ember.lookup, lookup, TemplateTests, view, container;
 
-module("Support for {{template}} helper", {
+QUnit.module("Support for {{template}} helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
     MyApp = lookup.MyApp = EmberObject.create({});

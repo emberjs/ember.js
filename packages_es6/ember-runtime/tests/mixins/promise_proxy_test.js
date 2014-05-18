@@ -13,7 +13,7 @@ test("present on ember namespace", function(){
   ok(PromiseProxyMixin, "expected PromiseProxyMixin to exist");
 });
 
-module("Ember.PromiseProxy - ObjectProxy", {
+QUnit.module("Ember.PromiseProxy - ObjectProxy", {
   setup: function() {
     ObjectPromiseProxy = ObjectProxy.extend(PromiseProxyMixin);
   }

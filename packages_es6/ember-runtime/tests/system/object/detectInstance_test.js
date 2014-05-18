@@ -1,6 +1,6 @@
 import EmberObject from "ember-runtime/system/object";
 
-module('system/object/detectInstance');
+QUnit.module('system/object/detectInstance');
 
 test('detectInstance detects instances correctly', function() {
 

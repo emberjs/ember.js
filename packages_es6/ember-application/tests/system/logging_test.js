@@ -12,7 +12,7 @@ import "ember-routing";
 
 var App, logs, originalLogger;
 
-module("Ember.Application – logging of generated classes", {
+QUnit.module("Ember.Application – logging of generated classes", {
   setup: function() {
     logs = {};
 
@@ -137,7 +137,7 @@ test("predefined classes do not get logged", function() {
   });
 });
 
-module("Ember.Application – logging of view lookups", {
+QUnit.module("Ember.Application – logging of view lookups", {
   setup: function() {
     logs = {};
 

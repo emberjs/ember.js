@@ -20,7 +20,7 @@ var DataAdapter = EmberDataAdapter.extend({
   }
 });
 
-module("Data Adapter", {
+QUnit.module("Data Adapter", {
   setup:function() {
     run(function() {
       App = EmberApplication.create();

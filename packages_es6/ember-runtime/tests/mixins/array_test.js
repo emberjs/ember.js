@@ -110,7 +110,7 @@ var obj, observer;
 // NOTIFY ARRAY OBSERVERS
 //
 
-module('mixins/array/arrayContent[Will|Did]Change');
+QUnit.module('mixins/array/arrayContent[Will|Did]Change');
 
 test('should notify observers of []', function() {
 
@@ -134,7 +134,7 @@ test('should notify observers of []', function() {
 // NOTIFY CHANGES TO LENGTH
 //
 
-module('notify observers of length', {
+QUnit.module('notify observers of length', {
   setup: function() {
     obj = DummyArray.createWithMixins({
       _after: 0,
@@ -182,7 +182,7 @@ test('should notify when passed lengths are different', function() {
 // NOTIFY ARRAY OBSERVER
 //
 
-module('notify array observers', {
+QUnit.module('notify array observers', {
   setup: function() {
     obj = DummyArray.create();
 
@@ -247,7 +247,7 @@ test('removing enumerable observer should disable', function() {
 // NOTIFY ENUMERABLE OBSERVER
 //
 
-module('notify enumerable observers as well', {
+QUnit.module('notify enumerable observers as well', {
   setup: function() {
     obj = DummyArray.create();
 
@@ -314,7 +314,7 @@ test('removing enumerable observer should disable', function() {
 
 var ary;
 
-module('EmberArray.@each support', {
+QUnit.module('EmberArray.@each support', {
   setup: function() {
     ary = new TestArray([
       { isDone: true,  desc: 'Todo 1' },

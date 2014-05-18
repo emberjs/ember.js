@@ -34,7 +34,7 @@ function setupExample() {
   });
 }
 
-module("Homepage Example", {
+QUnit.module("Homepage Example", {
   setup: function() {
     Ember.run(function() {
       App = Ember.Application.create({

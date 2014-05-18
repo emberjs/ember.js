@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import {classify} from "ember-runtime/system/string";
 
-module('EmberStringUtils.classify');
+QUnit.module('EmberStringUtils.classify');
 
 if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
   test("String.prototype.classify is not modified without EXTEND_PROTOTYPES", function() {

@@ -4,7 +4,7 @@ import EmberObject from "ember-runtime/system/object";
 import { View as EmberView } from "ember-views/views/view";
 
 var view ;
-module("EmberView#$", {
+QUnit.module("EmberView#$", {
   setup: function() {
     view = EmberView.extend({
       render: function(context, firstTime) {

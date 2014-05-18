@@ -28,7 +28,7 @@ function destroy(object) {
   });
 }
 
-module("{{textarea}}", {
+QUnit.module("{{textarea}}", {
   setup: function() {
     controller = {
       val: 'Lorem ipsum dolor'
@@ -63,7 +63,7 @@ test("Should bind its contents to the specified value", function() {
   equal(textArea.$('textarea').val(), "sit amet", "The new contents are included");
 });
 
-module("TextArea", {
+QUnit.module("TextArea", {
   setup: function() {
    TestObject = window.TestObject = EmberObject.create({
       value: null

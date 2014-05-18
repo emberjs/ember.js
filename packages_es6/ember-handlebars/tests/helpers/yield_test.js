@@ -13,7 +13,7 @@ import EmberError from "ember-metal/error";
 
 var originalLookup = Ember.lookup, lookup, TemplateTests, view, container;
 
-module("Support for {{yield}} helper", {
+QUnit.module("Support for {{yield}} helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
@@ -318,7 +318,7 @@ test("yield should work for views even if _parentView is null", function() {
 
 });
 
-module("Component {{yield}}", {
+QUnit.module("Component {{yield}}", {
   setup: function() {},
   teardown: function() {
     run(function() {

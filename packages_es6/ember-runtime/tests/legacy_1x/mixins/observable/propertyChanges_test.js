@@ -29,7 +29,7 @@ var ObservableObject = EmberObject.extend(Observable);
 
 var revMatches = false , ObjectA;
 
-module("object.propertyChanges", {
+QUnit.module("object.propertyChanges", {
   setup: function() {
     ObjectA = ObservableObject.createWithMixins({
       foo  : 'fooValue',

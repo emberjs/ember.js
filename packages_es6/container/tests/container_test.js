@@ -8,7 +8,7 @@ import Container from 'container';
 
 var originalModelInjections;
 
-module("Container", {
+QUnit.module("Container", {
   setup: function() {
     originalModelInjections = Ember.MODEL_FACTORY_INJECTIONS;
   },

@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 
-module('run.next');
+QUnit.module('run.next');
 
 asyncTest('should invoke immediately on next timeout', function() {
 

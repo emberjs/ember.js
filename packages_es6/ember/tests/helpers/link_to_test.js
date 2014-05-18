@@ -64,7 +64,7 @@ function sharedTeardown() {
   Ember.TEMPLATES = {};
 }
 
-module("The {{link-to}} helper", {
+QUnit.module("The {{link-to}} helper", {
   setup: function() {
     Ember.run(function() {
 
@@ -1208,7 +1208,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     equal(Ember.$('#the-link').attr('href'), "/?bar=NAW&foo=456", "link has right href");
   });
 
-  module("The {{link-to}} helper: invoking with query params", {
+  QUnit.module("The {{link-to}} helper: invoking with query params", {
     setup: function() {
       Ember.run(function() {
         sharedSetup();
@@ -1537,7 +1537,7 @@ function basicEagerURLUpdateTest(setTagName) {
 }
 
 var aboutDefer;
-module("The {{link-to}} helper: eager URL updating", {
+QUnit.module("The {{link-to}} helper: eager URL updating", {
   setup: function() {
     Ember.run(function() {
       sharedSetup();

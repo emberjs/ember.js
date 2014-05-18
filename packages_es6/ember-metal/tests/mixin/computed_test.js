@@ -5,7 +5,7 @@ import { Mixin } from "ember-metal/mixin";
 import { computed } from "ember-metal/computed";
 import { defineProperty } from "ember-metal/properties";
 
-module('Mixin Computed Properties');
+QUnit.module('Mixin Computed Properties');
 
 test('overriding computed properties', function() {
   var MixinA, MixinB, MixinC, MixinD;

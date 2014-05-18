@@ -3,7 +3,7 @@ import keys from "ember-runtime/keys";
 import {addObserver, removeObserver} from "ember-metal/observer";
 import EmberObject from "ember-runtime/system/object";
 
-module("Fetch Keys ");
+QUnit.module("Fetch Keys ");
 
 test("should get a key array for a specified object", function() {
   var object1 = {};
@@ -58,7 +58,7 @@ test('should return properties that were set after object creation', function ()
   deepEqual(keys(beer), ['brand']);
 });
 
-module('Keys behavior with observers');
+QUnit.module('Keys behavior with observers');
 
 test('should not leak properties on the prototype', function () {
   var beer = EmberObject.extend({

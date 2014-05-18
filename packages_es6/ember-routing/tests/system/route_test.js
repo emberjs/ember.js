@@ -14,7 +14,7 @@ function cleanupRoute(){
   run(route, 'destroy');
 }
 
-module("Ember.Route", {
+QUnit.module("Ember.Route", {
   setup: createRoute,
   teardown: cleanupRoute
 });
@@ -130,7 +130,7 @@ test("'store' does not need to be injected", function() {
   ok(true, 'no error was raised');
 });
 
-module("Ember.Route serialize", {
+QUnit.module("Ember.Route serialize", {
   setup: createRoute,
   teardown: cleanupRoute
 });
@@ -151,7 +151,7 @@ test("returns undefined if model is not set", function(){
   equal(route.serialize(undefined, ['post_id']), undefined, "serialized correctly");
 });
 
-module("Ember.Route interaction", {
+QUnit.module("Ember.Route interaction", {
   setup: function() {
     container = {
       lookup: function(fullName) {

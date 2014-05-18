@@ -59,7 +59,7 @@ var bindModuleOpts = {
 
 };
 
-module("bind() method", bindModuleOpts);
+QUnit.module("bind() method", bindModuleOpts);
 
 test("bind(TestNamespace.fromObject.bar) should follow absolute path", function() {
   run(function() {
@@ -120,7 +120,7 @@ var fooBindingModuleOpts = {
 
 };
 
-module("fooBinding method", fooBindingModuleOpts);
+QUnit.module("fooBinding method", fooBindingModuleOpts);
 
 
 test("fooBinding: TestNamespace.fromObject.bar should follow absolute path", function() {

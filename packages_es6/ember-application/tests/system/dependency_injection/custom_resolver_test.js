@@ -5,7 +5,7 @@ import { DefaultResolver } from "ember-application/system/resolver";
 
 var application;
 
-module("Ember.Application Depedency Injection – customResolver",{
+QUnit.module("Ember.Application Depedency Injection – customResolver",{
   setup: function() {
     function fallbackTemplate() { return "<h1>Fallback</h1>"; }
 

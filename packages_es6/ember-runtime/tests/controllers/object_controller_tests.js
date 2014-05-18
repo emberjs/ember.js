@@ -1,6 +1,6 @@
 import ObjectController from "ember-runtime/controllers/object_controller";
 
-module("Ember.ObjectController");
+QUnit.module("Ember.ObjectController");
 
 
 test("should be able to set the target property of an ObjectController", function() {

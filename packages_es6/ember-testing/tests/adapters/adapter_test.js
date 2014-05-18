@@ -4,7 +4,7 @@ import Adapter from "ember-testing/adapters/adapter";
 
 var adapter;
 
-module("ember-testing Adapter", {
+QUnit.module("ember-testing Adapter", {
   setup: function() {
     adapter = new Adapter();
   },

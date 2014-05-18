@@ -11,7 +11,7 @@ import {
   metaPath
 } from 'ember-metal/utils';
 
-module("Ember.meta");
+QUnit.module("Ember.meta");
 
 test("should return the same hash for an object", function() {
   var obj = {};
@@ -21,7 +21,7 @@ test("should return the same hash for an object", function() {
   equal(meta(obj).foo, "bar", "returns same hash with multiple calls to Ember.meta()");
 });
 
-module("Ember.metaPath");
+QUnit.module("Ember.metaPath");
 
 test("should not create nested objects if writable is false", function() {
   var obj = {};
@@ -52,7 +52,7 @@ test("getMeta and setMeta", function() {
   equal(getMeta(obj, 'foo'), "bar", "foo property on meta now exists");
 });
 
-module("Ember.meta enumerable");
+QUnit.module("Ember.meta enumerable");
 // Tests fix for https://github.com/emberjs/ember.js/issues/344
 // This is primarily for older browsers such as IE8
 if (platform.defineProperty.isSimulated) {

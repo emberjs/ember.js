@@ -10,7 +10,7 @@ import {
 import { addObserver } from "ember-metal/observer";
 import { create } from 'ember-metal/platform';
 
-module('Ember.get');
+QUnit.module('Ember.get');
 
 test('should get arbitrary properties on an object', function() {
   var obj = {
@@ -93,7 +93,7 @@ test('(regression) watched properties on unmodified inherited objects should sti
   equal(get(theRealObject, 'someProperty'), 'foo', 'should return the set value, not false');
 });
 
-module("Ember.getWithDefault");
+QUnit.module("Ember.getWithDefault");
 
 test('should get arbitrary properties on an object', function() {
   var obj = {

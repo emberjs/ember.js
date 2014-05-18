@@ -29,7 +29,7 @@ import NativeArray from "ember-runtime/system/native_array";
 
 var obj, sorted, sortProps, items, userFnCalls, todos, filtered;
 
-module('computedMap', {
+QUnit.module('computedMap', {
   setup: function() {
     run(function() {
       userFnCalls = 0;
@@ -162,7 +162,7 @@ test("it maps unshifted objects with property observers", function() {
   deepEqual(get(obj, 'mapped'), ['A', 'B', 'D'], "properties unshifted in sequence are mapped correctly");
 });
 
-module('computedMapBy', {
+QUnit.module('computedMapBy', {
   setup: function() {
     run(function() {
       obj = EmberObject.createWithMixins({
@@ -214,7 +214,7 @@ test("it is observerable", function() {
 });
 
 
-module('computedFilter', {
+QUnit.module('computedFilter', {
   setup: function() {
     run(function() {
       userFnCalls = 0;
@@ -326,7 +326,7 @@ test("it updates as the array is replaced", function() {
   deepEqual(filtered, [20,22,24], "computed array is updated when array is changed");
 });
 
-module('computedFilterBy', {
+QUnit.module('computedFilterBy', {
   setup: function() {
     obj = EmberObject.createWithMixins({
       array: Ember.A([
@@ -429,7 +429,7 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
   var alias  = tuple[0],
       testedFunc = tuple[1];
 
-  module('computed.' + alias, {
+  QUnit.module('computed.' + alias, {
     setup: function() {
       run(function() {
         obj = EmberObject.createWithMixins({
@@ -502,7 +502,7 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
   });
 });
 
-module('computed.intersect', {
+QUnit.module('computed.intersect', {
   setup: function() {
     run(function() {
       obj = EmberObject.createWithMixins({
@@ -555,7 +555,7 @@ test("it has set-intersection semantics", function() {
 });
 
 
-module('computedSetDiff', {
+QUnit.module('computedSetDiff', {
   setup: function() {
     run(function() {
       obj = EmberObject.createWithMixins({
@@ -750,7 +750,7 @@ function commonSortTests() {
   });
 }
 
-module('computedSort - sortProperties', {
+QUnit.module('computedSort - sortProperties', {
   setup: function() {
     run(function() {
       obj = EmberObject.createWithMixins({
@@ -994,7 +994,7 @@ function sortByFnameDesc(a, b) {
   return -sortByFnameAsc(a,b);
 }
 
-module('computedSort - sort function', {
+QUnit.module('computedSort - sort function', {
   setup: function() {
     run(function() {
       obj = EmberObject.createWithMixins({
@@ -1062,7 +1062,7 @@ test("changing item properties not specified via @each does not trigger a resort
   deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "updating an unspecified property on an item does not resort it");
 });
 
-module('computedMax', {
+QUnit.module('computedMax', {
   setup: function() {
     run(function() {
       obj = EmberObject.createWithMixins({
@@ -1115,7 +1115,7 @@ test("max recomputes when the current max is removed", function() {
   equal(get(obj, 'max'), 1, "max is recomputed when the current max is removed");
 });
 
-module('computedMin', {
+QUnit.module('computedMin', {
   setup: function() {
     run(function() {
       obj = EmberObject.createWithMixins({
@@ -1168,7 +1168,7 @@ test("min recomputes when the current min is removed", function() {
   equal(get(obj, 'min'), 3, "min is recomputed when the current min is removed");
 });
 
-module('Ember.arrayComputed - mixed sugar', {
+QUnit.module('Ember.arrayComputed - mixed sugar', {
   setup: function() {
     run(function() {
       obj = EmberObject.createWithMixins({
@@ -1254,7 +1254,7 @@ function evenPriorities(todo) {
   return p % 2 === 0;
 }
 
-module('Ember.arrayComputed - chains', {
+QUnit.module('Ember.arrayComputed - chains', {
   setup: function() {
     obj = EmberObject.createWithMixins({
       todos: Ember.A([todo('E', 4), todo('D', 3), todo('C', 2), todo('B', 1), todo('A', 0)]),
@@ -1297,7 +1297,7 @@ test("it can filter and sort when both depend on the same item property", functi
   deepEqual(filtered.mapProperty('name'), ['A', 'C', 'E', 'D'], "filtered updated correctly");
 });
 
-module('Chaining array and reduced CPs', {
+QUnit.module('Chaining array and reduced CPs', {
   setup: function() {
     run(function() {
       userFnCalls = 0;
@@ -1336,7 +1336,7 @@ test("it computes interdependent array computed properties", function() {
   equal(calls, 1, 'runtime created observers fire');
 });
 
-module('computedSum', {
+QUnit.module('computedSum', {
   setup: function() {
     run(function() {
       obj = EmberObject.createWithMixins({

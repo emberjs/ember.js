@@ -25,7 +25,7 @@ if (document.createEvent) {
   };
 }
 
-module("EventDispatcher", {
+QUnit.module("EventDispatcher", {
   setup: function() {
     run(function() {
       dispatcher = EventDispatcher.create();

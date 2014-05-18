@@ -11,7 +11,7 @@ var compile = EmberHandlebars.compile;
 var MyApp;
 var originalLookup = Ember.lookup, lookup, TemplateTests, view, container;
 
-module("Support for {{partial}} helper", {
+QUnit.module("Support for {{partial}} helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
     MyApp = lookup.MyApp = EmberObject.create({});

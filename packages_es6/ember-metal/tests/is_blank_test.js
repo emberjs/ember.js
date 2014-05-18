@@ -1,6 +1,6 @@
 import isBlank from 'ember-metal/is_blank';
 
-module("Ember.isBlank");
+QUnit.module("Ember.isBlank");
 
 test("Ember.isBlank", function() {
   var string = "string", fn = function() {},

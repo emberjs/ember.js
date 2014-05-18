@@ -12,7 +12,7 @@ var appendView = function() {
   run(function() { view.appendTo('#qunit-fixture'); });
 };
 
-module("EmberView - Attribute Bindings", {
+QUnit.module("EmberView - Attribute Bindings", {
   setup: function() {
     Ember.lookup = lookup = {};
   },

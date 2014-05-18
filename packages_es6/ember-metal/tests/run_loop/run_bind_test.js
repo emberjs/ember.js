@@ -1,6 +1,6 @@
 import run from 'ember-metal/run_loop';
 
-module('system/run_loop/run_bind_test');
+QUnit.module('system/run_loop/run_bind_test');
 
 test('Ember.run.bind builds a run-loop wrapped callback handler', function() {
   expect(3);

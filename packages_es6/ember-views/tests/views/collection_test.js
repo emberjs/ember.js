@@ -17,7 +17,7 @@ var view;
 
 var originalLookup;
 
-module("CollectionView", {
+QUnit.module("CollectionView", {
   setup: function() {
     CollectionView.CONTAINER_MAP.del = 'em';
     originalLookup = Ember.lookup;

@@ -4,7 +4,7 @@ import Application from "ember-application/system/application";
 
 var application, locator;
 
-module("Ember.Application Depedency Injection – normalization", {
+QUnit.module("Ember.Application Depedency Injection – normalization", {
   setup: function() {
     application = run(Application, 'create');
     locator = application.__container__;

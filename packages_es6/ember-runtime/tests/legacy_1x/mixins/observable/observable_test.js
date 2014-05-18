@@ -46,7 +46,7 @@ var originalLookup = Ember.lookup, lookup;
 // GET()
 //
 
-module("object.get()", {
+QUnit.module("object.get()", {
 
   setup: function() {
     object = ObservableObject.createWithMixins(Observable, {
@@ -96,7 +96,7 @@ test("should call unknownProperty when value is undefined", function() {
 // ..........................................................
 // Ember.GET()
 //
-module("Ember.get()", {
+QUnit.module("Ember.get()", {
   setup: function() {
     objectA = ObservableObject.createWithMixins({
 
@@ -174,7 +174,7 @@ test("should work when object is Ember (used in Ember.get)", function() {
   equal(get(Ember, 'RunLoop'), Ember.RunLoop, 'Ember.get(Ember, RunLoop)');
 });
 
-module("Ember.get() with paths", {
+QUnit.module("Ember.get() with paths", {
   setup: function() {
     lookup = Ember.lookup = {};
   },
@@ -228,7 +228,7 @@ test("should return a property at a given path relative to the passed object - J
 // SET()
 //
 
-module("object.set()", {
+QUnit.module("object.set()", {
 
   setup: function() {
     object = ObservableObject.createWithMixins({
@@ -313,7 +313,7 @@ test("should call unknownProperty with value when property is undefined", functi
 // COMPUTED PROPERTIES
 //
 
-module("Computed properties", {
+QUnit.module("Computed properties", {
   setup: function() {
     lookup = Ember.lookup = {};
 
@@ -642,7 +642,7 @@ test("cacheable nested dependent keys should clear after their dependencies upda
 // OBSERVABLE OBJECTS
 //
 
-module("Observable objects & object properties ", {
+QUnit.module("Observable objects & object properties ", {
 
   setup: function() {
     object = ObservableObject.createWithMixins({
@@ -748,7 +748,7 @@ test('should notify array observer when array changes',function() {
   equal(object.abnormal, 'notifiedObserver', 'observer should be notified');
 });
 
-module("object.addObserver()", {
+QUnit.module("object.addObserver()", {
   setup: function() {
 
     ObjectC = ObservableObject.create({
@@ -793,7 +793,7 @@ test("should register an observer for a property - Special case of chained prope
   equal('chainedPropertyObserved',ObjectC.normal2);
 });
 
-module("object.removeObserver()", {
+QUnit.module("object.removeObserver()", {
   setup: function() {
     ObjectD = ObservableObject.create({
 
@@ -880,7 +880,7 @@ test("removing an observer inside of an observer shouldn’t cause any problems"
 
 
 
-module("Bind function ", {
+QUnit.module("Bind function ", {
 
   setup: function() {
     originalLookup = Ember.lookup;

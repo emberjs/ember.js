@@ -24,7 +24,7 @@ var ObservableObject = EmberObject.extend(Observable);
 // GET()
 //
 
-module("object.observesForKey()");
+QUnit.module("object.observesForKey()");
 
 test("should get observers", function() {
   var o1 = ObservableObject.create({ foo: 100 }),

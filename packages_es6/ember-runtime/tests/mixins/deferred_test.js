@@ -6,7 +6,7 @@ import EmberObject from 'ember-runtime/system/object';
 import Deferred from "ember-runtime/mixins/deferred";
 import RSVP from "ember-runtime/ext/rsvp";
 
-module("Deferred");
+QUnit.module("Deferred");
 
 test("can resolve deferred", function() {
   var deferred, count = 0;
@@ -328,7 +328,7 @@ if (Ember.FEATURES['ember-runtime-test-friendly-promises']) {
   var EmberTest;
   var EmberTesting;
 
-  module("Deferred RSVP's async + Testing", {
+  QUnit.module("Deferred RSVP's async + Testing", {
     setup: function() {
       EmberTest = Ember.Test;
       EmberTesting = Ember.testing;

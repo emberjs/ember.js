@@ -22,7 +22,7 @@ function destroyView(view) {
 
 var oldString;
 
-module('Handlebars {{loc valueToLocalize}} helper', {
+QUnit.module('Handlebars {{loc valueToLocalize}} helper', {
   setup: function() {
     oldString = Ember.STRINGS;
     Ember.STRINGS = {

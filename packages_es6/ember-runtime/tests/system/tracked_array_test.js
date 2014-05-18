@@ -6,7 +6,7 @@ var forEach = EnumerableUtils.forEach, trackedArray,
     INSERT = TrackedArray.INSERT,
     DELETE = TrackedArray.DELETE;
 
-module('Ember.TrackedArray');
+QUnit.module('Ember.TrackedArray');
 
 test("operations for a tracked array of length n are initially retain:n", function() {
   trackedArray = new TrackedArray([1,2,3,4]);

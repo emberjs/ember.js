@@ -20,7 +20,7 @@ import EmberObject from 'ember-runtime/system/object';
 
   var klass;
 
-  module("EmberObject Concatenated Properties", {
+  QUnit.module("EmberObject Concatenated Properties", {
     setup: function() {
       klass = EmberObject.extend({
         concatenatedProperties: ['values', 'functions'],

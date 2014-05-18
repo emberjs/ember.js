@@ -9,7 +9,7 @@ import { View } from "ember-views/views/view";
 
 var view;
 
-module("View action handling", {
+QUnit.module("View action handling", {
   teardown: function() {
     run(function() {
       if (view) { view.destroy(); }

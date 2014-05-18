@@ -21,7 +21,7 @@ moduleOptions = {
   }
 };
 
-module('EmberObject.create', moduleOptions);
+QUnit.module('EmberObject.create', moduleOptions);
 
 test("simple properties are set", function() {
   var o = EmberObject.create({ohai: 'there'});
@@ -153,7 +153,7 @@ test("EmberObject.create can take null as a parameter", function(){
   deepEqual(EmberObject.create(), o);
 });
 
-module('EmberObject.createWithMixins', moduleOptions);
+QUnit.module('EmberObject.createWithMixins', moduleOptions);
 
 test("Creates a new object that contains passed properties", function() {
 

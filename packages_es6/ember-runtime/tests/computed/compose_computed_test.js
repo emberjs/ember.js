@@ -12,7 +12,7 @@ import EmberObject from 'ember-runtime/system/object';
 if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   var obj;
 
-  module('computed - composable', {
+  QUnit.module('computed - composable', {
     teardown: function () {
       if (obj && obj.destroy) {
         run(function() {

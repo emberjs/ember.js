@@ -39,7 +39,7 @@ var Combined = Mixin.create(BarProperties, BarMethods);
 
 var obj ;
 
-module('Basic introspection', {
+QUnit.module('Basic introspection', {
   setup: function() {
     obj = {};
     mixin(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);

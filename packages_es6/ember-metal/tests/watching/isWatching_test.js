@@ -10,7 +10,7 @@ import {
 } from "ember-metal/observer";
 import { isWatching } from 'ember-metal/watching';
 
-module('isWatching');
+QUnit.module('isWatching');
 
 function testObserver(setup, teardown, key) {
   var obj = {}, fn = function() {};

@@ -1,7 +1,7 @@
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 
-module('set');
+QUnit.module('set');
 
 test('should set arbitrary properties on an object', function() {
   var obj = {

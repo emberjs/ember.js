@@ -6,7 +6,7 @@ import {
   Mixin
 } from 'ember-metal/mixin';
 
-module('Mixin mergedProperties');
+QUnit.module('Mixin mergedProperties');
 
 test('defining mergedProperties should merge future version', function() {
 

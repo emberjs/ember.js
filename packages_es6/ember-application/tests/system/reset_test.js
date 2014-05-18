@@ -12,7 +12,7 @@ import Container from 'container/container';
 
 var application, EmberApplication = Application;
 
-module("Ember.Application - resetting", {
+QUnit.module("Ember.Application - resetting", {
   setup: function() {
     Application = EmberApplication.extend({
       name: "App",

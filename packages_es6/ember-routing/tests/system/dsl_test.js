@@ -2,7 +2,7 @@ import EmberRouter from "ember-routing/system/router";
 
 var Router;
 
-module("Ember Router DSL", {
+QUnit.module("Ember Router DSL", {
   setup: function() {
     Router = EmberRouter.extend();
   },

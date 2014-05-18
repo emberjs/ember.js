@@ -8,7 +8,7 @@ import ContainerView from "ember-views/views/container_view";
 
 var parentView, child, parentDom, childDom, view;
 
-module("Ember.View#element", {
+QUnit.module("Ember.View#element", {
   teardown: function() {
     run(function() {
       if (parentView) { parentView.destroy(); }
@@ -45,7 +45,7 @@ test("returns element if you set the value", function() {
 });
 
 
-module("Ember.View#element - autodiscovery", {
+QUnit.module("Ember.View#element - autodiscovery", {
   setup: function() {
     parentView = ContainerView.create({
       childViews: [ EmberView.extend({

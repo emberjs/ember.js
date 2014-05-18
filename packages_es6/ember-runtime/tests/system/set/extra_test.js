@@ -4,7 +4,7 @@ import {set} from "ember-metal/property_set";
 import {addObserver} from "ember-metal/observer";
 import Set from "ember-runtime/system/set";
 
-module('Set.init');
+QUnit.module('Set.init');
 
 test('passing an array to new Set() should instantiate w/ items', function() {
 
@@ -20,7 +20,7 @@ test('passing an array to new Set() should instantiate w/ items', function() {
   equal(count, 3, 'iterating should have returned three objects');
 });
 
-module('Set.clear');
+QUnit.module('Set.clear');
 
 test('should clear a set of its content', function() {
 
@@ -48,7 +48,7 @@ test('should clear a set of its content', function() {
 // Set.pop
 //
 
-module('Set.pop');
+QUnit.module('Set.pop');
 
 test('calling pop should return an object and remove it', function() {
 
@@ -69,7 +69,7 @@ test('calling pop should return an object and remove it', function() {
 // Set.aliases
 //
 
-module('Set aliases');
+QUnit.module('Set aliases');
 
 test('method aliases', function() {
   var aSet = new Set();

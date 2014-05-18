@@ -1,7 +1,7 @@
 import { inspect } from "ember-metal/utils";
 import Ember from 'ember-metal/core';
 
-module("Ember.inspect");
+QUnit.module("Ember.inspect");
 
 test("strings", function() {
   equal(inspect("foo"), "foo");

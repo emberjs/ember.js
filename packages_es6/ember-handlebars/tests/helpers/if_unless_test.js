@@ -11,7 +11,7 @@ var compile = Ember.Handlebars.compile;
 
 var view;
 
-module("Handlebars {{#if}} and {{#unless}} helpers", {
+QUnit.module("Handlebars {{#if}} and {{#unless}} helpers", {
   teardown: function() {
     run(function() {
       if (view) {

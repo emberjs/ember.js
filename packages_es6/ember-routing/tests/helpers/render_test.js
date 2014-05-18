@@ -84,7 +84,7 @@ function resolverFor(namespace) {
 
 var view, container, originalRenderHelper, originalActionHelper, originalOutletHelper;
 
-module("Handlebars {{render}} helper", {
+QUnit.module("Handlebars {{render}} helper", {
   setup: function() {
     originalOutletHelper = EmberHandlebars.helpers['outlet'];
     EmberHandlebars.registerHelper('outlet', outletHelper);

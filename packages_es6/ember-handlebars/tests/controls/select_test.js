@@ -14,7 +14,7 @@ var map = EnumerableUtils.map,
 
 var dispatcher, select, view;
 
-module("Ember.Select", {
+QUnit.module("Ember.Select", {
   setup: function() {
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
@@ -658,7 +658,7 @@ test("should be able to set the current selection by value", function() {
   equal(select.get('selection'), ebryn);
 });
 
-module("Ember.Select - usage inside templates", {
+QUnit.module("Ember.Select - usage inside templates", {
   setup: function() {
     dispatcher = EventDispatcher.create();
     dispatcher.setup();

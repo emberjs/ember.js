@@ -1,6 +1,6 @@
 import { typeOf } from 'ember-metal/utils';
 
-module("Ember Type Checking");
+QUnit.module("Ember Type Checking");
 
 test("Ember.typeOf", function() {
   var MockedDate = function() { };

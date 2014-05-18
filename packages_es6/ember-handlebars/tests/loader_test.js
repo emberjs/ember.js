@@ -5,7 +5,7 @@ var trim = jQuery.trim;
 
 var originalLookup = Ember.lookup, lookup, Tobias, App, view;
 
-module("test Ember.Handlebars.bootstrap", {
+QUnit.module("test Ember.Handlebars.bootstrap", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
   },

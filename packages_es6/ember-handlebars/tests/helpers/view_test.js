@@ -14,7 +14,7 @@ function viewClass(options) {
   return EmberView.extend(options);
 }
 
-module("Handlebars {{#view}} helper", {
+QUnit.module("Handlebars {{#view}} helper", {
   setup: function() {
     originalLookup = Ember.lookup;
   },

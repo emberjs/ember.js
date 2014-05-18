@@ -13,7 +13,7 @@ import "ember-routing"; //ES6TODO: fixme?
 
 var App, find, click, fillIn, currentRoute, visit, originalAdapter, andThen, indexHitCount;
 
-module("ember-testing Acceptance", {
+QUnit.module("ember-testing Acceptance", {
   setup: function() {
     jQuery('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
     jQuery('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');

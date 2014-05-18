@@ -1,6 +1,6 @@
 import copy from "ember-runtime/copy";
 
-module("Ember Copy Method");
+QUnit.module("Ember Copy Method");
 
 test("Ember.copy null", function() {
   var obj = {field: null};

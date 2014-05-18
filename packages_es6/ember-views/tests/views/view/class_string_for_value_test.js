@@ -1,6 +1,6 @@
 import { View } from "ember-views/views/view";
 
-module("View - _classStringForValue");
+QUnit.module("View - _classStringForValue");
 
 var cSFV = View._classStringForValue;
 

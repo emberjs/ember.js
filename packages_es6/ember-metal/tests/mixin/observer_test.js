@@ -10,7 +10,7 @@ import {
 } from 'ember-metal/mixin';
 import { isWatching } from "ember-metal/watching";
 
-module('Mixin observer');
+QUnit.module('Mixin observer');
 
 testBoth('global observer helper', function(get, set) {
 

@@ -92,7 +92,7 @@ function currentURL(app){
   }
 }
 
-module("ember-testing Helpers", {
+QUnit.module("ember-testing Helpers", {
   setup: function(){ cleanup(); },
   teardown: function() { cleanup(); }
 });
@@ -446,7 +446,7 @@ test("`wait` respects registerWaiters with optional context", function() {
 
 });
 
-module("ember-testing routing helpers", {
+QUnit.module("ember-testing routing helpers", {
   setup: function(){
     cleanup();
 
@@ -505,7 +505,7 @@ test("currentRouteName for '/posts/new'", function(){
   });
 });
 
-module("ember-testing pendingAjaxRequests", {
+QUnit.module("ember-testing pendingAjaxRequests", {
   setup: function(){
     cleanup();
 
@@ -590,7 +590,7 @@ test("`trigger` can be used to trigger arbitrary events", function() {
   });
 });
 
-module("ember-testing async router", {
+QUnit.module("ember-testing async router", {
   setup: function(){
     cleanup();
 

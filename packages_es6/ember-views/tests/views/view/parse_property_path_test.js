@@ -1,6 +1,6 @@
 import { View as EmberView } from "ember-views/views/view";
 
-module("EmberView - _parsePropertyPath");
+QUnit.module("EmberView - _parsePropertyPath");
 
 test("it works with a simple property path", function() {
   var parsed = EmberView._parsePropertyPath("simpleProperty");

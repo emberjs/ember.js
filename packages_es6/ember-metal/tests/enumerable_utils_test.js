@@ -1,6 +1,6 @@
 import EnumerableUtils from 'ember-metal/enumerable_utils';
 
-module('Ember.EnumerableUtils.intersection');
+QUnit.module('Ember.EnumerableUtils.intersection');
 
 test('returns an array of objects that appear in both enumerables', function() {
   var a = [1,2,3], b = [2,3,4], result;

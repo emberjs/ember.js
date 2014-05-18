@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import {w} from "ember-runtime/system/string";
 
-module('EmberStringUtils.w');
+QUnit.module('EmberStringUtils.w');
 
 if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
   test("String.prototype.w is not available without EXTEND_PROTOTYPES", function() {

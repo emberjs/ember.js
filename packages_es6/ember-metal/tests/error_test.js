@@ -1,4 +1,4 @@
-module("Ember Error Throwing");
+QUnit.module("Ember Error Throwing");
 
 test("new Ember.Error displays provided message", function() {
   raises( function() {

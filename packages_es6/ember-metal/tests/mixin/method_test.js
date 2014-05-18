@@ -7,7 +7,7 @@ import {
   Mixin
 } from 'ember-metal/mixin';
 
-module('Mixin Methods');
+QUnit.module('Mixin Methods');
 
 test('defining simple methods', function() {
 
@@ -159,7 +159,7 @@ test('_super from a first-of-two mixins with no superclass function does not err
 // CONFLICTS
 //
 
-module('Method Conflicts');
+QUnit.module('Method Conflicts');
 
 
 test('overriding toString', function() {
@@ -180,7 +180,7 @@ test('overriding toString', function() {
 // BUGS
 //
 
-module('system/mixin/method_test BUGS');
+QUnit.module('system/mixin/method_test BUGS');
 
 test('applying several mixins at once with sup already defined causes infinite loop', function() {
 

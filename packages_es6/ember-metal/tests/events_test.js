@@ -16,7 +16,7 @@ import {
   actionsUnion
 } from "ember-metal/events";
 
-module('system/props/events_test');
+QUnit.module('system/props/events_test');
 
 test('listener should receive event - removing should remove', function() {
   var obj = {}, count = 0;

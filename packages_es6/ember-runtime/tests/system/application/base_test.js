@@ -1,7 +1,7 @@
 import Namespace from "ember-runtime/system/namespace";
 import Application from "ember-runtime/system/application";
 
-module('Ember.Application');
+QUnit.module('Ember.Application');
 
 test('Ember.Application should be a subclass of Ember.Namespace', function() {
 

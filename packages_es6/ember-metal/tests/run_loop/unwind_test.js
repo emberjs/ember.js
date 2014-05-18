@@ -1,7 +1,7 @@
 import run from 'ember-metal/run_loop';
 import EmberError from 'ember-metal/error';
 
-module('system/run_loop/unwind_test');
+QUnit.module('system/run_loop/unwind_test');
 
 test('RunLoop unwinds despite unhandled exception', function() {
   var initialRunLoop = run.currentRunLoop;

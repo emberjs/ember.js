@@ -5,7 +5,7 @@ import { View as EmberView } from "ember-views/views/view";
 
 var view;
 
-module("EmberView evented helpers", {
+QUnit.module("EmberView evented helpers", {
   teardown: function() {
     run(function() {
       view.destroy();

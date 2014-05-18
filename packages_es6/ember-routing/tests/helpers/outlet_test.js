@@ -73,7 +73,7 @@ var trim = jQuery.trim;
 
 var view, container, originalOutletHelper;
 
-module("Handlebars {{outlet}} helpers", {
+QUnit.module("Handlebars {{outlet}} helpers", {
 
   setup: function() {
     originalOutletHelper = EmberHandlebars.helpers['outlet'];

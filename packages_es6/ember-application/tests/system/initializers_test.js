@@ -5,7 +5,7 @@ import jQuery from "ember-views/system/jquery";
 
 var oldInitializers, app;
 
-module("Ember.Application initializers", {
+QUnit.module("Ember.Application initializers", {
   setup: function() {
   },
 

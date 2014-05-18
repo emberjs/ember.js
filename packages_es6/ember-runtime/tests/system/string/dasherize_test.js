@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import {dasherize} from "ember-runtime/system/string";
 
-module('EmberStringUtils.dasherize');
+QUnit.module('EmberStringUtils.dasherize');
 
 if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
   test("String.prototype.dasherize is not modified without EXTEND_PROTOTYPES", function() {

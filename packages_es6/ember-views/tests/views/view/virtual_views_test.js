@@ -7,7 +7,7 @@ import { View as EmberView } from "ember-views/views/view";
 
 var rootView, childView;
 
-module("virtual views", {
+QUnit.module("virtual views", {
   teardown: function() {
     run(function() {
       rootView.destroy();

@@ -1,6 +1,6 @@
 import {testWithDefault, testBoth} from 'ember-runtime/tests/props_helper';
 
-module('Function.prototype.observes() helper');
+QUnit.module('Function.prototype.observes() helper');
 
 testBoth('global observer helper takes multiple params', function(get, set) {
 
@@ -27,7 +27,7 @@ testBoth('global observer helper takes multiple params', function(get, set) {
   equal(get(obj, 'count'), 2, 'should invoke observer after change');
 });
 
-module('Function.prototype.on() helper');
+QUnit.module('Function.prototype.on() helper');
 
 testBoth('sets up an event listener, and can trigger the function on multiple events', function(get, set) {
 
@@ -78,7 +78,7 @@ testBoth('can be chained with observes', function(get, set) {
   equal(get(obj, 'count'), 2, 'should invoke observer and listener');
 });
 
-module('Function.prototype.property() helper');
+QUnit.module('Function.prototype.property() helper');
 
 testBoth('sets up a ComputedProperty', function(get, set) {
 

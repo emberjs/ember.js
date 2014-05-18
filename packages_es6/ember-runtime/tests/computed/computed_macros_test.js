@@ -2,7 +2,7 @@ import {computed} from "ember-metal/computed";
 import EmberObject from "ember-runtime/system/object";
 import {testBoth} from "ember-runtime/tests/props_helper";
 
-module('CP macros');
+QUnit.module('CP macros');
 
 if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
   testBoth('Ember.computed.empty', function (get, set) {

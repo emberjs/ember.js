@@ -16,7 +16,7 @@ import EmberArray from "ember-runtime/mixins/array";
 
 var a, b, c ; // global variables
 
-module("creating Set instances", {
+QUnit.module("creating Set instances", {
 
   setup: function() {
     // create objects...
@@ -64,7 +64,7 @@ var set ; // global variables
 
 // The tests below also end up testing the contains() method pretty
 // exhaustively.
-module("Set.add + Set.contains", {
+QUnit.module("Set.add + Set.contains", {
 
   setup: function() {
     set = new Set() ;
@@ -167,7 +167,7 @@ test("adding an item, removing it, adding another item", function() {
   equal(set.length, 2, "set.length") ;
 });
 
-module("Set.remove + Set.contains", {
+QUnit.module("Set.remove + Set.contains", {
 
   // generate a set with every type of object, but none of the specific
   // ones we add in the tests below...
@@ -277,7 +277,7 @@ test("should ignore removing an object not in the set", function() {
   equal(set.length, oldLength) ;
 });
 
-module("Set.pop + Set.copy", {
+QUnit.module("Set.pop + Set.copy", {
 // generate a set with every type of object, but none of the specific
 // ones we add in the tests below...
   setup: function() {

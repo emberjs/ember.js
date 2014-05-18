@@ -1,6 +1,6 @@
 import isNone from 'ember-metal/is_none';
 
-module("Ember.isNone");
+QUnit.module("Ember.isNone");
 
 test("Ember.isNone", function() {
   var string = "string", fn = function() {};

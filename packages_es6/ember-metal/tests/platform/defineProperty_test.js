@@ -9,7 +9,7 @@ function isEnumerable(obj, keyName) {
   return EnumerableUtils.indexOf(keys, keyName)>=0;
 }
 
-module("platform.defineProperty()");
+QUnit.module("platform.defineProperty()");
 
 test("defining a simple property", function() {
   var obj = {};

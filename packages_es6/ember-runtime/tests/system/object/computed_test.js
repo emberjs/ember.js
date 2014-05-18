@@ -4,7 +4,7 @@ import {observer} from "ember-metal/mixin";
 import {testWithDefault, testBoth} from 'ember-runtime/tests/props_helper';
 import EmberObject from "ember-runtime/system/object";
 
-module('EmberObject computed property');
+QUnit.module('EmberObject computed property');
 
 testWithDefault('computed property on instance', function(get, set) {
 

@@ -4,7 +4,7 @@ import jQuery from "ember-views/system/jquery";
 
 var App;
 
-module('Simple Testing Setup', {
+QUnit.module('Simple Testing Setup', {
   teardown: function() {
     if (App) {
       App.removeTestHelpers();

@@ -49,7 +49,7 @@ function resolverFor(namespace) {
 
 var container, appController, namespace;
 
-module("Ember.controllerFor", {
+QUnit.module("Ember.controllerFor", {
   setup: function() {
     namespace = Namespace.create();
     container = buildContainer(namespace);
@@ -70,7 +70,7 @@ test("controllerFor should lookup for registered controllers", function() {
   equal(appController, controller, 'should find app controller');
 });
 
-module("Ember.generateController", {
+QUnit.module("Ember.generateController", {
   setup: function() {
     namespace = Namespace.create();
     container = buildContainer(namespace);

@@ -10,7 +10,7 @@ import objectKeys from "ember-runtime/keys";
 import {testBoth} from 'ember-runtime/tests/props_helper';
 import EmberObject from 'ember-runtime/system/object';
 
-module('ember-runtime/system/object/destroy_test');
+QUnit.module('ember-runtime/system/object/destroy_test');
 
 testBoth("should schedule objects to be destroyed at the end of the run loop", function(get, set) {
   var obj = EmberObject.create(), meta;

@@ -3,7 +3,7 @@ import {loc} from "ember-runtime/system/string";
 
 var oldString;
 
-module('EmberStringUtils.loc', {
+QUnit.module('EmberStringUtils.loc', {
   setup: function() {
     oldString = Ember.STRINGS;
     Ember.STRINGS = {

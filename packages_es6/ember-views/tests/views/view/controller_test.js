@@ -3,7 +3,7 @@ import run from "ember-metal/run_loop";
 
 import ContainerView from "ember-views/views/container_view";
 
-module("Ember.View - controller property");
+QUnit.module("Ember.View - controller property");
 
 test("controller property should be inherited from nearest ancestor with controller", function() {
   var grandparent = ContainerView.create();

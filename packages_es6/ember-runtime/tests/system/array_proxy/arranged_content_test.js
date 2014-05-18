@@ -5,7 +5,7 @@ import ArrayProxy from "ember-runtime/system/array_proxy";
 
 var array;
 
-module("ArrayProxy - arrangedContent", {
+QUnit.module("ArrayProxy - arrangedContent", {
   setup: function() {
     run(function() {
       array = ArrayProxy.createWithMixins({
@@ -172,7 +172,7 @@ test("firstObject - returns first arranged object", function() {
 });
 
 
-module("ArrayProxy - arrangedContent matching content", {
+QUnit.module("ArrayProxy - arrangedContent matching content", {
   setup: function() {
     run(function() {
       array = ArrayProxy.createWithMixins({
@@ -202,7 +202,7 @@ test("reverseObjects - reverses content", function() {
   deepEqual(array.get('content'), [5,4,2,1]);
 });
 
-module("ArrayProxy - arrangedContent with transforms", {
+QUnit.module("ArrayProxy - arrangedContent with transforms", {
   setup: function() {
     run(function() {
       array = ArrayProxy.createWithMixins({

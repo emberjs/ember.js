@@ -1,6 +1,6 @@
 import {isEqual} from "ember-runtime/core";
 
-module("isEqual");
+QUnit.module("isEqual");
 
 test("undefined and null", function() {
   ok(  isEqual(undefined, undefined), "undefined is equal to undefined" );

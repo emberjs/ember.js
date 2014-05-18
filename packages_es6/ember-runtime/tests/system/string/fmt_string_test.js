@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import {fmt} from "ember-runtime/system/string";
 
-module('EmberStringUtils.fmt');
+QUnit.module('EmberStringUtils.fmt');
 
 if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.String) {
   test("String.prototype.fmt is not modified without EXTEND_PROTOTYPES", function() {

@@ -5,7 +5,7 @@ import { Mixin } from "ember-metal/mixin";
 import { computed } from "ember-metal/computed";
 import { defineProperty } from "ember-metal/properties";
 
-module('Mixin.detect');
+QUnit.module('Mixin.detect');
 
 test('detect() finds a directly applied mixin', function() {
 

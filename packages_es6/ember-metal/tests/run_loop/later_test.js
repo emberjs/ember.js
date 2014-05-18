@@ -18,7 +18,7 @@ function wait(callback, maxWaitCount) {
   }, 10);
 }
 
-module('run.later', {
+QUnit.module('run.later', {
   teardown: function() {
     window.setTimeout = originalSetTimeout;
     Date.prototype.valueOf = originalDateValueOf;

@@ -17,7 +17,7 @@ function appendView(view) {
 var view;
 var originalLookup = Ember.lookup, lookup;
 
-module("Handlebars {{#with}} helper", {
+QUnit.module("Handlebars {{#with}} helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
@@ -70,7 +70,7 @@ test("updating a property on the view should update the HTML", function() {
   equal(view.$().text(), "Señorette Engineer: Tom Dale", "should be properly scoped after updating");
 });
 
-module("Multiple Handlebars {{with}} helpers with 'as'", {
+QUnit.module("Multiple Handlebars {{with}} helpers with 'as'", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
@@ -121,7 +121,7 @@ test("nested {{with}} blocks shadow the outer scoped variable properly.", functi
 
   equal(view.$().text(), "Limbo-Wrath-Treachery-Wrath-Limbo", "should be properly scoped after updating");
 });
-module("Handlebars {{#with}} globals helper", {
+QUnit.module("Handlebars {{#with}} globals helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
@@ -151,7 +151,7 @@ test("it should support #with Foo.bar as qux", function() {
   equal(view.$().text(), "updated", "should update");
 });
 
-module("Handlebars {{#with keyword as foo}}");
+QUnit.module("Handlebars {{#with keyword as foo}}");
 
 test("it should support #with view as foo", function() {
   var view = EmberView.create({
@@ -193,7 +193,7 @@ test("it should support #with name as food, then #with foo as bar", function() {
   });
 });
 
-module("Handlebars {{#with this as foo}}");
+QUnit.module("Handlebars {{#with this as foo}}");
 
 test("it should support #with this as qux", function() {
   var view = EmberView.create({
@@ -215,7 +215,7 @@ test("it should support #with this as qux", function() {
   });
 });
 
-module("Handlebars {{#with foo}} insideGroup");
+QUnit.module("Handlebars {{#with foo}} insideGroup");
 
 test("it should render without fail", function() {
   var View = EmberView.extend({
@@ -244,7 +244,7 @@ test("it should render without fail", function() {
   });
 });
 
-module("Handlebars {{#with foo}} with defined controller");
+QUnit.module("Handlebars {{#with foo}} with defined controller");
 
 test("it should wrap context with object controller", function() {
   var Controller = ObjectController.extend({

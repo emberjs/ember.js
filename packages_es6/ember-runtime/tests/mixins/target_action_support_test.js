@@ -4,7 +4,7 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
 
 var originalLookup;
 
-module("TargetActionSupport", {
+QUnit.module("TargetActionSupport", {
   setup: function() {
     originalLookup = Ember.lookup;
   },

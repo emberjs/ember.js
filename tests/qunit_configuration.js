@@ -63,8 +63,8 @@
     return obj.toString();
   };
 
-  var originalModule = module;
-  module = function(name, origOpts) {
+  var originalModule = QUnit.module;
+  QUnit.module = function(name, origOpts) {
     var opts = {};
     if (origOpts && origOpts.setup) { opts.setup = origOpts.setup; }
     opts.teardown = function() {

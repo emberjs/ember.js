@@ -24,7 +24,7 @@ function templateFor(template) {
 
 var originalLookup = Ember.lookup, lookup;
 
-module("the #each helper", {
+QUnit.module("the #each helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
@@ -522,7 +522,7 @@ test("it works with the controller keyword", function() {
   equal(view.$().text(), "foobarbaz");
 });
 
-module("{{#each foo in bar}}", {
+QUnit.module("{{#each foo in bar}}", {
   setup: function() {
     container = new Container();
     container.register('view:default', EmberView.extend());

@@ -1,6 +1,6 @@
 import Mixin from 'ember-metal/mixin';
 
-module('Ember.Mixin#reopen');
+QUnit.module('Ember.Mixin#reopen');
 
 test('using reopen() to add more properties to a simple', function() {
   var MixinA = Mixin.create({ foo: 'FOO', baz: 'BAZ' });

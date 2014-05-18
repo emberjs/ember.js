@@ -1,6 +1,6 @@
 import { create } from "ember-metal/platform";
 
-module("Ember.create()");
+QUnit.module("Ember.create()");
 
 test("should inherit the properties from the parent object", function() {
   var obj = { foo: 'FOO' };

@@ -10,7 +10,7 @@ var view;
 // .......................................................
 //  render()
 //
-module("EmberView#render", {
+QUnit.module("EmberView#render", {
   teardown: function() {
     run(function() {
       view.destroy();

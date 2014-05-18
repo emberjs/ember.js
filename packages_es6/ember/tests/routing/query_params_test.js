@@ -69,7 +69,7 @@ var TestLocation = Ember.NoneLocation.extend({
 
 if (Ember.FEATURES.isEnabled("query-params-new")) {
 
-  module("Routing w/ Query Params", {
+  QUnit.module("Routing w/ Query Params", {
     setup: function() {
       Ember.run(function() {
         App = Ember.Application.create({

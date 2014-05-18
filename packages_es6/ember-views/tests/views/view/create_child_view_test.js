@@ -4,7 +4,7 @@ import { View as EmberView } from "ember-views/views/view";
 
 var view, myViewClass, newView, container;
 
-module("EmberView#createChildView", {
+QUnit.module("EmberView#createChildView", {
   setup: function() {
     container = { };
 

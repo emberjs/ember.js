@@ -11,9 +11,9 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 
 var unsortedArray, sortedArrayController;
 
-module("Ember.Sortable");
+QUnit.module("Ember.Sortable");
 
-module("Ember.Sortable with content", {
+QUnit.module("Ember.Sortable with content", {
   setup: function() {
     run(function() {
       var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
@@ -146,7 +146,7 @@ test("changing sortProperties and sortAscending with setProperties, sortAscendin
 
 });
 
-module("Ember.Sortable with content and sortProperties", {
+QUnit.module("Ember.Sortable with content and sortProperties", {
   setup: function() {
     run(function() {
       var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
@@ -271,7 +271,7 @@ test("sortProperties observers removed on content removal", function() {
     "After removal, there should be no listeners for sortProperty change.");
 });
 
-module("Ember.Sortable with sortProperties", {
+QUnit.module("Ember.Sortable with sortProperties", {
   setup: function() {
     run(function() {
       sortedArrayController = ArrayController.create({
@@ -300,7 +300,7 @@ test("you can set content later and it will be sorted", function() {
   equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'array is sorted by name');
 });
 
-module("Ember.Sortable with sortFunction and sortProperties", {
+QUnit.module("Ember.Sortable with sortFunction and sortProperties", {
   setup: function() {
     run(function() {
       sortedArrayController = ArrayController.create({

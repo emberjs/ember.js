@@ -1,6 +1,6 @@
 import EmberObject from "ember-runtime/system/object";
 
-module('system/object/detect');
+QUnit.module('system/object/detect');
 
 test('detect detects classes correctly', function() {
 

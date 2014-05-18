@@ -9,7 +9,7 @@ import ContainerView from "ember-views/views/container_view";
 
 var trim = jQuery.trim, container, view, otherContainer;
 
-module("ember-views/views/container_view_test", {
+QUnit.module("ember-views/views/container_view_test", {
   teardown: function() {
     run(function() {
       container.destroy();

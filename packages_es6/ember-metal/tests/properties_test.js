@@ -4,7 +4,7 @@ import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
 import { defineProperty } from "ember-metal/properties";
 
-module('Ember.defineProperty');
+QUnit.module('Ember.defineProperty');
 
 test('toString', function() {
 

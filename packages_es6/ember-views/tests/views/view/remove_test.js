@@ -13,7 +13,7 @@ var indexOf = EnumerableUtils.indexOf;
 //
 
 var parentView, child;
-module("View#removeChild", {
+QUnit.module("View#removeChild", {
   setup: function() {
     parentView = ContainerView.create({ childViews: [View] });
     child = get(parentView, 'childViews').objectAt(0);
@@ -46,7 +46,7 @@ test("sets parentView property to null", function() {
 // removeAllChildren()
 //
 var view, childViews;
-module("View#removeAllChildren", {
+QUnit.module("View#removeAllChildren", {
   setup: function() {
     view = ContainerView.create({
       childViews: [View, View, View]
@@ -75,7 +75,7 @@ test("returns receiver", function() {
 // .......................................................
 // removeFromParent()
 //
-module("View#removeFromParent", {
+QUnit.module("View#removeFromParent", {
   teardown: function() {
     run(function() {
       if (parentView) { parentView.destroy(); }

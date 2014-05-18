@@ -2,7 +2,7 @@ import "ember";
 
 /*globals EmberDev */
 
-module("ember-states removal");
+QUnit.module("ember-states removal");
 
 test("errors occur when attempting to use Ember.StateManager or Ember.State", function() {
   if (EmberDev && EmberDev.runningProdBuild){
