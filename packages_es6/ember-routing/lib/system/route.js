@@ -129,6 +129,175 @@ var Route = EmberObject.extend(ActionHandler, {
   controllerName: null,
 
   /**
+    The `willTransition` action is fired at the beginning of any
+    attempted transition with a `Transition` object as the sole
+    argument. This action can be used for aborting, redirecting,
+    or decorating the transition from the currently active routes.
+
+    A good example is preventing navigation when a form is
+    half-filled out:
+
+    ```js
+    App.ContactFormRoute = Ember.Route.extend({
+      actions: {
+        willTransition: function(transition) {
+          if (this.controller.get('userHasEnteredData')) {
+            this.controller.displayNavigationConfirm();
+            transition.abort();
+          }
+        }
+      }
+    });
+    ```
+
+    You can also redirect elsewhere by calling
+    `this.transitionTo('elsewhere')` from within `willTransition`.
+    Note that `willTransition` will not be fired for the
+    redirecting `transitionTo`, since `willTransition` doesn't
+    fire when there is already a transition underway. If you want
+    subsequent `willTransition` actions to fire for the redirecting
+    transition, you must first explicitly call
+    `transition.abort()`.
+
+    @event willTransition
+    @param {Transition} transition
+  */
+
+  /**
+    The `didTransition` action is fired after a transition has
+    successfully been completed. This occurs after the normal model
+    hooks (`beforeModel`, `model`, `afterModel`, `setupController`)
+    have resolved. The `didTransition` action has no arguments,
+    however, it can be useful for tracking page views or resetting
+    state on the controller.
+
+    ```js
+    App.LoginRoute = Ember.Route.extend({
+      actions: {
+        didTransition: function() {
+          this.controller.get('errors.base').clear();
+          return true; // Bubble the didTransition event
+        }
+      }
+    });
+    ```
+
+    @event didTransition
+    @since 1.2.0
+  */
+
+  /**
+    The `loading` action is fired on the route when a route's `model`
+    hook returns a promise that is not already resolved. The current
+    `Transition` object is the first parameter and the route that
+    triggered the loading event is the second parameter.
+
+    ```js
+    App.ApplicationRoute = Ember.Route.extend({
+      actions: {
+        loading: function(transition, route) {
+          var view = Ember.View.create({
+            classNames: ['app-loading']
+          })
+          .append();
+
+          this.router.one('didTransition', function () {
+            view.destroy();
+          });
+          return true; // Bubble the loading event
+        }
+      }
+    });
+    ```
+
+    @event loading
+    @param {Transition} transition
+    @param {Ember.Route} route The route that triggered the loading event
+    @since 1.2.0
+  */
+
+  /**
+    When attempting to transition into a route, any of the hooks
+    may return a promise that rejects, at which point an `error`
+    action will be fired on the partially-entered routes, allowing
+    for per-route error handling logic, or shared error handling
+    logic defined on a parent route.
+
+    Here is an example of an error handler that will be invoked
+    for rejected promises from the various hooks on the route,
+    as well as any unhandled errors from child routes:
+
+    ```js
+    App.AdminRoute = Ember.Route.extend({
+      beforeModel: function() {
+        return Ember.RSVP.reject("bad things!");
+      },
+
+      actions: {
+        error: function(error, transition) {
+          // Assuming we got here due to the error in `beforeModel`,
+          // we can expect that error === "bad things!",
+          // but a promise model rejecting would also
+          // call this hook, as would any errors encountered
+          // in `afterModel`.
+
+          // The `error` hook is also provided the failed
+          // `transition`, which can be stored and later
+          // `.retry()`d if desired.
+
+          this.transitionTo('login');
+        }
+      }
+    });
+    ```
+
+    `error` actions that bubble up all the way to `ApplicationRoute`
+    will fire a default error handler that logs the error. You can
+    specify your own global default error handler by overriding the
+    `error` handler on `ApplicationRoute`:
+
+    ```js
+    App.ApplicationRoute = Ember.Route.extend({
+      actions: {
+        error: function(error, transition) {
+          this.controllerFor('banner').displayError(error.message);
+        }
+      }
+    });
+    ```
+    @event error
+    @param {Error} error
+    @param {Transition} transition
+  */
+
+  /**
+    The controller associated with this route.
+
+    Example
+
+    ```javascript
+    App.FormRoute = Ember.Route.extend({
+      actions: {
+        willTransition: function(transition) {
+          if (this.controller.get('userHasEnteredData') &&
+              !confirm("Are you sure you want to abandon progress?")) {
+            transition.abort();
+          } else {
+            // Bubble the `willTransition` action so that
+            // parent routes can decide whether or not to abort.
+            return true;
+          }
+        }
+      }
+    });
+    ```
+
+    @property controller
+    @type Ember.Controller
+    @since 1.6.0
+  */
+
+  /**
     The collection of functions, keyed by name, available on this route as
     action targets.
 
