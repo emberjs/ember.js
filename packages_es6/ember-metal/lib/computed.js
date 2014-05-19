@@ -642,6 +642,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
     todoList.get('done'); // true
     ```
 
+    @since 1.6.0
     @method computed.empty
     @for Ember
     @param {String} dependentKey

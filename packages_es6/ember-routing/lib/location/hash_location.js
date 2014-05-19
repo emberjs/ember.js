@@ -33,6 +33,7 @@ var HashLocation = EmberObject.extend({
 
     Returns normalized location.hash
 
+    @since 1.5.1
     @method getHash
   */
   getHash: EmberLocation._getHash,
