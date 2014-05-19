@@ -376,3 +376,36 @@ test("it should wrap keyword with object controller", function() {
 
   run(function() { view.destroy(); }); // destroy existing view
 });
+
+test("it should destroy the generated controller upon willDestroy", function() {
+  var destroyed = false;
+  var Controller = ObjectController.extend({
+    willDestroy: function() {
+      this._super();
+      destroyed = true;
+    }
+  });
+
+  var person = EmberObject.create({name: 'Steve Holt'});
+  var container = new Container();
+
+  var parentController = EmberObject.create({
+    container: container,
+    person: person,
+    name: 'Bob Loblaw'
+  });
+
+  view = EmberView.create({
+    container: container,
+    template: EmberHandlebars.compile('{{#with person controller="person"}}{{controllerName}}{{/with}}'),
+    controller: parentController
+  });
+
+  container.register('controller:person', Controller);
+
+  appendView(view);
+
+  run(view, 'destroy'); // destroy existing view
+
+  ok(destroyed, 'controller was destroyed properly');
+});
