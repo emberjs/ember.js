@@ -34,6 +34,13 @@ function exists(value) {
   return !isNone(value);
 }
 
+var _HandlebarsBoundWithControllerView = _HandlebarsBoundView.extend({
+  willDestroy: function() {
+    this._super();
+    this.get('controller').destroy();
+  }
+});
+
 // Binds a property into the DOM. This will create a hook in DOM that the
 // KVO system will look for and update if the property changes.
 function bind(property, options, preserveContext, shouldDisplay, valueNormalizer, childProperties) {
@@ -70,10 +77,8 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
       template(context, { data: options.data });
     } else {
-      // Create the view that will wrap the output of this template/property
-      // and add it to the nearest view's childViews array.
-      // See the documentation of Ember._HandlebarsBoundView for more.
-      var bindView = view.createChildView(Ember._HandlebarsBoundView, {
+      var viewClass = _HandlebarsBoundView;
+      var viewOptions = {
         preserveContext: preserveContext,
         shouldDisplayFunc: shouldDisplay,
         valueNormalizerFunc: valueNormalizer,
@@ -84,7 +89,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
         previousContext: currentContext,
         isEscaped: !options.hash.unescaped,
         templateData: options.data
-      });
+      };
 
       if (options['withHelper'] && options.hash.controller) {
         var controller = this.container.lookupFactory('controller:'+options.hash.controller).create({
@@ -93,15 +98,18 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
           target: currentContext
         });
 
-        bindView.setProperties({
-          controller: controller,
-          valueNormalizerFunc: function (result) {
-            controller.set('content', result);
-
-            return controller;
-          }
-        });
+        viewOptions.controller = controller;
+        viewOptions.valueNormalizerFunc = function(result) {
+          controller.set('content', result);
+          return controller;
+        };
+        viewClass = _HandlebarsBoundWithControllerView;
       }
+
+      // Create the view that will wrap the output of this template/property
+      // and add it to the nearest view's childViews array.
+      // See the documentation of Ember._HandlebarsBoundView for more.
+      var bindView = view.createChildView(viewClass, viewOptions);
 
       view.appendChild(bindView);
 
