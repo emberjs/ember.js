@@ -34,6 +34,7 @@ export default {
     This property is used by router:main to know whether to cancel the routing
     setup process, which is needed while we redirect the browser.
 
+    @since 1.5.1
     @property cancelRouterSetup
     @default false
   */
@@ -44,6 +45,7 @@ export default {
 
     Will be pre-pended to path upon state change.
 
+    @since 1.5.1
     @property rootURL
     @default '/'
   */
@@ -54,6 +56,7 @@ export default {
 
     Attached for mocking in tests
 
+    @since 1.5.1
     @property _window
     @default window
   */
@@ -74,6 +77,7 @@ export default {
 
     Attached for mocking in tests
 
+    @since 1.5.1
     @property _history
     @default window.history
   */
@@ -84,6 +88,7 @@ export default {
 
     Attached for mocking in tests
 
+    @since 1.5.1
     @property _HistoryLocation
     @default Ember.HistoryLocation
   */
@@ -94,6 +99,7 @@ export default {
 
     Attached for mocking in tests
 
+    @since 1.5.1
     @property _HashLocation
     @default Ember.HashLocation
   */
@@ -104,6 +110,7 @@ export default {
 
     Attached for mocking in tests
 
+    @since 1.5.1
     @property _NoneLocation
     @default Ember.NoneLocation
   */
@@ -186,6 +193,7 @@ export default {
   },
 
   /**
+    @since 1.5.1
     @private
     @method _getRootURL
   */
@@ -215,6 +223,7 @@ export default {
 
     Returns normalized location.hash as an alias to Ember.Location._getHash
 
+    @since 1.5.1
     @method _getHash
   */
   _getHash: EmberLocation._getHash,
@@ -224,6 +233,7 @@ export default {
 
     Returns location.search
 
+    @since 1.5.1
     @method _getQuery
   */
   _getQuery: function () {
