@@ -32,10 +32,23 @@ var vendor = pickFiles('vendor', {
   destDir: '/vendor'
 });
 
-var qunit = pickFiles('test', {
-  srcDir: '/',
-  files: ['qunit.js', 'qunit.css'],
-  destDir: '/'
+var bower = 'bower_components';
+
+var loader = pickFiles(bower, {
+  srcDir: '/loader',
+  files: [ 'loader.js' ],
+  destDir: '/vendor'
+});
+
+var handlebars = pickFiles(bower, {
+  srcDir: '/handlebars',
+  files: [ 'handlebars.amd.js' ],
+  destDir: '/vendor'
+});
+
+var qunit = pickFiles(bower, {
+  srcDir: '/qunit/qunit',
+  destDir: '/vendor'
 });
 
 var qunitIndex = pickFiles('test', {
@@ -44,4 +57,4 @@ var qunitIndex = pickFiles('test', {
   destDir: '/'
 });
 
-module.exports = mergeTrees([concatted, vendor, qunitIndex, qunit]);
+module.exports = mergeTrees([concatted, vendor, loader, handlebars, qunit, qunitIndex]);

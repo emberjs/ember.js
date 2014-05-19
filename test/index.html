@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8">
   <title>QUnit Example</title>
-  <link rel="stylesheet" href="qunit.css">
+  <link rel="stylesheet" href="vendor/qunit.css">
 </head>
 <body>
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
-  <script src="qunit.js"></script>
+  <script src="vendor/qunit.js"></script>
   <script src="vendor/loader.js"></script>
   <script src="vendor/handlebars.amd.js"></script>
   <script src="vendor/simple-html-tokenizer.amd.js"></script>
   <script src="htmlbars-and-tests.amd.js"></script>
   <script type="text/javascript">
-    for (var key in requireModule.registry) {
+    for (var key in requireModule.entries) {
       if (/^htmlbars\/tests\//.test(key)) requireModule(key);
     }
   </script>
