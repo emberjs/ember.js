@@ -113,7 +113,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
         viewOptions.controller = controller;
         viewOptions.valueNormalizerFunc = function(result) {
-          controller.set('content', result);
+          controller.set('model', result);
           return controller;
         };
         viewClass = _HandlebarsBoundWithControllerView;

@@ -1124,7 +1124,7 @@ var Route = EmberObject.extend(ActionHandler, {
     This method is called with the controller for the current route and the
     model supplied by the `model` hook.
 
-    By default, the `setupController` hook sets the `content` property of
+    By default, the `setupController` hook sets the `model` property of
     the controller to the `model`.
 
     If you implement the `setupController` hook in your Route, it will
@@ -1387,7 +1387,7 @@ var Route = EmberObject.extend(ActionHandler, {
     });
     ```
 
-    Remember that the controller's `content` will be the route's model. In
+    Remember that the controller's `model` will be the route's model. In
     this case, the default model will be `App.Post.find(params.post_id)`.
 
     @method render

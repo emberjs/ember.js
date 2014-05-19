@@ -239,8 +239,8 @@ test("{{render}} helper with a supplied model should not fire observers on the c
   });
 
   var PostController = EmberObjectController.extend({
-    contentDidChange: observer('content', function(){
-      contentDidChange++;
+    modelDidChange: observer('model', function(){
+      modelDidChange++;
     })
   });
 
@@ -248,9 +248,9 @@ test("{{render}} helper with a supplied model should not fire observers on the c
 
   Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
 
-  var contentDidChange = 0;
+  var modelDidChange = 0;
   appendView(view);
-  equal(contentDidChange, 0, "content observer did not fire");
+  equal(modelDidChange, 0, "model observer did not fire");
 
 });
 
@@ -394,7 +394,7 @@ test("{{render}} helper should not treat invocations with falsy contexts as cont
   var PostController = EmberObjectController.extend();
   container.register('controller:post', PostController, {singleton: false});
 
-  Ember.TEMPLATES['post'] = compile("<p>{{#unless content}}NOTHING{{/unless}}</p>");
+  Ember.TEMPLATES['post'] = compile("<p>{{#unless model}}NOTHING{{/unless}}</p>");
 
   appendView(view);
 

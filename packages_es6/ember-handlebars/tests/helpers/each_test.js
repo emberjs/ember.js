@@ -220,7 +220,7 @@ test("it works inside a table element", function() {
 test("it supports itemController", function() {
   var Controller = EmberController.extend({
     controllerName: computed(function() {
-      return "controller:"+this.get('content.name');
+      return "controller:"+this.get('model.name');
     })
   });
 
@@ -272,7 +272,7 @@ test("itemController specified in template gets a parentController property", fu
   // on the proxied model.
   var Controller = ObjectController.extend({
         controllerName: computed(function() {
-          return "controller:" + get(this, 'content.name') + ' of ' + get(this, 'parentController.company');
+          return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
         })
       }),
       parentController = {
@@ -300,7 +300,7 @@ test("itemController specified in template gets a parentController property", fu
 test("itemController specified in ArrayController gets a parentController property", function() {
   var PersonController = ObjectController.extend({
         controllerName: computed(function() {
-          return "controller:" + get(this, 'content.name') + ' of ' + get(this, 'parentController.company');
+          return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
         })
       }),
       PeopleController = ArrayController.extend({
@@ -328,7 +328,7 @@ test("itemController specified in ArrayController gets a parentController proper
 test("itemController's parentController property, when the ArrayController has a parentController", function() {
   var PersonController = ObjectController.extend({
         controllerName: computed(function() {
-          return "controller:" + get(this, 'content.name') + ' of ' + get(this, 'parentController.company');
+          return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
         })
       }),
       PeopleController = ArrayController.extend({
@@ -361,7 +361,7 @@ test("itemController's parentController property, when the ArrayController has a
 test("it supports itemController when using a custom keyword", function() {
   var Controller = EmberController.extend({
     controllerName: computed(function() {
-      return "controller:"+this.get('content.name');
+      return "controller:"+this.get('model.name');
     })
   });
 
@@ -674,7 +674,7 @@ test("it doesn't assert when the morph tags have the same parent", function() {
 test("itemController specified in template with name binding does not change context", function() {
   var Controller = EmberController.extend({
     controllerName: computed(function() {
-      return "controller:"+this.get('content.name');
+      return "controller:"+this.get('model.name');
     })
   });
 
@@ -723,7 +723,7 @@ test("itemController specified in ArrayController with name binding does not cha
 
   var PersonController = ObjectController.extend({
         controllerName: computed(function() {
-          return "controller:" + get(this, 'content.name') + ' of ' + get(this, 'parentController.company');
+          return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
         })
       }),
       PeopleController = ArrayController.extend({

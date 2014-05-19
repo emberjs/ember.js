@@ -249,7 +249,7 @@ QUnit.module("Handlebars {{#with foo}} with defined controller");
 test("it should wrap context with object controller", function() {
   var Controller = ObjectController.extend({
     controllerName: computed(function() {
-      return "controller:"+this.get('content.name') + ' and ' + this.get('parentController.name');
+      return "controller:"+this.get('model.name') + ' and ' + this.get('parentController.name');
     })
   });
 
@@ -302,7 +302,7 @@ test("it should wrap context with object controller", function() {
 test("it should still have access to original parentController within an {{#each}}", function() {
   var Controller = ObjectController.extend({
     controllerName: computed(function() {
-      return "controller:"+this.get('content.name') + ' and ' + this.get('parentController.name');
+      return "controller:"+this.get('model.name') + ' and ' + this.get('parentController.name');
     })
   });
 

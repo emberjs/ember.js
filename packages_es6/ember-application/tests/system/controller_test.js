@@ -65,12 +65,12 @@ test("Mixin sets up controllers if there is needs before calling super", functio
 
   container.register('controller:another', ArrayController.extend({
     needs: 'posts',
-    contentBinding: 'controllers.posts'
+    modelBinding: 'controllers.posts'
   }));
 
   container.register('controller:posts', ArrayController.extend());
 
-  container.lookup('controller:posts').set('content', A(['a','b','c']));
+  container.lookup('controller:posts').set('model', A(['a','b','c']));
 
   deepEqual(['a','b','c'], container.lookup('controller:other').toArray());
   deepEqual(['a','b','c'], container.lookup('controller:another').toArray());

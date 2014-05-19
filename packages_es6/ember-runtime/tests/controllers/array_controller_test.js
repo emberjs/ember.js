@@ -10,7 +10,7 @@ MutableArrayTests.extend({
   newObject: function(ary) {
     var ret = ary ? ary.slice() : this.newFixture(3);
     return ArrayController.create({
-      content: Ember.A(ret)
+      model: Ember.A(ret)
     });
   },
 
@@ -23,15 +23,15 @@ MutableArrayTests.extend({
   }
 }).run();
 
-test("defaults it's `content` to an empty array", function () {
+test("defaults it's `model` to an empty array", function () {
   var Controller = ArrayController.extend();
-  deepEqual(Controller.create().get("content"), [], "`ArrayController` defaults it's content to an empty array");
+  deepEqual(Controller.create().get("model"), [], "`ArrayController` defaults it's model to an empty array");
   equal(Controller.create().get('firstObject'), undefined, 'can fetch firstObject');
   equal(Controller.create().get('lastObject'), undefined, 'can fetch lastObject');
 });
 
 
-test("Ember.ArrayController length property works even if content was not set initially", function() {
+test("Ember.ArrayController length property works even if model was not set initially", function() {
   var controller = ArrayController.create();
   controller.pushObject('item');
   equal(controller.get('length'), 1);
