@@ -3,6 +3,7 @@ import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 
+import Container from "ember-runtime/system/container";
 import EmberObject from "ember-runtime/system/object";
 import { Controller as EmberController } from "ember-runtime/controllers/controller";
 import EmberObjectController from "ember-runtime/controllers/object_controller";
@@ -178,6 +179,69 @@ test("should target the current controller inside an {{each}} loop", function() 
   equal(registeredTarget.root, itemController, "the item controller is the target of action");
 
   ActionHelper.registerAction = originalRegisterAction;
+});
+
+test("should target the with-controller inside an {{#with controller='person'}}", function() {
+  var registeredTarget;
+
+  ActionHelper.registerAction = function(actionName, options) {
+    registeredTarget = options.target;
+  };
+
+  var PersonController = EmberObjectController.extend();
+  var container = new Container();
+  var parentController = EmberObject.create({
+    container: container
+  });
+
+  view = EmberView.create({
+    container: container,
+    template: EmberHandlebars.compile('{{#with view.person controller="person"}}{{action "editTodo"}}{{/with}}'),
+    person: EmberObject.create(),
+    controller: parentController
+  });
+
+  container.register('controller:person', PersonController);
+
+  appendView();
+
+  ok(registeredTarget.root instanceof PersonController, "the with-controller is the target of action");
+
+  ActionHelper.registerAction = originalRegisterAction;
+});
+
+test("should target the with-controller inside an {{each}} in a {{#with controller='person'}}", function() {
+  var eventsCalled = [];
+
+  var PeopleController = EmberArrayController.extend({
+    actions: {
+      robert: function() { eventsCalled.push('robert'); },
+      brian: function() { eventsCalled.push('brian'); }
+    }
+  });
+
+  var container = new Container();
+  var parentController = EmberObject.create({
+    container: container,
+    people: Ember.A([
+      {name: 'robert'},
+      {name: 'brian'}
+    ]),
+  });
+
+  view = EmberView.create({
+    container: container,
+    template: EmberHandlebars.compile('{{#with people controller="people"}}{{#each}}<a href="#" {{action name}}>{{name}}</a>{{/each}}{{/with}}'),
+    controller: parentController
+  });
+
+  container.register('controller:people', PeopleController);
+
+  appendView();
+
+  view.$('a').trigger('click');
+
+  deepEqual(eventsCalled, ['robert', 'brian'], 'the events are fired properly');
 });
 
 test("should allow a target to be specified", function() {

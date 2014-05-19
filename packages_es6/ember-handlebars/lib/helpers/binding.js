@@ -47,6 +47,13 @@ function exists(value) {
   return !isNone(value);
 }
 
+var _HandlebarsBoundWithControllerView = _HandlebarsBoundView.extend({
+  willDestroy: function() {
+    this._super();
+    this.get('controller').destroy();
+  }
+});
+
 // Binds a property into the DOM. This will create a hook in DOM that the
 // KVO system will look for and update if the property changes.
 function bind(property, options, preserveContext, shouldDisplay, valueNormalizer, childProperties) {
@@ -83,10 +90,8 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
       template(context, { data: options.data });
     } else {
-      // Create the view that will wrap the output of this template/property
-      // and add it to the nearest view's childViews array.
-      // See the documentation of Ember._HandlebarsBoundView for more.
-      var bindView = view.createChildView(Ember._HandlebarsBoundView, {
+      var viewClass = _HandlebarsBoundView;
+      var viewOptions = {
         preserveContext: preserveContext,
         shouldDisplayFunc: shouldDisplay,
         valueNormalizerFunc: valueNormalizer,
@@ -97,15 +102,27 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
         previousContext: currentContext,
         isEscaped: !options.hash.unescaped,
         templateData: options.data
-      });
+      };
 
-      if (options.hash.controller) {
-        bindView.set('_contextController', this.container.lookupFactory('controller:'+options.hash.controller).create({
+      if (options['withHelper'] && options.hash.controller) {
+        var controller = this.container.lookupFactory('controller:'+options.hash.controller).create({
           container: currentContext.container,
           parentController: currentContext,
           target: currentContext
-        }));
+        });
+
+        viewOptions.controller = controller;
+        viewOptions.valueNormalizerFunc = function(result) {
+          controller.set('content', result);
+          return controller;
+        };
+        viewClass = _HandlebarsBoundWithControllerView;
       }
+
+      // Create the view that will wrap the output of this template/property
+      // and add it to the nearest view's childViews array.
+      // See the documentation of Ember._HandlebarsBoundView for more.
+      var bindView = view.createChildView(viewClass, viewOptions);
 
       view.appendChild(bindView);
 
@@ -428,6 +445,10 @@ function unboundIfHelper(property, fn) {
   @return {String} HTML string
 */
 function withHelper(context, options) {
+  options['withHelper'] = true;
+
+  var bindContext, preserveContext, controller;
+
   if (arguments.length === 4) {
     var keywordName, path, rootPath, normalized, contextPath;
 
@@ -459,15 +480,20 @@ function withHelper(context, options) {
 
     emberBind(localizedOptions.data.keywords, keywordName, contextPath);
 
-    return bind.call(this, path, localizedOptions, true, exists);
+    bindContext = this;
+    context = path;
+    options = localizedOptions;
+    preserveContext = true;
   } else {
     Ember.assert("You must pass exactly one argument to the with helper", arguments.length === 2);
     Ember.assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
-    return helpers.bind.call(options.contexts[0], context, options);
+
+    bindContext = options.contexts[0];
+    preserveContext = false;
   }
+
+  return bind.call(bindContext, context, options, preserveContext, exists);
 }
-
-
 /**
   See [boundIf](/api/classes/Ember.Handlebars.helpers.html#method_boundIf)
   and [unboundIf](/api/classes/Ember.Handlebars.helpers.html#method_unboundIf)
