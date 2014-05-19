@@ -356,7 +356,7 @@ GroupedEach.prototype = {
   item needs to be presented by a custom controller you can provide a
   `itemController` option which references a controller by lookup name.
   Each item in the loop will be wrapped in an instance of this controller
-  and the item itself will be set to the `content` property of that controller.
+  and the item itself will be set to the `model` property of that controller.
 
   This is useful in cases where properties of model objects need transformation
   or synthesis for display:
@@ -364,7 +364,7 @@ GroupedEach.prototype = {
   ```javascript
   App.DeveloperController = Ember.ObjectController.extend({
     isAvailableForHire: function() {
-      return !this.get('content.isEmployed') && this.get('content.isSeekingWork');
+      return !this.get('model.isEmployed') && this.get('model.isSeekingWork');
     }.property('isEmployed', 'isSeekingWork')
   })
   ```

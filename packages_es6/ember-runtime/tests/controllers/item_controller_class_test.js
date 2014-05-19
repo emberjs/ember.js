@@ -54,7 +54,7 @@ QUnit.module("Ember.ArrayController - itemController", {
 function createUnwrappedArrayController() {
   arrayController = ArrayController.create({
     container: container,
-    content: lannisters
+    model: lannisters
   });
 }
 
@@ -62,7 +62,7 @@ function createArrayController() {
   arrayController = ArrayController.create({
     container: container,
     itemController: 'Item',
-    content: lannisters
+    model: lannisters
   });
 }
 
@@ -76,7 +76,7 @@ function createDynamicArrayController() {
         return "OtherItem";
       }
     },
-    content: lannisters
+    model: lannisters
   });
 }
 
@@ -158,7 +158,7 @@ test("when the underlying array changes, old subcontainers are destroyed", funct
   equal(!!cerseiController.isDestroying, false, "precond - nobody is destroyed yet");
 
   run(function() {
-    arrayController.set('content', Ember.A());
+    arrayController.set('model', Ember.A());
   });
 
   equal(!!jaimeController.isDestroying, true, "old subcontainers are destroyed");
@@ -193,7 +193,7 @@ test("when items are removed from the arrayController, their respective subconta
   equal(!!jaimeController.isDestroying, false, "Retained objects' containers are not cleaned up");
 });
 
-test("one cannot remove wrapped content directly when specifying `itemController`", function() {
+test("one cannot remove wrapped model directly when specifying `itemController`", function() {
   createArrayController();
   var jaimeController = arrayController.objectAtContent(1),
       cerseiController = arrayController.objectAtContent(2);
@@ -242,7 +242,7 @@ test("when `idx` is out of range, `lookupItemController` is not called", functio
     lookupItemController: function(object) {
       ok(false, "`lookupItemController` should not be called when `idx` is out of range");
     },
-    content: lannisters
+    model: lannisters
   });
 
   strictEqual(arrayController.objectAtContent(50), undefined, "no controllers are created for indexes that are superior to the length");
@@ -255,7 +255,7 @@ test("if `lookupItemController` returns a string, it must be resolvable by the c
     lookupItemController: function(object) {
       return "NonExistant";
     },
-    content: lannisters
+    model: lannisters
   });
 
   throws(function() {
@@ -317,7 +317,7 @@ test("array observers can invoke `objectAt` without overwriting existing item co
   });
 
   equal(arrayObserverCalled, true, "Array observers are called normally");
-  equal(tywinController.get('name'), "Tywin", "Array observers calling `objectAt` does not overwrite existing controllers' content");
+  equal(tywinController.get('name'), "Tywin", "Array observers calling `objectAt` does not overwrite existing controllers' model");
 });
 
 test("`itemController`'s life cycle should be entangled with its parent controller", function() {

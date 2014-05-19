@@ -661,7 +661,7 @@ test("currentRouteName for '/user'", function(){
     equal(currentRouteName(App), 'user.index', "should equal 'user.index'.");
     equal(currentPath(App), 'user.index', "should equal 'user.index'.");
     equal(currentURL(App), '/user', "should equal '/user'.");
-    equal(App.__container__.lookup('route:user').get('controller.content.firstName'), 'Tom', "should equal 'Tom'.");
+    equal(App.__container__.lookup('route:user').get('controller.model.firstName'), 'Tom', "should equal 'Tom'.");
   });
 });
 
@@ -672,6 +672,6 @@ test("currentRouteName for '/user/profile'", function(){
     equal(currentRouteName(App), 'user.edit', "should equal 'user.edit'.");
     equal(currentPath(App), 'user.edit', "should equal 'user.edit'.");
     equal(currentURL(App), '/user/edit', "should equal '/user/edit'.");
-    equal(App.__container__.lookup('route:user').get('controller.content.firstName'), 'Tom', "should equal 'Tom'.");
+    equal(App.__container__.lookup('route:user').get('controller.model.firstName'), 'Tom', "should equal 'Tom'.");
   });
 });

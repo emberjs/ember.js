@@ -779,7 +779,7 @@ test("The {{link-to}} helper's bound parameter functionality works as expected i
   var $link = Ember.$('#self-link', '#qunit-fixture');
   equal(normalizeUrl($link.attr('href')), '/posts/1', 'self link renders post 1');
 
-  Ember.run(postController, 'set', 'content', secondPost);
+  Ember.run(postController, 'set', 'model', secondPost);
   var linkView = Ember.View.views['self-link'];
 
   equal(normalizeUrl($link.attr('href')), '/posts/2', 'self link updated to post 2');

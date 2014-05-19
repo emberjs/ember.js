@@ -593,7 +593,7 @@ test("Template updates correctly if a path is passed to the bind helper and the 
     price: "$4"
   });
 
-  set(controller, 'content', realObject);
+  set(controller, 'model', realObject);
 
   view = EmberView.create({
     container: container,

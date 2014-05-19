@@ -259,7 +259,7 @@ test("The Homepage with explicit template name in renderTemplate and controller"
 });
 
 if(Ember.FEATURES.isEnabled("ember-routing-add-model-option")) {
-test("Model passed via renderTemplate model is set as controller's content", function(){
+test("Model passed via renderTemplate model is set as controller's model", function(){
   Ember.TEMPLATES['bio'] = compile("<p>{{name}}</p>");
 
   App.BioController = Ember.ObjectController.extend();
@@ -278,7 +278,7 @@ test("Model passed via renderTemplate model is set as controller's content", fun
 
   bootApplication();
 
-  equal(Ember.$('p:contains(emberjs)', '#qunit-fixture').length, 1, "Passed model was set as controllers content");
+  equal(Ember.$('p:contains(emberjs)', '#qunit-fixture').length, 1, "Passed model was set as controllers model");
 });
 }
 
@@ -645,12 +645,12 @@ test("The Specials Page getting its controller context by deserializing the para
     },
 
     setupController: function(controller, model) {
-      set(controller, 'content', model);
+      set(controller, 'model', model);
     }
   });
 
   Ember.TEMPLATES.special = Ember.Handlebars.compile(
-    "<p>{{content.menuItemId}}</p>"
+    "<p>{{model.menuItemId}}</p>"
   );
 
   bootApplication();
@@ -679,12 +679,12 @@ test("The Specials Page defaults to looking models up via `find`", function() {
 
   App.SpecialRoute = Ember.Route.extend({
     setupController: function(controller, model) {
-      set(controller, 'content', model);
+      set(controller, 'model', model);
     }
   });
 
   Ember.TEMPLATES.special = Ember.Handlebars.compile(
-    "<p>{{content.id}}</p>"
+    "<p>{{model.id}}</p>"
   );
 
   bootApplication();
@@ -721,12 +721,12 @@ test("The Special Page returning a promise puts the app into a loading state unt
 
   App.SpecialRoute = Ember.Route.extend({
     setupController: function(controller, model) {
-      set(controller, 'content', model);
+      set(controller, 'model', model);
     }
   });
 
   Ember.TEMPLATES.special = Ember.Handlebars.compile(
-    "<p>{{content.id}}</p>"
+    "<p>{{model.id}}</p>"
   );
 
   Ember.TEMPLATES.loading = Ember.Handlebars.compile(
@@ -769,12 +769,12 @@ test("The loading state doesn't get entered for promises that resolve on the sam
 
   App.SpecialRoute = Ember.Route.extend({
     setupController: function(controller, model) {
-      set(controller, 'content', model);
+      set(controller, 'model', model);
     }
   });
 
   Ember.TEMPLATES.special = Ember.Handlebars.compile(
-    "<p>{{content.id}}</p>"
+    "<p>{{model.id}}</p>"
   );
 
   Ember.TEMPLATES.loading = Ember.Handlebars.compile(
@@ -921,7 +921,7 @@ asyncTest("Moving from one page to another triggers the correct callbacks", func
 
   App.SpecialRoute = Ember.Route.extend({
     setupController: function(controller, model) {
-      set(controller, 'content', model);
+      set(controller, 'model', model);
     }
   });
 
@@ -930,7 +930,7 @@ asyncTest("Moving from one page to another triggers the correct callbacks", func
   );
 
   Ember.TEMPLATES.special = Ember.Handlebars.compile(
-    "<p>{{content.id}}</p>"
+    "<p>{{model.id}}</p>"
   );
 
   bootApplication();
@@ -1011,7 +1011,7 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
 
   App.SpecialRoute = Ember.Route.extend({
     setupController: function(controller, model) {
-      set(controller, 'content', model);
+      set(controller, 'model', model);
     }
   });
 
@@ -1020,7 +1020,7 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
   );
 
   Ember.TEMPLATES.special = Ember.Handlebars.compile(
-    "<p>{{content.id}}</p>"
+    "<p>{{model.id}}</p>"
   );
 
   Ember.TEMPLATES.loading = Ember.Handlebars.compile(
@@ -1087,7 +1087,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   });
 
   Ember.TEMPLATES.home = Ember.Handlebars.compile(
-    "<a {{action 'showStuff' content}}>{{name}}</a>"
+    "<a {{action 'showStuff' model}}>{{name}}</a>"
   );
 
   var controller = Ember.Controller.extend({
@@ -1133,7 +1133,7 @@ asyncTest("Events are triggered on the current state when defined in `actions` o
   });
 
   Ember.TEMPLATES.home = Ember.Handlebars.compile(
-    "<a {{action 'showStuff' content}}>{{name}}</a>"
+    "<a {{action 'showStuff' model}}>{{name}}</a>"
   );
 
   bootApplication();
@@ -1171,7 +1171,7 @@ asyncTest("Events defined in `actions` object are triggered on the current state
   });
 
   Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
-    "<a {{action 'showStuff' content}}>{{name}}</a>"
+    "<a {{action 'showStuff' model}}>{{name}}</a>"
   );
 
   bootApplication();
@@ -1205,7 +1205,7 @@ asyncTest("Events are triggered on the current state when defined in `events` ob
   });
 
   Ember.TEMPLATES.home = Ember.Handlebars.compile(
-    "<a {{action 'showStuff' content}}>{{name}}</a>"
+    "<a {{action 'showStuff' model}}>{{name}}</a>"
   );
 
   expectDeprecation(/Action handlers contained in an `events` object are deprecated/);
@@ -1244,7 +1244,7 @@ asyncTest("Events defined in `events` object are triggered on the current state 
   });
 
   Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
-    "<a {{action 'showStuff' content}}>{{name}}</a>"
+    "<a {{action 'showStuff' model}}>{{name}}</a>"
   );
 
   expectDeprecation(/Action handlers contained in an `events` object are deprecated/);
@@ -1319,7 +1319,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
     });
 
     Ember.TEMPLATES.home = Ember.Handlebars.compile(
-      "<a {{action 'showStuff' content}}>{{name}}</a>"
+      "<a {{action 'showStuff' model}}>{{name}}</a>"
     );
 
     var controller = Ember.Controller.extend({
@@ -1361,7 +1361,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
     });
 
     Ember.TEMPLATES.home = Ember.Handlebars.compile(
-      "<a {{action 'showStuff' content}}>{{name}}</a>"
+      "<a {{action 'showStuff' model}}>{{name}}</a>"
     );
 
     var controller = Ember.Controller.extend({
