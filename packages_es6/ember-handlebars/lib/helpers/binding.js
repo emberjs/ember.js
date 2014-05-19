@@ -99,12 +99,21 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
         templateData: options.data
       });
 
-      if (options.hash.controller) {
-        bindView.set('_contextController', this.container.lookupFactory('controller:'+options.hash.controller).create({
+      if (options['withHelper'] && options.hash.controller) {
+        var controller = this.container.lookupFactory('controller:'+options.hash.controller).create({
           container: currentContext.container,
           parentController: currentContext,
           target: currentContext
-        }));
+        });
+
+        bindView.setProperties({
+          controller: controller,
+          valueNormalizerFunc: function (result) {
+            controller.set('content', result);
+
+            return controller;
+          }
+        });
       }
 
       view.appendChild(bindView);
@@ -428,6 +437,10 @@ function unboundIfHelper(property, fn) {
   @return {String} HTML string
 */
 function withHelper(context, options) {
+  options['withHelper'] = true;
+
+  var bindContext, preserveContext, controller;
+
   if (arguments.length === 4) {
     var keywordName, path, rootPath, normalized, contextPath;
 
@@ -459,15 +472,20 @@ function withHelper(context, options) {
 
     emberBind(localizedOptions.data.keywords, keywordName, contextPath);
 
-    return bind.call(this, path, localizedOptions, true, exists);
+    bindContext = this;
+    context = path;
+    options = localizedOptions;
+    preserveContext = true;
   } else {
     Ember.assert("You must pass exactly one argument to the with helper", arguments.length === 2);
     Ember.assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
-    return helpers.bind.call(options.contexts[0], context, options);
+
+    bindContext = options.contexts[0];
+    preserveContext = false;
   }
+
+  return bind.call(bindContext, context, options, preserveContext, exists);
 }
-
-
 /**
   See [boundIf](/api/classes/Ember.Handlebars.helpers.html#method_boundIf)
   and [unboundIf](/api/classes/Ember.Handlebars.helpers.html#method_unboundIf)
