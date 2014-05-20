@@ -1,14 +1,3 @@
-packages/container
-packages/ember-metal
-packages/ember-runtime
-packages/ember-debug
-packages/ember-views
-packages/ember-extension-support
-packages/ember-testing
-packages/ember-handlebars-compiler
-packages/ember-handlebars
-packages/ember-routing
-packages/ember-application
 *.bpkg
 *.gem
 *.rbc
