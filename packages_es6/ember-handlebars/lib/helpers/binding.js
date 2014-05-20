@@ -13,6 +13,7 @@ var SafeString = EmberHandlebars.SafeString;
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import {fmt} from "ember-runtime/system/string";
+import { apply } from "ember-metal/utils";
 import {create as o_create} from "ember-metal/platform";
 import isNone from 'ember-metal/is_none';
 import EnumerableUtils from "ember-metal/enumerable_utils";
@@ -34,10 +35,55 @@ function exists(value) {
   return !isNone(value);
 }
 
-var _HandlebarsBoundWithControllerView = _HandlebarsBoundView.extend({
+var WithView = _HandlebarsBoundView.extend({
+  init: function() {
+    var controller;
+
+    apply(this, this._super, arguments);
+
+    var keywords        = this.get('templateData.keywords');
+    var keywordName     = this.get('templateHash.keywordName');
+    var keywordPath     = this.get('templateHash.keywordPath');
+    var controllerName  = this.get('templateHash.controller');
+    var preserveContext = this.get('preserveContext');
+
+    if (controllerName) {
+      var previousContext = this.get('previousContext');
+      controller = this.container.lookupFactory('controller:'+controllerName).create({
+        container: this.container,
+        parentController: previousContext,
+        target: previousContext
+      });
+
+      this.set('_generatedController', controller);
+
+      if (!preserveContext) {
+        this.set('controller', controller);
+
+        this.set('valueNormalizerFunc', function(result) {
+            controller.set('model', result);
+            return controller;
+        });
+      } else {
+        var controllerPath = jQuery.expando + guidFor(controller);
+        keywords[controllerPath] = controller;
+        emberBind(keywords, controllerPath + '.model', keywordPath);
+        keywordPath = controllerPath;
+      }
+    }
+
+    if (preserveContext) {
+      emberBind(keywords, keywordName, keywordPath);
+    }
+
+  },
   willDestroy: function() {
     this._super();
-    this.get('controller').destroy();
+
+    var generatedController = this.get('_generatedController');
+    if (generatedController) {
+      generatedController.destroy();
+    }
   }
 });
 
@@ -88,22 +134,12 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
         pathRoot: currentContext,
         previousContext: currentContext,
         isEscaped: !options.hash.unescaped,
-        templateData: options.data
+        templateData: options.data,
+        templateHash: options.hash
       };
 
-      if (options['withHelper'] && options.hash.controller) {
-        var controller = this.container.lookupFactory('controller:'+options.hash.controller).create({
-          container: currentContext.container,
-          parentController: currentContext,
-          target: currentContext
-        });
-
-        viewOptions.controller = controller;
-        viewOptions.valueNormalizerFunc = function(result) {
-          controller.set('content', result);
-          return controller;
-        };
-        viewClass = _HandlebarsBoundWithControllerView;
+      if (options['helperName'] === 'with') {
+        viewClass = WithView;
       }
 
       // Create the view that will wrap the output of this template/property
@@ -432,8 +468,6 @@ function unboundIfHelper(property, fn) {
   @return {String} HTML string
 */
 function withHelper(context, options) {
-  options['withHelper'] = true;
-
   var bindContext, preserveContext, controller;
 
   if (arguments.length === 4) {
@@ -465,7 +499,8 @@ function withHelper(context, options) {
       contextPath = path ? contextKey + '.' + path : contextKey;
     }
 
-    emberBind(localizedOptions.data.keywords, keywordName, contextPath);
+    localizedOptions.hash.keywordName = keywordName;
+    localizedOptions.hash.keywordPath = contextPath;
 
     bindContext = this;
     context = path;
@@ -478,6 +513,8 @@ function withHelper(context, options) {
     bindContext = options.contexts[0];
     preserveContext = false;
   }
+
+  options['helperName'] = 'with';
 
   return bind.call(bindContext, context, options, preserveContext, exists);
 }
