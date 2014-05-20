@@ -34,22 +34,24 @@ $(function() {
     patch it to work correctly as in the commit for the actual fix:
     https://github.com/jquery/jquery/commit/1fb2f92.
   */
-  testCheckboxClick(function() {
-    if (!this.checked && !$.event.special.click) {
-      $.event.special.click = {
-        // For checkbox, fire native event so checked state will be right
-        trigger: function() {
-          if ($.nodeName( this, "input" ) && this.type === "checkbox" && this.click) {
-            this.click();
-            return false;
+  if (typeof document !== 'undefined') {
+    testCheckboxClick(function() {
+      if (!this.checked && !$.event.special.click) {
+        $.event.special.click = {
+          // For checkbox, fire native event so checked state will be right
+          trigger: function() {
+            if ($.nodeName( this, "input" ) && this.type === "checkbox" && this.click) {
+              this.click();
+              return false;
+            }
           }
-        }
-      };
-    }
-  });
+        };
+      }
+    });
 
-  // Try again to verify that the patch took effect or blow up.
-  testCheckboxClick(function() {
-    Ember.warn("clicked checkboxes should be checked! the jQuery patch didn't work", this.checked);
-  });
+    // Try again to verify that the patch took effect or blow up.
+    testCheckboxClick(function() {
+      Ember.warn("clicked checkboxes should be checked! the jQuery patch didn't work", this.checked);
+    });
+  }
 });

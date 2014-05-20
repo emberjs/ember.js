@@ -165,7 +165,7 @@ Ember.runInDebug = function(func) {
 // Inform the developer about the Ember Inspector if not installed.
 if (!Ember.testing) {
   var isFirefox = typeof InstallTrigger !== 'undefined';
-  var isChrome = !!window.chrome && !window.opera;
+  var isChrome = typeof window !== 'undefined' && !!window.chrome && !window.opera;
 
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
     window.addEventListener("load", function() {
