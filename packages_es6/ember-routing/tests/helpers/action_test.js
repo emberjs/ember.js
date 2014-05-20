@@ -223,7 +223,7 @@ test("should target the with-controller inside an {{each}} in a {{#with controll
     people: Ember.A([
       {name: 'robert'},
       {name: 'brian'}
-    ]),
+    ])
   });
 
   view = EmberView.create({
