@@ -14,6 +14,8 @@ var builder = new broccoli.Builder(tree);
 
 var buildPath = process.argv[2] || 'dist';
 
+console.log('Building ember.js "' + process.env.BROCCOLI_ENV + '" to "' + buildPath + '/"...');
+
 builder.build()
   .then(function(results) {
     return rimraf(buildPath)
