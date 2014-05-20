@@ -6,6 +6,7 @@ import EmberObject from "ember-runtime/system/object";
 import { computed } from "ember-metal/computed";
 import EmberHandlebars from "ember-handlebars-compiler";
 import { set } from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import Container from "ember-runtime/system/container";
 import { A } from "ember-runtime/system/native_array";
@@ -331,7 +332,11 @@ test("it should still have access to original parentController within an {{#each
 });
 
 test("it should wrap keyword with object controller", function() {
-  var PersonController = ObjectController.extend();
+  var PersonController = ObjectController.extend({
+    name: computed('model.name', function() {
+      return get(this, 'model.name').toUpperCase();
+    })
+  });
 
   var person = EmberObject.create({name: 'Steve Holt'});
   var container = new Container();
@@ -352,32 +357,32 @@ test("it should wrap keyword with object controller", function() {
 
   appendView(view);
 
-  equal(view.$().text(), "Bob Loblaw - Steve Holt");
+  equal(view.$().text(), "Bob Loblaw - STEVE HOLT");
 
   run(function() {
     view.rerender();
   });
 
-  equal(view.$().text(), "Bob Loblaw - Steve Holt");
+  equal(view.$().text(), "Bob Loblaw - STEVE HOLT");
 
   run(function() {
     parentController.set('name', 'Carl Weathers');
     view.rerender();
   });
 
-  equal(view.$().text(), "Carl Weathers - Steve Holt");
+  equal(view.$().text(), "Carl Weathers - STEVE HOLT");
 
   run(function() {
     person.set('name', 'Gob');
     view.rerender();
   });
 
-  equal(view.$().text(), "Carl Weathers - Gob");
+  equal(view.$().text(), "Carl Weathers - GOB");
 
   run(function() { view.destroy(); }); // destroy existing view
 });
 
-test("it should destroy the generated controller upon willDestroy", function() {
+test("destroys the controller generated with {{with foo controller='blah'}}", function() {
   var destroyed = false;
   var Controller = ObjectController.extend({
     willDestroy: function() {
@@ -398,6 +403,39 @@ test("it should destroy the generated controller upon willDestroy", function() {
   view = EmberView.create({
     container: container,
     template: EmberHandlebars.compile('{{#with person controller="person"}}{{controllerName}}{{/with}}'),
+    controller: parentController
+  });
+
+  container.register('controller:person', Controller);
+
+  appendView(view);
+
+  run(view, 'destroy'); // destroy existing view
+
+  ok(destroyed, 'controller was destroyed properly');
+});
+
+test("destroys the controller generated with {{with foo as bar controller='blah'}}", function() {
+  var destroyed = false;
+  var Controller = ObjectController.extend({
+    willDestroy: function() {
+      this._super();
+      destroyed = true;
+    }
+  });
+
+  var person = EmberObject.create({name: 'Steve Holt'});
+  var container = new Container();
+
+  var parentController = EmberObject.create({
+    container: container,
+    person: person,
+    name: 'Bob Loblaw'
+  });
+
+  view = EmberView.create({
+    container: container,
+    template: EmberHandlebars.compile('{{#with person as steve controller="person"}}{{controllerName}}{{/with}}'),
     controller: parentController
   });
 

@@ -159,3 +159,21 @@ test("The `unbound if` helper does not update when the value changes", function(
   equal(view.$().text(), 'Nope');
 });
 
+test("The `if` helper ignores a controller option", function() {
+  var lookupCalled = false;
+
+  view = EmberView.create({
+    container: {
+      lookup: function() {
+        lookupCalled = true;
+      }
+    },
+    truthy: true,
+
+    template: compile('{{#if view.truthy controller="foo"}}Yep{{/if}}')
+  });
+
+  appendView(view);
+
+  equal(lookupCalled, false, 'controller option should NOT be used');
+});
