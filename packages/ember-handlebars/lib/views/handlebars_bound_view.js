@@ -164,7 +164,7 @@ merge(states.inDOM, {
 */
 var _HandlebarsBoundView = _MetamorphView.extend({
   instrumentName: 'boundHandlebars',
-  states: states,
+  _states: states,
 
   /**
     The function used to determine if the `displayTemplate` or

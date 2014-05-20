@@ -1049,3 +1049,52 @@ testBoth('computed.readOnly', function(get, set) {
 
   equal(get(obj, 'nickName'), 'TEDDDDDDDDYYY');
 });
+
+testBoth('computed.deprecatingAlias', function(get, set) {
+  var obj = { bar: 'asdf', baz: null, quz: false};
+  defineProperty(obj, 'bay', computed(function(key) {
+    return 'apple';
+  }));
+
+  defineProperty(obj, 'barAlias', computed.deprecatingAlias('bar'));
+  defineProperty(obj, 'bazAlias', computed.deprecatingAlias('baz'));
+  defineProperty(obj, 'quzAlias', computed.deprecatingAlias('quz'));
+  defineProperty(obj, 'bayAlias', computed.deprecatingAlias('bay'));
+
+  expectDeprecation(function() {
+    equal(get(obj, 'barAlias'), 'asdf');
+  }, 'Usage of `barAlias` is deprecated, use `bar` instead.');
+
+  expectDeprecation(function() {
+    equal(get(obj, 'bazAlias'), null);
+  }, 'Usage of `bazAlias` is deprecated, use `baz` instead.');
+
+  expectDeprecation(function() {
+    equal(get(obj, 'quzAlias'), false);
+  }, 'Usage of `quzAlias` is deprecated, use `quz` instead.');
+
+  expectDeprecation(function() {
+    equal(get(obj, 'bayAlias'), 'apple');
+  }, 'Usage of `bayAlias` is deprecated, use `bay` instead.');
+
+  expectDeprecation(function() {
+    set(obj, 'barAlias', 'newBar');
+  }, 'Usage of `barAlias` is deprecated, use `bar` instead.');
+
+  expectDeprecation(function() {
+    set(obj, 'bazAlias', 'newBaz');
+  }, 'Usage of `bazAlias` is deprecated, use `baz` instead.');
+
+  expectDeprecation(function() {
+    set(obj, 'quzAlias', null);
+  }, 'Usage of `quzAlias` is deprecated, use `quz` instead.');
+
+
+  equal(get(obj, 'barAlias'), 'newBar');
+  equal(get(obj, 'bazAlias'), 'newBaz');
+  equal(get(obj, 'quzAlias'), null);
+
+  equal(get(obj, 'bar'), 'newBar');
+  equal(get(obj, 'baz'), 'newBaz');
+  equal(get(obj, 'quz'), null);
+});
