@@ -48,7 +48,7 @@ var set = function set(obj, keyName, value, tolerant) {
   Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
   Ember.assert('calling set on destroyed object', !obj.isDestroyed);
 
-  if (desc !== undefined) {
+  if (typeof desc !== 'undefined' && desc !== null) {
     desc.set(obj, keyName, value);
   } else {
 
