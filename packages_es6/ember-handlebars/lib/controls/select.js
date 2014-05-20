@@ -599,10 +599,32 @@ var Select = View.extend({
     if (el) { el.selectedIndex = selectionIndex; }
   },
 
-  _selectionDidChangeMultiple: function() {
+  _indexesOfSelection : function() {
     var content = get(this, 'content'),
         selection = get(this, 'selection'),
-        selectedIndexes = content ? indexesOf(content, selection) : [-1],
+        valuePath = get(this, 'optionValuePath').replace(/^content\.?/, ''),
+        selectedIndexes = [];
+
+    if(content){
+      if (!valuePath){
+        return indexesOf(content, selection);
+      }else{
+        for (var selectionIndex = 0, selectionLength = selection.length; selectionIndex < selectionLength; selectionIndex++) {
+          for (var contentIndex = 0, contentLength = content.length; contentIndex < contentLength; contentIndex++) {
+            if (get(selection[selectionIndex],valuePath) === get(content[contentIndex],valuePath)) { 
+              selectedIndexes.push(contentIndex);
+            }
+          }
+        }
+      }
+    }else{
+      selectedIndexes.push(-1); 
+    }
+    return selectedIndexes;
+  },
+
+  _selectionDidChangeMultiple: function() {
+    var selectedIndexes = this._indexesOfSelection(),
         prompt = get(this, 'prompt'),
         offset = prompt ? 1 : 0,
         options = this.$('option'),

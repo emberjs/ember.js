@@ -175,6 +175,32 @@ test("can retrieve the current selected options when multiple=true", function() 
   deepEqual(select.get('selection'), [tom, david], "On change, the new options should be selected");
 });
 
+test("selection can be set with  deeply equal objects", function () {
+  var yehuda = { id: 1, firstName: 'Yehuda' },
+      tom = { id: 2, firstName: 'Tom' },
+      david = { id: 3, firstName: 'David' },
+      brennain = { id: 4, firstName: 'Brennain' },
+      aClonedTom = { id: 2, firstName: 'Tom' },
+      aClonedYehuda = { id: 1, firstName: 'Yehuda' };
+
+  run(function() {
+    select.set('content', Ember.A([yehuda, tom, david, brennain]));
+    select.set('multiple', true);
+    select.set('optionValuePath', 'content.id');
+    select.set('selection', aClonedTom);
+  });
+
+  append();
+
+  deepEqual(select.get('selection'), [tom], "Initial selection should be correct");
+
+  run(function() { select.set('selection', aClonedYehuda); });
+
+  deepEqual(select.get('selection'), [yehuda], "After changing it, selection should be correct");
+});
+
+
+
 test("selection can be set when multiple=false", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' },
       tom = { id: 2, firstName: 'Tom' };
