@@ -167,6 +167,7 @@ function es6Package(packageName) {
 
   libTree = pickFiles('packages/' + packageName + '/lib', {
     srcDir: '/',
+    files: ['**/*.js'],
     destDir: packageName
   });
 
@@ -187,6 +188,7 @@ function es6Package(packageName) {
 
   var testTree = pickFiles('packages/' + packageName + '/tests', {
     srcDir: '/',
+    files: ['**/*.js'],
     destDir: '/' + packageName + '/tests'
   });
 
