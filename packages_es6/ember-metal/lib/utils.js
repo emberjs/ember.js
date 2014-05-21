@@ -376,7 +376,7 @@ var EmberArray;
 */
 // ES6TODO: Move up to runtime? This is only use in ember-metal by concatenatedProperties
 function isArray(obj) {
-  var modulePath;
+  var modulePath, type;
 
   if (typeof EmberArray === "undefined") {
     modulePath = 'ember-runtime/mixins/array';
@@ -388,7 +388,10 @@ function isArray(obj) {
   if (!obj || obj.setInterval) { return false; }
   if (Array.isArray && Array.isArray(obj)) { return true; }
   if (EmberArray && EmberArray.detect(obj)) { return true; }
-  if ((obj.length !== undefined) && 'object'=== typeOf(obj)) { return true; }
+
+  type = typeOf(obj);
+  if ('array' === type) { return true; }
+  if ((obj.length !== undefined) && 'object' === type) { return true; }
   return false;
 };
 
