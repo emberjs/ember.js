@@ -206,6 +206,8 @@ var CollectionView = ContainerView.extend({
   */
   itemViewClass: View,
 
+  _preserveContext: false,
+
   /**
     Setup a CollectionView
 
@@ -340,7 +342,8 @@ var CollectionView = ContainerView.extend({
   */
   arrayDidChange: function(content, start, removed, added) {
     var addedViews = [], view, item, idx, len, itemViewClass,
-      emptyView;
+        attrs,
+        emptyView;
 
     len = content ? get(content, 'length') : 0;
 
@@ -358,10 +361,21 @@ var CollectionView = ContainerView.extend({
       for (idx = start; idx < start+added; idx++) {
         item = content.objectAt(idx);
 
-        view = this.createChildView(itemViewClass, {
+        attrs = {
           content: item,
           contentIndex: idx
-        });
+        };
+
+        if (this._preserveContext) {
+          set(get(this, 'context'), 'container', get(this, 'container'));
+          set(get(this, 'context'), 'parentController', get(this, 'controller'));
+          attrs.context = get(this, 'context');
+        }
+        else {
+          attrs.context = item;
+        }
+
+        view = this.createChildView(itemViewClass, attrs);
 
         addedViews.push(view);
       }

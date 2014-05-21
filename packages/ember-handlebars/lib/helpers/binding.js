@@ -107,7 +107,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
       if (options['withHelper'] && options.hash.controller) {
         var controller = this.container.lookupFactory('controller:'+options.hash.controller).create({
           container: currentContext.container,
-          parentController: currentContext,
+          parentController: get(currentContext, 'parentController') || currentContext,
           target: currentContext
         });
 

@@ -40,6 +40,12 @@ var EachView = CollectionView.extend(_Metamorph, {
     var itemController = get(this, 'itemController');
     var binding;
 
+    var keyword = get(this, 'keyword');
+
+    if (keyword) {
+      this._preserveContext = true;
+    }
+
     if (itemController) {
       var controller = get(this, 'controller.container').lookupFactory('controller:array').create({
         _isVirtual: true,
