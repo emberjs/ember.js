@@ -8,7 +8,7 @@ test("Ember.isArray" ,function() {
       number        = 23,
       strarray      = ["Hello", "Hi"],
       string        = "Hello",
-      object         = {},
+      object        = {},
       length        = {length: 12},
       fn            = function() {};
 
