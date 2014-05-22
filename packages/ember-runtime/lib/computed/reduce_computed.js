@@ -248,18 +248,15 @@ DependentArraysObserver.prototype = {
   dependentArrayWillChange: function (dependentArray, index, removedCount, addedCount) {
     if (this.suspended) { return; }
 
-    var removedItem = this.callbacks.removedItem,
-        changeMeta,
-        guid = guidFor(dependentArray),
-        dependentKey = this.dependentKeysByGuid[guid],
-        itemPropertyKeys = this.cp._itemPropertyKeys[dependentKey] || [],
-        length = get(dependentArray, 'length'),
-        normalizedIndex = normalizeIndex(index, length, 0),
-        normalizedRemoveCount = normalizeRemoveCount(normalizedIndex, length, removedCount),
-        item,
-        itemIndex,
-        sliceIndex,
-        observerContexts;
+    var removedItem = this.callbacks.removedItem;
+    var changeMeta;
+    var guid = guidFor(dependentArray);
+    var dependentKey = this.dependentKeysByGuid[guid];
+    var itemPropertyKeys = this.cp._itemPropertyKeys[dependentKey] || [];
+    var length = get(dependentArray, 'length');
+    var normalizedIndex = normalizeIndex(index, length, 0);
+    var normalizedRemoveCount = normalizeRemoveCount(normalizedIndex, length, removedCount);
+    var item, itemIndex, sliceIndex, observerContexts;
 
     observerContexts = this.trackRemove(dependentKey, normalizedIndex, normalizedRemoveCount);
 
@@ -286,15 +283,14 @@ DependentArraysObserver.prototype = {
   dependentArrayDidChange: function (dependentArray, index, removedCount, addedCount) {
     if (this.suspended) { return; }
 
-    var addedItem = this.callbacks.addedItem,
-        guid = guidFor(dependentArray),
-        dependentKey = this.dependentKeysByGuid[guid],
-        observerContexts = new Array(addedCount),
-        itemPropertyKeys = this.cp._itemPropertyKeys[dependentKey],
-        length = get(dependentArray, 'length'),
-        normalizedIndex = normalizeIndex(index, length, addedCount),
-        changeMeta,
-        observerContext;
+    var addedItem = this.callbacks.addedItem;
+    var guid = guidFor(dependentArray);
+    var dependentKey = this.dependentKeysByGuid[guid];
+    var observerContexts = new Array(addedCount);
+    var itemPropertyKeys = this.cp._itemPropertyKeys[dependentKey];
+    var length = get(dependentArray, 'length');
+    var normalizedIndex = normalizeIndex(index, length, addedCount);
+    var changeMeta, observerContext;
 
     forEach(dependentArray.slice(normalizedIndex, normalizedIndex + addedCount), function (item, sliceIndex) {
       if (itemPropertyKeys) {

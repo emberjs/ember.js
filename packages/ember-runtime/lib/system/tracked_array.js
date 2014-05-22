@@ -178,9 +178,9 @@ TrackedArray.prototype = {
   },
 
   _split: function (arrayOperationIndex, splitIndex, newArrayOperation) {
-    var arrayOperation = this._operations[arrayOperationIndex],
-        splitItems = arrayOperation.items.slice(splitIndex),
-        splitArrayOperation = new ArrayOperation(arrayOperation.type, splitItems.length, splitItems);
+    var arrayOperation = this._operations[arrayOperationIndex];
+    var splitItems = arrayOperation.items.slice(splitIndex);
+    var splitArrayOperation = new ArrayOperation(arrayOperation.type, splitItems.length, splitItems);
 
     // truncate LHS
     arrayOperation.count = splitIndex;
