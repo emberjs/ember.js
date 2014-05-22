@@ -133,7 +133,8 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
         previousContext: currentContext,
         isEscaped: !options.hash.unescaped,
         templateData: options.data,
-        templateHash: options.hash
+        templateHash: options.hash,
+        helperName: options.helperName
       };
 
       if (options.helperName === 'with') {
@@ -325,6 +326,8 @@ function bindHelper(property, options) {
     return simpleBind(context, property, options);
   }
 
+  options.helperName = 'bind';
+
   return bind.call(context, property, options, false, exists);
 }
 
@@ -347,6 +350,8 @@ function bindHelper(property, options) {
 */
 function boundIfHelper(property, fn) {
   var context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : this;
+
+  fn.helperName = fn.helperName || 'boundIf';
 
   return bind.call(context, property, fn, true, shouldDisplayIfHelperContent, shouldDisplayIfHelperContent, ['isTruthy', 'length']);
 }
@@ -529,6 +534,9 @@ function withHelper(context, options) {
 function ifHelper(context, options) {
   Ember.assert("You must pass exactly one argument to the if helper", arguments.length === 2);
   Ember.assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
+
+  options.helperName = options.helperName || ('if ' + context);
+
   if (options.data.isUnbound) {
     return helpers.unboundIf.call(options.contexts[0], context, options);
   } else {
@@ -551,6 +559,8 @@ function unlessHelper(context, options) {
 
   options.fn = inverse;
   options.inverse = fn;
+
+  options.helperName = options.helperName || 'unless';
 
   if (options.data.isUnbound) {
     return helpers.unboundIf.call(options.contexts[0], context, options);

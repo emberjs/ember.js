@@ -377,6 +377,8 @@ function viewHelper(path, options) {
     path = "Ember.View";
   }
 
+  options.helperName = options.helperName || 'view';
+
   return ViewHelper.helper(this, path, options);
 }
 

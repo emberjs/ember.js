@@ -27,6 +27,7 @@ import TextSupport from "ember-handlebars/controls/text_support";
   @uses Ember.TextSupport
 */
 var TextField = Component.extend(TextSupport, {
+  instrumentDisplay: '{{input type="text"}}',
 
   classNames: ['ember-text-field'],
   tagName: "input",

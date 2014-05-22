@@ -26,6 +26,8 @@ import {observer} from "ember-metal/mixin";
   @uses Ember.TextSupport
 */
 var TextArea = Component.extend(TextSupport, {
+  instrumentDisplay: '{{textarea}}',
+
   classNames: ['ember-text-area'],
 
   tagName: "textarea",

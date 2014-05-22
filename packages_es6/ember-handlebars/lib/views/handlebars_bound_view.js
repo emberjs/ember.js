@@ -20,8 +20,12 @@ import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
-import {View} from "ember-views/views/view";
-import {cloneStates, states} from "ember-views/views/states";
+import { computed } from "ember-metal/computed";
+import { View } from "ember-views/views/view";
+import {
+  cloneStates,
+  states
+} from "ember-views/views/states";
 var viewStates = states;
 
 import {_MetamorphView} from "ember-handlebars/views/metamorph_view";
@@ -161,7 +165,17 @@ merge(states.inDOM, {
 */
 var _HandlebarsBoundView = _MetamorphView.extend({
   instrumentName: 'boundHandlebars',
+<<<<<<< HEAD:packages_es6/ember-handlebars/lib/views/handlebars_bound_view.js
   states: states,
+=======
+  instrumentDisplay: computed(function() {
+    if (this.helperName) {
+      return '{{' + this.helperName + '}}';
+    }
+  }),
+
+  _states: states,
+>>>>>>> d6e1493... [BUGFIX beta] Provide better debugging information.:packages/ember-handlebars/lib/views/handlebars_bound_view.js
 
   /**
     The function used to determine if the `displayTemplate` or

@@ -905,6 +905,8 @@ function linkToHelper(name) {
     params: params
   };
 
+  options.helperName = options.helperName || 'link-to';
+
   return viewHelper.call(this, LinkView, options);
 };
 

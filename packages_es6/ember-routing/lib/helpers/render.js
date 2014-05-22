@@ -170,6 +170,8 @@ function renderHelper(name, contextString, options) {
     router._connectActiveView(name, view);
   }
 
+  options.helperName = options.helperName || 'render';
+
   viewHelper.call(this, view, options);
 };
 

@@ -162,6 +162,8 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 
   instrumentDetails: function(hash) {
     hash.object = this.toString();
+    hash.containerKey = this._debugContainerKey;
+    hash.view = this;
   },
 
   /**

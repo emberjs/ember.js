@@ -103,6 +103,13 @@ var a_slice = Array.prototype.slice;
   @extends Ember.View
 */
 var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
+  instrumentName: 'component',
+  instrumentDisplay: computed(function() {
+    if (this._debugContainerKey) {
+      return '{{' + this._debugContainerKey.split(':')[1] + '}}';
+    }
+  }),
+
   init: function() {
     this._super();
     set(this, 'context', this);
