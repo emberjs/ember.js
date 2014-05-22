@@ -53,5 +53,8 @@ var helpers = EmberHandlebars.helpers;
 */
 export default function templateHelper(name, options) {
   Ember.deprecate("The `template` helper has been deprecated in favor of the `partial` helper. Please use `partial` instead, which will work the same way.");
+
+  options.helperName = options.helperName || 'template';
+
   return helpers.partial.apply(this, arguments);
 }

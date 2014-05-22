@@ -381,5 +381,7 @@ export function viewHelper(path, options) {
     path = options.data.view.container.lookupFactory('view:default');
   }
 
+  options.helperName = options.helperName || 'view';
+
   return ViewHelper.helper(this, path, options);
 }

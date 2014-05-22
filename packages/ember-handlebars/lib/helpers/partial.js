@@ -64,6 +64,8 @@ export default function partialHelper(name, options) {
 
   var context = (options.contexts && options.contexts.length) ? options.contexts[0] : this;
 
+  options.helperName = options.helperName || 'partial';
+
   if (options.types[0] === "ID") {
     // Helper was passed a property path; we need to
     // create a binding that will re-render whenever

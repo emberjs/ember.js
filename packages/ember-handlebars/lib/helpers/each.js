@@ -36,6 +36,8 @@ import {
 } from "ember-handlebars/views/metamorph_view";
 
 var EachView = CollectionView.extend(_Metamorph, {
+  instrumentDisplay: '{{each}}',
+
   init: function() {
     var itemController = get(this, 'itemController');
     var binding;
@@ -456,6 +458,9 @@ function eachHelper(path, options) {
 
   // can't rely on this default behavior when use strict
   ctx = this || window;
+
+  options.helperName = options.helperName || 'each';
+
   if (options.data.insideGroup && !options.hash.groupedRows && !options.hash.itemViewClass) {
     new GroupedEach(ctx, path, options).render();
   } else {
