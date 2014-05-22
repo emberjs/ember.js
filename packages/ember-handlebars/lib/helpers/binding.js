@@ -54,29 +54,28 @@ var WithView = _HandlebarsBoundView.extend({
 
     apply(this, this._super, arguments);
 
-    var keywords        = this.get('templateData.keywords');
-    var keywordName     = this.get('templateHash.keywordName');
-    var keywordPath     = this.get('templateHash.keywordPath');
-    var controllerName  = this.get('templateHash.controller');
-    var preserveContext = this.get('preserveContext');
+    var keywords        = this.templateData.keywords;
+    var keywordName     = this.templateHash.keywordName;
+    var keywordPath     = this.templateHash.keywordPath;
+    var controllerName  = this.templateHash.controller;
+    var preserveContext = this.preserveContext;
 
     if (controllerName) {
-      var previousContext = this.get('previousContext');
+      var previousContext = this.previousContext;
       controller = this.container.lookupFactory('controller:'+controllerName).create({
-        container: this.container,
         parentController: previousContext,
         target: previousContext
       });
 
-      this.set('_generatedController', controller);
+      this._generatedController = controller;
 
       if (!preserveContext) {
         this.set('controller', controller);
 
-        this.set('valueNormalizerFunc', function(result) {
+        this.valueNormalizerFunc = function(result) {
             controller.set('model', result);
             return controller;
-        });
+        };
       } else {
         var controllerPath = jQuery.expando + guidFor(controller);
         keywords[controllerPath] = controller;
@@ -93,9 +92,8 @@ var WithView = _HandlebarsBoundView.extend({
   willDestroy: function() {
     this._super();
 
-    var generatedController = this.get('_generatedController');
-    if (generatedController) {
-      generatedController.destroy();
+    if (this._generatedController) {
+      this._generatedController.destroy();
     }
   }
 });
@@ -151,7 +149,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
         templateHash: options.hash
       };
 
-      if (options['helperName'] === 'with') {
+      if (options.helperName === 'with') {
         viewClass = WithView;
       }
 
@@ -527,7 +525,7 @@ function withHelper(context, options) {
     preserveContext = false;
   }
 
-  options['helperName'] = 'with';
+  options.helperName = 'with';
 
   return bind.call(bindContext, context, options, preserveContext, exists);
 }
