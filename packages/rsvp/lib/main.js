@@ -1794,7 +1794,7 @@ define("rsvp/promise/race",
       RSVP.Promise.race([promise1, promise2]).then(function(result){
         // Code here never runs
       }, function(reason){
-        // reason.message === "promise2" because promise 2 became rejected before
+        // reason.message === "promise 2" because promise 2 became rejected before
         // promise 1 became fulfilled
       });
       ```
