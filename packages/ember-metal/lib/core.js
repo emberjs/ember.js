@@ -137,7 +137,7 @@ Ember.FEATURES.isEnabled = function(feature) {
 //
 
 /**
-  Determines whether Ember should enhances some built-in object prototypes to
+  Determines whether Ember should enhance some built-in object prototypes to
   provide a more friendly API. If enabled, a few methods will be added to
   `Function`, `String`, and `Array`. `Object.prototype` will not be enhanced,
   which is the one that causes most trouble for people.
