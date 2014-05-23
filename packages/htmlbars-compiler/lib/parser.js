@@ -1,7 +1,7 @@
 import Handlebars from "handlebars";
 import { Tokenizer } from "simple-html-tokenizer";
-import nodeHandlers from "htmlbars/html-parser/node-handlers";
-import tokenHandlers from "htmlbars/html-parser/token-handlers";
+import nodeHandlers from "./html-parser/node-handlers";
+import tokenHandlers from "./html-parser/token-handlers";
 
 export function preprocess(html, options) {
   var ast = Handlebars.parse(html);

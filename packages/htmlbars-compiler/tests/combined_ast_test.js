@@ -1,6 +1,6 @@
-import { preprocess } from "htmlbars/parser";
+import { preprocess } from "htmlbars-compiler/parser";
 import { ProgramNode, BlockNode, ComponentNode, ElementNode, MustacheNode, SexprNode,
-  HashNode, IdNode, StringNode, AttrNode, TextNode } from "htmlbars/ast";
+  HashNode, IdNode, StringNode, AttrNode, TextNode } from "htmlbars-compiler/ast";
 
 module("HTML-based compiler (AST)");
 

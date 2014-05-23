@@ -1,8 +1,8 @@
 /*jshint evil:true*/
-import { preprocess } from "htmlbars/parser";
-import { TemplateCompiler } from "htmlbars/compiler/template";
-import { domHelpers } from "htmlbars/runtime/dom_helpers";
-import { Placeholder } from "htmlbars/runtime/placeholder";
+import { preprocess } from "./parser";
+import { TemplateCompiler } from "./compiler/template";
+import { domHelpers } from "htmlbars-runtime/dom_helpers";
+import { Placeholder } from "htmlbars-runtime/placeholder";
 
 export function compile(string, options) {
   return compileSpec(string, options)(domHelpers(), Placeholder);

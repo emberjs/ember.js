@@ -1,6 +1,6 @@
-import { TemplateCompiler } from "htmlbars/compiler/template";
-import { Placeholder } from "htmlbars/runtime/placeholder";
-import { preprocess } from "htmlbars/parser";
+import { TemplateCompiler } from "htmlbars-compiler/compiler/template";
+import { Placeholder } from "htmlbars-runtime/placeholder";
+import { preprocess } from "htmlbars-compiler/parser";
 
 module("TemplateCompiler");
 

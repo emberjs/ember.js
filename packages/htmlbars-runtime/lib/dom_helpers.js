@@ -1,4 +1,4 @@
-import { merge } from "htmlbars/utils";
+import { merge } from "./utils";
 
 export function domHelpers(extensions) {
   var base = {

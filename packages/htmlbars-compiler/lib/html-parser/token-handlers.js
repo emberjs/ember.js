@@ -1,5 +1,5 @@
-import { ProgramNode, ComponentNode, ElementNode, TextNode, appendChild } from "htmlbars/ast";
-import { postprocessProgram } from "htmlbars/html-parser/helpers";
+import { ProgramNode, ComponentNode, ElementNode, TextNode, appendChild } from "htmlbars-compiler/ast";
+import { postprocessProgram } from "htmlbars-compiler/html-parser/helpers";
 
 // This table maps from the state names in the tokenizer to a smaller
 // number of states that control how mustaches are handled

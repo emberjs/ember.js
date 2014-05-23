@@ -1,4 +1,4 @@
-import { Placeholder } from "htmlbars/runtime/placeholder";
+import { Placeholder } from "htmlbars-runtime/placeholder";
 import SafeString from 'handlebars/safe-string';
 
 function placeholderTests(factory) {

@@ -1,7 +1,7 @@
-import { compile } from "htmlbars/compiler";
+import { compile } from "htmlbars-compiler/compiler";
 import { tokenize } from "simple-html-tokenizer";
 import { CONTENT, ELEMENT, ATTRIBUTE, CONCAT, SUBEXPR, SIMPLE,
-  WEB_COMPONENT, WEB_COMPONENT_FALLBACK } from "htmlbars/runtime/helpers";
+  WEB_COMPONENT, WEB_COMPONENT_FALLBACK } from "htmlbars-runtime/helpers";
 
 function frag(element, string) {
   if (element instanceof DocumentFragment) {

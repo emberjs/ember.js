@@ -1,4 +1,4 @@
-import { array, hash, string } from "htmlbars/compiler/quoting";
+import { array, hash, string } from "./quoting";
 
 export function prepareHelper(stack, size) {
   var args = [],

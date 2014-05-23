@@ -1,34 +1,48 @@
 var pickFiles = require('broccoli-static-compiler');
 var concatFiles = require('broccoli-concat');
 var mergeTrees = require('broccoli-merge-trees');
+var moveFile = require('broccoli-file-mover');
+var replace = require('broccoli-replace');
 var transpileES6 = require('broccoli-es6-module-transpiler');
 var jsHint = require('broccoli-jshint');
 
-var config = require('./bin/config');
+var packages = require('./packages');
 
-var lib = 'lib';
-var test = 'test';
+function getPackageTrees(packageName) {
+  // Lib
+  var lib = moveFile(pickFiles('packages/' + packageName + '/lib', {
+    srcDir: '/',
+    destDir: '/' + packageName
+  }), {
+    srcFile: packageName + '/main.js',
+    destFile: '/' + packageName + '.js'
+  });
+  var transpiledLib = transpileES6(lib, { moduleName: true });
+  var concatenatedLib = concatFiles(transpiledLib, {
+    inputFiles: ['**/*.js'],
+    outputFile: '/' + packageName + '.amd.js'
+  });
 
-var transpiledLib = transpileES6(lib, { moduleName: true });
-var concatenatedLib = concatFiles(transpiledLib, {
-  inputFiles: ['**/*.js'],
-  outputFile: '/htmlbars.amd.js'
-});
+  // Tests
+  var tests = pickFiles('packages/' + packageName + '/tests', {
+    srcDir: '/',
+    destDir: '/' + packageName + '-tests'
+  });
+  var jsHintLib = jsHint(lib, { destFile: '/' + packageName + '-jshint/lib.js' });
+  var jsHintTests = jsHint(tests, { destFile: '/' + packageName + '-jshint/tests.js' });
+  var allTests = mergeTrees([tests, jsHintLib, jsHintTests]);
+  var transpiledTests = transpileES6(allTests, { moduleName: true });
+  var concatenatedTests = concatFiles(transpiledTests, {
+    inputFiles: ['**/*.js'],
+    outputFile: '/test/' + packageName + '-tests.amd.js'
+  });
 
-var tests = pickFiles('test', {
-  srcDir: '/tests',
-  destDir: '/htmlbars-tests'
-});
-var jsHintLib = jsHint(lib, { destFile: '/htmlbars-tests/jshint-lib.js' });
-var jsHintTests = jsHint(tests, { destFile: '/htmlbars-tests/jshint-tests.js' });
-var transpiledTests = transpileES6(tests, { moduleName: true });
-var transpiledTestsAndJsHintTests = mergeTrees([transpiledTests, jsHintLib, jsHintTests]);
-var concatenatedTests = concatFiles(transpiledTestsAndJsHintTests, {
-  inputFiles: ['**/*.js'],
-  outputFile: '/test/htmlbars-tests.amd.js'
-});
+  return [concatenatedLib, concatenatedTests];
+}
 
-// Testing assets
+
+
+// Vendored assets
 
 var vendor = pickFiles('vendor', {
   srcDir: '/',
@@ -43,6 +57,23 @@ var handlebars = pickFiles(bower, {
   destDir: '/vendor'
 });
 
+
+
+// Test Assets
+
+var test = pickFiles('test', {
+  srcDir: '/',
+  destDir: '/test'
+});
+
+test = replace(test, {
+  files: [ 'test/dependencies.js' ],
+  patterns: [{
+    match: /\{\{PACKAGE_DEPENDENCIES\}\}/g,
+    replacement: JSON.stringify(packages.dependencies, null, 2)
+  }]
+});
+
 var loader = pickFiles(bower, {
   srcDir: '/loader',
   files: [ 'loader.js' ],
@@ -54,14 +85,14 @@ var qunit = pickFiles(bower, {
   destDir: '/test'
 });
 
-var qunitIndex = pickFiles('test', {
-  srcDir: '/',
-  files: ['index.html'],
-  destDir: '/test'
-});
 
-module.exports = mergeTrees([concatenatedLib, concatenatedTests, vendor, loader, handlebars, qunit, qunitIndex]);
 
-function getName() {
-  return '/htmlbars' + config.version + '.amd.js';
+// Export trees
+
+var trees = [vendor, handlebars, test, loader, qunit];
+
+for (var packageName in packages.dependencies) {
+  trees = trees.concat(getPackageTrees(packageName));
 }
+
+module.exports = mergeTrees(trees);

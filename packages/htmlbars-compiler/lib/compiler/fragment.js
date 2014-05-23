@@ -1,5 +1,5 @@
-import { processOpcodes } from "htmlbars/compiler/utils";
-import { string } from "htmlbars/compiler/quoting";
+import { processOpcodes } from "./utils";
+import { string } from "./quoting";
 
 export function FragmentCompiler() {
   this.source = [];

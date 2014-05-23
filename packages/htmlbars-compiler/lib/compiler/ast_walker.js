@@ -1,4 +1,4 @@
-import { childrenFor } from "htmlbars/ast";
+import { childrenFor } from "../ast";
 
 function Frame(program, parent, isBlock) {
   this.parent = parent;

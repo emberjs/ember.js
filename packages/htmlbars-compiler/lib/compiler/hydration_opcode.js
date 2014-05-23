@@ -1,5 +1,5 @@
 import { ASTWalker } from "./ast_walker";
-import { buildHashFromAttributes } from "htmlbars/html-parser/helpers";
+import { buildHashFromAttributes } from "../html-parser/helpers";
 
 function HydrationOpcodeCompiler() {
   this.opcodes = [];

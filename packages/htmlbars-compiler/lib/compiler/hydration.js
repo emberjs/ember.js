@@ -1,6 +1,6 @@
-import { processOpcodes } from "htmlbars/compiler/utils";
-import { prepareHelper } from "htmlbars/compiler/helpers";
-import { string, quotedArray, hash, array } from "htmlbars/compiler/quoting";
+import { processOpcodes } from "./utils";
+import { prepareHelper } from "./helpers";
+import { string, quotedArray, hash, array } from "./quoting";
 
 function HydrationCompiler() {
   this.stack = [];

@@ -1,5 +1,5 @@
 import { Chars, StartTag, EndTag } from "simple-html-tokenizer";
-import { AttrNode, TextNode, MustacheNode, StringNode, IdNode } from "htmlbars/ast";
+import { AttrNode, TextNode, MustacheNode, StringNode, IdNode } from "../ast";
 
 StartTag.prototype.startAttribute = function(char) {
   this.finalizeAttributeValue();

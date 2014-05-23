@@ -1,4 +1,4 @@
-import { TextNode, StringNode, HashNode, usesPlaceholder } from "htmlbars/ast";
+import { TextNode, StringNode, HashNode, usesPlaceholder } from "../ast";
 
 // Rewrites an array of AttrNodes into a HashNode.
 // MustacheNodes are replaced with their root SexprNode and

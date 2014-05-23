@@ -1,6 +1,6 @@
-import { BlockNode, ProgramNode, TextNode, appendChild, usesPlaceholder } from "htmlbars/ast";
-import { postprocessProgram } from "htmlbars/html-parser/helpers";
-import { Chars } from "htmlbars/html-parser/tokens";
+import { BlockNode, ProgramNode, TextNode, appendChild, usesPlaceholder } from "../ast";
+import { postprocessProgram } from "../html-parser/helpers";
+import { Chars } from "../html-parser/tokens";
 
 var nodeHelpers = {
 

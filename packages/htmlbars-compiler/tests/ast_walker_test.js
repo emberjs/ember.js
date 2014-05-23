@@ -1,5 +1,5 @@
-import { preprocess } from "htmlbars/parser";
-import { ASTWalker } from "htmlbars/compiler/ast_walker";
+import { preprocess } from "htmlbars-compiler/parser";
+import { ASTWalker } from "htmlbars-compiler/compiler/ast_walker";
 
 module("ASTWalker");
 

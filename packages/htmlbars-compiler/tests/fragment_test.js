@@ -1,10 +1,10 @@
-import { FragmentOpcodeCompiler } from "htmlbars/compiler/fragment_opcode";
-import { HydrationOpcodeCompiler } from "htmlbars/compiler/hydration_opcode";
-import { FragmentCompiler } from "htmlbars/compiler/fragment";
-import { HydrationCompiler } from "htmlbars/compiler/hydration";
-import { domHelpers } from "htmlbars/runtime/dom_helpers";
-import { Placeholder } from "htmlbars/runtime/placeholder";
-import { preprocess } from "htmlbars/parser";
+import { FragmentOpcodeCompiler } from "htmlbars-compiler/compiler/fragment_opcode";
+import { HydrationOpcodeCompiler } from "htmlbars-compiler/compiler/hydration_opcode";
+import { FragmentCompiler } from "htmlbars-compiler/compiler/fragment";
+import { HydrationCompiler } from "htmlbars-compiler/compiler/hydration";
+import { domHelpers } from "htmlbars-runtime/dom_helpers";
+import { Placeholder } from "htmlbars-runtime/placeholder";
+import { preprocess } from "htmlbars-compiler/parser";
 
 function equalHTML(fragment, html) {
   var div = document.createElement("div");

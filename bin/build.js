@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 
-var broccoli = require('broccoli');
-var chalk = require('chalk');
-
 var mkdir = require('fs').mkdir;
 var rimraf = require('rimraf').sync;
+var chalk = require('chalk');
+var broccoli = require('broccoli');
 var copyRecursivelySync = require('broccoli-kitchen-sink-helpers').copyRecursivelySync;
 
 process.env.BROCCOLI_ENV = process.env.BROCCOLI_ENV || 'production';
-var tree    = broccoli.loadBrocfile();
+var tree = broccoli.loadBrocfile();
 var builder = new broccoli.Builder(tree);
 
 var buildPath = process.argv[2] || 'dist';
