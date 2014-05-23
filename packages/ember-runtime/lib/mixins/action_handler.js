@@ -204,10 +204,13 @@ var ActionHandler = Mixin.create({
     @param {*} context a context to send with the action
   */
   send: function(actionName) {
-    var args = [].slice.call(arguments, 1), target;
+    var action = this.get('_actions.' + actionName);
+    var args, target;
 
-    if (this._actions && this._actions[actionName]) {
-      if (this._actions[actionName].apply(this, args) === true) {
+    if (action) {
+      args = [].slice.call(arguments, 1);
+
+      if (action.apply(this, args) === true) {
         // handler returned true, so this action will bubble
       } else {
         return;

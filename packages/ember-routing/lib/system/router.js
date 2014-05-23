@@ -688,14 +688,15 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
   }
 
   var eventWasHandled = false;
-  var handlerInfo, handler;
+  var handlerInfo, handler, action;
 
   for (var i = handlerInfos.length - 1; i >= 0; i--) {
     handlerInfo = handlerInfos[i];
     handler = handlerInfo.handler;
+    action = get(handler, '_actions.' + name);
 
-    if (handler._actions && handler._actions[name]) {
-      if (handler._actions[name].apply(handler, args) === true) {
+    if (action) {
+      if (action.apply(handler, args) === true) {
         eventWasHandled = true;
       } else {
         return;

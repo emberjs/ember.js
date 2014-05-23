@@ -3256,4 +3256,30 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
   });
 }
 
+asyncTest("Actions are looked up with Ember.get", function() {
+  Router.map(function() {
+    this.resource("root", { path: "/" });
+  });
 
+  App.RootRoute = Ember.Route.extend({
+    actions: {
+      unknownProperty: function(name) {
+        if (name === 'some-randomly-weird-name') {
+          return function() {
+            ok(true, 'unknownProperty was used to lookup the action handler');
+
+            QUnit.start();
+          };
+        }
+      }
+    }
+  });
+
+  Ember.TEMPLATES['root'] = Ember.Handlebars.compile(
+    "<a id='root-action' {{action 'some-randomly-weird-name'}}>{{name}}</a>"
+  );
+
+  bootApplication();
+
+  Ember.$('#root-action').click();
+});
