@@ -9,13 +9,75 @@
   <div id="qunit"></div>
   <div id="qunit-fixture"></div>
   <script src="qunit.js"></script>
-  <script src="vendor/loader.js"></script>
-  <script src="vendor/handlebars.amd.js"></script>
-  <script src="vendor/simple-html-tokenizer.amd.js"></script>
-  <script src="htmlbars-and-tests.amd.js"></script>
-  <script type="text/javascript">
-    for (var key in requireModule.registry) {
-      if (/^htmlbars\/tests\//.test(key)) requireModule(key);
+  <script src="loader.js"></script>
+  <script src="dependencies.js"></script>
+
+  <script>
+    QUnit.config.urlConfig.push({ id: 'nojshint', label: "No JSHint"});
+
+    function loadScript(url) {
+      document.write(unescape('%3Cscript src="'+url+'"%3E%3C/script%3E'));
+    };
+
+    function loadVendor(packageName) {
+      loadScript("../vendor/" + packageName + ".amd.js");
+    }
+
+    function loadPackage(packageName) {
+      loadScript("../" + packageName + ".amd.js");
+    }
+
+    function loadTest(packageName) {
+      loadScript(packageName + "-tests.amd.js");
+    }
+
+    var packageString = QUnit.urlParams.packages || Object.keys(dependencies).join(',');
+    var packages = packageString.split(',');
+    var required = { vendor: {}, packages: {}, testPackages: {} };
+
+    // Merge all the dependencies for this configuration of packages
+    for (var i = 0; i < packages.length; i++) {
+      var packageName = packages[i];
+
+      // Packages require themselves
+      required.packages[packageName] = true;
+
+      for (var packageType in dependencies[packageName]) {
+        var deps = dependencies[packageName][packageType];
+
+        for (var j = 0; j < deps.length; j++) {
+          required[packageType][deps[j]] = true;
+        }
+      }
+    }
+
+    // Load all the required packages
+    for (var packageName in required.vendor) { loadVendor(packageName); }
+    for (var packageName in required.packages) { loadPackage(packageName); }
+    for (var packageName in required.testPackages) { loadPackage(packageName); }
+
+    // Load all the required tests
+    for (var i = 0; i < packages.length; i++) { loadTest(packages[i]); }
+  </script>
+
+  <script>
+    // Run tests
+    for (var key in requireModule.entries) {
+      var root = key.split('/')[0];
+
+      for (var i = 0; i < packages.length; i++) {
+        if (root === packages[i] + '-tests') {
+          requireModule(key);
+        }
+      }
+    }
+
+    // Run JShint
+    if (!QUnit.urlParams.nojshint) {
+      for (var i = 0; i < packages.length; i++) {
+        requireModule(packages[i] + '-jshint/lib');
+        requireModule(packages[i] + '-jshint/tests');
+      }
     }
   </script>
 </body>

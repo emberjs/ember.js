@@ -1,0 +1,9 @@
+{
+  "name": "htmlbars",
+  "devDependencies": {
+    "handlebars": "~1.3.0",
+    "loader": "stefanpenner/loader.js#3c79fbf03a4c625593cda783c0d51f0da2adaa37",
+    "qunit": "~1.14.0",
+    "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#3575d9f9850f4c5f30f3595e66e0d59866d53fa5"
+  }
+}

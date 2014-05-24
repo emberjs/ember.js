@@ -24,6 +24,21 @@ DOM vs the HTML-unaware string building approach of Handlebars.
 TODO: much change. This section will be updated shortly.
 
 Until then, check out [ARCHITECTURE.md](ARCHITECTURE.md) for
-info on how HTMLBars is structured and its approach to efficiently
-building / emitting DOM.
+info on how HTMLBars is structured and its approach to efficiently building / emitting DOM.
 
+# Building HTMLBars
+
+1. Ensure that [Node.js](http://nodejs.org/) is installed.
+2. Run `npm install` to ensure the required dependencies are installed.
+3. Run `npm run-script build` to build HTMLBars. The builds will be placed in the `dist/` directory.
+
+# How to Run Tests
+
+## In Node
+
+1. Run `npm test`.
+
+## In the browser
+
+1. Run `npm start`.
+2. Visit <http://localhost:4200/test>.
