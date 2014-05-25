@@ -6,6 +6,7 @@
 
 import Ember from "ember-metal/core"; // Ember.assert
 import { create } from "ember-metal/platform";
+import { isGlobalPath } from "ember-metal/binding";
 import merge from "ember-metal/merge";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -347,7 +348,7 @@ var CollectionView = ContainerView.extend({
     if (len) {
       itemViewClass = get(this, 'itemViewClass');
 
-      if ('string' === typeof itemViewClass) {
+      if ('string' === typeof itemViewClass && isGlobalPath(itemViewClass)) {
         itemViewClass = get(itemViewClass) || itemViewClass;
       }
 
@@ -370,7 +371,7 @@ var CollectionView = ContainerView.extend({
 
       if (!emptyView) { return; }
 
-      if ('string' === typeof emptyView) {
+      if ('string' === typeof emptyView && isGlobalPath(emptyView)) {
         emptyView = get(emptyView) || emptyView;
       }
 
