@@ -119,7 +119,7 @@ _RenderBuffer.prototype = {
     @private
     @property elementClasses
     @type Array
-    @default []
+    @default null
   */
   elementClasses: null,
 
@@ -131,7 +131,7 @@ _RenderBuffer.prototype = {
 
     @property classes
     @type Array
-    @default []
+    @default null
   */
   classes: null,
 
