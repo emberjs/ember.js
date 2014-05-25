@@ -15,7 +15,7 @@ function getRevision() {
 
   if (refPath) { // if in detached head mode this will be null
     var branchPath = path.join(gitPath, refPath.trim());
-    return fs.readFileSync(branchPath);
+    return fs.readFileSync(branchPath, {encoding: 'utf8'}).trim();
   } else {
     return branchName;
   }
@@ -25,19 +25,19 @@ module.exports = {
   version: getVersion(),
   revision: getRevision(),
 
+  vendored: {
+    "handlebars": true,
+    "simple-html-tokenizer": true
+  },
+
   dependencies: {
-
     "htmlbars-compiler": {
-      vendor: ["handlebars", "simple-html-tokenizer"],
-      packages: [],
-      testPackages: ["htmlbars-runtime"]
+      lib: ["handlebars", "simple-html-tokenizer"],
+      test: ["htmlbars-runtime"]
     },
-
     "htmlbars-runtime": {
-      vendor: ["handlebars"],
-      packages: [],
-      testPackages: []
+      lib: ["handlebars"],
+      test: []
     }
-
   }
 };
