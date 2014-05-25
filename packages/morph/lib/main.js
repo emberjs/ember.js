@@ -1,6 +1,6 @@
 var splice = Array.prototype.splice;
 
-export function Placeholder(parent, start, end) {
+export function Morph(parent, start, end) {
   // TODO: this is an internal API, this should be an assert
   if (parent.nodeType === 11) {
     if (start === null || end === null) {
@@ -15,65 +15,65 @@ export function Placeholder(parent, start, end) {
   this.end = end;
   this.text = null;
   this.owner = null;
-  this.placeholders = null;
+  this.morphs = null;
   this.before = null;
   this.after = null;
   this.escaped = true;
 }
 
-Placeholder.create = function (parent, startIndex, endIndex) {
+Morph.create = function (parent, startIndex, endIndex) {
   var childNodes = parent.childNodes,
     start = startIndex === -1 ? null : childNodes[startIndex],
     end = endIndex === -1 ? null : childNodes[endIndex];
-  return new Placeholder(parent, start, end);
+  return new Morph(parent, start, end);
 };
 
-Placeholder.prototype.parent = function () {
+Morph.prototype.parent = function () {
   if (!this.element && this._parent !== this.start.parentNode) {
     this.element = this._parent = this.start.parentNode;
   }
   return this._parent;
 };
 
-Placeholder.prototype.destroy = function () {
+Morph.prototype.destroy = function () {
   if (this.owner) {
-    this.owner.removePlaceholder(this);
+    this.owner.removeMorph(this);
   } else {
     clear(this.element || this.parent(), this.start, this.end);
   }
 };
 
-Placeholder.prototype.removePlaceholder = function (placeholder) {
-  var placeholders = this.placeholders;
-  for (var i=0, l=placeholders.length; i<l; i++) {
-    if (placeholders[i] === placeholder) {
+Morph.prototype.removeMorph = function (morph) {
+  var morphs = this.morphs;
+  for (var i=0, l=morphs.length; i<l; i++) {
+    if (morphs[i] === morph) {
       this.replace(i, 1);
       break;
     }
   }
 };
 
-Placeholder.prototype.update = function (nodeOrString) {
+Morph.prototype.update = function (nodeOrString) {
   this._update(this.element || this.parent(), nodeOrString);
 };
 
-Placeholder.prototype.updateNode = function (node) {
+Morph.prototype.updateNode = function (node) {
   var parent = this.element || this.parent();
   if (!node) return this._updateText(parent, '');
   this._updateNode(parent, node);
 };
 
-Placeholder.prototype.updateText = function (text) {
+Morph.prototype.updateText = function (text) {
   this._updateText(this.element || this.parent(), text);
 };
 
-Placeholder.prototype.updateHTML = function (html) {
+Morph.prototype.updateHTML = function (html) {
   var parent = this.element || this.parent();
   if (!html) return this._updateText(parent, '');
   this._updateHTML(parent, html);
 };
 
-Placeholder.prototype._update = function (parent, nodeOrString) {
+Morph.prototype._update = function (parent, nodeOrString) {
   if (nodeOrString === null || nodeOrString === undefined) {
     this._updateText(parent, '');
   } else if (typeof nodeOrString === 'string') {
@@ -91,7 +91,7 @@ Placeholder.prototype._update = function (parent, nodeOrString) {
   }
 };
 
-Placeholder.prototype._updateNode = function (parent, node) {
+Morph.prototype._updateNode = function (parent, node) {
   if (this.text) {
     if (node.nodeType === 3) {
       this.text.nodeValue = node.nodeValue;
@@ -111,7 +111,7 @@ Placeholder.prototype._updateNode = function (parent, node) {
   }
 };
 
-Placeholder.prototype._updateText = function (parent, text) {
+Morph.prototype._updateText = function (parent, text) {
   if (this.text) {
     this.text.nodeValue = text;
     return;
@@ -128,7 +128,7 @@ Placeholder.prototype._updateText = function (parent, text) {
   }
 };
 
-Placeholder.prototype._updateHTML = function (parent, html) {
+Morph.prototype._updateHTML = function (parent, html) {
   var start = this.start, end = this.end;
   clear(parent, start, end);
   this.text = null;
@@ -150,12 +150,12 @@ Placeholder.prototype._updateHTML = function (parent, html) {
   }
 };
 
-Placeholder.prototype.replace = function (index, removedLength, addedNodes) {
-  if (this.placeholders === null) this.placeholders = [];
+Morph.prototype.replace = function (index, removedLength, addedNodes) {
+  if (this.morphs === null) this.morphs = [];
   var parent = this.element || this.parent(),
-    placeholders = this.placeholders,
-    before = index > 0 ? placeholders[index-1] : null,
-    after = index+removedLength < placeholders.length ? placeholders[index+removedLength] : null,
+    morphs = this.morphs,
+    before = index > 0 ? morphs[index-1] : null,
+    after = index+removedLength < morphs.length ? morphs[index+removedLength] : null,
     start = before === null ? this.start : (before.end === null ? parent.lastChild : before.end.previousSibling),
     end   = after === null ? this.end : (after.start === null ? parent.firstChild : after.start.nextSibling),
     addedLength = addedNodes === undefined ? 0 : addedNodes.length,
@@ -174,14 +174,14 @@ Placeholder.prototype.replace = function (index, removedLength, addedNodes) {
       after.before = before;
       after.start = start;
     }
-    placeholders.splice(index, removedLength);
+    morphs.splice(index, removedLength);
     return;
   }
 
   args = new Array(addedLength+2);
   if (addedLength > 0) {
     for (i=0; i<addedLength; i++) {
-      args[i+2] = current = new Placeholder(parent, start, end);
+      args[i+2] = current = new Morph(parent, start, end);
       current._update(parent, addedNodes[i]);
       current.owner = this;
       if (before !== null) {
@@ -201,7 +201,7 @@ Placeholder.prototype.replace = function (index, removedLength, addedNodes) {
   args[0] = index;
   args[1] = removedLength;
 
-  splice.apply(placeholders, args);
+  splice.apply(morphs, args);
 };
 
 function appendChildren(parent, end, nodeList) {

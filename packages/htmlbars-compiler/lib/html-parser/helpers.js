@@ -1,4 +1,4 @@
-import { TextNode, StringNode, HashNode, usesPlaceholder } from "../ast";
+import { TextNode, StringNode, HashNode, usesMorph } from "../ast";
 
 // Rewrites an array of AttrNodes into a HashNode.
 // MustacheNodes are replaced with their root SexprNode and
@@ -28,11 +28,11 @@ export function postprocessProgram(program) {
 
   if (statements.length === 0) return;
 
-  if (usesPlaceholder(statements[0])) {
+  if (usesMorph(statements[0])) {
     statements.unshift(new TextNode(''));
   }
 
-  if (usesPlaceholder(statements[statements.length-1])) {
+  if (usesMorph(statements[statements.length-1])) {
     statements.push(new TextNode(''));
   }
 

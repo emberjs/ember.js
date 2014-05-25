@@ -66,21 +66,21 @@ prototype.stackLiteral = function(literal) {
   this.stack.push(literal);
 };
 
-prototype.helper = function(name, size, escaped, placeholderNum) {
+prototype.helper = function(name, size, escaped, morphNum) {
   var prepared = prepareHelper(this.stack, size);
   prepared.options.push('escaped:'+escaped);
   prepared.options.push('data:(typeof options !== "undefined" && options.data)');
-  this.pushMustacheInContent(string(name), prepared.args, prepared.options, placeholderNum);
+  this.pushMustacheInContent(string(name), prepared.args, prepared.options, morphNum);
 };
 
-prototype.component = function(tag, placeholderNum) {
+prototype.component = function(tag, morphNum) {
   var prepared = prepareHelper(this.stack, 0);
   prepared.options.push('data:(typeof options !== "undefined" && options.data)');
-  this.pushWebComponent(string(tag), prepared.options, placeholderNum);
+  this.pushWebComponent(string(tag), prepared.options, morphNum);
 };
 
-prototype.ambiguous = function(str, escaped, placeholderNum) {
-  this.pushMustacheInContent(string(str), '[]', ['escaped:'+escaped], placeholderNum);
+prototype.ambiguous = function(str, escaped, morphNum) {
+  this.pushMustacheInContent(string(str), '[]', ['escaped:'+escaped], morphNum);
 };
 
 prototype.ambiguousAttr = function(str, escaped) {
@@ -110,22 +110,22 @@ prototype.nodeHelper = function(name, size) {
   this.pushMustacheInNode(string(name), prepared.args, prepared.options);
 };
 
-prototype.placeholder = function(num, parentPath, startIndex, endIndex) {
+prototype.morph = function(num, parentPath, startIndex, endIndex) {
   var parentIndex = parentPath.length === 0 ? 0 : parentPath[parentPath.length-1];
   var parent = this.getParent();
-  var placeholder = "Placeholder.create("+parent+","+
+  var morph = "Morph.create("+parent+","+
     (startIndex === null ? "-1" : startIndex)+","+
     (endIndex === null ? "-1" : endIndex)+")";
 
-  this.declarations.push(['placeholder' + num, placeholder]);
+  this.declarations.push(['morph' + num, morph]);
 };
 
-prototype.pushWebComponent = function(name, pairs, placeholderNum) {
-  this.source.push('  helpers.WEB_COMPONENT(placeholder' + placeholderNum + ', ' + name + ', context, ' + hash(pairs) + ', helpers);\n');
+prototype.pushWebComponent = function(name, pairs, morphNum) {
+  this.source.push('  helpers.WEB_COMPONENT(morph' + morphNum + ', ' + name + ', context, ' + hash(pairs) + ', helpers);\n');
 };
 
-prototype.pushMustacheInContent = function(name, args, pairs, placeholderNum) {
-  this.source.push('  helpers.CONTENT(placeholder' + placeholderNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', helpers);\n');
+prototype.pushMustacheInContent = function(name, args, pairs, morphNum) {
+  this.source.push('  helpers.CONTENT(morph' + morphNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', helpers);\n');
 };
 
 prototype.pushMustacheInNode = function(name, args, pairs) {

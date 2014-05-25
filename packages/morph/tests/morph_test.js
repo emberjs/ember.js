@@ -1,18 +1,18 @@
-import { Placeholder } from "morph";
+import { Morph } from "morph";
 import SafeString from 'handlebars/safe-string';
 
-function placeholderTests(factory) {
+function morphTests(factory) {
   test('updateNode '+factory.name, function () {
     var fixture = document.getElementById('qunit-fixture'),
       setup = factory.create(),
       fragment = setup.fragment,
-      placeholder = setup.placeholder,
+      morph = setup.morph,
       startHTML = setup.startHTML,
       contentHTML = setup.contentHTML,
       endHTML = setup.endHTML,
       html;
 
-    placeholder.updateNode(element('p', 'updated'));
+    morph.updateNode(element('p', 'updated'));
 
     html = startHTML+'<p>updated</p>'+endHTML;
 
@@ -20,7 +20,7 @@ function placeholderTests(factory) {
 
     fixture.appendChild(setup.fragment);
 
-    placeholder.updateNode(element('p', 'updated again'));
+    morph.updateNode(element('p', 'updated again'));
 
     html = startHTML+'<p>updated again</p>'+endHTML;
 
@@ -31,13 +31,13 @@ function placeholderTests(factory) {
     var fixture = document.getElementById('qunit-fixture'),
       setup = factory.create(),
       fragment = setup.fragment,
-      placeholder = setup.placeholder,
+      morph = setup.morph,
       startHTML = setup.startHTML,
       contentHTML = setup.contentHTML,
       endHTML = setup.endHTML,
       html;
 
-    placeholder.updateText('updated');
+    morph.updateText('updated');
 
     html = startHTML+'updated'+endHTML;
 
@@ -45,7 +45,7 @@ function placeholderTests(factory) {
 
     fixture.appendChild(fragment);
 
-    placeholder.updateText('updated again');
+    morph.updateText('updated again');
 
     html = startHTML+'updated again'+endHTML;
 
@@ -56,13 +56,13 @@ function placeholderTests(factory) {
     var fixture = document.getElementById('qunit-fixture'),
       setup = factory.create(),
       fragment = setup.fragment,
-      placeholder = setup.placeholder,
+      morph = setup.morph,
       startHTML = setup.startHTML,
       contentHTML = setup.contentHTML,
       endHTML = setup.endHTML,
       html;
 
-    placeholder.updateHTML('<p>A</p><p>B</p><p>C</p>');
+    morph.updateHTML('<p>A</p><p>B</p><p>C</p>');
 
     html = startHTML+'<p>A</p><p>B</p><p>C</p>'+endHTML;
 
@@ -70,7 +70,7 @@ function placeholderTests(factory) {
 
     fixture.appendChild(fragment);
 
-    placeholder.updateHTML('<p>updated</p>');
+    morph.updateHTML('<p>updated</p>');
 
     html = startHTML+'<p>updated</p>'+endHTML;
 
@@ -80,12 +80,12 @@ function placeholderTests(factory) {
   test('destroy '+factory.name, function () {
     var setup = factory.create(),
       fragment = setup.fragment,
-      placeholder = setup.placeholder,
+      morph = setup.morph,
       startHTML = setup.startHTML,
       endHTML = setup.endHTML,
       html;
 
-    placeholder.destroy();
+    morph.destroy();
 
     html = startHTML+endHTML;
 
@@ -96,14 +96,14 @@ function placeholderTests(factory) {
     var fixture = document.getElementById('qunit-fixture'),
       setup = factory.create(),
       fragment = setup.fragment,
-      placeholder = setup.placeholder,
+      morph = setup.morph,
       startHTML = setup.startHTML,
       endHTML = setup.endHTML,
       html;
 
     fixture.appendChild(fragment);
 
-    placeholder.destroy();
+    morph.destroy();
 
     html = startHTML+endHTML;
 
@@ -113,38 +113,38 @@ function placeholderTests(factory) {
   test('update '+factory.name, function () {
     var setup = factory.create(),
       fragment = setup.fragment,
-      placeholder = setup.placeholder,
+      morph = setup.morph,
       startHTML = setup.startHTML,
       endHTML = setup.endHTML,
       html;
 
-    placeholder.update(element('p', 'updated'));
+    morph.update(element('p', 'updated'));
     html = startHTML+'<p>updated</p>'+endHTML;
     equalHTML(fragment, html);
 
-    placeholder.update('updated');
+    morph.update('updated');
     html = startHTML+'updated'+endHTML;
     equalHTML(fragment, html);
 
-    placeholder.update(new SafeString('<p>updated</p>'));
+    morph.update(new SafeString('<p>updated</p>'));
     html = startHTML+'<p>updated</p>'+endHTML;
     equalHTML(fragment, html);
 
     var duckTypedSafeString = {
       string: '<div>updated</div>'
     };
-    placeholder.update(duckTypedSafeString);
+    morph.update(duckTypedSafeString);
     html = startHTML+'<div>updated</div>'+endHTML;
     equalHTML(fragment, html);
   });
 }
 
-function placeholderListTests(factory) {
+function morphListTests(factory) {
   test('various list operations with fragments '+factory.name, function () {
     var fixture = document.getElementById('qunit-fixture'),
       setup = factory.create(),
       fragment = setup.fragment,
-      placeholder = setup.placeholder,
+      morph = setup.morph,
       startHTML = setup.startHTML,
       endHTML = setup.endHTML,
       html;
@@ -159,67 +159,67 @@ function placeholderListTests(factory) {
     var fragmentABC = fragmentFor(A,B,C);
     var fragmentEF = fragmentFor(E,F);
 
-    placeholder.replace(0, 0, [fragmentABC, D, fragmentEF]);
+    morph.replace(0, 0, [fragmentABC, D, fragmentEF]);
 
-    var placeholders = placeholder.placeholders;
+    var morphs = morph.morphs;
 
     html = startHTML+'<p>A</p><p>B</p><p>C</p><p>D</p><p>E</p><p>F</p>'+endHTML;
     equalHTML(fragment, html);
-    equal(placeholders[0].start, placeholder.start);
-    equal(placeholders[0].end, D);
-    equal(placeholders[1].start, C);
-    equal(placeholders[1].end, E);
-    equal(placeholders[2].start, D);
-    equal(placeholders[2].end, placeholder.end);
+    equal(morphs[0].start, morph.start);
+    equal(morphs[0].end, D);
+    equal(morphs[1].start, C);
+    equal(morphs[1].end, E);
+    equal(morphs[2].start, D);
+    equal(morphs[2].end, morph.end);
 
-    placeholder.replace(1,2);
+    morph.replace(1,2);
 
     html = startHTML+'<p>A</p><p>B</p><p>C</p>'+endHTML;
     equalHTML(fragment, html);
-    equal(placeholders.length, 1);
-    equal(placeholders[0].start, placeholder.start);
-    equal(placeholders[0].end, placeholder.end);
+    equal(morphs.length, 1);
+    equal(morphs[0].start, morph.start);
+    equal(morphs[0].end, morph.end);
 
-    placeholder.replace(1,0,['D', '', null, 'E', new SafeString('<p>F</p>')]);
+    morph.replace(1,0,['D', '', null, 'E', new SafeString('<p>F</p>')]);
     html = startHTML+'<p>A</p><p>B</p><p>C</p>DE<p>F</p>'+endHTML;
     equalHTML(fragment, html);
 
-    equal(placeholder.placeholders.length, 6);
-    equal(placeholders[0].start, placeholder.start);
-    equal(placeholders[0].end,   placeholders[1].start.nextSibling);
-    equal(placeholders[1].start, placeholders[0].end.previousSibling);
-    equal(placeholders[1].end,   placeholders[2].start.nextSibling);
-    equal(placeholders[2].start, placeholders[1].end.previousSibling);
-    equal(placeholders[2].end,   placeholders[3].start.nextSibling);
-    equal(placeholders[3].start, placeholders[2].end.previousSibling);
-    equal(placeholders[3].end,   placeholders[4].start.nextSibling);
-    equal(placeholders[4].start, placeholders[3].end.previousSibling);
-    equal(placeholders[4].end,   placeholders[5].start.nextSibling);
-    equal(placeholders[5].start, placeholders[4].end.previousSibling);
-    equal(placeholders[5].end,   placeholder.end);
+    equal(morph.morphs.length, 6);
+    equal(morphs[0].start, morph.start);
+    equal(morphs[0].end,   morphs[1].start.nextSibling);
+    equal(morphs[1].start, morphs[0].end.previousSibling);
+    equal(morphs[1].end,   morphs[2].start.nextSibling);
+    equal(morphs[2].start, morphs[1].end.previousSibling);
+    equal(morphs[2].end,   morphs[3].start.nextSibling);
+    equal(morphs[3].start, morphs[2].end.previousSibling);
+    equal(morphs[3].end,   morphs[4].start.nextSibling);
+    equal(morphs[4].start, morphs[3].end.previousSibling);
+    equal(morphs[4].end,   morphs[5].start.nextSibling);
+    equal(morphs[5].start, morphs[4].end.previousSibling);
+    equal(morphs[5].end,   morph.end);
 
-    placeholders[3].destroy();
-    placeholders[3].update(element('i', 'E'));
-    placeholders[1].update(element('b', 'D'));
-    placeholders[2].destroy();
+    morphs[3].destroy();
+    morphs[3].update(element('i', 'E'));
+    morphs[1].update(element('b', 'D'));
+    morphs[2].destroy();
 
     html = startHTML+'<p>A</p><p>B</p><p>C</p><b>D</b><i>E</i><p>F</p>'+endHTML;
     equalHTML(fragment, html);
-    equal(placeholder.placeholders.length, 4);
-    equal(placeholders[0].start, placeholder.start);
-    equal(placeholders[0].end,   placeholders[1].start.nextSibling);
-    equal(placeholders[1].start, placeholders[0].end.previousSibling);
-    equal(placeholders[1].end,   placeholders[2].start.nextSibling);
-    equal(placeholders[2].start, placeholders[1].end.previousSibling);
-    equal(placeholders[2].end,   placeholders[3].start.nextSibling);
-    equal(placeholders[3].start, placeholders[2].end.previousSibling);
-    equal(placeholders[3].end,   placeholder.end);
+    equal(morph.morphs.length, 4);
+    equal(morphs[0].start, morph.start);
+    equal(morphs[0].end,   morphs[1].start.nextSibling);
+    equal(morphs[1].start, morphs[0].end.previousSibling);
+    equal(morphs[1].end,   morphs[2].start.nextSibling);
+    equal(morphs[2].start, morphs[1].end.previousSibling);
+    equal(morphs[2].end,   morphs[3].start.nextSibling);
+    equal(morphs[3].start, morphs[2].end.previousSibling);
+    equal(morphs[3].end,   morph.end);
 
     fixture.appendChild(fragment);
 
-    placeholder.replace(2,2);
+    morph.replace(2,2);
 
-    placeholders[1].update(
+    morphs[1].update(
       fragmentFor(
         element('p','D'),
         element('p','E'),
@@ -230,15 +230,15 @@ function placeholderListTests(factory) {
     html = startHTML+'<p>A</p><p>B</p><p>C</p><p>D</p><p>E</p><p>F</p>'+endHTML;
     equal(fixture.innerHTML, html);
 
-    equal(placeholder.placeholders.length, 2);
-    equal(placeholders[0].start,  placeholder.start);
-    equal(placeholders[0].end,    placeholders[1].start.nextSibling);
-    equal(placeholders[0].before, null);
-    equal(placeholders[0].after,  placeholders[1]);
-    equal(placeholders[1].start,  placeholders[0].end.previousSibling);
-    equal(placeholders[1].end,    placeholder.end);
-    equal(placeholders[1].before, placeholders[0]);
-    equal(placeholders[1].after,  null);
+    equal(morph.morphs.length, 2);
+    equal(morphs[0].start,  morph.start);
+    equal(morphs[0].end,    morphs[1].start.nextSibling);
+    equal(morphs[0].before, null);
+    equal(morphs[0].after,  morphs[1]);
+    equal(morphs[1].start,  morphs[0].end.previousSibling);
+    equal(morphs[1].end,    morph.end);
+    equal(morphs[1].before, morphs[0]);
+    equal(morphs[1].after,  null);
   });
 }
 
@@ -328,12 +328,12 @@ var ends = [
 
 var contents = [
   {
-    name: 'with an empty Placeholder',
+    name: 'with an empty Morph',
     create: function (parent) { },
     HTML: ''
   },
   {
-    name: 'with some paragraphs in the Placeholder',
+    name: 'with some paragraphs in the Morph',
     create: function (parent) {
       var p;
       p = document.createElement('p');
@@ -370,7 +370,7 @@ function iterateCombinations(parents, starts, ends, contents, callback) {
 
         return {
           fragment: fragment,
-          placeholder: Placeholder.create(parent, startIndex, endIndex),
+          morph: Morph.create(parent, startIndex, endIndex),
           startHTML: parentFactory.startHTML + startFactory.HTML,
           contentHTML: contentFactory.HTML,
           endHTML: endFactory.HTML + parentFactory.endHTML
@@ -392,8 +392,8 @@ function iterateCombinations(parents, starts, ends, contents, callback) {
   }
 }
 
-QUnit.module('Placeholder');
-iterateCombinations(parents, starts, ends, contents, placeholderTests);
+QUnit.module('Morph');
+iterateCombinations(parents, starts, ends, contents, morphTests);
 
-QUnit.module('PlaceholderList');
-iterateCombinations(parents, starts, ends, [{name:'', create: function(){},HTML:''}], placeholderListTests);
+QUnit.module('MorphList');
+iterateCombinations(parents, starts, ends, [{name:'', create: function(){},HTML:''}], morphListTests);

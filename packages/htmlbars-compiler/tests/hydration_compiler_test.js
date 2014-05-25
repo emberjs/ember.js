@@ -9,12 +9,12 @@ function opcodesFor(html, options) {
 }
 
 
-function mustache(name, placeholderNum) {
-  return [ 'ambiguous', [name, true, placeholderNum] ];
+function mustache(name, morphNum) {
+  return [ 'ambiguous', [name, true, morphNum] ];
 }
 
-function helper(name, params, placeholderNum) {
-  return [ "helper", [name, params.length, true, placeholderNum] ];
+function helper(name, params, morphNum) {
+  return [ "helper", [name, params.length, true, morphNum] ];
 }
 
 module("HydrationOpcodeCompiler opcode generation");
@@ -22,8 +22,8 @@ module("HydrationOpcodeCompiler opcode generation");
 test("simple example", function() {
   var opcodes = opcodesFor("<div>{{foo}} bar {{baz}}</div>");
   deepEqual(opcodes, [
-    [ "placeholder", [ 0, [ 0 ], -1, 0 ] ],
-    [ "placeholder", [ 1, [ 0 ], 0, -1 ] ],
+    [ "morph", [ 0, [ 0 ], -1, 0 ] ],
+    [ "morph", [ 1, [ 0 ], 0, -1 ] ],
     mustache('foo', 0),
     mustache('baz', 1)
   ]);
@@ -32,7 +32,7 @@ test("simple example", function() {
 test("element with a sole mustache child", function() {
   var opcodes = opcodesFor("<div>{{foo}}</div>");
   deepEqual(opcodes, [
-    [ "placeholder", [ 0, [ 0 ], -1, -1 ] ],
+    [ "morph", [ 0, [ 0 ], -1, -1 ] ],
     mustache('foo', 0)
   ]);
 });
@@ -40,7 +40,7 @@ test("element with a sole mustache child", function() {
 test("element with a mustache between two text nodes", function() {
   var opcodes = opcodesFor("<div> {{foo}} </div>");
   deepEqual(opcodes, [
-    [ "placeholder", [ 0, [ 0 ], 0, 1 ] ],
+    [ "morph", [ 0, [ 0 ], 0, 1 ] ],
     mustache('foo', 0)
   ]);
 });
@@ -49,7 +49,7 @@ test("mustache two elements deep", function() {
   var opcodes = opcodesFor("<div><div>{{foo}}</div></div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "placeholder", [ 0, [ 0, 0 ], -1, -1 ] ],
+    [ "morph", [ 0, [ 0, 0 ], -1, -1 ] ],
     mustache('foo', 0),
     [ "popParent", [] ]
   ]);
@@ -59,11 +59,11 @@ test("two sibling elements with mustaches", function() {
   var opcodes = opcodesFor("<div>{{foo}}</div><div>{{bar}}</div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "placeholder", [ 0, [ 0 ], -1, -1 ] ],
+    [ "morph", [ 0, [ 0 ], -1, -1 ] ],
     mustache('foo', 0),
     [ "popParent", [] ],
     [ "consumeParent", [ 1 ] ],
-    [ "placeholder", [ 1, [ 1 ], -1, -1 ] ],
+    [ "morph", [ 1, [ 1 ], -1, -1 ] ],
     mustache('bar', 1),
     [ "popParent", [] ]
   ]);
@@ -72,8 +72,8 @@ test("two sibling elements with mustaches", function() {
 test("mustaches at the root", function() {
   var opcodes = opcodesFor("{{foo}} {{bar}}");
   deepEqual(opcodes, [
-    [ "placeholder", [ 0, [ ], 0, 1 ] ],
-    [ "placeholder", [ 1, [ ], 1, 2 ] ],
+    [ "morph", [ 0, [ ], 0, 1 ] ],
+    [ "morph", [ 1, [ ], 1, 2 ] ],
     mustache('foo', 0),
     mustache('bar', 1)
   ]);
@@ -82,10 +82,10 @@ test("mustaches at the root", function() {
 test("back to back mustaches should have a text node inserted between them", function() {
   var opcodes = opcodesFor("<div>{{foo}}{{bar}}{{baz}}wat{{qux}}</div>");
   deepEqual(opcodes, [
-    [ "placeholder", [ 0, [0], -1, 0 ] ],
-    [ "placeholder", [ 1, [0], 0, 1 ] ],
-    [ "placeholder", [ 2, [0], 1, 2 ] ],
-    [ "placeholder", [ 3, [0], 2, -1 ] ],
+    [ "morph", [ 0, [0], -1, 0 ] ],
+    [ "morph", [ 1, [0], 0, 1 ] ],
+    [ "morph", [ 2, [0], 1, 2 ] ],
+    [ "morph", [ 3, [0], 2, -1 ] ],
     mustache('foo', 0),
     mustache('bar', 1),
     mustache('baz', 2),
@@ -96,7 +96,7 @@ test("back to back mustaches should have a text node inserted between them", fun
 test("helper usage", function() {
   var opcodes = opcodesFor("<div>{{foo 'bar'}}</div>");
   deepEqual(opcodes, [
-    [ "placeholder", [ 0, [0], -1, -1 ] ],
+    [ "morph", [ 0, [0], -1, -1 ] ],
     [ "program", [null, null] ],
     [ "stringLiteral", ['bar'] ],
     [ "stackLiteral", [0] ],

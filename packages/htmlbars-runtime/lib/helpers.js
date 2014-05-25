@@ -1,6 +1,6 @@
 import SafeString from 'handlebars/safe-string';
 
-export function CONTENT(placeholder, helperName, context, params, options) {
+export function CONTENT(morph, helperName, context, params, options) {
   var value, helper = this.LOOKUP_HELPER(helperName, context, options);
   if (helper) {
     value = helper(context, params, options);
@@ -10,21 +10,21 @@ export function CONTENT(placeholder, helperName, context, params, options) {
   if (!options.escaped) {
     value = new SafeString(value);
   }
-  placeholder.update(value);
+  morph.update(value);
 }
 
-export function WEB_COMPONENT(placeholder, tagName, context, options, helpers) {
+export function WEB_COMPONENT(morph, tagName, context, options, helpers) {
   var value, helper = this.LOOKUP_HELPER(tagName, context, options);
   if (helper) {
     value = helper(context, null, options, helpers);
   } else {
-    value = this.WEB_COMPONENT_FALLBACK(placeholder, tagName, context, options, helpers);
+    value = this.WEB_COMPONENT_FALLBACK(morph, tagName, context, options, helpers);
   }
-  placeholder.update(value);
+  morph.update(value);
 }
 
-export function WEB_COMPONENT_FALLBACK(placeholder, tagName, context, options, helpers) {
-  var element = placeholder.parent().ownerDocument.createElement(tagName);
+export function WEB_COMPONENT_FALLBACK(morph, tagName, context, options, helpers) {
+  var element = morph.parent().ownerDocument.createElement(tagName);
   var hash = options.hash, hashTypes = options.hashTypes;
 
   for (var name in hash) {

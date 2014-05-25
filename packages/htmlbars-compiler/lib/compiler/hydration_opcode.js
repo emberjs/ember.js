@@ -6,8 +6,8 @@ function HydrationOpcodeCompiler() {
   this.paths = [];
   this.templateId = 0;
   this.currentDOMChildIndex = 0;
-  this.placeholders = [];
-  this.placeholderNum = 0;
+  this.morphs = [];
+  this.morphNum = 0;
 }
 
 HydrationOpcodeCompiler.prototype.compile = function(ast) {
@@ -19,14 +19,14 @@ HydrationOpcodeCompiler.prototype.compile = function(ast) {
 HydrationOpcodeCompiler.prototype.startTemplate = function() {
   this.opcodes.length = 0;
   this.paths.length = 0;
-  this.placeholders.length = 0;
+  this.morphs.length = 0;
   this.templateId = 0;
   this.currentDOMChildIndex = -1;
-  this.placeholderNum = 0;
+  this.morphNum = 0;
 };
 
 HydrationOpcodeCompiler.prototype.endTemplate = function(program) {
-  distributePlaceholders(this.placeholders, this.opcodes);
+  distributeMorphs(this.morphs, this.opcodes);
   if (program.statements.length === 1 && program.statements[0].type !== 'text') {
     this.opcodes.shift();
     this.opcodes.pop();
@@ -38,7 +38,7 @@ HydrationOpcodeCompiler.prototype.text = function(string) {
 };
 
 HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, mustacheCount) {
-  distributePlaceholders(this.placeholders, this.opcodes);
+  distributeMorphs(this.morphs, this.opcodes);
   ++this.currentDOMChildIndex;
 
   if (mustacheCount > 1) {
@@ -60,7 +60,7 @@ HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, must
 };
 
 HydrationOpcodeCompiler.prototype.closeElement = function(element) {
-  distributePlaceholders(this.placeholders, this.opcodes);
+  distributeMorphs(this.morphs, this.opcodes);
   this.opcode('popParent');
   this.currentDOMChildIndex = this.paths.pop();
 };
@@ -76,13 +76,13 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLe
   var start = (currentDOMChildIndex < 0 ? null : currentDOMChildIndex),
       end = (childIndex === childrenLength - 1 ? null : currentDOMChildIndex + 1);
 
-  var placeholderNum = this.placeholderNum++;
-  this.placeholders.push([placeholderNum, this.paths.slice(), start, end]);
+  var morphNum = this.morphNum++;
+  this.morphs.push([morphNum, this.paths.slice(), start, end]);
 
   this.opcode('program', this.templateId++, block.inverse === null ? null : this.templateId++);
   processParams(this, mustache.params);
   processHash(this, mustache.hash);
-  this.opcode('helper', mustache.id.string, mustache.params.length, mustache.escaped, placeholderNum);
+  this.opcode('helper', mustache.id.string, mustache.params.length, mustache.escaped, morphNum);
 };
 
 HydrationOpcodeCompiler.prototype.component = function(component, childIndex, childrenLength) {
@@ -91,12 +91,12 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
   var start = (currentDOMChildIndex < 0 ? null : currentDOMChildIndex),
       end = (childIndex === childrenLength - 1 ? null : currentDOMChildIndex + 1);
 
-  var placeholderNum = this.placeholderNum++;
-  this.placeholders.push([placeholderNum, this.paths.slice(), start, end]);
+  var morphNum = this.morphNum++;
+  this.morphs.push([morphNum, this.paths.slice(), start, end]);
 
   this.opcode('program', this.templateId++, null);
   processHash(this, buildHashFromAttributes(component.attributes));
-  this.opcode('component', component.tag, placeholderNum);
+  this.opcode('component', component.tag, morphNum);
 };
 
 HydrationOpcodeCompiler.prototype.opcode = function(type) {
@@ -132,16 +132,16 @@ HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, chil
   var start = currentDOMChildIndex,
       end = (childIndex === childrenLength - 1 ? -1 : currentDOMChildIndex + 1);
 
-  var placeholderNum = this.placeholderNum++;
-  this.placeholders.push([placeholderNum, this.paths.slice(), start, end]);
+  var morphNum = this.morphNum++;
+  this.morphs.push([morphNum, this.paths.slice(), start, end]);
 
   if (mustache.isHelper) {
     this.opcode('program', null, null);
     processParams(this, mustache.params);
     processHash(this, mustache.hash);
-    this.opcode('helper', mustache.id.string, mustache.params.length, mustache.escaped, placeholderNum);
+    this.opcode('helper', mustache.id.string, mustache.params.length, mustache.escaped, morphNum);
   } else {
-    this.opcode('ambiguous', mustache.id.string, mustache.escaped, placeholderNum);
+    this.opcode('ambiguous', mustache.id.string, mustache.escaped, morphNum);
   }
 };
 
@@ -209,12 +209,12 @@ function processHash(compiler, hash) {
   }
 }
 
-function distributePlaceholders(placeholders, opcodes) {
-  if (placeholders.length === 0) {
+function distributeMorphs(morphs, opcodes) {
+  if (morphs.length === 0) {
     return;
   }
 
-  // Splice placeholders after the most recent shareParent/consumeParent.
+  // Splice morphs after the most recent shareParent/consumeParent.
   var o;
   for (o = opcodes.length - 1; o >= 0; --o) {
     var opcode = opcodes[o][0];
@@ -224,12 +224,12 @@ function distributePlaceholders(placeholders, opcodes) {
   }
 
   var spliceArgs = [o + 1, 0];
-  for (var i = 0; i < placeholders.length; ++i) {
-    var p = placeholders[i];
-    spliceArgs.push(['placeholder', [p[0], p[1], p[2], p[3]]]);
+  for (var i = 0; i < morphs.length; ++i) {
+    var p = morphs[i];
+    spliceArgs.push(['morph', [p[0], p[1], p[2], p[3]]]);
   }
   opcodes.splice.apply(opcodes, spliceArgs);
-  placeholders.length = 0;
+  morphs.length = 0;
 }
 
 export { HydrationOpcodeCompiler };
