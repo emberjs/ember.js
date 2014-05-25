@@ -2,7 +2,7 @@
 import { preprocess } from "./parser";
 import { TemplateCompiler } from "./compiler/template";
 import { domHelpers } from "htmlbars-runtime/dom_helpers";
-import { Placeholder } from "htmlbars-runtime/placeholder";
+import { Placeholder } from "morph";
 
 export function compile(string, options) {
   return compileSpec(string, options)(domHelpers(), Placeholder);

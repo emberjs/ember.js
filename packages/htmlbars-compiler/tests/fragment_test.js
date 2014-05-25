@@ -3,7 +3,7 @@ import { HydrationOpcodeCompiler } from "htmlbars-compiler/compiler/hydration_op
 import { FragmentCompiler } from "htmlbars-compiler/compiler/fragment";
 import { HydrationCompiler } from "htmlbars-compiler/compiler/hydration";
 import { domHelpers } from "htmlbars-runtime/dom_helpers";
-import { Placeholder } from "htmlbars-runtime/placeholder";
+import { Placeholder } from "morph";
 import { preprocess } from "htmlbars-compiler/parser";
 
 function equalHTML(fragment, html) {

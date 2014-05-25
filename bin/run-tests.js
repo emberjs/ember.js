@@ -53,7 +53,7 @@ function run(queryString) {
 function runFn(queryString) {
   return function() {
     return run(queryString);
-  }
+  };
 }
 
 // Run the tests for each package in sequence.
