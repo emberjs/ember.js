@@ -67,11 +67,12 @@ var test = pickFiles('test', {
 });
 
 test = replace(test, {
-  files: [ 'test/dependencies.js' ],
+  files: [ 'test/packages-config.js' ],
   patterns: [{
-    match: /\{\{PACKAGE_DEPENDENCIES\}\}/g,
-    replacement: JSON.stringify(packages.dependencies, null, 2)
-  }]
+    match: /\{\{PACKAGES_CONFIG\}\}/g,
+    replacement: JSON.stringify(packages, null, 2)
+  },
+  ]
 });
 
 var loader = pickFiles(bower, {

@@ -10,7 +10,7 @@
   <div id="qunit-fixture"></div>
   <script src="qunit.js"></script>
   <script src="loader.js"></script>
-  <script src="dependencies.js"></script>
+  <script src="packages-config.js"></script>
 
   <script>
     QUnit.config.urlConfig.push({ id: 'nojshint', label: "No JSHint"});
@@ -19,45 +19,54 @@
       document.write(unescape('%3Cscript src="'+url+'"%3E%3C/script%3E'));
     };
 
-    function loadVendor(packageName) {
+    function loadVendored(packageName) {
       loadScript("../vendor/" + packageName + ".amd.js");
     }
 
-    function loadPackage(packageName) {
+    function loadLib(packageName) {
       loadScript("../" + packageName + ".amd.js");
     }
 
-    function loadTest(packageName) {
+    function loadTests(packageName) {
       loadScript(packageName + "-tests.amd.js");
     }
 
-    var packageString = QUnit.urlParams.packages || Object.keys(dependencies).join(',');
-    var packages = packageString.split(',');
-    var required = { vendor: {}, packages: {}, testPackages: {} };
+    function getPackageList() {
+      if (QUnit.urlParams.packages) {
+        return QUnit.urlParams.packages.split(',');
+      } else {
+        return Object.keys(packagesConfig.dependencies);
+      }
+    }
 
     // Merge all the dependencies for this configuration of packages
+    // to ensure that we only load the dependencies once.
+    var packages = getPackageList();
+    var requiredPackages = {};
+
     for (var i = 0; i < packages.length; i++) {
       var packageName = packages[i];
+      var depsHash = packagesConfig.dependencies[packageName];
+      var depsList = [packageName].concat(depsHash.lib, depsHash.test);
 
-      // Packages require themselves
-      required.packages[packageName] = true;
-
-      for (var packageType in dependencies[packageName]) {
-        var deps = dependencies[packageName][packageType];
-
-        for (var j = 0; j < deps.length; j++) {
-          required[packageType][deps[j]] = true;
-        }
+      for (var i = 0; i < depsList.length; i++) {
+        requiredPackages[depsList[i]] = true;
       }
     }
 
     // Load all the required packages
-    for (var packageName in required.vendor) { loadVendor(packageName); }
-    for (var packageName in required.packages) { loadPackage(packageName); }
-    for (var packageName in required.testPackages) { loadPackage(packageName); }
+    for (var packageName in requiredPackages) {
+      if (packagesConfig.vendored[packageName]) {
+        loadVendored(packageName);
+      } else {
+        loadLib(packageName);
+      }
+    }
 
     // Load all the required tests
-    for (var i = 0; i < packages.length; i++) { loadTest(packages[i]); }
+    for (var i = 0; i < packages.length; i++) {
+      loadTests(packages[i]);
+    }
   </script>
 
   <script>
