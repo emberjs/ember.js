@@ -3,11 +3,15 @@
 var RSVP = require('rsvp');
 var spawn = require('child_process').spawn;
 var chalk = require('chalk');
+var packages = require('../packages');
 
-run('phantomjs', ['bower_components/qunit-phantom-runner/runner.js', './dist/test/index.html']);
+var runnerPath = 'bower_components/qunit-phantom-runner/runner.js';
+var qunitIndexPath = './dist/test/index.html';
 
-function run(command, args) {
+function run(queryString) {
   return new RSVP.Promise(function(resolve, reject) {
+    var command = 'phantomjs';
+    var args = [runnerPath, qunitIndexPath + (queryString || "")];
 
     console.log('Running: ' + command + ' ' + args.join(' '));
 
@@ -45,3 +49,27 @@ function run(command, args) {
     });
   });
 }
+
+function runFn(queryString) {
+  return function() {
+    return run(queryString);
+  }
+}
+
+// Run the tests for each package in sequence.
+
+var testRuns = RSVP.resolve();
+
+for (var packageName in packages.dependencies) {
+  testRuns = testRuns.then(runFn("?packages=" + packageName));
+}
+
+testRuns
+  .then(function() {
+    console.log(chalk.green('Passed!'));
+    process.exit(0);
+  })
+  .catch(function() {
+    console.error(chalk.red('Failed!'));
+    process.exit(1);
+  });
