@@ -3,7 +3,7 @@ import { HydrationOpcodeCompiler } from "htmlbars-compiler/compiler/hydration_op
 import { FragmentCompiler } from "htmlbars-compiler/compiler/fragment";
 import { HydrationCompiler } from "htmlbars-compiler/compiler/hydration";
 import { domHelpers } from "htmlbars-runtime/dom_helpers";
-import { Placeholder } from "morph";
+import { Morph } from "morph";
 import { preprocess } from "htmlbars-compiler/parser";
 
 function equalHTML(fragment, html) {
@@ -34,7 +34,7 @@ function hydratorFor(ast) {
   var opcodes = hydrate.compile(ast);
   var hydrate2 = new HydrationCompiler();
   var program = hydrate2.compile(opcodes, []);
-  return new Function("Placeholder", "fragment", "context", "helpers", program);
+  return new Function("Morph", "fragment", "context", "helpers", program);
 }
 
 module('fragment');
@@ -54,7 +54,7 @@ test('converts entities to their char/string equivalent', function () {
   equal(fragment.textContent, "lol < << < < ≧̸ &Borksnorlax;");
 });
 
-test('hydrates a fragment with placeholder mustaches', function () {
+test('hydrates a fragment with morph mustaches', function () {
   var ast = preprocess("<div>{{foo \"foo\" 3 blah bar=baz ack=\"syn\"}} bar {{baz}}</div>");
   var fragment = fragmentFor(ast).cloneNode(true);
   var hydrate = hydratorFor(ast);
@@ -62,9 +62,9 @@ test('hydrates a fragment with placeholder mustaches', function () {
   var contentResolves = [];
   var context = {};
   var helpers = {
-    CONTENT: function(placeholder, path, context, params, options) {
+    CONTENT: function(morph, path, context, params, options) {
       contentResolves.push({
-        placeholder: placeholder,
+        morph: morph,
         context: context,
         path: path,
         params: params,
@@ -73,12 +73,12 @@ test('hydrates a fragment with placeholder mustaches', function () {
     }
   };
 
-  hydrate(Placeholder, fragment, context, helpers);
+  hydrate(Morph, fragment, context, helpers);
 
   equal(contentResolves.length, 2);
 
   var foo = contentResolves[0];
-  equal(foo.placeholder.parent(), fragment);
+  equal(foo.morph.parent(), fragment);
   equal(foo.context, context);
   equal(foo.path, 'foo');
   deepEqual(foo.params, ["foo",3,"blah"]);
@@ -88,38 +88,38 @@ test('hydrates a fragment with placeholder mustaches', function () {
   equal(foo.options.escaped, true);
 
   var baz = contentResolves[1];
-  equal(baz.placeholder.parent(), fragment);
+  equal(baz.morph.parent(), fragment);
   equal(baz.context, context);
   equal(baz.path, 'baz');
   equal(baz.params.length, 0);
   equal(baz.options.escaped, true);
 
-  foo.placeholder.update('A');
-  baz.placeholder.update('B');
+  foo.morph.update('A');
+  baz.morph.update('B');
 
   equalHTML(fragment, "<div>A bar B</div>");
 });
 
-test('test auto insertion of text nodes for needed edges a fragment with placeholder mustaches', function () {
+test('test auto insertion of text nodes for needed edges a fragment with morph mustaches', function () {
   var ast = preprocess("{{first}}<p>{{second}}</p>{{third}}");
   var fragment = fragmentFor(ast).cloneNode(true);
   var hydrate = hydratorFor(ast);
 
-  var placeholders = [];
-  var FakePlaceholder = {
+  var morphs = [];
+  var FakeMorph = {
     create: function (start, startIndex, endIndex) {
-      var placeholder = Placeholder.create(start, startIndex, endIndex);
-      placeholders.push(placeholder);
-      return placeholder;
+      var morph = Morph.create(start, startIndex, endIndex);
+      morphs.push(morph);
+      return morph;
     }
   };
 
   var contentResolves = [];
   var context = {};
   var helpers = {
-    CONTENT: function(placeholder, path, context, params, options) {
+    CONTENT: function(morph, path, context, params, options) {
       contentResolves.push({
-        placeholder: placeholder,
+        morph: morph,
         context: context,
         path: path,
         params: params,
@@ -128,23 +128,23 @@ test('test auto insertion of text nodes for needed edges a fragment with placeho
     }
   };
 
-  hydrate(FakePlaceholder, fragment, context, helpers);
+  hydrate(FakeMorph, fragment, context, helpers);
 
-  equal(placeholders.length, 3);
+  equal(morphs.length, 3);
 
-  var t = placeholders[0].start;
+  var t = morphs[0].start;
   equal(t.nodeType, 3);
   equal(t.textContent , '');
-  equal(placeholders[1].start, null);
-  equal(placeholders[1].end, null);
+  equal(morphs[1].start, null);
+  equal(morphs[1].end, null);
 
-  equal(placeholders[2].start, placeholders[1].parent());
-  equal(placeholders[2].end.nodeType, 3);
-  equal(placeholders[2].end.textContent, '');
+  equal(morphs[2].start, morphs[1].parent());
+  equal(morphs[2].end.nodeType, 3);
+  equal(morphs[2].end.textContent, '');
 
-  placeholders[0].update('A');
-  placeholders[1].update('B');
-  placeholders[2].update('C');
+  morphs[0].update('A');
+  morphs[1].update('B');
+  morphs[2].update('C');
 
   equalHTML(fragment, "A<p>B</p>C");
 });

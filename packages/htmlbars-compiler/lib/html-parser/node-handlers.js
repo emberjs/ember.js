@@ -1,4 +1,4 @@
-import { BlockNode, ProgramNode, TextNode, appendChild, usesPlaceholder } from "../ast";
+import { BlockNode, ProgramNode, TextNode, appendChild, usesMorph } from "../ast";
 import { postprocessProgram } from "../html-parser/helpers";
 import { Chars } from "../html-parser/tokens";
 

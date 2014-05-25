@@ -51,7 +51,7 @@ export function childrenFor(node) {
   if (node.type === 'element') return node.children;
 }
 
-export function usesPlaceholder(node) {
+export function usesMorph(node) {
   return node.type === 'mustache' || node.type === 'block' || node.type === 'component';
 }
 
@@ -61,7 +61,7 @@ export function appendChild(parent, node) {
   var len = children.length, last;
   if (len > 0) {
     last = children[len-1];
-    if (usesPlaceholder(last) && usesPlaceholder(node)) {
+    if (usesMorph(last) && usesMorph(node)) {
       children.push(new TextNode(''));
     }
   }

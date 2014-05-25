@@ -231,9 +231,9 @@ test("It is possible to override the resolution mechanism", function() {
 test("Simple data binding using text nodes", function() {
   var callback;
 
-  hooks.CONTENT = function(placeholder, path, context, params, options) {
+  hooks.CONTENT = function(morph, path, context, params, options) {
     callback = function() {
-      placeholder.update(context[path]);
+      morph.update(context[path]);
     };
     callback();
   };
@@ -255,10 +255,10 @@ test("Simple data binding using text nodes", function() {
 test("Simple data binding on fragments", function() {
   var callback;
 
-  hooks.CONTENT = function(placeholder, path, context, params, options) {
-    placeholder.escaped = false;
+  hooks.CONTENT = function(morph, path, context, params, options) {
+    morph.escaped = false;
     callback = function() {
-      placeholder.update(context[path]);
+      morph.update(context[path]);
     };
     callback();
   };
@@ -280,14 +280,14 @@ test("Simple data binding on fragments", function() {
 test("CONTENT hook receives escaping information", function() {
   expect(3);
 
-  hooks.CONTENT = function(placeholder, path, context, params, options) {
+  hooks.CONTENT = function(morph, path, context, params, options) {
     if (path === 'escaped') {
       equal(options.escaped, true);
     } else if (path === 'unescaped') {
       equal(options.escaped, false);
     }
 
-    placeholder.update(path);
+    morph.update(path);
   };
 
   // so we NEED a reference to div. because it's passed in twice.
@@ -540,24 +540,24 @@ test("Attribute runs can contain helpers", function() {
 */
 test("A simple block helper can return the default document fragment", function() {
 
-  hooks.CONTENT = function(placeholder, path, context, params, options) {
-    placeholder.update(options.render(context));
+  hooks.CONTENT = function(morph, path, context, params, options) {
+    morph.update(options.render(context));
   };
 
   compilesTo('{{#testing}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
 });
 
 test("A simple block helper can return text", function() {
-  hooks.CONTENT = function(placeholder, path, context, params, options) {
-    placeholder.update(options.render(context));
+  hooks.CONTENT = function(morph, path, context, params, options) {
+    morph.update(options.render(context));
   };
 
   compilesTo('{{#testing}}test{{else}}not shown{{/testing}}', 'test');
 });
 
 test("A block helper can have an else block", function() {
-  hooks.CONTENT = function(placeholder, path, context, params, options) {
-    placeholder.update(options.inverse(context));
+  hooks.CONTENT = function(morph, path, context, params, options) {
+    morph.update(options.inverse(context));
   };
 
   compilesTo('{{#testing}}Nope{{else}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
@@ -565,13 +565,13 @@ test("A block helper can have an else block", function() {
 
 test("A block helper can pass a context to be used in the child", function() {
   var CONTENT = hooks.CONTENT;
-  hooks.CONTENT = function(placeholder, path, context, params, options) {
+  hooks.CONTENT = function(morph, path, context, params, options) {
     if (path === 'testing') {
 
       // TODO: this sucks
       options.helpers = hooks;
 
-      placeholder.update(options.render({ title: 'Rails is omakase' }, options));
+      morph.update(options.render({ title: 'Rails is omakase' }, options));
     } else {
       CONTENT.apply(this, arguments);
     }
@@ -582,11 +582,11 @@ test("A block helper can pass a context to be used in the child", function() {
 
 test("A block helper can insert the document fragment manually", function() {
   var CONTENT = hooks.CONTENT;
-  hooks.CONTENT = function(placeholder, path, context, params, options) {
+  hooks.CONTENT = function(morph, path, context, params, options) {
     if (path === 'testing') {
       options.helpers = hooks;
       var frag = options.render({ title: 'Rails is omakase' }, options);
-      placeholder.update(frag);
+      morph.update(frag);
     } else {
       CONTENT.apply(this, arguments);
     }
@@ -596,10 +596,10 @@ test("A block helper can insert the document fragment manually", function() {
 });
 
 test("Block helpers receive hash arguments", function() {
-  hooks.CONTENT = function(placeholder, path, context, params, options) {
+  hooks.CONTENT = function(morph, path, context, params, options) {
     if (options.hash.truth) {
       options.helpers = hooks;
-      placeholder.update(options.render(context, options));
+      morph.update(options.render(context, options));
     }
   };
 

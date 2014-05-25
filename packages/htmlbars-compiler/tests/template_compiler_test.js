@@ -1,5 +1,5 @@
 import { TemplateCompiler } from "htmlbars-compiler/compiler/template";
-import { Placeholder } from "morph";
+import { Morph } from "morph";
 import { preprocess } from "htmlbars-compiler/parser";
 
 module("TemplateCompiler");
@@ -27,15 +27,15 @@ var dom = {
 };
 
 var helpers = {
-  CONTENT: function(placeholder, helperName, context, params, options, helpers) {
+  CONTENT: function(morph, helperName, context, params, options, helpers) {
     if (helperName === 'if') {
       if (context[params[0]]) {
         options.helpers = helpers;
-        placeholder.update(options.render(context, options));
+        morph.update(options.render(context, options));
       }
       return;
     }
-    placeholder.update(context[helperName]);
+    morph.update(context[helperName]);
   }
 };
 
@@ -44,7 +44,7 @@ test("it works", function testFunction() {
   var ast = preprocess('<div>{{#if working}}Hello {{firstName}} {{lastName}}!{{/if}}</div>');
   var compiler = new TemplateCompiler();
   var program = compiler.compile(ast);
-  var template = new Function("dom", "Placeholder", "return " + program)(dom, Placeholder);
+  var template = new Function("dom", "Morph", "return " + program)(dom, Morph);
   var frag = template(
     { working: true, firstName: 'Kris', lastName: 'Selden' },
     { helpers: helpers }
