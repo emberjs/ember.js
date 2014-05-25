@@ -1,5 +1,5 @@
 import { TemplateCompiler } from "htmlbars-compiler/compiler/template";
-import { Placeholder } from "htmlbars-runtime/placeholder";
+import { Placeholder } from "morph";
 import { preprocess } from "htmlbars-compiler/parser";
 
 module("TemplateCompiler");
