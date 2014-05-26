@@ -1182,7 +1182,7 @@ computed.alias = function(dependentKey) {
   return computed(dependentKey, function(key, value) {
     if (arguments.length > 1) {
       set(this, dependentKey, value);
-      return value;
+      return get(this, dependentKey);
     } else {
       return get(this, dependentKey);
     }

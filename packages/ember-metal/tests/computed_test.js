@@ -824,6 +824,24 @@ testBoth('computed.alias', function(get, set) {
   equal(get(obj, 'quz'), null);
 });
 
+testBoth('computed.alias set', function(get, set) {
+  var obj = {};
+  var constantValue = 'always `a`';
+
+  defineProperty(obj, 'original', computed(function(key, value) {
+    return constantValue;
+  }));
+  defineProperty(obj, 'aliased', computed.alias('original'));
+
+  equal(get(obj, 'original'), constantValue);
+  equal(get(obj, 'aliased'), constantValue);
+
+  set(obj, 'aliased', 'should not set to this value');
+
+  equal(get(obj, 'original'), constantValue);
+  equal(get(obj, 'aliased'), constantValue);
+});
+
 testBoth('computed.defaultTo', function(get, set) {
   var obj = { source: 'original source value' };
   defineProperty(obj, 'copy', computed.defaultTo('source'));
