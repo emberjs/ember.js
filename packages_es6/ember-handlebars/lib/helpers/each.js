@@ -29,11 +29,6 @@ import { computed } from "ember-metal/computed";
 import {handlebarsGet} from "ember-handlebars/ext";
 
 var EachView = CollectionView.extend(_Metamorph, {
-  instrumentDisplay: computed(function() {
-    if (this.helperName) {
-      return '{{' + this.helperName + '}}';
-    }
-  }),
 
   init: function() {
     var itemController = get(this, 'itemController');
