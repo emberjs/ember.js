@@ -37,11 +37,6 @@ import {
 } from "ember-handlebars/views/metamorph_view";
 
 var EachView = CollectionView.extend(_Metamorph, {
-  instrumentDisplay: computed(function() {
-    if (this.helperName) {
-      return '{{' + this.helperName + '}}';
-    }
-  }),
 
   init: function() {
     var itemController = get(this, 'itemController');

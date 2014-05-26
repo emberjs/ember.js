@@ -980,6 +980,18 @@ var View = CoreView.extend({
   layoutName: null,
 
   /**
+    Used to identify this view during debugging
+
+    @property instrumentDisplay
+    @type String
+  */
+  instrumentDisplay: computed(function() {
+    if (this.helperName) {
+      return '{{' + this.helperName + '}}';
+    }
+  }),
+
+  /**
     The template used to render the view. This should be a function that
     accepts an optional context parameter and returns a string of HTML that
     will be inserted into the DOM relative to its parent view.

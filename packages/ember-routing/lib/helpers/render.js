@@ -173,7 +173,7 @@ export default function renderHelper(name, contextString, options) {
     router._connectActiveView(name, view);
   }
 
-  options.helperName = options.helperName || 'render';
+  options.helperName = options.helperName || ('render "' + name + '"');
 
   viewHelper.call(this, view, options);
 }
