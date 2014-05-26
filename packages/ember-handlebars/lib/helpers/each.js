@@ -22,6 +22,7 @@ import copy from "ember-runtime/copy";
 import run from "ember-metal/run_loop";
 import { on } from "ember-metal/events";
 import { handlebarsGet } from "ember-handlebars/ext";
+import { computed } from "ember-metal/computed";
 
 import {
   addObserver,
@@ -36,7 +37,11 @@ import {
 } from "ember-handlebars/views/metamorph_view";
 
 var EachView = CollectionView.extend(_Metamorph, {
-  instrumentDisplay: '{{each}}',
+  instrumentDisplay: computed(function() {
+    if (this.helperName) {
+      return '{{' + this.helperName + '}}';
+    }
+  }),
 
   init: function() {
     var itemController = get(this, 'itemController');
@@ -433,23 +438,28 @@ GroupedEach.prototype = {
   @param [options.groupedRows] {boolean} enable normal item-by-item rendering when inside a `#group` helper
 */
 function eachHelper(path, options) {
-  var ctx;
+  var ctx, helperName = 'each';
 
   if (arguments.length === 4) {
     Ember.assert("If you pass more than one argument to the each helper, it must be in the form #each foo in bar", arguments[1] === "in");
 
     var keywordName = arguments[0];
 
+
     options = arguments[3];
     path = arguments[2];
+
+    helperName += ' ' + keywordName + ' in ' + path;
+
     if (path === '') { path = "this"; }
 
     options.hash.keyword = keywordName;
-  }
 
-  if (arguments.length === 1) {
+  } else if (arguments.length === 1) {
     options = path;
     path = 'this';
+  } else {
+    helperName += ' ' + path;
   }
 
   options.hash.dataSourceBinding = path;
@@ -459,7 +469,7 @@ function eachHelper(path, options) {
   // can't rely on this default behavior when use strict
   ctx = this || window;
 
-  options.helperName = options.helperName || 'each';
+  options.helperName = options.helperName || helperName;
 
   if (options.data.insideGroup && !options.hash.groupedRows && !options.hash.itemViewClass) {
     new GroupedEach(ctx, path, options).render();
