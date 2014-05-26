@@ -23,6 +23,8 @@ var indexOf = EnumerableUtils.indexOf,
     precompileTemplate = EmberHandlebars.compile;
 
 var SelectOption = View.extend({
+  instrumentDisplay: 'Ember.SelectOption',
+
   tagName: 'option',
   attributeBindings: ['value', 'selected'],
 
@@ -72,6 +74,8 @@ var SelectOption = View.extend({
 });
 
 var SelectOptgroup = CollectionView.extend({
+  instrumentDisplay: 'Ember.SelectOptgroup',
+
   tagName: 'optgroup',
   attributeBindings: ['label'],
 
@@ -336,6 +340,8 @@ var SelectOptgroup = CollectionView.extend({
   @extends Ember.View
 */
 var Select = View.extend({
+  instrumentDisplay: 'Ember.Select',
+
   tagName: 'select',
   classNames: ['ember-select'],
   defaultTemplate: precompileTemplate('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#if view.optionGroupPath}}{{#each view.groupedContent}}{{view view.groupView content=content label=label}}{{/each}}{{else}}{{#each view.content}}{{view view.optionView content=this}}{{/each}}{{/if}}'),

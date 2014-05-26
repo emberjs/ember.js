@@ -32,6 +32,8 @@ import { View } from "ember-views/views/view";
   @extends Ember.View
 */
 var Checkbox = View.extend({
+  instrumentDisplay: '{{input type="checkbox"}}',
+
   classNames: ['ember-checkbox'],
 
   tagName: 'input',

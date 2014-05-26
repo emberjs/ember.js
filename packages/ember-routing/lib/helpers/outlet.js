@@ -116,5 +116,7 @@ export function outletHelper(property, options) {
   options.data.view.set('outletSource', outletSource);
   options.hash.currentViewBinding = '_view.outletSource._outlets.' + property;
 
+  options.helperName = options.helperName || 'outlet';
+
   return viewHelper.call(this, viewClass, options);
 }
