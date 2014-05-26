@@ -2392,7 +2392,12 @@ View.applyAttributeBindings = function(elem, name, value) {
     if (isNone(value) || value === false) {
       // `null`, `undefined` or `false` should remove attribute
       elem.removeAttr(name);
-      elem.prop(name, '');
+      // In IE8 `prop` couldn't remove attribute when name is `required`.
+      if (name === 'required') {
+        elem.removeProp(name);
+      } else {
+        elem.prop(name, '');
+      }
     } else if (value !== elem.prop(name)) {
       // value should always be properties
       elem.prop(name, value);
