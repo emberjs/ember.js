@@ -33,7 +33,7 @@ module.exports = {
   dependencies: {
     "htmlbars-compiler": {
       lib: ["handlebars", "simple-html-tokenizer"],
-      test: ["htmlbars-runtime", "morph"]
+      test: ["htmlbars-runtime"]
     },
     "htmlbars-runtime": {
       lib: ["morph"],

@@ -39,22 +39,30 @@
       }
     }
 
-    // Merge all the dependencies for this configuration of packages
-    // to ensure that we only load the dependencies once.
     var packages = getPackageList();
+
+    // Recursively merge all the dependencies for this configuration
+    // of packages to ensure that we only load the dependencies once
     var requiredPackages = {};
 
-    for (var i = 0; i < packages.length; i++) {
-      var packageName = packages[i];
-      var depsHash = packagesConfig.dependencies[packageName];
-      var depsList = [packageName].concat(depsHash.lib, depsHash.test);
+    function visitPackage(name) {
+      if (requiredPackages[name]) return;
 
-      for (var i = 0; i < depsList.length; i++) {
-        requiredPackages[depsList[i]] = true;
+      requiredPackages[name] = true;
+
+      var deps = packagesConfig.dependencies[name];
+
+      if (deps) {
+        if (deps.lib) deps.lib.forEach(visitPackage);
+        if (deps.test) deps.test.forEach(visitPackage);
       }
     }
 
-    // Load all the required packages
+    for (var i = 0; i < packages.length; i++) {
+      visitPackage(packages[i]);
+    }
+
+    // Inject the required packages
     for (var packageName in requiredPackages) {
       if (packagesConfig.vendored[packageName]) {
         loadVendored(packageName);
@@ -63,7 +71,7 @@
       }
     }
 
-    // Load all the required tests
+    // Inject the tests
     for (var i = 0; i < packages.length; i++) {
       loadTests(packages[i]);
     }
