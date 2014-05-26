@@ -36,11 +36,9 @@ module.exports = {
       test: ["htmlbars-runtime"]
     },
     "htmlbars-runtime": {
-      lib: ["morph"],
-      test: []
+      lib: ["morph"]
     },
     "morph": {
-      lib: [],
       test: ["handlebars"]
     }
   }
