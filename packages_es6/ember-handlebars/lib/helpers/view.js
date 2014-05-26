@@ -198,6 +198,11 @@ var ViewHelper = EmberObject.create({
       viewOptions._context = thisContext;
     }
 
+    // for instrumentation
+    if (options.helperName) {
+      viewOptions.helperName = options.helperName;
+    }
+
     currentView.appendChild(newView, viewOptions);
   }
 });
