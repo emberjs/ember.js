@@ -630,11 +630,10 @@ test("should render the emptyView if content array is empty and emptyView is giv
 });
 
 test("should lookup against the container if itemViewClass is given as a string", function() {
-
   var ItemView = View.extend({
-      render: function(buf) {
-        buf.push(get(this, 'content'));
-      }
+    render: function(buf) {
+      buf.push(get(this, 'content'));
+    }
   });
 
   var container = {
@@ -660,23 +659,52 @@ test("should lookup against the container if itemViewClass is given as a string"
   }
 });
 
-test("should lookup against the container and render the emptyView if emptyView is given as string and content array is empty ", function() {
-  var EmptyView = View.extend({
-      tagName: 'kbd',
-      render: function(buf) {
-        buf.push("THIS IS AN EMPTY VIEW");
-      }
+test("should lookup only global path against the container if itemViewClass is given as a string", function() {
+  var ItemView = View.extend({
+    render: function(buf) {
+      buf.push(get(this, 'content'));
+    }
   });
 
   var container = {
     lookupFactory: lookupFactory
   };
 
-  view =  CollectionView.create({
+  view = CollectionView.create({
+    container: container,
+    content: Ember.A(['hi']),
+    itemViewClass: 'top'
+  });
+
+  run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$().text(), 'hi');
+
+  function lookupFactory(fullName) {
+    equal(fullName, 'view:top');
+
+    return ItemView;
+  }
+});
+
+test("should lookup against the container and render the emptyView if emptyView is given as string and content array is empty ", function() {
+  var EmptyView = View.extend({
+    tagName: 'kbd',
+    render: function(buf) {
+      buf.push("THIS IS AN EMPTY VIEW");
+    }
+  });
+
+  var container = {
+    lookupFactory: lookupFactory
+  };
+
+  view = CollectionView.create({
     container: container,
     tagName: 'del',
     content: Ember.A(),
-
     emptyView: 'empty'
   });
 
@@ -688,6 +716,36 @@ test("should lookup against the container and render the emptyView if emptyView 
 
   function lookupFactory(fullName) {
     equal(fullName, 'view:empty');
+
+    return EmptyView;
+  }
+});
+
+test("should lookup from only global path against the container if emptyView is given as string and content array is empty ", function() {
+  var EmptyView = View.extend({
+    render: function(buf) {
+      buf.push("EMPTY");
+    }
+  });
+
+  var container = {
+    lookupFactory: lookupFactory
+  };
+
+  view = CollectionView.create({
+    container: container,
+    content: Ember.A(),
+    emptyView: 'top'
+  });
+
+  run(function() {
+    view.append();
+  });
+
+  equal(view.$().text(), "EMPTY");
+
+  function lookupFactory(fullName) {
+    equal(fullName, 'view:top');
 
     return EmptyView;
   }
