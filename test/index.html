@@ -15,23 +15,23 @@
   <script>
     QUnit.config.urlConfig.push({ id: 'nojshint', label: "No JSHint"});
 
-    function loadScript(url) {
+    function injectScript(url) {
       document.write(unescape('%3Cscript src="'+url+'"%3E%3C/script%3E'));
     };
 
-    function loadVendored(packageName) {
-      loadScript("../vendor/" + packageName + ".amd.js");
+    function injectVendoredLib(packageName) {
+      injectScript("../vendor/" + packageName + ".amd.js");
     }
 
-    function loadLib(packageName) {
-      loadScript("../" + packageName + ".amd.js");
+    function injectLib(packageName) {
+      injectScript("../" + packageName + ".amd.js");
     }
 
-    function loadTests(packageName) {
-      loadScript(packageName + "-tests.amd.js");
+    function injectTests(packageName) {
+      injectScript(packageName + "-tests.amd.js");
     }
 
-    function getPackageList() {
+    function getPackagesToTest() {
       if (QUnit.urlParams.packages) {
         return QUnit.urlParams.packages.split(',');
       } else {
@@ -39,41 +39,41 @@
       }
     }
 
-    var packages = getPackageList();
-
-    // Recursively merge all the dependencies for this configuration
-    // of packages to ensure that we only load the dependencies once
-    var requiredPackages = {};
+    // Recursively merge all the dependencies for this configuration of
+    // packages to ensure that we only inject each dependency once.
+    // Testing dependencies are only injected for the packages being tested.
+    var packagesToTest = getPackagesToTest();
+    var packagesToInject = {};
 
     function visitPackage(name) {
-      if (requiredPackages[name]) return;
-
-      requiredPackages[name] = true;
+      if (packagesToInject[name]) return;
+      packagesToInject[name] = true;
 
       var deps = packagesConfig.dependencies[name];
-
-      if (deps) {
-        if (deps.lib) deps.lib.forEach(visitPackage);
-        if (deps.test) deps.test.forEach(visitPackage);
-      }
+      if (deps && deps.lib) deps.lib.forEach(visitPackage);
     }
 
-    for (var i = 0; i < packages.length; i++) {
-      visitPackage(packages[i]);
+    for (var i = 0; i < packagesToTest.length; i++) {
+      var packageName = packagesToTest[i];
+
+      visitPackage(packageName);
+
+      var deps = packagesConfig.dependencies[packageName];
+      if (deps && deps.test) deps.test.forEach(visitPackage);
     }
 
-    // Inject the required packages
-    for (var packageName in requiredPackages) {
+    // Inject lib packages
+    for (var packageName in packagesToInject) {
       if (packagesConfig.vendored[packageName]) {
-        loadVendored(packageName);
+        injectVendoredLib(packageName);
       } else {
-        loadLib(packageName);
+        injectLib(packageName);
       }
     }
 
-    // Inject the tests
-    for (var i = 0; i < packages.length; i++) {
-      loadTests(packages[i]);
+    // Inject test packages
+    for (var i = 0; i < packagesToTest.length; i++) {
+      injectTests(packagesToTest[i]);
     }
   </script>
 
@@ -82,8 +82,8 @@
     for (var key in requireModule.entries) {
       var root = key.split('/')[0];
 
-      for (var i = 0; i < packages.length; i++) {
-        if (root === packages[i] + '-tests') {
+      for (var i = 0; i < packagesToTest.length; i++) {
+        if (root === packagesToTest[i] + '-tests') {
           requireModule(key);
         }
       }
@@ -91,9 +91,9 @@
 
     // Run JShint
     if (!QUnit.urlParams.nojshint) {
-      for (var i = 0; i < packages.length; i++) {
-        requireModule(packages[i] + '-jshint/lib');
-        requireModule(packages[i] + '-jshint/tests');
+      for (var i = 0; i < packagesToTest.length; i++) {
+        requireModule(packagesToTest[i] + '-jshint/lib');
+        requireModule(packagesToTest[i] + '-jshint/tests');
       }
     }
   </script>
