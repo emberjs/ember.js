@@ -150,7 +150,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
         helperName: options.helperName
       };
 
-      if (options.helperName === 'with') {
+      if (options.isWithHelper) {
         viewClass = WithView;
       }
 
@@ -484,7 +484,7 @@ function unboundIfHelper(property, fn) {
   @return {String} HTML string
 */
 function withHelper(context, options) {
-  var bindContext, preserveContext, controller;
+  var bindContext, preserveContext, controller, helperName = 'with';
 
   if (arguments.length === 4) {
     var keywordName, path, rootPath, normalized, contextPath;
@@ -493,6 +493,10 @@ function withHelper(context, options) {
     options = arguments[3];
     keywordName = arguments[2];
     path = arguments[0];
+
+    if (path) {
+      helperName += ' ' + path + ' as ' + keywordName;
+    }
 
     Ember.assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
 
@@ -526,11 +530,13 @@ function withHelper(context, options) {
     Ember.assert("You must pass exactly one argument to the with helper", arguments.length === 2);
     Ember.assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
 
+    helperName += ' ' + context;
     bindContext = options.contexts[0];
     preserveContext = false;
   }
 
-  options.helperName = 'with';
+  options.helperName = helperName;
+  options.isWithHelper = true;
 
   return bind.call(bindContext, context, options, preserveContext, exists);
 }
@@ -568,12 +574,16 @@ function unlessHelper(context, options) {
   Ember.assert("You must pass exactly one argument to the unless helper", arguments.length === 2);
   Ember.assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
 
-  var fn = options.fn, inverse = options.inverse;
+  var fn = options.fn, inverse = options.inverse, helperName = 'unless';
+
+  if (context) {
+    helperName += ' ' + context;
+  }
 
   options.fn = inverse;
   options.inverse = fn;
 
-  options.helperName = options.helperName || 'unless';
+  options.helperName = options.helperName || helperName;
 
   if (options.data.isUnbound) {
     return helpers.unboundIf.call(options.contexts[0], context, options);
