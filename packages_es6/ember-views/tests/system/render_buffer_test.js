@@ -118,14 +118,17 @@ test("handles browsers like Firefox < 11 that don't support outerHTML Issue #195
 
 test("resets classes after pushing the opening tag", function() {
   var buffer = new RenderBuffer('div');
-  buffer.addClass('foo');
+  // IE8 renders single class without quote. To pass this test any environments, add class twice.
+  buffer.addClass('foo1');
+  buffer.addClass('foo2');
   buffer.pushOpeningTag();
   buffer.begin('div');
-  buffer.addClass('bar');
+  buffer.addClass('bar1');
+  buffer.addClass('bar2');
   buffer.pushOpeningTag();
   buffer.pushClosingTag();
   buffer.pushClosingTag();
-  equal(buffer.string(), '<div class="foo"><div class="bar"></div></div>');
+  equal(trim(buffer.string()).toLowerCase().replace(/\r\n/g, ''), '<div class="foo1 foo2"><div class="bar1 bar2"></div></div>');
 });
 
 test("lets `setClasses` and `addClass` work together", function() {
@@ -134,7 +137,7 @@ test("lets `setClasses` and `addClass` work together", function() {
   buffer.addClass('baz');
   buffer.pushOpeningTag();
   buffer.pushClosingTag();
-  equal(buffer.string(), '<div class="foo bar baz"></div>');
+  equal(trim(buffer.string().toLowerCase()), '<div class="foo bar baz"></div>');
 });
 
 module("RenderBuffer - without tagName");
