@@ -1,4 +1,5 @@
 import { Morph } from "morph";
+import { equalHTML } from "test/support/assertions";
 import SafeString from 'handlebars/safe-string';
 
 function morphTests(factory) {
@@ -240,13 +241,6 @@ function morphListTests(factory) {
     equal(morphs[1].before, morphs[0]);
     equal(morphs[1].after,  null);
   });
-}
-
-function equalHTML(fragment, html) {
-  var div = document.createElement("div");
-  div.appendChild(fragment.cloneNode(true));
-
-  QUnit.push(div.innerHTML === html, div.innerHTML, html);
 }
 
 function fragmentFor() {

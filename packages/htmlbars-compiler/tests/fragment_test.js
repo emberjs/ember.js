@@ -5,13 +5,7 @@ import { HydrationCompiler } from "htmlbars-compiler/compiler/hydration";
 import { domHelpers } from "htmlbars-runtime/dom_helpers";
 import { Morph } from "morph";
 import { preprocess } from "htmlbars-compiler/parser";
-
-function equalHTML(fragment, html) {
-  var div = document.createElement("div");
-  div.appendChild(fragment.cloneNode(true));
-
-  QUnit.push(div.innerHTML === html, div.innerHTML, html);
-}
+import { equalHTML } from "test/support/assertions";
 
 var dom = domHelpers();
 
