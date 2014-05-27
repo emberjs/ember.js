@@ -17,6 +17,9 @@ var dom = {
   },
   createTextNode: function(string) {
     return document.createTextNode(string);
+  },
+  cloneNode: function(element) {
+    return element.cloneNode(true);
   }
 };
 
