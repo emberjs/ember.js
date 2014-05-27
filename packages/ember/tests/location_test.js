@@ -1,10 +1,17 @@
 import "ember";
+import copy from "ember-runtime/copy";
 
-var App;
+var App, AutoTestLocation;
 
 QUnit.module('AutoLocation', {
   setup: function() {
-    Ember.AutoLocation._location = {
+    AutoTestLocation = copy(Ember.AutoLocation);
+
+    AutoTestLocation._getSupportsHistory = function () {
+      return true;
+    };
+
+    AutoTestLocation._location = {
       href: 'http://test.com/',
       pathname: '/rootdir/subdir',
       hash: '',
@@ -23,6 +30,7 @@ QUnit.module('AutoLocation', {
         location: 'none',
         rootURL: '/rootdir/'
       });
+      App.__container__.register('location:auto', AutoTestLocation );
       App.deferReadiness();
     });
   },
