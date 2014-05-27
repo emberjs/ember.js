@@ -24,6 +24,10 @@ export function domHelpers(extensions) {
 
     createTextNode: function(text) {
       return document.createTextNode(text);
+    },
+
+    cloneNode: function(element) {
+      return element.cloneNode(true);
     }
   };
 
