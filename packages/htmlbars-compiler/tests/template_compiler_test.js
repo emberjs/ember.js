@@ -1,15 +1,9 @@
 import { TemplateCompiler } from "htmlbars-compiler/compiler/template";
 import { Morph } from "morph";
 import { preprocess } from "htmlbars-compiler/parser";
+import { equalHTML } from "test/support/assertions";
 
 module("TemplateCompiler");
-
-function equalHTML(fragment, html) {
-  var div = document.createElement("div");
-  div.appendChild(fragment.cloneNode(true));
-
-  QUnit.push(div.innerHTML === html, div.innerHTML, html);
-}
 
 var dom = {
   createDocumentFragment: function () {
