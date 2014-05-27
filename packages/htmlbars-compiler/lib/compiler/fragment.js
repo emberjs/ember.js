@@ -59,5 +59,5 @@ FragmentCompiler.prototype.text = function(str) {
 FragmentCompiler.prototype.closeElement = function() {
   var child = 'el'+(this.depth--);
   var el = 'el'+this.depth;
-  this.source.push('  '+el+'.appendChild('+child+');\n');
+  this.source.push('  dom.appendChild('+el+', '+child+');\n');
 };
