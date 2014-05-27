@@ -23,6 +23,9 @@ builder.build()
   .then(function() {
     console.log(chalk.green('Built project successfully. Stored in "' + buildPath + '/".\n'));
   })
+  .finally(function() {
+    return builder.cleanup();
+  })
   .catch(function(err) {
     console.log(chalk.red('Build failed.\n'));
 
@@ -30,7 +33,5 @@ builder.build()
       console.log('File: ' + err.file + '\n');
     }
     console.log(err.stack);
-  })
-  .finally(function() {
-    return builder.cleanup();
+    process.exit(1);
   });

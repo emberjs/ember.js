@@ -34,11 +34,21 @@ info on how HTMLBars is structured and its approach to efficiently building / em
 
 # How to Run Tests
 
-## In Node
+## Via testem
+
+[Testem](https://github.com/airportyh/testem) is a tool for running tests against
+multiple launchers. For instance, Chrome and PhantomJS.
+
+1. Install Testem: `node install -g testem`
+2. Run testem: `testem` or run Testem with specific browers: `testem -l Safari,Firefox`
+
+Testem is a CI tool, so it will run tests as you change files.
+
+## On the console with PhantomJS
 
 1. Run `npm test`.
 
-## In the browser
+## In a browser
 
 1. Run `npm start`.
 2. Visit <http://localhost:4200/test>.

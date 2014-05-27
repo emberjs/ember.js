@@ -1,0 +1,16 @@
+{
+  "framework": "qunit",
+  "test_page": "dist/test/index.html",
+  "before_tests": "node bin/build.js",
+  "watch_files": [
+    "packages/**/*.js",
+    "test/**/*.js"
+  ],
+  "launch_in_dev": [
+    "PhantomJS",
+    "Chrome"
+  ],
+  "launch_in_ci": [
+    "PhantomJS"
+  ]
+}
