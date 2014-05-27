@@ -6,6 +6,10 @@ export function domHelpers(extensions) {
       element.appendChild(document.createTextNode(text));
     },
 
+    appendChild: function(element, childElement) {
+      element.appendChild(childElement);
+    },
+
     setAttribute: function(element, name, value) {
       element.setAttribute(name, value);
     },
@@ -20,6 +24,10 @@ export function domHelpers(extensions) {
 
     createTextNode: function(text) {
       return document.createTextNode(text);
+    },
+
+    cloneNode: function(element) {
+      return element.cloneNode(true);
     }
   };
 
