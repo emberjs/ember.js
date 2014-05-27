@@ -638,6 +638,69 @@ test("Quoteless route param performs property lookup", function() {
   assertEquality('/about');
 });
 
+test("link-to isActive is eagerly updated", function() {
+
+  expect(3);
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'thing' routeContext activeClass='i-am-active' id='context-link'}}string{{/link-to}}");
+
+  var thing = Ember.Object.create({ id: 123 });
+
+  App.IndexController = Ember.Controller.extend({
+    destinationRoute: null,
+    routeContext: '123'
+  });
+
+  // Allow us to resolve this promise at will later
+  var eagerDefer;
+  App.ThingRoute = Ember.Route.extend({
+    afterModel: function(model) {
+      eagerDefer = Ember.RSVP.defer();
+      return eagerDefer.promise.then(function() {
+        return model;
+      });
+    }
+  });
+  App.ThingController = Ember.ObjectController.extend({});
+
+  App.Router.map(function() {
+    this.route('thing', { path: '/thing/:id' });
+  });
+
+  bootApplication();
+
+  Ember.run(router, 'handleURL', '/');
+
+  function assertLinkHasActiveClass($link) {
+    ok($link.hasClass('i-am-active'), "loading linkView has activeClass");
+  }
+
+  function assertLinkHasNoActiveClass($link) {
+    ok(!$link.hasClass('i-am-active'), "linkView has no activeClass");
+  }
+
+  var $contextLink = Ember.$('#context-link', '#qunit-fixture'),
+      controller = container.lookup('controller:thing');
+
+  // Non active link has no active class
+  assertLinkHasNoActiveClass($contextLink);
+
+  // Begin the transition
+  Ember.run($contextLink, 'click');
+
+  // Eager load the active class
+  assertLinkHasActiveClass($contextLink);
+
+  // Transition completes
+  Ember.run(function() {
+    eagerDefer.resolve();
+    controller.set('model', thing);
+  });
+
+  assertLinkHasActiveClass($contextLink);
+
+});
+
 test("link-to with null/undefined dynamic parameters are put in a loading state", function() {
 
   expect(19);
