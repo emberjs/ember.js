@@ -9,6 +9,20 @@
   simple ground rule: Never set a controllers content, rather always set
   it's model and ember will do the right thing.
 
+### Ember 1.6.0-beta.5 (May 27, 2014)
+
+* [BUGFIX] Ensure itemController's do not leak by tying them to the parent controller lifecycle.
+* [BUGFIX] Spaces in brace expansion throws an error.
+* [BUGFIX] Fix `MutableEnumerable.removeObjects`.
+* [BUGFIX] Allow controller specified to `{{with}}` to be the target of an action.
+* [BUGFIX] Ensure that using keywords syntax (`{{with foo as bar}}`) works when specifying a controller.
+* [BUGFIX] Ensure that controllers instantiated by `{{with}}` are properly destroyed.
+* [BUGFIX] Wrap the keyword specified in `{{with foo as bar}}` with the controller (if specified).
+* [BUGFIX] Fix `Ember.isArray` on IE8.
+* [BUGFIX] Update backburner.js to fix issue with IE8.
+* [BUGFIX] `Ember.computed.alias` returns value of aliased property upon set.
+* Provide better debugging information for view rendering.
+
 ### Ember 1.6.0-beta.4 (May, 15, 2014)
 
 * [BUGFIX] Don't fire redirect on parent routes during transitions from one child route to another.
