@@ -34,7 +34,7 @@ QUnit.module("EmberView#instrumentation", {
 
     view = EmberView.create({
       _debugContainerKey: 'suchryzsd',
-      instrumentDisplay: 'asdfasdfmewj',
+      instrumentDisplay: 'asdfasdfmewj'
     });
   },
 
