@@ -24,13 +24,17 @@ function getPackageTrees(packageName) {
   });
 
   // Tests
+  var testSupports = pickFiles('test/support', {
+    srcDir: '/',
+    destDir: '/test/support'
+  });
   var tests = pickFiles('packages/' + packageName + '/tests', {
     srcDir: '/',
     destDir: '/' + packageName + '-tests'
   });
   var jsHintLib = jsHint(lib, { destFile: '/' + packageName + '-jshint/lib.js' });
   var jsHintTests = jsHint(tests, { destFile: '/' + packageName + '-jshint/tests.js' });
-  var allTests = mergeTrees([tests, jsHintLib, jsHintTests]);
+  var allTests = mergeTrees([testSupports, tests, jsHintLib, jsHintTests]);
   var transpiledTests = transpileES6(allTests, { moduleName: true });
   var concatenatedTests = concatFiles(transpiledTests, {
     inputFiles: ['**/*.js'],
