@@ -164,18 +164,13 @@ merge(states.inDOM, {
   @private
 */
 var _HandlebarsBoundView = _MetamorphView.extend({
-  instrumentName: 'boundHandlebars',
-<<<<<<< HEAD:packages_es6/ember-handlebars/lib/views/handlebars_bound_view.js
   states: states,
-=======
+  instrumentName: 'boundHandlebars',
   instrumentDisplay: computed(function() {
     if (this.helperName) {
       return '{{' + this.helperName + '}}';
     }
   }),
-
-  _states: states,
->>>>>>> d6e1493... [BUGFIX beta] Provide better debugging information.:packages/ember-handlebars/lib/views/handlebars_bound_view.js
 
   /**
     The function used to determine if the `displayTemplate` or
