@@ -6,6 +6,10 @@ export function domHelpers(extensions) {
       element.appendChild(document.createTextNode(text));
     },
 
+    appendChild: function(element, childElement) {
+      element.appendChild(childElement);
+    },
+
     setAttribute: function(element, name, value) {
       element.setAttribute(name, value);
     },
