@@ -5,11 +5,11 @@ import tokenHandlers from "./html-parser/token-handlers";
 
 export function preprocess(html, options) {
   var ast = Handlebars.parse(html);
-  var combined = new HTMLProcessor(options || {}).acceptNode(ast);
+  var combined = new HTMLProcessor().acceptNode(ast);
   return combined;
 }
 
-function HTMLProcessor(options) {
+function HTMLProcessor() {
   this.elementStack = [];
   this.tokenizer = new Tokenizer('');
   this.nodeHandlers = nodeHandlers;
