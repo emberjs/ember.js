@@ -194,6 +194,7 @@ Morph.prototype.replace = function (index, removedLength, addedNodes) {
     }
     if (after !== null) {
       current.after = after;
+      after.before = current;
       after.start = end.previousSibling;
     }
   }
