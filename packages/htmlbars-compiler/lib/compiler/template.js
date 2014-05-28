@@ -58,6 +58,7 @@ TemplateCompiler.prototype.endTemplate = function(program) {
     '    cachedFragment = build(dom);\n' +
     '  }\n' +
     '  var fragment = dom.cloneNode(cachedFragment);\n' +
+    '  var hooks = options && options.hooks;\n' +
     '  var helpers = options && options.helpers || {};\n' +
        hydrationProgram +
     '  return fragment;\n' +

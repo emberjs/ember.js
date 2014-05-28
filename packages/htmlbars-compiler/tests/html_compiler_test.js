@@ -1,7 +1,6 @@
 import { compile } from "htmlbars-compiler/compiler";
 import { tokenize } from "simple-html-tokenizer";
-import { CONTENT, ELEMENT, ATTRIBUTE, CONCAT, SUBEXPR, SIMPLE,
-  WEB_COMPONENT, WEB_COMPONENT_FALLBACK } from "htmlbars-runtime/hooks";
+import { hydrationHooks } from "htmlbars-runtime/hooks";
 
 function frag(element, string) {
   if (element instanceof DocumentFragment) {
@@ -30,12 +29,18 @@ function lookupHelper(helperName, context, options) {
   }
 }
 
+function compilesTo(html, expected, context) {
+  var template = compile(html);
+  var fragment = template(context, { hooks: hooks });
+
+  equalHTML(fragment, expected === undefined ? html : expected);
+  return fragment;
+}
+
 module("HTML-based compiler (output)", {
   setup: function() {
-    helpers = [];
-    hooks = { CONTENT: CONTENT, ELEMENT: ELEMENT, ATTRIBUTE: ATTRIBUTE, CONCAT: CONCAT,
-      SUBEXPR: SUBEXPR, LOOKUP_HELPER: lookupHelper, SIMPLE: SIMPLE,
-      WEB_COMPONENT: WEB_COMPONENT, WEB_COMPONENT_FALLBACK: WEB_COMPONENT_FALLBACK };
+    helpers = {};
+    hooks = hydrationHooks({ LOOKUP_HELPER: lookupHelper });
   }
 });
 
@@ -129,14 +134,6 @@ test("The compiler can handle newlines", function() {
   compilesTo("<div>common\n\nbro</div>");
   ok(true);
 });
-
-function compilesTo(html, expected, context) {
-  var template = compile(html);
-  var fragment = template(context, { helpers: hooks });
-
-  equalHTML(fragment, expected === undefined ? html : expected);
-  return fragment;
-}
 
 test("The compiler can handle simple handlebars", function() {
   compilesTo('<div>{{title}}</div>', '<div>hello</div>', { title: 'hello' });
@@ -567,10 +564,7 @@ test("A block helper can pass a context to be used in the child", function() {
   var CONTENT = hooks.CONTENT;
   hooks.CONTENT = function(morph, path, context, params, options) {
     if (path === 'testing') {
-
-      // TODO: this sucks
-      options.helpers = hooks;
-
+      options.hooks = this;
       morph.update(options.render({ title: 'Rails is omakase' }, options));
     } else {
       CONTENT.apply(this, arguments);
@@ -584,7 +578,7 @@ test("A block helper can insert the document fragment manually", function() {
   var CONTENT = hooks.CONTENT;
   hooks.CONTENT = function(morph, path, context, params, options) {
     if (path === 'testing') {
-      options.helpers = hooks;
+      options.hooks = this;
       var frag = options.render({ title: 'Rails is omakase' }, options);
       morph.update(frag);
     } else {
@@ -598,7 +592,7 @@ test("A block helper can insert the document fragment manually", function() {
 test("Block helpers receive hash arguments", function() {
   hooks.CONTENT = function(morph, path, context, params, options) {
     if (options.hash.truth) {
-      options.helpers = hooks;
+      options.hooks = this;
       morph.update(options.render(context, options));
     }
   };
@@ -702,7 +696,7 @@ test("Node helpers can be used for attribute bindings", function() {
 
 test('Web components - Called as helpers', function () {
   registerHelper('x-append', function(context, params, options, helpers) {
-    var fragment = options.render(context, { helpers: helpers });
+    var fragment = options.render(context, { hooks: hooks, helpers: helpers });
     fragment.appendChild(document.createTextNode(options.hash.text));
     return fragment;
   });

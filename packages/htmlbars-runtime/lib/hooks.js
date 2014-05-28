@@ -1,3 +1,4 @@
+import { merge } from "./utils";
 import SafeString from 'handlebars/safe-string';
 
 export function CONTENT(morph, helperName, context, params, options) {
@@ -34,7 +35,7 @@ export function WEB_COMPONENT_FALLBACK(morph, tagName, context, options, helpers
       element.setAttribute(name, hash[name]);
     }
   }
-  element.appendChild(options.render(context, { helpers: helpers }));
+  element.appendChild(options.render(context, { hooks: this, helpers: helpers }));
   return element;
 }
 
@@ -81,4 +82,20 @@ export function LOOKUP_HELPER(helperName, context, options) {
 
 export function SIMPLE(context, name, options) {
   return context[name];
+}
+
+export function hydrationHooks(extensions) {
+  var base = {
+    CONTENT: CONTENT,
+    WEB_COMPONENT: WEB_COMPONENT,
+    WEB_COMPONENT_FALLBACK: WEB_COMPONENT_FALLBACK,
+    ELEMENT: ELEMENT,
+    ATTRIBUTE: ATTRIBUTE,
+    CONCAT: CONCAT,
+    SUBEXPR: SUBEXPR,
+    LOOKUP_HELPER: LOOKUP_HELPER,
+    SIMPLE: SIMPLE
+  };
+
+  return extensions ? merge(extensions, base) : base;
 }
