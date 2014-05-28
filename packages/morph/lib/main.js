@@ -150,6 +150,37 @@ Morph.prototype._updateHTML = function (parent, html) {
   }
 };
 
+Morph.prototype.append = function (node) {
+  if (this.morphs === null) this.morphs = [];
+  var index = this.morphs.length;
+  return this.insert(index, node);
+};
+
+Morph.prototype.insert = function (index, node) {
+  if (this.morphs === null) this.morphs = [];
+  var parent = this.element || this.parent(),
+    morphs = this.morphs,
+    before = index > 0 ? morphs[index-1] : null,
+    after  = index < morphs.length ? morphs[index] : null,
+    start  = before === null ? this.start : (before.end === null ? parent.lastChild : before.end.previousSibling),
+    end    = after === null ? this.end : (after.start === null ? parent.firstChild : after.start.nextSibling),
+    morph  = new Morph(parent, start, end);
+  morph.owner = this;
+  morph._update(parent, node);
+  if (before !== null) {
+    morph.before = before;
+    before.end = start.nextSibling;
+    before.after = morph;
+  }
+  if (after !== null) {
+    morph.after = after;
+    after.before = morph;
+    after.start = end.previousSibling;
+  }
+  this.morphs.splice(index, 0, morph);
+  return morph;
+};
+
 Morph.prototype.replace = function (index, removedLength, addedNodes) {
   if (this.morphs === null) this.morphs = [];
   var parent = this.element || this.parent(),
