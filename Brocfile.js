@@ -295,6 +295,29 @@ var compiledSource = concatES6(sourceTrees, {
   destFile: '/ember.js'
 });
 
+function buildRuntimeTree() {
+  es6Package('ember-runtime');
+  var runtimeTrees = [packages['ember-runtime'].trees.lib];
+  var runtimeVendorTrees = packages['ember-runtime'].vendorRequirements.map(function(req){ return vendoredPackages[req] });
+  packages['ember-runtime'].requirements.forEach(function(req){
+    es6Package(req);
+    runtimeTrees.push(packages[req].trees.lib);
+    (packages[req].vendorRequirements || []).forEach(function(vreq) {
+      runtimeVendorTrees.push(vendoredPackages[vreq]);
+    });
+  });
+
+  var compiledRuntime = concatES6(mergeTrees(runtimeTrees), {
+    includeLoader: true,
+    bootstrapModule: 'ember-runtime',
+    vendorTrees: mergeTrees(runtimeVendorTrees),
+    inputFiles: ['**/*.js'],
+    destFile: '/ember-runtime.js'
+  });
+
+  return compiledRuntime;
+}
+
 var prodCompiledSource = removeFile(sourceTrees, {
   srcFile: 'ember-debug.js',
 });
@@ -320,7 +343,7 @@ var compiledTests = concatES6(testTrees, {
   destFile: '/ember-tests.js'
 });
 
-var distTrees = [templateCompilerTree, compiledSource, compiledTests, testConfig, bowerFiles];
+var distTrees = [templateCompilerTree, compiledSource, buildRuntimeTree(), compiledTests, testConfig, bowerFiles];
 
 if (env !== 'test') {
   distTrees.push(prodCompiledSource);
