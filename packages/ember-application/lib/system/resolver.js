@@ -178,7 +178,7 @@ export var DefaultResolver = EmberObject.extend({
       resolved = this.resolveOther(parsedName);
     }
 
-    if (parsedName.root.LOG_RESOLVER) {
+    if (parsedName.root && parsedName.root.LOG_RESOLVER) {
       this._logLookup(resolved, parsedName);
     }
 
