@@ -28,7 +28,7 @@ function hydratorFor(ast) {
   var opcodes = hydrate.compile(ast);
   var hydrate2 = new HydrationCompiler();
   var program = hydrate2.compile(opcodes, []);
-  return new Function("Morph", "fragment", "context", "helpers", program);
+  return new Function("Morph", "fragment", "context", "hooks", "helpers", program);
 }
 
 module('fragment');
@@ -55,7 +55,8 @@ test('hydrates a fragment with morph mustaches', function () {
 
   var contentResolves = [];
   var context = {};
-  var helpers = {
+  var helpers = {};
+  var hooks = {
     CONTENT: function(morph, path, context, params, options) {
       contentResolves.push({
         morph: morph,
@@ -67,7 +68,7 @@ test('hydrates a fragment with morph mustaches', function () {
     }
   };
 
-  hydrate(Morph, fragment, context, helpers);
+  hydrate(Morph, fragment, context, hooks, helpers);
 
   equal(contentResolves.length, 2);
 
@@ -110,7 +111,8 @@ test('test auto insertion of text nodes for needed edges a fragment with morph m
 
   var contentResolves = [];
   var context = {};
-  var helpers = {
+  var helpers = {};
+  var hooks = {
     CONTENT: function(morph, path, context, params, options) {
       contentResolves.push({
         morph: morph,
@@ -122,7 +124,7 @@ test('test auto insertion of text nodes for needed edges a fragment with morph m
     }
   };
 
-  hydrate(FakeMorph, fragment, context, helpers);
+  hydrate(FakeMorph, fragment, context, hooks, helpers);
 
   equal(morphs.length, 3);
 
