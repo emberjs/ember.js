@@ -140,6 +140,27 @@ function morphTests(factory) {
   });
 }
 
+function checkChildMorphState(morph) {
+  var morphs = morph.morphs, i, l;
+  for (i=0, l=morphs.length; i<l; i++) {
+    if (i === 0) {
+      equal(morphs[i].before, null);
+      equal(morphs[i].start, morph.start);
+    } else {
+      equal(morphs[i].before, morphs[i-1]);
+      equal(morphs[i].start, morphs[i-1].end.previousSibling);
+    }
+
+    if (i === l-1) {
+      equal(morphs[i].end, morph.end);
+      equal(morphs[i].after, null);
+    } else {
+      equal(morphs[i].end,   morphs[i+1].start.nextSibling);
+      equal(morphs[i].after, morphs[i+1]);
+    }
+  }
+}
+
 function morphListTests(factory) {
   test('various list operations with fragments '+factory.name, function () {
     var fixture = document.getElementById('qunit-fixture'),
@@ -173,43 +194,42 @@ function morphListTests(factory) {
     equal(morphs[2].start, D);
     equal(morphs[2].end, morph.end);
 
-    morph.replace(1,2);
+    morph.append(new SafeString('<b>G</b>'));
+    morph.append(element('i', 'H'));
+    morph.append('I');
+    morph.append(fragmentFor(element('p','J'),element('p','K')));
+
+    html = startHTML+'<p>A</p><p>B</p><p>C</p><p>D</p><p>E</p><p>F</p><b>G</b><i>H</i>I<p>J</p><p>K</p>'+endHTML;
+    equalHTML(fragment, html);
+    equal(morphs.length, 7);
+    checkChildMorphState(morph);
+
+    var end = morph.insert(7, 'end');
+    var middle = morph.insert(4, 'middle');
+    var begin = morph.insert(0, 'begin');
+
+    html = startHTML+'<p>A</p><p>B</p><p>C</p><p>D</p><p>E</p><p>F</p><b>G</b><i>H</i>I<p>J</p><p>K</p>'+endHTML;
+
+    equal(morphs.length, 10);
+    checkChildMorphState(morph);
+
+    morph.removeMorph(begin);
+    morph.removeMorph(middle);
+    morph.removeMorph(end);
+
+    morph.replace(1,6);
 
     html = startHTML+'<p>A</p><p>B</p><p>C</p>'+endHTML;
     equalHTML(fragment, html);
     equal(morphs.length, 1);
-    equal(morphs[0].start, morph.start);
-    equal(morphs[0].end, morph.end);
+    checkChildMorphState(morph);
 
     morph.replace(1,0,['D', '', null, 'E', new SafeString('<p>F</p>')]);
     html = startHTML+'<p>A</p><p>B</p><p>C</p>DE<p>F</p>'+endHTML;
     equalHTML(fragment, html);
 
     equal(morph.morphs.length, 6);
-    equal(morphs[0].start, morph.start);
-    equal(morphs[0].end,   morphs[1].start.nextSibling);
-    equal(morphs[0].before, null);
-    equal(morphs[0].after, morphs[1]);
-    equal(morphs[1].start, morphs[0].end.previousSibling);
-    equal(morphs[1].end,   morphs[2].start.nextSibling);
-    equal(morphs[1].before, morphs[0]);
-    equal(morphs[1].after, morphs[2]);
-    equal(morphs[2].start, morphs[1].end.previousSibling);
-    equal(morphs[2].end,   morphs[3].start.nextSibling);
-    equal(morphs[2].before, morphs[1]);
-    equal(morphs[2].after, morphs[3]);
-    equal(morphs[3].start, morphs[2].end.previousSibling);
-    equal(morphs[3].end,   morphs[4].start.nextSibling);
-    equal(morphs[3].before, morphs[2]);
-    equal(morphs[3].after, morphs[4]);
-    equal(morphs[4].start, morphs[3].end.previousSibling);
-    equal(morphs[4].end,   morphs[5].start.nextSibling);
-    equal(morphs[4].before, morphs[3]);
-    equal(morphs[4].after, morphs[5]);
-    equal(morphs[5].start, morphs[4].end.previousSibling);
-    equal(morphs[5].end,   morph.end);
-    equal(morphs[5].before, morphs[4]);
-    equal(morphs[5].after, null);
+    checkChildMorphState(morph);
 
     morphs[3].destroy();
     morphs[3].update(element('i', 'E'));
@@ -219,22 +239,7 @@ function morphListTests(factory) {
     html = startHTML+'<p>A</p><p>B</p><p>C</p><b>D</b><i>E</i><p>F</p>'+endHTML;
     equalHTML(fragment, html);
     equal(morph.morphs.length, 4);
-    equal(morphs[0].start, morph.start);
-    equal(morphs[0].end,   morphs[1].start.nextSibling);
-    equal(morphs[0].before, null);
-    equal(morphs[0].after, morphs[1]);
-    equal(morphs[1].start, morphs[0].end.previousSibling);
-    equal(morphs[1].end,   morphs[2].start.nextSibling);
-    equal(morphs[1].before, morphs[0]);
-    equal(morphs[1].after, morphs[2]);
-    equal(morphs[2].start, morphs[1].end.previousSibling);
-    equal(morphs[2].end,   morphs[3].start.nextSibling);
-    equal(morphs[2].before, morphs[1]);
-    equal(morphs[2].after, morphs[3]);
-    equal(morphs[3].start, morphs[2].end.previousSibling);
-    equal(morphs[3].end,   morph.end);
-    equal(morphs[3].before, morphs[2]);
-    equal(morphs[3].after, null);
+    checkChildMorphState(morph);
 
     fixture.appendChild(fragment);
 
@@ -252,32 +257,14 @@ function morphListTests(factory) {
     equal(fixture.innerHTML, html);
 
     equal(morph.morphs.length, 2);
-    equal(morphs[0].start,  morph.start);
-    equal(morphs[0].end,    morphs[1].start.nextSibling);
-    equal(morphs[0].before, null);
-    equal(morphs[0].after,  morphs[1]);
-    equal(morphs[1].start,  morphs[0].end.previousSibling);
-    equal(morphs[1].end,    morph.end);
-    equal(morphs[1].before, morphs[0]);
-    equal(morphs[1].after,  null);
+    checkChildMorphState(morph);
 
     morph.replace(1,0,['between']);
 
     html = startHTML+'<p>A</p><p>B</p><p>C</p>between<p>D</p><p>E</p><p>F</p>'+endHTML;
     equal(fixture.innerHTML, html);
     equal(morph.morphs.length, 3);
-    equal(morphs[0].start,  morph.start);
-    equal(morphs[0].end,    morphs[1].start.nextSibling);
-    equal(morphs[0].before, null);
-    equal(morphs[0].after,  morphs[1]);
-    equal(morphs[1].start,  morphs[0].end.previousSibling);
-    equal(morphs[1].end,    morphs[2].start.nextSibling);
-    equal(morphs[1].before, morphs[0]);
-    equal(morphs[1].after,  morphs[2]);
-    equal(morphs[2].start,  morphs[1].end.previousSibling);
-    equal(morphs[2].end,    morph.end);
-    equal(morphs[2].before, morphs[1]);
-    equal(morphs[2].after,  null);
+    checkChildMorphState(morph);
   });
 }
 
