@@ -347,17 +347,17 @@ var DataAdapter = EmberObject.extend({
     }
 
     // New adapters return strings instead of classes
-    types = emberA(types).map(function(name) {
+    types = A(types).map(function(name) {
       return {
         klass: self._nameToClass(name),
         name: name
       };
     });
-    types = emberA(types).filter(function(type) {
+    types = A(types).filter(function(type) {
       return self.detect(type.klass);
     });
 
-    return emberA(types);
+    return A(types);
   },
 
   /**
