@@ -1,6 +1,5 @@
 {
   "features": {
-    "ember-metal-computed-empty-array": true,
     "query-params-new": null,
     "ember-routing-named-substates": null,
     "ember-handlebars-caps-lookup": null,
