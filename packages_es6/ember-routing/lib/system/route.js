@@ -1710,10 +1710,8 @@ function normalizeOptions(route, name, template, options) {
     }
   }
 
-  if (Ember.FEATURES.isEnabled("ember-routing-add-model-option")) {
-    if (model) {
-      controller.set('model', model);
-    }
+  if (model) {
+    controller.set('model', model);
   }
 
   options.controller = controller;
