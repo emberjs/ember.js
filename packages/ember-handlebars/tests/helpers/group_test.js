@@ -9,6 +9,7 @@ import { A } from "ember-runtime/system/native_array";
 import Container from "ember-runtime/system/container";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
+import Component from "ember-views/views/component";
 
 var trim = jQuery.trim;
 var container, view;
@@ -215,6 +216,25 @@ test("an #each can be nested with a view inside", function() {
     '{{#each people}}{{#view}}{{name}}{{/view}}{{/each}}',
     {people: A([yehuda, {name: 'Tom'}])}
   );
+  appendView();
+  equal(view.$('script').length, 0, "No Metamorph markers are output");
+  equal(view.$().text(), 'YehudaTom', "The content was rendered");
+
+  run(function() {
+    set(yehuda, 'name', 'Erik');
+  });
+
+  equal(view.$().text(), 'ErikTom', "The updated object's view was rerendered");
+});
+
+test("an #each can be nested with a component inside", function() {
+  var yehuda = {name: 'Yehuda'};
+  container.register('view:test', Component.extend());
+  createGroupedView(
+    '{{#each people}}{{#view "test"}}{{name}}{{/view}}{{/each}}',
+    {people: A([yehuda, {name: 'Tom'}])}
+  );
+
   appendView();
   equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(view.$().text(), 'YehudaTom', "The content was rendered");

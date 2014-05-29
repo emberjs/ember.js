@@ -118,6 +118,9 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
   if ('object' === typeof this) {
     if (data.insideGroup) {
       observer = function() {
+        while (view._contextView) {
+          view = view._contextView;
+        }
         run.once(view, 'rerender');
       };
 
@@ -197,6 +200,9 @@ function simpleBind(currentContext, property, options) {
   if (pathRoot && ('object' === typeof pathRoot)) {
     if (data.insideGroup) {
       observer = function() {
+        while (view._contextView) {
+          view = view._contextView;
+        }
         run.once(view, 'rerender');
       };
 
