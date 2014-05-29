@@ -97,8 +97,8 @@ prototype.helperAttr = function(name, size, escaped) {
 prototype.sexpr = function(name, size) {
   var prepared = prepareHelper(this.stack, size);
 
-  //export function SUBEXPR(helperName, context, params, options) {
-  this.stack.push('hooks.SUBEXPR(' + string(name) + ', context, ' + prepared.args + ', ' + hash(prepared.options) + ', helpers)');
+  //export function subexpr(helperName, context, params, options) {
+  this.stack.push('hooks.subexpr(' + string(name) + ', context, ' + prepared.args + ', ' + hash(prepared.options) + ', helpers)');
 };
 
 prototype.string = function(str) {
@@ -121,15 +121,15 @@ prototype.morph = function(num, parentPath, startIndex, endIndex) {
 };
 
 prototype.pushWebComponent = function(name, pairs, morphNum) {
-  this.source.push('  hooks.WEB_COMPONENT(morph' + morphNum + ', ' + name + ', context, ' + hash(pairs) + ', helpers);\n');
+  this.source.push('  hooks.webComponent(morph' + morphNum + ', ' + name + ', context, ' + hash(pairs) + ', helpers);\n');
 };
 
 prototype.pushMustacheInContent = function(name, args, pairs, morphNum) {
-  this.source.push('  hooks.CONTENT(morph' + morphNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', helpers);\n');
+  this.source.push('  hooks.content(morph' + morphNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', helpers);\n');
 };
 
 prototype.pushMustacheInNode = function(name, args, pairs) {
-  this.source.push('  hooks.ELEMENT(' + this.getParent() + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', helpers);\n');
+  this.source.push('  hooks.element(' + this.getParent() + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', helpers);\n');
 };
 
 prototype.shareParent = function(i) {

@@ -57,7 +57,7 @@ test('hydrates a fragment with morph mustaches', function () {
   var context = {};
   var helpers = {};
   var hooks = {
-    CONTENT: function(morph, path, context, params, options) {
+    content: function(morph, path, context, params, options) {
       contentResolves.push({
         morph: morph,
         context: context,
@@ -113,7 +113,7 @@ test('test auto insertion of text nodes for needed edges a fragment with morph m
   var context = {};
   var helpers = {};
   var hooks = {
-    CONTENT: function(morph, path, context, params, options) {
+    content: function(morph, path, context, params, options) {
       contentResolves.push({
         morph: morph,
         context: context,

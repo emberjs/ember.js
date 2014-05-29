@@ -20,10 +20,10 @@ function registerHelper(name, callback) {
 }
 
 function lookupHelper(helperName, context, options) {
-  if (helperName === 'ATTRIBUTE') {
-    return this.ATTRIBUTE;
-  } else if (helperName === 'CONCAT') {
-    return this.CONCAT;
+  if (helperName === 'attribute') {
+    return this.attribute;
+  } else if (helperName === 'concat') {
+    return this.concat;
   } else {
     return helpers[helperName];
   }
@@ -40,7 +40,7 @@ function compilesTo(html, expected, context) {
 module("HTML-based compiler (output)", {
   setup: function() {
     helpers = {};
-    hooks = hydrationHooks({ LOOKUP_HELPER: lookupHelper });
+    hooks = hydrationHooks({ lookupHelper: lookupHelper });
   }
 });
 
@@ -212,7 +212,7 @@ test("The compiler passes along the types of the hash arguments", function() {
 });
 
 test("It is possible to override the resolution mechanism", function() {
-  hooks.SIMPLE = function(context, name, options) {
+  hooks.simple = function(context, name, options) {
     if (name === 'zomg') {
       return context.zomg;
     } else {
@@ -228,7 +228,7 @@ test("It is possible to override the resolution mechanism", function() {
 test("Simple data binding using text nodes", function() {
   var callback;
 
-  hooks.CONTENT = function(morph, path, context, params, options) {
+  hooks.content = function(morph, path, context, params, options) {
     callback = function() {
       morph.update(context[path]);
     };
@@ -252,7 +252,7 @@ test("Simple data binding using text nodes", function() {
 test("Simple data binding on fragments", function() {
   var callback;
 
-  hooks.CONTENT = function(morph, path, context, params, options) {
+  hooks.content = function(morph, path, context, params, options) {
     morph.escaped = false;
     callback = function() {
       morph.update(context[path]);
@@ -274,10 +274,10 @@ test("Simple data binding on fragments", function() {
   equalHTML(fragment, '<div><p>brown cow</p> to the world</div>');
 });
 
-test("CONTENT hook receives escaping information", function() {
+test("content hook receives escaping information", function() {
   expect(3);
 
-  hooks.CONTENT = function(morph, path, context, params, options) {
+  hooks.content = function(morph, path, context, params, options) {
     if (path === 'escaped') {
       equal(options.escaped, true);
     } else if (path === 'unescaped') {
@@ -360,7 +360,7 @@ function boundValue(valueGetter, binding) {
 }
 
 test("It is possible to override the resolution mechanism for attributes", function() {
-  hooks.ATTRIBUTE = function (context, params, options) {
+  hooks.attribute = function (context, params, options) {
     options.element.setAttribute(params[0], 'http://google.com/' + params[1]);
   };
 
@@ -537,7 +537,7 @@ test("Attribute runs can contain helpers", function() {
 */
 test("A simple block helper can return the default document fragment", function() {
 
-  hooks.CONTENT = function(morph, path, context, params, options) {
+  hooks.content = function(morph, path, context, params, options) {
     morph.update(options.render(context));
   };
 
@@ -545,7 +545,7 @@ test("A simple block helper can return the default document fragment", function(
 });
 
 test("A simple block helper can return text", function() {
-  hooks.CONTENT = function(morph, path, context, params, options) {
+  hooks.content = function(morph, path, context, params, options) {
     morph.update(options.render(context));
   };
 
@@ -553,7 +553,7 @@ test("A simple block helper can return text", function() {
 });
 
 test("A block helper can have an else block", function() {
-  hooks.CONTENT = function(morph, path, context, params, options) {
+  hooks.content = function(morph, path, context, params, options) {
     morph.update(options.inverse(context));
   };
 
@@ -561,13 +561,13 @@ test("A block helper can have an else block", function() {
 });
 
 test("A block helper can pass a context to be used in the child", function() {
-  var CONTENT = hooks.CONTENT;
-  hooks.CONTENT = function(morph, path, context, params, options) {
+  var content = hooks.content;
+  hooks.content = function(morph, path, context, params, options) {
     if (path === 'testing') {
       options.hooks = this;
       morph.update(options.render({ title: 'Rails is omakase' }, options));
     } else {
-      CONTENT.apply(this, arguments);
+      content.apply(this, arguments);
     }
   };
 
@@ -575,14 +575,14 @@ test("A block helper can pass a context to be used in the child", function() {
 });
 
 test("A block helper can insert the document fragment manually", function() {
-  var CONTENT = hooks.CONTENT;
-  hooks.CONTENT = function(morph, path, context, params, options) {
+  var content = hooks.content;
+  hooks.content = function(morph, path, context, params, options) {
     if (path === 'testing') {
       options.hooks = this;
       var frag = options.render({ title: 'Rails is omakase' }, options);
       morph.update(frag);
     } else {
-      CONTENT.apply(this, arguments);
+      content.apply(this, arguments);
     }
   };
 
@@ -590,7 +590,7 @@ test("A block helper can insert the document fragment manually", function() {
 });
 
 test("Block helpers receive hash arguments", function() {
-  hooks.CONTENT = function(morph, path, context, params, options) {
+  hooks.content = function(morph, path, context, params, options) {
     if (options.hash.truth) {
       options.hooks = this;
       morph.update(options.render(context, options));
