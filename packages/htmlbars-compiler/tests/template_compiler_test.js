@@ -24,7 +24,7 @@ var dom = {
 };
 
 var hooks = {
-  CONTENT: function(morph, helperName, context, params, options, helpers) {
+  content: function(morph, helperName, context, params, options, helpers) {
     if (helperName === 'if') {
       if (context[params[0]]) {
         options.hooks = this;

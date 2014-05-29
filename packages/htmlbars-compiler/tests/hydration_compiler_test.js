@@ -137,9 +137,9 @@ test("attribute mustache", function() {
     [ "sexpr", [ "foo", 0 ] ],
     [ "stringLiteral", [" after"] ],
     [ "stackLiteral", [0] ],
-    [ "sexpr", [ "CONCAT", 3 ] ],
+    [ "sexpr", [ "concat", 3 ] ],
     [ "stackLiteral", [0] ],
-    [ "nodeHelper", [ "ATTRIBUTE", 2, [ 0 ] ] ]
+    [ "nodeHelper", [ "attribute", 2, [ 0 ] ] ]
   ]);
 });
 
@@ -159,8 +159,8 @@ test("attribute helper", function() {
     [ "sexpr", [ "foo", 1 ] ],
     [ "stringLiteral", [ " after" ] ],
     [ "stackLiteral", [ 0 ] ],
-    [ "sexpr", [ "CONCAT", 3 ] ],
+    [ "sexpr", [ "concat", 3 ] ],
     [ "stackLiteral", [ 0 ] ],
-    [ "nodeHelper", [ "ATTRIBUTE", 2, [ 0 ] ] ]
+    [ "nodeHelper", [ "attribute", 2, [ 0 ] ] ]
   ]);
 });
