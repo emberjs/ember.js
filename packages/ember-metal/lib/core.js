@@ -215,4 +215,44 @@ if ('undefined' === typeof Ember.deprecateFunc) {
 */
 Ember.uuid = 0;
 
+
+/**
+  Load all comments nodes
+
+  @private
+  @return array
+*/
+var findComments = function() {
+    var root = document;
+    var arr = [];
+
+    for (var i = 0; i < root.childNodes.length; i++) {
+        var node = root.childNodes[i];
+        if(node.nodeType === 8) {
+            arr.push(node);
+        } else {
+            arr = arr.concat(findComments(node));
+        }
+    }
+
+    return arr;
+};
+
+/** 
+  Search a comment node by content
+
+  @param string content
+  @return DOM Node
+**/
+Ember.findCommentNode = function(content) {
+  var nodes = findComments();
+
+  for (var i in nodes) {
+    if (nodes[i].data.trim() === content) {
+      return nodes[i];
+    }
+  }
+};
+
+
 export default Ember;
