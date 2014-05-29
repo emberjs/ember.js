@@ -320,93 +320,91 @@ test("can handle fulfillment without  fulfillment handler", function() {
   run(deferred, 'resolve', fulfillment);
 });
 
-if (Ember.FEATURES['ember-runtime-test-friendly-promises']) {
-  var asyncStarted = 0;
-  var asyncEnded = 0;
-  var Promise = RSVP.Promise;
+var asyncStarted = 0;
+var asyncEnded = 0;
+var Promise = RSVP.Promise;
 
-  var EmberTest;
-  var EmberTesting;
+var EmberTest;
+var EmberTesting;
 
-  QUnit.module("Deferred RSVP's async + Testing", {
-    setup: function() {
-      EmberTest = Ember.Test;
-      EmberTesting = Ember.testing;
+QUnit.module("Deferred RSVP's async + Testing", {
+  setup: function() {
+    EmberTest = Ember.Test;
+    EmberTesting = Ember.testing;
 
-      Ember.Test = {
-        adapter: {
-          asyncStart: function() {
-            asyncStarted++;
-            QUnit.stop();
-          },
-          asyncEnd: function() {
-            asyncEnded++;
-            QUnit.start();
-          }
+    Ember.Test = {
+      adapter: {
+        asyncStart: function() {
+          asyncStarted++;
+          QUnit.stop();
+        },
+        asyncEnd: function() {
+          asyncEnded++;
+          QUnit.start();
         }
-      };
-    },
-    teardown: function() {
-      asyncStarted = 0;
-      asyncEnded = 0;
+      }
+    };
+  },
+  teardown: function() {
+    asyncStarted = 0;
+    asyncEnded = 0;
 
-      Ember.testing = EmberTesting;
-      Ember.Test =  EmberTest;
-    }
+    Ember.testing = EmberTesting;
+    Ember.Test =  EmberTest;
+  }
+});
+
+test("given `Ember.testing = true`, correctly informs the test suite about async steps", function() {
+  expect(19);
+
+  ok(!run.currentRunLoop, 'expect no run-loop');
+
+  Ember.testing = true;
+
+  equal(asyncStarted, 0);
+  equal(asyncEnded, 0);
+
+  var user = Promise.resolve({
+    name: 'tomster'
   });
 
-  test("given `Ember.testing = true`, correctly informs the test suite about async steps", function() {
-    expect(19);
+  equal(asyncStarted, 1);
+  equal(asyncEnded, 0);
 
-    ok(!run.currentRunLoop, 'expect no run-loop');
-
-    Ember.testing = true;
-
-    equal(asyncStarted, 0);
-    equal(asyncEnded, 0);
-
-    var user = Promise.resolve({
-      name: 'tomster'
-    });
-
+  user.then(function(user){
     equal(asyncStarted, 1);
-    equal(asyncEnded, 0);
+    equal(asyncEnded, 1);
 
-    user.then(function(user){
+    equal(user.name, 'tomster');
+
+    return Promise.resolve(1).then(function(){
       equal(asyncStarted, 1);
       equal(asyncEnded, 1);
+    });
 
-      equal(user.name, 'tomster');
+  }).then(function(){
+    equal(asyncStarted, 1);
+    equal(asyncEnded, 1);
 
-      return Promise.resolve(1).then(function(){
+    return new Promise(function(resolve){
+      QUnit.stop(); // raw async, we must inform the test framework manually
+      setTimeout(function(){
+        QUnit.start(); // raw async, we must inform the test framework manually
+
         equal(asyncStarted, 1);
         equal(asyncEnded, 1);
-      });
 
-    }).then(function(){
-      equal(asyncStarted, 1);
-      equal(asyncEnded, 1);
+        resolve({
+          name: 'async tomster'
+        });
 
-      return new Promise(function(resolve){
-        QUnit.stop(); // raw async, we must inform the test framework manually
-        setTimeout(function(){
-          QUnit.start(); // raw async, we must inform the test framework manually
-
-          equal(asyncStarted, 1);
-          equal(asyncEnded, 1);
-
-          resolve({
-            name: 'async tomster'
-          });
-
-          equal(asyncStarted, 2);
-          equal(asyncEnded, 1);
-        }, 0);
-      });
-    }).then(function(user){
-      equal(user.name, 'async tomster');
-      equal(asyncStarted, 2);
-      equal(asyncEnded, 2);
+        equal(asyncStarted, 2);
+        equal(asyncEnded, 1);
+      }, 0);
     });
+  }).then(function(user){
+    equal(user.name, 'async tomster');
+    equal(asyncStarted, 2);
+    equal(asyncEnded, 2);
   });
-}
+});
