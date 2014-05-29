@@ -160,7 +160,7 @@ namespace :release do
 end
 
 def files_to_publish
-  %w{ember.js ember-docs.json ember-tests.js ember-template-compiler.js}
+  %w{ember.js ember-docs.json ember-tests.js ember-template-compiler.js ember-runtime.js}
 end
 
 task :publish_build => [:docs] do
