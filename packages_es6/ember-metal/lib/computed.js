@@ -25,9 +25,7 @@ var metaFor = meta,
 
 function UNDEFINED() { }
 
-if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
-  var lengthPattern = /\.(length|\[\])$/;
-}
+var lengthPattern = /\.(length|\[\])$/;
 
 // ..........................................................
 // DEPENDENT KEYS
@@ -623,70 +621,36 @@ function registerComputedWithProperties(name, macro) {
   };
 };
 
-if (Ember.FEATURES.isEnabled('ember-metal-computed-empty-array')) {
-  /**
-    A computed property that returns true if the value of the dependent
-    property is null, an empty string, empty array, or empty function.
+/**
+  A computed property that returns true if the value of the dependent
+  property is null, an empty string, empty array, or empty function.
 
-    Example
+  Example
 
-    ```javascript
-    var ToDoList = Ember.Object.extend({
-      done: Ember.computed.empty('todos')
-    });
+  ```javascript
+  var ToDoList = Ember.Object.extend({
+    done: Ember.computed.empty('todos')
+  });
 
-    var todoList = ToDoList.create({todos: ['Unit Test', 'Documentation', 'Release']});
+  var todoList = ToDoList.create({todos: ['Unit Test', 'Documentation', 'Release']});
 
-    todoList.get('done'); // false
-    todoList.get('todos').clear();
-    todoList.get('done'); // true
-    ```
+  todoList.get('done'); // false
+  todoList.get('todos').clear();
+  todoList.get('done'); // true
+  ```
 
-    @since 1.6.0
-    @method computed.empty
-    @for Ember
-    @param {String} dependentKey
-    @return {Ember.ComputedProperty} computed property which negate
-    the original value for property
-  */
-  computed.empty = function (dependentKey) {
-    return computed(dependentKey + '.length', function () {
-      return isEmpty(get(this, dependentKey));
-    });
-  };
-} else {
-  /**
-    A computed property that returns true if the value of the dependent
-    property is null, an empty string, empty array, or empty function.
-
-    Note: When using `computed.empty` to watch an array make sure to
-    use the `array.[]` syntax so the computed can subscribe to transitions
-    from empty to non-empty states.
-
-    Example
-
-    ```javascript
-    var ToDoList = Ember.Object.extend({
-      done: Ember.computed.empty('todos.[]') // detect array changes
-    });
-
-    var todoList = ToDoList.create({todos: ['Unit Test', 'Documentation', 'Release']});
-
-    todoList.get('done'); // false
-    todoList.get('todos').clear(); // []
-    todoList.get('done'); // true
-    ```
-
-    @method computed.empty
-    @for Ember
-    @param {String} dependentKey
-    @return {Ember.ComputedProperty} computed property which negate
-    the original value for property
-  */
-  registerComputed('empty', function(dependentKey) {
+  @since 1.6.0
+  @method computed.empty
+  @for Ember
+  @param {String} dependentKey
+  @return {Ember.ComputedProperty} computed property which negate
+  the original value for property
+*/
+computed.empty = function (dependentKey) {
+  return computed(dependentKey + '.length', function () {
     return isEmpty(get(this, dependentKey));
   });
-}
+};
 
 /**
   A computed property that returns true if the value of the dependent
