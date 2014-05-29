@@ -345,15 +345,19 @@ export default EmberObject.extend({
     } else {
       types = this._getObjectsOnNamespaces();
     }
+
     // New adapters return strings instead of classes
-    return types.map(function(name) {
+    types = emberA(types).map(function(name) {
       return {
         klass: self._nameToClass(name),
         name: name
       };
-    }).filter(function(type) {
+    });
+    types = emberA(types).filter(function(type) {
       return self.detect(type.klass);
     });
+
+    return emberA(types);
   },
 
   /**
