@@ -5,37 +5,28 @@ import { computed } from "ember-metal/computed";
 import run from "ember-metal/run_loop";
 import RSVP from "ember-runtime/ext/rsvp";
 
-if (Ember.FEATURES['ember-runtime-test-friendly-promises']) {
+var asyncStart = function() {
+  if (Ember.Test && Ember.Test.adapter) {
+    Ember.Test.adapter.asyncStart();
+  }
+};
 
-  var asyncStart = function() {
-    if (Ember.Test && Ember.Test.adapter) {
-      Ember.Test.adapter.asyncStart();
-    }
-  };
+var asyncEnd = function() {
+  if (Ember.Test && Ember.Test.adapter) {
+    Ember.Test.adapter.asyncEnd();
+  }
+};
 
-  var asyncEnd = function() {
-    if (Ember.Test && Ember.Test.adapter) {
-      Ember.Test.adapter.asyncEnd();
-    }
-  };
+RSVP.configure('async', function(callback, promise) {
+  var async = !run.currentRunLoop;
 
-  RSVP.configure('async', function(callback, promise) {
-    var async = !run.currentRunLoop;
+  if (Ember.testing && async) { asyncStart(); }
 
-    if (Ember.testing && async) { asyncStart(); }
-
-    run.backburner.schedule('actions', function(){
-      if (Ember.testing && async) { asyncEnd(); }
-      callback(promise);
-    });
+  run.backburner.schedule('actions', function(){
+    if (Ember.testing && async) { asyncEnd(); }
+    callback(promise);
   });
-} else {
-  RSVP.configure('async', function(callback, promise) {
-    run.backburner.schedule('actions', function(){
-      callback(promise);
-    });
-  });
-}
+});
 
 RSVP.Promise.prototype.fail = function(callback, label){
   Ember.deprecate('RSVP.Promise.fail has been renamed as RSVP.Promise.catch');
