@@ -23,11 +23,11 @@ var dom = {
   }
 };
 
-var helpers = {
-  CONTENT: function(morph, helperName, context, params, options, helpers) {
+var hooks = {
+  content: function(morph, helperName, context, params, options, helpers) {
     if (helperName === 'if') {
       if (context[params[0]]) {
-        options.helpers = helpers;
+        options.hooks = this;
         morph.update(options.render(context, options));
       }
       return;
@@ -44,7 +44,7 @@ test("it works", function testFunction() {
   var template = new Function("dom", "Morph", "return " + program)(dom, Morph);
   var frag = template(
     { working: true, firstName: 'Kris', lastName: 'Selden' },
-    { helpers: helpers }
+    { hooks: hooks }
   );
   equalHTML(frag, '<div>Hello Kris Selden!</div>');
 });

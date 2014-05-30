@@ -20,7 +20,7 @@ A compiled HTMLbars template function contains the following:
    This code calls `build` and caches the resulting fragment (so that `build` 
    only needs to ever be called once), clones the fragment,
    then calls `hydrate` and loops through each mustache, 
-   passing each to runtime helpers `RESOLVE` or `ATTRIBUTE` 
+   passing each to runtime helpers `resolve` or `attribute` 
    which can be overridden to perform data-binding, invoke 
    user-defined helpers, etc.
     
@@ -79,7 +79,7 @@ with two main features that make it distinct from the vanilla HB AST:
 So the above example is restructured into an HTMLbars AST that looks
 something like:
 
-    Element tag='p' attributes=[Attr('class', Mustache(`CONCAT "user " user.cssClass`))]
+    Element tag='p' attributes=[Attr('class', Mustache(`concat "user " user.cssClass`))]
       "User: "
       Mustache(`user.name`)
       " "

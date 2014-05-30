@@ -41,8 +41,8 @@ StartTag.prototype.finalizeAttributeValue = function() {
     attr.value = attr.value[0];
   } else {
     // If the attr value has multiple parts combine them into
-    // a single MustacheNode with the CONCAT helper
-    var params = [ new IdNode([{ part: 'CONCAT' }]) ];
+    // a single MustacheNode with the concat helper
+    var params = [ new IdNode([{ part: 'concat' }]) ];
 
     for (var i = 0; i < attr.value.length; i++) {
       var part = attr.value[i];

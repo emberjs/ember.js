@@ -107,14 +107,14 @@ HydrationOpcodeCompiler.prototype.opcode = function(type) {
 HydrationOpcodeCompiler.prototype.attribute = function(attr) {
   if (attr.value.type === 'text') return;
 
-  // We treat attribute like a ATTRIBUTE helper evaluated by the ELEMENT hook.
-  // <p {{ATTRIBUTE 'class' 'foo ' (bar)}}></p>
+  // We treat attribute like a attribute helper evaluated by the element hook.
+  // <p {{attribute 'class' 'foo ' (bar)}}></p>
   // Unwrapped any mustaches to just be their internal sexprs.
   this.nodeHelper({
     params: [attr.name, attr.value.sexpr],
     hash: null,
     id: {
-      string: 'ATTRIBUTE'
+      string: 'attribute'
     }
   });
 };
