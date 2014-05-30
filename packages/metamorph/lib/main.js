@@ -79,7 +79,7 @@ define("metamorph",
        * Check this thread for more explaination:
        * http://stackoverflow.com/questions/8231048/why-use-x3c-instead-of-when-generating-html-from-javascript
        */
-      return "<script id='" + this.start + "' type='text/x-placeholder'>\x3C/script>";
+      return "<!-- " + this.start + " -->";
     };
 
     endTagFunc = function() {
@@ -88,7 +88,7 @@ define("metamorph",
        * Check this thread for more explaination:
        * http://stackoverflow.com/questions/8231048/why-use-x3c-instead-of-when-generating-html-from-javascript
        */
-      return "<script id='" + this.end + "' type='text/x-placeholder'>\x3C/script>";
+      return "<!-- " + this.end + " -->";
     };
 
     // If we have the W3C range API, this process is relatively straight forward.
@@ -98,8 +98,8 @@ define("metamorph",
       // ending placeholders.
       rangeFor = function(morph, outerToo) {
         var range = document.createRange();
-        var before = document.getElementById(morph.start);
-        var after = document.getElementById(morph.end);
+        var before = Ember.findCommentNode(morph.start);
+        var after = Ember.findCommentNode(morph.end);
 
         if (outerToo) {
           range.setStartBefore(before);
@@ -154,7 +154,7 @@ define("metamorph",
 
       afterFunc = function(html) {
         var range = document.createRange();
-        var after = document.getElementById(this.end);
+        var after = Ember.findCommentNode(this.end);
 
         range.setStartAfter(after);
         range.setEndAfter(after);
@@ -165,7 +165,7 @@ define("metamorph",
 
       prependFunc = function(html) {
         var range = document.createRange();
-        var start = document.getElementById(this.start);
+        var start = Ember.findCommentNode(this.start);
 
         range.setStartAfter(start);
         range.setEndAfter(start);
@@ -323,8 +323,8 @@ define("metamorph",
 
       htmlFunc = function(html, outerToo) {
         // get the real starting node. see realNode for details.
-        var start = realNode(document.getElementById(this.start));
-        var end = document.getElementById(this.end);
+        var start = realNode(Ember.findCommentNode(this.start));
+        var end = Ember.findCommentNode(this.end);
         var parentNode = end.parentNode;
         var node, nextSibling, last;
 
@@ -382,8 +382,8 @@ define("metamorph",
       //
       // this includes the starting and ending placeholders.
       removeFunc = function() {
-        var start = realNode(document.getElementById(this.start));
-        var end = document.getElementById(this.end);
+        var start = realNode(Ember.findCommentNode(this.start));
+        var end = Ember.findCommentNode(this.end);
 
         this.html('');
         start.parentNode.removeChild(start);
@@ -403,7 +403,7 @@ define("metamorph",
 
       afterFunc = function(html) {
         // get the real starting node. see realNode for details.
-        var end = document.getElementById(this.end);
+        var end = Ember.findCommentNode(this.end);
         var insertBefore = end.nextSibling;
         var parentNode = end.parentNode;
         var nextSibling;
@@ -424,7 +424,7 @@ define("metamorph",
       };
 
       prependFunc = function(html) {
-        var start = document.getElementById(this.start);
+        var start = Ember.findCommentNode(this.start);
         var parentNode = start.parentNode;
         var nextSibling;
         var node;
@@ -463,8 +463,8 @@ define("metamorph",
     Metamorph.prototype.endTag = endTagFunc;
 
     Metamorph.prototype.isRemoved = function() {
-      var before = document.getElementById(this.start);
-      var after = document.getElementById(this.end);
+      var before = Ember.findCommentNode(this.start);
+      var after = Ember.findCommentNode(this.end);
 
       return !before || !after;
     };
