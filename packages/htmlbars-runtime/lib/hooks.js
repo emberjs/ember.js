@@ -1,11 +1,12 @@
+import { merge } from "./utils";
 import SafeString from 'handlebars/safe-string';
 
-export function CONTENT(morph, helperName, context, params, options) {
-  var value, helper = this.LOOKUP_HELPER(helperName, context, options);
+export function content(morph, helperName, context, params, options) {
+  var value, helper = this.lookupHelper(helperName, context, options);
   if (helper) {
     value = helper(context, params, options);
   } else {
-    value = this.SIMPLE(context, helperName, options);
+    value = this.simple(context, helperName, options);
   }
   if (!options.escaped) {
     value = new SafeString(value);
@@ -13,48 +14,48 @@ export function CONTENT(morph, helperName, context, params, options) {
   morph.update(value);
 }
 
-export function WEB_COMPONENT(morph, tagName, context, options, helpers) {
-  var value, helper = this.LOOKUP_HELPER(tagName, context, options);
+export function webComponent(morph, tagName, context, options, helpers) {
+  var value, helper = this.lookupHelper(tagName, context, options);
   if (helper) {
     value = helper(context, null, options, helpers);
   } else {
-    value = this.WEB_COMPONENT_FALLBACK(morph, tagName, context, options, helpers);
+    value = this.webComponentFallback(morph, tagName, context, options, helpers);
   }
   morph.update(value);
 }
 
-export function WEB_COMPONENT_FALLBACK(morph, tagName, context, options, helpers) {
+export function webComponentFallback(morph, tagName, context, options, helpers) {
   var element = morph.parent().ownerDocument.createElement(tagName);
   var hash = options.hash, hashTypes = options.hashTypes;
 
   for (var name in hash) {
     if (hashTypes[name] === 'id') {
-      element.setAttribute(name, this.SIMPLE(context, hash[name], options));
+      element.setAttribute(name, this.simple(context, hash[name], options));
     } else {
       element.setAttribute(name, hash[name]);
     }
   }
-  element.appendChild(options.render(context, { helpers: helpers }));
+  element.appendChild(options.render(context, { hooks: this, helpers: helpers }));
   return element;
 }
 
-export function ELEMENT(element, helperName, context, params, options) {
-  var helper = this.LOOKUP_HELPER(helperName, context, options);
+export function element(domElement, helperName, context, params, options) {
+  var helper = this.lookupHelper(helperName, context, options);
   if (helper) {
-    options.element = element;
+    options.element = domElement;
     helper(context, params, options);
   }
 }
 
-export function ATTRIBUTE(context, params, options) {
+export function attribute(context, params, options) {
   options.element.setAttribute(params[0], params[1]);
 }
 
-export function CONCAT(context, params, options) {
+export function concat(context, params, options) {
   var value = "";
   for (var i = 0, l = params.length; i < l; i++) {
     if (options.types[i] === 'id') {
-      value += this.SIMPLE(context, params[i], options);
+      value += this.simple(context, params[i], options);
     } else {
       value += params[i];
     }
@@ -62,23 +63,39 @@ export function CONCAT(context, params, options) {
   return value;
 }
 
-export function SUBEXPR(helperName, context, params, options) {
-  var helper = this.LOOKUP_HELPER(helperName, context, options);
+export function subexpr(helperName, context, params, options) {
+  var helper = this.lookupHelper(helperName, context, options);
   if (helper) {
     return helper(context, params, options);
   } else {
-    return this.SIMPLE(context, helperName, options);
+    return this.simple(context, helperName, options);
   }
 }
 
-export function LOOKUP_HELPER(helperName, context, options) {
-  if (helperName === 'ATTRIBUTE') {
-    return this.ATTRIBUTE;
-  } else if (helperName === 'CONCAT') {
-    return this.CONCAT;
+export function lookupHelper(helperName, context, options) {
+  if (helperName === 'attribute') {
+    return this.attribute;
+  } else if (helperName === 'concat') {
+    return this.concat;
   }
 }
 
-export function SIMPLE(context, name, options) {
+export function simple(context, name, options) {
   return context[name];
+}
+
+export function hydrationHooks(extensions) {
+  var base = {
+    content: content,
+    webComponent: webComponent,
+    webComponentFallback: webComponentFallback,
+    element: element,
+    attribute: attribute,
+    concat: concat,
+    subexpr: subexpr,
+    lookupHelper: lookupHelper,
+    simple: simple
+  };
+
+  return extensions ? merge(extensions, base) : base;
 }

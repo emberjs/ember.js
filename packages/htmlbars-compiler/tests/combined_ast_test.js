@@ -38,7 +38,7 @@ function mustache(string, pairs, strip, raw) {
 }
 
 function concat(params) {
-  return mustache([id('CONCAT')].concat(params));
+  return mustache([id('concat')].concat(params));
 }
 
 function string(data) {
