@@ -67,6 +67,7 @@ var handlebars = pickFiles(bower, {
 
 var test = pickFiles('test', {
   srcDir: '/',
+  files: [ 'index.html', 'packages-config.js' ],
   destDir: '/test'
 });
 
