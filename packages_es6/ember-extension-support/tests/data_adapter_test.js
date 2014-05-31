@@ -9,6 +9,8 @@ import EmberDataAdapter from "ember-extension-support/data_adapter";
 import EmberApplication from "ember-application/system/application";
 import {DefaultResolver} from "ember-application/system/resolver";
 
+import "ember-routing/ext/run_loop"; // to create routerTransitions run loop queue
+
 var adapter, App, Model = EmberObject.extend();
 
 var DataAdapter = EmberDataAdapter.extend({
