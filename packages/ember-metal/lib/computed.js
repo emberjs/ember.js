@@ -96,7 +96,7 @@ function addDependentKeys(desc, obj, keyName, meta) {
 
 function removeDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
-  // add all of its dependent keys.
+  // remove all of its dependent keys.
   var depKeys = desc._dependentKeys, depsMeta, idx, len, depKey, keys;
   if (!depKeys) return;
 
@@ -106,9 +106,9 @@ function removeDependentKeys(desc, obj, keyName, meta) {
     depKey = depKeys[idx];
     // Lookup keys meta for depKey
     keys = keysForDep(depsMeta, depKey);
-    // Increment the number of times depKey depends on keyName.
+    // Decrement the number of times depKey depends on keyName.
     keys[keyName] = (keys[keyName] || 0) - 1;
-    // Watch the depKey
+    // Unwatch the depKey
     unwatch(obj, depKey, meta);
   }
 }
