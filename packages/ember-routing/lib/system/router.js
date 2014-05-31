@@ -394,10 +394,18 @@ var EmberRouter = EmberObject.extend(Evented, {
     var transitionPromise = this.router[method].apply(this.router, args);
 
     transitionPromise.then(null, function(error) {
-      if (error && error.name === "UnrecognizedURLError") {
+      if (!error || !error.name) { return; }
+
+      if (error.name === "UnrecognizedURLError") {
         Ember.assert("The URL '" + error.message + "' did not match any routes in your application");
+      } else if (error.name === 'TransitionAborted') {
+        // just ignore TransitionAborted here
+      } else {
+        throw error;
       }
-    }, 'Ember: Check for Router unrecognized URL error');
+
+      return error;
+    }, 'Ember: Process errors from Router');
 
     // We want to return the configurable promise object
     // so that callers of this function can use `.method()` on it,
@@ -536,7 +544,7 @@ var defaultActionHandlers = {
       return;
     }
 
-    var errorArgs = ['Error while loading route: ' + transition.targetName];
+    var errorArgs = ['Error while processing route: ' + transition.targetName];
 
     if (error) {
       if (error.message) { errorArgs.push(error.message); }

@@ -3036,7 +3036,7 @@ test("rejecting the model hooks promise with a non-error prints the `message` pr
   });
 
   Ember.Logger.error = function(initialMessage, errorMessage, errorStack) {
-    equal(initialMessage, 'Error while loading route: yippie', 'a message with the current route name is printed');
+    equal(initialMessage, 'Error while processing route: yippie', 'a message with the current route name is printed');
     equal(errorMessage, rejectedMessage, "the rejected reason's message property is logged");
     equal(errorStack, rejectedStack, "the rejected reason's stack property is logged");
   };
@@ -3060,7 +3060,7 @@ test("rejecting the model hooks promise with no reason still logs error", functi
   });
 
   Ember.Logger.error = function(initialMessage) {
-    equal(initialMessage, 'Error while loading route: wowzers', 'a message with the current route name is printed');
+    equal(initialMessage, 'Error while processing route: wowzers', 'a message with the current route name is printed');
   };
 
   App.WowzersRoute = Ember.Route.extend({
@@ -3083,7 +3083,7 @@ test("rejecting the model hooks promise with a string shows a good error", funct
   });
 
   Ember.Logger.error = function(initialMessage, errorMessage) {
-    equal(initialMessage, 'Error while loading route: yondo', 'a message with the current route name is printed');
+    equal(initialMessage, 'Error while processing route: yondo', 'a message with the current route name is printed');
     equal(errorMessage, rejectedMessage, "the rejected reason's message property is logged");
   };
 
@@ -3191,3 +3191,21 @@ if (Ember.FEATURES.isEnabled('ember-routing-consistent-resources')) {
     equal(currentPath, 'home.index');
   });
 }
+
+test("Errors in transitionTo within redirect hook are logged", function() {
+  Router.map(function() {
+    this.route('yondo', { path: "/" });
+    this.route('stink-bomb');
+  });
+
+  App.YondoRoute = Ember.Route.extend({
+    redirect: function(){
+      this.transitionTo('stink-bomb', {something: 'goes boom'});
+    }
+  });
+
+  raises(function() {
+    bootApplication();
+  },
+  /More context objects were passed than there are dynamic segments for the route: stink-bomb/);
+});
