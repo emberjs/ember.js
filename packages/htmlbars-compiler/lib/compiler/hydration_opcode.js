@@ -1,4 +1,5 @@
-import { ASTWalker } from "./ast_walker";
+import TemplateActionCompiler from "./template_action";
+import { processOpcodes } from "./utils";
 import { buildHashFromAttributes } from "../html-parser/helpers";
 
 function HydrationOpcodeCompiler() {
@@ -11,8 +12,11 @@ function HydrationOpcodeCompiler() {
 }
 
 HydrationOpcodeCompiler.prototype.compile = function(ast) {
-  var astWalker = new ASTWalker(this);
-  astWalker.visit(ast);
+  var templateActionCompiler = new TemplateActionCompiler();
+  var actions = templateActionCompiler.compile(ast);
+
+  processOpcodes(this, actions);
+
   return this.opcodes;
 };
 
@@ -63,10 +67,6 @@ HydrationOpcodeCompiler.prototype.closeElement = function(element) {
   distributeMorphs(this.morphs, this.opcodes);
   this.opcode('popParent');
   this.currentDOMChildIndex = this.paths.pop();
-};
-
-HydrationOpcodeCompiler.prototype.node = function (node, childIndex, childrenLength) {
-  this[node.type](node, childIndex, childrenLength);
 };
 
 HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLength) {
