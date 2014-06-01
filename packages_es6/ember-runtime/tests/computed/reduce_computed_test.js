@@ -15,7 +15,7 @@ import SubArray from "ember-runtime/system/subarray";
 
 var map = EnumerableUtils.map,
     metaFor = meta,
-    obj, addCalls, removeCalls, callbackItems;
+    obj, addCalls, removeCalls, callbackItems, shared;
 
 module('arrayComputed', {
   setup: function () {
@@ -941,3 +941,54 @@ if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.Array) {
     }, /must be an `Ember.Array`/, "Ember.reduceComputed complains about dependent non-extended native arrays");
   });
 }
+
+QUnit.module('arrayComputed - misc', {
+  setup: function () {
+    callbackItems = [];
+
+    shared = EmberObject.create({
+      flag: false
+    });
+
+    var Item = EmberObject.extend({
+      shared: shared,
+      flag: computed('shared.flag', function () {
+        return this.get('shared.flag');
+      })
+    });
+    
+    obj = EmberObject.extend({
+      upstream: Ember.A([
+        Item.create(),
+        Item.create()
+      ]),
+      arrayCP: arrayComputed('upstream.@each.flag', {
+        addedItem: function (array, item) {
+          callbackItems.push('add:' + item.get('flag'));
+          return array;
+        },
+
+        removedItem: function (array, item) {
+          callbackItems.push('remove:' + item.get('flag'));
+          return array;
+        }
+      })
+    }).create();
+  },
+
+  teardown: function () {
+    run(function () {
+      obj.destroy();
+    });
+  }
+});
+
+test("item property change flushes are gated by a semaphore", function() {
+  obj.get('arrayCP');
+  deepEqual(callbackItems, ['add:false', 'add:false'], "precond - calls are initially correct");
+
+  callbackItems.splice(0, 2);
+
+  shared.set('flag', true);
+  deepEqual(callbackItems, ['remove:true', 'add:true', 'remove:true', 'add:true'], "item property flushes that depend on a shared prop are gated by a semaphore");
+});
