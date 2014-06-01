@@ -83,8 +83,12 @@ function DependentArraysObserver(callbacks, cp, instanceMeta, context, propertyN
   // because we only have the key; instead we make the observers no-ops
   this.suspended = false;
 
-  // This is used to coalesce item changes from property observers.
+  // This is used to coalesce item changes from property observers within a
+  // single item.
   this.changedItems = {};
+  // This is used to coalesce item changes for multiple items that depend on
+  // some shared state.
+  this.changedItemCount = 0;
 }
 
 function ItemPropertyObserverContext (dependentArray, index, trackedArray) {
@@ -322,12 +326,15 @@ DependentArraysObserver.prototype = {
         previousValues:   {}
       };
     }
+    ++this.changedItemCount;
 
     this.changedItems[guid].previousValues[keyName] = get(obj, keyName);
   },
 
   itemPropertyDidChange: function(obj, keyName, array, observerContext) {
-    this.flushChanges();
+    if (--this.changedItemCount === 0) {
+      this.flushChanges();
+    }
   },
 
   flushChanges: function() {
