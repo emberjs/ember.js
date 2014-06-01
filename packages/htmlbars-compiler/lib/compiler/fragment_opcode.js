@@ -1,12 +1,16 @@
-import { ASTWalker } from "./ast_walker";
+import TemplateActionCompiler from "./template_action";
+import { processOpcodes } from "./utils";
 
 function FragmentOpcodeCompiler() {
   this.opcodes = [];
 }
 
 FragmentOpcodeCompiler.prototype.compile = function(ast) {
-  var astWalker = new ASTWalker(this);
-  astWalker.visit(ast);
+  var templateActionCompiler = new TemplateActionCompiler();
+  var actions = templateActionCompiler.compile(ast);
+
+  processOpcodes(this, actions);
+
   return this.opcodes;
 };
 
@@ -56,7 +60,7 @@ FragmentOpcodeCompiler.prototype.endTemplate = function(program) {
   }
 };
 
-FragmentOpcodeCompiler.prototype.node = function () {};
+FragmentOpcodeCompiler.prototype.mustache = function () {};
 
 FragmentOpcodeCompiler.prototype.component = function () {};
 

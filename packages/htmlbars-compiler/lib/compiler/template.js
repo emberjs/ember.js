@@ -2,7 +2,8 @@ import { FragmentOpcodeCompiler } from './fragment_opcode';
 import { FragmentCompiler } from './fragment';
 import { HydrationOpcodeCompiler } from './hydration_opcode';
 import { HydrationCompiler } from './hydration';
-import { ASTWalker } from './ast_walker';
+import TemplateActionCompiler from "./template_action";
+import { processOpcodes } from "./utils";
 
 export function TemplateCompiler() {
   this.fragmentOpcodeCompiler = new FragmentOpcodeCompiler();
@@ -14,8 +15,11 @@ export function TemplateCompiler() {
 }
 
 TemplateCompiler.prototype.compile = function(ast) {
-  var astWalker = new ASTWalker(this);
-  astWalker.visit(ast);
+  var templateActionCompiler = new TemplateActionCompiler();
+  var actions = templateActionCompiler.compile(ast);
+
+  processOpcodes(this, actions);
+
   return this.templates.pop();
 };
 
@@ -93,7 +97,7 @@ TemplateCompiler.prototype.text = function(string, i, l) {
   this.hydrationOpcodeCompiler.text(string, i, l);
 };
 
-TemplateCompiler.prototype.node = function (node, i, l) {
-  this.fragmentOpcodeCompiler.node(node, i, l);
-  this.hydrationOpcodeCompiler.node(node, i, l);
+TemplateCompiler.prototype.mustache = function (mustache, i, l) {
+  this.fragmentOpcodeCompiler.mustache(mustache, i, l);
+  this.hydrationOpcodeCompiler.mustache(mustache, i, l);
 };
