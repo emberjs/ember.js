@@ -174,10 +174,10 @@ export default {
     @method _getSupportsHashChange
   */
   _getSupportsHashChange: function () {
-    var window = this._window,
-        documentMode = window.document.documentMode;
+    var _window = this._window,
+        documentMode = _window.document.documentMode;
 
-    return ('onhashchange' in window && (documentMode === undefined || documentMode > 7 ));
+    return ('onhashchange' in _window && (documentMode === undefined || documentMode > 7 ));
   },
 
   /**
