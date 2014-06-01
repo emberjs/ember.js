@@ -368,7 +368,7 @@ test("given `Ember.testing = true`, correctly informs the test suite about async
     name: 'tomster'
   });
 
-  equal(asyncStarted, 1);
+  equal(asyncStarted, 0);
   equal(asyncEnded, 0);
 
   user.then(function(user){
