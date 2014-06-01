@@ -110,24 +110,6 @@
 
   EmberDev.jsHint = !QUnit.urlParams.nojshint;
 
-  EmberDev.jsHintReporter = function (file, errors) {
-    if (!errors) { return ''; }
-
-    var len = errors.length,
-        str = '',
-        error, idx;
-
-    if (len === 0) { return ''; }
-
-    for (idx=0; idx<len; idx++) {
-      error = errors[idx];
-      str += file  + ': line ' + error.line + ', col ' +
-          error.character + ', ' + error.reason + '\n';
-    }
-
-    return str + "\n" + len + ' error' + ((len === 1) ? '' : 's');
-  };
-
   var o_create = Object.create || (function(){
     function F(){}
 
