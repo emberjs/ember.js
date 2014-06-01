@@ -26,7 +26,7 @@ QUnit.module('arrayComputed', {
       otherNumbers: Ember.A([ 7, 8, 9 ]),
 
       // Users would obviously just use `Ember.computed.map`
-      // This implemantion is fine for these tests, but doesn't properly work as
+      // This implementation is fine for these tests, but doesn't properly work as
       // it's not index based.
       evenNumbers: arrayComputed('numbers', {
         addedItem: function (array, item) {
