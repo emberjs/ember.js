@@ -79,7 +79,7 @@ define("simple-html-tokenizer",
       },
 
       addToAttributeName: function(char) {
-        this.token.addToAttributeName(char.toLowerCase());
+        this.token.addToAttributeName(char);
       },
 
       addToAttributeValue: function(char) {
@@ -261,8 +261,6 @@ define("simple-html-tokenizer",
             this.state = 'selfClosingStartTag';
           } else if (char === ">") {
             return this.emitToken();
-          } else if (isUpper(char)) {
-            this.token.addToTagName(char.toLowerCase());
           } else {
             this.token.addToTagName(char);
           }
