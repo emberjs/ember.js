@@ -369,11 +369,17 @@ var DataAdapter = EmberObject.extend({
     @return {Array} Array of model type strings
   */
   _getObjectsOnNamespaces: function() {
-    var namespaces = A(Namespace.NAMESPACES), types = A();
+    var namespaces = A(Namespace.NAMESPACES),
+        types = A(),
+        self = this;
 
     namespaces.forEach(function(namespace) {
       for (var key in namespace) {
         if (!namespace.hasOwnProperty(key)) { continue; }
+        // Even though we will filter again in `getModelTypes`,
+        // we should not call `lookupContainer` on non-models
+        // (especially when `Ember.MODEL_FACTORY_INJECTIONS` is `true`)
+        if (!self.detect(namespace[key])) { continue; }
         var name = dasherize(key);
         if (!(namespace instanceof Application) && namespace.toString()) {
           name = namespace + '/' + name;
