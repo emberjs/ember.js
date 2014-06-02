@@ -62,6 +62,7 @@ define('rsvp/-internal', [
         }, promise);
     }
     function handleOwnThenable(promise, thenable) {
+        promise._onerror = null;
         if (thenable._state === FULFILLED) {
             fulfill(promise, thenable._result);
         } else if (promise._state === REJECTED) {
@@ -134,6 +135,7 @@ define('rsvp/-internal', [
     function subscribe(parent, child, onFulfillment, onRejection) {
         var subscribers = parent._subscribers;
         var length = subscribers.length;
+        parent._onerror = null;
         subscribers[length] = child;
         subscribers[length + FULFILLED] = onFulfillment;
         subscribers[length + REJECTED] = onRejection;
@@ -539,6 +541,7 @@ define('rsvp/enumerator', [
         var c = this._instanceConstructor;
         if (isMaybeThenable(entry)) {
             if (entry.constructor === c && entry._state !== PENDING) {
+                entry._onerror = null;
                 this._settledAt(entry._state, i, entry._result);
             } else {
                 this._willSettleAt(c.resolve(entry), i);
