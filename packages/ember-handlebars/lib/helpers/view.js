@@ -166,16 +166,23 @@ export var ViewHelper = EmberObject.create({
     makeBindings(thisContext, options);
 
     if ('string' === typeof path) {
-
+      var lookup;
       // TODO: this is a lame conditional, this should likely change
       // but something along these lines will likely need to be added
       // as deprecation warnings
       //
       if (options.types[0] === 'STRING' && LOWERCASE_A_Z.test(path) && !VIEW_PREFIX.test(path)) {
-        Ember.assert("View requires a container", !!data.view.container);
-        newView = data.view.container.lookupFactory('view:' + path);
+        lookup = path;
       } else {
         newView = handlebarsGet(thisContext, path, options);
+        if (typeof newView === 'string') {
+          lookup = newView;
+        }
+      }
+
+      if (lookup) {
+        Ember.assert("View requires a container", !!data.view.container);
+        newView = data.view.container.lookupFactory('view:' + lookup);
       }
 
       Ember.assert("Unable to find view at path '" + path + "'", !!newView);
