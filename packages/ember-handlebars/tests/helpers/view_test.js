@@ -118,6 +118,33 @@ test("View lookup - 'fu'", function() {
   }
 });
 
+test("View lookup - view.computed", function() {
+  var FuView = viewClass({
+    elementId: "fu",
+    template: Ember.Handlebars.compile("bro")
+  });
+
+  var container = {
+    lookupFactory: lookupFactory
+  };
+
+  view = EmberView.extend({
+    template: Ember.Handlebars.compile("{{view view.computed}}"),
+    container: container,
+    computed: 'fu'
+  }).create();
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  equal(jQuery('#fu').text(), 'bro');
+
+  function lookupFactory(fullName) {
+    equal(fullName, 'view:fu');
+
+    return FuView;
+  }
+});
+
 test("id bindings downgrade to one-time property lookup", function() {
   view = EmberView.extend({
     template: Ember.Handlebars.compile("{{#view Ember.View id=view.meshuggah}}{{view.parentView.meshuggah}}{{/view}}"),
