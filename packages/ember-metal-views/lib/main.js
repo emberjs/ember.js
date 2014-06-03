@@ -70,10 +70,6 @@ function _createElementForView(view) {
     if (view.tagName && el.tagName !== view.tagName.toUpperCase()) {
       el = view.element = transclude(el, view.tagName);
     }
-
-    if (view.transitionTo) {
-      view.transitionTo('hasElement');
-    }
   }
 
   return el;
@@ -123,7 +119,7 @@ function childViewsPlaceholder(parentView) {
 function _render(_view, insert) {
   var views = [_view],
       idx = 0,
-      view, parentView, ret, tagName, el, i, l;
+      view, parentView, ret, tagName, el, i, l, placeholder;
 
   while (idx < views.length) {
     view = views[idx];
@@ -154,9 +150,16 @@ function _render(_view, insert) {
       if (view._placeholder) {
         view._placeholder.update(content);
       } else {
-        view._placeholder = createChildPlaceholder(view._parentView, content);
+        placeholder = createChildPlaceholder(view._parentView, content);
+        console.assert(placeholder instanceof Placeholder);
+        view._placeholder = placeholder;
       }
     }
+
+    if (view.transitionTo) {
+      view.transitionTo('hasElement');
+    }
+    view.isRendered = true;
 
     var childViews = view._childViews, // FIXME
         childView;
@@ -188,13 +191,18 @@ function _render(_view, insert) {
       sendEvent(view, 'willInsertElement', view.element);
     }
 
-    _view._placeholder = insert(ret);
+    placeholder = insert(ret);
+
+    console.assert(placeholder instanceof Placeholder);
+
+    _view._placeholder = placeholder;
 
     for (i = 0, l = views.length; i<l; i++) {
       view = views[i];
       if (view.transitionTo) {
         view.transitionTo('inDOM');
       }
+      view.isInDOM = true;
       if (view.didInsertElement) {
         view.didInsertElement(view.element);
       }
@@ -328,17 +336,119 @@ function appendChild(view, childView, attrs) {
   return childView;
 }
 
-function remove(view) {
-  var el = view.element,
-      placeholder = view._placeholder;
+function clearRenderHooks(view) {
+  if (view.isRendered) {
+    if (view.willClearRender) {
+      view.willClearRender();
+    }
+  }
+  if (view.isInDOM) {
+    if (view.willDestroyElement) {
+      view.willDestroyElement();
+    }
+  }
+}
 
-  if (el && view.willDestroyElement) { view.willDestroyElement(); }
+function resetView(view) {
+  view.isInDOM = false;
+  view.isRendered = false;
   view.element = null;
-  if (el && el.parentNode) { el.parentNode.removeChild(el); }
-  if (placeholder) { placeholder.destroy(); }
+  view._placeholder = null;
+  view._childViewsPlaceholder = null;
   teardownView(view);
+}
 
-  _triggerRecursively(view, remove, true);
+function destroy(_view) {
+  remove(_view, true);
+}
+
+function remove(_view, shouldDestroy) {
+  if (_view._scheduledInsert) {
+    run.cancel(_view._scheduledInsert);
+    _view._scheduledInsert = null;
+  }
+
+  if (!shouldDestroy && !_view.isRendered) {
+    return;
+  }
+
+  var removeQueue = [], destroyQueue = [],
+    idx, len, view, staticChildren,
+    childViews, i, l, parentView;
+
+  if (shouldDestroy) {
+    destroyQueue.push(_view);
+  } else {
+    removeQueue.push(_view);
+  }
+
+  for (idx=0; idx<removeQueue.length; idx++) {
+    view = removeQueue[idx];
+
+    staticChildren = !!view._childViewsPlaceholder;
+
+    clearRenderHooks(view);
+
+    childViews = view._childViews;
+    if (childViews) {
+      if (staticChildren) {
+        for (i=0,l=childViews.length; i<l; i++) {
+          removeQueue.push(childViews[i]);
+        }
+      } else {
+        for (i=0,l=childViews.length; i<l; i++) {
+          destroyQueue.push(childViews[i]);
+        }
+      }
+    }
+  }
+
+  for (idx=0; idx<destroyQueue.length; idx++) {
+    view = destroyQueue[idx];
+
+    clearRenderHooks(view);
+
+    childViews = view._childViews;
+    if (childViews) {
+      for (i=0,l=childViews.length; i<l; i++) {
+        destroyQueue.push(childViews[i]);
+      }
+    }
+  }
+
+  // destroy DOM from root insertion
+  if (_view._placeholder) {
+    _view._placeholder.destroy();
+  }
+
+  for (idx=0, len=removeQueue.length; idx < len; idx++) {
+    view = removeQueue[idx];
+    resetView(view);
+    if (view.transitionTo) {
+      view.transitionTo('prerender');
+    }
+  }
+
+  for (idx=0, len=destroyQueue.length; idx < len; idx++) {
+    view = destroyQueue[idx];
+    resetView(view);
+    if (view.transitionTo) {
+      view.transitionTo('destroying');
+    }
+    if (view.destroy) {
+      view.destroy(true);
+    }
+    parentView = view._parentView;
+    view._parentView = null;
+    view._childViews = null;
+    if (parentView && !parentView.isDestroying) {
+      if (parentView.removeChild) {
+        parentView.removeChild(view);
+      } else {
+        // TODO: we need to do for metal views
+      }
+    }
+  }
 }
 
 function contextDidChange(view) {
@@ -369,7 +479,6 @@ function contextDidChange(view) {
   }
 }
 
-var destroy = remove;
 var createElementForView = _createElementForView;
 var render = _render;
 
