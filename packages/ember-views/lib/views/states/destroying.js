@@ -28,15 +28,7 @@ merge(destroying, {
 
   setElement: function() {
     throw new EmberError(fmt(destroyingError, ["set('element', ...)"]));
-  },
-
-  renderToBufferIfNeeded: function() {
-    return false;
-  },
-
-  // Since element insertion is scheduled, don't do anything if
-  // the view has been destroyed between scheduling and execution
-  insertElement: Ember.K
+  }
 });
 
 export default destroying;

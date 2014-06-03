@@ -1,55 +1,108 @@
 /*globals Node */
+import { Morph } from "morph";
+import { Renderer } from "ember-metal-views";
 
-import run from "ember-metal/run_loop";
+var renderer;
 
-module View from "ember-metal-views";
-export { View }
+function MetalRenderer () {
+  MetalRenderer.super.call(this);
+}
+MetalRenderer.super = Renderer;
+MetalRenderer.prototype = Object.create(Renderer.prototype, {
+  constructor: {
+    value: MetalRenderer,
+    enumerable: false,
+    writable: true,
+    configurable: true
+  }
+});
+
+MetalRenderer.prototype.childViews = function (view) {
+  return view.childViews;
+};
+MetalRenderer.prototype.willCreateElement = function(view) {
+};
+MetalRenderer.prototype.createElement = function (view) {
+  var el;
+  if (view.element) {
+    el = view.element;
+  } else {
+    el = view.element = document.createElement(view.tagName || 'div');
+  }
+  var classNames = view.classNames;
+  if (typeof classNames === 'string') {
+    el.setAttribute('class', classNames);
+  } else if (classNames && classNames.length) {
+    if (classNames.length === 1) { // PERF: avoid join'ing unnecessarily
+      el.setAttribute('class', classNames[0]);
+    } else {
+      el.setAttribute('class', classNames.join(' ')); // TODO: faster way to do this?
+    }
+  }
+  var attributeBindings = view.attributeBindings;
+  if (attributeBindings && attributeBindings.length) {
+    for (var i=0,l=attributeBindings.length; i<l; i++) {
+      var attributeBinding = attributeBindings[i];
+      var parts = attributeBinding.split(':');
+      el.setAttribute(parts[1], view[parts[0]]);
+    }
+  }
+  if (view.childViews) {
+    view._childViewsMorph = new Morph(el, null, null);
+  } else if (view.textContent) {
+    el.textContent = view.textContent;
+  } else if (view.innerHTML) {
+    el.innerHTML = view.innerHTML;
+  }
+  return el;
+};
+MetalRenderer.prototype.didCreateElement = function(view) {
+};
+MetalRenderer.prototype.willInsertElement = function(view) {
+  if (view.willInsertElement) {
+    view.willInsertElement();
+  }
+};
+MetalRenderer.prototype.didInsertElement = function(view) {
+  if (view.didInsertElement) {
+    view.didInsertElement();
+  }
+};
+
+MetalRenderer.prototype.scheduleRender = function (renderer, render) {
+  render.call(renderer);
+};
 
 export function testsFor(name, options) {
-  module(name, {
+  QUnit.module(name, {
     setup: function() {
-      $('#qunit-fixture').innerHTML = '';
-      if (options && options.setup) { options.setup(); }
+      renderer = new MetalRenderer();
+      if (options && options.setup) { options.setup(renderer); }
     },
     teardown: function() {
-      View.reset();
-      if (options && options.teardown) { options.teardown(); }
+      if (options && options.teardown) { options.teardown(renderer); }
+      renderer = undefined;
     }
   });
 }
 
-export function $(selector) {
-  if (selector instanceof Node) { return selector; }
-  return document.querySelector(selector);
+export function subject() {
+  return renderer;
 }
 
-export function equalHTML(selector, expectedHTML, message) {
-  var actualHTML = $(selector).innerHTML.replace(/ id="[^"]+"/gmi, '');
+export function equalHTML(element, expectedHTML, message) {
+  var html;
+  if (typeof element === 'string') {
+    html = document.getElementById(element).innerHTML;
+  } else {
+    html = element.outerHTML;
+  }
+
+  var actualHTML = html.replace(/ id="[^"]+"/gmi, '');
   equal(actualHTML, expectedHTML, message || "HTML matches");
 }
 
-var Ember_set = requireModule('ember-metal/property_set').set;
-export function set(obj, key, value) {
-  run(null, Ember_set, obj, key, value);
-}
-
-export function triggerEvent(el, name, data) {
-  // var event = new Event(name);
-  // el.dispatchEvent(event);
-  var isKeyboardEvent = /key/.test(name);
-  var event = document.createEvent('Event'); // (isKeyboardEvent ? 'KeyboardEvent' : 'Event');
-  event.initEvent(name, true, true);
-  if (isKeyboardEvent && data) { event.keyCode = event.which = data.keyCode; }
-  // TODO: figure this out
-  // if (isKeyboardEvent) {
-  //   event.initKeyboardEvent(name, true, true, null, data.keyCode, DOM_KEY_LOCATION_STANDARD);
-  // } else {
-  //   event.initEvent(name, true, true);
-  // }
-  el.dispatchEvent(event);
-}
-
-export function appendTo(view, sel) {
-  run(View, View.appendTo, view, sel);
+export function appendTo(view) {
+  renderer.appendTo(view, document.getElementById('qunit-fixture'));
   return view.element;
 }

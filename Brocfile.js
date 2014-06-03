@@ -245,7 +245,7 @@ var vendoredPackages = {
   'metamorph':        vendoredPackage('metamorph'),
   'router':           vendoredEs6Package('router.js'),
   'route-recognizer': vendoredEs6Package('route-recognizer'),
-  'placeholder':      vendoredPackage('placeholder')
+  'morph':            vendoredPackage('morph')
 };
 
 var emberHandlebarsCompiler = pickFiles('packages/ember-handlebars-compiler/lib', {

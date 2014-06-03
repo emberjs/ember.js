@@ -9,6 +9,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { setInnerHTML } from "ember-views/system/utils";
 import jQuery from "ember-views/system/jquery";
+import {Morph} from "morph";
 
 function ClassSet() {
   this.seen = {};
@@ -99,8 +100,9 @@ export default function RenderBuffer(tagName) {
 }
 
 function _RenderBuffer(tagName) {
-  this.tagNames = [tagName || null];
-  this.buffer = "";
+  this.tagName = tagName;
+  this.buffer = null;
+  this.childViews = [];
 }
 
 _RenderBuffer.prototype = {
@@ -207,6 +209,29 @@ _RenderBuffer.prototype = {
   */
   elementStyle: null,
 
+  pushChildView: function (view) {
+    var index = this.childViews.length;
+    this.childViews[index] = view;
+    this.push("<script id='morph-"+index+"' type='text/x-placeholder'>\x3C/script>");
+  },
+
+  hydrateMorphs: function () {
+    var childViews = this.childViews;
+    var el = this._element;
+    for (var i=0,l=childViews.length; i<l; i++) {
+      var childView = childViews[i];
+      var morphId = '#morph-'+i;
+      var ref = el.querySelector(morphId);
+      var parent = ref.parentNode;
+      var start = document.createTextNode('');
+      var end = document.createTextNode('');
+      parent.insertBefore(start, ref);
+      parent.insertBefore(end, ref);
+      parent.removeChild(ref);
+      childView._morph = new Morph(parent, start, end);
+    }
+  },
+
   /**
     Adds a string of HTML to the `RenderBuffer`.
 
@@ -215,6 +240,9 @@ _RenderBuffer.prototype = {
     @chainable
   */
   push: function(string) {
+    if (this.buffer === null) {
+      this.buffer = '';
+    }
     this.buffer += string;
     return this;
   },
@@ -343,96 +371,8 @@ _RenderBuffer.prototype = {
     return this;
   },
 
-  begin: function(tagName) {
-    this.tagNames.push(tagName || null);
-    return this;
-  },
-
-  pushOpeningTag: function() {
-    var tagName = this.currentTagName();
-    if (!tagName) { return; }
-
-    if (this._hasElement && !this._element && this.buffer.length === 0) {
-      this._element = this.generateElement();
-      return;
-    }
-
-    var buffer = this.buffer;
-    var id = this.elementId;
-    var classes = this.classes;
-    var attrs = this.elementAttributes;
-    var props = this.elementProperties;
-    var style = this.elementStyle;
-    var attr, prop;
-
-    buffer += '<' + stripTagName(tagName);
-
-    if (id) {
-      buffer += ' id="' + escapeAttribute(id) + '"';
-      this.elementId = null;
-    }
-    if (classes) {
-      buffer += ' class="' + escapeAttribute(classes.join(' ')) + '"';
-      this.classes = null;
-      this.elementClasses = null;
-    }
-
-    if (style) {
-      buffer += ' style="';
-
-      for (prop in style) {
-        if (style.hasOwnProperty(prop)) {
-          buffer += prop + ':' + escapeAttribute(style[prop]) + ';';
-        }
-      }
-
-      buffer += '"';
-
-      this.elementStyle = null;
-    }
-
-    if (attrs) {
-      for (attr in attrs) {
-        if (attrs.hasOwnProperty(attr)) {
-          buffer += ' ' + attr + '="' + escapeAttribute(attrs[attr]) + '"';
-        }
-      }
-
-      this.elementAttributes = null;
-    }
-
-    if (props) {
-      for (prop in props) {
-        if (props.hasOwnProperty(prop)) {
-          var value = props[prop];
-          if (value || typeof(value) === 'number') {
-            if (value === true) {
-              buffer += ' ' + prop + '="' + prop + '"';
-            } else {
-              buffer += ' ' + prop + '="' + escapeAttribute(props[prop]) + '"';
-            }
-          }
-        }
-      }
-
-      this.elementProperties = null;
-    }
-
-    buffer += '>';
-    this.buffer = buffer;
-  },
-
-  pushClosingTag: function() {
-    var tagName = this.tagNames.pop();
-    if (tagName) { this.buffer += '</' + stripTagName(tagName) + '>'; }
-  },
-
-  currentTagName: function() {
-    return this.tagNames[this.tagNames.length-1];
-  },
-
   generateElement: function() {
-    var tagName = this.tagNames.pop(), // pop since we don't need to close
+    var tagName = this.tagName, // pop since we don't need to close
         id = this.elementId,
         classes = this.classes,
         attrs = this.elementAttributes,
@@ -492,7 +432,7 @@ _RenderBuffer.prototype = {
       this.elementProperties = null;
     }
 
-    return element;
+    this._element = element;
   },
 
   /**
@@ -503,10 +443,23 @@ _RenderBuffer.prototype = {
   element: function() {
     var html = this.innerString();
 
-    if (html) {
-      this._element = setInnerHTML(this._element, html);
+    if (this._element) {
+      if (html) {
+        this._element = setInnerHTML(this._element, html);
+        this.hydrateMorphs();
+      }
+    } else {
+      if (html) {
+        var frag = this._element = document.createDocumentFragment();
+        var parsed = jQuery.parseHTML(html);
+        for (var i=0,l=parsed.length; i<l; i++) {
+          frag.appendChild(parsed[i]);
+        }
+        this.hydrateMorphs();
+      } else if (html === '') {
+        this._element = html;
+      }
     }
-
     return this._element;
   },
 
