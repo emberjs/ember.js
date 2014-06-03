@@ -1,3 +1,4 @@
+import run from "ember-metal/run_loop";
 import { testsFor, View, $, equalHTML, appendTo } from "ember-metal-views/tests/test_helpers";
 
 testsFor("ember-metal-views - attributes");

@@ -6,7 +6,7 @@ import { addObserver } from "ember-metal/observer";
 import { set } from "ember-metal/property_set";
 import { lookupView, setupView, teardownView, setupEventDispatcher, reset, events } from "ember-metal-views/events";
 import { setupClassNames, setupClassNameBindings, setupAttributeBindings } from "ember-metal-views/attributes";
-
+import { Placeholder } from "placeholder";
 
 // FIXME: don't have a hard dependency on the ember run loop
 // FIXME: avoid render/afterRender getting defined twice
@@ -25,28 +25,20 @@ addObserver(FAKE_PROTO, '_parentView', Ember.NO_TARGET, contextDidChange);
 
 var SHARED_META = meta(FAKE_PROTO);
 
-
-
-function _insertElementLater(view, fn) {
-  view._scheduledInsert = run.scheduleOnce('render', view, _insertElement, fn);
-}
-
-function _insertElement(fn) {
-  var view = this;
-  view._scheduledInsert = null;
-  var el = _createElementForView(view);
-  fn(view);
+function scheduleRender(render) {
+  return run.scheduleOnce('render', null, render);
 }
 
 function appendTo(view, selector) {
-  _insertElementLater(view, function() {
-    target.appendChild(view.element);
+  var target = typeof selector === 'string' ? querySelector(selector) : selector;
+  view._scheduledInsert = scheduleRender(function() {
+    view._placeholder = new Placeholder(target, target.lastChild, null);
+    _render(view);
   });
+}
 
-  var el = _render(view),
-      target = typeof selector === 'string' ? querySelector(selector) : selector;
-
-  return el;
+function render(view) {
+  return _render(view);
 }
 
 // TODO: figure out the most efficent way of changing tagName
@@ -70,23 +62,47 @@ function _createElementForView(view) {
   if (!view.isVirtual) {
     tagName = view.tagName || 'div';
     el = view.element = view.element || createElement(tagName);
-  
+
     if (view.tagName && el.tagName !== view.tagName.toUpperCase()) {
       el = view.element = transclude(el, view.tagName);
+    }
+
+    if (view.transitionTo) {
+      view.transitionTo('hasElement');
     }
   }
 
   return el;
 }
 
-function _render(_view, _parent) {
+function appendToPlaceholder(placeholder, content)
+{
+  // TODO: placeholder.append(content);
+  var index = placeholder.placeholders ? placeholder.placeholders.length : 0;
+  placeholder.replace(index, 0, [content]);
+  return placeholder.placeholders[index];
+}
+
+function createChildPlaceholder(parentView, content) {
+  var placeholder = childViewsPlaceholder(parentView);
+  return appendToPlaceholder(placeholder, content);
+}
+
+function childViewsPlaceholder(parentView) {
+  if (parentView.isVirtual) {
+    return parentView._placeholder;
+  }
+  var placeholder = parentView._childViewsPlaceholder;
+  if (!placeholder) {
+    placeholder = parentView._childViewsPlaceholder = new Placeholder(parentView.element, null, null);
+  }
+  return placeholder;
+}
+
+function _render(_view) {
   var views = [_view],
       idx = 0,
       view, ret, tagName, el;
-
-  if (_parent) { // FIXME: should be able to trash this
-    _view._parentView = _parent;
-  }
 
   while (idx < views.length) {
     view = views[idx];
@@ -103,10 +119,6 @@ function _render(_view, _parent) {
 
       setupView(view);
 
-      if (view._parentView) {
-        view._parentView.element.appendChild(el);
-      }
-
       el.setAttribute('id', view.elementId);
       if (view.isVisible === false) { el.style.display = 'none'; }
       setupClassNames(view);
@@ -114,10 +126,15 @@ function _render(_view, _parent) {
       setupAttributeBindings(view);
     }
 
-    if (ret) {
-      run.schedule('render', null, _renderContents, view, el);
-    } else { // only capture the root view's element
-      ret = _renderContents(view, el);
+    var content = _renderContents(view, el);
+    if (view === _view) {
+      ret = content; // hold off inserting the root view
+    } else {
+      if (view._placeholder) {
+        view._placeholder.update(content);
+      } else {
+        view._placeholder = createChildPlaceholder(view._parentView, content);
+      }
     }
 
     var childViews = view._childViews, // FIXME
@@ -134,20 +151,30 @@ function _render(_view, _parent) {
     idx++;
   }
 
-  _triggerRecursively(_view, 'willInsertElement');
+  // only assume we are inDOM if root had placeholder
+  if (_view._placeholder) {
+    setupEventDispatcher();
 
+    for (var i = 0, l = views.length; i<l; i++) {
+      var view = views[i];
+      if (view.willInsertElement) {
+        view.willInsertElement(view.element);
+      }
+    }
 
-  if (_view.transitionTo) {
-    _view.transitionTo('hasElement');
+    _view._placeholder.update(ret);
+
+    for (var i = 0, l = views.length; i<l; i++) {
+      var view = views[i];
+      if (view.transitionTo) {
+        view.transitionTo('inDOM');
+      }
+      if (view.didInsertElement) {
+        view.didInsertElement(view.element);
+      }
+    }
   }
 
-  run.schedule('render', function() {
-    if (document.body.contains(_view.element)) {
-      _triggerRecursively(_view, 'didInsertElement');
-    }
-  });
-
-  setupEventDispatcher();
   return ret;
 }
 
@@ -176,14 +203,13 @@ function _renderContents(view, el) {
     view.templateOptions.data.view = view;
     if (view.beforeTemplate) { view.beforeTemplate(); }
     var templateFragment = template(view, view.templateOptions);
-    if (!view.isVirtual) {
+    if (view.isVirtual) {
+      el = templateFragment;
+    } else {
       if (templateFragment) {
         if (typeof templateFragment === 'string') { templateFragment = document.createTextNode(templateFragment); }
-
         el.appendChild(templateFragment);
       }
-    } else {
-      el = templateFragment;
     }
     view.templateOptions.data.view = null;
   } else if (view.textContent) { // TODO: bind?
@@ -203,12 +229,6 @@ function fakeBufferFor(el) {
       el.innerHTML += str;
     }
   }
-}
-
-function render(view, parent) {
-  var el = view.element;
-  el = _render(view, parent);
-  return el || view.element;
 }
 
 function _triggerRecursively(view, functionOrEventName, skipParent) {
@@ -285,7 +305,7 @@ function remove(view) {
   if (el && view.willDestroyElement) { view.willDestroyElement(); }
   view.element = null;
   if (el && el.parentNode) { el.parentNode.removeChild(el); }
-  if (placeholder) { placeholder.clear(); } // TODO: Implement Placeholder.destroy
+  if (placeholder) { placeholder.destroy(); }
   teardownView(view);
 
   _triggerRecursively(view, remove, true);
