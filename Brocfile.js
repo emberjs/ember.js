@@ -146,7 +146,8 @@ var vendoredPackages = {
   'metamorph':        vendoredPackage('metamorph'),
   'backburner':       vendoredPackage('backburner'),
   'router':           vendoredPackage('router'),
-  'route-recognizer': vendoredPackage('route-recognizer')
+  'route-recognizer': vendoredPackage('route-recognizer'),
+  'placeholder':      vendoredPackage('placeholder'),
 };
 
 var emberHandlebarsCompiler = pickFiles('packages/ember-handlebars-compiler/lib', {
