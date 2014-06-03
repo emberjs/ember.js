@@ -53,7 +53,10 @@ function removeChainWatcher(obj, keyName, node) {
   if (nodes && nodes[keyName]) {
     nodes = nodes[keyName];
     for (var i = 0, l = nodes.length; i < l; i++) {
-      if (nodes[i] === node) { nodes.splice(i, 1); }
+      if (nodes[i] === node) {
+        nodes.splice(i, 1);
+        break;
+      }
     }
   }
   unwatchKey(obj, keyName, m);
@@ -212,7 +215,7 @@ ChainNodePrototype.chain = function(key, path, src) {
   node.count++; // count chains...
 
   // chain rest of path if there is one
-  if (path && path.length>0) {
+  if (path) {
     key = firstKey(path);
     path = path.slice(key.length+1);
     node.chain(key, path); // NOTE: no src means it will observe changes...
