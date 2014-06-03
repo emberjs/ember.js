@@ -7,6 +7,7 @@ import { set } from "ember-metal/property_set";
 import { lookupView, setupView, teardownView, setupEventDispatcher, reset, events } from "ember-metal-views/events";
 import { setupClassNames, setupClassNameBindings, setupAttributeBindings } from "ember-metal-views/attributes";
 import { Placeholder } from "placeholder";
+import { sendEvent } from "ember-metal/events";
 
 // FIXME: don't have a hard dependency on the ember run loop
 // FIXME: avoid render/afterRender getting defined twice
@@ -102,7 +103,7 @@ function childViewsPlaceholder(parentView) {
 function _render(_view) {
   var views = [_view],
       idx = 0,
-      view, ret, tagName, el;
+      view, parentView, ret, tagName, el, i, l;
 
   while (idx < views.length) {
     view = views[idx];
@@ -141,7 +142,7 @@ function _render(_view) {
         childView;
 
     if (childViews) {
-      for (var i = 0, l = childViews.length; i < l; i++) {
+      for (i = 0, l = childViews.length; i < l; i++) {
         childView = childViews[i];
         childView._parentView = view;
         views.push(childView);
@@ -155,23 +156,25 @@ function _render(_view) {
   if (_view._placeholder) {
     setupEventDispatcher();
 
-    for (var i = 0, l = views.length; i<l; i++) {
-      var view = views[i];
+    for (i = 0, l = views.length; i<l; i++) {
+      view = views[i];
       if (view.willInsertElement) {
         view.willInsertElement(view.element);
       }
+      sendEvent(view, 'willInsertElement', view.element);
     }
 
     _view._placeholder.update(ret);
 
-    for (var i = 0, l = views.length; i<l; i++) {
-      var view = views[i];
+    for (i = 0, l = views.length; i<l; i++) {
+      view = views[i];
       if (view.transitionTo) {
         view.transitionTo('inDOM');
       }
       if (view.didInsertElement) {
         view.didInsertElement(view.element);
       }
+      sendEvent(view, 'didInsertElement', view.element);
     }
   }
 
@@ -192,17 +195,17 @@ function _findTemplate(view) {
 
 function _renderContents(view, el) {
   var template = _findTemplate(view),
-      templateOptions = {}, // TODO
+      templateOptions = view.templateOptions || (view._parentView && view._parentView.templateOptions) || view.constructor.templateOptions || {data: {keywords: {controller: view.controller}}},
       i, l;
 
   if (template) {
-    if (!view.templateOptions) {
-      console.log('templateOptions not specified on ', view);
-      view.templateOptions = {data: {keywords: {controller: view.controller}}};
-    }
-    view.templateOptions.data.view = view;
+    // if (!templateOptions) {
+    //   console.log('templateOptions not specified on ', view);
+    //   view.templateOptions = {data: {keywords: {controller: view.controller}}};
+    // }
+    templateOptions.data.view = view;
     if (view.beforeTemplate) { view.beforeTemplate(); }
-    var templateFragment = template(view, view.templateOptions);
+    var templateFragment = template(view, templateOptions);
     if (view.isVirtual) {
       el = templateFragment;
     } else {
@@ -211,7 +214,7 @@ function _renderContents(view, el) {
         el.appendChild(templateFragment);
       }
     }
-    view.templateOptions.data.view = null;
+    templateOptions.data.view = null;
   } else if (view.textContent) { // TODO: bind?
     el.textContent = view.textContent;
   } else if (view.innerHTML) { // TODO: bind?
@@ -228,7 +231,7 @@ function fakeBufferFor(el) {
     push: function(str) {
       el.innerHTML += str;
     }
-  }
+  };
 }
 
 function _triggerRecursively(view, functionOrEventName, skipParent) {
@@ -347,4 +350,4 @@ function contextDidChange(view) {
 var destroy = remove;
 var createElementForView = _createElementForView;
 
-export { reset, events, appendTo, render, createChildView, appendChild, remove, destroy, createElementForView }
+export { reset, events, appendTo, render, createChildView, appendChild, remove, destroy, createElementForView };
