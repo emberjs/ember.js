@@ -33,13 +33,16 @@ function scheduleRender(render) {
 function appendTo(view, selector) {
   var target = typeof selector === 'string' ? querySelector(selector) : selector;
   view._scheduledInsert = scheduleRender(function() {
-    view._placeholder = new Placeholder(target, target.lastChild, null);
-    _render(view);
+    _render(view, function (fragOrEl) {
+      var start = document.createTextNode(''),
+        end = document.createTextNode(''),
+        placeholder = new Placeholder(target, start, end);
+      target.appendChild(start);
+      target.appendChild(end);
+      placeholder.update(fragOrEl);
+      return placeholder;
+    });
   });
-}
-
-function render(view) {
-  return _render(view);
 }
 
 // TODO: figure out the most efficent way of changing tagName
@@ -89,18 +92,35 @@ function createChildPlaceholder(parentView, content) {
   return appendToPlaceholder(placeholder, content);
 }
 
-function childViewsPlaceholder(parentView) {
-  if (parentView.isVirtual) {
-    return parentView._placeholder;
-  }
-  var placeholder = parentView._childViewsPlaceholder;
-  if (!placeholder) {
-    placeholder = parentView._childViewsPlaceholder = new Placeholder(parentView.element, null, null);
-  }
-  return placeholder;
+function insertChildContent(parentView, index, content) {
+  var placeholder = childViewsPlaceholder(parentView);
+  placeholder.replace(index, 0, [content]);
+  return placeholder.placeholders[index];
 }
 
-function _render(_view) {
+function childViewsPlaceholder(parentView) {
+  if (parentView._childViewsPlaceholder) {
+    return parentView._childViewsPlaceholder;
+  }
+  if (parentView.isVirtual) {
+    if (parentView._placeholder) {
+      return parentView._childViewsPlaceholder = parentView._placeholder;
+    }
+    // if root view of render is a virtual view
+    // we need to create a fragment placeholder
+    // TODO: allow non insertable Placeholder for this case
+    // we can assign it a start and end on insert
+    var frag = document.createDocumentFragment(),
+      start = document.createTextNode(''),
+      end = document.createTextNode('');
+    frag.appendChild(start);
+    frag.appendChild(end);
+    return parentView._childViewsPlaceholder = new Placeholder(frag, start, end);
+  }
+  return parentView._childViewsPlaceholder = new Placeholder(parentView.element, null, null);;
+}
+
+function _render(_view, insert) {
   var views = [_view],
       idx = 0,
       view, parentView, ret, tagName, el, i, l;
@@ -152,8 +172,12 @@ function _render(_view) {
     idx++;
   }
 
+  if (_view.isVirtual && _view._childViewsPlaceholder) {
+    ret = _view._childViewsPlaceholder._parent;
+  }
+
   // only assume we are inDOM if root had placeholder
-  if (_view._placeholder) {
+  if (insert) {
     setupEventDispatcher();
 
     for (i = 0, l = views.length; i<l; i++) {
@@ -164,7 +188,7 @@ function _render(_view) {
       sendEvent(view, 'willInsertElement', view.element);
     }
 
-    _view._placeholder.update(ret);
+    _view._placeholder = insert(ret);
 
     for (i = 0, l = views.length; i<l; i++) {
       view = views[i];
@@ -195,8 +219,11 @@ function _findTemplate(view) {
 
 function _renderContents(view, el) {
   var template = _findTemplate(view),
-      templateOptions = view.templateOptions || (view._parentView && view._parentView.templateOptions) || view.constructor.templateOptions || {data: {keywords: {controller: view.controller}}},
-      i, l;
+      templateOptions = view.templateOptions, i, l;
+
+  if (!templateOptions) {
+    templateOptions = view.templateOptions = (view._parentView && view._parentView.templateOptions) || view.constructor.templateOptions || {data: {keywords: {controller: view.controller}}};
+  }
 
   if (template) {
     // if (!templateOptions) {
@@ -342,12 +369,8 @@ function contextDidChange(view) {
   }
 }
 
-// function setContext(view, newContext) {
-//   view._context = newContext; // we're setting _context to signify that this view had context explictly set
-//   set(view, 'context', newContext);
-// }
-
 var destroy = remove;
 var createElementForView = _createElementForView;
+var render = _render;
 
-export { reset, events, appendTo, render, createChildView, appendChild, remove, destroy, createElementForView };
+export { reset, events, appendTo, render, createChildView, appendChild, remove, destroy, createElementForView, insertChildContent };
