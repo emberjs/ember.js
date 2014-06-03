@@ -1,63 +1,25 @@
-import run from "ember-metal/run_loop";
-import { indexOf } from "ember-metal/array";
-import { meta, META_KEY } from "ember-metal/utils";
-import { querySelector, createElement } from "ember-metal-views/dom";
-import { addObserver } from "ember-metal/observer";
-import { set } from "ember-metal/property_set";
+import { createElement } from "ember-metal-views/dom";
 import { lookupView, setupView, teardownView, setupEventDispatcher, reset, events } from "ember-metal-views/events";
 import { setupClassNames, setupClassNameBindings, setupAttributeBindings } from "ember-metal-views/attributes";
-import { Placeholder } from "placeholder";
+import { Morph } from "morph";
 import { sendEvent } from "ember-metal/events";
 
-// FIXME: don't have a hard dependency on the ember run loop
-// FIXME: avoid render/afterRender getting defined twice
-var queues = run.queues;
-queues.splice(indexOf.call(queues, 'actions')+1, 0, 'render', 'afterRender');
-
-/*
-var addObserver = Ember_addObserver || function() { console.log('TODO: implement addObserver'); },
-    set = Ember_set || function() { console.log('TODO: implement set'); };
-*/
-
-var FAKE_PROTO = {};
-
-addObserver(FAKE_PROTO, 'context', Ember.NO_TARGET, contextDidChange);
-addObserver(FAKE_PROTO, '_parentView', Ember.NO_TARGET, contextDidChange);
-
-var SHARED_META = meta(FAKE_PROTO);
-
-function scheduleRender(render) {
-  return run.scheduleOnce('render', null, render);
+function Renderer(hooks) {
+  this.hooks = hooks;
 }
 
-function appendTo(view, selector) {
-  var target = typeof selector === 'string' ? querySelector(selector) : selector;
-  view._scheduledInsert = scheduleRender(function() {
+function appendTo(view, target) {
+  view._scheduledInsert = this.hooks.scheduleRender(this, function() {
     _render(view, function (fragOrEl) {
       var start = document.createTextNode(''),
         end = document.createTextNode(''),
-        placeholder = new Placeholder(target, start, end);
+        morph = new Morph(target, start, end);
       target.appendChild(start);
       target.appendChild(end);
-      placeholder.update(fragOrEl);
-      return placeholder;
+      morph.update(fragOrEl);
+      return morph;
     });
   });
-}
-
-// TODO: figure out the most efficent way of changing tagName
-function transclude(oldEl, newTagName) {
-  var newEl = createElement(newTagName);
-
-  // TODO: attributes?
-  newEl.innerHTML = oldEl.innerHTML; // FIXME: probably want to just move the childNodes over
-
-  if (oldEl.parentElement) {
-    oldEl.parentElement.insertBefore(newEl, oldEl);
-    oldEl.parentElement.removeChild(oldEl);
-  }
-
-  return newEl;
 }
 
 function _createElementForView(view) {
@@ -66,64 +28,61 @@ function _createElementForView(view) {
   if (!view.isVirtual) {
     tagName = view.tagName || 'div';
     el = view.element = view.element || createElement(tagName);
-
-    if (view.tagName && el.tagName !== view.tagName.toUpperCase()) {
-      el = view.element = transclude(el, view.tagName);
-    }
   }
 
   return el;
 }
 
-function appendToPlaceholder(placeholder, content)
+function appendToMorph(morph, content)
 {
-  // TODO: placeholder.append(content);
-  var index = placeholder.placeholders ? placeholder.placeholders.length : 0;
-  placeholder.replace(index, 0, [content]);
-  return placeholder.placeholders[index];
+  // TODO: morph.append(content);
+  var index = morph.morphs ? morph.morphs.length : 0;
+  morph.replace(index, 0, [content]);
+  return morph.morphs[index];
 }
 
-function createChildPlaceholder(parentView, content) {
-  var placeholder = childViewsPlaceholder(parentView);
-  return appendToPlaceholder(placeholder, content);
+function createChildMorph(parentView, content) {
+  var morph = childViewsMorph(parentView);
+  return appendToMorph(morph, content);
 }
 
 function insertChildContent(parentView, index, content) {
-  var placeholder = childViewsPlaceholder(parentView);
-  placeholder.replace(index, 0, [content]);
-  return placeholder.placeholders[index];
+  var morph = childViewsMorph(parentView);
+  morph.replace(index, 0, [content]);
+  return morph.morphs[index];
 }
 
-function childViewsPlaceholder(parentView) {
-  if (parentView._childViewsPlaceholder) {
-    return parentView._childViewsPlaceholder;
+function childViewsMorph(parentView) {
+  if (parentView._childViewsMorph) {
+    return parentView._childViewsMorph;
   }
   if (parentView.isVirtual) {
-    if (parentView._placeholder) {
-      return parentView._childViewsPlaceholder = parentView._placeholder;
+    if (parentView._morph) {
+      return parentView._childViewsMorph = parentView._morph;
     }
     // if root view of render is a virtual view
-    // we need to create a fragment placeholder
-    // TODO: allow non insertable Placeholder for this case
+    // we need to create a fragment morph
+    // TODO: allow non insertable Morph for this case
     // we can assign it a start and end on insert
     var frag = document.createDocumentFragment(),
       start = document.createTextNode(''),
       end = document.createTextNode('');
     frag.appendChild(start);
     frag.appendChild(end);
-    return parentView._childViewsPlaceholder = new Placeholder(frag, start, end);
+    return parentView._childViewsMorph = new Morph(frag, start, end);
   }
-  return parentView._childViewsPlaceholder = new Placeholder(parentView.element, null, null);;
+  return parentView._childViewsMorph = new Morph(parentView.element, null, null);
 }
 
 function _render(_view, insert) {
   var views = [_view],
       idx = 0,
-      view, parentView, ret, tagName, el, i, l, placeholder;
+      view, parentView, ret, tagName, el, i, l, morph;
 
   while (idx < views.length) {
     view = views[idx];
-    if (!view[META_KEY]) { view[META_KEY] = SHARED_META; }
+
+    if (view.content) { view.context = view.content; } // CollectionView hack
 
     if (view.context) { // if the view has a context explicitly set, set _context so we know it
       view._context = view.context;
@@ -137,7 +96,6 @@ function _render(_view, insert) {
       setupView(view);
 
       el.setAttribute('id', view.elementId);
-      if (view.isVisible === false) { el.style.display = 'none'; }
       setupClassNames(view);
       setupClassNameBindings(view);
       setupAttributeBindings(view);
@@ -147,12 +105,13 @@ function _render(_view, insert) {
     if (view === _view) {
       ret = content; // hold off inserting the root view
     } else {
-      if (view._placeholder) {
-        view._placeholder.update(content);
+      if (view._morph) {
+        if (content) {
+          view._morph.update(content);
+        }
       } else {
-        placeholder = createChildPlaceholder(view._parentView, content);
-        console.assert(placeholder instanceof Placeholder);
-        view._placeholder = placeholder;
+        morph = createChildMorph(view._parentView, content);
+        view._morph = morph;
       }
     }
 
@@ -175,11 +134,11 @@ function _render(_view, insert) {
     idx++;
   }
 
-  if (_view.isVirtual && _view._childViewsPlaceholder) {
-    ret = _view._childViewsPlaceholder._parent;
+  if (_view.isVirtual && _view._childViewsMorph) {
+    ret = _view._childViewsMorph._parent;
   }
 
-  // only assume we are inDOM if root had placeholder
+  // only assume we are inDOM if root had morph
   if (insert) {
     setupEventDispatcher();
 
@@ -191,11 +150,9 @@ function _render(_view, insert) {
       sendEvent(view, 'willInsertElement', view.element);
     }
 
-    placeholder = insert(ret);
+    morph = insert(ret);
 
-    console.assert(placeholder instanceof Placeholder);
-
-    _view._placeholder = placeholder;
+    _view._morph = morph;
 
     for (i = 0, l = views.length; i<l; i++) {
       view = views[i];
@@ -255,85 +212,9 @@ function _renderContents(view, el) {
   } else if (view.innerHTML) { // TODO: bind?
     el.innerHTML = view.innerHTML;
   } else if (view.render) {
-    view.render(fakeBufferFor(el));
   }
 
   return el;
-}
-
-function fakeBufferFor(el) {
-  return {
-    push: function(str) {
-      el.innerHTML += str;
-    }
-  };
-}
-
-function _triggerRecursively(view, functionOrEventName, skipParent) {
-  var childViews = view._childViews, // FIXME
-      len = childViews && childViews.length;
-
-  if (childViews && len > 0) {
-    for (var i = 0; i < len; i++) {
-      _triggerRecursively(childViews[i], functionOrEventName);
-    }
-  }
-
-  if (skipParent !== true) {
-    if (typeof functionOrEventName === 'string') {
-      if (view[functionOrEventName]) {
-        view[functionOrEventName](view.element);
-      }
-    } else {
-      functionOrEventName(view);
-    }
-  }
-}
-
-function createChildView(view, childView, attrs) {
-  if (typeof childView === 'function') {
-    attrs = attrs || {};
-    // attrs.template = attemplate;
-    // attrs._context = context;
-    attrs._parentView = view;
-    // attrs._placeholder = placeholder;
-    // container
-    // template data?
-
-    childView = childView.create(attrs);
-  } else if (typeof childView === 'string') {
-    var fullName = 'view:' + childView;
-    var View = view.container.lookupFactory(fullName);
-
-    // Ember.assert("Could not find view: '" + fullName + "'", !!View);
-    // attrs.templateData = get(this, 'templateData');
-    childView = View.create(attrs);
-  } else if (typeof childView === 'object') {
-    if (childView.isView && childView._parentView === view && childView.container === view.container) { return childView; }
-    // Ember.assert('You must pass instance or subclass of View', view.isView);
-    // attrs.container = this.container;
-    // if (!get(view, 'templateData')) {
-    //   attrs.templateData = get(this, 'templateData');
-    // }
-    // view.template = template;
-    // view._context = context;
-    childView._parentView = view;
-    // view._placeholder = placeholder;
-    // Ember.setProperties(view, attrs);
-  }
-
-  return childView;
-}
-
-function appendChild(view, childView, attrs) {
-  childView = createChildView(view, childView, attrs);
-  var childViews = view._childViews;
-  if (!childViews) {
-    childViews = view._childViews = [childView];
-  } else {
-    childViews.push(childView);
-  }
-  return childView;
 }
 
 function clearRenderHooks(view) {
@@ -353,8 +234,8 @@ function resetView(view) {
   view.isInDOM = false;
   view.isRendered = false;
   view.element = null;
-  view._placeholder = null;
-  view._childViewsPlaceholder = null;
+  view._morph = null;
+  view._childViewsMorph = null;
   teardownView(view);
 }
 
@@ -364,7 +245,7 @@ function destroy(_view) {
 
 function remove(_view, shouldDestroy) {
   if (_view._scheduledInsert) {
-    run.cancel(_view._scheduledInsert);
+    this.hooks.cancelRender(_view._scheduledInsert);
     _view._scheduledInsert = null;
   }
 
@@ -385,7 +266,7 @@ function remove(_view, shouldDestroy) {
   for (idx=0; idx<removeQueue.length; idx++) {
     view = removeQueue[idx];
 
-    staticChildren = !!view._childViewsPlaceholder;
+    staticChildren = !!view._childViewsMorph;
 
     clearRenderHooks(view);
 
@@ -417,8 +298,8 @@ function remove(_view, shouldDestroy) {
   }
 
   // destroy DOM from root insertion
-  if (_view._placeholder) {
-    _view._placeholder.destroy();
+  if (_view._morph) {
+    _view._morph.destroy();
   }
 
   for (idx=0, len=removeQueue.length; idx < len; idx++) {
@@ -451,35 +332,13 @@ function remove(_view, shouldDestroy) {
   }
 }
 
-function contextDidChange(view) {
-  var newContext = view.context,
-      streams = view.streams,
-      streamKeys = streams && Object.keys(streams), // TODO: should we just for in, or is this actually faster?
-      stream, i, l;
-
-  if (streamKeys) {
-    for (i = 0, l = streamKeys.length; i < l; i++) {
-      stream = streams[streamKeys[i]];
-      stream.updateObject(newContext);
-    }
-  }
-
-  var childViews = view._childViews,
-      childView;
-  if (childViews) {
-    for (i = 0, l = childViews.length; i < l; i++) {
-      childView = childViews[i];
-
-      // if context was explicitly set on this child, don't propagate the context change to it and it's children
-      if (childView._context) { continue; }
-
-      set(childView, 'context', newContext);
-      contextDidChange(childView); // TODO: don't call contextDidChange recursively
-    }
-  }
-}
-
-var createElementForView = _createElementForView;
 var render = _render;
 
-export { reset, events, appendTo, render, createChildView, appendChild, remove, destroy, createElementForView, insertChildContent };
+Renderer.prototype.reset = reset;
+Renderer.prototype.events = events;
+Renderer.prototype.appendTo = appendTo;
+Renderer.prototype.destroy = destroy;
+
+export default Renderer;
+
+

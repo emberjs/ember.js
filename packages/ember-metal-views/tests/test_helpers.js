@@ -2,29 +2,42 @@
 
 import run from "ember-metal/run_loop";
 
-module View from "ember-metal-views";
-export { View }
+import Renderer from "ember-metal-views";
+
+var renderer;
+
+var hooks = {
+  scheduleRender: function (renderer, render) {
+    render.call(renderer);
+  }
+};
 
 export function testsFor(name, options) {
-  module(name, {
+  QUnit.module(name, {
     setup: function() {
-      $('#qunit-fixture').innerHTML = '';
-      if (options && options.setup) { options.setup(); }
+      renderer = new Renderer(hooks);
+      if (options && options.setup) { options.setup(renderer); }
     },
     teardown: function() {
-      View.reset();
-      if (options && options.teardown) { options.teardown(); }
+      if (options && options.teardown) { options.teardown(renderer); }
+      renderer = undefined;
     }
   });
 }
 
-export function $(selector) {
-  if (selector instanceof Node) { return selector; }
-  return document.querySelector(selector);
+export function subject() {
+  return renderer;
 }
 
-export function equalHTML(selector, expectedHTML, message) {
-  var actualHTML = $(selector).innerHTML.replace(/ id="[^"]+"/gmi, '');
+export function equalHTML(element, expectedHTML, message) {
+  var html;
+  if (typeof element === 'string') {
+    html = document.getElementById(element).innerHTML;
+  } else {
+    html = element.outerHTML;
+  }
+
+  var actualHTML = html.replace(/ id="[^"]+"/gmi, '');
   equal(actualHTML, expectedHTML, message || "HTML matches");
 }
 
@@ -49,7 +62,7 @@ export function triggerEvent(el, name, data) {
   el.dispatchEvent(event);
 }
 
-export function appendTo(view, sel) {
-  run(View, View.appendTo, view, sel);
+export function appendTo(view) {
+  run(renderer, renderer.appendTo, view, document.getElementById('qunit-fixture'));
   return view.element;
 }

@@ -1,5 +1,5 @@
 import run from "ember-metal/run_loop";
-import { testsFor, View, $, equalHTML, appendTo } from "ember-metal-views/tests/test_helpers";
+import { testsFor, subject, $, equalHTML, appendTo } from "ember-metal-views/tests/test_helpers";
 
 testsFor("ember-metal-views - attributes");
 
@@ -10,9 +10,9 @@ test('aliased attributeBindings', function() {
     isDisabled: 'disabled'
   };
 
-  var el = appendTo(view, '#qunit-fixture');
+  var el = appendTo(view);
 
   equal(el.getAttribute('disabled'), 'disabled', "The attribute alias was set");
 
-  View.destroy(view);
+  subject().destroy(view);
 });
