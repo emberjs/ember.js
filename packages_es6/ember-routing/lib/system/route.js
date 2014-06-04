@@ -1217,9 +1217,8 @@ var Route = EmberObject.extend(ActionHandler, {
     @return {Object} the model object
   */
   modelFor: function(name) {
-
     var route = this.container.lookup('route:' + name),
-        transition = this.router.router.activeTransition;
+        transition = this.router ? this.router.router.activeTransition : null;
 
     // If we are mid-transition, we want to try and look up
     // resolved parent contexts on the current transitionEvent.
