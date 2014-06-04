@@ -130,6 +130,22 @@ test("'store' does not need to be injected", function() {
   ok(true, 'no error was raised');
 });
 
+test("modelFor doesn't require the router", function() {
+  var container = new Container();
+  route.container = container;
+
+  var foo = { name: 'foo' };
+
+  var fooRoute = EmberRoute.extend({
+    container: container,
+    currentModel: foo
+  });
+
+  container.register('route:foo', fooRoute);
+
+  equal(route.modelFor('foo'), foo);
+});
+
 QUnit.module("Ember.Route serialize", {
   setup: createRoute,
   teardown: cleanupRoute
