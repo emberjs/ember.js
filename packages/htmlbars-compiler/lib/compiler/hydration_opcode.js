@@ -20,7 +20,7 @@ HydrationOpcodeCompiler.prototype.compile = function(ast) {
   return this.opcodes;
 };
 
-HydrationOpcodeCompiler.prototype.startTemplate = function() {
+HydrationOpcodeCompiler.prototype.startProgram = function() {
   this.opcodes.length = 0;
   this.paths.length = 0;
   this.morphs.length = 0;
@@ -29,7 +29,7 @@ HydrationOpcodeCompiler.prototype.startTemplate = function() {
   this.morphNum = 0;
 };
 
-HydrationOpcodeCompiler.prototype.endTemplate = function(program) {
+HydrationOpcodeCompiler.prototype.endProgram = function(program) {
   distributeMorphs(this.morphs, this.opcodes);
   if (program.statements.length === 1 && program.statements[0].type !== 'text') {
     this.opcodes.shift();

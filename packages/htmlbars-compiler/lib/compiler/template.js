@@ -23,9 +23,9 @@ TemplateCompiler.prototype.compile = function(ast) {
   return this.templates.pop();
 };
 
-TemplateCompiler.prototype.startTemplate = function(program, childTemplateCount) {
-  this.fragmentOpcodeCompiler.startTemplate(program, childTemplateCount);
-  this.hydrationOpcodeCompiler.startTemplate(program, childTemplateCount);
+TemplateCompiler.prototype.startProgram = function(program, childTemplateCount) {
+  this.fragmentOpcodeCompiler.startProgram(program, childTemplateCount);
+  this.hydrationOpcodeCompiler.startProgram(program, childTemplateCount);
 
   this.childTemplates.length = 0;
   while(childTemplateCount--) {
@@ -33,9 +33,9 @@ TemplateCompiler.prototype.startTemplate = function(program, childTemplateCount)
   }
 };
 
-TemplateCompiler.prototype.endTemplate = function(program) {
-  this.fragmentOpcodeCompiler.endTemplate(program);
-  this.hydrationOpcodeCompiler.endTemplate(program);
+TemplateCompiler.prototype.endProgram = function(program) {
+  this.fragmentOpcodeCompiler.endProgram(program);
+  this.hydrationOpcodeCompiler.endProgram(program);
 
   // function build(dom) { return fragment; }
   var fragmentProgram = this.fragmentCompiler.compile(
