@@ -65,6 +65,7 @@ Building Ember is quite simple.
 ```sh
 cd ember.js
 npm install
+bower install
 bin/build.js
 ```
 
