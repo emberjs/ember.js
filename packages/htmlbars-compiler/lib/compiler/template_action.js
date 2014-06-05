@@ -16,13 +16,13 @@ function Frame() {
  *
  * produces the actions
  *
- *     [['startTemplate', [programNode, 0]],
+ *     [['startProgram', [programNode, 0]],
  *      ['text', [textNode, 0, 3]],
  *      ['mustache', [mustacheNode, 1, 3]],
  *      ['openElement', [elementNode, 2, 3, 0]],
  *      ['text', [textNode, 0, 1]],
  *      ['closeElement', [elementNode, 2, 3],
- *      ['endTemplate', [programNode]]]
+ *      ['endProgram', [programNode]]]
  *
  * This compiler walks the AST depth first and backwards. As
  * a result the bottom-most child template will appear at the
@@ -33,19 +33,19 @@ function Frame() {
  *
  * produces the actions
  *
- *     [['startTemplate', [programNode, 0]],
+ *     [['startProgram', [programNode, 0]],
  *      ['text', [textNode, 0, 2, 0]],
  *      ['openElement', [elementNode, 1, 2, 0]],
  *      ['closeElement', [elementNode, 1, 2]],
- *      ['endTemplate', [programNode]],
- *      ['startTemplate', [programNode, 0]],
+ *      ['endProgram', [programNode]],
+ *      ['startProgram', [programNode, 0]],
  *      ['text', [textNode, 0, 1]],
- *      ['endTemplate', [programNode]],
- *      ['startTemplate', [programNode, 2]],
+ *      ['endProgram', [programNode]],
+ *      ['startProgram', [programNode, 2]],
  *      ['openElement', [elementNode, 0, 1, 1]],
  *      ['block', [blockNode, 0, 1]],
  *      ['closeElement', [elementNode, 0, 1]],
- *      ['endTemplate', [programNode]]]
+ *      ['endProgram', [programNode]]]
  *
  * The state of the traversal is maintained by a stack of frames.
  * Whenever a node with children is entered (either a ProgramNode
@@ -79,14 +79,14 @@ TemplateActionCompiler.prototype.program = function(program) {
   var programFrame = this.pushFrame();
 
   programFrame.childCount = program.statements.length;
-  programFrame.actions.push(['endTemplate', [program]]);
+  programFrame.actions.push(['endProgram', [program]]);
 
   for (var i = program.statements.length - 1; i >= 0; i--) {
     programFrame.childIndex = i;
     this.visit(program.statements[i]);
   }
 
-  programFrame.actions.push(['startTemplate', [program, programFrame.childTemplateCount]]);
+  programFrame.actions.push(['startProgram', [program, programFrame.childTemplateCount]]);
   this.popFrame();
 
   // Push the completed template into the compiler's actions list
