@@ -15,7 +15,7 @@ var replace = require('broccoli-replace');
 
 var calculateVersion = require('./lib/calculate-version');
 
-var env = process.env.BROCCOLI_ENV || 'test';
+var env = process.env.EMBER_ENV || 'development';
 var disableJSHint = !!process.env.NO_JSHINT || false;
 var disableDefeatureify = !!process.env.NO_DEFEATUREIFY || env === 'test' || false;
 
@@ -344,7 +344,7 @@ var compiledTests = concatES6(testTrees, {
 
 var distTrees = [templateCompilerTree, compiledSource, compiledTests, testConfig, bowerFiles];
 
-if (env !== 'test') {
+if (env !== 'development') {
   distTrees.push(prodCompiledSource);
   distTrees.push(minCompiledSource);
   distTrees.push(buildRuntimeTree());
