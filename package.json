@@ -3,9 +3,9 @@
   "license": "MIT",
   "version": "1.7.0-beta.1+canary",
   "scripts": {
-    "build": "ember build",
+    "build": "ember build --environment production",
     "postinstall": "bower install",
-    "pretest": "ember build",
+    "pretest": "ember build --environment production",
     "test": "bin/run-tests.js",
     "start": "ember serve"
   },
