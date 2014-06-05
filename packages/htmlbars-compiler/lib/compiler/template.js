@@ -2,7 +2,7 @@ import { FragmentOpcodeCompiler } from './fragment_opcode';
 import { FragmentCompiler } from './fragment';
 import { HydrationOpcodeCompiler } from './hydration_opcode';
 import { HydrationCompiler } from './hydration';
-import TemplateActionCompiler from "./template_action";
+import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
 
 export function TemplateCompiler() {
@@ -15,10 +15,10 @@ export function TemplateCompiler() {
 }
 
 TemplateCompiler.prototype.compile = function(ast) {
-  var templateActionCompiler = new TemplateActionCompiler();
-  var actions = templateActionCompiler.compile(ast);
+  var templateVisitor = new TemplateVisitor();
+  templateVisitor.visit(ast);
 
-  processOpcodes(this, actions);
+  processOpcodes(this, templateVisitor.actions);
 
   return this.templates.pop();
 };

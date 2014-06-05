@@ -1,4 +1,4 @@
-import TemplateActionCompiler from "./template_action";
+import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
 
 function FragmentOpcodeCompiler() {
@@ -6,10 +6,10 @@ function FragmentOpcodeCompiler() {
 }
 
 FragmentOpcodeCompiler.prototype.compile = function(ast) {
-  var templateActionCompiler = new TemplateActionCompiler();
-  var actions = templateActionCompiler.compile(ast);
+  var templateVisitor = new TemplateVisitor();
+  templateVisitor.visit(ast);
 
-  processOpcodes(this, actions);
+  processOpcodes(this, templateVisitor.actions);
 
   return this.opcodes;
 };
