@@ -1,11 +1,12 @@
 import { preprocess } from "htmlbars-compiler/parser";
-import TemplateActionCompiler from "htmlbars-compiler/compiler/template_action";
+import TemplateVisitor from "htmlbars-compiler/compiler/template_visitor";
 
 function actionsEqual(input, expectedActions) {
   var ast = preprocess(input);
 
-  var templateActionCompiler = new TemplateActionCompiler();
-  var actualActions = templateActionCompiler.compile(ast);
+  var templateVisitor = new TemplateVisitor();
+  templateVisitor.visit(ast);
+  var actualActions = templateVisitor.actions;
 
   // Remove the AST node reference from the actions to keep tests leaner
   for (var i = 0; i < actualActions.length; i++) {
@@ -15,7 +16,7 @@ function actionsEqual(input, expectedActions) {
   deepEqual(actualActions, expectedActions);
 }
 
-module("TemplateActionCompiler");
+module("TemplateVisitor");
 
 test("empty", function() {
   var input = "";

@@ -1,4 +1,4 @@
-import TemplateActionCompiler from "./template_action";
+import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
 import { buildHashFromAttributes } from "../html-parser/helpers";
 
@@ -12,10 +12,10 @@ function HydrationOpcodeCompiler() {
 }
 
 HydrationOpcodeCompiler.prototype.compile = function(ast) {
-  var templateActionCompiler = new TemplateActionCompiler();
-  var actions = templateActionCompiler.compile(ast);
+  var templateVisitor = new TemplateVisitor();
+  templateVisitor.visit(ast);
 
-  processOpcodes(this, actions);
+  processOpcodes(this, templateVisitor.actions);
 
   return this.opcodes;
 };
