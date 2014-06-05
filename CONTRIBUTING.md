@@ -65,7 +65,7 @@ Building Ember is quite simple.
 ```sh
 cd ember.js
 npm install
-bin/build.js
+npm run-script build
 ```
 
 # Pull Requests

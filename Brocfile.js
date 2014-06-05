@@ -10,7 +10,6 @@ var uglifyJavaScript = require('broccoli-uglify-js');
 var writeFile = require('broccoli-file-creator');
 var moveFile = require('broccoli-file-mover');
 var removeFile = require('broccoli-file-remover');
-var exportTree = require('broccoli-export-tree');
 var jshintTree = require('broccoli-jshint');
 var replace = require('broccoli-replace');
 
@@ -360,9 +359,4 @@ distTrees = replace(distTrees, {
   ]
 });
 
-
-var distExportTree = exportTree(distTrees, {
-  destDir: 'live-dist'
-});
-
-module.exports = mergeTrees([distTrees, distExportTree]);
+module.exports = distTrees;
