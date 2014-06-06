@@ -232,7 +232,7 @@ function meta(obj, writable) {
 
     ret = new Meta(obj);
 
-    if (MANDATORY_SETTER) { ret.values = {}; }
+    ret.values = {};
 
     obj[META_KEY] = ret;
 

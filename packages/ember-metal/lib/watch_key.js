@@ -6,7 +6,6 @@ import {
 import { platform } from "ember-metal/platform";
 
 var metaFor = meta; // utils.js
-var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 var o_defineProperty = platform.defineProperty;
 
 export function watchKey(obj, keyName, meta) {
@@ -23,12 +22,12 @@ export function watchKey(obj, keyName, meta) {
       obj.willWatchProperty(keyName);
     }
 
-    if (MANDATORY_SETTER && keyName in obj) {
+    if (Ember.ENV.MANDATORY_SETTER && keyName in obj) {
       m.values[keyName] = obj[keyName];
       o_defineProperty(obj, keyName, {
         configurable: true,
         enumerable: obj.propertyIsEnumerable(keyName),
-        set: Ember.MANDATORY_SETTER_FUNCTION,
+        set: Ember.MANDATORY_SETTER_FUNCTION(keyName),
         get: Ember.DEFAULT_GETTER_FUNCTION(keyName)
       });
     }
@@ -47,7 +46,7 @@ export function unwatchKey(obj, keyName, meta) {
       obj.didUnwatchProperty(keyName);
     }
 
-    if (MANDATORY_SETTER && keyName in obj) {
+    if (Ember.ENV.MANDATORY_SETTER && keyName in obj) {
       o_defineProperty(obj, keyName, {
         configurable: true,
         enumerable: obj.propertyIsEnumerable(keyName),
