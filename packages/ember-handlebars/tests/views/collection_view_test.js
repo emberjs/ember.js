@@ -1,7 +1,7 @@
 /*globals TemplateTests:true,App:true */
 /*jshint newcap:false*/
 
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import EmberObject from "ember-runtime/system/object";

@@ -1,7 +1,7 @@
 import { get } from "ember-metal/property_get";
 import { set as o_set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import EmberHandlebars from "ember-handlebars-compiler";
 

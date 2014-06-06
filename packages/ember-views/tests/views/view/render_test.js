@@ -2,7 +2,7 @@ import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 
 var view;

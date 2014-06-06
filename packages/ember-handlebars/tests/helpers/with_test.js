@@ -1,6 +1,6 @@
 /*globals Foo */
 /*jshint newcap:false*/
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import { computed } from "ember-metal/computed";

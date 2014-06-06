@@ -2,7 +2,7 @@
 import EmberObject from "ember-runtime/system/object";
 import { forEach } from "ember-metal/array";
 import run from "ember-metal/run_loop";
-import { View } from "ember-views/views/view";
+import View from "ember-views/views/view";
 import TextArea from "ember-handlebars/controls/text_area";
 import EmberHandlebars from "ember-handlebars";
 import { get } from "ember-metal/property_get";

@@ -7,7 +7,7 @@ import EmberHandlebars from "ember-handlebars-compiler";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { View } from "ember-views/views/view";
+import View from "ember-views/views/view";
 import CollectionView from "ember-views/views/collection_view";
 import { isArray } from "ember-metal/utils";
 import isNone from 'ember-metal/is_none';

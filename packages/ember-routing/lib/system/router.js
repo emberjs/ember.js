@@ -13,7 +13,7 @@ import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import Evented from "ember-runtime/mixins/evented";
 import EmberRouterDSL from "ember-routing/system/dsl";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import EmberLocation from "ember-routing/location/api";
 import { _MetamorphView } from "ember-handlebars/views/metamorph_view";
 

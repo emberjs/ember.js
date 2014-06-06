@@ -21,7 +21,7 @@ import { set } from "ember-metal/property_set";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
 import { computed } from "ember-metal/computed";
-import { View } from "ember-views/views/view";
+import View from "ember-views/views/view";
 import {
   cloneStates,
   states

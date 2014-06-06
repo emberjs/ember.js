@@ -1,6 +1,6 @@
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import jQuery from "ember-views/system/jquery";
 var trim = jQuery.trim;
 import Container from "ember-runtime/system/container";

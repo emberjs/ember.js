@@ -7,7 +7,7 @@ import { get } from "ember-metal/property_get";
 import { set as o_set } from "ember-metal/property_set";
 import EmberHandlebars from "ember-handlebars";
 import EmberObject from "ember-runtime/system/object";
-import { View } from "ember-views/views/view";
+import View from "ember-views/views/view";
 import TextField from "ember-handlebars/controls/text_field";
 
 var textField;

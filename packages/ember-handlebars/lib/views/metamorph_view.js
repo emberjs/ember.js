@@ -7,10 +7,8 @@ import Ember from "ember-metal/core"; // Ember.deprecate
 import { get } from "ember-metal/property_get";
 import set from "ember-metal/property_set";
 
-import {
-  CoreView,
-  View
-} from "ember-views/views/view";
+import CoreView from "ember-views/views/core_view";
+import View from "ember-views/views/view";
 import { Mixin } from "ember-metal/mixin";
 import run from "ember-metal/run_loop";
 

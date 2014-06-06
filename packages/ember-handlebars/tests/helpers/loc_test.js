@@ -1,5 +1,5 @@
 import run from "ember-metal/run_loop";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 
 function buildView(template, context) {
   return EmberView.create({

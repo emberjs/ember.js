@@ -12,7 +12,7 @@ import { typeOf } from "ember-metal/utils";
 import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
-import { View } from "ember-views/views/view";
+import View from "ember-views/views/view";
 
 var ActionHelper;
 

@@ -3,7 +3,7 @@ import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import jQuery from "ember-views/system/jquery";
-import {View as EmberView} from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import Test from "ember-testing/test";
 import EmberRoute from "ember-routing/system/route";
 import EmberApplication from "ember-application/system/application";

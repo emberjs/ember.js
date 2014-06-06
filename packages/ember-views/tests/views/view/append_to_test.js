@@ -4,7 +4,7 @@ import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
 import jQuery from "ember-views/system/jquery";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 
 var View, view, willDestroyCalled, childView;

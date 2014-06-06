@@ -5,7 +5,7 @@ import run from "ember-metal/run_loop";
 import { changeProperties } from "ember-metal/property_events";
 import { isWatching } from "ember-metal/watching";
 import EmberObject from "ember-runtime/system/object";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 
 var view;
 

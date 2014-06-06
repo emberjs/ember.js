@@ -1,6 +1,6 @@
 import { platform } from "ember-metal/platform";
 import run from "ember-metal/run_loop";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 
 var view;
 

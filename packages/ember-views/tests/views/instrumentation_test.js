@@ -5,7 +5,7 @@ import {
 import run from "ember-metal/run_loop";
 import { guidFor } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 
 var view, beforeCalls, afterCalls;
 

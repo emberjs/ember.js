@@ -1,6 +1,6 @@
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import jQuery from "ember-views/system/jquery";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import EventDispatcher from "ember-views/system/event_dispatcher";

@@ -13,7 +13,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { IS_BINDING } from "ember-metal/mixin";
 import jQuery from "ember-views/system/jquery";
-import { View } from "ember-views/views/view";
+import View from "ember-views/views/view";
 import { isGlobalPath } from "ember-metal/binding";
 import {
   normalizePath,

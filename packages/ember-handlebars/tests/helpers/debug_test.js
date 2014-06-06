@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core"; // Ember.lookup
 import EmberLogger from "ember-metal/logger";
 import run from "ember-metal/run_loop";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars-compiler";
 import { logHelper } from "ember-handlebars/helpers/debug";
 

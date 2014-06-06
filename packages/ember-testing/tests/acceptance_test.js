@@ -2,7 +2,7 @@ import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import Test from "ember-testing/test";
 import QUnitAdapter from "ember-testing/adapters/qunit";
-import {View as EmberView} from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import "ember-testing/initializers"; // ensure the initializer is setup
 import EmberApplication from "ember-application/system/application";
 import EmberRoute from "ember-routing/system/route";

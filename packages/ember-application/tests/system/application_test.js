@@ -8,7 +8,7 @@ import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
 import {DefaultResolver} from "ember-application/system/resolver";
 import Router from "ember-routing/system/router";
-import {View} from "ember-views/views/view";
+import View from "ember-views/views/view";
 import {Controller} from "ember-runtime/controllers/controller";
 import NoneLocation from "ember-routing/location/none_location";
 import EmberHandlebars from "ember-handlebars";

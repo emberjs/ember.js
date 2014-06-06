@@ -15,7 +15,7 @@ import { create as o_create } from "ember-metal/platform";
 import isNone from 'ember-metal/is_none';
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import { forEach } from "ember-metal/array";
-import { View } from "ember-views/views/view";
+import View from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import { removeObserver } from "ember-metal/observer";
 import { isGlobalPath } from "ember-metal/binding";

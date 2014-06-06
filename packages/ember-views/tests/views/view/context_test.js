@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import run from "ember-metal/run_loop";
 
-import {View as EmberView} from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 
 QUnit.module("EmberView - context property");

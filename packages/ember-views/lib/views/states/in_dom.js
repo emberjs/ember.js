@@ -15,7 +15,7 @@ var View;
 
 merge(inDOM, {
   enter: function(view) {
-    if (!View) { View = requireModule('ember-views/views/view')["View"]; } // ES6TODO: this sucks. Have to avoid cycles...
+    if (!View) { View = requireModule('ember-views/views/view')["default"]; } // ES6TODO: this sucks. Have to avoid cycles...
 
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
@@ -30,7 +30,7 @@ merge(inDOM, {
   },
 
   exit: function(view) {
-    if (!View) { View = requireModule('ember-views/views/view')["View"]; } // ES6TODO: this sucks. Have to avoid cycles...
+    if (!View) { View = requireModule('ember-views/views/view')["default"]; } // ES6TODO: this sucks. Have to avoid cycles...
 
     if (!this.isVirtual) delete View.views[view.elementId];
   },

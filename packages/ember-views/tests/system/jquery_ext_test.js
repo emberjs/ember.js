@@ -1,7 +1,7 @@
 import run from "ember-metal/run_loop";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import jQuery from "ember-views/system/jquery";
-import { View } from "ember-views/views/view";
+import View from "ember-views/views/view";
 
 var view, dispatcher;
 

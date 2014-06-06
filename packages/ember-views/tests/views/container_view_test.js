@@ -4,7 +4,7 @@ import run from "ember-metal/run_loop";
 import { computed } from "ember-metal/computed";
 import { Controller } from "ember-runtime/controllers/controller";
 import jQuery from "ember-views/system/jquery";
-import { View } from "ember-views/views/view";
+import View from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 
 var trim = jQuery.trim, container, view, otherContainer;

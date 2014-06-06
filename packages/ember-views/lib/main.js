@@ -21,11 +21,9 @@ import {
   states
 } from "ember-views/views/states";
 
-import {
-  CoreView,
-  View,
-  ViewCollection
-} from "ember-views/views/view";
+import  CoreView from "ember-views/views/core_view";
+import  View from "ember-views/views/view";
+import  ViewCollection from "ember-views/views/view_collection";
 import ContainerView from "ember-views/views/container_view";
 import CollectionView from "ember-views/views/collection_view";
 import Component from "ember-views/views/component";

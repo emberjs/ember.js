@@ -2,7 +2,7 @@
 
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars-compiler";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import { A } from "ember-runtime/system/native_array";

@@ -5,10 +5,8 @@ import MutableArray from "ember-runtime/mixins/mutable_array";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
-import {
-  View,
-  ViewCollection
-} from "ember-views/views/view";
+import View from "ember-views/views/view";
+import ViewCollection from "ember-views/views/view_collection";
 
 import {
   cloneStates,

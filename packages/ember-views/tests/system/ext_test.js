@@ -1,5 +1,5 @@
 import run from "ember-metal/run_loop";
-import { View } from "ember-views/views/view";
+import View from "ember-views/views/view";
 
 QUnit.module("Ember.View additions to run queue");
 

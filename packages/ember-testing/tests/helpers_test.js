@@ -4,7 +4,7 @@ import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import RSVP from "ember-runtime/ext/rsvp";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import jQuery from "ember-views/system/jquery";
 
 import Test from "ember-testing/test";

@@ -1,6 +1,6 @@
 /*jshint newcap:false*/
 import run from "ember-metal/run_loop";
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 import {computed} from "ember-metal/computed";
 import Namespace from "ember-runtime/system/namespace";
 import Container from "ember-runtime/system/container";

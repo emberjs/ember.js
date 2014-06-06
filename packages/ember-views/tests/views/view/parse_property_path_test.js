@@ -1,4 +1,4 @@
-import { View as EmberView } from "ember-views/views/view";
+import EmberView from "ember-views/views/view";
 
 QUnit.module("EmberView - _parsePropertyPath");
 
