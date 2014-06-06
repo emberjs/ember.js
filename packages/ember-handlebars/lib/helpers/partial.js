@@ -87,15 +87,15 @@ function exists(value) {
 }
 
 function renderPartial(context, name, options) {
-  var nameParts = name.split("/"),
-      lastPart = nameParts[nameParts.length - 1];
+  var nameParts = name.split("/");
+  var lastPart = nameParts[nameParts.length - 1];
 
   nameParts[nameParts.length - 1] = "_" + lastPart;
 
-  var view = options.data.view,
-      underscoredName = nameParts.join("/"),
-      template = view.templateForName(underscoredName),
-      deprecatedTemplate = !template && view.templateForName(name);
+  var view = options.data.view;
+  var underscoredName = nameParts.join("/");
+  var template = view.templateForName(underscoredName);
+  var deprecatedTemplate = !template && view.templateForName(name);
 
   Ember.assert("Unable to find partial with name '"+name+"'.", template || deprecatedTemplate);
 
