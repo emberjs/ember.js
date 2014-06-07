@@ -539,7 +539,7 @@ run.cancel = function(timer) {
     run.debounce(myContext, myFunc, 150, true);
 
     // console logs 'debounce ran.' one time immediately.
-    // 150ms passes and nothing else is logged tot he console and
+    // 150ms passes and nothing else is logged to the console and
     // the debouncee is no longer being watched
 
   ```
