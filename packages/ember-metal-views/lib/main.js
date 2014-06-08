@@ -2,15 +2,14 @@ import { createElement } from "ember-metal-views/dom";
 import { lookupView, setupView, teardownView, setupEventDispatcher, reset, events } from "ember-metal-views/events";
 import { setupClassNames, setupClassNameBindings, setupAttributeBindings } from "ember-metal-views/attributes";
 import { Morph } from "morph";
-import { sendEvent } from "ember-metal/events";
 
 function Renderer(hooks) {
   this.hooks = hooks;
 }
 
 function appendTo(view, target) {
-  view._scheduledInsert = this.hooks.scheduleRender(this, function() {
-    _render(view, function (fragOrEl) {
+  view._scheduledInsert = this.scheduleRender(this, function() {
+    this.render(view, function (fragOrEl) {
       var start = document.createTextNode(''),
         end = document.createTextNode(''),
         morph = new Morph(target, start, end);
@@ -35,7 +34,6 @@ function _createElementForView(view) {
 
 function appendToMorph(morph, content)
 {
-  // TODO: morph.append(content);
   var index = morph.morphs ? morph.morphs.length : 0;
   morph.replace(index, 0, [content]);
   return morph.morphs[index];
@@ -115,9 +113,7 @@ function _render(_view, insert) {
       }
     }
 
-    if (view.transitionTo) {
-      view.transitionTo('hasElement');
-    }
+    this.viewTransitionTo(view, 'hasElement');
     view.isRendered = true;
 
     var childViews = view._childViews, // FIXME
@@ -144,10 +140,7 @@ function _render(_view, insert) {
 
     for (i = 0, l = views.length; i<l; i++) {
       view = views[i];
-      if (view.willInsertElement) {
-        view.willInsertElement(view.element);
-      }
-      sendEvent(view, 'willInsertElement', view.element);
+      this.viewWillInsertElement(view, view.element);
     }
 
     morph = insert(ret);
@@ -156,14 +149,9 @@ function _render(_view, insert) {
 
     for (i = 0, l = views.length; i<l; i++) {
       view = views[i];
-      if (view.transitionTo) {
-        view.transitionTo('inDOM');
-      }
+      this.viewTransitionTo(view, 'inDOM');
       view.isInDOM = true;
-      if (view.didInsertElement) {
-        view.didInsertElement(view.element);
-      }
-      sendEvent(view, 'didInsertElement', view.element);
+      this.viewDidInsertElement(view, view.element);
     }
   }
 
@@ -217,19 +205,6 @@ function _renderContents(view, el) {
   return el;
 }
 
-function clearRenderHooks(view) {
-  if (view.isRendered) {
-    if (view.willClearRender) {
-      view.willClearRender();
-    }
-  }
-  if (view.isInDOM) {
-    if (view.willDestroyElement) {
-      view.willDestroyElement();
-    }
-  }
-}
-
 function resetView(view) {
   view.isInDOM = false;
   view.isRendered = false;
@@ -240,7 +215,7 @@ function resetView(view) {
 }
 
 function destroy(_view) {
-  remove(_view, true);
+  this.remove(_view, true);
 }
 
 function remove(_view, shouldDestroy) {
@@ -268,7 +243,7 @@ function remove(_view, shouldDestroy) {
 
     staticChildren = !!view._childViewsMorph;
 
-    clearRenderHooks(view);
+    this._clearRenderHooks(view);
 
     childViews = view._childViews;
     if (childViews) {
@@ -287,7 +262,7 @@ function remove(_view, shouldDestroy) {
   for (idx=0; idx<destroyQueue.length; idx++) {
     view = destroyQueue[idx];
 
-    clearRenderHooks(view);
+    this._clearRenderHooks(view);
 
     childViews = view._childViews;
     if (childViews) {
@@ -305,17 +280,14 @@ function remove(_view, shouldDestroy) {
   for (idx=0, len=removeQueue.length; idx < len; idx++) {
     view = removeQueue[idx];
     resetView(view);
-    if (view.transitionTo) {
-      view.transitionTo('prerender');
-    }
+    this.viewTransitionTo(view, 'preRender');
   }
 
   for (idx=0, len=destroyQueue.length; idx < len; idx++) {
     view = destroyQueue[idx];
     resetView(view);
-    if (view.transitionTo) {
-      view.transitionTo('destroying');
-    }
+
+    this.viewTransitionTo(view, 'destroying');
     if (view.destroy) {
       view.destroy(true);
     }
@@ -332,13 +304,63 @@ function remove(_view, shouldDestroy) {
   }
 }
 
-var render = _render;
+function clearRenderHooks(view) {
+  if (view.isRendered) {
+    this.viewWillClearRender(view);
+  }
+  if (view.isInDOM) {
+    this.viewWillDestroyElement(view);
+  }
+}
 
+Renderer.prototype._clearRenderHooks = clearRenderHooks;
+Renderer.prototype.render = _render;
 Renderer.prototype.reset = reset;
 Renderer.prototype.events = events;
 Renderer.prototype.appendTo = appendTo;
 Renderer.prototype.destroy = destroy;
+Renderer.prototype.remove = remove;
+
+// HOOKS
+// must return an opaque value for cancelRender
+Renderer.prototype.scheduleRender = function (renderer, render) {
+  return setTimeout(function () {
+    render.call(renderer);
+  }, 0);
+};
+
+Renderer.prototype.cancelRender = function (renderer, scheduledRender) {
+  clearTimeout(scheduledRender);
+};
+
+Renderer.prototype.viewWillInsertElement = function (view) {
+  if (view.willInsertElement) {
+    view.willInsertElement();
+  }
+};
+
+Renderer.prototype.viewDidInsertElement = function (view) {
+  if (view.didInsertElement) {
+    view.didInsertElement();
+  }
+};
+
+Renderer.prototype.viewWillDestroyElement = function (view) {
+  if (view.willDestroyElement) {
+    view.willDestroyElement();
+  }
+};
+
+Renderer.prototype.viewWillClearRender = function (view) {
+  if (view.willClearRender) {
+    view.willClearRender();
+  }
+};
+
+Renderer.prototype.viewTransitionTo = function (view, state) {
+  if (view.transitionTo) {
+    view.transitionTo(state);
+  }
+};
 
 export default Renderer;
-
-

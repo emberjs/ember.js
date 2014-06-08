@@ -1,7 +1,6 @@
 /*globals HTMLElement */
 
-import { testsFor, $, equalHTML, set, appendTo } from "ember-metal-views/tests/test_helpers";
-import run from "ember-metal/run_loop";
+import { testsFor, $, equalHTML, appendTo } from "ember-metal-views/tests/test_helpers";
 
 var view;
 
@@ -64,14 +63,13 @@ test("element can be specified", function() {
 });
 
 test("willInsertElement hook", function() {
-  expect(4);
+  expect(3);
 
   view = {
     isView: true,
 
     willInsertElement: function(el) {
       ok(this.element instanceof HTMLElement, "We have an element");
-      equal(this.element, el, 'The element gets passed in for convenience');
       equal(this.element.parentElement, null, "The element is parentless");
       this.element.textContent = 'you gone and done inserted that element';
     }
@@ -83,14 +81,13 @@ test("willInsertElement hook", function() {
 });
 
 test("didInsertElement hook", function() {
-  expect(4);
+  expect(3);
 
   view = {
     isView: true,
 
-    didInsertElement: function(el) {
+    didInsertElement: function() {
       ok(this.element instanceof HTMLElement, "We have an element");
-      equal(this.element, el, 'The element gets passed in for convenience');
       equal(this.element.parentElement, document.getElementById('qunit-fixture'), "The element's parent is correct");
       this.element.textContent = 'you gone and done inserted that element';
     }
@@ -123,6 +120,7 @@ test("classNames - string", function() {
   equalHTML('qunit-fixture', '<div class="foo bar">ohai</div>');
 });
 
+/*
 test("attributeBindings", function() {
   view = {
     isView: true,
@@ -152,3 +150,4 @@ test("classNameBindings", function() {
   set(view, 'isEnabled', false);
   equalHTML('qunit-fixture', '<div class=""></div>');
 });
+*/
