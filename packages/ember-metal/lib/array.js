@@ -1,13 +1,8 @@
-/*jshint newcap:false*/
 /**
 @module ember-metal
 */
 
 var ArrayPrototype = Array.prototype;
-
-// NOTE: There is a bug in jshint that doesn't recognize `Object()` without `new`
-// as being ok unless both `newcap:false` and not `use strict`.
-// https://github.com/jshint/jshint/issues/392
 
 // Testing this is not ideal, but we want to use native functions
 // if available, but not to use versions created by libraries like Prototype
