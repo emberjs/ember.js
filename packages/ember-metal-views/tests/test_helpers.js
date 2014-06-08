@@ -1,7 +1,5 @@
 /*globals Node */
 
-import run from "ember-metal/run_loop";
-
 import Renderer from "ember-metal-views";
 
 var renderer;
@@ -12,10 +10,15 @@ var hooks = {
   }
 };
 
+
+
 export function testsFor(name, options) {
   QUnit.module(name, {
     setup: function() {
-      renderer = new Renderer(hooks);
+      renderer = new Renderer();
+      renderer.scheduleRender = function (renderer, render) {
+        render.call(renderer);
+      };
       if (options && options.setup) { options.setup(renderer); }
     },
     teardown: function() {
@@ -41,11 +44,6 @@ export function equalHTML(element, expectedHTML, message) {
   equal(actualHTML, expectedHTML, message || "HTML matches");
 }
 
-var Ember_set = requireModule('ember-metal/property_set').set;
-export function set(obj, key, value) {
-  run(null, Ember_set, obj, key, value);
-}
-
 export function triggerEvent(el, name, data) {
   // var event = new Event(name);
   // el.dispatchEvent(event);
@@ -63,6 +61,6 @@ export function triggerEvent(el, name, data) {
 }
 
 export function appendTo(view) {
-  run(renderer, renderer.appendTo, view, document.getElementById('qunit-fixture'));
+  renderer.appendTo(view, document.getElementById('qunit-fixture'));
   return view.element;
 }
