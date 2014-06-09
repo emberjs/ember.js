@@ -1,6 +1,6 @@
 /*globals HTMLElement */
 
-import { testsFor, $, equalHTML, appendTo } from "ember-metal-views/tests/test_helpers";
+import { testsFor, equalHTML, appendTo } from "ember-metal-views/tests/test_helpers";
 
 var view;
 
@@ -119,35 +119,3 @@ test("classNames - string", function() {
   appendTo(view);
   equalHTML('qunit-fixture', '<div class="foo bar">ohai</div>');
 });
-
-/*
-test("attributeBindings", function() {
-  view = {
-    isView: true,
-    tagName: 'a',
-    attributeBindings: ['href'],
-    href: '/foo',
-    textContent: 'ohai'
-  };
-
-  appendTo(view);
-  equalHTML('qunit-fixture', '<a href="/foo">ohai</a>', "Attribute was set on initial render");
-
-  run(null, set, view, 'href', '/bar');
-  equalHTML('qunit-fixture', '<a href="/bar">ohai</a>', "Attribute updated when set");
-});
-
-test("classNameBindings", function() {
-  view = {
-    isView: true,
-    classNameBindings: ['isEnabled'],
-    isEnabled: true
-  };
-
-  appendTo(view);
-  equalHTML('qunit-fixture', '<div class="is-enabled"></div>');
-
-  set(view, 'isEnabled', false);
-  equalHTML('qunit-fixture', '<div class=""></div>');
-});
-*/

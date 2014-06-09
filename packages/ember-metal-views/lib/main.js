@@ -1,5 +1,4 @@
 import { createElement } from "ember-metal-views/dom";
-import { lookupView, setupView, teardownView, setupEventDispatcher, reset, events } from "ember-metal-views/events";
 import { setupClassNames, setupClassNameBindings, setupAttributeBindings } from "ember-metal-views/attributes";
 import { Morph } from "morph";
 
@@ -32,22 +31,12 @@ function _createElementForView(view) {
   return el;
 }
 
-function appendToMorph(morph, content)
-{
-  var index = morph.morphs ? morph.morphs.length : 0;
-  morph.replace(index, 0, [content]);
-  return morph.morphs[index];
-}
-
 function createChildMorph(parentView, content) {
-  var morph = childViewsMorph(parentView);
-  return appendToMorph(morph, content);
+  return childViewsMorph(parentView).append(content);
 }
 
 function insertChildContent(parentView, index, content) {
-  var morph = childViewsMorph(parentView);
-  morph.replace(index, 0, [content]);
-  return morph.morphs[index];
+  return childViewsMorph(parentView).insert(index, content);
 }
 
 function childViewsMorph(parentView) {
@@ -91,7 +80,7 @@ function _render(_view, insert) {
     if (!view.isVirtual) {
       el = _createElementForView(view);
 
-      setupView(view);
+      //setupView(view);
 
       el.setAttribute('id', view.elementId);
       setupClassNames(view);
@@ -136,7 +125,7 @@ function _render(_view, insert) {
 
   // only assume we are inDOM if root had morph
   if (insert) {
-    setupEventDispatcher();
+    //setupEventDispatcher();
 
     for (i = 0, l = views.length; i<l; i++) {
       view = views[i];
@@ -211,7 +200,7 @@ function resetView(view) {
   view.element = null;
   view._morph = null;
   view._childViewsMorph = null;
-  teardownView(view);
+  //teardownView(view);
 }
 
 function destroy(_view) {
@@ -315,8 +304,6 @@ function clearRenderHooks(view) {
 
 Renderer.prototype._clearRenderHooks = clearRenderHooks;
 Renderer.prototype.render = _render;
-Renderer.prototype.reset = reset;
-Renderer.prototype.events = events;
 Renderer.prototype.appendTo = appendTo;
 Renderer.prototype.destroy = destroy;
 Renderer.prototype.remove = remove;

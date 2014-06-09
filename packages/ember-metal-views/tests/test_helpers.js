@@ -44,22 +44,6 @@ export function equalHTML(element, expectedHTML, message) {
   equal(actualHTML, expectedHTML, message || "HTML matches");
 }
 
-export function triggerEvent(el, name, data) {
-  // var event = new Event(name);
-  // el.dispatchEvent(event);
-  var isKeyboardEvent = /key/.test(name);
-  var event = document.createEvent('Event'); // (isKeyboardEvent ? 'KeyboardEvent' : 'Event');
-  event.initEvent(name, true, true);
-  if (isKeyboardEvent && data) { event.keyCode = event.which = data.keyCode; }
-  // TODO: figure this out
-  // if (isKeyboardEvent) {
-  //   event.initKeyboardEvent(name, true, true, null, data.keyCode, DOM_KEY_LOCATION_STANDARD);
-  // } else {
-  //   event.initEvent(name, true, true);
-  // }
-  el.dispatchEvent(event);
-}
-
 export function appendTo(view) {
   renderer.appendTo(view, document.getElementById('qunit-fixture'));
   return view.element;
