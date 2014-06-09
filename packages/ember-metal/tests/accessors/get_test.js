@@ -58,7 +58,7 @@ test('warn on attempts to get a property path of undefined', function() {
   }, /Cannot call get with 'aProperty.on.aPath' on an undefined object/);
 });
 
-test('warn on attemps to get a falsy property', function() {
+test('warn on attempts to get a falsy property', function() {
   var obj = {};
   expectAssertion(function() {
     get(obj, null);
