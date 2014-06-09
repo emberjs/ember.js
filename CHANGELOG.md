@@ -1,5 +1,7 @@
 # Ember Changelog
 
+* `uuid` is now consistently used across the project.
+* `Ember.uuid` is now an internal function instead of a property on `Ember` itself.
 * [Bugfix beta] sync back burner: workaround IE's issue with try/finally
   without Catch. Also no longer force deoptimization of the run loop
   queue flush.

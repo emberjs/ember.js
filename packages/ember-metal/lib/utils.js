@@ -13,6 +13,19 @@ import {
 */
 
 /**
+  Previously we used `Ember.$.uuid`, however `$.uuid` has been removed from
+  jQuery master. We'll just bootstrap our own uuid now.
+
+  @private
+  @return {Number} the uuid
+*/
+var _uuid = 0;
+
+export function uuid() {
+  return ++_uuid;
+}
+
+/**
   Prefix used for guids through out Ember.
   @private
   @property GUID_PREFIX
@@ -27,8 +40,6 @@ var o_create = create;
 // Used for guid generation...
 var numberCache  = [];
 var stringCache  = {};
-var uuid = 0;
-
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
 /**
@@ -73,7 +84,7 @@ var GUID_DESC = {
 */
 export function generateGuid(obj, prefix) {
   if (!prefix) prefix = GUID_PREFIX;
-  var ret = (prefix + (uuid++));
+  var ret = (prefix + uuid());
   if (obj) {
     if (obj[GUID_KEY] === null) {
       obj[GUID_KEY] = ret;
@@ -117,7 +128,7 @@ export function guidFor(obj) {
 
     case 'string':
       ret = stringCache[obj];
-      if (!ret) ret = stringCache[obj] = 'st'+(uuid++);
+      if (!ret) ret = stringCache[obj] = 'st' + uuid();
       return ret;
 
     case 'boolean':
@@ -127,7 +138,7 @@ export function guidFor(obj) {
       if (obj[GUID_KEY]) return obj[GUID_KEY];
       if (obj === Object) return '(Object)';
       if (obj === Array)  return '(Array)';
-      ret = 'ember' + (uuid++);
+      ret = 'ember' + uuid();
 
       if (obj[GUID_KEY] === null) {
         obj[GUID_KEY] = ret;

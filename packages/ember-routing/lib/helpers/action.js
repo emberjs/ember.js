@@ -1,6 +1,7 @@
 import Ember from "ember-metal/core"; // Handlebars, uuid, FEATURES, assert, deprecate
 import { get } from "ember-metal/property_get";
 import { forEach } from "ember-metal/array";
+import { uuid } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
 
 import { isSimpleClick } from "ember-views/system/utils";
@@ -69,7 +70,7 @@ var isAllowedEvent = function(event, allowedKeys) {
 };
 
 ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
-  var actionId = ++Ember.uuid;
+  var actionId = uuid();
 
   ActionHelper.registeredActions[actionId] = {
     eventName: options.eventName,

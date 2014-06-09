@@ -9,7 +9,7 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.warn, uuid
 import EmberHandlebars from "ember-handlebars-compiler";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { apply } from "ember-metal/utils";
+import { apply, uuid } from "ember-metal/utils";
 import { fmt } from "ember-runtime/system/string";
 import { create as o_create } from "ember-metal/platform";
 import isNone from 'ember-metal/is_none';
@@ -737,7 +737,7 @@ function bindAttrHelper(options) {
   // Generate a unique id for this element. This will be added as a
   // data attribute to the element so it can be looked up when
   // the bound property changes.
-  var dataId = ++Ember.uuid;
+  var dataId = uuid();
 
   // Handle classes differently, as we can bind multiple classes
   var classBindings = attrs['class'];
