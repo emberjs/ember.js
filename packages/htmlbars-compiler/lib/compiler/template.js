@@ -2,7 +2,8 @@ import { FragmentOpcodeCompiler } from './fragment_opcode';
 import { FragmentCompiler } from './fragment';
 import { HydrationOpcodeCompiler } from './hydration_opcode';
 import { HydrationCompiler } from './hydration';
-import { ASTWalker } from './ast_walker';
+import TemplateVisitor from "./template_visitor";
+import { processOpcodes } from "./utils";
 
 export function TemplateCompiler() {
   this.fragmentOpcodeCompiler = new FragmentOpcodeCompiler();
@@ -14,14 +15,17 @@ export function TemplateCompiler() {
 }
 
 TemplateCompiler.prototype.compile = function(ast) {
-  var astWalker = new ASTWalker(this);
-  astWalker.visit(ast);
+  var templateVisitor = new TemplateVisitor();
+  templateVisitor.visit(ast);
+
+  processOpcodes(this, templateVisitor.actions);
+
   return this.templates.pop();
 };
 
-TemplateCompiler.prototype.startTemplate = function(program, childTemplateCount) {
-  this.fragmentOpcodeCompiler.startTemplate(program, childTemplateCount);
-  this.hydrationOpcodeCompiler.startTemplate(program, childTemplateCount);
+TemplateCompiler.prototype.startProgram = function(program, childTemplateCount) {
+  this.fragmentOpcodeCompiler.startProgram(program, childTemplateCount);
+  this.hydrationOpcodeCompiler.startProgram(program, childTemplateCount);
 
   this.childTemplates.length = 0;
   while(childTemplateCount--) {
@@ -29,9 +33,9 @@ TemplateCompiler.prototype.startTemplate = function(program, childTemplateCount)
   }
 };
 
-TemplateCompiler.prototype.endTemplate = function(program) {
-  this.fragmentOpcodeCompiler.endTemplate(program);
-  this.hydrationOpcodeCompiler.endTemplate(program);
+TemplateCompiler.prototype.endProgram = function(program) {
+  this.fragmentOpcodeCompiler.endProgram(program);
+  this.hydrationOpcodeCompiler.endProgram(program);
 
   // function build(dom) { return fragment; }
   var fragmentProgram = this.fragmentCompiler.compile(
@@ -93,7 +97,7 @@ TemplateCompiler.prototype.text = function(string, i, l) {
   this.hydrationOpcodeCompiler.text(string, i, l);
 };
 
-TemplateCompiler.prototype.node = function (node, i, l) {
-  this.fragmentOpcodeCompiler.node(node, i, l);
-  this.hydrationOpcodeCompiler.node(node, i, l);
+TemplateCompiler.prototype.mustache = function (mustache, i, l) {
+  this.fragmentOpcodeCompiler.mustache(mustache, i, l);
+  this.hydrationOpcodeCompiler.mustache(mustache, i, l);
 };

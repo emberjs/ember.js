@@ -1,4 +1,5 @@
-import { ASTWalker } from "./ast_walker";
+import TemplateVisitor from "./template_visitor";
+import { processOpcodes } from "./utils";
 import { buildHashFromAttributes } from "../html-parser/helpers";
 
 function HydrationOpcodeCompiler() {
@@ -11,12 +12,15 @@ function HydrationOpcodeCompiler() {
 }
 
 HydrationOpcodeCompiler.prototype.compile = function(ast) {
-  var astWalker = new ASTWalker(this);
-  astWalker.visit(ast);
+  var templateVisitor = new TemplateVisitor();
+  templateVisitor.visit(ast);
+
+  processOpcodes(this, templateVisitor.actions);
+
   return this.opcodes;
 };
 
-HydrationOpcodeCompiler.prototype.startTemplate = function() {
+HydrationOpcodeCompiler.prototype.startProgram = function() {
   this.opcodes.length = 0;
   this.paths.length = 0;
   this.morphs.length = 0;
@@ -25,7 +29,7 @@ HydrationOpcodeCompiler.prototype.startTemplate = function() {
   this.morphNum = 0;
 };
 
-HydrationOpcodeCompiler.prototype.endTemplate = function(program) {
+HydrationOpcodeCompiler.prototype.endProgram = function(program) {
   distributeMorphs(this.morphs, this.opcodes);
   if (program.statements.length === 1 && program.statements[0].type !== 'text') {
     this.opcodes.shift();
@@ -63,10 +67,6 @@ HydrationOpcodeCompiler.prototype.closeElement = function(element) {
   distributeMorphs(this.morphs, this.opcodes);
   this.opcode('popParent');
   this.currentDOMChildIndex = this.paths.pop();
-};
-
-HydrationOpcodeCompiler.prototype.node = function (node, childIndex, childrenLength) {
-  this[node.type](node, childIndex, childrenLength);
 };
 
 HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLength) {

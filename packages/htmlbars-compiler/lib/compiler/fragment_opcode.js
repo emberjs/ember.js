@@ -1,12 +1,16 @@
-import { ASTWalker } from "./ast_walker";
+import TemplateVisitor from "./template_visitor";
+import { processOpcodes } from "./utils";
 
 function FragmentOpcodeCompiler() {
   this.opcodes = [];
 }
 
 FragmentOpcodeCompiler.prototype.compile = function(ast) {
-  var astWalker = new ASTWalker(this);
-  astWalker.visit(ast);
+  var templateVisitor = new TemplateVisitor();
+  templateVisitor.visit(ast);
+
+  processOpcodes(this, templateVisitor.actions);
+
   return this.opcodes;
 };
 
@@ -30,14 +34,14 @@ FragmentOpcodeCompiler.prototype.closeElement = function(element) {
   this.opcode('closeElement', [element.tag]);
 };
 
-FragmentOpcodeCompiler.prototype.startTemplate = function(program) {
+FragmentOpcodeCompiler.prototype.startProgram = function(program) {
   this.opcodes.length = 0;
   if (program.statements.length > 1) {
     this.opcode('startFragment');
   }
 };
 
-FragmentOpcodeCompiler.prototype.endTemplate = function(program) {
+FragmentOpcodeCompiler.prototype.endProgram = function(program) {
   var statements = program.statements;
 
   if (statements.length === 0) {
@@ -56,7 +60,7 @@ FragmentOpcodeCompiler.prototype.endTemplate = function(program) {
   }
 };
 
-FragmentOpcodeCompiler.prototype.node = function () {};
+FragmentOpcodeCompiler.prototype.mustache = function () {};
 
 FragmentOpcodeCompiler.prototype.component = function () {};
 
