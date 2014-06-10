@@ -67,6 +67,16 @@ var isAllowedEvent = function(event, allowedKeys) {
   return allowed;
 };
 
+function isKeyEvent(eventName) {
+  return ['keyUp', 'keyPress', 'keyDown'].indexOf(eventName) !== -1;
+}
+
+function ignoreKeyEvent(eventName, event, keyCode) {
+  var any = 'any';
+  keyCode = keyCode || any;
+  return isKeyEvent(eventName) && keyCode !== any && keyCode !== event.which.toString();
+}
+
 ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
   var actionId = uuid();
 
@@ -85,7 +95,14 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
 
       var target = options.target,
           parameters = options.parameters,
+          eventName = options.eventName,
           actionName;
+
+      if (Ember.FEATURES.isEnabled("ember-actions-with-key-code")) {
+        if (ignoreKeyEvent(eventName, event, options.withKeyCode)) {
+          return;
+        }
+      }
 
       if (target.target) {
         target = handlebarsGet(target.root, target.target, target.options);
@@ -96,7 +113,7 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
       if (options.boundProperty) {
         actionName = resolveParams(parameters.context, [actionNameOrPath], { types: ['ID'], data: parameters.options.data })[0];
 
-        if(typeof actionName === 'undefined' || typeof actionName === 'function') {
+        if (typeof actionName === 'undefined' || typeof actionName === 'function') {
           Ember.assert("You specified a quoteless path to the {{action}} helper '" + actionNameOrPath + "' which did not resolve to an actionName. Perhaps you meant to use a quoted actionName? (e.g. {{action '" + actionNameOrPath + "'}}).", true);
           actionName = actionNameOrPath;
         }
@@ -312,6 +329,7 @@ export function actionHelper(actionName) {
     bubbles: hash.bubbles,
     preventDefault: hash.preventDefault,
     target: { options: options },
+    withKeyCode: hash.withKeyCode,
     boundProperty: options.types[0] === "ID"
   };
 
