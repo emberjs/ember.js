@@ -12,7 +12,6 @@ import {instrument, subscribe, unsubscribe, reset} from "ember-metal/instrumenta
 import {
   generateGuid,
   GUID_KEY,
-  GUID_PREFIX,
   guidFor,
   META_DESC,
   EMPTY_META,
@@ -99,7 +98,6 @@ Ember.subscribe = subscribe;
 
 Ember.generateGuid    = generateGuid;
 Ember.GUID_KEY        = GUID_KEY;
-Ember.GUID_PREFIX     = GUID_PREFIX;
 Ember.create          = create;
 Ember.platform        = platform;
 

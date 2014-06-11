@@ -138,7 +138,7 @@ export function guidFor(obj) {
       if (obj[GUID_KEY]) return obj[GUID_KEY];
       if (obj === Object) return '(Object)';
       if (obj === Array)  return '(Array)';
-      ret = 'ember' + uuid();
+      ret = GUID_PREFIX + uuid();
 
       if (obj[GUID_KEY] === null) {
         obj[GUID_KEY] = ret;
@@ -796,7 +796,6 @@ export function applyStr(t /* target */, m /* method */, a /* args */) {
 
 export {
   GUID_KEY,
-  GUID_PREFIX,
   META_DESC,
   EMPTY_META,
   META_KEY,
