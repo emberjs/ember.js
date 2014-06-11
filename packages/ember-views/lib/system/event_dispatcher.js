@@ -171,7 +171,7 @@ export default EmberObject.extend({
 
     rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
       //ES6TODO: Needed for ActionHelper (generally not available in ember-views test suite)
-      if (!ActionHelper) { ActionHelper = requireModule("ember-routing/helpers/action")["ActionHelper"]; }
+      if (!ActionHelper) { ActionHelper = requireModule("ember-routing-handlebars/helpers/action")["ActionHelper"]; }
 
       var actionId = jQuery(evt.currentTarget).attr('data-ember-action'),
           action   = ActionHelper.registeredActions[actionId];

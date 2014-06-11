@@ -13,9 +13,7 @@ import { viewHelper } from "ember-handlebars/helpers/view";
 import {
   resolveParams,
   resolvePath
-} from "ember-routing/helpers/shared";
-
-// requireModule('ember-handlebars');
+} from "ember-routing-handlebars/helpers/shared";
 
 /**
 @module ember

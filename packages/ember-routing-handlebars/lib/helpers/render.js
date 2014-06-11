@@ -12,8 +12,6 @@ import { viewHelper } from "ember-handlebars/helpers/view";
 
 import "ember-handlebars/helpers/view";
 
-// requireModule('ember-handlebars');
-
 /**
 @module ember
 @submodule ember-routing

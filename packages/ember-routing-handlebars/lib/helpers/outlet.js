@@ -6,8 +6,6 @@ import ContainerView from "ember-views/views/container_view";
 import { _Metamorph } from "ember-handlebars/views/metamorph_view";
 import { viewHelper } from "ember-handlebars/helpers/view";
 
-// requireModule('ember-handlebars');
-
 /**
 @module ember
 @submodule ember-routing

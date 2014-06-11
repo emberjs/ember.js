@@ -22,7 +22,7 @@ import EmberView from "ember-routing/ext/view";
 import EmberContainerView from "ember-views/views/container_view";
 import jQuery from "ember-views/system/jquery";
 
-import { outletHelper } from "ember-routing/helpers/outlet";
+import { outletHelper } from "ember-routing-handlebars/helpers/outlet";
 
 var buildContainer = function(namespace) {
   var container = new Container();
