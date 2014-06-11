@@ -23,12 +23,12 @@ import EmberHandlebars from "ember-handlebars";
 import EmberView from "ember-routing/ext/view";
 import jQuery from "ember-views/system/jquery";
 
-import renderHelper from "ember-routing/helpers/render";
+import renderHelper from "ember-routing-handlebars/helpers/render";
 import {
   ActionHelper,
   actionHelper
-} from "ember-routing/helpers/action";
-import { outletHelper } from "ember-routing/helpers/outlet";
+} from "ember-routing-handlebars/helpers/action";
+import { outletHelper } from "ember-routing-handlebars/helpers/outlet";
 
 function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });

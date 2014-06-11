@@ -14,11 +14,11 @@ import EmberView from "ember-views/views/view";
 import EmberComponent from "ember-views/views/component";
 import jQuery from "ember-views/system/jquery";
 
-import "ember-routing/helpers/shared";
+import "ember-routing-handlebars/helpers/shared";
 import {
   ActionHelper,
   actionHelper
-} from "ember-routing/helpers/action";
+} from "ember-routing-handlebars/helpers/action";
 
 var dispatcher, view, originalActionHelper,
     originalRegisterAction = ActionHelper.registerAction;

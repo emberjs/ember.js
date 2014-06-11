@@ -13,7 +13,7 @@ import {Controller} from "ember-runtime/controllers/controller";
 import NoneLocation from "ember-routing/location/none_location";
 import EmberHandlebars from "ember-handlebars";
 import EmberObject from "ember-runtime/system/object";
-import {outletHelper} from "ember-routing/helpers/outlet";
+import {outletHelper} from "ember-routing-handlebars/helpers/outlet";
 
 import jQuery from "ember-views/system/jquery";
 var trim = jQuery.trim;

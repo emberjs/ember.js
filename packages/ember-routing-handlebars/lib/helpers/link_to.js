@@ -17,9 +17,7 @@ import EmberRouter from "ember-routing/system/router";
 import {
   resolveParams,
   resolvePaths
-} from "ember-routing/helpers/shared";
-
-// requireModule('ember-handlebars');
+} from "ember-routing-handlebars/helpers/shared";
 
 /**
 @module ember
