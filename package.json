@@ -10,7 +10,7 @@
     "start": "ember serve"
   },
   "devDependencies": {
-    "ember-cli": "0.0.29",
+    "ember-cli": "0.0.34",
     "defeatureify": "~0.2.0",
     "yuidocjs": "~0.3.46",
     "es6-module-transpiler": "~0.4.0",
