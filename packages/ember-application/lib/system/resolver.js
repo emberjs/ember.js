@@ -118,7 +118,8 @@ export var Resolver = EmberObject.extend({
   @namespace Ember
   @extends Ember.Object
 */
-export var DefaultResolver = EmberObject.extend({
+
+export default EmberObject.extend({
   /**
     This will be set to the Application instance when it is
     created.

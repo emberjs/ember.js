@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core"; // Ember.TEMPLATES
 import run from "ember-metal/run_loop";
 import Logger from "ember-metal/logger";
-import { Controller } from "ember-runtime/controllers/controller";
+import Controller from "ember-runtime/controllers/controller";
 import EmberObject from "ember-runtime/system/object";
 import EmberHandlebars from "ember-handlebars";
 import Namespace from "ember-runtime/system/namespace";

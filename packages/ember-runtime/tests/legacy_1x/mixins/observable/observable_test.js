@@ -1,15 +1,16 @@
-import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
-import EnumerableUtils from 'ember-metal/enumerable_utils';
-import {computed} from 'ember-metal/computed';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { forEach } from 'ember-metal/enumerable_utils';
+import { computed } from 'ember-metal/computed';
 import run from 'ember-metal/run_loop';
-import {typeOf} from 'ember-metal/utils';
-import {observer} from 'ember-metal/mixin';
-import {fmt, w} from "ember-runtime/system/string";
+import { typeOf } from 'ember-metal/utils';
+import { observer } from 'ember-metal/mixin';
+import {
+  fmt,
+  w
+} from "ember-runtime/system/string";
 import EmberObject from 'ember-runtime/system/object';
 import Observable from 'ember-runtime/mixins/observable';
-
-var forEach = EnumerableUtils.forEach;
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests

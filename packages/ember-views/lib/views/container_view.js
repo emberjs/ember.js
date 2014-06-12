@@ -15,9 +15,7 @@ import {
 
 import EmberError from "ember-metal/error";
 
-// ES6TODO: functions on EnumerableUtils should get their own export
-import EnumerableUtils from "ember-metal/enumerable_utils";
-var forEach = EnumerableUtils.forEach;
+import { forEach } from "ember-metal/enumerable_utils";
 
 import { computed } from "ember-metal/computed";
 import run from "ember-metal/run_loop";

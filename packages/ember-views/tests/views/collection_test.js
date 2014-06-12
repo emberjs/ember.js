@@ -2,7 +2,7 @@ import Ember from "ember-metal/core"; // Ember.A
 import { set } from "ember-metal/property_set";
 import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { forEach } from "ember-metal/enumerable_utils";
 import { Mixin } from "ember-metal/mixin";
 import { fmt } from "ember-runtime/system/string";
 import ArrayProxy from "ember-runtime/system/array_proxy";
@@ -11,7 +11,6 @@ import jQuery from "ember-views/system/jquery";
 import CollectionView from "ember-views/views/collection_view";
 import View from "ember-views/views/view";
 
-var forEach = EnumerableUtils.forEach;
 var trim = jQuery.trim;
 var view;
 

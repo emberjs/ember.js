@@ -3,7 +3,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import { Mixin } from "ember-metal/mixin";
-import { Controller } from "ember-runtime/controllers/controller";
+import Controller from "ember-runtime/controllers/controller";
 import EmberObject from "ember-runtime/system/object";
 import View from "ember-views/views/view";
 

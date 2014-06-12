@@ -5,10 +5,9 @@ import { computed } from "ember-metal/computed";
 import { typeOf } from "ember-metal/utils";
 import { meta } from "ember-metal/utils";
 import merge from "ember-metal/merge";
-import EnumerableUtils from "ember-metal/enumerable_utils";
-var map = EnumerableUtils.map;
+import { map } from "ember-metal/enumerable_utils";
 
-import { ControllerMixin } from "ember-runtime/controllers/controller";
+import ControllerMixin from "ember-runtime/mixins/controller";
 
 /**
 @module ember

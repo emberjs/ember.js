@@ -1,8 +1,8 @@
 // Provides a way to register library versions with ember.
-import EnumerableUtils from "ember-metal/enumerable_utils";
-
-var forEach = EnumerableUtils.forEach,
-    indexOf = EnumerableUtils.indexOf;
+import {
+  forEach,
+  indexOf
+} from "ember-metal/enumerable_utils";
 
 var libraries = function() {
   var _libraries   = [];

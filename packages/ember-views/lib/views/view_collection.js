@@ -1,10 +1,9 @@
-import EnumerableUtils from "ember-metal/enumerable_utils";
-var a_forEach = EnumerableUtils.forEach;
+import { forEach } from "ember-metal/enumerable_utils";
 
-var ViewCollection = function(initialViews) {
+function ViewCollection(initialViews) {
   var views = this.views = initialViews || [];
   this.length = views.length;
-};
+}
 
 ViewCollection.prototype = {
   length: 0,
@@ -52,7 +51,7 @@ ViewCollection.prototype = {
 
   forEach: function(callback) {
     var views = this.views;
-    return a_forEach(views, callback);
+    return forEach(views, callback);
   },
 
   clear: function() {

@@ -1,7 +1,7 @@
 import Ember from "ember-metal/core";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
-import { Controller as EmberController } from "ember-runtime/controllers/controller";
+import { default as EmberController } from "ember-runtime/controllers/controller";
 import "ember-extension-support"; // Must be required to export Ember.ContainerDebugAdapter
 import Application from "ember-application/system/application";
 

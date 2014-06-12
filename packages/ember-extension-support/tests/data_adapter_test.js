@@ -7,10 +7,10 @@ import {
   removeObserver
 } from "ember-metal/observer";
 import EmberObject from "ember-runtime/system/object";
-import { Controller as EmberController } from "ember-runtime/controllers/controller";
+import { default as EmberController } from "ember-runtime/controllers/controller";
 import EmberDataAdapter from "ember-extension-support/data_adapter";
 import EmberApplication from "ember-application/system/application";
-import { DefaultResolver } from "ember-application/system/resolver";
+import DefaultResolver from "ember-application/system/resolver";
 
 var adapter, App, Model = EmberObject.extend();
 

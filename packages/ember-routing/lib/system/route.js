@@ -3,11 +3,17 @@ import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import getProperties from "ember-metal/get_properties";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import {
+  forEach,
+  replace
+}from "ember-metal/enumerable_utils";
 import { isNone } from "ember-metal/is_none";
 import { computed } from "ember-metal/computed";
 import merge from "ember-metal/merge";
-import { isArray, typeOf } from "ember-metal/utils";
+import {
+  isArray,
+  typeOf
+} from "ember-metal/utils";
 import run from "ember-metal/run_loop";
 import keys from "ember-runtime/keys";
 import copy from "ember-runtime/copy";
@@ -17,18 +23,13 @@ import {
 } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import ActionHandler from "ember-runtime/mixins/action_handler";
-import { generateController } from "ember-routing/system/controller_for";
+import generateController from "ember-routing/system/generate_controller";
 import { stashParamNames } from "ember-routing-handlebars/helpers/shared";
 
 /**
 @module ember
 @submodule ember-routing
 */
-
-var a_forEach = EnumerableUtils.forEach;
-var a_replace = EnumerableUtils.replace;
-var a_find    = EnumerableUtils.find;
-
 
 /**
   The `Ember.Route` class is used to define individual routes. Refer to
@@ -408,7 +409,7 @@ var Route = EmberObject.extend(ActionHandler, {
           transition.method('replace');
         }
 
-        a_forEach(qpMeta.qps, function(qp) {
+        forEach(qpMeta.qps, function(qp) {
           var routeQpMeta = get(qp.route, '_qp');
           var finalizedController = qp.route.controller;
           finalizedController._qpDelegate = get(routeQpMeta, 'states.active');
@@ -1467,7 +1468,7 @@ var Route = EmberObject.extend(ActionHandler, {
 
     // Tear down any outlets rendered with 'into'
     var teardownOutletViews = this.teardownOutletViews || [];
-    a_forEach(teardownOutletViews, function(teardownOutletView) {
+    forEach(teardownOutletViews, function(teardownOutletView) {
       teardownOutletView();
     });
 
@@ -1841,7 +1842,7 @@ function appendView(route, view, options) {
     var parentView = route.router._lookupActiveView(options.into);
     var teardownOutletView = generateOutletTeardown(parentView, options.outlet);
     if (!route.teardownOutletViews) { route.teardownOutletViews = []; }
-    a_replace(route.teardownOutletViews, 0, 0, [teardownOutletView]);
+    replace(route.teardownOutletViews, 0, 0, [teardownOutletView]);
     parentView.connectOutlet(options.outlet, view);
   } else {
     var rootElement = get(route, 'router.namespace.rootElement');

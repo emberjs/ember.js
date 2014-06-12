@@ -12,7 +12,9 @@ import {
   guidFor
 } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import {
+  forEach
+} from "ember-metal/enumerable_utils";
 import run from 'ember-metal/run_loop';
 import { addObserver } from "ember-metal/observer";
 import { arrayComputed } from "ember-runtime/computed/array_computed";
@@ -23,8 +25,6 @@ import keys from "ember-runtime/keys";
 import compare from "ember-runtime/compare";
 
 var a_slice = [].slice;
-var forEach = EnumerableUtils.forEach;
-var SearchProxy;
 
 /**
  A computed property that returns the sum of the value
@@ -439,7 +439,7 @@ export var union = uniq;
 */
 export function intersect() {
   var getDependentKeyGuids = function (changeMeta) {
-    return EnumerableUtils.map(changeMeta.property._dependentKeys, function (dependentKey) {
+    return map(changeMeta.property._dependentKeys, function (dependentKey) {
       return guidFor(dependentKey);
     });
   };

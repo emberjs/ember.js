@@ -3,27 +3,32 @@ import EnumerableUtils from 'ember-metal/enumerable_utils';
 import EmberObject from 'ember-runtime/system/object';
 import setProperties from "ember-metal/set_properties";
 import ObjectProxy from 'ember-runtime/system/object_proxy';
-import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
-import {computed} from 'ember-metal/computed';
-import {addObserver} from "ember-metal/observer";
-import {beginPropertyChanges, endPropertyChanges} from "ember-metal/property_events";
-import {forEach} from "ember-metal/array";
-import {observer} from 'ember-metal/mixin';
-import {sum as computedSum,
-        min as computedMin,
-        max as computedMax,
-        map as computedMap,
-        sort as computedSort,
-        setDiff as computedSetDiff,
-        mapBy as computedMapBy,
-        mapProperty,
-        filter as computedFilter,
-        filterBy as computedFilterBy,
-        uniq as computedUniq,
-        union as computedUnion,
-        intersect as computedIntersect} from 'ember-runtime/computed/reduce_computed_macros';
+import { computed } from 'ember-metal/computed';
+import { addObserver } from "ember-metal/observer";
+import {
+  beginPropertyChanges,
+  endPropertyChanges
+} from "ember-metal/property_events";
+import { forEach } from "ember-metal/array";
+import { observer } from 'ember-metal/mixin';
+import {
+  sum as computedSum,
+  min as computedMin,
+  max as computedMax,
+  map as computedMap,
+  sort as computedSort,
+  setDiff as computedSetDiff,
+  mapBy as computedMapBy,
+  mapProperty,
+  filter as computedFilter,
+  filterBy as computedFilterBy,
+  uniq as computedUniq,
+  union as computedUnion,
+  intersect as computedIntersect
+} from 'ember-runtime/computed/reduce_computed_macros';
 
 import NativeArray from "ember-runtime/system/native_array";
 

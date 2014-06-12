@@ -1,10 +1,11 @@
 import EmberObject from "ember-runtime/system/object";
-import {required} from "ember-metal/mixin";
-import {guidFor, generateGuid} from "ember-metal/utils";
-import {get} from "ember-metal/property_get";
-import EnumerableUtils from "ember-metal/enumerable_utils";
-
-var forEach = EnumerableUtils.forEach;
+import { required } from "ember-metal/mixin";
+import {
+  guidFor,
+  generateGuid
+} from "ember-metal/utils";
+import { get } from "ember-metal/property_get";
+import { forEach } from "ember-metal/enumerable_utils";
 
 /**
   @class

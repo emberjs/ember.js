@@ -136,3 +136,4 @@ export var _MetamorphView = View.extend(_Metamorph);
   @private
 */
 export var _SimpleMetamorphView = CoreView.extend(_Metamorph);
+export default View.extend(_Metamorph);

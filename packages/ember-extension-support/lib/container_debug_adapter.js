@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core";
+import { A as emberA } from "ember-runtime/system/native_array";
 import { typeOf } from "ember-metal/utils";
 import {
   dasherize,
@@ -46,7 +47,7 @@ import EmberObject from "ember-runtime/system/object";
   @extends EmberObject
   @since 1.5.0
 */
-var ContainerDebugAdapter = EmberObject.extend({
+export default EmberObject.extend({
   /**
     The container of the application being debugged.
     This property will be injected
@@ -88,7 +89,7 @@ var ContainerDebugAdapter = EmberObject.extend({
     @return {Array} An array of strings.
   */
   catalogEntriesByType: function(type) {
-    var namespaces = Ember.A(Namespace.NAMESPACES), types = Ember.A(), self = this;
+    var namespaces = emberA(Namespace.NAMESPACES), types = emberA(), self = this;
     var typeSuffixRegex = new RegExp(classify(type) + "$");
 
     namespaces.forEach(function(namespace) {
@@ -107,5 +108,3 @@ var ContainerDebugAdapter = EmberObject.extend({
     return types;
   }
 });
-
-export default ContainerDebugAdapter;

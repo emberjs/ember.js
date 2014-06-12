@@ -1,12 +1,11 @@
 import EmberError from 'ember-metal/error';
-import EnumerableUtils from 'ember-metal/enumerable_utils';
+import { forEach } from 'ember-metal/enumerable_utils';
 
 /**
   @module ember-metal
   */
 
-var forEach = EnumerableUtils.forEach,
-  BRACE_EXPANSION = /^((?:[^\.]*\.)*)\{(.*)\}$/;
+var BRACE_EXPANSION = /^((?:[^\.]*\.)*)\{(.*)\}$/;
 
 /**
   Expands `pattern`, invoking `callback` for each expansion.

@@ -1,9 +1,8 @@
 import Ember from 'ember-metal/core'; // Ember.assert
-import {w} from "ember-runtime/system/string";
+import { w } from "ember-runtime/system/string";
 
 // ES6TODO: the functions on EnumerableUtils need their own exports
-import EnumerableUtils from "ember-metal/enumerable_utils";
-var forEach = EnumerableUtils.forEach;
+import { forEach } from "ember-metal/enumerable_utils";
 
 /**
 Ember Views

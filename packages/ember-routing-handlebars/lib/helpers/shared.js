@@ -1,8 +1,11 @@
-import {get} from "ember-metal/property_get";
-import {map} from "ember-metal/array";
-import {ControllerMixin} from "ember-runtime/controllers/controller";
-import {resolveParams as handlebarsResolve, handlebarsGet} from "ember-handlebars/ext";
-import {typeOf} from 'ember-metal/utils';
+import { get } from "ember-metal/property_get";
+import { map } from "ember-metal/array";
+import ControllerMixin from "ember-runtime/mixins/controller";
+import {
+  resolveParams as handlebarsResolve,
+  handlebarsGet
+} from "ember-handlebars/ext";
+import { typeOf } from 'ember-metal/utils';
 import { get } from "ember-metal/property_get";
 
 export function routeArgs(targetRouteName, models, queryParams) {
@@ -61,8 +64,7 @@ export function stashParamNames(router, handlerInfos) {
   handlerInfos._namesStashed = true;
 }
 
-export { resolvePaths };
-function resolvePaths(context, params, options) {
+export function resolvePaths(context, params, options) {
   var resolved = handlebarsResolve(context, params, options),
       types = options.types;
 

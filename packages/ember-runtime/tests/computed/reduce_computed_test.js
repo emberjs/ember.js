@@ -1,21 +1,25 @@
 import Ember from 'ember-metal/core';
-import EnumerableUtils from 'ember-metal/enumerable_utils';
-import {get, getWithDefault} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
-import {meta} from 'ember-metal/utils';
+import { map } from 'ember-metal/enumerable_utils';
+import {
+  get,
+  getWithDefault
+} from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { meta as metaFor } from 'ember-metal/utils';
 import run from 'ember-metal/run_loop';
-import {observer} from 'ember-metal/mixin';
+import { observer } from 'ember-metal/mixin';
 import keys from "ember-runtime/keys";
 import EmberObject from "ember-runtime/system/object";
-import {ComputedProperty, computed} from "ember-metal/computed";
-import {arrayComputed} from "ember-runtime/computed/array_computed";
-import {reduceComputed} from "ember-runtime/computed/reduce_computed";
+import {
+  ComputedProperty,
+  computed
+} from "ember-metal/computed";
+import { arrayComputed } from "ember-runtime/computed/array_computed";
+import { reduceComputed } from "ember-runtime/computed/reduce_computed";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import SubArray from "ember-runtime/system/subarray";
 
-var map = EnumerableUtils.map,
-    metaFor = meta,
-    obj, addCalls, removeCalls, callbackItems, shared;
+var obj, addCalls, removeCalls, callbackItems, shared;
 
 QUnit.module('arrayComputed', {
   setup: function () {

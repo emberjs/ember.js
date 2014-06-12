@@ -1,7 +1,7 @@
-import {computed} from "ember-metal/computed";
-import {addObserver} from "ember-metal/observer";
+import { computed } from "ember-metal/computed";
+import { addObserver } from "ember-metal/observer";
 import EmberObject from 'ember-runtime/system/object';
-import {testBoth} from 'ember-runtime/tests/props_helper';
+import { testBoth } from 'ember-runtime/tests/props_helper';
 
 QUnit.module('mixins/observable');
 

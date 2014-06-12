@@ -1,7 +1,6 @@
-import {get} from "ember-metal/property_get";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { get } from "ember-metal/property_get";
+import { forEach } from "ember-metal/enumerable_utils";
 
-var forEach = EnumerableUtils.forEach;
 var RETAIN = 'r';
 var INSERT = 'i';
 var DELETE = 'd';

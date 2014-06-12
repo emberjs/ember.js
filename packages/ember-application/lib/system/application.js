@@ -10,12 +10,12 @@ import { runLoadHooks } from "ember-runtime/system/lazy_load";
 import DAG from "ember-application/system/dag";
 import Namespace from "ember-runtime/system/namespace";
 import DeferredMixin from "ember-runtime/mixins/deferred";
-import { DefaultResolver } from "ember-application/system/resolver";
+import DefaultResolver from "ember-application/system/resolver";
 import { create } from "ember-metal/platform";
 import run from "ember-metal/run_loop";
 import { canInvoke } from "ember-metal/utils";
 import Container from 'container/container';
-import { Controller } from "ember-runtime/controllers/controller";
+import Controller from "ember-runtime/controllers/controller";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
@@ -30,30 +30,13 @@ import AutoLocation from "ember-routing/location/auto_location";
 import NoneLocation from "ember-routing/location/none_location";
 import BucketCache from "ember-routing/system/cache";
 
+import {
+  K
+} from 'ember-metal/core';
 import EmberHandlebars from "ember-handlebars-compiler";
+import DeprecatedContainer from "ember-application/system/deprecated-container";
 
-var K = Ember.K;
 var ContainerDebugAdapter;
-
-function DeprecatedContainer(container) {
-  this._container = container;
-}
-
-DeprecatedContainer.deprecate = function(method) {
-  return function() {
-    var container = this._container;
-
-    Ember.deprecate('Using the defaultContainer is no longer supported. [defaultContainer#' + method + '] see: http://git.io/EKPpnA', false);
-    return container[method].apply(container, arguments);
-  };
-};
-
-DeprecatedContainer.prototype = {
-  _container: null,
-  lookup: DeprecatedContainer.deprecate('lookup'),
-  resolve: DeprecatedContainer.deprecate('resolve'),
-  register: DeprecatedContainer.deprecate('register')
-};
 
 /**
   An instance of `Ember.Application` is the starting point for every Ember

@@ -1,4 +1,4 @@
-import { ControllerMixin } from "ember-runtime/controllers/controller";
+import ControllerMixin from "ember-runtime/mixins/controller";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 
 /**
