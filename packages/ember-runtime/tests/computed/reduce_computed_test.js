@@ -982,7 +982,7 @@ QUnit.module('arrayComputed - misc', {
         return this.get('shared.flag');
       })
     });
-    
+
     obj = Ember.Object.extend({
       upstream: Ember.A([
         Item.create(),
@@ -1006,7 +1006,7 @@ QUnit.module('arrayComputed - misc', {
     run(function () {
       obj.destroy();
     });
-  },
+  }
 });
 
 test("item property change flushes are gated by a semaphore", function() {

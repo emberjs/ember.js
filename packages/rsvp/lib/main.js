@@ -828,7 +828,7 @@ define('rsvp/hash-settled', [
       var promises = {
         myPromise: RSVP.Promise.resolve(1),
         rejectedPromise: RSVP.Promise.reject(new Error('rejection')),
-        anotherRejectedPromise: RSVP.Promise.reject(new Error('more rejection')),
+        anotherRejectedPromise: RSVP.Promise.reject(new Error('more rejection'))
       };
 
       RSVP.hashSettled(promises).then(function(hash){
@@ -935,7 +935,7 @@ define('rsvp/hash', [
       var promises = {
         myPromise: RSVP.resolve(1),
         rejectedPromise: RSVP.reject(new Error("rejectedPromise")),
-        anotherRejectedPromise: RSVP.reject(new Error("anotherRejectedPromise")),
+        anotherRejectedPromise: RSVP.reject(new Error("anotherRejectedPromise"))
       };
 
       RSVP.hash(promises).then(function(hash){

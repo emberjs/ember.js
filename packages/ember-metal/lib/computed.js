@@ -295,7 +295,7 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
 
   MyApp.president = MyApp.President.create({
     firstName: 'Barack',
-    lastName: 'Obama',
+    lastName: 'Obama'
   });
 
   MyApp.president.get('fullName'); // 'Barack Obama'

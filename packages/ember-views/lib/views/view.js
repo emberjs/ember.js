@@ -485,7 +485,7 @@ var EMPTY_ARRAY = [];
   });
 
   aView = AView.create({
-    controller: aController,
+    controller: aController
   });
   ```
 
@@ -519,8 +519,8 @@ var EMPTY_ARRAY = [];
 
   ```javascript
   AViewWithLayout = Ember.View.extend({
-    layout: Ember.Handlebars.compile("<div class='my-decorative-class'>{{yield}}</div>")
-    template: Ember.Handlebars.compile("I got wrapped"),
+    layout: Ember.Handlebars.compile("<div class='my-decorative-class'>{{yield}}</div>"),
+    template: Ember.Handlebars.compile("I got wrapped")
   });
   ```
 

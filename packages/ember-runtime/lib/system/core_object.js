@@ -259,7 +259,7 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     App.FooBarView = App.BarView.extend({
       someNonConcatenatedProperty: ['foo'],
-      classNames: ['foo'],
+      classNames: ['foo']
     });
 
     var fooBarView = App.FooBarView.create();

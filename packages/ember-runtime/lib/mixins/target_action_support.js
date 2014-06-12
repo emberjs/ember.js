@@ -78,7 +78,7 @@ var TargetActionSupport = Mixin.create({
       this.triggerAction({
         action: 'save',
         target: this.get('controller'),
-        actionContext: this.get('context'),
+        actionContext: this.get('context')
       }); // Sends the `save` action, along with the current context
           // to the current controller
     }
