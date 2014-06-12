@@ -1,4 +1,5 @@
-require('ember-metal/utils'); // Ember.tryCatchFinally
+import Ember from "ember-metal/core";
+import { tryCatchFinally } from "ember-metal/utils";
 
 /**
   The purpose of the Ember Instrumentation module is
@@ -46,8 +47,6 @@ require('ember-metal/utils'); // Ember.tryCatchFinally
   @namespace Ember
   @static
 */
-Ember.Instrumentation = {};
-
 var subscribers = [], cache = {};
 
 var populateListeners = function(name) {
@@ -65,16 +64,27 @@ var populateListeners = function(name) {
 };
 
 var time = (function() {
-	var perf = 'undefined' !== typeof window ? window.performance || {} : {};
-	var fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
-	// fn.bind will be available in all the browsers that support the advanced window.performance... ;-)
-	return fn ? fn.bind(perf) : function() { return +new Date(); };
+  var perf = 'undefined' !== typeof window ? window.performance || {} : {};
+  var fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
+  // fn.bind will be available in all the browsers that support the advanced window.performance... ;-)
+  return fn ? fn.bind(perf) : function() { return +new Date(); };
 })();
 
+/**
+  Notifies event's subscribers, calls `before` and `after` hooks.
 
-Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
+  @method instrument
+  @namespace Ember.Instrumentation
+
+  @param {String} [name] Namespaced event name.
+  @param {Object} payload
+  @param {Function} callback Function that you're instrumenting.
+  @param {Object} binding Context that instrument function is called with.
+*/
+export function instrument(name, payload, callback, binding) {
   var listeners = cache[name], timeName, ret;
 
+  // ES6TODO: Docs. What is this?
   if (Ember.STRUCTURED_PROFILE) {
     timeName = name + ": " + payload.object;
     console.time(timeName);
@@ -92,7 +102,7 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
 
   var beforeValues = [], listener, i, l;
 
-  function tryable(){
+  function tryable() {
     for (i=0, l=listeners.length; i<l; i++) {
       listener = listeners[i];
       beforeValues[i] = listener.before(name, time(), payload);
@@ -101,7 +111,7 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
     return callback.call(binding);
   }
 
-  function catchable(e){
+  function catchable(e) {
     payload = payload || {};
     payload.exception = e;
   }
@@ -117,10 +127,21 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
     }
   }
 
-  return Ember.tryCatchFinally(tryable, catchable, finalizer);
-};
+  return tryCatchFinally(tryable, catchable, finalizer);
+}
 
-Ember.Instrumentation.subscribe = function(pattern, object) {
+/**
+  Subscribes to a particular event or instrumented block of code.
+
+  @method subscribe
+  @namespace Ember.Instrumentation
+
+  @param {String} [pattern] Namespaced event name.
+  @param {Object} [object] Before and After hooks.
+
+  @return {Subscriber}
+*/
+export function subscribe(pattern, object) {
   var paths = pattern.split("."), path, regex = [];
 
   for (var i=0, l=paths.length; i<l; i++) {
@@ -145,9 +166,17 @@ Ember.Instrumentation.subscribe = function(pattern, object) {
   cache = {};
 
   return subscriber;
-};
+}
 
-Ember.Instrumentation.unsubscribe = function(subscriber) {
+/**
+  Unsubscribes from a particular event or instrumented block of code.
+
+  @method unsubscribe
+  @namespace Ember.Instrumentation
+
+  @param {Object} [subscriber]
+*/
+export function unsubscribe(subscriber) {
   var index;
 
   for (var i=0, l=subscribers.length; i<l; i++) {
@@ -158,12 +187,15 @@ Ember.Instrumentation.unsubscribe = function(subscriber) {
 
   subscribers.splice(index, 1);
   cache = {};
-};
+}
 
-Ember.Instrumentation.reset = function() {
+/**
+  Resets `Ember.Instrumentation` by flushing list of subscribers.
+
+  @method reset
+  @namespace Ember.Instrumentation
+*/
+export function reset() {
   subscribers = [];
   cache = {};
-};
-
-Ember.instrument = Ember.Instrumentation.instrument;
-Ember.subscribe = Ember.Instrumentation.subscribe;
+}

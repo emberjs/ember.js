@@ -1,20 +1,33 @@
-var set = Ember.set, get = Ember.get;
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
 
-var parentView, child, parentDom, childDom ;
+import jQuery from "ember-views/system/jquery";
+import EmberView from "ember-views/views/view";
+import ContainerView from "ember-views/views/container_view";
 
-module("Ember.View#element");
+var parentView, child, parentDom, childDom, view;
+
+QUnit.module("Ember.View#element", {
+  teardown: function() {
+    run(function() {
+      if (parentView) { parentView.destroy(); }
+      view.destroy();
+    });
+  }
+});
 
 test("returns null if the view has no element and no parent view", function() {
-  var view = Ember.View.create() ;
+  view = EmberView.create() ;
   equal(get(view, 'parentView'), null, 'precond - has no parentView');
   equal(get(view, 'element'), null, 'has no element');
 });
 
 test("returns null if the view has no element and parent view has no element", function() {
-  parentView = Ember.ContainerView.create({
-    childViews: [ Ember.View.extend() ]
+  parentView = ContainerView.create({
+    childViews: [ EmberView.extend() ]
   });
-  var view = get(parentView, 'childViews').objectAt(0);
+  view = get(parentView, 'childViews').objectAt(0);
 
   equal(get(view, 'parentView'), parentView, 'precond - has parent view');
   equal(get(parentView, 'element'), null, 'parentView has no element');
@@ -22,7 +35,7 @@ test("returns null if the view has no element and parent view has no element", f
 });
 
 test("returns element if you set the value", function() {
-  var view = Ember.View.create();
+  view = EmberView.create();
   equal(get(view, 'element'), null, 'precond- has no element');
 
   var dom = document.createElement('div');
@@ -32,11 +45,10 @@ test("returns element if you set the value", function() {
 });
 
 
-module("Ember.View#element - autodiscovery", {
+QUnit.module("Ember.View#element - autodiscovery", {
   setup: function() {
-
-    parentView = Ember.ContainerView.create({
-      childViews: [ Ember.View.extend({
+    parentView = ContainerView.create({
+      childViews: [ EmberView.extend({
         elementId: 'child-view'
       }) ]
     });
@@ -44,13 +56,17 @@ module("Ember.View#element - autodiscovery", {
     child = get(parentView, 'childViews').objectAt(0);
 
     // setup parent/child dom
-    parentDom = Ember.$("<div><div id='child-view'></div></div>")[0];
+    parentDom = jQuery("<div><div id='child-view'></div></div>")[0];
 
     // set parent element...
     set(parentView, 'element', parentDom);
   },
 
   teardown: function() {
+    run(function() {
+      parentView.destroy();
+      if (view) { view.destroy(); }
+    });
     parentView = child = parentDom = childDom = null ;
   }
 });
@@ -62,9 +78,13 @@ test("discovers element if has no element but parent view does have element", fu
   equal(child.$().attr('id'), 'child-view', 'view discovered child');
 });
 
-test("should not allow the elementId to be changed", function() {
-  var view = Ember.View.create({
+test("should not allow the elementId to be changed after inserted", function() {
+  view = EmberView.create({
     elementId: 'one'
+  });
+
+  run(function() {
+    view.appendTo('#qunit-fixture');
   });
 
   raises(function() {

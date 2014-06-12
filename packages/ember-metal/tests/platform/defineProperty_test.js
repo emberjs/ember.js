@@ -1,16 +1,19 @@
+import { platform } from 'ember-metal/platform';
+import EnumerableUtils from 'ember-metal/enumerable_utils';
+
 function isEnumerable(obj, keyName) {
   var keys = [];
   for(var key in obj) {
     if (obj.hasOwnProperty(key)) keys.push(key);
   }
-  return Ember.EnumerableUtils.indexOf(keys, keyName)>=0;
+  return EnumerableUtils.indexOf(keys, keyName)>=0;
 }
 
-module("Ember.platform.defineProperty()");
+QUnit.module("platform.defineProperty()");
 
 test("defining a simple property", function() {
   var obj = {};
-  Ember.platform.defineProperty(obj, 'foo', {
+  platform.defineProperty(obj, 'foo', {
     enumerable:   true,
     writable:     true,
     value: 'FOO'
@@ -25,7 +28,7 @@ test("defining a simple property", function() {
 
 test('defining a read only property', function() {
   var obj = {};
-  Ember.platform.defineProperty(obj, 'foo', {
+  platform.defineProperty(obj, 'foo', {
     enumerable:   true,
     writable:     false,
     value: 'FOO'
@@ -33,24 +36,31 @@ test('defining a read only property', function() {
 
   equal(obj.foo, 'FOO', 'should have added property');
 
-  obj.foo = "BAR";
-  if (Ember.platform.defineProperty.isSimulated) {
+  if (platform.defineProperty.isSimulated) {
+    obj.foo = "BAR";
     equal(obj.foo, 'BAR', 'simulated defineProperty should silently work');
   } else {
-    equal(obj.foo, 'FOO', 'real defined property should not be writable');
+    // cannot set read-only property in strict-mode
+    try {
+      obj.foo = "BAR";
+    } catch(e) {
+      // do nothing (assertion still happens in finally)
+    }finally {
+      equal(obj.foo, 'FOO', 'real defined property should not be writable');
+    }
   }
 
 });
 
 test('defining a non enumerable property', function() {
   var obj = {};
-  Ember.platform.defineProperty(obj, 'foo', {
+  platform.defineProperty(obj, 'foo', {
     enumerable:   false,
     writable:     true,
     value: 'FOO'
   });
 
-  if (Ember.platform.defineProperty.isSimulated) {
+  if (platform.defineProperty.isSimulated) {
     equal(isEnumerable(obj, 'foo'), true, 'simulated defineProperty will leave properties enumerable');
   } else {
     equal(isEnumerable(obj, 'foo'), false, 'real defineProperty will make property not-enumerable');
@@ -59,7 +69,7 @@ test('defining a non enumerable property', function() {
 
 // If accessors don't exist, behavior that relies on getters
 // and setters don't do anything
-if (Ember.platform.hasPropertyAccessors) {
+if (platform.hasPropertyAccessors) {
   test('defining a getter/setter', function() {
     var obj = {}, getCnt = 0, setCnt = 0, v = 'FOO';
 
@@ -69,8 +79,8 @@ if (Ember.platform.hasPropertyAccessors) {
       set: function(val) { setCnt++; v = val; }
     };
 
-    if (Ember.platform.hasPropertyAccessors) {
-      Ember.platform.defineProperty(obj, 'foo', desc);
+    if (platform.hasPropertyAccessors) {
+      platform.defineProperty(obj, 'foo', desc);
       equal(obj.foo, 'FOO', 'should return getter');
       equal(getCnt, 1, 'should have invoked getter');
 
@@ -85,7 +95,7 @@ if (Ember.platform.hasPropertyAccessors) {
   test('defining getter/setter along with writable', function() {
     var obj  ={};
     raises(function() {
-      Ember.platform.defineProperty(obj, 'foo', {
+      platform.defineProperty(obj, 'foo', {
         enumerable: true,
         get: function() {},
         set: function() {},
@@ -97,7 +107,7 @@ if (Ember.platform.hasPropertyAccessors) {
   test('defining getter/setter along with value', function() {
     var obj  ={};
     raises(function() {
-      Ember.platform.defineProperty(obj, 'foo', {
+      platform.defineProperty(obj, 'foo', {
         enumerable: true,
         get: function() {},
         set: function() {},

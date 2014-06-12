@@ -1,7 +1,12 @@
-module('mixins/observable');
+import {computed} from "ember-metal/computed";
+import {addObserver} from "ember-metal/observer";
+import EmberObject from 'ember-runtime/system/object';
+import {testBoth} from 'ember-runtime/tests/props_helper';
+
+QUnit.module('mixins/observable');
 
 test('should be able to use getProperties to get a POJO of provided keys', function() {
-  var obj = Ember.Object.create({
+  var obj = EmberObject.create({
     firstName: "Steve",
     lastName: "Jobs",
     companyName: "Apple, Inc."
@@ -13,7 +18,7 @@ test('should be able to use getProperties to get a POJO of provided keys', funct
 });
 
 test('should be able to use getProperties with array parameter to get a POJO of provided keys', function() {
-  var obj = Ember.Object.create({
+  var obj = EmberObject.create({
     firstName: "Steve",
     lastName: "Jobs",
     companyName: "Apple, Inc."
@@ -25,7 +30,7 @@ test('should be able to use getProperties with array parameter to get a POJO of 
 });
 
 test('should be able to use setProperties to set multiple properties at once', function() {
-  var obj = Ember.Object.create({
+  var obj = EmberObject.create({
     firstName: "Steve",
     lastName: "Jobs",
     companyName: "Apple, Inc."
@@ -38,10 +43,10 @@ test('should be able to use setProperties to set multiple properties at once', f
 
 testBoth('calling setProperties completes safely despite exceptions', function(get,set) {
   var exc = new Error("Something unexpected happened!");
-  var obj = Ember.Object.createWithMixins({
+  var obj = EmberObject.createWithMixins({
     firstName: "Steve",
     lastName: "Jobs",
-    companyName: Ember.computed(function(key, value) {
+    companyName: computed(function(key, value) {
       if (value !== undefined) {
         throw exc;
       }
@@ -51,7 +56,7 @@ testBoth('calling setProperties completes safely despite exceptions', function(g
 
   var firstNameChangedCount = 0;
 
-  Ember.addObserver(obj, 'firstName', function() { firstNameChangedCount++; });
+  addObserver(obj, 'firstName', function() { firstNameChangedCount++; });
 
   try {
     obj.setProperties({
@@ -69,8 +74,8 @@ testBoth('calling setProperties completes safely despite exceptions', function(g
 });
 
 testBoth("should be able to retrieve cached values of computed properties without invoking the computed property", function(get) {
-  var obj = Ember.Object.createWithMixins({
-    foo: Ember.computed(function() {
+  var obj = EmberObject.createWithMixins({
+    foo: computed(function() {
       return "foo";
     }),
 
@@ -84,4 +89,12 @@ testBoth("should be able to retrieve cached values of computed properties withou
   equal(obj.cacheFor('foo'), "foo", "should return the cached value after it is invoked");
 
   equal(obj.cacheFor('bar'), undefined, "returns undefined if the value is not a computed property");
+});
+
+test('incrementProperty should work even if value is number in string', function() {
+  var obj = EmberObject.create({
+    age: "24"
+  });
+  obj.incrementProperty('age');
+  equal(25, obj.get('age'));
 });

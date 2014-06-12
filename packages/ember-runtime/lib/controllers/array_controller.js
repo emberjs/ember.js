@@ -1,14 +1,20 @@
-require('ember-runtime/system/array_proxy');
-require('ember-runtime/controllers/controller');
-require('ember-runtime/mixins/sortable');
-
 /**
 @module ember
 @submodule ember-runtime
 */
 
-var get = Ember.get, set = Ember.set, isGlobalPath = Ember.isGlobalPath,
-    forEach = Ember.EnumerableUtils.forEach, replace = Ember.EnumerableUtils.replace;
+import Ember from "ember-metal/core";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import EnumerableUtils from "ember-metal/enumerable_utils";
+import ArrayProxy from "ember-runtime/system/array_proxy";
+import SortableMixin from "ember-runtime/mixins/sortable";
+import { ControllerMixin } from "ember-runtime/controllers/controller";
+import {computed} from "ember-metal/computed";
+import EmberError from "ember-metal/error";
+
+var forEach = EnumerableUtils.forEach;
+var replace = EnumerableUtils.replace;
 
 /**
   `Ember.ArrayController` provides a way for you to publish a collection of
@@ -17,16 +23,16 @@ var get = Ember.get, set = Ember.set, isGlobalPath = Ember.isGlobalPath,
 
   The advantage of using an `ArrayController` is that you only have to set up
   your view bindings once; to change what's displayed, simply swap out the
-  `content` property on the controller.
+  `model` property on the controller.
 
   For example, imagine you wanted to display a list of items fetched via an XHR
-  request. Create an `Ember.ArrayController` and set its `content` property:
+  request. Create an `Ember.ArrayController` and set its `model` property:
 
   ```javascript
   MyApp.listController = Ember.ArrayController.create();
 
   $.get('people.json', function(data) {
-    MyApp.listController.set('content', data);
+    MyApp.listController.set('model', data);
   });
   ```
 
@@ -43,7 +49,7 @@ var get = Ember.get, set = Ember.set, isGlobalPath = Ember.isGlobalPath,
   capability comes from `Ember.ArrayProxy`, which this class inherits from.
 
   Sometimes you want to display computed properties within the body of an
-  `#each` helper that depend on the underlying items in `content`, but are not
+  `#each` helper that depend on the underlying items in `model`, but are not
   present on those items.   To do this, set `itemController` to the name of a
   controller (probably an `ObjectController`) that will wrap each individual item.
 
@@ -51,7 +57,7 @@ var get = Ember.get, set = Ember.set, isGlobalPath = Ember.isGlobalPath,
 
   ```handlebars
     {{#each post in controller}}
-      <li>{{title}} ({{titleLength}} characters)</li>
+      <li>{{post.title}} ({{post.titleLength}} characters)</li>
     {{/each}}
   ```
 
@@ -87,6 +93,9 @@ var get = Ember.get, set = Ember.set, isGlobalPath = Ember.isGlobalPath,
   });
   ```
 
+  The itemController instances will have a `parentController` property set to
+  the `ArrayController` instance.
+
   @class ArrayController
   @namespace Ember
   @extends Ember.ArrayProxy
@@ -94,8 +103,7 @@ var get = Ember.get, set = Ember.set, isGlobalPath = Ember.isGlobalPath,
   @uses Ember.ControllerMixin
 */
 
-Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
-  Ember.SortableMixin, {
+export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
 
   /**
     The controller used to wrap items, if any.
@@ -126,48 +134,57 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
     });
     ```
 
-    @method
-    @type String
-    @default null
+    @method lookupItemController
+    @param {Object} object
+    @return {String}
   */
   lookupItemController: function(object) {
     return get(this, 'itemController');
   },
 
   objectAtContent: function(idx) {
-    var length = get(this, 'length'),
-        object = get(this,'arrangedContent').objectAt(idx),
-        controllerClass = this.lookupItemController(object);
+    var length = get(this, 'length');
+    var arrangedContent = get(this, 'arrangedContent');
+    var object = arrangedContent && arrangedContent.objectAt(idx);
+    var controllerClass;
 
-    if (controllerClass && idx < length) {
-      return this.controllerAt(idx, object, controllerClass);
-    } else {
-      // When controllerClass is falsy we have not opted in to using item
-      // controllers, so return the object directly.  However, when
-      // controllerClass is defined but the index is out of range,  we want to
-      // return the "out of range" value, whatever that might be.  Rather than
-      // make assumptions (e.g. guessing `null` or `undefined`) we defer this to
-      // `arrangedContent`.
-      return object;
+    if (idx >= 0 && idx < length) {
+      controllerClass = this.lookupItemController(object);
+      if (controllerClass) {
+        return this.controllerAt(idx, object, controllerClass);
+      }
     }
+
+    // When `controllerClass` is falsy, we have not opted in to using item
+    // controllers, so return the object directly.
+
+    // When the index is out of range, we want to return the "out of range"
+    // value, whatever that might be.  Rather than make assumptions
+    // (e.g. guessing `null` or `undefined`) we defer this to `arrangedContent`.
+    return object;
   },
 
   arrangedContentDidChange: function() {
     this._super();
-    this._resetSubContainers();
+    this._resetSubControllers();
   },
 
   arrayContentDidChange: function(idx, removedCnt, addedCnt) {
-    var subContainers = get(this, 'subContainers'),
-        subContainersToRemove = subContainers.slice(idx, idx+removedCnt);
+    var subControllers = this._subControllers;
 
-    forEach(subContainersToRemove, function(subContainer) {
-      if (subContainer) { subContainer.destroy(); }
-    });
+    if (subControllers.length) {
+      var subControllersToRemove = subControllers.slice(idx, idx + removedCnt);
 
-    replace(subContainers, idx, removedCnt, new Array(addedCnt));
+      forEach(subControllersToRemove, function(subController) {
+        if (subController) {
+          subController.destroy();
+        }
+      });
 
-    // The shadow array of subcontainers must be updated before we trigger
+      replace(subControllers, idx, removedCnt, new Array(addedCnt));
+    }
+
+    // The shadow array of subcontrollers must be updated before we trigger
     // observers, otherwise observers will get the wrong subcontainer when
     // calling `objectAt`
     this._super(idx, removedCnt, addedCnt);
@@ -175,41 +192,80 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
 
   init: function() {
     this._super();
-    this._resetSubContainers();
+    this._subControllers = [];
   },
+
+  model: computed(function () {
+    return Ember.A();
+  }),
+
+  /**
+   * Flag to mark as being "virtual". Used to keep this instance
+   * from participating in the parentController hierarchy.
+   *
+   * @private
+   * @property _isVirtual
+   * @type Boolean
+   */
+  _isVirtual: false,
 
   controllerAt: function(idx, object, controllerClass) {
-    var container = get(this, 'container'),
-        subContainers = get(this, 'subContainers'),
-        subContainer = subContainers[idx],
-        controller;
+    var fullName, subController, parentController;
 
-    if (!subContainer) {
-      subContainer = subContainers[idx] = container.child();
+    var container = get(this, 'container');
+    var subControllers = this._subControllers;
+
+    if (subControllers.length > idx) {
+      subController = subControllers[idx];
+
+      if (subController) {
+        return subController;
+      }
     }
 
-    controller = subContainer.lookup("controller:" + controllerClass);
-    if (!controller) {
-      throw new Error('Could not resolve itemController: "' + controllerClass + '"');
+    fullName = 'controller:' + controllerClass;
+
+    if (!container.has(fullName)) {
+      throw new EmberError('Could not resolve itemController: "' + controllerClass + '"');
     }
 
-    controller.set('target', this);
-    controller.set('content', object);
+    if (this._isVirtual) {
+      parentController = get(this, 'parentController');
+    } else {
+      parentController = this;
+    }
 
-    return controller;
+    subController = container.lookupFactory(fullName).create({
+      target: parentController,
+      parentController: parentController,
+      model: object
+    });
+
+    subControllers[idx] = subController;
+
+    return subController;
   },
 
-  subContainers: null,
+  _subControllers: null,
 
-  _resetSubContainers: function() {
-    var subContainers = get(this, 'subContainers');
+  _resetSubControllers: function() {
+    var controller;
+    var subControllers = this._subControllers;
 
-    if (subContainers) {
-      forEach(subContainers, function(subContainer) {
-        if (subContainer) { subContainer.destroy(); }
-      });
+    if (subControllers.length) {
+      for (var i = 0, length = subControllers.length; length > i; i++) {
+        controller = subControllers[i];
+        if (controller) {
+          controller.destroy();
+        }
+      }
+
+      subControllers.length = 0;
     }
+  },
 
-    this.set('subContainers', Ember.A());
+  willDestroy: function() {
+    this._resetSubControllers();
+    this._super();
   }
 });

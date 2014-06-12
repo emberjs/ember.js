@@ -1,13 +1,15 @@
-module('system/run_loop/once_test');
+import run from 'ember-metal/run_loop';
+
+QUnit.module('system/run_loop/once_test');
 
 test('calling invokeOnce more than once invokes only once', function() {
 
   var count = 0;
-  Ember.run(function() {
+  run(function() {
     var F = function() { count++; };
-    Ember.run.once(F);
-    Ember.run.once(F);
-    Ember.run.once(F);
+    run.once(F);
+    run.once(F);
+    run.once(F);
   });
 
   equal(count, 1, 'should have invoked once');
@@ -16,12 +18,12 @@ test('calling invokeOnce more than once invokes only once', function() {
 test('should differentiate based on target', function() {
 
   var A = { count: 0 }, B = { count: 0 };
-  Ember.run(function() {
+  run(function() {
     var F = function() { this.count++; };
-    Ember.run.once(A, F);
-    Ember.run.once(B, F);
-    Ember.run.once(A, F);
-    Ember.run.once(B, F);
+    run.once(A, F);
+    run.once(B, F);
+    run.once(A, F);
+    run.once(B, F);
   });
 
   equal(A.count, 1, 'should have invoked once on A');
@@ -32,12 +34,12 @@ test('should differentiate based on target', function() {
 test('should ignore other arguments - replacing previous ones', function() {
 
   var A = { count: 0 }, B = { count: 0 };
-  Ember.run(function() {
+  run(function() {
     var F = function(amt) { this.count += amt; };
-    Ember.run.once(A, F, 10);
-    Ember.run.once(B, F, 20);
-    Ember.run.once(A, F, 30);
-    Ember.run.once(B, F, 40);
+    run.once(A, F, 10);
+    run.once(B, F, 20);
+    run.once(A, F, 30);
+    run.once(B, F, 40);
   });
 
   equal(A.count, 30, 'should have invoked once on A');
@@ -46,9 +48,9 @@ test('should ignore other arguments - replacing previous ones', function() {
 
 test('should be inside of a runloop when running', function() {
 
-  Ember.run(function() {
-    Ember.run.once(function() {
-      ok(!!Ember.run.currentRunLoop, 'should have a runloop');
+  run(function() {
+    run.once(function() {
+      ok(!!run.currentRunLoop, 'should have a runloop');
     });
   });
 });

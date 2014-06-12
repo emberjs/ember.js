@@ -1,51 +1,53 @@
-/*global TestApp:true*/
-var set = Ember.set, get = Ember.get;
+import Ember from "ember-metal/core";
+import { get } from "ember-metal/property_get";
+import run from "ember-metal/run_loop";
+import { computed } from "ember-metal/computed";
+import EmberObject from "ember-runtime/system/object";
+import EmberView from "ember-views/views/view";
 
-var originalLookup = Ember.lookup, lookup;
+var originalLookup = Ember.lookup, lookup, view;
 
-module("Ember.View.create", {
+QUnit.module("EmberView.create", {
   setup: function() {
     Ember.lookup = lookup = {};
   },
   teardown: function() {
+    run(function() {
+      view.destroy();
+    });
+
     Ember.lookup = originalLookup;
   }
 });
 
 test("registers view in the global views hash using layerId for event targeted", function() {
-  var v = Ember.View.create();
-  equal(Ember.View.views[get(v, 'elementId')], v, 'registers view');
-});
-
-test("registers itself with a controller if the viewController property is set", function() {
-  lookup.TestApp = {};
-  lookup.TestApp.fooController = Ember.Object.create();
-
-  var v = Ember.View.create({
-    viewController: 'TestApp.fooController'
+  view = EmberView.create();
+  run(function() {
+    view.appendTo('#qunit-fixture');
   });
-
-  equal(lookup.TestApp.fooController.get('view'), v, "sets the view property of the controller");
+  equal(EmberView.views[get(view, 'elementId')], view, 'registers view');
 });
 
-module("Ember.View.createWithMixins");
+QUnit.module("EmberView.createWithMixins");
 
 test("should warn if a non-array is used for classNames", function() {
-  raises(function() {
-    Ember.View.createWithMixins({
-      classNames: Ember.computed(function() {
+  expectAssertion(function() {
+    EmberView.createWithMixins({
+      elementId: 'test',
+      classNames: computed(function() {
         return ['className'];
       }).volatile()
     });
-  }, /Only arrays are allowed/i, 'should warn that an array was not used');
+  }, /Only arrays are allowed/i);
 });
 
 test("should warn if a non-array is used for classNamesBindings", function() {
-  raises(function() {
-    Ember.View.createWithMixins({
-      classNameBindings: Ember.computed(function() {
+  expectAssertion(function() {
+    EmberView.createWithMixins({
+      elementId: 'test',
+      classNameBindings: computed(function() {
         return ['className'];
       }).volatile()
     });
-  }, /Only arrays are allowed/i, 'should warn that an array was not used');
+  }, /Only arrays are allowed/i);
 });

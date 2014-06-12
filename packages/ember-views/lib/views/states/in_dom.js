@@ -1,90 +1,43 @@
-require('ember-views/views/states/default');
+import Ember from "ember-metal/core"; // Ember.assert
+import { create } from "ember-metal/platform";
+import merge from "ember-metal/merge";
+import EmberError from "ember-metal/error";
 
+import hasElement from "ember-views/views/states/has_element";
 /**
 @module ember
 @submodule ember-views
 */
 
-var get = Ember.get, set = Ember.set, meta = Ember.meta;
+var inDOM = create(hasElement);
 
-var hasElement = Ember.View.states.hasElement = Ember.create(Ember.View.states._default);
+var View;
 
-Ember.merge(hasElement, {
-  $: function(view, sel) {
-    var elem = get(view, 'element');
-    return sel ? Ember.$(sel, elem) : Ember.$(elem);
-  },
+merge(inDOM, {
+  enter: function(view) {
+    if (!View) { View = requireModule('ember-views/views/view')["default"]; } // ES6TODO: this sucks. Have to avoid cycles...
 
-  getElement: function(view) {
-    var parent = get(view, 'parentView');
-    if (parent) { parent = get(parent, 'element'); }
-    if (parent) { return view.findElementInParentElement(parent); }
-    return Ember.$("#" + get(view, 'elementId'))[0];
-  },
-
-  setElement: function(view, value) {
-    if (value === null) {
-      view.transitionTo('preRender');
-    } else {
-      throw "You cannot set an element to a non-null value when the element is already in the DOM.";
+    // Register the view for event handling. This hash is used by
+    // Ember.EventDispatcher to dispatch incoming events.
+    if (!view.isVirtual) {
+      Ember.assert("Attempted to register a view with an id already in use: "+view.elementId, !View.views[view.elementId]);
+      View.views[view.elementId] = view;
     }
 
-    return value;
+    view.addBeforeObserver('elementId', function() {
+      throw new EmberError("Changing a view's elementId after creation is not allowed");
+    });
   },
 
-  // once the view has been inserted into the DOM, rerendering is
-  // deferred to allow bindings to synchronize.
-  rerender: function(view) {
-    view.triggerRecursively('willClearRender');
+  exit: function(view) {
+    if (!View) { View = requireModule('ember-views/views/view')["default"]; } // ES6TODO: this sucks. Have to avoid cycles...
 
-    view.clearRenderedChildren();
-
-    view.domManager.replace(view);
-    return view;
+    if (!this.isVirtual) delete View.views[view.elementId];
   },
 
-  // once the view is already in the DOM, destroying it removes it
-  // from the DOM, nukes its element, and puts it back into the
-  // preRender state if inDOM.
-
-  destroyElement: function(view) {
-    view._notifyWillDestroyElement();
-    view.domManager.remove(view);
-    set(view, 'element', null);
-    if (view._scheduledInsert) {
-      Ember.run.cancel(view._scheduledInsert);
-      view._scheduledInsert = null;
-    }
-    return view;
-  },
-
-  empty: function(view) {
-    var _childViews = view._childViews, len, idx;
-    if (_childViews) {
-      len = _childViews.length;
-      for (idx = 0; idx < len; idx++) {
-        _childViews[idx]._notifyWillDestroyElement();
-      }
-    }
-    view.domManager.empty(view);
-  },
-
-  // Handle events from `Ember.EventDispatcher`
-  handleEvent: function(view, eventName, evt) {
-    if (view.has(eventName)) {
-      // Handler should be able to re-dispatch events, so we don't
-      // preventDefault or stopPropagation.
-      return view.trigger(eventName, evt);
-    } else {
-      return true; // continue event propagation
-    }
-  }
-});
-
-var inDOM = Ember.View.states.inDOM = Ember.create(hasElement);
-
-Ember.merge(inDOM, {
   insertElement: function(view, fn) {
-    throw "You can't insert an element into the DOM that has already been inserted";
+    throw new EmberError("You can't insert an element into the DOM that has already been inserted");
   }
 });
+
+export default inDOM;

@@ -1,11 +1,16 @@
-var instrument = Ember.Instrumentation;
+import {
+  instrument,
+  subscribe,
+  unsubscribe,
+  reset
+} from "ember-metal/instrumentation";
 
-module("Ember Instrumentation", {
+QUnit.module("Ember Instrumentation", {
   setup: function() {
 
   },
   teardown: function() {
-    instrument.reset();
+    reset();
   }
 });
 
@@ -14,7 +19,7 @@ test("subscribing to a simple path receives the listener", function() {
 
   var sentPayload = {}, count = 0;
 
-  instrument.subscribe("render", {
+  subscribe("render", {
     before: function(name, timestamp, payload) {
       if (count === 0) {
         strictEqual(name, "render");
@@ -40,11 +45,11 @@ test("subscribing to a simple path receives the listener", function() {
     }
   });
 
-  instrument.instrument("render", sentPayload, function() {
+  instrument("render", sentPayload, function() {
 
   });
 
-  instrument.instrument("render.handlebars", sentPayload, function() {
+  instrument("render.handlebars", sentPayload, function() {
 
   });
 });
@@ -54,7 +59,7 @@ test("returning a value from the before callback passes it to the after callback
 
   var passthru1 = {}, passthru2 = {};
 
-  instrument.subscribe("render", {
+  subscribe("render", {
     before: function(name, timestamp, payload) {
       return passthru1;
     },
@@ -63,7 +68,7 @@ test("returning a value from the before callback passes it to the after callback
     }
   });
 
-  instrument.subscribe("render", {
+  subscribe("render", {
     before: function(name, timestamp, payload) {
       return passthru2;
     },
@@ -72,7 +77,7 @@ test("returning a value from the before callback passes it to the after callback
     }
   });
 
-  instrument.instrument("render", null, function() {});
+  instrument("render", null, function() {});
 });
 
 test("raising an exception in the instrumentation attaches it to the payload", function() {
@@ -80,29 +85,29 @@ test("raising an exception in the instrumentation attaches it to the payload", f
 
   var error = new Error("Instrumentation");
 
-  instrument.subscribe("render", {
+  subscribe("render", {
     before: function() {},
     after: function(name, timestamp, payload) {
       strictEqual(payload.exception, error);
     }
   });
 
-  instrument.subscribe("render", {
+  subscribe("render", {
     before: function() {},
     after: function(name, timestamp, payload) {
       strictEqual(payload.exception, error);
     }
   });
 
-  instrument.instrument("render.handlebars", null, function() {
+  instrument("render.handlebars", null, function() {
     throw error;
   });
 });
 
 test("it is possible to add a new subscriber after the first instrument", function() {
-  instrument.instrument("render.handlebars", null, function() {});
+  instrument("render.handlebars", null, function() {});
 
-  instrument.subscribe("render", {
+  subscribe("render", {
     before: function() {
       ok(true, "Before callback was called");
     },
@@ -111,7 +116,7 @@ test("it is possible to add a new subscriber after the first instrument", functi
     }
   });
 
-  instrument.instrument("render.handlebars", null, function() {});
+  instrument("render.handlebars", null, function() {});
 });
 
 test("it is possible to remove a subscriber", function() {
@@ -119,7 +124,7 @@ test("it is possible to remove a subscriber", function() {
 
   var count = 0;
 
-  var subscriber = instrument.subscribe("render", {
+  var subscriber = subscribe("render", {
     before: function() {
       equal(count, 0);
       ok(true, "Before callback was called");
@@ -131,9 +136,9 @@ test("it is possible to remove a subscriber", function() {
     }
   });
 
-  instrument.instrument("render.handlebars", null, function() {});
+  instrument("render.handlebars", null, function() {});
 
-  instrument.unsubscribe(subscriber);
+  unsubscribe(subscriber);
 
-  instrument.instrument("render.handlebars", null, function() {});
+  instrument("render.handlebars", null, function() {});
 });

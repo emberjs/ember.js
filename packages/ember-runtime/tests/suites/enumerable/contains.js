@@ -1,6 +1,6 @@
-require('ember-runtime/~tests/suites/enumerable');
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = Ember.EnumerableTests;
+var suite = SuiteModuleBuilder.create();
 
 suite.module('contains');
 
@@ -16,3 +16,4 @@ suite.test('contains returns false if item is not in enumerable', function() {
   equal(obj.contains(data[0]), false, 'should return false if not contained');
 });
 
+export default suite;

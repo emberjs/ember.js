@@ -1,6 +1,7 @@
-require('ember-runtime/~tests/suites/array');
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import {fmt} from "ember-runtime/system/string";
 
-var suite = Ember.ArrayTests;
+var suite = SuiteModuleBuilder.create();
 
 suite.module('objectAt');
 
@@ -11,7 +12,7 @@ suite.test("should return object at specified index", function() {
       idx;
 
   for(idx=0;idx<len;idx++) {
-    equal(obj.objectAt(idx), expected[idx], Ember.String.fmt('obj.objectAt(%@) should match', [idx]));
+    equal(obj.objectAt(idx), expected[idx], fmt('obj.objectAt(%@) should match', [idx]));
   }
 
 });
@@ -26,4 +27,4 @@ suite.test("should return undefined when requesting objects beyond index", funct
   equal(obj.objectAt(0), undefined, 'should return undefined for obj.objectAt(0) when len = 0');
 });
 
-
+export default suite;

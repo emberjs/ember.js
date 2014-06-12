@@ -1,8 +1,10 @@
-module("Ember.ObjectController");
+import ObjectController from "ember-runtime/controllers/object_controller";
+
+QUnit.module("Ember.ObjectController");
 
 
 test("should be able to set the target property of an ObjectController", function() {
-  var controller = Ember.ObjectController.create();
+  var controller = ObjectController.create();
   var target = {};
 
   controller.set('target', target);

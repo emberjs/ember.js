@@ -1,13 +1,17 @@
-require('ember-runtime/system/string');
-
 /**
 @module ember
 @submodule ember-runtime
 */
 
 
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { required } from "ember-metal/mixin";
+import { Freezable } from "ember-runtime/mixins/freezable";
+import { Mixin } from 'ember-metal/mixin';
+import { fmt } from "ember-runtime/system/string";
+import EmberError from 'ember-metal/error';
 
-var get = Ember.get, set = Ember.set;
 
 /**
   Implements some standard methods for copying an object. Add this mixin to
@@ -22,21 +26,18 @@ var get = Ember.get, set = Ember.set;
 
   @class Copyable
   @namespace Ember
-  @extends Ember.Mixin
   @since Ember 0.9
 */
-Ember.Copyable = Ember.Mixin.create(
-/** @scope Ember.Copyable.prototype */ {
-
+export default Mixin.create({
   /**
     Override to return a copy of the receiver. Default implementation raises
     an exception.
 
     @method copy
-    @param deep {Boolean} if `true`, a deep copy of the object should be made
+    @param {Boolean} deep if `true`, a deep copy of the object should be made
     @return {Object} copy of receiver
   */
-  copy: Ember.required(Function),
+  copy: required(Function),
 
   /**
     If the object implements `Ember.Freezable`, then this will return a new
@@ -53,10 +54,10 @@ Ember.Copyable = Ember.Mixin.create(
     @return {Object} copy of receiver or receiver
   */
   frozenCopy: function() {
-    if (Ember.Freezable && Ember.Freezable.detect(this)) {
+    if (Freezable && Freezable.detect(this)) {
       return get(this, 'isFrozen') ? this : this.copy().freeze();
     } else {
-      throw new Error(Ember.String.fmt("%@ does not support freezing", [this]));
+      throw new EmberError(fmt("%@ does not support freezing", [this]));
     }
   }
 });

@@ -1,59 +1,41 @@
-require("ember-handlebars/ext");
-require("ember-views/views/view");
-require("ember-handlebars/controls/text_support");
-
 /**
 @module ember
 @submodule ember-handlebars
 */
 
-var get = Ember.get, set = Ember.set;
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import Component from "ember-views/views/component";
+import TextSupport from "ember-handlebars/controls/text_support";
 
 /**
-  The `Ember.TextField` view class renders a text
-  [input](https://developer.mozilla.org/en/HTML/Element/Input) element. It
-  allows for binding Ember properties to the text field contents (`value`),
-  live-updating as the user inputs text.
 
-  Example:
+  The internal class used to create text inputs when the `{{input}}`
+  helper is used with `type` of `text`.
 
-  ```handlebars
-  {{view Ember.TextField valueBinding="firstName"}}
-  ```
+  See [Handlebars.helpers.input](/api/classes/Ember.Handlebars.helpers.html#method_input)  for usage details.
 
   ## Layout and LayoutName properties
 
   Because HTML `input` elements are self closing `layout` and `layoutName`
-  properties will not be applied. See `Ember.View`'s layout section for more
-  information.
-
-  ## HTML Attributes
-
-  By default `Ember.TextField` provides support for `type`, `value`, `size`,
-  `placeholder`, `disabled`, `maxlength` and `tabindex` attributes on a
-  test field. If you need to support more attributes have a look at the
-  `attributeBindings` property in `Ember.View`'s HTML Attributes section.
-
-  To globally add support for additional attributes you can reopen
-  `Ember.TextField` or `Ember.TextSupport`.
-
-  ```javascript
-  Ember.TextSupport.reopen({
-    attributeBindings: ["required"]
-  })
-  ```
+  properties will not be applied. See [Ember.View](/api/classes/Ember.View.html)'s
+  layout section for more information.
 
   @class TextField
   @namespace Ember
-  @extends Ember.View
+  @extends Ember.Component
   @uses Ember.TextSupport
 */
-Ember.TextField = Ember.View.extend(Ember.TextSupport,
-  /** @scope Ember.TextField.prototype */ {
+export default Component.extend(TextSupport, {
+  instrumentDisplay: '{{input type="text"}}',
 
   classNames: ['ember-text-field'],
   tagName: "input",
-  attributeBindings: ['type', 'value', 'size'],
+  attributeBindings: ['type', 'value', 'size', 'pattern', 'name', 'min', 'max',
+                      'accept', 'autocomplete', 'autosave', 'formaction',
+                      'formenctype', 'formmethod', 'formnovalidate', 'formtarget',
+                      'height', 'inputmode', 'list', 'multiple', 'step',
+                      'width'],
 
   /**
     The `value` attribute of the input element. As the user inputs text, this
@@ -84,26 +66,31 @@ Ember.TextField = Ember.View.extend(Ember.TextSupport,
   size: null,
 
   /**
-    The action to be sent when the user presses the return key.
+    The `pattern` attribute of input element.
 
-    This is similar to the `{{action}}` helper, but is fired when
-    the user presses the return key when editing a text field, and sends
-    the value of the field as the context.
-
-   @property action
-   @type String
-   @default null
+    @property pattern
+    @type String
+    @default null
   */
-  action: null,
+  pattern: null,
 
-  insertNewline: function() {
-    var controller = get(this, 'controller'),
-        action = get(this, 'action');
+  /**
+    The `min` attribute of input element used with `type="number"` or `type="range"`.
 
-    if (action) {
-      controller.send(action, get(this, 'value'));
-    }
+    @property min
+    @type String
+    @default null
+    @since 1.4.0
+  */
+  min: null,
 
-    return false;
-  }
+  /**
+    The `max` attribute of input element used with `type="number"` or `type="range"`.
+
+    @property max
+    @type String
+    @default null
+    @since 1.4.0
+  */
+  max: null
 });

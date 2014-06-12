@@ -1,13 +1,14 @@
-require('ember-runtime/~tests/suites/suite');
+import {Suite, SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import {required} from "ember-metal/mixin";
 
-Ember.CopyableTests = Ember.Suite.extend({
+var CopyableTests = Suite.extend({
 
   /**
     Must be able to create a new object for testing.
 
     @returns {Object} object
   */
-  newObject: Ember.required(Function),
+  newObject: required(Function),
 
   /**
     Compares the two passed in objects.  Returns true if the two objects
@@ -21,7 +22,7 @@ Ember.CopyableTests = Ember.Suite.extend({
 
     @returns {Boolean}
   */
-  isEqual: Ember.required(Function),
+  isEqual: required(Function),
 
   /**
     Set this to true if you expect the objects you test to be freezable.
@@ -34,3 +35,11 @@ Ember.CopyableTests = Ember.Suite.extend({
   shouldBeFreezable: false
 
 });
+
+import copyTests from 'ember-runtime/tests/suites/copyable/copy';
+import frozenCopyTests from 'ember-runtime/tests/suites/copyable/frozenCopy';
+
+CopyableTests.importModuleTests(copyTests);
+CopyableTests.importModuleTests(frozenCopyTests);
+
+export default CopyableTests;

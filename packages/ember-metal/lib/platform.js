@@ -1,6 +1,6 @@
 /*globals Node */
 
-require('ember-metal/core');
+import Ember from "ember-metal/core";
 
 /**
 @module ember-metal
@@ -13,8 +13,8 @@ require('ember-metal/core');
   @namespace Ember
   @static
 */
-var platform = Ember.platform = {};
-
+// TODO remove this
+var platform = {};
 
 /**
   Identical to `Object.create()`. Implements if not available natively.
@@ -22,14 +22,21 @@ var platform = Ember.platform = {};
   @method create
   @for Ember
 */
-Ember.create = Object.create;
+var create = Object.create;
+
+// IE8 has Object.create but it couldn't treat property descriptors.
+if (create) {
+  if (create({a: 1}, {a: {value: 2}}).a !== 2) {
+    create = null;
+  }
+}
 
 // STUB_OBJECT_CREATE allows us to override other libraries that stub
 // Object.create different than we would prefer
-if (!Ember.create || Ember.ENV.STUB_OBJECT_CREATE) {
+if (!create || Ember.ENV.STUB_OBJECT_CREATE) {
   var K = function() {};
 
-  Ember.create = function(obj, props) {
+  create = function(obj, props) {
     K.prototype = obj;
     obj = new K();
     if (props) {
@@ -44,7 +51,7 @@ if (!Ember.create || Ember.ENV.STUB_OBJECT_CREATE) {
     return obj;
   };
 
-  Ember.create.isSimulated = true;
+  create.isSimulated = true;
 }
 
 var defineProperty = Object.defineProperty;
@@ -53,7 +60,7 @@ var canRedefineProperties, canDefinePropertyOnDOM;
 // Catch IE8 where Object.defineProperty exists but only works on DOM elements
 if (defineProperty) {
   try {
-    defineProperty({}, 'a',{get:function(){}});
+    defineProperty({}, 'a',{get:function() {}});
   } catch (e) {
     defineProperty = null;
   }
@@ -84,7 +91,7 @@ if (defineProperty) {
 
   // This is for Safari 5.0, which supports Object.defineProperty, but not
   // on DOM nodes.
-  canDefinePropertyOnDOM = (function(){
+  canDefinePropertyOnDOM = (function() {
     try {
       defineProperty(document.createElement('div'), 'definePropertyOnDOM', {});
       return true;
@@ -96,7 +103,7 @@ if (defineProperty) {
   if (!canRedefineProperties) {
     defineProperty = null;
   } else if (!canDefinePropertyOnDOM) {
-    defineProperty = function(obj, keyName, desc){
+    defineProperty = function(obj, keyName, desc) {
       var isNode;
 
       if (typeof Node === "object") {
@@ -153,3 +160,8 @@ if (!platform.defineProperty) {
 if (Ember.ENV.MANDATORY_SETTER && !platform.hasPropertyAccessors) {
   Ember.ENV.MANDATORY_SETTER = false;
 }
+
+export {
+  create,
+  platform
+};

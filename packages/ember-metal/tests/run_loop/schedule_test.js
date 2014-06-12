@@ -1,11 +1,13 @@
-module('system/run_loop/schedule_test');
+import run from 'ember-metal/run_loop';
+
+QUnit.module('system/run_loop/schedule_test');
 
 test('scheduling item in queue should defer until finished', function() {
   var cnt = 0;
 
-  Ember.run(function() {
-    Ember.run.schedule('actions', function() { cnt++; });
-    Ember.run.schedule('actions', function() { cnt++; });
+  run(function() {
+    run.schedule('actions', function() { cnt++; });
+    run.schedule('actions', function() { cnt++; });
     equal(cnt, 0, 'should not run action yet') ;
   });
 
@@ -16,12 +18,12 @@ test('scheduling item in queue should defer until finished', function() {
 test('nested runs should queue each phase independently', function() {
   var cnt = 0;
 
-  Ember.run(function() {
-    Ember.run.schedule('actions', function() { cnt++; });
+  run(function() {
+    run.schedule('actions', function() { cnt++; });
     equal(cnt, 0, 'should not run action yet') ;
 
-    Ember.run(function() {
-      Ember.run.schedule('actions', function() { cnt++; });
+    run(function() {
+      run.schedule('actions', function() { cnt++; });
     });
     equal(cnt, 1, 'should not run action yet') ;
 
@@ -34,23 +36,44 @@ test('nested runs should queue each phase independently', function() {
 test('prior queues should be flushed before moving on to next queue', function() {
   var order = [];
 
-  Ember.run(function() {
-    Ember.run.schedule('sync', function() {
+  run(function() {
+    var runLoop = run.currentRunLoop;
+    ok(runLoop, 'run loop present');
+
+    run.schedule('sync', function() {
       order.push('sync');
+      equal(runLoop, run.currentRunLoop, 'same run loop used');
     });
-    Ember.run.schedule('actions', function() {
+    run.schedule('actions', function() {
       order.push('actions');
-      Ember.run.schedule('actions', function() {
+      equal(runLoop, run.currentRunLoop, 'same run loop used');
+
+      run.schedule('actions', function() {
         order.push('actions');
+        equal(runLoop, run.currentRunLoop, 'same run loop used');
       });
-      Ember.run.schedule('sync', function() {
+
+      run.schedule('sync', function() {
         order.push('sync');
+        equal(runLoop, run.currentRunLoop, 'same run loop used');
       });
     });
-    Ember.run.schedule('timers', function() {
-      order.push('timers');
+    run.schedule('destroy', function() {
+      order.push('destroy');
+      equal(runLoop, run.currentRunLoop, 'same run loop used');
     });
   });
 
-  deepEqual(order, ['sync', 'actions', 'sync', 'actions', 'timers']);
+  deepEqual(order, ['sync', 'actions', 'sync', 'actions', 'destroy']);
+});
+
+test('makes sure it does not trigger an autorun during testing', function() {
+  expectAssertion(function() {
+    run.schedule('actions', function() {});
+  }, /wrap any code with asynchronous side-effects in an run/);
+
+  // make sure not just the first violation is asserted.
+  expectAssertion(function() {
+    run.schedule('actions', function() {});
+  }, /wrap any code with asynchronous side-effects in an run/);
 });

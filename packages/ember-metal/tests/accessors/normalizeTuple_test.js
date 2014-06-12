@@ -1,4 +1,5 @@
-/*globals Foo:true $foo:true */
+/*globals Foo:true, $foo:true */
+import { normalizeTuple } from "ember-metal/property_get";
 
 var obj, moduleOpts = {
   setup: function() {
@@ -30,46 +31,42 @@ var obj, moduleOpts = {
   }
 };
 
-module('Ember.normalizeTuple', moduleOpts);
+QUnit.module('normalizeTuple', moduleOpts);
 
 // ..........................................................
 // LOCAL PATHS
 //
 
 test('[obj, foo] -> [obj, foo]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'foo'), [obj, 'foo']);
+  deepEqual(normalizeTuple(obj, 'foo'), [obj, 'foo']);
 });
 
 test('[obj, *] -> [obj, *]', function() {
-  deepEqual(Ember.normalizeTuple(obj, '*'), [obj, '*']);
+  deepEqual(normalizeTuple(obj, '*'), [obj, '*']);
 });
 
 test('[obj, foo.bar] -> [obj, foo.bar]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'foo.bar'), [obj, 'foo.bar']);
+  deepEqual(normalizeTuple(obj, 'foo.bar'), [obj, 'foo.bar']);
 });
 
 test('[obj, foo.*] -> [obj, foo.*]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'foo.*'), [obj, 'foo.*']);
+  deepEqual(normalizeTuple(obj, 'foo.*'), [obj, 'foo.*']);
 });
 
 test('[obj, foo.*.baz] -> [obj, foo.*.baz]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'foo.*.baz'), [obj, 'foo.*.baz']);
+  deepEqual(normalizeTuple(obj, 'foo.*.baz'), [obj, 'foo.*.baz']);
 });
 
 test('[obj, this.foo] -> [obj, foo]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'this.foo'), [obj, 'foo']);
+  deepEqual(normalizeTuple(obj, 'this.foo'), [obj, 'foo']);
 });
 
 test('[obj, this.foo.bar] -> [obj, foo.bar]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'this.foo.bar'), [obj, 'foo.bar']);
-});
-
-test('[obj, .foo.bar] -> [obj, foo.bar]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'this.foo.bar'), [obj, 'foo.bar']);
+  deepEqual(normalizeTuple(obj, 'this.foo.bar'), [obj, 'foo.bar']);
 });
 
 test('[obj, this.Foo.bar] -> [obj, Foo.bar]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'this.Foo.bar'), [obj, 'Foo.bar']);
+  deepEqual(normalizeTuple(obj, 'this.Foo.bar'), [obj, 'Foo.bar']);
 });
 
 // ..........................................................
@@ -77,15 +74,15 @@ test('[obj, this.Foo.bar] -> [obj, Foo.bar]', function() {
 //
 
 test('[obj, Foo] -> [obj, Foo]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'Foo'), [obj, 'Foo']);
+  deepEqual(normalizeTuple(obj, 'Foo'), [obj, 'Foo']);
 });
 
 test('[obj, Foo.bar] -> [Foo, bar]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'Foo.bar'), [Foo, 'bar']);
+  deepEqual(normalizeTuple(obj, 'Foo.bar'), [Foo, 'bar']);
 });
 
 test('[obj, $foo.bar.baz] -> [$foo, bar.baz]', function() {
-  deepEqual(Ember.normalizeTuple(obj, '$foo.bar.baz'), [$foo, 'bar.baz']);
+  deepEqual(normalizeTuple(obj, '$foo.bar.baz'), [$foo, 'bar.baz']);
 });
 
 // ..........................................................
@@ -94,10 +91,10 @@ test('[obj, $foo.bar.baz] -> [$foo, bar.baz]', function() {
 
 test('[null, Foo] -> EXCEPTION', function() {
   raises(function() {
-    Ember.normalizeTuple(null, 'Foo');
+    normalizeTuple(null, 'Foo');
   }, Error);
 });
 
 test('[null, Foo.bar] -> [Foo, bar]', function() {
-  deepEqual(Ember.normalizeTuple(null, 'Foo.bar'), [Foo, 'bar']);
+  deepEqual(normalizeTuple(null, 'Foo.bar'), [Foo, 'bar']);
 });

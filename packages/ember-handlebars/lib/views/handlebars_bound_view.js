@@ -1,18 +1,35 @@
-/*globals Handlebars */
+/*globals Handlebars, Metamorph:true */
 /*jshint newcap:false*/
 
-require("metamorph");
 
 /**
 @module ember
 @submodule ember-handlebars
 */
 
-var get = Ember.get, set = Ember.set, handlebarsGet = Ember.Handlebars.get;
+import EmberHandlebars from "ember-handlebars-compiler"; // EmberHandlebars.SafeString;
+var SafeString = EmberHandlebars.SafeString;
+
+import Ember from "ember-metal/core"; // Ember.K
+var K = Ember.K;
+
 var Metamorph = requireModule('metamorph');
 
-require('ember-views/views/view');
-require('ember-handlebars/views/metamorph_view');
+import EmberError from "ember-metal/error";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import merge from "ember-metal/merge";
+import run from "ember-metal/run_loop";
+import { computed } from "ember-metal/computed";
+import View from "ember-views/views/view";
+import {
+  cloneStates,
+  states
+} from "ember-views/views/states";
+var viewStates = states;
+
+import { _MetamorphView } from "ember-handlebars/views/metamorph_view";
+import { handlebarsGet } from "ember-handlebars/ext";
 
 function SimpleHandlebarsView(path, pathRoot, isEscaped, templateData) {
   this.path = path;
@@ -23,9 +40,9 @@ function SimpleHandlebarsView(path, pathRoot, isEscaped, templateData) {
   this.morph = Metamorph();
   this.state = 'preRender';
   this.updateId = null;
+  this._parentView = null;
+  this.buffer = null;
 }
-
-Ember._SimpleHandlebarsView = SimpleHandlebarsView;
 
 SimpleHandlebarsView.prototype = {
   isVirtual: true,
@@ -33,13 +50,19 @@ SimpleHandlebarsView.prototype = {
 
   destroy: function () {
     if (this.updateId) {
-      Ember.run.cancel(this.updateId);
+      run.cancel(this.updateId);
       this.updateId = null;
     }
+    if (this._parentView) {
+      this._parentView.removeChild(this);
+    }
     this.morph = null;
+    this.state = 'destroyed';
   },
 
-  propertyDidChange: Ember.K,
+  propertyWillChange: K,
+
+  propertyDidChange: K,
 
   normalizedValue: function() {
     var path = this.path,
@@ -78,7 +101,7 @@ SimpleHandlebarsView.prototype = {
 
     if (result === null || result === undefined) {
       result = "";
-    } else if (!(result instanceof Handlebars.SafeString)) {
+    } else if (!(result instanceof SafeString)) {
       result = String(result);
     }
 
@@ -92,10 +115,10 @@ SimpleHandlebarsView.prototype = {
       case 'destroyed':
         break;
       case 'inBuffer':
-        throw new Ember.Error("Something you did tried to replace an {{expression}} before it was inserted into the DOM.");
+        throw new EmberError("Something you did tried to replace an {{expression}} before it was inserted into the DOM.");
       case 'hasElement':
       case 'inDOM':
-        this.updateId = Ember.run.scheduleOnce('render', this, 'update');
+        this.updateId = run.scheduleOnce('render', this, 'update');
         break;
     }
 
@@ -112,15 +135,15 @@ SimpleHandlebarsView.prototype = {
   }
 };
 
-var states = Ember.View.cloneStates(Ember.View.states), merge = Ember.merge;
+states = cloneStates(viewStates);
 
 merge(states._default, {
-  rerenderIfNeeded: Ember.K
+  rerenderIfNeeded: K
 });
 
 merge(states.inDOM, {
   rerenderIfNeeded: function(view) {
-    if (get(view, 'normalizedValue') !== view._lastNormalizedValue) {
+    if (view.normalizedValue() !== view._lastNormalizedValue) {
       view.rerender();
     }
   }
@@ -140,9 +163,10 @@ merge(states.inDOM, {
   @extends Ember._MetamorphView
   @private
 */
-Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
-  instrumentName: 'render.boundHandlebars',
-  states: states,
+var _HandlebarsBoundView = _MetamorphView.extend({
+  instrumentName: 'boundHandlebars',
+
+  _states: states,
 
   /**
     The function used to determine if the `displayTemplate` or
@@ -224,7 +248,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
   */
   pathRoot: null,
 
-  normalizedValue: Ember.computed(function() {
+  normalizedValue: function() {
     var path = get(this, 'path'),
         pathRoot  = get(this, 'pathRoot'),
         valueNormalizer = get(this, 'valueNormalizerFunc'),
@@ -242,7 +266,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
     }
 
     return valueNormalizer ? valueNormalizer(result) : result;
-  }).property('path', 'pathRoot', 'valueNormalizerFunc').volatile(),
+  },
 
   rerenderIfNeeded: function() {
     this.currentState.rerenderIfNeeded(this);
@@ -277,7 +301,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
     var inverseTemplate = get(this, 'inverseTemplate'),
         displayTemplate = get(this, 'displayTemplate');
 
-    var result = get(this, 'normalizedValue');
+    var result = this.normalizedValue();
     this._lastNormalizedValue = result;
 
     // First, test the conditional to see if we should
@@ -299,7 +323,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
         // expression to the render context and return.
           if (result === null || result === undefined) {
             result = "";
-          } else if (!(result instanceof Handlebars.SafeString)) {
+          } else if (!(result instanceof SafeString)) {
             result = String(result);
           }
 
@@ -323,3 +347,8 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
     return this._super(buffer);
   }
 });
+
+export {
+  _HandlebarsBoundView,
+  SimpleHandlebarsView
+};

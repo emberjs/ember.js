@@ -1,18 +1,45 @@
-require('ember-runtime');
-require('ember-views');
-require('ember-handlebars');
-require('ember-routing/vendor/route-recognizer');
-require('ember-routing/vendor/router');
-require('ember-routing/system');
-require('ember-routing/helpers');
-require('ember-routing/ext');
-require('ember-routing/location');
-
 /**
 Ember Routing
 
 @module ember
 @submodule ember-routing
-@requires ember-states
 @requires ember-views
 */
+
+import EmberHandlebars from "ember-handlebars";
+import Ember from "ember-metal/core";
+
+// ES6TODO: Cleanup modules with side-effects below
+import "ember-routing/ext/run_loop";
+import "ember-routing/ext/controller";
+import "ember-routing/ext/view";
+
+import EmberLocation from "ember-routing/location/api";
+import NoneLocation from "ember-routing/location/none_location";
+import HashLocation from "ember-routing/location/hash_location";
+import HistoryLocation from "ember-routing/location/history_location";
+import AutoLocation from "ember-routing/location/auto_location";
+
+import {
+  controllerFor,
+  generateControllerFactory,
+  generateController
+} from "ember-routing/system/controller_for";
+import RouterDSL from "ember-routing/system/dsl";
+import Router from "ember-routing/system/router";
+import Route from "ember-routing/system/route";
+
+Ember.Location = EmberLocation;
+Ember.AutoLocation = AutoLocation;
+Ember.HashLocation = HashLocation;
+Ember.HistoryLocation = HistoryLocation;
+Ember.NoneLocation = NoneLocation;
+
+Ember.controllerFor = controllerFor;
+Ember.generateControllerFactory = generateControllerFactory;
+Ember.generateController = generateController;
+Ember.RouterDSL = RouterDSL;
+Ember.Router = Router;
+Ember.Route = Route;
+
+export default Ember;

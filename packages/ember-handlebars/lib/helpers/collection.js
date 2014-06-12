@@ -1,20 +1,29 @@
-/*globals Handlebars */
-
-// TODO: Don't require all of this module
-require('ember-handlebars');
-require('ember-handlebars/helpers/view');
-
 /**
 @module ember
 @submodule ember-handlebars
 */
 
-var get = Ember.get, handlebarsGet = Ember.Handlebars.get, fmt = Ember.String.fmt;
+import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
+import { inspect } from "ember-metal/utils";
 
+// var emberAssert = Ember.assert;
+    // emberDeprecate = Ember.deprecate;
+
+import EmberHandlebars from "ember-handlebars-compiler";
+var helpers = EmberHandlebars.helpers;
+
+import { fmt } from "ember-runtime/system/string";
+import { get } from "ember-metal/property_get";
+import { handlebarsGet } from "ember-handlebars/ext";
+import { ViewHelper } from "ember-handlebars/helpers/view";
+import { computed } from "ember-metal/computed";
+import CollectionView from "ember-views/views/collection_view";
+
+var alias = computed.alias;
 /**
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
-  `Ember.CollectionView` to a template. See `Ember.CollectionView` for
-  additional information on how a `CollectionView` functions.
+  `Ember.CollectionView` to a template. See [Ember.CollectionView](/api/classes/Ember.CollectionView.html)
+   for additional information on how a `CollectionView` functions.
 
   `{{collection}}`'s primary use is as a block helper with a `contentBinding`
   option pointing towards an `Ember.Array`-compatible object. An `Ember.View`
@@ -53,7 +62,7 @@ var get = Ember.get, handlebarsGet = Ember.Handlebars.get, fmt = Ember.String.fm
   </div>
   ```
 
-  ### Blockless Use
+  ### Blockless use in a collection
 
   If you provide an `itemViewClass` option that has its own `template` you can
   omit the block.
@@ -133,7 +142,7 @@ var get = Ember.get, handlebarsGet = Ember.Handlebars.get, fmt = Ember.String.fm
   @return {String} HTML string
   @deprecated Use `{{each}}` helper instead.
 */
-Ember.Handlebars.registerHelper('collection', function(path, options) {
+function collectionHelper(path, options) {
   Ember.deprecate("Using the {{collection}} helper without specifying a class has been deprecated as the {{each}} helper now supports the same functionality.", path !== 'collection');
 
   // If no path is provided, treat path param as options.
@@ -150,20 +159,49 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   var inverse = options.inverse;
   var view = options.data.view;
 
+
+  var controller, container;
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
   var collectionClass;
-  collectionClass = path ? handlebarsGet(this, path, options) : Ember.CollectionView;
-  Ember.assert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
+  if (path) {
+    controller = data.keywords.controller;
+    container = controller && controller.container;
+    collectionClass = handlebarsGet(this, path, options) || container.lookupFactory('view:' + path);
+    Ember.assert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
+  }
+  else {
+    collectionClass = CollectionView;
+  }
 
   var hash = options.hash, itemHash = {}, match;
 
   // Extract item view class if provided else default to the standard class
-  var itemViewClass, itemViewPath = hash.itemViewClass;
-  var collectionPrototype = collectionClass.proto();
+  var collectionPrototype = collectionClass.proto(), itemViewClass;
+
+  if (hash.itemView) {
+    controller = data.keywords.controller;
+    Ember.assert('You specified an itemView, but the current context has no ' +
+                 'container to look the itemView up in. This probably means ' +
+                 'that you created a view manually, instead of through the ' +
+                 'container. Instead, use container.lookup("view:viewName"), ' +
+                 'which will properly instantiate your view.',
+                 controller && controller.container);
+    container = controller.container;
+    itemViewClass = container.lookupFactory('view:' + hash.itemView);
+    Ember.assert('You specified the itemView ' + hash.itemView + ", but it was " +
+                 "not found at " + container.describe("view:" + hash.itemView) +
+                 " (and it was not registered in the container)", !!itemViewClass);
+  } else if (hash.itemViewClass) {
+    itemViewClass = handlebarsGet(collectionPrototype, hash.itemViewClass, options);
+  } else {
+    itemViewClass = collectionPrototype.itemViewClass;
+  }
+
+  Ember.assert(fmt("%@ #collection: Could not find itemViewClass %@", [data.view, itemViewClass]), !!itemViewClass);
+
   delete hash.itemViewClass;
-  itemViewClass = itemViewPath ? handlebarsGet(collectionPrototype, itemViewPath, options) : collectionPrototype.itemViewClass;
-  Ember.assert(fmt("%@ #collection: Could not find itemViewClass %@", [data.view, itemViewPath]), !!itemViewClass);
+  delete hash.itemView;
 
   // Go through options passed to the {{collection}} helper and extract options
   // that configure item views instead of the collection itself.
@@ -171,7 +209,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
     if (hash.hasOwnProperty(prop)) {
       match = prop.match(/^item(.)(.*)$/);
 
-      if(match) {
+      if (match && prop !== 'itemController') {
         // Convert itemShouldFoo -> shouldFoo
         itemHash[match[1].toLowerCase() + match[2]] = hash[prop];
         // Delete from hash as this will end up getting passed to the
@@ -181,15 +219,13 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
     }
   }
 
-  var tagName = hash.tagName || collectionPrototype.tagName;
-
   if (fn) {
     itemHash.template = fn;
     delete options.fn;
   }
 
   var emptyViewClass;
-  if (inverse && inverse !== Handlebars.VM.noop) {
+  if (inverse && inverse !== EmberHandlebars.VM.noop) {
     emptyViewClass = get(collectionPrototype, 'emptyViewClass');
     emptyViewClass = emptyViewClass.extend({
           template: inverse,
@@ -198,20 +234,21 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   } else if (hash.emptyViewClass) {
     emptyViewClass = handlebarsGet(this, hash.emptyViewClass, options);
   }
-  hash.emptyView = emptyViewClass;
+  if (emptyViewClass) { hash.emptyView = emptyViewClass; }
 
-  if (hash.eachHelper === 'each') {
-    itemHash._context = Ember.computed(function() {
-      return get(this, 'content');
-    }).property('content');
-    delete hash.eachHelper;
+  if (hash.keyword) {
+    itemHash._context = this;
+  } else {
+    itemHash._context = alias('content');
   }
 
-  var viewString = view.toString();
-
-  var viewOptions = Ember.Handlebars.ViewHelper.propertiesFromHTMLOptions({ data: data, hash: itemHash }, this);
+  var viewOptions = ViewHelper.propertiesFromHTMLOptions({ data: data, hash: itemHash }, this);
   hash.itemViewClass = itemViewClass.extend(viewOptions);
 
-  return Ember.Handlebars.helpers.view.call(this, collectionClass, options);
-});
+  options.helperName = options.helperName || 'collection';
+
+  return helpers.view.call(this, collectionClass, options);
+}
+
+export default collectionHelper;
 

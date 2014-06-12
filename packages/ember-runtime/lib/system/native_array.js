@@ -1,19 +1,42 @@
-require('ember-runtime/mixins/observable');
-require('ember-runtime/mixins/mutable_array');
-require('ember-runtime/mixins/copyable');
-
 /**
 @module ember
 @submodule ember-runtime
 */
 
+import Ember from "ember-metal/core"; // Ember.EXTEND_PROTOTYPES
 
-var get = Ember.get, set = Ember.set;
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import EnumerableUtils from "ember-metal/enumerable_utils";
+import { Mixin } from "ember-metal/mixin";
+import EmberArray from "ember-runtime/mixins/array";
+import MutableArray from "ember-runtime/mixins/mutable_array";
+import Observable from "ember-runtime/mixins/observable";
+import Copyable from "ember-runtime/mixins/copyable";
+import { FROZEN_ERROR } from "ember-runtime/mixins/freezable";
+import copy from "ember-runtime/copy";
+
+var replace = EnumerableUtils._replace;
+var forEach = EnumerableUtils.forEach;
 
 // Add Ember.Array to Array.prototype. Remove methods with native
 // implementations and supply some more optimized versions of generic methods
 // because they are so common.
-var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember.Copyable, {
+
+/**
+  The NativeArray mixin contains the properties needed to to make the native
+  Array support Ember.MutableArray and all of its dependent APIs. Unless you
+  have `Ember.EXTEND_PROTOTYPES` or `Ember.EXTEND_PROTOTYPES.Array` set to
+  false, this will be applied automatically. Otherwise you can apply the mixin
+  at anytime by calling `Ember.NativeArray.activate`.
+
+  @class NativeArray
+  @namespace Ember
+  @uses Ember.MutableArray
+  @uses Ember.Observable
+  @uses Ember.Copyable
+*/
+var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
 
   // because length is a built-in property we need to know to just get the
   // original property.
@@ -30,7 +53,7 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
   // primitive for array support.
   replace: function(idx, amt, objects) {
 
-    if (this.isFrozen) throw Ember.FROZEN_ERROR ;
+    if (this.isFrozen) throw FROZEN_ERROR;
 
     // if we replaced exactly the same number of items, then pass only the
     // replaced range. Otherwise, pass the full remaining array length
@@ -38,15 +61,14 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
     var len = objects ? get(objects, 'length') : 0;
     this.arrayContentWillChange(idx, amt, len);
 
-    if (!objects || objects.length === 0) {
-      this.splice(idx, amt) ;
+    if (len === 0) {
+      this.splice(idx, amt);
     } else {
-      var args = [idx, amt].concat(objects) ;
-      this.splice.apply(this,args) ;
+      replace(this, idx, amt, objects);
     }
 
     this.arrayContentDidChange(idx, amt, len);
-    return this ;
+    return this;
   },
 
   // If you ask for an unknown property, then try to collect the value
@@ -89,7 +111,7 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
 
   copy: function(deep) {
     if (deep) {
-      return this.map(function(item){ return Ember.copy(item, true); });
+      return this.map(function(item) { return copy(item, true); });
     }
 
     return this.slice();
@@ -98,7 +120,7 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
 
 // Remove any methods implemented natively so we don't override them
 var ignore = ['length'];
-Ember.EnumerableUtils.forEach(NativeArray.keys(), function(methodName) {
+forEach(NativeArray.keys(), function(methodName) {
   if (Array.prototype[methodName]) ignore.push(methodName);
 });
 
@@ -107,51 +129,69 @@ if (ignore.length>0) {
 }
 
 /**
-  The NativeArray mixin contains the properties needed to to make the native
-  Array support Ember.MutableArray and all of its dependent APIs. Unless you
-  have `Ember.EXTEND_PROTOTYPES or `Ember.EXTEND_PROTOTYPES.Array` set to
-  false, this will be applied automatically. Otherwise you can apply the mixin
-  at anytime by calling `Ember.NativeArray.activate`.
-
-  @class NativeArray
-  @namespace Ember
-  @extends Ember.Mixin
-  @uses Ember.MutableArray
-  @uses Ember.MutableEnumerable
-  @uses Ember.Copyable
-  @uses Ember.Freezable
-*/
-Ember.NativeArray = NativeArray;
-
-/**
   Creates an `Ember.NativeArray` from an Array like object.
-  Does not modify the original object.
+  Does not modify the original object. Ember.A is not needed if
+  `Ember.EXTEND_PROTOTYPES` is `true` (the default value). However,
+  it is recommended that you use Ember.A when creating addons for
+  ember or when you can not guarantee that `Ember.EXTEND_PROTOTYPES`
+  will be `true`.
+
+  Example
+
+  ```js
+  var Pagination = Ember.CollectionView.extend({
+    tagName: 'ul',
+    classNames: ['pagination'],
+    init: function() {
+      this._super();
+      if (!this.get('content')) {
+        this.set('content', Ember.A([]));
+      }
+    }
+  });
+  ```
 
   @method A
   @for Ember
   @return {Ember.NativeArray}
 */
-Ember.A = function(arr){
+var A = function(arr) {
   if (arr === undefined) { arr = []; }
-  return Ember.Array.detect(arr) ? arr : Ember.NativeArray.apply(arr);
+  return EmberArray.detect(arr) ? arr : NativeArray.apply(arr);
 };
 
 /**
   Activates the mixin on the Array.prototype if not already applied. Calling
-  this method more than once is safe.
+  this method more than once is safe. This will be called when ember is loaded
+  unless you have `Ember.EXTEND_PROTOTYPES` or `Ember.EXTEND_PROTOTYPES.Array`
+  set to `false`.
+
+  Example
+
+  ```js
+  if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Array) {
+    Ember.NativeArray.activate();
+  }
+  ```
 
   @method activate
   @for Ember.NativeArray
   @static
   @return {void}
 */
-Ember.NativeArray.activate = function() {
+NativeArray.activate = function() {
   NativeArray.apply(Array.prototype);
 
-  Ember.A = function(arr) { return arr || []; };
+  A = function(arr) { return arr || []; };
 };
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Array) {
-  Ember.NativeArray.activate();
+  NativeArray.activate();
 }
 
+Ember.A = A; // ES6TODO: Setting A onto the object returned by ember-metal/core to avoid circles
+export {
+  A,
+  NativeArray // TODO: only use default export
+};
+export default NativeArray;

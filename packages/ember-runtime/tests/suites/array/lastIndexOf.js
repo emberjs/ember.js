@@ -1,6 +1,7 @@
-require('ember-runtime/~tests/suites/array');
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import {fmt} from "ember-runtime/system/string";
 
-var suite = Ember.ArrayTests;
+var suite = SuiteModuleBuilder.create();
 
 suite.module('lastIndexOf');
 
@@ -12,7 +13,7 @@ suite.test("should return index of object's last occurrence", function() {
 
   for(idx=0;idx<len;idx++) {
     equal(obj.lastIndexOf(expected[idx]), idx,
-      Ember.String.fmt('obj.lastIndexOf(%@) should match idx', [expected[idx]]));
+      fmt('obj.lastIndexOf(%@) should match idx', [expected[idx]]));
   }
 
 });
@@ -25,7 +26,7 @@ suite.test("should return index of object's last occurrence even startAt search 
 
   for(idx=0;idx<len;idx++) {
     equal(obj.lastIndexOf(expected[idx], len), idx,
-      Ember.String.fmt('obj.lastIndexOfs(%@) should match idx', [expected[idx]]));
+      fmt('obj.lastIndexOfs(%@) should match idx', [expected[idx]]));
   }
 
 });
@@ -38,7 +39,7 @@ suite.test("should return index of object's last occurrence even startAt search 
 
   for(idx=0;idx<len;idx++) {
     equal(obj.lastIndexOf(expected[idx], len + 1), idx,
-      Ember.String.fmt('obj.lastIndexOf(%@) should match idx', [expected[idx]]));
+      fmt('obj.lastIndexOf(%@) should match idx', [expected[idx]]));
   }
 
 });
@@ -57,3 +58,5 @@ suite.test("should return -1 when no match is found even startAt search location
   var obj = this.newObject(this.newFixture(3)), foo = {};
   equal(obj.lastIndexOf(foo, obj.length + 1), -1, 'obj.lastIndexOf(foo) should be -1');
 });
+
+export default suite;

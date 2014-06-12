@@ -3,8 +3,9 @@
 @submodule ember-runtime
 */
 
-
-var get = Ember.get, set = Ember.set;
+import { Mixin } from "ember-metal/mixin";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 
 /**
   The `Ember.Freezable` mixin implements some basic methods for marking an
@@ -46,7 +47,7 @@ var get = Ember.get, set = Ember.set;
 
   });
 
-  c = Context.create({ firstName: "John", lastName: "Doe" });
+  c = Contact.create({ firstName: "John", lastName: "Doe" });
   c.swapNames();  // returns c
   c.freeze();
   c.swapNames();  // EXCEPTION
@@ -60,11 +61,9 @@ var get = Ember.get, set = Ember.set;
 
   @class Freezable
   @namespace Ember
-  @extends Ember.Mixin
   @since Ember 0.9
 */
-Ember.Freezable = Ember.Mixin.create(
-/** @scope Ember.Freezable.prototype */ {
+export var Freezable = Mixin.create({
 
   /**
     Set to `true` when the object is frozen. Use this property to detect
@@ -90,4 +89,4 @@ Ember.Freezable = Ember.Mixin.create(
 
 });
 
-Ember.FROZEN_ERROR = "Frozen object cannot be modified.";
+export var FROZEN_ERROR = "Frozen object cannot be modified.";

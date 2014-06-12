@@ -1,11 +1,11 @@
-// ..........................................................
-// COPYABLE TESTS
-//
-Ember.CopyableTests.extend({
+import CopyableTests from 'ember-runtime/tests/suites/copyable';
+import {generateGuid} from 'ember-metal/utils';
+
+CopyableTests.extend({
   name: 'NativeArray Copyable',
 
   newObject: function() {
-    return Ember.A([Ember.generateGuid()]);
+    return Ember.A([generateGuid()]);
   },
 
   isEqual: function(a,b) {
@@ -18,7 +18,7 @@ Ember.CopyableTests.extend({
   shouldBeFreezable: false
 }).run();
 
-module("NativeArray Copyable");
+QUnit.module("NativeArray Copyable");
 
 test("deep copy is respected", function() {
   var array = Ember.A([ { id: 1 }, { id: 2 }, { id: 3 } ]);

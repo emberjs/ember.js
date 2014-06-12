@@ -1,10 +1,16 @@
-require('ember-metal/core'); // Ember.Logger
-require('ember-metal/accessors'); // get, set, trySet
-require('ember-metal/utils'); // guidFor, isArray, meta
-require('ember-metal/observer'); // addObserver, removeObserver
-require('ember-metal/run_loop'); // Ember.run.schedule
-require('ember-metal/map');
+import Ember from "ember-metal/core"; // Ember.Logger, Ember.LOG_BINDINGS, assert
+import { get } from "ember-metal/property_get";
+import { set, trySet } from "ember-metal/property_set";
+import { guidFor } from "ember-metal/utils";
+import { Map } from "ember-metal/map";
+import {
+  addObserver,
+  removeObserver,
+  _suspendObserver
+} from "ember-metal/observer";
+import run from "ember-metal/run_loop";
 
+// ES6TODO: where is Ember.lookup defined?
 /**
 @module ember-metal
 */
@@ -25,11 +31,21 @@ require('ember-metal/map');
 */
 Ember.LOG_BINDINGS = false || !!Ember.ENV.LOG_BINDINGS;
 
-var get     = Ember.get,
-    set     = Ember.set,
-    guidFor = Ember.guidFor,
-    isGlobalPath = Ember.isGlobalPath;
+var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
 
+/**
+  Returns true if the provided path is global (e.g., `MyApp.fooController.bar`)
+  instead of local (`foo.bar.baz`).
+
+  @method isGlobalPath
+  @for Ember
+  @private
+  @param {String} path
+  @return Boolean
+*/
+function isGlobalPath(path) {
+  return IS_GLOBAL.test(path);
+}
 
 function getWithGlobals(obj, path) {
   return get(isGlobalPath(path) ? Ember.lookup : obj, path);
@@ -43,7 +59,7 @@ var Binding = function(toPath, fromPath) {
   this._direction = 'fwd';
   this._from = fromPath;
   this._to   = toPath;
-  this._directionMap = Ember.Map.create();
+  this._directionMap = Map.create();
 };
 
 /**
@@ -56,7 +72,7 @@ Binding.prototype = {
     This copies the Binding so it can be connected to another object.
 
     @method copy
-    @return {Ember.Binding}
+    @return {Ember.Binding} `this`
   */
   copy: function () {
     var copy = new Binding(this._to, this._from);
@@ -78,7 +94,7 @@ Binding.prototype = {
     `get()` - see that method for more information.
 
     @method from
-    @param {String} propertyPath the property path to connect to
+    @param {String} path the property path to connect to
     @return {Ember.Binding} `this`
   */
   from: function(path) {
@@ -96,7 +112,7 @@ Binding.prototype = {
     `get()` - see that method for more information.
 
     @method to
-    @param {String|Tuple} propertyPath A property path or tuple
+    @param {String|Tuple} path A property path or tuple
     @return {Ember.Binding} `this`
   */
   to: function(path) {
@@ -118,6 +134,10 @@ Binding.prototype = {
     return this;
   },
 
+  /**
+    @method toString
+    @return {String} string representation of binding
+  */
   toString: function() {
     var oneWay = this._oneWay ? '[oneWay]' : '';
     return "Ember.Binding<" + guidFor(this) + ">(" + this._from + " -> " + this._to + ")" + oneWay;
@@ -140,13 +160,13 @@ Binding.prototype = {
     Ember.assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
     var fromPath = this._from, toPath = this._to;
-    Ember.trySet(obj, toPath, getWithGlobals(obj, fromPath));
+    trySet(obj, toPath, getWithGlobals(obj, fromPath));
 
     // add an observer on the object to be notified when the binding should be updated
-    Ember.addObserver(obj, fromPath, this, this.fromDidChange);
+    addObserver(obj, fromPath, this, this.fromDidChange);
 
     // if the binding is a two-way binding, also set up an observer on the target
-    if (!this._oneWay) { Ember.addObserver(obj, toPath, this, this.toDidChange); }
+    if (!this._oneWay) { addObserver(obj, toPath, this, this.toDidChange); }
 
     this._readyToSync = true;
 
@@ -168,10 +188,10 @@ Binding.prototype = {
 
     // remove an observer on the object so we're no longer notified of
     // changes that should update bindings.
-    Ember.removeObserver(obj, this._from, this, this.fromDidChange);
+    removeObserver(obj, this._from, this, this.fromDidChange);
 
     // if the binding is two-way, remove the observer from the target as well
-    if (twoWay) { Ember.removeObserver(obj, this._to, this, this.toDidChange); }
+    if (twoWay) { removeObserver(obj, this._to, this, this.toDidChange); }
 
     this._readyToSync = false; // disable scheduled syncs...
     return this;
@@ -197,7 +217,7 @@ Binding.prototype = {
 
     // if we haven't scheduled the binding yet, schedule it
     if (!existingDir) {
-      Ember.run.schedule('sync', this, this._sync, obj);
+      run.schedule('sync', this, this._sync, obj);
       directionMap.set(obj, dir);
     }
 
@@ -230,10 +250,10 @@ Binding.prototype = {
         Ember.Logger.log(' ', this.toString(), '->', fromValue, obj);
       }
       if (this._oneWay) {
-        Ember.trySet(obj, toPath, fromValue);
+        trySet(obj, toPath, fromValue);
       } else {
-        Ember._suspendObserver(obj, toPath, this, this.toDidChange, function () {
-          Ember.trySet(obj, toPath, fromValue);
+        _suspendObserver(obj, toPath, this, this.toDidChange, function () {
+          trySet(obj, toPath, fromValue);
         });
       }
     // if we're synchronizing *to* the remote object
@@ -242,8 +262,8 @@ Binding.prototype = {
       if (log) {
         Ember.Logger.log(' ', this.toString(), '<-', toValue, obj);
       }
-      Ember._suspendObserver(obj, fromPath, this, this.fromDidChange, function () {
-        Ember.trySet(Ember.isGlobalPath(fromPath) ? Ember.lookup : obj, fromPath, toValue);
+      _suspendObserver(obj, fromPath, this, this.fromDidChange, function () {
+        trySet(isGlobalPath(fromPath) ? Ember.lookup : obj, fromPath, toValue);
       });
     }
   }
@@ -260,8 +280,8 @@ function mixinProperties(to, from) {
 
 mixinProperties(Binding, {
 
-  /**
-    See {{#crossLink "Ember.Binding/from"}}{{/crossLink}}
+  /*
+    See `Ember.Binding.from`.
 
     @method from
     @static
@@ -271,8 +291,8 @@ mixinProperties(Binding, {
     return binding.from.apply(binding, arguments);
   },
 
-  /**
-    See {{#crossLink "Ember.Binding/to"}}{{/crossLink}}
+  /*
+    See `Ember.Binding.to`.
 
     @method to
     @static
@@ -289,13 +309,14 @@ mixinProperties(Binding, {
     This means that if you change the "to" side directly, the "from" side may have
     a different value.
 
-    See {{#crossLink "Binding/oneWay"}}{{/crossLink}}
+    See `Binding.oneWay`.
 
     @method oneWay
     @param {String} from from path.
     @param {Boolean} [flag] (Optional) passing nothing here will make the
       binding `oneWay`. You can instead pass `false` to disable `oneWay`, making the
       binding two way again.
+    @return {Ember.Binding} `this`
   */
   oneWay: function(from, flag) {
     var C = this, binding = new C(null, from);
@@ -317,7 +338,7 @@ mixinProperties(Binding, {
   Properties ending in a `Binding` suffix will be converted to `Ember.Binding`
   instances. The value of this property should be a string representing a path
   to another object or a custom binding instanced created using Binding helpers
-  (see "Customizing Your Bindings"):
+  (see "One Way Bindings"):
 
   ```
   valueBinding: "MyApp.someController.title"
@@ -350,7 +371,7 @@ mixinProperties(Binding, {
 
   You should consider using one way bindings anytime you have an object that
   may be created frequently and you do not intend to change a property; only
-  to monitor it for changes. (such as in the example above).
+  to monitor it for changes (such as in the example above).
 
   ## Adding Bindings Manually
 
@@ -420,7 +441,7 @@ mixinProperties(Binding, {
   @namespace Ember
   @since Ember 0.9
 */
-Ember.Binding = Binding;
+// Ember.Binding = Binding; ES6TODO: where to put this?
 
 
 /**
@@ -436,9 +457,9 @@ Ember.Binding = Binding;
     Must be relative to obj or a global path.
   @return {Ember.Binding} binding instance
 */
-Ember.bind = function(obj, to, from) {
-  return new Ember.Binding(to, from).connect(obj);
-};
+export function bind(obj, to, from) {
+  return new Binding(to, from).connect(obj);
+}
 
 /**
   @method oneWay
@@ -450,6 +471,11 @@ Ember.bind = function(obj, to, from) {
     Must be relative to obj or a global path.
   @return {Ember.Binding} binding instance
 */
-Ember.oneWay = function(obj, to, from) {
-  return new Ember.Binding(to, from).oneWay().connect(obj);
+export function oneWay(obj, to, from) {
+  return new Binding(to, from).oneWay().connect(obj);
+}
+
+export {
+  Binding,
+  isGlobalPath
 };

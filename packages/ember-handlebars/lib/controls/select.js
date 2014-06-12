@@ -1,17 +1,91 @@
-/*jshint eqeqeq:false */
-
 /**
 @module ember
 @submodule ember-handlebars
 */
 
-var set = Ember.set,
-    get = Ember.get,
-    indexOf = Ember.EnumerableUtils.indexOf,
-    indexesOf = Ember.EnumerableUtils.indexesOf,
-    replace = Ember.EnumerableUtils.replace,
-    isArray = Ember.isArray,
-    precompileTemplate = Ember.Handlebars.compile;
+import EmberHandlebars from "ember-handlebars-compiler";
+import EnumerableUtils from "ember-metal/enumerable_utils";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import View from "ember-views/views/view";
+import CollectionView from "ember-views/views/collection_view";
+import { isArray } from "ember-metal/utils";
+import isNone from 'ember-metal/is_none';
+import { computed } from "ember-metal/computed";
+import { A as emberA } from "ember-runtime/system/native_array";
+import { observer } from "ember-metal/mixin";
+import { defineProperty } from "ember-metal/properties";
+
+var indexOf = EnumerableUtils.indexOf,
+    indexesOf = EnumerableUtils.indexesOf,
+    forEach = EnumerableUtils.forEach,
+    replace = EnumerableUtils.replace,
+    precompileTemplate = EmberHandlebars.compile;
+
+var SelectOption = View.extend({
+  instrumentDisplay: 'Ember.SelectOption',
+
+  tagName: 'option',
+  attributeBindings: ['value', 'selected'],
+
+  defaultTemplate: function(context, options) {
+    options = { data: options.data, hash: {} };
+    EmberHandlebars.helpers.bind.call(context, "view.label", options);
+  },
+
+  init: function() {
+    this.labelPathDidChange();
+    this.valuePathDidChange();
+
+    this._super();
+  },
+
+  selected: computed(function() {
+    var content = get(this, 'content'),
+        selection = get(this, 'parentView.selection');
+    if (get(this, 'parentView.multiple')) {
+      return selection && indexOf(selection, content.valueOf()) > -1;
+    } else {
+      // Primitives get passed through bindings as objects... since
+      // `new Number(4) !== 4`, we use `==` below
+      return content == selection; // jshint ignore:line
+    }
+  }).property('content', 'parentView.selection'),
+
+  labelPathDidChange: observer('parentView.optionLabelPath', function() {
+    var labelPath = get(this, 'parentView.optionLabelPath');
+
+    if (!labelPath) { return; }
+
+    defineProperty(this, 'label', computed(function() {
+      return get(this, labelPath);
+    }).property(labelPath));
+  }),
+
+  valuePathDidChange: observer('parentView.optionValuePath', function() {
+    var valuePath = get(this, 'parentView.optionValuePath');
+
+    if (!valuePath) { return; }
+
+    defineProperty(this, 'value', computed(function() {
+      return get(this, valuePath);
+    }).property(valuePath));
+  })
+});
+
+var SelectOptgroup = CollectionView.extend({
+  instrumentDisplay: 'Ember.SelectOptgroup',
+
+  tagName: 'optgroup',
+  attributeBindings: ['label'],
+
+  selectionBinding: 'parentView.selection',
+  multipleBinding: 'parentView.multiple',
+  optionLabelPathBinding: 'parentView.optionLabelPath',
+  optionValuePathBinding: 'parentView.optionValuePath',
+
+  itemViewClassBinding: 'parentView.optionView'
+});
 
 /**
   The `Ember.Select` view class renders a
@@ -23,7 +97,7 @@ var set = Ember.set,
   `content` property. The underlying data object of the selected `<option>` is
   stored in the `Element.Select`'s `value` property.
 
-  ### `content` as an array of Strings
+  ## The Content Property (array of strings)
 
   The simplest version of an `Ember.Select` takes an array of strings as its
   `content` property. The string will be used as both the `value` property and
@@ -32,11 +106,13 @@ var set = Ember.set,
   Example:
 
   ```javascript
-  App.names = ["Yehuda", "Tom"];
+  App.ApplicationController = Ember.ObjectController.extend({
+    names: ["Yehuda", "Tom"]
+  });
   ```
 
   ```handlebars
-  {{view Ember.Select contentBinding="App.names"}}
+  {{view Ember.Select content=names}}
   ```
 
   Would result in the following HTML:
@@ -49,19 +125,19 @@ var set = Ember.set,
   ```
 
   You can control which `<option>` is selected through the `Ember.Select`'s
-  `value` property directly or as a binding:
+  `value` property:
 
   ```javascript
-  App.names = Ember.Object.create({
-    selected: 'Tom',
-    content: ["Yehuda", "Tom"]
+  App.ApplicationController = Ember.ObjectController.extend({
+    selectedName: 'Tom',
+    names: ["Yehuda", "Tom"]
   });
   ```
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="App.names.content"
-         valueBinding="App.names.selected"
+         content=names
+         value=selectedName
   }}
   ```
 
@@ -75,9 +151,9 @@ var set = Ember.set,
   ```
 
   A user interacting with the rendered `<select>` to choose "Yehuda" would
-  update the value of `App.names.selected` to "Yehuda".
+  update the value of `selectedName` to "Yehuda".
 
-  ### `content` as an Array of Objects
+  ## The Content Property (array of Objects)
 
   An `Ember.Select` can also take an array of JavaScript or Ember objects as
   its `content` property.
@@ -92,15 +168,17 @@ var set = Ember.set,
   element's text. Both paths must reference each object itself as `content`:
 
   ```javascript
-  App.programmers = [
-    Ember.Object.create({firstName: "Yehuda", id: 1}),
-    Ember.Object.create({firstName: "Tom",    id: 2})
-  ];
+  App.ApplicationController = Ember.ObjectController.extend({
+    programmers: [
+      {firstName: "Yehuda", id: 1},
+      {firstName: "Tom",    id: 2}
+    ]
+  });
   ```
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="App.programmers"
+         content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"}}
   ```
@@ -109,97 +187,98 @@ var set = Ember.set,
 
   ```html
   <select class="ember-select">
-    <option value>Please Select</option>
     <option value="1">Yehuda</option>
     <option value="2">Tom</option>
   </select>
   ```
 
   The `value` attribute of the selected `<option>` within an `Ember.Select`
-  can be bound to a property on another object by providing a
-  `valueBinding` option:
+  can be bound to a property on another object:
 
   ```javascript
-  App.programmers = [
-    Ember.Object.create({firstName: "Yehuda", id: 1}),
-    Ember.Object.create({firstName: "Tom",    id: 2})
-  ];
-
-  App.currentProgrammer = Ember.Object.create({
-    id: 2
+  App.ApplicationController = Ember.ObjectController.extend({
+    programmers: [
+      {firstName: "Yehuda", id: 1},
+      {firstName: "Tom",    id: 2}
+    ],
+    currentProgrammer: {
+      id: 2
+    }
   });
   ```
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="App.programmers"
+         content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
-         valueBinding="App.currentProgrammer.id"}}
+         value=currentProgrammer.id}}
   ```
 
   Would result in the following HTML with a selected option:
 
   ```html
   <select class="ember-select">
-    <option value>Please Select</option>
     <option value="1">Yehuda</option>
     <option value="2" selected="selected">Tom</option>
   </select>
   ```
 
   Interacting with the rendered element by selecting the first option
-  ('Yehuda') will update the `id` value of `App.currentProgrammer`
+  ('Yehuda') will update the `id` of `currentProgrammer`
   to match the `value` property of the newly selected `<option>`.
 
   Alternatively, you can control selection through the underlying objects
-  used to render each object providing a `selectionBinding`. When the selected
-  `<option>` is changed, the property path provided to `selectionBinding`
+  used to render each object by binding the `selection` option. When the selected
+  `<option>` is changed, the property path provided to `selection`
   will be updated to match the content object of the rendered `<option>`
   element:
 
   ```javascript
-  App.controller = Ember.Object.create({
-    selectedPerson: null,
-    content: [
-      Ember.Object.create({firstName: "Yehuda", id: 1}),
-      Ember.Object.create({firstName: "Tom",    id: 2})
+
+  var yehuda = {firstName: "Yehuda", id: 1, bff4eva: 'tom'}
+  var tom = {firstName: "Tom", id: 2, bff4eva: 'yehuda'};
+
+  App.ApplicationController = Ember.ObjectController.extend({
+    selectedPerson: tom,
+    programmers: [
+      yehuda,
+      tom
     ]
   });
   ```
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="App.controller.content"
+         content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
-         selectionBinding="App.controller.selectedPerson"}}
+         selection=selectedPerson}}
   ```
 
   Would result in the following HTML with a selected option:
 
   ```html
   <select class="ember-select">
-    <option value>Please Select</option>
     <option value="1">Yehuda</option>
     <option value="2" selected="selected">Tom</option>
   </select>
   ```
 
   Interacting with the rendered element by selecting the first option
-  ('Yehuda') will update the `selectedPerson` value of `App.controller`
-  to match the content object of the newly selected `<option>`. In this
-  case it is the first object in the `App.content.content`
+  ('Yehuda') will update the `selectedPerson` to match the object of
+  the newly selected `<option>`. In this case it is the first object
+  in the `programmers`
 
-  ### Supplying a Prompt
+  ## Supplying a Prompt
 
   A `null` value for the `Ember.Select`'s `value` or `selection` property
   results in there being no `<option>` with a `selected` attribute:
 
   ```javascript
-  App.controller = Ember.Object.create({
-    selected: null,
-    content: [
+  App.ApplicationController = Ember.ObjectController.extend({
+    selectedProgrammer: null,
+    programmers: [
       "Yehuda",
       "Tom"
     ]
@@ -208,8 +287,8 @@ var set = Ember.set,
 
   ``` handlebars
   {{view Ember.Select
-         contentBinding="App.controller.content"
-         valueBinding="App.controller.selected"
+         content=programmers
+         value=selectedProgrammer
   }}
   ```
 
@@ -222,16 +301,16 @@ var set = Ember.set,
   </select>
   ```
 
-  Although `App.controller.selected` is `null` and no `<option>`
+  Although `selectedProgrammer` is `null` and no `<option>`
   has a `selected` attribute the rendered HTML will display the
   first item as though it were selected. You can supply a string
   value for the `Ember.Select` to display when there is no selection
   with the `prompt` option:
 
   ```javascript
-  App.controller = Ember.Object.create({
-    selected: null,
-    content: [
+  App.ApplicationController = Ember.ObjectController.extend({
+    selectedProgrammer: null,
+    programmers: [
       "Yehuda",
       "Tom"
     ]
@@ -240,8 +319,8 @@ var set = Ember.set,
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="App.controller.content"
-         valueBinding="App.controller.selected"
+         content=programmers
+         value=selectedProgrammer
          prompt="Please select a name"
   }}
   ```
@@ -260,13 +339,14 @@ var set = Ember.set,
   @namespace Ember
   @extends Ember.View
 */
-Ember.Select = Ember.View.extend(
-  /** @scope Ember.Select.prototype */ {
+var Select = View.extend({
+  instrumentDisplay: 'Ember.Select',
 
   tagName: 'select',
   classNames: ['ember-select'],
-  defaultTemplate: precompileTemplate('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
-  attributeBindings: ['multiple', 'disabled', 'tabindex'],
+  defaultTemplate: precompileTemplate('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#if view.optionGroupPath}}{{#each view.groupedContent}}{{view view.groupView content=content label=label}}{{/each}}{{else}}{{#each view.content}}{{view view.optionView content=this}}{{/each}}{{/if}}'),
+  attributeBindings: ['multiple', 'disabled', 'tabindex', 'name', 'required', 'autofocus',
+                      'form', 'size'],
 
   /**
     The `multiple` attribute of the select element. Indicates whether multiple
@@ -278,7 +358,26 @@ Ember.Select = Ember.View.extend(
   */
   multiple: false,
 
+  /**
+    The `disabled` attribute of the select element. Indicates whether
+    the element is disabled from interactions.
+
+    @property disabled
+    @type Boolean
+    @default false
+  */
   disabled: false,
+
+  /**
+    The `required` attribute of the select element. Indicates whether
+    a selected option is required for form validation.
+
+    @property required
+    @type Boolean
+    @default false
+    @since 1.5.0
+  */
+  required: false,
 
   /**
     The list of options.
@@ -327,7 +426,7 @@ Ember.Select = Ember.View.extend(
     @type String
     @default null
   */
-  value: Ember.computed(function(key, value) {
+  value: computed(function(key, value) {
     if (arguments.length === 2) { return value; }
     var valuePath = get(this, 'optionValuePath').replace(/^content\.?/, '');
     return valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection');
@@ -344,7 +443,7 @@ Ember.Select = Ember.View.extend(
   prompt: null,
 
   /**
-    The path of the option labels. See `content`.
+    The path of the option labels. See [content](/api/classes/Ember.Select.html#property_content).
 
     @property optionLabelPath
     @type String
@@ -353,13 +452,62 @@ Ember.Select = Ember.View.extend(
   optionLabelPath: 'content',
 
   /**
-    The path of the option values. See `content`.
+    The path of the option values. See [content](/api/classes/Ember.Select.html#property_content).
 
     @property optionValuePath
     @type String
     @default 'content'
   */
   optionValuePath: 'content',
+
+  /**
+    The path of the option group.
+    When this property is used, `content` should be sorted by `optionGroupPath`.
+
+    @property optionGroupPath
+    @type String
+    @default null
+  */
+  optionGroupPath: null,
+
+  /**
+    The view class for optgroup.
+
+    @property groupView
+    @type Ember.View
+    @default Ember.SelectOptgroup
+  */
+  groupView: SelectOptgroup,
+
+  groupedContent: computed(function() {
+    var groupPath = get(this, 'optionGroupPath');
+    var groupedContent = emberA();
+    var content = get(this, 'content') || [];
+
+    forEach(content, function(item) {
+      var label = get(item, groupPath);
+
+      if (get(groupedContent, 'lastObject.label') !== label) {
+        groupedContent.pushObject({
+          label: label,
+          content: emberA()
+        });
+      }
+
+      get(groupedContent, 'lastObject.content').push(item);
+    });
+
+    return groupedContent;
+  }).property('optionGroupPath', 'content.@each'),
+
+  /**
+    The view class for option.
+
+    @property optionView
+    @type Ember.View
+    @default Ember.SelectOption
+  */
+  optionView: SelectOption,
 
   _change: function() {
     if (get(this, 'multiple')) {
@@ -369,20 +517,20 @@ Ember.Select = Ember.View.extend(
     }
   },
 
-  selectionDidChange: Ember.observer(function() {
+  selectionDidChange: observer('selection.@each', function() {
     var selection = get(this, 'selection');
     if (get(this, 'multiple')) {
       if (!isArray(selection)) {
-        set(this, 'selection', Ember.A([selection]));
+        set(this, 'selection', emberA([selection]));
         return;
       }
       this._selectionDidChangeMultiple();
     } else {
       this._selectionDidChangeSingle();
     }
-  }, 'selection.@each'),
+  }),
 
-  valueDidChange: Ember.observer(function() {
+  valueDidChange: observer('value', function() {
     var content = get(this, 'content'),
         value = get(this, 'value'),
         valuePath = get(this, 'optionValuePath').replace(/^content\.?/, ''),
@@ -390,21 +538,21 @@ Ember.Select = Ember.View.extend(
         selection;
 
     if (value !== selectedValue) {
-      selection = content.find(function(obj) {
+      selection = content ? content.find(function(obj) {
         return value === (valuePath ? get(obj, valuePath) : obj);
-      });
+      }) : null;
 
       this.set('selection', selection);
     }
-  }, 'value'),
+  }),
 
 
   _triggerChange: function() {
     var selection = get(this, 'selection');
     var value = get(this, 'value');
 
-    if (selection) { this.selectionDidChange(); }
-    if (value) { this.valueDidChange(); }
+    if (!isNone(selection)) { this.selectionDidChange(); }
+    if (!isNone(value)) { this.valueDidChange(); }
 
     this._change();
   },
@@ -414,7 +562,7 @@ Ember.Select = Ember.View.extend(
         content = get(this, 'content'),
         prompt = get(this, 'prompt');
 
-    if (!get(content, 'length')) { return; }
+    if (!content || !get(content, 'length')) { return; }
     if (prompt && selectedIndex === 0) { set(this, 'selection', null); return; }
 
     if (prompt) { selectedIndex -= 1; }
@@ -429,9 +577,9 @@ Ember.Select = Ember.View.extend(
         content = get(this, 'content'),
         selection = get(this, 'selection');
 
-    if (!content){ return; }
+    if (!content) { return; }
     if (options) {
-      var selectedIndexes = options.map(function(){
+      var selectedIndexes = options.map(function() {
         return this.index - offset;
       }).toArray();
       var newSelection = content.objectsAt(selectedIndexes);
@@ -481,51 +629,9 @@ Ember.Select = Ember.View.extend(
   }
 });
 
-Ember.SelectOption = Ember.View.extend({
-  tagName: 'option',
-  attributeBindings: ['value', 'selected'],
-
-  defaultTemplate: function(context, options) {
-    options = { data: options.data, hash: {} };
-    Ember.Handlebars.helpers.bind.call(context, "view.label", options);
-  },
-
-  init: function() {
-    this.labelPathDidChange();
-    this.valuePathDidChange();
-
-    this._super();
-  },
-
-  selected: Ember.computed(function() {
-    var content = get(this, 'content'),
-        selection = get(this, 'parentView.selection');
-    if (get(this, 'parentView.multiple')) {
-      return selection && indexOf(selection, content.valueOf()) > -1;
-    } else {
-      // Primitives get passed through bindings as objects... since
-      // `new Number(4) !== 4`, we use `==` below
-      return content == selection;
-    }
-  }).property('content', 'parentView.selection').volatile(),
-
-  labelPathDidChange: Ember.observer(function() {
-    var labelPath = get(this, 'parentView.optionLabelPath');
-
-    if (!labelPath) { return; }
-
-    Ember.defineProperty(this, 'label', Ember.computed(function() {
-      return get(this, labelPath);
-    }).property(labelPath));
-  }, 'parentView.optionLabelPath'),
-
-  valuePathDidChange: Ember.observer(function() {
-    var valuePath = get(this, 'parentView.optionValuePath');
-
-    if (!valuePath) { return; }
-
-    Ember.defineProperty(this, 'value', Ember.computed(function() {
-      return get(this, valuePath);
-    }).property(valuePath));
-  }, 'parentView.optionValuePath')
-});
+export default Select;
+export {
+  Select,
+  SelectOption,
+  SelectOptgroup
+};

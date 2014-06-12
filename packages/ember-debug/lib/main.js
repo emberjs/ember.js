@@ -1,5 +1,9 @@
 /*global __fail__*/
 
+import Ember from "ember-metal/core";
+import EmberError from "ember-metal/error";
+import Logger from "ember-metal/logger";
+
 /**
 Ember Debug
 
@@ -10,20 +14,6 @@ Ember Debug
 /**
 @class Ember
 */
-
-if ('undefined' === typeof Ember) {
-  Ember = {};
-
-  if ('undefined' !== typeof window) {
-    window.Em = window.Ember = Em = Ember;
-  }
-}
-
-Ember.ENV = 'undefined' === typeof ENV ? {} : ENV;
-
-if (!('MANDATORY_SETTER' in Ember.ENV)) {
-  Ember.ENV.MANDATORY_SETTER = true; // default to true for debug dist
-}
 
 /**
   Define an assertion that will throw an exception if the condition is not
@@ -44,7 +34,9 @@ if (!('MANDATORY_SETTER' in Ember.ENV)) {
     falsy, an exception will be thrown.
 */
 Ember.assert = function(desc, test) {
-  if (!test) throw new Error("assertion failed: "+desc);
+  if (!test) {
+    throw new EmberError("Assertion Failed: " + desc);
+  }
 };
 
 
@@ -59,9 +51,24 @@ Ember.assert = function(desc, test) {
 */
 Ember.warn = function(message, test) {
   if (!test) {
-    Ember.Logger.warn("WARNING: "+message);
-    if ('trace' in Ember.Logger) Ember.Logger.trace();
+    Logger.warn("WARNING: "+message);
+    if ('trace' in Logger) Logger.trace();
   }
+};
+
+/**
+  Display a debug notice. Ember build tools will remove any calls to
+  `Ember.debug()` when doing a production build.
+
+  ```javascript
+  Ember.debug("I'm a debug notice!");
+  ```
+
+  @method debug
+  @param {String} message A debug message to display.
+*/
+Ember.debug = function(message) {
+  Logger.debug("DEBUG: "+message);
 };
 
 /**
@@ -75,12 +82,9 @@ Ember.warn = function(message, test) {
     will be displayed.
 */
 Ember.deprecate = function(message, test) {
-  if (Ember && Ember.TESTING_DEPRECATION) { return; }
-
-  if (arguments.length === 1) { test = false; }
   if (test) { return; }
 
-  if (Ember && Ember.ENV.RAISE_ON_DEPRECATION) { throw new Error(message); }
+  if (Ember.ENV.RAISE_ON_DEPRECATION) { throw new EmberError(message); }
 
   var error;
 
@@ -105,21 +109,28 @@ Ember.deprecate = function(message, test) {
     message = message + stackStr;
   }
 
-  Ember.Logger.warn("DEPRECATION: "+message);
+  Logger.warn("DEPRECATION: "+message);
 };
 
 
 
 /**
+  Alias an old, deprecated method with its new counterpart.
+
   Display a deprecation warning with the provided message and a stack trace
-  (Chrome and Firefox only) when the wrapped method is called.
+  (Chrome and Firefox only) when the assigned method is called.
 
   Ember build tools will not remove calls to `Ember.deprecateFunc()`, though
   no warnings will be shown in production.
 
+  ```javascript
+  Ember.oldMethod = Ember.deprecateFunc('Please use the new, updated method', Ember.newMethod);
+  ```
+
   @method deprecateFunc
   @param {String} message A description of the deprecation.
-  @param {Function} func The function to be deprecated.
+  @param {Function} func The new function called to replace its deprecated counterpart.
+  @return {Function} a new function that wrapped the original function with a deprecation warning
 */
 Ember.deprecateFunc = function(message, func) {
   return function() {
@@ -128,9 +139,47 @@ Ember.deprecateFunc = function(message, func) {
   };
 };
 
-if ('undefined' !== typeof window) {
-  window.ember_assert         = Ember.deprecateFunc("ember_assert is deprecated. Please use Ember.assert instead.",               Ember.assert);
-  window.ember_warn           = Ember.deprecateFunc("ember_warn is deprecated. Please use Ember.warn instead.",                   Ember.warn);
-  window.ember_deprecate      = Ember.deprecateFunc("ember_deprecate is deprecated. Please use Ember.deprecate instead.",         Ember.deprecate);
-  window.ember_deprecateFunc  = Ember.deprecateFunc("ember_deprecateFunc is deprecated. Please use Ember.deprecateFunc instead.", Ember.deprecateFunc);
+
+/**
+  Run a function meant for debugging. Ember build tools will remove any calls to
+  `Ember.runInDebug()` when doing a production build.
+
+  ```javascript
+  Ember.runInDebug(function() {
+    Ember.Handlebars.EachView.reopen({
+      didInsertElement: function() {
+        console.log("I'm happy");
+      }
+    });
+  });
+  ```
+
+  @method runInDebug
+  @param {Function} func The function to be executed.
+  @since 1.5.0
+*/
+Ember.runInDebug = function(func) {
+  func();
+};
+
+// Inform the developer about the Ember Inspector if not installed.
+if (!Ember.testing) {
+  var isFirefox = typeof InstallTrigger !== 'undefined';
+  var isChrome = !!window.chrome && !window.opera;
+
+  if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
+    window.addEventListener("load", function() {
+      if (document.documentElement && document.documentElement.dataset && !document.documentElement.dataset.emberExtension) {
+        var downloadURL;
+
+        if(isChrome) {
+          downloadURL = 'https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi';
+        } else if(isFirefox) {
+          downloadURL = 'https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/';
+        }
+
+        Ember.debug('For more advanced debugging, install the Ember Inspector from ' + downloadURL);
+      }
+    }, false);
+  }
 }

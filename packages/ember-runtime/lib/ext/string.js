@@ -1,114 +1,112 @@
-require('ember-runtime/core');
-require('ember-runtime/system/string');
-
 /**
 @module ember
 @submodule ember-runtime
 */
 
+import Ember from "ember-metal/core"; // Ember.EXTEND_PROTOTYPES, Ember.assert, Ember.FEATURES
+import {
+  fmt,
+  w,
+  loc,
+  camelize,
+  decamelize,
+  dasherize,
+  underscore,
+  capitalize,
+  classify
+} from "ember-runtime/system/string";
 
-
-var fmt = Ember.String.fmt,
-    w   = Ember.String.w,
-    loc = Ember.String.loc,
-    camelize = Ember.String.camelize,
-    decamelize = Ember.String.decamelize,
-    dasherize = Ember.String.dasherize,
-    underscore = Ember.String.underscore,
-    capitalize = Ember.String.capitalize,
-    classify = Ember.String.classify;
+var StringPrototype = String.prototype;
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
   /**
-    See {{#crossLink "Ember.String/fmt"}}{{/crossLink}}
+    See [Ember.String.fmt](/api/classes/Ember.String.html#method_fmt).
 
     @method fmt
     @for String
   */
-  String.prototype.fmt = function() {
+  StringPrototype.fmt = function() {
     return fmt(this, arguments);
   };
 
   /**
-    See {{#crossLink "Ember.String/w"}}{{/crossLink}}
+    See [Ember.String.w](/api/classes/Ember.String.html#method_w).
 
     @method w
     @for String
   */
-  String.prototype.w = function() {
+  StringPrototype.w = function() {
     return w(this);
   };
 
   /**
-    See {{#crossLink "Ember.String/loc"}}{{/crossLink}}
+    See [Ember.String.loc](/api/classes/Ember.String.html#method_loc).
 
     @method loc
     @for String
   */
-  String.prototype.loc = function() {
+  StringPrototype.loc = function() {
     return loc(this, arguments);
   };
 
   /**
-    See {{#crossLink "Ember.String/camelize"}}{{/crossLink}}
+    See [Ember.String.camelize](/api/classes/Ember.String.html#method_camelize).
 
     @method camelize
     @for String
   */
-  String.prototype.camelize = function() {
+  StringPrototype.camelize = function() {
     return camelize(this);
   };
 
   /**
-    See {{#crossLink "Ember.String/decamelize"}}{{/crossLink}}
+    See [Ember.String.decamelize](/api/classes/Ember.String.html#method_decamelize).
 
     @method decamelize
     @for String
   */
-  String.prototype.decamelize = function() {
+  StringPrototype.decamelize = function() {
     return decamelize(this);
   };
 
   /**
-    See {{#crossLink "Ember.String/dasherize"}}{{/crossLink}}
+    See [Ember.String.dasherize](/api/classes/Ember.String.html#method_dasherize).
 
     @method dasherize
     @for String
   */
-  String.prototype.dasherize = function() {
+  StringPrototype.dasherize = function() {
     return dasherize(this);
   };
 
   /**
-    See {{#crossLink "Ember.String/underscore"}}{{/crossLink}}
+    See [Ember.String.underscore](/api/classes/Ember.String.html#method_underscore).
 
     @method underscore
     @for String
   */
-  String.prototype.underscore = function() {
+  StringPrototype.underscore = function() {
     return underscore(this);
   };
 
   /**
-    See {{#crossLink "Ember.String/classify"}}{{/crossLink}}
+    See [Ember.String.classify](/api/classes/Ember.String.html#method_classify).
 
     @method classify
     @for String
   */
-  String.prototype.classify = function() {
+  StringPrototype.classify = function() {
     return classify(this);
   };
 
   /**
-    See {{#crossLink "Ember.String/capitalize"}}{{/crossLink}}
+    See [Ember.String.capitalize](/api/classes/Ember.String.html#method_capitalize).
 
     @method capitalize
     @for String
   */
-  String.prototype.capitalize = function() {
+  StringPrototype.capitalize = function() {
     return capitalize(this);
   };
-
 }
-

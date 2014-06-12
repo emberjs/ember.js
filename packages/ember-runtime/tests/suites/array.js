@@ -1,8 +1,12 @@
-require('ember-runtime/~tests/suites/enumerable');
+import {EnumerableTests, ObserverClass} from 'ember-runtime/tests/suites/enumerable';
+import indexOfTests from 'ember-runtime/tests/suites/array/indexOf';
+import lastIndexOfTests from 'ember-runtime/tests/suites/array/lastIndexOf';
+import objectAtTests from 'ember-runtime/tests/suites/array/objectAt';
 
 
+var EnumerableTestsObserverClass = ObserverClass;
 
-var ObserverClass =   Ember.EnumerableTests.ObserverClass.extend({
+ObserverClass = EnumerableTestsObserverClass.extend({
 
    observeArray: function(obj) {
     obj.addArrayObserver(this);
@@ -26,14 +30,16 @@ var ObserverClass =   Ember.EnumerableTests.ObserverClass.extend({
 
 });
 
-Ember.ArrayTests = Ember.EnumerableTests.extend({
+var ArrayTests = EnumerableTests.extend({
 
   observerClass: ObserverClass
 
 });
 
-Ember.ArrayTests.ObserverClass = ObserverClass;
+ArrayTests.ObserverClass = ObserverClass;
 
-require('ember-runtime/~tests/suites/array/indexOf');
-require('ember-runtime/~tests/suites/array/lastIndexOf');
-require('ember-runtime/~tests/suites/array/objectAt');
+ArrayTests.importModuleTests(indexOfTests);
+ArrayTests.importModuleTests(lastIndexOfTests);
+ArrayTests.importModuleTests(objectAtTests);
+
+export {ArrayTests, ObserverClass};

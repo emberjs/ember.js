@@ -1,6 +1,8 @@
-module("Ember.View - _classStringForValue");
+import View from "ember-views/views/view";
 
-var cSFV = Ember.View._classStringForValue;
+QUnit.module("View - _classStringForValue");
+
+var cSFV = View._classStringForValue;
 
 test("returns dasherized version of last path part if value is true", function() {
   equal(cSFV("propertyName", true), "property-name", "class is dasherized");
@@ -38,4 +40,14 @@ test("returns the value if the value is truthy", function() {
 
   equal(cSFV("propertyName", "123"), 123, "returns value if the value is truthy");
   equal(cSFV("content.propertyName", 123), 123, "returns value if the value is truthy");
+});
+
+test("treat empty array as falsy value and return null", function() {
+  equal(cSFV("propertyName", [], "truthyClass"), null, "returns null if value is false");
+  equal(cSFV("content.propertyName", [], "truthyClass"), null, "returns null if value is false");
+});
+
+test("treat non-empty array as truthy value and return the className if specified", function() {
+  equal(cSFV("propertyName", ['emberjs'], "truthyClass"), "truthyClass", "returns className if given");
+  equal(cSFV("content.propertyName", ['emberjs'], "truthyClass"), "truthyClass", "returns className if given");
 });

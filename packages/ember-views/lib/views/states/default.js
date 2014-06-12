@@ -1,16 +1,17 @@
-require('ember-views/views/view');
+import Ember from "ember-metal/core"; // Ember.K
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import EmberError from "ember-metal/error";
 
 /**
 @module ember
 @submodule ember-views
 */
-
-var get = Ember.get, set = Ember.set;
-
-Ember.View.states._default = {
+export default {
   // appendChild is only legal while rendering the buffer.
   appendChild: function() {
-    throw "You can't use appendChild outside of the rendering process";
+    throw new EmberError("You can't use appendChild outside of the rendering process");
   },
 
   $: function() {
@@ -29,7 +30,7 @@ Ember.View.states._default = {
   destroyElement: function(view) {
     set(view, 'element', null);
     if (view._scheduledInsert) {
-      Ember.run.cancel(view._scheduledInsert);
+      run.cancel(view._scheduledInsert);
       view._scheduledInsert = null;
     }
     return view;
@@ -39,5 +40,6 @@ Ember.View.states._default = {
     return false;
   },
 
-  rerender: Ember.K
+  rerender: Ember.K,
+  invokeObserver: Ember.K
 };

@@ -7,9 +7,31 @@
 // HELPERS
 //
 
-var get = Ember.get, set = Ember.set;
+import Ember from "ember-metal/core";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { apply } from "ember-metal/utils";
+import {
+  Mixin,
+  required,
+  aliasMethod
+} from "ember-metal/mixin";
+import EnumerableUtils from "ember-metal/enumerable_utils";
+import { computed } from "ember-metal/computed";
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
+import {
+  addListener,
+  removeListener,
+  sendEvent,
+  hasListeners
+} from "ember-metal/events";
+import compare from "ember-runtime/compare";
+
 var a_slice = Array.prototype.slice;
-var a_indexOf = Ember.EnumerableUtils.indexOf;
+var a_indexOf = EnumerableUtils.indexOf;
 
 var contexts = [];
 
@@ -47,13 +69,13 @@ function iter(key, value) {
   To make your own custom class enumerable, you need two items:
 
   1. You must have a length property. This property should change whenever
-     the number of items in your enumerable object changes. If you using this
+     the number of items in your enumerable object changes. If you use this
      with an `Ember.Object` subclass, you should be sure to change the length
      property using `set().`
 
-  2. If you must implement `nextObject().` See documentation.
+  2. You must implement `nextObject().` See documentation.
 
-  Once you have these two methods implement, apply the `Ember.Enumerable` mixin
+  Once you have these two methods implemented, apply the `Ember.Enumerable` mixin
   to your class and you will be able to enumerate the contents of your object
   like any other collection.
 
@@ -67,14 +89,9 @@ function iter(key, value) {
 
   @class Enumerable
   @namespace Ember
-  @extends Ember.Mixin
   @since Ember 0.9
 */
-Ember.Enumerable = Ember.Mixin.create(
-  /** @scope Ember.Enumerable.prototype */ {
-
-  // compatibility
-  isEnumerable: true,
+export default Mixin.create({
 
   /**
     Implement this method to make your class enumerable.
@@ -104,12 +121,12 @@ Ember.Enumerable = Ember.Mixin.create(
 
     @method nextObject
     @param {Number} index the current index of the iteration
-    @param {Object} previousObject the value returned by the last call to 
+    @param {Object} previousObject the value returned by the last call to
       `nextObject`.
     @param {Object} context a context object you can use to maintain state.
     @return {Object} the next object in the iteration or undefined
   */
-  nextObject: Ember.required(Function),
+  nextObject: required(Function),
 
   /**
     Helper method returns the first object from a collection. This is usually
@@ -123,16 +140,16 @@ Ember.Enumerable = Ember.Mixin.create(
 
     ```javascript
     var arr = ["a", "b", "c"];
-    arr.firstObject();  // "a"
+    arr.get('firstObject');  // "a"
 
     var arr = [];
-    arr.firstObject();  // undefined
+    arr.get('firstObject');  // undefined
     ```
 
     @property firstObject
     @return {Object} the object or undefined
   */
-  firstObject: Ember.computed(function() {
+  firstObject: computed(function() {
     if (get(this, 'length')===0) return undefined ;
 
     // handle generic enumerables
@@ -149,16 +166,16 @@ Ember.Enumerable = Ember.Mixin.create(
 
     ```javascript
     var arr = ["a", "b", "c"];
-    arr.lastObject();  // "c"
+    arr.get('lastObject');  // "c"
 
     var arr = [];
-    arr.lastObject();  // undefined
+    arr.get('lastObject');  // undefined
     ```
 
     @property lastObject
     @return {Object} the last object or undefined
   */
-  lastObject: Ember.computed(function() {
+  lastObject: computed(function() {
     var len = get(this, 'length');
     if (len===0) return undefined ;
     var context = popCtx(), idx=0, cur, last = null;
@@ -231,14 +248,14 @@ Ember.Enumerable = Ember.Mixin.create(
   },
 
   /**
-    Alias for `mapProperty`
+    Alias for `mapBy`
 
     @method getEach
     @param {String} key name of the property
     @return {Array} The mapped array.
   */
   getEach: function(key) {
-    return this.mapProperty(key);
+    return this.mapBy(key);
   },
 
   /**
@@ -285,7 +302,7 @@ Ember.Enumerable = Ember.Mixin.create(
     @return {Array} The mapped array.
   */
   map: function(callback, target) {
-    var ret = [];
+    var ret = Ember.A();
     this.forEach(function(x, idx, i) {
       ret[idx] = callback.call(target, x, idx,i);
     });
@@ -296,15 +313,27 @@ Ember.Enumerable = Ember.Mixin.create(
     Similar to map, this specialized function returns the value of the named
     property on all items in the enumeration.
 
-    @method mapProperty
+    @method mapBy
     @param {String} key name of the property
     @return {Array} The mapped array.
   */
-  mapProperty: function(key) {
+  mapBy: function(key) {
     return this.map(function(next) {
       return get(next, key);
     });
   },
+
+  /**
+    Similar to map, this specialized function returns the value of the named
+    property on all items in the enumeration.
+
+    @method mapProperty
+    @param {String} key name of the property
+    @return {Array} The mapped array.
+    @deprecated Use `mapBy` instead
+  */
+
+  mapProperty: aliasMethod('mapBy'),
 
   /**
     Returns an array with all of the items in the enumeration that the passed
@@ -335,7 +364,7 @@ Ember.Enumerable = Ember.Mixin.create(
     @return {Array} A filtered array.
   */
   filter: function(callback, target) {
-    var ret = [];
+    var ret = Ember.A();
     this.forEach(function(x, idx, i) {
       if (callback.call(target, x, idx, i)) ret.push(x);
     });
@@ -349,7 +378,9 @@ Ember.Enumerable = Ember.Mixin.create(
     The callback method you provide should have the following signature (all
     parameters are optional):
 
-          function(item, index, enumerable);
+    ```javascript
+    function(item, index, enumerable);
+    ```
 
     - *item* is the current item in the iteration.
     - *index* is the current index in the iteration
@@ -368,8 +399,22 @@ Ember.Enumerable = Ember.Mixin.create(
    */
   reject: function(callback, target) {
     return this.filter(function() {
-      return !(callback.apply(target, arguments));
+      return !(apply(target, callback, arguments));
     });
+  },
+
+  /**
+    Returns an array with just the items with the matched property. You
+    can pass an optional second argument with the target value. Otherwise
+    this will match any property that evaluates to `true`.
+
+    @method filterBy
+    @param {String} key the property to test
+    @param {*} [value] optional value to test against.
+    @return {Array} filtered array
+  */
+  filterBy: function(key, value) {
+    return this.filter(apply(this, iter, arguments));
   },
 
   /**
@@ -381,9 +426,26 @@ Ember.Enumerable = Ember.Mixin.create(
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Array} filtered array
+    @deprecated Use `filterBy` instead
   */
-  filterProperty: function(key, value) {
-    return this.filter(iter.apply(this, arguments));
+  filterProperty: aliasMethod('filterBy'),
+
+  /**
+    Returns an array with the items that do not have truthy values for
+    key.  You can pass an optional second argument with the target value.  Otherwise
+    this will match any property that evaluates to false.
+
+    @method rejectBy
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @return {Array} rejected array
+  */
+  rejectBy: function(key, value) {
+    var exactValue = function(item) { return get(item, key) === value; },
+        hasValue = function(item) { return !!get(item, key); },
+        use = (arguments.length === 2 ? exactValue : hasValue);
+
+    return this.reject(use);
   },
 
   /**
@@ -395,14 +457,9 @@ Ember.Enumerable = Ember.Mixin.create(
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Array} rejected array
+    @deprecated Use `rejectBy` instead
   */
-  rejectProperty: function(key, value) {
-    var exactValue = function(item) { return get(item, key) === value; },
-        hasValue = function(item) { return !!get(item, key); },
-        use = (arguments.length === 2 ? exactValue : hasValue);
-
-    return this.reject(use);
-  },
+  rejectProperty: aliasMethod('rejectBy'),
 
   /**
     Returns the first item in the array for which the callback returns true.
@@ -455,14 +512,29 @@ Ember.Enumerable = Ember.Mixin.create(
 
     This method works much like the more generic `find()` method.
 
-    @method findProperty
+    @method findBy
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
     @return {Object} found item or `undefined`
   */
-  findProperty: function(key, value) {
-    return this.find(iter.apply(this, arguments));
+  findBy: function(key, value) {
+    return this.find(apply(this, iter, arguments));
   },
+
+  /**
+    Returns the first item with a property matching the passed value. You
+    can pass an optional second argument with the target value. Otherwise
+    this will match any property that evaluates to `true`.
+
+    This method works much like the more generic `find()` method.
+
+    @method findProperty
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @return {Object} found item or `undefined`
+    @deprecated Use `findBy` instead
+  */
+  findProperty: aliasMethod('findBy'),
 
   /**
     Returns `true` if the passed function returns true for every item in the
@@ -503,18 +575,89 @@ Ember.Enumerable = Ember.Mixin.create(
   },
 
   /**
-    Returns `true` if the passed property resolves to `true` for all items in
-    the enumerable. This method is often simpler/faster than using a callback.
+    @method everyBy
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @deprecated Use `isEvery` instead
+    @return {Boolean}
+  */
+  everyBy: aliasMethod('isEvery'),
 
+  /**
     @method everyProperty
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
+    @deprecated Use `isEvery` instead
     @return {Boolean}
   */
-  everyProperty: function(key, value) {
-    return this.every(iter.apply(this, arguments));
+  everyProperty: aliasMethod('isEvery'),
+
+  /**
+    Returns `true` if the passed property resolves to `true` for all items in
+    the enumerable. This method is often simpler/faster than using a callback.
+
+    @method isEvery
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @return {Boolean}
+    @since 1.3.0
+  */
+  isEvery: function(key, value) {
+    return this.every(apply(this, iter, arguments));
   },
 
+  /**
+    Returns `true` if the passed function returns true for any item in the
+    enumeration. This corresponds with the `some()` method in JavaScript 1.6.
+
+    The callback method you provide should have the following signature (all
+    parameters are optional):
+
+    ```javascript
+    function(item, index, enumerable);
+    ```
+
+    - `item` is the current item in the iteration.
+    - `index` is the current index in the iteration.
+    - `enumerable` is the enumerable object itself.
+
+    It should return the `true` to include the item in the results, `false`
+    otherwise.
+
+    Note that in addition to a callback, you can also pass an optional target
+    object that will be set as `this` on the context. This is a good way
+    to give your iterator function access to the current object.
+
+    Usage Example:
+
+    ```javascript
+    if (people.any(isManager)) { Paychecks.addBiggerBonus(); }
+    ```
+
+    @method any
+    @param {Function} callback The callback to execute
+    @param {Object} [target] The target object to use
+    @return {Boolean} `true` if the passed function returns `true` for any item
+  */
+  any: function(callback, target) {
+    var len     = get(this, 'length'),
+        context = popCtx(),
+        found   = false,
+        last    = null,
+        next, idx;
+
+    if (target === undefined) { target = null; }
+
+    for (idx = 0; idx < len && !found; idx++) {
+      next  = this.nextObject(idx, last, context);
+      found = callback.call(target, next, idx, this);
+      last  = next;
+    }
+
+    next = last = null;
+    context = pushCtx(context);
+    return found;
+  },
 
   /**
     Returns `true` if the passed function returns true for any item in the
@@ -547,26 +690,42 @@ Ember.Enumerable = Ember.Mixin.create(
     @method some
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
-    @return {Array} A filtered array.
+    @return {Boolean} `true` if the passed function returns `true` for any item
+    @deprecated Use `any` instead
   */
-  some: function(callback, target) {
-    return !!this.find(function(x, idx, i) {
-      return !!callback.call(target, x, idx, i);
-    });
-  },
+  some: aliasMethod('any'),
 
   /**
     Returns `true` if the passed property resolves to `true` for any item in
     the enumerable. This method is often simpler/faster than using a callback.
 
+    @method isAny
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @return {Boolean} `true` if the passed function returns `true` for any item
+    @since 1.3.0
+  */
+  isAny: function(key, value) {
+    return this.any(apply(this, iter, arguments));
+  },
+
+  /**
+    @method anyBy
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @return {Boolean} `true` if the passed function returns `true` for any item
+    @deprecated Use `isAny` instead
+  */
+  anyBy: aliasMethod('isAny'),
+
+  /**
     @method someProperty
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
-    @return {Boolean} `true`
+    @return {Boolean} `true` if the passed function returns `true` for any item
+    @deprecated Use `isAny` instead
   */
-  someProperty: function(key, value) {
-    return this.some(iter.apply(this, arguments));
-  },
+  someProperty: aliasMethod('isAny'),
 
   /**
     This will combine the values of the enumerator into a single value. It
@@ -607,7 +766,7 @@ Ember.Enumerable = Ember.Mixin.create(
     var ret = initialValue;
 
     this.forEach(function(item, i) {
-      ret = callback.call(null, ret, item, i, this, reducerProperty);
+      ret = callback(ret, item, i, this, reducerProperty);
     }, this);
 
     return ret;
@@ -624,13 +783,13 @@ Ember.Enumerable = Ember.Mixin.create(
     @return {Array} return values from calling invoke.
   */
   invoke: function(methodName) {
-    var args, ret = [];
+    var args, ret = Ember.A();
     if (arguments.length>1) args = a_slice.call(arguments, 1);
 
     this.forEach(function(x, idx) {
       var method = x && x[methodName];
       if ('function' === typeof method) {
-        ret[idx] = args ? method.apply(x, args) : method.call(x);
+        ret[idx] = args ? apply(x, method, args) : x[methodName]();
       }
     }, this);
 
@@ -645,23 +804,25 @@ Ember.Enumerable = Ember.Mixin.create(
     @return {Array} the enumerable as an array.
   */
   toArray: function() {
-    var ret = [];
+    var ret = Ember.A();
     this.forEach(function(o, idx) { ret[idx] = o; });
-    return ret ;
+    return ret;
   },
 
   /**
-    Returns a copy of the array with all null elements removed.
+    Returns a copy of the array with all null and undefined elements removed.
 
     ```javascript
-    var arr = ["a", null, "c", null];
+    var arr = ["a", null, "c", undefined];
     arr.compact();  // ["a", "c"]
     ```
 
     @method compact
-    @return {Array} the array without null elements.
+    @return {Array} the array without null and undefined elements.
   */
-  compact: function() { return this.without(null); },
+  compact: function() {
+    return this.filter(function(value) { return value != null; });
+  },
 
   /**
     Returns a new enumerable that excludes the passed value. The default
@@ -679,7 +840,7 @@ Ember.Enumerable = Ember.Mixin.create(
   */
   without: function(value) {
     if (!this.contains(value)) return this; // nothing to do
-    var ret = [] ;
+    var ret = Ember.A();
     this.forEach(function(k) {
       if (k !== value) ret[ret.length] = k;
     }) ;
@@ -699,8 +860,8 @@ Ember.Enumerable = Ember.Mixin.create(
     @return {Ember.Enumerable}
   */
   uniq: function() {
-    var ret = [];
-    this.forEach(function(k){
+    var ret = Ember.A();
+    this.forEach(function(k) {
       if (a_indexOf(ret, k)<0) ret.push(k);
     });
     return ret;
@@ -711,13 +872,14 @@ Ember.Enumerable = Ember.Mixin.create(
     You can observe this property to be notified of changes to the enumerables
     content.
 
-    For plain enumerables, this property is read only. `Ember.Array` overrides
+    For plain enumerables, this property is read only. `Array` overrides
     this method.
 
     @property []
-    @type Ember.Array
+    @type Array
+    @return this
   */
-  '[]': Ember.computed(function(key, value) {
+  '[]': computed(function(key, value) {
     return this;
   }),
 
@@ -730,18 +892,19 @@ Ember.Enumerable = Ember.Mixin.create(
     mixin.
 
     @method addEnumerableObserver
-    @param target {Object}
-    @param opts {Hash}
+    @param {Object} target
+    @param {Hash} [opts]
+    @return this
   */
   addEnumerableObserver: function(target, opts) {
     var willChange = (opts && opts.willChange) || 'enumerableWillChange',
         didChange  = (opts && opts.didChange) || 'enumerableDidChange';
 
     var hasObservers = get(this, 'hasEnumerableObservers');
-    if (!hasObservers) Ember.propertyWillChange(this, 'hasEnumerableObservers');
-    Ember.addListener(this, '@enumerable:before', target, willChange);
-    Ember.addListener(this, '@enumerable:change', target, didChange);
-    if (!hasObservers) Ember.propertyDidChange(this, 'hasEnumerableObservers');
+    if (!hasObservers) propertyWillChange(this, 'hasEnumerableObservers');
+    addListener(this, '@enumerable:before', target, willChange);
+    addListener(this, '@enumerable:change', target, didChange);
+    if (!hasObservers) propertyDidChange(this, 'hasEnumerableObservers');
     return this;
   },
 
@@ -749,18 +912,19 @@ Ember.Enumerable = Ember.Mixin.create(
     Removes a registered enumerable observer.
 
     @method removeEnumerableObserver
-    @param target {Object}
-    @param [opts] {Hash}
+    @param {Object} target
+    @param {Hash} [opts]
+    @return this
   */
   removeEnumerableObserver: function(target, opts) {
     var willChange = (opts && opts.willChange) || 'enumerableWillChange',
         didChange  = (opts && opts.didChange) || 'enumerableDidChange';
 
     var hasObservers = get(this, 'hasEnumerableObservers');
-    if (hasObservers) Ember.propertyWillChange(this, 'hasEnumerableObservers');
-    Ember.removeListener(this, '@enumerable:before', target, willChange);
-    Ember.removeListener(this, '@enumerable:change', target, didChange);
-    if (hasObservers) Ember.propertyDidChange(this, 'hasEnumerableObservers');
+    if (hasObservers) propertyWillChange(this, 'hasEnumerableObservers');
+    removeListener(this, '@enumerable:before', target, willChange);
+    removeListener(this, '@enumerable:change', target, didChange);
+    if (hasObservers) propertyDidChange(this, 'hasEnumerableObservers');
     return this;
   },
 
@@ -771,8 +935,8 @@ Ember.Enumerable = Ember.Mixin.create(
     @property hasEnumerableObservers
     @type Boolean
   */
-  hasEnumerableObservers: Ember.computed(function() {
-    return Ember.hasListeners(this, '@enumerable:change') || Ember.hasListeners(this, '@enumerable:before');
+  hasEnumerableObservers: computed(function() {
+    return hasListeners(this, '@enumerable:change') || hasListeners(this, '@enumerable:before');
   }),
 
 
@@ -805,9 +969,9 @@ Ember.Enumerable = Ember.Mixin.create(
     if (removing === -1) removing = null;
     if (adding   === -1) adding   = null;
 
-    Ember.propertyWillChange(this, '[]');
-    if (hasDelta) Ember.propertyWillChange(this, 'length');
-    Ember.sendEvent(this, '@enumerable:before', [this, removing, adding]);
+    propertyWillChange(this, '[]');
+    if (hasDelta) propertyWillChange(this, 'length');
+    sendEvent(this, '@enumerable:before', [this, removing, adding]);
 
     return this;
   },
@@ -820,8 +984,6 @@ Ember.Enumerable = Ember.Mixin.create(
     notify range observers.
 
     @method enumerableContentDidChange
-    @param {Number} [start] optional start offset for the content change.
-      For unordered enumerables, you should always pass -1.
     @param {Ember.Enumerable|Number} removing An enumerable of the objects to
       be removed or the number of items to be removed.
     @param {Ember.Enumerable|Number} adding  An enumerable of the objects to
@@ -829,7 +991,7 @@ Ember.Enumerable = Ember.Mixin.create(
     @chainable
   */
   enumerableContentDidChange: function(removing, adding) {
-    var notify = this.propertyDidChange, removeCnt, addCnt, hasDelta;
+    var removeCnt, addCnt, hasDelta;
 
     if ('number' === typeof removing) removeCnt = removing;
     else if (removing) removeCnt = get(removing, 'length');
@@ -844,11 +1006,36 @@ Ember.Enumerable = Ember.Mixin.create(
     if (removing === -1) removing = null;
     if (adding   === -1) adding   = null;
 
-    Ember.sendEvent(this, '@enumerable:change', [this, removing, adding]);
-    if (hasDelta) Ember.propertyDidChange(this, 'length');
-    Ember.propertyDidChange(this, '[]');
+    sendEvent(this, '@enumerable:change', [this, removing, adding]);
+    if (hasDelta) propertyDidChange(this, 'length');
+    propertyDidChange(this, '[]');
 
     return this ;
-  }
+  },
 
-}) ;
+  /**
+    Converts the enumerable into an array and sorts by the keys
+    specified in the argument.
+
+    You may provide multiple arguments to sort by multiple properties.
+
+    @method sortBy
+    @param {String} property name(s) to sort on
+    @return {Array} The sorted array.
+    @since 1.2.0
+    */
+  sortBy: function() {
+    var sortKeys = arguments;
+    return this.toArray().sort(function(a, b){
+      for(var i = 0; i < sortKeys.length; i++) {
+        var key = sortKeys[i],
+        propA = get(a, key),
+        propB = get(b, key);
+        // return 1 or -1 else continue to the next sortKey
+        var compareValue = compare(propA, propB);
+        if (compareValue) { return compareValue; }
+      }
+      return 0;
+    });
+  }
+});

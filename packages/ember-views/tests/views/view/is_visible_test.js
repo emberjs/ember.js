@@ -1,9 +1,14 @@
-var get = Ember.get, set = Ember.set;
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import EmberObject from "ember-runtime/system/object";
+import EmberView from "ember-views/views/view";
+import ContainerView from "ember-views/views/container_view";
 
 var View, view, parentBecameVisible, childBecameVisible, grandchildBecameVisible;
 var parentBecameHidden, childBecameHidden, grandchildBecameHidden;
 
-module("Ember.View#isVisible", {
+QUnit.module("EmberView#isVisible", {
   setup: function() {
     parentBecameVisible=0;
     childBecameVisible=0;
@@ -12,17 +17,17 @@ module("Ember.View#isVisible", {
     childBecameHidden=0;
     grandchildBecameHidden=0;
 
-    View = Ember.ContainerView.extend({
+    View = ContainerView.extend({
       childViews: ['child'],
       becameVisible: function() { parentBecameVisible++; },
       becameHidden: function() { parentBecameHidden++; },
 
-      child: Ember.ContainerView.extend({
+      child: ContainerView.extend({
         childViews: ['grandchild'],
         becameVisible: function() { childBecameVisible++; },
         becameHidden: function() { childBecameHidden++; },
 
-        grandchild: Ember.View.extend({
+        grandchild: EmberView.extend({
           template: function() { return "seems weird bro"; },
           becameVisible: function() { grandchildBecameVisible++; },
           becameHidden: function() { grandchildBecameHidden++; }
@@ -33,29 +38,34 @@ module("Ember.View#isVisible", {
 
   teardown: function() {
     if (view) {
-      Ember.run(function(){ view.destroy(); });
+      run(function() { view.destroy(); });
     }
   }
 });
 
 test("should hide views when isVisible is false", function() {
-  view = Ember.View.create({
+  view = EmberView.create({
     isVisible: false
   });
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
   ok(view.$().is(':hidden'), "the view is hidden");
 
-  set(view, 'isVisible', true);
+  run(function(){
+    set(view, 'isVisible', true);
+  });
+
   ok(view.$().is(':visible'), "the view is visible");
-  view.remove();
+  run(function() {
+    view.remove();
+  });
 });
 
 test("should hide element if isVisible is false before element is created", function() {
-  view = Ember.View.create({
+  view = EmberView.create({
     isVisible: false
   });
 
@@ -63,35 +73,40 @@ test("should hide element if isVisible is false before element is created", func
 
   set(view, 'template', function() { return "foo"; });
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
   ok(view.$().is(':hidden'), "should be hidden");
 
-  view.remove();
-  set(view, 'isVisible', true);
+  run(function() {
+    view.remove();
+  });
 
-  Ember.run(function() {
+  run(function(){
+    set(view, 'isVisible', true);
+  });
+
+  run(function() {
     view.append();
   });
 
   ok(view.$().is(':visible'), "view should be visible");
 
-  Ember.run(function() {
+  run(function() {
     view.remove();
   });
 });
 
 test("view should be notified after isVisible is set to false and the element has been hidden", function() {
-  Ember.run(function(){
+  run(function() {
     view = View.create({ isVisible: false });
     view.append();
   });
 
   ok(view.$().is(':hidden'), "precond - view is hidden when appended");
 
-  Ember.run(function() {
+  run(function() {
     view.set('isVisible', true);
   });
 
@@ -106,13 +121,13 @@ test("view should be notified after isVisible is set to false and the element ha
   var childView = view.get('childViews').objectAt(0);
   var grandchildView = childView.get('childViews').objectAt(0);
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
   ok(view.$().is(':visible'), "precond - view is visible when appended");
 
-  Ember.run(function() {
+  run(function() {
     childView.set('isVisible', false);
   });
 
@@ -127,13 +142,13 @@ test("view should be notified after isVisible is set to true and the element has
   var childView = view.get('childViews').objectAt(0);
   var grandchildView = childView.get('childViews').objectAt(0);
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
   ok(view.$().is(':hidden'), "precond - view is hidden when appended");
 
-  Ember.run(function() {
+  run(function() {
     view.set('isVisible', true);
   });
 
@@ -149,24 +164,24 @@ test("if a view descends from a hidden view, making isVisible true should not tr
   var childView = view.get('childViews').objectAt(0);
   var grandchildView = childView.get('childViews').objectAt(0);
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
   ok(view.$().is(':visible'), "precond - view is visible when appended");
 
-  Ember.run(function() {
+  run(function() {
     childView.set('isVisible', false);
   });
 
-  Ember.run(function() {
+  run(function() {
     view.set('isVisible', false);
   });
 
   childBecameVisible = 0;
   grandchildBecameVisible = 0;
 
-  Ember.run(function() {
+  run(function() {
     childView.set('isVisible', true);
   });
 
@@ -179,20 +194,20 @@ test("if a child view becomes visible while its parent is hidden, if its parent 
   var childView = view.get('childViews').objectAt(0);
   var grandchildView = childView.get('childViews').objectAt(0);
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
   ok(view.$().is(':hidden'), "precond - view is hidden when appended");
 
-  Ember.run(function() {
+  run(function() {
     childView.set('isVisible', true);
   });
 
   equal(childBecameVisible, 0, "child did not become visible since parent is hidden");
   equal(grandchildBecameVisible, 0, "grandchild did not become visible since parent is hidden");
 
-  Ember.run(function() {
+  run(function() {
     view.set('isVisible', true);
   });
 

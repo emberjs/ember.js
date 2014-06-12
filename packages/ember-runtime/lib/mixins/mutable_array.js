@@ -4,25 +4,41 @@
 */
 
 
-require('ember-runtime/mixins/array');
-require('ember-runtime/mixins/mutable_enumerable');
+// require('ember-runtime/mixins/array');
+// require('ember-runtime/mixins/mutable_enumerable');
 
 // ..........................................................
 // CONSTANTS
 //
 
-var OUT_OF_RANGE_EXCEPTION = "Index out of range" ;
+var OUT_OF_RANGE_EXCEPTION = "Index out of range";
 var EMPTY = [];
 
 // ..........................................................
 // HELPERS
 //
 
-var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
-
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { isArray } from "ember-metal/utils";
+import EmberError from "ember-metal/error";
+import {
+  Mixin,
+  required
+} from "ember-metal/mixin";
+import EmberArray from "ember-runtime/mixins/array";
+import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";
+import Enumerable from "ember-runtime/mixins/enumerable";
 /**
   This mixin defines the API for modifying array-like objects. These methods
   can be applied only to a collection that keeps its items in an ordered set.
+  It builds upon the Array mixin and adds methods to modify the array.
+  Concrete implementations of this class include ArrayProxy and ArrayController.
+
+  It is important to use the methods in this class to modify arrays so that
+  changes are observable. This allows the binding system in Ember to function
+  correctly.
+
 
   Note that an Array can change even if it does not implement this mixin.
   For example, one might implement a SparseArray that cannot be directly
@@ -30,12 +46,10 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
 
   @class MutableArray
   @namespace Ember
-  @extends Ember.Mixin
   @uses Ember.Array
   @uses Ember.MutableEnumerable
 */
-Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
-  /** @scope Ember.MutableArray.prototype */ {
+export default Mixin.create(EmberArray, MutableEnumerable, {
 
   /**
     __Required.__ You must implement this method to apply this mixin.
@@ -45,17 +59,17 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     passed array. You should also call `this.enumerableContentDidChange()`
 
     @method replace
-    @param {Number} idx Starting index in the array to replace. If 
+    @param {Number} idx Starting index in the array to replace. If
       idx >= length, then append to the end of the array.
-    @param {Number} amt Number of elements that should be removed from 
+    @param {Number} amt Number of elements that should be removed from
       the array, starting at *idx*.
-    @param {Array} objects An array of zero or more objects that should be 
+    @param {Array} objects An array of zero or more objects that should be
       inserted into the array at *idx*
   */
-  replace: Ember.required(),
+  replace: required(),
 
   /**
-    Remove all elements from self. This is useful if you
+    Remove all elements from the array. This is useful if you
     want to reuse an existing array without having to recreate it.
 
     ```javascript
@@ -83,16 +97,17 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     var colors = ["red", "green", "blue"];
     colors.insertAt(2, "yellow");  // ["red", "green", "yellow", "blue"]
     colors.insertAt(5, "orange");  // Error: Index out of range
-    ```javascript
+    ```
 
     @method insertAt
     @param {Number} idx index of insert the object at.
     @param {Object} object object to insert
+    @return {Ember.Array} receiver
   */
   insertAt: function(idx, object) {
-    if (idx > get(this, 'length')) throw new Error(OUT_OF_RANGE_EXCEPTION) ;
-    this.replace(idx, 0, [object]) ;
-    return this ;
+    if (idx > get(this, 'length')) throw new EmberError(OUT_OF_RANGE_EXCEPTION);
+    this.replace(idx, 0, [object]);
+    return this;
   },
 
   /**
@@ -100,7 +115,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     method. You can pass either a single index, or a start and a length.
 
     If you pass a start and length that is beyond the
-    length this method will throw an `Ember.OUT_OF_RANGE_EXCEPTION`
+    length this method will throw an `OUT_OF_RANGE_EXCEPTION`.
 
     ```javascript
     var colors = ["red", "green", "blue", "yellow", "orange"];
@@ -112,13 +127,13 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     @method removeAt
     @param {Number} start index, start of range
     @param {Number} len length of passing range
-    @return {Object} receiver
+    @return {Ember.Array} receiver
   */
   removeAt: function(start, len) {
     if ('number' === typeof start) {
 
       if ((start < 0) || (start >= get(this, 'length'))) {
-        throw new Error(OUT_OF_RANGE_EXCEPTION);
+        throw new EmberError(OUT_OF_RANGE_EXCEPTION);
       }
 
       // fast case
@@ -126,7 +141,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
       this.replace(start, len, EMPTY);
     }
 
-    return this ;
+    return this;
   },
 
   /**
@@ -134,17 +149,18 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     is KVO-compliant.
 
     ```javascript
-    var colors = ["red", "green", "blue"];
-    colors.pushObject("black");               // ["red", "green", "blue", "black"]
-    colors.pushObject(["yellow", "orange"]);  // ["red", "green", "blue", "black", ["yellow", "orange"]]
+    var colors = ["red", "green"];
+    colors.pushObject("black");     // ["red", "green", "black"]
+    colors.pushObject(["yellow"]);  // ["red", "green", ["yellow"]]
     ```
 
     @method pushObject
-    @param {anything} obj object to push
+    @param {*} obj object to push
+    @return object same object passed as a param
   */
   pushObject: function(obj) {
-    this.insertAt(get(this, 'length'), obj) ;
-    return obj ;
+    this.insertAt(get(this, 'length'), obj);
+    return obj;
   },
 
   /**
@@ -152,9 +168,8 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     notifying observers of the change until all objects are added.
 
     ```javascript
-    var colors = ["red", "green", "blue"];
-    colors.pushObjects("black");               // ["red", "green", "blue", "black"]
-    colors.pushObjects(["yellow", "orange"]);  // ["red", "green", "blue", "black", "yellow", "orange"]
+    var colors = ["red"];
+    colors.pushObjects(["yellow", "orange"]);  // ["red", "yellow", "orange"]
     ```
 
     @method pushObjects
@@ -162,6 +177,9 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     @return {Ember.Array} receiver
   */
   pushObjects: function(objects) {
+    if (!(Enumerable.detect(objects) || isArray(objects))) {
+      throw new TypeError("Must pass Ember.Enumerable to Ember.MutableArray#pushObjects");
+    }
     this.replace(get(this, 'length'), 0, objects);
     return this;
   },
@@ -180,12 +198,12 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     @return object
   */
   popObject: function() {
-    var len = get(this, 'length') ;
-    if (len === 0) return null ;
+    var len = get(this, 'length');
+    if (len === 0) return null;
 
-    var ret = this.objectAt(len-1) ;
-    this.removeAt(len-1, 1) ;
-    return ret ;
+    var ret = this.objectAt(len-1);
+    this.removeAt(len-1, 1);
+    return ret;
   },
 
   /**
@@ -202,10 +220,10 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     @return object
   */
   shiftObject: function() {
-    if (get(this, 'length') === 0) return null ;
-    var ret = this.objectAt(0) ;
-    this.removeAt(0) ;
-    return ret ;
+    if (get(this, 'length') === 0) return null;
+    var ret = this.objectAt(0);
+    this.removeAt(0);
+    return ret;
   },
 
   /**
@@ -213,17 +231,18 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     KVO-compliant.
 
     ```javascript
-    var colors = ["red", "green", "blue"];
-    colors.unshiftObject("yellow");             // ["yellow", "red", "green", "blue"]
-    colors.unshiftObject(["black", "white"]);   // [["black", "white"], "yellow", "red", "green", "blue"]
+    var colors = ["red"];
+    colors.unshiftObject("yellow");    // ["yellow", "red"]
+    colors.unshiftObject(["black"]);   // [["black"], "yellow", "red"]
     ```
 
     @method unshiftObject
-    @param {anything} obj object to unshift
+    @param {*} obj object to unshift
+    @return object same object passed as a param
   */
   unshiftObject: function(obj) {
-    this.insertAt(0, obj) ;
-    return obj ;
+    this.insertAt(0, obj);
+    return obj;
   },
 
   /**
@@ -231,9 +250,9 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     observers until all objects have been added.
 
     ```javascript
-    var colors = ["red", "green", "blue"];
-    colors.unshiftObjects(["black", "white"]);   // ["black", "white", "red", "green", "blue"]
-    colors.unshiftObjects("yellow");             // Type Error: 'undefined' is not a function
+    var colors = ["red"];
+    colors.unshiftObjects(["black", "white"]);   // ["black", "white", "red"]
+    colors.unshiftObjects("yellow"); // Type Error: 'undefined' is not a function
     ```
 
     @method unshiftObjects
@@ -287,19 +306,46 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
   // IMPLEMENT Ember.MutableEnumerable
   //
 
+  /**
+    Remove all occurances of an object in the array.
+
+    ```javascript
+    var cities = ["Chicago", "Berlin", "Lima", "Chicago"];
+    cities.removeObject("Chicago");  // ["Berlin", "Lima"]
+    cities.removeObject("Lima");     // ["Berlin"]
+    cities.removeObject("Tokyo")     // ["Berlin"]
+    ```
+
+    @method removeObject
+    @param {*} obj object to remove
+    @return {Ember.Array} receiver
+  */
   removeObject: function(obj) {
     var loc = get(this, 'length') || 0;
     while(--loc >= 0) {
-      var curObject = this.objectAt(loc) ;
-      if (curObject === obj) this.removeAt(loc) ;
+      var curObject = this.objectAt(loc);
+      if (curObject === obj) this.removeAt(loc);
     }
-    return this ;
+    return this;
   },
 
+  /**
+    Push the object onto the end of the array if it is not already
+    present in the array.
+
+    ```javascript
+    var cities = ["Chicago", "Berlin"];
+    cities.addObject("Lima");    // ["Chicago", "Berlin", "Lima"]
+    cities.addObject("Berlin");  // ["Chicago", "Berlin", "Lima"]
+    ```
+
+    @method addObject
+    @param {*} obj object to add, if not already present
+    @return {Ember.Array} receiver
+  */
   addObject: function(obj) {
     if (!this.contains(obj)) this.pushObject(obj);
-    return this ;
+    return this;
   }
 
 });
-

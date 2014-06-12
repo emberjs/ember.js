@@ -1,3 +1,14 @@
+import { set } from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
+import { computed } from 'ember-metal/computed';
+import { defineProperty } from "ember-metal/properties";
+import {
+  propertyDidChange,
+  beginPropertyChanges,
+  endPropertyChanges
+} from "ember-metal/property_events";
+import { addObserver } from "ember-metal/observer";
+
 /*
   This test file is designed to capture performance regressions related to
   deferred computation. Things like run loops, computed properties, and bindings
@@ -5,47 +16,32 @@
   bugs that cause them to get evaluated more than necessary should be put here.
 */
 
-module("Computed Properties - Number of times evaluated");
-
-test("computed properties that depend on multiple properties should run only once per run loop", function() {
-  var obj = {a: 'a', b: 'b', c: 'c'};
-  var count = 0;
-  Ember.defineProperty(obj, 'abc', Ember.computed(function(key) {
-    count++;
-    return 'computed '+key;
-  }).property('a', 'b', 'c'));
-
-  Ember.beginPropertyChanges();
-  Ember.set(obj, 'a', 'aa');
-  Ember.set(obj, 'b', 'bb');
-  Ember.set(obj, 'c', 'cc');
-  Ember.endPropertyChanges();
-
-  Ember.get(obj, 'abc');
-
-  equal(count, 1, "The computed property is only invoked once");
-});
+QUnit.module("Computed Properties - Number of times evaluated");
 
 test("computed properties that depend on multiple properties should run only once per run loop", function() {
   var obj = {a: 'a', b: 'b', c: 'c'};
   var cpCount = 0, obsCount = 0;
 
-  Ember.defineProperty(obj, 'abc', Ember.computed(function(key) {
+  defineProperty(obj, 'abc', computed(function(key) {
     cpCount++;
     return 'computed '+key;
   }).property('a', 'b', 'c'));
 
-  Ember.addObserver(obj, 'abc', function() {
+  get(obj, 'abc');
+
+  cpCount = 0;
+
+  addObserver(obj, 'abc', function() {
     obsCount++;
   });
 
-  Ember.beginPropertyChanges();
-  Ember.set(obj, 'a', 'aa');
-  Ember.set(obj, 'b', 'bb');
-  Ember.set(obj, 'c', 'cc');
-  Ember.endPropertyChanges();
+  beginPropertyChanges();
+  set(obj, 'a', 'aa');
+  set(obj, 'b', 'bb');
+  set(obj, 'c', 'cc');
+  endPropertyChanges();
 
-  Ember.get(obj, 'abc');
+  get(obj, 'abc');
 
   equal(cpCount, 1, "The computed property is only invoked once");
   equal(obsCount, 1, "The observer is only invoked once");
@@ -56,13 +52,13 @@ test("computed properties are not executed if they are the last segment of an ob
 
   var count = 0;
 
-  Ember.defineProperty(foo.bar.baz, 'bam', Ember.computed(function() {
+  defineProperty(foo.bar.baz, 'bam', computed(function() {
     count++;
   }));
 
-  Ember.addObserver(foo, 'bar.baz.bam', function() {});
+  addObserver(foo, 'bar.baz.bam', function() {});
 
-  Ember.propertyDidChange(Ember.get(foo, 'bar.baz'), 'bam');
+  propertyDidChange(get(foo, 'bar.baz'), 'bam');
 
   equal(count, 0, "should not have recomputed property");
 });

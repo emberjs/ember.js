@@ -1,6 +1,7 @@
-require('ember-runtime/~tests/suites/mutable_enumerable');
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import {get} from 'ember-metal/property_get';
 
-var suite = Ember.MutableEnumerableTests;
+var suite = SuiteModuleBuilder.create();
 
 suite.module('addObject');
 
@@ -19,11 +20,13 @@ suite.test("[A,B].addObject(C) => [A,B,C] + notify", function() {
   after  = [before[0], before[1], item];
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
+  get(obj, 'firstObject');
+  get(obj, 'lastObject');
 
   obj.addObject(item);
 
   deepEqual(this.toArray(obj), after, 'post item results');
-  equal(Ember.get(obj, 'length'), after.length, 'length');
+  equal(get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
@@ -46,7 +49,7 @@ suite.test("[A,B,C].addObject(A) => [A,B,C] + NO notify", function() {
   obj.addObject(item); // note: item in set
 
   deepEqual(this.toArray(obj), after, 'post item results');
-  equal(Ember.get(obj, 'length'), after.length, 'length');
+  equal(get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equal(observer.validate('[]'), false, 'should NOT have notified []');
@@ -66,3 +69,5 @@ suite.test('Adding object should notify enumerable observer', function() {
   deepEqual(observer._before, [obj, null, [item]]);
   deepEqual(observer._after, [obj, null, [item]]);
 });
+
+export default suite;

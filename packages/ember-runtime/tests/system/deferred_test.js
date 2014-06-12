@@ -1,16 +1,20 @@
-module("Ember.Deferred all-in-one");
+import Ember from 'ember-metal/core';
+import run from 'ember-metal/run_loop';
+import Deferred from "ember-runtime/system/deferred";
+
+QUnit.module("Ember.Deferred all-in-one");
 
 asyncTest("Can resolve a promise", function() {
   var value = { value: true };
 
-  var promise = Ember.Deferred.promise(function(deferred) {
+  var promise = Deferred.promise(function(deferred) {
     setTimeout(function() {
-      Ember.run(function() { deferred.resolve(value); });
+      run(function() { deferred.resolve(value); });
     });
   });
 
   promise.then(function(resolveValue) {
-    start();
+    QUnit.start();
     equal(resolveValue, value, "The resolved value should be correct");
   });
 });
@@ -18,16 +22,14 @@ asyncTest("Can resolve a promise", function() {
 asyncTest("Can reject a promise", function() {
   var rejected = { rejected: true };
 
-  var promise = Ember.Deferred.promise(function(deferred) {
+  var promise = Deferred.promise(function(deferred) {
     setTimeout(function() {
-      Ember.run(function() { deferred.reject(rejected); });
+      run(function() { deferred.reject(rejected); });
     });
   });
 
   promise.then(null, function(rejectedValue) {
-    start();
+    QUnit.start();
     equal(rejectedValue, rejected, "The resolved value should be correct");
   });
 });
-
-

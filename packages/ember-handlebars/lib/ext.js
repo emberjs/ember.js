@@ -1,18 +1,36 @@
-require('ember-handlebars-compiler');
+import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.assert, Ember.Handlebars, Ember.lookup
+// var emberAssert = Ember.assert;
+
+import { fmt } from "ember-runtime/system/string";
+
+import EmberHandlebars from "ember-handlebars-compiler";
+var helpers = EmberHandlebars.helpers;
+
+import { get } from "ember-metal/property_get";
+import { isGlobalPath } from "ember-metal/binding";
+import EmberError from "ember-metal/error";
+import { IS_BINDING } from "ember-metal/mixin";
+
+// late bound via requireModule because of circular dependencies.
+var resolveHelper,
+    SimpleHandlebarsView;
+
+import isEmpty from 'ember-metal/is_empty';
+
+var slice = [].slice, originalTemplate = EmberHandlebars.template;
 
 /**
-  @private
-
   If a path starts with a reserved keyword, returns the root
   that should be used.
 
+  @private
   @method normalizePath
   @for Ember
   @param root {Object}
   @param path {String}
   @param data {Hash}
 */
-var normalizePath = Ember.Handlebars.normalizePath = function(root, path, data) {
+function normalizePath(root, path, data) {
   var keywords = (data && data.keywords) || {},
       keyword, isKeyword;
 
@@ -40,7 +58,7 @@ var normalizePath = Ember.Handlebars.normalizePath = function(root, path, data) 
   }
 
   return { root: root, path: path, isKeyword: isKeyword };
-};
+}
 
 
 /**
@@ -54,29 +72,68 @@ var normalizePath = Ember.Handlebars.normalizePath = function(root, path, data) 
   @param {String} path The path to be lookedup
   @param {Object} options The template's option hash
 */
-var handlebarsGet = Ember.Handlebars.get = function(root, path, options) {
+function handlebarsGet(root, path, options) {
   var data = options && options.data,
       normalizedPath = normalizePath(root, path, data),
       value;
 
-  // In cases where the path begins with a keyword, change the
-  // root to the value represented by that keyword, and ensure
-  // the path is relative to it.
-  root = normalizedPath.root;
-  path = normalizedPath.path;
+  if (Ember.FEATURES.isEnabled("ember-handlebars-caps-lookup")) {
 
-  value = Ember.get(root, path);
+    // If the path starts with a capital letter, look it up on Ember.lookup,
+    // which defaults to the `window` object in browsers.
+    if (isGlobalPath(path)) {
+      value = get(Ember.lookup, path);
+    } else {
 
-  // If the path starts with a capital letter, look it up on Ember.lookup,
-  // which defaults to the `window` object in browsers.
-  if (value === undefined && root !== Ember.lookup && Ember.isGlobalPath(path)) {
-    value = Ember.get(Ember.lookup, path);
+      // In cases where the path begins with a keyword, change the
+      // root to the value represented by that keyword, and ensure
+      // the path is relative to it.
+      value = get(normalizedPath.root, normalizedPath.path);
+    }
+
+  } else {
+    root = normalizedPath.root;
+    path = normalizedPath.path;
+
+    value = get(root, path);
+
+    if (value === undefined && root !== Ember.lookup && isGlobalPath(path)) {
+      value = get(Ember.lookup, path);
+    }
   }
-  return value;
-};
-Ember.Handlebars.getPath = Ember.deprecateFunc('`Ember.Handlebars.getPath` has been changed to `Ember.Handlebars.get` for consistency.', Ember.Handlebars.get);
 
-Ember.Handlebars.resolveParams = function(context, params, options) {
+  return value;
+}
+
+/**
+  This method uses `Ember.Handlebars.get` to lookup a value, then ensures
+  that the value is escaped properly.
+
+  If `unescaped` is a truthy value then the escaping will not be performed.
+
+  @method getEscaped
+  @for Ember.Handlebars
+  @param {Object} root The object to look up the property on
+  @param {String} path The path to be lookedup
+  @param {Object} options The template's option hash
+  @since 1.4.0
+*/
+export function getEscaped(root, path, options) {
+  var result = handlebarsGet(root, path, options);
+
+  if (result === null || result === undefined) {
+    result = "";
+  } else if (!(result instanceof Handlebars.SafeString)) {
+    result = String(result);
+  }
+  if (!options.hash.unescaped){
+    result = Handlebars.Utils.escapeExpression(result);
+  }
+
+  return result;
+}
+
+export function resolveParams(context, params, options) {
   var resolvedParams = [], types = options.types, param, type;
 
   for (var i=0, l=params.length; i<l; i++) {
@@ -91,9 +148,9 @@ Ember.Handlebars.resolveParams = function(context, params, options) {
   }
 
   return resolvedParams;
-};
+}
 
-Ember.Handlebars.resolveHash = function(context, hash, options) {
+export function resolveHash(context, hash, options) {
   var resolvedHash = {}, types = options.hashTypes, type;
 
   for (var key in hash) {
@@ -109,11 +166,9 @@ Ember.Handlebars.resolveHash = function(context, hash, options) {
   }
 
   return resolvedHash;
-};
+}
 
 /**
-  @private
-
   Registers a helper in Handlebars that will be called if no property with the
   given name can be found on the current context object, and no helper with
   that name is registered.
@@ -121,20 +176,65 @@ Ember.Handlebars.resolveHash = function(context, hash, options) {
   This throws an exception with a more helpful error message so the user can
   track down where the problem is happening.
 
+  @private
   @method helperMissing
   @for Ember.Handlebars.helpers
   @param {String} path
   @param {Hash} options
 */
-Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
+export function helperMissingHelper(path) {
+  if (!resolveHelper) { resolveHelper = requireModule('ember-handlebars/helpers/binding')['resolveHelper']; } // ES6TODO: stupid circular dep
+
   var error, view = "";
 
+  var options = arguments[arguments.length - 1];
+
+  var helper = resolveHelper(options.data.view.container, path);
+
+  if (helper) {
+    return helper.apply(this, slice.call(arguments, 1));
+  }
+
   error = "%@ Handlebars error: Could not find property '%@' on object %@.";
-  if (options.data){
+  if (options.data) {
     view = options.data.view;
   }
-  throw new Ember.Error(Ember.String.fmt(error, [view, path, this]));
-});
+  throw new EmberError(fmt(error, [view, path, this]));
+}
+
+/**
+  Registers a helper in Handlebars that will be called if no property with the
+  given name can be found on the current context object, and no helper with
+  that name is registered.
+
+  This throws an exception with a more helpful error message so the user can
+  track down where the problem is happening.
+
+  @private
+  @method helperMissing
+  @for Ember.Handlebars.helpers
+  @param {String} path
+  @param {Hash} options
+*/
+export function blockHelperMissingHelper(path) {
+  if (!resolveHelper) { resolveHelper = requireModule('ember-handlebars/helpers/binding')['resolveHelper']; } // ES6TODO: stupid circular dep
+
+  var options = arguments[arguments.length - 1];
+
+  Ember.assert("`blockHelperMissing` was invoked without a helper name, which " +
+               "is most likely due to a mismatch between the version of " +
+               "Ember.js you're running now and the one used to precompile your " +
+               "templates. Please make sure the version of " +
+               "`ember-handlebars-compiler` you're using is up to date.", path);
+
+  var helper = resolveHelper(options.data.view.container, path);
+
+  if (helper) {
+    return helper.apply(this, slice.call(arguments, 1));
+  } else {
+    return helpers.helperMissing.call(this, path);
+  }
+}
 
 /**
   Register a bound handlebars helper. Bound helpers behave similarly to regular
@@ -145,7 +245,7 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
 
   ```javascript
   Ember.Handlebars.registerBoundHelper('capitalize', function(value) {
-    return value.toUpperCase();
+    return Ember.String.capitalize(value);
   });
   ```
 
@@ -167,7 +267,7 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
   Ember.Handlebars.registerBoundHelper('repeat', function(value, options) {
     var count = options.hash.count;
     var a = [];
-    while(a.length < count){
+    while(a.length < count) {
         a.push(value);
     }
     return a.join('');
@@ -179,6 +279,18 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
   ```handlebars
   {{repeat text count=3}}
   ```
+
+  ## Example with bound options
+
+  Bound hash options are also supported. Example:
+
+  ```handlebars
+  {{repeat text count=numRepeats}}
+  ```
+
+  In this example, count will be bound to the value of
+  the `numRepeats` property on the context. If that property
+  changes, the helper will be re-rendered.
 
   ## Example with extra dependencies
 
@@ -192,62 +304,258 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
   }, 'name');
   ```
 
+  ## Example with multiple bound properties
+
+  `Ember.Handlebars.registerBoundHelper` supports binding to
+  multiple properties, e.g.:
+
+  ```javascript
+  Ember.Handlebars.registerBoundHelper('concatenate', function() {
+    var values = Array.prototype.slice.call(arguments, 0, -1);
+    return values.join('||');
+  });
+  ```
+
+  Which allows for template syntax such as `{{concatenate prop1 prop2}}` or
+  `{{concatenate prop1 prop2 prop3}}`. If any of the properties change,
+  the helper will re-render.  Note that dependency keys cannot be
+  using in conjunction with multi-property helpers, since it is ambiguous
+  which property the dependent keys would belong to.
+
+  ## Use with unbound helper
+
+  The `{{unbound}}` helper can be used with bound helper invocations
+  to render them in their unbound form, e.g.
+
+  ```handlebars
+  {{unbound capitalize name}}
+  ```
+
+  In this example, if the name property changes, the helper
+  will not re-render.
+
+  ## Use with blocks not supported
+
+  Bound helpers do not support use with Handlebars blocks or
+  the addition of child views of any kind.
+
   @method registerBoundHelper
   @for Ember.Handlebars
   @param {String} name
   @param {Function} function
   @param {String} dependentKeys*
 */
-Ember.Handlebars.registerBoundHelper = function(name, fn) {
-  var dependentKeys = Array.prototype.slice.call(arguments, 2);
-  Ember.Handlebars.registerHelper(name, function(property, options) {
-    var data = options.data,
+export function registerBoundHelper(name, fn) {
+  var boundHelperArgs = slice.call(arguments, 1),
+      boundFn = makeBoundHelper.apply(this, boundHelperArgs);
+  EmberHandlebars.registerHelper(name, boundFn);
+}
+
+/**
+  A helper function used by `registerBoundHelper`. Takes the
+  provided Handlebars helper function fn and returns it in wrapped
+  bound helper form.
+
+  The main use case for using this outside of `registerBoundHelper`
+  is for registering helpers on the container:
+
+  ```js
+  var boundHelperFn = Ember.Handlebars.makeBoundHelper(function(word) {
+    return word.toUpperCase();
+  });
+
+  container.register('helper:my-bound-helper', boundHelperFn);
+  ```
+
+  In the above example, if the helper function hadn't been wrapped in
+  `makeBoundHelper`, the registered helper would be unbound.
+
+  @method makeBoundHelper
+  @for Ember.Handlebars
+  @param {Function} function
+  @param {String} dependentKeys*
+  @since 1.2.0
+*/
+function makeBoundHelper(fn) {
+  if (!SimpleHandlebarsView) { SimpleHandlebarsView = requireModule('ember-handlebars/views/handlebars_bound_view')['SimpleHandlebarsView']; } // ES6TODO: stupid circular dep
+
+  var dependentKeys = slice.call(arguments, 1);
+
+  function helper() {
+    var properties = slice.call(arguments, 0, -1),
+      numProperties = properties.length,
+      options = arguments[arguments.length - 1],
+      normalizedProperties = [],
+      data = options.data,
+      types = data.isUnbound ? slice.call(options.types, 1) : options.types,
+      hash = options.hash,
       view = data.view,
-      currentContext = (options.contexts && options.contexts[0]) || this,
-      pathRoot, path, normalized,
-      observer, loc;
+      contexts = options.contexts,
+      currentContext = (contexts && contexts.length) ? contexts[0] : this,
+      prefixPathForDependentKeys = '',
+      loc, len, hashOption,
+      boundOption, property,
+      normalizedValue = SimpleHandlebarsView.prototype.normalizedValue;
 
-    normalized = Ember.Handlebars.normalizePath(currentContext, property, data);
+    Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !options.fn);
 
-    pathRoot = normalized.root;
-    path = normalized.path;
+    // Detect bound options (e.g. countBinding="otherCount")
+    var boundOptions = hash.boundOptions = {};
+    for (hashOption in hash) {
+      if (IS_BINDING.test(hashOption)) {
+        // Lop off 'Binding' suffix.
+        boundOptions[hashOption.slice(0, -7)] = hash[hashOption];
+      }
+    }
 
-    var bindView = new Ember._SimpleHandlebarsView(
-      path, pathRoot, !options.hash.unescaped, options.data
-    );
+    // Expose property names on data.properties object.
+    var watchedProperties = [];
+    data.properties = [];
+    for (loc = 0; loc < numProperties; ++loc) {
+      data.properties.push(properties[loc]);
+      if (types[loc] === 'ID') {
+        var normalizedProp = normalizePath(currentContext, properties[loc], data);
+        normalizedProperties.push(normalizedProp);
+        watchedProperties.push(normalizedProp);
+      } else {
+        if(data.isUnbound) {
+          normalizedProperties.push({path: properties[loc]});
+        }else {
+          normalizedProperties.push(null);
+        }
+      }
+    }
 
+    // Handle case when helper invocation is preceded by `unbound`, e.g.
+    // {{unbound myHelper foo}}
+    if (data.isUnbound) {
+      return evaluateUnboundHelper(this, fn, normalizedProperties, options);
+    }
+
+    var bindView = new SimpleHandlebarsView(null, null, !options.hash.unescaped, options.data);
+
+    // Override SimpleHandlebarsView's method for generating the view's content.
     bindView.normalizedValue = function() {
-      var value = Ember._SimpleHandlebarsView.prototype.normalizedValue.call(bindView);
-      return fn.call(view, value, options);
+      var args = [], boundOption;
+
+      // Copy over bound hash options.
+      for (boundOption in boundOptions) {
+        if (!boundOptions.hasOwnProperty(boundOption)) { continue; }
+        property = normalizePath(currentContext, boundOptions[boundOption], data);
+        bindView.path = property.path;
+        bindView.pathRoot = property.root;
+        hash[boundOption] = normalizedValue.call(bindView);
+      }
+
+      for (loc = 0; loc < numProperties; ++loc) {
+        property = normalizedProperties[loc];
+        if (property) {
+          bindView.path = property.path;
+          bindView.pathRoot = property.root;
+          args.push(normalizedValue.call(bindView));
+        } else {
+          args.push(properties[loc]);
+        }
+      }
+      args.push(options);
+
+      // Run the supplied helper function.
+      return fn.apply(currentContext, args);
     };
 
     view.appendChild(bindView);
 
-    observer = function() {
-      Ember.run.scheduleOnce('render', bindView, 'rerender');
-    };
-
-    view.registerObserver(pathRoot, path, observer);
-
-    for (var i=0, l=dependentKeys.length; i<l; i++) {
-      view.registerObserver(pathRoot, path + '.' + dependentKeys[i], observer);
+    // Assemble list of watched properties that'll re-render this helper.
+    for (boundOption in boundOptions) {
+      if (boundOptions.hasOwnProperty(boundOption)) {
+        watchedProperties.push(normalizePath(currentContext, boundOptions[boundOption], data));
+      }
     }
-  });
-};
+
+    // Observe each property.
+    for (loc = 0, len = watchedProperties.length; loc < len; ++loc) {
+      property = watchedProperties[loc];
+      view.registerObserver(property.root, property.path, bindView, bindView.rerender);
+    }
+
+    if (types[0] !== 'ID' || normalizedProperties.length === 0) {
+      return;
+    }
+
+    // Add dependent key observers to the first param
+    var normalized = normalizedProperties[0],
+        pathRoot = normalized.root,
+        path = normalized.path;
+
+    if(!isEmpty(path)) {
+      prefixPathForDependentKeys = path + '.';
+    }
+    for (var i=0, l=dependentKeys.length; i<l; i++) {
+      view.registerObserver(pathRoot, prefixPathForDependentKeys + dependentKeys[i], bindView, bindView.rerender);
+    }
+  }
+
+  helper._rawFunction = fn;
+  return helper;
+}
 
 /**
-  @private
+  Renders the unbound form of an otherwise bound helper function.
 
+  @private
+  @method evaluateUnboundHelper
+  @param {Function} fn
+  @param {Object} context
+  @param {Array} normalizedProperties
+  @param {String} options
+*/
+function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
+  var args = [],
+   hash = options.hash,
+   boundOptions = hash.boundOptions,
+   types = slice.call(options.types, 1),
+   loc,
+   len,
+   property,
+   propertyType,
+   boundOption;
+
+  for (boundOption in boundOptions) {
+    if (!boundOptions.hasOwnProperty(boundOption)) { continue; }
+    hash[boundOption] = handlebarsGet(context, boundOptions[boundOption], options);
+  }
+
+  for(loc = 0, len = normalizedProperties.length; loc < len; ++loc) {
+    property = normalizedProperties[loc];
+    propertyType = types[loc];
+    if(propertyType === "ID") {
+      args.push(handlebarsGet(property.root, property.path, options));
+    } else {
+      args.push(property.path);
+    }
+  }
+  args.push(options);
+  return fn.apply(context, args);
+}
+
+/**
   Overrides Handlebars.template so that we can distinguish
   user-created, top-level templates from inner contexts.
 
+  @private
   @method template
   @for Ember.Handlebars
-  @param {String} template spec
+  @param {String} spec
 */
-Ember.Handlebars.template = function(spec){
-  var t = Handlebars.template(spec);
+export function template(spec) {
+  var t = originalTemplate(spec);
   t.isTop = true;
   return t;
-};
+}
 
+export {
+  normalizePath,
+  makeBoundHelper,
+  handlebarsGet,
+  evaluateUnboundHelper
+};

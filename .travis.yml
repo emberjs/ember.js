@@ -1,13 +1,34 @@
+---
 rvm:
-  - 1.9.3
-bundler_args: --without development
-before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-script: "rake test\\[standard]"
-notifications:
-  webhooks: http://emberjs-master-builds.herokuapp.com/upload/ember.js
-branches:
-  except:
-    - latest-builds
-    - release-builds
+- 2.1
+node_js:
+- "0.10"
+install:
+- "npm install"
+after_success:
+  - bundle install --deployment --retry 3 --jobs 4
+  - bundle exec rake publish_build
+  - bundle exec rake publish_to_bower
+script:
+  - npm test
+env:
+  global:
+  - BROCCOLI_ENV=production
+  - S3_BUILD_CACHE_BUCKET=emberjs-build-cache
+  - S3_BUCKET_NAME=builds.emberjs.com
+  - secure: "SHnuJ4A3QbSc3LV2fYynDPbbSbhVl0ZWnCiKPuRgwnddDnoSaMQUY2RqyHdtsQGdUZCOeNaMvYUhYx6hzxBVHn0yuN3KA20aSwvYdwaMgZXfJi+lyxgsEI8iYdksWXvVbCAyKM8zjTWXUtNcMBGtsGYOfdD41wfZgI8GsI0YYJc="
+  - secure: ! 'KXJmcGLpnxnPmmei/qPNVcdQxLX1xyYIaVocinQ0YAjtBvCtAwg63EWMFnGp
+
+      VIzUNikE+Cej3g+nwEdDJiL1c9NFPL+zCnriR2iMVjPak+IQaG3YcMm0T+hY
+
+      /WLEPAquZBKw1gU6lBEUuDumTlkXQQdHz3cJYoidAXz3uV1EXIU='
+  - secure: ! 'qCW0BVNFuQjAI53pvvE6oeGxtEdZ+RlvcCpYjU4vxEjedidEEcHKtIVh7d7J
+
+      PZ8DNTxX0zsp2jjY8NwTR5MC8NBH+J5VjuTSGv82t5sm0i0jzaBmOOSLbKqH
+
+      I/BFT0MbnR6JVCZiPV7TCWPgY1gvgZ6TEEIKGqauDMUBdL8ZK6I='
+  matrix:
+    - TEST_SUITE=each-package-tests
+    - TEST_SUITE=built-tests
+    - TEST_SUITE=old-jquery
+    - TEST_SUITE=extend-prototypes

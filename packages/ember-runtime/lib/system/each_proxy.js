@@ -1,16 +1,38 @@
-require('ember-runtime/system/object');
-require('ember-runtime/mixins/array');
-
 /**
 @module ember
 @submodule ember-runtime
 */
 
+import Ember from "ember-metal/core"; // Ember.assert
 
-var set = Ember.set, get = Ember.get, guidFor = Ember.guidFor;
-var forEach = Ember.EnumerableUtils.forEach;
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { guidFor } from "ember-metal/utils";
+import EnumerableUtils from "ember-metal/enumerable_utils";
+import { indexOf } from "ember-metal/array";
+import EmberArray from "ember-runtime/mixins/array"; // ES6TODO: WAT? Circular dep?
+import EmberObject from "ember-runtime/system/object";
+import { computed } from "ember-metal/computed";
+import {
+  addObserver,
+  addBeforeObserver,
+  removeBeforeObserver,
+  removeObserver
+} from "ember-metal/observer";
+import { typeOf } from "ember-metal/utils";
+import { watchedEvents } from "ember-metal/events";
+import { defineProperty } from "ember-metal/properties";
+import {
+  beginPropertyChanges,
+  propertyDidChange,
+  propertyWillChange,
+  endPropertyChanges,
+  changeProperties
+} from "ember-metal/property_events";
 
-var EachArray = Ember.Object.extend(Ember.Array, {
+var forEach = EnumerableUtils.forEach;
+
+var EachArray = EmberObject.extend(EmberArray, {
 
   init: function(content, keyName, owner) {
     this._super();
@@ -24,7 +46,7 @@ var EachArray = Ember.Object.extend(Ember.Array, {
     return item && get(item, this._keyName);
   },
 
-  length: Ember.computed(function() {
+  length: computed(function() {
     var content = this._content;
     return content ? get(content, 'length') : 0;
   })
@@ -40,10 +62,11 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
   while(--loc>=idx) {
     var item = content.objectAt(loc);
     if (item) {
-      Ember.addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
-      Ember.addObserver(item, keyName, proxy, 'contentKeyDidChange');
+      Ember.assert('When using @each to observe the array ' + content + ', the array must return an object', typeOf(item) === 'instance' || typeOf(item) === 'object');
+      addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
+      addObserver(item, keyName, proxy, 'contentKeyDidChange');
 
-      // keep track of the indicies each item was found at so we can map
+      // keep track of the index each item was found at so we can map
       // it back when the obj changes.
       guid = guidFor(item);
       if (!objects[guid]) objects[guid] = [];
@@ -60,12 +83,12 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
   while(--loc>=idx) {
     var item = content.objectAt(loc);
     if (item) {
-      Ember.removeBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
-      Ember.removeObserver(item, keyName, proxy, 'contentKeyDidChange');
+      removeBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
+      removeObserver(item, keyName, proxy, 'contentKeyDidChange');
 
       guid = guidFor(item);
       indicies = objects[guid];
-      indicies[indicies.indexOf(loc)] = null;
+      indicies[indexOf.call(indicies, loc)] = null;
     }
   }
 }
@@ -80,7 +103,7 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
   @namespace Ember
   @extends Ember.Object
 */
-Ember.EachProxy = Ember.Object.extend({
+var EachProxy = EmberObject.extend({
 
   init: function(content) {
     this._super();
@@ -89,7 +112,7 @@ Ember.EachProxy = Ember.Object.extend({
 
     // in case someone is already observing some keys make sure they are
     // added
-    forEach(Ember.watchedEvents(this), function(eventName) {
+    forEach(watchedEvents(this), function(eventName) {
       this.didAddListener(eventName);
     }, this);
   },
@@ -100,12 +123,12 @@ Ember.EachProxy = Ember.Object.extend({
 
     @method unknownProperty
     @param keyName {String}
-    @param value {anything}
+    @param value {*}
   */
   unknownProperty: function(keyName, value) {
     var ret;
     ret = new EachArray(this._content, keyName, this);
-    Ember.defineProperty(this, keyName, null, ret);
+    defineProperty(this, keyName, null, ret);
     this.beginObservingContentKey(keyName);
     return ret;
   },
@@ -115,39 +138,38 @@ Ember.EachProxy = Ember.Object.extend({
   // Invokes whenever the content array itself changes.
 
   arrayWillChange: function(content, idx, removedCnt, addedCnt) {
-    var keys = this._keys, key, array, lim;
+    var keys = this._keys, key, lim;
 
     lim = removedCnt>0 ? idx+removedCnt : -1;
-    Ember.beginPropertyChanges(this);
+    beginPropertyChanges(this);
 
     for(key in keys) {
       if (!keys.hasOwnProperty(key)) { continue; }
 
-      if (lim>0) removeObserverForContentKey(content, key, this, idx, lim);
+      if (lim>0) { removeObserverForContentKey(content, key, this, idx, lim); }
 
-      Ember.propertyWillChange(this, key);
+      propertyWillChange(this, key);
     }
 
-    Ember.propertyWillChange(this._content, '@each');
-    Ember.endPropertyChanges(this);
+    propertyWillChange(this._content, '@each');
+    endPropertyChanges(this);
   },
 
   arrayDidChange: function(content, idx, removedCnt, addedCnt) {
-    var keys = this._keys, key, array, lim;
+    var keys = this._keys, lim;
 
     lim = addedCnt>0 ? idx+addedCnt : -1;
-    Ember.beginPropertyChanges(this);
+    changeProperties(function() {
+      for(var key in keys) {
+        if (!keys.hasOwnProperty(key)) { continue; }
 
-    for(key in keys) {
-      if (!keys.hasOwnProperty(key)) { continue; }
+        if (lim>0) { addObserverForContentKey(content, key, this, idx, lim); }
 
-      if (lim>0) addObserverForContentKey(content, key, this, idx, lim);
+        propertyDidChange(this, key);
+      }
 
-      Ember.propertyDidChange(this, key);
-    }
-
-    Ember.propertyDidChange(this._content, '@each');
-    Ember.endPropertyChanges(this);
+      propertyDidChange(this._content, '@each');
+    }, this);
   },
 
   // ..........................................................
@@ -193,13 +215,16 @@ Ember.EachProxy = Ember.Object.extend({
   },
 
   contentKeyWillChange: function(obj, keyName) {
-    Ember.propertyWillChange(this, keyName);
+    propertyWillChange(this, keyName);
   },
 
   contentKeyDidChange: function(obj, keyName) {
-    Ember.propertyDidChange(this, keyName);
+    propertyDidChange(this, keyName);
   }
 
 });
 
-
+export {
+  EachArray,
+  EachProxy
+};

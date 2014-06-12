@@ -1,20 +1,62 @@
 /*globals Handlebars */
 
-// TODO: Don't require the entire module
-require("ember-handlebars");
-
 /**
 @module ember
 @submodule ember-handlebars
 */
 
-var get = Ember.get, set = Ember.set;
-var PARENT_VIEW_PATH = /^parentView\./;
-var EmberHandlebars = Ember.Handlebars;
+import Ember from "ember-metal/core"; // Ember.warn, Ember.assert
+// var emberWarn = Ember.warn, emberAssert = Ember.assert;
 
-EmberHandlebars.ViewHelper = Ember.Object.create({
+import EmberObject from "ember-runtime/system/object";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { IS_BINDING } from "ember-metal/mixin";
+import jQuery from "ember-views/system/jquery";
+import View from "ember-views/views/view";
+import { isGlobalPath } from "ember-metal/binding";
+import {
+  normalizePath,
+  handlebarsGet
+} from "ember-handlebars/ext";
+import EmberString from "ember-runtime/system/string";
 
-  propertiesFromHTMLOptions: function(options, thisContext) {
+
+var LOWERCASE_A_Z = /^[a-z]/,
+    VIEW_PREFIX = /^view\./;
+
+function makeBindings(thisContext, options) {
+  var hash = options.hash,
+      hashType = options.hashTypes;
+
+  for (var prop in hash) {
+    if (hashType[prop] === 'ID') {
+
+      var value = hash[prop];
+
+      if (IS_BINDING.test(prop)) {
+        Ember.warn("You're attempting to render a view by passing " + prop + "=" + value + " to a view helper, but this syntax is ambiguous. You should either surround " + value + " in quotes or remove `Binding` from " + prop + ".");
+      } else {
+        hash[prop + 'Binding'] = value;
+        hashType[prop + 'Binding'] = 'STRING';
+        delete hash[prop];
+        delete hashType[prop];
+      }
+    }
+  }
+
+  if (hash.hasOwnProperty('idBinding')) {
+    // id can't be bound, so just perform one-time lookup.
+    hash.id = handlebarsGet(thisContext, hash.idBinding, options);
+    hashType.id = 'STRING';
+    delete hash.idBinding;
+    delete hashType.idBinding;
+  }
+}
+
+export var ViewHelper = EmberObject.create({
+
+  propertiesFromHTMLOptions: function(options) {
     var hash = options.hash, data = options.data;
     var extensions = {},
         classes = hash['class'],
@@ -22,6 +64,11 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
 
     if (hash.id) {
       extensions.elementId = hash.id;
+      dup = true;
+    }
+
+    if (hash.tag) {
+      extensions.tagName = hash.tag;
       dup = true;
     }
 
@@ -49,8 +96,9 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
     }
 
     if (dup) {
-      hash = Ember.$.extend({}, hash);
+      hash = jQuery.extend({}, hash);
       delete hash.id;
+      delete hash.tag;
       delete hash['class'];
       delete hash.classBinding;
     }
@@ -65,7 +113,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
       if (!hash.hasOwnProperty(prop)) { continue; }
 
       // Test if the property ends in "Binding"
-      if (Ember.IS_BINDING.test(prop) && typeof hash[prop] === 'string') {
+      if (IS_BINDING.test(prop) && typeof hash[prop] === 'string') {
         path = this.contextualizeBindingPath(hash[prop], data);
         if (path) { hash[prop] = path; }
       }
@@ -83,14 +131,14 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
           // is converted to this:
           //
           //     classNameBinding="_parentView.context.isGreen:green"
-          var parsedPath = Ember.View._parsePropertyPath(full);
+          var parsedPath = View._parsePropertyPath(full);
           path = this.contextualizeBindingPath(parsedPath.path, data);
           if (path) { extensions.classNameBindings[b] = path + parsedPath.classNames; }
         }
       }
     }
 
-    return Ember.$.extend(hash, extensions);
+    return jQuery.extend(hash, extensions);
   },
 
   // Transform bindings from the current context to a context that can be evaluated within the view.
@@ -98,12 +146,12 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
   //
   // TODO: consider the addition of a prefix that would allow this method to return `path`.
   contextualizeBindingPath: function(path, data) {
-    var normalized = Ember.Handlebars.normalizePath(null, path, data);
+    var normalized = normalizePath(null, path, data);
     if (normalized.isKeyword) {
       return 'templateData.keywords.' + path;
-    } else if (Ember.isGlobalPath(path)) {
+    } else if (isGlobalPath(path)) {
       return null;
-    } else if (path === 'this') {
+    } else if (path === 'this' || path === '') {
       return '_parentView.context';
     } else {
       return '_parentView.context.' + path;
@@ -111,25 +159,42 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
   },
 
   helper: function(thisContext, path, options) {
-    var inverse = options.inverse,
-        data = options.data,
-        view = data.view,
+    var data = options.data,
         fn = options.fn,
-        hash = options.hash,
         newView;
 
+    makeBindings(thisContext, options);
+
     if ('string' === typeof path) {
-      newView = EmberHandlebars.get(thisContext, path, options);
+      var lookup;
+      // TODO: this is a lame conditional, this should likely change
+      // but something along these lines will likely need to be added
+      // as deprecation warnings
+      //
+      if (options.types[0] === 'STRING' && LOWERCASE_A_Z.test(path) && !VIEW_PREFIX.test(path)) {
+        lookup = path;
+      } else {
+        newView = handlebarsGet(thisContext, path, options);
+        if (typeof newView === 'string') {
+          lookup = newView;
+        }
+      }
+
+      if (lookup) {
+        Ember.assert("View requires a container", !!data.view.container);
+        newView = data.view.container.lookupFactory('view:' + lookup);
+      }
+
       Ember.assert("Unable to find view at path '" + path + "'", !!newView);
     } else {
       newView = path;
     }
 
-    Ember.assert(Ember.String.fmt('You must pass a view to the #view helper, not %@ (%@)', [path, newView]), Ember.View.detect(newView) || Ember.View.detectInstance(newView));
+    Ember.assert(EmberString.fmt('You must pass a view to the #view helper, not %@ (%@)', [path, newView]), View.detect(newView) || View.detectInstance(newView));
 
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;
-    viewOptions.templateData = options.data;
+    viewOptions.templateData = data;
     var newViewProto = newView.proto ? newView.proto() : newView;
 
     if (fn) {
@@ -143,12 +208,17 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
       viewOptions._context = thisContext;
     }
 
+    // for instrumentation
+    if (options.helperName) {
+      viewOptions.helperName = options.helperName;
+    }
+
     currentView.appendChild(newView, viewOptions);
   }
 });
 
 /**
-  `{{view}}` inserts a new instance of `Ember.View` into a template passing its
+  `{{view}}` inserts a new instance of an `Ember.View` into a template passing its
   options to the `Ember.View`'s `create` method and using the supplied block as
   the view's own template.
 
@@ -256,9 +326,8 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
   {{/view}}
   ```
 
-  The first argument can also be a relative path. Ember will search for the
-  view class starting at the `Ember.View` of the template where `{{view}}` was
-  used as the root object:
+  The first argument can also be a relative path accessible from the current
+  context.
 
   ```javascript
   MyApp = Ember.Application.create({});
@@ -266,7 +335,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
     innerViewClass: Ember.View.extend({
       classNames: ['a-custom-view-class-as-property']
     }),
-    template: Ember.Handlebars.compile('{{#view "innerViewClass"}} hi {{/view}}')
+    template: Ember.Handlebars.compile('{{#view "view.innerViewClass"}} hi {{/view}}')
   });
 
   MyApp.OuterView.create().appendTo('body');
@@ -313,15 +382,18 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
   @param {Hash} options
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('view', function(path, options) {
+export function viewHelper(path, options) {
   Ember.assert("The view helper only takes a single argument", arguments.length <= 2);
 
-  // If no path is provided, treat path param as options.
+  // If no path is provided, treat path param as options
+  // and get an instance of the registered `view:default`
   if (path && path.data && path.data.isRenderData) {
     options = path;
-    path = "Ember.View";
+    Ember.assert('{{view}} helper requires parent view to have a container but none was found. This usually happens when you are manually-managing views.', !!options.data.view.container);
+    path = options.data.view.container.lookupFactory('view:default');
   }
 
-  return EmberHandlebars.ViewHelper.helper(this, path, options);
-});
+  options.helperName = options.helperName || 'view';
 
+  return ViewHelper.helper(this, path, options);
+}

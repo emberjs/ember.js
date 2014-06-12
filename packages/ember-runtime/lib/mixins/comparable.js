@@ -1,10 +1,12 @@
-require('ember-runtime/core');
+import {
+  Mixin,
+  required
+} from "ember-metal/mixin";
 
 /**
 @module ember
 @submodule ember-runtime
 */
-
 
 /**
   Implements some standard methods for comparing objects. Add this mixin to
@@ -14,19 +16,9 @@ require('ember-runtime/core');
 
   @class Comparable
   @namespace Ember
-  @extends Ember.Mixin
   @since Ember 0.9
 */
-Ember.Comparable = Ember.Mixin.create( /** @scope Ember.Comparable.prototype */{
-
-  /**
-    walk like a duck. Indicates that the object can be compared.
-
-    @property isComparable
-    @type Boolean
-    @default true
-  */
-  isComparable: true,
+export default Mixin.create({
 
   /**
     Override to return the result of the comparison of the two parameters. The
@@ -43,7 +35,5 @@ Ember.Comparable = Ember.Mixin.create( /** @scope Ember.Comparable.prototype */{
     @param b {Object} the second object to compare
     @return {Integer} the result of the comparison
   */
-  compare: Ember.required(Function)
-
+  compare: required(Function)
 });
-

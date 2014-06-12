@@ -1,13 +1,17 @@
 /*globals Handlebars */
 
-require('ember-handlebars/ext');
-
 /**
 @module ember
 @submodule ember-handlebars
 */
 
-var handlebarsGet = Ember.Handlebars.get;
+import EmberHandlebars from "ember-handlebars-compiler";
+var helpers = EmberHandlebars.helpers;
+
+import { resolveHelper } from "ember-handlebars/helpers/binding";
+import { handlebarsGet } from "ember-handlebars/ext";
+
+var slice = [].slice;
 
 /**
   `unbound` allows you to output a property without binding. *Important:* The
@@ -17,12 +21,33 @@ var handlebarsGet = Ember.Handlebars.get;
   <div>{{unbound somePropertyThatDoesntChange}}</div>
   ```
 
+  `unbound` can also be used in conjunction with a bound helper to
+  render it in its unbound form:
+
+  ```handlebars
+  <div>{{unbound helperName somePropertyThatDoesntChange}}</div>
+  ```
+
   @method unbound
   @for Ember.Handlebars.helpers
   @param {String} property
   @return {String} HTML string
 */
-Ember.Handlebars.registerHelper('unbound', function(property, fn) {
-  var context = (fn.contexts && fn.contexts[0]) || this;
+export default function unboundHelper(property, fn) {
+  var options = arguments[arguments.length - 1],
+      container = options.data.view.container,
+      helper, context, out, ctx;
+
+  ctx = this;
+  if (arguments.length > 2) {
+    // Unbound helper call.
+    options.data.isUnbound = true;
+    helper = resolveHelper(container, property) || helpers.helperMissing;
+    out = helper.apply(ctx, slice.call(arguments, 1));
+    delete options.data.isUnbound;
+    return out;
+  }
+
+  context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : ctx;
   return handlebarsGet(context, property, fn);
-});
+}

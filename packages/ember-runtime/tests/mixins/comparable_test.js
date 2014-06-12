@@ -1,22 +1,25 @@
-/*globals module test ok isObj equals expects */
+import {get} from 'ember-metal/property_get';
+import EmberObject from 'ember-runtime/system/object';
+import compare from "ember-runtime/compare";
+import Comparable from 'ember-runtime/mixins/comparable';
 
-var Rectangle = Ember.Object.extend(Ember.Comparable, {
+var Rectangle = EmberObject.extend(Comparable, {
   length: 0,
   width: 0,
 
   area: function() {
-    return Ember.get(this,'length') * Ember.get(this, 'width');
+    return get(this,'length') * get(this, 'width');
   },
 
   compare: function(a, b) {
-    return Ember.compare(a.area(), b.area());
+    return compare(a.area(), b.area());
   }
 
 });
 
 var r1, r2;
 
-module("Comparable", {
+QUnit.module("Comparable", {
 
   setup: function() {
     r1 = Rectangle.create({length: 6, width: 12});
@@ -29,8 +32,8 @@ module("Comparable", {
 });
 
 test("should be comparable and return the correct result", function() {
-  equal(Ember.Comparable.detect(r1), true);
-  equal(Ember.compare(r1, r1), 0);
-  equal(Ember.compare(r1, r2), -1);
-  equal(Ember.compare(r2, r1), 1);
+  equal(Comparable.detect(r1), true);
+  equal(compare(r1, r1), 0);
+  equal(compare(r1, r2), -1);
+  equal(compare(r2, r1), 1);
 });

@@ -3,10 +3,9 @@
 This is the issue tracker for Ember.js. The Ember.js community uses this site
 to collect and track bugs and discussions of new features. If you are having
 difficulties using Ember.js or have a question about usage please ask a
-question on StackOverflow: http://stackoverflow.com/questions/ask and tag
-your question with `ember.js`.
+question on Stack Overflow: http://stackoverflow.com/questions/ask?tags=ember.js
 
-The Ember.js community is very active on StackOverflow and most questions
+The Ember.js community is very active on Stack Overflow and most questions
 receive attention the same day they're posted:
 http://stackoverflow.com/questions/tagged/ember.js
 
@@ -23,11 +22,11 @@ this bug already.
 
 3. Provide JSFiddle or JSBin demo that specifically shows the problem. This
 demo should be fully operational with the exception of the bug you want to
-demonstrate. The more pared down, the better. 
-Preconfigured starting points: [JSFiddle](http://jsfiddle.net/6p6XJ/) | [JSBin](http://jsbin.com/ijicor/3/edit)
-Issues with fiddles are priotized.
+demonstrate. The more pared down, the better.
+Preconfigured starting points for the latest Ember: [JSFiddle](http://jsfiddle.net/NQKvy/) | [JSBin](http://emberjs.jsbin.com) (may not work with older IE versions due to MIME type issues).
+Issues with fiddles are prioritized.
 
-4. Your issue will be verified. The provided fiddle will be tested for
+4. Your issue will be verified. The provided example will be tested for
 correctness. The Ember team will work with you until your issue can
 be verified.
 
@@ -61,31 +60,13 @@ then that will speed the process along.
 
 # Building Ember.js
 
-The stack needed to build emberjs can be quite complex to setup for new developers. A VagrantFile is here to ease things for newcomers.
-Using Vagrant to buid latest version of Ember.js is quite simple. Just follow nexts 4 steps:
+Building Ember is quite simple.
 
-1. Install Vagrant
-2. Retrieve chef cookbooks
-
-~~~
-git submodule init
-git submodule update
-~~~
-3. Lauch your vagrant virtual machine
-
-~~~
-vagrant up
-vagrant ssh
-~~~
-4. Use it!
-
-~~~
-cd /vagrant
-bundle install
-rake dist
-rake test
-...
-~~~
+```sh
+cd ember.js
+npm install
+npm run-script build
+```
 
 # Pull Requests
 
@@ -94,8 +75,8 @@ We love pull requests. Here's a quick guide:
 1. Fork the repo.
 
 2. Run the tests. We only take pull requests with passing tests, and it's great
-to know that you have a clean slate: `bundle && rake test[all]`. (To see tests
-in the browser, run `rackup` and open `http://localhost:9292/`.)
+to know that you have a clean slate: `npm install && npm test`.
+(To see tests in the browser, run `npm start` and open `http://localhost:4200/tests/index.html`.)
 
 3. Add a test for your change. Only refactoring and documentation changes
 require no new tests. If you are adding functionality or fixing a bug, we need
@@ -104,7 +85,7 @@ a test!
 4. Make the test pass.
 
 5. Commit your changes. If your pull request fixes an issue specify it in the commit message.
-Here's an example: `git commit -m "Close #52 - Fix controller and viewbindings"`
+Here's an example: `git commit -m "Close #52 – Fix controller and viewbindings"`
 
 6. Push to your fork and submit a pull request. Please provide us with some
 explanation of why you made the changes you made. For new features make sure to
@@ -143,7 +124,7 @@ updating or writing new documentation:
 7. Prefer a single space between sentences
 8. Reference Ember.js as Ember.
 9. Wrap long markdown blocks > 80 characters
-10. Don't include blank lines after `@param` defintions
+10. Don't include blank lines after `@param` definitions
 
 Code words are:
 
@@ -151,7 +132,7 @@ Code words are:
 * `Global.Class.attribute`
 * `thisFunction()`
 * `Global.CONSTANT_NAME`
-* `true`, `false`, `null`, `undefined` (when refering to programming values)
+* `true`, `false`, `null`, `undefined` (when referring to programming values)
 * references to other properties/methods
 
 And in case we didn't emphasize it enough: we love tests!

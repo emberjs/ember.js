@@ -1,17 +1,27 @@
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+
+import EmberObject from "ember-runtime/system/object";
+
+import jQuery from "ember-views/system/jquery";
+import View from "ember-views/views/view";
+import EventDispatcher from "ember-views/system/event_dispatcher";
+import ContainerView from "ember-views/views/container_view";
+
 var view;
 var dispatcher;
-var set = Ember.set, get = Ember.get;
 
-module("Ember.EventDispatcher", {
+QUnit.module("EventDispatcher", {
   setup: function() {
-    Ember.run(function() {
-      dispatcher = Ember.EventDispatcher.create();
+    run(function() {
+      dispatcher = EventDispatcher.create();
       dispatcher.setup();
     });
   },
 
   teardown: function() {
-    Ember.run(function() {
+    run(function() {
       if (view) { view.destroy(); }
       dispatcher.destroy();
     });
@@ -24,10 +34,10 @@ test("should dispatch events to views", function() {
   var childKeyDownCalled = 0;
   var parentKeyDownCalled = 0;
 
-  view = Ember.ContainerView.createWithMixins({
+  view = ContainerView.createWithMixins({
     childViews: ['child'],
 
-    child: Ember.View.extend({
+    child: View.extend({
       render: function(buffer) {
         buffer.push('<span id="wot">ewot</span>');
       },
@@ -54,7 +64,7 @@ test("should dispatch events to views", function() {
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -65,14 +75,14 @@ test("should dispatch events to views", function() {
   parentMouseDownCalled = 0;
 
   view.$('span#awesome').trigger('mousedown');
-  ok(receivedEvent, "event bubbles up to nearest Ember.View");
+  ok(receivedEvent, "event bubbles up to nearest View");
   equal(parentMouseDownCalled, 1, "does not trigger the parent handlers twice because of browser bubbling");
   receivedEvent = null;
 
-  Ember.$('#wot').trigger('mousedown');
-  ok(receivedEvent, "event bubbles up to nearest Ember.View");
+  jQuery('#wot').trigger('mousedown');
+  ok(receivedEvent, "event bubbles up to nearest View");
 
-  Ember.$('#wot').trigger('keydown');
+  jQuery('#wot').trigger('keydown');
   equal(childKeyDownCalled, 1, "calls keyDown on child view");
   equal(parentKeyDownCalled, 0, "does not call keyDown on parent if child handles event");
 });
@@ -80,7 +90,7 @@ test("should dispatch events to views", function() {
 test("should not dispatch events to views not inDOM", function() {
   var receivedEvent;
 
-  view = Ember.View.createWithMixins({
+  view = View.createWithMixins({
     render: function(buffer) {
       buffer.push('some <span id="awesome">awesome</span> content');
       this._super(buffer);
@@ -91,13 +101,13 @@ test("should not dispatch events to views not inDOM", function() {
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
   var $element = view.$();
 
-  Ember.run(function() {
+  run(function() {
     view.set('element', null); // Force into preRender
   });
 
@@ -107,7 +117,7 @@ test("should not dispatch events to views not inDOM", function() {
   receivedEvent = null;
 
   $element.find('span#awesome').trigger('mousedown');
-  ok(!receivedEvent, "event does not bubble up to nearest Ember.View");
+  ok(!receivedEvent, "event does not bubble up to nearest View");
   receivedEvent = null;
 
   // Cleanup
@@ -116,7 +126,7 @@ test("should not dispatch events to views not inDOM", function() {
 
 test("should send change events up view hierarchy if view contains form elements", function() {
   var receivedEvent;
-  view = Ember.View.create({
+  view = View.create({
     render: function(buffer) {
       buffer.push('<input id="is-done" type="checkbox">');
     },
@@ -126,25 +136,25 @@ test("should send change events up view hierarchy if view contains form elements
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
-  Ember.$('#is-done').trigger('change');
+  jQuery('#is-done').trigger('change');
   ok(receivedEvent, "calls change method when a child element is changed");
-  equal(receivedEvent.target, Ember.$('#is-done')[0], "target property is the element that was clicked");
+  equal(receivedEvent.target, jQuery('#is-done')[0], "target property is the element that was clicked");
 });
 
 test("events should stop propagating if the view is destroyed", function() {
   var parentViewReceived, receivedEvent;
 
-  var parentView = Ember.ContainerView.create({
+  var parentView = ContainerView.create({
     change: function(evt) {
       parentViewReceived = true;
     }
   });
 
-  view = parentView.createChildView(Ember.View, {
+  view = parentView.createChildView(View, {
     render: function(buffer) {
       buffer.push('<input id="is-done" type="checkbox">');
     },
@@ -152,55 +162,55 @@ test("events should stop propagating if the view is destroyed", function() {
     change: function(evt) {
       receivedEvent = true;
       var self = this;
-      Ember.run(function() {
+      run(function() {
         get(self, 'parentView').destroy();
       });
     }
   });
 
-  Ember.get(parentView, 'childViews').pushObject(view);
+  parentView.pushObject(view);
 
-  Ember.run(function() {
+  run(function() {
     parentView.append();
   });
 
-  ok(Ember.$('#is-done').length, "precond - view is in the DOM");
-  Ember.$('#is-done').trigger('change');
-  ok(!Ember.$('#is-done').length, "precond - view is not in the DOM");
+  ok(jQuery('#is-done').length, "precond - view is in the DOM");
+  jQuery('#is-done').trigger('change');
+  ok(!jQuery('#is-done').length, "precond - view is not in the DOM");
   ok(receivedEvent, "calls change method when a child element is changed");
   ok(!parentViewReceived, "parent view does not receive the event");
 });
 
 test("should not interfere with event propagation", function() {
   var receivedEvent;
-  view = Ember.View.create({
+  view = View.create({
     render: function(buffer) {
       buffer.push('<div id="propagate-test-div"></div>');
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
-  Ember.$(window).bind('click', function(evt) {
+  jQuery(window).bind('click', function(evt) {
     receivedEvent = evt;
   });
 
-  Ember.$('#propagate-test-div').click();
+  jQuery('#propagate-test-div').click();
 
   ok(receivedEvent, "allowed event to propagate outside Ember");
-  deepEqual(receivedEvent.target, Ember.$('#propagate-test-div')[0], "target property is the element that was clicked");
+  deepEqual(receivedEvent.target, jQuery('#propagate-test-div')[0], "target property is the element that was clicked");
 });
 
 test("should dispatch events to nearest event manager", function() {
   var receivedEvent=0;
-  view = Ember.ContainerView.create({
+  view = ContainerView.create({
     render: function(buffer) {
       buffer.push('<input id="is-done" type="checkbox">');
     },
 
-    eventManager: Ember.Object.create({
+    eventManager: EmberObject.create({
       mouseDown: function() {
         receivedEvent++;
       }
@@ -209,21 +219,21 @@ test("should dispatch events to nearest event manager", function() {
     mouseDown: function() {}
   });
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
-  Ember.$('#is-done').trigger('mousedown');
+  jQuery('#is-done').trigger('mousedown');
   equal(receivedEvent, 1, "event should go to manager and not view");
 });
 
 test("event manager should be able to re-dispatch events to view", function() {
 
   var receivedEvent=0;
-  view = Ember.ContainerView.createWithMixins({
+  view = ContainerView.createWithMixins({
     elementId: 'containerView',
 
-    eventManager: Ember.Object.create({
+    eventManager: EmberObject.create({
       mouseDown: function(evt, view) {
         // Re-dispatch event when you get it.
         //
@@ -239,7 +249,7 @@ test("event manager should be able to re-dispatch events to view", function() {
 
     childViews: ['child'],
 
-    child: Ember.View.extend({
+    child: View.extend({
       elementId: 'nestedView',
 
       mouseDown: function(evt) {
@@ -252,8 +262,82 @@ test("event manager should be able to re-dispatch events to view", function() {
     }
   });
 
-  Ember.run(function() { view.append(); });
+  run(function() { view.append(); });
 
-  Ember.$('#nestedView').trigger('mousedown');
+  jQuery('#nestedView').trigger('mousedown');
   equal(receivedEvent, 2, "event should go to manager and not view");
+});
+
+test("event handlers should be wrapped in a run loop", function() {
+  expect(1);
+
+  view = View.createWithMixins({
+    elementId: 'test-view',
+
+    eventManager: EmberObject.create({
+      mouseDown: function() {
+        ok(run.currentRunLoop, 'a run loop should have started');
+      }
+    })
+  });
+
+  run(function() { view.append(); });
+
+  jQuery('#test-view').trigger('mousedown');
+});
+
+QUnit.module("EventDispatcher#setup", {
+  setup: function() {
+    run(function() {
+      dispatcher = EventDispatcher.create({
+        rootElement: "#qunit-fixture"
+      });
+    });
+  },
+
+  teardown: function() {
+    run(function() {
+      if (view) { view.destroy(); }
+      dispatcher.destroy();
+    });
+  }
+});
+
+test("additional events which should be listened on can be passed", function () {
+  expect(1);
+
+  run(function () {
+    dispatcher.setup({ myevent: "myEvent" });
+
+    view = View.create({
+      elementId: "leView",
+      myEvent: function() {
+        ok(true, "custom event has been triggered");
+      }
+    }).appendTo( dispatcher.get("rootElement") );
+  });
+
+  jQuery("#leView").trigger("myevent");
+});
+
+test("additional events and rootElement can be specified", function () {
+  expect(3);
+
+  jQuery("#qunit-fixture").append("<div class='custom-root'></div>");
+
+  run(function () {
+    dispatcher.setup({ myevent: "myEvent" }, ".custom-root");
+
+    view = View.create({
+      elementId: "leView",
+      myEvent: function() {
+        ok(true, "custom event has been triggered");
+      }
+    }).appendTo( dispatcher.get("rootElement") );
+  });
+
+  ok(jQuery(".custom-root").hasClass("ember-application"), "the custom rootElement is used");
+  equal(dispatcher.get("rootElement"), ".custom-root", "the rootElement is updated");
+
+  jQuery("#leView").trigger("myevent");
 });

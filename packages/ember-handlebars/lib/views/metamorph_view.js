@@ -1,32 +1,48 @@
-/*jshint newcap:false*/
+/* global Metamorph:true */
 
-require("metamorph");
-require("ember-views/views/view");
+/*jshint newcap:false*/
+import Ember from "ember-metal/core"; // Ember.deprecate
+// var emberDeprecate = Ember.deprecate;
+
+import { get } from "ember-metal/property_get";
+import set from "ember-metal/property_set";
+
+import CoreView from "ember-views/views/core_view";
+import View from "ember-views/views/view";
+import { Mixin } from "ember-metal/mixin";
+import run from "ember-metal/run_loop";
 
 /**
 @module ember
 @submodule ember-handlebars
 */
 
-var set = Ember.set, get = Ember.get;
 var Metamorph = requireModule('metamorph');
+
+function notifyMutationListeners() {
+  run.once(View, 'notifyMutationListeners');
+}
 
 // DOMManager should just abstract dom manipulation between jquery and metamorph
 var DOMManager = {
   remove: function(view) {
     view.morph.remove();
+    notifyMutationListeners();
   },
 
   prepend: function(view, html) {
     view.morph.prepend(html);
+    notifyMutationListeners();
   },
 
   after: function(view, html) {
     view.morph.after(html);
+    notifyMutationListeners();
   },
 
   html: function(view, html) {
     view.morph.html(html);
+    notifyMutationListeners();
   },
 
   // This is messed up.
@@ -35,25 +51,32 @@ var DOMManager = {
 
     view.transitionTo('preRender');
 
-    Ember.run.schedule('render', this, function() {
-      if (get(view, 'isDestroyed')) { return; }
+    run.schedule('render', this, function renderMetamorphView() {
+      if (view.isDestroying) { return; }
 
       view.clearRenderedChildren();
       var buffer = view.renderToBuffer();
 
       view.invokeRecursively(function(view) {
-        view.propertyDidChange('element');
+        view.propertyWillChange('element');
       });
-
       view.triggerRecursively('willInsertElement');
+
       morph.replaceWith(buffer.string());
       view.transitionTo('inDOM');
+
+      view.invokeRecursively(function(view) {
+        view.propertyDidChange('element');
+      });
       view.triggerRecursively('didInsertElement');
+
+      notifyMutationListeners();
     });
   },
 
   empty: function(view) {
     view.morph.html("");
+    notifyMutationListeners();
   }
 };
 
@@ -63,18 +86,18 @@ var DOMManager = {
 /**
   @class _Metamorph
   @namespace Ember
-  @extends Ember.Mixin
   @private
 */
-Ember._Metamorph = Ember.Mixin.create({
+export var _Metamorph = Mixin.create({
   isVirtual: true,
   tagName: '',
 
-  instrumentName: 'render.metamorph',
+  instrumentName: 'metamorph',
 
   init: function() {
     this._super();
     this.morph = Metamorph();
+    Ember.deprecate('Supplying a tagName to Metamorph views is unreliable and is deprecated. You may be setting the tagName on a Handlebars helper that creates a Metamorph.', !this.tagName);
   },
 
   beforeRender: function(buffer) {
@@ -103,14 +126,13 @@ Ember._Metamorph = Ember.Mixin.create({
   @uses Ember._Metamorph
   @private
 */
-Ember._MetamorphView = Ember.View.extend(Ember._Metamorph);
+export var _MetamorphView = View.extend(_Metamorph);
 
 /**
   @class _SimpleMetamorphView
   @namespace Ember
-  @extends Ember.View
+  @extends Ember.CoreView
   @uses Ember._Metamorph
   @private
 */
-Ember._SimpleMetamorphView = Ember.CoreView.extend(Ember._Metamorph);
-
+export var _SimpleMetamorphView = CoreView.extend(_Metamorph);

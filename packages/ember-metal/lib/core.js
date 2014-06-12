@@ -1,4 +1,4 @@
-/*globals Em:true ENV */
+/*globals Ember:true,Em:true,ENV,EmberENV,MetamorphENV:true */
 
 /**
 @module ember
@@ -22,7 +22,7 @@
 
   @class Ember
   @static
-  @version 1.0.0-pre.4
+  @version VERSION_STRING_PLACEHOLDER
 */
 
 if ('undefined' === typeof Ember) {
@@ -37,7 +37,7 @@ var exports = Ember.exports = Ember.exports || this;
 var lookup  = Ember.lookup  = Ember.lookup  || this;
 
 // aliases needed to keep minifiers from removing the global context
-exports.Em = exports.Ember = Em = Ember;
+exports.Em = exports.Ember = Ember;
 
 // Make sure these are set whether Ember was already defined or not
 
@@ -49,29 +49,95 @@ Ember.toString = function() { return "Ember"; };
 /**
   @property VERSION
   @type String
-  @default '1.0.0-pre.4'
-  @final
+  @default 'VERSION_STRING_PLACEHOLDER'
+  @static
 */
-Ember.VERSION = '1.0.0-pre.4';
+Ember.VERSION = 'VERSION_STRING_PLACEHOLDER';
 
 /**
-  Standard environmental variables. You can define these in a global `ENV`
-  variable before loading Ember to control various configuration
-  settings.
+  Standard environmental variables. You can define these in a global `EmberENV`
+  variable before loading Ember to control various configuration settings.
+
+  For backwards compatibility with earlier versions of Ember the global `ENV`
+  variable will be used if `EmberENV` is not defined.
 
   @property ENV
   @type Hash
 */
-Ember.ENV = Ember.ENV || ('undefined' === typeof ENV ? {} : ENV);
+
+if (Ember.ENV) {
+  // do nothing if Ember.ENV is already setup
+} else if ('undefined' !== typeof EmberENV) {
+  Ember.ENV = EmberENV;
+} else if('undefined' !== typeof ENV) {
+  Ember.ENV = ENV;
+} else {
+  Ember.ENV = {};
+}
 
 Ember.config = Ember.config || {};
+
+// We disable the RANGE API by default for performance reasons
+if ('undefined' === typeof Ember.ENV.DISABLE_RANGE_API) {
+  Ember.ENV.DISABLE_RANGE_API = true;
+}
+
+if ("undefined" === typeof MetamorphENV) {
+  exports.MetamorphENV = {};
+}
+
+MetamorphENV.DISABLE_RANGE_API = Ember.ENV.DISABLE_RANGE_API;
+
+/**
+  Hash of enabled Canary features. Add to before creating your application.
+
+  You can also define `ENV.FEATURES` if you need to enable features flagged at runtime.
+
+  @class FEATURES
+  @namespace Ember
+  @static
+  @since 1.1.0
+*/
+
+Ember.FEATURES = Ember.ENV.FEATURES || {};
+
+/**
+  Test that a feature is enabled. Parsed by Ember's build tools to leave
+  experimental features out of beta/stable builds.
+
+  You can define the following configuration options:
+
+  * `ENV.ENABLE_ALL_FEATURES` - force all features to be enabled.
+  * `ENV.ENABLE_OPTIONAL_FEATURES` - enable any features that have not been explicitly
+    enabled/disabled.
+
+  @method isEnabled
+  @param {String} feature
+  @return {Boolean}
+  @for Ember.FEATURES
+  @since 1.1.0
+*/
+
+Ember.FEATURES.isEnabled = function(feature) {
+  var featureValue = Ember.FEATURES[feature];
+
+  if (Ember.ENV.ENABLE_ALL_FEATURES) {
+    return true;
+  } else if (featureValue === true || featureValue === false || featureValue === undefined) {
+    return featureValue;
+  } else if (Ember.ENV.ENABLE_OPTIONAL_FEATURES) {
+    return true;
+  } else {
+    return false;
+  }
+};
 
 // ..........................................................
 // BOOTSTRAP
 //
 
 /**
-  Determines whether Ember should enhances some built-in object prototypes to
+  Determines whether Ember should enhance some built-in object prototypes to
   provide a more friendly API. If enabled, a few methods will be added to
   `Function`, `String`, and `Array`. `Object.prototype` will not be enhanced,
   which is the one that causes most trouble for people.
@@ -83,6 +149,7 @@ Ember.config = Ember.config || {};
   @property EXTEND_PROTOTYPES
   @type Boolean
   @default true
+  @for Ember
 */
 Ember.EXTEND_PROTOTYPES = Ember.ENV.EXTEND_PROTOTYPES;
 
@@ -109,7 +176,16 @@ Ember.LOG_STACKTRACE_ON_DEPRECATION = (Ember.ENV.LOG_STACKTRACE_ON_DEPRECATION !
 Ember.SHIM_ES5 = (Ember.ENV.SHIM_ES5 === false) ? false : Ember.EXTEND_PROTOTYPES;
 
 /**
-  Empty function. Useful for some operations.
+  Determines whether Ember logs info about version of used libraries
+
+  @property LOG_VERSION
+  @type Boolean
+  @default true
+*/
+Ember.LOG_VERSION = (Ember.ENV.LOG_VERSION === false) ? false : true;
+
+/**
+  Empty function. Useful for some operations. Always returns `this`.
 
   @method K
   @private
@@ -122,86 +198,11 @@ Ember.K = function() { return this; };
 
 if ('undefined' === typeof Ember.assert) { Ember.assert = Ember.K; }
 if ('undefined' === typeof Ember.warn) { Ember.warn = Ember.K; }
+if ('undefined' === typeof Ember.debug) { Ember.debug = Ember.K; }
+if ('undefined' === typeof Ember.runInDebug) { Ember.runInDebug = Ember.K; }
 if ('undefined' === typeof Ember.deprecate) { Ember.deprecate = Ember.K; }
 if ('undefined' === typeof Ember.deprecateFunc) {
   Ember.deprecateFunc = function(_, func) { return func; };
 }
 
-// These are deprecated but still supported
-
-if ('undefined' === typeof ember_assert) { exports.ember_assert = Ember.K; }
-if ('undefined' === typeof ember_warn) { exports.ember_warn = Ember.K; }
-if ('undefined' === typeof ember_deprecate) { exports.ember_deprecate = Ember.K; }
-if ('undefined' === typeof ember_deprecateFunc) {
-  exports.ember_deprecateFunc = function(_, func) { return func; };
-}
-
-/**
-  Previously we used `Ember.$.uuid`, however `$.uuid` has been removed from
-  jQuery master. We'll just bootstrap our own uuid now.
-
-  @property uuid
-  @type Number
-  @private
-*/
-Ember.uuid = 0;
-
-// ..........................................................
-// LOGGER
-//
-
-/**
-  Inside Ember-Metal, simply uses the `imports.console` object.
-  Override this to provide more robust logging functionality.
-
-  @class Logger
-  @namespace Ember
-*/
-Ember.Logger = imports.console || { log: Ember.K, warn: Ember.K, error: Ember.K, info: Ember.K, debug: Ember.K };
-
-
-// ..........................................................
-// ERROR HANDLING
-//
-
-/**
-  A function may be assigned to `Ember.onerror` to be called when Ember
-  internals encounter an error. This is useful for specialized error handling
-  and reporting code.
-
-  @event onerror
-  @for Ember
-  @param {Exception} error the error object
-*/
-Ember.onerror = null;
-
-/**
-  @private
-
-  Wrap code block in a try/catch if {{#crossLink "Ember/onerror"}}{{/crossLink}} is set.
-
-  @method handleErrors
-  @for Ember
-  @param {Function} func
-  @param [context]
-*/
-Ember.handleErrors = function(func, context) {
-  // Unfortunately in some browsers we lose the backtrace if we rethrow the existing error,
-  // so in the event that we don't have an `onerror` handler we don't wrap in a try/catch
-  if ('function' === typeof Ember.onerror) {
-    try {
-      return func.apply(context || this);
-    } catch (error) {
-      Ember.onerror(error);
-    }
-  } else {
-    return func.apply(context || this);
-  }
-};
-
-Ember.merge = function(original, updates) {
-  for (var prop in updates) {
-    if (!updates.hasOwnProperty(prop)) { continue; }
-    original[prop] = updates[prop];
-  }
-};
+export default Ember;

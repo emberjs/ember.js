@@ -1,7 +1,7 @@
-require('ember-runtime/~tests/suites/enumerable');
+import EmberObject from 'ember-runtime/system/object';
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = Ember.EnumerableTests;
-
+var suite = SuiteModuleBuilder.create();
 // ..........................................................
 // find()
 //
@@ -32,23 +32,23 @@ suite.test('every should stop invoking when you return true', function() {
 });
 
 // ..........................................................
-// findProperty()
+// findBy()
 //
 
-suite.module('findProperty');
+suite.module('findBy');
 
 suite.test('should return first object of property matches', function() {
   var ary, obj;
 
   ary = [
     { foo: 'foo', bar: 'BAZ' },
-    Ember.Object.create({ foo: 'foo', bar: 'bar' })
+    EmberObject.create({ foo: 'foo', bar: 'bar' })
   ];
 
   obj = this.newObject(ary);
 
-  equal(obj.findProperty('foo', 'foo'), ary[0], 'findProperty(foo)');
-  equal(obj.findProperty('bar', 'bar'), ary[1], 'findProperty(bar)');
+  equal(obj.findBy('foo', 'foo'), ary[0], 'findBy(foo)');
+  equal(obj.findBy('bar', 'bar'), ary[1], 'findBy(bar)');
 });
 
 suite.test('should return first object with truthy prop', function() {
@@ -56,14 +56,14 @@ suite.test('should return first object with truthy prop', function() {
 
   ary = [
     { foo: 'foo', bar: false },
-    Ember.Object.create({ foo: 'bar', bar: true })
+    EmberObject.create({ foo: 'bar', bar: true })
   ];
 
   obj = this.newObject(ary);
 
   // different values - all eval to true
-  equal(obj.findProperty('foo'), ary[0], 'findProperty(foo)');
-  equal(obj.findProperty('bar'), ary[1], 'findProperty(bar)');
+  equal(obj.findBy('foo'), ary[0], 'findBy(foo)');
+  equal(obj.findBy('bar'), ary[1], 'findBy(bar)');
 });
 
 suite.test('should return first null property match', function() {
@@ -71,13 +71,13 @@ suite.test('should return first null property match', function() {
 
   ary = [
     { foo: null, bar: 'BAZ' },
-    Ember.Object.create({ foo: null, bar: null })
+    EmberObject.create({ foo: null, bar: null })
   ];
 
   obj = this.newObject(ary);
 
-  equal(obj.findProperty('foo', null), ary[0], "findProperty('foo', null)");
-  equal(obj.findProperty('bar', null), ary[1], "findProperty('bar', null)");
+  equal(obj.findBy('foo', null), ary[0], "findBy('foo', null)");
+  equal(obj.findBy('bar', null), ary[1], "findBy('bar', null)");
 });
 
 suite.test('should return first undefined property match', function() {
@@ -85,11 +85,21 @@ suite.test('should return first undefined property match', function() {
 
   ary = [
     { foo: undefined, bar: 'BAZ' },
-    Ember.Object.create({ })
+    EmberObject.create({ })
   ];
 
   obj = this.newObject(ary);
 
-  equal(obj.findProperty('foo', undefined), ary[0], "findProperty('foo', undefined)");
-  equal(obj.findProperty('bar', undefined), ary[1], "findProperty('bar', undefined)");
+  equal(obj.findBy('foo', undefined), ary[0], "findBy('foo', undefined)");
+  equal(obj.findBy('bar', undefined), ary[1], "findBy('bar', undefined)");
 });
+
+suite.test('should be aliased to findProperty', function() {
+  var obj;
+
+  obj = this.newObject([]);
+
+  equal(obj.findProperty, obj.findBy);
+});
+
+export default suite;

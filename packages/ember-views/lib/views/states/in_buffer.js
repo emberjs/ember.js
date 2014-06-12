@@ -1,15 +1,18 @@
-require('ember-views/views/states/default');
+import _default from "ember-views/views/states/default";
+import EmberError from "ember-metal/error";
+
+import Ember from "ember-metal/core"; // Ember.assert
+import { create } from "ember-metal/platform";
+import merge from "ember-metal/merge";
 
 /**
 @module ember
 @submodule ember-views
 */
 
-var get = Ember.get, set = Ember.set, meta = Ember.meta;
+var inBuffer = create(_default);
 
-var inBuffer = Ember.View.states.inBuffer = Ember.create(Ember.View.states._default);
-
-Ember.merge(inBuffer, {
+merge(inBuffer, {
   $: function(view, sel) {
     // if we don't have an element yet, someone calling this.$() is
     // trying to update an element that isn't in the DOM. Instead,
@@ -22,17 +25,18 @@ Ember.merge(inBuffer, {
   // when a view is rendered in a buffer, rerendering it simply
   // replaces the existing buffer with a new one
   rerender: function(view) {
-    throw new Ember.Error("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.");
+    throw new EmberError("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.");
   },
 
   // when a view is rendered in a buffer, appending a child
   // view will render that view and append the resulting
   // buffer into its buffer.
   appendChild: function(view, childView, options) {
-    var buffer = view.buffer;
+    var buffer = view.buffer, _childViews = view._childViews;
 
     childView = view.createChildView(childView, options);
-    view._childViews.push(childView);
+    if (!_childViews.length) { _childViews = view._childViews = _childViews.slice(); }
+    _childViews.push(childView);
 
     childView.renderToBuffer(buffer);
 
@@ -46,24 +50,27 @@ Ember.merge(inBuffer, {
   // state back into the preRender state.
   destroyElement: function(view) {
     view.clearBuffer();
-    view._notifyWillDestroyElement();
-    view.transitionTo('preRender');
+    var viewCollection = view._notifyWillDestroyElement();
+    viewCollection.transitionTo('preRender', false);
 
     return view;
   },
 
   empty: function() {
-    Ember.assert("Emptying a view in the inBuffer state is not allowed and should not happen under normal circumstances. Most likely there is a bug in your application. This may be due to excessive property change notifications.");
+    Ember.assert("Emptying a view in the inBuffer state is not allowed and " +
+                 "should not happen under normal circumstances. Most likely " +
+                 "there is a bug in your application. This may be due to " +
+                 "excessive property change notifications.");
   },
 
-  renderToBufferIfNeeded: function (view) {
-    return view.buffer;
+  renderToBufferIfNeeded: function (view, buffer) {
+    return false;
   },
 
   // It should be impossible for a rendered view to be scheduled for
   // insertion.
   insertElement: function() {
-    throw "You can't insert an element that has already been rendered";
+    throw new EmberError("You can't insert an element that has already been rendered");
   },
 
   setElement: function(view, value) {
@@ -75,6 +82,11 @@ Ember.merge(inBuffer, {
     }
 
     return value;
+  },
+
+  invokeObserver: function(target, observer) {
+    observer.call(target);
   }
 });
 
+export default inBuffer;

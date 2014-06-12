@@ -5,7 +5,7 @@
 
   "homepage": "http://emberjs.com",
   "author": "Charles Jolley",
-  "version": "1.0.0-pre.4",
+  "version": "1.0.0",
 
   "directories": {
     "lib": "lib"
@@ -13,21 +13,21 @@
 
   "dependencies": {
     "spade":            "~> 1.0",
-    "ember-metal": "1.0.0-pre.4",
+    "ember-metal": "1.0.0",
     "container": "1.0.0-pre.2"
   },
 
   "dependencies:development": {
     "spade-qunit": "~> 1.0.0"
   },
-  
+
   "bpm:build": {
-    
+
     "bpm_libs.js": {
       "files": ["lib"],
       "modes":        "*"
     },
-    
+
     "ember-runtime/bpm_tests.js": {
       "files": ["tests"],
       "modes": ["debug"]

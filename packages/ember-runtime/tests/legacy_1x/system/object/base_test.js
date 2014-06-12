@@ -1,4 +1,8 @@
-/*globals TestNamespace:true*/
+import Ember from "ember-metal/core";
+import {get} from 'ember-metal/property_get';
+import {set} from 'ember-metal/property_set';
+import {observer as emberObserver} from "ember-metal/mixin";
+import EmberObject from 'ember-runtime/system/object';
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -19,25 +23,16 @@
 */
 
 // ========================================================================
-// Ember.Object Base Tests
+// EmberObject Base Tests
 // ========================================================================
 
 var obj, obj1, don, don1 ; // global variables
+var TestNamespace, originalLookup, lookup;
 
-var get = Ember.get, set = Ember.set;
-
-function inArray(item, array) {
-  var len = array.length, idx;
-  for (idx=0; idx<len; idx++) {
-    if (array[idx] === item) { return idx; }
-  }
-  return -1;
-}
-
-module("A new Ember.Object instance", {
+QUnit.module("A new EmberObject instance", {
 
   setup: function() {
-    obj = Ember.Object.create({
+    obj = EmberObject.create({
       foo: "bar",
       total: 12345,
       aMethodThatExists: function() {},
@@ -53,12 +48,12 @@ module("A new Ember.Object instance", {
 
 });
 
-test("Should return it's properties when requested using Ember.Object#get", function() {
+test("Should return it's properties when requested using EmberObject#get", function() {
   equal(get(obj, 'foo'), 'bar') ;
   equal(get(obj, 'total'), 12345) ;
 });
 
-test("Should allow changing of those properties by calling Ember.Object#set", function() {
+test("Should allow changing of those properties by calling EmberObject#set", function() {
   equal(get(obj,'foo'), 'bar') ;
   equal(get(obj, 'total'), 12345) ;
 
@@ -70,33 +65,40 @@ test("Should allow changing of those properties by calling Ember.Object#set", fu
 });
 
 
-module("Ember.Object observers", {
+QUnit.module("EmberObject observers", {
   setup: function() {
+    originalLookup = Ember.lookup;
+    Ember.lookup = lookup = {};
+
     // create a namespace
-    TestNamespace = {
-      obj: Ember.Object.create({
+    lookup['TestNamespace'] = TestNamespace = {
+      obj: EmberObject.create({
         value: "test"
       })
     };
 
     // create an object
-    obj = Ember.Object.createWithMixins({
+    obj = EmberObject.createWithMixins({
       prop1: null,
 
       // normal observer
-      observer: Ember.observer(function(){
+      observer: emberObserver("prop1", function() {
         this._normal = true;
-      }, "prop1"),
+      }),
 
-      globalObserver: Ember.observer(function() {
+      globalObserver: emberObserver("TestNamespace.obj.value", function() {
         this._global = true;
-      }, "TestNamespace.obj.value"),
+      }),
 
-      bothObserver: Ember.observer(function() {
+      bothObserver: emberObserver("prop1", "TestNamespace.obj.value", function() {
         this._both = true;
-      }, "prop1", "TestNamespace.obj.value")
+      })
     });
 
+  },
+
+  teardown: function(){
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -120,34 +122,34 @@ test("Global+Local observer works", function() {
 
 
 
-module("Ember.Object superclass and subclasses", {
+QUnit.module("EmberObject superclass and subclasses", {
   setup: function() {
-    obj = Ember.Object.extend ({
+    obj = EmberObject.extend ({
     method1: function() {
       return "hello";
     }
-	});
-	obj1 = obj.extend();
-	don = obj1.create ({
+  });
+  obj1 = obj.extend();
+  don = obj1.create ({
     method2: function() {
       return this.superclass();
     }
-	});
+  });
   },
 
   teardown: function() {
-	obj = undefined ;
+  obj = undefined ;
     obj1 = undefined ;
     don = undefined ;
   }
 });
 
-test("Checking the detect() function on an object and its subclass", function(){
-	equal(obj.detect(obj1), true);
-	equal(obj1.detect(obj), false);
+test("Checking the detect() function on an object and its subclass", function() {
+  equal(obj.detect(obj1), true);
+  equal(obj1.detect(obj), false);
 });
 
 test("Checking the detectInstance() function on an object and its subclass", function() {
-  ok(Ember.Object.detectInstance(obj.create()));
+  ok(EmberObject.detectInstance(obj.create()));
   ok(obj.detectInstance(obj.create()));
 });

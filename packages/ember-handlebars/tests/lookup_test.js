@@ -1,4 +1,4 @@
-module("Ember.Handlebars.resolveParams");
+QUnit.module("Ember.Handlebars.resolveParams");
 
 test("Raw string parameters should be returned as Strings", function() {
   var params = Ember.Handlebars.resolveParams({}, ["foo", "bar", "baz"], { types: ["STRING", "STRING", "STRING"] });
@@ -28,6 +28,17 @@ test("ID parameters should be looked up on the context", function() {
   deepEqual(params, ["Mr", "Tom", "Dale"]);
 });
 
+if (Ember.FEATURES.isEnabled("ember-handlebars-caps-lookup")) {
+  test("ID parameters that start with capital letters use Ember.lookup as their context", function() {
+    Ember.lookup.FOO = "BAR";
+
+    var context = { FOO: "BAZ" };
+
+    var params = Ember.Handlebars.resolveParams(context, ["FOO"], { types: ["ID"] });
+    deepEqual(params, ["BAR"]);
+  });
+}
+
 test("ID parameters can look up keywords", function() {
   var controller = {
     salutation: "Mr"
@@ -55,7 +66,7 @@ test("ID parameters can look up keywords", function() {
   deepEqual(params, ["Mr", "Tom", "Dale", "State Charts"]);
 });
 
-module("Ember.Handlebars.resolveHash");
+QUnit.module("Ember.Handlebars.resolveHash");
 
 test("Raw string parameters should be returned as Strings", function() {
   var hash = Ember.Handlebars.resolveHash({}, { string: "foo" }, { hashTypes: { string: "STRING" } });

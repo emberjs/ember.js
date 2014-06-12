@@ -1,16 +1,27 @@
-/*global module test equals context ok same */
+import { get } from "ember-metal/property_get";
+import run from "ember-metal/run_loop";
+import EmberObject from "ember-runtime/system/object";
+import jQuery from "ember-views/system/jquery";
+import EmberView from "ember-views/views/view";
+import ContainerView from "ember-views/views/container_view";
 
-var set = Ember.set, get = Ember.get;
+var view;
 
 // .......................................................
 //  render()
 //
-module("Ember.View#render");
+QUnit.module("EmberView#render", {
+  teardown: function() {
+    run(function() {
+      view.destroy();
+    });
+  }
+});
 
 test("default implementation does not render child views", function() {
 
   var rendered = 0, updated = 0, parentRendered = 0, parentUpdated = 0 ;
-  var view = Ember.ContainerView.createWithMixins({
+  view = ContainerView.createWithMixins({
     childViews: ["child"],
 
     render: function(buffer) {
@@ -18,7 +29,7 @@ test("default implementation does not render child views", function() {
       this._super(buffer);
     },
 
-    child: Ember.View.createWithMixins({
+    child: EmberView.createWithMixins({
       render: function(buffer) {
         rendered++;
         this._super(buffer);
@@ -26,7 +37,7 @@ test("default implementation does not render child views", function() {
     })
   });
 
-  Ember.run(function(){
+  run(function() {
     view.createElement();
   });
   equal(rendered, 1, 'rendered the child once');
@@ -38,7 +49,7 @@ test("default implementation does not render child views", function() {
 test("should invoke renderChildViews if layer is destroyed then re-rendered", function() {
 
   var rendered = 0, parentRendered = 0, parentUpdated = 0 ;
-  var view = Ember.ContainerView.createWithMixins({
+  view = ContainerView.createWithMixins({
     childViews: ["child"],
 
     render: function(buffer) {
@@ -46,7 +57,7 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
       this._super(buffer);
     },
 
-    child: Ember.View.createWithMixins({
+    child: EmberView.createWithMixins({
       render: function(buffer) {
         rendered++;
         this._super(buffer);
@@ -54,7 +65,7 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
     })
   });
 
-  Ember.run(function() {
+  run(function() {
     view.append();
   });
 
@@ -62,7 +73,7 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
   equal(parentRendered, 1);
   equal(view.$('div').length, 1);
 
-  Ember.run(function() {
+  run(function() {
     view.rerender();
   });
 
@@ -70,7 +81,7 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
   equal(parentRendered, 2);
   equal(view.$('div').length, 1);
 
-  Ember.run(function(){
+  run(function() {
     view.destroy();
   });
 });
@@ -78,15 +89,15 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
 test("should render child views with a different tagName", function() {
   var rendered = 0, parentRendered = 0, parentUpdated = 0 ;
 
-  var view = Ember.ContainerView.create({
+  view = ContainerView.create({
     childViews: ["child"],
 
-    child: Ember.View.create({
+    child: EmberView.create({
       tagName: 'aside'
     })
   });
 
-  Ember.run(function(){
+  run(function() {
     view.createElement();
   });
 
@@ -94,19 +105,36 @@ test("should render child views with a different tagName", function() {
 });
 
 test("should add ember-view to views", function() {
-  var view = Ember.View.create();
+  view = EmberView.create();
 
-  Ember.run(function(){
+  run(function() {
     view.createElement();
   });
 
   ok(view.$().hasClass('ember-view'), "the view has ember-view");
 });
 
-test("should not add role attribute unless one is specified", function() {
-  var view = Ember.View.create();
+test("should allow hX tags as tagName", function() {
 
-  Ember.run(function(){
+  view = ContainerView.create({
+    childViews: ["child"],
+
+    child: EmberView.create({
+      tagName: 'h3'
+    })
+  });
+
+  run(function() {
+    view.createElement();
+  });
+
+  ok(view.$('h3').length, "does not render the h3 tag correctly");
+});
+
+test("should not add role attribute unless one is specified", function() {
+  view = EmberView.create();
+
+  run(function() {
     view.createElement();
   });
 
@@ -114,7 +142,7 @@ test("should not add role attribute unless one is specified", function() {
 });
 
 test("should re-render if the context is changed", function() {
-  var view = Ember.View.create({
+  view = EmberView.create({
     elementId: 'template-context-test',
     context: { foo: "bar" },
     render: function(buffer) {
@@ -123,17 +151,17 @@ test("should re-render if the context is changed", function() {
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     view.appendTo('#qunit-fixture');
   });
 
-  equal(Ember.$('#qunit-fixture #template-context-test').text(), "bar", "precond - renders the view with the initial value");
+  equal(jQuery('#qunit-fixture #template-context-test').text(), "bar", "precond - renders the view with the initial value");
 
-  Ember.run(function() {
+  run(function() {
     view.set('context', {
       foo: "bang baz"
     });
   });
 
-  equal(Ember.$('#qunit-fixture #template-context-test').text(), "bang baz", "re-renders the view with the updated context");
+  equal(jQuery('#qunit-fixture #template-context-test').text(), "bang baz", "re-renders the view with the updated context");
 });

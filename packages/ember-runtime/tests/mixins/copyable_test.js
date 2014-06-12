@@ -1,26 +1,29 @@
-require('ember-runtime/~tests/suites/copyable');
+import CopyableTests from 'ember-runtime/tests/suites/copyable';
+import Copyable from 'ember-runtime/mixins/copyable';
+import EmberObject from 'ember-runtime/system/object';
+import {generateGuid} from 'ember-metal/utils';
+import {set} from 'ember-metal/property_set';
+import {get} from 'ember-metal/property_get';
 
-// NOTE: See debug/suites/copyable.js for mosts tests
-
-var CopyableObject = Ember.Object.extend(Ember.Copyable, {
+var CopyableObject = EmberObject.extend(Copyable, {
 
   id: null,
 
   init: function() {
     this._super();
-    Ember.set(this, 'id', Ember.generateGuid());
+    set(this, 'id', generateGuid());
   },
 
   copy: function() {
     var ret = new CopyableObject();
-    Ember.set(ret, 'id', Ember.get(this, 'id'));
+    set(ret, 'id', get(this, 'id'));
     return ret;
   }
 });
 
-Ember.CopyableTests.extend({
+CopyableTests.extend({
 
-  name: 'Ember.Copyable Basic Test',
+  name: 'Copyable Basic Test',
 
   newObject: function() {
     return new CopyableObject();
@@ -28,6 +31,6 @@ Ember.CopyableTests.extend({
 
   isEqual: function(a, b) {
     if (!(a instanceof CopyableObject) || !(b instanceof CopyableObject)) return false;
-    return Ember.get(a, 'id') === Ember.get(b,'id');
+    return get(a, 'id') === get(b,'id');
   }
 }).run();

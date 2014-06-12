@@ -1,6 +1,11 @@
-/*globals MyApp:true */
+import { set } from 'ember-metal/property_set';
+import { get } from 'ember-metal/property_get';
+import run from 'ember-metal/run_loop';
+import { oneWay } from "ember-metal/binding";
 
-module('system/mixin/binding/oneWay_test', {
+var MyApp;
+
+QUnit.module('system/mixin/binding/oneWay_test', {
   setup: function() {
     MyApp = {
       foo: { value: 'FOO' },
@@ -15,26 +20,26 @@ module('system/mixin/binding/oneWay_test', {
 
 test('oneWay(true) should only sync one way', function() {
   var binding;
-  Ember.run(function(){
-    binding = Ember.oneWay(MyApp, 'bar.value', 'foo.value');
+  run(function() {
+    binding = oneWay(MyApp, 'bar.value', 'foo.value');
   });
 
-  equal(Ember.get('MyApp.foo.value'), 'FOO', 'foo synced');
-  equal(Ember.get('MyApp.bar.value'), 'FOO', 'bar synced');
+  equal(get(MyApp, 'foo.value'), 'FOO', 'foo synced');
+  equal(get(MyApp, 'bar.value'), 'FOO', 'bar synced');
 
-  Ember.run(function(){
-    Ember.set('MyApp.bar.value', 'BAZ');
+  run(function() {
+    set(MyApp, 'bar.value', 'BAZ');
   });
 
-  equal(Ember.get('MyApp.foo.value'), 'FOO', 'foo synced');
-  equal(Ember.get('MyApp.bar.value'), 'BAZ', 'bar not synced');
+  equal(get(MyApp, 'foo.value'), 'FOO', 'foo synced');
+  equal(get(MyApp, 'bar.value'), 'BAZ', 'bar not synced');
 
-  Ember.run(function(){
-    Ember.set('MyApp.foo.value', 'BIFF');
+  run(function() {
+    set(MyApp, 'foo.value', 'BIFF');
   });
 
-  equal(Ember.get('MyApp.foo.value'), 'BIFF', 'foo synced');
-  equal(Ember.get('MyApp.bar.value'), 'BIFF', 'foo synced');
+  equal(get(MyApp, 'foo.value'), 'BIFF', 'foo synced');
+  equal(get(MyApp, 'bar.value'), 'BIFF', 'foo synced');
 
 });
 

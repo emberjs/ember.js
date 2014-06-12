@@ -1,11 +1,10 @@
-require('ember-runtime/mixins/observable');
-require('ember-runtime/system/core_object');
-require('ember-runtime/system/set');
-
 /**
 @module ember
 @submodule ember-runtime
 */
+
+import CoreObject from "ember-runtime/system/core_object";
+import Observable from "ember-runtime/mixins/observable";
 
 /**
   `Ember.Object` is the main base class for all Ember objects. It is a subclass
@@ -17,4 +16,9 @@ require('ember-runtime/system/set');
   @extends Ember.CoreObject
   @uses Ember.Observable
 */
-Ember.Object = Ember.CoreObject.extend(Ember.Observable);
+var EmberObject = CoreObject.extend(Observable);
+EmberObject.toString = function() {
+  return "Ember.Object";
+};
+
+export default EmberObject;

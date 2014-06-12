@@ -1,4 +1,4 @@
-module('Ember.aliasMethod');
+QUnit.module('Ember.aliasMethod');
 
 function validateAliasMethod(obj) {
   equal(obj.fooMethod(), 'FOO', 'obj.fooMethod()');
@@ -19,7 +19,7 @@ test('methods of another name are aliased when the mixin is applied', function()
 test('should follow aliasMethods all the way down', function() {
   var MyMixin = Ember.Mixin.create({
     bar: Ember.aliasMethod('foo'), // put first to break ordered iteration
-    baz: function(){ return 'baz'; },
+    baz: function() { return 'baz'; },
     foo: Ember.aliasMethod('baz')
   });
 

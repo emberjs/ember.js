@@ -1,45 +1,50 @@
-/*globals testBoth */
+import testBoth from 'ember-metal/tests/props_helper';
+import {
+  watch,
+  unwatch
+} from "ember-metal/watching";
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
+import { defineProperty } from 'ember-metal/properties';
+import { addListener } from "ember-metal/events";
+import { computed } from 'ember-metal/computed';
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 
-require('ember-metal/~tests/props_helper');
+var willCount, didCount;
 
-var willCount = 0 , didCount = 0,
-    willChange = Ember.propertyWillChange,
-    didChange = Ember.propertyDidChange;
-
-module('Ember.unwatch', {
+QUnit.module('unwatch', {
   setup: function() {
     willCount = didCount = 0;
-    Ember.propertyWillChange = function(cur, keyName) {
-      willCount++;
-      willChange.call(this, cur, keyName);
-    };
-
-    Ember.propertyDidChange = function(cur, keyName) {
-      didCount++;
-      didChange.call(this, cur, keyName);
-    };
-  },
-
-  teardown: function() {
-    Ember.propertyWillChange = willChange;
-    Ember.propertyDidChange  = didChange;
   }
 });
+
+function addListeners(obj, keyPath) {
+  addListener(obj, keyPath + ':before', function() {
+    willCount++;
+  });
+  addListener(obj, keyPath + ':change', function() {
+    didCount++;
+  });
+}
 
 testBoth('unwatching a computed property - regular get/set', function(get, set) {
 
   var obj = {};
-  Ember.defineProperty(obj, 'foo', Ember.computed(function(keyName, value) {
+  defineProperty(obj, 'foo', computed(function(keyName, value) {
     if (value !== undefined) this.__foo = value;
     return this.__foo;
   }));
+  addListeners(obj, 'foo');
 
-  Ember.watch(obj, 'foo');
+  watch(obj, 'foo');
   set(obj, 'foo', 'bar');
   equal(willCount, 1, 'should have invoked willCount');
   equal(didCount, 1, 'should have invoked didCount');
 
-  Ember.unwatch(obj, 'foo');
+  unwatch(obj, 'foo');
   willCount = didCount = 0;
   set(obj, 'foo', 'BAZ');
   equal(willCount, 0, 'should NOT have invoked willCount');
@@ -50,13 +55,14 @@ testBoth('unwatching a computed property - regular get/set', function(get, set) 
 testBoth('unwatching a regular property - regular get/set', function(get, set) {
 
   var obj = { foo: 'BIFF' };
+  addListeners(obj, 'foo');
 
-  Ember.watch(obj, 'foo');
+  watch(obj, 'foo');
   set(obj, 'foo', 'bar');
   equal(willCount, 1, 'should have invoked willCount');
   equal(didCount, 1, 'should have invoked didCount');
 
-  Ember.unwatch(obj, 'foo');
+  unwatch(obj, 'foo');
   willCount = didCount = 0;
   set(obj, 'foo', 'BAZ');
   equal(willCount, 0, 'should NOT have invoked willCount');
@@ -66,22 +72,43 @@ testBoth('unwatching a regular property - regular get/set', function(get, set) {
 test('unwatching should be nested', function() {
 
   var obj = { foo: 'BIFF' };
+  addListeners(obj, 'foo');
 
-  Ember.watch(obj, 'foo');
-  Ember.watch(obj, 'foo');
-  Ember.set(obj, 'foo', 'bar');
+  watch(obj, 'foo');
+  watch(obj, 'foo');
+  set(obj, 'foo', 'bar');
   equal(willCount, 1, 'should have invoked willCount');
   equal(didCount, 1, 'should have invoked didCount');
 
-  Ember.unwatch(obj, 'foo');
+  unwatch(obj, 'foo');
   willCount = didCount = 0;
-  Ember.set(obj, 'foo', 'BAZ');
+  set(obj, 'foo', 'BAZ');
   equal(willCount, 1, 'should NOT have invoked willCount');
   equal(didCount, 1, 'should NOT have invoked didCount');
 
-  Ember.unwatch(obj, 'foo');
+  unwatch(obj, 'foo');
   willCount = didCount = 0;
-  Ember.set(obj, 'foo', 'BAZ');
+  set(obj, 'foo', 'BAZ');
   equal(willCount, 0, 'should NOT have invoked willCount');
   equal(didCount, 0, 'should NOT have invoked didCount');
+});
+
+testBoth('unwatching "length" property on an object', function(get, set) {
+
+  var obj = { foo: 'RUN' };
+  addListeners(obj, 'length');
+
+  // Can watch length when it is undefined
+  watch(obj, 'length');
+  set(obj, 'length', '10k');
+  equal(willCount, 1, 'should have invoked willCount');
+  equal(didCount, 1, 'should have invoked didCount');
+
+  // Should stop watching despite length now being defined (making object 'array-like')
+  unwatch(obj, 'length');
+  willCount = didCount = 0;
+  set(obj, 'length', '5k');
+  equal(willCount, 0, 'should NOT have invoked willCount');
+  equal(didCount, 0, 'should NOT have invoked didCount');
+
 });

@@ -1,39 +1,68 @@
-require('ember-runtime/system/namespace');
-
 /**
-@module ember
-@submodule ember-runtime
+  @module ember
+  @submodule ember-runtime
 */
 
+import Ember from "ember-metal/core";
+// Ember.ENV.MANDATORY_SETTER, Ember.assert, Ember.K, Ember.config
 
-// NOTE: this object should never be included directly. Instead use Ember.
-// Ember.Object. We only define this separately so that Ember.Set can depend on it
+// NOTE: this object should never be included directly. Instead use `Ember.Object`.
+// We only define this separately so that `Ember.Set` can depend on it.
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import {
+  guidFor,
+  apply
+} from "ember-metal/utils";
+import { create } from "ember-metal/platform";
+import {
+  generateGuid,
+  GUID_KEY,
+  meta,
+  META_KEY,
+  makeArray
+} from "ember-metal/utils";
+import { rewatch } from "ember-metal/watching";
+import { finishChains } from "ember-metal/chains";
+import { sendEvent } from "ember-metal/events";
+import {
+  IS_BINDING,
+  Mixin,
+  required
+} from "ember-metal/mixin";
+import EnumerableUtils from "ember-metal/enumerable_utils";
+import EmberError from "ember-metal/error";
+import { platform } from "ember-metal/platform";
+import keys from "ember-runtime/keys";
+import ActionHandler from "ember-runtime/mixins/action_handler";
+import {defineProperty} from "ember-metal/properties";
+import { Binding } from "ember-metal/binding";
+import { ComputedProperty } from "ember-metal/computed";
+import run from 'ember-metal/run_loop';
+import { destroy } from "ember-metal/watching";
 
-
-var set = Ember.set, get = Ember.get,
-    o_create = Ember.create,
-    o_defineProperty = Ember.platform.defineProperty,
-    a_slice = Array.prototype.slice,
-    GUID_KEY = Ember.GUID_KEY,
-    guidFor = Ember.guidFor,
-    generateGuid = Ember.generateGuid,
-    meta = Ember.meta,
-    rewatch = Ember.rewatch,
-    finishChains = Ember.finishChains,
-    destroy = Ember.destroy,
-    schedule = Ember.run.schedule,
-    Mixin = Ember.Mixin,
-    applyMixin = Mixin._apply,
-    finishPartial = Mixin.finishPartial,
-    reopen = Mixin.prototype.reopen,
-    MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
-    indexOf = Ember.EnumerableUtils.indexOf;
+var o_create = create;
+var o_defineProperty = platform.defineProperty;
+var schedule = run.schedule;
+var applyMixin = Mixin._apply;
+var finishPartial = Mixin.finishPartial;
+var reopen = Mixin.prototype.reopen;
+var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
+var indexOf = EnumerableUtils.indexOf;
+var K = Ember.K;
 
 var undefinedDescriptor = {
   configurable: true,
   writable: true,
   enumerable: false,
   value: undefined
+};
+
+var nullDescriptor = {
+  configurable: true,
+  writable: true,
+  enumerable: false,
+  value: null
 };
 
 function makeCtor() {
@@ -48,15 +77,15 @@ function makeCtor() {
     if (!wasApplied) {
       Class.proto(); // prepare prototype...
     }
-    o_defineProperty(this, GUID_KEY, undefinedDescriptor);
-    o_defineProperty(this, '_super', undefinedDescriptor);
-    var m = meta(this);
+    o_defineProperty(this, GUID_KEY, nullDescriptor);
+    o_defineProperty(this, '__nextSuper', undefinedDescriptor);
+    var m = meta(this), proto = m.proto;
     m.proto = this;
     if (initMixins) {
       // capture locally so we can clear the closed over variable
       var mixins = initMixins;
       initMixins = null;
-      this.reopen.apply(this, mixins);
+      apply(this, this.reopen, mixins);
     }
     if (initProperties) {
       // capture locally so we can clear the closed over variable
@@ -67,11 +96,22 @@ function makeCtor() {
 
       for (var i = 0, l = props.length; i < l; i++) {
         var properties = props[i];
-        for (var keyName in properties) {
+
+        Ember.assert("Ember.Object.create no longer supports mixing in other definitions, use createWithMixins instead.", !(properties instanceof Mixin));
+
+        if (typeof properties !== 'object' && properties !== undefined) {
+          throw new EmberError("Ember.Object.create only accepts objects.");
+        }
+
+        if (!properties) { continue; }
+
+        var keyNames = keys(properties);
+
+        for (var j = 0, ll = keyNames.length; j < ll; j++) {
+          var keyName = keyNames[j];
           if (!properties.hasOwnProperty(keyName)) { continue; }
 
-          var value = properties[keyName],
-              IS_BINDING = Ember.IS_BINDING;
+          var value = properties[keyName];
 
           if (IS_BINDING.test(keyName)) {
             var bindings = m.bindings;
@@ -85,8 +125,11 @@ function makeCtor() {
 
           var desc = m.descs[keyName];
 
-          Ember.assert("Ember.Object.create no longer supports defining computed properties.", !(value instanceof Ember.ComputedProperty));
+          Ember.assert("Ember.Object.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().", !(value instanceof ComputedProperty));
           Ember.assert("Ember.Object.create no longer supports defining methods that call _super.", !(typeof value === 'function' && value.toString().indexOf('._super') !== -1));
+          Ember.assert("`actions` must be provided at extend time, not at create " +
+                       "time, when Ember.ActionHandler is used (i.e. views, " +
+                       "controllers & routes).", !((keyName === 'actions') && ActionHandler.detect(this)));
 
           if (concatenatedProperties && indexOf(concatenatedProperties, keyName) >= 0) {
             var baseValue = this[keyName];
@@ -95,10 +138,10 @@ function makeCtor() {
               if ('function' === typeof baseValue.concat) {
                 value = baseValue.concat(value);
               } else {
-                value = Ember.makeArray(baseValue).concat(value);
+                value = makeArray(baseValue).concat(value);
               }
             } else {
-              value = Ember.makeArray(value);
+              value = makeArray(value);
             }
           }
 
@@ -108,7 +151,7 @@ function makeCtor() {
             if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
               this.setUnknownProperty(keyName, value);
             } else if (MANDATORY_SETTER) {
-              Ember.defineProperty(this, keyName, null, value); // setup mandatory setter
+              defineProperty(this, keyName, null, value); // setup mandatory setter
             } else {
               this[keyName] = value;
             }
@@ -117,9 +160,10 @@ function makeCtor() {
       }
     }
     finishPartial(this, m);
-    delete m.proto;
+    apply(this, this.init, arguments);
+    m.proto = proto;
     finishChains(this);
-    this.init.apply(this, arguments);
+    sendEvent(this, "init");
   };
 
   Class.toString = Mixin.prototype.toString;
@@ -150,17 +194,47 @@ function makeCtor() {
 
 }
 
+/**
+  @class CoreObject
+  @namespace Ember
+*/
 var CoreObject = makeCtor();
+CoreObject.toString = function() { return "Ember.CoreObject"; };
 
 CoreObject.PrototypeMixin = Mixin.create({
-
   reopen: function() {
     applyMixin(this, arguments, true);
     return this;
   },
 
-  isInstance: true,
+  /**
+    An overridable method called when objects are instantiated. By default,
+    does nothing unless it is overridden during class definition.
 
+    Example:
+
+    ```javascript
+    App.Person = Ember.Object.extend({
+      init: function() {
+        alert('Name is ' + this.get('name'));
+      }
+    });
+
+    var steve = App.Person.create({
+      name: "Steve"
+    });
+
+    // alerts 'Name is Steve'.
+    ```
+
+    NOTE: If you do override `init` for a framework class like `Ember.View` or
+    `Ember.ArrayController`, be sure to call `this._super()` in your
+    `init` declaration! If you don't, Ember may not have an opportunity to
+    do important setup work, and you'll see strange behavior in your
+    application.
+
+    @method init
+  */
   init: function() {},
 
   /**
@@ -205,14 +279,14 @@ CoreObject.PrototypeMixin = Mixin.create({
     view.get('classNames'); // ['ember-view', 'bar', 'foo', 'baz']
     ```
     Adding a single property that is not an array will just add it in the array:
-    
+
     ```javascript
     var view = App.FooBarView.create({
       classNames: 'baz'
     })
     view.get('classNames'); // ['ember-view', 'bar', 'foo', 'baz']
     ```
-    
+
     Using the `concatenatedProperties` property, we can tell to Ember that mix
     the content of the properties.
 
@@ -220,7 +294,10 @@ CoreObject.PrototypeMixin = Mixin.create({
     are also concatenated, in addition to `classNames`.
 
     This feature is available for you to use throughout the Ember object model,
-    although typical app developers are likely to use it infrequently.
+    although typical app developers are likely to use it infrequently. Since
+    it changes expectations about behavior of properties, you should properly
+    document its usage in each individual concatenated property (to not
+    mislead your users to think they can override the property in a subclass).
 
     @property concatenatedProperties
     @type Array
@@ -229,12 +306,22 @@ CoreObject.PrototypeMixin = Mixin.create({
   concatenatedProperties: null,
 
   /**
+    Destroyed object property flag.
+
+    if this property is `true` the observers and bindings were already
+    removed by the effect of calling the `destroy()` method.
+
     @property isDestroyed
     @default false
   */
   isDestroyed: false,
 
   /**
+    Destruction scheduled flag. The `destroy()` method has been called.
+
+    The object stays intact until the end of the run loop at which point
+    the `isDestroyed` flag is set.
+
     @property isDestroying
     @default false
   */
@@ -248,39 +335,42 @@ CoreObject.PrototypeMixin = Mixin.create({
     raised.
 
     Note that destruction is scheduled for the end of the run loop and does not
-    happen immediately.
+    happen immediately.  It will set an isDestroying flag immediately.
 
     @method destroy
     @return {Ember.Object} receiver
   */
   destroy: function() {
     if (this.isDestroying) { return; }
-
     this.isDestroying = true;
 
-    if (this.willDestroy) { this.willDestroy(); }
-
+    schedule('actions', this, this.willDestroy);
     schedule('destroy', this, this._scheduledDestroy);
     return this;
   },
 
   /**
-    @private
+    Override to implement teardown.
 
+    @method willDestroy
+   */
+  willDestroy: K,
+
+  /**
     Invoked by the run loop to actually destroy the object. This is
     scheduled for execution by the `destroy` method.
 
+    @private
     @method _scheduledDestroy
   */
   _scheduledDestroy: function() {
+    if (this.isDestroyed) { return; }
     destroy(this);
-    set(this, 'isDestroyed', true);
-
-    if (this.didDestroy) { this.didDestroy(); }
+    this.isDestroyed = true;
   },
 
   bind: function(to, from) {
-    if (!(from instanceof Ember.Binding)) { from = Ember.Binding.from(from); }
+    if (!(from instanceof Binding)) { from = Binding.from(from); }
     from.to(to).connect(this);
     return from;
   },
@@ -290,27 +380,33 @@ CoreObject.PrototypeMixin = Mixin.create({
     than Javascript's `toString` typically does, in a generic way for all Ember
     objects.
 
-        App.Person = Em.Object.extend()
-        person = App.Person.create()
-        person.toString() //=> "<App.Person:ember1024>"
+    ```javascript
+    App.Person = Em.Object.extend()
+    person = App.Person.create()
+    person.toString() //=> "<App.Person:ember1024>"
+    ```
 
     If the object's class is not defined on an Ember namespace, it will
     indicate it is a subclass of the registered superclass:
 
-        Student = App.Person.extend()
-        student = Student.create()
-        student.toString() //=> "<(subclass of App.Person):ember1025>"
+   ```javascript
+    Student = App.Person.extend()
+    student = Student.create()
+    student.toString() //=> "<(subclass of App.Person):ember1025>"
+    ```
 
     If the method `toStringExtension` is defined, its return value will be
     included in the output.
 
-        App.Teacher = App.Person.extend({
-          toStringExtension: function(){
-            return this.get('fullName');
-          }
-        });
-        teacher = App.Teacher.create()
-        teacher.toString(); // #=> "<App.Teacher:ember1026:Tom Dale>"
+    ```javascript
+    App.Teacher = App.Person.extend({
+      toStringExtension: function() {
+        return this.get('fullName');
+      }
+    });
+    teacher = App.Teacher.create()
+    teacher.toString(); //=> "<App.Teacher:ember1026:Tom Dale>"
+    ```
 
     @method toString
     @return {String} string representation
@@ -324,6 +420,8 @@ CoreObject.PrototypeMixin = Mixin.create({
   }
 });
 
+CoreObject.PrototypeMixin.ownerConstructor = CoreObject;
+
 function makeToString(ret) {
   return function() { return ret; };
 }
@@ -336,14 +434,94 @@ CoreObject.__super__ = null;
 
 var ClassMixin = Mixin.create({
 
-  ClassMixin: Ember.required(),
+  ClassMixin: required(),
 
-  PrototypeMixin: Ember.required(),
+  PrototypeMixin: required(),
 
   isClass: true,
 
   isMethod: false,
 
+  /**
+    Creates a new subclass.
+
+    ```javascript
+    App.Person = Ember.Object.extend({
+      say: function(thing) {
+        alert(thing);
+       }
+    });
+    ```
+
+    This defines a new subclass of Ember.Object: `App.Person`. It contains one method: `say()`.
+
+    You can also create a subclass from any existing class by calling its `extend()`  method. For example, you might want to create a subclass of Ember's built-in `Ember.View` class:
+
+    ```javascript
+    App.PersonView = Ember.View.extend({
+      tagName: 'li',
+      classNameBindings: ['isAdministrator']
+    });
+    ```
+
+    When defining a subclass, you can override methods but still access the implementation of your parent class by calling the special `_super()` method:
+
+    ```javascript
+    App.Person = Ember.Object.extend({
+      say: function(thing) {
+        var name = this.get('name');
+        alert(name + ' says: ' + thing);
+      }
+    });
+
+    App.Soldier = App.Person.extend({
+      say: function(thing) {
+        this._super(thing + ", sir!");
+      },
+      march: function(numberOfHours) {
+        alert(this.get('name') + ' marches for ' + numberOfHours + ' hours.')
+      }
+    });
+
+    var yehuda = App.Soldier.create({
+      name: "Yehuda Katz"
+    });
+
+    yehuda.say("Yes");  // alerts "Yehuda Katz says: Yes, sir!"
+    ```
+
+    The `create()` on line #17 creates an *instance* of the `App.Soldier` class. The `extend()` on line #8 creates a *subclass* of `App.Person`. Any instance of the `App.Person` class will *not* have the `march()` method.
+
+    You can also pass `Mixin` classes to add additional properties to the subclass.
+
+    ```javascript
+    App.Person = Ember.Object.extend({
+      say: function(thing) {
+        alert(this.get('name') + ' says: ' + thing);
+      }
+    });
+
+    App.SingingMixin = Mixin.create({
+      sing: function(thing){
+        alert(this.get('name') + ' sings: la la la ' + thing);
+      }
+    });
+
+    App.BroadwayStar = App.Person.extend(App.SingingMixin, {
+      dance: function() {
+        alert(this.get('name') + ' dances: tap tap tap tap ');
+      }
+    });
+    ```
+
+    The `App.BroadwayStar` class contains three methods: `say()`, `sing()`, and `dance()`.
+
+    @method extend
+    @static
+
+    @param {Mixin} [mixins]* One or more Mixin classes
+    @param {Object} [arguments]* Object containing values to use within the new class
+  */
   extend: function() {
     var Class = makeCtor(), proto;
     Class.ClassMixin = Mixin.create(this.ClassMixin);
@@ -359,33 +537,162 @@ var ClassMixin = Mixin.create({
 
     proto = Class.prototype = o_create(this.prototype);
     proto.constructor = Class;
-    generateGuid(proto, 'ember');
+    generateGuid(proto);
     meta(proto).proto = proto; // this will disable observers on prototype
 
     Class.ClassMixin.apply(Class);
     return Class;
   },
 
+  /**
+    Equivalent to doing `extend(arguments).create()`.
+    If possible use the normal `create` method instead.
+
+    @method createWithMixins
+    @static
+    @param [arguments]*
+  */
   createWithMixins: function() {
     var C = this;
     if (arguments.length>0) { this._initMixins(arguments); }
     return new C();
   },
 
+  /**
+    Creates an instance of a class. Accepts either no arguments, or an object
+    containing values to initialize the newly instantiated object with.
+
+    ```javascript
+    App.Person = Ember.Object.extend({
+      helloWorld: function() {
+        alert("Hi, my name is " + this.get('name'));
+      }
+    });
+
+    var tom = App.Person.create({
+      name: 'Tom Dale'
+    });
+
+    tom.helloWorld(); // alerts "Hi, my name is Tom Dale".
+    ```
+
+    `create` will call the `init` function if defined during
+    `Ember.AnyObject.extend`
+
+    If no arguments are passed to `create`, it will not set values to the new
+    instance during initialization:
+
+    ```javascript
+    var noName = App.Person.create();
+    noName.helloWorld(); // alerts undefined
+    ```
+
+    NOTE: For performance reasons, you cannot declare methods or computed
+    properties during `create`. You should instead declare methods and computed
+    properties when using `extend` or use the `createWithMixins` shorthand.
+
+    @method create
+    @static
+    @param [arguments]*
+  */
   create: function() {
     var C = this;
     if (arguments.length>0) { this._initProperties(arguments); }
     return new C();
   },
 
+  /**
+    Augments a constructor's prototype with additional
+    properties and functions:
+
+    ```javascript
+    MyObject = Ember.Object.extend({
+      name: 'an object'
+    });
+
+    o = MyObject.create();
+    o.get('name'); // 'an object'
+
+    MyObject.reopen({
+      say: function(msg){
+        console.log(msg);
+      }
+    })
+
+    o2 = MyObject.create();
+    o2.say("hello"); // logs "hello"
+
+    o.say("goodbye"); // logs "goodbye"
+    ```
+
+    To add functions and properties to the constructor itself,
+    see `reopenClass`
+
+    @method reopen
+  */
   reopen: function() {
     this.willReopen();
-    reopen.apply(this.PrototypeMixin, arguments);
+    apply(this.PrototypeMixin, reopen, arguments);
     return this;
   },
 
+  /**
+    Augments a constructor's own properties and functions:
+
+    ```javascript
+    MyObject = Ember.Object.extend({
+      name: 'an object'
+    });
+
+    MyObject.reopenClass({
+      canBuild: false
+    });
+
+    MyObject.canBuild; // false
+    o = MyObject.create();
+    ```
+
+    In other words, this creates static properties and functions for the class. These are only available on the class
+    and not on any instance of that class.
+
+    ```javascript
+    App.Person = Ember.Object.extend({
+      name : "",
+      sayHello : function(){
+        alert("Hello. My name is " + this.get('name'));
+      }
+    });
+
+    App.Person.reopenClass({
+      species : "Homo sapiens",
+      createPerson: function(newPersonsName){
+        return App.Person.create({
+          name:newPersonsName
+        });
+      }
+    });
+
+    var tom = App.Person.create({
+      name : "Tom Dale"
+    });
+    var yehuda = App.Person.createPerson("Yehuda Katz");
+
+    tom.sayHello(); // "Hello. My name is Tom Dale"
+    yehuda.sayHello(); // "Hello. My name is Yehuda Katz"
+    alert(App.Person.species); // "Homo sapiens"
+    ```
+
+    Note that `species` and `createPerson` are *not* valid on the `tom` and `yehuda`
+    variables. They are only valid on `App.Person`.
+
+    To add functions and properties to instances of
+    a constructor by extending the constructor's prototype
+    see `reopen`
+
+    @method reopenClass
+  */
   reopenClass: function() {
-    reopen.apply(this.ClassMixin, arguments);
+    apply(this.ClassMixin, reopen, arguments);
     applyMixin(this, arguments, false);
     return this;
   },
@@ -431,9 +738,10 @@ var ClassMixin = Mixin.create({
     @param key {String} property name
   */
   metaForProperty: function(key) {
-    var desc = meta(this.proto(), false).descs[key];
+    var meta = this.proto()[META_KEY],
+        desc = meta && meta.descs[key];
 
-    Ember.assert("metaForProperty() could not find a computed property with key '"+key+"'.", !!desc && desc instanceof Ember.ComputedProperty);
+    Ember.assert("metaForProperty() could not find a computed property with key '"+key+"'.", !!desc && desc instanceof ComputedProperty);
     return desc._meta || {};
   },
 
@@ -454,13 +762,15 @@ var ClassMixin = Mixin.create({
     for (var name in descs) {
       property = descs[name];
 
-      if (property instanceof Ember.ComputedProperty) {
+      if (property instanceof ComputedProperty) {
         callback.call(binding || this, name, property._meta || empty);
       }
     }
   }
 
 });
+
+ClassMixin.ownerConstructor = CoreObject;
 
 if (Ember.config.overrideClassMixin) {
   Ember.config.overrideClassMixin(ClassMixin);
@@ -469,8 +779,4 @@ if (Ember.config.overrideClassMixin) {
 CoreObject.ClassMixin = ClassMixin;
 ClassMixin.apply(CoreObject);
 
-/**
-  @class CoreObject
-  @namespace Ember
-*/
-Ember.CoreObject = CoreObject;
+export default CoreObject;

@@ -1,6 +1,7 @@
-require('ember-runtime/~tests/suites/enumerable');
+import EmberObject from 'ember-runtime/system/object';
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = Ember.EnumerableTests;
+var suite = SuiteModuleBuilder.create();
 
 suite.module('invoke');
 
@@ -13,10 +14,10 @@ suite.test('invoke should call on each object that implements', function() {
   cnt = 0;
   ary = [
     { foo: F },
-    Ember.Object.create({ foo: F }),
+    EmberObject.create({ foo: F }),
 
     // NOTE: does not impl foo - invoke should just skip
-    Ember.Object.create({ bar: F }),
+    EmberObject.create({ bar: F }),
 
     { foo: F }
   ];
@@ -30,4 +31,4 @@ suite.test('invoke should call on each object that implements', function() {
   equal(cnt, 6, 'should have invoked 3 times, passing param');
 });
 
-
+export default suite;

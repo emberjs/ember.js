@@ -1,7 +1,13 @@
-module("Ember.ArrayProxy - content change");
+import Ember from "ember-metal/core";
+import {set} from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
+import ArrayProxy from "ember-runtime/system/array_proxy";
+import ArrayController from "ember-runtime/controllers/array_controller";
+
+QUnit.module("ArrayProxy - content change");
 
 test("should update length for null content", function() {
-  var proxy = Ember.ArrayProxy.create({
+  var proxy = ArrayProxy.create({
         content: Ember.A([1,2,3])
       });
 
@@ -16,7 +22,7 @@ test("The `arrangedContentWillChange` method is invoked before `content` is chan
   var callCount = 0,
       expectedLength;
 
-  var proxy = Ember.ArrayProxy.extend({
+  var proxy = ArrayProxy.extend({
     content: Ember.A([1, 2, 3]),
 
     arrangedContentWillChange: function() {
@@ -40,7 +46,7 @@ test("The `arrangedContentDidChange` method is invoked after `content` is change
   var callCount = 0,
       expectedLength;
 
-  var proxy = Ember.ArrayProxy.extend({
+  var proxy = ArrayProxy.extend({
     content: Ember.A([1, 2, 3]),
 
     arrangedContentDidChange: function() {
@@ -60,4 +66,17 @@ test("The `arrangedContentDidChange` method is invoked after `content` is change
   expectedLength = 2;
   proxy.set('content', Ember.A(['a', 'b']));
   equal(callCount, 1, "replacing the content array triggers the hook");
+});
+
+test("The ArrayProxy doesn't explode when assigned a destroyed object", function() {
+  var arrayController = ArrayController.create();
+  var proxy = ArrayProxy.create();
+
+  run(function() {
+    arrayController.destroy();
+  });
+
+  set(proxy, 'content', arrayController);
+
+  ok(true, "No exception was raised");
 });

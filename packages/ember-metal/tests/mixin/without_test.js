@@ -1,8 +1,8 @@
-/*globals setup */
+import { Mixin } from 'ember-metal/mixin';
 
 test('without should create a new mixin excluding named properties', function() {
 
-  var MixinA = Ember.Mixin.create({
+  var MixinA = Mixin.create({
     foo: 'FOO',
     bar: 'BAR'
   });

@@ -3,17 +3,17 @@
 @submodule ember-views
 */
 
-var get = Ember.get, set = Ember.set;
-var indexOf = Ember.ArrayPolyfills.indexOf;
+import Ember from 'ember-metal/core'; // jQuery
 
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { setInnerHTML } from "ember-views/system/utils";
+import jQuery from "ember-views/system/jquery";
 
-
-
-
-var ClassSet = function() {
+function ClassSet() {
   this.seen = {};
   this.list = [];
-};
+}
 
 ClassSet.prototype = {
   add: function(string) {
@@ -28,40 +28,97 @@ ClassSet.prototype = {
   }
 };
 
+var BAD_TAG_NAME_TEST_REGEXP = /[^a-zA-Z0-9\-]/;
+var BAD_TAG_NAME_REPLACE_REGEXP = /[^a-zA-Z0-9\-]/g;
+
+function stripTagName(tagName) {
+  if (!tagName) {
+    return tagName;
+  }
+
+  if (!BAD_TAG_NAME_TEST_REGEXP.test(tagName)) {
+    return tagName;
+  }
+
+  return tagName.replace(BAD_TAG_NAME_REPLACE_REGEXP, '');
+}
+
+var BAD_CHARS_REGEXP = /&(?!\w+;)|[<>"'`]/g;
+var POSSIBLE_CHARS_REGEXP = /[&<>"'`]/;
+
+function escapeAttribute(value) {
+  // Stolen shamelessly from Handlebars
+
+  var escape = {
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#x27;",
+    "`": "&#x60;"
+  };
+
+  var escapeChar = function(chr) {
+    return escape[chr] || "&amp;";
+  };
+
+  var string = value.toString();
+
+  if(!POSSIBLE_CHARS_REGEXP.test(string)) { return string; }
+  return string.replace(BAD_CHARS_REGEXP, escapeChar);
+}
+
+// IE 6/7 have bugs around setting names on inputs during creation.
+// From http://msdn.microsoft.com/en-us/library/ie/ms536389(v=vs.85).aspx:
+// "To include the NAME attribute at run time on objects created with the createElement method, use the eTag."
+var canSetNameOnInputs = (function() {
+  var div = document.createElement('div'),
+      el = document.createElement('input');
+
+  el.setAttribute('name', 'foo');
+  div.appendChild(el);
+
+  return !!div.innerHTML.match('foo');
+})();
+
 /**
-  `Ember.RenderBuffer` gathers information regarding the a view and generates the
+  `Ember.RenderBuffer` gathers information regarding the view and generates the
   final representation. `Ember.RenderBuffer` will generate HTML which can be pushed
   to the DOM.
+
+   ```javascript
+   var buffer = Ember.RenderBuffer('div');
+  ```
 
   @class RenderBuffer
   @namespace Ember
   @constructor
+  @param {String} tagName tag name (such as 'div' or 'p') used for the buffer
 */
-Ember.RenderBuffer = function(tagName) {
-  return new Ember._RenderBuffer(tagName);
-};
+export default function RenderBuffer(tagName) {
+  return new _RenderBuffer(tagName); // jshint ignore:line
+}
 
-Ember._RenderBuffer = function(tagName) {
+function _RenderBuffer(tagName) {
   this.tagNames = [tagName || null];
-  this.buffer = [];
-};
+  this.buffer = "";
+}
 
-Ember._RenderBuffer.prototype =
-/** @scope Ember.RenderBuffer.prototype */ {
+_RenderBuffer.prototype = {
 
   // The root view's element
   _element: null,
 
-  /**
-    @private
+  _hasElement: true,
 
+  /**
     An internal set used to de-dupe class names when `addClass()` is
     used. After each call to `addClass()`, the `classes` property
     will be updated.
 
+    @private
     @property elementClasses
     @type Array
-    @default []
+    @default null
   */
   elementClasses: null,
 
@@ -73,7 +130,7 @@ Ember._RenderBuffer.prototype =
 
     @property classes
     @type Array
-    @default []
+    @default null
   */
   classes: null,
 
@@ -103,6 +160,21 @@ Ember._RenderBuffer.prototype =
     @default {}
   */
   elementAttributes: null,
+
+  /**
+    A hash keyed on the name of the properties and whose value will be
+    applied to that property. For example, if you wanted to apply a
+    `checked=true` property to an element, you would set the
+    elementProperties hash to `{'checked':true}`.
+
+    You should not maintain this hash yourself, rather, you should use
+    the `prop()` method of `Ember.RenderBuffer`.
+
+    @property elementProperties
+    @type Hash
+    @default {}
+  */
+  elementProperties: null,
 
   /**
     The tagname of the element an instance of `Ember.RenderBuffer` represents.
@@ -152,7 +224,7 @@ Ember._RenderBuffer.prototype =
     @chainable
   */
   push: function(string) {
-    this.buffer.push(string);
+    this.buffer += string;
     return this;
   },
 
@@ -165,7 +237,7 @@ Ember._RenderBuffer.prototype =
   */
   addClass: function(className) {
     // lazily create elementClasses
-    var elementClasses = this.elementClasses = (this.elementClasses || new ClassSet());
+    this.elementClasses = (this.elementClasses || new ClassSet());
     this.elementClasses.add(className);
     this.classes = this.elementClasses.list;
 
@@ -173,7 +245,11 @@ Ember._RenderBuffer.prototype =
   },
 
   setClasses: function(classNames) {
-    this.classes = classNames;
+    this.elementClasses = null;
+    var len = classNames.length, i;
+    for (i = 0; i < len; i++) {
+      this.addClass(classNames[i]);
+    }
   },
 
   /**
@@ -227,6 +303,41 @@ Ember._RenderBuffer.prototype =
   },
 
   /**
+    Adds a property which will be rendered to the element.
+
+    @method prop
+    @param {String} name The name of the property
+    @param {String} value The value to add to the property
+    @chainable
+    @return {Ember.RenderBuffer|String} this or the current property value
+  */
+  prop: function(name, value) {
+    var properties = this.elementProperties = (this.elementProperties || {});
+
+    if (arguments.length === 1) {
+      return properties[name];
+    } else {
+      properties[name] = value;
+    }
+
+    return this;
+  },
+
+  /**
+    Remove an property from the list of properties to render.
+
+    @method removeProp
+    @param {String} name The name of the property
+    @chainable
+  */
+  removeProp: function(name) {
+    var properties = this.elementProperties;
+    if (properties) { delete properties[name]; }
+
+    return this;
+  },
+
+  /**
     Adds a style to the style attribute which will be rendered to the element.
 
     @method style
@@ -235,7 +346,7 @@ Ember._RenderBuffer.prototype =
     @chainable
   */
   style: function(name, value) {
-    var style = this.elementStyle = (this.elementStyle || {});
+    this.elementStyle = (this.elementStyle || {});
 
     this.elementStyle[name] = value;
     return this;
@@ -250,7 +361,7 @@ Ember._RenderBuffer.prototype =
     var tagName = this.currentTagName();
     if (!tagName) { return; }
 
-    if (!this._element && this.buffer.length === 0) {
+    if (this._hasElement && !this._element && this.buffer.length === 0) {
       this._element = this.generateElement();
       return;
     }
@@ -259,50 +370,70 @@ Ember._RenderBuffer.prototype =
         id = this.elementId,
         classes = this.classes,
         attrs = this.elementAttributes,
+        props = this.elementProperties,
         style = this.elementStyle,
-        prop;
+        attr, prop;
 
-    buffer.push('<' + tagName);
+    buffer += '<' + stripTagName(tagName);
 
     if (id) {
-      buffer.push(' id="' + this._escapeAttribute(id) + '"');
+      buffer += ' id="' + escapeAttribute(id) + '"';
       this.elementId = null;
     }
     if (classes) {
-      buffer.push(' class="' + this._escapeAttribute(classes.join(' ')) + '"');
+      buffer += ' class="' + escapeAttribute(classes.join(' ')) + '"';
       this.classes = null;
+      this.elementClasses = null;
     }
 
     if (style) {
-      buffer.push(' style="');
+      buffer += ' style="';
 
       for (prop in style) {
         if (style.hasOwnProperty(prop)) {
-          buffer.push(prop + ':' + this._escapeAttribute(style[prop]) + ';');
+          buffer += prop + ':' + escapeAttribute(style[prop]) + ';';
         }
       }
 
-      buffer.push('"');
+      buffer += '"';
 
       this.elementStyle = null;
     }
 
     if (attrs) {
-      for (prop in attrs) {
-        if (attrs.hasOwnProperty(prop)) {
-          buffer.push(' ' + prop + '="' + this._escapeAttribute(attrs[prop]) + '"');
+      for (attr in attrs) {
+        if (attrs.hasOwnProperty(attr)) {
+          buffer += ' ' + attr + '="' + escapeAttribute(attrs[attr]) + '"';
         }
       }
 
       this.elementAttributes = null;
     }
 
-    buffer.push('>');
+    if (props) {
+      for (prop in props) {
+        if (props.hasOwnProperty(prop)) {
+          var value = props[prop];
+          if (value || typeof(value) === 'number') {
+            if (value === true) {
+              buffer += ' ' + prop + '="' + prop + '"';
+            } else {
+              buffer += ' ' + prop + '="' + escapeAttribute(props[prop]) + '"';
+            }
+          }
+        }
+      }
+
+      this.elementProperties = null;
+    }
+
+    buffer += '>';
+    this.buffer = buffer;
   },
 
   pushClosingTag: function() {
     var tagName = this.tagNames.pop();
-    if (tagName) { this.buffer.push('</' + tagName + '>'); }
+    if (tagName) { this.buffer += '</' + stripTagName(tagName) + '>'; }
   },
 
   currentTagName: function() {
@@ -311,13 +442,22 @@ Ember._RenderBuffer.prototype =
 
   generateElement: function() {
     var tagName = this.tagNames.pop(), // pop since we don't need to close
-        element = document.createElement(tagName),
-        $element = Ember.$(element),
         id = this.elementId,
         classes = this.classes,
         attrs = this.elementAttributes,
+        props = this.elementProperties,
         style = this.elementStyle,
-        styleBuffer = '', prop;
+        styleBuffer = '', attr, prop, tagString;
+
+    if (attrs && attrs.name && !canSetNameOnInputs) {
+      // IE allows passing a tag to createElement. See note on `canSetNameOnInputs` above as well.
+      tagString = '<'+stripTagName(tagName)+' name="'+escapeAttribute(attrs.name)+'">';
+    } else {
+      tagString = tagName;
+    }
+
+    var element = document.createElement(tagString),
+        $element = jQuery(element);
 
     if (id) {
       $element.attr('id', id);
@@ -326,6 +466,7 @@ Ember._RenderBuffer.prototype =
     if (classes) {
       $element.attr('class', classes.join(' '));
       this.classes = null;
+      this.elementClasses = null;
     }
 
     if (style) {
@@ -341,13 +482,23 @@ Ember._RenderBuffer.prototype =
     }
 
     if (attrs) {
-      for (prop in attrs) {
-        if (attrs.hasOwnProperty(prop)) {
-          $element.attr(prop, attrs[prop]);
+      for (attr in attrs) {
+        if (attrs.hasOwnProperty(attr)) {
+          $element.attr(attr, attrs[attr]);
         }
       }
 
       this.elementAttributes = null;
+    }
+
+    if (props) {
+      for (prop in props) {
+        if (props.hasOwnProperty(prop)) {
+          $element.prop(prop, props[prop]);
+        }
+      }
+
+      this.elementProperties = null;
     }
 
     return element;
@@ -362,7 +513,7 @@ Ember._RenderBuffer.prototype =
     var html = this.innerString();
 
     if (html) {
-      this._element = Ember.ViewUtils.setInnerHTML(this._element, html);
+      this._element = setInnerHTML(this._element, html);
     }
 
     return this._element;
@@ -375,39 +526,19 @@ Ember._RenderBuffer.prototype =
     @return {String} The generated HTML
   */
   string: function() {
-    if (this._element) {
-      return this.element().outerHTML;
+    if (this._hasElement && this._element) {
+      // Firefox versions < 11 do not have support for element.outerHTML.
+      var thisElement = this.element(), outerHTML = thisElement.outerHTML;
+      if (typeof outerHTML === 'undefined') {
+        return jQuery('<div/>').append(thisElement).html();
+      }
+      return outerHTML;
     } else {
       return this.innerString();
     }
   },
 
   innerString: function() {
-    return this.buffer.join('');
-  },
-
-  _escapeAttribute: function(value) {
-    // Stolen shamelessly from Handlebars
-
-    var escape = {
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#x27;",
-      "`": "&#x60;"
-    };
-
-    var badChars = /&(?!\w+;)|[<>"'`]/g;
-    var possible = /[&<>"'`]/;
-
-    var escapeChar = function(chr) {
-      return escape[chr] || "&amp;";
-    };
-
-    var string = value.toString();
-
-    if(!possible.test(string)) { return string; }
-    return string.replace(badChars, escapeChar);
+    return this.buffer;
   }
-
 };

@@ -1,11 +1,14 @@
-require('ember-runtime/mixins/enumerable');
+import EnumerableUtils from "ember-metal/enumerable_utils";
+import Enumerable from "ember-runtime/mixins/enumerable";
+import {Mixin, required} from "ember-metal/mixin";
+import {beginPropertyChanges, endPropertyChanges} from "ember-metal/property_events";
 
 /**
 @module ember
 @submodule ember-runtime
 */
 
-var forEach = Ember.EnumerableUtils.forEach;
+var forEach = EnumerableUtils.forEach;
 
 /**
   This mixin defines the API for modifying generic enumerables. These methods
@@ -20,7 +23,7 @@ var forEach = Ember.EnumerableUtils.forEach;
 
   To add an object to an enumerable, use the `addObject()` method. This
   method will only add the object to the enumerable if the object is not
-  already present and the object if of a type supported by the enumerable.
+  already present and is of a type supported by the enumerable.
 
   ```javascript
   set.addObject(contact);
@@ -28,8 +31,8 @@ var forEach = Ember.EnumerableUtils.forEach;
 
   ## Removing Objects
 
-  To remove an object form an enumerable, use the `removeObject()` method. This
-  will only remove the object if it is already in the enumerable, otherwise
+  To remove an object from an enumerable, use the `removeObject()` method. This
+  will only remove the object if it is present in the enumerable, otherwise
   this method has no effect.
 
   ```javascript
@@ -44,11 +47,9 @@ var forEach = Ember.EnumerableUtils.forEach;
 
   @class MutableEnumerable
   @namespace Ember
-  @extends Ember.Mixin
   @uses Ember.Enumerable
 */
-Ember.MutableEnumerable = Ember.Mixin.create(Ember.Enumerable,
-  /** @scope Ember.MutableEnumerable.prototype */ {
+export default Mixin.create(Enumerable, {
 
   /**
     __Required.__ You must implement this method to apply this mixin.
@@ -57,14 +58,14 @@ Ember.MutableEnumerable = Ember.Mixin.create(Ember.Enumerable,
     already present in the collection. If the object is present, this method
     has no effect.
 
-    If the passed object is of a type not supported by the receiver
+    If the passed object is of a type not supported by the receiver,
     then this method should raise an exception.
 
     @method addObject
     @param {Object} object The object to add to the enumerable.
     @return {Object} the passed object
   */
-  addObject: Ember.required(Function),
+  addObject: required(Function),
 
   /**
     Adds each object in the passed enumerable to the receiver.
@@ -74,9 +75,9 @@ Ember.MutableEnumerable = Ember.Mixin.create(Ember.Enumerable,
     @return {Object} receiver
   */
   addObjects: function(objects) {
-    Ember.beginPropertyChanges(this);
+    beginPropertyChanges(this);
     forEach(objects, function(obj) { this.addObject(obj); }, this);
-    Ember.endPropertyChanges(this);
+    endPropertyChanges(this);
     return this;
   },
 
@@ -84,31 +85,32 @@ Ember.MutableEnumerable = Ember.Mixin.create(Ember.Enumerable,
     __Required.__ You must implement this method to apply this mixin.
 
     Attempts to remove the passed object from the receiver collection if the
-    object is in present in the collection. If the object is not present,
+    object is present in the collection. If the object is not present,
     this method has no effect.
 
-    If the passed object is of a type not supported by the receiver
+    If the passed object is of a type not supported by the receiver,
     then this method should raise an exception.
 
     @method removeObject
     @param {Object} object The object to remove from the enumerable.
     @return {Object} the passed object
   */
-  removeObject: Ember.required(Function),
+  removeObject: required(Function),
 
 
   /**
-    Removes each objects in the passed enumerable from the receiver.
+    Removes each object in the passed enumerable from the receiver.
 
     @method removeObjects
     @param {Ember.Enumerable} objects the objects to remove
     @return {Object} receiver
   */
   removeObjects: function(objects) {
-    Ember.beginPropertyChanges(this);
-    forEach(objects, function(obj) { this.removeObject(obj); }, this);
-    Ember.endPropertyChanges(this);
+    beginPropertyChanges(this);
+    for (var i = objects.length - 1; i >= 0; i--) {
+      this.removeObject(objects[i]);
+    }
+    endPropertyChanges(this);
     return this;
   }
-
 });

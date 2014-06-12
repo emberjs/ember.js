@@ -1,10 +1,31 @@
-var buildContainer = function(namespace) {
-  var container = new Ember.Container();
+import Ember from 'ember-metal/core'; // A
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import run from "ember-metal/run_loop";
 
-  container.set = Ember.set;
+import Container from 'container/container';
+import Namespace from "ember-runtime/system/namespace";
+import { classify } from "ember-runtime/system/string";
+import { Controller } from "ember-runtime/controllers/controller";
+import ObjectController from "ember-runtime/controllers/object_controller";
+import ArrayController from "ember-runtime/controllers/array_controller";
+import {
+  controllerFor,
+  generateController
+} from "ember-routing/system/controller_for";
+
+var buildContainer = function(namespace) {
+  var container = new Container();
+
+  container.set = set;
   container.resolver = resolverFor(namespace);
   container.optionsForType('view', { singleton: false });
-  container.register('application', 'main', namespace, { instantiate: false });
+
+  container.register('application:main', namespace, { instantiate: false });
+
+  container.register('controller:basic', Controller, { instantiate: false });
+  container.register('controller:object', ObjectController, { instantiate: false });
+  container.register('controller:array', ArrayController, { instantiate: false });
 
   return container;
 };
@@ -14,55 +35,99 @@ function resolverFor(namespace) {
     var nameParts = fullName.split(":"),
         type = nameParts[0], name = nameParts[1];
 
-    var className = Ember.String.classify(name) + Ember.String.classify(type);
-    var factory = Ember.get(namespace, className);
+    if (name === 'basic') {
+      name = '';
+    }
+    var className = classify(name) + classify(type);
+    var factory = get(namespace, className);
+
+
 
     if (factory) { return factory; }
   };
 }
 
-var container, appController;
+var container, appController, namespace;
 
-module("Ember.controllerFor", {
+QUnit.module("Ember.controllerFor", {
   setup: function() {
-    var namespace = Ember.Namespace.create();
+    namespace = Namespace.create();
     container = buildContainer(namespace);
-    container.register('controller', 'app', Ember.Controller.extend());
+    container.register('controller:app', Controller.extend());
     appController = container.lookup('controller:app');
   },
   teardown: function() {
-    Ember.run(function () {
-      if (container) {
-        container.destroy();
-      }
+    run(function () {
+      container.destroy();
+      namespace.destroy();
     });
   }
 });
 
 test("controllerFor should lookup for registered controllers", function() {
-  var controller = Ember.controllerFor(container, 'app');
+  var controller = controllerFor(container, 'app');
 
   equal(appController, controller, 'should find app controller');
 });
 
-test("controllerFor should create Ember.Controller", function() {
-  var controller = Ember.controllerFor(container, 'home');
-
-  ok(controller instanceof Ember.Controller, 'should create controller');
+QUnit.module("Ember.generateController", {
+  setup: function() {
+    namespace = Namespace.create();
+    container = buildContainer(namespace);
+  },
+  teardown: function() {
+    run(function () {
+      container.destroy();
+      namespace.destroy();
+    });
+  }
 });
 
-test("controllerFor should create Ember.ObjectController", function() {
+test("generateController should create Ember.Controller", function() {
+  var controller = generateController(container, 'home');
+
+  ok(controller instanceof Controller, 'should create controller');
+});
+
+test("generateController should create Ember.ObjectController", function() {
   var context = {};
-  var controller = Ember.controllerFor(container, 'home', context);
+  var controller = generateController(container, 'home', context);
 
-  ok(controller instanceof Ember.ObjectController, 'should create controller');
-  equal(controller.get('content'), context, 'should set content');
+  ok(controller instanceof ObjectController, 'should create controller');
 });
 
-test("controllerFor should create Ember.ArrayController", function() {
+test("generateController should create Ember.ArrayController", function() {
   var context = Ember.A();
-  var controller = Ember.controllerFor(container, 'home', context);
+  var controller = generateController(container, 'home', context);
 
-  ok(controller instanceof Ember.ArrayController, 'should create controller');
-  equal(controller.get('content'), context, 'should set content');
+  ok(controller instanceof ArrayController, 'should create controller');
+});
+
+test("generateController should create App.Controller if provided", function() {
+  var controller;
+  namespace.Controller = Controller.extend();
+
+  controller = generateController(container, 'home');
+
+  ok(controller instanceof namespace.Controller, 'should create controller');
+});
+
+test("generateController should create App.ObjectController if provided", function() {
+  var context = {}, controller;
+  namespace.ObjectController = ObjectController.extend();
+
+  controller = generateController(container, 'home', context);
+
+  ok(controller instanceof namespace.ObjectController, 'should create controller');
+
+});
+
+test("generateController should create App.ArrayController if provided", function() {
+  var context = Ember.A(), controller;
+  namespace.ArrayController = ArrayController.extend();
+
+  controller = generateController(container, 'home', context);
+
+  ok(controller instanceof namespace.ArrayController, 'should create controller');
+
 });

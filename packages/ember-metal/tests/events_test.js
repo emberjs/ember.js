@@ -1,19 +1,37 @@
-module('system/props/events_test');
+import { Mixin } from 'ember-metal/mixin';
+import { create } from 'ember-metal/platform';
+import { meta } from 'ember-metal/utils';
+
+import {
+  on,
+  addListener,
+  removeListener,
+  suspendListener,
+  suspendListeners,
+  sendEvent,
+  hasListeners,
+  watchedEvents,
+  listenersFor,
+  actionsDiff,
+  actionsUnion
+} from "ember-metal/events";
+
+QUnit.module('system/props/events_test');
 
 test('listener should receive event - removing should remove', function() {
   var obj = {}, count = 0;
   var F = function() { count++; };
 
-  Ember.addListener(obj, 'event!', F);
+  addListener(obj, 'event!', F);
   equal(count, 0, 'nothing yet');
 
-  Ember.sendEvent(obj, 'event!');
+  sendEvent(obj, 'event!');
   equal(count, 1, 'received event');
 
-  Ember.removeListener(obj, 'event!', F);
+  removeListener(obj, 'event!', F);
 
   count = 0;
-  Ember.sendEvent(obj, 'event!');
+  sendEvent(obj, 'event!');
   equal(count, 0, 'received event');
 });
 
@@ -21,22 +39,22 @@ test('listeners should be inherited', function() {
   var obj = {}, count = 0;
   var F = function() { count++; };
 
-  Ember.addListener(obj, 'event!', F);
+  addListener(obj, 'event!', F);
 
-  var obj2 = Ember.create(obj);
+  var obj2 = create(obj);
 
   equal(count, 0, 'nothing yet');
 
-  Ember.sendEvent(obj2, 'event!');
+  sendEvent(obj2, 'event!');
   equal(count, 1, 'received event');
 
-  Ember.removeListener(obj2, 'event!', F);
+  removeListener(obj2, 'event!', F);
 
   count = 0;
-  Ember.sendEvent(obj2, 'event!');
+  sendEvent(obj2, 'event!');
   equal(count, 0, 'did not receive event');
 
-  Ember.sendEvent(obj, 'event!');
+  sendEvent(obj, 'event!');
   equal(count, 1, 'should still invoke on parent');
 
 });
@@ -46,10 +64,10 @@ test('adding a listener more than once should only invoke once', function() {
 
   var obj = {}, count = 0;
   var F = function() { count++; };
-  Ember.addListener(obj, 'event!', F);
-  Ember.addListener(obj, 'event!', F);
+  addListener(obj, 'event!', F);
+  addListener(obj, 'event!', F);
 
-  Ember.sendEvent(obj, 'event!');
+  sendEvent(obj, 'event!');
   equal(count, 1, 'should only invoke once');
 });
 
@@ -61,8 +79,8 @@ test('adding a listener with a target should invoke with target', function() {
     method: function() { this.count++; }
   };
 
-  Ember.addListener(obj, 'event!', target, target.method);
-  Ember.sendEvent(obj, 'event!');
+  addListener(obj, 'event!', target, target.method);
+  sendEvent(obj, 'event!');
   equal(target.count, 1, 'should invoke');
 });
 
@@ -79,22 +97,23 @@ test('suspending a listener should not invoke during callback', function() {
     method: function() { this.count++; }
   };
 
-  Ember.addListener(obj, 'event!', target, target.method);
-  Ember.addListener(obj, 'event!', otherTarget, otherTarget.method);
+  addListener(obj, 'event!', target, target.method);
+  addListener(obj, 'event!', otherTarget, otherTarget.method);
 
   function callback() {
+      /*jshint validthis:true */
       equal(this, target);
 
-      Ember.sendEvent(obj, 'event!');
+      sendEvent(obj, 'event!');
 
       return 'result';
   }
 
-  Ember.sendEvent(obj, 'event!');
+  sendEvent(obj, 'event!');
 
-  equal(Ember._suspendListener(obj, 'event!', target, target.method, callback), 'result');
+  equal(suspendListener(obj, 'event!', target, target.method, callback), 'result');
 
-  Ember.sendEvent(obj, 'event!');
+  sendEvent(obj, 'event!');
 
   equal(target.count, 2, 'should invoke');
   equal(otherTarget.count, 3, 'should invoke');
@@ -108,23 +127,23 @@ test('adding a listener with string method should lookup method on event deliver
     method: function() {}
   };
 
-  Ember.addListener(obj, 'event!', target, 'method');
-  Ember.sendEvent(obj, 'event!');
+  addListener(obj, 'event!', target, 'method');
+  sendEvent(obj, 'event!');
   equal(target.count, 0, 'should invoke but do nothing');
 
   target.method = function() { this.count++; };
-  Ember.sendEvent(obj, 'event!');
+  sendEvent(obj, 'event!');
   equal(target.count, 1, 'should invoke now');
 });
 
 test('calling sendEvent with extra params should be passed to listeners', function() {
 
   var obj = {}, params = null;
-  Ember.addListener(obj, 'event!', function() {
+  addListener(obj, 'event!', function() {
     params = Array.prototype.slice.call(arguments);
   });
 
-  Ember.sendEvent(obj, 'event!', ['foo', 'bar']);
+  sendEvent(obj, 'event!', ['foo', 'bar']);
   deepEqual(params, ['foo', 'bar'], 'params should be saved');
 });
 
@@ -139,9 +158,9 @@ test('implementing sendEvent on object should invoke', function() {
     count: 0
   };
 
-  Ember.addListener(obj, 'event!', obj, function() { this.count++; });
+  addListener(obj, 'event!', obj, function() { this.count++; });
 
-  Ember.sendEvent(obj, 'event!', ['foo', 'bar']);
+  sendEvent(obj, 'event!', ['foo', 'bar']);
   equal(obj.count, 2, 'should have invoked method & listener');
 });
 
@@ -149,36 +168,36 @@ test('hasListeners tells you if there are listeners for a given event', function
 
   var obj = {}, F = function() {}, F2 = function() {};
 
-  equal(Ember.hasListeners(obj, 'event!'), false, 'no listeners at first');
+  equal(hasListeners(obj, 'event!'), false, 'no listeners at first');
 
-  Ember.addListener(obj, 'event!', F);
-  Ember.addListener(obj, 'event!', F2);
+  addListener(obj, 'event!', F);
+  addListener(obj, 'event!', F2);
 
-  equal(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
+  equal(hasListeners(obj, 'event!'), true, 'has listeners');
 
-  Ember.removeListener(obj, 'event!', F);
-  equal(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
+  removeListener(obj, 'event!', F);
+  equal(hasListeners(obj, 'event!'), true, 'has listeners');
 
-  Ember.removeListener(obj, 'event!', F2);
-  equal(Ember.hasListeners(obj, 'event!'), false, 'has no more listeners');
+  removeListener(obj, 'event!', F2);
+  equal(hasListeners(obj, 'event!'), false, 'has no more listeners');
 
-  Ember.addListener(obj, 'event!', F);
-  equal(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
+  addListener(obj, 'event!', F);
+  equal(hasListeners(obj, 'event!'), true, 'has listeners');
 });
 
 test('calling removeListener without method should remove all listeners', function() {
   var obj = {}, F = function() {}, F2 = function() {};
 
-  equal(Ember.hasListeners(obj, 'event!'), false, 'no listeners at first');
+  equal(hasListeners(obj, 'event!'), false, 'no listeners at first');
 
-  Ember.addListener(obj, 'event!', F);
-  Ember.addListener(obj, 'event!', F2);
+  addListener(obj, 'event!', F);
+  addListener(obj, 'event!', F2);
 
-  equal(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
+  equal(hasListeners(obj, 'event!'), true, 'has listeners');
 
-  Ember.removeListener(obj, 'event!');
+  removeListener(obj, 'event!');
 
-  equal(Ember.hasListeners(obj, 'event!'), false, 'has no more listeners');
+  equal(hasListeners(obj, 'event!'), false, 'has no more listeners');
 });
 
 test('while suspended, it should not be possible to add a duplicate listener', function() {
@@ -189,25 +208,69 @@ test('while suspended, it should not be possible to add a duplicate listener', f
     method: function() { this.count++; }
   };
 
-  Ember.addListener(obj, 'event!', target, target.method);
+  addListener(obj, 'event!', target, target.method);
 
   function callback() {
-    Ember.addListener(obj, 'event!', target, target.method);
+    addListener(obj, 'event!', target, target.method);
   }
 
-  Ember.sendEvent(obj, 'event!');
+  sendEvent(obj, 'event!');
 
-  Ember._suspendListener(obj, 'event!', target, target.method, callback);
+  suspendListener(obj, 'event!', target, target.method, callback);
 
   equal(target.count, 1, 'should invoke');
-  equal(Ember.meta(obj).listeners['event!'].length, 1, "a duplicate listener wasn't added");
+  equal(meta(obj).listeners['event!'].length, 3, "a duplicate listener wasn't added");
 
-  // now test _suspendListeners...
+  // now test suspendListeners...
 
-  Ember.sendEvent(obj, 'event!');
+  sendEvent(obj, 'event!');
 
-  Ember._suspendListeners(obj, ['event!'], target, target.method, callback);
+  suspendListeners(obj, ['event!'], target, target.method, callback);
 
   equal(target.count, 2, 'should have invoked again');
-  equal(Ember.meta(obj).listeners['event!'].length, 1, "a duplicate listener wasn't added");
+  equal(meta(obj).listeners['event!'].length, 3, "a duplicate listener wasn't added");
+});
+
+test('a listener can be added as part of a mixin', function() {
+  var triggered = 0;
+  var MyMixin = Mixin.create({
+    foo1: on('bar', function() {
+      triggered++;
+    }),
+
+    foo2: on('bar', function() {
+      triggered++;
+    })
+  });
+
+  var obj = {};
+  MyMixin.apply(obj);
+
+  sendEvent(obj, 'bar');
+  equal(triggered, 2, 'should invoke listeners');
+});
+
+test('a listener added as part of a mixin may be overridden', function() {
+
+  var triggered = 0;
+  var FirstMixin = Mixin.create({
+    foo: on('bar', function() {
+      triggered++;
+    })
+  });
+  var SecondMixin = Mixin.create({
+    foo: on('baz', function() {
+      triggered++;
+    })
+  });
+
+  var obj = {};
+  FirstMixin.apply(obj);
+  SecondMixin.apply(obj);
+
+  sendEvent(obj, 'bar');
+  equal(triggered, 0, 'should not invoke from overriden property');
+
+  sendEvent(obj, 'baz');
+  equal(triggered, 1, 'should invoke from subclass property');
 });

@@ -4,7 +4,7 @@
   "summary": "JavaScript on Steroids",
   "homepage": "http://github.com/emberjs/ember.js",
   "author": "Charles Jolley",
-  "version": "1.0.0-pre.4",
+  "version": "1.0.0",
 
   "dependencies": {
     "spade": "~> 1.0.0"
@@ -13,18 +13,18 @@
   "directories": {
     "lib": "lib"
   },
-  
+
   "dependencies:development": {
     "spade-qunit": "~> 1.0.0"
   },
-  
+
   "bpm:build": {
-    
+
     "bpm_libs.js": {
       "files": ["lib"],
       "modes":        "*"
     },
-    
+
     "ember-metal/bpm_tests.js": {
       "files": ["tests"],
       "modes": ["debug"]

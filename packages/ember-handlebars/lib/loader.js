@@ -1,6 +1,11 @@
 /*globals Handlebars */
 
-require("ember-handlebars/ext");
+import ComponentLookup from "ember-handlebars/component_lookup";
+import jQuery from "ember-views/system/jquery";
+import EmberError from "ember-metal/error";
+import {onLoad} from "ember-runtime/system/lazy_load";
+
+import EmberHandlebars from "ember-handlebars-compiler";
 
 /**
 @module ember
@@ -8,8 +13,6 @@ require("ember-handlebars/ext");
 */
 
 /**
-  @private
-
   Find templates stored in the head tag as script tags and make them available
   to `Ember.CoreView` in the global `Ember.TEMPLATES` object. This will be run
   as as jQuery DOM-ready callback.
@@ -19,28 +22,33 @@ require("ember-handlebars/ext");
   Those with type `text/x-raw-handlebars` will be compiled with regular
   Handlebars and are suitable for use in views' computed properties.
 
+  @private
   @method bootstrap
   @for Ember.Handlebars
   @static
   @param ctx
 */
-Ember.Handlebars.bootstrap = function(ctx) {
+function bootstrap(ctx) {
   var selectors = 'script[type="text/x-handlebars"], script[type="text/x-raw-handlebars"]';
 
-  Ember.$(selectors, ctx)
+  jQuery(selectors, ctx)
     .each(function() {
     // Get a reference to the script tag
-    var script = Ember.$(this),
-        type   = script.attr('type');
+    var script = jQuery(this);
 
     var compile = (script.attr('type') === 'text/x-raw-handlebars') ?
-                  Ember.$.proxy(Handlebars.compile, Handlebars) :
-                  Ember.$.proxy(Ember.Handlebars.compile, Ember.Handlebars),
+                  jQuery.proxy(Handlebars.compile, Handlebars) :
+                  jQuery.proxy(EmberHandlebars.compile, EmberHandlebars),
       // Get the name of the script, used by Ember.View's templateName property.
       // First look for data-template-name attribute, then fall back to its
       // id if no name is found.
       templateName = script.attr('data-template-name') || script.attr('id') || 'application',
       template = compile(script.html());
+
+    // Check if template of same name already exists
+    if (Ember.TEMPLATES[templateName] !== undefined) {
+      throw new EmberError('Template named "' + templateName  + '" already exists.');
+    }
 
     // For templates which have a name, we save them and then remove them from the DOM
     Ember.TEMPLATES[templateName] = template;
@@ -48,10 +56,14 @@ Ember.Handlebars.bootstrap = function(ctx) {
     // Remove script tag from DOM
     script.remove();
   });
-};
+}
 
-function bootstrap() {
-  Ember.Handlebars.bootstrap( Ember.$(document) );
+function _bootstrap() {
+  bootstrap( jQuery(document) );
+}
+
+function registerComponentLookup(container) {
+  container.register('component-lookup:main', ComponentLookup);
 }
 
 /*
@@ -65,4 +77,17 @@ function bootstrap() {
   from the DOM after processing.
 */
 
-Ember.onLoad('application', bootstrap);
+onLoad('Ember.Application', function(Application) {
+  Application.initializer({
+    name: 'domTemplates',
+    initialize: _bootstrap
+  });
+
+  Application.initializer({
+    name: 'registerComponentLookup',
+    after: 'domTemplates',
+    initialize: registerComponentLookup
+  });
+});
+
+export default bootstrap;

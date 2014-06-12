@@ -1,6 +1,8 @@
+import { tryFinally } from 'ember-metal/utils';
+
 var tryCount, finalizeCount, tryable, finalizer, error, tryableResult, finalizerResult;
 
-module("Ember.tryFinally", {
+QUnit.module("Ember.tryFinally", {
   setup: function() {
     error = new Error('Test Error');
     tryCount = 0;
@@ -13,14 +15,14 @@ module("Ember.tryFinally", {
   },
 
   teardown: function() {
-    tryCount = finalizeCount = tryable = finalizer = finalizeCount, tryableResult = null;
+    tryCount = finalizeCount = tryable = finalizer = finalizeCount = tryableResult = null;
   }
 });
 
-function callTryFinallyWithError(){
+function callTryFinallyWithError() {
   var errorWasThrown;
   try {
-    Ember.tryFinally(tryable, finalizer);
+    tryFinally(tryable, finalizer);
   } catch(e) {
     errorWasThrown = true;
     equal(e, error, 'correct error was thrown');
@@ -30,7 +32,7 @@ function callTryFinallyWithError(){
 }
 
 test("no failure", function() {
-  equal(Ember.tryFinally(tryable, finalizer), tryableResult, 'correct return value');
+  equal(tryFinally(tryable, finalizer), tryableResult, 'correct return value');
 
   equal(tryCount,      1, 'tryable was called once');
   equal(finalizeCount, 1, 'finalize was called once');
@@ -39,7 +41,7 @@ test("no failure", function() {
 test("no failure, return from finally", function() {
   finalizerResult = 'finalizer return value';
 
-  equal(Ember.tryFinally(tryable, finalizer), finalizerResult, 'crrect return value');
+  equal(tryFinally(tryable, finalizer), finalizerResult, 'crrect return value');
 
   equal(tryCount,      1, 'tryable was called once');
   equal(finalizeCount, 1, 'finalize was called once');

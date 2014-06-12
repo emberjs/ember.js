@@ -2,8 +2,22 @@
 @module ember
 @submodule ember-views
 */
+import Ember from "ember-metal/core"; // Ember.assert
 
-var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { isNone } from 'ember-metal/is_none';
+import run from "ember-metal/run_loop";
+import { typeOf } from "ember-metal/utils";
+import { fmt } from "ember-runtime/system/string";
+import EmberObject from "ember-runtime/system/object";
+import jQuery from "ember-views/system/jquery";
+import View from "ember-views/views/view";
+
+var ActionHelper;
+
+//ES6TODO:
+// find a better way to do Ember.View.views without global state
 
 /**
   `Ember.EventDispatcher` handles delegating browser events to their
@@ -16,12 +30,50 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   @private
   @extends Ember.Object
 */
-Ember.EventDispatcher = Ember.Object.extend(
-/** @scope Ember.EventDispatcher.prototype */{
+export default EmberObject.extend({
 
   /**
-    @private
+    The set of events names (and associated handler function names) to be setup
+    and dispatched by the `EventDispatcher`. Custom events can added to this list at setup
+    time, generally via the `Ember.Application.customEvents` hash. Only override this
+    default set to prevent the EventDispatcher from listening on some events all together.
 
+    This set will be modified by `setup` to also include any events added at that time.
+
+    @property events
+    @type Object
+  */
+  events: {
+    touchstart  : 'touchStart',
+    touchmove   : 'touchMove',
+    touchend    : 'touchEnd',
+    touchcancel : 'touchCancel',
+    keydown     : 'keyDown',
+    keyup       : 'keyUp',
+    keypress    : 'keyPress',
+    mousedown   : 'mouseDown',
+    mouseup     : 'mouseUp',
+    contextmenu : 'contextMenu',
+    click       : 'click',
+    dblclick    : 'doubleClick',
+    mousemove   : 'mouseMove',
+    focusin     : 'focusIn',
+    focusout    : 'focusOut',
+    mouseenter  : 'mouseEnter',
+    mouseleave  : 'mouseLeave',
+    submit      : 'submit',
+    input       : 'input',
+    change      : 'change',
+    dragstart   : 'dragStart',
+    drag        : 'drag',
+    dragenter   : 'dragEnter',
+    dragleave   : 'dragLeave',
+    dragover    : 'dragOver',
+    drop        : 'drop',
+    dragend     : 'dragEnd'
+  },
+
+  /**
     The root DOM element to which event listeners should be attached. Event
     listeners will be attached to the document unless this is overridden.
 
@@ -30,6 +82,7 @@ Ember.EventDispatcher = Ember.Object.extend(
     The default body is a string since this may be evaluated before document.body
     exists in the DOM.
 
+    @private
     @property rootElement
     @type DOMElement
     @default 'body'
@@ -37,8 +90,6 @@ Ember.EventDispatcher = Ember.Object.extend(
   rootElement: 'body',
 
   /**
-    @private
-
     Sets up event listeners for standard browser events.
 
     This will be called after the browser sends a `DOMContentReady` event. By
@@ -46,43 +97,21 @@ Ember.EventDispatcher = Ember.Object.extend(
     would like to register the listeners on a different element, set the event
     dispatcher's `root` property.
 
+    @private
     @method setup
     @param addedEvents {Hash}
   */
-  setup: function(addedEvents) {
-    var event, events = {
-      touchstart  : 'touchStart',
-      touchmove   : 'touchMove',
-      touchend    : 'touchEnd',
-      touchcancel : 'touchCancel',
-      keydown     : 'keyDown',
-      keyup       : 'keyUp',
-      keypress    : 'keyPress',
-      mousedown   : 'mouseDown',
-      mouseup     : 'mouseUp',
-      contextmenu : 'contextMenu',
-      click       : 'click',
-      dblclick    : 'doubleClick',
-      mousemove   : 'mouseMove',
-      focusin     : 'focusIn',
-      focusout    : 'focusOut',
-      mouseenter  : 'mouseEnter',
-      mouseleave  : 'mouseLeave',
-      submit      : 'submit',
-      input       : 'input',
-      change      : 'change',
-      dragstart   : 'dragStart',
-      drag        : 'drag',
-      dragenter   : 'dragEnter',
-      dragleave   : 'dragLeave',
-      dragover    : 'dragOver',
-      drop        : 'drop',
-      dragend     : 'dragEnd'
-    };
+  setup: function(addedEvents, rootElement) {
+    var event, events = get(this, 'events');
 
-    Ember.$.extend(events, addedEvents || {});
+    jQuery.extend(events, addedEvents || {});
 
-    var rootElement = Ember.$(get(this, 'rootElement'));
+
+    if (!isNone(rootElement)) {
+      set(this, 'rootElement', rootElement);
+    }
+
+    rootElement = jQuery(get(this, 'rootElement'));
 
     Ember.assert(fmt('You cannot use the same root element (%@) multiple times in an Ember.Application', [rootElement.selector || rootElement[0].tagName]), !rootElement.is('.ember-application'));
     Ember.assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', !rootElement.closest('.ember-application').length);
@@ -100,8 +129,6 @@ Ember.EventDispatcher = Ember.Object.extend(
   },
 
   /**
-    @private
-
     Registers an event listener on the document. If the given event is
     triggered, the provided event handler will be triggered on the target view.
 
@@ -116,6 +143,7 @@ Ember.EventDispatcher = Ember.Object.extend(
     setupHandler('mousedown', 'mouseDown');
     ```
 
+    @private
     @method setupHandler
     @param {Element} rootElement
     @param {String} event the browser-originated event to listen to
@@ -124,35 +152,36 @@ Ember.EventDispatcher = Ember.Object.extend(
   setupHandler: function(rootElement, event, eventName) {
     var self = this;
 
-    rootElement.delegate('.ember-view', event + '.ember', function(evt, triggeringManager) {
-      return Ember.handleErrors(function() {
-        var view = Ember.View.views[this.id],
-            result = true, manager = null;
+    rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
+      var view = View.views[this.id],
+          result = true, manager = null;
 
-        manager = self._findNearestEventManager(view,eventName);
+      manager = self._findNearestEventManager(view, eventName);
 
-        if (manager && manager !== triggeringManager) {
-          result = self._dispatchEvent(manager, evt, eventName, view);
-        } else if (view) {
-          result = self._bubbleEvent(view,evt,eventName);
-        } else {
-          evt.stopPropagation();
-        }
+      if (manager && manager !== triggeringManager) {
+        result = self._dispatchEvent(manager, evt, eventName, view);
+      } else if (view) {
+        result = self._bubbleEvent(view, evt, eventName);
+      } else {
+        evt.stopPropagation();
+      }
 
-        return result;
-      }, this);
+      return result;
     });
 
-    rootElement.delegate('[data-ember-action]', event + '.ember', function(evt) {
-      return Ember.handleErrors(function() {
-        var actionId = Ember.$(evt.currentTarget).attr('data-ember-action'),
-            action   = Ember.Handlebars.ActionHelper.registeredActions[actionId],
-            handler  = action.handler;
+    rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
+      //ES6TODO: Needed for ActionHelper (generally not available in ember-views test suite)
+      if (!ActionHelper) { ActionHelper = requireModule("ember-routing-handlebars/helpers/action")["ActionHelper"]; }
 
-        if (action.eventName === eventName) {
-          return handler(evt);
-        }
-      }, this);
+      var actionId = jQuery(evt.currentTarget).attr('data-ember-action'),
+          action   = ActionHelper.registeredActions[actionId];
+
+      // We have to check for action here since in some cases, jQuery will trigger
+      // an event on `removeChild` (i.e. focusout) after we've already torn down the
+      // action handlers for the view.
+      if (action && action.eventName === eventName) {
+        return action.handler(evt);
+      }
     });
   },
 
@@ -173,8 +202,8 @@ Ember.EventDispatcher = Ember.Object.extend(
     var result = true;
 
     var handler = object[eventName];
-    if (Ember.typeOf(handler) === 'function') {
-      result = handler.call(object, evt, view);
+    if (typeOf(handler) === 'function') {
+      result = run(object, handler, evt, view);
       // Do not preventDefault in eventManagers.
       evt.stopPropagation();
     }
@@ -186,14 +215,12 @@ Ember.EventDispatcher = Ember.Object.extend(
   },
 
   _bubbleEvent: function(view, evt, eventName) {
-    return Ember.run(function() {
-      return view.handleEvent(eventName, evt);
-    });
+    return run(view, view.handleEvent, eventName, evt);
   },
 
   destroy: function() {
     var rootElement = get(this, 'rootElement');
-    Ember.$(rootElement).undelegate('.ember').removeClass('ember-application');
+    jQuery(rootElement).off('.ember', '**').removeClass('ember-application');
     return this._super();
   }
 });

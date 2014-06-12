@@ -1,24 +1,25 @@
-var oldInitializers, app;
-var indexOf = Ember.ArrayPolyfills.indexOf;
+import run from "ember-metal/run_loop";
+import Application from "ember-application/system/application";
+import { indexOf } from "ember-metal/array";
+import jQuery from "ember-views/system/jquery";
 
-module("Ember.Application initializers", {
+var oldInitializers, app;
+
+QUnit.module("Ember.Application initializers", {
   setup: function() {
-    oldInitializers = Ember.Application.initializers;
-    Ember.Application.initializers = Ember.A();
   },
 
   teardown: function() {
-    Ember.Application.initializers = oldInitializers;
-
     if (app) {
-      Ember.run(function() { app.destroy(); });
+      run(function() { app.destroy(); });
     }
   }
 });
 
 test("initializers can be registered in a specified order", function() {
   var order = [];
-  Ember.Application.initializer({
+  var MyApplication = Application.extend();
+  MyApplication.initializer({
     name: 'fourth',
     after: 'third',
     initialize: function(container) {
@@ -26,7 +27,7 @@ test("initializers can be registered in a specified order", function() {
     }
   });
 
-  Ember.Application.initializer({
+  MyApplication.initializer({
     name: 'second',
     before: 'third',
     initialize: function(container) {
@@ -34,7 +35,7 @@ test("initializers can be registered in a specified order", function() {
     }
   });
 
-  Ember.Application.initializer({
+  MyApplication.initializer({
     name: 'fifth',
     after: 'fourth',
     initialize: function(container) {
@@ -42,7 +43,7 @@ test("initializers can be registered in a specified order", function() {
     }
   });
 
-  Ember.Application.initializer({
+  MyApplication.initializer({
     name: 'first',
     before: 'second',
     initialize: function(container) {
@@ -50,25 +51,21 @@ test("initializers can be registered in a specified order", function() {
     }
   });
 
-  Ember.Application.initializer({
+  MyApplication.initializer({
     name: 'third',
     initialize: function(container) {
       order.push('third');
     }
   });
 
-  Ember.run(function() {
-    app = Ember.Application.create({
+  run(function() {
+    app = MyApplication.create({
       router: false,
       rootElement: '#qunit-fixture'
     });
   });
 
   deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth']);
-
-  Ember.run(function() {
-    app.destroy();
-  });
 });
 
 test("initializers can have multiple dependencies", function () {
@@ -107,14 +104,14 @@ test("initializers can have multiple dependencies", function () {
           order.push("after c");
         }
       };
-  Ember.Application.initializer(b);
-  Ember.Application.initializer(a);
-  Ember.Application.initializer(afterC);
-  Ember.Application.initializer(afterB);
-  Ember.Application.initializer(c);
+  Application.initializer(b);
+  Application.initializer(a);
+  Application.initializer(afterC);
+  Application.initializer(afterB);
+  Application.initializer(c);
 
-  Ember.run(function() {
-    app = Ember.Application.create({
+  run(function() {
+    app = Application.create({
       router: false,
       rootElement: '#qunit-fixture'
     });
@@ -124,9 +121,92 @@ test("initializers can have multiple dependencies", function () {
   ok(indexOf.call(order, b.name) < indexOf.call(order, c.name), 'b < c');
   ok(indexOf.call(order, b.name) < indexOf.call(order, afterB.name), 'b < afterB');
   ok(indexOf.call(order, c.name) < indexOf.call(order, afterC.name), 'c < afterC');
-
-  Ember.run(function() {
-    app.destroy();
-  });
 });
 
+test("initializers set on Application subclasses should not be shared between apps", function(){
+  var firstInitializerRunCount = 0, secondInitializerRunCount = 0;
+  var FirstApp = Application.extend();
+  FirstApp.initializer({
+    name: 'first',
+    initialize: function(container) {
+      firstInitializerRunCount++;
+    }
+  });
+  var SecondApp = Application.extend();
+  SecondApp.initializer({
+    name: 'second',
+    initialize: function(container) {
+      secondInitializerRunCount++;
+    }
+  });
+  jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
+  run(function() {
+    var firstApp = FirstApp.create({
+      router: false,
+      rootElement: '#qunit-fixture #first'
+    });
+  });
+  equal(firstInitializerRunCount, 1, 'first initializer only was run');
+  equal(secondInitializerRunCount, 0, 'first initializer only was run');
+  run(function() {
+    var secondApp = SecondApp.create({
+      router: false,
+      rootElement: '#qunit-fixture #second'
+    });
+  });
+  equal(firstInitializerRunCount, 1, 'second initializer only was run');
+  equal(secondInitializerRunCount, 1, 'second initializer only was run');
+});
+
+test("initializers are concatenated", function(){
+  var firstInitializerRunCount = 0, secondInitializerRunCount = 0;
+  var FirstApp = Application.extend();
+  FirstApp.initializer({
+    name: 'first',
+    initialize: function(container) {
+      firstInitializerRunCount++;
+    }
+  });
+
+  var SecondApp = FirstApp.extend();
+  SecondApp.initializer({
+    name: 'second',
+    initialize: function(container) {
+      secondInitializerRunCount++;
+    }
+  });
+
+  jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
+  run(function() {
+    var firstApp = FirstApp.create({
+      router: false,
+      rootElement: '#qunit-fixture #first'
+    });
+  });
+  equal(firstInitializerRunCount, 1, 'first initializer only was run when base class created');
+  equal(secondInitializerRunCount, 0, 'first initializer only was run when base class created');
+  firstInitializerRunCount = 0;
+  run(function() {
+    var secondApp = SecondApp.create({
+      router: false,
+      rootElement: '#qunit-fixture #second'
+    });
+  });
+  equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
+  equal(secondInitializerRunCount, 1, 'second initializers was run when subclass created');
+});
+
+test("initializers are per-app", function(){
+  expect(0);
+  var FirstApp = Application.extend();
+  FirstApp.initializer({
+    name: 'shouldNotCollide',
+    initialize: function(container) {}
+  });
+
+  var SecondApp = Application.extend();
+  SecondApp.initializer({
+    name: 'shouldNotCollide',
+    initialize: function(container) {}
+  });
+});

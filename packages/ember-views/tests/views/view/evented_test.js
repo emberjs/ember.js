@@ -1,11 +1,22 @@
-var set = Ember.set, get = Ember.get;
+import { get } from "ember-metal/property_get";
+import run from "ember-metal/run_loop";
+import EmberObject from "ember-runtime/system/object";
+import EmberView from "ember-views/views/view";
 
-module("Ember.View evented helpers");
+var view;
+
+QUnit.module("EmberView evented helpers", {
+  teardown: function() {
+    run(function() {
+      view.destroy();
+    });
+  }
+});
 
 test("fire should call method sharing event name if it exists on the view", function() {
   var eventFired = false;
 
-  var view = Ember.View.create({
+  view = EmberView.create({
     fireMyEvent: function() {
       this.trigger('myEvent');
     },
@@ -15,7 +26,7 @@ test("fire should call method sharing event name if it exists on the view", func
     }
   });
 
-  Ember.run(function() {
+  run(function() {
     view.fireMyEvent();
   });
 
@@ -25,13 +36,13 @@ test("fire should call method sharing event name if it exists on the view", func
 test("fire does not require a view method with the same name", function() {
   var eventFired = false;
 
-  var view = Ember.View.create({
+  view = EmberView.create({
     fireMyEvent: function() {
       this.trigger('myEvent');
     }
   });
 
-  var listenObject = Ember.Object.create({
+  var listenObject = EmberObject.create({
     onMyEvent: function() {
       eventFired = true;
     }
@@ -39,10 +50,14 @@ test("fire does not require a view method with the same name", function() {
 
   view.on('myEvent', listenObject, 'onMyEvent');
 
-  Ember.run(function() {
+  run(function() {
     view.fireMyEvent();
   });
 
   equal(eventFired, true, "fired the event without a view method sharing its name");
+
+  run(function() {
+    listenObject.destroy();
+  });
 });
 

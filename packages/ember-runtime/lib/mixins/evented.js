@@ -1,3 +1,11 @@
+import { Mixin } from "ember-metal/mixin";
+import {
+  addListener,
+  removeListener,
+  hasListeners,
+  sendEvent
+} from "ember-metal/events";
+
 /**
 @module ember
 @submodule ember-runtime
@@ -25,11 +33,20 @@
   // outputs: 'Our person has greeted'
   ```
 
+  You can also chain multiple event subscriptions:
+
+  ```javascript
+  person.on('greet', function() {
+    console.log('Our person has greeted');
+  }).one('greet', function() {
+    console.log('Offer one-time special');
+  }).off('event', this, forgetThis);
+  ```
+
   @class Evented
   @namespace Ember
-  @extends Ember.Mixin
  */
-Ember.Evented = Ember.Mixin.create({
+export default Mixin.create({
 
   /**
    Subscribes to a named event with given function.
@@ -49,9 +66,11 @@ Ember.Evented = Ember.Mixin.create({
    @param {String} name The name of the event
    @param {Object} [target] The "this" binding for the callback
    @param {Function} method The callback to execute
+   @return this
   */
   on: function(name, target, method) {
-    Ember.addListener(this, name, target, method);
+    addListener(this, name, target, method);
+    return this;
   },
 
   /**
@@ -67,6 +86,7 @@ Ember.Evented = Ember.Mixin.create({
     @param {String} name The name of the event
     @param {Object} [target] The "this" binding for the callback
     @param {Function} method The callback to execute
+    @return this
   */
   one: function(name, target, method) {
     if (!method) {
@@ -74,7 +94,8 @@ Ember.Evented = Ember.Mixin.create({
       target = null;
     }
 
-    Ember.addListener(this, name, target, method, true);
+    addListener(this, name, target, method, true);
+    return this;
   },
 
   /**
@@ -83,7 +104,7 @@ Ember.Evented = Ember.Mixin.create({
     event.
 
     ```javascript
-    person.on('didEat', food) {
+    person.on('didEat', function(food) {
       console.log('person ate some ' + food);
     });
 
@@ -96,28 +117,28 @@ Ember.Evented = Ember.Mixin.create({
     @param {Object...} args Optional arguments to pass on
   */
   trigger: function(name) {
-    var args = [], i, l;
-    for (i = 1, l = arguments.length; i < l; i++) {
-      args.push(arguments[i]);
-    }
-    Ember.sendEvent(this, name, args);
-  },
+    var length = arguments.length;
+    var args = new Array(length - 1);
 
-  fire: function(name) {
-    Ember.deprecate("Ember.Evented#fire() has been deprecated in favor of trigger() for compatibility with jQuery. It will be removed in 1.0. Please update your code to call trigger() instead.");
-    this.trigger.apply(this, arguments);
+    for (var i = 1; i < length; i++) {
+      args[i - 1] = arguments[i];
+    }
+
+    sendEvent(this, name, args);
   },
 
   /**
-    Cancels subscription for give name, target, and method.
+    Cancels subscription for given name, target, and method.
 
     @method off
     @param {String} name The name of the event
     @param {Object} target The target of the subscription
     @param {Function} method The function of the subscription
+    @return this
   */
   off: function(name, target, method) {
-    Ember.removeListener(this, name, target, method);
+    removeListener(this, name, target, method);
+    return this;
   },
 
   /**
@@ -128,6 +149,6 @@ Ember.Evented = Ember.Mixin.create({
     @return {Boolean} does the object have a subscription for event
    */
   has: function(name) {
-    return Ember.hasListeners(this, name);
+    return hasListeners(this, name);
   }
 });

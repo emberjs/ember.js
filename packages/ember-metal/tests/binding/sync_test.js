@@ -1,12 +1,25 @@
-module("system/binding/sync_test.js");
+import testBoth from 'ember-metal/tests/props_helper';
+import run from 'ember-metal/run_loop';
+import {
+  addObserver,
+  removeObserver,
+  _suspendObserver
+} from "ember-metal/observer";
+import { create }  from 'ember-metal/platform';
+import { bind } from "ember-metal/binding";
+import { rewatch } from "ember-metal/watching";
+import { computed } from "ember-metal/computed";
+import { defineProperty } from "ember-metal/properties";
+
+QUnit.module("system/binding/sync_test.js");
 
 testBoth("bindings should not sync twice in a single run loop", function(get, set) {
   var a, b, setValue, setCalled=0, getCalled=0;
 
-  Ember.run(function() {
+  run(function() {
     a = {};
 
-    Ember.defineProperty(a, 'foo', Ember.computed(function(key, value) {
+    defineProperty(a, 'foo', computed(function(key, value) {
       if (arguments.length === 2) {
         setCalled++;
         setValue = value;
@@ -20,13 +33,13 @@ testBoth("bindings should not sync twice in a single run loop", function(get, se
     b = {
       a: a
     };
-    Ember.bind(b, 'foo', 'a.foo');
+    bind(b, 'foo', 'a.foo');
   });
 
   // reset after initial binding synchronization
   getCalled = 0;
 
-  Ember.run(function() {
+  run(function() {
     set(a, 'foo', 'trollface');
   });
 
@@ -38,10 +51,10 @@ testBoth("bindings should not sync twice in a single run loop", function(get, se
 testBoth("bindings should not infinite loop if computed properties return objects", function(get, set) {
   var a, b, getCalled=0;
 
-  Ember.run(function() {
+  run(function() {
     a = {};
 
-    Ember.defineProperty(a, 'foo', Ember.computed(function() {
+    defineProperty(a, 'foo', computed(function() {
       getCalled++;
       if (getCalled > 1000) {
         throw 'infinite loop detected';
@@ -52,7 +65,7 @@ testBoth("bindings should not infinite loop if computed properties return object
     b = {
       a: a
     };
-    Ember.bind(b, 'foo', 'a.foo');
+    bind(b, 'foo', 'a.foo');
   });
 
   deepEqual(get(b, 'foo'), ['foo', 'bar'], "the binding should sync");
@@ -62,7 +75,7 @@ testBoth("bindings should not infinite loop if computed properties return object
 testBoth("bindings should do the right thing when observers trigger bindings in the opposite direction", function(get, set) {
   var a, b, c;
 
-  Ember.run(function() {
+  run(function() {
     a = {
       foo: 'trololol'
     };
@@ -70,19 +83,19 @@ testBoth("bindings should do the right thing when observers trigger bindings in 
     b = {
       a: a
     };
-    Ember.bind(b, 'foo', 'a.foo');
+    bind(b, 'foo', 'a.foo');
 
     c = {
       a: a
     };
-    Ember.bind(c, 'foo', 'a.foo');
+    bind(c, 'foo', 'a.foo');
   });
 
-  Ember.addObserver(b, 'foo', function() {
+  addObserver(b, 'foo', function() {
     set(c, 'foo', "what is going on");
   });
 
-  Ember.run(function() {
+  run(function() {
     set(a, 'foo', 'trollface');
   });
 
@@ -91,14 +104,14 @@ testBoth("bindings should do the right thing when observers trigger bindings in 
 
 testBoth("bindings should do the right thing when binding is in prototype", function(get, set) {
   var obj, proto, a, b, selectionChanged;
-  Ember.run(function() {
+  run(function() {
     obj = {
       selection: null
     };
 
     selectionChanged = 0;
 
-    Ember.addObserver(obj, 'selection', function () {
+    addObserver(obj, 'selection', function () {
       selectionChanged++;
     });
 
@@ -108,23 +121,23 @@ testBoth("bindings should do the right thing when binding is in prototype", func
         set(this, 'selection', value);
       }
     };
-    Ember.bind(proto, 'selection', 'obj.selection');
+    bind(proto, 'selection', 'obj.selection');
 
-    a = Ember.create(proto);
-    b = Ember.create(proto);
-    Ember.rewatch(a);
-    Ember.rewatch(b);
+    a = create(proto);
+    b = create(proto);
+    rewatch(a);
+    rewatch(b);
   });
 
-  Ember.run(function () {
+  run(function () {
     set(a, 'selection', 'a');
   });
 
-  Ember.run(function () {
+  run(function () {
     set(b, 'selection', 'b');
   });
 
-  Ember.run(function () {
+  run(function () {
     set(a, 'selection', 'a');
   });
 
@@ -135,7 +148,7 @@ testBoth("bindings should do the right thing when binding is in prototype", func
 testBoth("bindings should not try to sync destroyed objects", function(get, set) {
   var a, b;
 
-  Ember.run(function() {
+  run(function() {
     a = {
       foo: 'trololol'
     };
@@ -143,16 +156,16 @@ testBoth("bindings should not try to sync destroyed objects", function(get, set)
     b = {
       a: a
     };
-    Ember.bind(b, 'foo', 'a.foo');
+    bind(b, 'foo', 'a.foo');
   });
 
-  Ember.run(function() {
+  run(function() {
     set(a, 'foo', 'trollface');
     set(b, 'isDestroyed', true);
     ok(true, "should not raise");
   });
 
-  Ember.run(function() {
+  run(function() {
     a = {
       foo: 'trololol'
     };
@@ -160,10 +173,10 @@ testBoth("bindings should not try to sync destroyed objects", function(get, set)
     b = {
       a: a
     };
-    Ember.bind(b, 'foo', 'a.foo');
+    bind(b, 'foo', 'a.foo');
   });
 
-  Ember.run(function() {
+  run(function() {
     set(b, 'foo', 'trollface');
     set(a, 'isDestroyed', true);
     ok(true, "should not raise");

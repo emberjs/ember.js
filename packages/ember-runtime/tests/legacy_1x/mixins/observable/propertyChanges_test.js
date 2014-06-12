@@ -18,30 +18,37 @@
 // ========================================================================
 /*globals module test ok isObj equals expects */
 
-var ObservableObject = Ember.Object.extend(Ember.Observable);
+import {get} from 'ember-metal/property_get';
+import {set} from 'ember-metal/property_set';
+import EmberObject from 'ember-runtime/system/object';
+import Observable from 'ember-runtime/mixins/observable';
+import {computed} from 'ember-metal/computed';
+import {observer} from "ember-metal/mixin";
+
+var ObservableObject = EmberObject.extend(Observable);
 
 var revMatches = false , ObjectA;
 
-module("object.propertyChanges", {
+QUnit.module("object.propertyChanges", {
   setup: function() {
     ObjectA = ObservableObject.createWithMixins({
       foo  : 'fooValue',
       prop : 'propValue',
 
-      action: Ember.observer(function() {
+      action: observer('foo', function() {
         this.set('prop', 'changedPropValue');
-      }, 'foo'),
+      }),
 
       newFoo : 'newFooValue',
       newProp: 'newPropValue',
 
-      notifyAction: Ember.observer(function() {
+      notifyAction: observer('newFoo', function() {
         this.set('newProp', 'changedNewPropValue');
-      }, 'newFoo'),
+      }),
 
-      notifyAllAction: Ember.observer(function() {
+      notifyAllAction: observer('prop', function() {
         this.set('newFoo', 'changedNewFooValue');
-      }, 'prop'),
+      }),
 
       starProp: null,
       starObserver: function(target, key, value, rev) {
@@ -117,7 +124,7 @@ test("should invalidate function property cache when notifyPropertyChange is cal
 
   var a = ObservableObject.createWithMixins({
     _b: null,
-    b: Ember.computed(function(key, value) {
+    b: computed(function(key, value) {
       if (value !== undefined) {
         this._b = value;
         return this;

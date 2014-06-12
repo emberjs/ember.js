@@ -1,19 +1,26 @@
-require('ember-runtime/system/object');
-
 /**
 @module ember
 @submodule ember-runtime
 */
-
-var get = Ember.get,
-    set = Ember.set,
-    fmt = Ember.String.fmt,
-    addBeforeObserver = Ember.addBeforeObserver,
-    addObserver = Ember.addObserver,
-    removeBeforeObserver = Ember.removeBeforeObserver,
-    removeObserver = Ember.removeObserver,
-    propertyWillChange = Ember.propertyWillChange,
-    propertyDidChange = Ember.propertyDidChange;
+import Ember from "ember-metal/core"; // Ember.assert
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { meta } from "ember-metal/utils";
+import {
+  addObserver,
+  removeObserver,
+  addBeforeObserver,
+  removeBeforeObserver
+} from "ember-metal/observer";
+import {
+  propertyWillChange,
+  propertyDidChange
+} from "ember-metal/property_events";
+import { computed } from "ember-metal/computed";
+import { defineProperty } from "ember-metal/properties";
+import { observer } from "ember-metal/mixin";
+import { fmt } from "ember-runtime/system/string";
+import EmberObject from "ember-runtime/system/object";
 
 function contentPropertyWillChange(content, contentKey) {
   var key = contentKey.slice(8); // remove "content."
@@ -94,8 +101,7 @@ function contentPropertyDidChange(content, contentKey) {
   @namespace Ember
   @extends Ember.Object
 */
-Ember.ObjectProxy = Ember.Object.extend(
-/** @scope Ember.ObjectProxy.prototype */ {
+var ObjectProxy = EmberObject.extend({
   /**
     The object whose properties will be forwarded.
 
@@ -104,13 +110,13 @@ Ember.ObjectProxy = Ember.Object.extend(
     @default null
   */
   content: null,
-  _contentDidChange: Ember.observer(function() {
-    Ember.assert("Can't set ObjectProxy's content to itself", this.get('content') !== this);
-  }, 'content'),
+  _contentDidChange: observer('content', function() {
+    Ember.assert("Can't set ObjectProxy's content to itself", get(this, 'content') !== this);
+  }),
 
-  isTruthy: Ember.computed(function() {
-    return !!get(this, 'content');
-  }).property('content'),
+  isTruthy: computed.bool('content'),
+
+  _debugContainerKey: null,
 
   willWatchProperty: function (key) {
     var contentKey = 'content.' + key;
@@ -132,8 +138,19 @@ Ember.ObjectProxy = Ember.Object.extend(
   },
 
   setUnknownProperty: function (key, value) {
+    var m = meta(this);
+    if (m.proto === this) {
+      // if marked as prototype then just defineProperty
+      // rather than delegate
+      defineProperty(this, key, null, value);
+      return value;
+    }
+
     var content = get(this, 'content');
     Ember.assert(fmt("Cannot delegate set('%@', %@) to the 'content' property of object proxy %@: its 'content' is undefined.", [key, value, this]), content);
     return set(content, key, value);
   }
+
 });
+
+export default ObjectProxy;

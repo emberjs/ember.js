@@ -1,33 +1,51 @@
-module("Ember.View - controller property");
+import Ember from "ember-metal/core";
+import run from "ember-metal/run_loop";
+
+import ContainerView from "ember-views/views/container_view";
+
+QUnit.module("Ember.View - controller property");
 
 test("controller property should be inherited from nearest ancestor with controller", function() {
-  var grandparent = Ember.ContainerView.create();
-  var parent = Ember.ContainerView.create();
-  var child = Ember.ContainerView.create();
-  var grandchild = Ember.ContainerView.create();
+  var grandparent = ContainerView.create();
+  var parent = ContainerView.create();
+  var child = ContainerView.create();
+  var grandchild = ContainerView.create();
 
   var grandparentController = {};
   var parentController = {};
 
-  Ember.run(function() {
+  run(function() {
     grandparent.set('controller', grandparentController);
     parent.set('controller', parentController);
 
-    grandparent.get('childViews').pushObject(parent);
-    parent.get('childViews').pushObject(child);
+    grandparent.pushObject(parent);
+    parent.pushObject(child);
+  });
 
-    strictEqual(grandparent.get('controller'), grandparentController);
-    strictEqual(parent.get('controller'), parentController);
-    strictEqual(child.get('controller'), parentController);
-    strictEqual(grandchild.get('controller'), null);
+  strictEqual(grandparent.get('controller'), grandparentController);
+  strictEqual(parent.get('controller'), parentController);
+  strictEqual(child.get('controller'), parentController);
+  strictEqual(grandchild.get('controller'), null);
 
-    child.get('childViews').pushObject(grandchild);
-    strictEqual(grandchild.get('controller'), parentController);
+  run(function() {
+    child.pushObject(grandchild);
+  });
 
-    var newController = {};
+  strictEqual(grandchild.get('controller'), parentController);
+
+  var newController = {};
+  run(function() {
     parent.set('controller', newController);
-    strictEqual(parent.get('controller'), newController);
-    strictEqual(child.get('controller'), newController);
-    strictEqual(grandchild.get('controller'), newController);
+  });
+
+  strictEqual(parent.get('controller'), newController);
+  strictEqual(child.get('controller'), newController);
+  strictEqual(grandchild.get('controller'), newController);
+
+  run(function() {
+    grandparent.destroy();
+    parent.destroy();
+    child.destroy();
+    grandchild.destroy();
   });
 });

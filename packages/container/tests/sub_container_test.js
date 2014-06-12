@@ -1,22 +1,18 @@
-var passedOptions;
-var Container = requireModule('container');
+import {
+  factory,
+  o_create,
+  setProperties
+} from 'container/tests/container_helper';
 
-var setProperties = function(object, properties) {
-  for (var key in properties) {
-    if (properties.hasOwnProperty(key)) {
-      object[key] = properties[key];
-    }
-  }
-};
-
+import Container from 'container';
 var container;
 
-module("Container (sub-containers)", {
+QUnit.module("Container (sub-containers)", {
   setup: function() {
     container = new Container();
     var PostController = factory();
 
-    container.register('controller', 'post', PostController);
+    container.register('controller:post', PostController);
   },
 
   teardown: function() {
@@ -25,23 +21,6 @@ module("Container (sub-containers)", {
     }
   }
 });
-
-function factory() {
-  var Klass = function(options) {
-    setProperties(this, options);
-  };
-
-  Klass.prototype.destroy = function() {
-    this.isDestroyed = true;
-  };
-
-  Klass.create = function(options) {
-    passedOptions = options;
-    return new Klass(options);
-  };
-
-  return Klass;
-}
 
 test("Singletons already found on the parent container will be found again on the sub-container", function() {
   var postController = container.lookup('controller:post');
@@ -90,4 +69,22 @@ test("Resolver is inherited from parent container", function() {
 
   equal(subContainer.resolve('controller:post'), otherController, 'should use parent resolver');
   equal(container.resolve('controller:post'), otherController, 'should use resolver');
+});
+
+test("Type injections should be inherited", function() {
+  var container = new Container();
+  var PostController = factory();
+  var Store = factory();
+
+  container.register('controller:post', PostController);
+  container.register('store:main', Store);
+
+  container.typeInjection('controller', 'store', 'store:main');
+
+  var store = container.lookup('store:main');
+
+  var childContainer = container.child();
+  var postController = childContainer.lookup('controller:post');
+
+  equal(postController.store, store);
 });

@@ -1,5 +1,7 @@
 /*globals Foo:true $foo:true */
 
+import { get } from 'ember-metal/property_get';
+
 var obj, moduleOpts = {
   setup: function() {
     obj = {
@@ -7,8 +9,8 @@ var obj, moduleOpts = {
         bar: {
           baz: { biff: 'BIFF' }
         }
-      }
-
+      },
+      falseValue: false
     };
 
     window.Foo = {
@@ -31,30 +33,34 @@ var obj, moduleOpts = {
   }
 };
 
-module('Ember.get with path', moduleOpts);
+QUnit.module('Ember.get with path', moduleOpts);
 
 // ..........................................................
 // LOCAL PATHS
 //
 
 test('[obj, foo] -> obj.foo', function() {
-  deepEqual(Ember.get(obj, 'foo'), obj.foo);
+  deepEqual(get(obj, 'foo'), obj.foo);
 });
 
 test('[obj, foo.bar] -> obj.foo.bar', function() {
-  deepEqual(Ember.get(obj, 'foo.bar'), obj.foo.bar);
+  deepEqual(get(obj, 'foo.bar'), obj.foo.bar);
 });
 
 test('[obj, this.foo] -> obj.foo', function() {
-  deepEqual(Ember.get(obj, 'this.foo'), obj.foo);
+  deepEqual(get(obj, 'this.foo'), obj.foo);
 });
 
 test('[obj, this.foo.bar] -> obj.foo.bar', function() {
-  deepEqual(Ember.get(obj, 'this.foo.bar'), obj.foo.bar);
+  deepEqual(get(obj, 'this.foo.bar'), obj.foo.bar);
 });
 
 test('[obj, this.Foo.bar] -> (null)', function() {
-  deepEqual(Ember.get(obj, 'this.Foo.bar'), undefined);
+  deepEqual(get(obj, 'this.Foo.bar'), undefined);
+});
+
+test('[obj, falseValue.notDefined] -> (null)', function() {
+  deepEqual(get(obj, 'falseValue.notDefined'), undefined);
 });
 
 // ..........................................................
@@ -62,10 +68,10 @@ test('[obj, this.Foo.bar] -> (null)', function() {
 //
 
 test('[null, Foo] -> Foo', function() {
-  deepEqual(Ember.get('Foo'), Foo);
+  deepEqual(get('Foo'), Foo);
 });
 
 test('[null, Foo.bar] -> Foo.bar', function() {
-  deepEqual(Ember.get('Foo.bar'), Foo.bar);
+  deepEqual(get('Foo.bar'), Foo.bar);
 });
 

@@ -1,14 +1,19 @@
-Ember.MutableArrayTests.extend({
+import Ember from 'ember-metal/core';
+import MutableArrayTests from 'ember-runtime/tests/suites/mutable_array';
+import ArrayProxy from "ember-runtime/system/array_proxy";
+import {get} from "ember-metal/property_get";
+
+MutableArrayTests.extend({
 
   name: 'Ember.ArrayProxy',
 
   newObject: function(ary) {
     var ret = ary ? ary.slice() : this.newFixture(3);
-    return Ember.ArrayProxy.create({ content: Ember.A(ret) });
+    return ArrayProxy.create({ content: Ember.A(ret) });
   },
 
   mutate: function(obj) {
-    obj.pushObject(Ember.get(obj, 'length')+1);
+    obj.pushObject(get(obj, 'length')+1);
   },
 
   toArray: function(obj) {
@@ -16,6 +21,3 @@ Ember.MutableArrayTests.extend({
   }
 
 }).run();
-
-
-

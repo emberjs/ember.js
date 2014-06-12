@@ -1,6 +1,6 @@
-require('ember-runtime/~tests/suites/mutable_array');
+import {SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
 
-var suite = Ember.MutableArrayTests;
+var suite = SuiteModuleBuilder.create();
 
 suite.module('addObject');
 
@@ -59,3 +59,5 @@ suite.test("[A,B,C].addObject(A) => [A,B,C] + NO notify", function() {
     equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject once');
   }
 });
+
+export default suite;

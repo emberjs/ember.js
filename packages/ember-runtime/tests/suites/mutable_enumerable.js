@@ -1,6 +1,12 @@
-require('ember-runtime/~tests/suites/enumerable');
+import {EnumerableTests, ObserverClass} from 'ember-runtime/tests/suites/enumerable';
 
-Ember.MutableEnumerableTests = Ember.EnumerableTests.extend();
+import addObjectTests from 'ember-runtime/tests/suites/mutable_enumerable/addObject';
+import removeObjectTests from 'ember-runtime/tests/suites/mutable_enumerable/removeObject';
+import removeObjectsTests from 'ember-runtime/tests/suites/mutable_enumerable/removeObjects';
 
-require('ember-runtime/~tests/suites/mutable_enumerable/addObject');
-require('ember-runtime/~tests/suites/mutable_enumerable/removeObject');
+var MutableEnumerableTests = EnumerableTests.extend();
+MutableEnumerableTests.importModuleTests(addObjectTests);
+MutableEnumerableTests.importModuleTests(removeObjectTests);
+MutableEnumerableTests.importModuleTests(removeObjectsTests);
+
+export default MutableEnumerableTests;

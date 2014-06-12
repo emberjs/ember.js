@@ -1,9 +1,13 @@
-module('system/object/subclasses');
+import run from "ember-metal/run_loop";
+import {computed} from "ember-metal/computed";
+import EmberObject from "ember-runtime/system/object";
+
+QUnit.module('system/object/subclasses');
 
 test('chains should copy forward to subclasses when prototype created', function () {
   var ObjectWithChains, objWithChains, SubWithChains, SubSub, subSub;
-  Ember.run(function () {
-    ObjectWithChains = Ember.Object.extend({
+  run(function () {
+    ObjectWithChains = EmberObject.extend({
       obj: {
         a: 'a',
         hi: 'hi'
@@ -15,9 +19,9 @@ test('chains should copy forward to subclasses when prototype created', function
     // should not copy chains from parent yet
     SubWithChains = ObjectWithChains.extend({
       hiBinding: 'obj.hi', // add chain
-      hello: Ember.computed(function() {
+      hello: computed(function() {
         return this.get('obj.hi') + ' world';
-      }).property('hi').volatile(), // observe chain
+      }).property('hi'), // observe chain
       greetingBinding: 'hello'
     });
     SubSub = SubWithChains.extend();
@@ -25,7 +29,7 @@ test('chains should copy forward to subclasses when prototype created', function
     subSub = SubSub.create();
   });
   equal(subSub.get('greeting'), 'hi world');
-  Ember.run(function () {
+  run(function () {
     objWithChains.set('obj.hi', 'hello');
   });
   equal(subSub.get('greeting'), 'hello world');

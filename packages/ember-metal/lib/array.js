@@ -1,12 +1,8 @@
-/*jshint newcap:false*/
-
 /**
 @module ember-metal
 */
 
-// NOTE: There is a bug in jshint that doesn't recognize `Object()` without `new`
-// as being ok unless both `newcap:false` and not `use strict`.
-// https://github.com/jshint/jshint/issues/392
+var ArrayPrototype = Array.prototype;
 
 // Testing this is not ideal, but we want to use native functions
 // if available, but not to use versions created by libraries like Prototype
@@ -16,7 +12,7 @@ var isNativeFunc = function(func) {
 };
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/map
-var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : function(fun /*, thisp */) {
+var map = isNativeFunc(ArrayPrototype.map) ? ArrayPrototype.map : function(fun /*, thisp */) {
   //"use strict";
 
   if (this === void 0 || this === null) {
@@ -41,7 +37,7 @@ var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : functio
 };
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/foreach
-var arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEach : function(fun /*, thisp */) {
+var forEach = isNativeFunc(ArrayPrototype.forEach) ? ArrayPrototype.forEach : function(fun /*, thisp */) {
   //"use strict";
 
   if (this === void 0 || this === null) {
@@ -62,7 +58,7 @@ var arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEa
   }
 };
 
-var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.indexOf : function (obj, fromIndex) {
+var indexOf = isNativeFunc(ArrayPrototype.indexOf) ? ArrayPrototype.indexOf : function (obj, fromIndex) {
   if (fromIndex === null || fromIndex === undefined) { fromIndex = 0; }
   else if (fromIndex < 0) { fromIndex = Math.max(0, this.length + fromIndex); }
   for (var i = fromIndex, j = this.length; i < j; i++) {
@@ -71,62 +67,52 @@ var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.index
   return -1;
 };
 
-Ember.ArrayPolyfills = {
-  map: arrayMap,
-  forEach: arrayForEach,
-  indexOf: arrayIndexOf
-};
+var filter = isNativeFunc(ArrayPrototype.filter) ? ArrayPrototype.filter : function (fn, context) {
+  var i,
+  value,
+  result = [],
+  length = this.length;
 
-var utils = Ember.EnumerableUtils = {
-  map: function(obj, callback, thisArg) {
-    return obj.map ? obj.map.call(obj, callback, thisArg) : arrayMap.call(obj, callback, thisArg);
-  },
-
-  forEach: function(obj, callback, thisArg) {
-    return obj.forEach ? obj.forEach.call(obj, callback, thisArg) : arrayForEach.call(obj, callback, thisArg);
-  },
-
-  indexOf: function(obj, element, index) {
-    return obj.indexOf ? obj.indexOf.call(obj, element, index) : arrayIndexOf.call(obj, element, index);
-  },
-
-  indexesOf: function(obj, elements) {
-    return elements === undefined ? [] : utils.map(elements, function(item) {
-      return utils.indexOf(obj, item);
-    });
-  },
-
-  addObject: function(array, item) {
-    var index = utils.indexOf(array, item);
-    if (index === -1) { array.push(item); }
-  },
-
-  removeObject: function(array, item) {
-    var index = utils.indexOf(array, item);
-    if (index !== -1) { array.splice(index, 1); }
-  },
-
-  replace: function(array, idx, amt, objects) {
-    if (array.replace) {
-      return array.replace(idx, amt, objects);
-    } else {
-      var args = Array.prototype.concat.apply([idx, amt], objects);
-      return array.splice.apply(array, args);
+  for (i = 0; i < length; i++) {
+    if (this.hasOwnProperty(i)) {
+      value = this[i];
+      if (fn.call(context, value, i, this)) {
+        result.push(value);
+      }
     }
   }
+  return result;
 };
 
 
 if (Ember.SHIM_ES5) {
-  if (!Array.prototype.map) {
-    Array.prototype.map = arrayMap;
+  if (!ArrayPrototype.map) {
+    ArrayPrototype.map = map;
   }
 
-  if (!Array.prototype.forEach) {
-    Array.prototype.forEach = arrayForEach;
+  if (!ArrayPrototype.forEach) {
+    ArrayPrototype.forEach = forEach;
   }
 
-  if (!Array.prototype.indexOf) {
-    Array.prototype.indexOf = arrayIndexOf;
+  if (!ArrayPrototype.filter) {
+    ArrayPrototype.filter = filter;
+  }
+
+  if (!ArrayPrototype.indexOf) {
+    ArrayPrototype.indexOf = indexOf;
   }
 }
+
+/**
+  Array polyfills to support ES5 features in older browsers.
+
+  @namespace Ember
+  @property ArrayPolyfills
+*/
+export {
+  map,
+  forEach,
+  filter,
+  indexOf
+};
+

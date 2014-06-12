@@ -1,10 +1,18 @@
+import Ember from "ember-metal/core"; // FEATURES
+import {get} from "ember-metal/property_get";
+import {set} from "ember-metal/property_set";
+import {guidFor} from "ember-metal/utils";
+
+import EmberObject from "ember-runtime/system/object";
+import jQuery from "ember-views/system/jquery";
+
 /**
 @module ember
 @submodule ember-routing
 */
 
-var get = Ember.get, set = Ember.set;
-var popstateReady = false;
+var popstateFired = false;
+var supportsHistoryState = window.history && 'state' in window.history;
 
 /**
   Ember.HistoryLocation implements the location API using the browser's
@@ -14,23 +22,23 @@ var popstateReady = false;
   @namespace Ember
   @extends Ember.Object
 */
-Ember.HistoryLocation = Ember.Object.extend({
+export default EmberObject.extend({
+  implementation: 'history',
 
   init: function() {
     set(this, 'location', get(this, 'location') || window.location);
-    this.initState();
+    set(this, 'baseURL', jQuery('base').attr('href') || '');
   },
 
   /**
-    @private
-
     Used to set state on first call to setURL
 
+    @private
     @method initState
   */
   initState: function() {
-    this.replaceState(get(this, 'location').pathname);
-    set(this, 'history', window.history);
+    set(this, 'history', get(this, 'history') || window.history);
+    this.replaceState(this.formatURL(this.getURL()));
   },
 
   /**
@@ -42,136 +50,172 @@ Ember.HistoryLocation = Ember.Object.extend({
   rootURL: '/',
 
   /**
+    Returns the current `location.pathname` without `rootURL` or `baseURL`
+
     @private
-
-    Returns the current `location.pathname` without rootURL
-
     @method getURL
+    @return url {String}
   */
   getURL: function() {
     var rootURL = get(this, 'rootURL'),
-        url = get(this, 'location').pathname;
+        location = get(this, 'location'),
+        path = location.pathname,
+        baseURL = get(this, 'baseURL');
 
     rootURL = rootURL.replace(/\/$/, '');
-    url = url.replace(rootURL, '');
+    baseURL = baseURL.replace(/\/$/, '');
+    var url = path.replace(baseURL, '').replace(rootURL, '');
+
+    if (Ember.FEATURES.isEnabled("query-params-new")) {
+      var search = location.search || '';
+      url += search;
+    }
 
     return url;
   },
 
   /**
-    @private
-
     Uses `history.pushState` to update the url without a page reload.
 
+    @private
     @method setURL
     @param path {String}
   */
   setURL: function(path) {
+    var state = this.getState();
     path = this.formatURL(path);
 
-    if (this.getState() && this.getState().path !== path) {
-      popstateReady = true;
+    if (!state || state.path !== path) {
       this.pushState(path);
     }
   },
 
   /**
-    @private
-
     Uses `history.replaceState` to update the url without a page reload
     or history modification.
 
+    @private
     @method replaceURL
     @param path {String}
   */
   replaceURL: function(path) {
+    var state = this.getState();
     path = this.formatURL(path);
 
-    if (this.getState() && this.getState().path !== path) {
-      popstateReady = true;
+    if (!state || state.path !== path) {
       this.replaceState(path);
     }
   },
 
   /**
+   Get the current `history.state`. Checks for if a polyfill is
+   required and if so fetches this._historyState. The state returned
+   from getState may be null if an iframe has changed a window's
+   history.
+
    @private
-
-   Get the current `history.state`
-
    @method getState
+   @return state {Object}
   */
   getState: function() {
-    return get(this, 'history').state;
+    return supportsHistoryState ? get(this, 'history').state : this._historyState;
   },
 
   /**
+   Pushes a new state.
+
    @private
-
-   Pushes a new state
-
    @method pushState
    @param path {String}
   */
   pushState: function(path) {
-    window.history.pushState({ path: path }, null, path);
+    var state = { path: path };
+
+    get(this, 'history').pushState(state, null, path);
+
+    // store state if browser doesn't support `history.state`
+    if (!supportsHistoryState) {
+      this._historyState = state;
+    }
+
+    // used for webkit workaround
+    this._previousURL = this.getURL();
   },
 
   /**
+   Replaces the current state.
+
    @private
-
-   Replaces the current state
-
    @method replaceState
    @param path {String}
   */
   replaceState: function(path) {
-    window.history.replaceState({ path: path }, null, path);
+    var state = { path: path };
+
+    get(this, 'history').replaceState(state, null, path);
+
+    // store state if browser doesn't support `history.state`
+    if (!supportsHistoryState) {
+      this._historyState = state;
+    }
+
+    // used for webkit workaround
+    this._previousURL = this.getURL();
   },
 
   /**
-    @private
-
     Register a callback to be invoked whenever the browser
     history changes, including using forward and back buttons.
 
+    @private
     @method onUpdateURL
     @param callback {Function}
   */
   onUpdateURL: function(callback) {
-    var guid = Ember.guidFor(this),
+    var guid = guidFor(this),
         self = this;
 
-    Ember.$(window).bind('popstate.ember-location-'+guid, function(e) {
-      if(!popstateReady) {
-        return;
+    jQuery(window).on('popstate.ember-location-'+guid, function(e) {
+      // Ignore initial page load popstate event in Chrome
+      if (!popstateFired) {
+        popstateFired = true;
+        if (self.getURL() === self._previousURL) { return; }
       }
       callback(self.getURL());
     });
   },
 
   /**
-    @private
-
     Used when using `{{action}}` helper.  The url is always appended to the rootURL.
 
+    @private
     @method formatURL
     @param url {String}
+    @return formatted url {String}
   */
   formatURL: function(url) {
-    var rootURL = get(this, 'rootURL');
+    var rootURL = get(this, 'rootURL'),
+        baseURL = get(this, 'baseURL');
 
     if (url !== '') {
       rootURL = rootURL.replace(/\/$/, '');
+      baseURL = baseURL.replace(/\/$/, '');
+    } else if(baseURL.match(/^\//) && rootURL.match(/^\//)) {
+      baseURL = baseURL.replace(/\/$/, '');
     }
 
-    return rootURL + url;
+    return baseURL + rootURL + url;
   },
 
-  willDestroy: function() {
-    var guid = Ember.guidFor(this);
+  /**
+    Cleans up the HistoryLocation event listener.
 
-    Ember.$(window).unbind('popstate.ember-location-'+guid);
+    @private
+    @method willDestroy
+  */
+  willDestroy: function() {
+    var guid = guidFor(this);
+
+    jQuery(window).off('popstate.ember-location-'+guid);
   }
 });
-
-Ember.Location.registerImplementation('history', Ember.HistoryLocation);

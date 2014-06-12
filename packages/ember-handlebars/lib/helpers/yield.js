@@ -3,9 +3,16 @@
 @submodule ember-handlebars
 */
 
-var get = Ember.get, set = Ember.set;
+import Ember from "ember-metal/core";
+// var emberAssert = Ember.assert;
+
+import { get } from "ember-metal/property_get";
 
 /**
+  `{{yield}}` denotes an area of a template that will be rendered inside
+  of another template. It has two main uses:
+
+  ### Use with `layout`
   When used in a Handlebars template that is assigned to an `Ember.View`
   instance's `layout` property Ember will render the layout template first,
   inserting the view's own rendered output at the `{{yield}}` location.
@@ -48,7 +55,34 @@ var get = Ember.get, set = Ember.set;
   bView.appendTo('body');
 
   // throws
-  // Uncaught Error: assertion failed: You called yield in a template that was not a layout
+  // Uncaught Error: assertion failed:
+  // You called yield in a template that was not a layout
+  ```
+
+  ### Use with Ember.Component
+  When designing components `{{yield}}` is used to denote where, inside the component's
+  template, an optional block passed to the component should render:
+
+  ```handlebars
+  <!-- application.hbs -->
+  {{#labeled-textfield value=someProperty}}
+    First name:
+  {{/labeled-textfield}}
+  ```
+
+  ```handlebars
+  <!-- components/labeled-textfield.hbs -->
+  <label>
+    {{yield}} {{input value=value}}
+  </label>
+  ```
+
+  Result:
+
+  ```html
+  <label>
+    First name: <input type="text" />
+  </label>
   ```
 
   @method yield
@@ -56,16 +90,18 @@ var get = Ember.get, set = Ember.set;
   @param {Hash} options
   @return {String} HTML string
 */
-Ember.Handlebars.registerHelper('yield', function(options) {
-  var view = options.data.view, template;
+export default function yieldHelper(options) {
+  var view = options.data.view;
 
   while (view && !get(view, 'layout')) {
-    view = get(view, 'parentView');
+    if (view._contextView) {
+      view = view._contextView;
+    } else {
+      view = get(view, '_parentView');
+    }
   }
 
   Ember.assert("You called yield in a template that was not a layout", !!view);
 
-  template = get(view, 'template');
-
-  if (template) { template(this, options); }
-});
+  view._yield(this, options);
+}

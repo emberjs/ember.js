@@ -1,6 +1,8 @@
+import { canInvoke } from "ember-metal/utils";
+
 var obj;
 
-module("Ember.canInvoke", {
+QUnit.module("Ember.canInvoke", {
   setup: function() {
     obj = {
       foobar: "foobar",
@@ -14,17 +16,17 @@ module("Ember.canInvoke", {
 });
 
 test("should return false if the object doesn't exist", function() {
-  equal(Ember.canInvoke(undefined, 'aMethodThatDoesNotExist'), false);
+  equal(canInvoke(undefined, 'aMethodThatDoesNotExist'), false);
 });
 
 test("should return true if the method exists on the object", function() {
-  equal(Ember.canInvoke(obj, 'aMethodThatExists'), true);
+  equal(canInvoke(obj, 'aMethodThatExists'), true);
 });
 
 test("should return false if the method doesn't exist on the object", function() {
-  equal(Ember.canInvoke(obj, 'aMethodThatDoesNotExist'), false);
+  equal(canInvoke(obj, 'aMethodThatDoesNotExist'), false);
 });
 
 test("should return false if the property exists on the object but is a non-function", function() {
-  equal(Ember.canInvoke(obj, 'foobar'), false);
+  equal(canInvoke(obj, 'foobar'), false);
 });
