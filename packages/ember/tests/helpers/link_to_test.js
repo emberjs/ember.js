@@ -453,40 +453,40 @@ if(Ember.FEATURES.isEnabled('ember-routing-linkto-target-attribute')) {
   test("The {{link-to}} helper supports `target` attribute", function() {
     Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}");
     bootApplication();
-    
+
     Ember.run(function() {
       router.handleURL("/");
     });
-    
+
     var link = Ember.$('#self-link', '#qunit-fixture');
     equal(link.attr('target'), '_blank', "The self-link contains `target` attribute");
   });
-  
+
   test("The {{link-to}} helper does not call preventDefault if `target` attribute is provided", function() {
     Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}");
     bootApplication();
-    
+
     Ember.run(function() {
       router.handleURL("/");
     });
-    
+
     var event = Ember.$.Event("click");
     Ember.$('#self-link', '#qunit-fixture').trigger(event);
-    
+
     equal(event.isDefaultPrevented(), false, "should not preventDefault when target attribute is specified");
   });
 
   test("The {{link-to}} helper should preventDefault when `target = _self`", function() {
     Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#link-to 'index' id='self-link' target='_self'}}Self{{/link-to}}");
     bootApplication();
-    
+
     Ember.run(function() {
       router.handleURL("/");
     });
-    
+
     var event = Ember.$.Event("click");
     Ember.$('#self-link', '#qunit-fixture').trigger(event);
-    
+
     equal(event.isDefaultPrevented(), true, "should preventDefault when target attribute is `_self`");
   });
 }
@@ -1582,7 +1582,7 @@ test("when link-to eagerly updates url, the path it provides does NOT include th
       pathname: '/app/',
       protocol: 'http:',
       port: '',
-      search: '',
+      search: ''
     },
 
     // Don't actually touch the URL

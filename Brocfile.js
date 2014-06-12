@@ -141,7 +141,7 @@ var vendoredPackages = {
   'metamorph':        vendoredPackage('metamorph'),
   'backburner':       vendoredPackage('backburner'),
   'router':           vendoredPackage('router'),
-  'route-recognizer': vendoredPackage('route-recognizer'),
+  'route-recognizer': vendoredPackage('route-recognizer')
 };
 
 var emberHandlebarsCompiler = pickFiles('packages/ember-handlebars-compiler/lib', {
@@ -318,7 +318,7 @@ function buildRuntimeTree() {
 }
 
 var prodCompiledSource = removeFile(sourceTrees, {
-  srcFile: 'ember-debug.js',
+  srcFile: 'ember-debug.js'
 });
 
 prodCompiledSource = concatES6(prodCompiledSource, {
@@ -332,7 +332,7 @@ prodCompiledSource = concatES6(prodCompiledSource, {
 
 var minCompiledSource = moveFile(prodCompiledSource, {
   srcFile: 'ember.prod.js',
-  destFile: 'ember.min.js',
+  destFile: 'ember.min.js'
 });
 minCompiledSource = uglifyJavaScript(minCompiledSource);
 

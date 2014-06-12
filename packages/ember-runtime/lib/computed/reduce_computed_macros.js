@@ -640,7 +640,7 @@ var SearchProxy = ObjectProxy.extend();
         return -1;
       }
       return 0;
-    }),
+    })
   });
   var todoList = ToDoList.create({todos: [
     {name: 'Unit Test', priority: 2},

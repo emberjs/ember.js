@@ -72,7 +72,7 @@ var Route = EmberObject.extend(ActionHandler, {
 
     ```js
     var PostsList = Ember.Route.extend({
-      viewName: 'postsList',
+      viewName: 'postsList'
     });
 
     App.PostsIndexRoute = PostsList.extend();
