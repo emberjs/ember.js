@@ -81,7 +81,7 @@ var canSetNameOnInputs = (function() {
 })();
 
 /**
-  `Ember.RenderBuffer` gathers information regarding the a view and generates the
+  `Ember.RenderBuffer` gathers information regarding the view and generates the
   final representation. `Ember.RenderBuffer` will generate HTML which can be pushed
   to the DOM.
 
