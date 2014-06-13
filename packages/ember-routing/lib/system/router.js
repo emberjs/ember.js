@@ -16,6 +16,7 @@ import EmberRouterDSL from "ember-routing/system/dsl";
 import EmberView from "ember-views/views/view";
 import EmberLocation from "ember-routing/location/api";
 import { _MetamorphView } from "ember-handlebars/views/metamorph_view";
+import { routeArgs, getActiveTargetName, stashParamNames } from "ember-routing-handlebars/helpers/shared";
 
 // requireModule("ember-handlebars");
 // requireModule("ember-runtime");
@@ -34,8 +35,9 @@ import { _MetamorphView } from "ember-handlebars/views/metamorph_view";
 var Router = requireModule("router")['default'];
 var Transition = requireModule("router/transition").Transition;
 
-var slice = [].slice;
+var slice = Array.prototype.slice;
 var forEach = EnumerableUtils.forEach;
+var map = EnumerableUtils.map;
 
 var DefaultView = _MetamorphView;
 
@@ -163,11 +165,30 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   handleURL: function(url) {
-    return this._doTransition('handleURL', [url]);
+    return this._doURLTransition('handleURL', url);
+  },
+
+  _doURLTransition: function(routerJsMethod, url) {
+    var transition = this.router[routerJsMethod](url || '/');
+    listenForTransitionErrors(transition);
+    return transition;
   },
 
   transitionTo: function() {
-    return this._doTransition('transitionTo', arguments);
+    var args = slice.call(arguments), queryParams;
+    if (resemblesURL(args[0])) {
+      return this._doURLTransition('transitionTo', args[0]);
+    }
+
+    var possibleQueryParams = args[args.length-1];
+    if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
+      queryParams = args.pop().queryParams;
+    } else {
+      queryParams = {};
+    }
+
+    var targetRouteName = args.shift();
+    return this._doTransition(targetRouteName, args, queryParams);
   },
 
   intermediateTransitionTo: function() {
@@ -182,7 +203,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   replaceWith: function() {
-    return this._doTransition('replaceWith', arguments);
+    return this.transitionTo.apply(this, arguments).method('replace');
   },
 
   generate: function() {
@@ -199,6 +220,23 @@ var EmberRouter = EmberObject.extend(Evented, {
     @private
   */
   isActive: function(routeName) {
+    var router = this.router;
+    return router.isActive.apply(router, arguments);
+  },
+
+  /**
+    An alternative form of `isActive` that doesn't require
+    manual concatenation of the arguments into a single
+    array.
+
+    @method isActive
+    @param routeName
+    @param models
+    @param queryParams
+    @return {Boolean}
+    @private
+  */
+  isActiveIntent: function(routeName, models, queryParams) {
     var router = this.router;
     return router.isActive.apply(router, arguments);
   },
@@ -336,83 +374,77 @@ var EmberRouter = EmberObject.extend(Evented, {
     };
   },
 
-  _doTransition: function(method, args) {
-    // Normalize blank route to root URL.
-    args = slice.call(args);
-    args[0] = args[0] || '/';
+  _serializeQueryParams: function(targetRouteName, queryParams) {
+    var groupedByUrlKey = {};
 
-    var name = args[0], self = this,
-      isQueryParamsOnly = false, queryParams;
+    forEachQueryParam(this, targetRouteName, queryParams, function(key, value, qp) {
+      var urlKey = qp.urlKey;
+      if (!groupedByUrlKey[urlKey]) {
+        groupedByUrlKey[urlKey] = [];
+      }
+      groupedByUrlKey[urlKey].push({
+        qp: qp,
+        value: value
+      });
+      delete queryParams[key];
+    });
 
+    for (var key in groupedByUrlKey) {
+      var qps = groupedByUrlKey[key];
+      if (qps.length > 1) {
+        var qp0 = qps[0].qp, qp1=qps[1].qp;
+        Ember.assert(fmt("You're not allowed to have more than one controller property map to the same query param key, but both `%@` and `%@` map to `%@`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `%@: { as: 'other-%@' }`", [qp0.fprop, qp1.fprop, qp0.urlKey, qp0.prop, qp0.prop]), false);
+      }
+      var qp = qps[0].qp;
+      queryParams[qp.urlKey] = qp.route.serializeQueryParam(qps[0].value, qp.urlKey, qp.type);
+    }
+  },
+
+  _deserializeQueryParams: function(targetRouteName, queryParams) {
+    forEachQueryParam(this, targetRouteName, queryParams, function(key, value, qp) {
+      delete queryParams[key];
+      queryParams[qp.prop] = qp.route.deserializeQueryParam(value, qp.urlKey, qp.type);
+    });
+  },
+
+  _pruneDefaultQueryParamValues: function(targetRouteName, queryParams) {
+    var qps = this._queryParamsFor(targetRouteName);
+    for (var key in queryParams) {
+      var qp = qps.map[key];
+      if (qp && qp.sdef === queryParams[key]) {
+        delete queryParams[key];
+      }
+    }
+  },
+
+  _doTransition: function(_targetRouteName, models, _queryParams) {
+    var targetRouteName = _targetRouteName || getActiveTargetName(this.router);
+    Ember.assert("The route " + targetRouteName + " was not found", targetRouteName && this.router.hasRoute(targetRouteName));
+
+    var queryParams = {};
     if (Ember.FEATURES.isEnabled("query-params-new")) {
-
-      var possibleQueryParamArg = args[args.length - 1];
-      if (possibleQueryParamArg && possibleQueryParamArg.hasOwnProperty('queryParams')) {
-        if (args.length === 1) {
-          isQueryParamsOnly = true;
-          name = null;
-        }
-        queryParams = args[args.length - 1].queryParams;
-      }
+      merge(queryParams, _queryParams);
+      this._prepareQueryParams(targetRouteName, models, queryParams);
     }
 
-    if (!isQueryParamsOnly && name.charAt(0) !== '/') {
-      Ember.assert("The route " + name + " was not found", this.router.hasRoute(name));
-    }
+    var transitionArgs = routeArgs(targetRouteName, models, queryParams);
+    var transitionPromise = this.router.transitionTo.apply(this.router, transitionArgs);
 
-    if (queryParams) {
-      // router.js expects queryParams to be passed in in
-      // their final serialized form, so we need to translate.
+    listenForTransitionErrors(transitionPromise);
 
-      if (!name) {
-        // Need to determine destination route name.
-        var handlerInfos = this.router.activeTransition ?
-                           this.router.activeTransition.state.handlerInfos :
-                           this.router.state.handlerInfos;
-        name = handlerInfos[handlerInfos.length - 1].name;
-        args.unshift(name);
-      }
-
-      var qpCache = this._queryParamsFor(name), qps = qpCache.qps;
-
-      var finalParams = {};
-      for (var key in queryParams) {
-        if (!queryParams.hasOwnProperty(key)) { continue; }
-        var inputValue = queryParams[key],
-            qp = qpCache.map[key];
-
-        if (!qp) {
-          throw new EmberError("Unrecognized query param " + key + " provided as transition argument");
-        }
-        finalParams[qp.urlKey] = qp.route.serializeQueryParam(inputValue, qp.urlKey, qp.type);
-      }
-
-      // Perform any necessary serialization.
-      args[args.length-1].queryParams = finalParams;
-    }
-
-    var transitionPromise = this.router[method].apply(this.router, args);
-
-    transitionPromise.then(null, function(error) {
-      if (!error || !error.name) { return; }
-
-      if (error.name === "UnrecognizedURLError") {
-        Ember.assert("The URL '" + error.message + "' did not match any routes in your application");
-      } else if (error.name === 'TransitionAborted') {
-        // just ignore TransitionAborted here
-      } else {
-        throw error;
-      }
-
-      return error;
-    }, 'Ember: Process errors from Router');
-
-    // We want to return the configurable promise object
-    // so that callers of this function can use `.method()` on it,
-    // which obviously doesn't exist for normal RSVP promises.
     return transitionPromise;
   },
 
+  _prepareQueryParams: function(targetRouteName, models, queryParams) {
+    this._hydrateUnsuppliedQueryParams(targetRouteName, models, queryParams);
+    this._serializeQueryParams(targetRouteName, queryParams);
+    this._pruneDefaultQueryParamValues(targetRouteName, queryParams);
+  },
+
+  /**
+    Returns a merged query params meta object for a given route.
+    Useful for asking a route what its known query params are.
+   */
   _queryParamsFor: function(leafRouteName) {
     if (this._qpCache[leafRouteName]) {
       return this._qpCache[leafRouteName];
@@ -443,6 +475,57 @@ var EmberRouter = EmberObject.extend(Evented, {
     };
   },
 
+  /*
+    becomeResolved: function(payload, resolvedContext) {
+      var params = this.serialize(resolvedContext);
+
+      if (payload) {
+        this.stashResolvedModel(payload, resolvedContext);
+        payload.params = payload.params || {};
+        payload.params[this.name] = params;
+      }
+
+      return this.factory('resolved', {
+        context: resolvedContext,
+        name: this.name,
+        handler: this.handler,
+        params: params
+      });
+    },
+  */
+
+  _hydrateUnsuppliedQueryParams: function(leafRouteName, contexts, queryParams) {
+    var state = calculatePostTransitionState(this, leafRouteName, contexts);
+    var handlerInfos = state.handlerInfos;
+    var appCache = this._bucketCache;
+
+    stashParamNames(this, handlerInfos);
+
+    for (var i = 0, len = handlerInfos.length; i < len; ++i) {
+      var route = handlerInfos[i].handler;
+      var qpMeta = get(route, '_qp');
+
+      for (var j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
+        var qp = qpMeta.qps[j];
+        var presentProp = qp.prop in queryParams  && qp.prop ||
+                          qp.fprop in queryParams && qp.fprop;
+
+        if (presentProp) {
+          if (presentProp !== qp.fprop) {
+            queryParams[qp.fprop] = queryParams[presentProp];
+            delete queryParams[presentProp];
+          }
+        } else {
+          var controllerProto = qp.cProto;
+          var cacheMeta = get(controllerProto, '_cacheMeta');
+
+          var cacheKey = controllerProto._calculateCacheKey(qp.ctrl, cacheMeta[qp.prop].parts, state.params);
+          queryParams[qp.fprop] = appCache.lookup(cacheKey, qp.prop, qp.def);
+        }
+      }
+    }
+  },
+
   _scheduleLoadingEvent: function(transition, originRoute) {
     this._cancelLoadingEvent();
     this._loadingStateTimer = run.scheduleOnce('routerTransitions', this, '_fireLoadingEvent', transition, originRoute);
@@ -465,21 +548,6 @@ var EmberRouter = EmberObject.extend(Evented, {
     this._loadingStateTimer = null;
   }
 });
-
-function controllerOrProtoFor(controllerName, container, getProto) {
-  var fullName = container.normalize('controller:' + controllerName);
-  if (!getProto && container.cache.has(fullName)) {
-    return container.lookup(fullName);
-  } else {
-    // Controller hasn't been instantiated yet; just return its proto.
-    var controllerClass = container.lookupFactory(fullName);
-    if (controllerClass && typeof controllerClass.proto === 'function') {
-      return controllerClass.proto();
-    } else {
-      return {};
-    }
-  }
-}
 
 /*
   Helper function for iterating root-ward, starting
@@ -644,6 +712,22 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
   }
 }
 
+function calculatePostTransitionState(emberRouter, leafRouteName, contexts) {
+  var routerjs = emberRouter.router;
+  var state = routerjs.applyIntent(leafRouteName, contexts);
+  var handlerInfos = state.handlerInfos;
+  var params = state.params;
+
+  for (var i = 0, len = handlerInfos.length; i < len; ++i) {
+    var handlerInfo = handlerInfos[i];
+    if (!handlerInfo.isResolved) {
+      handlerInfo = handlerInfo.becomeResolved(null, handlerInfo.context);
+    }
+    params[handlerInfo.name] = handlerInfo.params;
+  }
+  return state;
+}
+
 function updatePaths(router) {
   var appController = router.container.lookup('controller:application');
 
@@ -737,5 +821,42 @@ EmberRouter.reopenClass({
     return path.join(".");
   }
 });
+
+function listenForTransitionErrors(transition) {
+  transition.then(null, function(error) {
+    if (!error || !error.name) { return; }
+
+    if (error.name === "UnrecognizedURLError") {
+      Ember.assert("The URL '" + error.message + "' did not match any routes in your application");
+    } else if (error.name === 'TransitionAborted') {
+      // just ignore TransitionAborted here
+    } else {
+      throw error;
+    }
+
+    return error;
+  }, 'Ember: Process errors from Router');
+}
+
+function resemblesURL(str) {
+  return typeof str === 'string' && ( str === '' || str.charAt(0) === '/');
+}
+
+function forEachQueryParam(router, targetRouteName, queryParams, callback) {
+  if (!Ember.FEATURES.isEnabled("query-params-new")) { return {}; }
+
+  var qpCache = router._queryParamsFor(targetRouteName),
+      qps = qpCache.qps;
+
+  for (var key in queryParams) {
+    if (!queryParams.hasOwnProperty(key)) { continue; }
+    var value = queryParams[key],
+        qp = qpCache.map[key];
+
+    if (qp) {
+      callback(key, value, qp);
+    }
+  }
+}
 
 export default EmberRouter;

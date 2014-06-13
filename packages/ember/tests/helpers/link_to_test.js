@@ -288,7 +288,7 @@ test("The {{link-to}} helper supports custom, nested, currentWhen", function() {
   equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, "The link is active since currentWhen is a parent route");
 });
 
-test("The {{link-to}} helper does not disregards currentWhen when it is given explicitly for a resource", function() {
+test("The {{link-to}} helper does not disregard currentWhen when it is given explicitly for a resource", function() {
   Router.map(function(match) {
     this.resource("index", { path: "/" }, function() {
       this.route("about");
@@ -522,9 +522,7 @@ test("Issue 4201 - Shorthand for route.index shouldn't throw errors about contex
   expect(2);
   Router.map(function() {
     this.resource('lobby', function() {
-      this.route('index', {
-        path: ':lobby_id'
-      });
+      this.route('index', { path: ':lobby_id' });
       this.route('list');
     });
   });
@@ -547,7 +545,11 @@ test("Issue 4201 - Shorthand for route.index shouldn't throw errors about contex
 });
 
 test("The {{link-to}} helper unwraps controllers", function() {
-  expect(3);
+  if (Ember.FEATURES.isEnabled("query-params-new")) {
+    expect(5);
+  } else {
+    expect(3);
+  }
 
   Router.map(function() {
     this.route('filter', { path: '/filters/:filter' });
@@ -1252,13 +1254,11 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, "controller QP properties not");
   });
 
-  test("doesn't update controller QP properties on current route when invoked (inferred route)", function() {
+  test("link-to with no params throws", function() {
     Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to id='the-link'}}Index{{/link-to}}");
-    bootApplication();
-
-    Ember.run(Ember.$('#the-link'), 'click');
-    var indexController = container.lookup('controller:index');
-    deepEqual(indexController.getProperties('foo', 'bar'), { foo: '123', bar: 'abc' }, "controller QP properties not");
+    expectAssertion(function() {
+      bootApplication();
+    }, /one or more/);
   });
 
   test("doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)", function() {
@@ -1358,7 +1358,6 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       "{{#link-to (query-params search='same' archive=true) id='both-same'}}Index{{/link-to}} " +
       "{{#link-to (query-params search='different' archive=true) id='change-one'}}Index{{/link-to}} " +
       "{{#link-to (query-params search='different' archive=false) id='remove-one'}}Index{{/link-to}} " +
-      "{{#link-to id='change-nothing'}}Index{{/link-to}} " +
       "{{outlet}}"
     );
 
@@ -1371,8 +1370,6 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       "{{#link-to (query-params search='change' sort='title') id='change-search-same-sort-child-and-parent'}}Index{{/link-to}} " +
       "{{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}} "
     );
-
-
 
     Router.map(function() {
       this.resource("search", function() {
@@ -1414,17 +1411,19 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     shouldNotBeActive('#same-search-add-archive');
     shouldNotBeActive('#only-add-archive');
     shouldNotBeActive('#remove-one');
-    shouldBeActive('#change-nothing');
 
     Ember.run(function() {
-      router.handleURL("/search?search=same&archive");
+      router.handleURL("/search?search=same&archive=true");
     });
     shouldBeActive('#both-same');
     shouldNotBeActive('#change-one');
 
     //Nested Controllers
     Ember.run(function() {
-      router.handleURL("/search/results?search=same&sort=title&showDetails");
+      // Note: this is kind of a strange case; sort's default value is 'title',
+      // so this URL shouldn't have been generated in the first place, but
+      // we should also be able to gracefully handle these cases.
+      router.handleURL("/search/results?search=same&sort=title&showDetails=true");
     });
     shouldBeActive('#same-sort-child-only');
     shouldBeActive('#same-search-parent-only');
@@ -1432,26 +1431,23 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     shouldBeActive('#same-search-same-sort-child-and-parent');
     shouldNotBeActive('#same-search-different-sort-child-and-parent');
     shouldNotBeActive('#change-search-same-sort-child-and-parent');
-
-
   });
 
   test("The {{link-to}} applies active class when query-param is number", function() {
-      Ember.TEMPLATES.index = Ember.Handlebars.compile(
-        "{{#link-to (query-params page=pageNumber) id='page-link'}}Index{{/link-to}} ");
+    Ember.TEMPLATES.index = Ember.Handlebars.compile(
+      "{{#link-to (query-params page=pageNumber) id='page-link'}}Index{{/link-to}} ");
 
-      App.IndexController = Ember.Controller.extend({
-        queryParams: ['page'],
-        page: 1,
-        pageNumber: 5
-      });
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['page'],
+      page: 1,
+      pageNumber: 5
+    });
 
-      bootApplication();
+    bootApplication();
 
-      shouldNotBeActive('#page-link');
-      Ember.run(router, 'handleURL', '/?page=5');
-      shouldBeActive('#page-link');
-
+    shouldNotBeActive('#page-link');
+    Ember.run(router, 'handleURL', '/?page=5');
+    shouldBeActive('#page-link');
   });
 
   test("The {{link-to}} applies active class when query-param is array", function() {
@@ -1486,7 +1482,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       shouldNotBeActive('#empty-link');
   });
 
-  test("The {{link-to}} applies active class to parent route", function() {
+  test("The {{link-to}} helper applies active class to parent route", function() {
     App.Router.map(function() {
       this.resource('parent', function() {
         this.route('child');
@@ -1509,6 +1505,42 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     shouldNotBeActive('#parent-child-link');
     Ember.run(router, 'handleURL', '/parent/child?foo=dog');
     shouldBeActive('#parent-link');
+  });
+
+  test("The {{link-to}} helper disregards query-params in activeness computation when currentWhen specified", function() {
+    App.Router.map(function() {
+      this.route('parent');
+    });
+
+    Ember.TEMPLATES.application = Ember.Handlebars.compile(
+        "{{#link-to 'parent' (query-params page=1) currentWhen='parent' id='app-link'}}Parent{{/link-to}} {{outlet}}");
+    Ember.TEMPLATES.parent = Ember.Handlebars.compile(
+        "{{#link-to 'parent' (query-params page=1) currentWhen='parent' id='parent-link'}}Parent{{/link-to}} {{outlet}}");
+
+    App.ParentController = Ember.ObjectController.extend({
+      queryParams: ['page'],
+      page: 1
+    });
+
+    bootApplication();
+    equal(Ember.$('#app-link').attr('href'), '/parent');
+    shouldNotBeActive('#app-link');
+
+    Ember.run(router, 'handleURL', '/parent?page=2');
+    equal(Ember.$('#app-link').attr('href'), '/parent');
+    shouldBeActive('#app-link');
+    equal(Ember.$('#parent-link').attr('href'), '/parent');
+    shouldBeActive('#parent-link');
+
+    var parentController = container.lookup('controller:parent');
+    equal(parentController.get('page'), 2);
+    Ember.run(parentController, 'set', 'page', 3);
+    equal(router.get('location.path'), '/parent?page=3');
+    shouldBeActive('#app-link');
+    shouldBeActive('#parent-link');
+
+    Ember.$('#app-link').click();
+    equal(router.get('location.path'), '/parent');
   });
 }
 
