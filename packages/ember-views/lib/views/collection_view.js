@@ -290,7 +290,7 @@ var CollectionView = ContainerView.extend({
 
     @method arrayWillChange
     @param {Array} content the managed collection of objects
-    @param {Number} start the index at which the changes will occurr
+    @param {Number} start the index at which the changes will occur
     @param {Number} removed number of object to be removed from content
   */
   arrayWillChange: function(content, start, removedCount) {
@@ -307,6 +307,10 @@ var CollectionView = ContainerView.extend({
     var childViews = this._childViews, childView, idx, len;
 
     len = this._childViews.length;
+
+    if (removedCount > len) {
+      removedCount = len;
+    }
 
     var removingAll = removedCount === len;
 

@@ -750,3 +750,24 @@ test("should lookup from only global path against the container if emptyView is 
     return EmptyView;
   }
 });
+
+test("arrayWillChange can be given a removedCount greater than the length of the child views and not explode", function() {
+  var content = Ember.A(['foo', 'bar', 'baz']);
+
+  view = CollectionView.create({
+    content: content,
+    tagName: 'div',
+
+    itemViewClass: View.extend({
+      render: function(buf) {
+        buf.push(get(this, 'content'));
+      }
+    })
+  });
+
+  view.currentState.empty = function(self) { equal(view, self); };
+
+  run(function() {
+    view.arrayWillChange(content, 0, 42);
+  });
+});
