@@ -781,6 +781,128 @@ var Application = Namespace.extend(DeferredMixin, {
 
 Application.reopenClass({
   initializers: {},
+
+  /**
+    Initializer receives an object which has the following attributes:
+    `name`, `before`, `after`, `initialize`. The only required attribute is
+    `initialize, all others are optional.
+
+    * `name` allows you to specify under which name the initializer is registered.
+    This must be a unique name, as trying to register two initializers with the
+    same name will result in an error.
+
+    ```javascript
+    Ember.Application.initializer({
+      name: 'namedInitializer',
+      initialize: function(container, application) {
+        Ember.debug("Running namedInitializer!");
+      }
+    });
+    ```
+
+    * `before` and `after` are used to ensure that this initializer is ran prior
+    or after the one identified by the value. This value can be a single string
+    or an array of strings, referencing the `name` of other initializers. Please
+    note that you cannot specify both attributes for the same initializer.
+
+    An example of ordering initializers, we create an initializer named `first`:
+
+    ```javascript
+    Ember.Application.initializer({
+      name: 'first',
+      initialize: function(container, application) {
+        Ember.debug("First initializer!");
+      }
+    });
+
+    // DEBUG: First initializer!
+    ```
+
+    We add another initializer named `second`, specifying that it should run
+    after the initializer named `first`:
+
+    ```javascript
+    Ember.Application.initializer({
+      name: 'second',
+      after: 'first',
+
+      initialize: function(container, application) {
+        Ember.debug("Second initializer!");
+      }
+    });
+
+    // DEBUG: First initializer!
+    // DEBUG: Second initializer!
+    ```
+
+    Afterwards we add a further initializer named `pre`, this time specifying
+    that it should run before the initializer named `first`:
+
+    ```javascript
+    Ember.Application.initializer({
+      name: 'pre',
+      before: 'first',
+
+      initialize: function(container, application) {
+        Ember.debug("Pre initializer!");
+      }
+    });
+
+    // DEBUG: Pre initializer!
+    // DEBUG: First initializer!
+    // DEBUG: Second initializer!
+    ```
+
+    Finally we add an initializer named `post`, specifying it should run after
+    both the `first` and the `second` initializers:
+
+    ```javascript
+    Ember.Application.initializer({
+      name: 'post',
+      after: ['first', 'second'],
+
+      initialize: function(container, application) {
+        Ember.debug("Post initializer!");
+      }
+    });
+
+    // DEBUG: Pre initializer!
+    // DEBUG: First initializer!
+    // DEBUG: Second initializer!
+    // DEBUG: Post initializer!
+    ```
+
+    * `initialize` is a callback function that receives two arguments, `container`
+    and `application` on which you can operate.
+
+    Example of using `container` to preload data into the store:
+
+    ```javascript
+    Ember.Application.initializer({
+      name: "preload-data",
+
+      initialize: function(container, application) {
+        var store = container.lookup('store:main');
+        store.pushPayload(preloadedData);
+      }
+    });
+    ```
+
+    Example of using `application` to register an adapter:
+
+    ```javascript
+    Ember.Application.initializer({
+      name: 'api-adapter',
+
+      initialize: function(container, application) {
+        application.register('api-adapter:main', ApiAdapter);
+      }
+    });
+    ```
+
+    @method initializer
+    @param initializer {Object}
+   */
   initializer: function(initializer) {
     // If this is the first initializer being added to a subclass, we are going to reopen the class
     // to make sure we have a new `initializers` object, which extends from the parent class' using
