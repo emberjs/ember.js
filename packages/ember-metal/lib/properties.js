@@ -38,11 +38,13 @@ export function Descriptor() {}
 // DEFINING PROPERTIES API
 //
 
-var MANDATORY_SETTER_FUNCTION = Ember.MANDATORY_SETTER_FUNCTION = function(value) {
-  Ember.assert("You must use Ember.set() to access this property (of " + this + ")", false);
+var MANDATORY_SETTER_FUNCTION = Ember.MANDATORY_SETTER_FUNCTION = function(name) {
+  return function(value) {
+    Ember.set(this, name, value);
+  };
 };
 
-var DEFAULT_GETTER_FUNCTION = Ember.DEFAULT_GETTER_FUNCTION = function DEFAULT_GETTER_FUNCTION(name) {
+var DEFAULT_GETTER_FUNCTION = Ember.DEFAULT_GETTER_FUNCTION = function(name) {
   return function() {
     var meta = this[META_KEY];
     return meta && meta.values[name];

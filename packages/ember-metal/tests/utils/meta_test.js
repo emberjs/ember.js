@@ -21,6 +21,14 @@ test("should return the same hash for an object", function() {
   equal(meta(obj).foo, "bar", "returns same hash with multiple calls to Ember.meta()");
 });
 
+test("should provide an empty 'values' object as a default", function() {
+  var obj = {};
+
+  var subject = meta(obj).values;
+
+  equal(Ember.inspect(subject), '{}', 'should be an empty object');
+});
+
 QUnit.module("Ember.metaPath");
 
 test("should not create nested objects if writable is false", function() {

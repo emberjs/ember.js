@@ -11,7 +11,8 @@ import {
 var willCount, didCount,
     willKeys, didKeys,
     indexOf = EnumerableUtils.indexOf,
-    originalLookup, lookup, Global;
+    originalLookup, lookup, Global,
+    originalSet;
 
 QUnit.module('watch', {
   setup: function() {
@@ -21,10 +22,13 @@ QUnit.module('watch', {
 
     originalLookup = Ember.lookup;
     Ember.lookup = lookup = {};
+    originalSet = Ember.set;
   },
 
   teardown: function(){
     Ember.lookup = originalLookup;
+    Ember.set = originalSet;
+    Ember.ENV.MANDATORY_SETTER = false;
   }
 });
 
@@ -276,4 +280,21 @@ testBoth('watching "length" property on an array', function(get, set) {
 
   equal(get(arr, 'length'), 10, 'should get new value');
   equal(arr.length, 10, 'property should be accessible on arr');
+});
+
+test('setters defined by watch', function(){
+  expect(1);
+
+  var obj = {foo: 'bar'},
+      setterArguments = [];
+  Ember.ENV.MANDATORY_SETTER = true;
+
+  Ember.set = function() {
+    setterArguments = [].slice.call(arguments);
+  };
+
+  watch(obj, 'foo');
+  obj.foo = 'baz';
+
+  deepEqual(setterArguments, [obj, 'foo', 'baz'], 'should call "set" with the appropriate arguments');
 });
