@@ -24,9 +24,8 @@ import { computed } from "ember-metal/computed";
 import View from "ember-views/views/view";
 import {
   cloneStates,
-  states
+  states as viewStates
 } from "ember-views/views/states";
-var viewStates = states;
 
 import _MetamorphView from "ember-handlebars/views/metamorph_view";
 import { handlebarsGet } from "ember-handlebars/ext";
@@ -135,7 +134,7 @@ SimpleHandlebarsView.prototype = {
   }
 };
 
-states = cloneStates(viewStates);
+var states = cloneStates(viewStates);
 
 merge(states._default, {
   rerenderIfNeeded: K

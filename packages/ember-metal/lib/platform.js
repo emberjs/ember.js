@@ -147,6 +147,8 @@ platform.defineProperty = defineProperty;
 */
 platform.hasPropertyAccessors = true;
 
+var definePropertyIsSimulated = false;
+
 if (!platform.defineProperty) {
   platform.hasPropertyAccessors = false;
 
@@ -154,7 +156,7 @@ if (!platform.defineProperty) {
     if (!desc.get) { obj[keyName] = desc.value; }
   };
 
-  platform.defineProperty.isSimulated = true;
+  definePropertyIsSimulated = platform.defineProperty.isSimulated = true;
 }
 
 if (Ember.ENV.MANDATORY_SETTER && !platform.hasPropertyAccessors) {
@@ -163,5 +165,7 @@ if (Ember.ENV.MANDATORY_SETTER && !platform.hasPropertyAccessors) {
 
 export {
   create,
-  platform
+  platform,
+  definePropertyIsSimulated,
+  defineProperty
 };
