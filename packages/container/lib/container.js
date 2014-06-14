@@ -582,8 +582,10 @@ Container.prototype = {
     validateFullName(fullName);
 
     if (this.factoryCache.has(normalizedName)) {
-      throw new Error("Attempted to register a factoryInjection for a type that has already been looked up. ('" + normalizedName + "', '" + property + "', '" + injectionName + "')");
+      throw new Error('Attempted to register a factoryInjection for a type that has already ' +
+        'been looked up. (\'' + normalizedName + '\', \'' + property + '\', \'' + injectionName + '\')');
     }
+
     addInjection(this.factoryInjections, normalizedName, property, normalizedInjectionName);
   },
 
@@ -594,7 +596,7 @@ Container.prototype = {
     @method destroy
   */
   destroy: function() {
-    for (var i=0, l=this.children.length; i<l; i++) {
+    for (var i = 0, length = this.children.length; i < length; i++) {
       this.children[i].destroy();
     }
 
@@ -612,9 +614,10 @@ Container.prototype = {
     @method reset
   */
   reset: function() {
-    for (var i=0, l=this.children.length; i<l; i++) {
+    for (var i = 0, length = this.children.length; i < length; i++) {
       resetCache(this.children[i]);
     }
+
     resetCache(this);
   }
 };
@@ -646,7 +649,7 @@ function lookup(container, fullName, options) {
 }
 
 function illegalChildOperation(operation) {
-  throw new Error(operation + " is not currently supported on child containers");
+  throw new Error(operation + ' is not currently supported on child containers');
 }
 
 function isSingleton(container, fullName) {
@@ -662,7 +665,7 @@ function buildInjections(container, injections) {
 
   var injection, injectable;
 
-  for (var i=0, l=injections.length; i<l; i++) {
+  for (var i = 0, length = injections.length; i < length; i++) {
     injection = injections[i];
     injectable = lookup(container, injection.fullName);
 
@@ -683,7 +686,7 @@ function option(container, fullName, optionName) {
     return options[optionName];
   }
 
-  var type = fullName.split(":")[0];
+  var type = fullName.split(':')[0];
   options = container._typeOptions.get(type);
 
   if (options) {
@@ -696,7 +699,7 @@ function factoryFor(container, fullName) {
   var factory = container.resolve(name);
   var injectedFactory;
   var cache = container.factoryCache;
-  var type = fullName.split(":")[0];
+  var type = fullName.split(':')[0];
 
   if (factory === undefined) { return; }
 
@@ -709,8 +712,7 @@ function factoryFor(container, fullName) {
     // for now just fallback to create time injection
     return factory;
   } else {
-
-    var injections        = injectionsFor(container, fullName);
+    var injections = injectionsFor(container, fullName);
     var factoryInjections = factoryInjectionsFor(container, fullName);
 
     factoryInjections._toString = container.makeToString(factory, fullName);
@@ -725,7 +727,7 @@ function factoryFor(container, fullName) {
 }
 
 function injectionsFor(container, fullName) {
-  var splitName = fullName.split(":"),
+  var splitName = fullName.split(':'),
     type = splitName[0],
     injections = [];
 
@@ -740,7 +742,7 @@ function injectionsFor(container, fullName) {
 }
 
 function factoryInjectionsFor(container, fullName) {
-  var splitName = fullName.split(":"),
+  var splitName = fullName.split(':'),
     type = splitName[0],
     factoryInjections = [];
 
@@ -761,6 +763,11 @@ function instantiate(container, fullName) {
   }
 
   if (factory) {
+    if (typeof factory.create !== 'function') {
+      throw new Error('Failed to create an instance of \'' + fullName + '\'. ' +
+        'Most likely an improperly defined class or an invalid module export.');
+    }
+
     if (typeof factory.extend === 'function') {
       // assume the factory was extendable and is already injected
       return factory.create();
