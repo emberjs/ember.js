@@ -13,7 +13,7 @@ function frag(element, string) {
   return range.createContextualFragment(string);
 }
 
-var hooks, helpers;
+var hooks, helpers, env;
 
 function registerHelper(name, callback) {
   helpers[name] = callback;
@@ -41,6 +41,11 @@ module("HTML-based compiler (output)", {
   setup: function() {
     helpers = {};
     hooks = hydrationHooks({ lookupHelper: lookupHelper });
+
+    env = {
+      hooks: hooks,
+      helpers: helpers
+    };
   }
 });
 
@@ -66,21 +71,21 @@ function equalHTML(fragment, html) {
 
 test("Simple content produces a document fragment", function() {
   var template = compile("content");
-  var fragment = template();
+  var fragment = template({}, env);
 
   equalHTML(fragment, "content");
 });
 
 test("Simple elements are created", function() {
   var template = compile("<h1>hello!</h1><div>content</div>");
-  var fragment = template();
+  var fragment = template({}, env);
 
   equalHTML(fragment, "<h1>hello!</h1><div>content</div>");
 });
 
 test("Simple elements can have attributes", function() {
   var template = compile("<div class='foo' id='bar'>content</div>");
-  var fragment = template();
+  var fragment = template({}, env);
 
   equalHTML(fragment, '<div class="foo" id="bar">content</div>');
 });
@@ -88,7 +93,7 @@ test("Simple elements can have attributes", function() {
 function shouldBeVoid(tagName) {
   var html = "<" + tagName + " data-foo='bar'><p>hello</p>";
   var template = compile(html);
-  var fragment = template();
+  var fragment = template({}, env);
 
 
   var div = document.createElement("div");
@@ -113,7 +118,7 @@ test("Void elements are self-closing", function() {
 test("The compiler can handle nesting", function() {
   var html = '<div class="foo"><p><span id="bar" data-foo="bar">hi!</span></p></div> More content';
   var template = compile(html);
-  var fragment = template();
+  var fragment = template({}, env);
 
   equalHTML(fragment, html);
 });
@@ -121,7 +126,7 @@ test("The compiler can handle nesting", function() {
 test("The compiler can handle foreign elements", function() {
   var html = '<svg><path stroke="black" d="M 0 0 L 100 100"></path></svg>';
   var template = compile(html);
-  var fragment = template();
+  var fragment = template({}, env);
 
   equalHTML(fragment, html);
 });
@@ -537,37 +542,36 @@ test("Attribute runs can contain helpers", function() {
 */
 test("A simple block helper can return the default document fragment", function() {
 
-  hooks.content = function(morph, path, context, params, options) {
-    morph.update(options.render(context));
+  hooks.content = function(morph, path, context, params, options, env) {
+    morph.update(options.render(context, env));
   };
 
   compilesTo('{{#testing}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
 });
 
 test("A simple block helper can return text", function() {
-  hooks.content = function(morph, path, context, params, options) {
-    morph.update(options.render(context));
+  hooks.content = function(morph, path, context, params, options, env) {
+    morph.update(options.render(context, env));
   };
 
   compilesTo('{{#testing}}test{{else}}not shown{{/testing}}', 'test');
 });
 
 test("A block helper can have an else block", function() {
-  hooks.content = function(morph, path, context, params, options) {
-    morph.update(options.inverse(context));
+  hooks.content = function(morph, path, context, params, options, env) {
+    morph.update(options.inverse(context, env));
   };
 
   compilesTo('{{#testing}}Nope{{else}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
 });
 
 test("A block helper can pass a context to be used in the child", function() {
-  var content = hooks.content;
-  hooks.content = function(morph, path, context, params, options) {
+  var originalContent = hooks.content;
+  hooks.content = function(morph, path, context, params, options, env) {
     if (path === 'testing') {
-      options.hooks = this;
-      morph.update(options.render({ title: 'Rails is omakase' }, options));
+      morph.update(options.render({ title: 'Rails is omakase' }, env));
     } else {
-      content.apply(this, arguments);
+      originalContent.apply(this, arguments);
     }
   };
 
@@ -575,14 +579,13 @@ test("A block helper can pass a context to be used in the child", function() {
 });
 
 test("A block helper can insert the document fragment manually", function() {
-  var content = hooks.content;
-  hooks.content = function(morph, path, context, params, options) {
+  var originalContent = hooks.content;
+  hooks.content = function(morph, path, context, params, options, env) {
     if (path === 'testing') {
-      options.hooks = this;
-      var frag = options.render({ title: 'Rails is omakase' }, options);
+      var frag = options.render({ title: 'Rails is omakase' }, env);
       morph.update(frag);
     } else {
-      content.apply(this, arguments);
+      originalContent.apply(this, arguments);
     }
   };
 
