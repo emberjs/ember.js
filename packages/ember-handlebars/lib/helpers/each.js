@@ -15,7 +15,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import CollectionView from "ember-views/views/collection_view";
 import { Binding } from "ember-metal/binding";
-import { ControllerMixin } from "ember-runtime/controllers/controller";
+import ControllerMixin from "ember-runtime/mixins/controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import EmberArray from "ember-runtime/mixins/array";
 import copy from "ember-runtime/copy";

@@ -1,5 +1,5 @@
 import run from "ember-metal/run_loop";
-import {Controller, ControllerMixin} from "ember-runtime/controllers/controller";
+import Controller from "ember-runtime/controllers/controller";
 
 test("passing a function for the actions hash triggers an assertion", function() {
   expect(1);

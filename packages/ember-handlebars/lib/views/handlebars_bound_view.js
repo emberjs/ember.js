@@ -28,7 +28,7 @@ import {
 } from "ember-views/views/states";
 var viewStates = states;
 
-import { _MetamorphView } from "ember-handlebars/views/metamorph_view";
+import _MetamorphView from "ember-handlebars/views/metamorph_view";
 import { handlebarsGet } from "ember-handlebars/ext";
 
 function SimpleHandlebarsView(path, pathRoot, isEscaped, templateData) {

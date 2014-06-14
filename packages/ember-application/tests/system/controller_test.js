@@ -1,6 +1,6 @@
 /*jshint newcap:false */
 
-import { Controller } from "ember-runtime/controllers/controller";
+import Controller from "ember-runtime/controllers/controller";
 import "ember-application/ext/controller";
 
 import Container from "ember-runtime/system/container";

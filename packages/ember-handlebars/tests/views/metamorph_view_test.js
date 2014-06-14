@@ -6,7 +6,7 @@ import { set } from "ember-metal/property_set";
 import { observer } from "ember-metal/mixin";
 import EmberHandlebars from "ember-handlebars-compiler";
 
-import { _MetamorphView } from "ember-handlebars/views/metamorph_view";
+import _MetamorphView from "ember-handlebars/views/metamorph_view";
 
 var view, childView, metamorphView;
 

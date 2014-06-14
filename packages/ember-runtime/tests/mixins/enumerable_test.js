@@ -1,15 +1,13 @@
 import Ember from 'ember-metal/core'; // for Ember.K and Ember.A
 import EnumerableTests from 'ember-runtime/tests/suites/enumerable';
-import EnumerableUtils from 'ember-metal/enumerable_utils';
+import { indexOf } from 'ember-metal/enumerable_utils';
 import EmberObject from 'ember-runtime/system/object';
 import Enumerable from 'ember-runtime/mixins/enumerable';
 import EmberArray from 'ember-runtime/mixins/array';
-import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
-import {computed} from 'ember-metal/computed';
-import {observer as emberObserver} from 'ember-metal/mixin';
-
-var indexOf = EnumerableUtils.indexOf;
+import { get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
+import { computed } from 'ember-metal/computed';
+import { observer as emberObserver } from 'ember-metal/mixin';
 
 /*
   Implement a basic fake enumerable.  This validates that any non-native

@@ -7,7 +7,10 @@ import Ember from "ember-metal/core"; // Ember.EXTEND_PROTOTYPES
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import {
+  _replace as replace,
+  forEach
+} from "ember-metal/enumerable_utils";
 import { Mixin } from "ember-metal/mixin";
 import EmberArray from "ember-runtime/mixins/array";
 import MutableArray from "ember-runtime/mixins/mutable_array";
@@ -15,9 +18,6 @@ import Observable from "ember-runtime/mixins/observable";
 import Copyable from "ember-runtime/mixins/copyable";
 import { FROZEN_ERROR } from "ember-runtime/mixins/freezable";
 import copy from "ember-runtime/copy";
-
-var replace = EnumerableUtils._replace;
-var forEach = EnumerableUtils.forEach;
 
 // Add Ember.Array to Array.prototype. Remove methods with native
 // implementations and supply some more optimized versions of generic methods

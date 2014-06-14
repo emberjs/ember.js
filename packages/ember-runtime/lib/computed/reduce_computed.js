@@ -22,8 +22,8 @@ import {
   ComputedProperty,
   cacheFor
 } from "ember-metal/computed";
-import { create } from "ember-metal/platform";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { create as o_create } from "ember-metal/platform";
+import { forEach } from "ember-metal/enumerable_utils";
 import TrackedArray from "ember-runtime/system/tracked_array";
 import EmberArray from "ember-runtime/mixins/array";
 import run from "ember-metal/run_loop";
@@ -34,8 +34,6 @@ var cacheSet = cacheFor.set;
 var cacheGet = cacheFor.get;
 var cacheRemove = cacheFor.remove;
 var a_slice = [].slice;
-var o_create = create;
-var forEach = EnumerableUtils.forEach;
 // Here we explicitly don't allow `@each.foo`; it would require some special
 // testing, but there's no particular reason why it should be disallowed.
 var eachPropertyPattern = /^(.*)\.@each\.(.*)/;

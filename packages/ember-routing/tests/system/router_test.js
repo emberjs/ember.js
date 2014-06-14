@@ -1,14 +1,13 @@
 import run from "ember-metal/run_loop";
 import copy from "ember-runtime/copy";
 import merge from "ember-metal/merge";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { map } from "ember-metal/enumerable_utils";
 import Container from 'container/container';
 import HashLocation from "ember-routing/location/hash_location";
 import AutoLocation from "ember-routing/location/auto_location";
 import EmberRouter from "ember-routing/system/router";
 
-var map = EnumerableUtils.map,
-    container, Router, router;
+var container, Router, router;
 
 function createRouter(overrides) {
   var opts = merge({ container: container }, overrides);

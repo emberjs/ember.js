@@ -1,10 +1,10 @@
-import EnumerableUtils from 'ember-metal/enumerable_utils';
+import { forEach } from 'ember-metal/enumerable_utils';
 import TrackedArray from "ember-runtime/system/tracked_array";
 
-var forEach = EnumerableUtils.forEach, trackedArray,
-    RETAIN = TrackedArray.RETAIN,
-    INSERT = TrackedArray.INSERT,
-    DELETE = TrackedArray.DELETE;
+var trackedArray;
+var RETAIN = TrackedArray.RETAIN;
+var INSERT = TrackedArray.INSERT;
+var DELETE = TrackedArray.DELETE;
 
 QUnit.module('Ember.TrackedArray');
 

@@ -22,18 +22,29 @@ import Application from "ember-runtime/system/application";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 import CoreObject from "ember-runtime/system/core_object";
-import {EachArray, EachProxy} from "ember-runtime/system/each_proxy";
+import {
+  EachArray,
+  EachProxy
+} from "ember-runtime/system/each_proxy";
+
 import NativeArray from "ember-runtime/system/native_array";
 import Set from "ember-runtime/system/set";
 import EmberStringUtils from "ember-runtime/system/string";
 import Deferred from "ember-runtime/system/deferred";
-import {onLoad, runLoadHooks} from "ember-runtime/system/lazy_load";
+import {
+  onLoad,
+  runLoadHooks
+} from "ember-runtime/system/lazy_load";
 
 import EmberArray from "ember-runtime/mixins/array";
 import Comparable from "ember-runtime/mixins/comparable";
 import Copyable from "ember-runtime/mixins/copyable";
 import Enumerable from "ember-runtime/mixins/enumerable";
-import { Freezable, FROZEN_ERROR } from "ember-runtime/mixins/freezable";
+import {
+  Freezable,
+  FROZEN_ERROR
+} from "ember-runtime/mixins/freezable";
+
 import Observable from "ember-runtime/mixins/observable";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import DeferredMixin from "ember-runtime/mixins/deferred";
@@ -43,15 +54,16 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
 import Evented from "ember-runtime/mixins/evented";
 import PromiseProxyMixin from "ember-runtime/mixins/promise_proxy";
 import SortableMixin from "ember-runtime/mixins/sortable";
-
 import {
   arrayComputed,
   ArrayComputedProperty
 } from "ember-runtime/computed/array_computed";
+
 import {
   reduceComputed,
   ReduceComputedProperty
 } from "ember-runtime/computed/reduce_computed";
+
 import {
   sum,
   min,
@@ -71,10 +83,8 @@ import {
 
 import ArrayController from "ember-runtime/controllers/array_controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
-import {
-  Controller,
-  ControllerMixin
-} from "ember-runtime/controllers/controller";
+import Controller from "ember-runtime/controllers/controller";
+import ControllerMixin from "ember-runtime/mixins/controller";
 
 import RSVP from "ember-runtime/ext/rsvp";     // just for side effect of extending Ember.RSVP
 import "ember-runtime/ext/string";   // just for side effect of extending String.prototype

@@ -9,7 +9,7 @@ import {
   decamelize,
   classify
 } from "ember-runtime/system/string";
-import { Controller } from "ember-runtime/controllers/controller";
+import Controller from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 

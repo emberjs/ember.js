@@ -1,7 +1,7 @@
 import jQuery from "ember-views/system/jquery";
 import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
-import { DefaultResolver } from "ember-application/system/resolver";
+import DefaultResolver from "ember-application/system/resolver";
 
 var application;
 

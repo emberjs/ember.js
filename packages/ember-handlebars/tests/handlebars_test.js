@@ -4,7 +4,7 @@
 import Ember from "ember-metal/core"; // Ember.lookup
 import jQuery from "ember-views/system/jquery";
 // import {expectAssertion} from "ember-metal/tests/debug_helpers";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { forEach } from "ember-metal/enumerable_utils";
 import run from "ember-metal/run_loop";
 import Namespace from "ember-runtime/system/namespace";
 import EmberView from "ember-views/views/view";
@@ -32,7 +32,6 @@ Ember.ContainerView = ContainerView;
 Ember.Logger = Logger;
 
 var trim = jQuery.trim;
-var forEach = EnumerableUtils.forEach;
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";

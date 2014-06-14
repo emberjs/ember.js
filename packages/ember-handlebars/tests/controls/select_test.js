@@ -2,15 +2,14 @@ import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import jQuery from "ember-views/system/jquery";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { map } from "ember-metal/enumerable_utils";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import { computed } from "ember-metal/computed";
 import Namespace from "ember-runtime/system/namespace";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 
-var map = EnumerableUtils.map,
-    trim = jQuery.trim;
+var trim = jQuery.trim;
 
 var dispatcher, select, view;
 

@@ -31,10 +31,11 @@ import { A as emberA } from "ember-runtime/system/native_array";
 import { dasherize } from "ember-runtime/system/string";
 
 // ES6TODO: functions on EnumerableUtils should get their own export
-import EnumerableUtils from "ember-metal/enumerable_utils";
-var a_forEach = EnumerableUtils.forEach,
-    a_addObject = EnumerableUtils.addObject,
-    a_removeObject = EnumerableUtils.removeObject;
+import {
+  forEach,
+  addObject,
+  removeObject
+} from "ember-metal/enumerable_utils";
 
 import { beforeObserver } from "ember-metal/mixin";
 import copy from "ember-runtime/copy";
@@ -70,7 +71,7 @@ function clearCachedElement(view) {
 var childViewsProperty = computed(function() {
   var childViews = this._childViews, ret = emberA(), view = this;
 
-  a_forEach(childViews, function(view) {
+  forEach(childViews, function(view) {
     var currentChildViews;
     if (view.isVirtual) {
       if (currentChildViews = get(view, 'childViews')) {
@@ -1130,7 +1131,7 @@ var View = CoreView.extend({
     // Loop through all of the configured bindings. These will be either
     // property names ('isUrgent') or property paths relative to the view
     // ('content.isUrgent')
-    a_forEach(classBindings, function(binding) {
+    forEach(classBindings, function(binding) {
 
       Ember.assert("classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. ['foo', ':bar']", binding.indexOf(' ') === -1);
 
@@ -1172,7 +1173,7 @@ var View = CoreView.extend({
       if (dasherizedClass) {
         // Ensure that it gets into the classNames array
         // so it is displayed when we render.
-        a_addObject(classNames, dasherizedClass);
+        addObject(classNames, dasherizedClass);
 
         // Save a reference to the class name so we can remove it
         // if the observer fires. Remember that this variable has
@@ -1207,7 +1208,7 @@ var View = CoreView.extend({
     var attributeValue,
         unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
 
-    a_forEach(attributeBindings, function(binding) {
+    forEach(attributeBindings, function(binding) {
       var split = binding.split(':'),
           property = split[0],
           attributeName = split[1] || property;
@@ -1894,7 +1895,7 @@ var View = CoreView.extend({
     // remove view from childViews array.
     var childViews = this._childViews;
 
-    a_removeObject(childViews, view);
+    removeObject(childViews, view);
 
     this.propertyDidChange('childViews'); // HUH?! what happened to will change?
 

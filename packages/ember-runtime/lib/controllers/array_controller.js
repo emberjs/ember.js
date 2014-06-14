@@ -6,15 +6,16 @@
 import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import {
+  forEach,
+  replace
+} from "ember-metal/enumerable_utils";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import SortableMixin from "ember-runtime/mixins/sortable";
-import { ControllerMixin } from "ember-runtime/controllers/controller";
-import {computed} from "ember-metal/computed";
+import ControllerMixin from "ember-runtime/mixins/controller";
+import { computed } from "ember-metal/computed";
 import EmberError from "ember-metal/error";
 
-var forEach = EnumerableUtils.forEach;
-var replace = EnumerableUtils.replace;
 
 /**
   `Ember.ArrayController` provides a way for you to publish a collection of

@@ -19,7 +19,7 @@ import {
   none
 } from 'ember-metal/is_none';
 import Enumerable from "ember-runtime/mixins/enumerable";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { map } from "ember-metal/enumerable_utils";
 import {
   Mixin,
   required
@@ -35,8 +35,6 @@ import {
   hasListeners
 } from "ember-metal/events";
 import { isWatching } from "ember-metal/watching";
-
-var map = EnumerableUtils.map;
 
 // ..........................................................
 // ARRAY

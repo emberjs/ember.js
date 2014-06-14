@@ -1,6 +1,6 @@
 import EmberObject from "ember-runtime/system/object";
 
-var Cache = EmberObject.extend({
+export default EmberObject.extend({
   init: function() {
     this.cache = {};
   },
@@ -28,6 +28,3 @@ var Cache = EmberObject.extend({
   },
   cache: null
 });
-
-export default Cache;
-

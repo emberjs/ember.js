@@ -4,7 +4,14 @@
 */
 
 import EmberHandlebars from "ember-handlebars-compiler";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+
+import {
+  forEach,
+  indexOf,
+  indexesOf,
+  replace
+} from "ember-metal/enumerable_utils";
+
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import View from "ember-views/views/view";
@@ -16,11 +23,7 @@ import { A as emberA } from "ember-runtime/system/native_array";
 import { observer } from "ember-metal/mixin";
 import { defineProperty } from "ember-metal/properties";
 
-var indexOf = EnumerableUtils.indexOf,
-    indexesOf = EnumerableUtils.indexesOf,
-    forEach = EnumerableUtils.forEach,
-    replace = EnumerableUtils.replace,
-    precompileTemplate = EmberHandlebars.compile;
+var precompileTemplate = EmberHandlebars.compile;
 
 var SelectOption = View.extend({
   instrumentDisplay: 'Ember.SelectOption',

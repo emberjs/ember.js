@@ -1,4 +1,4 @@
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { forEach } from "ember-metal/enumerable_utils";
 import Enumerable from "ember-runtime/mixins/enumerable";
 import {Mixin, required} from "ember-metal/mixin";
 import {beginPropertyChanges, endPropertyChanges} from "ember-metal/property_events";
@@ -7,8 +7,6 @@ import {beginPropertyChanges, endPropertyChanges} from "ember-metal/property_eve
 @module ember
 @submodule ember-runtime
 */
-
-var forEach = EnumerableUtils.forEach;
 
 /**
   This mixin defines the API for modifying generic enumerables. These methods

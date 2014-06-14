@@ -2,12 +2,11 @@ import Ember from "ember-metal/core"; // FEATURES, Logger, K, assert
 import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { forEach } from "ember-metal/array";
 import { defineProperty } from "ember-metal/properties";
 import { computed } from "ember-metal/computed";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { forEach } from "ember-metal/enumerable_utils";
 
 import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
@@ -15,8 +14,12 @@ import Evented from "ember-runtime/mixins/evented";
 import EmberRouterDSL from "ember-routing/system/dsl";
 import EmberView from "ember-views/views/view";
 import EmberLocation from "ember-routing/location/api";
-import { _MetamorphView } from "ember-handlebars/views/metamorph_view";
-import { routeArgs, getActiveTargetName, stashParamNames } from "ember-routing-handlebars/helpers/shared";
+import _MetamorphView from "ember-handlebars/views/metamorph_view";
+import {
+  routeArgs,
+  getActiveTargetName,
+  stashParamNames
+} from "ember-routing-handlebars/helpers/shared";
 
 // requireModule("ember-handlebars");
 // requireModule("ember-runtime");
@@ -35,11 +38,7 @@ import { routeArgs, getActiveTargetName, stashParamNames } from "ember-routing-h
 var Router = requireModule("router")['default'];
 var Transition = requireModule("router/transition").Transition;
 
-var slice = Array.prototype.slice;
-var forEach = EnumerableUtils.forEach;
-var map = EnumerableUtils.map;
-
-var DefaultView = _MetamorphView;
+var slice = [].slice;
 
 /**
   The `Ember.Router` class manages the application state and URLs. Refer to
@@ -124,7 +123,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     this._setupRouter(router, location);
 
-    container.register('view:default', DefaultView);
+    container.register('view:default', _MetamorphView);
     container.register('view:toplevel', EmberView.extend());
 
     location.onUpdateURL(function(url) {

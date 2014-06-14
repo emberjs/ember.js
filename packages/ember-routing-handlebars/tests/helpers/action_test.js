@@ -5,7 +5,7 @@ import EventDispatcher from "ember-views/system/event_dispatcher";
 
 import Container from "ember-runtime/system/container";
 import EmberObject from "ember-runtime/system/object";
-import { Controller as EmberController } from "ember-runtime/controllers/controller";
+import { default as EmberController } from "ember-runtime/controllers/controller";
 import EmberObjectController from "ember-runtime/controllers/object_controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
 

@@ -1,6 +1,6 @@
 import Ember from 'ember-metal/core';
 import testBoth from 'ember-metal/tests/props_helper';
-import EnumerableUtils from 'ember-metal/enumerable_utils';
+import { indexOf } from 'ember-metal/enumerable_utils';
 import { addListener } from "ember-metal/events";
 import {
   watch,
@@ -10,7 +10,6 @@ import {
 
 var willCount, didCount,
     willKeys, didKeys,
-    indexOf = EnumerableUtils.indexOf,
     originalLookup, lookup, Global;
 
 QUnit.module('watch', {

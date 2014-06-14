@@ -31,24 +31,33 @@ import View from "ember-views/views/view";
   @namespace Ember
   @extends Ember.View
 */
-var Checkbox = View.extend({
+export default View.extend({
   instrumentDisplay: '{{input type="checkbox"}}',
 
   classNames: ['ember-checkbox'],
 
   tagName: 'input',
 
-  attributeBindings: ['type', 'checked', 'indeterminate', 'disabled', 'tabindex', 'name',
-                      'autofocus', 'required', 'form'],
+  attributeBindings: [
+    'type',
+    'checked',
+    'indeterminate',
+    'disabled',
+    'tabindex',
+    'name',
+    'autofocus',
+    'required',
+    'form'
+  ],
 
-  type: "checkbox",
+  type: 'checkbox',
   checked: false,
   disabled: false,
   indeterminate: false,
 
   init: function() {
     this._super();
-    this.on("change", this, this._updateElementValue);
+    this.on('change', this, this._updateElementValue);
   },
 
   didInsertElement: function() {
@@ -60,5 +69,3 @@ var Checkbox = View.extend({
     set(this, 'checked', this.$().prop('checked'));
   }
 });
-
-export default Checkbox;

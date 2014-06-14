@@ -222,5 +222,8 @@ export default EmberObject.extend({
     var rootElement = get(this, 'rootElement');
     jQuery(rootElement).off('.ember', '**').removeClass('ember-application');
     return this._super();
+  },
+  toString: function() {
+    return '(EventDisptacher)';
   }
 });

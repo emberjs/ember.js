@@ -9,9 +9,9 @@ import { set } from "ember-metal/property_set";
 import EmberError from "ember-metal/error";
 import { inspect } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
-import { ControllerMixin } from "ember-runtime/controllers/controller";
+import ControllerMixin from "ember-runtime/mixins/controller";
 import { meta } from "ember-metal/utils";
-import { controllerFor } from "ember-routing/system/controller_for";
+import controllerFor from "ember-routing/system/controller_for";
 
 function verifyNeedsDependencies(controller, container, needs) {
   var dependency, i, l, missing = [];

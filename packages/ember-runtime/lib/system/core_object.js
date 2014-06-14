@@ -14,7 +14,7 @@ import {
   guidFor,
   apply
 } from "ember-metal/utils";
-import { create } from "ember-metal/platform";
+import { create as o_create } from "ember-metal/platform";
 import {
   generateGuid,
   GUID_KEY,
@@ -30,7 +30,7 @@ import {
   Mixin,
   required
 } from "ember-metal/mixin";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { indexOf } from "ember-metal/enumerable_utils";
 import EmberError from "ember-metal/error";
 import { platform } from "ember-metal/platform";
 import keys from "ember-runtime/keys";
@@ -41,15 +41,15 @@ import { ComputedProperty } from "ember-metal/computed";
 import run from 'ember-metal/run_loop';
 import { destroy } from "ember-metal/watching";
 
-var o_create = create;
+import {
+  K
+} from 'ember-metal/core';
 var o_defineProperty = platform.defineProperty;
 var schedule = run.schedule;
 var applyMixin = Mixin._apply;
 var finishPartial = Mixin.finishPartial;
 var reopen = Mixin.prototype.reopen;
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
-var indexOf = EnumerableUtils.indexOf;
-var K = Ember.K;
 
 var undefinedDescriptor = {
   configurable: true,
@@ -767,7 +767,6 @@ var ClassMixin = Mixin.create({
       }
     }
   }
-
 });
 
 ClassMixin.ownerConstructor = CoreObject;

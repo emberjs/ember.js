@@ -16,7 +16,7 @@ import {
   required,
   aliasMethod
 } from "ember-metal/mixin";
-import EnumerableUtils from "ember-metal/enumerable_utils";
+import { indexOf } from "ember-metal/enumerable_utils";
 import { computed } from "ember-metal/computed";
 import {
   propertyWillChange,
@@ -31,7 +31,6 @@ import {
 import compare from "ember-runtime/compare";
 
 var a_slice = Array.prototype.slice;
-var a_indexOf = EnumerableUtils.indexOf;
 
 var contexts = [];
 
@@ -51,7 +50,8 @@ function iter(key, value) {
     var cur = get(item, key);
     return valueProvided ? value===cur : !!cur;
   }
-  return i ;
+
+  return i;
 }
 
 /**
@@ -149,15 +149,15 @@ export default Mixin.create({
     @property firstObject
     @return {Object} the object or undefined
   */
-  firstObject: computed(function() {
+  firstObject: computed('[]', function() {
     if (get(this, 'length')===0) return undefined ;
 
     // handle generic enumerables
     var context = popCtx(), ret;
     ret = this.nextObject(0, null, context);
     pushCtx(context);
-    return ret ;
-  }).property('[]'),
+    return ret;
+  }),
 
   /**
     Helper method returns the last object from a collection. If your enumerable
@@ -175,7 +175,7 @@ export default Mixin.create({
     @property lastObject
     @return {Object} the last object or undefined
   */
-  lastObject: computed(function() {
+  lastObject: computed('[]', function() {
     var len = get(this, 'length');
     if (len===0) return undefined ;
     var context = popCtx(), idx=0, cur, last = null;
@@ -185,7 +185,7 @@ export default Mixin.create({
     } while (cur !== undefined);
     pushCtx(context);
     return last;
-  }).property('[]'),
+  }),
 
   /**
     Returns `true` if the passed object can be found in the receiver. The
@@ -232,7 +232,7 @@ export default Mixin.create({
     @return {Object} receiver
   */
   forEach: function(callback, target) {
-    if (typeof callback !== "function") throw new TypeError() ;
+    if (typeof callback !== 'function') throw new TypeError() ;
     var len = get(this, 'length'), last = null, context = popCtx();
 
     if (target === undefined) target = null;
@@ -862,7 +862,7 @@ export default Mixin.create({
   uniq: function() {
     var ret = Ember.A();
     this.forEach(function(k) {
-      if (a_indexOf(ret, k)<0) ret.push(k);
+      if (indexOf(ret, k)<0) ret.push(k);
     });
     return ret;
   },

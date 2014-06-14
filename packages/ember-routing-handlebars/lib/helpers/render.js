@@ -5,8 +5,8 @@ import { set } from "ember-metal/property_set";
 import { camelize } from "ember-runtime/system/string";
 import {
   generateControllerFactory,
-  generateController
-} from "ember-routing/system/controller_for";
+  default as generateController
+} from "ember-routing/system/generate_controller";
 import { handlebarsGet } from "ember-handlebars/ext";
 import { viewHelper } from "ember-handlebars/helpers/view";
 

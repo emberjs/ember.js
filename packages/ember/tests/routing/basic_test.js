@@ -1,10 +1,10 @@
 import "ember";
+import { forEach } from "ember-metal/enumerable_utils";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 
 var Router, App, AppView, templates, router, container;
-var get = Ember.get,
-    set = Ember.set,
-    compile = Ember.Handlebars.compile,
-    forEach = Ember.EnumerableUtils.forEach;
+var compile = Ember.Handlebars.compile;
 
 function bootApplication() {
   router = container.lookup('router:main');
