@@ -51,7 +51,7 @@ test("A registered factory is returned from lookupFactory is the same factory ea
   deepEqual(container.lookupFactory('controller:post'), container.lookupFactory('controller:post'), 'The return of lookupFactory is always the same');
 });
 
-test("A factory returned from lookupFactory has a debugkey", function(){
+test("A factory returned from lookupFactory has a debugkey", function() {
   var container = new Container();
   var PostController = factory();
   var instance;
@@ -63,7 +63,7 @@ test("A factory returned from lookupFactory has a debugkey", function(){
   equal(PostFactory._debugContainerKey, 'controller:post', 'factory instance receives _debugContainerKey');
 });
 
-test("fallback for to create time injections if factory has no extend", function(){
+test("fallback for to create time injections if factory has no extend", function() {
   var container = new Container();
   var AppleController = factory();
   var PostController = factory();
@@ -278,6 +278,16 @@ test("A failed lookup returns undefined", function() {
   var container = new Container();
 
   equal(container.lookup('doesnot:exist'), undefined);
+});
+
+test("An invalid factory throws an error", function() {
+  var container = new Container();
+
+  container.register('controller:foo', {});
+
+  throws(function() {
+    container.lookup('controller:foo');
+  }, /Failed to create an instance of \'controller:foo\'/);
 });
 
 test("Injecting a failed lookup raises an error", function() {
@@ -542,7 +552,7 @@ test('container.has should not accidentally cause injections on that factory to 
   ok(container.has('controller:apple'));
 });
 
-test('once resolved, always return the same result', function(){
+test('once resolved, always return the same result', function() {
   expect(1);
 
   var container = new Container();
@@ -560,7 +570,7 @@ test('once resolved, always return the same result', function(){
   equal(container.resolve('models:bar'), Bar);
 });
 
-test('once looked up, assert if an injection is registered for the entry', function(){
+test('once looked up, assert if an injection is registered for the entry', function() {
   expect(1);
 
   var container = new Container(),
