@@ -69,13 +69,11 @@ prototype.stackLiteral = function(literal) {
 prototype.helper = function(name, size, escaped, morphNum) {
   var prepared = prepareHelper(this.stack, size);
   prepared.options.push('escaped:'+escaped);
-  prepared.options.push('data:(typeof options !== "undefined" && options.data)');
   this.pushMustacheInContent(string(name), prepared.args, prepared.options, morphNum);
 };
 
 prototype.component = function(tag, morphNum) {
   var prepared = prepareHelper(this.stack, 0);
-  prepared.options.push('data:(typeof options !== "undefined" && options.data)');
   this.pushWebComponent(string(tag), prepared.options, morphNum);
 };
 
@@ -98,7 +96,7 @@ prototype.sexpr = function(name, size) {
   var prepared = prepareHelper(this.stack, size);
 
   //export function subexpr(helperName, context, params, options) {
-  this.stack.push('hooks.subexpr(' + string(name) + ', context, ' + prepared.args + ', ' + hash(prepared.options) + ', helpers)');
+  this.stack.push('hooks.subexpr(' + string(name) + ', context, ' + prepared.args + ', ' + hash(prepared.options) + ', env)');
 };
 
 prototype.string = function(str) {
@@ -121,15 +119,15 @@ prototype.morph = function(num, parentPath, startIndex, endIndex) {
 };
 
 prototype.pushWebComponent = function(name, pairs, morphNum) {
-  this.source.push('  hooks.webComponent(morph' + morphNum + ', ' + name + ', context, ' + hash(pairs) + ', helpers);\n');
+  this.source.push('  hooks.webComponent(morph' + morphNum + ', ' + name + ', context, ' + hash(pairs) + ', env);\n');
 };
 
 prototype.pushMustacheInContent = function(name, args, pairs, morphNum) {
-  this.source.push('  hooks.content(morph' + morphNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', helpers);\n');
+  this.source.push('  hooks.content(morph' + morphNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', env);\n');
 };
 
 prototype.pushMustacheInNode = function(name, args, pairs) {
-  this.source.push('  hooks.element(' + this.getParent() + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', helpers);\n');
+  this.source.push('  hooks.element(' + this.getParent() + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', env);\n');
 };
 
 prototype.shareParent = function(i) {
