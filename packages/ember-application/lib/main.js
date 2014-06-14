@@ -12,7 +12,7 @@ Ember Application
 import DAG from "ember-application/system/dag";
 import {
   Resolver,
-  DefaultResolver
+  default as DefaultResolver
 } from "ember-application/system/resolver";
 import Application from "ember-application/system/application";
 import "ember-application/ext/controller"; // side effect of extending ControllerMixin
