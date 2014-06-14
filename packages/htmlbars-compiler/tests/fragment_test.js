@@ -28,7 +28,7 @@ function hydratorFor(ast) {
   var opcodes = hydrate.compile(ast);
   var hydrate2 = new HydrationCompiler();
   var program = hydrate2.compile(opcodes, []);
-  return new Function("Morph", "fragment", "context", "hooks", "helpers", program);
+  return new Function("Morph", "fragment", "context", "hooks", "env", program);
 }
 
 module('fragment');
