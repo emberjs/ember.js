@@ -1,3 +1,5 @@
+import Rerender from "ember-views/system/renderer";
+
 import {
   cloneStates,
   states
@@ -6,7 +8,7 @@ import EmberObject from "ember-runtime/system/object";
 import Evented from "ember-runtime/mixins/evented";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 
-import { defineProperty, deprecateProperty } from "ember-metal/properties";
+import { deprecateProperty } from "ember-metal/properties";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { computed } from "ember-metal/computed";
@@ -35,6 +37,8 @@ import renderBuffer from "ember-views/system/render_buffer";
 */
 var CoreView = EmberObject.extend(Evented, ActionHandler, {
   isView: true,
+  isVirtual: false,
+  isContainer: false,
 
   _states: cloneStates(states),
 
@@ -100,36 +104,14 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
       be used.
     @private
   */
-  renderToBuffer: function(buffer) {
-    var name = 'render.' + this.instrumentName,
-        details = {};
-
-    this.instrumentDetails(details);
-
-    return instrument(name, details, function instrumentRenderToBuffer() {
-      return this._renderToBuffer(buffer);
-    }, this);
+  renderToBuffer: function() {
+    // TODO bring back instrumentation
+    return this._renderToBuffer();
   },
 
-  _renderToBuffer: function(_buffer) {
-    // If this is the top-most view, start a new buffer. Otherwise,
-    // create a new buffer relative to the original using the
-    // provided buffer operation (for example, `insertAfter` will
-    // insert a new buffer after the "parent buffer").
-    var tagName = this.tagName;
-
-    if (tagName === null || tagName === undefined) {
-      tagName = 'div';
-    }
-
-    var buffer = this.buffer = _buffer && _buffer.begin(tagName) || renderBuffer(tagName);
-    this._transitionTo('inBuffer', false);
-
-    this.beforeRender(buffer);
-    this.render(buffer);
-    this.afterRender(buffer);
-
-    return buffer;
+  _renderToBuffer: function() {
+    this.constructor.renderer.renderTree(this);
+    return this.buffer;
   },
 
   /**
@@ -194,6 +176,10 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   invokeRecursively: Ember.K,
   _transitionTo: Ember.K,
   destroyElement: Ember.K
+});
+
+CoreView.reopenClass({
+  renderer: new Rerender()
 });
 
 export default CoreView;

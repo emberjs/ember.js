@@ -1101,18 +1101,18 @@ var View = CoreView.extend({
   },
 
   clearRenderedChildren: function() {
-    var lengthBefore = this.lengthBeforeRender,
-        lengthAfter  = this.lengthAfterRender;
+    // var lengthBefore = this.lengthBeforeRender,
+    //     lengthAfter  = this.lengthAfterRender;
 
-    // If there were child views created during the last call to render(),
-    // remove them under the assumption that they will be re-created when
-    // we re-render.
+    // // If there were child views created during the last call to render(),
+    // // remove them under the assumption that they will be re-created when
+    // // we re-render.
 
-    // VIEW-TODO: Unit test this path.
-    var childViews = this._childViews;
-    for (var i=lengthAfter-1; i>=lengthBefore; i--) {
-      if (childViews[i]) { childViews[i].destroy(); }
-    }
+    // // VIEW-TODO: Unit test this path.
+    // var childViews = this._childViews;
+    // for (var i=lengthAfter-1; i>=lengthBefore; i--) {
+    //   if (childViews[i]) { childViews[i].destroy(); }
+    // }
   },
 
   /**
@@ -1377,11 +1377,13 @@ var View = CoreView.extend({
   appendTo: function(target) {
     // Schedule the DOM element to be created and appended to the given
     // element after bindings have synchronized.
-    this._insertElementLater(function() {
-      Ember.assert("You tried to append to (" + target + ") but that isn't in the DOM", jQuery(target).length > 0);
-      Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !jQuery(target).is('.ember-view') && !jQuery(target).parents().is('.ember-view'));
-      this.$().appendTo(target);
-    });
+    // this._insertElementLater(function() {
+    //   Ember.assert("You tried to append to (" + target + ") but that isn't in the DOM", jQuery(target).length > 0);
+    //   Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !jQuery(target).is('.ember-view') && !jQuery(target).parents().is('.ember-view'));
+    //   this.$().appendTo(target);
+    // });
+
+    this.constructor.renderer.appendTo(this, jQuery(target)[0]);
 
     return this;
   },
@@ -1511,8 +1513,9 @@ var View = CoreView.extend({
   createElement: function() {
     if (get(this, 'element')) { return this; }
 
-    var buffer = this.renderToBuffer();
-    set(this, 'element', buffer.element());
+    var element = this.constructor.renderer.renderTree(this);
+
+    set(this, 'element', element);
 
     return this;
   },
@@ -1678,7 +1681,7 @@ var View = CoreView.extend({
 
   _renderToBuffer: function(buffer) {
     this.lengthBeforeRender = this._childViews.length;
-    buffer = this._super(buffer);
+    this._super(buffer);
     this.lengthAfterRender = this._childViews.length;
 
     return buffer;
@@ -1688,14 +1691,9 @@ var View = CoreView.extend({
     return this.currentState.renderToBufferIfNeeded(this, buffer);
   },
 
-  beforeRender: function(buffer) {
-    this.applyAttributesToBuffer(buffer);
-    buffer.pushOpeningTag();
-  },
+  beforeRender: function(buffer) {},
 
-  afterRender: function(buffer) {
-    buffer.pushClosingTag();
-  },
+  afterRender: function(buffer) {},
 
   applyAttributesToBuffer: function(buffer) {
     // Creates observers for all registered class name and attribute bindings,

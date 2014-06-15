@@ -41,12 +41,14 @@ merge(hasElement, {
   // once the view has been inserted into the DOM, rerendering is
   // deferred to allow bindings to synchronize.
   rerender: function(view) {
-    view.triggerRecursively('willClearRender');
-
-    view.clearRenderedChildren();
-
-    view.domManager.replace(view);
-    return view;
+    var morph = view._morph;
+    view._morph = null;
+    view._renderer.remove(view, false);
+    view._morph = morph;
+    // TODO: should be scheduled with renderer
+    view._insertElementLater(function() {
+      view._renderer.renderTree(view);
+    });
   },
 
   // once the view is already in the DOM, destroying it removes it
@@ -54,13 +56,7 @@ merge(hasElement, {
   // preRender state if inDOM.
 
   destroyElement: function(view) {
-    view._notifyWillDestroyElement();
-    view.domManager.remove(view);
-    set(view, 'element', null);
-    if (view._scheduledInsert) {
-      run.cancel(view._scheduledInsert);
-      view._scheduledInsert = null;
-    }
+    view._renderer.remove(view, true);
     return view;
   },
 
