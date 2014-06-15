@@ -1,4 +1,4 @@
-import { createElement } from "ember-metal-views/dom";
+/*import { createElement } from "ember-metal-views/dom";
 import { setupClassNames, setupClassNameBindings, setupAttributeBindings } from "ember-metal-views/attributes";
 import { Morph } from "morph";
 
@@ -348,6 +348,8 @@ Renderer.prototype.viewTransitionTo = function (view, state) {
   if (view.transitionTo) {
     view.transitionTo(state);
   }
-};
+};*/
 
-export default Renderer;
+import Renderer from 'ember-metal-views/renderer';
+
+export { Renderer };

@@ -6,7 +6,7 @@ test("a view can have child views", function() {
   var view = {
     isView: true,
     tagName: 'ul',
-    _childViews: [
+    childViews: [
       {isView: true, tagName: 'li', textContent: 'ohai'}
     ]
   };
@@ -21,7 +21,7 @@ test("didInsertElement fires after children are rendered", function() {
   var view = {
     isView: true,
     tagName: 'ul',
-    _childViews: [
+    childViews: [
       {isView: true, tagName: 'li', textContent: 'ohai'}
     ],
 
