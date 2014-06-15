@@ -100,18 +100,18 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
       be used.
     @private
   */
-  renderToBuffer: function(parentBuffer, bufferOperation) {
+  renderToBuffer: function(buffer) {
     var name = 'render.' + this.instrumentName,
         details = {};
 
     this.instrumentDetails(details);
 
     return instrument(name, details, function instrumentRenderToBuffer() {
-      return this._renderToBuffer(parentBuffer, bufferOperation);
+      return this._renderToBuffer(buffer);
     }, this);
   },
 
-  _renderToBuffer: function(parentBuffer, bufferOperation) {
+  _renderToBuffer: function(_buffer) {
     // If this is the top-most view, start a new buffer. Otherwise,
     // create a new buffer relative to the original using the
     // provided buffer operation (for example, `insertAfter` will
@@ -122,7 +122,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
       tagName = 'div';
     }
 
-    var buffer = this.buffer = parentBuffer && parentBuffer.begin(tagName) || renderBuffer(tagName);
+    var buffer = this.buffer = _buffer && _buffer.begin(tagName) || renderBuffer(tagName);
     this.transitionTo('inBuffer', false);
 
     this.beforeRender(buffer);

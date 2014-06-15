@@ -208,15 +208,6 @@ _RenderBuffer.prototype = {
   elementStyle: null,
 
   /**
-    Nested `RenderBuffers` will set this to their parent `RenderBuffer`
-    instance.
-
-    @property parentBuffer
-    @type Ember._RenderBuffer
-  */
-  parentBuffer: null,
-
-  /**
     Adds a string of HTML to the `RenderBuffer`.
 
     @method push

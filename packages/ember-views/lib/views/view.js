@@ -1676,9 +1676,9 @@ var View = CoreView.extend({
     this._super(hash);
   },
 
-  _renderToBuffer: function(parentBuffer, bufferOperation) {
+  _renderToBuffer: function(buffer) {
     this.lengthBeforeRender = this._childViews.length;
-    var buffer = this._super(parentBuffer, bufferOperation);
+    var buffer = this._super(buffer);
     this.lengthAfterRender = this._childViews.length;
 
     return buffer;
