@@ -38,7 +38,9 @@ merge(inBuffer, {
     if (!_childViews.length) { _childViews = view._childViews = _childViews.slice(); }
     _childViews.push(childView);
 
-    childView.renderToBuffer(buffer);
+    //childView.renderToBuffer(buffer); // done later on the render loop
+
+    buffer.pushChildView(childView);
 
     view.propertyDidChange('childViews');
 
@@ -49,6 +51,7 @@ merge(inBuffer, {
   // element will simply destroy the buffer and put the
   // state back into the preRender state.
   destroyElement: function(view) {
+    // TODO call rerender remove on view
     view.clearBuffer();
     var viewCollection = view._notifyWillDestroyElement();
     viewCollection.transitionTo('preRender', false);
