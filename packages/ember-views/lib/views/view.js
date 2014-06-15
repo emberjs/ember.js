@@ -1678,7 +1678,7 @@ var View = CoreView.extend({
 
   _renderToBuffer: function(buffer) {
     this.lengthBeforeRender = this._childViews.length;
-    var buffer = this._super(buffer);
+    buffer = this._super(buffer);
     this.lengthAfterRender = this._childViews.length;
 
     return buffer;
