@@ -1152,7 +1152,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
         z: 0
       });
 
-      App.CommentsController = Ember.ArrayController.extend({
+      App.CommentsController = Ember.Controller.extend({
         queryParams: 'page',
         page: 1
       });
