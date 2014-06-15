@@ -842,19 +842,21 @@ function resemblesURL(str) {
 }
 
 function forEachQueryParam(router, targetRouteName, queryParams, callback) {
-  if (!Ember.FEATURES.isEnabled("query-params-new")) { return {}; }
+  if (Ember.FEATURES.isEnabled("query-params-new")) {
+    var qpCache = router._queryParamsFor(targetRouteName),
+    qps = qpCache.qps;
 
-  var qpCache = router._queryParamsFor(targetRouteName),
-      qps = qpCache.qps;
+    for (var key in queryParams) {
+      if (!queryParams.hasOwnProperty(key)) { continue; }
+      var value = queryParams[key],
+      qp = qpCache.map[key];
 
-  for (var key in queryParams) {
-    if (!queryParams.hasOwnProperty(key)) { continue; }
-    var value = queryParams[key],
-        qp = qpCache.map[key];
-
-    if (qp) {
-      callback(key, value, qp);
+      if (qp) {
+        callback(key, value, qp);
+      }
     }
+  } else {
+    return {};
   }
 }
 
