@@ -142,12 +142,12 @@ if (ignore.length>0) {
   var Pagination = Ember.CollectionView.extend({
     tagName: 'ul',
     classNames: ['pagination'],
-    init: function() {
-      this._super();
+
+    defaultContent: function() {
       if (!this.get('content')) {
-        this.set('content', Ember.A([]));
+        this.set('content', Ember.A());
       }
-    }
+    }.on('init')
   });
   ```
 
