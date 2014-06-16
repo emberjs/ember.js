@@ -271,6 +271,36 @@ test("`click` triggers appropriate events in order", function() {
   });
 });
 
+test("`click` gives focus to any focusable element", function() {
+  expect(3);
+  var click;
+
+  run(function() {
+    App = EmberApplication.create();
+    App.setupForTesting();
+  });
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile('{{input id="inputField" type="text"}} <ul><li tabindex="0" id="focusable">I can get focus</li><li id="not-focusable">I cannot</li></ul>');
+  App.injectTestHelpers();
+  run(App, App.advanceReadiness);
+  click = App.testHelpers.click;
+
+  click('#inputField').then(function () {
+    // is(':focus') can not be used in phantomjs, so activeElement provides the element that has
+    // the focus
+    equal(jQuery(document.activeElement).attr('id'), 'inputField',
+      'The input field has the focus after click');
+    return click('#focusable');
+  }).then(function () {
+    equal(jQuery(document.activeElement).attr('id'), 'focusable',
+      'The first <li> tag has a tabindex, so it can get the focus');
+    return click('#not-focusable');
+  }).then(function () {
+    equal(jQuery(document.activeElement).attr('id'), 'focusable',
+      'The second <li> has no tabindex, so it does not get the focus and the previous element keeps it');
+  });
+});
+
 test("Ember.Application#setupForTesting attaches ajax listeners", function() {
   var documentEvents;
 
