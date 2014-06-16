@@ -8,6 +8,10 @@ Replacing Ember's internal helper utilities with lodash's comparable functions.
 [x] forEach
 [x] indexOf
 [x] filter
+[x] isEmpty
+[x] isFunction
+[x] isBoolean
+[x] isObject
 
 ## Building
 
