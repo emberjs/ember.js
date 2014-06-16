@@ -406,4 +406,19 @@ test("bound helpers can handle `this` keyword when it's a non-object", function(
   equal(view.$().text(), 'wallace!', "helper output is correct");
 });
 
+test("should update class property of svg elements", function() {
+  view = EmberView.create({
+    template: EmberHandlebars.compile('<svg><text x="100" y="100" {{bind-attr class="view.hidden:hide"}}>Text</text></svg>'),
+    hidden:true
+  });
 
+  appendView();
+
+  equal(view.$('text').attr('class'), 'hide', "El has class");
+
+  run(function() {
+    set(view, 'hidden', false);
+  });
+
+  equal(view.$('text').attr('class'), '', "El class removed");
+});
