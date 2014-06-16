@@ -652,7 +652,10 @@ Alias.prototype = new Descriptor();
     moniker: Ember.aliasMethod('name')
   });
 
-  var goodGuy = App.Person.create()
+  var goodGuy = App.Person.create();
+  
+  goodGuy.name();    // 'Tomhuda Katzdale'
+  goodGuy.moniker(); // 'Tomhuda Katzdale'
   ```
 
   @method aliasMethod
