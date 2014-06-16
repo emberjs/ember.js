@@ -906,24 +906,35 @@ function bindClasses(context, classBindings, view, bindAttrId, options) {
       if (!elem || elem.length === 0) {
         removeObserver(pathRoot, path, observer);
       } else {
+		var isSvg = elem[0].namespaceURI === 'http://www.w3.org/2000/svg';
         // If we had previously added a class to the element, remove it.
         if (oldClass) {
-          elem.attr('class', function(index, classNames) {
-            if (typeof classNames === 'string') {
-              return classNames.replace(oldClass, '');
+		  if(isSvg){
+			elem.attr('class', function(index, classNames) {
+              if (typeof classNames === 'string') {
+				return classNames.replace(oldClass, '');
               }
-          });
+			});
+		  }else{
+			elem.removeClass(oldClass);
+		  }
         }
 
         // If necessary, add a new class. Make sure we keep track of it so
         // it can be removed in the future.
         if (newClass) {
-          elem.attr('class', function(index, classNames) {
-            if (typeof classNames !== 'string') {
-              classNames = '';
-            }
-            return classNames + ' ' + newClass;
-          });
+		  if(isSvg){
+			elem.attr('class', function(index, classNames) {
+			  var classes = [];
+              if (typeof classNames === 'string' && classNames.length > 0) {
+				classes = classNames.split(' ');
+              }
+			  classes.push(newClass);
+              return classes.join(' ');
+			});
+		  }else{
+			elem.addClass(newClass);
+		  }
           oldClass = newClass;
         } else {
           oldClass = null;
