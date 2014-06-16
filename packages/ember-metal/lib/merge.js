@@ -1,4 +1,4 @@
-import keys from 'ember-metal/keys';
+import merge from 'lodash/objects/merge';
 
 /**
   Merge the contents of two objects together into the first object.
@@ -16,19 +16,4 @@ import keys from 'ember-metal/keys';
   @param {Object} updates The object to copy properties from
   @return {Object}
 */
-export default function merge(original, updates) {
-  if (!updates || typeof updates !== 'object') {
-    return original;
-  }
-
-  var props = keys(updates);
-  var prop;
-  var length = props.length;
-
-  for (var i = 0; i < length; i++) {
-    prop = props[i];
-    original[prop] = updates[prop];
-  }
-
-  return original;
-}
+export default merge;

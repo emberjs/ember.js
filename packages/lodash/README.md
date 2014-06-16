@@ -4,14 +4,15 @@ Replacing Ember's internal helper utilities with lodash's comparable functions.
 
 ## Utilities Checklist
 
-[x] map
+[x] filter
 [x] forEach
 [x] indexOf
-[x] filter
+[x] isBoolean
 [x] isEmpty
 [x] isFunction
-[x] isBoolean
 [x] isObject
+[x] map
+[x] merge
 
 ## Building
 
