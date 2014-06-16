@@ -908,13 +908,22 @@ function bindClasses(context, classBindings, view, bindAttrId, options) {
       } else {
         // If we had previously added a class to the element, remove it.
         if (oldClass) {
-          elem.removeClass(oldClass);
+			      elem.attr('class', function(index, classNames) {
+              if (typeof classNames === 'string') {
+				        return classNames.replace(oldClass, '');
+              }
+            });
         }
 
         // If necessary, add a new class. Make sure we keep track of it so
         // it can be removed in the future.
         if (newClass) {
-          elem.addClass(newClass);
+			      elem.attr('class', function(index, classNames) {
+              if (typeof classNames !== 'string') {
+                classNames = '';
+              }
+				      return classNames + newClass;
+			      });
           oldClass = newClass;
         } else {
           oldClass = null;
