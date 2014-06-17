@@ -119,6 +119,8 @@ export var _Metamorph = Mixin.create({
   domManager: DOMManager
 });
 
+export var _wrapMap = Metamorph._wrapMap;
+
 /**
   @class _MetamorphView
   @namespace Ember

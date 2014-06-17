@@ -183,7 +183,7 @@ define("metamorph",
        * that as the key for the wrap map. In our case, we know the parent node, and
        * can use its type as the key for the wrap map.
        **/
-      var wrapMap = {
+      Metamorph._wrapMap = {
         select: [ 1, "<select multiple='multiple'>", "</select>" ],
         fieldset: [ 1, "<fieldset>", "</fieldset>" ],
         table: [ 1, "<table>", "</table>" ],
@@ -236,6 +236,7 @@ define("metamorph",
        * We need to do this because innerHTML in IE does not really parse the nodes.
        */
       var firstNodeFor = function(parentNode, html) {
+        var wrapMap = Metamorph._wrapMap;
         var arr = wrapMap[parentNode.tagName.toLowerCase()] || wrapMap._default;
         var depth = arr[0], start = arr[1], end = arr[2];
 

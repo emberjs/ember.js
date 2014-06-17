@@ -80,10 +80,12 @@ import {
   SimpleHandlebarsView
 } from "ember-handlebars/views/handlebars_bound_view";
 import {
+  _wrapMap,
   _SimpleMetamorphView,
   _MetamorphView,
   _Metamorph
 } from "ember-handlebars/views/metamorph_view";
+
 
 /**
 Ember Handlebars
@@ -121,6 +123,7 @@ Ember._HandlebarsBoundView = _HandlebarsBoundView;
 Ember._SimpleMetamorphView = _SimpleMetamorphView;
 Ember._MetamorphView = _MetamorphView;
 Ember._Metamorph = _Metamorph;
+Ember._metamorphWrapMap = _wrapMap;
 Ember.TextSupport = TextSupport;
 Ember.Checkbox = Checkbox;
 Ember.Select = Select;
