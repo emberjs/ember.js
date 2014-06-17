@@ -152,7 +152,7 @@ export default Mixin.create(MutableEnumerable, {
     return this._super();
   },
 
-  isSorted: computed.bool('sortProperties'),
+  isSorted: computed.notEmpty('sortProperties'),
 
   /**
     Overrides the default arrangedContent from arrayProxy in order to sort by sortFunction.
