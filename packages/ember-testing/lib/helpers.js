@@ -50,7 +50,7 @@ function click(app, selector, context) {
   var $el = findWithAssert(app, selector, context);
   run($el, 'mousedown');
 
-  if ($el.is(':input')) {
+  if ($el.is(':input') || !Ember.isNone($el.attr('tabindex'))) {
     var type = $el.prop('type');
     if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
       run($el, function(){
