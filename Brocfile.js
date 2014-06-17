@@ -358,7 +358,7 @@ if (env !== 'development') {
 
 distTrees = mergeTrees(distTrees);
 distTrees = replace(distTrees, {
-  files: [ '**/*.js' ],
+  files: [ '**/*.js', '**/*.json' ],
   patterns: [
     { match: /VERSION_STRING_PLACEHOLDER/g, replacement: calculateVersion }
   ]
