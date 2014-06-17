@@ -20,7 +20,7 @@ var loaded = {};
   resolved from a string into the object:
 
   ``` javascript
-  Ember.onLoad('Ember.Handlebars' function(hbars){
+  Ember.onLoad('Ember.Handlebars' function(hbars) {
     hbars.registerHelper(...);
   });
   ```

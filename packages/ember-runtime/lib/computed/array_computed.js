@@ -76,7 +76,7 @@ ArrayComputedProperty.prototype.didChange = function (obj, keyName) {
   The `initialize` function has the following signature:
 
   ```javascript
-   function (array, changeMeta, instanceMeta)
+  function(array, changeMeta, instanceMeta)
   ```
 
   `array` - The initial value of the arrayComputed, an empty array.
@@ -96,7 +96,7 @@ ArrayComputedProperty.prototype.didChange = function (obj, keyName) {
   The `removedItem` and `addedItem` functions both have the following signature:
 
   ```javascript
-  function (accumulatedValue, item, changeMeta, instanceMeta)
+  function(accumulatedValue, item, changeMeta, instanceMeta)
   ```
 
   `accumulatedValue` - The value returned from the last time

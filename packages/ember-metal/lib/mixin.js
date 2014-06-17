@@ -766,7 +766,6 @@ export function immediateObserver() {
 
   ```javascript
   App.PersonView = Ember.View.extend({
-
     friends: [{ name: 'Tom' }, { name: 'Stefan' }, { name: 'Kris' }],
 
     valueWillChange: Ember.beforeObserver('content.value', function(obj, keyName) {
