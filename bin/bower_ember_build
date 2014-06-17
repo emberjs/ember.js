@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-git config --global user.email "<EMAIL_ADDRESS_OF_ASSOCIATED_GIT_USER>"
-git config --global user.name "<USER_NAME_OF_ASSOCIATED_GIT_USER>"
+git config --global user.email "tomster@emberjs.com"
+git config --global user.name "Tomster"
 
 # This specifies the repository we are going to work with.  This will most likely be set to 'ember'
 COMPONENTS_EMBER_REPO_SLUG="components/ember"
 
 # This specifies the user who is associated to the GH_TOKEN
-USER="<YOUR_USER_HERE>"
+USER="rjackson"
 
 # This ensure that no directories within dist will be copied when script is run.
 INCLUDED_FILES=`find dist -maxdepth 1 -type f`
