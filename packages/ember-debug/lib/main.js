@@ -23,8 +23,9 @@ Ember Debug
   ```javascript
   // Test for truthiness
   Ember.assert('Must pass a valid object', obj);
+
   // Fail unconditionally
-  Ember.assert('This code path should never be run')
+  Ember.assert('This code path should never be run');
   ```
 
   @method assert
@@ -61,7 +62,7 @@ Ember.warn = function(message, test) {
   `Ember.debug()` when doing a production build.
 
   ```javascript
-  Ember.debug("I'm a debug notice!");
+  Ember.debug('I\'m a debug notice!');
   ```
 
   @method debug
@@ -148,7 +149,7 @@ Ember.deprecateFunc = function(message, func) {
   Ember.runInDebug(function() {
     Ember.Handlebars.EachView.reopen({
       didInsertElement: function() {
-        console.log("I'm happy");
+        console.log('I\'m happy');
       }
     });
   });

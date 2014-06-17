@@ -387,12 +387,14 @@ export function listenersFor(obj, eventName) {
 
   ``` javascript
   var Job = Ember.Object.extend({
-    logCompleted: Ember.on('completed', function(){
+    logCompleted: Ember.on('completed', function() {
       console.log('Job completed!');
     })
   });
+
   var job = Job.create();
-  Ember.sendEvent(job, 'completed'); // Logs "Job completed!"
+
+  Ember.sendEvent(job, 'completed'); // Logs 'Job completed!'
  ```
 
   @method on
