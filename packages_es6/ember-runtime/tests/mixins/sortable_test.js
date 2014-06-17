@@ -42,6 +42,12 @@ test("if you do not specify `sortProperties` sortable have no effect", function(
 
   equal(sortedArrayController.get('length'), 4, 'array has 4 items');
   equal(sortedArrayController.objectAt(3).name, 'Scumbag Chavard', 'a new object was inserted in the natural order');
+
+  sortedArrayController.set('sortProperties', []);
+  unsortedArray.pushObject({id: 5, name: 'Scumbag Jackson'});
+
+  equal(sortedArrayController.get('length'), 5, 'array has 5 items');
+  equal(sortedArrayController.objectAt(4).name, 'Scumbag Jackson', 'a new object was inserted in the natural order with empty array as sortProperties');
 });
 
 test("you can change sorted properties", function() {
@@ -227,7 +233,7 @@ test("addObject does not insert duplicates", function() {
   equal(sortedArrayProxy.get('length'), 1, 'array still has 1 item');
 });
 
-test("you can change a sort property and the content will rearrenge", function() {
+test("you can change a sort property and the content will rearrange", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
   equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'bryn is first');
 
