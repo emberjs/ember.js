@@ -659,7 +659,7 @@ ReduceComputedProperty.prototype.property = function () {
   The `initialize` function has the following signature:
 
   ```javascript
-   function (initialValue, changeMeta, instanceMeta)
+  function(initialValue, changeMeta, instanceMeta)
   ```
 
   `initialValue` - The value of the `initialValue` property from the
@@ -680,7 +680,7 @@ ReduceComputedProperty.prototype.property = function () {
   The `removedItem` and `addedItem` functions both have the following signature:
 
   ```javascript
-  function (accumulatedValue, item, changeMeta, instanceMeta)
+  function(accumulatedValue, item, changeMeta, instanceMeta)
   ```
 
   `accumulatedValue` - The value returned from the last time
@@ -730,15 +730,15 @@ ReduceComputedProperty.prototype.property = function () {
   Example
 
   ```javascript
-  Ember.computed.max = function (dependentKey) {
+  Ember.computed.max = function(dependentKey) {
     return Ember.reduceComputed(dependentKey, {
       initialValue: -Infinity,
 
-      addedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+      addedItem: function(accumulatedValue, item, changeMeta, instanceMeta) {
         return Math.max(accumulatedValue, item);
       },
 
-      removedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+      removedItem: function(accumulatedValue, item, changeMeta, instanceMeta) {
         if (item < accumulatedValue) {
           return accumulatedValue;
         }
@@ -772,10 +772,10 @@ ReduceComputedProperty.prototype.property = function () {
   });
 
   App.PersonController = Ember.ObjectController.extend({
-    reversedName: function () {
+    reversedName: function() {
       return reverse(get(this, 'name'));
     }.property('name')
-  })
+  });
   ```
 
   Dependent keys whose values are not arrays are treated as regular

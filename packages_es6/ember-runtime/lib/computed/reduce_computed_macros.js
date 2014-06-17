@@ -54,12 +54,13 @@ function sum(dependentKey){
   array is empty.
 
   ```javascript
-  App.Person = Ember.Object.extend({
+  var Person = Ember.Object.extend({
     childAges: Ember.computed.mapBy('children', 'age'),
     maxChildAge: Ember.computed.max('childAges')
   });
 
-  var lordByron = App.Person.create({children: []});
+  var lordByron = Person.create({ children: [] });
+
   lordByron.get('maxChildAge'); // -Infinity
   lordByron.get('children').pushObject({
     name: 'Augusta Ada Byron', age: 7
@@ -102,12 +103,13 @@ function max (dependentKey) {
   array is empty.
 
   ```javascript
-  App.Person = Ember.Object.extend({
+  var Person = Ember.Object.extend({
     childAges: Ember.computed.mapBy('children', 'age'),
     minChildAge: Ember.computed.min('childAges')
   });
 
-  var lordByron = App.Person.create({children: []});
+  var lordByron = Person.create({ children: [] });
+
   lordByron.get('minChildAge'); // Infinity
   lordByron.get('children').pushObject({
     name: 'Augusta Ada Byron', age: 7
@@ -157,15 +159,16 @@ function min(dependentKey) {
   Example
 
   ```javascript
-  App.Hamster = Ember.Object.extend({
+  var Hamster = Ember.Object.extend({
     excitingChores: Ember.computed.map('chores', function(chore) {
       return chore.toUpperCase() + '!';
     })
   });
 
-  var hamster = App.Hamster.create({
+  var hamster = Hamster.create({
     chores: ['clean', 'write more unit tests']
   });
+
   hamster.get('excitingChores'); // ['CLEAN!', 'WRITE MORE UNIT TESTS!']
   ```
 
@@ -195,13 +198,14 @@ function map(dependentKey, callback) {
   Returns an array mapped to the specified key.
 
   ```javascript
-  App.Person = Ember.Object.extend({
+  var Person = Ember.Object.extend({
     childAges: Ember.computed.mapBy('children', 'age')
   });
 
-  var lordByron = App.Person.create({children: []});
+  var lordByron = Person.create({ children: [] });
+
   lordByron.get('childAges'); // []
-  lordByron.get('children').pushObject({name: 'Augusta Ada Byron', age: 7});
+  lordByron.get('children').pushObject({ name: 'Augusta Ada Byron', age: 7 });
   lordByron.get('childAges'); // [7]
   lordByron.get('children').pushObjects([{
     name: 'Allegra Byron',
@@ -244,17 +248,20 @@ var mapProperty = mapBy;
   ```
 
   ```javascript
-  App.Hamster = Ember.Object.extend({
+  var Hamster = Ember.Object.extend({
     remainingChores: Ember.computed.filter('chores', function(chore) {
       return !chore.done;
     })
   });
 
-  var hamster = App.Hamster.create({chores: [
-    {name: 'cook', done: true},
-    {name: 'clean', done: true},
-    {name: 'write more unit tests', done: false}
-  ]});
+  var hamster = Hamster.create({ 
+    chores: [
+      { name: 'cook', done: true },
+      { name: 'clean', done: true },
+      { name: 'write more unit tests', done: false }
+    ] 
+  });
+
   hamster.get('remainingChores'); // [{name: 'write more unit tests', done: false}]
   ```
 
@@ -299,16 +306,19 @@ function filter(dependentKey, callback) {
   Filters the array by the property and value
 
   ```javascript
-  App.Hamster = Ember.Object.extend({
+  var Hamster = Ember.Object.extend({
     remainingChores: Ember.computed.filterBy('chores', 'done', false)
   });
 
-  var hamster = App.Hamster.create({chores: [
-    {name: 'cook', done: true},
-    {name: 'clean', done: true},
-    {name: 'write more unit tests', done: false}
-  ]});
-  hamster.get('remainingChores'); // [{name: 'write more unit tests', done: false}]
+  var hamster = Hamster.create({
+    chores: [
+      { name: 'cook', done: true },
+      { name: 'clean', done: true },
+      { name: 'write more unit tests', done: false }
+    ]
+  });
+
+  hamster.get('remainingChores'); // [{ name: 'write more unit tests', done: false }]
   ```
 
   @method computed.filterBy
@@ -351,16 +361,19 @@ var filterProperty = filterBy;
   Example
 
   ```javascript
-  App.Hamster = Ember.Object.extend({
+  var Hamster = Ember.Object.extend({
     uniqueFruits: Ember.computed.uniq('fruits')
   });
 
-  var hamster = App.Hamster.create({fruits: [
-    'banana',
-    'grape',
-    'kale',
-    'banana'
-  ]});
+  var hamster = Hamster.create({
+    fruits: [
+      'banana',
+      'grape',
+      'kale',
+      'banana'
+    ]
+  });
+
   hamster.get('uniqueFruits'); // ['banana', 'grape', 'kale']
   ```
 
@@ -496,15 +509,18 @@ function intersect() {
   Example
 
   ```javascript
-  App.Hamster = Ember.Object.extend({
+  var Hamster = Ember.Object.extend({
     likes: ['banana', 'grape', 'kale'],
     wants: Ember.computed.setDiff('likes', 'fruits')
   });
 
-  var hamster = App.Hamster.create({fruits: [
-    'grape',
-    'kale',
-  ]});
+  var hamster = Hamster.create({
+    fruits: [
+      'grape',
+      'kale',
+    ]
+  });
+
   hamster.get('wants'); // ['banana']
   ```
 
@@ -636,18 +652,20 @@ var SearchProxy = ObjectProxy.extend();
       } else if (a.priority < b.priority) {
         return -1;
       }
+
       return 0;
     }),
   });
+
   var todoList = ToDoList.create({todos: [
-    {name: 'Unit Test', priority: 2},
-    {name: 'Documentation', priority: 3},
-    {name: 'Release', priority: 1}
+    { name: 'Unit Test', priority: 2 },
+    { name: 'Documentation', priority: 3 },
+    { name: 'Release', priority: 1 }
   ]});
 
-  todoList.get('sortedTodos'); // [{name:'Documentation', priority:3}, {name:'Release', priority:1}, {name:'Unit Test', priority:2}]
-  todoList.get('sortedTodosDesc'); // [{name:'Unit Test', priority:2}, {name:'Release', priority:1}, {name:'Documentation', priority:3}]
-  todoList.get('priorityTodos'); // [{name:'Release', priority:1}, {name:'Unit Test', priority:2}, {name:'Documentation', priority:3}]
+  todoList.get('sortedTodos');      // [{ name:'Documentation', priority:3 }, { name:'Release', priority:1 }, { name:'Unit Test', priority:2 }]
+  todoList.get('sortedTodosDesc');  // [{ name:'Unit Test', priority:2 }, { name:'Release', priority:1 }, { name:'Documentation', priority:3 }]
+  todoList.get('priorityTodos');    // [{ name:'Release', priority:1 }, { name:'Unit Test', priority:2 }, { name:'Documentation', priority:3 }]
   ```
 
   @method computed.sort

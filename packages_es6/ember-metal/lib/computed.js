@@ -33,9 +33,9 @@ var lengthPattern = /\.(length|\[\])$/;
 
 // data structure:
 //  meta.deps = {
-//   'depKey': {
-//     'keyName': count,
-//   }
+//    'depKey': {
+//      'keyName': count,
+//    }
 //  }
 
 /*
@@ -119,7 +119,7 @@ function removeDependentKeys(desc, obj, keyName, meta) {
   values.
 
   ```javascript
-  Person = Ember.Object.extend({
+  var Person = Ember.Object.extend({
     // these will be supplied by `create`
     firstName: null,
     lastName: null,
@@ -146,8 +146,7 @@ function removeDependentKeys(desc, obj, keyName, meta) {
   third parameter.
 
   ```javascript
-
- Person = Ember.Object.extend({
+  var Person = Ember.Object.extend({
     // these will be supplied by `create`
     firstName: null,
     lastName: null,
@@ -162,7 +161,7 @@ function removeDependentKeys(desc, obj, keyName, meta) {
 
       // setter
       } else {
-        var name = value.split(" ");
+        var name = value.split(' ');
 
         this.set('firstName', name[0]);
         this.set('lastName', name[1]);
@@ -173,9 +172,10 @@ function removeDependentKeys(desc, obj, keyName, meta) {
   });
 
   var person = Person.create();
+
   person.set('fullName', 'Peter Wagenet');
-  person.get('firstName') // 'Peter'
-  person.get('lastName') // 'Wagenet'
+  person.get('firstName'); // 'Peter'
+  person.get('lastName');  // 'Wagenet'
   ```
 
   @class ComputedProperty
@@ -224,7 +224,7 @@ ComputedPropertyPrototype.cacheable = function(aFlag) {
   mode the computed property will not automatically cache the return value.
 
   ```javascript
-  MyApp.outsideService = Ember.Object.extend({
+  var outsideService = Ember.Object.extend({
     value: function() {
       return OutsideService.getValue();
     }.property().volatile()
@@ -244,15 +244,15 @@ ComputedPropertyPrototype.volatile = function() {
   mode the computed property will throw an error when set.
 
   ```javascript
-  MyApp.Person = Ember.Object.extend({
+  var Person = Ember.Object.extend({
     guid: function() {
       return 'guid-guid-guid';
     }.property().readOnly()
   });
 
-  MyApp.person = MyApp.Person.create();
+  var person = Person.create();
 
-  MyApp.person.set('guid', 'new-guid'); // will throw an exception
+  person.set('guid', 'new-guid'); // will throw an exception
   ```
 
   @method readOnly
@@ -269,7 +269,7 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
   arguments containing key paths that this computed property depends on.
 
   ```javascript
-  MyApp.President = Ember.Object.extend({
+  var President = Ember.Object.extend({
     fullName: computed(function() {
       return this.get('firstName') + ' ' + this.get('lastName');
 
@@ -278,12 +278,12 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
     }).property('firstName', 'lastName')
   });
 
-  MyApp.president = MyApp.President.create({
+  var president = President.create({
     firstName: 'Barack',
     lastName: 'Obama',
   });
 
-  MyApp.president.get('fullName'); // 'Barack Obama'
+  president.get('fullName'); // 'Barack Obama'
   ```
 
   @method property
@@ -367,10 +367,9 @@ function finishChains(chainNodes)
   Otherwise, call the function passing the property name as an argument.
 
   ```javascript
-  Person = Ember.Object.extend({
+  var Person = Ember.Object.extend({
     fullName: function(keyName) {
       // the keyName parameter is 'fullName' in this case.
-
       return this.get('firstName') + ' ' + this.get('lastName');
     }.property('firstName', 'lastName')
   });
@@ -632,7 +631,9 @@ function registerComputedWithProperties(name, macro) {
     done: Ember.computed.empty('todos')
   });
 
-  var todoList = ToDoList.create({todos: ['Unit Test', 'Documentation', 'Release']});
+  var todoList = ToDoList.create({
+    todos: ['Unit Test', 'Documentation', 'Release']
+  });
 
   todoList.get('done'); // false
   todoList.get('todos').clear();
@@ -667,11 +668,11 @@ computed.empty = function (dependentKey) {
     hasStuff: Ember.computed.notEmpty('backpack.[]')
   });
 
-  var hamster = Hamster.create({backpack: ['Food', 'Sleeping Bag', 'Tent']});
+  var hamster = Hamster.create({ backpack: ['Food', 'Sleeping Bag', 'Tent'] });
 
-  hamster.get('hasStuff'); // true
+  hamster.get('hasStuff');         // true
   hamster.get('backpack').clear(); // []
-  hamster.get('hasStuff'); // false
+  hamster.get('hasStuff');         // false
   ```
 
   @method computed.notEmpty
@@ -1107,12 +1108,12 @@ registerComputedWithProperties('collect', function(properties) {
   though they were called on the original property.
 
   ```javascript
-  Person = Ember.Object.extend({
+  var Person = Ember.Object.extend({
     name: 'Alex Matchneer',
     nomen: Ember.computed.alias('name')
   });
 
-  alex = Person.create();
+  var alex = Person.create();
 
   alex.get('nomen'); // 'Alex Matchneer'
   alex.get('name');  // 'Alex Matchneer'
@@ -1159,9 +1160,9 @@ computed.alias = function(dependentKey) {
     lastName:  'Zeenny'
   });
 
-  teddy.get('nickName'); // 'Teddy'
+  teddy.get('nickName');              // 'Teddy'
   teddy.set('nickName', 'TeddyBear'); // 'TeddyBear'
-  teddy.get('firstName'); // 'Teddy'
+  teddy.get('firstName');             // 'Teddy'
   ```
 
   @method computed.oneWay
@@ -1211,10 +1212,10 @@ if (Ember.FEATURES.isEnabled('query-params-new')) {
     lastName:  'Zeenny'
   });
 
-  teddy.get('nickName'); // 'Teddy'
+  teddy.get('nickName');              // 'Teddy'
   teddy.set('nickName', 'TeddyBear'); // throws Exception
   // throw new Ember.Error('Cannot Set: nickName on: <User:ember27288>' );`
-  teddy.get('firstName'); // 'Teddy'
+  teddy.get('firstName');             // 'Teddy'
   ```
 
   @method computed.readOnly
@@ -1241,12 +1242,12 @@ computed.readOnly = function(dependentKey) {
     wishList: Ember.computed.defaultTo('favoriteFood')
   });
 
-  var hamster = Hamster.create({favoriteFood: 'Banana'});
+  var hamster = Hamster.create({ favoriteFood: 'Banana' });
 
-  hamster.get('wishList'); // 'Banana'
+  hamster.get('wishList');                     // 'Banana'
   hamster.set('wishList', 'More Unit Tests');
-  hamster.get('wishList'); // 'More Unit Tests'
-  hamster.get('favoriteFood'); // 'Banana'
+  hamster.get('wishList');                     // 'More Unit Tests'
+  hamster.get('favoriteFood');                 // 'Banana'
   ```
 
   @method computed.defaultTo

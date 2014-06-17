@@ -12,7 +12,7 @@
   ```javascript
   Ember.isEqual('hello', 'hello');  // true
   Ember.isEqual(1, 2);              // false
-  Ember.isEqual([4,2], [4,2]);      // false
+  Ember.isEqual([4, 2], [4, 2]);    // false
   ```
 
   @method isEqual

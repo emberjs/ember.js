@@ -364,9 +364,9 @@ var EmberArray;
   not formally array but appears to be array-like (i.e. implements `Ember.Array`)
 
   ```javascript
-  Ember.isArray();                                            // false
-  Ember.isArray([]);                                          // true
-  Ember.isArray( Ember.ArrayProxy.create({ content: [] }) );  // true
+  Ember.isArray();                                          // false
+  Ember.isArray([]);                                        // true
+  Ember.isArray(Ember.ArrayProxy.create({ content: [] }));  // true
   ```
 
   @method isArray
@@ -401,13 +401,14 @@ function isArray(obj) {
   an array. If obj is `null` or `undefined`, returns an empty array.
 
   ```javascript
-  Ember.makeArray();                           // []
-  Ember.makeArray(null);                       // []
-  Ember.makeArray(undefined);                  // []
-  Ember.makeArray('lindsay');                  // ['lindsay']
-  Ember.makeArray([1,2,42]);                   // [1,2,42]
+  Ember.makeArray();            // []
+  Ember.makeArray(null);        // []
+  Ember.makeArray(undefined);   // []
+  Ember.makeArray('lindsay');   // ['lindsay']
+  Ember.makeArray([1, 2, 42]);  // [1, 2, 42]
 
   var controller = Ember.ArrayProxy.create({ content: [] });
+
   Ember.makeArray(controller) === controller;  // true
   ```
 
@@ -425,7 +426,8 @@ function makeArray(obj) {
   Checks to see if the `methodName` exists on the `obj`.
 
   ```javascript
-  var foo = {bar: Ember.K, baz: null};
+  var foo = { bar: Ember.K, baz: null };
+
   Ember.canInvoke(foo, 'bar'); // true
   Ember.canInvoke(foo, 'baz'); // false
   Ember.canInvoke(foo, 'bat'); // false
@@ -447,8 +449,9 @@ function canInvoke(obj, methodName) {
 
   ```javascript
   var d = new Date('03/15/2013');
-  Ember.tryInvoke(d, 'getTime'); // 1363320000000
-  Ember.tryInvoke(d, 'setFullYear', [2014]); // 1394856000000
+
+  Ember.tryInvoke(d, 'getTime');              // 1363320000000
+  Ember.tryInvoke(d, 'setFullYear', [2014]);  // 1394856000000
   Ember.tryInvoke(d, 'noSuchMethod', [2014]); // undefined
   ```
 
@@ -480,7 +483,7 @@ var needsFinallyFix = (function() {
 })();
 
 /**
-  Provides try { } finally { } functionality, while working
+  Provides try/finally functionality, while working
   around Safari's double finally bug.
 
   ```javascript
@@ -488,9 +491,11 @@ var needsFinallyFix = (function() {
     someResource.lock();
     runCallback(); // May throw error.
   };
+
   var finalizer = function() {
     someResource.unlock();
   };
+
   Ember.tryFinally(tryable, finalizer);
   ```
 
@@ -542,12 +547,12 @@ if (needsFinallyFix) {
 }
 
 /**
-  Provides try { } catch finally { } functionality, while working
+  Provides try/catch/finally functionality, while working
   around Safari's double finally bug.
 
   ```javascript
   var tryable = function() {
-    for (i=0, l=listeners.length; i<l; i++) {
+    for (i = 0, l = listeners.length; i < l; i++) {
       listener = listeners[i];
       beforeValues[i] = listener.before(name, time(), payload);
     }
@@ -561,11 +566,12 @@ if (needsFinallyFix) {
   };
 
   var finalizer = function() {
-    for (i=0, l=listeners.length; i<l; i++) {
+    for (i = 0, l = listeners.length; i < l; i++) {
       listener = listeners[i];
       listener.after(name, time(), payload, beforeValues[i]);
     }
   };
+
   Ember.tryCatchFinally(tryable, catchable, finalizer);
   ```
 
@@ -670,15 +676,15 @@ var EmberObject;
   Ember.typeOf(true);                   // 'boolean'
   Ember.typeOf(new Boolean(true));      // 'boolean'
   Ember.typeOf(Ember.makeArray);        // 'function'
-  Ember.typeOf([1,2,90]);               // 'array'
+  Ember.typeOf([1, 2, 90]);             // 'array'
   Ember.typeOf(/abc/);                  // 'regexp'
   Ember.typeOf(new Date());             // 'date'
   Ember.typeOf(Ember.Object.extend());  // 'class'
   Ember.typeOf(Ember.Object.create());  // 'instance'
   Ember.typeOf(new Error('teamocil'));  // 'error'
 
-  // "normal" JavaScript object
-  Ember.typeOf({a: 'b'});              // 'object'
+  // 'normal' JavaScript object
+  Ember.typeOf({ a: 'b' });             // 'object'
   ```
 
   @method typeOf
