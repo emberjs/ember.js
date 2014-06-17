@@ -33,18 +33,18 @@ esac
 echo -e "CHANNEL: ${CHANNEL}\n"
 
 # sending output to /dev/null to prevent GH_TOKEN leak on error
-git clone https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_REPO_SLUG}.git bower_ember > /dev/null
+git clone --branch ${CHANNEL} https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_REPO_SLUG}.git bower_ember &> /dev/null
 rm -rf bower_ember/*
 cp -r ${INCLUDED_FILES} bower_ember/
 cd bower_ember
 git remote rm origin
 
 # sending output to /dev/null to prevent GH_TOKEN leak on error
-git remote add origin https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_REPO_SLUG}.git > /dev/null
+git remote add origin https://${USER}:${GH_TOKEN}@github.com/${COMPONENTS_EMBER_REPO_SLUG}.git &> /dev/null
 git add -A
-git commit -m "Ember bower component auto build for ${TRAVIS_BRANCH}"
+git commit -m "Ember Bower Auto build for https://github.com/emberjs/ember.js/commits/${TRAVIS_COMMIT}."
 
 # sending output to /dev/null to prevent GH_TOKEN leak on error
-git push -fq origin master > /dev/null
+git push -fq origin ${CHANNEL} &> /dev/null
 echo -e "Done\n"
 
