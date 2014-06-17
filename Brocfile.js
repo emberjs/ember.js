@@ -112,6 +112,11 @@ testConfig = replace(testConfig, {
 });
 
 var bowerFiles = [
+  pickFiles('config/package_manager_files', {
+    srcDir: '/',
+    destDir: '/'
+  }),
+
   pickFiles('bower_components/qunit/qunit', {
     srcDir: '/',
     destDir: '/qunit'
