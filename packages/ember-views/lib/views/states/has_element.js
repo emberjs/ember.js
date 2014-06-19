@@ -41,12 +41,12 @@ merge(hasElement, {
   // once the view has been inserted into the DOM, rerendering is
   // deferred to allow bindings to synchronize.
   rerender: function(view) {
-    var morph = view._morph;
-    view._morph = null;
-    view._renderer.remove(view, false);
-    view._morph = morph;
     // TODO: should be scheduled with renderer
-    view._insertElementLater(function() {
+    run.scheduleOnce('render', function () {
+      var morph = view._morph;
+      view._morph = null;
+      view._renderer.remove(view, false);
+      view._morph = morph;
       view._renderer.renderTree(view);
     });
   },
