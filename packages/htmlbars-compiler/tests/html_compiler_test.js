@@ -90,6 +90,12 @@ test("Simple elements can have attributes", function() {
   equalHTML(fragment, '<div class="foo" id="bar">content</div>');
 });
 
+test("Simple elements can have arbitrary attributes", function() {
+  var template = compile("<div data-some-data='foo' data-isCamelCase='bar'>content</div>");
+  var fragment = template({}, env);
+  equalHTML(fragment, '<div data-some-data="foo" data-iscamelcase="bar">content</div>');
+});
+
 function shouldBeVoid(tagName) {
   var html = "<" + tagName + " data-foo='bar'><p>hello</p>";
   var template = compile(html);
