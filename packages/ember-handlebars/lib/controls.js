@@ -166,6 +166,8 @@ export function inputHelper(options) {
       inputType = hash.type,
       onEvent = hash.on;
 
+  Ember.warn('You can only use a string as a `type` parameter, not a variable', types.type !== 'STRING');
+
   delete hash.type;
   delete hash.on;
 
