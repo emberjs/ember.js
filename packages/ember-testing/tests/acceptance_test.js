@@ -57,7 +57,7 @@ QUnit.module("ember-testing Acceptance", {
       });
 
       App.CommentsView = EmberView.extend({
-        defaultTemplate: EmberHandlebars.compile("{{input type=text}}")
+        defaultTemplate: EmberHandlebars.compile('{{input type="text"}}')
       });
 
       App.AbortTransitionRoute = EmberRoute.extend({

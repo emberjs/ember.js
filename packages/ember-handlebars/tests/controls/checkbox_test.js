@@ -89,6 +89,27 @@ test("It works", function() {
   }, /you must use `checked=/);
 });
 
+QUnit.module("{{input type='checkbox'}} - prevent dynamic type", {
+  setup: function() {
+    checkboxView = EmberView.extend({
+      controller: controller,
+      inputType: "checkbox",
+      template: compile('{{input type=inputType}}')
+    }).create();
+  },
+
+  teardown: function() {
+    destroy(checkboxView);
+  }
+});
+
+test("It works", function() {
+  expectAssertion(function() {
+    append();
+  }, /not a variable/);
+});
+
+
 QUnit.module("{{input type='checkbox'}} - static values", {
   setup: function() {
     controller = {
