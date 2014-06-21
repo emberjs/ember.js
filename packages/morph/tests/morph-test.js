@@ -2,6 +2,17 @@ import Morph from "morph/morph";
 import { equalHTML } from "test/support/assertions";
 import SafeString from 'handlebars/safe-string';
 
+var domHelper = {
+  createTextNode: function(text){
+    return document.createTextNode(text);
+  },
+  parseHTML: function(html){
+    var element = document.createElement('div');
+    element.innerHTML = html;
+    return element.childNodes;
+  }
+};
+
 function morphTests(factory) {
   test('updateNode '+factory.name, function () {
     var fixture = document.getElementById('qunit-fixture'),
@@ -389,7 +400,7 @@ function iterateCombinations(parents, starts, ends, contents, callback) {
 
         return {
           fragment: fragment,
-          morph: Morph.create(parent, startIndex, endIndex),
+          morph: Morph.create(parent, startIndex, endIndex, domHelper),
           startHTML: parentFactory.startHTML + startFactory.HTML,
           contentHTML: contentFactory.HTML,
           endHTML: endFactory.HTML + parentFactory.endHTML

@@ -1,5 +1,3 @@
-import { domHelpers } from "./dom_helpers";
-import { Morph } from "morph";
+import { DOMHelper } from "./dom-helper";
 
-export var domHelpers;
-export var Morph;
+export var DOMHelper;
