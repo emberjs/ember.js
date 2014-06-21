@@ -4,13 +4,14 @@ import { string } from "./quoting";
 export function FragmentCompiler() {
   this.source = [];
   this.depth = 0;
+  this.domHelper = 'dom0';
 }
 
 FragmentCompiler.prototype.compile = function(opcodes) {
   this.source.length = 0;
   this.depth = 0;
 
-  this.source.push('function build(dom) {\n');
+  this.source.push('function build() {\n');
   processOpcodes(this, opcodes);
   this.source.push('}\n');
 
@@ -18,11 +19,11 @@ FragmentCompiler.prototype.compile = function(opcodes) {
 };
 
 FragmentCompiler.prototype.empty = function() {
-  this.source.push('  return dom.createDocumentFragment();\n');
+  this.source.push('  return '+this.domHelper+'.createDocumentFragment();\n');
 };
 
 FragmentCompiler.prototype.startFragment = function() {
-  this.source.push('  var el0 = dom.createDocumentFragment();\n');
+  this.source.push('  var el0 = '+this.domHelper+'.createDocumentFragment();\n');
 };
 
 FragmentCompiler.prototype.endFragment = function() {
@@ -30,7 +31,9 @@ FragmentCompiler.prototype.endFragment = function() {
 };
 
 FragmentCompiler.prototype.openRootElement = function(tagName) {
-  this.source.push('  var el0 = dom.createElement('+string(tagName)+');\n');
+  this.source.push('  var el0 = '+this.domHelper+'.createElement('+
+    string(tagName)+
+  ');\n');
 };
 
 FragmentCompiler.prototype.closeRootElement = function() {
@@ -38,26 +41,37 @@ FragmentCompiler.prototype.closeRootElement = function() {
 };
 
 FragmentCompiler.prototype.rootText = function(str) {
-  this.source.push('  return dom.createTextNode('+string(str)+');\n');
+  this.source.push('  return '+this.domHelper+'.createTextNode('+string(str)+');\n');
+};
+
+FragmentCompiler.prototype.openContextualElement = function(domHelper) {
+  var el = 'el'+this.depth;
+  this.source.push('  '+domHelper+' = new '+this.domHelper+'.constructor('+el+');\n');
+};
+
+FragmentCompiler.prototype.selectDOMHelper = function(domHelper) {
+  this.domHelper = domHelper;
 };
 
 FragmentCompiler.prototype.openElement = function(tagName) {
   var el = 'el'+(++this.depth);
-  this.source.push('  var '+el+' = dom.createElement('+string(tagName)+');\n');
+  this.source.push('  var '+el+' = '+this.domHelper+'.createElement('+
+    string(tagName)+
+  ');\n');
 };
 
 FragmentCompiler.prototype.setAttribute = function(name, value) {
   var el = 'el'+this.depth;
-  this.source.push('  dom.setAttribute('+el+','+string(name)+','+string(value)+');\n');
+  this.source.push('  '+this.domHelper+'.setAttribute('+el+','+string(name)+','+string(value)+');\n');
 };
 
 FragmentCompiler.prototype.text = function(str) {
   var el = 'el'+this.depth;
-  this.source.push('  dom.appendText('+el+','+string(str)+');\n');
+  this.source.push('  '+this.domHelper+'.appendText('+el+','+string(str)+');\n');
 };
 
 FragmentCompiler.prototype.closeElement = function() {
   var child = 'el'+(this.depth--);
   var el = 'el'+this.depth;
-  this.source.push('  dom.appendChild('+el+', '+child+');\n');
+  this.source.push('  '+this.domHelper+'.appendChild('+el+', '+child+');\n');
 };

@@ -1,6 +1,6 @@
 var splice = Array.prototype.splice;
 
-function Morph(parent, start, end) {
+function Morph(parent, start, end, domHelper) {
   // TODO: this is an internal API, this should be an assert
   if (parent.nodeType === 11) {
     if (start === null || end === null) {
@@ -13,6 +13,7 @@ function Morph(parent, start, end) {
   this._parent = parent;
   this.start = start;
   this.end = end;
+  this.domHelper = domHelper;
   this.text = null;
   this.owner = null;
   this.morphs = null;
@@ -21,16 +22,19 @@ function Morph(parent, start, end) {
   this.escaped = true;
 }
 
-Morph.create = function (parent, startIndex, endIndex) {
+Morph.create = function (parent, startIndex, endIndex, domHelper) {
   var childNodes = parent.childNodes,
-    start = startIndex === -1 ? null : childNodes[startIndex],
-    end = endIndex === -1 ? null : childNodes[endIndex];
-  return new Morph(parent, start, end);
+      start = startIndex === -1 ? null : childNodes[startIndex],
+      end = endIndex === -1 ? null : childNodes[endIndex];
+  return new Morph(parent, start, end, domHelper);
 };
 
 Morph.prototype.parent = function () {
-  if (!this.element && this._parent !== this.start.parentNode) {
-    this.element = this._parent = this.start.parentNode;
+  if (!this.element) {
+    var parent = this.start.parentNode;
+    if (this._parent !== parent) {
+      this.element = this._parent = parent;
+    }
   }
   return this._parent;
 };
@@ -116,7 +120,7 @@ Morph.prototype._updateText = function (parent, text) {
     this.text.nodeValue = text;
     return;
   }
-  var node = parent.ownerDocument.createTextNode(text);
+  var node = this.domHelper.createTextNode(text);
   this.text = node;
   clear(parent, this.start, this.end);
   parent.insertBefore(node, this.end);
@@ -132,16 +136,8 @@ Morph.prototype._updateHTML = function (parent, html) {
   var start = this.start, end = this.end;
   clear(parent, start, end);
   this.text = null;
-  var element;
-  if (parent.nodeType === 11) {
-    /* TODO require templates always have a contextual element
-       instead of element0 = frag */
-    element = parent.ownerDocument.createElement('div');
-  } else {
-    element = parent.cloneNode(false);
-  }
-  element.innerHTML = html;
-  appendChildren(parent, end, element.childNodes);
+  var childNodes = this.domHelper.parseHTML(html, parent);
+  appendChildren(parent, end, childNodes);
   if (this.before !== null) {
     this.before.end = start.nextSibling;
   }
@@ -164,7 +160,7 @@ Morph.prototype.insert = function (index, node) {
     after  = index < morphs.length ? morphs[index] : null,
     start  = before === null ? this.start : (before.end === null ? parent.lastChild : before.end.previousSibling),
     end    = after === null ? this.end : (after.start === null ? parent.firstChild : after.start.nextSibling),
-    morph  = new Morph(parent, start, end);
+    morph  = new Morph(parent, start, end, this.domHelper);
   morph.owner = this;
   morph._update(parent, node);
   if (before !== null) {
@@ -212,7 +208,7 @@ Morph.prototype.replace = function (index, removedLength, addedNodes) {
   args = new Array(addedLength+2);
   if (addedLength > 0) {
     for (i=0; i<addedLength; i++) {
-      args[i+2] = current = new Morph(parent, start, end);
+      args[i+2] = current = new Morph(parent, start, end, this.domHelper);
       current._update(parent, addedNodes[i]);
       current.owner = this;
       if (before !== null) {

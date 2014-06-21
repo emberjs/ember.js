@@ -4,6 +4,7 @@ import { HydrationOpcodeCompiler } from './hydration_opcode';
 import { HydrationCompiler } from './hydration';
 import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
+import { string } from "./quoting";
 
 export function TemplateCompiler() {
   this.fragmentOpcodeCompiler = new FragmentOpcodeCompiler();
@@ -12,6 +13,8 @@ export function TemplateCompiler() {
   this.hydrationCompiler = new HydrationCompiler();
   this.templates = [];
   this.childTemplates = [];
+  this.domHelperStack = [];
+  this.domHelperVariables = [];
 }
 
 TemplateCompiler.prototype.compile = function(ast) {
@@ -26,6 +29,11 @@ TemplateCompiler.prototype.compile = function(ast) {
 TemplateCompiler.prototype.startProgram = function(program, childTemplateCount) {
   this.fragmentOpcodeCompiler.startProgram(program, childTemplateCount);
   this.hydrationOpcodeCompiler.startProgram(program, childTemplateCount);
+
+  // The stack tracks what the current helper is
+  this.domHelperStack.splice(0, this.domHelperStack.length, 'dom0');
+  // The list of variables
+  this.domHelperVariables.splice(0, this.domHelperVariables.length, 'dom0');
 
   this.childTemplates.length = 0;
   while(childTemplateCount--) {
@@ -55,13 +63,16 @@ TemplateCompiler.prototype.endProgram = function(program) {
   var template =
     '(function (){\n' +
       childTemplateVars +
+    'var ' + this.domHelperVariables.join(', ') + ';\n' +
       fragmentProgram +
-    'var cachedFragment = null;\n' +
+    'var cachedFragment;\n' +
     'return function template(context, env) {\n' +
-    '  if (cachedFragment === null) {\n' +
-    '    cachedFragment = build(dom);\n' +
+    '  if (!env.dom) { throw "You must specify a dom argument to env"; }\n' +
+    '  if (dom0 === undefined || !dom0.sameAs(env.dom)) {\n' +
+    '    dom0 = env.dom;\n' +
+    '    cachedFragment = build();\n' +
     '  }\n' +
-    '  var fragment = dom.cloneNode(cachedFragment);\n' +
+    '  var fragment = dom0.cloneNode(cachedFragment, true);\n' +
     '  var hooks = env.hooks;\n' +
        hydrationProgram +
     '  return fragment;\n' +
@@ -79,6 +90,24 @@ TemplateCompiler.prototype.openElement = function(element, i, l, c) {
 TemplateCompiler.prototype.closeElement = function(element, i, l) {
   this.fragmentOpcodeCompiler.closeElement(element, i, l);
   this.hydrationOpcodeCompiler.closeElement(element, i, l);
+};
+
+TemplateCompiler.prototype.openContextualElement = function(contextualElement) {
+  var previousHelper = this.domHelperStack[this.domHelperStack.length-1],
+      domHelper      = 'dom'+this.domHelperVariables.length;
+  this.domHelperStack.push(domHelper);
+  this.domHelperVariables.push(domHelper);
+
+  this.fragmentOpcodeCompiler.openContextualElement(domHelper);
+  this.fragmentOpcodeCompiler.selectDOMHelper(domHelper);
+  this.hydrationOpcodeCompiler.selectDOMHelper(domHelper);
+};
+
+TemplateCompiler.prototype.closeContextualElement = function(contextualElement) {
+  this.domHelperStack.pop();
+  var domHelper = this.domHelperStack[this.domHelperStack.length-1];
+  this.fragmentOpcodeCompiler.selectDOMHelper(domHelper);
+  this.hydrationOpcodeCompiler.selectDOMHelper(domHelper);
 };
 
 TemplateCompiler.prototype.component = function(component, i, l) {
