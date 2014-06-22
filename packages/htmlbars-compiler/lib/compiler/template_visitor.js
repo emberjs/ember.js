@@ -1,6 +1,7 @@
 var push = Array.prototype.push;
 
 function Frame() {
+  this.parentNode = null;
   this.childIndex = null;
   this.childCount = null;
   this.childTemplateCount = 0;
@@ -73,6 +74,7 @@ TemplateVisitor.prototype.program = function(program) {
   var parentFrame = this.getCurrentFrame();
   var programFrame = this.pushFrame();
 
+  programFrame.parentNode = program;
   programFrame.childCount = program.statements.length;
   programFrame.actions.push(['endProgram', [program]]);
 
@@ -93,6 +95,7 @@ TemplateVisitor.prototype.element = function(element) {
   var parentFrame = this.getCurrentFrame();
   var elementFrame = this.pushFrame();
 
+  elementFrame.parentNode = element;
   elementFrame.childCount = element.children.length;
   elementFrame.mustacheCount += element.helpers.length;
   elementFrame.actions.push(['closeElement', [element, parentFrame.childIndex, parentFrame.childCount]]);
