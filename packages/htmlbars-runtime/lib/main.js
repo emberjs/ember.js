@@ -1,3 +1,3 @@
-import { DOMHelper } from "./dom-helper";
+var hooks = require('htmlbars-runtime/hooks');
 
-export var DOMHelper;
+export var hooks;

@@ -1,17 +1,9 @@
 import Morph from "morph/morph";
 import { equalHTML } from "test/support/assertions";
 import SafeString from 'handlebars/safe-string';
+import DOMHelper from "morph/dom-helper";
 
-var domHelper = {
-  createTextNode: function(text){
-    return document.createTextNode(text);
-  },
-  parseHTML: function(html){
-    var element = document.createElement('div');
-    element.innerHTML = html;
-    return element.childNodes;
-  }
-};
+var domHelper = new DOMHelper();
 
 function morphTests(factory) {
   test('updateNode '+factory.name, function () {

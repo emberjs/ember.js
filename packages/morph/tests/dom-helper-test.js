@@ -1,4 +1,4 @@
-import {DOMHelper} from "htmlbars-runtime/dom-helper";
+import {DOMHelper} from "morph";
 import {equalHTML} from "test/support/assertions";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",

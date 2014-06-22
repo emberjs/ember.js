@@ -45,7 +45,7 @@ var xhtmlNamespace = "http://www.w3.org/1999/xhtml";
  * @param {HTMLDocument} _document The document DOM methods are proxied to
  * @param {String} namespace The namespace for these actions
  */
-export function DOMHelper(contextualElement, _document, namespaceURI){
+function DOMHelper(contextualElement, _document, namespaceURI){
   this.document = _document || (
     contextualElement ? contextualElement.ownerDocument : document);
   this.namespaceURI = namespaceURI || (
