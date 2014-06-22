@@ -1,7 +1,7 @@
 import { compile } from "htmlbars-compiler/compiler";
 import { tokenize } from "simple-html-tokenizer";
 import { hydrationHooks } from "htmlbars-runtime/hooks";
-import { DOMHelper } from "htmlbars-runtime/dom-helper";
+import { DOMHelper } from "morph";
 
 function frag(element, string) {
   if (element instanceof DocumentFragment) {
