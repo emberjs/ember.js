@@ -1,4 +1,4 @@
-import { Morph } from "morph";
+import Morph from "morph/morph";
 import { equalHTML } from "test/support/assertions";
 import SafeString from 'handlebars/safe-string';
 
