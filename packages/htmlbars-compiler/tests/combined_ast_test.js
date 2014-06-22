@@ -107,6 +107,13 @@ test("a simple piece of content", function() {
   ]));
 });
 
+test("self-closed element", function() {
+  var t = '<g />';
+  astEqual(t, root([
+    element("g")
+  ]));
+});
+
 test("a piece of content with HTML", function() {
   var t = 'some <div>content</div> done';
   astEqual(t, root([

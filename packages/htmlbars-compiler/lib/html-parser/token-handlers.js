@@ -11,6 +11,10 @@ var states = {
   "beforeAttributeName": "in-tag"
 };
 
+// The HTML elements in this list are speced by
+// http://www.w3.org/TR/html-markup/syntax.html#syntax-elements,
+// and will be forced to close regardless of if they have a
+// self-closing /> at the end.
 var voidTagNames = "area base br col command embed hr img input keygen link meta param source track wbr";
 var voidMap = {};
 
@@ -31,7 +35,7 @@ var tokenHandlers = {
   StartTag: function(tag) {
     var element = new ElementNode(tag.tagName, tag.attributes, tag.helpers || [], []);
     this.elementStack.push(element);
-    if (voidMap.hasOwnProperty(tag.tagName)) {
+    if (voidMap.hasOwnProperty(tag.tagName) || tag.selfClosing) {
       tokenHandlers.EndTag.call(this, tag);
     }
   },
