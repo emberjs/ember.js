@@ -52,7 +52,7 @@ export default function compare(v, w) {
     }
 
     if (type2 === 'instance' && Comparable.detect(w.constructor)) {
-      return 1-w.constructor.compare(w, v);
+      return -w.constructor.compare(w, v);
     }
   }
 
