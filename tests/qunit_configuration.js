@@ -257,7 +257,7 @@
   //
   window.expectNoDeprecation = function(message) {
     if (typeof EmberDev.deprecations.expecteds === 'array') {
-      throw("No deprecation was expected after expectDeprecation was called!");
+      throw("expectNoDeprecation was called after expectDeprecation was called!");
     }
     EmberDev.deprecations.stubEmber();
     EmberDev.deprecations.expecteds = EmberDev.deprecations.NONE;
@@ -277,7 +277,7 @@
   //
   window.expectDeprecation = function(fn, message) {
     if (EmberDev.deprecations.expecteds === EmberDev.deprecations.NONE) {
-      throw("A deprecation was expected after expectNoDeprecation was called!");
+      throw("expectDeprecation was called after expectNoDeprecation was called!");
     }
     EmberDev.deprecations.stubEmber();
     EmberDev.deprecations.expecteds = EmberDev.deprecations.expecteds || [];
@@ -331,10 +331,10 @@
 
     if (expecteds === EmberDev.deprecations.NONE) {
       var actualMessages = [];
-      for (var actual in actuals) {
-        actualMessages.push(actual[0]);
+      for (var i=0;i<actuals.length;i++) {
+        actualMessages.push(actuals[i][0]);
       }
-      ok(actuals.length === 0, "Expected no deprecation call, got: "+actualMessages.join(', '));
+      ok(actuals.length === 0, "Expected no deprecation calls, got "+actuals.length+": "+actualMessages.join(', '));
     } else {
       for (var o=0;o < expecteds.length; o++) {
         var expected = expecteds[o], match;
