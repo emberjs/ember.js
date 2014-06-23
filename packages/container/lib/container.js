@@ -1,4 +1,5 @@
 import InheritingDict from 'container/inheriting_dict';
+import Ember from "ember-metal/core"; // Ember.assert
 
 // A lightweight container that helps to assemble and decouple components.
 // Public api for the container is still in flux.
@@ -133,7 +134,7 @@ Container.prototype = {
     @param {Object} options
   */
   register: function(fullName, factory, options) {
-    validateFullName(fullName);
+    Ember.assert('fullName must be a proper full name', validateFullName(fullName));
 
     if (factory === undefined) {
       throw new TypeError('Attempting to register an unknown factory: `' + fullName + '`');
@@ -166,7 +167,7 @@ Container.prototype = {
     @param {String} fullName
    */
   unregister: function(fullName) {
-    validateFullName(fullName);
+    Ember.assert('fullName must be a proper full name', validateFullName(fullName));
 
     var normalizedName = this.normalize(fullName);
 
@@ -210,7 +211,7 @@ Container.prototype = {
     @return {Function} fullName's factory
   */
   resolve: function(fullName) {
-    validateFullName(fullName);
+    Ember.assert('fullName must be a proper full name', validateFullName(fullName));
 
     var normalizedName = this.normalize(fullName);
     var cached = this.resolveCache.get(normalizedName);
@@ -302,7 +303,7 @@ Container.prototype = {
     @return {any}
   */
   lookup: function(fullName, options) {
-    validateFullName(fullName);
+    Ember.assert('fullName must be a proper full name', validateFullName(fullName));
     return lookup(this, this.normalize(fullName), options);
   },
 
@@ -314,7 +315,7 @@ Container.prototype = {
     @return {any}
   */
   lookupFactory: function(fullName) {
-    validateFullName(fullName);
+    Ember.assert('fullName must be a proper full name', validateFullName(fullName));
     return factoryFor(this, this.normalize(fullName));
   },
 
@@ -327,7 +328,7 @@ Container.prototype = {
     @return {Boolean}
   */
   has: function(fullName) {
-    validateFullName(fullName);
+    Ember.assert('fullName must be a proper full name', validateFullName(fullName));
     return has(this, this.normalize(fullName));
   },
 
@@ -409,7 +410,7 @@ Container.prototype = {
     @param {String} fullName
   */
   typeInjection: function(type, property, fullName) {
-    validateFullName(fullName);
+    Ember.assert('fullName must be a proper full name', validateFullName(fullName));
     if (this.parent) { illegalChildOperation('typeInjection'); }
 
     var fullNameType = fullName.split(':')[0];
@@ -473,7 +474,7 @@ Container.prototype = {
       return this.typeInjection(fullName, property, normalizedInjectionName);
     }
 
-    validateFullName(fullName);
+    Ember.assert('fullName must be a proper full name', validateFullName(fullName));
     var normalizedName = this.normalize(fullName);
 
     if (this.cache.has(normalizedName)) {
@@ -579,7 +580,7 @@ Container.prototype = {
       return this.factoryTypeInjection(normalizedName, property, normalizedInjectionName);
     }
 
-    validateFullName(fullName);
+    Ember.assert('fullName must be a proper full name', validateFullName(fullName));
 
     if (this.factoryCache.has(normalizedName)) {
       throw new Error('Attempted to register a factoryInjection for a type that has already ' +
@@ -814,6 +815,7 @@ function validateFullName(fullName) {
   if (!VALID_FULL_NAME_REGEXP.test(fullName)) {
     throw new TypeError('Invalid Fullname, expected: `type:name` got: ' + fullName);
   }
+  return true;
 }
 
 function addInjection(rules, factoryName, property, injectionName) {
