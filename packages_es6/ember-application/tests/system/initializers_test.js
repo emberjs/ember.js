@@ -29,6 +29,7 @@ test("initializers can be registered in a specified order", function() {
 
   MyApplication.initializer({
     name: 'second',
+    after: 'first',
     before: 'third',
     initialize: function(container) {
       order.push('second');
@@ -38,6 +39,7 @@ test("initializers can be registered in a specified order", function() {
   MyApplication.initializer({
     name: 'fifth',
     after: 'fourth',
+    before: 'sixth',
     initialize: function(container) {
       order.push('fifth');
     }
@@ -58,6 +60,13 @@ test("initializers can be registered in a specified order", function() {
     }
   });
 
+  MyApplication.initializer({
+    name: 'sixth',
+    initialize: function(container) {
+      order.push('sixth');
+    }
+  });
+
   run(function() {
     app = MyApplication.create({
       router: false,
@@ -65,7 +74,7 @@ test("initializers can be registered in a specified order", function() {
     });
   });
 
-  deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth']);
+  deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
 });
 
 test("initializers can have multiple dependencies", function () {
