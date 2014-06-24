@@ -786,8 +786,7 @@ Application.reopenClass({
 
     * `before` and `after` are used to ensure that this initializer is ran prior
     or after the one identified by the value. This value can be a single string
-    or an array of strings, referencing the `name` of other initializers. Please
-    note that you cannot specify both attributes for the same initializer.
+    or an array of strings, referencing the `name` of other initializers.
 
     An example of ordering initializers, we create an initializer named `first`:
 
