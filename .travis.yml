@@ -7,10 +7,12 @@ install:
 - "npm install"
 after_success:
   - bundle install --deployment --retry 3 --jobs 4
-  - bundle exec rake publish_build
+  - bundle exec rake docs
+  - "./bin/publish_to_s3.js"
   - "./bin/bower_ember_build"
 script:
   - npm test
+  - npm run-script test-node
 env:
   global:
   - BROCCOLI_ENV=production
