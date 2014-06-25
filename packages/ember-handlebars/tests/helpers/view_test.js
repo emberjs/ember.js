@@ -1,5 +1,6 @@
 /*globals EmberDev */
 import EmberView from "ember-views/views/view";
+import Container from 'container/container';
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 
@@ -28,9 +29,9 @@ QUnit.module("Handlebars {{#view}} helper", {
   }
 });
 
-test("By default view:default is used", function() {
+test("By default view:toplevel is used", function() {
   var DefaultView = viewClass({
-    elementId: 'default-view',
+    elementId: 'toplevel-view',
     template: Ember.Handlebars.compile('hello world')
   });
 
@@ -45,10 +46,10 @@ test("By default view:default is used", function() {
 
   run(view, 'appendTo', '#qunit-fixture');
 
-  equal(jQuery('#default-view').text(), 'hello world');
+  equal(jQuery('#toplevel-view').text(), 'hello world');
 
   function lookupFactory(fullName) {
-    equal(fullName, 'view:default');
+    equal(fullName, 'view:toplevel');
 
     return DefaultView;
   }
@@ -182,4 +183,23 @@ test("mixing old and new styles of property binding fires a warning, treats valu
   equal(jQuery('#lol').text(), "nerd", "awkward mixed syntax treated like binding");
 
   Ember.warn = oldWarn;
+});
+
+test("allows you to pass attributes that will be assigned to the class instance, like class=\"foo\"", function() {
+  expect(4);
+
+  var container = new Container();
+  container.register('view:toplevel', EmberView.extend());
+
+  view = EmberView.extend({
+    template: Ember.Handlebars.compile('{{view id="foo" tagName="h1" class="foo"}}{{#view id="bar" class="bar"}}Bar{{/view}}'),
+    container: container
+  }).create();
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  ok(jQuery('#foo').hasClass('foo'));
+  ok(jQuery('#foo').is('h1'));
+  ok(jQuery('#bar').hasClass('bar'));
+  equal(jQuery('#bar').text(), 'Bar');
 });

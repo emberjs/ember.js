@@ -21,6 +21,7 @@ import HashLocation from "ember-routing/location/hash_location";
 
 import EmberHandlebars from "ember-handlebars";
 import EmberView from "ember-routing/ext/view";
+import _MetamorphView from "ember-handlebars/views/metamorph_view";
 import jQuery from "ember-views/system/jquery";
 
 import renderHelper from "ember-routing-handlebars/helpers/render";
@@ -98,7 +99,7 @@ QUnit.module("Handlebars {{render}} helper", {
 
     var namespace = Namespace.create();
     container = buildContainer(namespace);
-    container.register('view:default', EmberView.extend());
+    container.register('view:default', _MetamorphView);
     container.register('router:main', EmberRouter.extend());
   },
   teardown: function() {
