@@ -81,7 +81,7 @@ QUnit.module("Handlebars {{outlet}} helpers", {
 
     var namespace = Namespace.create();
     container = buildContainer(namespace);
-    container.register('view:default', EmberView.extend());
+    container.register('view:default', _MetamorphView);
     container.register('router:main', EmberRouter.extend());
   },
   teardown: function() {

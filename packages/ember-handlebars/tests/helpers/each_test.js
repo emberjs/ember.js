@@ -3,6 +3,7 @@ import Ember from "ember-metal/core"; // Ember.lookup;
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
+import _MetamorphView from "ember-handlebars/views/metamorph_view";
 import { computed } from "ember-metal/computed";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import EmberHandlebars from "ember-handlebars-compiler";
@@ -32,7 +33,8 @@ QUnit.module("the #each helper", {
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
     container = new Container();
-    container.register('view:default', EmberView.extend());
+    container.register('view:default', _MetamorphView);
+    container.register('view:toplevel', EmberView.extend());
 
     view = EmberView.create({
       container: container,
@@ -525,7 +527,8 @@ test("it works with the controller keyword", function() {
 QUnit.module("{{#each foo in bar}}", {
   setup: function() {
     container = new Container();
-    container.register('view:default', EmberView.extend());
+    container.register('view:default', _MetamorphView);
+    container.register('view:toplevel', EmberView.extend());
   },
   teardown: function() {
     run(function() {

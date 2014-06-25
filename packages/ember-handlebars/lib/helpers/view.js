@@ -386,11 +386,11 @@ export function viewHelper(path, options) {
   Ember.assert("The view helper only takes a single argument", arguments.length <= 2);
 
   // If no path is provided, treat path param as options
-  // and get an instance of the registered `view:default`
+  // and get an instance of the registered `view:toplevel`
   if (path && path.data && path.data.isRenderData) {
     options = path;
     Ember.assert('{{view}} helper requires parent view to have a container but none was found. This usually happens when you are manually-managing views.', !!options.data.view.container);
-    path = options.data.view.container.lookupFactory('view:default');
+    path = options.data.view.container.lookupFactory('view:toplevel');
   }
 
   options.helperName = options.helperName || 'view';
