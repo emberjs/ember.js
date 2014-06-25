@@ -74,7 +74,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
 
       parentIndex = parents[level];
       parent = views[parentIndex];
-      this.insertElement(view, parent, element);
+      this.insertElement(view, parent, element, -1);
       index = queue[--length];
       view = views[index];
       element = elements[level];
