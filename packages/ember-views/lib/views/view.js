@@ -1360,14 +1360,6 @@ var View = CoreView.extend({
     @return {Ember.View} receiver
   */
   appendTo: function(target) {
-    // Schedule the DOM element to be created and appended to the given
-    // element after bindings have synchronized.
-    // this._insertElementLater(function() {
-    //   Ember.assert("You tried to append to (" + target + ") but that isn't in the DOM", jQuery(target).length > 0);
-    //   Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !jQuery(target).is('.ember-view') && !jQuery(target).parents().is('.ember-view'));
-    //   this.$().appendTo(target);
-    // });
-
     this.constructor.renderer.appendTo(this, jQuery(target)[0]);
 
     return this;
@@ -1396,37 +1388,6 @@ var View = CoreView.extend({
     });
 
     return this;
-  },
-
-  /**
-    Schedules a DOM operation to occur during the next render phase. This
-    ensures that all bindings have finished synchronizing before the view is
-    rendered.
-
-    To use, pass a function that performs a DOM operation.
-
-    Before your function is called, this view and all child views will receive
-    the `willInsertElement` event. After your function is invoked, this view
-    and all of its child views will receive the `didInsertElement` event.
-
-    ```javascript
-    view._insertElementLater(function() {
-      this.createElement();
-      this.$().appendTo('body');
-    });
-    ```
-
-    @method _insertElementLater
-    @param {Function} fn the function that inserts the element into the DOM
-    @private
-  */
-  _insertElementLater: function(fn) {
-    this._scheduledInsert = run.scheduleOnce('render', this, '_insertElement', fn);
-  },
-
-  _insertElement: function (fn) {
-    this._scheduledInsert = null;
-    this.currentState.insertElement(this, fn);
   },
 
   /**
@@ -1667,10 +1628,6 @@ var View = CoreView.extend({
     this.lengthAfterRender = this._childViews.length;
 
     return buffer;
-  },
-
-  renderToBufferIfNeeded: function (buffer) {
-    return this.currentState.renderToBufferIfNeeded(this, buffer);
   },
 
   beforeRender: function(buffer) {},
@@ -2169,48 +2126,6 @@ function notifyMutationListeners() {
   run.once(View, 'notifyMutationListeners');
 }
 
-var DOMManager = {
-  prepend: function(view, html) {
-    view.$().prepend(html);
-    notifyMutationListeners();
-  },
-
-  after: function(view, html) {
-    view.$().after(html);
-    notifyMutationListeners();
-  },
-
-  html: function(view, html) {
-    view.$().html(html);
-    notifyMutationListeners();
-  },
-
-  replace: function(view) {
-    var element = get(view, 'element');
-
-    set(view, 'element', null);
-
-    view._insertElementLater(function() {
-      jQuery(element).replaceWith(get(view, 'element'));
-      notifyMutationListeners();
-    });
-  },
-
-  remove: function(view) {
-    view.$().remove();
-    notifyMutationListeners();
-  },
-
-  empty: function(view) {
-    view.$().empty();
-    notifyMutationListeners();
-  }
-};
-
-View.reopen({
-  domManager: DOMManager
-});
-
 View.reopenClass({
 
   /**
@@ -2321,7 +2236,7 @@ View.reopenClass({
 });
 
 var mutation = EmberObject.extend(Evented).create();
-
+// TODO MOVE TO RENDERER HOOKS
 View.addMutationListener = function(callback) {
   mutation.on('change', callback);
 };
