@@ -1286,13 +1286,7 @@ var View = CoreView.extend({
     @property element
     @type DOMElement
   */
-  element: computed('_parentView', function(key, value) {
-    if (value !== undefined) {
-      return this.currentState.setElement(this, value);
-    } else {
-      return this.currentState.getElement(this);
-    }
-  }),
+  element: null,
 
   /**
     Returns a jQuery object for this view's element. If you pass in a selector
