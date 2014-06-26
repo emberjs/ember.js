@@ -66,16 +66,6 @@ merge(inBuffer, {
                  "excessive property change notifications.");
   },
 
-  renderToBufferIfNeeded: function (view, buffer) {
-    return false;
-  },
-
-  // It should be impossible for a rendered view to be scheduled for
-  // insertion.
-  insertElement: function() {
-    throw new EmberError("You can't insert an element that has already been rendered");
-  },
-
   setElement: function(view, value) {
     if (value === null) {
       view._transitionTo('preRender');

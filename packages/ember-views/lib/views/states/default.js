@@ -36,10 +36,6 @@ export default {
     return view;
   },
 
-  renderToBufferIfNeeded: function () {
-    return false;
-  },
-
   rerender: Ember.K,
   invokeObserver: Ember.K
 };

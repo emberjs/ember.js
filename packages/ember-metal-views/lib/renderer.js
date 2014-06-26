@@ -16,6 +16,9 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
   var index = 0;
   var total = 1;
 
+  // if root view && view has a _morph assigned or _parentView._elementInserted
+  var willInsert = _parentView == null ? !!_view._morph : _parentView._elementInserted;
+
   var queue = this._queue;
   queue[0] = 0;
   var length = 1;
@@ -63,9 +66,11 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
 
     while (parentIndex === index) {
       level--;
-      view._elementInserted = true;
+      view._elementCreated = true;
       this.didCreateElement(view);
-      this.willInsertElement(view);
+      if (willInsert) {
+        this.willInsertElement(view);
+      }
 
       if (level === 0) {
         length--;
@@ -85,8 +90,10 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
   this.insertElement(view, _parentView, element, insertAt);
 
   for (i=total-1;i>=0;i--) {
-    view._elementInserted = true;
-    this.didInsertElement(views[i]);
+    if (willInsert) {
+      view._elementInserted = true;
+      this.didInsertElement(views[i]);
+    }
     views[i] = null;
   }
 
@@ -221,6 +228,9 @@ function Renderer_afterRemove(view, shouldDestroy) {
 }
 
 Renderer.prototype.remove = Renderer_remove;
+Renderer.prototype.destroy = function (view) {
+  this.remove(view, true);
+};
 Renderer.prototype.renderTree = Renderer_renderTree;
 Renderer.prototype.insertElement = Renderer_insertElement;
 Renderer.prototype.beforeRemove = Renderer_beforeRemove;

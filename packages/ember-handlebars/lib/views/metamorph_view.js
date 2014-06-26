@@ -23,63 +23,6 @@ function notifyMutationListeners() {
   run.once(View, 'notifyMutationListeners');
 }
 
-// DOMManager should just abstract dom manipulation between jquery and metamorph
-var DOMManager = {
-  remove: function(view) {
-    view.morph.remove();
-    notifyMutationListeners();
-  },
-
-  prepend: function(view, html) {
-    view.morph.prepend(html);
-    notifyMutationListeners();
-  },
-
-  after: function(view, html) {
-    view.morph.after(html);
-    notifyMutationListeners();
-  },
-
-  html: function(view, html) {
-    view.morph.html(html);
-    notifyMutationListeners();
-  },
-
-  // This is messed up.
-  replace: function(view) {
-    var morph = view.morph;
-
-    view._transitionTo('preRender');
-
-    run.schedule('render', this, function renderMetamorphView() {
-      if (view.isDestroying) { return; }
-
-      view.clearRenderedChildren();
-      var buffer = view.renderToBuffer();
-
-      view.invokeRecursively(function(view) {
-        view.propertyWillChange('element');
-      });
-      view.triggerRecursively('willInsertElement');
-
-      morph.replaceWith(buffer.string());
-      view._transitionTo('inDOM');
-
-      view.invokeRecursively(function(view) {
-        view.propertyDidChange('element');
-      });
-      view.triggerRecursively('didInsertElement');
-
-      notifyMutationListeners();
-    });
-  },
-
-  empty: function(view) {
-    view.morph.html("");
-    notifyMutationListeners();
-  }
-};
-
 // The `morph` and `outerHTML` properties are internal only
 // and not observable.
 
@@ -114,9 +57,7 @@ export var _Metamorph = Mixin.create({
     var buffer = this.renderToBuffer();
     this.outerHTML = buffer.string();
     this.clearBuffer();
-  },
-
-  domManager: DOMManager
+  }
 });
 
 export var _wrapMap = Metamorph._wrapMap;

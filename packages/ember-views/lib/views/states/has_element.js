@@ -47,7 +47,7 @@ merge(hasElement, {
       view._morph = null;
       view._renderer.remove(view, false);
       view._morph = morph;
-      view._renderer.renderTree(view);
+      view._renderer.renderTree(view, view._parentView);
     });
   },
 
