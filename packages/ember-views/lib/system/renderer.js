@@ -104,6 +104,7 @@ EmberRenderer.prototype.createElement =
     }
 
     view.buffer = null;
+    view.element = element;
     return element;
   };
 

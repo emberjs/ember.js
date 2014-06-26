@@ -132,7 +132,7 @@ function Renderer_remove(_view, shouldDestroy) {
     this._inserts[viewId] = undefined;
   }
 
-  if (!shouldDestroy && !_view._elementInserted) {
+  if (!shouldDestroy && !_view._elementCreated) {
     return;
   }
 
