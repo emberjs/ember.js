@@ -94,6 +94,7 @@ function debuggerHelper(options) {
   // These are helpful values you can inspect while debugging.
   var templateContext = this;
   var typeOfTemplateContext = inspect(templateContext);
+  console.log('Use `this` to access the context of the calling template');
 
   debugger;
 }
