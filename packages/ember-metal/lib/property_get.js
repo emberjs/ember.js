@@ -128,11 +128,6 @@ function normalizeTuple(target, path) {
 function _getPath(root, path) {
   var hasThis, parts, tuple, idx, len;
 
-  // If there is no root and path is a key name, return that
-  // property from the global object.
-  // E.g. get('Ember') -> Ember
-  if (root === null && path.indexOf('.') === -1) { return get(Ember.lookup, path); }
-
   // detect complicated paths and normalize them
   hasThis = path.indexOf(HAS_THIS) === 0;
 
@@ -143,7 +138,7 @@ function _getPath(root, path) {
     tuple.length = 0;
   }
 
-  parts = path.split(".");
+  parts = path.split('.');
   len = parts.length;
   for (idx = 0; root != null && idx < len; idx++) {
     root = get(root, parts[idx], true);
