@@ -200,6 +200,7 @@ function removeDependentKeys(desc, obj, keyName, meta) {
 */
 function ComputedProperty(func, opts) {
   func.__ember_arity__ = func.length;
+  this.__isComputedProperty__ = true;
   this.func = func;
 
   this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : true;

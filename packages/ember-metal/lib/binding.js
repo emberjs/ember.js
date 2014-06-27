@@ -55,12 +55,13 @@ function getWithGlobals(obj, path) {
 // BINDING
 //
 
-var Binding = function(toPath, fromPath) {
+function Binding(toPath, fromPath) {
   this._direction = 'fwd';
   this._from = fromPath;
   this._to   = toPath;
   this._directionMap = Map.create();
-};
+  this.__isBinding__ = true;
+}
 
 /**
 @class Binding

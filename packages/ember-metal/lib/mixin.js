@@ -65,22 +65,6 @@ function mixinsMeta(obj) {
   return ret;
 }
 
-function initMixin(mixin, args) {
-  if (args && args.length > 0) {
-    mixin.mixins = a_map.call(args, function(x) {
-      if (x instanceof Mixin) { return x; }
-
-      // Note: Manually setup a primitive mixin here. This is the only
-      // way to actually get a primitive mixin. This way normal creation
-      // of mixins will give you combined mixins...
-      var mixin = new Mixin();
-      mixin.properties = x;
-      return mixin;
-    });
-  }
-  return mixin;
-}
-
 function isMethod(obj) {
   return 'function' === typeof obj &&
          obj.isMethod !== false &&
@@ -92,7 +76,7 @@ var CONTINUE = {};
 function mixinProperties(mixinsMeta, mixin) {
   var guid;
 
-  if (mixin instanceof Mixin) {
+  if (mixin.__isMixin__) {
     guid = guidFor(mixin);
     if (mixinsMeta[guid]) { return CONTINUE; }
     mixinsMeta[guid] = mixin;
@@ -127,7 +111,7 @@ function giveDescriptorSuper(meta, key, property, values, descs) {
   // it on the original object.
   superProperty = superProperty || meta.descs[key];
 
-  if (!superProperty || !(superProperty instanceof ComputedProperty)) {
+  if (!superProperty || !(superProperty.__isComputedProperty__)) {
     return property;
   }
 
@@ -204,7 +188,7 @@ function applyMergedProperties(obj, key, value, values) {
 }
 
 function addNormalizedProperty(base, key, value, meta, descs, values, concats, mergings) {
-  if (value instanceof Descriptor) {
+  if (value.__isDescriptor__) {
     if (value === REQUIRED && descs[key]) { return CONTINUE; }
 
     // Wrap descriptor function to implement
@@ -290,7 +274,7 @@ function connectBindings(obj, m) {
       binding = bindings[key];
       if (binding) {
         to = key.slice(0, -7); // strip Binding off end
-        if (binding instanceof Binding) {
+        if (binding.__isBinding__) {
           binding = binding.copy(); // copy prototypes' instance
           binding.to(to);
         } else { // binding is string path
@@ -376,7 +360,7 @@ function applyMixin(obj, mixins, partial) {
 
     if (desc === REQUIRED) { continue; }
 
-    while (desc && desc instanceof Alias) {
+    while (desc && desc.__isAlias__) {
       var followed = followAlias(obj, desc, m, descs, values);
       desc = followed.desc;
       value = followed.value;
@@ -403,9 +387,17 @@ function applyMixin(obj, mixins, partial) {
   @param mixins*
   @return obj
 */
-export function mixin(obj) {
-  var args = a_slice.call(arguments, 1);
+export function mixin() {
+  var length = arguments.length;
+  var args = new Array(length - 1);
+  var obj = arguments[0];
+
+  for (var i = 1; i < length; i++) {
+    args[i - 1] = arguments[i];
+  }
+
   applyMixin(obj, args, false);
+
   return obj;
 }
 
@@ -464,7 +456,35 @@ export function mixin(obj) {
   @namespace Ember
 */
 export default Mixin;
-function Mixin() { return initMixin(this, arguments); }
+function Mixin() {
+  this.__isMixin__ = true;
+
+  var length = arguments.length;
+
+  if (length > 0) {
+    var m, x;
+
+    var mixins = this.mixins = new Array(length);
+
+    for (var i = 0; i < length; i++) {
+      m = arguments[i];
+
+      if (m.__isMixin__) {
+        mixins[i] = m;
+      } else {
+        // Note: Manually setup a primitive mixin here. This is the only
+        // way to actually get a primitive mixin. This way normal creation
+        // of mixins will give you combined mixins...
+        x = new Mixin();
+        x.properties = m;
+        mixins[i] = x;
+      }
+    }
+  } else {
+    this.mixins = false;
+  }
+}
+
 Mixin.prototype = {
   properties: null,
   mixins: null,
@@ -491,8 +511,8 @@ Ember.anyUnprocessedMixins = false;
 Mixin.create = function() {
   // ES6TODO: this relies on a global state?
   Ember.anyUnprocessedMixins = true;
-  var M = this;
-  return initMixin(new M(), arguments);
+  var Constructor = this;
+  return new Constructor(arguments);
 };
 
 var MixinPrototype = Mixin.prototype;
@@ -520,7 +540,7 @@ MixinPrototype.reopen = function() {
     Ember.assert('Expected hash or Mixin instance, got ' + Object.prototype.toString.call(mixin),
                  typeof mixin === 'object' && mixin !== null && Object.prototype.toString.call(mixin) !== '[object Array]');
 
-    if (mixin instanceof Mixin) {
+    if (mixin.__isMixin__) {
       mixins.push(mixin);
     } else {
       tmp = Mixin.create();
@@ -566,7 +586,7 @@ function _detect(curMixin, targetMixin, seen) {
 */
 MixinPrototype.detect = function(obj) {
   if (!obj) { return false; }
-  if (obj instanceof Mixin) { return _detect(obj, this, {}); }
+  if (obj.__isMixin__) { return _detect(obj, this, {}); }
   var m = obj[META_KEY],
       mixins = m && m.mixins;
   if (mixins) {
@@ -637,6 +657,7 @@ export function required() {
 
 function Alias(methodName) {
   this.methodName = methodName;
+  this.__isAlias__ = true;
 }
 
 Alias.prototype = new Descriptor();
