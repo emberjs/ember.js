@@ -2104,10 +2104,14 @@ var View = CoreView.extend({
   clearBuffer: function() {
     this.invokeRecursively(nullViewsBuffer);
   },
-
   transitionTo: function(state, children) {
-    var priorState = this.currentState,
-        currentState = this.currentState = this._states[state];
+    Ember.deprecate("Ember.View#transitionTo has been deprecated, it is for internal use only");
+    this._transitionTo(state, children);
+  },
+  _transitionTo: function(state, children) {
+    var priorState = this.currentState;
+    var currentState = this.currentState = this._states[state];
+
     this._state = state;
 
     if (priorState && priorState.exit) { priorState.exit(this); }
@@ -2116,7 +2120,7 @@ var View = CoreView.extend({
 
     if (children !== false) {
       this.forEachChildView(function(view) {
-        view.transitionTo(state);
+        view._transitionTo(state);
       });
     }
   },

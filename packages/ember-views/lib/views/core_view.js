@@ -40,7 +40,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 
   init: function() {
     this._super();
-    this.transitionTo('preRender');
+    this._transitionTo('preRender');
     this._isVisible = get(this, 'isVisible');
 
     deprecateProperty(this, 'states', '_states');
@@ -123,7 +123,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     }
 
     var buffer = this.buffer = _buffer && _buffer.begin(tagName) || renderBuffer(tagName);
-    this.transitionTo('inBuffer', false);
+    this._transitionTo('inBuffer', false);
 
     this.beforeRender(buffer);
     this.render(buffer);
@@ -184,7 +184,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     // the DOM again.
     if (parent) { parent.removeChild(this); }
 
-    this.transitionTo('destroying', false);
+    this._transitionTo('destroying', false);
 
     return this;
   },
@@ -192,7 +192,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   clearRenderedChildren: Ember.K,
   triggerRecursively: Ember.K,
   invokeRecursively: Ember.K,
-  transitionTo: Ember.K,
+  _transitionTo: Ember.K,
   destroyElement: Ember.K
 });
 

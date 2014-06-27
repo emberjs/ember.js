@@ -30,7 +30,7 @@ merge(hasElement, {
 
   setElement: function(view, value) {
     if (value === null) {
-      view.transitionTo('preRender');
+      view._transitionTo('preRender');
     } else {
       throw new EmberError("You cannot set an element to a non-null value when the element is already in the DOM.");
     }

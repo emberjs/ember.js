@@ -130,7 +130,7 @@ SimpleHandlebarsView.prototype = {
     this.morph.html(this.render());
   },
 
-  transitionTo: function(state) {
+  _transitionTo: function(state) {
     this.state = state;
   }
 };

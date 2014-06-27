@@ -49,7 +49,7 @@ var DOMManager = {
   replace: function(view) {
     var morph = view.morph;
 
-    view.transitionTo('preRender');
+    view._transitionTo('preRender');
 
     run.schedule('render', this, function renderMetamorphView() {
       if (view.isDestroying) { return; }
@@ -63,7 +63,7 @@ var DOMManager = {
       view.triggerRecursively('willInsertElement');
 
       morph.replaceWith(buffer.string());
-      view.transitionTo('inDOM');
+      view._transitionTo('inDOM');
 
       view.invokeRecursively(function(view) {
         view.propertyDidChange('element');
