@@ -45,7 +45,19 @@ describe('S3Publisher.publish', function(){
       'canary/ember-runtime.js',
       'canary/daily/' + date + '/ember-runtime.js',
       'canary/shas/foo-commit/ember-runtime.js',
-      'tags/foo-tag/ember-runtime.js' ]
+      'tags/foo-tag/ember-runtime.js',
+      'ember.min-latest.js',
+      'latest/ember.min.js',
+      'canary/ember.min.js',
+      'canary/daily/' + date + '/ember.min.js',
+      'canary/shas/foo-commit/ember.min.js',
+      'tags/foo-tag/ember.min.js',
+      'ember.prod-latest.js',
+      'latest/ember.prod.js',
+      'canary/ember.prod.js',
+      'canary/daily/' + date +  '/ember.prod.js',
+      'canary/shas/foo-commit/ember.prod.js',
+      'tags/foo-tag/ember.prod.js' ]
 
     publisher.publish();
     assert.deepEqual(expectedLocations, uploadFileLocations, "Destinations were not correct.");
