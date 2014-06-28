@@ -412,7 +412,7 @@ function insertViewCollection(view, viewCollection, previous, buffer) {
   }
 
   viewCollection.forEach(function(v) {
-    v.transitionTo('inDOM');
+    v._transitionTo('inDOM');
     v.propertyDidChange('element');
     v.triggerRecursively('didInsertElement');
   });

@@ -75,10 +75,10 @@ merge(inBuffer, {
 
   setElement: function(view, value) {
     if (value === null) {
-      view.transitionTo('preRender');
+      view._transitionTo('preRender');
     } else {
       view.clearBuffer();
-      view.transitionTo('hasElement');
+      view._transitionTo('hasElement');
     }
 
     return value;

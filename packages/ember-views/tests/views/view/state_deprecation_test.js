@@ -4,7 +4,6 @@ import EmberView from "ember-views/views/view";
 
 var view;
 
-
 QUnit.module("views/view/state_deprecation", {
   teardown: function() {
     if (view) {

@@ -36,7 +36,7 @@ merge(preRender, {
 
   setElement: function(view, value) {
     if (value !== null) {
-      view.transitionTo('hasElement');
+      view._transitionTo('hasElement');
     }
     return value;
   }
