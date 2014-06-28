@@ -383,17 +383,7 @@ define("router/router",
       queryParamsTransition: function(changelist, wasTransitioning, oldState, newState) {
         var router = this;
 
-        // This is a little hacky but we need some way of storing
-        // changed query params given that no activeTransition
-        // is guaranteed to have occurred.
-        this._changedQueryParams = changelist.changed;
-        for (var k in changelist.removed) {
-          if (changelist.removed.hasOwnProperty(k)) {
-            this._changedQueryParams[k] = null;
-          }
-        }
         fireQueryParamDidChange(this, newState, changelist);
-        this._changedQueryParams = null;
 
         if (!wasTransitioning && this.activeTransition) {
           // One of the handlers in queryParamsDidChange
@@ -563,8 +553,6 @@ define("router/router",
       },
 
       refresh: function(pivotHandler) {
-
-
         var state = this.activeTransition ? this.activeTransition.state : this.state;
         var handlerInfos = state.handlerInfos;
         var params = {};
@@ -728,12 +716,7 @@ define("router/router",
         // This is a little hacky but we need some way of storing
         // changed query params given that no activeTransition
         // is guaranteed to have occurred.
-        router._changedQueryParams = queryParamChangelist.changed;
-        for (var i in queryParamChangelist.removed) {
-          if (queryParamChangelist.removed.hasOwnProperty(i)) {
-            router._changedQueryParams[i] = null;
-          }
-        }
+        router._changedQueryParams = queryParamChangelist.all;
         trigger(router, newState.handlerInfos, true, ['queryParamsDidChange', queryParamChangelist.changed, queryParamChangelist.all, queryParamChangelist.removed]);
         router._changedQueryParams = null;
       }
