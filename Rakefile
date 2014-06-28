@@ -159,26 +159,4 @@ namespace :release do
   task :deploy => ['ember:release:deploy', 'starter_kit:deploy', 'website:deploy']
 end
 
-def files_to_publish
-  %w{ember.js ember-docs.json ember-tests.js ember-template-compiler.js ember-runtime.js}
-end
-
-task :publish_build => [:docs] do
-  root_dir = Pathname.new(__FILE__).dirname
-  dist_dir = root_dir.join('dist')
-
-  FileUtils.cp root_dir.join('docs', 'build', 'data.json'),
-               dist_dir.join('ember-docs.json')
-
-  files = files_to_publish
-
-  EmberDev::Publish.to_s3({
-    :access_key_id => ENV['S3_ACCESS_KEY_ID'],
-    :secret_access_key => ENV['S3_SECRET_ACCESS_KEY'],
-    :bucket_name => ENV['S3_BUCKET_NAME'],
-
-    :files => files.map { |f| dist_dir.join(f) }
-  })
-end
-
 task :docs => "ember:docs"
