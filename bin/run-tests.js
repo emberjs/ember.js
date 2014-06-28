@@ -4,14 +4,13 @@ var RSVP  = require('rsvp');
 var spawn = require('child_process').spawn;
 var chalk = require('chalk');
 var packages = require('../lib/packages');
-var runInSequence = require('../lib/runInSequence');
-
+var runInSequence = require('../lib/run-in-sequence');
 
 function shouldPrint(inputString) {
   var skipStrings = [
     "*** WARNING: Method userSpaceScaleFactor",
     "CoreText performance note:",
-  ]
+  ];
 
   for (var i = 0; i < skipStrings.length; i++) {
     if (inputString.indexOf(skipStrings[i])) {
@@ -24,7 +23,10 @@ function shouldPrint(inputString) {
 
 function run(queryString) {
   return new RSVP.Promise(function(resolve, reject) {
-    var args = ['bower_components/qunit-phantom-runner/runner.js', './tmp/output/tests/index.html?' + queryString];
+    var args = [
+      'bower_components/qunit-phantom-runner/runner.js',
+      './dist/tests/index.html?' + queryString
+    ];
 
     console.log('Running: phantomjs ' + args.join(' '));
 
@@ -76,7 +78,7 @@ function generateEachPackageTests() {
       return run('package=' + packageName);
     });
     testFunctions.push(function() {
-      return run('package=' + packageName + '&enableoptionalfeatures=true')
+      return run('package=' + packageName + '&enableoptionalfeatures=true');
     });
   });
 }
