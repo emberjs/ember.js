@@ -2032,18 +2032,10 @@ var View = CoreView.extend({
   _transitionTo: function(state, children) {
     var priorState = this.currentState;
     var currentState = this.currentState = this._states[state];
-
     this._state = state;
 
     if (priorState && priorState.exit) { priorState.exit(this); }
     if (currentState.enter) { currentState.enter(this); }
-    if (state === 'inDOM') { meta(this).cache.element = undefined; }
-
-    if (children !== false) {
-      this.forEachChildView(function(view) {
-        view._transitionTo(state);
-      });
-    }
   },
 
   // .......................................................
