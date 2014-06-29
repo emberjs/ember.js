@@ -91,7 +91,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
 
   for (i=total-1;i>=0;i--) {
     if (willInsert) {
-      view._elementInserted = true;
+      views[i]._elementInserted = true;
       this.didInsertElement(views[i]);
     }
     views[i] = null;
@@ -124,7 +124,7 @@ Renderer.prototype.appendTo = function Renderer_appendTo(view, target) {
   });
 };
 
-function Renderer_remove(_view, shouldDestroy) {
+function Renderer_remove(_view, shouldDestroy, reset) {
   var viewId = this.uuid(_view);
 
   if (this._inserts[viewId]) {
@@ -132,7 +132,7 @@ function Renderer_remove(_view, shouldDestroy) {
     this._inserts[viewId] = undefined;
   }
 
-  if (!shouldDestroy && !_view._elementCreated) {
+  if (!_view._elementCreated) {
     return;
   }
 
@@ -140,22 +140,22 @@ function Renderer_remove(_view, shouldDestroy) {
     idx, len, view, staticChildren, queue,
     childViews, i, l, parentView;
 
-  if (shouldDestroy) {
-    destroyQueue.push(_view);
-  } else {
-    removeQueue.push(_view);
-  }
+  removeQueue.push(_view);
 
   for (idx=0; idx<removeQueue.length; idx++) {
     view = removeQueue[idx];
 
-    if (view._childViewsMorph) {
+    if (!shouldDestroy && view._childViewsMorph) {
       queue = removeQueue;
     } else {
       queue = destroyQueue;
     }
 
     this.beforeRemove(removeQueue[idx]);
+
+    if (reset && view._childViewsMorph) {
+      continue;
+    }
 
     childViews = view._childViews;
     if (childViews) {
@@ -179,20 +179,21 @@ function Renderer_remove(_view, shouldDestroy) {
   }
 
   // destroy DOM from root insertion
-  if (_view._morph) {
+  if (_view._morph && !reset) {
     _view._morph.destroy();
   }
 
   for (idx=0, len=removeQueue.length; idx < len; idx++) {
-    this.afterRemove(removeQueue[idx], false);
+    this.afterRemove(removeQueue[idx], false, reset);
   }
 
   for (idx=0, len=destroyQueue.length; idx < len; idx++) {
-    this.afterRemove(destroyQueue[idx], true);
+    this.afterRemove(destroyQueue[idx], true, reset);
   }
 }
 
 function Renderer_insertElement(view, parentView, element, index) {
+  if (element === null || element === undefined) return;
   if (view._morph) {
     view._morph.update(element);
   } else if (parentView) {
@@ -213,9 +214,11 @@ function Renderer_beforeRemove(view) {
   }
 }
 
-function Renderer_afterRemove(view, shouldDestroy) {
+function Renderer_afterRemove(view, shouldDestroy, reset) {
   view._elementInserted = false;
-  view._morph = null;
+  if (!reset) {
+    view._morph = null;
+  }
   view._childViewsMorph = null;
   if (view._elementCreated) {
     view._elementCreated = false;

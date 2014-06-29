@@ -101,7 +101,7 @@ export default function RenderBuffer(tagName) {
 
 function _RenderBuffer(tagName) {
   this.tagName = tagName;
-  this.buffer = "";
+  this.buffer = null;
   this.childViews = [];
 }
 
@@ -212,7 +212,7 @@ _RenderBuffer.prototype = {
   pushChildView: function (view) {
     var index = this.childViews.length;
     this.childViews[index] = view;
-    this.buffer += "<script id='morph-"+index+"' type='text/x-placeholder'>\x3C/script>";
+    this.push("<script id='morph-"+index+"' type='text/x-placeholder'>\x3C/script>");
   },
 
   hydrateMorphs: function () {
@@ -240,6 +240,9 @@ _RenderBuffer.prototype = {
     @chainable
   */
   push: function(string) {
+    if (this.buffer === null) {
+      this.buffer = '';
+    }
     this.buffer += string;
     return this;
   },
@@ -446,7 +449,7 @@ _RenderBuffer.prototype = {
         this.hydrateMorphs();
       }
     } else {
-      if (html) {
+      if (html !== null && html !== undefined) {
         var frag = this._element = document.createDocumentFragment();
         // TODO: fix me
         var div = document.createElement('div');
@@ -457,6 +460,8 @@ _RenderBuffer.prototype = {
           ref = frag.insertBefore(childNodes[i], ref);
         }
         this.hydrateMorphs();
+      } else if (html === '') {
+        this._element = html;
       }
     }
     return this._element;

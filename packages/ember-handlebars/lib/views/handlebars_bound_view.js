@@ -65,9 +65,10 @@ SimpleHandlebarsView.prototype = {
   propertyDidChange: K,
 
   normalizedValue: function() {
-    var path = this.path,
-        pathRoot = this.pathRoot,
-        result, templateData;
+    var path = this.path;
+    var pathRoot = this.pathRoot;
+    var escape = this.isEscaped;
+    var result, templateData;
 
     // Use the pathRoot as the result if no path is provided. This
     // happens if the path is `this`, which gets normalized into
@@ -80,33 +81,18 @@ SimpleHandlebarsView.prototype = {
       result = handlebarsGet(pathRoot, path, { data: templateData });
     }
 
-    return result;
-  },
-
-  renderToBuffer: function(buffer) {
-    var string = '';
-
-    string += this.morph.startTag();
-    string += this.render();
-    string += this.morph.endTag();
-
-    buffer.push(string);
-  },
-
-  render: function() {
-    // If not invoked via a triple-mustache ({{{foo}}}), escape
-    // the content of the template.
-    var escape = this.isEscaped;
-    var result = this.normalizedValue();
 
     if (result === null || result === undefined) {
       result = "";
-    } else if (!(result instanceof SafeString)) {
-      result = String(result);
+    } else if (!escape && !(result instanceof SafeString)) {
+      result = new SafeString(result);
     }
 
-    if (escape) { result = Handlebars.Utils.escapeExpression(result); }
     return result;
+  },
+
+  render: function(buffer) {
+    buffer._element = this.normalizedValue();
   },
 
   rerender: function() {
@@ -127,7 +113,7 @@ SimpleHandlebarsView.prototype = {
 
   update: function () {
     this.updateId = null;
-    this.morph.html(this.render());
+    this._morph.update(this.normalizedValue());
   },
 
   _transitionTo: function(state) {
