@@ -43,10 +43,7 @@ merge(hasElement, {
   rerender: function(view) {
     // TODO: should be scheduled with renderer
     run.scheduleOnce('render', function () {
-      var morph = view._morph;
-      view._morph = null;
-      view._renderer.remove(view, false);
-      view._morph = morph;
+      if (view.isDestroying) return;
       view._renderer.renderTree(view, view._parentView);
     });
   },

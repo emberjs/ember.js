@@ -40,6 +40,10 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
     }
     this.uuid(view);
     view._level = level;
+    if (view._elementCreated) {
+      this.remove(view, false, true);
+    }
+
     this.willCreateElement(view);
     element = this.createElement(view);
 
