@@ -134,26 +134,6 @@ var EachView = CollectionView.extend(_Metamorph, {
   }
 });
 
-// Defeatureify doesn't seem to like nested functions that need to be removed
-function _addMetamorphCheck() {
-  EachView.reopen({
-    _checkMetamorph: on('didInsertElement', function() {
-      Ember.assert("The metamorph tags, " +
-                   this.morph.start + " and " + this.morph.end +
-                   ", have different parents.\nThe browser has fixed your template to output valid HTML (for example, check that you have properly closed all tags and have used a TBODY tag when creating a table with '{{#each}}')",
-        document.getElementById( this.morph.start ).parentNode ===
-        document.getElementById( this.morph.end ).parentNode
-      );
-    })
-  });
-}
-
-// until ember-debug is es6ed
-var runInDebug = function(f){ f(); };
-runInDebug( function() {
-  _addMetamorphCheck();
-});
-
 var GroupedEach = EmberHandlebars.GroupedEach = function(context, path, options) {
   var self = this,
       normalized = EmberHandlebars.normalizePath(context, path, options.data);
