@@ -125,9 +125,16 @@ TemplateVisitor.prototype.attr = function(attr) {
 };
 
 TemplateVisitor.prototype.block = function(node) {
-  var frame = this.getCurrentFrame();
+  var frame = this.getCurrentFrame(),
+      parentNode = frame.parentNode;
   frame.mustacheCount++;
-  frame.actions.push([node.type, [node, frame.childIndex, frame.childCount]]);
+  if (parentNode.type === 'element') {
+    frame.actions.push(['closeContextualElement', [parentNode]]);
+    frame.actions.push([node.type, [node, frame.childIndex, frame.childCount]]);
+    frame.actions.push(['openContextualElement', [parentNode]]);
+  } else {
+    frame.actions.push([node.type, [node, frame.childIndex, frame.childCount]]);
+  }
 
   if (node.inverse) { this.visit(node.inverse); }
   if (node.program) { this.visit(node.program); }

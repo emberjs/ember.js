@@ -1,5 +1,3 @@
-import { domHelpers } from "./dom_helpers";
-import { Morph } from "morph";
+var hooks = require('htmlbars-runtime/hooks');
 
-export var domHelpers;
-export var Morph;
+export var hooks;

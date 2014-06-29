@@ -1,34 +1,18 @@
 import { TemplateCompiler } from "htmlbars-compiler/compiler/template";
-import { Morph } from "morph";
 import { preprocess } from "htmlbars-compiler/parser";
 import { equalHTML } from "test/support/assertions";
+import { DOMHelper } from "morph";
 
 module("TemplateCompiler");
 
-var dom = {
-  createDocumentFragment: function () {
-    return document.createDocumentFragment();
-  },
-  createElement: function (name) {
-    return document.createElement(name);
-  },
-  appendText: function (node, string) {
-    node.appendChild(document.createTextNode(string));
-  },
-  createTextNode: function(string) {
-    return document.createTextNode(string);
-  },
-  cloneNode: function(element) {
-    return element.cloneNode(true);
-  }
-};
+var dom = new DOMHelper(null, document);
 
 var hooks = {
-  content: function(morph, helperName, context, params, options, helpers) {
+  content: function(morph, helperName, context, params, options, env) {
     if (helperName === 'if') {
       if (context[params[0]]) {
         options.hooks = this;
-        morph.update(options.render(context, options));
+        morph.update(options.render(context, env));
       }
       return;
     }
@@ -41,10 +25,14 @@ test("it works", function testFunction() {
   var ast = preprocess('<div>{{#if working}}Hello {{firstName}} {{lastName}}!{{/if}}</div>');
   var compiler = new TemplateCompiler();
   var program = compiler.compile(ast);
-  var template = new Function("dom", "Morph", "return " + program)(dom, Morph);
+  var template = new Function("return " + program)();
+  var env = {
+    hooks: hooks,
+    dom: dom
+  };
   var frag = template(
     { working: true, firstName: 'Kris', lastName: 'Selden' },
-    { hooks: hooks }
+    env
   );
   equalHTML(frag, '<div>Hello Kris Selden!</div>');
 });

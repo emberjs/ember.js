@@ -22,6 +22,14 @@ FragmentOpcodeCompiler.prototype.text = function(text) {
   this.opcode('text', [text.chars]);
 };
 
+FragmentOpcodeCompiler.prototype.openContextualElement = function(domHelper) {
+  this.opcode('openContextualElement', [domHelper]);
+};
+
+FragmentOpcodeCompiler.prototype.selectDOMHelper = function(domHelper) {
+  this.opcode('selectDOMHelper', [domHelper]);
+};
+
 FragmentOpcodeCompiler.prototype.openElement = function(element) {
   this.opcode('openElement', [element.tag]);
 

@@ -41,6 +41,10 @@ HydrationOpcodeCompiler.prototype.text = function(string) {
   ++this.currentDOMChildIndex;
 };
 
+HydrationOpcodeCompiler.prototype.selectDOMHelper = function(domHelper) {
+  this.opcode('selectDOMHelper', domHelper);
+};
+
 HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, mustacheCount) {
   distributeMorphs(this.morphs, this.opcodes);
   ++this.currentDOMChildIndex;

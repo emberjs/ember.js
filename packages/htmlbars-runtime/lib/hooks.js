@@ -1,10 +1,10 @@
 import { merge } from "./utils";
 import SafeString from 'handlebars/safe-string';
 
-export function content(morph, helperName, context, params, options) {
+export function content(morph, helperName, context, params, options, env) {
   var value, helper = this.lookupHelper(helperName, context, options);
   if (helper) {
-    value = helper(context, params, options);
+    value = helper(context, params, options, env);
   } else {
     value = this.simple(context, helperName, options);
   }
@@ -14,18 +14,18 @@ export function content(morph, helperName, context, params, options) {
   morph.update(value);
 }
 
-export function webComponent(morph, tagName, context, options, helpers) {
+export function webComponent(morph, tagName, context, options, env) {
   var value, helper = this.lookupHelper(tagName, context, options);
   if (helper) {
-    value = helper(context, null, options, helpers);
+    value = helper(context, null, options, env);
   } else {
-    value = this.webComponentFallback(morph, tagName, context, options, helpers);
+    value = this.webComponentFallback(morph, tagName, context, options, env);
   }
   morph.update(value);
 }
 
-export function webComponentFallback(morph, tagName, context, options, helpers) {
-  var element = morph.parent().ownerDocument.createElement(tagName);
+export function webComponentFallback(morph, tagName, context, options, env) {
+  var element = env.dom.createElement(tagName);
   var hash = options.hash, hashTypes = options.hashTypes;
 
   for (var name in hash) {
@@ -35,7 +35,7 @@ export function webComponentFallback(morph, tagName, context, options, helpers) 
       element.setAttribute(name, hash[name]);
     }
   }
-  element.appendChild(options.render(context, { hooks: this, helpers: helpers }));
+  element.appendChild(options.render(context, env));
   return element;
 }
 
