@@ -140,8 +140,10 @@ function Renderer_remove(_view, shouldDestroy, reset) {
     return;
   }
 
-  var removeQueue = [], destroyQueue = [],
-    idx, len, view, staticChildren, queue,
+  var removeQueue = [];
+  var destroyQueue = [];
+  var morph = _view._morph;
+  var  idx, len, view, staticChildren, queue,
     childViews, i, l, parentView;
 
   removeQueue.push(_view);
@@ -156,10 +158,6 @@ function Renderer_remove(_view, shouldDestroy, reset) {
     }
 
     this.beforeRemove(removeQueue[idx]);
-
-    if (reset && view._childViewsMorph) {
-      continue;
-    }
 
     childViews = view._childViews;
     if (childViews) {
@@ -183,16 +181,20 @@ function Renderer_remove(_view, shouldDestroy, reset) {
   }
 
   // destroy DOM from root insertion
-  if (_view._morph && !reset) {
-    _view._morph.destroy();
+  if (morph && !reset) {
+    morph.destroy();
   }
 
   for (idx=0, len=removeQueue.length; idx < len; idx++) {
-    this.afterRemove(removeQueue[idx], false, reset);
+    this.afterRemove(removeQueue[idx], false);
   }
 
   for (idx=0, len=destroyQueue.length; idx < len; idx++) {
-    this.afterRemove(destroyQueue[idx], true, reset);
+    this.afterRemove(destroyQueue[idx], true);
+  }
+
+  if (reset) {
+    _view._morph = morph;
   }
 }
 
@@ -218,11 +220,9 @@ function Renderer_beforeRemove(view) {
   }
 }
 
-function Renderer_afterRemove(view, shouldDestroy, reset) {
+function Renderer_afterRemove(view, shouldDestroy) {
   view._elementInserted = false;
-  if (!reset) {
-    view._morph = null;
-  }
+  view._morph = null;
   view._childViewsMorph = null;
   if (view._elementCreated) {
     view._elementCreated = false;
