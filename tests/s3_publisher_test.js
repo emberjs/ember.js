@@ -63,6 +63,17 @@ describe('S3Publisher.publish', function(){
     assert.deepEqual(expectedLocations, uploadFileLocations, "Destinations were not correct.");
   });
 
+  it("doesn't create tag urls if TRAVIS_TAG is undefined", function(){
+    defaultOptions.TRAVIS_TAG = undefined;
+    var publisher             = new S3Publisher(defaultOptions);
+    publisher.uploadFile      = function(){ uploadFileLocations.push(arguments[2]); };
+    var uploadFileLocations   = [];
+
+    publisher.publish();
+    assert(uploadFileLocations.length > 0);
+    for(var location in uploadFileLocations) { assert(!/tags/.test(uploadFileLocations[location])) }
+  });
+
   it("errors when file doesn't exist in dist", function(){
     var publisher = new S3Publisher(defaultOptions);
     publisher.fileMap = function(){
