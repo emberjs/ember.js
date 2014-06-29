@@ -1,6 +1,9 @@
 import Morph from "morph/morph";
 import { equalHTML } from "test/support/assertions";
 import SafeString from 'handlebars/safe-string';
+import DOMHelper from "morph/dom-helper";
+
+var domHelper = new DOMHelper();
 
 function morphTests(factory) {
   test('updateNode '+factory.name, function () {
@@ -389,7 +392,7 @@ function iterateCombinations(parents, starts, ends, contents, callback) {
 
         return {
           fragment: fragment,
-          morph: Morph.create(parent, startIndex, endIndex),
+          morph: Morph.create(parent, startIndex, endIndex, domHelper),
           startHTML: parentFactory.startHTML + startFactory.HTML,
           contentHTML: contentFactory.HTML,
           endHTML: endFactory.HTML + parentFactory.endHTML

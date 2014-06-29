@@ -2,12 +2,11 @@ import { FragmentOpcodeCompiler } from "htmlbars-compiler/compiler/fragment_opco
 import { HydrationOpcodeCompiler } from "htmlbars-compiler/compiler/hydration_opcode";
 import { FragmentCompiler } from "htmlbars-compiler/compiler/fragment";
 import { HydrationCompiler } from "htmlbars-compiler/compiler/hydration";
-import { domHelpers } from "htmlbars-runtime/dom_helpers";
-import { Morph } from "morph";
+import { DOMHelper } from "morph";
 import { preprocess } from "htmlbars-compiler/parser";
 import { equalHTML } from "test/support/assertions";
 
-var dom = domHelpers();
+var dom = new DOMHelper(null, document);
 
 function fragmentFor(ast) {
   /* jshint evil: true */
@@ -17,9 +16,9 @@ function fragmentFor(ast) {
   var opcodes = fragmentOpcodeCompiler.compile(ast);
   var program = fragmentCompiler.compile(opcodes);
 
-  var fn = new Function('return ' + program)();
+  var fn = new Function("dom0", 'return ' + program)(dom);
 
-  return fn( dom );
+  return fn();
 }
 
 function hydratorFor(ast) {
@@ -28,7 +27,7 @@ function hydratorFor(ast) {
   var opcodes = hydrate.compile(ast);
   var hydrate2 = new HydrationCompiler();
   var program = hydrate2.compile(opcodes, []);
-  return new Function("Morph", "fragment", "context", "hooks", "env", program);
+  return new Function("fragment", "context", "hooks", "env", "dom0", program);
 }
 
 module('fragment');
@@ -68,7 +67,7 @@ test('hydrates a fragment with morph mustaches', function () {
     }
   };
 
-  hydrate(Morph, fragment, context, hooks, helpers);
+  hydrate(fragment, context, hooks, helpers, dom);
 
   equal(contentResolves.length, 2);
 
@@ -101,12 +100,12 @@ test('test auto insertion of text nodes for needed edges a fragment with morph m
   var hydrate = hydratorFor(ast);
 
   var morphs = [];
-  var FakeMorph = {
-    create: function (start, startIndex, endIndex) {
-      var morph = Morph.create(start, startIndex, endIndex);
-      morphs.push(morph);
-      return morph;
-    }
+  var fakeMorphDOM = new DOMHelper(null, document);
+  fakeMorphDOM.createMorph = function(start, startIndex, endIndex){
+    var morph = DOMHelper.prototype.createMorph.call(
+      this, start, startIndex, endIndex);
+    morphs.push(morph);
+    return morph;
   };
 
   var contentResolves = [];
@@ -124,7 +123,7 @@ test('test auto insertion of text nodes for needed edges a fragment with morph m
     }
   };
 
-  hydrate(FakeMorph, fragment, context, hooks, helpers);
+  hydrate(fragment, context, hooks, helpers, fakeMorphDOM);
 
   equal(morphs.length, 3);
 
