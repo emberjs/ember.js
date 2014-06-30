@@ -8,7 +8,7 @@
     "pretest": "ember build --environment production",
     "test": "bin/run-tests.js",
     "start": "ember serve",
-    "test-node": "mocha tests/*test.js"
+    "test-node": "mocha tests/**/*test.js"
   },
   "devDependencies": {
     "ember-cli": "0.0.37",

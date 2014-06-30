@@ -1,4 +1,4 @@
-var S3Publisher = require('../lib/s3_publisher.js');
+var S3Publisher = require('../../lib/s3_publisher.js');
 var assert = require("assert");
 
 describe('S3Publisher.publish', function(){
@@ -57,7 +57,13 @@ describe('S3Publisher.publish', function(){
       'canary/ember.prod.js',
       'canary/daily/' + date +  '/ember.prod.js',
       'canary/shas/foo-commit/ember.prod.js',
-      'tags/foo-tag/ember.prod.js' ]
+      'tags/foo-tag/ember.prod.js',
+      'ember-docs-latest.json',
+      'latest/ember-docs.json',
+      'canary/ember-docs.json',
+      'canary/daily/20140630/ember-docs.json',
+      'canary/shas/foo-commit/ember-docs.json',
+      'tags/foo-tag/ember-docs.json' ];
 
     publisher.publish();
     assert.deepEqual(expectedLocations, uploadFileLocations, "Destinations were not correct.");

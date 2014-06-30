@@ -158,5 +158,3 @@ namespace :release do
   desc "Deploy a new Ember release"
   task :deploy => ['ember:release:deploy', 'starter_kit:deploy', 'website:deploy']
 end
-
-task :docs => "ember:docs"
