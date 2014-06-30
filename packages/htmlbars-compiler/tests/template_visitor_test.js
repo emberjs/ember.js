@@ -30,10 +30,10 @@ test("basic", function() {
   var input = "foo{{bar}}<div></div>";
   actionsEqual(input, [
     ['startProgram', [0]],
-    ['text', [0, 3]],
+    ['text', [0, 3, false]],
     ['mustache', [1, 3]],
-    ['openElement', [2, 3, 0]],
-    ['closeElement', [2, 3]],
+    ['openElement', [2, 3, false, 0]],
+    ['closeElement', [2, 3, false]],
     ['endProgram', []]
   ]);
 });
@@ -42,14 +42,14 @@ test("nested HTML", function() {
   var input = "<a></a><a><a><a></a></a></a>";
   actionsEqual(input, [
     ['startProgram', [0]],
-    ['openElement', [0, 2, 0]],
-    ['closeElement', [0, 2]],
-    ['openElement', [1, 2, 0]],
-    ['openElement', [0, 1, 0]],
-    ['openElement', [0, 1, 0]],
-    ['closeElement', [0, 1]],
-    ['closeElement', [0, 1]],
-    ['closeElement', [1, 2]],
+    ['openElement', [0, 2, false, 0]],
+    ['closeElement', [0, 2, false]],
+    ['openElement', [1, 2, false, 0]],
+    ['openElement', [0, 1, false, 0]],
+    ['openElement', [0, 1, false, 0]],
+    ['closeElement', [0, 1, false]],
+    ['closeElement', [0, 1, false]],
+    ['closeElement', [1, 2, false]],
     ['endProgram', []]
   ]);
 });
@@ -58,19 +58,19 @@ test("mustaches are counted correctly", function() {
   var input = "<a><a>{{foo}}</a><a {{foo}}><a>{{foo}}</a><a>{{foo}}</a></a></a>";
   actionsEqual(input, [
     ['startProgram', [0]],
-    ['openElement', [0, 1, 2]],
-    ['openElement', [0, 2, 1]],
+    ['openElement', [0, 1, true, 2]],
+    ['openElement', [0, 2, false, 1]],
     ['mustache', [0, 1]],
-    ['closeElement', [0, 2]],
-    ['openElement', [1, 2, 3]],
-    ['openElement', [0, 2, 1]],
+    ['closeElement', [0, 2, false]],
+    ['openElement', [1, 2, false, 3]],
+    ['openElement', [0, 2, false, 1]],
     ['mustache', [0, 1]],
-    ['closeElement', [0, 2]],
-    ['openElement', [1, 2, 1]],
+    ['closeElement', [0, 2, false]],
+    ['openElement', [1, 2, false, 1]],
     ['mustache', [0, 1]],
-    ['closeElement', [1, 2]],
-    ['closeElement', [1, 2]],
-    ['closeElement', [0, 1]],
+    ['closeElement', [1, 2, false]],
+    ['closeElement', [1, 2, false]],
+    ['closeElement', [0, 1, true]],
     ['endProgram', []]
   ]);
 });
@@ -81,9 +81,9 @@ test("empty block", function() {
     ['startProgram', [0]],
     ['endProgram', []],
     ['startProgram', [1]],
-    ['text', [0, 3]],
+    ['text', [0, 3, false]],
     ['block', [1, 3]],
-    ['text', [2, 3]],
+    ['text', [2, 3, false]],
     ['endProgram', []]
   ]);
 });
@@ -94,12 +94,12 @@ test("block with inverse", function() {
     ['startProgram', [0]],
     ['endProgram', []],
     ['startProgram', [0]],
-    ['text', [0, 1]],
+    ['text', [0, 1, true]],
     ['endProgram', []],
     ['startProgram', [2]],
-    ['text', [0, 3]],
+    ['text', [0, 3, false]],
     ['block', [1, 3]],
-    ['text', [2, 3]],
+    ['text', [2, 3, false]],
     ['endProgram', []]
   ]);
 });
@@ -108,30 +108,30 @@ test("nested blocks", function() {
   var input = "{{#a}}{{#a}}<b></b>{{/a}}{{#a}}{{b}}{{/a}}{{/a}}{{#a}}b{{/a}}";
   actionsEqual(input, [
     ['startProgram', [0]],
-    ['text', [0, 1]],
+    ['text', [0, 1, true]],
     ['endProgram', []],
     ['startProgram', [0]],
-    ['text', [0, 3]],
+    ['text', [0, 3, false]],
     ['mustache', [1, 3]],
-    ['text', [2, 3]],
+    ['text', [2, 3, false]],
     ['endProgram', []],
     ['startProgram', [0]],
-    ['openElement', [0, 1, 0]],
-    ['closeElement', [0, 1]],
+    ['openElement', [0, 1, true, 0]],
+    ['closeElement', [0, 1, true]],
     ['endProgram', []],
     ['startProgram', [2]],
-    ['text', [0, 5]],
+    ['text', [0, 5, false]],
     ['block', [1, 5]],
-    ['text', [2, 5]],
+    ['text', [2, 5, false]],
     ['block', [3, 5]],
-    ['text', [4, 5]],
+    ['text', [4, 5, false]],
     ['endProgram', []],
     ['startProgram', [2]],
-    ['text', [0, 5]],
+    ['text', [0, 5, false]],
     ['block', [1, 5]],
-    ['text', [2, 5]],
+    ['text', [2, 5, false]],
     ['block', [3, 5]],
-    ['text', [4, 5]],
+    ['text', [4, 5, false]],
     ['endProgram', []]
   ]);
 });
@@ -140,12 +140,12 @@ test("web component", function() {
   var input = "<x-foo>bar</x-foo>";
   actionsEqual(input, [
     ['startProgram', [0]],
-    ['text', [0, 1]],
+    ['text', [0, 1, true]],
     ['endProgram', []],
     ['startProgram', [1]],
-    ['text', [0, 3]],
+    ['text', [0, 3, false]],
     ['component', [1, 3]],
-    ['text', [2, 3]],
+    ['text', [2, 3, false]],
     ['endProgram', []]
   ]);
 });
