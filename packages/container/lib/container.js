@@ -212,17 +212,7 @@ Container.prototype = {
   */
   resolve: function(fullName) {
     Ember.assert('fullName must be a proper full name', validateFullName(fullName));
-
-    var normalizedName = this.normalize(fullName);
-    var cached = this.resolveCache.get(normalizedName);
-
-    if (cached) { return cached; }
-
-    var resolved = this.resolver(normalizedName) || this.registry.get(normalizedName);
-
-    this.resolveCache.set(normalizedName, resolved);
-
-    return resolved;
+    return resolve(this, this.normalize(fullName));
   },
 
   /**
@@ -623,6 +613,16 @@ Container.prototype = {
   }
 };
 
+function resolve(container, normalizedName) {
+  var cached = container.resolveCache.get(normalizedName);
+  if (cached) { return cached; }
+
+  var resolved = container.resolver(normalizedName) || container.registry.get(normalizedName);
+  container.resolveCache.set(normalizedName, resolved);
+
+  return resolved;
+}
+
 function has(container, fullName){
   if (container.cache.has(fullName)) {
     return true;
@@ -696,18 +696,14 @@ function option(container, fullName, optionName) {
 }
 
 function factoryFor(container, fullName) {
-  var name = fullName;
-  var factory = container.resolve(name);
-  var injectedFactory;
   var cache = container.factoryCache;
-  var type = fullName.split(':')[0];
-
-  if (factory === undefined) { return; }
-
   if (cache.has(fullName)) {
     return cache.get(fullName);
   }
+  var factory = container.resolve(fullName);
+  if (factory === undefined) { return; }
 
+  var type = fullName.split(':')[0];
   if (!factory || typeof factory.extend !== 'function' || (!Ember.MODEL_FACTORY_INJECTIONS && type === 'model')) {
     // TODO: think about a 'safe' merge style extension
     // for now just fallback to create time injection
@@ -718,7 +714,7 @@ function factoryFor(container, fullName) {
 
     factoryInjections._toString = container.makeToString(factory, fullName);
 
-    injectedFactory = factory.extend(injections);
+    var injectedFactory = factory.extend(injections);
     injectedFactory.reopenClass(factoryInjections);
 
     cache.set(fullName, injectedFactory);
