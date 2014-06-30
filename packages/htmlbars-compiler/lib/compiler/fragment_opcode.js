@@ -18,12 +18,13 @@ FragmentOpcodeCompiler.prototype.opcode = function(type, params) {
   this.opcodes.push([type, params]);
 };
 
-FragmentOpcodeCompiler.prototype.text = function(text) {
-  this.opcode('text', [text.chars]);
+FragmentOpcodeCompiler.prototype.text = function(text, childIndex, childCount, isSingleRoot) {
+  this.opcode('createText', [text.chars]);
+  if (!isSingleRoot) { this.opcode('appendChild'); }
 };
 
 FragmentOpcodeCompiler.prototype.openContextualElement = function(domHelper) {
-  this.opcode('openContextualElement', [domHelper]);
+  this.opcode('createDOMHelper', [domHelper]);
 };
 
 FragmentOpcodeCompiler.prototype.selectDOMHelper = function(domHelper) {
@@ -31,41 +32,23 @@ FragmentOpcodeCompiler.prototype.selectDOMHelper = function(domHelper) {
 };
 
 FragmentOpcodeCompiler.prototype.openElement = function(element) {
-  this.opcode('openElement', [element.tag]);
-
-  element.attributes.forEach(function(attribute) {
-    this.attribute(attribute);
-  }, this);
+  this.opcode('createElement', [element.tag]);
+  element.attributes.forEach(this.attribute, this);
 };
 
-FragmentOpcodeCompiler.prototype.closeElement = function(element) {
-  this.opcode('closeElement', [element.tag]);
+FragmentOpcodeCompiler.prototype.closeElement = function(element, childIndex, childCount, isSingleRoot) {
+  if (!isSingleRoot) { this.opcode('appendChild'); }
 };
 
 FragmentOpcodeCompiler.prototype.startProgram = function(program) {
   this.opcodes.length = 0;
-  if (program.statements.length > 1) {
-    this.opcode('startFragment');
+  if (program.statements.length !== 1) {
+    this.opcode('createFragment');
   }
 };
 
 FragmentOpcodeCompiler.prototype.endProgram = function(program) {
-  var statements = program.statements;
-
-  if (statements.length === 0) {
-    this.opcode('empty');
-  } else if (statements.length === 1) {
-    var statement = statements[0];
-    if (statement.type === 'text') {
-      this.opcodes[0][0] = 'rootText';
-    } else if (statement.type === 'element') {
-      var opcodes = this.opcodes;
-      opcodes[0][0] = 'openRootElement';
-      opcodes[opcodes.length-1][0] = 'closeRootElement';
-    }
-  } else {
-    this.opcode('endFragment');
-  }
+  this.opcode('returnNode');
 };
 
 FragmentOpcodeCompiler.prototype.mustache = function () {};

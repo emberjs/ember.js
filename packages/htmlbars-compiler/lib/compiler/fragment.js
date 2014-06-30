@@ -3,7 +3,7 @@ import { string } from "./quoting";
 
 export function FragmentCompiler() {
   this.source = [];
-  this.depth = 0;
+  this.depth = -1;
   this.domHelper = 'dom0';
 }
 
@@ -18,33 +18,32 @@ FragmentCompiler.prototype.compile = function(opcodes) {
   return this.source.join('');
 };
 
-FragmentCompiler.prototype.empty = function() {
-  this.source.push('  return '+this.domHelper+'.createDocumentFragment();\n');
+FragmentCompiler.prototype.createFragment = function() {
+  var el = 'el'+(++this.depth);
+  this.source.push('  var '+el+' = '+this.domHelper+'.createDocumentFragment();\n');
 };
 
-FragmentCompiler.prototype.startFragment = function() {
-  this.source.push('  var el0 = '+this.domHelper+'.createDocumentFragment();\n');
+FragmentCompiler.prototype.createElement = function(tagName) {
+  var el = 'el'+(++this.depth);
+  this.source.push('  var '+el+' = '+this.domHelper+'.createElement('+string(tagName)+');\n');
 };
 
-FragmentCompiler.prototype.endFragment = function() {
-  this.source.push('  return el0;\n');
+FragmentCompiler.prototype.createText = function(str) {
+  var el = 'el'+(++this.depth);
+  this.source.push('  var '+el+' = '+this.domHelper+'.createTextNode('+string(str)+');\n');
 };
 
-FragmentCompiler.prototype.openRootElement = function(tagName) {
-  this.source.push('  var el0 = '+this.domHelper+'.createElement('+
-    string(tagName)+
-  ');\n');
+FragmentCompiler.prototype.returnNode = function() {
+  var el = 'el'+this.depth;
+  this.source.push('  return '+el+';\n');
 };
 
-FragmentCompiler.prototype.closeRootElement = function() {
-  this.source.push('  return el0;\n');
+FragmentCompiler.prototype.setAttribute = function(name, value) {
+  var el = 'el'+this.depth;
+  this.source.push('  '+this.domHelper+'.setAttribute('+el+','+string(name)+','+string(value)+');\n');
 };
 
-FragmentCompiler.prototype.rootText = function(str) {
-  this.source.push('  return '+this.domHelper+'.createTextNode('+string(str)+');\n');
-};
-
-FragmentCompiler.prototype.openContextualElement = function(domHelper) {
+FragmentCompiler.prototype.createDOMHelper = function(domHelper) {
   var el = 'el'+this.depth;
   this.source.push('  '+domHelper+' = new '+this.domHelper+'.constructor('+el+');\n');
 };
@@ -53,24 +52,7 @@ FragmentCompiler.prototype.selectDOMHelper = function(domHelper) {
   this.domHelper = domHelper;
 };
 
-FragmentCompiler.prototype.openElement = function(tagName) {
-  var el = 'el'+(++this.depth);
-  this.source.push('  var '+el+' = '+this.domHelper+'.createElement('+
-    string(tagName)+
-  ');\n');
-};
-
-FragmentCompiler.prototype.setAttribute = function(name, value) {
-  var el = 'el'+this.depth;
-  this.source.push('  '+this.domHelper+'.setAttribute('+el+','+string(name)+','+string(value)+');\n');
-};
-
-FragmentCompiler.prototype.text = function(str) {
-  var el = 'el'+this.depth;
-  this.source.push('  '+this.domHelper+'.appendText('+el+','+string(str)+');\n');
-};
-
-FragmentCompiler.prototype.closeElement = function() {
+FragmentCompiler.prototype.appendChild = function() {
   var child = 'el'+(this.depth--);
   var el = 'el'+this.depth;
   this.source.push('  '+this.domHelper+'.appendChild('+el+', '+child+');\n');

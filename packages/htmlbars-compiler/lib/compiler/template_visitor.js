@@ -94,11 +94,20 @@ TemplateVisitor.prototype.program = function(program) {
 TemplateVisitor.prototype.element = function(element) {
   var parentFrame = this.getCurrentFrame();
   var elementFrame = this.pushFrame();
+  var parentNode = parentFrame.parentNode;
 
   elementFrame.parentNode = element;
   elementFrame.childCount = element.children.length;
   elementFrame.mustacheCount += element.helpers.length;
-  elementFrame.actions.push(['closeElement', [element, parentFrame.childIndex, parentFrame.childCount]]);
+
+  var actionArgs = [
+    element,
+    parentFrame.childIndex,
+    parentFrame.childCount,
+    parentNode.type === 'program' && parentFrame.childCount === 1
+  ];
+
+  elementFrame.actions.push(['closeElement', actionArgs]);
 
   for (var i = element.attributes.length - 1; i >= 0; i--) {
     this.visit(element.attributes[i]);
@@ -109,7 +118,7 @@ TemplateVisitor.prototype.element = function(element) {
     this.visit(element.children[i]);
   }
 
-  elementFrame.actions.push(['openElement', [element, parentFrame.childIndex, parentFrame.childCount, elementFrame.mustacheCount]]);
+  elementFrame.actions.push(['openElement', actionArgs.concat(elementFrame.mustacheCount)]);
   this.popFrame();
 
   // Propagate the element's frame state to the parent frame
@@ -125,9 +134,11 @@ TemplateVisitor.prototype.attr = function(attr) {
 };
 
 TemplateVisitor.prototype.block = function(node) {
-  var frame = this.getCurrentFrame(),
-      parentNode = frame.parentNode;
+  var frame = this.getCurrentFrame();
+  var parentNode = frame.parentNode;
+
   frame.mustacheCount++;
+  
   if (parentNode.type === 'element') {
     frame.actions.push(['closeContextualElement', [parentNode]]);
     frame.actions.push([node.type, [node, frame.childIndex, frame.childCount]]);
@@ -144,7 +155,8 @@ TemplateVisitor.prototype.component = TemplateVisitor.prototype.block;
 
 TemplateVisitor.prototype.text = function(text) {
   var frame = this.getCurrentFrame();
-  frame.actions.push(['text', [text, frame.childIndex, frame.childCount]]);
+  var isSingleRoot = frame.parentNode.type === 'program' && frame.childCount === 1;
+  frame.actions.push(['text', [text, frame.childIndex, frame.childCount, isSingleRoot]]);
 };
 
 TemplateVisitor.prototype.mustache = function(mustache) {
