@@ -5,9 +5,8 @@ node_js:
 - "0.10"
 install:
 - "npm install"
+- "./bin/generate_docs.js"
 after_success:
-  - bundle install --deployment --retry 3 --jobs 4
-  - bundle exec rake docs
   - "./bin/publish_to_s3.js"
   - "./bin/bower_ember_build"
 script:
