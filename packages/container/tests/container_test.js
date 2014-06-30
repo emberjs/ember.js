@@ -84,6 +84,16 @@ test("fallback for to create time injections if factory has no extend", function
   ok(postController.apple instanceof AppleController, 'instance receives an apple of instance AppleController');
 });
 
+test("The container only extends Ember objects", function(){
+  var container = new Container();
+  var badApple = { extend: function(){} };
+
+  container.register('apples:bad', badApple, {instantiate: false});
+  var instance = container.lookup('apples:bad');
+
+  equal(instance, badApple, 'instance is not instantiated');
+});
+
 test("The descendants of a factory returned from lookupFactory have a container and debugkey", function(){
   var container = new Container();
   var PostController = factory();
