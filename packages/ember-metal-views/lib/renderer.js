@@ -15,6 +15,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
   var insertAt = _insertAt === undefined ? -1 : _insertAt;
   var index = 0;
   var total = 1;
+  var levelBase = _parentView ? _parentView._level+1 : 0;
 
   // if root view && view has a _morph assigned or _parentView._elementInserted
   var willInsert = _parentView == null ? !!_view._morph : _parentView._elementInserted;
@@ -39,7 +40,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
       view._morph = null;
     }
     this.uuid(view);
-    view._level = level;
+    view._level = levelBase + level;
     if (view._elementCreated) {
       this.remove(view, false, true);
     }
@@ -112,21 +113,34 @@ Renderer.prototype.uuid = function Renderer_uuid(view) {
   return view._uuid;
 };
 
-Renderer.prototype.appendTo = function Renderer_appendTo(view, target) {
-  // TODO check view state, cancel existing insertion.
-  // TODO use dom helper for creating this morph.
-  var start = document.createTextNode('');
-  var end = document.createTextNode('');
-  target.appendChild(start);
-  target.appendChild(end);
-  view._morph = new Morph(target, start, end);
+Renderer.prototype.scheduleInsert =
+  function Renderer_scheduleInsert(view) {
+    var viewId = this.uuid(view);
+    this._inserts[viewId] = this.scheduleRender(this, function() {
+      this._inserts[viewId] = null;
+      this.renderTree(view);
+    });
+  };
 
-  var viewId = this.uuid(view);
-  this._inserts[viewId] = this.scheduleRender(this, function() {
-    this._inserts[viewId] = null;
-    this.renderTree(view);
-  });
-};
+Renderer.prototype.appendTo =
+  function Renderer_appendTo(view, target) {
+    // TODO check view state, cancel existing insertion.
+    // TODO use dom helper for creating this morph.
+    var start = document.createTextNode('');
+    var end = document.createTextNode('');
+    target.appendChild(start);
+    target.appendChild(end);
+    view._morph = new Morph(target, start, end);
+
+    this.scheduleInsert(view);
+  };
+
+Renderer.prototype.replaceIn =
+  function Renderer_replaceIn(view, target) {
+    view._morph = new Morph(target, null, null);
+
+    this.scheduleInsert(view);
+  };
 
 function Renderer_remove(_view, shouldDestroy, reset) {
   var viewId = this.uuid(_view);
@@ -230,7 +244,6 @@ function Renderer_afterRemove(view, shouldDestroy) {
   }
   if (shouldDestroy) {
     this.destroyView(view);
-    this.removeFromParent(view);
   }
 }
 
@@ -238,6 +251,7 @@ Renderer.prototype.remove = Renderer_remove;
 Renderer.prototype.destroy = function (view) {
   this.remove(view, true);
 };
+
 Renderer.prototype.renderTree = Renderer_renderTree;
 Renderer.prototype.insertElement = Renderer_insertElement;
 Renderer.prototype.beforeRemove = Renderer_beforeRemove;
@@ -245,6 +259,7 @@ Renderer.prototype.afterRemove = Renderer_afterRemove;
 
 /// HOOKS
 var noop = function () {};
+
 Renderer.prototype.willCreateElement = noop; // inBuffer
 Renderer.prototype.createElement = noop; // renderToBuffer or createElement
 Renderer.prototype.didCreateElement = noop; // hasElement
@@ -255,6 +270,5 @@ Renderer.prototype.willDestroyElement = noop; // willClearRender (currently bala
 Renderer.prototype.didDestroyElement = noop; // element destroyed so view.destroy shouldn't try to remove it removedFromDOM
 Renderer.prototype.destroyView = noop;
 Renderer.prototype.childViews = noop;
-Renderer.prototype.removeFromParent = noop;
 
 export default Renderer;
