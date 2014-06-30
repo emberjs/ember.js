@@ -1353,8 +1353,13 @@ var View = CoreView.extend({
     @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
     @return {Ember.View} receiver
   */
-  appendTo: function(target) {
-    this.constructor.renderer.appendTo(this, jQuery(target)[0]);
+  appendTo: function(selector) {
+    var target = jQuery(selector);
+
+    Ember.assert("You tried to append to (" + selector + ") but that isn't in the DOM", target.length > 0);
+    Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !target.is('.ember-view') && !target.parents().is('.ember-view'));
+
+    this.constructor.renderer.appendTo(this, target[0]);
 
     return this;
   },
@@ -1372,14 +1377,13 @@ var View = CoreView.extend({
     @param {String|DOMElement|jQuery} target A selector, element, HTML string, or jQuery object
     @return {Ember.View} received
   */
-  replaceIn: function(target) {
-    Ember.assert("You tried to replace in (" + target + ") but that isn't in the DOM", jQuery(target).length > 0);
-    Ember.assert("You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.", !jQuery(target).is('.ember-view') && !jQuery(target).parents().is('.ember-view'));
+  replaceIn: function(selector) {
+    var target = jQuery(selector);
 
-    this._insertElementLater(function() {
-      jQuery(target).empty();
-      this.$().appendTo(target);
-    });
+    Ember.assert("You tried to replace in (" + selector + ") but that isn't in the DOM", target.length > 0);
+    Ember.assert("You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.", !target.is('.ember-view') && !target.parents().is('.ember-view'));
+
+    this.constructor.renderer.replaceIn(this, target[0]);
 
     return this;
   },

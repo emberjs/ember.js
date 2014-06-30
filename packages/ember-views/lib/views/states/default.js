@@ -28,11 +28,8 @@ export default {
   },
 
   destroyElement: function(view) {
-    set(view, 'element', null);
-    if (view._scheduledInsert) {
-      run.cancel(view._scheduledInsert);
-      view._scheduledInsert = null;
-    }
+    if (view._renderer)
+      view._renderer.remove(view, false);
     return view;
   },
 
