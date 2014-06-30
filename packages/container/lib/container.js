@@ -193,7 +193,7 @@ Container.prototype = {
 
     Optionally the container can be provided with a custom resolver.
     If provided, `resolve` will first provide the custom resolver
-    the oppertunity to resolve the fullName, otherwise it will fallback
+    the opportunity to resolve the fullName, otherwise it will fallback
     to the registry.
 
     ```javascript
@@ -280,7 +280,7 @@ Container.prototype = {
 
     // by default the container will return singletons
     var twitter2 = container.lookup('api:twitter');
-    twitter instanceof Twitter; // => true
+    twitter2 instanceof Twitter; // => true
 
     twitter === twitter2; //=> true
     ```
