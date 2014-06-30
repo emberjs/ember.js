@@ -720,6 +720,42 @@ test("Node helpers can modify the node", function() {
   compilesTo('<div {{testing}}>Node helpers</div>', '<div zomg="zomg">Node helpers</div>');
 });
 
+test("Node helpers can modify the node after one node appended by top-level helper", function() {
+  registerHelper('top-helper', function(context, params, options) {
+    return document.createElement('span');
+  });
+  registerHelper('attr-helper', function(context, params, options) {
+    options.element.setAttribute('zomg', 'zomg');
+  });
+
+  compilesTo('<div {{attr-helper}}>Node helpers</div>{{top-helper}}', '<div zomg="zomg">Node helpers</div><span></span>');
+});
+
+test("Node helpers can modify the node after one node prepended by top-level helper", function() {
+  registerHelper('top-helper', function(context, params, options) {
+    return document.createElement('span');
+  });
+  registerHelper('attr-helper', function(context, params, options) {
+    options.element.setAttribute('zomg', 'zomg');
+  });
+
+  compilesTo('{{top-helper}}<div {{attr-helper}}>Node helpers</div>', '<span></span><div zomg="zomg">Node helpers</div>');
+});
+
+test("Node helpers can modify the node after many nodes returned from top-level helper", function() {
+  registerHelper('top-helper', function(context, params, options) {
+    var frag = document.createDocumentFragment();
+    frag.appendChild(document.createElement('span'));
+    frag.appendChild(document.createElement('span'));
+    return frag;
+  });
+  registerHelper('attr-helper', function(context, params, options) {
+    options.element.setAttribute('zomg', 'zomg');
+  });
+
+  compilesTo('{{top-helper}}<div {{attr-helper}}>Node helpers</div>', '<span></span><span></span><div zomg="zomg">Node helpers</div>');
+});
+
 test("Node helpers can be used for attribute bindings", function() {
   var callback;
 
