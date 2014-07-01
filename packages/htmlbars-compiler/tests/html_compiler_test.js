@@ -34,7 +34,7 @@ function compilesTo(html, expected, context) {
   var template = compile(html);
   var fragment = template(context, env);
 
-  equalHTML(fragment, expected === undefined ? html : expected);
+  equalTokens(fragment, expected === undefined ? html : expected);
   return fragment;
 }
 
@@ -51,7 +51,7 @@ module("HTML-based compiler (output)", {
   }
 });
 
-function equalHTML(fragment, html) {
+function equalTokens(fragment, html) {
   var div = document.createElement("div");
 
   div.appendChild(fragment.cloneNode(true));
@@ -61,7 +61,15 @@ function equalHTML(fragment, html) {
 
   function normalizeTokens(token) {
     if (token.type === 'StartTag') {
-      token.attributes = token.attributes.sort();
+      token.attributes = token.attributes.sort(function(a,b){
+        if (a.name > b.name) {
+          return 1;
+        }
+        if (a.name < b.name) {
+          return -1;
+        }
+        return 0;
+      });
     }
   }
 
@@ -75,27 +83,27 @@ test("Simple content produces a document fragment", function() {
   var template = compile("content");
   var fragment = template({}, env);
 
-  equalHTML(fragment, "content");
+  equalTokens(fragment, "content");
 });
 
 test("Simple elements are created", function() {
   var template = compile("<h1>hello!</h1><div>content</div>");
   var fragment = template({}, env);
 
-  equalHTML(fragment, "<h1>hello!</h1><div>content</div>");
+  equalTokens(fragment, "<h1>hello!</h1><div>content</div>");
 });
 
 test("Simple elements can have attributes", function() {
   var template = compile("<div class='foo' id='bar'>content</div>");
   var fragment = template({}, env);
 
-  equalHTML(fragment, '<div class="foo" id="bar">content</div>');
+  equalTokens(fragment, '<div class="foo" id="bar">content</div>');
 });
 
 test("Simple elements can have arbitrary attributes", function() {
   var template = compile("<div data-some-data='foo' data-isCamelCase='bar'>content</div>");
   var fragment = template({}, env);
-  equalHTML(fragment, '<div data-some-data="foo" data-iscamelcase="bar">content</div>');
+  equalTokens(fragment, '<div data-some-data="foo" data-iscamelcase="bar">content</div>');
 });
 
 function shouldBeVoid(tagName) {
@@ -128,7 +136,7 @@ test("The compiler can handle nesting", function() {
   var template = compile(html);
   var fragment = template({}, env);
 
-  equalHTML(fragment, html);
+  equalTokens(fragment, html);
 });
 
 test("The compiler can handle quotes", function() {
@@ -308,12 +316,12 @@ test("Simple data binding using text nodes", function() {
   object.title = 'goodbye';
   callback();
 
-  equalHTML(fragment, '<div>goodbye world</div>');
+  equalTokens(fragment, '<div>goodbye world</div>');
 
   object.title = 'brown cow';
   callback();
 
-  equalHTML(fragment, '<div>brown cow world</div>');
+  equalTokens(fragment, '<div>brown cow world</div>');
 });
 
 test("Simple data binding on fragments", function() {
@@ -333,12 +341,12 @@ test("Simple data binding on fragments", function() {
   object.title = '<p>goodbye</p> to the';
   callback();
 
-  equalHTML(fragment, '<div><p>goodbye</p> to the world</div>');
+  equalTokens(fragment, '<div><p>goodbye</p> to the world</div>');
 
   object.title = '<p>brown cow</p> to the';
   callback();
 
-  equalHTML(fragment, '<div><p>brown cow</p> to the world</div>');
+  equalTokens(fragment, '<div><p>brown cow</p> to the world</div>');
 });
 
 test("content hook receives escaping information", function() {
@@ -452,12 +460,12 @@ test("It is possible to use RESOLVE_IN_ATTR for data binding", function() {
   object.url = 'clippy.html';
   callback();
 
-  equalHTML(fragment, '<a href="clippy.html">linky</a>');
+  equalTokens(fragment, '<a href="clippy.html">linky</a>');
 
   object.url = 'zippy.html';
   callback();
 
-  equalHTML(fragment, '<a href="zippy.html">linky</a>');
+  equalTokens(fragment, '<a href="zippy.html">linky</a>');
 });
 */
 
@@ -500,7 +508,7 @@ test("Attribute helpers can use the hash for data binding", function() {
 
   object.on = false;
   callback();
-  equalHTML(fragment, '<div class="nope">hi</div>');
+  equalTokens(fragment, '<div class="nope">hi</div>');
 });
 */
 test("Attributes containing multiple helpers are treated like a block", function() {
@@ -542,7 +550,7 @@ test("It is possible to trigger a re-render of an attribute from a child resolut
   context.url = "www.example.com";
   callback();
 
-  equalHTML(fragment, '<a href="http://www.example.com/index.html">linky</a>');
+  equalTokens(fragment, '<a href="http://www.example.com/index.html">linky</a>');
 });
 
 test("A child resolution can pass contextual information to the parent", function() {
@@ -561,7 +569,7 @@ test("A child resolution can pass contextual information to the parent", functio
   context.url = "www.example.com";
   callback();
 
-  equalHTML(fragment, '<a href="http://www.example.com/index.html">linky</a>');
+  equalTokens(fragment, '<a href="http://www.example.com/index.html">linky</a>');
 });
 
 test("Attribute runs can contain helpers", function() {
@@ -593,13 +601,13 @@ test("Attribute runs can contain helpers", function() {
   context.path = "yep";
   callbacks.forEach(function(callback) { callback(); });
 
-  equalHTML(fragment, '<a href="http://www.example.com/yep.html/linky">linky</a>');
+  equalTokens(fragment, '<a href="http://www.example.com/yep.html/linky">linky</a>');
 
   context.url = "nope.example.com";
   context.path = "nope";
   callbacks.forEach(function(callback) { callback(); });
 
-  equalHTML(fragment, '<a href="http://nope.example.com/nope.html/linky">linky</a>');
+  equalTokens(fragment, '<a href="http://nope.example.com/nope.html/linky">linky</a>');
 });
 */
 test("A simple block helper can return the default document fragment", function() {
@@ -703,12 +711,12 @@ test("Data-bound block helpers", function() {
   object.shouldRender = true;
   callback();
 
-  equalHTML(fragment, '<p>hi</p> content <p>Appears!</p> more <em>content</em> here');
+  equalTokens(fragment, '<p>hi</p> content <p>Appears!</p> more <em>content</em> here');
 
   object.shouldRender = false;
   callback();
 
-  equalHTML(fragment, '<p>hi</p> content  more <em>content</em> here');
+  equalTokens(fragment, '<p>hi</p> content  more <em>content</em> here');
 });
 */
 
@@ -741,7 +749,7 @@ test("Node helpers can be used for attribute bindings", function() {
   object.url = 'zippy.html';
   callback();
 
-  equalHTML(fragment, '<a href="zippy.html">linky</a>');
+  equalTokens(fragment, '<a href="zippy.html">linky</a>');
 });
 
 
