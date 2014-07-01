@@ -108,9 +108,9 @@ prototype.string = function(str) {
   this.stack.push(string(str));
 };
 
-prototype.nodeHelper = function(name, size) {
+prototype.nodeHelper = function(name, size, elementNum) {
   var prepared = prepareHelper(this.stack, size);
-  this.pushMustacheInNode(string(name), prepared.args, prepared.options);
+  this.pushMustacheInNode(string(name), prepared.args, prepared.options, elementNum);
 };
 
 prototype.morph = function(num, parentPath, startIndex, endIndex) {
@@ -123,6 +123,13 @@ prototype.morph = function(num, parentPath, startIndex, endIndex) {
   this.declarations.push(['morph' + num, morph]);
 };
 
+// Adds our element to cached declaration
+prototype.element = function(elementNum){
+  var elementNodesName = "element" + elementNum;
+  this.declarations.push([elementNodesName, this.getParent() ]);
+  this.parents[this.parents.length-1] = elementNodesName;
+};
+
 prototype.pushWebComponent = function(name, pairs, morphNum) {
   this.source.push('  hooks.webComponent(morph' + morphNum + ', ' + name + ', context, ' + hash(pairs) + ', ' + this.envHash() + ');\n');
 };
@@ -131,8 +138,8 @@ prototype.pushMustacheInContent = function(name, args, pairs, morphNum) {
   this.source.push('  hooks.content(morph' + morphNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', ' + this.envHash() + ');\n');
 };
 
-prototype.pushMustacheInNode = function(name, args, pairs) {
-  this.source.push('  hooks.element(' + this.getParent() + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', ' + this.envHash() + ');\n');
+prototype.pushMustacheInNode = function(name, args, pairs, elementNum) {
+  this.source.push('  hooks.element(element' + elementNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', ' + this.envHash() + ');\n');
 };
 
 prototype.shareParent = function(i) {
