@@ -1354,7 +1354,7 @@ test("{{view}} should evaluate other attribute bindings set to global paths", fu
 
   appendView();
 
-  equal(view.$('input').attr('value'), "myApp", "evaluates attributes bound to global paths");
+  equal(view.$('input').val(), "myApp", "evaluates attributes bound to global paths");
 
   run(function() {
     lookup.App.destroy();
@@ -1369,7 +1369,7 @@ test("{{view}} should evaluate other attributes bindings set in the current cont
 
   appendView();
 
-  equal(view.$('input').attr('value'), "myView", "evaluates attributes bound in the current context");
+  equal(view.$('input').val(), "myView", "evaluates attributes bound in the current context");
 });
 
 test("{{view}} should be able to bind class names to truthy properties", function() {
