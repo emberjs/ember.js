@@ -47,36 +47,6 @@ merge(inBuffer, {
     return childView;
   },
 
-  // when a view is rendered in a buffer, destroying the
-  // element will simply destroy the buffer and put the
-  // state back into the preRender state.
-  destroyElement: function(view) {
-    // TODO call rerender remove on view
-    view.clearBuffer();
-    var viewCollection = view._notifyWillDestroyElement();
-    viewCollection.transitionTo('preRender', false);
-
-    return view;
-  },
-
-  empty: function() {
-    Ember.assert("Emptying a view in the inBuffer state is not allowed and " +
-                 "should not happen under normal circumstances. Most likely " +
-                 "there is a bug in your application. This may be due to " +
-                 "excessive property change notifications.");
-  },
-
-  setElement: function(view, value) {
-    if (value === null) {
-      view._transitionTo('preRender');
-    } else {
-      view.clearBuffer();
-      view._transitionTo('hasElement');
-    }
-
-    return value;
-  },
-
   invokeObserver: function(target, observer) {
     observer.call(target);
   }

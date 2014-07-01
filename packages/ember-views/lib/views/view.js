@@ -1595,18 +1595,6 @@ var View = CoreView.extend({
   },
 
   /**
-    If this view's element changes, we need to invalidate the caches of our
-    child views so that we do not retain references to DOM elements that are
-    no longer needed.
-
-    @method _elementDidChange
-    @private
-  */
-  _elementDidChange: observer('element', function() {
-    this.forEachChildView(clearCachedElement);
-  }),
-
-  /**
     Called when the parentView property has changed.
 
     @event parentViewDidChange

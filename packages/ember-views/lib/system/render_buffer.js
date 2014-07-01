@@ -449,15 +449,11 @@ _RenderBuffer.prototype = {
         this.hydrateMorphs();
       }
     } else {
-      if (html !== null && html !== undefined) {
+      if (html) {
         var frag = this._element = document.createDocumentFragment();
-        // TODO: fix me
-        var div = document.createElement('div');
-        div.innerHTML = html;
-        var childNodes = div.childNodes;
-        var ref = null;
-        for (var i=childNodes.length-1; i>=0; i--) {
-          ref = frag.insertBefore(childNodes[i], ref);
+        var parsed = jQuery.parseHTML(html);
+        for (var i=0,l=parsed.length; i<l; i++) {
+          frag.appendChild(parsed[i]);
         }
         this.hydrateMorphs();
       } else if (html === '') {
