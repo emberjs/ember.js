@@ -93,7 +93,7 @@ test('#createElement of path with svg contextual element', function(){
 });
 */
 
-// TODO: Safari, Phantom do not return childNodes for SVG
+// TODO: Safari, Phantom does not return childNodes for SVG
 /*
 test('#parseHTML of path with svg contextual element', function(){
   var svgElement = document.createElementNS(svgNamespace, 'svg'),
@@ -126,4 +126,19 @@ test('#cloneNode deep', function(){
   equal(node.tagName, 'DIV');
   equal(node.namespaceURI, xhtmlNamespace);
   equalHTML(node, '<div><span></span></div>');
+});
+
+test('#cloneNode deep with blank text', function(){
+  var fragment = document.createDocumentFragment();
+
+  fragment.appendChild( document.createTextNode('') );
+  fragment.appendChild( document.createElement('span') );
+
+  var node = dom.cloneNode(fragment, true);
+
+  equal(node.nodeType, 11);
+  equalHTML(node, '<span></span>');
+  // IE's native cloneNode drops blank string text
+  // nodes. Assert that DOMHelper does not do this.
+  equal(node.childNodes.length, 2);
 });
