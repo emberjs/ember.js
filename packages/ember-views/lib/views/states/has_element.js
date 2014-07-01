@@ -57,17 +57,6 @@ merge(hasElement, {
     return view;
   },
 
-  empty: function(view) {
-    var _childViews = view._childViews, len, idx;
-    if (_childViews) {
-      len = _childViews.length;
-      for (idx = 0; idx < len; idx++) {
-        _childViews[idx]._notifyWillDestroyElement();
-      }
-    }
-    view.domManager.empty(view);
-  },
-
   // Handle events from `Ember.EventDispatcher`
   handleEvent: function(view, eventName, evt) {
     if (view.has(eventName)) {

@@ -13,8 +13,6 @@ var SafeString = EmberHandlebars.SafeString;
 import Ember from "ember-metal/core"; // Ember.K
 var K = Ember.K;
 
-var Metamorph = requireModule('metamorph');
-
 import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -37,7 +35,6 @@ function SimpleHandlebarsView(path, pathRoot, isEscaped, templateData) {
   this.isEscaped = isEscaped;
   this.templateData = templateData;
 
-  this.morph = Metamorph();
   this.state = 'preRender';
   this.updateId = null;
   this._parentView = null;

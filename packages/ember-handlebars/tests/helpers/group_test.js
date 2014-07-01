@@ -54,7 +54,6 @@ test("should properly modify behavior inside the block", function() {
   createGroupedView("{{msg}}", {msg: 'ohai'});
   appendView();
 
-  equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(view.$().text(), 'ohai', 'Original value was rendered');
 
   run(function() {
@@ -83,7 +82,6 @@ test("property changes inside views should only rerender their view", function()
     rerender: function() { rerenderWasCalled = true; this._super(); }
   });
   appendView();
-  equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(trim(view.$().text()), 'ohai', 'Original value was rendered');
 
   run(function() {
@@ -119,7 +117,6 @@ test("should work with the #if helper", function() {
   );
   appendView();
 
-  equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(trim(view.$().text()), 'hooray', 'Truthy text was rendered');
 
   run(function() {
@@ -157,7 +154,6 @@ test("#each can be nested", function() {
     {numbers: A([1, 2, 3])}
   );
   appendView();
-  equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(view.$().text(), '123', "The content was rendered");
 
   run(function() {
@@ -179,7 +175,6 @@ test("#each can be used with an ArrayProxy", function() {
     {numbers: ArrayProxy.create({content: A([1, 2, 3])})}
   );
   appendView();
-  equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(view.$().text(), '123', "The content was rendered");
 });
 
@@ -190,7 +185,6 @@ test("should allow `#each item in array` format", function() {
     {people: A([yehuda, {name: 'Tom'}])}
   );
   appendView();
-  equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(view.$().text(), 'YehudaTom', "The content was rendered");
 
   run(function() {
@@ -217,7 +211,6 @@ test("an #each can be nested with a view inside", function() {
     {people: A([yehuda, {name: 'Tom'}])}
   );
   appendView();
-  equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(view.$().text(), 'YehudaTom', "The content was rendered");
 
   run(function() {
@@ -236,7 +229,6 @@ test("an #each can be nested with a component inside", function() {
   );
 
   appendView();
-  equal(view.$('script').length, 0, "No Metamorph markers are output");
   equal(view.$().text(), 'YehudaTom', "The content was rendered");
 
   run(function() {
@@ -252,14 +244,12 @@ test("#each with groupedRows=true behaves like a normal bound #each", function()
     {numbers: A([1, 2, 3])}
   );
   appendView();
-  equal(view.$('script').length, 8, "Correct number of Metamorph markers are output");
   equal(view.$().text(), '123');
 
   run(function() {
     view.get('context.numbers').pushObject(4);
   });
 
-  equal(view.$('script').length, 10, "Correct number of Metamorph markers are output");
   equal(view.$().text(), '1234');
 });
 
@@ -269,7 +259,6 @@ test("#each with itemViewClass behaves like a normal bound #each", function() {
     {people: A([{name: 'Erik'}, {name: 'Peter'}])}
   );
   appendView();
-  equal(view.$('script').length, 2, "Correct number of Metamorph markers are output");
   equal(view.$('.ember-view').length, 2, "Correct number of views are output");
   equal(view.$().text(), 'ErikPeter');
 
@@ -277,7 +266,6 @@ test("#each with itemViewClass behaves like a normal bound #each", function() {
     view.get('context.people').pushObject({name: 'Tom'});
   });
 
-  equal(view.$('script').length, 2, "Correct number of Metamorph markers are output");
   equal(view.$('.ember-view').length, 3, "Correct number of views are output");
   // IE likes to add newlines
   equal(trim(view.$().text()), 'ErikPeterTom');
