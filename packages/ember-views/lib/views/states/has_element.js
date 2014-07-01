@@ -17,7 +17,7 @@ var hasElement = create(_default);
 
 merge(hasElement, {
   $: function(view, sel) {
-    var elem = get(view, 'element');
+    var elem = view.get('concreteView').element;
     return sel ? jQuery(sel, elem) : jQuery(elem);
   },
 
