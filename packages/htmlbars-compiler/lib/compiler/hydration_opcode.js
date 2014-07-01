@@ -9,6 +9,8 @@ function HydrationOpcodeCompiler() {
   this.currentDOMChildIndex = 0;
   this.morphs = [];
   this.morphNum = 0;
+  this.element = null;
+  this.elementNum = -1;
 }
 
 HydrationOpcodeCompiler.prototype.compile = function(ast) {
@@ -49,10 +51,14 @@ HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, must
   distributeMorphs(this.morphs, this.opcodes);
   ++this.currentDOMChildIndex;
 
+  this.opcode('consumeParent', this.currentDOMChildIndex);
+
+  this.element = this.currentDOMChildIndex;
+
+  // If our parent referance will be used more than once, cache its referance.
   if (mustacheCount > 1) {
-    this.opcode('shareParent', this.currentDOMChildIndex);
-  } else {
-    this.opcode('consumeParent', this.currentDOMChildIndex);
+    this.opcode('element', ++this.elementNum);
+    this.element = null; // Set element to null so we don't cache it twice
   }
 
   this.paths.push(this.currentDOMChildIndex);
@@ -127,7 +133,12 @@ HydrationOpcodeCompiler.prototype.nodeHelper = function(mustache) {
   this.opcode('program', null, null);
   processParams(this, mustache.params);
   processHash(this, mustache.hash);
-  this.opcode('nodeHelper', mustache.id.string, mustache.params.length, this.paths.slice());
+  // If we have a helper in a node, and this element has not been cached, cache it
+  if(this.element !== null){
+    this.opcode('element', ++this.elementNum);
+    this.element = null; // Reset element so we don't cache it more than once
+  }
+  this.opcode('nodeHelper', mustache.id.string, mustache.params.length, this.elementNum);
 };
 
 HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, childrenLength) {
@@ -222,7 +233,7 @@ function distributeMorphs(morphs, opcodes) {
   var o;
   for (o = opcodes.length - 1; o >= 0; --o) {
     var opcode = opcodes[o][0];
-    if (opcode === 'shareParent' || opcode === 'consumeParent' || opcode === 'popParent') {
+    if (opcode === 'element' || opcode === 'consumeParent'  || opcode === 'popParent') {
       break;
     }
   }
