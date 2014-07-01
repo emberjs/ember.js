@@ -414,8 +414,8 @@ function iterateCombinations(parents, starts, ends, contents, callback) {
   }
 }
 
-QUnit.module('Morph');
+QUnit.module('morph: Morph');
 iterateCombinations(parents, starts, ends, contents, morphTests);
 
-QUnit.module('MorphList');
+QUnit.module('morph: MorphList');
 iterateCombinations(parents, starts, ends, [{name:'', create: function(){},HTML:''}], morphListTests);
