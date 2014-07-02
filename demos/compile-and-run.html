@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <title>HTMLBars example</title>
+  </head>
+  <body>
+    <label>Data</label>
+    <textarea id="data">{"name": "Bob"}</textarea>
+    <label>Template</label>
+    <textarea id="template">Howdy {{name}}</textarea>
+    <button id="run-template">Render</button>
+    <hr>
+    <div id="output"></div>
+    <hr>
+
+    <script src="../bower_components/loader/loader.js"></script>
+    <script src="../dist/vendor/simple-html-tokenizer.amd.js"></script>
+    <script src="../dist/vendor/handlebars.amd.js"></script>
+    <script src="../dist/morph.amd.js"></script>
+    <script src="../dist/htmlbars-compiler.amd.js"></script>
+    <script src="../dist/htmlbars-runtime.amd.js"></script>
+    <script>
+      var button   = document.getElementById('run-template'),
+          dataarea = document.getElementById('data'),
+          textarea = document.getElementById('template'),
+          output   = document.getElementById('output');
+
+      var compiler    = requireModule('htmlbars-compiler/compiler'),
+          compile     = compiler.compile,
+          compileSpec = compiler.compileSpec,
+          DOMHelper   = requireModule('morph').DOMHelper,
+          hooks       = requireModule('htmlbars-runtime').hooks;
+
+      button.addEventListener('click', function(){
+        var source = textarea.value,
+            data = {};
+        try {
+          data = JSON.parse(dataarea.value);
+        } catch(e) {}
+        try {
+          var templateSpec = compileSpec(source),
+              template     = compile(source),
+              dom          = template(data, {hooks: hooks, dom: new DOMHelper()});
+          output.innerHTML = '<pre><code>'+JSON.stringify(data)+'</code></pre><hr><pre><code>'+templateSpec+'</code></pre><hr>';
+          output.appendChild(dom);
+        } catch(e) {
+          output.innerHTML = 'Failure to run template: '+e.message;
+          throw(e);
+        }
+      });
+    </script>
+  </body>
+</html>
