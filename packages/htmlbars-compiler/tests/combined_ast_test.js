@@ -2,6 +2,8 @@ import { preprocess } from "htmlbars-compiler/parser";
 import { ProgramNode, BlockNode, ComponentNode, ElementNode, MustacheNode, SexprNode,
   HashNode, IdNode, StringNode, AttrNode, TextNode } from "htmlbars-compiler/ast";
 
+var svgNamespace = "http://www.w3.org/2000/svg";
+
 module("HTML-based compiler (AST)");
 
 var stripLeft = { left: true, right: false };
@@ -47,6 +49,18 @@ function string(data) {
 
 function element(tagName, attributes, helpers, children) {
   return new ElementNode(tagName, attributes || [], helpers || [], children || []);
+}
+
+function svgElement(tagName, attributes, helpers, children) {
+  var e = element(tagName, attributes, helpers, children);
+  e.namespaceURI = svgNamespace;
+  return e;
+}
+
+function svgHTMLIntegrationPoint(tagName, attributes, helpers, children) {
+  var e = svgElement(tagName, attributes, helpers, children);
+  e.isHTMLIntegrationPoint = true;
+  return e;
 }
 
 function component(tagName, attributes, children) {
@@ -113,6 +127,51 @@ test("self-closed element", function() {
     element("g")
   ]));
 });
+
+test("svg content", function() {
+  var t = "<svg></svg>";
+  astEqual(t, root([
+    svgElement("svg")
+  ]));
+});
+
+test("html content with html content inline", function() {
+  var t = '<div><p></p></div>';
+  astEqual(t, root([
+    element("div", [], [], [
+      element("p")
+    ])
+  ]));
+});
+
+test("html content with svg content inline", function() {
+  var t = '<div><svg></svg></div>';
+  astEqual(t, root([
+    element("div", [], [], [
+      svgElement("svg")
+    ])
+  ]));
+});
+
+var integrationPoints = ['foreignObject', 'desc', 'title'];
+function buildIntegrationPointTest(integrationPoint){
+  return function integrationPointTest(){
+    var t = '<svg><'+integrationPoint+'><div></div></'+integrationPoint+'></svg>';
+    astEqual(t, root([
+      svgElement("svg", [], [], [
+        svgHTMLIntegrationPoint(integrationPoint, [], [], [
+          element("div")
+        ])
+      ])
+    ]));
+  };
+}
+for (var i=0, length = integrationPoints.length; i<length; i++) {
+  test(
+    "svg content with html content inline for "+integrationPoints[i],
+    buildIntegrationPointTest(integrationPoints[i])
+  );
+}
 
 test("a piece of content with HTML", function() {
   var t = 'some <div>content</div> done';
