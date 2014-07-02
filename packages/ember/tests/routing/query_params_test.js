@@ -1,12 +1,13 @@
 import "ember";
+import { computed } from "ember-metal/computed";
 import {
   forEach,
   map
 }  from "ember-metal/enumerable_utils";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 
 var Router, App, AppView, templates, router, container;
-var get = Ember.get;
-var set = Ember.set;
 var compile = Ember.Handlebars.compile;
 
 function bootApplication() {
@@ -1394,6 +1395,76 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
     equal(Ember.$('#one').attr('href'), "/a/a-1/comments?q=imdone");
     equal(Ember.$('#two').attr('href'), "/a/a-2/comments");
+  });
+
+  test("CPs assume controller scoping", function() {
+    App.ArticleController = Ember.ObjectController.extend({
+      queryParams: 'q',
+      q: computed.alias('model.q'),
+      w: computed.alias('model.w')
+    });
+
+    var article1 = this.articles[0];
+    article1.q = "modelq";
+    article1.w = "modelw";
+
+    this.boot();
+
+    Ember.run(this.$link1, 'click');
+    equal(get(article1, 'q'), "modelq");
+    equal(get(article1, 'w'), "modelw");
+
+    Ember.run(function() {
+      set(article1, 'q', 'newq');
+    });
+
+    equal(get(article1, 'w'), "modelw");
+    equal(this.controller.get('w'), 'modelw');
+
+    equal(router.get('location.path'), '/a/a-1?q=newq');
+    equal(this.$link1.attr('href'), '/a/a-1?q=newq');
+  });
+
+  test("QPs can be bound to properties on a proxied model", function() {
+    var model = {
+      paginated: Ember.ArrayProxy.create({
+        offset: 0,
+        limit: 5
+      })
+    };
+
+    App.IndexRoute = Ember.Route.extend({
+      model: function() {
+        return model;
+      }
+    });
+
+    App.IndexController = Ember.ObjectController.extend({
+      queryParams: ['limit', 'offset'],
+      limit: Ember.computed.alias('paginated.limit'),
+      offset: Ember.computed.alias('paginated.offset'),
+
+      actions: {
+        nextPage: function() {
+          this.incrementProperty('offset', 10);
+        }
+      }
+    });
+
+    this.boot();
+
+    equal(router.get('location.path'), '');
+
+    var indexController = container.lookup('controller:index');
+    Ember.run(indexController, 'incrementProperty', 'offset', 10);
+
+    equal(indexController.get('offset'), 10, "offset has correctly updated");
+    equal(indexController.get('limit'),   5, "limit remains unchanged");
+
+    equal(get(model.paginated, 'offset'), 10, "offset has correctly updated on the model");
+    equal(get(model.paginated, 'limit'),   5, "limit remains unchanged on the model");
+
+    equal(router.get('location.path'), '/?limit=5&offset=10');
   });
 
 

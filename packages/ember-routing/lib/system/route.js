@@ -365,10 +365,15 @@ var Route = EmberObject.extend(ActionHandler, {
               value = route.deserializeQueryParam(svalue, qp.urlKey, qp.type);
             } else {
               // No QP provided; use default value.
-              svalue = qp.sdef;
-              value = qp.def;
-              if (isArray(value)) {
-                value = Ember.A(value.slice());
+              if (qp.useCp) {
+                value = get(controller, qp.prop);
+                svalue = route.serializeQueryParam(value, qp.urlKey, qp.type);
+              } else {
+                svalue = qp.sdef;
+                value = qp.def;
+                if (isArray(value)) {
+                  value = Ember.A(value.slice());
+                }
               }
             }
           }
@@ -1564,7 +1569,8 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
               svalue: defaultValueSerialized,
               cacheType: desc.scope,
               route: this,
-              cacheMeta: cacheMeta[propName]
+              cacheMeta: cacheMeta[propName],
+              useCp: desc.useCp
             };
 
         map[propName] = map[urlKey] = map[fprop] = qp;
