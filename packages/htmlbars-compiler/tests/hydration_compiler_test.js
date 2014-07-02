@@ -22,6 +22,7 @@ module("HydrationOpcodeCompiler opcode generation");
 test("simple example", function() {
   var opcodes = opcodesFor("<div>{{foo}} bar {{baz}}</div>");
   deepEqual(opcodes, [
+    [ "element", [0] ],
     [ "morph", [ 0, [ 0 ], -1, 0 ] ],
     [ "morph", [ 1, [ 0 ], 0, -1 ] ],
     mustache('foo', 0),
@@ -82,6 +83,7 @@ test("mustaches at the root", function() {
 test("back to back mustaches should have a text node inserted between them", function() {
   var opcodes = opcodesFor("<div>{{foo}}{{bar}}{{baz}}wat{{qux}}</div>");
   deepEqual(opcodes, [
+    [ "element", [0] ],
     [ "morph", [ 0, [0], -1, 0 ] ],
     [ "morph", [ 1, [0], 0, 1 ] ],
     [ "morph", [ 2, [0], 1, 2 ] ],
@@ -109,7 +111,8 @@ test("node mustache", function() {
   deepEqual(opcodes, [
     [ "program", [null, null] ],
     [ "stackLiteral", [0] ],
-    [ "nodeHelper", ["foo", 0, [0]] ]
+    [ "element", [0] ],
+    [ "nodeHelper", ["foo", 0, 0 ] ]
   ]);
 });
 
@@ -119,7 +122,8 @@ test("node helper", function() {
     [ "program", [null, null] ],
     [ "stringLiteral", ['bar'] ],
     [ "stackLiteral", [0] ],
-    [ "nodeHelper", ["foo", 1, [0]] ]
+    [ "element", [0] ],
+    [ "nodeHelper", ["foo", 1, 0 ] ]
   ]);
 });
 
@@ -139,7 +143,8 @@ test("attribute mustache", function() {
     [ "stackLiteral", [0] ],
     [ "sexpr", [ "concat", 3 ] ],
     [ "stackLiteral", [0] ],
-    [ "nodeHelper", [ "attribute", 2, [ 0 ] ] ]
+    [ "element", [0] ],
+    [ "nodeHelper", [ "attribute", 2, 0 ] ]
   ]);
 });
 
@@ -161,6 +166,7 @@ test("attribute helper", function() {
     [ "stackLiteral", [ 0 ] ],
     [ "sexpr", [ "concat", 3 ] ],
     [ "stackLiteral", [ 0 ] ],
-    [ "nodeHelper", [ "attribute", 2, [ 0 ] ] ]
+    [ "element", [0] ],
+    [ "nodeHelper", [ "attribute", 2, 0 ] ]
   ]);
 });
