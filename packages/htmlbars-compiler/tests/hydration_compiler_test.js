@@ -22,7 +22,6 @@ module("HydrationOpcodeCompiler opcode generation");
 test("simple example", function() {
   var opcodes = opcodesFor("<div>{{foo}} bar {{baz}}</div>");
   deepEqual(opcodes, [
-    [ "element", [0] ],
     [ "morph", [ 0, [ 0 ], -1, 0 ] ],
     [ "morph", [ 1, [ 0 ], 0, -1 ] ],
     mustache('foo', 0),
@@ -83,7 +82,6 @@ test("mustaches at the root", function() {
 test("back to back mustaches should have a text node inserted between them", function() {
   var opcodes = opcodesFor("<div>{{foo}}{{bar}}{{baz}}wat{{qux}}</div>");
   deepEqual(opcodes, [
-    [ "element", [0] ],
     [ "morph", [ 0, [0], -1, 0 ] ],
     [ "morph", [ 1, [0], 0, 1 ] ],
     [ "morph", [ 2, [0], 1, 2 ] ],
