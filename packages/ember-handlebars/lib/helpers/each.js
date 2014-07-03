@@ -307,7 +307,7 @@ GroupedEach.prototype = {
   {{/each}}
   ```
   ### Specifying a View class for items
-  If you provide an `itemViewClass` option that references a view class
+  If you provide an `itemViewClass` or `itemView` option that references a view class
   with its own `template` you can omit the block.
 
   The following template:
@@ -315,6 +315,14 @@ GroupedEach.prototype = {
   ```handlebars
   {{#view App.MyView }}
     {{each view.items itemViewClass="App.AnItemView"}}
+  {{/view}}
+  ```
+
+  or its equalivent:
+
+  ```handlebars
+  {{#view App.MyView }}
+    {{each view.items itemView="anItemView"}}
   {{/view}}
   ```
 
@@ -346,8 +354,9 @@ GroupedEach.prototype = {
   </div>
   ```
 
-  If an `itemViewClass` is defined on the helper, and therefore the helper is not
-  being used as a block, an `emptyViewClass` can also be provided optionally.
+  If an `itemViewClass` or `itemView` is defined on the helper, and therefore
+  the helper is not being used as a block, an `emptyViewClass` can also be
+  provided optionally.
   The `emptyViewClass` will match the behavior of the `{{else}}` condition
   described above. That is, the `emptyViewClass` will render if the collection
   is empty.
@@ -421,7 +430,8 @@ GroupedEach.prototype = {
   entire group to be re-rendered. However, changes to the `cars` collection
   will be re-rendered individually (as normal).
 
-  Note that `group` behavior is also disabled by specifying an `itemViewClass`.
+  Note that `group` behavior is also disabled by specifying an `itemViewClass`
+  or `itemView`.
 
   @method each
   @for Ember.Handlebars.helpers
@@ -429,6 +439,7 @@ GroupedEach.prototype = {
   @param [path] {String} path
   @param [options] {Object} Handlebars key/value pairs of options
   @param [options.itemViewClass] {String} a path to a view class used for each item
+  @param [options.itemView] {String} a name of a view to be used for each item
   @param [options.itemController] {String} name of a controller to be created for each item
   @param [options.groupedRows] {boolean} enable normal item-by-item rendering when inside a `#group` helper
 */
@@ -466,7 +477,11 @@ function eachHelper(path, options) {
 
   options.helperName = options.helperName || helperName;
 
-  if (options.data.insideGroup && !options.hash.groupedRows && !options.hash.itemViewClass) {
+  if (options.data.insideGroup &&
+      !options.hash.groupedRows &&
+      !options.hash.itemViewClass &&
+      !options.hash.itemView
+  ) {
     new GroupedEach(ctx, path, options).render();
   } else {
     // ES6TODO: figure out how to do this without global lookup.

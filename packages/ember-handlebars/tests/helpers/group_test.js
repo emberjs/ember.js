@@ -41,6 +41,9 @@ QUnit.module("EmberHandlebars - group flag", {
 function createGroupedView(template, context) {
   var options = {
     container: container,
+    controller: {
+      container: container
+    },
     context: context,
     template: EmberHandlebars.compile(template),
     templateData: {insideGroup: true, keywords: {}}
@@ -268,6 +271,29 @@ test("#each with itemViewClass behaves like a normal bound #each", function() {
     '{{#each people itemViewClass="Ember.View"}}{{name}}{{/each}}',
     {people: A([{name: 'Erik'}, {name: 'Peter'}])}
   );
+  appendView();
+  equal(view.$('script').length, 2, "Correct number of Metamorph markers are output");
+  equal(view.$('.ember-view').length, 2, "Correct number of views are output");
+  equal(view.$().text(), 'ErikPeter');
+
+  run(function() {
+    view.get('context.people').pushObject({name: 'Tom'});
+  });
+
+  equal(view.$('script').length, 2, "Correct number of Metamorph markers are output");
+  equal(view.$('.ember-view').length, 3, "Correct number of views are output");
+  // IE likes to add newlines
+  equal(trim(view.$().text()), 'ErikPeterTom');
+});
+
+test("#each with itemView behaves like a normal bound #each", function() {
+  var itemView = EmberView.extend();
+  container.register('view:test', itemView);
+  createGroupedView(
+    '{{#each people itemView="test"}}{{name}}{{/each}}',
+    {people: A([{name: 'Erik'}, {name: 'Peter'}])}
+  );
+
   appendView();
   equal(view.$('script').length, 2, "Correct number of Metamorph markers are output");
   equal(view.$('.ember-view').length, 2, "Correct number of views are output");
