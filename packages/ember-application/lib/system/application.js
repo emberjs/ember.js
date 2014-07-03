@@ -652,11 +652,11 @@ var Application = Namespace.extend(DeferredMixin, {
     @method runInitializers
   */
   runInitializers: function() {
-    var initializers = get(this.constructor, 'initializers'),
-        container = this.__container__,
-        graph = new DAG(),
-        namespace = this,
-        name, initializer;
+    var initializers = get(this.constructor, 'initializers');
+    var container = this.__container__;
+    var graph = new DAG();
+    var namespace = this;
+    var name, initializer;
 
     for (name in initializers) {
       initializer = initializers[name];
@@ -697,9 +697,9 @@ var Application = Namespace.extend(DeferredMixin, {
     @method setupEventDispatcher
   */
   setupEventDispatcher: function() {
-    var customEvents = get(this, 'customEvents'),
-        rootElement = get(this, 'rootElement'),
-        dispatcher = this.__container__.lookup('event_dispatcher:main');
+    var customEvents = get(this, 'customEvents');
+    var rootElement = get(this, 'rootElement');
+    var dispatcher = this.__container__.lookup('event_dispatcher:main');
 
     set(this, 'eventDispatcher', dispatcher);
     dispatcher.setup(customEvents, rootElement);
