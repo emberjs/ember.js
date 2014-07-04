@@ -138,14 +138,7 @@ TemplateVisitor.prototype.block = function(node) {
   var parentNode = frame.parentNode;
 
   frame.mustacheCount++;
-  
-  if (parentNode.type === 'element') {
-    frame.actions.push(['closeContextualElement', [parentNode]]);
-    frame.actions.push([node.type, [node, frame.childIndex, frame.childCount]]);
-    frame.actions.push(['openContextualElement', [parentNode]]);
-  } else {
-    frame.actions.push([node.type, [node, frame.childIndex, frame.childCount]]);
-  }
+  frame.actions.push([node.type, [node, frame.childIndex, frame.childCount]]);
 
   if (node.inverse) { this.visit(node.inverse); }
   if (node.program) { this.visit(node.program); }

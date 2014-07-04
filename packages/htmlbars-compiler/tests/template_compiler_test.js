@@ -5,7 +5,7 @@ import { DOMHelper } from "morph";
 
 module("TemplateCompiler");
 
-var dom = new DOMHelper(null, document);
+var dom = new DOMHelper();
 
 var hooks = {
   content: function(morph, helperName, context, params, options, env) {

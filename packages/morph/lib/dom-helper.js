@@ -39,19 +39,10 @@ var xhtmlNamespace = "http://www.w3.org/1999/xhtml";
  *
  * @class DOMHelper
  * @constructor
- * @param {HTMLElement} contextualElement the context element to be used
- *   during parseHTML requests. Will also be used for document and
- *   namespace if they are not provided explicitly.
  * @param {HTMLDocument} _document The document DOM methods are proxied to
- * @param {String} namespace The namespace for these actions
  */
-function DOMHelper(contextualElement, _document, namespaceURI){
-  this.document = _document || (
-    contextualElement ? contextualElement.ownerDocument : document);
-  this.namespaceURI = namespaceURI || (
-    contextualElement && contextualElement.namespaceURI !== xhtmlNamespace ?
-    contextualElement.namespaceURI : null );
-  this.contextualElement = contextualElement;
+function DOMHelper(_document){
+  this.document = _document || window.document;
 }
 
 var prototype = DOMHelper.prototype;
@@ -89,41 +80,21 @@ prototype.cloneNode = function(element, deep){
   return element.cloneNode(!!deep);
 };
 
-prototype.createMorph = function(parent, startIndex, endIndex){
-  return Morph.create(parent, startIndex, endIndex, this);
+prototype.createMorph = function(parent, startIndex, endIndex, contextualElement){
+  return Morph.create(parent, startIndex, endIndex, this, contextualElement);
 };
 
-prototype.parseHTML = function(html, parent){
+prototype.parseHTML = function(html, contextualElement){
   var element;
-  // nodeType 11 is a document fragment. This will only
-  // occur at the root of a template, and thus we can trust
-  // that the contextualElement on the dom-helper is
-  // the correct parent node.
-  if (!parent || parent.nodeType === 11) {
-    if (this.contextualElement){
-      element = this.cloneNode(this.contextualElement, false);
-    } else {
-      // Perhaps this should just throw? It catches the corner
-      // case of inner content being svg (like path), but not having
-      // a parent or contextual element provided. this.createElement
-      // then creates an SVG namespace div, and the inner content
-      // ends up being correct.
-      element = this.createElement('div');
-    }
+
+  if (!contextualElement || contextualElement.nodeType === 11) {
+    element = this.document.createElement('div');
   } else {
-    element = this.cloneNode(parent, false);
+    element = this.cloneNode(contextualElement, false);
   }
+
   element.innerHTML = html;
   return element.childNodes;
-};
-
-prototype.sameAs = function(dom){
-  return this.contextualElement === dom.contextualElement &&
-         ( this.contextualElement ?
-           this.contextualElement.tagName === dom.contextualElement.tagName :
-           true ) &&
-         this.document === dom.document &&
-         this.namespace === dom.namespace;
 };
 
 export default DOMHelper;

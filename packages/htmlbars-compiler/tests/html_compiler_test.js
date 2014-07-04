@@ -46,7 +46,7 @@ module("HTML-based compiler (output)", {
     env = {
       hooks: hooks,
       helpers: helpers,
-      dom: new DOMHelper(null, document)
+      dom: new DOMHelper()
     };
   }
 });
@@ -164,13 +164,13 @@ test("The compiler can handle top-level unescaped HTML", function() {
 });
 
 test("The compiler can handle top-level unescaped tr", function() {
-  var template = compile('{{{html}}}', {}),
-      fragment = template({
+  var template = compile('{{{html}}}');
+  var fragment = template({
                    html: '<tr><td>Yo</td></tr>'
                  }, {
                    hooks: hooks,
-                   dom: new DOMHelper(document.createElement('table'))
-                 });
+                   dom: new DOMHelper()
+                 }, document.createElement('table'));
 
   equal(
     fragment.childNodes[1].tagName, 'TBODY',
@@ -179,20 +179,20 @@ test("The compiler can handle top-level unescaped tr", function() {
 
 test("The compiler can handle unescaped tr in top of content", function() {
   var helper = function(params, options, env) {
-    return options.render(options.context, env);
+    return options.render(options.context, env, options.morph.contextualElement);
   };
   hooks.lookupHelper = function(name){
     if (name === 'test') {
       return helper;
     }
   };
-  var template = compile('{{#test}}{{{html}}}{{/test}}', {}),
-      fragment = template({
+  var template = compile('{{#test}}{{{html}}}{{/test}}');
+  var fragment = template({
                    html: '<tr><td>Yo</td></tr>'
                  }, {
                    hooks: hooks,
-                   dom: new DOMHelper(document.createElement('table'))
-                 });
+                   dom: new DOMHelper()
+                 }, document.createElement('table'));
 
   equal(
     fragment.childNodes[2].tagName, 'TBODY',
@@ -201,20 +201,20 @@ test("The compiler can handle unescaped tr in top of content", function() {
 
 test("The compiler can handle unescaped tr inside fragment table", function() {
   var helper = function(params, options, env) {
-    return options.render(options.context, env);
+    return options.render(options.context, env, options.morph.contextualElement);
   };
   hooks.lookupHelper = function(name){
     if (name === 'test') {
       return helper;
     }
   };
-  var template = compile('<table>{{#test}}{{{html}}}{{/test}}</table>', {}),
+  var template = compile('<table>{{#test}}{{{html}}}{{/test}}</table>'),
       fragment = template({
                    html: '<tr><td>Yo</td></tr>'
                  }, {
                    hooks: hooks,
-                   dom: new DOMHelper(document.createElement('div'))
-                 });
+                   dom: new DOMHelper()
+                 }, document.createElement('div'));
 
   equal(
     fragment.childNodes[1].tagName, 'TBODY',
@@ -811,70 +811,4 @@ test('Web components - Text-only attributes work', function () {
 
 test('Web components - Empty components work', function () {
   compilesTo('<x-bar></x-bar>','<x-bar></x-bar>', {});
-});
-
-test('running a template with the same domHelper returns a cached fragment root', function () {
-  var template = compile("<div></div>", {}),
-      originalCreateElement = env.dom.createElement,
-      calls = 0;
-
-  env.dom.createElement = function(node){
-    calls++;
-    return originalCreateElement.call(this, node);
-  };
-
-  var fragmentA = template({}, env),
-      fragmentB = template({}, env);
-
-  equal(calls, 1, "the domHelper is used once to create an element");
-});
-
-test('running a template with new but same domHelper returns the same fragment root', function () {
-  var template = compile("<div></div>"),
-      domHelperA = new DOMHelper(null, document),
-      domHelperB = new DOMHelper(null, document),
-      originalCreateElement = env.dom.createElement,
-      aCalls = 0,
-      bCalls = 0;
-
-  domHelperA.createElement = function(node){
-    aCalls++;
-    return originalCreateElement.call(this, node);
-  };
-
-  domHelperB.createElement = function(node){
-    bCalls++;
-    return originalCreateElement.call(this, node);
-  };
-
-  var fragmentA = template({}, {hooks: hooks, dom: domHelperA}),
-      fragmentB = template({}, {hooks: hooks, dom: domHelperB});
-
-  equal(aCalls, 1, "the first domHelper is used once to create an element");
-  equal(bCalls, 0, "the second domHelper is used once to create an element");
-});
-
-test('running a template with new and different domHelper returns a new fragment root', function () {
-  var template = compile("<div></div>"),
-      domHelperA = new DOMHelper(null, document),
-      domHelperB = new DOMHelper(document.createElement('div')),
-      originalCreateElement = env.dom.createElement,
-      aCalls = 0,
-      bCalls = 0;
-
-  domHelperA.createElement = function(node){
-    aCalls++;
-    return originalCreateElement.call(this, node);
-  };
-
-  domHelperB.createElement = function(node){
-    bCalls++;
-    return originalCreateElement.call(this, node);
-  };
-
-  var fragmentA = template({}, {hooks: hooks, dom: domHelperA}),
-      fragmentB = template({}, {hooks: hooks, dom: domHelperB});
-
-  equal(aCalls, 1, "the first domHelper is used once to create an element");
-  equal(bCalls, 1, "the second domHelper is used once to create an element");
 });
