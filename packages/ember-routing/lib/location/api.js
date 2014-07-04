@@ -194,8 +194,8 @@ export default {
   _getHash: function () {
     // AutoLocation has it at _location, HashLocation at .location.
     // Being nice and not changing
-    var href = (this._location || this.location).href,
-        hashIndex = href.indexOf('#');
+    var href = (this._location || this.location).href;
+    var hashIndex = href.indexOf('#');
 
     if (hashIndex === -1) {
       return '';

@@ -109,11 +109,11 @@ var EmberRouter = EmberObject.extend(Evented, {
   startRouting: function() {
     this.router = this.router || this.constructor.map(Ember.K);
 
-    var router = this.router,
-        location = get(this, 'location'),
-        container = this.container,
-        self = this,
-        initialURL = get(this, 'initialURL');
+    var router = this.router;
+    var location = get(this, 'location');
+    var container = this.container;
+    var self = this;
+    var initialURL = get(this, 'initialURL');
 
     // Allow the Location class to cancel the router setup while it refreshes
     // the page
@@ -287,8 +287,8 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   _setupLocation: function() {
-    var location = get(this, 'location'),
-        rootURL = get(this, 'rootURL');
+    var location = get(this, 'location');
+    var rootURL = get(this, 'rootURL');
 
     if (rootURL && !this.container.has('-location-setting:root-url')) {
       this.container.register('-location-setting:root-url', rootURL, { instantiate: false });
@@ -317,13 +317,13 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   _getHandlerFunction: function() {
-    var seen = {}, container = this.container,
-        DefaultRoute = container.lookupFactory('route:basic'),
-        self = this;
+    var seen = {}, container = this.container;
+    var DefaultRoute = container.lookupFactory('route:basic');
+    var self = this;
 
     return function(name) {
-      var routeName = 'route:' + name,
-          handler = container.lookup(routeName);
+      var routeName = 'route:' + name;
+      var handler = container.lookup(routeName);
 
       if (seen[name]) { return handler; }
 
@@ -458,9 +458,9 @@ var EmberRouter = EmberObject.extend(Evented, {
         recogHandlerInfos = routerjs.recognizer.handlersFor(leafRouteName);
 
     for (var i = 0, len = recogHandlerInfos.length; i < len; ++i) {
-      var recogHandler = recogHandlerInfos[i],
-          route = routerjs.getHandler(recogHandler.handler),
-          qpMeta = get(route, '_qp');
+      var recogHandler = recogHandlerInfos[i];
+      var route = routerjs.getHandler(recogHandler.handler);
+      var qpMeta = get(route, '_qp');
 
       if (!qpMeta) { continue; }
 
@@ -558,12 +558,13 @@ var EmberRouter = EmberObject.extend(Evented, {
   @private
  */
 function forEachRouteAbove(originRoute, transition, callback) {
-  var handlerInfos = transition.state.handlerInfos,
-      originRouteFound = false;
+  var handlerInfos = transition.state.handlerInfos;
+  var originRouteFound = false;
+  var handlerInfo, route;
 
   for (var i = handlerInfos.length - 1; i >= 0; --i) {
-    var handlerInfo = handlerInfos[i],
-        route = handlerInfo.handler;
+    handlerInfo = handlerInfos[i];
+    route = handlerInfo.handler;
 
     if (!originRouteFound) {
       if (originRoute === route) {
@@ -652,10 +653,10 @@ var defaultActionHandlers = {
 };
 
 function findChildRouteName(parentRoute, originatingChildRoute, name) {
-  var router = parentRoute.router,
-      childName,
-      targetChildRouteName = originatingChildRoute.routeName.split('.').pop(),
-      namespace = parentRoute.routeName === 'application' ? '' : parentRoute.routeName + '.';
+  var router = parentRoute.router;
+  var childName;
+  var targetChildRouteName = originatingChildRoute.routeName.split('.').pop();
+  var namespace = parentRoute.routeName === 'application' ? '' : parentRoute.routeName + '.';
 
   if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     // First, try a named loading state, e.g. 'foo_loading'
@@ -687,10 +688,11 @@ function triggerEvent(handlerInfos, ignoreFailure, args) {
   }
 
   var eventWasHandled = false;
+  var handlerInfo, handler;
 
   for (var i = handlerInfos.length - 1; i >= 0; i--) {
-    var handlerInfo = handlerInfos[i],
-        handler = handlerInfo.handler;
+    handlerInfo = handlerInfos[i];
+    handler = handlerInfo.handler;
 
     if (handler._actions && handler._actions[name]) {
       if (handler._actions[name].apply(handler, args) === true) {
@@ -802,10 +804,11 @@ EmberRouter.reopenClass({
       return true;
     }
 
+    var name, nameParts, oldNameParts;
     for (var i=1, l=handlerInfos.length; i<l; i++) {
-      var name = handlerInfos[i].name,
-          nameParts = name.split("."),
-          oldNameParts = slice.call(path);
+      name = handlerInfos[i].name;
+      nameParts = name.split(".");
+      oldNameParts = slice.call(path);
 
       while (oldNameParts.length) {
         if (intersectionMatches(oldNameParts, nameParts)) {
