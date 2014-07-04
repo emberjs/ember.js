@@ -10,19 +10,23 @@ import { TemplateCompiler } from "./compiler/template";
  *     // Template is the hydration portion of the compiled template
  *     var template = compile("Howdy {{name}}");
  *
- *     // Template accepts two arguments:
+ *     // Template accepts three arguments:
  *     //
  *     //   1. A context object
  *     //   2. An env object
+ *     //   3. A contextualElement (optional, document.body is the default)
  *     //
  *     // The env object *must* have at least these two properties:
  *     //
  *     //   1. `hooks` - Basic hooks for rendering a template
- *     //   2. `dom` - An instance of DOMHelper that provides the context for DOM creation
+ *     //   2. `dom` - An instance of DOMHelper
  *     //
  *     import {hooks} from 'htmlbars-runtime';
  *     import {DOMHelper} from 'morph';
- *     var domFragment = template({name: 'whatever'}, {hooks: hooks, dom: new DOMHelper() });
+ *     var context = {name: 'whatever'},
+ *         env = {hooks: hooks, dom: new DOMHelper()},
+ *         contextualElement = document.body;
+ *     var domFragment = template(context, env, contextualElement);
  *
  * @method compile
  * @param {String} string An htmlbars template string
