@@ -2,7 +2,7 @@ import { BlockNode, ProgramNode, TextNode, appendChild, usesMorph } from "../ast
 import { postprocessProgram } from "../html-parser/helpers";
 import { Chars } from "../html-parser/tokens";
 
-var nodeHelpers = {
+var nodeHandlers = {
 
   program: function(program) {
     var statements = [];
@@ -11,7 +11,7 @@ var nodeHelpers = {
 
     this.elementStack.push(node);
 
-    if (l === 0) return this.elementStack.pop();
+    if (l === 0) { return this.elementStack.pop(); }
 
     for (i = 0; i < l; i++) {
       this.acceptNode(program.statements[i]);
@@ -74,4 +74,4 @@ function switchToHandlebars(processor) {
   }
 }
 
-export default nodeHelpers;
+export default nodeHandlers;

@@ -178,8 +178,8 @@ test("The compiler can handle top-level unescaped tr", function() {
 });
 
 test("The compiler can handle unescaped tr in top of content", function() {
-  var helper = function(context, params, options, env) {
-    return options.render(context, env);
+  var helper = function(params, options, env) {
+    return options.render(options.context, env);
   };
   hooks.lookupHelper = function(name){
     if (name === 'test') {
@@ -200,8 +200,8 @@ test("The compiler can handle unescaped tr in top of content", function() {
 });
 
 test("The compiler can handle unescaped tr inside fragment table", function() {
-  var helper = function(context, params, options, env) {
-    return options.render(context, env);
+  var helper = function(params, options, env) {
+    return options.render(options.context, env);
   };
   hooks.lookupHelper = function(name){
     if (name === 'test') {
@@ -222,7 +222,8 @@ test("The compiler can handle unescaped tr inside fragment table", function() {
 });
 
 test("The compiler can handle simple helpers", function() {
-  registerHelper('testing', function(context, params, options) {
+  registerHelper('testing', function(params, options) {
+    var context = options.context;
     return context[params[0]];
   });
 
@@ -230,7 +231,7 @@ test("The compiler can handle simple helpers", function() {
 });
 
 test("The compiler can handle sexpr helpers", function() {
-  registerHelper('testing', function(context, params, options) {
+  registerHelper('testing', function(params, options) {
     return params[0] + "!";
   });
 
@@ -246,16 +247,16 @@ test("The compiler can handle multiple invocations of sexprs", function() {
     }
   }
 
-  registerHelper('testing', function(context, params, options) {
-    return evalParam(context, params[0], options.types[0]) +
-           evalParam(context, params[1], options.types[1]);
+  registerHelper('testing', function(params, options) {
+    return evalParam(options.context, params[0], options.types[0]) +
+           evalParam(options.context, params[1], options.types[1]);
   });
 
   compilesTo('<div>{{testing (testing "hello" foo) (testing (testing bar "lol") baz)}}</div>', '<div>helloFOOBARlolBAZ</div>', { foo: "FOO", bar: "BAR", baz: "BAZ" });
 });
 
 test("The compiler tells helpers what kind of expression the path is", function() {
-  registerHelper('testing', function(context, params, options) {
+  registerHelper('testing', function(params, options) {
     return options.types[0] + '-' + params[0];
   });
 
@@ -266,7 +267,7 @@ test("The compiler tells helpers what kind of expression the path is", function(
 });
 
 test("The compiler passes along the hash arguments", function() {
-  registerHelper('testing', function(context, params, options) {
+  registerHelper('testing', function(params, options) {
     return options.hash.first + '-' + options.hash.second;
   });
 
@@ -274,7 +275,7 @@ test("The compiler passes along the hash arguments", function() {
 });
 
 test("The compiler passes along the types of the hash arguments", function() {
-  registerHelper('testing', function(context, params, options) {
+  registerHelper('testing', function(params, options) {
     return options.hashTypes.first + '-' + options.hash.first;
   });
 
@@ -370,7 +371,7 @@ test("content hook receives escaping information", function() {
 test("Helpers receive escaping information", function() {
   expect(3);
 
-  registerHelper('testing', function(context, params, options) {
+  registerHelper('testing', function(params, options) {
     if (params[0] === 'escaped') {
       equal(options.escaped, true);
     } else if (params[0] === 'unescaped') {
@@ -434,7 +435,7 @@ function boundValue(valueGetter, binding) {
 }
 
 test("It is possible to override the resolution mechanism for attributes", function() {
-  hooks.attribute = function (context, params, options) {
+  hooks.attribute = function(params, options) {
     options.element.setAttribute(params[0], 'http://google.com/' + params[1]);
   };
 
@@ -469,8 +470,8 @@ test("It is possible to use RESOLVE_IN_ATTR for data binding", function() {
 */
 
 test("Attributes can be populated with helpers that generate a string", function() {
-  registerHelper('testing', function(context, params, options) {
-    return context[params[0]];
+  registerHelper('testing', function(params, options) {
+    return options.context[params[0]];
   });
 
   compilesTo('<a href="{{testing url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html'});
@@ -485,8 +486,8 @@ test("A helper can return a stream for the attribute", function() {
 });
 */
 test("Attribute helpers take a hash", function() {
-  registerHelper('testing', function(context, params, options) {
-    return context[options.hash.path];
+  registerHelper('testing', function(params, options) {
+    return options.context[options.hash.path];
   });
 
   compilesTo('<a href="{{testing path=url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html' });
@@ -511,9 +512,9 @@ test("Attribute helpers can use the hash for data binding", function() {
 });
 */
 test("Attributes containing multiple helpers are treated like a block", function() {
-  registerHelper('testing', function(context, params, options) {
+  registerHelper('testing', function(params, options) {
     if (options.types[0] === 'id') {
-      return context[params[0]];
+      return options.context[params[0]];
     } else {
       return params[0];
     }
@@ -525,7 +526,7 @@ test("Attributes containing multiple helpers are treated like a block", function
 test("Attributes containing a helper are treated like a block", function() {
   expect(2);
 
-  registerHelper('testing', function(context, params, options) {
+  registerHelper('testing', function(params, options) {
     deepEqual(params, [123]);
     return "example.com";
   });
@@ -720,7 +721,7 @@ test("Data-bound block helpers", function() {
 */
 
 test("Node helpers can modify the node", function() {
-  registerHelper('testing', function(context, params, options) {
+  registerHelper('testing', function(params, options) {
     options.element.setAttribute('zomg', 'zomg');
   });
 
@@ -728,10 +729,10 @@ test("Node helpers can modify the node", function() {
 });
 
 test("Node helpers can modify the node after one node appended by top-level helper", function() {
-  registerHelper('top-helper', function(context, params, options) {
+  registerHelper('top-helper', function(params, options) {
     return document.createElement('span');
   });
-  registerHelper('attr-helper', function(context, params, options) {
+  registerHelper('attr-helper', function(params, options) {
     options.element.setAttribute('zomg', 'zomg');
   });
 
@@ -739,10 +740,10 @@ test("Node helpers can modify the node after one node appended by top-level help
 });
 
 test("Node helpers can modify the node after one node prepended by top-level helper", function() {
-  registerHelper('top-helper', function(context, params, options) {
+  registerHelper('top-helper', function(params, options) {
     return document.createElement('span');
   });
-  registerHelper('attr-helper', function(context, params, options) {
+  registerHelper('attr-helper', function(params, options) {
     options.element.setAttribute('zomg', 'zomg');
   });
 
@@ -750,13 +751,13 @@ test("Node helpers can modify the node after one node prepended by top-level hel
 });
 
 test("Node helpers can modify the node after many nodes returned from top-level helper", function() {
-  registerHelper('top-helper', function(context, params, options) {
+  registerHelper('top-helper', function(params, options) {
     var frag = document.createDocumentFragment();
     frag.appendChild(document.createElement('span'));
     frag.appendChild(document.createElement('span'));
     return frag;
   });
-  registerHelper('attr-helper', function(context, params, options) {
+  registerHelper('attr-helper', function(params, options) {
     options.element.setAttribute('zomg', 'zomg');
   });
 
@@ -766,12 +767,12 @@ test("Node helpers can modify the node after many nodes returned from top-level 
 test("Node helpers can be used for attribute bindings", function() {
   var callback;
 
-  registerHelper('testing', function(context, params, options) {
+  registerHelper('testing', function(params, options) {
     var path = options.hash.href,
         element = options.element;
 
     callback = function() {
-      var value = context[path];
+      var value = options.context[path];
       element.setAttribute('href', value);
     };
 
@@ -789,8 +790,8 @@ test("Node helpers can be used for attribute bindings", function() {
 
 
 test('Web components - Called as helpers', function () {
-  registerHelper('x-append', function(context, params, options, _env) {
-    var fragment = options.render(context, _env);
+  registerHelper('x-append', function(params, options, env) {
+    var fragment = options.render(options.context, env);
     fragment.appendChild(document.createTextNode(options.hash.text));
     return fragment;
   });

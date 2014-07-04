@@ -4,7 +4,8 @@ import SafeString from 'handlebars/safe-string';
 export function content(morph, helperName, context, params, options, env) {
   var value, helper = this.lookupHelper(helperName, context, options);
   if (helper) {
-    value = helper(context, params, options, env);
+    options.context = context;
+    value = helper(params, options, env);
   } else {
     value = this.simple(context, helperName, options);
   }
@@ -17,7 +18,8 @@ export function content(morph, helperName, context, params, options, env) {
 export function webComponent(morph, tagName, context, options, env) {
   var value, helper = this.lookupHelper(tagName, context, options);
   if (helper) {
-    value = helper(context, null, options, env);
+    options.context = context;
+    value = helper(null, options, env);
   } else {
     value = this.webComponentFallback(morph, tagName, context, options, env);
   }
@@ -39,19 +41,21 @@ export function webComponentFallback(morph, tagName, context, options, env) {
   return element;
 }
 
-export function element(domElement, helperName, context, params, options) {
+export function element(domElement, helperName, context, params, options, env) {
   var helper = this.lookupHelper(helperName, context, options);
   if (helper) {
+    options.context = context;
     options.element = domElement;
-    helper(context, params, options);
+    helper(params, options, env);
   }
 }
 
-export function attribute(context, params, options) {
+export function attribute(params, options, env) {
   options.element.setAttribute(params[0], params[1]);
 }
 
-export function concat(context, params, options) {
+export function concat(params, options, env) {
+  var context = options.context;
   var value = "";
   for (var i = 0, l = params.length; i < l; i++) {
     if (options.types[i] === 'id') {
@@ -63,10 +67,11 @@ export function concat(context, params, options) {
   return value;
 }
 
-export function subexpr(helperName, context, params, options) {
+export function subexpr(helperName, context, params, options, env) {
   var helper = this.lookupHelper(helperName, context, options);
   if (helper) {
-    return helper(context, params, options);
+    options.context = context;
+    return helper(params, options, env);
   } else {
     return this.simple(context, helperName, options);
   }
