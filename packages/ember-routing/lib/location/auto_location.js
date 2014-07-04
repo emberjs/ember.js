@@ -124,8 +124,8 @@ export default {
     @method _getOrigin
   */
   _getOrigin: function () {
-    var location = this._location,
-        origin = location.origin;
+    var location = this._location;
+    var origin = location.origin;
 
     // Older browsers, especially IE, don't have origin
     if (!origin) {
@@ -174,8 +174,8 @@ export default {
     @method _getSupportsHashChange
   */
   _getSupportsHashChange: function () {
-    var _window = this._window,
-        documentMode = _window.document.documentMode;
+    var _window = this._window;
+    var documentMode = _window.document.documentMode;
 
     return ('onhashchange' in _window && (documentMode === undefined || documentMode > 7 ));
   },
@@ -261,12 +261,12 @@ export default {
     @method _getHistoryPath
   */
   _getHistoryPath: function () {
-    var rootURL = this._getRootURL(),
-        path = this._getPath(),
-        hash = this._getHash(),
-        query = this._getQuery(),
-        rootURLIndex = path.indexOf(rootURL),
-        routeHash, hashParts;
+    var rootURL = this._getRootURL();
+    var path = this._getPath();
+    var hash = this._getHash();
+    var query = this._getQuery();
+    var rootURLIndex = path.indexOf(rootURL);
+    var routeHash, hashParts;
 
     Ember.assert('Path ' + path + ' does not start with the provided rootURL ' + rootURL, rootURLIndex === 0);
 
@@ -309,10 +309,10 @@ export default {
     @method _getHashPath
   */
   _getHashPath: function () {
-    var rootURL = this._getRootURL(),
-        path = rootURL,
-        historyPath = this._getHistoryPath(),
-        routePath = historyPath.substr(rootURL.length);
+    var rootURL = this._getRootURL();
+    var path = rootURL;
+    var historyPath = this._getHistoryPath();
+    var routePath = historyPath.substr(rootURL.length);
 
     if (routePath !== '') {
       if (routePath.charAt(0) !== '/') {
@@ -338,10 +338,10 @@ export default {
       this.rootURL = options.rootURL;
     }
 
-    var historyPath, hashPath,
-        cancelRouterSetup = false,
-        implementationClass = this._NoneLocation,
-        currentPath = this._getFullPath();
+    var historyPath, hashPath;
+    var cancelRouterSetup = false;
+    var implementationClass = this._NoneLocation;
+    var currentPath = this._getFullPath();
 
     if (this._getSupportsHistory()) {
       historyPath = this._getHistoryPath();

@@ -112,7 +112,7 @@ export default EmberObject.extend({
     @param url {String}
   */
   formatURL: function(url) {
-    return '#'+url;
+    return '#' + url;
   },
 
   /**

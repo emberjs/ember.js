@@ -73,8 +73,8 @@ ControllerMixin.reopen({
   */
   transitionToRoute: function() {
     // target may be either another controller or a router
-    var target = get(this, 'target'),
-        method = target.transitionToRoute || target.transitionTo;
+    var target = get(this, 'target');
+    var method = target.transitionToRoute || target.transitionTo;
     return method.apply(target, arguments);
   },
 
@@ -145,8 +145,8 @@ ControllerMixin.reopen({
   */
   replaceRoute: function() {
     // target may be either another controller or a router
-    var target = get(this, 'target'),
-        method = target.replaceRoute || target.replaceWith;
+    var target = get(this, 'target');
+    var method = target.replaceRoute || target.replaceWith;
     return method.apply(target, arguments);
   },
 
@@ -200,14 +200,14 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
         return get(m.proto, '_cacheMeta');
       }
 
-      var cacheMeta = {},
-          qpMap = get(this, '_normalizedQueryParams');
+      var cacheMeta = {};
+      var qpMap = get(this, '_normalizedQueryParams');
       for (var prop in qpMap) {
         if (!qpMap.hasOwnProperty(prop)) { continue; }
 
-        var qp = qpMap[prop],
-            scope = qp.scope,
-            parts;
+        var qp = qpMap[prop];
+        var scope = qp.scope;
+        var parts;
 
         if (scope === 'controller') {
           parts = [];
