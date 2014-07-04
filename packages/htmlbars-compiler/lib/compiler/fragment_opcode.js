@@ -23,14 +23,6 @@ FragmentOpcodeCompiler.prototype.text = function(text, childIndex, childCount, i
   if (!isSingleRoot) { this.opcode('appendChild'); }
 };
 
-FragmentOpcodeCompiler.prototype.openContextualElement = function(domHelper) {
-  this.opcode('createDOMHelper', [domHelper]);
-};
-
-FragmentOpcodeCompiler.prototype.selectDOMHelper = function(domHelper) {
-  this.opcode('selectDOMHelper', [domHelper]);
-};
-
 FragmentOpcodeCompiler.prototype.openElement = function(element) {
   this.opcode('createElement', [element.tag]);
   element.attributes.forEach(this.attribute, this);

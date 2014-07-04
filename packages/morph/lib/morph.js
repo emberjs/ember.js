@@ -1,6 +1,6 @@
 var splice = Array.prototype.splice;
 
-function Morph(parent, start, end, domHelper) {
+function Morph(parent, start, end, domHelper, contextualElement) {
   // TODO: this is an internal API, this should be an assert
   if (parent.nodeType === 11) {
     if (start === null || end === null) {
@@ -14,6 +14,7 @@ function Morph(parent, start, end, domHelper) {
   this.start = start;
   this.end = end;
   this.domHelper = domHelper;
+  this.contextualElement = contextualElement || parent;
   this.text = null;
   this.owner = null;
   this.morphs = null;
@@ -22,11 +23,11 @@ function Morph(parent, start, end, domHelper) {
   this.escaped = true;
 }
 
-Morph.create = function (parent, startIndex, endIndex, domHelper) {
+Morph.create = function (parent, startIndex, endIndex, domHelper, contextualElement) {
   var childNodes = parent.childNodes,
       start = startIndex === -1 ? null : childNodes[startIndex],
       end = endIndex === -1 ? null : childNodes[endIndex];
-  return new Morph(parent, start, end, domHelper);
+  return new Morph(parent, start, end, domHelper, contextualElement);
 };
 
 Morph.prototype.parent = function () {
@@ -136,7 +137,7 @@ Morph.prototype._updateHTML = function (parent, html) {
   var start = this.start, end = this.end;
   clear(parent, start, end);
   this.text = null;
-  var childNodes = this.domHelper.parseHTML(html, parent);
+  var childNodes = this.domHelper.parseHTML(html, this.contextualElement);
   appendChildren(parent, end, childNodes);
   if (this.before !== null) {
     this.before.end = start.nextSibling;
