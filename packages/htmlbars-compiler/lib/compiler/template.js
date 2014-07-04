@@ -34,7 +34,7 @@ TemplateCompiler.prototype.startProgram = function(program, childTemplateCount) 
   }
 };
 
-TemplateCompiler.prototype.endProgram = function(program) {
+TemplateCompiler.prototype.endProgram = function(program, programDepth) {
   this.fragmentOpcodeCompiler.endProgram(program);
   this.hydrationOpcodeCompiler.endProgram(program);
 
