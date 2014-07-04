@@ -70,6 +70,7 @@ prototype.stackLiteral = function(literal) {
 prototype.helper = function(name, size, escaped, morphNum) {
   var prepared = prepareHelper(this.stack, size);
   prepared.options.push('escaped:'+escaped);
+  prepared.options.push('morph:morph'+morphNum);
   this.pushMustacheInContent(string(name), prepared.args, prepared.options, morphNum);
 };
 
@@ -93,14 +94,11 @@ prototype.ambiguousAttr = function(str, escaped) {
 prototype.helperAttr = function(name, size, escaped) {
   var prepared = prepareHelper(this.stack, size);
   prepared.options.push('escaped:'+escaped);
-
   this.stack.push('['+string(name)+','+prepared.args+','+ hash(prepared.options)+']');
 };
 
 prototype.sexpr = function(name, size) {
   var prepared = prepareHelper(this.stack, size);
-
-  //export function subexpr(helperName, context, params, options) {
   this.stack.push('hooks.subexpr(' + string(name) + ', context, ' + prepared.args + ', ' + hash(prepared.options) + ', ' + this.envHash() + ')');
 };
 
@@ -110,6 +108,7 @@ prototype.string = function(str) {
 
 prototype.nodeHelper = function(name, size, elementNum) {
   var prepared = prepareHelper(this.stack, size);
+  prepared.options.push('element:element'+elementNum);
   this.pushMustacheInNode(string(name), prepared.args, prepared.options, elementNum);
 };
 
