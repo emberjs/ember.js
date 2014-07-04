@@ -13,28 +13,22 @@ function HydrationCompiler() {
 
 var prototype = HydrationCompiler.prototype;
 
-prototype.compile = function(opcodes) {
+prototype.compile = function(opcodes, options) {
   this.stack.length = 0;
   this.mustaches.length = 0;
   this.source.length = 0;
   this.parents.length = 1;
   this.declarations.length = 0;
   this.parentCount = 0;
+  this.indent = (options && options.indent) || "";
 
   processOpcodes(this, opcodes);
 
   if (this.declarations.length) {
-    var decs = "  var ";
+    var decs = "";
     for (var i = 0, l = this.declarations.length; i < l; ++i) {
       var dec = this.declarations[i];
-      decs += dec[0];
-      decs += " = ";
-      decs += dec[1];
-      if (i+1 === l) {
-        decs += ';\n';
-      } else {
-        decs += ', ';
-      }
+      decs += this.indent+'  var '+dec[0]+' = '+dec[1]+';\n';
     }
     this.source.unshift(decs);
   }
@@ -128,15 +122,15 @@ prototype.element = function(elementNum){
 };
 
 prototype.pushWebComponent = function(name, pairs, morphNum) {
-  this.source.push('  hooks.webComponent(morph' + morphNum + ', ' + name + ', context, ' + hash(pairs) + ', env);\n');
+  this.source.push(this.indent+'  hooks.webComponent(morph' + morphNum + ', ' + name + ', context, ' + hash(pairs) + ', env);\n');
 };
 
 prototype.pushMustacheInContent = function(name, args, pairs, morphNum) {
-  this.source.push('  hooks.content(morph' + morphNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', env);\n');
+  this.source.push(this.indent+'  hooks.content(morph' + morphNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', env);\n');
 };
 
 prototype.pushMustacheInNode = function(name, args, pairs, elementNum) {
-  this.source.push('  hooks.element(element' + elementNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', env);\n');
+  this.source.push(this.indent+'  hooks.element(element' + elementNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', env);\n');
 };
 
 prototype.shareParent = function(i) {
