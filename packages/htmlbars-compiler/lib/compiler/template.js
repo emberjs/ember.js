@@ -4,7 +4,7 @@ import { HydrationOpcodeCompiler } from './hydration_opcode';
 import { HydrationCompiler } from './hydration';
 import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
-import { string } from "./quoting";
+import { string, repeat } from "./quoting";
 
 export function TemplateCompiler() {
   this.fragmentOpcodeCompiler = new FragmentOpcodeCompiler();
@@ -38,39 +38,46 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
   this.fragmentOpcodeCompiler.endProgram(program);
   this.hydrationOpcodeCompiler.endProgram(program);
 
+  var indent = repeat("  ", programDepth);
+  var options = {
+    indent: indent + "  "
+  };
+
   // function build(dom) { return fragment; }
   var fragmentProgram = this.fragmentCompiler.compile(
-    this.fragmentOpcodeCompiler.opcodes
+    this.fragmentOpcodeCompiler.opcodes,
+    options
   );
 
   // function hydrate(fragment) { return mustaches; }
   var hydrationProgram = this.hydrationCompiler.compile(
-    this.hydrationOpcodeCompiler.opcodes
+    this.hydrationOpcodeCompiler.opcodes,
+    options
   );
 
   var childTemplateVars = "";
   for (var i=0, l=this.childTemplates.length; i<l; i++) {
-    childTemplateVars +=   '  var child' + i + '=' + this.childTemplates[i] + ';\n';
+    childTemplateVars += indent+'  var child' + i + ' = ' + this.childTemplates[i] + '\n';
   }
 
   var template =
-    '(function (){\n' +
-      childTemplateVars +
-      fragmentProgram +
-    'var cachedFragment;\n' +
-    'return function template(context, env, contextualElement) {\n' +
-    '  var dom = env.dom, hooks = env.hooks;\n' +
-    '  if (cachedFragment === undefined) {\n' +
-    '    cachedFragment = build(dom);\n' +
-    '  }\n' +
-    '  if (contextualElement === undefined) {\n' +
-    '    contextualElement = dom.document.body;\n' +
-    '  }\n' +
-    '  var fragment = dom.cloneNode(cachedFragment, true);\n' +
-       hydrationProgram +
-    '  return fragment;\n' +
-    '};\n' +
-    '}())';
+    '(function() {\n' +
+    childTemplateVars +
+    fragmentProgram +
+    indent+'  var cachedFragment;\n' +
+    indent+'  return function template(context, env, contextualElement) {\n' +
+    indent+'    var dom = env.dom, hooks = env.hooks;\n' +
+    indent+'    if (cachedFragment === undefined) {\n' +
+    indent+'      cachedFragment = build(dom);\n' +
+    indent+'    }\n' +
+    indent+'    if (contextualElement === undefined) {\n' +
+    indent+'      contextualElement = dom.document.body;\n' +
+    indent+'    }\n' +
+    indent+'    var fragment = dom.cloneNode(cachedFragment, true);\n' +
+    hydrationProgram +
+    indent+'    return fragment;\n' +
+    indent+'  };\n' +
+    indent+'}());';
 
   this.templates.push(template);
 };

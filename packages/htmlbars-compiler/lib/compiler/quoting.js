@@ -23,3 +23,11 @@ export function quotedArray(list) {
 export function hash(pairs) {
   return "{" + pairs.join(",") + "}";
 }
+
+export function repeat(chars, times) {
+  var str = "";
+  while (times--) {
+    str += chars;
+  }
+  return str;
+}

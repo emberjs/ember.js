@@ -6,44 +6,45 @@ export function FragmentCompiler() {
   this.depth = -1;
 }
 
-FragmentCompiler.prototype.compile = function(opcodes) {
+FragmentCompiler.prototype.compile = function(opcodes, options) {
   this.source.length = 0;
   this.depth = -1;
+  this.indent = (options && options.indent) || "";
 
-  this.source.push('function build(dom) {\n');
+  this.source.push(this.indent+'function build(dom) {\n');
   processOpcodes(this, opcodes);
-  this.source.push('}\n');
+  this.source.push(this.indent+'}\n');
 
   return this.source.join('');
 };
 
 FragmentCompiler.prototype.createFragment = function() {
   var el = 'el'+(++this.depth);
-  this.source.push('  var '+el+' = dom.createDocumentFragment();\n');
+  this.source.push(this.indent+'  var '+el+' = dom.createDocumentFragment();\n');
 };
 
 FragmentCompiler.prototype.createElement = function(tagName) {
   var el = 'el'+(++this.depth);
-  this.source.push('  var '+el+' = dom.createElement('+string(tagName)+');\n');
+  this.source.push(this.indent+'  var '+el+' = dom.createElement('+string(tagName)+');\n');
 };
 
 FragmentCompiler.prototype.createText = function(str) {
   var el = 'el'+(++this.depth);
-  this.source.push('  var '+el+' = dom.createTextNode('+string(str)+');\n');
+  this.source.push(this.indent+'  var '+el+' = dom.createTextNode('+string(str)+');\n');
 };
 
 FragmentCompiler.prototype.returnNode = function() {
   var el = 'el'+this.depth;
-  this.source.push('  return '+el+';\n');
+  this.source.push(this.indent+'  return '+el+';\n');
 };
 
 FragmentCompiler.prototype.setAttribute = function(name, value) {
   var el = 'el'+this.depth;
-  this.source.push('  dom.setAttribute('+el+','+string(name)+','+string(value)+');\n');
+  this.source.push(this.indent+'  dom.setAttribute('+el+','+string(name)+','+string(value)+');\n');
 };
 
 FragmentCompiler.prototype.appendChild = function() {
   var child = 'el'+(this.depth--);
   var el = 'el'+this.depth;
-  this.source.push('  dom.appendChild('+el+', '+child+');\n');
+  this.source.push(this.indent+'  dom.appendChild('+el+', '+child+');\n');
 };
