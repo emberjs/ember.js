@@ -4,7 +4,6 @@ import SafeString from 'handlebars/safe-string';
 export function content(morph, helperName, context, params, options, env) {
   var value, helper = this.lookupHelper(helperName, context, options);
   if (helper) {
-    options.context = context;
     value = helper(params, options, env);
   } else {
     value = this.simple(context, helperName, options);
@@ -18,7 +17,6 @@ export function content(morph, helperName, context, params, options, env) {
 export function webComponent(morph, tagName, context, options, env) {
   var value, helper = this.lookupHelper(tagName, context, options);
   if (helper) {
-    options.context = context;
     value = helper(null, options, env);
   } else {
     value = this.webComponentFallback(morph, tagName, context, options, env);
@@ -44,8 +42,6 @@ export function webComponentFallback(morph, tagName, context, options, env) {
 export function element(domElement, helperName, context, params, options, env) {
   var helper = this.lookupHelper(helperName, context, options);
   if (helper) {
-    options.context = context;
-    options.element = domElement;
     helper(params, options, env);
   }
 }
@@ -70,7 +66,6 @@ export function concat(params, options, env) {
 export function subexpr(helperName, context, params, options, env) {
   var helper = this.lookupHelper(helperName, context, options);
   if (helper) {
-    options.context = context;
     return helper(params, options, env);
   } else {
     return this.simple(context, helperName, options);
