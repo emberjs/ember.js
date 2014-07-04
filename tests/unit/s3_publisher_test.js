@@ -61,7 +61,7 @@ describe('S3Publisher.publish', function(){
       'ember-docs-latest.json',
       'latest/ember-docs.json',
       'canary/ember-docs.json',
-      'canary/daily/20140630/ember-docs.json',
+      'canary/daily/' + date +  '/ember-docs.json',
       'canary/shas/foo-commit/ember-docs.json',
       'tags/foo-tag/ember-docs.json' ];
 
