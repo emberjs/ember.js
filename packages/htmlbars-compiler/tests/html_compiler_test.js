@@ -205,6 +205,20 @@ test("The compiler can handle top-level unescaped tr", function() {
     "root tr has been wrapped in tbody" );
 });
 
+test("The compiler can handle top-level unescaped td inside tr contextualElement", function() {
+  var template = compile('{{{html}}}');
+  var fragment = template({
+                   html: '<td>Yo</td>'
+                 }, {
+                   hooks: hooks,
+                   dom: new DOMHelper()
+                 }, document.createElement('tr'));
+
+  equal(
+    fragment.childNodes[1].tagName, 'TD',
+    "root td is returned" );
+});
+
 test("The compiler can handle unescaped tr in top of content", function() {
   var helper = function(params, options, env) {
     return options.render(options.context, env, options.morph.contextualElement);
