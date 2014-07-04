@@ -59,10 +59,10 @@ EmberView.reopen({
       return;
     }
 
-    var outlets = get(this, '_outlets'),
-        container = get(this, 'container'),
-        router = container && container.lookup('router:main'),
-        renderedName = get(view, 'renderedName');
+    var outlets = get(this, '_outlets');
+    var container = get(this, 'container');
+    var router = container && container.lookup('router:main');
+    var renderedName = get(view, 'renderedName');
 
     set(outlets, outletName, view);
 

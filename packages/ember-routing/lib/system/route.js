@@ -694,8 +694,9 @@ var Route = EmberObject.extend(ActionHandler, {
     @method setup
   */
   setup: function(context, transition) {
-    var controllerName = this.controllerName || this.routeName,
-        controller = this.controllerFor(controllerName, true);
+    var controllerName = this.controllerName || this.routeName;
+    var controller = this.controllerFor(controllerName, true);
+
     if (!controller) {
       controller =  this.generateController(controllerName, context);
     }
@@ -1168,9 +1169,9 @@ var Route = EmberObject.extend(ActionHandler, {
     @return {Ember.Controller}
   */
   controllerFor: function(name, _skipAssert) {
-    var container = this.container,
-        route = container.lookup('route:'+name),
-        controller;
+    var container = this.container;
+    var route = container.lookup('route:'+name);
+    var controller;
 
     if (route && route.controllerName) {
       name = route.controllerName;
@@ -1249,8 +1250,8 @@ var Route = EmberObject.extend(ActionHandler, {
     @return {Object} the model object
   */
   modelFor: function(name) {
-    var route = this.container.lookup('route:' + name),
-        transition = this.router ? this.router.router.activeTransition : null;
+    var route = this.container.lookup('route:' + name);
+    var transition = this.router ? this.router.router.activeTransition : null;
 
     // If we are mid-transition, we want to try and look up
     // resolved parent contexts on the current transitionEvent.
@@ -1373,9 +1374,9 @@ var Route = EmberObject.extend(ActionHandler, {
 
     var viewName = options.view || namePassed && name || this.viewName || name;
 
-    var container = this.container,
-        view = container.lookup('view:' + viewName),
-        template = view ? view.get('template') : null;
+    var container = this.container;
+    var view = container.lookup('view:' + viewName);
+    var template = view ? view.get('template') : null;
 
     if (!template) {
       template = container.lookup('template:' + templateName);
@@ -1648,9 +1649,9 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
         return {};
       }
 
-      var transition = this.router.router.activeTransition,
-          state = transition ? transition.state : this.router.router.state,
-          params = {};
+      var transition = this.router.router.activeTransition;
+      var state = transition ? transition.state : this.router.router.state;
+      var params = {};
 
       merge(params, state.params[name]);
 

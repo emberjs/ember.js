@@ -57,13 +57,14 @@ export default EmberObject.extend({
     @return url {String}
   */
   getURL: function() {
-    var rootURL = get(this, 'rootURL'),
-        location = get(this, 'location'),
-        path = location.pathname,
-        baseURL = get(this, 'baseURL');
+    var rootURL = get(this, 'rootURL');
+    var location = get(this, 'location');
+    var path = location.pathname;
+    var baseURL = get(this, 'baseURL');
 
     rootURL = rootURL.replace(/\/$/, '');
     baseURL = baseURL.replace(/\/$/, '');
+
     var url = path.replace(baseURL, '').replace(rootURL, '');
 
     if (Ember.FEATURES.isEnabled("query-params-new")) {
@@ -172,8 +173,8 @@ export default EmberObject.extend({
     @param callback {Function}
   */
   onUpdateURL: function(callback) {
-    var guid = guidFor(this),
-        self = this;
+    var guid = guidFor(this);
+    var self = this;
 
     jQuery(window).on('popstate.ember-location-'+guid, function(e) {
       // Ignore initial page load popstate event in Chrome
@@ -194,8 +195,8 @@ export default EmberObject.extend({
     @return formatted url {String}
   */
   formatURL: function(url) {
-    var rootURL = get(this, 'rootURL'),
-        baseURL = get(this, 'baseURL');
+    var rootURL = get(this, 'rootURL');
+    var baseURL = get(this, 'baseURL');
 
     if (url !== '') {
       rootURL = rootURL.replace(/\/$/, '');

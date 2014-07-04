@@ -3,17 +3,17 @@
 @submodule ember-application
 */
 
-import Ember from "ember-metal/core"; // Ember.TEMPLATES, Ember.assert
-import { get } from "ember-metal/property_get";
-import Logger from "ember-metal/logger";
+import Ember from 'ember-metal/core'; // Ember.TEMPLATES, Ember.assert
+import { get } from 'ember-metal/property_get';
+import Logger from 'ember-metal/logger';
 import {
   classify,
   capitalize,
   decamelize
-} from "ember-runtime/system/string";
-import EmberObject from "ember-runtime/system/object";
-import Namespace from "ember-runtime/system/namespace";
-import EmberHandlebars from "ember-handlebars";
+} from 'ember-runtime/system/string';
+import EmberObject from 'ember-runtime/system/object';
+import Namespace from 'ember-runtime/system/namespace';
+import EmberHandlebars from 'ember-handlebars';
 
 export var Resolver = EmberObject.extend({
   /**
@@ -23,30 +23,14 @@ export var Resolver = EmberObject.extend({
     @property namespace
   */
   namespace: null,
-  normalize: function(fullName) {
-    throw new Error("Invalid call to `resolver.normalize(fullName)`. Please override the 'normalize' method in subclass of `Ember.Resolver` to prevent falling through to this error.");
-  },
-  resolve: function(fullName) {
-   throw new Error("Invalid call to `resolver.resolve(parsedName)`. Please override the 'resolve' method in subclass of `Ember.Resolver` to prevent falling through to this error.");
-  },
-  parseName: function(parsedName) {
-   throw new Error("Invalid call to `resolver.resolveByType(parsedName)`. Please override the 'resolveByType' method in subclass of `Ember.Resolver` to prevent falling through to this error.");
-  },
-  lookupDescription: function(fullName) {
-    throw new Error("Invalid call to `resolver.lookupDescription(fullName)`. Please override the 'lookupDescription' method in subclass of `Ember.Resolver` to prevent falling through to this error.");
-  },
-  makeToString: function(factory, fullName) {
-    throw new Error("Invalid call to `resolver.makeToString(factory, fullName)`. Please override the 'makeToString' method in subclass of `Ember.Resolver` to prevent falling through to this error.");
-  },
-  resolveOther: function(parsedName) {
-   throw new Error("Invalid call to `resolver.resolveOther(parsedName)`. Please override the 'resolveOther' method in subclass of `Ember.Resolver` to prevent falling through to this error.");
-  },
-  _logLookup: function(found, parsedName) {
-   throw new Error("Invalid call to `resolver._logLookup(found, parsedName)`. Please override the '_logLookup' method in subclass of `Ember.Resolver` to prevent falling through to this error.");
-  }
+  normalize:         Ember.required(Function),
+  resolve:           Ember.required(Function),
+  parseName:         Ember.required(Function),
+  lookupDescription: Ember.required(Function),
+  makeToString:      Ember.required(Function),
+  resolveOther:      Ember.required(Function),
+  _logLookup:        Ember.required(Function)
 });
-
-
 
 /**
   The DefaultResolver defines the default lookup rules to resolve
@@ -168,7 +152,7 @@ export default EmberObject.extend({
         resolved;
 
     if (!(parsedName.name && parsedName.type)) {
-      throw new TypeError("Invalid fullName: `" + fullName + "`, must be of the form `type:name` ");
+      throw new TypeError('Invalid fullName: `' + fullName + '`, must be of the form `type:name` ');
     }
 
     if (this[resolveMethodName]) {
@@ -186,7 +170,7 @@ export default EmberObject.extend({
     return resolved;
   },
   /**
-    Convert the string name of the form "type:name" to
+    Convert the string name of the form 'type:name' to
     a Javascript object with the parsed aspects of the name
     broken out.
 
@@ -195,7 +179,7 @@ export default EmberObject.extend({
     @method parseName
   */
   parseName: function(fullName) {
-    var nameParts = fullName.split(":"),
+    var nameParts = fullName.split(':'),
         type = nameParts[0], fullNameWithoutType = nameParts[1],
         name = fullNameWithoutType,
         namespace = get(this, 'namespace'),
@@ -216,7 +200,7 @@ export default EmberObject.extend({
       fullNameWithoutType: fullNameWithoutType,
       name: name,
       root: root,
-      resolveMethodName: "resolve" + classify(type)
+      resolveMethodName: 'resolve' + classify(type)
     };
   },
 
@@ -234,10 +218,10 @@ export default EmberObject.extend({
     var parsedName = this.parseName(fullName);
 
     if (parsedName.type === 'template') {
-      return "template at " + parsedName.fullNameWithoutType.replace(/\./g, '/');
+      return 'template at ' + parsedName.fullNameWithoutType.replace(/\./g, '/');
     }
 
-    var description = parsedName.root + "." + classify(parsedName.name);
+    var description = parsedName.root + '.' + classify(parsedName.name);
     if (parsedName.type !== 'model') { description += classify(parsedName.type); }
 
     return description;
@@ -327,8 +311,8 @@ export default EmberObject.extend({
     @method resolveModel
   */
   resolveModel: function(parsedName) {
-    var className = classify(parsedName.name),
-        factory = get(parsedName.root, className);
+    var className = classify(parsedName.name);
+    var factory = get(parsedName.root, className);
 
      if (factory) { return factory; }
   },
@@ -354,8 +338,8 @@ export default EmberObject.extend({
     @method resolveOther
   */
   resolveOther: function(parsedName) {
-    var className = classify(parsedName.name) + classify(parsedName.type),
-        factory = get(parsedName.root, className);
+    var className = classify(parsedName.name) + classify(parsedName.type);
+    var factory = get(parsedName.root, className);
     if (factory) { return factory; }
   },
 
@@ -369,7 +353,7 @@ export default EmberObject.extend({
     var symbol, padding;
 
     if (found) { symbol = '[✓]'; }
-    else          { symbol = '[ ]'; }
+    else       { symbol = '[ ]'; }
 
     if (parsedName.fullName.length > 60) {
       padding = '.';
