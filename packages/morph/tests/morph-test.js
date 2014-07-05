@@ -392,7 +392,7 @@ function iterateCombinations(parents, starts, ends, contents, callback) {
 
         return {
           fragment: fragment,
-          morph: Morph.create(parent, startIndex, endIndex, domHelper),
+          morph: domHelper.createMorphAt(parent, startIndex, endIndex, document.body),
           startHTML: parentFactory.startHTML + startFactory.HTML,
           contentHTML: contentFactory.HTML,
           endHTML: endFactory.HTML + parentFactory.endHTML

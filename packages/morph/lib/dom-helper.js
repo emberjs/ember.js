@@ -80,19 +80,27 @@ prototype.cloneNode = function(element, deep){
   return element.cloneNode(!!deep);
 };
 
-prototype.createMorph = function(parent, startIndex, endIndex, contextualElement){
-  return Morph.create(parent, startIndex, endIndex, this, contextualElement);
+prototype.createMorph = function(parent, start, end, contextualElement){
+  if (!contextualElement && parent.nodeType === Node.ELEMENT_NODE) {
+    contextualElement = parent;
+  }
+  if (!contextualElement) {
+    contextualElement = this.document.body;
+  }
+  return new Morph(parent, start, end, this, contextualElement);
+};
+
+// This helper is just to keep the templates good looking,
+// passing integers instead of element references.
+prototype.createMorphAt = function(parent, startIndex, endIndex, contextualElement){
+  var childNodes = parent.childNodes,
+      start = startIndex === -1 ? null : childNodes[startIndex],
+      end = endIndex === -1 ? null : childNodes[endIndex];
+  return this.createMorph(parent, start, end, contextualElement);
 };
 
 prototype.parseHTML = function(html, contextualElement){
-  var element;
-
-  if (!contextualElement || contextualElement.nodeType === 11) {
-    element = this.document.createElement('div');
-  } else {
-    element = this.cloneNode(contextualElement, false);
-  }
-
+  var element = this.cloneNode(contextualElement, false);
   element.innerHTML = html;
   return element.childNodes;
 };
