@@ -98,7 +98,7 @@ test('hydrates a fragment with morph mustaches', function () {
 
 test('test auto insertion of text nodes for needed edges a fragment with morph mustaches', function () {
   var ast = preprocess("{{first}}<p>{{second}}</p>{{third}}");
-  var fragment = fragmentFor(ast).cloneNode(true);
+  var fragment = dom.cloneNode(fragmentFor(ast), true);
   var hydrate = hydratorFor(ast);
 
   var morphs = [];

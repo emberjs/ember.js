@@ -2,6 +2,15 @@ import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
 import { buildHashFromAttributes } from "../html-parser/helpers";
 
+function detectIsElementChecked(element){
+  for (var i=0, len=element.attributes.length;i<len;i++) {
+    if (element.attributes[i].name === 'checked') {
+      return true;
+    }
+  }
+  return false;
+}
+
 function HydrationOpcodeCompiler() {
   this.opcodes = [];
   this.paths = [];
@@ -22,24 +31,29 @@ HydrationOpcodeCompiler.prototype.compile = function(ast) {
   return this.opcodes;
 };
 
-HydrationOpcodeCompiler.prototype.startProgram = function() {
+HydrationOpcodeCompiler.prototype.startProgram = function(p, c, blankChildTextNodes) {
   this.opcodes.length = 0;
   this.paths.length = 0;
   this.morphs.length = 0;
   this.templateId = 0;
   this.currentDOMChildIndex = -1;
   this.morphNum = 0;
+
+  if (blankChildTextNodes.length > 0){
+    this.opcode( 'repairClonedNode',
+                 blankChildTextNodes );
+  }
 };
 
 HydrationOpcodeCompiler.prototype.endProgram = function(program) {
   distributeMorphs(this.morphs, this.opcodes);
 };
 
-HydrationOpcodeCompiler.prototype.text = function(string) {
+HydrationOpcodeCompiler.prototype.text = function(string, pos, len) {
   ++this.currentDOMChildIndex;
 };
 
-HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, isSingleRoot, mustacheCount) {
+HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, isSingleRoot, mustacheCount, blankChildTextNodes) {
   distributeMorphs(this.morphs, this.opcodes);
   ++this.currentDOMChildIndex;
 
@@ -53,6 +67,12 @@ HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, isSi
       this.opcode('element', ++this.elementNum);
       this.element = null; // Set element to null so we don't cache it twice
     }
+  }
+  var isElementChecked = detectIsElementChecked(element);
+  if (blankChildTextNodes.length > 0 || isElementChecked) {
+    this.opcode( 'repairClonedNode',
+                 blankChildTextNodes,
+                 isElementChecked );
   }
 
   this.paths.push(this.currentDOMChildIndex);

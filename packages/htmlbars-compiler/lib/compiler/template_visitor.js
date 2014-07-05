@@ -79,6 +79,7 @@ TemplateVisitor.prototype.program = function(program) {
 
   programFrame.parentNode = program;
   programFrame.childCount = program.statements.length;
+  programFrame.blankChildTextNodes = [];
   programFrame.actions.push(['endProgram', [program, this.programDepth]]);
 
   for (var i = program.statements.length - 1; i >= 0; i--) {
@@ -86,7 +87,8 @@ TemplateVisitor.prototype.program = function(program) {
     this.visit(program.statements[i]);
   }
 
-  programFrame.actions.push(['startProgram', [program, programFrame.childTemplateCount]]);
+  programFrame.actions.push(['startProgram', [
+    program, programFrame.childTemplateCount, programFrame.blankChildTextNodes.reverse() ]]);
   this.popFrame();
 
   this.programDepth--;
@@ -104,6 +106,7 @@ TemplateVisitor.prototype.element = function(element) {
   elementFrame.parentNode = element;
   elementFrame.childCount = element.children.length;
   elementFrame.mustacheCount += element.helpers.length;
+  elementFrame.blankChildTextNodes = [];
 
   var actionArgs = [
     element,
@@ -123,7 +126,8 @@ TemplateVisitor.prototype.element = function(element) {
     this.visit(element.children[i]);
   }
 
-  elementFrame.actions.push(['openElement', actionArgs.concat(elementFrame.mustacheCount)]);
+  elementFrame.actions.push(['openElement', actionArgs.concat([
+    elementFrame.mustacheCount, elementFrame.blankChildTextNodes.reverse() ])]);
   this.popFrame();
 
   // Propagate the element's frame state to the parent frame
@@ -160,6 +164,9 @@ TemplateVisitor.prototype.component = TemplateVisitor.prototype.block;
 TemplateVisitor.prototype.text = function(text) {
   var frame = this.getCurrentFrame();
   var isSingleRoot = frame.parentNode.type === 'program' && frame.childCount === 1;
+  if (text.chars === '') {
+    frame.blankChildTextNodes.push(frame.childIndex);
+  }
   frame.actions.push(['text', [text, frame.childIndex, frame.childCount, isSingleRoot]]);
 };
 

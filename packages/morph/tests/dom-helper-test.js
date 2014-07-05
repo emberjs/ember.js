@@ -128,17 +128,53 @@ test('#cloneNode deep', function(){
   equalHTML(node, '<div><span></span></div>');
 });
 
-test('#cloneNode deep with blank text', function(){
-  var fragment = document.createDocumentFragment();
+test('dom node has empty text after cloning and ensuringBlankTextNode', function(){
+  var div = document.createElement('div');
 
-  fragment.appendChild( document.createTextNode('') );
-  fragment.appendChild( document.createElement('span') );
+  div.appendChild( document.createTextNode('') );
 
-  var node = dom.cloneNode(fragment, true);
+  var clonedDiv = dom.cloneNode(div, true);
 
-  equal(node.nodeType, 11);
-  equalHTML(node, '<span></span>');
+  equal(clonedDiv.nodeType, Node.ELEMENT_NODE);
+  equalHTML(clonedDiv, '<div></div>');
   // IE's native cloneNode drops blank string text
-  // nodes. Assert that DOMHelper does not do this.
-  equal(node.childNodes.length, 2);
+  // nodes. Assert repairClonedNode brings back the blank
+  // text node.
+  dom.repairClonedNode(clonedDiv, [0]);
+  equal(clonedDiv.childNodes.length, 1);
+  equal(clonedDiv.childNodes[0].nodeType, Node.TEXT_NODE);
+});
+
+test('dom node has empty start text after cloning and ensuringBlankTextNode', function(){
+  var div = document.createElement('div');
+
+  div.appendChild( document.createTextNode('') );
+  div.appendChild( document.createElement('span') );
+
+  var clonedDiv = dom.cloneNode(div, true);
+
+  equal(clonedDiv.nodeType, Node.ELEMENT_NODE);
+  equalHTML(clonedDiv, '<div><span></span></div>');
+  // IE's native cloneNode drops blank string text
+  // nodes. Assert denormalizeText brings back the blank
+  // text node.
+  dom.repairClonedNode(clonedDiv, [0]);
+  equal(clonedDiv.childNodes.length, 2);
+  equal(clonedDiv.childNodes[0].nodeType, Node.TEXT_NODE);
+});
+
+test('dom node checked after cloning and ensuringChecked', function(){
+  var input = document.createElement('input');
+
+  input.setAttribute('checked', 'checked');
+  ok(input.checked, 'input is checked');
+
+  var clone = dom.cloneNode(input, false);
+
+  // IE's native cloneNode copies checked attributes but
+  // not the checked property of the DOM node.
+  dom.repairClonedNode(clone, [], true);
+
+  equalHTML(clone, '<input checked="checked">');
+  ok(clone.checked, 'clone is checked');
 });
