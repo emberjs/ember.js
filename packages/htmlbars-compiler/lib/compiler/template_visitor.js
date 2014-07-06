@@ -62,6 +62,7 @@ function Frame() {
 function TemplateVisitor() {
   this.frameStack = [];
   this.actions = [];
+  this.programDepth = -1;
 }
 
 // Traversal methods
@@ -71,12 +72,14 @@ TemplateVisitor.prototype.visit = function(node) {
 };
 
 TemplateVisitor.prototype.program = function(program) {
+  this.programDepth++;
+
   var parentFrame = this.getCurrentFrame();
   var programFrame = this.pushFrame();
 
   programFrame.parentNode = program;
   programFrame.childCount = program.statements.length;
-  programFrame.actions.push(['endProgram', [program]]);
+  programFrame.actions.push(['endProgram', [program, this.programDepth]]);
 
   for (var i = program.statements.length - 1; i >= 0; i--) {
     programFrame.childIndex = i;
@@ -85,6 +88,8 @@ TemplateVisitor.prototype.program = function(program) {
 
   programFrame.actions.push(['startProgram', [program, programFrame.childTemplateCount]]);
   this.popFrame();
+
+  this.programDepth--;
 
   // Push the completed template into the global actions list
   if (parentFrame) { parentFrame.childTemplateCount++; }

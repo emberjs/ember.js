@@ -22,7 +22,7 @@ test("empty", function() {
   var input = "";
   actionsEqual(input, [
     ['startProgram', [0]],
-    ['endProgram', []]
+    ['endProgram', [0]]
   ]);
 });
 
@@ -34,7 +34,7 @@ test("basic", function() {
     ['mustache', [1, 3]],
     ['openElement', [2, 3, false, 0]],
     ['closeElement', [2, 3, false]],
-    ['endProgram', []]
+    ['endProgram', [0]]
   ]);
 });
 
@@ -50,7 +50,7 @@ test("nested HTML", function() {
     ['closeElement', [0, 1, false]],
     ['closeElement', [0, 1, false]],
     ['closeElement', [1, 2, false]],
-    ['endProgram', []]
+    ['endProgram', [0]]
   ]);
 });
 
@@ -71,7 +71,7 @@ test("mustaches are counted correctly", function() {
     ['closeElement', [1, 2, false]],
     ['closeElement', [1, 2, false]],
     ['closeElement', [0, 1, true]],
-    ['endProgram', []]
+    ['endProgram', [0]]
   ]);
 });
 
@@ -79,12 +79,12 @@ test("empty block", function() {
   var input = "{{#a}}{{/a}}";
   actionsEqual(input, [
     ['startProgram', [0]],
-    ['endProgram', []],
+    ['endProgram', [1]],
     ['startProgram', [1]],
     ['text', [0, 3, false]],
     ['block', [1, 3]],
     ['text', [2, 3, false]],
-    ['endProgram', []]
+    ['endProgram', [0]]
   ]);
 });
 
@@ -92,15 +92,15 @@ test("block with inverse", function() {
   var input = "{{#a}}b{{^}}{{/a}}";
   actionsEqual(input, [
     ['startProgram', [0]],
-    ['endProgram', []],
+    ['endProgram', [1]],
     ['startProgram', [0]],
     ['text', [0, 1, true]],
-    ['endProgram', []],
+    ['endProgram', [1]],
     ['startProgram', [2]],
     ['text', [0, 3, false]],
     ['block', [1, 3]],
     ['text', [2, 3, false]],
-    ['endProgram', []]
+    ['endProgram', [0]]
   ]);
 });
 
@@ -109,30 +109,30 @@ test("nested blocks", function() {
   actionsEqual(input, [
     ['startProgram', [0]],
     ['text', [0, 1, true]],
-    ['endProgram', []],
+    ['endProgram', [1]],
     ['startProgram', [0]],
     ['text', [0, 3, false]],
     ['mustache', [1, 3]],
     ['text', [2, 3, false]],
-    ['endProgram', []],
+    ['endProgram', [2]],
     ['startProgram', [0]],
     ['openElement', [0, 1, true, 0]],
     ['closeElement', [0, 1, true]],
-    ['endProgram', []],
+    ['endProgram', [2]],
     ['startProgram', [2]],
     ['text', [0, 5, false]],
     ['block', [1, 5]],
     ['text', [2, 5, false]],
     ['block', [3, 5]],
     ['text', [4, 5, false]],
-    ['endProgram', []],
+    ['endProgram', [1]],
     ['startProgram', [2]],
     ['text', [0, 5, false]],
     ['block', [1, 5]],
     ['text', [2, 5, false]],
     ['block', [3, 5]],
     ['text', [4, 5, false]],
-    ['endProgram', []]
+    ['endProgram', [0]]
   ]);
 });
 
@@ -141,11 +141,11 @@ test("web component", function() {
   actionsEqual(input, [
     ['startProgram', [0]],
     ['text', [0, 1, true]],
-    ['endProgram', []],
+    ['endProgram', [1]],
     ['startProgram', [1]],
     ['text', [0, 3, false]],
     ['component', [1, 3]],
     ['text', [2, 3, false]],
-    ['endProgram', []]
+    ['endProgram', [0]]
   ]);
 });
