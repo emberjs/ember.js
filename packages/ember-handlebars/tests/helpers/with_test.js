@@ -447,3 +447,30 @@ test("destroys the controller generated with {{with foo as bar controller='blah'
 
   ok(destroyed, 'controller was destroyed properly');
 });
+
+QUnit.module("{{#with}} helper binding to view keyword", {
+  setup: function() {
+    Ember.lookup = lookup = { Ember: Ember };
+
+    view = EmberView.create({
+      template: EmberHandlebars.compile("We have: {{#with view.thing as fromView}}{{fromView.name}} and {{fromContext.name}}{{/with}}"),
+      thing: { name: 'this is from the view' },
+      context: {
+        fromContext: { name: "this is from the context" },
+      }
+    });
+
+    appendView(view);
+  },
+
+  teardown: function() {
+    run(function() {
+      view.destroy();
+    });
+    Ember.lookup = originalLookup;
+  }
+});
+
+test("{{with}} helper can bind to keywords with 'as'", function(){
+  equal(view.$().text(), "We have: this is from the view and this is from the context", "should render");
+});

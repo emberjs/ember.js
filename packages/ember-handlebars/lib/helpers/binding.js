@@ -529,7 +529,7 @@ function withHelper(context, options) {
     localizedOptions.hash.keywordPath = contextPath;
 
     bindContext = this;
-    context = path;
+    context = contextPath;
     options = localizedOptions;
     preserveContext = true;
   } else {
