@@ -90,6 +90,34 @@ export default EmberObject.extend({
   rootElement: 'body',
 
   /**
+    It enables events to be dispatched to the view `eventManager` which object 
+    when present takes precedence over events of the same name handled through methods 
+    on the view.
+
+    Most of the ember applications does not implement view `eventManagers`, 
+    then disabling this property will provide some performance benefit 
+    because it skips the search for the `eventManager` on the view tree.
+
+    ```javascript
+    var EventDispatcher = Em.EventDispatcher.extend({
+      events: {
+          click       : 'click',
+          focusin     : 'focusIn',
+          focusout    : 'focusOut',
+          change      : 'change'
+      },
+      canDispatchToEventManager: false 
+    });
+    container.register('event_dispatcher:main', EventDispatcher);
+    ```
+
+    @property canDispatchToEventManager
+    @type boolean
+    @default 'true'
+  */
+  canDispatchToEventManager: true,
+
+  /**
     Sets up event listeners for standard browser events.
 
     This will be called after the browser sends a `DOMContentReady` event. By
@@ -154,9 +182,9 @@ export default EmberObject.extend({
 
     rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
       var view = View.views[this.id],
-          result = true, manager = null;
-
-      manager = self._findNearestEventManager(view, eventName);
+          result = true;
+      
+      var manager = self.canDispatchToEventManager ? self._findNearestEventManager(view, eventName) : null;
 
       if (manager && manager !== triggeringManager) {
         result = self._dispatchEvent(manager, evt, eventName, view);
