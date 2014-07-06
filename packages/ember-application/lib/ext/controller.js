@@ -117,8 +117,8 @@ ControllerMixin.reopen({
   needs: [],
 
   init: function() {
-    var needs = get(this, 'needs'),
-    length = get(needs, 'length');
+    var needs = get(this, 'needs');
+    var length = get(needs, 'length');
 
     if (length > 0) {
       Ember.assert(' `' + inspect(this) + ' specifies `needs`, but does ' +

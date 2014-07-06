@@ -1,11 +1,12 @@
 import EmberError from "ember-metal/error";
 
 function visit(vertex, fn, visited, path) {
-  var name = vertex.name,
-    vertices = vertex.incoming,
-    names = vertex.incomingNames,
-    len = names.length,
-    i;
+  var name = vertex.name;
+  var vertices = vertex.incoming;
+  var names = vertex.incomingNames;
+  var len = names.length;
+  var i;
+
   if (!visited) {
     visited = {};
   }
@@ -66,11 +67,12 @@ DAG.prototype.addEdge = function(fromName, toName) {
 };
 
 DAG.prototype.topsort = function(fn) {
-  var visited = {},
-    vertices = this.vertices,
-    names = this.names,
-    len = names.length,
-    i, vertex;
+  var visited = {};
+  var vertices = this.vertices;
+  var names = this.names;
+  var len = names.length;
+  var i, vertex;
+
   for (i = 0; i < len; i++) {
     vertex = vertices[names[i]];
     if (!vertex.hasOutgoing) {
