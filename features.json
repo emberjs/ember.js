@@ -7,7 +7,8 @@
     "ember-routing-add-model-option": true,
     "ember-routing-linkto-target-attribute": null,
     "ember-routing-will-change-hooks": null,
-    "ember-routing-consistent-resources": null
+    "ember-routing-consistent-resources": null,
+    "event-dispatcher-can-disable-event-manager": null
   },
   "debugStatements": [
     "Ember.warn",
