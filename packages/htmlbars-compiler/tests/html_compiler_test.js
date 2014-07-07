@@ -147,6 +147,10 @@ test("The compiler can handle newlines", function() {
   compilesTo("<div>common\n\nbro</div>");
 });
 
+test("The compiler can handle comments", function() {
+  compilesTo("<div>{{! Better not break! }}content</div>", '<div>content</div>', {});
+});
+
 test("The compiler can handle simple handlebars", function() {
   compilesTo('<div>{{title}}</div>', '<div>hello</div>', { title: 'hello' });
 });
