@@ -60,6 +60,10 @@ var nodeHelpers = {
   mustache: function(mustache) {
     switchToHandlebars(this);
     this.acceptToken(mustache);
+  },
+
+  comment: function(comment) {
+    return;
   }
 
 };
