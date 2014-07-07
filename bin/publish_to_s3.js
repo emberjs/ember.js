@@ -14,6 +14,6 @@
 // ```sh
 // ./bin/publish_to_s3.js
 // ```
-var S3Publisher = require('../lib/s3_publisher.js');
-publisher = new S3Publisher();
+var S3Publisher = require('ember-publisher');
+publisher = new S3Publisher({project: 'ember'});
 publisher.publish();
