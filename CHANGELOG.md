@@ -11,7 +11,7 @@
   simple ground rule: Never set a controllers content, rather always set
   it's model and ember will do the right thing.
 
-### Ember 1.6.0-beta.5 (May 27, 2014)
+### Ember 1.6.0 (July, 7, 2014)
 
 * [BUGFIX] Ensure itemController's do not leak by tying them to the parent controller lifecycle.
 * [BUGFIX] Spaces in brace expansion throws an error.
@@ -24,15 +24,9 @@
 * [BUGFIX] Update backburner.js to fix issue with IE8.
 * [BUGFIX] `Ember.computed.alias` returns value of aliased property upon set.
 * Provide better debugging information for view rendering.
-
-### Ember 1.6.0-beta.4 (May, 15, 2014)
-
 * [BUGFIX] Don't fire redirect on parent routes during transitions from one child route to another.
 * [BUGFIX] Make errors thrown by Ember use `Ember.Error` consistently.
 * [BUGFIX] Ensure controllers instantiated by the `{{render}}` helper are properly torn down.
-
-### Ember 1.6.0-beta.3 (April, 29, 2014)
-
 * [BUGFIX] sync back burner: workaround IE's issue with try/finally without Catch. Also no longer force deoptimization of the run loop queue flush.
 * [BREAKING BUGFIX] An empty array are treated as falsy value in `bind-attr` to be in consistent with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty array as truthy value in `bind-attr`.
 * [BUGFIX] Ember.onerror now uses Backburner's error handler.
@@ -46,9 +40,6 @@
 * [BUGFIX] reduceComputed detect retain:n better. Fixes issue with `Ember.computed.filterBy` erroring when items removed from dependent array.
 * [BUGFIX] Namespaces are now required to start with uppercase A-Z.
 * [BUGFIX] pass context to sortFunction to avoid calling `__nextSuper` on `undefined`.
-
-### Ember 1.6.0-beta.2 (April, 8, 2014)
-
 * [BUGFIX] Allow setting of `undefined` value to a `content` property.
 * [BUGFIX] Resolve bound actionName in Handlebars context instead of direct lookup on target.
 * [BUGFIX] isEqual now supports dates.
@@ -59,9 +50,6 @@
 * [BUGFIX] Drop dead code for * in paths.
 * [BUGFIX] Route#render name vs viewName precedence fix.
 * [BUGFIX] Use parseFloat before incrementing via incrementProperty.
-
-### Ember 1.6.0-beta.1 (March 31, 2014)
-
 * [BUGFIX] Add `which` attribute to event triggered by keyEvent test helper.
 * [Performance] Improve cache lookup throughput.
 * [FEATURE ember-routing-add-model-option]
