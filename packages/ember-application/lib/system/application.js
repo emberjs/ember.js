@@ -255,7 +255,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     this.scheduleInitialize();
 
-    Ember.libraries.registerCoreLibrary('Handlebars', EmberHandlebars.VERSION);
+    Ember.libraries.registerCoreLibrary('Handlebars' + (EmberHandlebars.compile ? '' : '-runtime'), EmberHandlebars.VERSION);
     Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
 
     if ( Ember.LOG_VERSION ) {
