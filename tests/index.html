@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Ember</title>
+    <link rel="stylesheet" href="../qunit/qunit.css">
+    <script src="../qunit/qunit.js"></script>
+    <script src="../handlebars/handlebars.js"></script>
+
+    <script type="text/javascript">
+      window.loadScript = function(url) {
+        document.write(unescape('%3Cscript src="'+url+'"%3E%3C/script%3E'));
+      };
+    </script>
+
+    <script src="./qunit_configuration.js"></script>
+
+    <script type="text/javascript">
+      // Load custom version of jQuery if possible (assign to window so IE8 can use in later blocks)
+      var jQueryVersion = QUnit.urlParams.jquery;
+      if (jQueryVersion) {
+        loadScript('https://code.jquery.com/jquery-'+jQueryVersion+'.js');
+      }
+      // Close the script tag to make sure document.write happens
+    </script>
+
+    <script type="text/javascript">
+      // Fallback to default jQuery
+      if (jQueryVersion !== 'none' && !window.jQuery) {
+        loadScript('../jquery/jquery.js');
+      }
+      // Close the script tag to make sure document.write happens
+    </script>
+
+    <script src="./ember_configuration.js"></script>
+    <script>
+      var dist = QUnit.urlParams.dist;
+
+      if (dist) {
+        loadScript('../ember.' + dist + '.js');
+      } else {
+        loadScript('../ember.js');
+      }
+    </script>
+
+    <script src="../ember-tests.js"></script>
+    <script>
+      var packages     = QUnit.urlParams.package;
+      packages = (packages && packages.split(',')) || [".*"];
+      var packageRegexp   = new RegExp('^('+packages.join('|')+')/');
+
+      var skipPackages = QUnit.urlParams.skipPackage;
+      skipPackages = (skipPackages && skipPackages.split(',')) || [];
+      var skipPackageRegexp   = new RegExp('^('+skipPackages.join('|')+')/');
+
+      for (var moduleName in Ember.__loader.registry) {
+        if (!moduleName.match(packageRegexp))   { continue; }
+        if (moduleName.match(skipPackageRegexp)) { continue; }
+
+        if (moduleName.match(/[_-]test$/)) { Ember.__loader.require(moduleName); }
+        if (!QUnit.urlParams.nojshint && moduleName.match(/[-_.]jshint$/)) { Ember.__loader.require(moduleName); }
+      }
+    </script>
+  </head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+</body>
+</html>

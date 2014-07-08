@@ -43,3 +43,35 @@ for a detailed explanation.
   params will cause those controller properties to update.
 
   Added in [#4008](https://github.com/emberjs/ember.js/pull/4008).
+
+* `ember-routing-will-change-hooks`
+  Finer-grained `willTransition`-esque actions:
+
+  - `willLeave`: fires on routes that will no longer be active after
+    the transition
+  - `willChangeModel`: fires on routes that will still be active
+    but will re-resolve their models
+
+  Both of these hooks act like willTransition in the sense that they
+  give you an opportunity to abort the transition before it happens.
+  Common use cases include animating things away or prompting to user
+  to deal with unsaved changes.
+
+  Added in [#4760](https://github.com/emberjs/ember.js/pull/4760)
+
+* `ember-routing-consistent-resources`
+
+  Adds `.index`, `.loading`, and `.error` sub-routes for resources created
+  even if no callback was provided.
+
+  For example:
+
+  ```javascript
+    App.Router.map(function() {
+      this.resource("home");
+    });
+  ```
+
+  Prior to this feature `home.index` route would not be created for the above resource.
+
+  Added in [#4251](https://github.com/emberjs/ember.js/pull/4251)

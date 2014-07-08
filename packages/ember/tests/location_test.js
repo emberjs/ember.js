@@ -1,7 +1,9 @@
-var App, AutoTestLocation;
-var copy = Ember.copy;
+import "ember";
+import copy from "ember-runtime/copy";
 
-module('AutoLocation', {
+var App, AutoTestLocation;
+
+QUnit.module('AutoLocation', {
   setup: function() {
     AutoTestLocation = copy(Ember.AutoLocation);
 

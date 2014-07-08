@@ -1,15 +1,8 @@
-requireModule('ember-metal');
-requireModule('ember-runtime');
-requireModule('ember-handlebars-compiler');
-requireModule('ember-handlebars');
-requireModule('ember-views');
-requireModule('ember-routing');
-requireModule('ember-application');
-requireModule('ember-extension-support');
+import "ember";
 
 var App, container, router;
 
-module("Application Lifecycle", {
+QUnit.module("Application Lifecycle", {
   setup: function() {
     Ember.run(function() {
       App = Ember.Application.create({
