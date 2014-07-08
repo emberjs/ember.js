@@ -14,10 +14,14 @@ function frag(element, string) {
   return range.createContextualFragment(string);
 }
 
-var hooks, helpers, env;
+var hooks, helpers, partials, env;
 
 function registerHelper(name, callback) {
   helpers[name] = callback;
+}
+
+function registerPartial(name, html) {
+  partials[name] = compile(html);
 }
 
 function lookupHelper(helperName, context, options) {
@@ -25,6 +29,8 @@ function lookupHelper(helperName, context, options) {
     return this.attribute;
   } else if (helperName === 'concat') {
     return this.concat;
+  } else if (helperName === 'partial') {
+    return this.partial;
   } else {
     return helpers[helperName];
   }
@@ -33,7 +39,6 @@ function lookupHelper(helperName, context, options) {
 function compilesTo(html, expected, context) {
   var template = compile(html);
   var fragment = template(context, env);
-
   equalTokens(fragment, expected === undefined ? html : expected);
   return fragment;
 }
@@ -41,12 +46,14 @@ function compilesTo(html, expected, context) {
 module("HTML-based compiler (output)", {
   setup: function() {
     helpers = {};
-    hooks = hydrationHooks({ lookupHelper: lookupHelper });
+    partials = {};
+    hooks = hydrationHooks({lookupHelper : lookupHelper});
 
     env = {
       hooks: hooks,
       helpers: helpers,
-      dom: new DOMHelper()
+      dom: new DOMHelper(),
+      partials: partials
     };
   }
 });
@@ -149,6 +156,16 @@ test("The compiler can handle newlines", function() {
 
 test("The compiler can handle comments", function() {
   compilesTo("<div>{{! Better not break! }}content</div>", '<div>content</div>', {});
+});
+
+test("The compiler can handle partials in handlebars partial syntax", function() {
+  registerPartial('partial_name', "<b>Partial Works!</b>");
+  compilesTo('<div>{{>partial_name}} Plaintext content</div>', '<div><b>Partial Works!</b> Plaintext content</div>', {});
+});
+
+test("The compiler can handle partials in helper partial syntax", function() {
+  registerPartial('partial_name', "<b>Partial Works!</b>");
+  compilesTo('<div>{{partial "partial_name"}} Plaintext content</div>', '<div><b>Partial Works!</b> Plaintext content</div>', {});
 });
 
 test("The compiler can handle simple handlebars", function() {
