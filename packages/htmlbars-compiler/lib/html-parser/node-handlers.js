@@ -1,4 +1,4 @@
-import { BlockNode, ProgramNode, TextNode, appendChild, usesMorph } from "../ast";
+import { BlockNode, ProgramNode, TextNode, PartialNode, appendChild, usesMorph } from "../ast";
 import { postprocessProgram } from "../html-parser/helpers";
 import { Chars } from "../html-parser/tokens";
 
@@ -64,8 +64,13 @@ var nodeHandlers = {
 
   comment: function(comment) {
     return;
-  }
+  },
 
+  partial: function(partial) {
+    var node = new PartialNode(partial.partialName.name);
+    appendChild(this.currentElement(), node);
+    return;
+  }
 };
 
 function switchToHandlebars(processor) {
