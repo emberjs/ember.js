@@ -1,13 +1,15 @@
 ---
 rvm:
-- 2.1.0
+- 2.1
 node_js:
 - "0.10"
 install:
 - "npm install"
 - "bin/cached-bundle install --deployment --retry 3 --jobs 4"
-after_success: bundle exec rake publish_build
-script: rake test\[$TEST_SUITE]
+after_success:
+  - bundle exec rake publish_build
+  - bundle exec rake publish_to_bower
+script: bundle exec rake test\[$TEST_SUITE]
 notifications:
   campfire:
     rooms:
@@ -22,6 +24,7 @@ env:
   global:
   - S3_BUILD_CACHE_BUCKET=emberjs-build-cache
   - S3_BUCKET_NAME=builds.emberjs.com
+  - secure: "SHnuJ4A3QbSc3LV2fYynDPbbSbhVl0ZWnCiKPuRgwnddDnoSaMQUY2RqyHdtsQGdUZCOeNaMvYUhYx6hzxBVHn0yuN3KA20aSwvYdwaMgZXfJi+lyxgsEI8iYdksWXvVbCAyKM8zjTWXUtNcMBGtsGYOfdD41wfZgI8GsI0YYJc="
   - secure: ! 'KXJmcGLpnxnPmmei/qPNVcdQxLX1xyYIaVocinQ0YAjtBvCtAwg63EWMFnGp
 
       VIzUNikE+Cej3g+nwEdDJiL1c9NFPL+zCnriR2iMVjPak+IQaG3YcMm0T+hY

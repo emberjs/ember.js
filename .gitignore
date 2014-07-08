@@ -1,4 +1,14 @@
 packages/container
+packages/ember-metal
+packages/ember-runtime
+packages/ember-debug
+packages/ember-views
+packages/ember-extension-support
+packages/ember-testing
+packages/ember-handlebars-compiler
+packages/ember-handlebars
+packages/ember-routing
+packages/ember-application
 *.bpkg
 *.gem
 *.rbc
@@ -16,7 +26,6 @@ assets/bpm_libs.js
 assets/bpm_styles.css
 coverage
 dist
-distold
 docs/build
 docs/node_modules
 lib/*/tests/all.js
@@ -38,3 +47,4 @@ tests/source
 node_modules
 bundle/
 *~
+publish_to_bower/

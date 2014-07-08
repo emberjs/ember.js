@@ -49,19 +49,17 @@ module("Homepage Example", {
     });
 
     $fixture = Ember.$('#qunit-fixture');
-
-
     setupExample();
-
   },
 
   teardown: function() {
     Ember.run(function() {
       App.destroy();
-      App = null;
-
-      Ember.TEMPLATES = {};
     });
+
+    App = null;
+
+    Ember.TEMPLATES = {};
   }
 });
 

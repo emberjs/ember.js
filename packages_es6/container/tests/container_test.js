@@ -162,6 +162,17 @@ test("A container lookup has access to the container", function() {
   equal(postController.container, container);
 });
 
+test("Throw exception when trying to inject `type:thing` on all type(s)", function(){
+  var container = new Container(),
+    PostController = factory();
+
+  container.register('controller:post', PostController);
+
+  throws(function(){
+    container.typeInjection('controller', 'injected', 'controller:post');
+  }, 'Cannot inject a `controller:post` on other controller(s). Register the `controller:post` as a different type and perform the typeInjection.');
+});
+
 test("A factory type with a registered injection's instances receive that injection", function() {
   var container = new Container();
   var PostController = factory();

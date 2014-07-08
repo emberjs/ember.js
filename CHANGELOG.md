@@ -1,10 +1,49 @@
 # Ember Changelog
 
-### Ember 1.5.1 (April 22, 2014)
+### Ember 1.6.0 (July, 7, 2014)
 
-* Fixes for AutoLocation. See [#4717](https://github.com/emberjs/ember.js/pull/4717).
-* Fixes for HistoryLocation. See [#4730](https://github.com/emberjs/ember.js/pull/4730).
-* Fixes for ArrayComputed Performance Regression. See [#4740](https://github.com/emberjs/ember.js/issues/4740).
+* [BUGFIX] Ensure itemController's do not leak by tying them to the parent controller lifecycle.
+* [BUGFIX] Spaces in brace expansion throws an error.
+* [BUGFIX] Fix `MutableEnumerable.removeObjects`.
+* [BUGFIX] Allow controller specified to `{{with}}` to be the target of an action.
+* [BUGFIX] Ensure that using keywords syntax (`{{with foo as bar}}`) works when specifying a controller.
+* [BUGFIX] Ensure that controllers instantiated by `{{with}}` are properly destroyed.
+* [BUGFIX] Wrap the keyword specified in `{{with foo as bar}}` with the controller (if specified).
+* [BUGFIX] Fix `Ember.isArray` on IE8.
+* [BUGFIX] Update backburner.js to fix issue with IE8.
+* [BUGFIX] `Ember.computed.alias` returns value of aliased property upon set.
+* Provide better debugging information for view rendering.
+* [BUGFIX] Don't fire redirect on parent routes during transitions from one child route to another.
+* [BUGFIX] Make errors thrown by Ember use `Ember.Error` consistently.
+* [BUGFIX] Ensure controllers instantiated by the `{{render}}` helper are properly torn down.
+* [BUGFIX] sync back burner: workaround IE's issue with try/finally without Catch. Also no longer force deoptimization of the run loop queue flush.
+* [BREAKING BUGFIX] An empty array are treated as falsy value in `bind-attr` to be in consistent with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty array as truthy value in `bind-attr`.
+* [BUGFIX] Ember.onerror now uses Backburner's error handler.
+* [BUGFIX] Do not rely on Array.prototype.map for logging version.
+* [BUGFIX] RSVP errors go to Ember.onerror if present.
+* [BUGFIX] Ensure context is unchanged when using keywords with itemController.
+* [BUGFIX] Does not disregard currentWhen when given explicitly.
+* [DOC] Remove private wording from makeBoundHelper.
+* [BUGFIX] Invalidate previous sorting if sortProperties changes.
+* [BUGFIX] Properly resolve helpers from {{unbound}}.
+* [BUGFIX] reduceComputed detect retain:n better. Fixes issue with `Ember.computed.filterBy` erroring when items removed from dependent array.
+* [BUGFIX] Namespaces are now required to start with uppercase A-Z.
+* [BUGFIX] pass context to sortFunction to avoid calling `__nextSuper` on `undefined`.
+* [BUGFIX] Allow setting of `undefined` value to a `content` property.
+* [BUGFIX] Resolve bound actionName in Handlebars context instead of direct lookup on target.
+* [BUGFIX] isEqual now supports dates.
+* [BUGFIX] Add better debugging for DefaultResolver.
+* [BUGFIX] {{yield}} works inside a Metamorph'ed component.
+* [BUGFIX] Add `title` attribute binding to Ember.TextSupport.
+* [BUGFIX] Ember.View's concreteView now asks its parentView's concreteView.
+* [BUGFIX] Drop dead code for * in paths.
+* [BUGFIX] Route#render name vs viewName precedence fix.
+* [BUGFIX] Use parseFloat before incrementing via incrementProperty.
+* [BUGFIX] Add `which` attribute to event triggered by keyEvent test helper.
+* [Performance] Improve cache lookup throughput.
+* [FEATURE ember-routing-add-model-option]
+* [FEATURE ember-runtime-test-friendly-promises]
+* [FEATURE ember-metal-computed-empty-array]
 
 ### Ember 1.5.0 (March 29, 2014)
 
@@ -26,7 +65,6 @@
 * [SECURITY] Ensure that `ember-routing-auto-location` cannot be forced to redirect to another domain.
 * [BUGFIX beta] Handle ES6 transpiler errors.
 * [BUGFIX beta] Ensure namespaces are cleaned up.
-* Many documentation updates.
 * [FEATURE ember-handlebars-log-primitives]
 * [FEATURE ember-testing-routing-helpers]
 * [FEATURE ember-testing-triggerEvent-helper]

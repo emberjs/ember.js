@@ -1,21 +1,21 @@
 {
   "features": {
-    "ember-metal-computed-empty-array": false,
     "query-params-new": false,
     "ember-routing-named-substates": false,
     "ember-handlebars-caps-lookup": false,
-    "ember-handlebars-log-primitives": true,
-    "ember-testing-routing-helpers": true,
-    "ember-testing-triggerEvent-helper": true,
-    "computed-read-only": true,
-    "composable-computed-properties": null,
-    "ember-routing-drop-deprecated-action-style": null,
-    "ember-metal-is-blank": true,
-    "ember-eager-url-update": true,
-    "ember-routing-auto-location": true,
-    "ember-routing-bound-action-name": true,
-    "ember-runtime-test-friendly-promises": false,
-    "ember-routing-inherits-parent-model": true
+    "ember-routing-drop-deprecated-action-style": null
   },
-  "debugStatements": ["Ember.warn", "Ember.assert", "Ember.deprecate", "Ember.debug", "Ember.Logger.info", "Ember.runInDebug"]
+  "debugStatements": [
+    "Ember.warn",
+    "emberWarn",
+    "Ember.assert",
+    "emberAssert",
+    "Ember.deprecate",
+    "emberDeprecate",
+    "Ember.debug",
+    "emberDebug",
+    "Ember.Logger.info",
+    "Ember.runInDebug",
+    "runInDebug"
+  ]
 }

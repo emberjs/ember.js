@@ -25,27 +25,6 @@ for a detailed explanation.
 
   Added in [#3218](https://github.com/emberjs/ember.js/pull/3218)
 
-* `ember-testing-routing-helpers`
-
-  Adds `currentRouteName`, `currentPath`, and `currentURL` testing helpers.
-
-  Added in [#3711](https://github.com/emberjs/ember.js/pull/3711).
-
-* `ember-testing-triggerEvent-helper`
-
-  Adds `triggerEvent` testing helper to allow triggering of arbitrary events on an
-  element.
-
-  Added in [#3792](https://github.com/emberjs/ember.js/pull/3792).
-  Updated in [#4177](https://github.com/emberjs/ember.js/pull/4177).
-
-* `computed-read-only`
-
-  Enables `Ember.computed.readOnly` which is the shortHand for
-  Ember.computed.oneWay('foo').readOnly().
-
-  Added in [#3879](https://github.com/emberjs/ember.js/pull/3879)
-
 * `composable-computed-properties`
 
   This feature allows you to combine (compose) different computed
@@ -64,58 +43,3 @@ for a detailed explanation.
   params will cause those controller properties to update.
 
   Added in [#4008](https://github.com/emberjs/ember.js/pull/4008).
-
-* `ember-metal-is-blank`
-
-  Adds `Ember.isBlank` method which returns true for an empty value or
-  a whitespace string.
-
-  Added in [#4049](https://github.com/emberjs/ember.js/pull/4049).  
-
-* `ember-eager-url-update`
-
-  Invoking (clicking) `link-to` tags will immediately update the URL
-  instead of waiting for the transition to run to completion, unless
-  the transition was aborted/redirected within the same run loop.
-
-  Added in [#4122](https://github.com/emberjs/ember.js/pull/4122).
-
-* `ember-routing-auto-location`
-
-  Adds `auto` as a `location` option for the app's `Router`.
-
-  ```javascript
-  App.Router.reopen({
-    location: 'auto'
-  });
-  ```
-
-  When used, Ember will select the best location option based off browser
-  support with the priority order: history, hash, none.
-
-  Clean pushState paths accessed by hashchange-only browsers will be redirected
-  to the hash-equivalent and vice versa so future transitions look consistent.
-
-  Added in [#3725](https://github.com/emberjs/ember.js/pull/3725).
-
-* `ember-routing-bound-action-name`
-
-  Enables using a bound property lookup to determine the action name to
-  be fired.
-
-  Added in [#3936](https://github.com/emberjs/ember.js/pull/3936)
-
-* `ember-runtime-test-friendly-promises`
-  Ember.RSVP.Promise's are now ember testing aware
-
-  - they no longer cause autorun assertions
-  - if a test adapter is provided, they still automatically tell the
-    underlying test framework to start/stop between async steps.
-
-  Added in [#4176](https://github.com/emberjs/ember.js/pull/4176)
-  
-* `ember-routing-inherits-parent-model`
-
-  Ember routes and leaf resources (without nested routes) will inherit the parent route's model.
-  
-  Added in [#4246](https://github.com/emberjs/ember.js/pull/4246)

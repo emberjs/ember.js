@@ -256,6 +256,28 @@ test("The Homepage with explicit template name in renderTemplate and controller"
   equal(Ember.$('h3:contains(Megatroll) + p:contains(YES I AM HOME)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
+test("Model passed via renderTemplate model is set as controller's content", function(){
+  Ember.TEMPLATES['bio'] = compile("<p>{{name}}</p>");
+
+  App.BioController = Ember.ObjectController.extend();
+
+  Router.map(function(){
+    this.route('home', { path: '/'});
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    renderTemplate: function(){
+      this.render('bio', {
+        model: {name: 'emberjs'}
+      });
+    }
+  });
+
+  bootApplication();
+
+  equal(Ember.$('p:contains(emberjs)', '#qunit-fixture').length, 1, "Passed model was set as controllers content");
+});
+
 test("Renders correct view with slash notation", function() {
   Ember.TEMPLATES['home/page'] = compile("<p>{{view.name}}</p>");
 
@@ -394,6 +416,45 @@ test('defining templateName allows other templates to be rendered', function() {
 
   equal(Ember.$('.alert-box', '#qunit-fixture').text(), "Invader!", "Template for alert was render into outlet");
 
+});
+
+test('Specifying a name to render should have precedence over everything else', function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeController = Ember.Controller.extend();
+  App.HomeRoute = Ember.Route.extend({
+    templateName: 'home',
+    controllerName: 'home',
+    viewName: 'home',
+
+    renderTemplate: function() {
+      this.render('homepage');
+    }
+  });
+
+  App.HomeView = Ember.View.extend({
+    template: Ember.Handlebars.compile("<h3>This should not be rendered</h3><p>{{home}}</p>")
+  });
+
+  App.HomepageController = Ember.ObjectController.extend({
+    content: {
+      home: 'Tinytroll'
+    }
+  });
+  App.HomepageView = Ember.View.extend({
+    layout: Ember.Handlebars.compile(
+      "<span>Outer</span>{{yield}}<span>troll</span>"
+    ),
+    templateName: 'homepage'
+  });
+
+  bootApplication();
+
+  equal(Ember.$('h3', '#qunit-fixture').text(), "Megatroll", "The homepage template was rendered");
+  equal(Ember.$('p', '#qunit-fixture').text(), "Tinytroll", "The homepage controller was used");
+  equal(Ember.$('span', '#qunit-fixture').text(), "Outertroll", "The homepage view was used");
 });
 
 test("The Homepage with a `setupController` hook", function() {
@@ -750,7 +811,7 @@ asyncTest("The Special page returning an error fires the error hook on SpecialRo
     actions: {
       error: function(reason) {
         equal(reason, 'Setup error');
-        start();
+        QUnit.start();
       }
     }
   });
@@ -886,7 +947,7 @@ asyncTest("Moving from one page to another triggers the correct callbacks", func
       return router.transitionTo('special', promiseContext);
     }).then(function(result) {
       deepEqual(router.location.path, '/specials/1');
-      start();
+      QUnit.start();
     });
   });
 });
@@ -991,7 +1052,7 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
       deepEqual(router.location.path, '/specials/1');
       equal(currentPath, 'root.special');
 
-      start();
+      QUnit.start();
     });
   });
 });
@@ -1025,7 +1086,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
       showStuff: function(context) {
         ok (stateIsNotCalled, "an event on the state is not triggered");
         deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
-        start();
+        QUnit.start();
       }
     }
   });
@@ -1057,7 +1118,7 @@ asyncTest("Events are triggered on the current state when defined in `actions` o
         ok(this instanceof App.HomeRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
-        start();
+        QUnit.start();
       }
     }
   });
@@ -1089,7 +1150,7 @@ asyncTest("Events defined in `actions` object are triggered on the current state
         ok(this instanceof App.RootRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
-        start();
+        QUnit.start();
       }
     }
   });
@@ -1129,7 +1190,7 @@ asyncTest("Events are triggered on the current state when defined in `events` ob
         ok(this instanceof App.HomeRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
-        start();
+        QUnit.start();
       }
     }
   });
@@ -1162,7 +1223,7 @@ asyncTest("Events defined in `events` object are triggered on the current state 
         ok(this instanceof App.RootRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
-        start();
+        QUnit.start();
       }
     }
   });
@@ -1243,7 +1304,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
         showStuff: function(context) {
           ok (stateIsNotCalled, "an event on the state is not triggered");
           deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
-          start();
+          QUnit.start();
         }
       }
     });
@@ -1298,7 +1359,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
       showStuff: function(context) {
         ok (stateIsNotCalled, "an event on the state is not triggered");
         deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
-        start();
+        QUnit.start();
       }
     });
 
@@ -1331,7 +1392,7 @@ asyncTest("actions can be triggered with multiple arguments", function() {
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj1, true), { name: "Tilde" }, "the first context is correct");
         deepEqual(Ember.copy(obj2, true), { name: "Tom Dale" }, "the second context is correct");
-        start();
+        QUnit.start();
       }
     }
   });
@@ -1469,121 +1530,119 @@ test("using replaceWith calls setURL if location.replaceURL is not defined", fun
   equal(router.get('location').getURL(), "/foo");
 });
 
-if (Ember.FEATURES.isEnabled("ember-routing-inherits-parent-model")) {
-  test("Route inherits model from parent route", function() {
-    expect(9);
+test("Route inherits model from parent route", function() {
+  expect(9);
 
-    Router.map(function() {
-      this.resource("the_post", { path: "/posts/:post_id" }, function() {
-        this.route("comments");
+  Router.map(function() {
+    this.resource("the_post", { path: "/posts/:post_id" }, function() {
+      this.route("comments");
 
-        this.resource("shares", { path: "/shares/:share_id"}, function() {
-          this.route("share");
-        });
+      this.resource("shares", { path: "/shares/:share_id"}, function() {
+        this.route("share");
       });
     });
-
-    var post1 = {}, post2 = {}, post3 = {}, currentPost;
-    var share1 = {}, share2 = {}, share3 = {}, currentShare;
-
-    var posts = {
-      1: post1,
-      2: post2,
-      3: post3
-    };
-    var shares = {
-      1: share1,
-      2: share2,
-      3: share3
-    };
-
-    App.ThePostRoute = Ember.Route.extend({
-      model: function(params) {
-        return posts[params.post_id];
-      }
-    });
-
-    App.ThePostCommentsRoute = Ember.Route.extend({
-      afterModel: function(post, transition) {
-        var parent_model = this.modelFor('thePost');
-
-        equal(post, parent_model);
-      }
-    });
-
-    App.SharesRoute = Ember.Route.extend({
-      model: function(params) {
-        return shares[params.share_id];
-      }
-    });
-
-    App.SharesShareRoute = Ember.Route.extend({
-      afterModel: function(share, transition) {
-        var parent_model = this.modelFor('shares');
-
-        equal(share, parent_model);
-      }
-    });
-
-    bootApplication();
-
-    currentPost = post1;
-    handleURL("/posts/1/comments");
-    handleURL("/posts/1/shares/1");
-
-    currentPost = post2;
-    handleURL("/posts/2/comments");
-    handleURL("/posts/2/shares/2");
-
-    currentPost = post3;
-    handleURL("/posts/3/comments");
-    handleURL("/posts/3/shares/3");
   });
 
-  test("Resource does not inherit model from parent resource", function() {
-    expect(6);
+  var post1 = {}, post2 = {}, post3 = {}, currentPost;
+  var share1 = {}, share2 = {}, share3 = {}, currentShare;
 
-    Router.map(function() {
-      this.resource("the_post", { path: "/posts/:post_id" }, function() {
-        this.resource("comments", function() {
-        });
+  var posts = {
+    1: post1,
+    2: post2,
+    3: post3
+  };
+  var shares = {
+    1: share1,
+    2: share2,
+    3: share3
+  };
+
+  App.ThePostRoute = Ember.Route.extend({
+    model: function(params) {
+      return posts[params.post_id];
+    }
+  });
+
+  App.ThePostCommentsRoute = Ember.Route.extend({
+    afterModel: function(post, transition) {
+      var parent_model = this.modelFor('thePost');
+
+      equal(post, parent_model);
+    }
+  });
+
+  App.SharesRoute = Ember.Route.extend({
+    model: function(params) {
+      return shares[params.share_id];
+    }
+  });
+
+  App.SharesShareRoute = Ember.Route.extend({
+    afterModel: function(share, transition) {
+      var parent_model = this.modelFor('shares');
+
+      equal(share, parent_model);
+    }
+  });
+
+  bootApplication();
+
+  currentPost = post1;
+  handleURL("/posts/1/comments");
+  handleURL("/posts/1/shares/1");
+
+  currentPost = post2;
+  handleURL("/posts/2/comments");
+  handleURL("/posts/2/shares/2");
+
+  currentPost = post3;
+  handleURL("/posts/3/comments");
+  handleURL("/posts/3/shares/3");
+});
+
+test("Resource does not inherit model from parent resource", function() {
+  expect(6);
+
+  Router.map(function() {
+    this.resource("the_post", { path: "/posts/:post_id" }, function() {
+      this.resource("comments", function() {
       });
     });
-
-    var post1 = {}, post2 = {}, post3 = {}, currentPost;
-
-    var posts = {
-      1: post1,
-      2: post2,
-      3: post3
-    };
-
-    App.ThePostRoute = Ember.Route.extend({
-      model: function(params) {
-        return posts[params.post_id];
-      }
-    });
-
-    App.CommentsRoute = Ember.Route.extend({
-      afterModel: function(post, transition) {
-        var parent_model = this.modelFor('thePost');
-
-        notEqual(post, parent_model);
-      }
-    });
-
-    bootApplication();
-
-    currentPost = post1;
-    handleURL("/posts/1/comments");
-
-    currentPost = post2;
-    handleURL("/posts/2/comments");
-
-    currentPost = post3;
-    handleURL("/posts/3/comments");
   });
-}
+
+  var post1 = {}, post2 = {}, post3 = {}, currentPost;
+
+  var posts = {
+    1: post1,
+    2: post2,
+    3: post3
+  };
+
+  App.ThePostRoute = Ember.Route.extend({
+    model: function(params) {
+      return posts[params.post_id];
+    }
+  });
+
+  App.CommentsRoute = Ember.Route.extend({
+    afterModel: function(post, transition) {
+      var parent_model = this.modelFor('thePost');
+
+      notEqual(post, parent_model);
+    }
+  });
+
+  bootApplication();
+
+  currentPost = post1;
+  handleURL("/posts/1/comments");
+
+  currentPost = post2;
+  handleURL("/posts/2/comments");
+
+  currentPost = post3;
+  handleURL("/posts/3/comments");
+});
 
 test("It is possible to get the model from a parent route", function() {
   expect(9);
@@ -2960,4 +3019,92 @@ test("Redirecting with null model doesn't error out", function() {
   equal(router.get('location.path'), "/about/TreeklesMcGeekles");
 });
 
+test("rejecting the model hooks promise with a non-error prints the `message` property", function() {
+  var rejectedMessage = 'OMG!! SOOOOOO BAD!!!!',
+      rejectedStack   = 'Yeah, buddy: stack gets printed too.',
+      originalLoggerError = Ember.Logger.error;
 
+  Router.map(function() {
+    this.route("yippie", { path: "/" });
+  });
+
+  Ember.Logger.error = function(initialMessage, errorMessage, errorStack) {
+    equal(initialMessage, 'Error while processing route: yippie', 'a message with the current route name is printed');
+    equal(errorMessage, rejectedMessage, "the rejected reason's message property is logged");
+    equal(errorStack, rejectedStack, "the rejected reason's stack property is logged");
+  };
+
+  App.YippieRoute = Ember.Route.extend({
+    model: function(){
+      return Ember.RSVP.reject({message: rejectedMessage, stack: rejectedStack});
+    }
+  });
+
+  bootApplication();
+
+  Ember.Logger.error = originalLoggerError;
+});
+
+test("rejecting the model hooks promise with no reason still logs error", function() {
+  var originalLoggerError = Ember.Logger.error;
+
+  Router.map(function() {
+    this.route("wowzers", { path: "/" });
+  });
+
+  Ember.Logger.error = function(initialMessage) {
+    equal(initialMessage, 'Error while processing route: wowzers', 'a message with the current route name is printed');
+  };
+
+  App.WowzersRoute = Ember.Route.extend({
+    model: function(){
+      return Ember.RSVP.reject();
+    }
+  });
+
+  bootApplication();
+
+  Ember.Logger.error = originalLoggerError;
+});
+
+test("rejecting the model hooks promise with a string shows a good error", function() {
+  var originalLoggerError = Ember.Logger.error,
+      rejectedMessage = "Supercalifragilisticexpialidocious";
+
+  Router.map(function() {
+    this.route("yondo", { path: "/" });
+  });
+
+  Ember.Logger.error = function(initialMessage, errorMessage) {
+    equal(initialMessage, 'Error while processing route: yondo', 'a message with the current route name is printed');
+    equal(errorMessage, rejectedMessage, "the rejected reason's message property is logged");
+  };
+
+  App.YondoRoute = Ember.Route.extend({
+    model: function(){
+      return Ember.RSVP.reject(rejectedMessage);
+    }
+  });
+
+  bootApplication();
+
+  Ember.Logger.error = originalLoggerError;
+});
+
+test("Errors in transitionTo within redirect hook are logged", function() {
+  Router.map(function() {
+    this.route('yondo', { path: "/" });
+    this.route('stink-bomb');
+  });
+
+  App.YondoRoute = Ember.Route.extend({
+    redirect: function(){
+      this.transitionTo('stink-bomb', {something: 'goes boom'});
+    }
+  });
+
+  raises(function() {
+    bootApplication();
+  },
+  /More context objects were passed than there are dynamic segments for the route: stink-bomb/);
+});

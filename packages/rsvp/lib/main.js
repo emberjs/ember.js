@@ -2,7 +2,7 @@
   @class RSVP
   @module RSVP
   */
-define("rsvp/all", 
+define("rsvp/all",
   ["./promise","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -22,7 +22,7 @@ define("rsvp/all",
       return Promise.all(array, label);
     };
   });
-define("rsvp/all_settled", 
+define("rsvp/all_settled",
   ["./promise","./utils","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
@@ -137,7 +137,7 @@ define("rsvp/all_settled",
       return { state: 'rejected', reason: reason };
     }
   });
-define("rsvp/config", 
+define("rsvp/config",
   ["./events","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -168,7 +168,7 @@ define("rsvp/config",
     __exports__.config = config;
     __exports__.configure = configure;
   });
-define("rsvp/defer", 
+define("rsvp/defer",
   ["./promise","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -194,7 +194,7 @@ define("rsvp/defer",
 
        deferred.resolve("Success!");
 
-       defered.promise.then(function(value){
+       deferred.promise.then(function(value){
          // value here is "Success!"
        });
        ```
@@ -217,7 +217,7 @@ define("rsvp/defer",
       return deferred;
     };
   });
-define("rsvp/events", 
+define("rsvp/events",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -421,7 +421,7 @@ define("rsvp/events",
       }
     };
   });
-define("rsvp/filter", 
+define("rsvp/filter",
   ["./all","./map","./utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
@@ -537,7 +537,7 @@ define("rsvp/filter",
 
     __exports__["default"] = filter;
   });
-define("rsvp/hash", 
+define("rsvp/hash",
   ["./promise","./utils","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
@@ -675,7 +675,7 @@ define("rsvp/hash",
       });
     };
   });
-define("rsvp/instrument", 
+define("rsvp/instrument",
   ["./config","./utils","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
@@ -701,7 +701,7 @@ define("rsvp/instrument",
       }
     };
   });
-define("rsvp/map", 
+define("rsvp/map",
   ["./promise","./all","./utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
@@ -810,7 +810,7 @@ define("rsvp/map",
       });
     };
   });
-define("rsvp/node", 
+define("rsvp/node",
   ["./promise","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -923,7 +923,7 @@ define("rsvp/node",
       };
     };
   });
-define("rsvp/promise", 
+define("rsvp/promise",
   ["./config","./events","./instrument","./utils","./promise/cast","./promise/all","./promise/race","./promise/resolve","./promise/reject","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __exports__) {
     "use strict";
@@ -1552,7 +1552,7 @@ define("rsvp/promise",
       publish(promise, promise._state = REJECTED);
     }
   });
-define("rsvp/promise/all", 
+define("rsvp/promise/all",
   ["../utils","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -1653,7 +1653,7 @@ define("rsvp/promise/all",
       }, label);
     };
   });
-define("rsvp/promise/cast", 
+define("rsvp/promise/cast",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -1737,7 +1737,7 @@ define("rsvp/promise/cast",
       }, label);
     };
   });
-define("rsvp/promise/race", 
+define("rsvp/promise/race",
   ["../utils","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -1840,7 +1840,7 @@ define("rsvp/promise/race",
       }, label);
     };
   });
-define("rsvp/promise/reject", 
+define("rsvp/promise/reject",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -1888,7 +1888,7 @@ define("rsvp/promise/reject",
       }, label);
     };
   });
-define("rsvp/promise/resolve", 
+define("rsvp/promise/resolve",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -1933,7 +1933,7 @@ define("rsvp/promise/resolve",
       }, label);
     };
   });
-define("rsvp/race", 
+define("rsvp/race",
   ["./promise","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -1952,7 +1952,7 @@ define("rsvp/race",
       return Promise.race(array, label);
     };
   });
-define("rsvp/reject", 
+define("rsvp/reject",
   ["./promise","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -1973,7 +1973,7 @@ define("rsvp/reject",
       return Promise.reject(reason, label);
     };
   });
-define("rsvp/resolve", 
+define("rsvp/resolve",
   ["./promise","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
@@ -1995,7 +1995,7 @@ define("rsvp/resolve",
       return Promise.resolve(value, label);
     };
   });
-define("rsvp/rethrow", 
+define("rsvp/rethrow",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -2045,7 +2045,7 @@ define("rsvp/rethrow",
       throw reason;
     };
   });
-define("rsvp/utils", 
+define("rsvp/utils",
   ["exports"],
   function(__exports__) {
     "use strict";
@@ -2080,7 +2080,7 @@ define("rsvp/utils",
     };
     __exports__.keysOf = keysOf;
   });
-define("rsvp", 
+define("rsvp",
   ["./rsvp/promise","./rsvp/events","./rsvp/node","./rsvp/all","./rsvp/all_settled","./rsvp/race","./rsvp/hash","./rsvp/rethrow","./rsvp/defer","./rsvp/config","./rsvp/map","./rsvp/resolve","./rsvp/reject","./rsvp/filter","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __dependency11__, __dependency12__, __dependency13__, __dependency14__, __exports__) {
     "use strict";

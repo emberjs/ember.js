@@ -192,7 +192,7 @@ Container.prototype = {
 
     Optionally the container can be provided with a custom resolver.
     If provided, `resolve` will first provide the custom resolver
-    the oppertunity to resolve the fullName, otherwise it will fallback
+    the opportunity to resolve the fullName, otherwise it will fallback
     to the registry.
 
     ```javascript
@@ -279,7 +279,7 @@ Container.prototype = {
 
     // by default the container will return singletons
     var twitter2 = container.lookup('api:twitter');
-    twitter instanceof Twitter; // => true
+    twitter2 instanceof Twitter; // => true
 
     twitter === twitter2; //=> true
     ```
@@ -412,6 +412,10 @@ Container.prototype = {
     validateFullName(fullName);
     if (this.parent) { illegalChildOperation('typeInjection'); }
 
+    var fullNameType = fullName.split(':')[0];
+    if(fullNameType === type) {
+      throw new Error('Cannot inject a `' + fullName + '` on other ' + type + '(s). Register the `' + fullName + '` as a different type and perform the typeInjection.');
+    }
     addTypeInjection(this.typeInjections, type, property, fullName);
   },
 

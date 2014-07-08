@@ -20,8 +20,6 @@
         "raises",
         "throws",
         "deepEqual",
-        "start",
-        "stop",
         "ok",
         "strictEqual",
         "module",
@@ -62,5 +60,6 @@
     "sub": true,
     "strict": false,
     "white": false,
-    "eqnull": true
+    "eqnull": true,
+    "trailing": true
 }

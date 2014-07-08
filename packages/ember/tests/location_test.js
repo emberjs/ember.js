@@ -1,8 +1,15 @@
-var App;
+var App, AutoTestLocation;
+var copy = Ember.copy;
 
 module('AutoLocation', {
   setup: function() {
-    Ember.AutoLocation._location = {
+    AutoTestLocation = copy(Ember.AutoLocation);
+
+    AutoTestLocation._getSupportsHistory = function () {
+      return true;
+    };
+
+    AutoTestLocation._location = {
       href: 'http://test.com/',
       pathname: '/rootdir/subdir',
       hash: '',
@@ -21,6 +28,7 @@ module('AutoLocation', {
         location: 'none',
         rootURL: '/rootdir/'
       });
+      App.__container__.register('location:auto', AutoTestLocation );
       App.deferReadiness();
     });
   },
