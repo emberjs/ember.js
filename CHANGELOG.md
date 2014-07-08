@@ -9,17 +9,15 @@
 * [FEATURE ember-routing-consistent-resources]
 * `uuid` is now consistently used across the project.
 * `Ember.uuid` is now an internal function instead of a property on `Ember` itself.
-* [BUGFIX] sync back burner: workaround IE's issue with try/finally without Catch.
-  Also no longer force deoptimization of the run loop queue flush.
-* [BREAKING BUGFIX] An empty array are treated as falsy value in `bind-attr` to be in consistent
-  with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty
-  array as truthy value in `bind-attr`.
 * [BREAKING BUGFIX] On Controllers, the content property is now derived from model. This reduces many
   caveats with model/content, and also sets a simple ground rule: Never set a controllers content,
   rather always set it's model and ember will do the right thing.
 
 ### Ember 1.6.0 (July, 7, 2014)
 
+* [BREAKING BUGFIX] An empty array is treated as falsy value in `bind-attr` to be in consistent
+  with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty
+  array as truthy value in `bind-attr`.
 * [BUGFIX] Ensure itemController's do not leak by tying them to the parent controller lifecycle.
 * [BUGFIX] Spaces in brace expansion throws an error.
 * [BUGFIX] Fix `MutableEnumerable.removeObjects`.
