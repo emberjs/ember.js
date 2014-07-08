@@ -44,7 +44,7 @@ HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, isSi
   ++this.currentDOMChildIndex;
 
   this.element = this.currentDOMChildIndex;
-  
+
   if (!isSingleRoot) {
     this.opcode('consumeParent', this.currentDOMChildIndex);
 
