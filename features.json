@@ -1,14 +1,14 @@
 {
   "features": {
     "query-params-new": true,
-    "ember-routing-named-substates": null,
-    "ember-handlebars-caps-lookup": null,
+    "ember-routing-named-substates": false,
+    "ember-handlebars-caps-lookup": false,
     "ember-routing-drop-deprecated-action-style": null,
     "ember-routing-add-model-option": true,
-    "ember-routing-linkto-target-attribute": null,
-    "ember-routing-will-change-hooks": null,
+    "ember-routing-linkto-target-attribute": false,
+    "ember-routing-will-change-hooks": false,
     "ember-routing-consistent-resources": true,
-    "event-dispatcher-can-disable-event-manager": null
+    "event-dispatcher-can-disable-event-manager": false
   },
   "debugStatements": [
     "Ember.warn",
