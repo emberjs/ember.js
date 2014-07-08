@@ -2,6 +2,9 @@
 
 ### Ember 1.6.0 (July, 7, 2014)
 
+* [BREAKING BUGFIX] An empty array is treated as falsy value in `bind-attr` to be in consistent
+  with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty
+  array as truthy value in `bind-attr`.
 * [BUGFIX] Ensure itemController's do not leak by tying them to the parent controller lifecycle.
 * [BUGFIX] Spaces in brace expansion throws an error.
 * [BUGFIX] Fix `MutableEnumerable.removeObjects`.
