@@ -17,7 +17,6 @@
 * [BUGFIX] Make errors thrown by Ember use `Ember.Error` consistently.
 * [BUGFIX] Ensure controllers instantiated by the `{{render}}` helper are properly torn down.
 * [BUGFIX] sync back burner: workaround IE's issue with try/finally without Catch. Also no longer force deoptimization of the run loop queue flush.
-* [BREAKING BUGFIX] An empty array are treated as falsy value in `bind-attr` to be in consistent with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty array as truthy value in `bind-attr`.
 * [BUGFIX] Ember.onerror now uses Backburner's error handler.
 * [BUGFIX] Do not rely on Array.prototype.map for logging version.
 * [BUGFIX] RSVP errors go to Ember.onerror if present.
