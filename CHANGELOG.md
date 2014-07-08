@@ -1,15 +1,22 @@
 # Ember Changelog
 
+### Ember 1.7.0-beta.1 (July, 8, 2014)
+
+* Fix components inside group helper.
+* [BUGFIX] Fix wrong view keyword in a component block.
+* Update to RSVP 3.0.7.
+* [FEATURE query-params-new]
+* [FEATURE ember-routing-consistent-resources]
 * `uuid` is now consistently used across the project.
 * `Ember.uuid` is now an internal function instead of a property on `Ember` itself.
-* [Bugfix beta] sync back burner: workaround IE's issue with try/finally
-  without Catch. Also no longer force deoptimization of the run loop
-  queue flush.
-* [BREAKING BUGFIX] An empty array are treated as falsy value in `bind-attr` to be in consistent with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty array as truthy value in `bind-attr`.
-* [Bugfix beta] On Controllers, the content property is now derived from
-  model. This reduces many caveats with model/content, and also sets a
-  simple ground rule: Never set a controllers content, rather always set
-  it's model and ember will do the right thing.
+* [BUGFIX] sync back burner: workaround IE's issue with try/finally without Catch.
+  Also no longer force deoptimization of the run loop queue flush.
+* [BREAKING BUGFIX] An empty array are treated as falsy value in `bind-attr` to be in consistent
+  with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty
+  array as truthy value in `bind-attr`.
+* [BREAKING BUGFIX] On Controllers, the content property is now derived from model. This reduces many
+  caveats with model/content, and also sets a simple ground rule: Never set a controllers content,
+  rather always set it's model and ember will do the right thing.
 
 ### Ember 1.6.0 (July, 7, 2014)
 
