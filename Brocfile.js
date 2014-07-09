@@ -12,6 +12,7 @@ var moveFile = require('broccoli-file-mover');
 var removeFile = require('broccoli-file-remover');
 var jshintTree = require('broccoli-jshint');
 var replace = require('broccoli-replace');
+var es3recast = require('broccoli-es3-safe-recast');
 
 var calculateVersion = require('./lib/calculate-version');
 
@@ -353,6 +354,9 @@ if (env !== 'development') {
   distTrees.push(prodCompiledSource);
   distTrees.push(minCompiledSource);
   distTrees.push(buildRuntimeTree());
+  distTrees = distTrees.map(function(tree){
+    return es3recast(tree);
+  });
   //distTrees.push(compiledPackageTrees);
 }
 
