@@ -80,12 +80,24 @@ to know that you have a clean slate: `npm install && npm test`.
 
 3. Add a test for your change. Only refactoring and documentation changes
 require no new tests. If you are adding functionality or fixing a bug, we need
-a test!
+a test! If your change is a new feature, please
+[wrap it in a feature flag](http://emberjs.com/guides/contributing/adding-new-features/).
 
 4. Make the test pass.
 
-5. Commit your changes. If your pull request fixes an issue specify it in the commit message.
-Here's an example: `git commit -m "Close #52 – Fix controller and viewbindings"`
+5. Commit your changes. Please use an appropriate commit prefix.
+If your pull request fixes an issue specify it in the commit message. Some examples:
+
+  ```
+  [DOC beta] Update CONTRIBUTING.md for commit prefixes
+  [FEATURE query-params-new] Message
+  [BUGFIX beta] Message
+  [SECURITY CVE-111-1111] Message
+  ```
+
+  For more information about commit prefixes see
+  [Robert Jacksons slides on contributing to Ember](https://speakerdeck.com/rwjblue/contributing-to-ember).
+
 
 6. Push to your fork and submit a pull request. Please provide us with some
 explanation of why you made the changes you made. For new features make sure to
