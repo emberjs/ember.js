@@ -81,6 +81,7 @@ import libraries from "ember-metal/libraries";
 import {isNone, none} from 'ember-metal/is_none';
 import {isEmpty, empty} from 'ember-metal/is_empty';
 import isBlank from 'ember-metal/is_blank';
+import isPresent from 'ember-metal/is_present';
 // END IMPORTS
 
 // BEGIN EXPORTS
@@ -229,6 +230,10 @@ Ember.isEmpty = isEmpty;
 Ember.empty = empty;
 
 Ember.isBlank = isBlank;
+
+if (Ember.FEATURES.isEnabled('ember-metal-is-present')) {
+  Ember.isPresent = isPresent;
+}
 
 Ember.merge = merge;
 

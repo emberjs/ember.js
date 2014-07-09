@@ -8,7 +8,8 @@
     "ember-routing-linkto-target-attribute": null,
     "ember-routing-will-change-hooks": null,
     "ember-routing-consistent-resources": true,
-    "event-dispatcher-can-disable-event-manager": null
+    "event-dispatcher-can-disable-event-manager": null,
+    "ember-metal-is-present": null
   },
   "debugStatements": [
     "Ember.warn",

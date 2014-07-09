@@ -75,3 +75,11 @@ for a detailed explanation.
   Prior to this feature `home.index` route would not be created for the above resource.
 
   Added in [#4251](https://github.com/emberjs/ember.js/pull/4251)
+
+* `ember-metal-is-present`
+
+  Adds `Ember.isPresent` as the inverse of `Ember.isBlank`. This convenience
+  method can lead to more semantic and clearer code.
+
+  Added in [#5136](https://github.com/emberjs/ember.js/pull/5136)
+
