@@ -21,10 +21,10 @@ import HistoryLocation from "ember-routing/location/history_location";
 import AutoLocation from "ember-routing/location/auto_location";
 
 import {
-  controllerFor,
   generateControllerFactory,
-  generateController
-} from "ember-routing/system/controller_for";
+  default as generateController
+} from "ember-routing/system/generate_controller";
+import controllerFor from "ember-routing/system/controller_for";
 import RouterDSL from "ember-routing/system/dsl";
 import Router from "ember-routing/system/router";
 import Route from "ember-routing/system/route";
