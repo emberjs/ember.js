@@ -10,7 +10,10 @@ import Controller from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import controllerFor from "ember-routing/system/controller_for";
-import generateController from "ember-routing/system/generate_controller";
+import {
+  generateControllerFactory,
+  default as generateController
+} from "ember-routing/system/generate_controller";
 
 var buildContainer = function(namespace) {
   var container = new Container();
@@ -79,6 +82,11 @@ QUnit.module("Ember.generateController", {
       namespace.destroy();
     });
   }
+});
+
+test("generateController and generateControllerFactory are properties on the root namespace", function() {
+  equal(Ember.generateController, generateController, 'should export generateController');
+  equal(Ember.generateControllerFactory, generateControllerFactory, 'should export generateControllerFactory');
 });
 
 test("generateController should create Ember.Controller", function() {
