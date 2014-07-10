@@ -26,6 +26,13 @@ var injectHelpersCallbacks = [];
   @namespace Ember
 */
 var Test = {
+  /**
+    Hash containing all known test helpers.
+
+    @property _helpers
+    @private
+  */
+  _helpers: helpers,
 
   /**
     `registerHelper` is used to register a test helper that will be injected
