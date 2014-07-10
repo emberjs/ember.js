@@ -4,16 +4,8 @@ import { set } from "ember-metal/property_set";
 import {
   meta,
   META_KEY,
-  guidFor,
-  typeOf,
   inspect
 } from "ember-metal/utils";
-import EnumerableUtils from "ember-metal/enumerable_utils";
-import { create } from "ember-metal/platform";
-import {
-  watch,
-  unwatch
-} from "ember-metal/watching";
 import expandProperties from "ember-metal/expand_properties";
 import EmberError from "ember-metal/error";
 import {
@@ -24,6 +16,10 @@ import {
   propertyWillChange,
   propertyDidChange
 } from "ember-metal/property_events";
+import {
+  addDependentKeys,
+  removeDependentKeys
+} from "ember-metal/dependent_keys";
 
 /**
 @module ember-metal
@@ -33,81 +29,9 @@ Ember.warn("The CP_DEFAULT_CACHEABLE flag has been removed and computed properti
 
 
 var metaFor = meta,
-    a_slice = [].slice,
-    o_create = create;
+    a_slice = [].slice;
 
 function UNDEFINED() { }
-
-// ..........................................................
-// DEPENDENT KEYS
-//
-
-// data structure:
-//  meta.deps = {
-//    'depKey': {
-//      'keyName': count,
-//    }
-//  }
-
-/*
-  This function returns a map of unique dependencies for a
-  given object and key.
-*/
-function keysForDep(depsMeta, depKey) {
-  var keys = depsMeta[depKey];
-  if (!keys) {
-    // if there are no dependencies yet for a the given key
-    // create a new empty list of dependencies for the key
-    keys = depsMeta[depKey] = {};
-  } else if (!depsMeta.hasOwnProperty(depKey)) {
-    // otherwise if the dependency list is inherited from
-    // a superclass, clone the hash
-    keys = depsMeta[depKey] = o_create(keys);
-  }
-  return keys;
-}
-
-function metaForDeps(meta) {
-  return keysForDep(meta, 'deps');
-}
-
-function addDependentKeys(desc, obj, keyName, meta) {
-  // the descriptor has a list of dependent keys, so
-  // add all of its dependent keys.
-  var depKeys = desc._dependentKeys, depsMeta, idx, len, depKey, keys;
-  if (!depKeys) return;
-
-  depsMeta = metaForDeps(meta);
-
-  for(idx = 0, len = depKeys.length; idx < len; idx++) {
-    depKey = depKeys[idx];
-    // Lookup keys meta for depKey
-    keys = keysForDep(depsMeta, depKey);
-    // Increment the number of times depKey depends on keyName.
-    keys[keyName] = (keys[keyName] || 0) + 1;
-    // Watch the depKey
-    watch(obj, depKey, meta);
-  }
-}
-
-function removeDependentKeys(desc, obj, keyName, meta) {
-  // the descriptor has a list of dependent keys, so
-  // remove all of its dependent keys.
-  var depKeys = desc._dependentKeys, depsMeta, idx, len, depKey, keys;
-  if (!depKeys) return;
-
-  depsMeta = metaForDeps(meta);
-
-  for(idx = 0, len = depKeys.length; idx < len; idx++) {
-    depKey = depKeys[idx];
-    // Lookup keys meta for depKey
-    keys = keysForDep(depsMeta, depKey);
-    // Decrement the number of times depKey depends on keyName.
-    keys[keyName] = (keys[keyName] || 0) - 1;
-    // Unwatch the depKey
-    unwatch(obj, depKey, meta);
-  }
-}
 
 // ..........................................................
 // COMPUTED PROPERTY
