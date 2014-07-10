@@ -19,6 +19,9 @@ export function watchKey(obj, keyName, meta) {
   if (!watching[keyName]) {
     watching[keyName] = 1;
 
+    var desc = m.descs[keyName];
+    if (desc && desc.willWatch) { desc.willWatch(obj, keyName); }
+
     if ('function' === typeof obj.willWatchProperty) {
       obj.willWatchProperty(keyName);
     }
@@ -42,6 +45,9 @@ export function unwatchKey(obj, keyName, meta) {
 
   if (watching[keyName] === 1) {
     watching[keyName] = 0;
+
+    var desc = m.descs[keyName];
+    if (desc && desc.didUnwatch) { desc.didUnwatch(obj, keyName); }
 
     if ('function' === typeof obj.didUnwatchProperty) {
       obj.didUnwatchProperty(keyName);

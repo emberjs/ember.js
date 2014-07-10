@@ -4,6 +4,7 @@ import { set } from "ember-metal/property_set";
 import { computed } from "ember-metal/computed";
 import isEmpty from 'ember-metal/is_empty';
 import { isNone } from 'ember-metal/is_none';
+import { alias } from 'ember-metal/alias';
 
 /**
 @module ember-metal
@@ -548,15 +549,7 @@ registerComputedWithProperties('collect', function(properties) {
   @return {Ember.ComputedProperty} computed property which creates an
   alias to the original value for property.
 */
-computed.alias = function(dependentKey) {
-  return computed(dependentKey, function(key, value) {
-    if (arguments.length > 1) {
-      set(this, dependentKey, value);
-    }
-
-    return get(this, dependentKey);
-  });
-};
+computed.alias = alias;
 
 /**
   Where `computed.alias` aliases `get` and `set`, and allows for bidirectional
@@ -591,9 +584,7 @@ computed.alias = function(dependentKey) {
   one way computed property to the original value for property.
 */
 computed.oneWay = function(dependentKey) {
-  return computed(dependentKey, function() {
-    return get(this, dependentKey);
-  });
+  return alias(dependentKey).oneWay();
 };
 
 if (Ember.FEATURES.isEnabled('query-params-new')) {
@@ -645,9 +636,7 @@ if (Ember.FEATURES.isEnabled('query-params-new')) {
   @since 1.5.0
 */
 computed.readOnly = function(dependentKey) {
-  return computed(dependentKey, function() {
-    return get(this, dependentKey);
-  }).readOnly();
+  return alias(dependentKey).readOnly();
 };
 /**
   A computed property that acts like a standard getter and setter,
