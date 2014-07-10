@@ -1,7 +1,7 @@
 import ObjectController from "ember-runtime/controllers/object_controller";
+import { observer } from 'ember-metal/mixin';
 
 QUnit.module("Ember.ObjectController");
-
 
 test("should be able to set the target property of an ObjectController", function() {
   var controller = ObjectController.create();
@@ -9,4 +9,12 @@ test("should be able to set the target property of an ObjectController", functio
 
   controller.set('target', target);
   equal(controller.get('target'), target, "able to set the target property");
+});
+
+test("can observe a path on an ObjectController", function() {
+  var controller = ObjectController.extend({
+    baz: observer('foo.bar', function() {})
+  }).create();
+  controller.set('model', {});
+  ok(true, "should not fail");
 });
