@@ -674,10 +674,13 @@ computed.readOnly = function(dependentKey) {
   @param {String} defaultPath
   @return {Ember.ComputedProperty} computed property which acts like
   a standard getter and setter, but defaults to the value from `defaultPath`.
+  @deprecated Use `Ember.computed.oneWay` or custom CP with default instead.
 */
 // ES6TODO: computed should have its own export path so you can do import {defaultTo} from computed
 computed.defaultTo = function(defaultPath) {
   return computed(function(key, newValue, cachedValue) {
+    Ember.deprecate('Usage of Ember.computed.defaultTo is deprecated, use `Ember.computed.oneWay` instead.');
+
     if (arguments.length === 1) {
       return get(this, defaultPath);
     }
