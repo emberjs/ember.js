@@ -118,21 +118,21 @@ EmberRenderer.prototype.childViews = function childViews(view) {
 };
 
 Renderer.prototype.willCreateElement = function (view) {
-  if (view.transitionTo) {
-    view.transitionTo('inBuffer');
+  if (view._transitionTo) {
+    view._transitionTo('inBuffer');
   }
 }; // inBuffer
 Renderer.prototype.didCreateElement = function (view) {
-  if (view.transitionTo) {
-    view.transitionTo('hasElement');
+  if (view._transitionTo) {
+    view._transitionTo('hasElement');
   }
 }; // hasElement
 Renderer.prototype.willInsertElement = function (view) {
   if (view.trigger) { view.trigger('willInsertElement'); }
 }; // will place into DOM
 Renderer.prototype.didInsertElement = function (view) {
-  if (view.transitionTo) {
-    view.transitionTo('inDOM');
+  if (view._transitionTo) {
+    view._transitionTo('inDOM');
   }
   if (view.trigger) { view.trigger('didInsertElement'); }
 }; // inDOM // placed into DOM
@@ -146,8 +146,8 @@ Renderer.prototype.willDestroyElement = function (view) {
 };
 Renderer.prototype.didDestroyElement = function (view) {
   set(view, 'element', null);
-  if (view.transitionTo) {
-    view.transitionTo('preRender');
+  if (view._transitionTo) {
+    view._transitionTo('preRender');
   }
 }; // element destroyed so view.destroy shouldn't try to remove it removedFromDOM
 
