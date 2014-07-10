@@ -73,6 +73,9 @@ import {watch, isWatching, unwatch, rewatch, destroy} from "ember-metal/watching
 import expandProperties from "ember-metal/expand_properties";
 import {ComputedProperty, computed, cacheFor} from "ember-metal/computed";
 
+// side effect of defining the computed.* macros
+import "ember-metal/computed_macros";
+
 import {addObserver, observersFor, removeObserver, addBeforeObserver, _suspendBeforeObserver, _suspendObserver, _suspendBeforeObservers, _suspendObservers, beforeObserversFor, removeBeforeObserver} from "ember-metal/observer";
 import {IS_BINDING, mixin, Mixin, required, aliasMethod, observer, immediateObserver, beforeObserver} from "ember-metal/mixin";
 import {Binding, isGlobalPath, bind, oneWay} from "ember-metal/binding";
