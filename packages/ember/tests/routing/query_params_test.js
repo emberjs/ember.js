@@ -858,6 +858,24 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     equal(controller.get('foo'), false);
   });
 
+  test("A Query param can be changed from a boolean to a number", function() {
+    Router.map(function() {
+      this.route("home", { path: '/' });
+    });
+
+    App.HomeController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: 5
+    });
+
+    bootApplication();
+
+    var controller = container.lookup('controller:home');
+
+    setAndFlush(controller, 'foo', 'baz');
+    equal(router.get('location.path'), "/?foo=baz");
+  });
+
   test("Query param without value are empty string", function() {
     App.IndexController = Ember.Controller.extend({
       queryParams: ['foo'],
