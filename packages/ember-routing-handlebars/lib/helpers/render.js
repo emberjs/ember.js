@@ -93,7 +93,7 @@ export default function renderHelper(name, contextString, options) {
   var contextProvided = length === 3,
       container, router, controller, view, context, lookupOptions;
 
-  container = (options || contextString).data.keywords.controller.container;
+  container = (options && contextString).data.keywords.controller.container;
   router = container.lookup('router:main');
 
   if (length === 2) {
