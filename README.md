@@ -28,7 +28,9 @@ on building killer features and UI.
 
 2. To start the development server, run `npm start`.
 
-3. Then visit: `http://localhost:4200/tests/index.html?package=PACKAGE_NAME`. Replace
+3. Then visit: `http://localhost:4200/`
+
+4. To run a specific package visit: `http://localhost:4200/tests/index.html?package=PACKAGE_NAME` Replace
 `PACKAGE_NAME` with the name of the package you want to run. For
 example:
 
