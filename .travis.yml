@@ -3,6 +3,10 @@ rvm: 2.1
 
 sudo: false
 
+cache:
+  directories:
+    - node_modules
+
 install:
   - "npm install"
   - "./bin/generate_docs.js"
