@@ -15,7 +15,7 @@ import { computed } from "ember-metal/computed";
 
 import { typeOf } from "ember-metal/utils";
 
-import { instrument } from "ember-metal/instrumentation";
+import { instrumentFast } from "ember-metal/instrumentation";
 
 
 import renderBuffer from "ember-views/system/render_buffer";
@@ -87,6 +87,12 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     hash.view = this;
   },
 
+  _instrumentDetails: function() {
+    var details = {};
+    this.instrumentDetails(details);
+    return details;
+  },
+
   /**
     Invoked by the view system when this view needs to produce an HTML
     representation. This method will create a new render buffer, if needed,
@@ -105,8 +111,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     @private
   */
   renderToBuffer: function() {
-    // TODO bring back instrumentation
-    return this._renderToBuffer();
+    return instrumentFast('render.' + this.instrumentName, this, this._renderToBuffer);
   },
 
   _renderToBuffer: function() {

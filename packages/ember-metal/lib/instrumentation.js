@@ -49,7 +49,7 @@ import { tryCatchFinally } from "ember-metal/utils";
 */
 var subscribers = [], cache = {};
 
-var populateListeners = function(name) {
+function populateListeners(name) {
   var listeners = [], subscriber;
 
   for (var i=0, l=subscribers.length; i<l; i++) {
@@ -61,7 +61,7 @@ var populateListeners = function(name) {
 
   cache[name] = listeners;
   return listeners;
-};
+}
 
 var time = (function() {
   var perf = 'undefined' !== typeof window ? window.performance || {} : {};
@@ -130,6 +130,87 @@ export function instrument(name, payload, callback, binding) {
   return tryCatchFinally(tryable, catchable, finalizer);
 }
 
+function doInstrumentation(name, context, method, args) {
+  var listeners = cache[name], ret;
+
+  if (!listeners) {
+    listeners = populateListeners(name);
+  }
+
+  if (listeners.length === 0) {
+    if (args) {
+      ret = method.apply(context, args);
+    } else {
+      ret = method.call(context);
+    }
+  }
+
+  var beforeValues = [], listener, i, l;
+
+  function tryable() {
+    for (i=0, l=listeners.length; i<l; i++) {
+      listener = listeners[i];
+      beforeValues[i] = listener.before(name, time(), payload);
+    }
+
+    return method.call(context);
+  }
+
+  var payload = {};
+
+  if (context._instrumentationDetails) {
+    payload = context._instrumentationDetails();
+  }
+
+  function catchable(e) {
+    payload.exception = e;
+  }
+
+  function finalizer() {
+    for (i=0, l=listeners.length; i<l; i++) {
+      listener = listeners[i];
+      listener.after(name, time(), payload, beforeValues[i]);
+    }
+  }
+
+  return tryCatchFinally(tryable, catchable, finalizer);
+
+}
+
+function startStructuredProfile(name, payload) {
+  var timeName = name + ": " + payload.object;
+  console.time(timeName);
+  return timeName;
+}
+
+function endStructuredProfile(name) {
+  console.timeEnd(name);
+}
+
+export function instrumentFast(name, context, method, args) {
+  var profile, ret;
+
+  if (Ember.STRUCTURED_PROFILE) {
+    profile = startStructuredProfile(name, context.toString());
+  }
+
+  if (subscribers.length) {
+    ret = doInstrumentation(context, method, args);
+  } else {
+    if (args) {
+      ret = method.apply(context, args);
+    } else {
+      ret = method.call(context);
+    }
+  }
+
+  if (Ember.STRUCTURED_PROFILE) {
+    endStructuredProfile(profile);
+  }
+
+  return ret;
+}
+
 /**
   Subscribes to a particular event or instrumented block of code.
 
@@ -142,7 +223,9 @@ export function instrument(name, payload, callback, binding) {
   @return {Subscriber}
 */
 export function subscribe(pattern, object) {
-  var paths = pattern.split("."), path, regex = [];
+  var paths = pattern.split('.');
+  var path;
+  var regex = [];
 
   for (var i=0, l=paths.length; i<l; i++) {
     path = paths[i];
