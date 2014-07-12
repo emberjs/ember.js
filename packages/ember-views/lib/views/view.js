@@ -1499,10 +1499,10 @@ var View = CoreView.extend({
   },
 
   /**
-    Creates a DOM representation of the view and all of its
-    child views by recursively calling the `render()` method.
+    Creates a DOM representation of the view and all of its child views by
+    recursively calling the `render()` method.
 
-    After the element has been created, `didInsertElement` will
+    After the element has been inserted into the DOM, `didInsertElement` will
     be called on this view and all of its child views.
 
     @method createElement
