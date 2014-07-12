@@ -103,9 +103,8 @@ test('test auto insertion of text nodes for needed edges a fragment with morph m
 
   var morphs = [];
   var fakeMorphDOM = new DOMHelper();
-  fakeMorphDOM.createMorph = function(start, startIndex, endIndex){
-    var morph = DOMHelper.prototype.createMorph.call(
-      this, start, startIndex, endIndex);
+  fakeMorphDOM.createMorphAt = function(){
+    var morph = DOMHelper.prototype.createMorphAt.apply(this, arguments);
     morphs.push(morph);
     return morph;
   };
@@ -127,7 +126,7 @@ test('test auto insertion of text nodes for needed edges a fragment with morph m
     }
   };
 
-  hydrate(fragment, context, env.dom, env.hooks, env);
+  hydrate(fragment, context, env.dom, env.hooks, env, document.body);
 
   equal(morphs.length, 3);
 

@@ -7,31 +7,9 @@ var xhtmlNamespace = "http://www.w3.org/1999/xhtml";
  * namespaces, contextual elements for morph un-escaped content
  * insertion.
  *
- * When entering a template, a DOMHelper should be passed to provide
- * context to the template. The context is most easily expressed as
- * an element:
+ * When entering a template, a DOMHelper should be passed:
  *
- *   template(context, { hooks: hooks, dom: new DOMHelper(element) });
- *
- * In this case, the namespace and ownerDocument of the element will
- * provide context.
- *
- * During fragment creation, a new namespace may be needed. In these
- * cases, a dom helper will be created for the new namespace:
- *
- *   dom1 = new dom0.constructor(null, dom0.document, someNamespaceURI);
- *
- * In this case the namespace and document are passed explicitly,
- * as decided by the parser at compile time, instead of asking the
- * DOMHelper to determine them. There is no contextual element passed,
- * but the contextual element should only be required by the morphs
- * at the root of a document anyway.
- *
- * Helpers and hooks can pass a new DOMHelper or another object as
- * is appropriate:
- *
- *   var svg = document.createElementNS(svgNamespace, 'svg');
- *   morph.render(context, {hooks: env.hooks, dom: new DOMHelper(svg)});
+ *   template(context, { hooks: hooks, dom: new DOMHelper() });
  *
  * TODO: support foreignObject as a passed contextual element. It has
  * a namespace (svg) that does not match its internal namespace
@@ -80,19 +58,27 @@ prototype.cloneNode = function(element, deep){
   return element.cloneNode(!!deep);
 };
 
-prototype.createMorph = function(parent, startIndex, endIndex, contextualElement){
-  return Morph.create(parent, startIndex, endIndex, this, contextualElement);
+prototype.createMorph = function(parent, start, end, contextualElement){
+  if (!contextualElement && parent.nodeType === Node.ELEMENT_NODE) {
+    contextualElement = parent;
+  }
+  if (!contextualElement) {
+    contextualElement = this.document.body;
+  }
+  return new Morph(parent, start, end, this, contextualElement);
+};
+
+// This helper is just to keep the templates good looking,
+// passing integers instead of element references.
+prototype.createMorphAt = function(parent, startIndex, endIndex, contextualElement){
+  var childNodes = parent.childNodes,
+      start = startIndex === -1 ? null : childNodes[startIndex],
+      end = endIndex === -1 ? null : childNodes[endIndex];
+  return this.createMorph(parent, start, end, contextualElement);
 };
 
 prototype.parseHTML = function(html, contextualElement){
-  var element;
-
-  if (!contextualElement || contextualElement.nodeType === 11) {
-    element = this.document.createElement('div');
-  } else {
-    element = this.cloneNode(contextualElement, false);
-  }
-
+  var element = this.cloneNode(contextualElement, false);
   element.innerHTML = html;
   return element.childNodes;
 };

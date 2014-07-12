@@ -42,6 +42,30 @@ test('#createElement of tr with contextual table element', function(){
   equalHTML(node, '<tr></tr>');
 });
 
+test('#createMorph has optional contextualElement', function(){
+  var parent = document.createElement('div'),
+      fragment = document.createDocumentFragment(),
+      start = document.createTextNode(''),
+      end = document.createTextNode(''),
+      morph, thrown;
+
+  morph = dom.createMorph(fragment, start, end);
+  equal(morph.contextualElement, document.body, "morph's body is default contextualElement with fragment parent");
+
+  try {
+    morph = dom.createMorph(fragment, start, end, fragment);
+  } catch(e) {
+    thrown = true;
+  }
+  ok(thrown, 'Exception thrown when a fragment is provided for contextualElement');
+
+  morph = dom.createMorph(fragment, start, end, parent);
+  equal(morph.contextualElement, parent, "morph's contextualElement is parent");
+
+  morph = dom.createMorph(parent, start, end);
+  equal(morph.contextualElement, parent, "morph's contextualElement is parent");
+});
+
 test('#parseHTML of tr with contextual table element', function(){
   var tableElement = document.createElement('table'),
       nodes = dom.parseHTML('<tr><td>Yo</td></tr>', tableElement);

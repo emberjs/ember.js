@@ -70,9 +70,6 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     indent+'    if (cachedFragment === undefined) {\n' +
     indent+'      cachedFragment = build(dom);\n' +
     indent+'    }\n' +
-    indent+'    if (contextualElement === undefined) {\n' +
-    indent+'      contextualElement = dom.document.body;\n' +
-    indent+'    }\n' +
     indent+'    var fragment = dom.cloneNode(cachedFragment, true);\n' +
     hydrationProgram +
     indent+'    return fragment;\n' +
