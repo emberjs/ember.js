@@ -106,7 +106,7 @@ prototype.morph = function(num, parentPath, startIndex, endIndex) {
   var parentIndex = isRoot ? 0 : parentPath[parentPath.length-1];
   var parent = this.getParent();
 
-  var morph = "dom.createMorph("+parent+
+  var morph = "dom.createMorphAt("+parent+
     ","+(startIndex === null ? "-1" : startIndex)+
     ","+(endIndex === null ? "-1" : endIndex)+
     (isRoot ? ",contextualElement)" : ")");

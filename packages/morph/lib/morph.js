@@ -14,7 +14,10 @@ function Morph(parent, start, end, domHelper, contextualElement) {
   this.start = start;
   this.end = end;
   this.domHelper = domHelper;
-  this.contextualElement = contextualElement || parent;
+  if (!contextualElement || contextualElement.nodeType !== Node.ELEMENT_NODE) {
+    throw new Error('An element node must be provided for a contextualElement, you provided '+(contextualElement ? 'nodeType '+contextualElement.nodeType : 'nothing'));
+  }
+  this.contextualElement = contextualElement;
   this.text = null;
   this.owner = null;
   this.morphs = null;
@@ -22,13 +25,6 @@ function Morph(parent, start, end, domHelper, contextualElement) {
   this.after = null;
   this.escaped = true;
 }
-
-Morph.create = function (parent, startIndex, endIndex, domHelper, contextualElement) {
-  var childNodes = parent.childNodes,
-      start = startIndex === -1 ? null : childNodes[startIndex],
-      end = endIndex === -1 ? null : childNodes[endIndex];
-  return new Morph(parent, start, end, domHelper, contextualElement);
-};
 
 Morph.prototype.parent = function () {
   if (!this.element) {
@@ -161,7 +157,7 @@ Morph.prototype.insert = function (index, node) {
     after  = index < morphs.length ? morphs[index] : null,
     start  = before === null ? this.start : (before.end === null ? parent.lastChild : before.end.previousSibling),
     end    = after === null ? this.end : (after.start === null ? parent.firstChild : after.start.nextSibling),
-    morph  = new Morph(parent, start, end, this.domHelper);
+    morph  = new Morph(parent, start, end, this.domHelper, this.contextualElement);
   morph.owner = this;
   morph._update(parent, node);
   if (before !== null) {
@@ -209,7 +205,7 @@ Morph.prototype.replace = function (index, removedLength, addedNodes) {
   args = new Array(addedLength+2);
   if (addedLength > 0) {
     for (i=0; i<addedLength; i++) {
-      args[i+2] = current = new Morph(parent, start, end, this.domHelper);
+      args[i+2] = current = new Morph(parent, start, end, this.domHelper, this.contextualElement);
       current._update(parent, addedNodes[i]);
       current.owner = this;
       if (before !== null) {
