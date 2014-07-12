@@ -2,6 +2,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import EmberError from "ember-metal/error";
 import { Descriptor, defineProperty } from "ember-metal/properties";
+import { ComputedProperty } from "ember-metal/computed";
 import { create } from "ember-metal/platform";
 import { meta, inspect } from "ember-metal/utils";
 import {
@@ -68,3 +69,7 @@ function AliasedProperty_oneWaySet(obj, keyName, value) {
   defineProperty(obj, keyName, null);
   return set(obj, keyName, value);
 }
+
+// Backwards compatibility with Ember Data
+AliasedProperty.prototype._meta = undefined;
+AliasedProperty.prototype.meta = ComputedProperty.prototype.meta;
