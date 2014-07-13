@@ -218,6 +218,31 @@ test("An alternate template will pull in an alternate controller", function() {
   equal(Ember.$('h3:contains(Megatroll) + p:contains(Comes from homepage)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
+test("An alternate template will pull in an alternate controller instead of controllerName", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    controllerName: 'foo',
+    renderTemplate: function() {
+      this.render('homepage');
+    }
+  });
+
+  App.FooController = Ember.Controller.extend({
+    home: "Comes from Foo"
+  });
+
+  App.HomepageController = Ember.Controller.extend({
+    home: "Comes from homepage"
+  });
+
+  bootApplication();
+
+  equal(Ember.$('h3:contains(Megatroll) + p:contains(Comes from homepage)', '#qunit-fixture').length, 1, "The homepage template was rendered");
+});
+
 test("The template will pull in an alternate controller via key/value", function() {
   Router.map(function() {
     this.route("homepage", { path: "/" });
@@ -549,6 +574,33 @@ test("The route controller specified via controllerName is used in render", func
 
   deepEqual(container.lookup('route:home').controller, container.lookup('controller:myController'), "route controller is set by controllerName");
   equal(Ember.$('p', '#qunit-fixture').text(), "alternative home: foo", "The homepage template was rendered with data from the custom controller");
+});
+
+test("The route controller specified via controllerName is used in render even when a controller with the routeName is available", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<p>home: {{myValue}}</p>"
+  );
+
+  App.HomeRoute = Ember.Route.extend({
+    controllerName: 'myController'
+  });
+
+  container.register('controller:home', Ember.Controller.extend({
+    myValue: "home"
+  }));
+
+  container.register('controller:myController', Ember.Controller.extend({
+    myValue: "myController"
+  }));
+
+  bootApplication();
+
+  deepEqual(container.lookup('route:home').controller, container.lookup('controller:myController'), "route controller is set by controllerName");
+  equal(Ember.$('p', '#qunit-fixture').text(), "home: myController", "The homepage template was rendered with data from the custom controller");
 });
 
 test("The Homepage with a `setupController` hook modifying other controllers", function() {
