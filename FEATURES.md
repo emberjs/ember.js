@@ -83,3 +83,9 @@ for a detailed explanation.
 
   Added in [#5136](https://github.com/emberjs/ember.js/pull/5136)
 
+* `property-brace-expansion-improvement`
+
+  Property brace expansion now allows multiple sets of braces to be used,
+  as well as not restricting their location in the string.
+
+  Added in [#4617](https://github.com/emberjs/ember.js/pull/4617)

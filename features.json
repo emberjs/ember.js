@@ -9,7 +9,8 @@
     "ember-routing-will-change-hooks": null,
     "ember-routing-consistent-resources": true,
     "event-dispatcher-can-disable-event-manager": null,
-    "ember-metal-is-present": null
+    "ember-metal-is-present": null,
+    "property-brace-expansion-improvement": null
   },
   "debugStatements": [
     "Ember.warn",
