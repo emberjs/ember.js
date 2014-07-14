@@ -11,6 +11,7 @@ import Ember from 'ember-metal';
 import { isEqual } from 'ember-runtime/core';
 import compare from 'ember-runtime/compare';
 import copy from 'ember-runtime/copy';
+import inject from 'ember-runtime/inject';
 
 import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
@@ -94,6 +95,10 @@ import 'ember-runtime/ext/function'; // just for side effect of extending Functi
 Ember.compare = compare;
 Ember.copy = copy;
 Ember.isEqual = isEqual;
+
+if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  Ember.inject = inject;
+}
 
 Ember.Array = EmberArray;
 

@@ -154,6 +154,12 @@ var ActionHandler = Mixin.create({
     @method willMergeMixin
   */
   willMergeMixin: function(props) {
+    if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+      // Calling super is only OK here since we KNOW that there is another
+      // Mixin loaded first (injection dependency verification)
+      this._super.apply(this, arguments);
+    }
+
     var hashName;
 
     if (!props._actions) {
