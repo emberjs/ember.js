@@ -20,6 +20,9 @@ import {
   beforeObserver,
   observer
 } from "ember-metal/mixin"; //ES6TODO: should we access these directly from their package or from how thier exposed in ember-metal?
+import EmberArray from "ember-runtime/mixins/array";
+
+var forEach = EnumerableUtils.forEach;
 
 /**
   `Ember.SortableMixin` provides a standard interface for array proxies
@@ -237,7 +240,7 @@ export default Mixin.create(MutableEnumerable, {
   _setupSortProperties: function() {
     var sortProperties = get(this, 'sortProperties');
 
-    if (sortProperties && sortProperties.addArrayObserver) {
+    if (EmberArray.detect(sortProperties)) {
       sortProperties.addArrayObserver(this, {
         willChange: '_sortPropertiesArrayWillChange',
         didChange: '_sortPropertiesArrayDidChange'
@@ -247,7 +250,8 @@ export default Mixin.create(MutableEnumerable, {
 
   _teardownSortProperties: function() {
     var sortProperties = get(this, 'sortProperties');
-    if (sortProperties && sortProperties.removeArrayObserver) {
+
+    if (EmberArray.detect(sortProperties)) {
       sortProperties.removeArrayObserver(this, {
         willChange: '_sortPropertiesArrayWillChange',
         didChange: '_sortPropertiesArrayDidChange'
