@@ -96,3 +96,10 @@ for a detailed explanation.
   inherit from `Ember.ObjectProxy` directly.
 
   Added in [#5156](https://github.com/emberjs/ember.js/pull/5156)
+
+* `ember-routing-multi-current-when`
+
+  Allows the `link-to` helper's currentWhen property to accept multiple routes
+  using a `|` delimiter, for more control over a link's active state.
+
+  Added in [#3673](https://github.com/emberjs/ember.js/pull/3673)
