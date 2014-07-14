@@ -22,8 +22,6 @@ import {
 } from "ember-metal/mixin"; //ES6TODO: should we access these directly from their package or from how thier exposed in ember-metal?
 import EmberArray from "ember-runtime/mixins/array";
 
-var forEach = EnumerableUtils.forEach;
-
 /**
   `Ember.SortableMixin` provides a standard interface for array proxies
   to specify a sort order and maintain this sorting when objects are added,
