@@ -1,7 +1,6 @@
 *.bpkg
 *.gem
 *.rbc
-*.swp
 .DS_Store
 .bpm
 .bundle
