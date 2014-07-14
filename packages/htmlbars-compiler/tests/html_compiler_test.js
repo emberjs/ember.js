@@ -107,6 +107,13 @@ test("Simple elements can have attributes", function() {
   equalTokens(fragment, '<div class="foo" id="bar">content</div>');
 });
 
+test("Null attribute value removes that attribute", function() {
+  var template = compile('<input disabled="{{isDisabled}}">');
+  var fragment =template({isDisabled: null}, env);
+
+  equalTokens(fragment, '<input>');
+});
+
 test("Simple elements can have arbitrary attributes", function() {
   var template = compile("<div data-some-data='foo' data-isCamelCase='bar'>content</div>");
   var fragment = template({}, env);
