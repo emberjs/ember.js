@@ -8,6 +8,7 @@
     "ember-routing-linkto-target-attribute": null,
     "ember-routing-will-change-hooks": null,
     "ember-routing-consistent-resources": true,
+    "ember-routing-multi-current-when": null,
     "event-dispatcher-can-disable-event-manager": null,
     "ember-metal-is-present": null,
     "property-brace-expansion-improvement": null,
