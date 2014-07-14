@@ -188,7 +188,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       var qpMap = queryParams._qpMap = {};
 
       for (var i = 0, len = queryParams.length; i < len; ++i) {
-        accumulateQueryParamDescriptors(queryParams[i], qpMap);
+        accumulateQueryParamDescriptors(queryParams[i], qpMap, m);
       }
 
       return qpMap;
@@ -230,6 +230,10 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       for (var prop in cacheMeta) {
         if (!cacheMeta.hasOwnProperty(prop)) { continue; }
         var propMeta = cacheMeta[prop];
+        if (propMeta.scope === 'controller') {
+          continue;
+        }
+
         propMeta.values = params;
 
         var cacheKey = this._calculateCacheKey(propMeta.prefix, propMeta.parts, propMeta.values);
@@ -269,7 +273,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
   });
 }
 
-function accumulateQueryParamDescriptors(_desc, accum) {
+function accumulateQueryParamDescriptors(_desc, accum, meta) {
   var desc = _desc, tmp;
   if (typeOf(desc) === 'string') {
     tmp = {};
@@ -277,6 +281,7 @@ function accumulateQueryParamDescriptors(_desc, accum) {
     desc = tmp;
   }
 
+  var metaDescs = meta.descs;
   for (var key in desc) {
     if (!desc.hasOwnProperty(key)) { return; }
 
@@ -285,7 +290,12 @@ function accumulateQueryParamDescriptors(_desc, accum) {
       singleDesc = { as: singleDesc };
     }
 
-    tmp = accum[key] || { as: null, scope: 'model' };
+    var useCp = !!metaDescs[key];
+    tmp = accum[key] || {
+      as: null,
+      scope: (useCp) ? 'controller' : 'model',
+      useCp: useCp
+    };
     merge(tmp, singleDesc);
 
     accum[key] = tmp;
