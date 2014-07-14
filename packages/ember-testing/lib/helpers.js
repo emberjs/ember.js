@@ -74,6 +74,7 @@ function click(app, selector, context) {
 
 function triggerEvent(app, selector, context, type, options){
   if (arguments.length === 3) {
+    options = type;
     type = context;
     context = null;
   }
@@ -367,7 +368,7 @@ click('#some-link-id').then(validateURL);
 helper('currentURL', currentURL);
 
 /**
-  Triggers the given event on the element identified by the provided selector.
+  Triggers the given DOM event on the element identified by the provided selector.
 
   Example:
 
@@ -383,8 +384,10 @@ helper('currentURL', currentURL);
 
  @method triggerEvent
  @param {String} selector jQuery selector for finding element on the DOM
+ @param {String} [context] jQuery selector that will limit the selector
+                           argument to find only within the context's children
  @param {String} type The event type to be triggered.
- @param {String} options The options to be passed to jQuery.Event.
+ @param {Object} options The options to be passed to jQuery.Event.
  @return {RSVP.Promise}
  @since 1.5.0
 */
