@@ -208,32 +208,59 @@ test("AutoLocation.create() should transform the URL for hashchange-only browser
   equal(get(location, 'cancelRouterSetup'), true, 'cancelRouterSetup should be set so the router knows.');
 });
 
-test("AutoLocation.create() should transform the URL for pushState-supported browsers viewing a HashLocation-formatted url", function() {
-  expect(4);
+if (Ember.FEATURES.isEnabled('ember-routing-auto-location-uses-replace-state-for-history')) {
+  test("AutoLocation.create() should replace the URL for pushState-supported browsers viewing a HashLocation-formatted url", function() {
+    expect(2);
 
-  supportsHistory = true;
-  supportsHashChange = true;
+    supportsHistory = true;
+    supportsHashChange = true;
 
-  AutoTestLocation._location = {
-    hash: '#/test',
-    hostname: 'test.com',
-    href: 'http://test.com/#/test',
-    pathname: '/',
-    protocol: 'http:',
-    port: '',
-    search: '',
+    AutoTestLocation._location = {
+      hash: '#/test',
+      hostname: 'test.com',
+      href: 'http://test.com/#/test',
+      pathname: '/',
+      protocol: 'http:',
+      port: '',
+      search: ''
+    };
 
-    replace: function (path) {
-      equal(path, 'http://test.com/test', 'location.replace should be called with normalized HistoryLocation url');
-    }
-  };
+    AutoTestLocation._history.replaceState = function (state, title, path) {
+      equal(path, '/test', 'history.replaceState should be called with normalized HistoryLocation url');
+    };
 
-  createLocation();
+    createLocation();
 
-  equal(get(location, 'implementation'), 'none', 'NoneLocation should be returned while we attempt to location.replace()');
-  equal(location instanceof FakeNoneLocation, true, 'NoneLocation should be returned while we attempt to location.replace()');
-  equal(get(location, 'cancelRouterSetup'), true, 'cancelRouterSetup should be set so the router knows.');
-});
+    equal(get(location, 'implementation'), 'history');
+  });  
+} else {
+  test("AutoLocation.create() should transform the URL for pushState-supported browsers viewing a HashLocation-formatted url", function() {
+    expect(4);
+
+    supportsHistory = true;
+    supportsHashChange = true;
+
+    AutoTestLocation._location = {
+      hash: '#/test',
+      hostname: 'test.com',
+      href: 'http://test.com/#/test',
+      pathname: '/',
+      protocol: 'http:',
+      port: '',
+      search: '',
+
+      replace: function (path) {
+        equal(path, 'http://test.com/test', 'location.replace should be called with normalized HistoryLocation url');
+      }
+    };
+
+    createLocation();
+
+    equal(get(location, 'implementation'), 'none', 'NoneLocation should be returned while we attempt to location.replace()');
+    equal(location instanceof FakeNoneLocation, true, 'NoneLocation should be returned while we attempt to location.replace()');
+    equal(get(location, 'cancelRouterSetup'), true, 'cancelRouterSetup should be set so the router knows.');
+  });
+}
 
 test("AutoLocation._getSupportsHistory() should handle false positive for Android 2.2/2.3, returning false", function() {
   expect(1);

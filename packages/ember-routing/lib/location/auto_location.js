@@ -351,8 +351,18 @@ export default {
       if (currentPath === historyPath) {
         implementationClass = this._HistoryLocation;
       } else {
-        cancelRouterSetup = true;
-        this._replacePath(historyPath);
+        if (Ember.FEATURES.isEnabled("ember-routing-auto-location-uses-replace-state-for-history")) {
+          if (currentPath.substr(0, 2) === '/#') {
+            this._history.replaceState({ path: historyPath }, null, historyPath);
+            implementationClass = this._HistoryLocation;
+          } else {
+            cancelRouterSetup = true;
+            this._replacePath(historyPath);
+          }
+        } else {
+          cancelRouterSetup = true;
+          this._replacePath(historyPath);
+        }
       }
 
     } else if (this._getSupportsHashChange()) {
