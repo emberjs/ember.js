@@ -1,6 +1,9 @@
 import Controller from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import Mixin from "ember-metal/mixin";
+import Object from "ember-runtime/system/object";
+import Container from "ember-runtime/system/container";
+import inject from "ember-runtime/inject";
 
 QUnit.module('Controller event handling');
 
@@ -169,3 +172,33 @@ test("specifying `content` (with `model` specified) does not result in deprecati
     model: 'blammo'
   }).create();
 });
+
+if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  QUnit.module('Controller injected properties');
+
+  test("defining a controller on a non-controller should fail assertion", function(){
+    expectAssertion(function() {
+      var AnObject = Object.extend({
+        foo: inject.controller('bar')
+      });
+
+      // Prototype chains are lazy, make sure it's evaluated
+      AnObject.proto();
+    }, /Defining an injected controller property on a non-controller is not allowed./);
+  });
+
+  test("controllers can be injected into controllers", function() {
+    var container = new Container();
+
+    container.register('controller:post', Controller.extend({
+      postsController: inject.controller('posts')
+    }));
+
+    container.register('controller:posts', Controller.extend());
+
+    var postController = container.lookup('controller:post'),
+      postsController = container.lookup('controller:posts');
+
+    equal(postsController, postController.get('postsController'), "controller.posts is injected");
+  });
+}
