@@ -13,7 +13,6 @@
     "ember-metal-is-present": null,
     "property-brace-expansion-improvement": null,
     "ember-runtime-proxy-mixin": null,
-    "ember-routing-consistent-resources": null,
     "ember-routing-handlebars-action-with-key-code": null
   },
   "debugStatements": [
