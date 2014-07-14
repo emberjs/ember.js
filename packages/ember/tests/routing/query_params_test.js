@@ -3,6 +3,7 @@ import {
   forEach,
   map
 }  from "ember-metal/enumerable_utils";
+import { platform } from 'ember-metal/platform';
 
 var Router, App, AppView, templates, router, container;
 var get = Ember.get;
@@ -10,11 +11,15 @@ var set = Ember.set;
 var compile = Ember.Handlebars.compile;
 
 function withoutMeta(object) {
-  var newObject = Ember.$.extend(true, {}, object);
+  if (platform.defineProperty.isSimulated) {
+    var newObject = Ember.$.extend(true, {}, object);
 
-  delete newObject['__ember_meta__'];
+    delete newObject['__ember_meta__'];
 
-  return newObject;
+    return newObject;
+  } else {
+    return object;
+  }
 }
 
 function bootApplication() {
