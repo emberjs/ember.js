@@ -1,4 +1,5 @@
 import Controller from "ember-runtime/controllers/controller";
+import Service from "ember-runtime/system/service";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import Mixin from "ember-metal/mixin";
 import Object from "ember-runtime/system/object";
@@ -200,5 +201,20 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
       postsController = container.lookup('controller:posts');
 
     equal(postsController, postController.get('postsController'), "controller.posts is injected");
+  });
+
+  test("services can be injected into controllers", function() {
+    var container = new Container();
+
+    container.register('controller:application', Controller.extend({
+      authService: inject.service('auth')
+    }));
+
+    container.register('service:auth', Service.extend());
+
+    var appController = container.lookup('controller:application'),
+      authService = container.lookup('service:auth');
+
+    equal(authService, appController.get('authService'), "service.auth is injected");
   });
 }
