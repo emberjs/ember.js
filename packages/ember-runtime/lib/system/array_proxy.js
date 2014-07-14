@@ -143,7 +143,28 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     }
   },
 
+  /**
+    Override to implement content array `willChange` observer.
+
+    @method contentArrayWillChange
+
+    @param {Ember.Array} contentArray the content array
+    @param {Number} start starting index of the change
+    @param {Number} removeCount count of items removed
+    @param {Number} addCount count of items added
+
+  */
   contentArrayWillChange: K,
+  /**
+    Override to implement content array `didChange` observer.
+
+    @method contentArrayDidChange
+
+    @param {Ember.Array} contentArray the content array
+    @param {Number} start starting index of the change
+    @param {Number} removeCount count of items removed
+    @param {Number} addCount count of items added
+  */
   contentArrayDidChange: K,
 
   /**
