@@ -10,7 +10,8 @@
     "ember-routing-consistent-resources": true,
     "event-dispatcher-can-disable-event-manager": null,
     "ember-metal-is-present": null,
-    "property-brace-expansion-improvement": null
+    "property-brace-expansion-improvement": null,
+    "ember-runtime-proxy-mixin": null
   },
   "debugStatements": [
     "Ember.warn",
