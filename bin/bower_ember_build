@@ -26,6 +26,8 @@ case $TRAVIS_BRANCH in
     CHANNEL="release" ;;
   "release" )
     CHANNEL="release" ;;
+  "metal-views" )
+    CHANNEL="metal-views" ;;
   * )
     echo "Not a bower release branch.  Exiting!"
     exit 0 ;;
