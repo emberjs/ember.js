@@ -823,7 +823,7 @@ test("it can trigger actions for keyboard events", function() {
   ok(showCalled, "should call action with keyup");
 });
 
-if (Ember.FEATURES.isEnabled("ember-actions-with-key-code")) {
+if (Ember.FEATURES.isEnabled("ember-routing-handlebars-action-with-key-code")) {
   test("it can trigger actions for key events with specific key codes", function() {
     var showCalled = false;
 

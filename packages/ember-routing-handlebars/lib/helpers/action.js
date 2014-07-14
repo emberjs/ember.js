@@ -98,7 +98,7 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
           eventName = options.eventName,
           actionName;
 
-      if (Ember.FEATURES.isEnabled("ember-actions-with-key-code")) {
+      if (Ember.FEATURES.isEnabled("ember-routing-handlebars-action-with-key-code")) {
         if (ignoreKeyEvent(eventName, event, options.withKeyCode)) {
           return;
         }
