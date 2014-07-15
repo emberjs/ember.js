@@ -31,6 +31,12 @@ QUnit.module("Ember Router", {
   }
 });
 
+test("can create a router without a container", function() {
+  var router = Router.create();
+
+  ok(router.router);
+});
+
 test("should create a router if one does not exist on the constructor", function() {
   createRouter();
 
