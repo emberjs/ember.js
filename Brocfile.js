@@ -18,7 +18,7 @@ var calculateVersion = require('./lib/calculate-version');
 
 var env = process.env.EMBER_ENV || 'development';
 var disableJSHint = !!process.env.NO_JSHINT || false;
-var disableDefeatureify = !!process.env.NO_DEFEATUREIFY || env === 'test' || false;
+var disableDefeatureify = !!process.env.NO_DEFEATUREIFY || env === 'development' || false;
 
 var generateTemplateCompiler = require('./lib/broccoli-ember-template-compiler-generator');
 var inlineTemplatePrecompiler = require('./lib/broccoli-ember-inline-template-precompiler');
