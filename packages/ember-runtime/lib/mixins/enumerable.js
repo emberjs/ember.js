@@ -7,7 +7,7 @@
 // HELPERS
 //
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, isNone = Ember.isNone;
 var a_slice = Array.prototype.slice;
 var a_indexOf = Ember.EnumerableUtils.indexOf;
 
@@ -30,6 +30,22 @@ function iter(key, value) {
     return valueProvided ? value===cur : !!cur;
   }
   return i ;
+}
+
+function aggregate(collection, key, comparator) {
+  var ret = null;
+  collection.forEach(function(item) {
+    if (!isNone(item)) {
+      var itemValue = get(item, key);
+      if (!isNone(itemValue)) {
+        if (isNone(ret)) ret = item;
+        if (Ember.compare(itemValue, get(ret, key)) === comparator) {
+          ret = item;
+        }
+      }
+    }
+  });
+  return ret;
 }
 
 /**
@@ -1010,7 +1026,15 @@ if (Ember.FEATURES.isEnabled("ember-runtime-compact-by")) {
      Returns a copy of the array without elements with `key` equal to `null` and `undefined`.
 
      ```javascript
-     var arr = [Ember.Object.create({a: null}), {a: 1}, {a: false}, {a: ''}, {a: undefined}, {a: 0}, {a: null}];
+     var arr = [
+      Ember.Object.create({a: null}),
+      {a: 1},
+      {a: false},
+      {a: ''},
+      {a: undefined},
+      {a: 0},
+      {a: null}
+     ];
      arr.compactBy("a");  // [{a: 1}, {a: false}, {a: ''}, {a: 0}]
      ```
 
@@ -1030,7 +1054,12 @@ if (Ember.FEATURES.isEnabled("ember-runtime-max-by")) {
      Returns an object with maximum `key` value or `null` if all elements don't have `key`
 
      ```javascript
-     var arr = [{a: 2}, {a: 1}, {a: 3}, {a: 4}];
+     var arr = [
+      {a: 2},
+      {a: 1},
+      {a: 3},
+      {a: 4}
+     ];
      arr.maxBy("a");  // {a: 4}
      ```
 
@@ -1039,20 +1068,7 @@ if (Ember.FEATURES.isEnabled("ember-runtime-max-by")) {
      @return {Object} object with maximum `key` value or `null` if all elements don't have `key`
      */
     maxBy: function(key) {
-      if (get(this, 'length') === 0) return null;
-      var ret = null;
-      this.forEach(function(o) {
-        if (!Ember.isNone(o)) {
-          var oVal = get(o, key);
-          if (!Ember.isNone(oVal)) {
-            if (Ember.isNone(ret)) ret = o;
-            if (Ember.compare(oVal, get(ret, key)) === 1) {
-              ret = o;
-            }
-          }
-        }
-      });
-      return ret;
+      return aggregate(this, key, 1);
     }
   });
 }
@@ -1063,7 +1079,12 @@ if (Ember.FEATURES.isEnabled("ember-runtime-min-by")) {
      Returns an object with minimum `key` value or `null` if all elements don't have `key`
 
      ```javascript
-     var arr = [{a: 2}, {a: 1}, {a: 3}, {a: 4}];
+     var arr = [
+      {a: 2},
+      {a: 1},
+      {a: 3},
+      {a: 4}
+     ];
      arr.minBy("a");  // {a: 1}
      ```
 
@@ -1072,20 +1093,7 @@ if (Ember.FEATURES.isEnabled("ember-runtime-min-by")) {
      @return {Object} object with minimum `key` value or `null` if all elements don't have `key`
      */
     minBy: function(key) {
-      if (get(this, 'length') === 0) return null;
-      var ret = null;
-      this.forEach(function(o) {
-        if (!Ember.isNone(o)) {
-          var oVal = get(o, key);
-          if (!Ember.isNone(oVal)) {
-            if (Ember.isNone(ret)) ret = o;
-            if (Ember.compare(oVal, get(ret, key)) === -1) {
-              ret = o;
-            }
-          }
-        }
-      });
-      return ret;
+      return aggregate(this, key, -1);
     }
   });
 }
