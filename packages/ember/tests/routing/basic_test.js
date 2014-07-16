@@ -1,4 +1,4 @@
-var Router, App, AppView, templates, router, container;
+var Router, App, AppView, templates, router, container, originalLoggerError, originalStringName;
 var get = Ember.get,
     set = Ember.set,
     compile = Ember.Handlebars.compile,
@@ -67,6 +67,15 @@ module("Basic Routing", {
       Ember.TEMPLATES.homepage = compile("<h3>Megatroll</h3><p>{{home}}</p>");
       Ember.TEMPLATES.camelot = compile('<section><h3>Is a silly place</h3></section>');
     });
+
+    originalLoggerError = Ember.Logger.error;
+
+    // Older versions of JSHint define String.prototype.name
+    // but that breaks a few asserts that are attempting to confirm
+    // the error output (as we use error.name to determine if it is
+    // an error or not).
+    originalStringName  = String.prototype.name;
+    String.prototype.name = null;
   },
 
   teardown: function() {
@@ -75,6 +84,8 @@ module("Basic Routing", {
       App = null;
 
       Ember.TEMPLATES = {};
+      Ember.Logger.error = originalLoggerError;
+      String.prototype.name = originalStringName;
     });
   }
 });
@@ -3021,8 +3032,7 @@ test("Redirecting with null model doesn't error out", function() {
 
 test("rejecting the model hooks promise with a non-error prints the `message` property", function() {
   var rejectedMessage = 'OMG!! SOOOOOO BAD!!!!',
-      rejectedStack   = 'Yeah, buddy: stack gets printed too.',
-      originalLoggerError = Ember.Logger.error;
+      rejectedStack   = 'Yeah, buddy: stack gets printed too.';
 
   Router.map(function() {
     this.route("yippie", { path: "/" });
@@ -3041,13 +3051,9 @@ test("rejecting the model hooks promise with a non-error prints the `message` pr
   });
 
   bootApplication();
-
-  Ember.Logger.error = originalLoggerError;
 });
 
 test("rejecting the model hooks promise with no reason still logs error", function() {
-  var originalLoggerError = Ember.Logger.error;
-
   Router.map(function() {
     this.route("wowzers", { path: "/" });
   });
@@ -3063,13 +3069,10 @@ test("rejecting the model hooks promise with no reason still logs error", functi
   });
 
   bootApplication();
-
-  Ember.Logger.error = originalLoggerError;
 });
 
 test("rejecting the model hooks promise with a string shows a good error", function() {
-  var originalLoggerError = Ember.Logger.error,
-      rejectedMessage = "Supercalifragilisticexpialidocious";
+  var rejectedMessage = "Supercalifragilisticexpialidocious";
 
   Router.map(function() {
     this.route("yondo", { path: "/" });
@@ -3092,6 +3095,8 @@ test("rejecting the model hooks promise with a string shows a good error", funct
 });
 
 test("Errors in transitionTo within redirect hook are logged", function() {
+  expect(1);
+
   Router.map(function() {
     this.route('yondo', { path: "/" });
     this.route('stink-bomb');
@@ -3103,8 +3108,28 @@ test("Errors in transitionTo within redirect hook are logged", function() {
     }
   });
 
-  raises(function() {
-    bootApplication();
-  },
-  /More context objects were passed than there are dynamic segments for the route: stink-bomb/);
+  Ember.Logger.error = function(message) {
+    ok(message.match(/More context objects were passed than there are dynamic segments for the route: stink-bomb/), 'the error is printed');
+  };
+
+  bootApplication();
+});
+
+test("Errors in transition show error template if available", function() {
+  Ember.TEMPLATES.error = compile("<div id='error'>Error!</div>");
+
+  Router.map(function() {
+    this.route('yondo', { path: "/" });
+    this.route('stink-bomb');
+  });
+
+  App.YondoRoute = Ember.Route.extend({
+    redirect: function(){
+      throw new Error('Go boom!');
+    }
+  });
+
+  bootApplication();
+
+  equal(Ember.$('#error').length, 1, "Error template was rendered.");
 });

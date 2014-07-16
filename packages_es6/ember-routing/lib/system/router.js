@@ -401,7 +401,7 @@ var EmberRouter = EmberObject.extend(Evented, {
       } else if (error.name === 'TransitionAborted') {
         // just ignore TransitionAborted here
       } else {
-        throw error;
+        logError(error);
       }
 
       return error;
@@ -544,16 +544,7 @@ var defaultActionHandlers = {
       return;
     }
 
-    var errorArgs = ['Error while processing route: ' + transition.targetName];
-
-    if (error) {
-      if (error.message) { errorArgs.push(error.message); }
-      if (error.stack)   { errorArgs.push(error.stack); }
-
-      if (typeof error === "string") { errorArgs.push(error); }
-    }
-
-    Ember.Logger.error.apply(this, errorArgs);
+    logError(error, 'Error while processing route: ' + transition.targetName);
   },
 
   loading: function(transition, originRoute) {
@@ -583,6 +574,21 @@ var defaultActionHandlers = {
     }
   }
 };
+
+function logError(error, initialMessage) {
+  var errorArgs = [];
+
+  if (initialMessage) { errorArgs.push(initialMessage); }
+
+  if (error) {
+    if (error.message) { errorArgs.push(error.message); }
+    if (error.stack)   { errorArgs.push(error.stack); }
+
+    if (typeof error === "string") { errorArgs.push(error); }
+  }
+
+  Ember.Logger.error.apply(this, errorArgs);
+}
 
 function findChildRouteName(parentRoute, originatingChildRoute, name) {
   var router = parentRoute.router,
