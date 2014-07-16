@@ -1,5 +1,18 @@
 # Ember Changelog
 
+### Ember 1.7.0-beta.2 (July, 16, 2014)
+
+* [BUGFIX] Wrap es3 keywords in quotes.
+* [BUGFIX] Use injected integration test helpers instead of local functions.
+* [BUGFIX] Add alias descriptor, and replace `Ember.computed.alias` with new descriptor.
+* [BUGFIX] Fix `{{#with view.foo as bar}}`.
+* [BUGFIX] Force remove `required` attribute for IE8.
+* [BUGFIX] Controller precendence for `Ember.Route.prototype.render` updated.
+* [BUGFIX] fixes variable argument passing to triggerEvent helper.
+* [BUGFIX] Use view:toplevel for {{view}} instead of view:default.
+* [BUGFIX] Do not throw uncaught errors mid-transition.
+* [BUGFIX] Don't assume that the router has a container.
+
 ### Ember 1.7.0-beta.1 (July, 8, 2014)
 
 * Fix components inside group helper.
