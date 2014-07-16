@@ -18,6 +18,11 @@
   caveats with model/content, and also sets a simple ground rule: Never set a controllers content,
   rather always set it's model and ember will do the right thing.
 
+### Ember 1.6.1 (July, 15, 2014)
+
+* Fix error routes/templates. Changes in router promise logging caused errors to be
+  thrown mid-transition into the `error` route. See [#5166](https://github.com/emberjs/ember.js/pull/5166) for further details.
+
 ### Ember 1.6.0 (July, 7, 2014)
 
 * [BUGFIX] Ensure itemController's do not leak by tying them to the parent controller lifecycle.
