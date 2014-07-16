@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### Ember 1.6.1 (July, 15, 2014)
+
+* Fix error routes/templates. Changes in router promise logging caused errors to be
+  thrown mid-transition into the `error` route. See [#5166](https://github.com/emberjs/ember.js/pull/5166) for further details.
+
 ### Ember 1.6.0 (July, 7, 2014)
 
 * [BREAKING BUGFIX] An empty array is treated as falsy value in `bind-attr` to be in consistent
