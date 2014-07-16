@@ -83,12 +83,6 @@ var childViewsProperty = computed(function() {
   });
 
   ret.replace = function (idx, removedCount, addedViews) {
-    if (!ContainerView) { ContainerView = requireModule('ember-views/views/container_view')['default']; } // ES6TODO: stupid circular dep
-
-    if (view instanceof ContainerView) {
-      Ember.deprecate("Manipulating an Ember.ContainerView through its childViews property is deprecated. Please use the ContainerView instance itself as an Ember.MutableArray.");
-      return view.replace(idx, removedCount, addedViews);
-    }
     throw new EmberError("childViews is immutable");
   };
 
