@@ -144,7 +144,7 @@ run.join = function(target, method /* args */) {
   ```
 
   @method bind
-  @namespace run
+  @namespace Ember
   @param {Object} [target] target of method to call
   @param {Function|String} method Method to invoke.
     May be a function or a string. If you pass a string
