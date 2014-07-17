@@ -1807,7 +1807,6 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
       @method resetController
       @param {Controller} controller instance
-      @param {Object} model
       @param {Boolean} isExiting
       @param {Object} transition
     */
