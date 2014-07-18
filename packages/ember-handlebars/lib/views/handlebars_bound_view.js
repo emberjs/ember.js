@@ -37,6 +37,7 @@ function SimpleHandlebarsView(path, pathRoot, isEscaped, templateData) {
   this.isEscaped = isEscaped;
   this.templateData = templateData;
 
+  this._lastNormalizedValue = undefined;
   this.morph = Metamorph();
   this.state = 'preRender';
   this.updateId = null;
@@ -65,9 +66,9 @@ SimpleHandlebarsView.prototype = {
   propertyDidChange: K,
 
   normalizedValue: function() {
-    var path = this.path,
-        pathRoot = this.pathRoot,
-        result, templateData;
+    var path = this.path;
+    var pathRoot = this.pathRoot;
+    var result, templateData;
 
     // Use the pathRoot as the result if no path is provided. This
     // happens if the path is `this`, which gets normalized into
@@ -93,12 +94,12 @@ SimpleHandlebarsView.prototype = {
     buffer.push(string);
   },
 
-  render: function() {
+  render: function(value) {
     // If not invoked via a triple-mustache ({{{foo}}}), escape
     // the content of the template.
     var escape = this.isEscaped;
-    var result = this.normalizedValue();
-
+    var result = value || this.normalizedValue();
+    this._lastNormalizedValue = result;
     if (result === null || result === undefined) {
       result = "";
     } else if (!(result instanceof SafeString)) {
@@ -127,7 +128,10 @@ SimpleHandlebarsView.prototype = {
 
   update: function () {
     this.updateId = null;
-    this.morph.html(this.render());
+    var value = this.normalizedValue();
+    if (value !== this._lastNormalizedValue) {
+      this.morph.html(this.render(value));
+    }
   },
 
   _transitionTo: function(state) {
