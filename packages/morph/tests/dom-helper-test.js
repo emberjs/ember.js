@@ -76,33 +76,35 @@ test('#parseHTML of tr with contextual table element', function(){
 });
 
 // TODO: Basic svg support
-/*
 test('#createElement of svg with svg namespace', function(){
+  dom.setNamespace(svgNamespace);
   var node = dom.createElement('svg');
   equal(node.tagName, 'svg');
   equal(node.namespaceURI, svgNamespace);
-  equalHTML(node, '<svg></svg>');
 });
 
 test('#createElement of path with svg contextual element', function(){
-  var svgElement = document.createElementNS(svgNamespace, 'svg'),
-      node = dom.createElement('path');
+  dom.setNamespace(svgNamespace);
+  var node = dom.createElement('path');
   equal(node.tagName, 'path');
   equal(node.namespaceURI, svgNamespace);
-  equalHTML(node, '<path></path>');
 });
-*/
 
-// TODO: Safari, Phantom does not return childNodes for SVG
-/*
 test('#parseHTML of path with svg contextual element', function(){
+  dom.setNamespace(svgNamespace);
   var svgElement = document.createElementNS(svgNamespace, 'svg'),
       nodes = dom.parseHTML('<path></path>', svgElement);
-  console.log(nodes);
-  equal(nodes[0].tagName, 'path');
+  equal(nodes[0].tagName.toLowerCase(), 'path');
   equal(nodes[0].namespaceURI, svgNamespace);
 });
-*/
+
+test('#parseHTML of stop with linearGradient contextual element', function(){
+  dom.setNamespace(svgNamespace);
+  var svgElement = document.createElementNS(svgNamespace, 'linearGradient'),
+      nodes = dom.parseHTML('<stop />', svgElement);
+  equal(nodes[0].tagName.toLowerCase(), 'stop');
+  equal(nodes[0].namespaceURI, svgNamespace);
+});
 
 test('#cloneNode shallow', function(){
   var divElement = document.createElement('div');

@@ -6,7 +6,8 @@ import { DOMHelper } from "morph";
 import { preprocess } from "htmlbars-compiler/parser";
 import { equalHTML } from "test/support/assertions";
 
-var dom = new DOMHelper();
+var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
+    svgNamespace = "http://www.w3.org/2000/svg";
 
 function fragmentFor(ast) {
   /* jshint evil: true */
@@ -18,7 +19,7 @@ function fragmentFor(ast) {
 
   var fn = new Function("dom", 'return ' + program)();
 
-  return fn(dom);
+  return fn(new DOMHelper());
 }
 
 function hydratorFor(ast) {
@@ -39,6 +40,27 @@ test('compiles a fragment', function () {
   equalHTML(fragment, "<div> bar </div>");
 });
 
+test('compiles an svg fragment', function () {
+  var ast = preprocess("<div><svg><circle/><foreignObject><span></span></foreignObject></svg></div>");
+  var fragment = fragmentFor(ast);
+
+  equal( fragment.childNodes[0].namespaceURI, svgNamespace,
+         'svg has the right namespace' );
+  equal( fragment.childNodes[0].childNodes[0].namespaceURI, svgNamespace,
+         'circle has the right namespace' );
+  equal( fragment.childNodes[0].childNodes[1].namespaceURI, svgNamespace,
+         'foreignObject has the right namespace' );
+  equal( fragment.childNodes[0].childNodes[1].childNodes[0].namespaceURI, xhtmlNamespace,
+         'span has the right namespace' );
+});
+
+test('compiles an svg element with classes', function () {
+  var ast = preprocess('<svg class="red right hand"></svg>');
+  var fragment = fragmentFor(ast);
+
+  equal(fragment.getAttribute('class'), 'red right hand');
+});
+
 test('converts entities to their char/string equivalent', function () {
   var ast = preprocess("<div title=\"&quot;Foo &amp; Bar&quot;\">lol &lt; &#60;&#x3c; &#x3C; &LT; &NotGreaterFullEqual; &Borksnorlax;</div>");
   var fragment = fragmentFor(ast);
@@ -55,7 +77,7 @@ test('hydrates a fragment with morph mustaches', function () {
   var contentResolves = [];
   var context = {};
   var env = {
-    dom: dom,
+    dom: new DOMHelper(),
     hooks: {
       content: function(morph, path, context, params, options) {
         contentResolves.push({
@@ -98,13 +120,14 @@ test('hydrates a fragment with morph mustaches', function () {
 
 test('test auto insertion of text nodes for needed edges a fragment with morph mustaches', function () {
   var ast = preprocess("{{first}}<p>{{second}}</p>{{third}}");
+  var dom = new DOMHelper();
   var fragment = dom.cloneNode(fragmentFor(ast), true);
   var hydrate = hydratorFor(ast);
 
   var morphs = [];
   var fakeMorphDOM = new DOMHelper();
   fakeMorphDOM.createMorphAt = function(){
-    var morph = DOMHelper.prototype.createMorphAt.apply(this, arguments);
+    var morph = dom.createMorphAt.apply(this, arguments);
     morphs.push(morph);
     return morph;
   };
