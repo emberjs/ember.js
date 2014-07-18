@@ -31,15 +31,16 @@ function copy(obj) {
   var output = {};
 
   for (var prop in obj) {
-    if (obj.hasOwnProperty(prop)) { output[prop] = obj[prop]; }
+    // hasOwnPropery is not needed because obj is Object.create(null);
+    output[prop] = obj[prop];
   }
 
   return output;
 }
 
 function copyMap(original, newObject) {
-  var keys = original.keys.copy(),
-      values = copy(original.values);
+  var keys = original.keys.copy();
+  var values = copy(original.values);
 
   newObject.keys = keys;
   newObject.values = values;
@@ -71,13 +72,12 @@ OrderedSet.create = function() {
   return new OrderedSet();
 };
 
-
 OrderedSet.prototype = {
   /**
     @method clear
   */
   clear: function() {
-    this.presenceSet = {};
+    this.presenceSet = Object.create(null);
     this.list = [];
   },
 
@@ -86,11 +86,11 @@ OrderedSet.prototype = {
     @param obj
   */
   add: function(obj) {
-    var guid = guidFor(obj),
-        presenceSet = this.presenceSet,
-        list = this.list;
+    var guid = guidFor(obj);
+    var presenceSet = this.presenceSet;
+    var list = this.list;
 
-    if (guid in presenceSet) { return; }
+    if (presenceSet[guid]) { return; }
 
     presenceSet[guid] = true;
     list.push(obj);
@@ -101,9 +101,9 @@ OrderedSet.prototype = {
     @param obj
   */
   remove: function(obj) {
-    var guid = guidFor(obj),
-        presenceSet = this.presenceSet,
-        list = this.list;
+    var guid = guidFor(obj);
+    var presenceSet = this.presenceSet;
+    var list = this.list;
 
     delete presenceSet[guid];
 
@@ -127,10 +127,10 @@ OrderedSet.prototype = {
     @return {Boolean}
   */
   has: function(obj) {
-    var guid = guidFor(obj),
-        presenceSet = this.presenceSet;
+    var guid = guidFor(obj);
+    var presenceSet = this.presenceSet;
 
-    return guid in presenceSet;
+    return presenceSet[guid];
   },
 
   /**
@@ -191,7 +191,7 @@ OrderedSet.prototype = {
 */
 function Map() {
   this.keys = OrderedSet.create();
-  this.values = {};
+  this.values = Object.create(null);
 }
 
 Ember.Map = Map;
@@ -222,8 +222,8 @@ Map.prototype = {
     @return {*} the value associated with the key, or `undefined`
   */
   get: function(key) {
-    var values = this.values,
-        guid = guidFor(key);
+    var values = this.values;
+    var guid = guidFor(key);
 
     return values[guid];
   },
@@ -237,9 +237,9 @@ Map.prototype = {
     @param {*} value
   */
   set: function(key, value) {
-    var keys = this.keys,
-        values = this.values,
-        guid = guidFor(key);
+    var keys = this.keys;
+    var values = this.values;
+    var guid = guidFor(key);
 
     keys.add(key);
     values[guid] = value;
@@ -256,11 +256,11 @@ Map.prototype = {
   remove: function(key) {
     // don't use ES6 "delete" because it will be annoying
     // to use in browsers that are not ES6 friendly;
-    var keys = this.keys,
-        values = this.values,
-        guid = guidFor(key);
+    var keys = this.keys;
+    var values = this.values;
+    var guid = guidFor(key);
 
-    if (values.hasOwnProperty(guid)) {
+    if (values[guid]) {
       keys.remove(key);
       delete values[guid];
       set(this, 'length', keys.list.length);
@@ -278,10 +278,10 @@ Map.prototype = {
     @return {Boolean} true if the item was present, false otherwise
   */
   has: function(key) {
-    var values = this.values,
-        guid = guidFor(key);
+    var values = this.values;
+    var guid = guidFor(key);
 
-    return values.hasOwnProperty(guid);
+    return !!values[guid];
   },
 
   /**
@@ -296,8 +296,8 @@ Map.prototype = {
       callback. By default, `this` is the map.
   */
   forEach: function(callback, self) {
-    var keys = this.keys,
-        values = this.values;
+    var keys = this.keys;
+    var values = this.values;
 
     keys.forEach(function(key) {
       var guid = guidFor(key);
@@ -324,7 +324,7 @@ Map.prototype = {
     @param {*} [options.defaultValue]
 */
 function MapWithDefault(options) {
-  Map.call(this);
+  this._super$constructor();
   this.defaultValue = options.defaultValue;
 }
 
@@ -345,6 +345,9 @@ MapWithDefault.create = function(options) {
 };
 
 MapWithDefault.prototype = create(Map.prototype);
+MapWithDefault.prototype.constructor = MapWithDefault;
+MapWithDefault.prototype._super$constructor = Map;
+MapWithDefault.prototype._super$get = Map.prototype.get;
 
 /**
   Retrieve the value associated with a given key.
@@ -357,7 +360,7 @@ MapWithDefault.prototype.get = function(key) {
   var hasValue = this.has(key);
 
   if (hasValue) {
-    return Map.prototype.get.call(this, key);
+    return this._super$get(key);
   } else {
     var defaultValue = this.defaultValue(key);
     this.set(key, defaultValue);
