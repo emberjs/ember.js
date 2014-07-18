@@ -137,7 +137,7 @@ export default Mixin.create(Enumerable, {
 
   /**
     This is the handler for the special array content property. If you get
-    this property, it will return this. If you set this property it a new
+    this property, it will return this. If you set this property to a new
     array, it will replace the current content.
 
     This property overrides the default property defined in `Ember.Enumerable`.
