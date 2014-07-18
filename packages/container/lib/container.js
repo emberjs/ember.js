@@ -1,5 +1,5 @@
-import InheritingDict from 'container/inheriting_dict';
-import Ember from "ember-metal/core"; // Ember.assert
+import Ember from 'ember-metal/core'; // Ember.assert
+import dictionary from 'ember-metal/dictionary';
 
 // A lightweight container that helps to assemble and decouple components.
 // Public api for the container is still in flux.
@@ -10,18 +10,18 @@ function Container(parent) {
 
   this.resolver = parent && parent.resolver || function() {};
 
-  this.registry = new InheritingDict(parent && parent.registry);
-  this.cache = new InheritingDict(parent && parent.cache);
-  this.factoryCache = new InheritingDict(parent && parent.factoryCache);
-  this.resolveCache = new InheritingDict(parent && parent.resolveCache);
-  this.typeInjections = new InheritingDict(parent && parent.typeInjections);
-  this.injections = {};
+  this.registry       = dictionary(parent ? parent.registry : null);
+  this.cache          = dictionary(parent ? parent.cache : null);
+  this.factoryCache   = dictionary(parent ? parent.factoryCache : null);
+  this.resolveCache   = dictionary(parent ? parent.resolveCache : null);
+  this.typeInjections = dictionary(parent ? parent.typeInjections : null);
+  this.injections     = dictionary(null);
 
-  this.factoryTypeInjections = new InheritingDict(parent && parent.factoryTypeInjections);
-  this.factoryInjections = {};
+  this.factoryTypeInjections = dictionary(parent ? parent.factoryTypeInjections : null);
+  this.factoryInjections     = dictionary(null);
 
-  this._options = new InheritingDict(parent && parent._options);
-  this._typeOptions = new InheritingDict(parent && parent._typeOptions);
+  this._options     = dictionary(parent ? parent._options : null);
+  this._typeOptions = dictionary(parent ? parent._typeOptions : null);
 }
 
 Container.prototype = {
@@ -142,12 +142,12 @@ Container.prototype = {
 
     var normalizedName = this.normalize(fullName);
 
-    if (this.cache.has(normalizedName)) {
+    if (normalizedName in this.cache) {
       throw new Error('Cannot re-register: `' + fullName +'`, as it has already been looked up.');
     }
 
-    this.registry.set(normalizedName, factory);
-    this._options.set(normalizedName, options || {});
+    this.registry[normalizedName] = factory;
+    this._options[normalizedName] = (options || {});
   },
 
   /**
@@ -171,11 +171,11 @@ Container.prototype = {
 
     var normalizedName = this.normalize(fullName);
 
-    this.registry.remove(normalizedName);
-    this.cache.remove(normalizedName);
-    this.factoryCache.remove(normalizedName);
-    this.resolveCache.remove(normalizedName);
-    this._options.remove(normalizedName);
+    delete this.registry[normalizedName];
+    delete this.cache[normalizedName];
+    delete this.factoryCache[normalizedName];
+    delete this.resolveCache[normalizedName];
+    delete this._options[normalizedName];
   },
 
   /**
@@ -352,7 +352,7 @@ Container.prototype = {
   optionsForType: function(type, options) {
     if (this.parent) { illegalChildOperation('optionsForType'); }
 
-    this._typeOptions.set(type, options);
+    this._typeOptions[type] = options;
   },
 
   /**
@@ -401,12 +401,14 @@ Container.prototype = {
   */
   typeInjection: function(type, property, fullName) {
     Ember.assert('fullName must be a proper full name', validateFullName(fullName));
+
     if (this.parent) { illegalChildOperation('typeInjection'); }
 
     var fullNameType = fullName.split(':')[0];
-    if(fullNameType === type) {
+    if (fullNameType === type) {
       throw new Error('Cannot inject a `' + fullName + '` on other ' + type + '(s). Register the `' + fullName + '` as a different type and perform the typeInjection.');
     }
+
     addTypeInjection(this.typeInjections, type, property, fullName);
   },
 
@@ -467,7 +469,7 @@ Container.prototype = {
     Ember.assert('fullName must be a proper full name', validateFullName(fullName));
     var normalizedName = this.normalize(fullName);
 
-    if (this.cache.has(normalizedName)) {
+    if (this.cache[normalizedName]) {
       throw new Error("Attempted to register an injection for a type that has already been looked up. ('" + normalizedName + "', '" + property + "', '" + injectionName + "')");
     }
     addInjection(this.injections, normalizedName, property, normalizedInjectionName);
@@ -572,7 +574,7 @@ Container.prototype = {
 
     Ember.assert('fullName must be a proper full name', validateFullName(fullName));
 
-    if (this.factoryCache.has(normalizedName)) {
+    if (this.factoryCache[normalizedName]) {
       throw new Error('Attempted to register a factoryInjection for a type that has already ' +
         'been looked up. (\'' + normalizedName + '\', \'' + property + '\', \'' + injectionName + '\')');
     }
@@ -614,17 +616,17 @@ Container.prototype = {
 };
 
 function resolve(container, normalizedName) {
-  var cached = container.resolveCache.get(normalizedName);
+  var cached = container.resolveCache[normalizedName];
   if (cached) { return cached; }
 
-  var resolved = container.resolver(normalizedName) || container.registry.get(normalizedName);
-  container.resolveCache.set(normalizedName, resolved);
+  var resolved = container.resolver(normalizedName) || container.registry[normalizedName];
+  container.resolveCache[normalizedName] = resolved;
 
   return resolved;
 }
 
 function has(container, fullName){
-  if (container.cache.has(fullName)) {
+  if (container.cache[fullName]) {
     return true;
   }
 
@@ -634,8 +636,8 @@ function has(container, fullName){
 function lookup(container, fullName, options) {
   options = options || {};
 
-  if (container.cache.has(fullName) && options.singleton !== false) {
-    return container.cache.get(fullName);
+  if (container.cache[fullName] && options.singleton !== false) {
+    return container.cache[fullName];
   }
 
   var value = instantiate(container, fullName);
@@ -643,7 +645,7 @@ function lookup(container, fullName, options) {
   if (value === undefined) { return; }
 
   if (isSingleton(container, fullName) && options.singleton !== false) {
-    container.cache.set(fullName, value);
+    container.cache[fullName] = value;
   }
 
   return value;
@@ -681,14 +683,14 @@ function buildInjections(container, injections) {
 }
 
 function option(container, fullName, optionName) {
-  var options = container._options.get(fullName);
+  var options = container._options[fullName];
 
   if (options && options[optionName] !== undefined) {
     return options[optionName];
   }
 
   var type = fullName.split(':')[0];
-  options = container._typeOptions.get(type);
+  options = container._typeOptions[type];
 
   if (options) {
     return options[optionName];
@@ -697,8 +699,8 @@ function option(container, fullName, optionName) {
 
 function factoryFor(container, fullName) {
   var cache = container.factoryCache;
-  if (cache.has(fullName)) {
-    return cache.get(fullName);
+  if (cache[fullName]) {
+    return cache[fullName];
   }
   var factory = container.resolve(fullName);
   if (factory === undefined) { return; }
@@ -717,18 +719,18 @@ function factoryFor(container, fullName) {
     var injectedFactory = factory.extend(injections);
     injectedFactory.reopenClass(factoryInjections);
 
-    cache.set(fullName, injectedFactory);
+    cache[fullName] = injectedFactory;
 
     return injectedFactory;
   }
 }
 
 function injectionsFor(container, fullName) {
-  var splitName = fullName.split(':'),
-    type = splitName[0],
-    injections = [];
+  var splitName = fullName.split(':');
+  var type = splitName[0];
+  var injections = [];
 
-  injections = injections.concat(container.typeInjections.get(type) || []);
+  injections = injections.concat(container.typeInjections[type] || []);
   injections = injections.concat(container.injections[fullName] || []);
 
   injections = buildInjections(container, injections);
@@ -739,11 +741,11 @@ function injectionsFor(container, fullName) {
 }
 
 function factoryInjectionsFor(container, fullName) {
-  var splitName = fullName.split(':'),
-    type = splitName[0],
-    factoryInjections = [];
+  var splitName = fullName.split(':');
+  var type = splitName[0];
+  var factoryInjections = [];
 
-  factoryInjections = factoryInjections.concat(container.factoryTypeInjections.get(type) || []);
+  factoryInjections = factoryInjections.concat(container.factoryTypeInjections[type] || []);
   factoryInjections = factoryInjections.concat(container.factoryInjections[fullName] || []);
 
   factoryInjections = buildInjections(container, factoryInjections);
@@ -778,26 +780,34 @@ function instantiate(container, fullName) {
 }
 
 function eachDestroyable(container, callback) {
-  container.cache.eachLocal(function(key, value) {
-    if (option(container, key, 'instantiate') === false) { return; }
-    callback(value);
-  });
+  var cache = container.cache;
+  var keys = Object.keys(cache);
+  var key, value;
+
+  for (var i = 0, l = keys.length; i < l; i++) {
+    key = keys[i];
+    value = cache[key];
+
+    if (option(container, key, 'instantiate') !== false) {
+      callback(value);
+    }
+  }
 }
 
 function resetCache(container) {
-  container.cache.eachLocal(function(key, value) {
-    if (option(container, key, 'instantiate') === false) { return; }
+  eachDestroyable(container, function(value) {
     value.destroy();
   });
-  container.cache.dict = {};
+
+  container.cache.dict = dictionary(null);
 }
 
 function addTypeInjection(rules, type, property, fullName) {
-  var injections = rules.get(type);
+  var injections = rules[type];
 
   if (!injections) {
     injections = [];
-    rules.set(type, injections);
+    rules[type] = injections;
   }
 
   injections.push({
@@ -816,7 +826,10 @@ function validateFullName(fullName) {
 
 function addInjection(rules, factoryName, property, injectionName) {
   var injections = rules[factoryName] = rules[factoryName] || [];
-  injections.push({ property: property, fullName: injectionName });
+  injections.push({
+    property: property,
+    fullName: injectionName
+  });
 }
 
 export default Container;
