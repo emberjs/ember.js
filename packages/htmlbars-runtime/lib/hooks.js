@@ -47,7 +47,14 @@ export function element(domElement, helperName, context, params, options, env) {
 }
 
 export function attribute(params, options, env) {
-  options.element.setAttribute(params[0], params[1]);
+  var attrName = params[0];
+  var attrValue = params[1];
+
+  if (attrValue === null) {
+    options.element.removeAttribute(attrName);
+  } else {
+    options.element.setAttribute(attrName, attrValue);
+  }
 }
 
 export function concat(params, options, env) {
