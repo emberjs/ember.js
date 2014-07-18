@@ -145,13 +145,15 @@ export default Mixin.create({
     with a list of strings or an array:
 
     ```javascript
-    record.getProperties('firstName', 'lastName', 'zipCode');  // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
+    record.getProperties('firstName', 'lastName', 'zipCode');
+    // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
     ```
 
     is equivalent to:
 
     ```javascript
-    record.getProperties(['firstName', 'lastName', 'zipCode']);  // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
+    record.getProperties(['firstName', 'lastName', 'zipCode']);
+    // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
     ```
 
     @method getProperties
