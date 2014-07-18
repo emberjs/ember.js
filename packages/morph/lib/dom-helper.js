@@ -16,6 +16,27 @@ var ignoresCheckedAttribute = (function(){
   return !clonedElement.checked;
 })();
 
+var svgNamespace = 'http://www.w3.org/2000/svg',
+    svgHTMLIntegrationPoints = ['foreignObject', 'desc', 'title'];
+
+function isSVG(ns){
+  return ns === svgNamespace;
+}
+
+// This is not the namespace of the element, but of
+// the elements inside that elements.
+function interiorNamespace(element){
+  if (
+    element &&
+    element.namespaceURI === svgNamespace &&
+    svgHTMLIntegrationPoints.indexOf(element.tagName) === -1
+  ) {
+    return svgNamespace;
+  } else {
+    return null;
+  }
+}
+
 /*
  * A class wrapping DOM functions to address environment compatibility,
  * namespaces, contextual elements for morph un-escaped content
@@ -35,6 +56,7 @@ var ignoresCheckedAttribute = (function(){
  */
 function DOMHelper(_document){
   this.document = _document || window.document;
+  this.namespace = null;
 }
 
 var prototype = DOMHelper.prototype;
@@ -53,11 +75,19 @@ prototype.setAttribute = function(element, name, value) {
 };
 
 prototype.createElement = function(tagName) {
-  if (this.namespaceURI) {
-    return this.document.createElementNS(this.namespaceURI, tagName);
+  if (this.namespace) {
+    return this.document.createElementNS(this.namespace, tagName);
   } else {
     return this.document.createElement(tagName);
   }
+};
+
+prototype.setNamespace = function(ns) {
+  this.namespace = ns;
+};
+
+prototype.detectNamespace = function(element) {
+  this.namespace = interiorNamespace(element);
 };
 
 prototype.createDocumentFragment = function(){
@@ -111,9 +141,19 @@ prototype.createMorphAt = function(parent, startIndex, endIndex, contextualEleme
 };
 
 prototype.parseHTML = function(html, contextualElement){
-  var element = this.cloneNode(contextualElement, false);
+  var element;
+  if (isSVG(this.namespace) && svgHTMLIntegrationPoints.indexOf(contextualElement.tagName) === -1) {
+    html = '<svg>'+html+'</svg>';
+    element = document.createElement('div');
+  } else {
+    element = this.cloneNode(contextualElement, false);
+  }
   element.innerHTML = html;
-  return element.childNodes;
+  if (isSVG(this.namespace)) {
+    return element.firstChild.childNodes;
+  } else {
+    return element.childNodes;
+  }
 };
 
 export default DOMHelper;

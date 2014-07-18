@@ -55,4 +55,8 @@ FragmentOpcodeCompiler.prototype.attribute = function(attr) {
   }
 };
 
+FragmentOpcodeCompiler.prototype.setNamespace = function(namespace) {
+  this.opcode('setNamespace', [namespace]);
+};
+
 export { FragmentOpcodeCompiler };
