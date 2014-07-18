@@ -16,6 +16,7 @@ function Container(parent) {
   this.resolveCache   = dictionary(parent ? parent.resolveCache : null);
   this.typeInjections = dictionary(parent ? parent.typeInjections : null);
   this.injections     = dictionary(null);
+  this.normalizeCache = dictionary(null);
 
   this.factoryTypeInjections = dictionary(parent ? parent.factoryTypeInjections : null);
   this.factoryInjections     = dictionary(null);
@@ -140,7 +141,7 @@ Container.prototype = {
       throw new TypeError('Attempting to register an unknown factory: `' + fullName + '`');
     }
 
-    var normalizedName = this.normalize(fullName);
+    var normalizedName = this._normalize(fullName);
 
     if (normalizedName in this.cache) {
       throw new Error('Cannot re-register: `' + fullName +'`, as it has already been looked up.');
@@ -169,7 +170,7 @@ Container.prototype = {
   unregister: function(fullName) {
     Ember.assert('fullName must be a proper full name', validateFullName(fullName));
 
-    var normalizedName = this.normalize(fullName);
+    var normalizedName = this._normalize(fullName);
 
     delete this.registry[normalizedName];
     delete this.cache[normalizedName];
@@ -212,7 +213,7 @@ Container.prototype = {
   */
   resolve: function(fullName) {
     Ember.assert('fullName must be a proper full name', validateFullName(fullName));
-    return resolve(this, this.normalize(fullName));
+    return resolve(this, this._normalize(fullName));
   },
 
   /**
@@ -240,6 +241,12 @@ Container.prototype = {
   */
   normalize: function(fullName) {
     return fullName;
+  },
+
+  _normalize: function(fullName) {
+    return this.normalizeCache[fullName] || (
+      this.normalizeCache[fullName] = this.normalize(fullName)
+    );
   },
 
   /**
@@ -294,7 +301,7 @@ Container.prototype = {
   */
   lookup: function(fullName, options) {
     Ember.assert('fullName must be a proper full name', validateFullName(fullName));
-    return lookup(this, this.normalize(fullName), options);
+    return lookup(this, this._normalize(fullName), options);
   },
 
   /**
@@ -306,7 +313,7 @@ Container.prototype = {
   */
   lookupFactory: function(fullName) {
     Ember.assert('fullName must be a proper full name', validateFullName(fullName));
-    return factoryFor(this, this.normalize(fullName));
+    return factoryFor(this, this._normalize(fullName));
   },
 
   /**
@@ -319,7 +326,7 @@ Container.prototype = {
   */
   has: function(fullName) {
     Ember.assert('fullName must be a proper full name', validateFullName(fullName));
-    return has(this, this.normalize(fullName));
+    return has(this, this._normalize(fullName));
   },
 
   /**
@@ -460,14 +467,14 @@ Container.prototype = {
     if (this.parent) { illegalChildOperation('injection'); }
 
     validateFullName(injectionName);
-    var normalizedInjectionName = this.normalize(injectionName);
+    var normalizedInjectionName = this._normalize(injectionName);
 
     if (fullName.indexOf(':') === -1) {
       return this.typeInjection(fullName, property, normalizedInjectionName);
     }
 
     Ember.assert('fullName must be a proper full name', validateFullName(fullName));
-    var normalizedName = this.normalize(fullName);
+    var normalizedName = this._normalize(fullName);
 
     if (this.cache[normalizedName]) {
       throw new Error("Attempted to register an injection for a type that has already been looked up. ('" + normalizedName + "', '" + property + "', '" + injectionName + "')");
@@ -508,7 +515,7 @@ Container.prototype = {
   factoryTypeInjection: function(type, property, fullName) {
     if (this.parent) { illegalChildOperation('factoryTypeInjection'); }
 
-    addTypeInjection(this.factoryTypeInjections, type, property, this.normalize(fullName));
+    addTypeInjection(this.factoryTypeInjections, type, property, this._normalize(fullName));
   },
 
   /**
@@ -563,8 +570,8 @@ Container.prototype = {
   factoryInjection: function(fullName, property, injectionName) {
     if (this.parent) { illegalChildOperation('injection'); }
 
-    var normalizedName = this.normalize(fullName);
-    var normalizedInjectionName = this.normalize(injectionName);
+    var normalizedName = this._normalize(fullName);
+    var normalizedInjectionName = this._normalize(injectionName);
 
     validateFullName(injectionName);
 

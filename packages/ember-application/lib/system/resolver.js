@@ -114,15 +114,9 @@ export default EmberObject.extend({
   namespace: null,
 
   init: function() {
-    this._normalizationCache = dictionary(null);
-    this._parseNameCache     = dictionary(null);
+    this._parseNameCache = dictionary(null);
   },
   normalize: function(fullName) {
-    return this._normalizationCache[fullName] || (
-      this._normalizationCache[fullName] = this._normalize(fullName)
-    );
-  },
-  _normalize: function(fullName) {
     var split = fullName.split(':', 2);
     var type = split[0];
     var name = split[1];
