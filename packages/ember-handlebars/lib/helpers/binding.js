@@ -101,11 +101,11 @@ var WithView = _HandlebarsBoundView.extend({
 // Binds a property into the DOM. This will create a hook in DOM that the
 // KVO system will look for and update if the property changes.
 function bind(property, options, preserveContext, shouldDisplay, valueNormalizer, childProperties) {
-  var data = options.data,
-      fn = options.fn,
-      inverse = options.inverse,
-      view = data.view,
-      normalized, observer, i;
+  var data = options.data;
+  var fn = options.fn;
+  var inverse = options.inverse;
+  var view = data.view;
+  var normalized, observer, i;
 
   // we relied on the behavior of calling without
   // context to mean this === window, but when running
@@ -189,9 +189,9 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 }
 
 function simpleBind(currentContext, property, options) {
-  var data = options.data,
-      view = data.view,
-      normalized, observer, pathRoot, output;
+  var data = options.data;
+  var view = data.view;
+  var normalized, observer, pathRoot, output;
 
   normalized = normalizePath(currentContext, property, data);
   pathRoot = normalized.root;
@@ -395,11 +395,11 @@ function boundIfHelper(property, fn) {
   @since 1.4.0
 */
 function unboundIfHelper(property, fn) {
-  var context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : this,
-      data = fn.data,
-      template = fn.fn,
-      inverse = fn.inverse,
-      normalized, propertyValue, result;
+  var context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : this;
+  var data = fn.data;
+  var template = fn.fn;
+  var inverse = fn.inverse;
+  var normalized, propertyValue, result;
 
   normalized = normalizePath(context, property, data);
   propertyValue = handlebarsGet(context, property, fn);
@@ -760,8 +760,8 @@ function bindAttrHelper(options) {
 
     normalized = normalizePath(ctx, path, options.data);
 
-    var value = (path === 'this') ? normalized.root : handlebarsGet(ctx, path, options),
-        type = typeOf(value);
+    var value = (path === 'this') ? normalized.root : handlebarsGet(ctx, path, options);
+    var type = typeOf(value);
 
     Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
 
@@ -857,8 +857,8 @@ function bindClasses(context, classBindings, view, bindAttrId, options) {
   // determine which class string to return, based on whether it is
   // a Boolean or not.
   var classStringForPath = function(root, parsedPath, options) {
-    var val,
-        path = parsedPath.path;
+    var val;
+    var path = parsedPath.path;
 
     if (path === 'this') {
       val = root;
@@ -879,13 +879,11 @@ function bindClasses(context, classBindings, view, bindAttrId, options) {
     // closes over this variable, so it knows which string to remove when
     // the property changes.
     var oldClass;
-
     var observer;
-
-    var parsedPath = View._parsePropertyPath(binding),
-        path = parsedPath.path,
-        pathRoot = context,
-        normalized;
+    var parsedPath = View._parsePropertyPath(binding);
+    var path = parsedPath.path;
+    var pathRoot = context;
+    var normalized;
 
     if (path !== '' && path !== 'this') {
       normalized = normalizePath(context, path, options.data);

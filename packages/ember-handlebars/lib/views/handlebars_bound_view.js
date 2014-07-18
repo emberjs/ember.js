@@ -249,10 +249,10 @@ var _HandlebarsBoundView = _MetamorphView.extend({
   pathRoot: null,
 
   normalizedValue: function() {
-    var path = get(this, 'path'),
-        pathRoot  = get(this, 'pathRoot'),
-        valueNormalizer = get(this, 'valueNormalizerFunc'),
-        result, templateData;
+    var path = get(this, 'path');
+    var pathRoot  = get(this, 'pathRoot');
+    var valueNormalizer = get(this, 'valueNormalizerFunc');
+    var result, templateData;
 
     // Use the pathRoot as the result if no path is provided. This
     // happens if the path is `this`, which gets normalized into
@@ -294,14 +294,15 @@ var _HandlebarsBoundView = _MetamorphView.extend({
     // the content of the template.
     var escape = get(this, 'isEscaped');
 
-    var shouldDisplay = get(this, 'shouldDisplayFunc'),
-        preserveContext = get(this, 'preserveContext'),
-        context = get(this, 'previousContext');
+    var shouldDisplay = get(this, 'shouldDisplayFunc');
+    var preserveContext = get(this, 'preserveContext');
+    var context = get(this, 'previousContext');
 
-    var inverseTemplate = get(this, 'inverseTemplate'),
-        displayTemplate = get(this, 'displayTemplate');
+    var inverseTemplate = get(this, 'inverseTemplate');
+    var displayTemplate = get(this, 'displayTemplate');
 
     var result = this.normalizedValue();
+
     this._lastNormalizedValue = result;
 
     // First, test the conditional to see if we should

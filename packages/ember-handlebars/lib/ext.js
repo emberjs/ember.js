@@ -31,8 +31,8 @@ var slice = [].slice, originalTemplate = EmberHandlebars.template;
   @param data {Hash}
 */
 function normalizePath(root, path, data) {
-  var keywords = (data && data.keywords) || {},
-      keyword, isKeyword;
+  var keywords = (data && data.keywords) || {};
+  var keyword, isKeyword;
 
   // Get the first segment of the path. For example, if the
   // path is "foo.bar.baz", returns "foo".
@@ -57,7 +57,11 @@ function normalizePath(root, path, data) {
     }
   }
 
-  return { root: root, path: path, isKeyword: isKeyword };
+  return {
+    root: root,
+    path: path,
+    isKeyword: isKeyword
+  };
 }
 
 
@@ -73,9 +77,9 @@ function normalizePath(root, path, data) {
   @param {Object} options The template's option hash
 */
 function handlebarsGet(root, path, options) {
-  var data = options && options.data,
-      normalizedPath = normalizePath(root, path, data),
-      value;
+  var data = options && options.data;
+  var normalizedPath = normalizePath(root, path, data);
+  var value;
 
   if (Ember.FEATURES.isEnabled("ember-handlebars-caps-lookup")) {
 
@@ -346,8 +350,8 @@ export function blockHelperMissingHelper(path) {
   @param {String} dependentKeys*
 */
 export function registerBoundHelper(name, fn) {
-  var boundHelperArgs = slice.call(arguments, 1),
-      boundFn = makeBoundHelper.apply(this, boundHelperArgs);
+  var boundHelperArgs = slice.call(arguments, 1);
+  var boundFn = makeBoundHelper.apply(this, boundHelperArgs);
   EmberHandlebars.registerHelper(name, boundFn);
 }
 
@@ -382,20 +386,20 @@ function makeBoundHelper(fn) {
   var dependentKeys = slice.call(arguments, 1);
 
   function helper() {
-    var properties = slice.call(arguments, 0, -1),
-      numProperties = properties.length,
-      options = arguments[arguments.length - 1],
-      normalizedProperties = [],
-      data = options.data,
-      types = data.isUnbound ? slice.call(options.types, 1) : options.types,
-      hash = options.hash,
-      view = data.view,
-      contexts = options.contexts,
-      currentContext = (contexts && contexts.length) ? contexts[0] : this,
-      prefixPathForDependentKeys = '',
-      loc, len, hashOption,
-      boundOption, property,
-      normalizedValue = SimpleHandlebarsView.prototype.normalizedValue;
+    var properties = slice.call(arguments, 0, -1);
+    var numProperties = properties.length;
+    var options = arguments[arguments.length - 1];
+    var normalizedProperties = [];
+    var data = options.data;
+    var types = data.isUnbound ? slice.call(options.types, 1) : options.types;
+    var hash = options.hash;
+    var view = data.view;
+    var contexts = options.contexts;
+    var currentContext = (contexts && contexts.length) ? contexts[0] : this;
+    var prefixPathForDependentKeys = '';
+    var loc, len, hashOption;
+    var boundOption, property;
+    var normalizedValue = SimpleHandlebarsView.prototype.normalizedValue;
 
     Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !options.fn);
 
@@ -418,7 +422,7 @@ function makeBoundHelper(fn) {
         normalizedProperties.push(normalizedProp);
         watchedProperties.push(normalizedProp);
       } else {
-        if(data.isUnbound) {
+        if (data.isUnbound) {
           normalizedProperties.push({path: properties[loc]});
         }else {
           normalizedProperties.push(null);
@@ -483,9 +487,9 @@ function makeBoundHelper(fn) {
     }
 
     // Add dependent key observers to the first param
-    var normalized = normalizedProperties[0],
-        pathRoot = normalized.root,
-        path = normalized.path;
+    var normalized = normalizedProperties[0];
+    var pathRoot = normalized.root;
+    var path = normalized.path;
 
     if(!isEmpty(path)) {
       prefixPathForDependentKeys = path + '.';
@@ -510,25 +514,21 @@ function makeBoundHelper(fn) {
   @param {String} options
 */
 function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
-  var args = [],
-   hash = options.hash,
-   boundOptions = hash.boundOptions,
-   types = slice.call(options.types, 1),
-   loc,
-   len,
-   property,
-   propertyType,
-   boundOption;
+  var args = [];
+  var hash = options.hash;
+  var boundOptions = hash.boundOptions;
+  var types = slice.call(options.types, 1);
+  var loc, len, property, propertyType, boundOption;
 
   for (boundOption in boundOptions) {
     if (!boundOptions.hasOwnProperty(boundOption)) { continue; }
     hash[boundOption] = handlebarsGet(context, boundOptions[boundOption], options);
   }
 
-  for(loc = 0, len = normalizedProperties.length; loc < len; ++loc) {
+  for (loc = 0, len = normalizedProperties.length; loc < len; ++loc) {
     property = normalizedProperties[loc];
     propertyType = types[loc];
-    if(propertyType === "ID") {
+    if (propertyType === "ID") {
       args.push(handlebarsGet(property.root, property.path, options));
     } else {
       args.push(property.path);
