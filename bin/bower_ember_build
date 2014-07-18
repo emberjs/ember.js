@@ -7,7 +7,7 @@ git config --global user.name "Tomster"
 COMPONENTS_EMBER_REPO_SLUG="components/ember"
 
 # This specifies the user who is associated to the GH_TOKEN
-USER="rjackson"
+USER="rwjblue"
 
 # This ensure that no directories within dist will be copied when script is run.
 INCLUDED_FILES=`find dist -maxdepth 1 -type f`
