@@ -102,6 +102,7 @@ export var Resolver = EmberObject.extend({
   @namespace Ember
   @extends Ember.Object
 */
+import dictionary from 'ember-metal/dictionary';
 
 export default EmberObject.extend({
   /**
@@ -112,10 +113,19 @@ export default EmberObject.extend({
   */
   namespace: null,
 
+  init: function() {
+    this._normalizationCache = dictionary(null);
+    this._parseNameCache     = dictionary(null);
+  },
   normalize: function(fullName) {
-    var split = fullName.split(':', 2),
-        type = split[0],
-        name = split[1];
+    return this._normalizationCache[fullName] || (
+      this._normalizationCache[fullName] = this._normalize(fullName)
+    );
+  },
+  _normalize: function(fullName) {
+    var split = fullName.split(':', 2);
+    var type = split[0];
+    var name = split[1];
 
     Ember.assert("Tried to normalize a container name without a colon (:) in it. You probably tried to lookup a name that did not contain a type, a colon, and a name. A proper lookup name would be `view:post`.", split.length === 2);
 
@@ -123,11 +133,15 @@ export default EmberObject.extend({
       var result = name;
 
       if (result.indexOf('.') > -1) {
-        result = result.replace(/\.(.)/g, function(m) { return m.charAt(1).toUpperCase(); });
+        result = result.replace(/\.(.)/g, function(m) {
+          return m.charAt(1).toUpperCase();
+        });
       }
 
       if (name.indexOf('_') > -1) {
-        result = result.replace(/_(.)/g, function(m) { return m.charAt(1).toUpperCase(); });
+        result = result.replace(/_(.)/g, function(m) {
+          return m.charAt(1).toUpperCase();
+        });
       }
 
       return type + ':' + result;
@@ -147,9 +161,9 @@ export default EmberObject.extend({
     @return {Object} the resolved factory
   */
   resolve: function(fullName) {
-    var parsedName = this.parseName(fullName),
-        resolveMethodName = parsedName.resolveMethodName,
-        resolved;
+    var parsedName = this.parseName(fullName);
+    var resolveMethodName = parsedName.resolveMethodName;
+    var resolved;
 
     if (!(parsedName.name && parsedName.type)) {
       throw new TypeError('Invalid fullName: `' + fullName + '`, must be of the form `type:name` ');
@@ -178,12 +192,19 @@ export default EmberObject.extend({
     @param {String} fullName the lookup string
     @method parseName
   */
+
   parseName: function(fullName) {
-    var nameParts = fullName.split(':'),
-        type = nameParts[0], fullNameWithoutType = nameParts[1],
-        name = fullNameWithoutType,
-        namespace = get(this, 'namespace'),
-        root = namespace;
+    return this._parseNameCache[fullName] || (
+      this._parseNameCache[fullName] = this._parseName(fullName)
+    );
+  },
+
+  _parseName: function(fullName) {
+    var nameParts = fullName.split(':');
+    var type = nameParts[0], fullNameWithoutType = nameParts[1];
+    var name = fullNameWithoutType;
+    var namespace = get(this, 'namespace');
+    var root = namespace;
 
     if (type !== 'template' && name.indexOf('/') !== -1) {
       var parts = name.split('/');
@@ -222,7 +243,10 @@ export default EmberObject.extend({
     }
 
     var description = parsedName.root + '.' + classify(parsedName.name);
-    if (parsedName.type !== 'model') { description += classify(parsedName.type); }
+
+    if (parsedName.type !== 'model') {
+      description += classify(parsedName.type);
+    }
 
     return description;
   },
@@ -265,6 +289,7 @@ export default EmberObject.extend({
       return Ember.TEMPLATES[templateName];
     }
   },
+
   /**
     Lookup the view using `resolveOther`
 
@@ -277,6 +302,7 @@ export default EmberObject.extend({
     this.useRouterNaming(parsedName);
     return this.resolveOther(parsedName);
   },
+
   /**
     Lookup the controller using `resolveOther`
 
