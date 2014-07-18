@@ -32,7 +32,7 @@
     "broccoli-writer": "~0.1.1",
     "chalk": "~0.4.0",
     "defeatureify": "~0.2.0",
-    "ember-cli": "0.0.37",
+    "ember-cli": "0.0.39",
     "ember-publisher": "0.0.1",
     "es6-module-transpiler": "~0.4.0",
     "express": "^4.5.0",
