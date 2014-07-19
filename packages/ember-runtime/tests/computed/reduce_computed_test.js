@@ -88,6 +88,21 @@ test("array computed properties are instances of ComputedProperty", function() {
   ok(arrayComputed({}) instanceof ComputedProperty);
 });
 
+test(".property() appends to rather than replaces dependent keys", function() {
+  var ac = arrayComputed({});
+  ok(!ac._dependentKeys);
+  ac.property('dk');
+  deepEqual(ac._dependentKeys, ['dk']);
+  ac.property('lol');
+  deepEqual(ac._dependentKeys, ['dk', 'lol']);
+  ac.property('dk', 'lol');
+  deepEqual(ac._dependentKeys, ['dk', 'lol']);
+  ac.property('omg');
+  deepEqual(ac._dependentKeys, ['dk', 'lol', 'omg']);
+  ac.property('omg', 'dk');
+  deepEqual(ac._dependentKeys, ['dk', 'lol', 'omg']);
+});
+
 test("when the dependent array is null or undefined, `addedItem` is not called and only the initial value is returned", function() {
   obj = EmberObject.createWithMixins({
     numbers: null,
@@ -569,7 +584,7 @@ test("recomputations from `arrayComputed` observers add back dependent keys", fu
   equal(meta.watching.people, 2, "watching.people is unchanged");
 });
 
-QUnit.module('Ember.arryComputed - self chains', {
+QUnit.module('Ember.arrayComputed - self chains', {
   setup: function() {
     var a = EmberObject.create({ name: 'a' }),
     b = EmberObject.create({ name: 'b' });

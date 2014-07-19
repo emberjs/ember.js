@@ -612,7 +612,7 @@ ReduceComputedProperty.prototype.clearItemPropertyKeys = function (dependentArra
 ReduceComputedProperty.prototype.property = function () {
   var cp = this,
       args = a_slice.call(arguments),
-      propertyArgs = new Set(),
+      propertyArgs = new Set(this._dependentKeys),
       match,
       dependentArrayKey,
       itemPropertyKey;
@@ -829,7 +829,7 @@ export function reduceComputed(options) {
 
   if (arguments.length > 1) {
     args = a_slice.call(arguments, 0, -1);
-    options = a_slice.call(arguments, -1)[0];
+    options = arguments[arguments.length-1];
   }
 
   if (typeof options !== "object") {
