@@ -1,5 +1,5 @@
-import ControllerMixin from "ember-runtime/mixins/controller";
-import ObjectProxy from "ember-runtime/system/object_proxy";
+import ControllerMixin from 'ember-runtime/mixins/controller';
+import ObjectProxy from 'ember-runtime/system/object_proxy';
 
 /**
 @module ember

@@ -1,34 +1,34 @@
-import Ember from "ember-metal/core"; // Ember.assert
-import { get as e_get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
+import Ember from 'ember-metal/core'; // Ember.assert
+import { get as e_get } from 'ember-metal/property_get';
+import { set } from 'ember-metal/property_set';
 import {
   guidFor,
   meta as metaFor
-} from "ember-metal/utils";
-import EmberError from "ember-metal/error";
+} from 'ember-metal/utils';
+import EmberError from 'ember-metal/error';
 import {
   propertyWillChange,
   propertyDidChange
-} from "ember-metal/property_events";
-import expandProperties from "ember-metal/expand_properties";
+} from 'ember-metal/property_events';
+import expandProperties from 'ember-metal/expand_properties';
 import {
   addObserver,
   observersFor,
   removeObserver,
   addBeforeObserver,
   removeBeforeObserver
-} from "ember-metal/observer";
+} from 'ember-metal/observer';
 import {
   ComputedProperty,
   cacheFor
-} from "ember-metal/computed";
-import { create as o_create } from "ember-metal/platform";
-import { forEach } from "ember-metal/enumerable_utils";
-import TrackedArray from "ember-runtime/system/tracked_array";
-import EmberArray from "ember-runtime/mixins/array";
-import run from "ember-metal/run_loop";
-import Set from "ember-runtime/system/set";
-import { isArray } from "ember-metal/utils";
+} from 'ember-metal/computed';
+import { create as o_create } from 'ember-metal/platform';
+import { forEach } from 'ember-metal/enumerable_utils';
+import TrackedArray from 'ember-runtime/system/tracked_array';
+import EmberArray from 'ember-runtime/mixins/array';
+import run from 'ember-metal/run_loop';
+import Set from 'ember-runtime/system/set';
+import { isArray } from 'ember-metal/utils';
 
 var cacheSet = cacheFor.set;
 var cacheGet = cacheFor.get;
@@ -90,7 +90,7 @@ function DependentArraysObserver(callbacks, cp, instanceMeta, context, propertyN
 }
 
 function ItemPropertyObserverContext (dependentArray, index, trackedArray) {
-  Ember.assert("Internal error: trackedArray is null or undefined", trackedArray);
+  Ember.assert('Internal error: trackedArray is null or undefined', trackedArray);
 
   this.dependentArray = dependentArray;
   this.index = index;
@@ -98,7 +98,6 @@ function ItemPropertyObserverContext (dependentArray, index, trackedArray) {
   this.trackedArray = trackedArray;
   this.beforeObserver = null;
   this.observer = null;
-
   this.destroyed = false;
 }
 
@@ -106,6 +105,7 @@ DependentArraysObserver.prototype = {
   setValue: function (newValue) {
     this.instanceMeta.setValue(newValue, true);
   },
+
   getValue: function () {
     return this.instanceMeta.getValue();
   },
@@ -162,11 +162,9 @@ DependentArraysObserver.prototype = {
   },
 
   teardownPropertyObservers: function (dependentKey, itemPropertyKeys) {
-    var dependentArrayObserver = this,
-        trackedArray = this.trackedArraysByGuid[dependentKey],
-        beforeObserver,
-        observer,
-        item;
+    var dependentArrayObserver = this;
+    var trackedArray = this.trackedArraysByGuid[dependentKey];
+    var beforeObserver, observer, item;
 
     if (!trackedArray) { return; }
 
@@ -201,6 +199,7 @@ DependentArraysObserver.prototype = {
     observerContext.beforeObserver = function (obj, keyName) {
       return dependentArrayObserver.itemPropertyWillChange(obj, keyName, observerContext.dependentArray, observerContext);
     };
+
     observerContext.observer = function (obj, keyName) {
       return dependentArrayObserver.itemPropertyDidChange(obj, keyName, observerContext.dependentArray, observerContext);
     };
@@ -212,6 +211,7 @@ DependentArraysObserver.prototype = {
 
   trackAdd: function (dependentKey, index, newItems) {
     var trackedArray = this.trackedArraysByGuid[dependentKey];
+
     if (trackedArray) {
       trackedArray.addItems(index, newItems);
     }
@@ -277,7 +277,7 @@ DependentArraysObserver.prototype = {
       forEach(itemPropertyKeys, removeObservers, this);
 
       changeMeta = new ChangeMeta(dependentArray, item, itemIndex, this.instanceMeta.propertyName, this.cp, normalizedRemoveCount);
-      this.setValue( removedItem.call(
+      this.setValue(removedItem.call(
         this.instanceMeta.context, this.getValue(), item, changeMeta, this.instanceMeta.sugarMeta));
     }
   },
@@ -292,13 +292,15 @@ DependentArraysObserver.prototype = {
     var itemPropertyKeys = this.cp._itemPropertyKeys[dependentKey];
     var length = get(dependentArray, 'length');
     var normalizedIndex = normalizeIndex(index, length, addedCount);
+    var endIndex = normalizedIndex + addedCount;
     var changeMeta, observerContext;
 
-    forEach(dependentArray.slice(normalizedIndex, normalizedIndex + addedCount), function (item, sliceIndex) {
+    forEach(dependentArray.slice(normalizedIndex, endIndex), function (item, sliceIndex) {
       if (itemPropertyKeys) {
-        observerContext =
-          observerContexts[sliceIndex] =
-          this.createPropertyObserverContext(dependentArray, normalizedIndex + sliceIndex, this.trackedArraysByGuid[dependentKey]);
+        observerContext = this.createPropertyObserverContext(dependentArray, normalizedIndex + sliceIndex,
+          this.trackedArraysByGuid[dependentKey]);
+        observerContexts[sliceIndex] = observerContext;
+
         forEach(itemPropertyKeys, function (propertyKey) {
           addBeforeObserver(item, propertyKey, this, observerContext.beforeObserver);
           addObserver(item, propertyKey, this, observerContext.observer);
@@ -306,7 +308,7 @@ DependentArraysObserver.prototype = {
       }
 
       changeMeta = new ChangeMeta(dependentArray, item, normalizedIndex + sliceIndex, this.instanceMeta.propertyName, this.cp, addedCount);
-      this.setValue( addedItem.call(
+      this.setValue(addedItem.call(
         this.instanceMeta.context, this.getValue(), item, changeMeta, this.instanceMeta.sugarMeta));
     }, this);
 
@@ -318,24 +320,24 @@ DependentArraysObserver.prototype = {
 
     if (!this.changedItems[guid]) {
       this.changedItems[guid] = {
-        array:            array,
-        observerContext:  observerContext,
-        obj:              obj,
-        previousValues:   {}
+        array: array,
+        observerContext: observerContext,
+        obj: obj,
+        previousValues: {}
       };
     }
-    ++this.changedItemCount;
 
+    ++this.changedItemCount;
     this.changedItems[guid].previousValues[keyName] = get(obj, keyName);
   },
 
-  itemPropertyDidChange: function(obj, keyName, array, observerContext) {
+  itemPropertyDidChange: function (obj, keyName, array, observerContext) {
     if (--this.changedItemCount === 0) {
       this.flushChanges();
     }
   },
 
-  flushChanges: function() {
+  flushChanges: function () {
     var changedItems = this.changedItems, key, c, changeMeta;
 
     for (key in changedItems) {
@@ -350,6 +352,7 @@ DependentArraysObserver.prototype = {
       this.setValue(
         this.callbacks.addedItem.call(this.instanceMeta.context, this.getValue(), c.obj, changeMeta, this.instanceMeta.sugarMeta));
     }
+
     this.changedItems = {};
   }
 };
@@ -382,7 +385,7 @@ function ChangeMeta(dependentArray, item, index, propertyName, property, changed
   }
 }
 
-function addItems (dependentArray, callbacks, cp, propertyName, meta) {
+function addItems(dependentArray, callbacks, cp, propertyName, meta) {
   forEach(dependentArray, function (item, index) {
     meta.setValue( callbacks.addedItem.call(
       this, meta.getValue(), item, new ChangeMeta(dependentArray, item, index, propertyName, cp, dependentArray.length), meta.sugarMeta));
@@ -401,7 +404,10 @@ function reset(cp, propertyName) {
   }
 
   if (cp.options.initialize) {
-    cp.options.initialize.call(this, meta.getValue(), { property: cp, propertyName: propertyName }, meta.sugarMeta);
+    cp.options.initialize.call(this, meta.getValue(), {
+      property: cp,
+      propertyName: propertyName
+    }, meta.sugarMeta);
   }
 }
 
@@ -418,16 +424,15 @@ function ReduceComputedPropertyInstanceMeta(context, propertyName, initialValue)
   this.context = context;
   this.propertyName = propertyName;
   this.cache = metaFor(context).cache;
-
   this.dependentArrays = {};
   this.sugarMeta = {};
-
   this.initialValue = initialValue;
 }
 
 ReduceComputedPropertyInstanceMeta.prototype = {
   getValue: function () {
     var value = cacheGet(this.cache, this.propertyName);
+
     if (value !== undefined) {
       return value;
     } else {
@@ -469,11 +474,11 @@ ReduceComputedPropertyInstanceMeta.prototype = {
 */
 
 export { ReduceComputedProperty }; // TODO: default export
+
 function ReduceComputedProperty(options) {
   var cp = this;
 
   this.options = options;
-
   this._dependentKeys = null;
   // A map of dependentKey -> [itemProperty, ...] that tracks what properties of
   // items in the array we must track to update this property.
@@ -489,24 +494,25 @@ function ReduceComputedProperty(options) {
     // coalesce by, in addition to the target and method.
     run.once(this, recompute, propertyName);
   };
+
   var recompute = function(propertyName) {
-    var dependentKeys = cp._dependentKeys,
-        meta = cp._instanceMeta(this, propertyName),
-        callbacks = cp._callbacks();
+    var dependentKeys = cp._dependentKeys;
+    var meta = cp._instanceMeta(this, propertyName);
+    var callbacks = cp._callbacks();
 
     reset.call(this, cp, propertyName);
 
     meta.dependentArraysObserver.suspendArrayObservers(function () {
       forEach(cp._dependentKeys, function (dependentKey) {
         Ember.assert(
-          "dependent array " + dependentKey + " must be an `Ember.Array`.  " +
-          "If you are not extending arrays, you will need to wrap native arrays with `Ember.A`",
+          'dependent array ' + dependentKey + ' must be an `Ember.Array`.  ' +
+          'If you are not extending arrays, you will need to wrap native arrays with `Ember.A`',
           !(isArray(get(this, dependentKey)) && !EmberArray.detect(get(this, dependentKey))));
 
         if (!partiallyRecomputeFor(this, dependentKey)) { return; }
 
-        var dependentArray = get(this, dependentKey),
-            previousDependentArray = meta.dependentArrays[dependentKey];
+        var dependentArray = get(this, dependentKey);
+        var previousDependentArray = meta.dependentArrays[dependentKey];
 
         if (dependentArray === previousDependentArray) {
           // The array may be the same, but our item property keys may have
@@ -535,6 +541,7 @@ function ReduceComputedProperty(options) {
       if (!partiallyRecomputeFor(this, dependentKey)) { return; }
 
       var dependentArray = get(this, dependentKey);
+
       if (dependentArray) {
         addItems.call(this, dependentArray, callbacks, cp, propertyName, meta);
       }
@@ -543,7 +550,7 @@ function ReduceComputedProperty(options) {
 
 
   this.func = function (propertyName) {
-    Ember.assert("Computed reduce values require at least one dependent key", cp._dependentKeys);
+    Ember.assert('Computed reduce values require at least one dependent key', cp._dependentKeys);
 
     recompute.call(this, propertyName);
 
@@ -560,11 +567,13 @@ function defaultCallback(computedValue) {
 ReduceComputedProperty.prototype._callbacks = function () {
   if (!this.callbacks) {
     var options = this.options;
+
     this.callbacks = {
       removedItem: options.removedItem || defaultCallback,
       addedItem: options.addedItem || defaultCallback
     };
   }
+
   return this.callbacks;
 };
 
@@ -573,8 +582,8 @@ ReduceComputedProperty.prototype._hasInstanceMeta = function (context, propertyN
 };
 
 ReduceComputedProperty.prototype._instanceMeta = function (context, propertyName) {
-  var cacheMeta = metaFor(context).cacheMeta,
-      meta = cacheMeta[propertyName];
+  var cacheMeta = metaFor(context).cacheMeta;
+  var meta = cacheMeta[propertyName];
 
   if (!meta) {
     meta = cacheMeta[propertyName] = new ReduceComputedPropertyInstanceMeta(context, propertyName, this.initialValue());
@@ -610,23 +619,21 @@ ReduceComputedProperty.prototype.clearItemPropertyKeys = function (dependentArra
 };
 
 ReduceComputedProperty.prototype.property = function () {
-  var cp = this,
-      args = a_slice.call(arguments),
-      propertyArgs = new Set(),
-      match,
-      dependentArrayKey,
-      itemPropertyKey;
+  var cp = this;
+  var args = a_slice.call(arguments);
+  var propertyArgs = new Set();
+  var match, dependentArrayKey, itemPropertyKey;
 
   forEach(args, function (dependentKey) {
     if (doubleEachPropertyPattern.test(dependentKey)) {
-      throw new EmberError("Nested @each properties not supported: " + dependentKey);
+      throw new EmberError('Nested @each properties not supported: ' + dependentKey);
     } else if (match = eachPropertyPattern.exec(dependentKey)) {
       dependentArrayKey = match[1];
 
-      var itemPropertyKeyPattern = match[2],
-          addItemPropertyKey = function (itemPropertyKey) {
-            cp.itemPropertyKey(dependentArrayKey, itemPropertyKey);
-          };
+      var itemPropertyKeyPattern = match[2];
+      var addItemPropertyKey = function (itemPropertyKey) {
+        cp.itemPropertyKey(dependentArrayKey, itemPropertyKey);
+      };
 
       expandProperties(itemPropertyKeyPattern, addItemPropertyKey);
       propertyArgs.add(dependentArrayKey);
@@ -636,7 +643,6 @@ ReduceComputedProperty.prototype.property = function () {
   });
 
   return ComputedProperty.prototype.property.apply(this, propertyArgs.toArray());
-
 };
 
 /**
@@ -772,8 +778,8 @@ ReduceComputedProperty.prototype.property = function () {
       // `content.@each.reversedName` above, we would be getting the objects
       // directly and not have access to `reversedName`.
       //
-      var reversedNameA = get(personA, 'reversedName'),
-          reversedNameB = get(personB, 'reversedName');
+      var reversedNameA = get(personA, 'reversedName');
+      var reversedNameB = get(personB, 'reversedName');
 
       return Ember.compare(reversedNameA, reversedNameB);
     })
@@ -832,12 +838,12 @@ export function reduceComputed(options) {
     options = a_slice.call(arguments, -1)[0];
   }
 
-  if (typeof options !== "object") {
-    throw new EmberError("Reduce Computed Property declared without an options hash");
+  if (typeof options !== 'object') {
+    throw new EmberError('Reduce Computed Property declared without an options hash');
   }
 
   if (!('initialValue' in options)) {
-    throw new EmberError("Reduce Computed Property declared without an initial value");
+    throw new EmberError('Reduce Computed Property declared without an initial value');
   }
 
   var cp = new ReduceComputedProperty(options);

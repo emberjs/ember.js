@@ -1,6 +1,6 @@
-import Ember from "ember-metal/core";  // for Ember.ORDER_DEFINITION
-import { typeOf } from "ember-metal/utils";
-import Comparable from "ember-runtime/mixins/comparable";
+import Ember from 'ember-metal/core';  // for Ember.ORDER_DEFINITION
+import { typeOf } from 'ember-metal/utils';
+import Comparable from 'ember-runtime/mixins/comparable';
 
 // Used by Ember.compare
 Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
@@ -47,7 +47,7 @@ export default function compare(v, w) {
   var type2 = typeOf(w);
 
   if (Comparable) {
-    if (type1==='instance' && Comparable.detect(v.constructor)) {
+    if (type1 ==='instance' && Comparable.detect(v.constructor)) {
       return v.constructor.compare(v, w);
     }
 
@@ -59,11 +59,14 @@ export default function compare(v, w) {
   // If we haven't yet generated a reverse-mapping of Ember.ORDER_DEFINITION,
   // do so now.
   var mapping = Ember.ORDER_DEFINITION_MAPPING;
+
   if (!mapping) {
     var order = Ember.ORDER_DEFINITION;
-    mapping = Ember.ORDER_DEFINITION_MAPPING = {};
     var idx, len;
-    for (idx = 0, len = order.length; idx < len;  ++idx) {
+
+    mapping = Ember.ORDER_DEFINITION_MAPPING = {};
+
+    for (idx = 0, len = order.length; idx < len; ++idx) {
       mapping[order[idx]] = idx;
     }
 
@@ -98,7 +101,7 @@ export default function compare(v, w) {
       var r = 0;
       var i = 0;
       while (r === 0 && i < l) {
-        r = compare(v[i],w[i]);
+        r = compare(v[i], w[i]);
         i++;
       }
       if (r !== 0) { return r; }

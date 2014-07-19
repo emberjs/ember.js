@@ -1,5 +1,5 @@
-import EnumerableUtils from "ember-metal/enumerable_utils";
-import {create} from "ember-metal/platform";
+import EnumerableUtils from 'ember-metal/enumerable_utils';
+import {create} from 'ember-metal/platform';
 
 /**
   Returns all of the keys defined on an object or hash. This is useful
@@ -12,6 +12,7 @@ import {create} from "ember-metal/platform";
   @return {Array} Array containing keys of obj
 */
 var keys = Object.keys;
+
 if (!keys || create.isSimulated) {
   var prototypeProperties = [
     'constructor',
@@ -21,20 +22,33 @@ if (!keys || create.isSimulated) {
     'valueOf',
     'toLocaleString',
     'toString'
-  ],
-  pushPropertyName = function(obj, array, key) {
+  ];
+  var pushPropertyName = function(obj, array, key) {
     // Prevents browsers that don't respect non-enumerability from
     // copying internal Ember properties
-    if (key.substring(0,2) === '__') return;
-    if (key === '_super') return;
-    if (EnumerableUtils.indexOf(array, key) >= 0) return;
-    if (typeof obj.hasOwnProperty === 'function' && !obj.hasOwnProperty(key)) return;
+    if (key.substring(0, 2) === '__') {
+      return;
+    }
+
+    if (key === '_super') {
+      return;
+    }
+
+    if (EnumerableUtils.indexOf(array, key) >= 0) {
+      return;
+    }
+
+    if (typeof obj.hasOwnProperty === 'function' && !obj.hasOwnProperty(key)) {
+      return;
+    }
 
     array.push(key);
   };
 
   keys = function keys(obj) {
-    var ret = [], key;
+    var ret = [];
+    var key;
+
     for (key in obj) {
       pushPropertyName(obj, ret, key);
     }

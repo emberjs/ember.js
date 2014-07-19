@@ -3,9 +3,9 @@
 @submodule ember-runtime
 */
 
-import Ember from "ember-metal/core"; // Ember.EXTEND_PROTOTYPES, Ember.assert
-import expandProperties from "ember-metal/expand_properties";
-import { computed } from "ember-metal/computed";
+import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES, Ember.assert
+import expandProperties from 'ember-metal/expand_properties';
+import { computed } from 'ember-metal/computed';
 
 var a_slice = Array.prototype.slice;
 var FunctionPrototype = Function.prototype;
@@ -26,17 +26,15 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
 
       fullName: function() {
         return this.get('firstName') + ' ' + this.get('lastName');
-
-        // Call this flag to mark the function as a property
-      }.property()
+      }.property() // Call this flag to mark the function as a property
     });
 
     var president = MyApp.President.create({
-      firstName: "Barack",
-      lastName: "Obama"
+      firstName: 'Barack',
+      lastName: 'Obama'
     });
 
-    president.get('fullName');    // "Barack Obama"
+    president.get('fullName'); // 'Barack Obama'
     ```
 
     Treating a function like a property is useful because they can work with
@@ -72,7 +70,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @method property
     @for Function
   */
-  FunctionPrototype.property = function() {
+  FunctionPrototype.property = function () {
     var ret = computed(this);
     // ComputedProperty.prototype.property expands properties; no need for us to
     // do so here.
@@ -104,11 +102,13 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @method observes
     @for Function
   */
-  FunctionPrototype.observes = function() {
-    var addWatchedProperty = function (obs) { watched.push(obs); };
+  FunctionPrototype.observes = function () {
     var watched = [];
+    var addWatchedProperty = function (obs) {
+      watched.push(obs);
+    };
 
-    for (var i=0; i<arguments.length; ++i) {
+    for (var i = 0; i < arguments.length; ++i) {
       expandProperties(arguments[i], addWatchedProperty);
     }
 
@@ -142,10 +142,11 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @method observesImmediately
     @for Function
   */
-  FunctionPrototype.observesImmediately = function() {
-    for (var i=0, l=arguments.length; i<l; i++) {
+  FunctionPrototype.observesImmediately = function () {
+    for (var i = 0, l = arguments.length; i < l; i++) {
       var arg = arguments[i];
-      Ember.assert("Immediate observers must observe internal properties only, not properties on other objects.", arg.indexOf('.') === -1);
+      Ember.assert('Immediate observers must observe internal properties only, ' +
+        'not properties on other objects.', arg.indexOf('.') === -1);
     }
 
     // observes handles property expansion
@@ -174,11 +175,13 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @method observesBefore
     @for Function
   */
-  FunctionPrototype.observesBefore = function() {
-    var addWatchedProperty = function (obs) { watched.push(obs); };
+  FunctionPrototype.observesBefore = function () {
     var watched = [];
+    var addWatchedProperty = function (obs) {
+      watched.push(obs);
+    };
 
-    for (var i=0; i<arguments.length; ++i) {
+    for (var i = 0; i < arguments.length; ++i) {
       expandProperties(arguments[i], addWatchedProperty);
     }
 
@@ -208,9 +211,10 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @method on
     @for Function
   */
-  FunctionPrototype.on = function() {
+  FunctionPrototype.on = function () {
     var events = a_slice.call(arguments);
     this.__ember_listens__ = events;
+
     return this;
   };
 }

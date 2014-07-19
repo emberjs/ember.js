@@ -1,12 +1,12 @@
 /* globals RSVP:true */
 
-import Ember from "ember-metal/core";
-import Logger from "ember-metal/logger";
+import Ember from 'ember-metal/core';
+import Logger from 'ember-metal/logger';
 
-var RSVP = requireModule("rsvp");
+var RSVP = requireModule('rsvp');
 var Test, testModuleName = 'ember-testing/test';
 
-RSVP.onerrorDefault = function(error) {
+RSVP.onerrorDefault = function (error) {
   if (error instanceof Error) {
     if (Ember.testing) {
       // ES6TODO: remove when possible
