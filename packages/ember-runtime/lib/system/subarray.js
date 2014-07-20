@@ -37,8 +37,8 @@ SubArray.prototype = {
 
     @method addItem
 
-    @param {number} index The index of the item in the tracked array.
-    @param {boolean} match `true` iff the item is included in the subarray.
+    @param {Number} index The index of the item in the tracked array.
+    @param {Boolean} match `true` iff the item is included in the subarray.
 
     @return {number} The index of the item in the subarray.
   */
@@ -90,7 +90,7 @@ SubArray.prototype = {
 
     @method removeItem
 
-    @param {number} index The index of the item in the tracked array.
+    @param {Number} index The index of the item in the tracked array.
 
     @return {number} The index of the item in the subarray, or `-1` if the item
     was not in the subarray.

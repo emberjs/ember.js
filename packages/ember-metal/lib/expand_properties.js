@@ -28,13 +28,13 @@ var BRACE_EXPANSION = /^((?:[^\.]*\.)*)\{(.*)\}$/,
 
   @method
   @private
-  @param {string} pattern The property pattern to expand.
-  @param {function} callback The callback to invoke.  It is invoked once per
+  @param {String} pattern The property pattern to expand.
+  @param {Function} callback The callback to invoke.  It is invoked once per
   expansion, and is passed the expansion.
   */
 export default function expandProperties(pattern, callback) {
   if (pattern.indexOf(' ') > -1) {
-    throw new EmberError('Brace expanded properties cannot contain spaces, ' + 
+    throw new EmberError('Brace expanded properties cannot contain spaces, ' +
       'e.g. `user.{firstName, lastName}` should be `user.{firstName,lastName}`');
   }
 

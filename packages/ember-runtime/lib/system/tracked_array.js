@@ -14,7 +14,7 @@ export default TrackedArray;
 
   @class TrackedArray
   @namespace Ember
-  @param {array} [items=[]] The array to be tracked.  This is used just to get
+  @param {Array} [items=[]] The array to be tracked.  This is used just to get
   the initial items for the starting state of retain:n.
 */
 function TrackedArray(items) {
@@ -119,7 +119,7 @@ TrackedArray.prototype = {
     `Ember.TrackedArray.{RETAIN, DELETE, INSERT}`
 
     @method apply
-    @param {function} callback
+    @param {Function} callback
   */
   apply: function (callback) {
     var items = [],
@@ -142,7 +142,7 @@ TrackedArray.prototype = {
 
     @method _findArrayOperation
 
-    @param {number} index the index of the item whose operation information
+    @param {Number} index the index of the item whose operation information
     should be returned.
     @private
   */
@@ -300,10 +300,10 @@ TrackedArray.prototype = {
 
   @method ArrayOperation
   @private
-  @param {string} type The type of the operation.  One of
+  @param {String} type The type of the operation.  One of
   `Ember.TrackedArray.{RETAIN, INSERT, DELETE}`
-  @param {number} count The number of items in this operation.
-  @param {array} items The items of the operation, if included.  RETAIN and
+  @param {Number} count The number of items in this operation.
+  @param {Array} items The items of the operation, if included.  RETAIN and
   INSERT include their items, DELETE does not.
 */
 function ArrayOperation (operation, count, items) {
@@ -319,10 +319,10 @@ function ArrayOperation (operation, count, items) {
   @method ArrayOperationMatch
   @private
   @param {ArrayOperation} operation
-  @param {number} index The index of `operation` in the array of operations.
-  @param {boolean} split Whether or not the item index searched for would
+  @param {Number} index The index of `operation` in the array of operations.
+  @param {Boolean} split Whether or not the item index searched for would
   require a split for a new operation type.
-  @param {number} rangeStart The index of the first item in the operation,
+  @param {Number} rangeStart The index of the first item in the operation,
   with respect to the tracked array.  The index of the last item can be computed
   from `rangeStart` and `operation.count`.
 */
