@@ -69,7 +69,11 @@ function concatES6(sourceTrees, options) {
     sourceTrees = defeatureify(sourceTrees, defeatureifyConfig(options.defeatureifyOptions));
   }
 
-  var concatTrees = [loader, 'generators', iifeStart, iifeStop, sourceTrees];
+  var concatTrees = [loader, legacyShims, 'generators', iifeStart, iifeStop, sourceTrees];
+  if (options.includeLegacyShims === true) {
+    inputFiles.unshift('legacy-shims.js');
+  }
+
   if (options.includeLoader === true) {
     inputFiles.unshift('loader.js');
   }
@@ -111,6 +115,12 @@ testConfig = replace(testConfig, {
     { match: /\{\{FEATURES\}\}/g, replacement: JSON.stringify(defeatureifyConfig().enabled) }
   ]
 });
+
+var legacyShims = concat('packages/legacy-shims/lib', {
+    wrapInEval: false,
+    inputFiles: ['**/*.js'],
+    outputFile: '/legacy-shims.js'
+  });
 
 var bowerFiles = [
   pickFiles('config/package_manager_files', {
@@ -294,6 +304,7 @@ testTrees   = mergeTrees(testTrees);
 
 var compiledSource = concatES6(sourceTrees, {
   includeLoader: true,
+  includeLegacyShims: true,
   bootstrapModule: 'ember',
   vendorTrees: vendorTrees,
   inputFiles: ['**/*.js'],
@@ -314,6 +325,7 @@ function buildRuntimeTree() {
 
   var compiledRuntime = concatES6(mergeTrees(runtimeTrees), {
     includeLoader: true,
+    includeLegacyShims: true,
     bootstrapModule: 'ember-runtime',
     vendorTrees: mergeTrees(runtimeVendorTrees),
     inputFiles: ['**/*.js'],
@@ -329,6 +341,7 @@ var prodCompiledSource = removeFile(sourceTrees, {
 
 prodCompiledSource = concatES6(prodCompiledSource, {
   includeLoader: true,
+  includeLegacyShims: true,
   bootstrapModule: 'ember',
   vendorTrees: vendorTrees,
   inputFiles: ['**/*.js'],
