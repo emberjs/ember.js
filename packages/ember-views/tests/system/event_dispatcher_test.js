@@ -182,9 +182,11 @@ test("events should stop propagating if the view is destroyed", function() {
   ok(!parentViewReceived, "parent view does not receive the event");
 });
 
-test("should not interfere with event propagation", function() {
+test('should not interfere with event propagation of virtualViews', function() {
   var receivedEvent;
-  view = View.create({
+
+  var view = View.create({
+    isVirtual: true,
     render: function(buffer) {
       buffer.push('<div id="propagate-test-div"></div>');
     }
@@ -200,8 +202,8 @@ test("should not interfere with event propagation", function() {
 
   jQuery('#propagate-test-div').click();
 
-  ok(receivedEvent, "allowed event to propagate outside Ember");
-  deepEqual(receivedEvent.target, jQuery('#propagate-test-div')[0], "target property is the element that was clicked");
+  ok(receivedEvent, 'allowed event to propagate');
+  deepEqual(receivedEvent && receivedEvent.target, jQuery('#propagate-test-div')[0], 'target property is the element that was clicked');
 });
 
 test("should dispatch events to nearest event manager", function() {
