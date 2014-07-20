@@ -1,12 +1,12 @@
-import Ember from "ember-metal/core";
+import Ember from 'ember-metal/core';
 import {
   reduceComputed,
   ReduceComputedProperty
-} from "ember-runtime/computed/reduce_computed";
-import { forEach } from "ember-metal/enumerable_utils";
-import { create as o_create } from "ember-metal/platform";
-import { addObserver } from "ember-metal/observer";
-import EmberError from "ember-metal/error";
+} from 'ember-runtime/computed/reduce_computed';
+import { forEach } from 'ember-metal/enumerable_utils';
+import { create as o_create } from 'ember-metal/platform';
+import { addObserver } from 'ember-metal/observer';
+import EmberError from 'ember-metal/error';
 
 var a_slice = [].slice;
 
@@ -36,9 +36,11 @@ function ArrayComputedProperty() {
 }
 
 ArrayComputedProperty.prototype = o_create(ReduceComputedProperty.prototype);
+
 ArrayComputedProperty.prototype.initialValue = function () {
   return Ember.A();
 };
+
 ArrayComputedProperty.prototype.resetValue = function (array) {
   array.clear();
   return array;
@@ -171,8 +173,8 @@ function arrayComputed (options) {
     options = a_slice.call(arguments, -1)[0];
   }
 
-  if (typeof options !== "object") {
-    throw new EmberError("Array Computed Property declared without an options hash");
+  if (typeof options !== 'object') {
+    throw new EmberError('Array Computed Property declared without an options hash');
   }
 
   var cp = new ArrayComputedProperty(options);
