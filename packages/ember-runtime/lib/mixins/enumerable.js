@@ -978,7 +978,7 @@ export default Mixin.create({
 
   /**
     Invoke this method when the contents of your enumerable has changed.
-    This will notify any observers watching for content changes. If your are
+    This will notify any observers watching for content changes. If you are
     implementing an ordered enumerable (such as an array), also pass the
     start and end values where the content changed so that it can be used to
     notify range observers.
