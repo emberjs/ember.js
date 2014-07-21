@@ -86,11 +86,7 @@ test("log class generation if logging enabled", function() {
   run(App, 'advanceReadiness');
 
   visit('/posts').then(function() {
-    if (Ember.FEATURES.isEnabled('ember-routing-consistent-resources')) {
-      equal(Ember.keys(logs).length, 8, 'expected logs');
-    } else {
-      equal(Ember.keys(logs).length, 6, 'expected logs');
-    }
+    equal(Ember.keys(logs).length, 6, 'expected logs');
   });
 });
 

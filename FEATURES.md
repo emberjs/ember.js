@@ -59,23 +59,6 @@ for a detailed explanation.
 
   Added in [#4760](https://github.com/emberjs/ember.js/pull/4760)
 
-* `ember-routing-consistent-resources`
-
-  Adds `.index`, `.loading`, and `.error` sub-routes for resources created
-  even if no callback was provided.
-
-  For example:
-
-  ```javascript
-    App.Router.map(function() {
-      this.resource("home");
-    });
-  ```
-
-  Prior to this feature `home.index` route would not be created for the above resource.
-
-  Added in [#4251](https://github.com/emberjs/ember.js/pull/4251)
-
 * `ember-metal-is-present`
 
   Adds `Ember.isPresent` as the inverse of `Ember.isBlank`. This convenience
