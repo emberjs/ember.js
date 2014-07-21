@@ -7,7 +7,6 @@
     "ember-routing-add-model-option": true,
     "ember-routing-linkto-target-attribute": false,
     "ember-routing-will-change-hooks": false,
-    "ember-routing-consistent-resources": true,
     "event-dispatcher-can-disable-event-manager": false
   },
   "debugStatements": [

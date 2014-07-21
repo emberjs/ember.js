@@ -28,14 +28,7 @@ DSL.prototype = {
       options.path = "/" + name;
     }
 
-    var createSubRoutes = false;
-    if (Ember.FEATURES.isEnabled('ember-routing-consistent-resources')) {
-      createSubRoutes = true;
-    } else {
-      if (callback) { createSubRoutes = true; }
-    }
-
-    if (createSubRoutes) {
+    if (callback) {
       var dsl = new DSL(name);
       route(dsl, 'loading');
       route(dsl, 'error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
