@@ -1,5 +1,7 @@
 # Ember Changelog
 
+* Revert ember-routing-consistent-resources.
+
 ### Ember 1.7.0-beta.2 (July, 16, 2014)
 
 * [BUGFIX] Wrap es3 keywords in quotes.
