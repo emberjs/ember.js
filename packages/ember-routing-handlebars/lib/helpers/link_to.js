@@ -355,7 +355,10 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     @property router
   **/
   router: computed(function() {
-    return get(this, 'controller').container.lookup('router:main');
+    var controller = get(this, 'controller');
+    if (controller && controller.container) {
+      return controller.container.lookup('router:main');
+    }
   }),
 
   /**
@@ -493,8 +496,10 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     @return {Array} An array with the route name and any dynamic segments
   **/
   loadedParams: computed('resolvedParams', function computeLinkViewRouteArgs() {
+    var router = get(this, 'router');
+    if (!router) { return; }
+
     var resolvedParams = get(this, 'resolvedParams'),
-        router = get(this, 'router'),
         namedRoute = resolvedParams.targetRouteName;
 
     if (!namedRoute) { return; }
