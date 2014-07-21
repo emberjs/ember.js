@@ -12,9 +12,7 @@ function DSL(name) {
 export default DSL;
 
 DSL.prototype = {
-  resource: function(name, options, callback) {
-    Ember.assert("'basic' cannot be used as a resource name.", name !== 'basic');
-
+  route: function(name, options, callback) {
     if (arguments.length === 2 && typeof options === 'function') {
       callback = options;
       options = {};
@@ -24,8 +22,16 @@ DSL.prototype = {
       options = {};
     }
 
+    var type = options.resetNamespace === true ? 'resource' : 'route';
+    Ember.assert("'basic' cannot be used as a " + type + " name.", name !== 'basic');
+
+
     if (typeof options.path !== 'string') {
       options.path = "/" + name;
+    }
+
+    if (canNest(this) && options.resetNamespace !== true) {
+      name = this.parent + "." + name;
     }
 
     if (callback) {
@@ -40,14 +46,9 @@ DSL.prototype = {
       this.push(options.path, name, null);
     }
 
-
     if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
-      // For namespace-preserving nested resource (e.g. resource('foo.bar') within
-      // resource('foo')) we only want to use the last route name segment to determine
-      // the names of the error/loading substates (e.g. 'bar_loading')
-      name = name.split('.').pop();
-      route(this, name + '_loading');
-      route(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
+      route(this, name + '_loading', {resetNamespace: options.resetNamespace});
+      route(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error"});
     }
   },
 
@@ -58,21 +59,25 @@ DSL.prototype = {
     this.matches.push([url, name, callback]);
   },
 
-  route: function(name, options) {
-    Ember.assert("'basic' cannot be used as a route name.", name !== 'basic');
-
-    route(this, name, options);
-    if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
-      route(this, name + '_loading');
-      route(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
+  resource: function(name, options, callback) {
+    if (arguments.length === 2 && typeof options === 'function') {
+      callback = options;
+      options = {};
     }
+
+    if (arguments.length === 1) {
+      options = {};
+    }
+
+    options.resetNamespace = true;
+    this.route(name, options, callback);
   },
 
   generate: function() {
     var dslMatches = this.matches;
 
     if (!this.explicitIndex) {
-      this.route("index", { path: "/" });
+      route(this, "index", { path: "/" });
     }
 
     return function(match) {
@@ -84,6 +89,10 @@ DSL.prototype = {
   }
 };
 
+function canNest(dsl) {
+  return dsl.parent && dsl.parent !== 'application';
+}
+
 function route(dsl, name, options) {
   Ember.assert("You must use `this.resource` to nest", typeof options !== 'function');
 
@@ -93,7 +102,7 @@ function route(dsl, name, options) {
     options.path = "/" + name;
   }
 
-  if (dsl.parent && dsl.parent !== 'application') {
+  if (canNest(dsl) && options.resetNamespace !== true) {
     name = dsl.parent + "." + name;
   }
 
