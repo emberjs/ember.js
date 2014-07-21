@@ -385,7 +385,10 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
   try {
 
     if (cacheable && cache[keyName] !== undefined) {
-      cachedValue = cache[keyName];
+      if(cache[keyName] !== UNDEFINED) {
+        cachedValue = cache[keyName];
+      }
+
       hadCachedValue = true;
     }
 

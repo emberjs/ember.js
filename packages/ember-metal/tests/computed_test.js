@@ -609,6 +609,22 @@ test('adding a computed property should show up in key iteration',function() {
   ok('foo' in obj, 'foo in obj should pass');
 });
 
+testBoth("when setting a value after it had been retrieved empty don't pass function UNDEFINED as oldValue", function(get, set) {
+    var obj = {}, oldValueIsNoFunction = true;
+
+    defineProperty(obj, 'foo', computed(function(key, value, oldValue) {
+        if(typeof oldValue === 'function') {
+            oldValueIsNoFunction = false;
+        }
+
+        return undefined;
+    }));
+
+    get(obj, 'foo');
+    set(obj, 'foo', undefined);
+
+    ok(oldValueIsNoFunction);
+});
 
 QUnit.module('computed - setter');
 
