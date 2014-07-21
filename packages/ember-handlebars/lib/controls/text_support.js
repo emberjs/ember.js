@@ -94,10 +94,10 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   },
 
   /**
-    The action to be sent when the user inserts a new line.
+    Called when the user inserts a new line.
 
     Called by the `Ember.TextSupport` mixin on keyUp if keycode matches 13.
-    Uses sendAction to send the `enter` action to the controller.
+    Uses sendAction to send the `enter` action.
 
     @method insertNewline
     @param {Event} event
@@ -111,7 +111,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     Called when the user hits escape.
 
     Called by the `Ember.TextSupport` mixin on keyUp if keycode matches 27.
-    Uses sendAction to send the `escape-press` action to the controller.
+    Uses sendAction to send the `escape-press` action.
 
     @method cancel
     @param {Event} event
@@ -123,6 +123,8 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   /**
     Called when the text area is focused.
 
+    Uses sendAction to send the `focus-in` action.
+
     @method focusIn
     @param {Event} event
   */
@@ -131,7 +133,9 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   },
 
   /**
-    Called when the text area is blurred.
+    Called when the text area is blurred. 
+
+    Uses sendAction to send the `focus-out` action.
 
     @method focusOut
     @param {Event} event
@@ -141,10 +145,10 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   },
 
   /**
-    The action to be sent when the user presses a key. Enabled by setting
+    Called when the user presses a key. Enabled by setting
     the `onEvent` property to `keyPress`.
 
-    Uses sendAction to send the `keyPress` action to the controller.
+    Uses sendAction to send the `key-press` action.
 
     @method keyPress
     @param {Event} event
