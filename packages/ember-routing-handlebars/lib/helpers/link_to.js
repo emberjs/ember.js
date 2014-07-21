@@ -290,7 +290,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     or the application's current route is the route the `LinkView` would trigger
     transitions into.
 
-    The `currentWhen` property can match against multiple routes by separating 
+    The `currentWhen` property can match against multiple routes by separating
     route names using the `|` character.
 
     @property active
@@ -342,13 +342,13 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     if (Ember.FEATURES.isEnabled("ember-routing-multi-current-when")) {
       currentWhen = currentWhen.split('|');
       for (var i = 0, len = currentWhen.length; i < len; i++) {
-        if (isActiveForRoute(currentWhen[i])) { 
-          return get(this, 'activeClass'); 
+        if (isActiveForRoute(currentWhen[i])) {
+          return get(this, 'activeClass');
         }
       }
     } else {
-      if (isActiveForRoute(currentWhen)) { 
-        return get(this, 'activeClass'); 
+      if (isActiveForRoute(currentWhen)) {
+        return get(this, 'activeClass');
       }
     }
   }),

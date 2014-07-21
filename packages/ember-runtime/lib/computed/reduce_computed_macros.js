@@ -257,12 +257,12 @@ export var mapProperty = mapBy;
     })
   });
 
-  var hamster = Hamster.create({ 
+  var hamster = Hamster.create({
     chores: [
       { name: 'cook', done: true },
       { name: 'clean', done: true },
       { name: 'write more unit tests', done: false }
-    ] 
+    ]
   });
 
   hamster.get('remainingChores'); // [{name: 'write more unit tests', done: false}]
