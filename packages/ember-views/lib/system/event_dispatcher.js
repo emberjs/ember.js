@@ -90,13 +90,13 @@ export default EmberObject.extend({
   rootElement: 'body',
 
   /**
-    It enables events to be dispatched to the view `eventManager` which object
-    when present takes precedence over events of the same name handled through methods
-    on the view.
+    It enables events to be dispatched to the view's `eventManager.` When present,
+    this object takes precedence over handling of events on the view itself.
 
-    Most of the ember applications does not implement view `eventManagers`,
-    then disabling this property will provide some performance benefit
-    because it skips the search for the `eventManager` on the view tree.
+    Note that most Ember applications do not use this feature. If your app also
+    does not use it, consider setting this property to false to gain some performance
+    improvement by allowing the EventDispatcher to skip the search for the
+    `eventManager` on the view tree.
 
     ```javascript
     var EventDispatcher = Em.EventDispatcher.extend({
@@ -134,7 +134,6 @@ export default EmberObject.extend({
 
     jQuery.extend(events, addedEvents || {});
 
-
     if (!isNone(rootElement)) {
       set(this, 'rootElement', rootElement);
     }
@@ -157,19 +156,12 @@ export default EmberObject.extend({
   },
 
   /**
-    Registers an event listener on the document. If the given event is
+    Registers an event listener on the rootElement. If the given event is
     triggered, the provided event handler will be triggered on the target view.
 
     If the target view does not implement the event handler, or if the handler
     returns `false`, the parent view will be called. The event will continue to
     bubble to each successive parent view until it reaches the top.
-
-    For example, to have the `mouseDown` method called on the target view when
-    a `mousedown` event is received from the browser, do the following:
-
-    ```javascript
-    setupHandler('mousedown', 'mouseDown');
-    ```
 
     @private
     @method setupHandler
@@ -249,6 +241,7 @@ export default EmberObject.extend({
     jQuery(rootElement).off('.ember', '**').removeClass('ember-application');
     return this._super();
   },
+
   toString: function() {
     return '(EventDisptacher)';
   }
