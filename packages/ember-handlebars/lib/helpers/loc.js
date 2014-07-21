@@ -24,7 +24,7 @@ import { loc } from "ember-runtime/system/string";
   Take note that `"welcome"` is a string and not an object
   reference.
 
-  See [Ember.String.loc](/api/classes/Ember.String.html#method_loc) for how to 
+  See [Ember.String.loc](/api/classes/Ember.String.html#method_loc) for how to
   set up localized string references.
 
   @method loc

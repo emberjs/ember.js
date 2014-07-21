@@ -653,7 +653,7 @@ Alias.prototype = new Descriptor();
   });
 
   var goodGuy = App.Person.create();
-  
+
   goodGuy.name();    // 'Tomhuda Katzdale'
   goodGuy.moniker(); // 'Tomhuda Katzdale'
   ```

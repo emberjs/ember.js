@@ -313,7 +313,7 @@ export function inputHelper(options) {
   Internally, `{{textarea}}` creates an instance of `Ember.TextArea`, passing
   arguments from the helper to `Ember.TextArea`'s `create` method. You can
   extend the capabilities of text areas in your application by reopening this
-  class. For example, if you are building a Bootstrap project where `data-*` 
+  class. For example, if you are building a Bootstrap project where `data-*`
   attributes are used, you can globally add support for a `data-*` attribute
   on all `{{textarea}}`s' in your app by reopening `Ember.TextArea` or
   `Ember.TextSupport` and adding it to the `attributeBindings` concatenated

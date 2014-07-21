@@ -232,7 +232,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-auto-location-uses-replace-state-for
     createLocation();
 
     equal(get(location, 'implementation'), 'history');
-  });  
+  });
 } else {
   test("AutoLocation.create() should transform the URL for pushState-supported browsers viewing a HashLocation-formatted url", function() {
     expect(4);
