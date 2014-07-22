@@ -26,17 +26,26 @@ module.exports = {
   revision: getRevision(),
 
   vendored: {
+    /*
     "handlebars": true,
     "simple-html-tokenizer": true
+    */
   },
 
+  // dependencies are not walked. You must specify all
+  // deps including their own dependencies.
   dependencies: {
+    /*
+    "htmlbars": {
+      lib: ["handlebars", "morph", "simple-html-tokenizer", "htmlbars-compiler", "htmlbars-runtime"]
+    },
+    */
     "htmlbars-compiler": {
-      lib: ["handlebars", "simple-html-tokenizer"],
+      lib: ["handlebars", "simple-html-tokenizer", "morph"],
       test: ["htmlbars-runtime"]
     },
     "htmlbars-runtime": {
-      lib: ["morph", "handlebars"]
+      lib: ["handlebars", "morph"]
     },
     "morph": {
       test: ["handlebars"]

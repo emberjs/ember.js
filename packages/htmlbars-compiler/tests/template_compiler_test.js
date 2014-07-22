@@ -1,7 +1,7 @@
-import { TemplateCompiler } from "htmlbars-compiler/compiler/template";
-import { preprocess } from "htmlbars-compiler/parser";
-import { equalHTML } from "test/support/assertions";
-import { DOMHelper } from "morph";
+import { TemplateCompiler } from "../htmlbars-compiler/compiler/template";
+import { preprocess } from "../htmlbars-compiler/parser";
+import { equalHTML } from "../test/support/assertions";
+import { DOMHelper } from "../morph";
 
 module("TemplateCompiler");
 
