@@ -203,7 +203,7 @@ var Test = {
   /**
     Replacement for `Ember.RSVP.resolve`
     The only difference is this uses
-    and instance of `Ember.Test.Promise`
+    an instance of `Ember.Test.Promise`
 
     @public
     @method resolve
