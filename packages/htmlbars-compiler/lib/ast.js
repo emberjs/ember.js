@@ -1,4 +1,4 @@
-import AST from "handlebars/compiler/ast";
+import AST from "../handlebars/compiler/ast";
 
 export var MustacheNode = AST.MustacheNode;
 export var SexprNode = AST.SexprNode;

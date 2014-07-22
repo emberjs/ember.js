@@ -1,4 +1,4 @@
-import {hooks} from "htmlbars-runtime";
+import {hooks} from "../htmlbars-runtime";
 
 module("htmlbars-runtime");
 

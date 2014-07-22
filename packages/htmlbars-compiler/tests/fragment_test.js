@@ -1,10 +1,10 @@
-import { FragmentOpcodeCompiler } from "htmlbars-compiler/compiler/fragment_opcode";
-import { HydrationOpcodeCompiler } from "htmlbars-compiler/compiler/hydration_opcode";
-import { FragmentCompiler } from "htmlbars-compiler/compiler/fragment";
-import { HydrationCompiler } from "htmlbars-compiler/compiler/hydration";
-import { DOMHelper } from "morph";
-import { preprocess } from "htmlbars-compiler/parser";
-import { equalHTML } from "test/support/assertions";
+import { FragmentOpcodeCompiler } from "../htmlbars-compiler/compiler/fragment_opcode";
+import { HydrationOpcodeCompiler } from "../htmlbars-compiler/compiler/hydration_opcode";
+import { FragmentCompiler } from "../htmlbars-compiler/compiler/fragment";
+import { HydrationCompiler } from "../htmlbars-compiler/compiler/hydration";
+import { DOMHelper } from "../morph";
+import { preprocess } from "../htmlbars-compiler/parser";
+import { equalHTML } from "../test/support/assertions";
 
 var dom = new DOMHelper();
 
