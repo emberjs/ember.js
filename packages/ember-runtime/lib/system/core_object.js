@@ -412,9 +412,10 @@ CoreObject.PrototypeMixin = Mixin.create({
     @return {String} string representation
   */
   toString: function toString() {
-    var hasToStringExtension = typeof this.toStringExtension === 'function',
-        extension = hasToStringExtension ? ":" + this.toStringExtension() : '';
+    var hasToStringExtension = typeof this.toStringExtension === 'function';
+    var extension = hasToStringExtension ? ":" + this.toStringExtension() : '';
     var ret = '<'+this.constructor.toString()+':'+guidFor(this)+extension+'>';
+
     this.toString = makeToString(ret);
     return ret;
   }
@@ -738,8 +739,8 @@ var ClassMixin = Mixin.create({
     @param key {String} property name
   */
   metaForProperty: function(key) {
-    var meta = this.proto()[META_KEY],
-        desc = meta && meta.descs[key];
+    var meta = this.proto()[META_KEY];
+    var desc = meta && meta.descs[key];
 
     Ember.assert("metaForProperty() could not find a computed property with key '"+key+"'.", !!desc && desc instanceof ComputedProperty);
     return desc._meta || {};
@@ -754,10 +755,10 @@ var ClassMixin = Mixin.create({
     @param {Object} binding
   */
   eachComputedProperty: function(callback, binding) {
-    var proto = this.proto(),
-        descs = meta(proto).descs,
-        empty = {},
-        property;
+    var proto = this.proto();
+    var descs = meta(proto).descs;
+    var empty = {};
+    var property;
 
     for (var name in descs) {
       property = descs[name];
