@@ -123,6 +123,15 @@ function processNamespace(paths, root, seen) {
 
 var STARTS_WITH_UPPERCASE = /^[A-Z]/;
 
+function tryIsNamespace(lookup, prop) {
+  try {
+    var obj = lookup[prop];
+    return obj && obj.isNamespace && obj;
+  } catch (e) {
+    // continue
+  }
+}
+
 function findNamespaces() {
   var lookup = Ember.lookup, obj, isNamespace;
 
@@ -137,14 +146,8 @@ function findNamespaces() {
 
     // At times we are not allowed to access certain properties for security reasons.
     // There are also times where even if we can access them, we are not allowed to access their properties.
-    try {
-      obj = lookup[prop];
-      isNamespace = obj && obj.isNamespace;
-    } catch (e) {
-      continue;
-    }
-
-    if (isNamespace) {
+    obj = tryIsNamespace(lookup, prop);
+    if (obj) {
       obj[NAME_KEY] = prop;
     }
   }
