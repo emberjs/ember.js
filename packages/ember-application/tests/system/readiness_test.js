@@ -60,57 +60,37 @@ QUnit.module("Application readiness", {
 // it was triggered after initialization.
 
 test("Ember.Application's ready event is called right away if jQuery is already ready", function() {
-  var wasResolved = 0;
   jQuery.isReady = true;
 
   run(function() {
     application = Application.create({ router: false });
-    application.then(function() {
-      wasResolved++;
-    });
 
     equal(readyWasCalled, 0, "ready is not called until later");
-    equal(wasResolved, 0);
   });
 
-  equal(wasResolved, 1);
   equal(readyWasCalled, 1, "ready was called");
 
   domReady();
 
-  equal(wasResolved, 1);
   equal(readyWasCalled, 1, "application's ready was not called again");
 });
 
 test("Ember.Application's ready event is called after the document becomes ready", function() {
-  var wasResolved = 0;
   run(function() {
     application = Application.create({ router: false });
-    application.then(function() {
-      wasResolved++;
-    });
-    equal(wasResolved, 0);
   });
 
   equal(readyWasCalled, 0, "ready wasn't called yet");
-  equal(wasResolved, 0);
 
   domReady();
 
-  equal(wasResolved, 1);
   equal(readyWasCalled, 1, "ready was called now that DOM is ready");
 });
 
 test("Ember.Application's ready event can be deferred by other components", function() {
-  var wasResolved = 0;
-
   run(function() {
     application = Application.create({ router: false });
-    application.then(function() {
-      wasResolved++;
-    });
     application.deferReadiness();
-    equal(wasResolved, 0);
   });
 
   equal(readyWasCalled, 0, "ready wasn't called yet");
@@ -118,29 +98,22 @@ test("Ember.Application's ready event can be deferred by other components", func
   domReady();
 
   equal(readyWasCalled, 0, "ready wasn't called yet");
-  equal(wasResolved, 0);
 
   run(function() {
     application.advanceReadiness();
     equal(readyWasCalled, 0);
-    equal(wasResolved, 0);
   });
 
-  equal(wasResolved, 1);
   equal(readyWasCalled, 1, "ready was called now all readiness deferrals are advanced");
 });
 
 test("Ember.Application's ready event can be deferred by other components", function() {
-  var wasResolved = 0;
   jQuery.isReady = false;
 
   run(function() {
     application = Application.create({ router: false });
     application.deferReadiness();
-    application.then(function() {
-      wasResolved++;
-    });
-    equal(wasResolved, 0);
+    equal(readyWasCalled, 0, "ready wasn't called yet");
   });
 
   domReady();
@@ -149,10 +122,8 @@ test("Ember.Application's ready event can be deferred by other components", func
 
   run(function() {
     application.advanceReadiness();
-    equal(wasResolved, 0);
   });
 
-  equal(wasResolved, 1);
   equal(readyWasCalled, 1, "ready was called now all readiness deferrals are advanced");
 
   expectAssertion(function() {
