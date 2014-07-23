@@ -503,9 +503,9 @@ function computed(func) {
   @return {Object} the cached value
 */
 function cacheFor(obj, key) {
-  var meta = obj[META_KEY],
-      cache = meta && meta.cache,
-      ret = cache && cache[key];
+  var meta = obj[META_KEY];
+  var cache = meta && meta.cache;
+  var ret = cache && cache[key];
 
   if (ret === UNDEFINED) { return undefined; }
   return ret;
