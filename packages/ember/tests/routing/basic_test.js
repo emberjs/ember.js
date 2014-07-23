@@ -755,16 +755,16 @@ test("The Special Page returning a promise puts the app into a loading state unt
     this.resource("special", { path: "/specials/:menu_item_id" });
   });
 
-  var menuItem;
+  var menuItem, resolve;
 
-  App.MenuItem = Ember.Object.extend(Ember.DeferredMixin);
+  App.MenuItem = Ember.Object.extend();
   App.MenuItem.reopenClass({
     find: function(id) {
-      menuItem = App.MenuItem.create({
-        id: id
-      });
+      menuItem = App.MenuItem.create({ id: id });
 
-      return menuItem;
+      return new Ember.RSVP.Promise(function(res) {
+        resolve = res;
+      });
     }
   });
 
@@ -795,7 +795,7 @@ test("The Special Page returning a promise puts the app into a loading state unt
   equal(Ember.$('p', '#qunit-fixture').text(), "LOADING!", "The app is in the loading state");
 
   Ember.run(function() {
-    menuItem.resolve(menuItem);
+    resolve(menuItem);
   });
 
   equal(Ember.$('p', '#qunit-fixture').text(), "1", "The app is now in the specials state");
@@ -885,13 +885,17 @@ test("The Special page returning an error invokes SpecialRoute's error handler",
     this.resource("special", { path: "/specials/:menu_item_id" });
   });
 
-  var menuItem;
+  var menuItem, promise, resolve;
 
-  App.MenuItem = Ember.Object.extend(Ember.DeferredMixin);
+  App.MenuItem = Ember.Object.extend();
   App.MenuItem.reopenClass({
     find: function(id) {
       menuItem = App.MenuItem.create({ id: id });
-      return menuItem;
+      promise = new Ember.RSVP.Promise(function(res) {
+        resolve = res;
+      });
+
+      return promise;
     }
   });
 
@@ -910,7 +914,9 @@ test("The Special page returning an error invokes SpecialRoute's error handler",
 
   handleURLRejectsWith('/specials/1', 'Setup error');
 
-  Ember.run(menuItem, menuItem.resolve, menuItem);
+  Ember.run(function() {
+    resolve(menuItem);
+  });
 });
 
 function testOverridableErrorHandler(handlersName) {
@@ -922,13 +928,15 @@ function testOverridableErrorHandler(handlersName) {
     this.resource("special", { path: "/specials/:menu_item_id" });
   });
 
-  var menuItem;
+  var menuItem, resolve;
 
-  App.MenuItem = Ember.Object.extend(Ember.DeferredMixin);
+  App.MenuItem = Ember.Object.extend();
   App.MenuItem.reopenClass({
     find: function(id) {
       menuItem = App.MenuItem.create({ id: id });
-      return menuItem;
+      return new Ember.RSVP.Promise(function(res) {
+        resolve = res;
+      });
     }
   });
 
@@ -951,7 +959,9 @@ function testOverridableErrorHandler(handlersName) {
 
   handleURLRejectsWith("/specials/1", "Setup error");
 
-  Ember.run(menuItem, 'resolve', menuItem);
+  Ember.run(function() {
+    resolve(menuItem);
+  });
 }
 
 test("ApplicationRoute's default error handler can be overridden", function() {
@@ -970,7 +980,7 @@ asyncTest("Moving from one page to another triggers the correct callbacks", func
     this.resource("special", { path: "/specials/:menu_item_id" });
   });
 
-  App.MenuItem = Ember.Object.extend(Ember.DeferredMixin);
+  App.MenuItem = Ember.Object.extend();
 
   App.SpecialRoute = Ember.Route.extend({
     setupController: function(controller, model) {
@@ -998,7 +1008,7 @@ asyncTest("Moving from one page to another triggers the correct callbacks", func
 
       var promiseContext = App.MenuItem.create({ id: 1 });
       Ember.run.later(function() {
-        promiseContext.resolve(promiseContext);
+        Ember.RSVP.resolve(promiseContext);
       }, 1);
 
       return router.transitionTo('special', promiseContext);
@@ -1024,9 +1034,9 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
     })
   });
 
-  var menuItem;
+  var menuItem, resolve;
 
-  App.MenuItem = Ember.Object.extend(Ember.DeferredMixin);
+  App.MenuItem = Ember.Object.extend();
   App.MenuItem.reopenClass({
     find: function(id) {
       menuItem = App.MenuItem.create({ id: id });
@@ -1096,7 +1106,9 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
 
   Ember.run(function() {
     var menuItem = App.MenuItem.create({ id: 1 });
-    Ember.run.later(function() { menuItem.resolve(menuItem); }, 1);
+    Ember.run.later(function() {
+      Ember.RSVP.resolve(menuItem);
+    }, 1);
 
     router.transitionTo('special', menuItem).then(function(result) {
       equal(rootSetup, 1, "The root setup was not triggered again");
