@@ -284,3 +284,15 @@ test("can resolve custom router", function(){
 
   ok(app.__container__.lookup('router:main') instanceof CustomRouter, 'application resolved the correct router');
 });
+
+test("throws helpful error if `app.then` is used", function() {
+  run(function() {
+    app = Application.create({
+      rootElement: '#qunit-fixture'
+    });
+  });
+
+  expectAssertion(function() {
+    app.then(function() { });
+  }, /Do not use `.then` on an instance of Ember.Application.  Please use the `.ready` hook instead./);
+});

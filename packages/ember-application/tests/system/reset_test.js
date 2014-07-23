@@ -29,12 +29,13 @@ QUnit.module("Ember.Application - resetting", {
 
 test("Brings it's own run-loop if not provided", function() {
   application = run(Application, 'create');
-
-  application.reset();
-
-  run(application,'then', function() {
+  application.ready = function() {
+    QUnit.start();
     ok(true, 'app booted');
-  });
+  };
+
+  QUnit.stop();
+  application.reset();
 });
 
 test("does not bring it's own run loop if one is already provided", function() {
