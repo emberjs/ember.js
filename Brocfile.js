@@ -65,6 +65,10 @@ function concatES6(sourceTrees, options) {
     moduleName: true
   });
 
+  if (options.es3Safe) {
+    sourceTrees = es3recast(sourceTrees);
+  }
+
   if (!disableDefeatureify) {
     sourceTrees = defeatureify(sourceTrees, defeatureifyConfig(options.defeatureifyOptions));
   }
@@ -303,6 +307,7 @@ function backburner() {
 }
 
 var compiledSource = concatES6(sourceTrees, {
+  es3Safe: env !== 'development',
   includeLoader: true,
   bootstrapModule: 'ember',
   vendorTrees: vendorTrees,
@@ -338,6 +343,7 @@ var prodCompiledSource = removeFile(sourceTrees, {
 });
 
 prodCompiledSource = concatES6(prodCompiledSource, {
+  es3Safe: env !== 'development',
   includeLoader: true,
   bootstrapModule: 'ember',
   vendorTrees: vendorTrees,
@@ -353,6 +359,7 @@ var minCompiledSource = moveFile(prodCompiledSource, {
 minCompiledSource = uglifyJavaScript(minCompiledSource);
 
 var compiledTests = concatES6(testTrees, {
+  es3Safe: env !== 'development',
   includeLoader: true,
   inputFiles: ['**/*.js'],
   destFile: '/ember-tests.js'
@@ -364,10 +371,6 @@ if (env !== 'development') {
   distTrees.push(prodCompiledSource);
   distTrees.push(minCompiledSource);
   distTrees.push(buildRuntimeTree());
-  distTrees = distTrees.map(function(tree){
-    return es3recast(tree);
-  });
-  //distTrees.push(compiledPackageTrees);
 }
 
 distTrees = mergeTrees(distTrees);
