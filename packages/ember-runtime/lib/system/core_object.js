@@ -50,6 +50,7 @@ var applyMixin = Mixin._apply;
 var finishPartial = Mixin.finishPartial;
 var reopen = Mixin.prototype.reopen;
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
+var hasCachedComputedProperties = false;
 
 var undefinedDescriptor = {
   configurable: true,
@@ -746,6 +747,26 @@ var ClassMixin = Mixin.create({
     return desc._meta || {};
   },
 
+  _computedProperties: Ember.computed(function() {
+    hasCachedComputedProperties = true;
+    var proto = this.proto();
+    var descs = meta(proto).descs;
+    var property;
+    var properties = [];
+
+    for (var name in descs) {
+      property = descs[name];
+
+      if (property instanceof ComputedProperty) {
+        properties.push({
+          name: name,
+          meta: property._meta
+        });
+      }
+    }
+    return properties;
+  }).readOnly(),
+
   /**
     Iterate over each computed property for the class, passing its name
     and any associated metadata (see `metaForProperty`) to the callback.
@@ -755,17 +776,15 @@ var ClassMixin = Mixin.create({
     @param {Object} binding
   */
   eachComputedProperty: function(callback, binding) {
-    var proto = this.proto();
-    var descs = meta(proto).descs;
+    var property, name;
     var empty = {};
-    var property;
 
-    for (var name in descs) {
-      property = descs[name];
+    var properties = get(this, '_computedProperties');
 
-      if (property instanceof ComputedProperty) {
-        callback.call(binding || this, name, property._meta || empty);
-      }
+    for (var i = 0, length = properties.length; i < length; i++) {
+      property = properties[i];
+      name = property.name;
+      callback.call(binding || this, property.name, property.meta || empty);
     }
   }
 });
@@ -777,6 +796,23 @@ if (Ember.config.overrideClassMixin) {
 }
 
 CoreObject.ClassMixin = ClassMixin;
+
 ClassMixin.apply(CoreObject);
+
+CoreObject.reopen({
+  didDefineProperty: function(proto, key, value) {
+    if (hasCachedComputedProperties === false) { return; }
+    if (value instanceof Ember.ComputedProperty) {
+      var cache = Ember.meta(this.constructor).cache;
+
+      if (cache._computedProperties !== undefined) {
+        cache._computedProperties = undefined;
+      }
+    }
+
+    this._super();
+  }
+});
+
 
 export default CoreObject;

@@ -155,7 +155,7 @@ test("can retrieve metadata for a computed property", function() {
   }, "metaForProperty() could not find a computed property with key 'staticProperty'.");
 });
 
-testBoth("can iterate over a list of computed properties for a class", function(get, set) {
+test("can iterate over a list of computed properties for a class", function() {
   var MyClass = EmberObject.extend({
     foo: computed(function() {
 
@@ -203,4 +203,38 @@ testBoth("can iterate over a list of computed properties for a class", function(
   });
 
   deepEqual(list.sort(), ['bar', 'bat', 'baz', 'foo'], "all inherited properties are included");
+});
+
+test("list of properties updates when an additional property is added (such cache busting)", function() {
+  var MyClass = EmberObject.extend({
+    foo: computed(Ember.K),
+
+    fooDidChange: observer('foo', function() {
+
+    }),
+
+    bar: computed(Ember.K)
+  });
+
+  var list = [];
+
+  MyClass.eachComputedProperty(function(name) {
+    list.push(name);
+  });
+
+  deepEqual(list.sort(), ['bar', 'foo'].sort(), 'expected two computed properties');
+
+  MyClass.reopen({
+    baz: computed(Ember.K)
+  });
+
+  MyClass.create(); // force apply mixins
+
+  list = [];
+
+  MyClass.eachComputedProperty(function(name) {
+    list.push(name);
+  });
+
+  deepEqual(list.sort(), ['bar', 'foo', 'baz'].sort(), 'expected three computed properties');
 });
