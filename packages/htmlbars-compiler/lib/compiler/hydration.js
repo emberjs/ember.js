@@ -8,7 +8,8 @@ function HydrationCompiler() {
   this.mustaches = [];
   this.parents = ['fragment'];
   this.parentCount = 0;
-  this.declarations = [];
+  this.morphs = [];
+  this.fragmentProcessing = [];
 }
 
 var prototype = HydrationCompiler.prototype;
@@ -18,19 +19,29 @@ prototype.compile = function(opcodes, options) {
   this.mustaches.length = 0;
   this.source.length = 0;
   this.parents.length = 1;
-  this.declarations.length = 0;
+  this.morphs.length = 0;
+  this.fragmentProcessing.length = 0;
   this.parentCount = 0;
   this.indent = (options && options.indent) || "";
 
   processOpcodes(this, opcodes);
 
-  if (this.declarations.length) {
-    var decs = "";
-    for (var i = 0, l = this.declarations.length; i < l; ++i) {
-      var dec = this.declarations[i];
-      decs += this.indent+'  var '+dec[0]+' = '+dec[1]+';\n';
+  var i, l;
+  if (this.morphs.length) {
+    var morphs = "";
+    for (i = 0, l = this.morphs.length; i < l; ++i) {
+      var morph = this.morphs[i];
+      morphs += this.indent+'  var '+morph[0]+' = '+morph[1]+';\n';
     }
-    this.source.unshift(decs);
+    this.source.unshift(morphs);
+  }
+
+  if (this.fragmentProcessing.length) {
+    var processing = "";
+    for (i = 0, l = this.fragmentProcessing.length; i < l; ++i) {
+      processing += this.indent+'  '+this.fragmentProcessing[i]+'\n';
+    }
+    this.source.unshift(processing);
   }
 
   return this.source.join('');
@@ -103,7 +114,6 @@ prototype.nodeHelper = function(name, size, elementNum) {
 
 prototype.morph = function(num, parentPath, startIndex, endIndex) {
   var isRoot = parentPath.length === 0;
-  var parentIndex = isRoot ? 0 : parentPath[parentPath.length-1];
   var parent = this.getParent();
 
   var morph = "dom.createMorphAt("+parent+
@@ -111,18 +121,29 @@ prototype.morph = function(num, parentPath, startIndex, endIndex) {
     ","+(endIndex === null ? "-1" : endIndex)+
     (isRoot ? ",contextualElement)" : ")");
 
-  this.declarations.push(['morph' + num, morph]);
+  this.morphs.push(['morph' + num, morph]);
 };
 
 // Adds our element to cached declaration
 prototype.element = function(elementNum){
   var elementNodesName = "element" + elementNum;
-  this.declarations.push([elementNodesName, this.getParent() ]);
+  this.fragmentProcessing.push('var '+elementNodesName+' = '+this.getParent());
   this.parents[this.parents.length-1] = elementNodesName;
 };
 
 prototype.pushWebComponent = function(name, pairs, morphNum) {
   this.source.push(this.indent+'  hooks.webComponent(morph' + morphNum + ', ' + name + ', context, ' + hash(pairs) + ', env);\n');
+};
+
+prototype.repairClonedNode = function(blankChildTextNodes, isElementChecked) {
+  var parent = this.getParent(),
+      processing = 'dom.repairClonedNode('+parent+','+
+                   array(blankChildTextNodes)+
+                   ( isElementChecked ? ',true' : '' )+
+                   ');';
+  this.fragmentProcessing.push(
+    processing
+  );
 };
 
 prototype.pushMustacheInContent = function(name, args, pairs, morphNum) {
@@ -135,7 +156,7 @@ prototype.pushMustacheInNode = function(name, args, pairs, elementNum) {
 
 prototype.shareParent = function(i) {
   var parentNodesName = "parent" + this.parentCount++;
-  this.declarations.push([parentNodesName, this.getParent() + '.childNodes[' + i + ']']);
+  this.fragmentProcessing.push('var '+parentNodesName+' = '+this.getParent()+'.childNodes['+i+']');
   this.parents.push(parentNodesName);
 };
 

@@ -1,6 +1,20 @@
 import Morph from "morph/morph";
 
-var xhtmlNamespace = "http://www.w3.org/1999/xhtml";
+var emptyString = '';
+
+var deletesBlankTextNodes = (function(){
+  var element = document.createElement('div');
+  element.appendChild( document.createTextNode('') );
+  var clonedElement = element.cloneNode(true);
+  return clonedElement.childNodes.length === 0;
+})();
+
+var ignoresCheckedAttribute = (function(){
+  var element = document.createElement('input');
+  element.setAttribute('checked', 'checked');
+  var clonedElement = element.cloneNode(false);
+  return !clonedElement.checked;
+})();
 
 /*
  * A class wrapping DOM functions to address environment compatibility,
@@ -54,8 +68,27 @@ prototype.createTextNode = function(text){
   return this.document.createTextNode(text);
 };
 
+prototype.repairClonedNode = function(element, blankChildTextNodes, isChecked){
+  if (deletesBlankTextNodes && blankChildTextNodes.length > 0) {
+    for (var i=0, len=blankChildTextNodes.length;i<len;i++){
+      var textNode = document.createTextNode(emptyString),
+          offset = blankChildTextNodes[i],
+          before = element.childNodes[offset];
+      if (before) {
+        element.insertBefore(textNode, before);
+      } else {
+        element.appendChild(textNode);
+      }
+    }
+  }
+  if (ignoresCheckedAttribute && isChecked) {
+    element.setAttribute('checked', 'checked');
+  }
+};
+
 prototype.cloneNode = function(element, deep){
-  return element.cloneNode(!!deep);
+  var clone = element.cloneNode(!!deep);
+  return clone;
 };
 
 prototype.createMorph = function(parent, start, end, contextualElement){
