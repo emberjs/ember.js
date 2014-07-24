@@ -5,5 +5,8 @@
     "jquery": "~1.11.1",
     "qunit": "~1.12.0",
     "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#1.2.0"
+  },
+  "devDependencies": {
+    "backburner": "https://github.com/ebryn/backburner.js.git#bf91c46978cced9aa130ca0793c5a72107e649db"
   }
 }
