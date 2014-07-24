@@ -161,7 +161,12 @@ function makeCtor() {
       }
     }
     finishPartial(this, m);
-    apply(this, this.init, arguments);
+    var length = arguments.length;
+    var args = new Array(length);
+    for (var x = 0; x < length; x++) {
+      args[x] = arguments[x];
+    }
+    apply(this, this.init, args);
     m.proto = proto;
     finishChains(this);
     sendEvent(this, "init");
@@ -204,7 +209,12 @@ CoreObject.toString = function() { return "Ember.CoreObject"; };
 
 CoreObject.PrototypeMixin = Mixin.create({
   reopen: function() {
-    applyMixin(this, arguments, true);
+    var length = arguments.length;
+    var args = new Array(length);
+    for (var i = 0; i < length; i++) {
+      args[i] = arguments[i];
+    }
+    applyMixin(this, args, true);
     return this;
   },
 
@@ -556,7 +566,14 @@ var ClassMixin = Mixin.create({
   */
   createWithMixins: function() {
     var C = this;
-    if (arguments.length>0) { this._initMixins(arguments); }
+    var l= arguments.length;
+    if (l > 0) {
+      var args = new Array(l);
+      for (var i = 0; i < l; i++) {
+        args[i] = arguments[i];
+      }
+      this._initMixins(args);
+    }
     return new C();
   },
 
@@ -599,7 +616,14 @@ var ClassMixin = Mixin.create({
   */
   create: function() {
     var C = this;
-    if (arguments.length>0) { this._initProperties(arguments); }
+    var l = arguments.length;
+    if (l > 0) {
+      var args = new Array(l);
+      for (var i = 0; i < l; i++) {
+        args[i] = arguments[i];
+      }
+      this._initProperties(args);
+    }
     return new C();
   },
 
@@ -634,7 +658,16 @@ var ClassMixin = Mixin.create({
   */
   reopen: function() {
     this.willReopen();
-    apply(this.PrototypeMixin, reopen, arguments);
+
+    var l = arguments.length;
+    var args = new Array(l);
+    if (l > 0) {
+      for (var i = 0; i < l; i++) {
+        args[i] = arguments[i];
+      }
+    }
+
+    apply(this.PrototypeMixin, reopen, args);
     return this;
   },
 
@@ -694,7 +727,15 @@ var ClassMixin = Mixin.create({
     @method reopenClass
   */
   reopenClass: function() {
-    apply(this.ClassMixin, reopen, arguments);
+    var l = arguments.length;
+    var args = new Array(l);
+    if (l > 0) {
+      for (var i = 0; i < l; i++) {
+        args[i] = arguments[i];
+      }
+    }
+
+    apply(this.ClassMixin, reopen, args);
     applyMixin(this, arguments, false);
     return this;
   },
