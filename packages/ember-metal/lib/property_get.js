@@ -5,13 +5,13 @@
 import Ember from "ember-metal/core";
 import { META_KEY } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
-
-var get;
+import {
+  isGlobalPath,
+  isPath,
+  hasThis as pathHasThis
+} from "ember-metal/path_cache";
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
-
-var IS_GLOBAL_PATH = /^([A-Z$]|([0-9][A-Z$])).*[\.]/;
-var HAS_THIS  = 'this.';
 var FIRST_KEY = /^([^\.]+)/;
 
 // ..........................................................
@@ -51,7 +51,7 @@ var get = function get(obj, keyName) {
     return obj;
   }
 
-  if (!keyName && 'string'===typeof obj) {
+  if (!keyName && 'string' === typeof obj) {
     keyName = obj;
     obj = null;
   }
@@ -63,7 +63,7 @@ var get = function get(obj, keyName) {
 
   var meta = obj[META_KEY], desc = meta && meta.descs[keyName], ret;
 
-  if (desc === undefined && keyName.indexOf('.') !== -1) {
+  if (desc === undefined && isPath(keyName)) {
     return _getPath(obj, keyName);
   }
 
@@ -106,9 +106,9 @@ if (Ember.config.overrideAccessors) {
   @return {Array} a temporary array with the normalized target/path pair.
 */
 function normalizeTuple(target, path) {
-  var hasThis  = path.indexOf(HAS_THIS) === 0,
-      isGlobal = !hasThis && IS_GLOBAL_PATH.test(path),
-      key;
+  var hasThis  = pathHasThis(path);
+  var isGlobal = !hasThis && isGlobalPath(path);
+  var key;
 
   if (!target || isGlobal) target = Ember.lookup;
   if (hasThis) path = path.slice(5);
@@ -131,10 +131,12 @@ function _getPath(root, path) {
   // If there is no root and path is a key name, return that
   // property from the global object.
   // E.g. get('Ember') -> Ember
-  if (root === null && path.indexOf('.') === -1) { return get(Ember.lookup, path); }
+  if (root === null && !isPath(path)) {
+    return get(Ember.lookup, path);
+  }
 
   // detect complicated paths and normalize them
-  hasThis = path.indexOf(HAS_THIS) === 0;
+  hasThis = pathHasThis(path);
 
   if (!root || hasThis) {
     tuple = normalizeTuple(root, path);

@@ -33,7 +33,7 @@ import {
 } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
-
+import Cache from "ember-metal/cache";
 import {create, platform} from "ember-metal/platform";
 import {map, forEach, filter, indexOf} from "ember-metal/array";
 import Logger from "ember-metal/logger";
@@ -95,6 +95,8 @@ EmberInstrumentation.reset  = reset;
 
 Ember.instrument = instrument;
 Ember.subscribe = subscribe;
+
+Ember._Cache = Cache;
 
 Ember.generateGuid    = generateGuid;
 Ember.GUID_KEY        = GUID_KEY;
