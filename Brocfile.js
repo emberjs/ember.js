@@ -144,8 +144,8 @@ var iifeStop  = writeFile('iife-stop', '})();');
 var vendoredPackages = {
   'loader':           vendoredPackage('loader'),
   'rsvp':             vendoredPackage('rsvp'),
+  'backburner':       backburner(),
   'metamorph':        vendoredPackage('metamorph'),
-  'backburner':       vendoredPackage('backburner'),
   'router':           vendoredPackage('router'),
   'route-recognizer': vendoredPackage('route-recognizer')
 };
@@ -291,6 +291,16 @@ compiledPackageTrees = mergeTrees(compiledPackageTrees);
 vendorTrees = mergeTrees(vendorTrees);
 sourceTrees = mergeTrees(sourceTrees);
 testTrees   = mergeTrees(testTrees);
+
+function backburner() {
+  var tree = pickFiles('bower_components/backburner/lib', {
+    srcDir: '/', destDir: '/'
+  });
+
+  return transpileES6(tree, {
+    moduleName: true
+  });
+}
 
 var compiledSource = concatES6(sourceTrees, {
   includeLoader: true,
