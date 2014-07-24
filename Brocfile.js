@@ -147,7 +147,7 @@ var iifeStop  = writeFile('iife-stop', '})();');
 
 var vendoredPackages = {
   'loader':           vendoredPackage('loader'),
-  'rsvp':             vendoredPackage('rsvp'),
+  'rsvp':             rsvp(),
   'backburner':       backburner(),
   'metamorph':        vendoredPackage('metamorph'),
   'router':           vendoredPackage('router'),
@@ -298,6 +298,16 @@ testTrees   = mergeTrees(testTrees);
 
 function backburner() {
   var tree = pickFiles('bower_components/backburner/lib', {
+    srcDir: '/', destDir: '/'
+  });
+
+  return transpileES6(tree, {
+    moduleName: true
+  });
+}
+
+function rsvp() {
+  var tree = pickFiles('bower_components/rsvp/lib', {
     srcDir: '/', destDir: '/'
   });
 
