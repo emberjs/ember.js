@@ -2,36 +2,7 @@ import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.Test
 import { get } from "ember-metal/property_get";
 import { Mixin } from "ember-metal/mixin";
 import { computed } from "ember-metal/computed";
-import run from "ember-metal/run_loop";
 import RSVP from "ember-runtime/ext/rsvp";
-
-var asyncStart = function() {
-  if (Ember.Test && Ember.Test.adapter) {
-    Ember.Test.adapter.asyncStart();
-  }
-};
-
-var asyncEnd = function() {
-  if (Ember.Test && Ember.Test.adapter) {
-    Ember.Test.adapter.asyncEnd();
-  }
-};
-
-RSVP.configure('async', function(callback, promise) {
-  var async = !run.currentRunLoop;
-
-  if (Ember.testing && async) { asyncStart(); }
-
-  run.backburner.schedule('actions', function(){
-    if (Ember.testing && async) { asyncEnd(); }
-    callback(promise);
-  });
-});
-
-RSVP.Promise.prototype.fail = function(callback, label){
-  Ember.deprecate('RSVP.Promise.fail has been renamed as RSVP.Promise.catch');
-  return this['catch'](callback, label);
-};
 
 /**
 @module ember
@@ -97,6 +68,8 @@ export default Mixin.create({
   },
 
   _deferred: computed(function() {
+    Ember.deprecate('Usage of Ember.DeferredMixin or Ember.Deferred is deprecated.', this._suppressDeferredDeprecation);
+
     return RSVP.defer('Ember: DeferredMixin - ' + this);
   })
 });

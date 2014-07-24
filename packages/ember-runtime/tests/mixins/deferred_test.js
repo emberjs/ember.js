@@ -1,4 +1,4 @@
-/* global Promise:true */
+/* global Promise:true,EmberDev */
 
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
@@ -6,7 +6,18 @@ import EmberObject from 'ember-runtime/system/object';
 import Deferred from "ember-runtime/mixins/deferred";
 import RSVP from "ember-runtime/ext/rsvp";
 
-QUnit.module("Deferred");
+var originalDeprecate;
+
+QUnit.module("Deferred", {
+  setup: function() {
+    originalDeprecate = Ember.deprecate;
+    Ember.deprecate = function() { };
+  },
+
+  teardown: function() {
+    Ember.deprecate = originalDeprecate;
+  }
+});
 
 test("can resolve deferred", function() {
   var deferred, count = 0;
@@ -320,91 +331,22 @@ test("can handle fulfillment without  fulfillment handler", function() {
   run(deferred, 'resolve', fulfillment);
 });
 
-var asyncStarted = 0;
-var asyncEnded = 0;
-var Promise = RSVP.Promise;
+if (!EmberDev.runningProdBuild){
+  test("causes a deprecation warning when used", function() {
+    var deferred, deprecationMade, obj = {};
 
-var EmberTest;
-var EmberTesting;
-
-QUnit.module("Deferred RSVP's async + Testing", {
-  setup: function() {
-    EmberTest = Ember.Test;
-    EmberTesting = Ember.testing;
-
-    Ember.Test = {
-      adapter: {
-        asyncStart: function() {
-          asyncStarted++;
-          QUnit.stop();
-        },
-        asyncEnd: function() {
-          asyncEnded++;
-          QUnit.start();
-        }
-      }
+    Ember.deprecate = function(message) {
+      deprecationMade = message;
     };
-  },
-  teardown: function() {
-    asyncStarted = 0;
-    asyncEnded = 0;
 
-    Ember.testing = EmberTesting;
-    Ember.Test =  EmberTest;
-  }
-});
+    deferred = EmberObject.createWithMixins(Deferred);
+    equal(deprecationMade, undefined, 'no deprecation was made on init');
 
-test("given `Ember.testing = true`, correctly informs the test suite about async steps", function() {
-  expect(19);
-
-  ok(!run.currentRunLoop, 'expect no run-loop');
-
-  Ember.testing = true;
-
-  equal(asyncStarted, 0);
-  equal(asyncEnded, 0);
-
-  var user = Promise.resolve({
-    name: 'tomster'
-  });
-
-  equal(asyncStarted, 0);
-  equal(asyncEnded, 0);
-
-  user.then(function(user){
-    equal(asyncStarted, 1);
-    equal(asyncEnded, 1);
-
-    equal(user.name, 'tomster');
-
-    return Promise.resolve(1).then(function(){
-      equal(asyncStarted, 1);
-      equal(asyncEnded, 1);
+    deferred.then(function(value) {
+      equal(value, obj, "successfully resolved to given value");
     });
+    equal(deprecationMade, 'Usage of Ember.DeferredMixin or Ember.Deferred is deprecated.');
 
-  }).then(function(){
-    equal(asyncStarted, 1);
-    equal(asyncEnded, 1);
-
-    return new Promise(function(resolve){
-      QUnit.stop(); // raw async, we must inform the test framework manually
-      setTimeout(function(){
-        QUnit.start(); // raw async, we must inform the test framework manually
-
-        equal(asyncStarted, 1);
-        equal(asyncEnded, 1);
-
-        resolve({
-          name: 'async tomster'
-        });
-
-        equal(asyncStarted, 2);
-        equal(asyncEnded, 1);
-      }, 0);
-    });
-  }).then(function(user){
-    equal(user.name, 'async tomster');
-    equal(asyncStarted, 2);
-    equal(asyncEnded, 2);
+    run(deferred, 'resolve', obj);
   });
-});
+}

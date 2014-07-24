@@ -181,6 +181,7 @@ var ContainerDebugAdapter;
 */
 
 var Application = Namespace.extend(DeferredMixin, {
+  _suppressDeferredDeprecation: true,
 
   /**
     The root DOM element of the Application. This can be specified as an
@@ -760,6 +761,17 @@ var Application = Namespace.extend(DeferredMixin, {
 
   initializer: function(options) {
     this.constructor.initializer(options);
+  },
+
+  /**
+    @method then
+    @private
+    @deprecated
+  */
+  then: function() {
+    Ember.deprecate('Do not use `.then` on an instance of Ember.Application.  Please use the `.ready` hook instead.');
+
+    this._super.apply(this, arguments);
   }
 });
 
