@@ -115,9 +115,16 @@ test("Null attribute value removes that attribute", function() {
 });
 
 test("Simple elements can have arbitrary attributes", function() {
-  var template = compile("<div data-some-data='foo' data-isCamelCase='bar'>content</div>");
+  var template = compile("<div data-some-data='foo'>content</div>");
   var fragment = template({}, env);
-  equalTokens(fragment, '<div data-some-data="foo" data-iscamelcase="bar">content</div>');
+  equalTokens(fragment, '<div data-some-data="foo">content</div>');
+});
+
+test("checked attribute and checked property are present after clone and hydrate", function() {
+  var template = compile("<input checked=\"checked\">");
+  var fragment = template({}, env);
+  ok(fragment.checked, 'input is checked');
+  equalTokens(fragment, "<input checked='checked'>");
 });
 
 function shouldBeVoid(tagName) {
@@ -203,6 +210,20 @@ test("The compiler can handle top-level unescaped tr", function() {
   equal(
     fragment.childNodes[1].tagName, 'TBODY',
     "root tr has been wrapped in tbody" );
+});
+
+test("The compiler can handle top-level unescaped td inside tr contextualElement", function() {
+  var template = compile('{{{html}}}');
+  var fragment = template({
+                   html: '<td>Yo</td>'
+                 }, {
+                   hooks: hooks,
+                   dom: new DOMHelper()
+                 }, document.createElement('tr'));
+
+  equal(
+    fragment.childNodes[1].tagName, 'TD',
+    "root td is returned" );
 });
 
 test("The compiler can handle unescaped tr in top of content", function() {
@@ -789,7 +810,9 @@ test("Node helpers can modify the node after many nodes returned from top-level 
     options.element.setAttribute('zomg', 'zomg');
   });
 
-  compilesTo('{{top-helper}}<div {{attr-helper}}>Node helpers</div>', '<span></span><span></span><div zomg="zomg">Node helpers</div>');
+  compilesTo(
+    '{{top-helper}}<div {{attr-helper}}>Node helpers</div>',
+    '<span></span><span></span><div zomg="zomg">Node helpers</div>' );
 });
 
 test("Node helpers can be used for attribute bindings", function() {

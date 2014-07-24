@@ -24,9 +24,9 @@ TemplateCompiler.prototype.compile = function(ast) {
   return this.templates.pop();
 };
 
-TemplateCompiler.prototype.startProgram = function(program, childTemplateCount) {
-  this.fragmentOpcodeCompiler.startProgram(program, childTemplateCount);
-  this.hydrationOpcodeCompiler.startProgram(program, childTemplateCount);
+TemplateCompiler.prototype.startProgram = function(program, childTemplateCount, blankChildTextNodes) {
+  this.fragmentOpcodeCompiler.startProgram(program, childTemplateCount, blankChildTextNodes);
+  this.hydrationOpcodeCompiler.startProgram(program, childTemplateCount, blankChildTextNodes);
 
   this.childTemplates.length = 0;
   while(childTemplateCount--) {
@@ -79,9 +79,9 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
   this.templates.push(template);
 };
 
-TemplateCompiler.prototype.openElement = function(element, i, l, r, c) {
-  this.fragmentOpcodeCompiler.openElement(element, i, l, r, c);
-  this.hydrationOpcodeCompiler.openElement(element, i, l, r, c);
+TemplateCompiler.prototype.openElement = function(element, i, l, r, c, b) {
+  this.fragmentOpcodeCompiler.openElement(element, i, l, r, c, b);
+  this.hydrationOpcodeCompiler.openElement(element, i, l, r, c, b);
 };
 
 TemplateCompiler.prototype.closeElement = function(element, i, l, r) {
