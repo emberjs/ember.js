@@ -9,6 +9,7 @@ import { set } from "ember-metal/property_set";
 import { runLoadHooks } from "ember-runtime/system/lazy_load";
 import DAG from "ember-application/system/dag";
 import Namespace from "ember-runtime/system/namespace";
+import DeferredMixin from "ember-runtime/mixins/deferred";
 import DefaultResolver from "ember-application/system/resolver";
 import { create } from "ember-metal/platform";
 import run from "ember-metal/run_loop";
@@ -179,7 +180,8 @@ var ContainerDebugAdapter;
   @extends Ember.Namespace
 */
 
-var Application = Namespace.extend({
+var Application = Namespace.extend(DeferredMixin, {
+  _suppressDeferredDeprecation: true,
 
   /**
     The root DOM element of the Application. This can be specified as an
@@ -683,6 +685,8 @@ var Application = Namespace.extend({
       Ember.Namespace.processAll();
       Ember.BOOTED = true;
     }
+
+    this.resolve(this);
   },
 
   /**
@@ -765,7 +769,9 @@ var Application = Namespace.extend({
     @deprecated
   */
   then: function() {
-    Ember.assert('Do not use `.then` on an instance of Ember.Application.  Please use the `.ready` hook instead.');
+    Ember.deprecate('Do not use `.then` on an instance of Ember.Application.  Please use the `.ready` hook instead.');
+
+    this._super.apply(this, arguments);
   }
 });
 

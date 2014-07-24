@@ -68,7 +68,7 @@ export default Mixin.create({
   },
 
   _deferred: computed(function() {
-    Ember.deprecate('Usage of Ember.DeferredMixin or Ember.Deferred is deprecated.');
+    Ember.deprecate('Usage of Ember.DeferredMixin or Ember.Deferred is deprecated.', this._suppressDeferredDeprecation);
 
     return RSVP.defer('Ember: DeferredMixin - ' + this);
   })
