@@ -1,4 +1,4 @@
-/* global Promise:true */
+/* global Promise:true,EmberDev */
 
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
@@ -331,20 +331,22 @@ test("can handle fulfillment without  fulfillment handler", function() {
   run(deferred, 'resolve', fulfillment);
 });
 
-test("causes a deprecation warning when used", function() {
-  var deferred, deprecationMade, obj = {};
+if (!EmberDev.runningProdBuild){
+  test("causes a deprecation warning when used", function() {
+    var deferred, deprecationMade, obj = {};
 
-  Ember.deprecate = function(message) {
-    deprecationMade = message;
-  };
+    Ember.deprecate = function(message) {
+      deprecationMade = message;
+    };
 
-  deferred = EmberObject.createWithMixins(Deferred);
-  equal(deprecationMade, undefined, 'no deprecation was made on init');
+    deferred = EmberObject.createWithMixins(Deferred);
+    equal(deprecationMade, undefined, 'no deprecation was made on init');
 
-  deferred.then(function(value) {
-    equal(value, obj, "successfully resolved to given value");
+    deferred.then(function(value) {
+      equal(value, obj, "successfully resolved to given value");
+    });
+    equal(deprecationMade, 'Usage of Ember.DeferredMixin or Ember.Deferred is deprecated.');
+
+    run(deferred, 'resolve', obj);
   });
-  equal(deprecationMade, 'Usage of Ember.DeferredMixin or Ember.Deferred is deprecated.');
-
-  run(deferred, 'resolve', obj);
-});
+}
