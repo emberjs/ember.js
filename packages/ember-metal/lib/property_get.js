@@ -3,7 +3,6 @@
 */
 
 import Ember from "ember-metal/core";
-import { META_KEY } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
 import {
   isGlobalPath,
@@ -61,7 +60,7 @@ var get = function get(obj, keyName) {
 
   if (obj === null) { return _getPath(obj, keyName);  }
 
-  var meta = obj[META_KEY], desc = meta && meta.descs[keyName], ret;
+  var meta = obj['__ember_meta__'], desc = meta && meta.descs[keyName], ret;
 
   if (desc === undefined && isPath(keyName)) {
     return _getPath(obj, keyName);

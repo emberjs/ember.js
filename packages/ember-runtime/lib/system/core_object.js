@@ -19,7 +19,6 @@ import {
   generateGuid,
   GUID_KEY,
   meta,
-  META_KEY,
   makeArray
 } from "ember-metal/utils";
 import { rewatch } from "ember-metal/watching";
@@ -781,7 +780,7 @@ var ClassMixin = Mixin.create({
     @param key {String} property name
   */
   metaForProperty: function(key) {
-    var meta = this.proto()[META_KEY];
+    var meta = this.proto()['__ember_meta__'];
     var desc = meta && meta.descs[key];
 
     Ember.assert("metaForProperty() could not find a computed property with key '"+key+"'.", !!desc && desc instanceof ComputedProperty);

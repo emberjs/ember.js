@@ -1,5 +1,4 @@
 import {
-  META_KEY,
   guidFor,
   tryFinally
 } from "ember-metal/utils";
@@ -34,7 +33,7 @@ var deferred = 0;
   @return {void}
 */
 function propertyWillChange(obj, keyName) {
-  var m = obj[META_KEY];
+  var m = obj['__ember_meta__'];
   var watching = (m && m.watching[keyName] > 0) || keyName === 'length';
   var proto = m && m.proto;
   var desc = m && m.descs[keyName];
@@ -63,7 +62,7 @@ function propertyWillChange(obj, keyName) {
   @return {void}
 */
 function propertyDidChange(obj, keyName) {
-  var m = obj[META_KEY];
+  var m = obj['__ember_meta__'];
   var watching = (m && m.watching[keyName] > 0) || keyName === 'length';
   var proto = m && m.proto;
   var desc = m && m.descs[keyName];
