@@ -1,5 +1,16 @@
 # Ember Changelog
 
+### Ember 1.7.0-beta.3 (July, 24, 2014)
+
+* [BUGFIX] Stub meta on AliasedProperty (fixes regression from beta.2 with Ember Data).
+* [DOC] Fixed issue with docs showing 'Ember.run' as 'run.run'.
+* [BUGFIX] SimpleHandlebarsView should not re-render if normalized value is unchanged.
+* Allow Router DSL to nest routes via `this.route`.
+* [BUGFIX] Don't pass function UNDEFINED as oldValue to computed properties.
+* [BUGFIX] dramatically improve performance of eachComputedProperty.
+* [BUGFIX] Prevent strict mode errors from superWrapper.
+* Deprecate Ember.DeferredMixin and Ember.Deferred.
+* Deprecate `.then` on Ember.Application.
 * Revert ember-routing-consistent-resources.
 
 ### Ember 1.7.0-beta.2 (July, 16, 2014)
