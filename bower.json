@@ -7,6 +7,7 @@
     "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#1.2.0"
   },
   "devDependencies": {
-    "backburner": "https://github.com/ebryn/backburner.js.git#bf91c46978cced9aa130ca0793c5a72107e649db"
+    "backburner": "https://github.com/ebryn/backburner.js.git#bf91c46978cced9aa130ca0793c5a72107e649db",
+    "rsvp": "https://github.com/tildeio/rsvp.js.git#ca08b69b65c34089a55ed6ec194d5cac0b867688"
   }
 }
