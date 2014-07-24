@@ -30,13 +30,20 @@ var slice = [].slice, originalTemplate = EmberHandlebars.template;
   @param path {String}
   @param data {Hash}
 */
+
+import Cache from 'ember-metal/cache';
+
+var FIRST_SEGMENT_CACHE = new Cache(1000, function(path){
+  return path.split('.', 1)[0];
+});
+
 function normalizePath(root, path, data) {
   var keywords = (data && data.keywords) || {};
   var keyword, isKeyword;
 
   // Get the first segment of the path. For example, if the
   // path is "foo.bar.baz", returns "foo".
-  keyword = path.split('.', 1)[0];
+  keyword = FIRST_SEGMENT_CACHE.get(path);
 
   // Test to see if the first path is a keyword that has been
   // passed along in the view's data hash. If so, we will treat
