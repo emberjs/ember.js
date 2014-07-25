@@ -62,7 +62,7 @@ var get = function get(obj, keyName) {
     var value = _getPath(obj, keyName);
     Ember.deprecate(
       "Ember.get fetched '"+keyName+"' from the global context. This behavior will change in the future (issue #3852)",
-      !value || (obj && obj !== Ember.lookup) || keyName.indexOf('.') !== -1 || IS_GLOBAL_PATH.test(keyName+".") // Add a . to ensure simple paths are matched.
+      !value || (obj && obj !== Ember.lookup) || keyName.indexOf('.') !== -1 || isGlobalPath(keyName+".") // Add a . to ensure simple paths are matched.
     );
     return value;
   }
@@ -121,7 +121,7 @@ function normalizeTuple(target, path) {
 
   Ember.deprecate(
     "normalizeTuple will return '"+path+"' as a non-global. This behavior will change in the future (issue #3852)",
-    target === Ember.lookup || !target || hasThis || isGlobal || !IS_GLOBAL_PATH.test(path+'.')
+    target === Ember.lookup || !target || hasThis || isGlobal || !isGlobalPath(path+'.')
   );
 
   if (target === Ember.lookup) {
