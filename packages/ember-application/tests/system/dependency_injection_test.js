@@ -52,14 +52,6 @@ test('container lookup is normalized', function() {
   equal(dotNotationController, camelCaseController);
 });
 
-test('Container.defaultContainer is the same as the Apps container, but emits deprecation warnings', function() {
-  expectDeprecation(/Using the defaultContainer is no longer supported./);
-  var routerFromContainer = locator.lookup('router:main'),
-    routerFromDefaultContainer = Container.defaultContainer.lookup('router:main');
-
-  equal(routerFromContainer, routerFromDefaultContainer, 'routers from both containers are equal');
-});
-
 test('registered entities can be looked up later', function() {
   equal(locator.resolve('model:person'), application.Person);
   equal(locator.resolve('model:user'), application.User);

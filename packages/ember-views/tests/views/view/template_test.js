@@ -212,3 +212,19 @@ test("should provide a controller to the template if a controller is specified o
     parentViewWithControllerlessChild.destroy();
   });
 });
+
+test("should throw an assertion if no container has been set", function() {
+  expect(1);
+  var View;
+
+  View = EmberView.extend({
+    templateName: 'foobar',
+  });
+
+  raises(function() {
+    view = View.create();
+    run(function() {
+      view.createElement();
+    });
+  }, /Container was not found when looking up a views template./);
+});

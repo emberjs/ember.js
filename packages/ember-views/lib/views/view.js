@@ -25,7 +25,6 @@ import {
 } from "ember-metal/utils";
 import { isNone } from 'ember-metal/is_none';
 import { Mixin } from 'ember-metal/mixin';
-import Container from 'container/container';
 import { A as emberA } from "ember-runtime/system/native_array";
 
 import { dasherize } from "ember-runtime/system/string";
@@ -814,9 +813,13 @@ var View = CoreView.extend({
     if (!name) { return; }
     Ember.assert("templateNames are not allowed to contain periods: "+name, name.indexOf('.') === -1);
 
-    // the defaultContainer is deprecated
-    var container = this.container || (Container && Container.defaultContainer);
-    return container && container.lookup('template:' + name);
+    if (!this.container) {
+      throw new EmberError('Container was not found when looking up a views template. ' +
+                 'This is most likely due to manually instantiating an Ember.View. ' +
+                 'See: http://git.io/EKPpnA');
+    }
+
+    return this.container.lookup('template:' + name);
   },
 
   /**
