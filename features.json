@@ -2,7 +2,6 @@
   "features": {
     "query-params-new": true,
     "ember-routing-named-substates": null,
-    "ember-handlebars-caps-lookup": null,
     "ember-routing-drop-deprecated-action-style": null,
     "ember-routing-add-model-option": true,
     "ember-routing-linkto-target-attribute": null,

@@ -88,28 +88,21 @@ function handlebarsGet(root, path, options) {
   var normalizedPath = normalizePath(root, path, data);
   var value;
 
-  if (Ember.FEATURES.isEnabled("ember-handlebars-caps-lookup")) {
+  // In cases where the path begins with a keyword, change the
+  // root to the value represented by that keyword, and ensure
+  // the path is relative to it.
+  root = normalizedPath.root;
+  path = normalizedPath.path;
 
-    // If the path starts with a capital letter, look it up on Ember.lookup,
-    // which defaults to the `window` object in browsers.
-    if (isGlobalPath(path)) {
-      value = get(Ember.lookup, path);
-    } else {
+  value = get(root, path);
 
-      // In cases where the path begins with a keyword, change the
-      // root to the value represented by that keyword, and ensure
-      // the path is relative to it.
-      value = get(normalizedPath.root, normalizedPath.path);
+  if (isGlobalPath(path)) {
+    if (value === undefined && root !== Ember.lookup) {
+      root = Ember.lookup;
+      value = get(root, path);
     }
-
-  } else {
-    root = normalizedPath.root;
-    path = normalizedPath.path;
-
-    value = get(root, path);
-
-    if (value === undefined && root !== Ember.lookup && isGlobalPath(path)) {
-      value = get(Ember.lookup, path);
+    if (root === Ember.lookup || root === null) {
+      Ember.deprecate("Global lookup of "+path+" from a Handlebars template is deprecated.", options.silenceGlobalDeprecation);
     }
   }
 
