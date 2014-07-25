@@ -24,6 +24,7 @@ import jQuery from "ember-views/system/jquery";
 import { isArray } from "ember-metal/utils";
 import { getEscaped as handlebarsGetEscaped } from "ember-handlebars/ext";
 import keys from "ember-runtime/keys";
+import Cache from "ember-metal/cache";
 
 import {
   _HandlebarsBoundView,
@@ -274,6 +275,10 @@ function _triageMustacheHelper(property, options) {
   return helpers.bind.call(this, property, options);
 }
 
+export var ISNT_HELPER_CACHE = new Cache(1000, function(key) {
+  return key.indexOf('-') === -1;
+});
+
 /**
   Used to lookup/resolve handlebars helpers. The lookup order is:
 
@@ -294,7 +299,7 @@ function resolveHelper(container, name) {
     return helpers[name];
   }
 
-  if (!container || name.indexOf('-') === -1) {
+  if (!container || ISNT_HELPER_CACHE.get(name)) {
     return;
   }
 
@@ -374,7 +379,6 @@ function boundIfHelper(property, fn) {
 
   return bind.call(context, property, fn, true, shouldDisplayIfHelperContent, shouldDisplayIfHelperContent, ['isTruthy', 'length']);
 }
-
 
 /**
   @private

@@ -12,8 +12,8 @@ import { overrideChains } from "ember-metal/property_events";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
-var metaFor = meta,
-    objectDefineProperty = platform.defineProperty;
+var metaFor = meta;
+var objectDefineProperty = platform.defineProperty;
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 

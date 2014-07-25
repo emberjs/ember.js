@@ -7,6 +7,10 @@ import {
 } from "ember-metal/property_events";
 import { defineProperty } from "ember-metal/properties";
 import EmberError from "ember-metal/error";
+import {
+  isPath
+} from "ember-metal/path_cache";
+
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
@@ -41,7 +45,7 @@ var set = function set(obj, keyName, value, tolerant) {
   var meta = obj[META_KEY], desc = meta && meta.descs[keyName],
       isUnknown, currentValue;
 
-  if (desc === undefined && keyName.indexOf('.') !== -1) {
+  if (desc === undefined && isPath(keyName)) {
     return setPath(obj, keyName, value, tolerant);
   }
 

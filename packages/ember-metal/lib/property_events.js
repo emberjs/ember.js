@@ -34,10 +34,10 @@ var deferred = 0;
   @return {void}
 */
 function propertyWillChange(obj, keyName) {
-  var m = obj[META_KEY],
-      watching = (m && m.watching[keyName] > 0) || keyName === 'length',
-      proto = m && m.proto,
-      desc = m && m.descs[keyName];
+  var m = obj[META_KEY];
+  var watching = (m && m.watching[keyName] > 0) || keyName === 'length';
+  var proto = m && m.proto;
+  var desc = m && m.descs[keyName];
 
   if (!watching) { return; }
   if (proto === obj) { return; }
@@ -63,10 +63,10 @@ function propertyWillChange(obj, keyName) {
   @return {void}
 */
 function propertyDidChange(obj, keyName) {
-  var m = obj[META_KEY],
-      watching = (m && m.watching[keyName] > 0) || keyName === 'length',
-      proto = m && m.proto,
-      desc = m && m.descs[keyName];
+  var m = obj[META_KEY];
+  var watching = (m && m.watching[keyName] > 0) || keyName === 'length';
+  var proto = m && m.proto;
+  var desc = m && m.descs[keyName];
 
   if (proto === obj) { return; }
 
@@ -124,9 +124,9 @@ function chainsWillChange(obj, keyName, m) {
     return;
   }
 
-  var nodes = m.chainWatchers[keyName],
-      events = [],
-      i, l;
+  var nodes = m.chainWatchers[keyName];
+  var events = [];
+  var i, l;
 
   for(i = 0, l = nodes.length; i < l; i++) {
     nodes[i].willChange(events);
@@ -143,9 +143,9 @@ function chainsDidChange(obj, keyName, m, suppressEvents) {
     return;
   }
 
-  var nodes = m.chainWatchers[keyName],
-      events = suppressEvents ? null : [],
-      i, l;
+  var nodes = m.chainWatchers[keyName];
+  var events = suppressEvents ? null : [];
+  var i, l;
 
   for(i = 0, l = nodes.length; i < l; i++) {
     nodes[i].didChange(events);
