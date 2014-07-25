@@ -820,7 +820,8 @@ test("Template views return throw if their template cannot be found", function()
 
 test("Layout views return throw if their layout cannot be found", function() {
   view = EmberView.create({
-    layoutName: 'cantBeFound'
+    layoutName: 'cantBeFound',
+    container: { lookup: function() { }}
   });
 
   expectAssertion(function() {
