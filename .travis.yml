@@ -1,5 +1,5 @@
 ---
-rvm: 2.1
+language: node_js
 
 sudo: false
 
