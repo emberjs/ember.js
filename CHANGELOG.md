@@ -1,5 +1,7 @@
 # Ember Changelog
 
+* Deprecate usage of Internet Explorer 6 & 7.
+
 ### Ember 1.7.0-beta.2 (July, 16, 2014)
 
 * [BUGFIX] Wrap es3 keywords in quotes.
