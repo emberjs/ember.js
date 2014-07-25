@@ -9,6 +9,7 @@
   "devDependencies": {
     "backburner": "https://github.com/ebryn/backburner.js.git#bf91c46978cced9aa130ca0793c5a72107e649db",
     "rsvp": "https://github.com/tildeio/rsvp.js.git#ca08b69b65c34089a55ed6ec194d5cac0b867688",
-    "router": "https://github.com/tildeio/router.js.git#137d2b55d0ac8c3c2f5ab251f122e56a1204e717"
+    "router": "https://github.com/tildeio/router.js.git#137d2b55d0ac8c3c2f5ab251f122e56a1204e717",
+    "route-recognizer": "https://github.com/tildeio/route-recognizer.git#dbbcad2acf0857b396a085891f4b22d26d605709"
   }
 }
