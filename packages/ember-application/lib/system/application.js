@@ -34,7 +34,6 @@ import {
   K
 } from 'ember-metal/core';
 import EmberHandlebars from "ember-handlebars-compiler";
-import DeprecatedContainer from "ember-application/system/deprecated-container";
 
 var ContainerDebugAdapter;
 
@@ -942,8 +941,6 @@ Application.reopenClass({
   */
   buildContainer: function(namespace) {
     var container = new Container();
-
-    Container.defaultContainer = new DeprecatedContainer(container);
 
     container.set = set;
     container.resolver  = resolverFor(namespace);
