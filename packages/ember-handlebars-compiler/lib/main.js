@@ -6,6 +6,8 @@
 */
 
 import Ember from "ember-metal/core";
+//import View from "ember-views/views/view";
+//import Component from "ember-views/views/component";
 
 // ES6Todo: you'll need to import debugger once debugger is es6'd.
 if (typeof Ember.assert === 'undefined')   { Ember.assert = function(){}; }
