@@ -16,7 +16,7 @@ var defineNativeShim = function(nativeFunc, shim) {
     return nativeFunc;
   }
   return shim;
-}
+};
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/map
 var map = defineNativeShim(ArrayPrototype.map, function(fun /*, thisp */) {
