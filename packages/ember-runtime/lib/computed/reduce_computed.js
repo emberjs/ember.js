@@ -27,7 +27,6 @@ import { forEach } from 'ember-metal/enumerable_utils';
 import TrackedArray from 'ember-runtime/system/tracked_array';
 import EmberArray from 'ember-runtime/mixins/array';
 import run from 'ember-metal/run_loop';
-import Set from 'ember-runtime/system/set';
 import { isArray } from 'ember-metal/utils';
 
 var cacheSet = cacheFor.set;
@@ -621,7 +620,7 @@ ReduceComputedProperty.prototype.clearItemPropertyKeys = function (dependentArra
 ReduceComputedProperty.prototype.property = function () {
   var cp = this;
   var args = a_slice.call(arguments);
-  var propertyArgs = new Set();
+  var propertyArgs = {};
   var match, dependentArrayKey, itemPropertyKey;
 
   forEach(args, function (dependentKey) {
@@ -636,13 +635,18 @@ ReduceComputedProperty.prototype.property = function () {
       };
 
       expandProperties(itemPropertyKeyPattern, addItemPropertyKey);
-      propertyArgs.add(dependentArrayKey);
+      propertyArgs[guidFor(dependentArrayKey)] = dependentArrayKey;
     } else {
-      propertyArgs.add(dependentKey);
+      propertyArgs[guidFor(dependentKey)] = dependentKey;
     }
   });
 
-  return ComputedProperty.prototype.property.apply(this, propertyArgs.toArray());
+  var propertyArgsToArray = [];
+  for (var guid in propertyArgs) {
+    propertyArgsToArray.push(propertyArgs[guid]);
+  }
+
+  return ComputedProperty.prototype.property.apply(this, propertyArgsToArray);
 };
 
 /**

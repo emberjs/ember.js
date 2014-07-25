@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from "ember-metal/core"; // Ember.isNone
+import Ember from "ember-metal/core"; // Ember.isNone, Ember.A
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -358,6 +358,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   //
 
   init: function(items) {
+    Ember.deprecate('Ember.Set is deprecated and will be removed in a future release.');
     this._super();
     if (items) this.addObjects(items);
   },
