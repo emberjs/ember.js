@@ -138,12 +138,15 @@ var EachView = CollectionView.extend(_Metamorph, {
 function _addMetamorphCheck() {
   EachView.reopen({
     _checkMetamorph: on('didInsertElement', function() {
+      var start = document.getElementById( this.morph.start );
+      var end = document.getElementById( this.morph.end );
+
+      if (!start || !end) { return; }
+
       Ember.assert("The metamorph tags, " +
                    this.morph.start + " and " + this.morph.end +
                    ", have different parents.\nThe browser has fixed your template to output valid HTML (for example, check that you have properly closed all tags and have used a TBODY tag when creating a table with '{{#each}}')",
-        document.getElementById( this.morph.start ).parentNode ===
-        document.getElementById( this.morph.end ).parentNode
-      );
+        start.parentNode === end.parentNode );
     })
   });
 }
