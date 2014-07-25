@@ -9,7 +9,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { setInnerHTML } from "ember-views/system/utils";
 import jQuery from "ember-views/system/jquery";
-import {Morph} from "morph";
+import {DOMHelper} from "morph";
 
 function ClassSet() {
   this.seen = {};
@@ -103,6 +103,8 @@ function _RenderBuffer(tagName) {
   this.tagName = tagName;
   this.buffer = null;
   this.childViews = [];
+  this.dom = new DOMHelper();
+
 }
 
 _RenderBuffer.prototype = {
@@ -228,7 +230,7 @@ _RenderBuffer.prototype = {
       parent.insertBefore(start, ref);
       parent.insertBefore(end, ref);
       parent.removeChild(ref);
-      childView._morph = new Morph(parent, start, end);
+      childView._morph = this.dom.createMorph(parent, start, end);
     }
   },
 
