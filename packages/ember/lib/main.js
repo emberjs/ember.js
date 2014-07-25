@@ -21,3 +21,4 @@ Ember
 @module ember
 */
 
+Ember.deprecate('Usage of Ember is deprecated for Internet Explorer 6 and 7, support will be removed in the next major version.', !navigator.userAgent.match(/MSIE [67]/));
