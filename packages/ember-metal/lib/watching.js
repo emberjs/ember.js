@@ -4,7 +4,6 @@
 
 import {
   meta,
-  META_KEY,
   GUID_KEY,
   typeOf,
   generateGuid
@@ -56,7 +55,7 @@ function watch(obj, _keyPath, m) {
 export { watch };
 
 export function isWatching(obj, key) {
-  var meta = obj[META_KEY];
+  var meta = obj['__ember_meta__'];
   return (meta && meta.watching[key]) > 0;
 }
 
@@ -84,7 +83,7 @@ export function unwatch(obj, _keyPath, m) {
   @param obj
 */
 export function rewatch(obj) {
-  var m = obj[META_KEY], chains = m && m.chains;
+  var m = obj['__ember_meta__'], chains = m && m.chains;
 
   // make sure the object has its own guid.
   if (GUID_KEY in obj && !obj.hasOwnProperty(GUID_KEY)) {
@@ -109,9 +108,9 @@ var NODE_STACK = [];
   @return {void}
 */
 export function destroy(obj) {
-  var meta = obj[META_KEY], node, nodes, key, nodeObject;
+  var meta = obj['__ember_meta__'], node, nodes, key, nodeObject;
   if (meta) {
-    obj[META_KEY] = null;
+    obj['__ember_meta__'] = null;
     // remove chainWatchers to remove circular references that would prevent GC
     node = meta.chains;
     if (node) {

@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core"; // warn, assert, etc;
 import {get, normalizeTuple} from "ember-metal/property_get";
-import {meta, META_KEY} from "ember-metal/utils";
+import {meta} from "ember-metal/utils";
 import {forEach} from "ember-metal/array";
 import {watchKey, unwatchKey} from "ember-metal/watch_key";
 
@@ -45,7 +45,7 @@ function addChainWatcher(obj, keyName, node) {
 function removeChainWatcher(obj, keyName, node) {
   if (!obj || 'object' !== typeof obj) { return; } // nothing to do
 
-  var m = obj[META_KEY];
+  var m = obj['__ember_meta__'];
   if (m && !m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
 
   var nodes = m && m.chainWatchers;
@@ -99,7 +99,7 @@ var ChainNodePrototype = ChainNode.prototype;
 function lazyGet(obj, key) {
   if (!obj) return undefined;
 
-  var meta = obj[META_KEY];
+  var meta = obj['__ember_meta__'];
   // check if object meant only to be a prototype
   if (meta && meta.proto === obj) return undefined;
 
@@ -319,7 +319,7 @@ ChainNodePrototype.didChange = function(events) {
 
 export function finishChains(obj) {
   // We only create meta if we really have to
-  var m = obj[META_KEY], chains = m && m.chains;
+  var m = obj['__ember_meta__'], chains = m && m.chains;
   if (chains) {
     if (chains.value() !== obj) {
       metaFor(obj).chains = chains = chains.copy(obj);

@@ -14,7 +14,6 @@ import { create } from "ember-metal/platform";
 import {
   guidFor,
   meta,
-  META_KEY,
   wrap,
   makeArray,
   apply
@@ -567,7 +566,7 @@ function _detect(curMixin, targetMixin, seen) {
 MixinPrototype.detect = function(obj) {
   if (!obj) { return false; }
   if (obj instanceof Mixin) { return _detect(obj, this, {}); }
-  var m = obj[META_KEY],
+  var m = obj['__ember_meta__'],
       mixins = m && m.mixins;
   if (mixins) {
     return !!mixins[guidFor(this)];
@@ -607,7 +606,7 @@ MixinPrototype.keys = function() {
 // returns the mixins currently applied to the specified object
 // TODO: Make Ember.mixin
 Mixin.mixins = function(obj) {
-  var m = obj[META_KEY],
+  var m = obj['__ember_meta__'],
       mixins = m && m.mixins, ret = [];
 
   if (!mixins) { return ret; }

@@ -1,6 +1,5 @@
 import Ember from "ember-metal/core";
 import { _getPath as getPath } from "ember-metal/property_get";
-import { META_KEY } from "ember-metal/utils";
 import {
   propertyWillChange,
   propertyDidChange
@@ -42,7 +41,7 @@ var set = function set(obj, keyName, value, tolerant) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  var meta = obj[META_KEY], desc = meta && meta.descs[keyName],
+  var meta = obj['__ember_meta__'], desc = meta && meta.descs[keyName],
       isUnknown, currentValue;
 
   if (desc === undefined && isPath(keyName)) {

@@ -161,17 +161,6 @@ var META_DESC = {
   value: null
 };
 
-/**
-  The key used to store meta information on object for property observing.
-
-  @property META_KEY
-  @for Ember
-  @private
-  @final
-  @type String
-*/
-var META_KEY = '__ember_meta__';
-
 var isDefinePropertySimulated = platform.defineProperty.isSimulated;
 
 function Meta(obj) {
@@ -235,23 +224,23 @@ if (MANDATORY_SETTER) { EMPTY_META.values = {}; }
 */
 function meta(obj, writable) {
 
-  var ret = obj[META_KEY];
+  var ret = obj['__ember_meta__'];
   if (writable===false) return ret || EMPTY_META;
 
   if (!ret) {
-    if (!isDefinePropertySimulated) o_defineProperty(obj, META_KEY, META_DESC);
+    if (!isDefinePropertySimulated) o_defineProperty(obj, '__ember_meta__', META_DESC);
 
     ret = new Meta(obj);
 
     if (MANDATORY_SETTER) { ret.values = {}; }
 
-    obj[META_KEY] = ret;
+    obj['__ember_meta__'] = ret;
 
     // make sure we don't accidentally try to create constructor like desc
     ret.descs.constructor = null;
 
   } else if (ret.source !== obj) {
-    if (!isDefinePropertySimulated) o_defineProperty(obj, META_KEY, META_DESC);
+    if (!isDefinePropertySimulated) o_defineProperty(obj, '__ember_meta__', META_DESC);
 
     ret = o_create(ret);
     ret.descs     = o_create(ret.descs);
@@ -262,7 +251,7 @@ function meta(obj, writable) {
 
     if (MANDATORY_SETTER) { ret.values = o_create(ret.values); }
 
-    obj[META_KEY] = ret;
+    obj['__ember_meta__'] = ret;
   }
   return ret;
 }
@@ -798,7 +787,6 @@ export {
   GUID_KEY,
   META_DESC,
   EMPTY_META,
-  META_KEY,
   meta,
   typeOf,
   tryCatchFinally,

@@ -3,7 +3,6 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import {
   meta,
-  META_KEY,
   inspect
 } from "ember-metal/utils";
 import expandProperties from "ember-metal/expand_properties";
@@ -503,7 +502,7 @@ function computed(func) {
   @return {Object} the cached value
 */
 function cacheFor(obj, key) {
-  var meta = obj[META_KEY];
+  var meta = obj['__ember_meta__'];
   var cache = meta && meta.cache;
   var ret = cache && cache[key];
 
