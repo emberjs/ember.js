@@ -1,3 +1,5 @@
+/* global Node */
+
 import _default from "ember-views/views/states/default";
 import { create } from "ember-metal/platform";
 import merge from "ember-metal/merge";
@@ -7,6 +9,15 @@ import merge from "ember-metal/merge";
 @submodule ember-views
 */
 var preRender = create(_default);
+
+var containsElement = Node.prototype.contains;
+if (!containsElement && Node.prototype.compareDocumentPosition) {
+  // polyfill for older Firefox.
+  // http://compatibility.shwups-cms.ch/en/polyfills/?&id=52
+  containsElement = function(node){
+    return !!(this.compareDocumentPosition(node) & 16);
+  };
+}
 
 merge(preRender, {
   // a view leaves the preRender state once its element has been
@@ -21,7 +32,7 @@ merge(preRender, {
 
     // We transition to `inDOM` if the element exists in the DOM
     var element = view.get('element');
-    if (document.body.contains(element)) {
+    if (containsElement.call(document.body, element)) {
       viewCollection.transitionTo('inDOM', false);
       viewCollection.trigger('didInsertElement');
     }
