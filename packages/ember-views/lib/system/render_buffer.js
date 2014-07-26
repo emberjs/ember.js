@@ -82,20 +82,19 @@ var canSetNameOnInputs = (function() {
 })();
 
 /**
-  `Ember.RenderBuffer` gathers information regarding the view and generates the
-  final representation. `Ember.RenderBuffer` will generate HTML which can be pushed
+  `Ember.renderBuffer` gathers information regarding the view and generates the
+  final representation. `Ember.renderBuffer` will generate HTML which can be pushed
   to the DOM.
 
    ```javascript
-   var buffer = Ember.RenderBuffer('div');
+   var buffer = Ember.renderBuffer('div');
   ```
 
-  @class RenderBuffer
+  @method renderBuffer
   @namespace Ember
-  @constructor
   @param {String} tagName tag name (such as 'div' or 'p') used for the buffer
 */
-export default function RenderBuffer(tagName) {
+export default function renderBuffer(tagName) {
   return new _RenderBuffer(tagName); // jshint ignore:line
 }
 
@@ -374,7 +373,7 @@ _RenderBuffer.prototype = {
   },
 
   generateElement: function() {
-    var tagName = this.tagName, // pop since we don't need to close
+    var tagName = this.tagName,
         id = this.elementId,
         classes = this.classes,
         attrs = this.elementAttributes,
