@@ -68,9 +68,12 @@ test("The helper becomes the body of the component", function() {
 });
 
 test("If a component is registered, it is used", function() {
+  delete Ember.TEMPLATES['components/expand-it'];
+
   boot(function() {
     container.register('component:expand-it', Ember.Component.extend({
-      classNames: 'testing123'
+      classNames: 'testing123',
+      layout: compile('hello {{yield}}')
     }));
   });
 
@@ -102,6 +105,7 @@ test("Late-registered components can be rendered with template registered on the
   boot(function() {
     container.register('template:components/sally-rutherford', compile("funkytowny{{yield}}"));
     container.register('component:sally-rutherford', Ember.Component);
+    container.injection('component:sally-rutherford', 'layout', 'template:components/sally-rutherford');
   });
 
   equal(Ember.$('#wrapper').text(), "hello world funkytowny-funkytowny!!!", "The component is composed correctly");
@@ -111,10 +115,9 @@ test("Late-registered components can be rendered with template registered on the
 test("Late-registered components can be rendered with ONLY the template registered on the container", function() {
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>hello world {{borf-snorlax}}-{{#borf-snorlax}}!!!{{/borf-snorlax}}</div>");
+  Ember.TEMPLATES['components/borf-snorlax'] = compile("goodfreakingTIMES{{yield}}");
 
-  boot(function() {
-    container.register('template:components/borf-snorlax', compile("goodfreakingTIMES{{yield}}"));
-  });
+  boot();
 
   equal(Ember.$('#wrapper').text(), "hello world goodfreakingTIMES-goodfreakingTIMES!!!", "The component is composed correctly");
   ok(!Ember.Handlebars.helpers['borf-snorlax'], "Component wasn't saved to global Handlebars.helpers hash");
@@ -207,12 +210,12 @@ test("Components with a block should have the proper content when a template is 
   Ember.TEMPLATES['components/my-component'] = compile("{{text}}-{{yield}}");
 
   boot(function() {
+    App.MyComponentComponent = Ember.Component.extend({
+      text: 'inner'
+    });
+
     container.register('controller:application', Ember.Controller.extend({
       'text': 'outer'
-    }));
-
-    container.register('component:my-component', Ember.Component.extend({
-      text: 'inner'
     }));
   });
 
@@ -240,12 +243,12 @@ test("Components without a block should have the proper content when a template 
   Ember.TEMPLATES['components/my-component'] = compile("{{text}}");
 
   boot(function() {
+    App.MyComponentComponent = Ember.Component.extend({
+      text: 'inner'
+    });
+
     container.register('controller:application', Ember.Controller.extend({
       'text': 'outer'
-    }));
-
-    container.register('component:my-component', Ember.Component.extend({
-      text: 'inner'
     }));
   });
 
@@ -323,13 +326,13 @@ test("Components trigger actions in the components context when called from with
       }
     }));
 
-    container.register('component:my-component', Ember.Component.extend({
+    App.MyComponentComponent = Ember.Component.extend({
       actions: {
         fizzbuzz: function(){
           ok(true, 'action triggered on component');
         }
       }
-    }));
+    });
   });
 
   Ember.$('#fizzbuzz', "#wrapper").click();
