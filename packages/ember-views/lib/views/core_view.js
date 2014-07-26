@@ -17,9 +17,6 @@ import { typeOf } from "ember-metal/utils";
 
 import { instrument } from "ember-metal/instrumentation";
 
-
-import renderBuffer from "ember-views/system/render_buffer";
-
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
   to both Ember's main view class `Ember.View` and other classes like
