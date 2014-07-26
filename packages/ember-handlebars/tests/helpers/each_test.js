@@ -466,7 +466,10 @@ test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function() {
   html = html.replace(/<li[^>]*/ig, '<li');
 
   // Use lowercase since IE 8 make tagnames uppercase
-  equal(html.toLowerCase(), "<ul><li>steve holt</li><li>annabelle</li></ul>");
+  ok(
+    new RegExp("<ul [^>]*><li>steve holt</li><li>annabelle</li></ul>").test(html.toLowerCase()),
+    "ul tag is generated for deprecated each view case"
+  );
 });
 
 test("it supports {{itemViewClass=}} with in format", function() {
