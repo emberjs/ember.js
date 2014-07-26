@@ -17,6 +17,14 @@ Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
   'date'
 ];
 
+//
+// the spaceship operator
+//
+var spaceship = function(a, b) {
+  var diff = a - b;
+  return (diff > 0) - (diff < 0);
+};
+
 /**
  This will compare two javascript values of possibly different types.
  It will tell you which one is greater than the other by returning:
@@ -41,7 +49,9 @@ Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
  @return {Number} -1 if v < w, 0 if v = w and 1 if v > w.
 */
 export default function compare(v, w) {
-  if (v === w) { return 0; }
+  if (v === w) { 
+    return 0; 
+  }
 
   var type1 = typeOf(v);
   var type2 = typeOf(w);
@@ -52,7 +62,7 @@ export default function compare(v, w) {
     }
 
     if (type2 === 'instance' && Comparable.detect(w.constructor)) {
-      return 1-w.constructor.compare(w, v);
+      return 1 - w.constructor.compare(w, v);
     }
   }
 
@@ -62,11 +72,10 @@ export default function compare(v, w) {
 
   if (!mapping) {
     var order = Ember.ORDER_DEFINITION;
-    var idx, len;
 
     mapping = Ember.ORDER_DEFINITION_MAPPING = {};
 
-    for (idx = 0, len = order.length; idx < len; ++idx) {
+    for (var idx = 0; idx < order.length; idx++) {
       mapping[order[idx]] = idx;
     }
 
@@ -74,44 +83,35 @@ export default function compare(v, w) {
     delete Ember.ORDER_DEFINITION;
   }
 
-  var type1Index = mapping[type1];
-  var type2Index = mapping[type2];
-
-  if (type1Index < type2Index) { return -1; }
-  if (type1Index > type2Index) { return 1; }
+  var res = spaceship(mapping[type1], mapping[type2]);
+  if (res !== 0) {
+    return res;
+  }
 
   // types are equal - so we have to check values now
   switch (type1) {
     case 'boolean':
     case 'number':
-      if (v < w) { return -1; }
-      if (v > w) { return 1; }
-      return 0;
+      return spaceship(v,w);
 
     case 'string':
-      var comp = v.localeCompare(w);
-      if (comp < 0) { return -1; }
-      if (comp > 0) { return 1; }
-      return 0;
+      return spaceship(v.localeCompare(w), 0);
 
     case 'array':
-      var vLen = v.length;
-      var wLen = w.length;
-      var l = Math.min(vLen, wLen);
-      var r = 0;
-      var i = 0;
-      while (r === 0 && i < l) {
-        r = compare(v[i], w[i]);
-        i++;
+      var vLen = v.length,
+          wLen = w.length,
+          len = Math.min(vLen, wLen);
+
+      for (var i = 0; i < len; i++) {
+        var r = compare(v[i], w[i]);
+        if (r !== 0) {
+          return r;
+        }
       }
-      if (r !== 0) { return r; }
 
       // all elements are equal now
       // shorter array should be ordered first
-      if (vLen < wLen) { return -1; }
-      if (vLen > wLen) { return 1; }
-      // arrays are equal now
-      return 0;
+      return spaceship(vLen, wLen);
 
     case 'instance':
       if (Comparable && Comparable.detect(v)) {
@@ -120,11 +120,7 @@ export default function compare(v, w) {
       return 0;
 
     case 'date':
-      var vNum = v.getTime();
-      var wNum = w.getTime();
-      if (vNum < wNum) { return -1; }
-      if (vNum > wNum) { return 1; }
-      return 0;
+      return spaceship(v.getTime(), w.getTime());
 
     default:
       return 0;

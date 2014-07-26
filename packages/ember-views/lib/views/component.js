@@ -282,25 +282,18 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @param [context] {*} a context to send with the action
   */
   sendAction: function(action) {
-    var actionName,
+    var actionName = get(this, action || 'action'),
         contexts = a_slice.call(arguments, 1);
 
     // Send the default action
-    if (action === undefined) {
-      actionName = get(this, 'action');
-      Ember.assert("The default action was triggered on the component " + this.toString() +
+      Ember.assert("The " + (action || "default" ) + " action was triggered on the component " + this.toString() +
                    ", but the action name (" + actionName + ") was not a string.",
                    isNone(actionName) || typeof actionName === 'string');
-    } else {
-      actionName = get(this, action);
-      Ember.assert("The " + action + " action was triggered on the component " +
-                   this.toString() + ", but the action name (" + actionName +
-                   ") was not a string.",
-                   isNone(actionName) || typeof actionName === 'string');
-    }
 
     // If no action name for that action could be found, just abort.
-    if (actionName === undefined) { return; }
+    if (actionName === undefined) {
+      return;
+    }
 
     this.triggerAction({
       action: actionName,
