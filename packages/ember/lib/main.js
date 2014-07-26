@@ -1,3 +1,4 @@
+/* global navigator */
 // require the main entry points for each of these packages
 // this is so that the global exports occur properly
 import "ember-metal";
