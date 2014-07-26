@@ -21,7 +21,7 @@ merge(preRender, {
 
     // We transition to `inDOM` if the element exists in the DOM
     var element = view.get('element');
-    if (document.body.contains(element)) {
+    if (document.body.contains && document.body.contains(element)) {
       viewCollection.transitionTo('inDOM', false);
       viewCollection.trigger('didInsertElement');
     }
