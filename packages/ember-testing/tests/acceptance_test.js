@@ -187,6 +187,24 @@ test("Nested async helpers", function() {
   });
 });
 
+test("Multiple nested async helpers", function() {
+  expect(2);
+
+  visit('/posts');
+
+  andThen(function() {
+    click('a:first', '#comments-link');
+
+    fillIn('.ember-text-field', "hello");
+    fillIn('.ember-text-field', "goodbye");
+  });
+
+  andThen(function() {
+    equal(find('.ember-text-field').val(), 'goodbye', "Fillin successfully works");
+    equal(currentRoute, 'comments', "Successfully visited comments route");
+  });
+});
+
 test("Helpers nested in thens", function() {
   expect(3);
 
