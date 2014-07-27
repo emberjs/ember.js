@@ -266,6 +266,24 @@ export default Mixin.create(Enumerable, {
   // ARRAY OBSERVERS
   //
 
+  _arrayObserversHelper: function(target, opts, operation, notify) {
+    var willChange = (opts && opts.willChange) || 'arrayWillChange';
+    var didChange  = (opts && opts.didChange) || 'arrayDidChange';
+    var hasObservers = get(this, 'hasArrayObservers');
+
+    if (hasObservers === notify) {
+      propertyWillChange(this, 'hasArrayObservers');
+    }
+
+    operation(this, '@array:before', target, willChange);
+    operation(this, '@array:change', target, didChange);
+
+    if (hasObservers === notify) {
+      propertyDidChange(this, 'hasArrayObservers');
+    }
+    return this;
+  },
+
   /**
     Adds an array observer to the receiving array. The array observer object
     normally must implement two methods:
@@ -290,15 +308,9 @@ export default Mixin.create(Enumerable, {
       `willChange` and `didChange` option.
     @return {Ember.Array} receiver
   */
-  addArrayObserver: function(target, opts) {
-    var willChange = (opts && opts.willChange) || 'arrayWillChange',
-        didChange  = (opts && opts.didChange) || 'arrayDidChange';
 
-    var hasObservers = get(this, 'hasArrayObservers');
-    if (!hasObservers) propertyWillChange(this, 'hasArrayObservers');
-    addListener(this, '@array:before', target, willChange);
-    addListener(this, '@array:change', target, didChange);
-    if (!hasObservers) propertyDidChange(this, 'hasArrayObservers');
+  addArrayObserver: function(target, opts) {
+    this._arrayObserversHelper(target, opts, addListener, false);
     return this;
   },
 
@@ -314,14 +326,7 @@ export default Mixin.create(Enumerable, {
     @return {Ember.Array} receiver
   */
   removeArrayObserver: function(target, opts) {
-    var willChange = (opts && opts.willChange) || 'arrayWillChange',
-        didChange  = (opts && opts.didChange) || 'arrayDidChange';
-
-    var hasObservers = get(this, 'hasArrayObservers');
-    if (hasObservers) propertyWillChange(this, 'hasArrayObservers');
-    removeListener(this, '@array:before', target, willChange);
-    removeListener(this, '@array:change', target, didChange);
-    if (hasObservers) propertyDidChange(this, 'hasArrayObservers');
+    this._arrayObserversHelper(target, opts, removeListener, true);
     return this;
   },
 
