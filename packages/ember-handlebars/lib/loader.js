@@ -62,10 +62,6 @@ function _bootstrap() {
   bootstrap( jQuery(document) );
 }
 
-function registerComponentLookup(container) {
-  container.register('component-lookup:main', ComponentLookup);
-}
-
 /*
   We tie this to application.load to ensure that we've at least
   attempted to bootstrap at the point that the application is loaded.
@@ -81,12 +77,6 @@ onLoad('Ember.Application', function(Application) {
   Application.initializer({
     name: 'domTemplates',
     initialize: _bootstrap
-  });
-
-  Application.initializer({
-    name: 'registerComponentLookup',
-    after: 'domTemplates',
-    initialize: registerComponentLookup
   });
 });
 

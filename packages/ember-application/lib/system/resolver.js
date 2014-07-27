@@ -14,6 +14,7 @@ import {
 import EmberObject from 'ember-runtime/system/object';
 import Namespace from 'ember-runtime/system/namespace';
 import EmberHandlebars from 'ember-handlebars';
+import EmberComponent from 'ember-views/views/component';
 
 export var Resolver = EmberObject.extend({
   /**
@@ -320,6 +321,26 @@ export default EmberObject.extend({
   resolveRoute: function(parsedName) {
     this.useRouterNaming(parsedName);
     return this.resolveOther(parsedName);
+  },
+
+  resolveComponent: function(parsedName) {
+    this.useRouterNaming(parsedName);
+
+    var Component = this.resolveOther(parsedName);
+    var layoutName = 'components/' + parsedName.name;
+    var layout = this.resolve('template:' + layoutName);
+
+    // Only treat as a component if either the component
+    // or a template has been registered.
+    if (layout || Component) {
+      if (!Component) {
+        Component = EmberComponent;
+      }
+
+      return Component.extend({
+        layout: layout
+      });
+    }
   },
 
   /**
