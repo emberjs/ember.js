@@ -19,6 +19,7 @@ prototype.compile = function(opcodes, options) {
   this.mustaches.length = 0;
   this.source.length = 0;
   this.parents.length = 1;
+  this.parents[0] = 'fragment';
   this.morphs.length = 0;
   this.fragmentProcessing.length = 0;
   this.parentCount = 0;
@@ -127,7 +128,7 @@ prototype.morph = function(num, parentPath, startIndex, endIndex) {
 // Adds our element to cached declaration
 prototype.element = function(elementNum){
   var elementNodesName = "element" + elementNum;
-  this.fragmentProcessing.push('var '+elementNodesName+' = '+this.getParent());
+  this.fragmentProcessing.push('var '+elementNodesName+' = '+this.getParent()+';');
   this.parents[this.parents.length-1] = elementNodesName;
 };
 
