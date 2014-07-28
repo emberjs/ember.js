@@ -33,7 +33,7 @@
     "chalk": "~0.4.0",
     "defeatureify": "~0.2.0",
     "ember-cli": "0.0.40",
-    "ember-publisher": "0.0.3",
+    "ember-publisher": "0.0.6",
     "es6-module-transpiler": "~0.4.0",
     "express": "^4.5.0",
     "glob": "~3.2.8",
