@@ -346,9 +346,7 @@ function es6Package(packageName) {
     srcFile: 'ember-template-compiler.js'
   });
 
-  var libJSHintTree = jshintTree(libTree, {
-    destFile: '/' + packageName + '/tests/lib-jshint.js'
-  });
+  var libJSHintTree = jshintTree(libTree);
 
   var testTree = pickFiles('packages/' + packageName + '/tests', {
     srcDir: '/',
@@ -356,9 +354,7 @@ function es6Package(packageName) {
     destDir: '/' + packageName + '/tests'
   });
 
-  var testJSHintTree = jshintTree(testTree, {
-    destFile: '/' + packageName + '/tests/tests-jshint.js'
-  });
+  var testJSHintTree = jshintTree(testTree);
 
   /*
     Merge jshint into testTree in order to ensure that if you have a jshint
