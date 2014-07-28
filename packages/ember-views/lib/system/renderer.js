@@ -60,7 +60,7 @@ EmberRenderer.prototype.createChildViewsMorph =
         view._childViewsMorph = this._dom.createMorph(element, start, end);
       }
     } else {
-      view._childViewsMorph = this._dom.createMorph(element, null, null);
+      view._childViewsMorph = this._dom.createMorph(element, element.lastChild, null);
     }
     return element;
   };
