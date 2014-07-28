@@ -54,7 +54,7 @@ function defeatureifyConfig(options) {
 }
 
 /*
-  Returns a tree picked from `packages/#{packageName}/lib` and then move `main.js` to `/#{pacakgeName}.js`.
+  Returns a tree picked from `packages/#{packageName}/lib` and then move `main.js` to `/#{packageName}.js`.
  */
 function vendoredPackage(packageName) {
   /*
@@ -74,7 +74,7 @@ function vendoredPackage(packageName) {
   });
 
   /*
-    Then we move the main.js to pacakageName.js
+    Then we move the main.js to packageName.js
     Given:
       /metamorph
         └── main.js
@@ -89,7 +89,7 @@ function vendoredPackage(packageName) {
 };
 
 /*
-  Responsible for conncatting ES6 modules together wrapped in loader and iife
+  Responsible for concatenating ES6 modules together wrapped in loader and iife
   (immediately-invoked function expression)
  */
 function concatES6(sourceTrees, options) {
@@ -253,7 +253,7 @@ function es6Package(packageName) {
       libTree;
 
   /*
-    Prematurely returns if already defined. Trees is (will be) an ojbect that looks like:
+    Prematurely returns if already defined. Trees is (will be) an object that looks like:
 
     ```
       {lib: libTree, compiledTree: compiledTrees, vendorTrees: vendorTrees};
@@ -328,7 +328,7 @@ function es6Package(packageName) {
 
   /*
      Add templateCompiler to libTree.  This is done to ensure that the templates
-     are precompiled with the local version of `ember-handelbars-compiler` (NOT
+     are precompiled with the local version of `ember-handlebars-compiler` (NOT
      the `npm` version), and includes any changes.  Specifically, so that you
      can work on the template compiler and still have functional builds.
   */
@@ -406,12 +406,12 @@ function es6Package(packageName) {
 
 /*
   Iterate over dependencyTree as specified within `lib/packages.js`.  Make sure
-  all depedencies are met for each pacakage
+  all dependencies are met for each package
 */
 function packageDependencyTree(packageName) {
   var dependencyTrees = packages[packageName]['dependencyTrees'];
 
-  // Return if we've already processed this pacakage
+  // Return if we've already processed this package
   if (dependencyTrees) {
     return dependencyTrees;
   } else {
@@ -456,7 +456,7 @@ function packageDependencyTree(packageName) {
 
   /*
     Merge and return dependencyTrees.  Overwrite _MUST_ occur in order to
-    prevent requireents from stepping on one another.
+    prevent requirements from stepping on one another.
   */
   packages[packageName]['vendorTrees']            = mergeTrees(vendorTrees, {overwrite: true});
   return packages[packageName]['dependencyTrees'] = mergeTrees(libTrees, {overwrite: true});
@@ -564,7 +564,7 @@ var prodCompiledSource = removeFile(sourceTrees, {
 });
 
 // Generates prod build.  defeatureify increases the overall runtime speed of ember.js by
-// ~10%.  See defeauturify.
+// ~10%.  See defeatureify.
 prodCompiledSource = concatES6(prodCompiledSource, {
   es3Safe: env !== 'development',
   includeLoader: true,
@@ -593,7 +593,7 @@ var compiledTests = concatES6(testTrees, {
 var distTrees = [templateCompilerTree, compiledSource, compiledTests, testConfig, bowerFiles];
 
 // If you are not running in dev add Production and Minify build to distTrees.
-// This ensures development build speed is not affected by unecessary
+// This ensures development build speed is not affected by unnecessary
 // minification and defeaturification
 if (env !== 'development') {
   distTrees.push(prodCompiledSource);
