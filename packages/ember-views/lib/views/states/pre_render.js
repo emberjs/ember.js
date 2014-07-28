@@ -10,12 +10,20 @@ import merge from "ember-metal/merge";
 */
 var preRender = create(_default);
 
-var containsElement = Node.prototype.contains;
-if (!containsElement && Node.prototype.compareDocumentPosition) {
-  // polyfill for older Firefox.
-  // http://compatibility.shwups-cms.ch/en/polyfills/?&id=52
-  containsElement = function(node){
-    return !!(this.compareDocumentPosition(node) & 16);
+var containsElement;
+if (typeof Node === 'object') {
+  containsElement = Node.prototype.contains;
+
+  if (!containsElement && Node.prototype.compareDocumentPosition) {
+    // polyfill for older Firefox.
+    // http://compatibility.shwups-cms.ch/en/polyfills/?&id=52
+    containsElement = function(node){
+      return !!(this.compareDocumentPosition(node) & 16);
+    };
+  }
+} else {
+  containsElement = function(element) {
+    return this.contains(element);
   };
 }
 
