@@ -610,7 +610,7 @@ function unlessHelper(context, options) {
   <img {{bind-attr src="imageUrl" alt="imageTitle"}}>
   ```
 
-  The above handlebars template will fill the `<img>`'s `src` attribute will
+  The above handlebars template will fill the `<img>`'s `src` attribute with
   the value of the property referenced with `"imageUrl"` and its `alt`
   attribute with the value of the property referenced with `"imageTitle"`.
 
