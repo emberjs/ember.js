@@ -86,7 +86,7 @@ function vendoredPackage(packageName) {
     srcFile: packageName + '/main.js',
     destFile: '/' + packageName + '.js'
   });
-};
+}
 
 /*
   Responsible for concatenating ES6 modules together wrapped in loader and iife
@@ -372,7 +372,7 @@ function es6Package(packageName) {
     vendorTrees: vendorTrees,
     inputFiles: [packageName + '/**/*.js', packageName + '.js'],
     destFile: '/packages/' + packageName + '.js'
-  })
+  });
   var compiledTrees = [compiledLib];
 
   /*
@@ -383,7 +383,7 @@ function es6Package(packageName) {
     includeLoader: false,
     inputFiles: ['**/*.js'],
     destFile: '/packages/' + packageName + '-tests.js'
-  })
+  });
   if (!pkg.skipTests) { compiledTrees.push(compiledTest); }
 
   compiledTrees = mergeTrees(compiledTrees);
@@ -534,7 +534,7 @@ var compiledSource = concatES6(sourceTrees, {
 function buildRuntimeTree() {
   es6Package('ember-runtime');
   var runtimeTrees = [packages['ember-runtime'].trees.lib];
-  var runtimeVendorTrees = packages['ember-runtime'].vendorRequirements.map(function(req){ return vendoredPackages[req] });
+  var runtimeVendorTrees = packages['ember-runtime'].vendorRequirements.map(function(req){ return vendoredPackages[req];});
   packages['ember-runtime'].requirements.forEach(function(req){
     es6Package(req);
     runtimeTrees.push(packages[req].trees.lib);
