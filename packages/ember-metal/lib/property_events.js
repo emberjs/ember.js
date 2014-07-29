@@ -100,27 +100,35 @@ function dependentKeysDidChange(obj, depKey, meta) {
   if (top) { DID_SEEN = null; }
 }
 
+function keysOf(obj) {
+  var keys = [];
+  for (var key in obj) {
+    keys.push(key);
+  }
+  return keys;
+}
+
 function iterDeps(method, obj, depKey, seen, meta) {
-  var guid, deps, keys, key, i, desc;
-  guid = guidFor(obj);
-  if (!seen[guid]) seen[guid] = {};
-  if (seen[guid][depKey]) return;
-  seen[guid][depKey] = true;
+  var deps, keys, key, i, desc, descs;
+  var guid = guidFor(obj);
+
+  var current = seen[guid];
+  if (!current) current = seen[guid] = {};
+  if (current[depKey]) return;
+  current[depKey] = true;
 
   deps = meta.deps;
   deps = deps && deps[depKey];
-  keys = [];
   if (deps) {
-    for(key in deps) {
-      keys.push(key);
-    }
-  }
+    keys = keysOf(deps);
+    descs = meta.descs;
 
-  for (i=0; i<keys.length; i++) {
-    key = keys[i];
-    desc = meta.descs[key];
-    if (desc && desc._suspended === obj) continue;
-    method(obj, key);
+    for (i=0; i<keys.length; i++) {
+      key = keys[i];
+      desc = descs[key];
+      if (desc && desc._suspended === obj) continue;
+      method(obj, key);
+    }
   }
 }
 
