@@ -1,3 +1,5 @@
+/* jshint node: true */
+
 var fs  = require('fs');
 var util = require('util');
 var path = require('path');
