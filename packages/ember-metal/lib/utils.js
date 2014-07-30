@@ -53,7 +53,7 @@ var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
   Why?
 
-  Runtimes store strings in atleast 2 different representations:
+  Runtimes store strings in at least 2 different representations:
   Ropes and Symbols (interned strings). The Rope provides a memory efficient
   data-structure for strings created from concatenation or some other string
   manipulation like splitting.
