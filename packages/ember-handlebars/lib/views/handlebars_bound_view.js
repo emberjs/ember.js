@@ -30,13 +30,14 @@ var viewStates = states;
 
 import _MetamorphView from "ember-handlebars/views/metamorph_view";
 import { handlebarsGet } from "ember-handlebars/ext";
+import { uuid } from "ember-metal/utils";
 
 function SimpleHandlebarsView(path, pathRoot, isEscaped, templateData) {
   this.path = path;
   this.pathRoot = pathRoot;
   this.isEscaped = isEscaped;
   this.templateData = templateData;
-
+  this[Ember.GUID_KEY] = uuid();
   this._lastNormalizedValue = undefined;
   this.morph = Metamorph();
   this.state = 'preRender';
