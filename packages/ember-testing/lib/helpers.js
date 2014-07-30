@@ -74,13 +74,24 @@ function click(app, selector, context) {
 
 function triggerEvent(app, selector, context, type, options){
   if (arguments.length === 3) {
-    options = type;
+    // context and options are optional, so this is
+    // app, selector, type
     type = context;
     context = null;
+    options = {};
   }
 
-  if (typeof options === 'undefined') {
-    options = {};
+  if (arguments.length === 4) {
+    // context and options are optional, so this is
+    if (typeof type === "object") {  // either
+      // app, selector, type, options
+      options = type;
+      type = context;
+      context = null;
+    } else { // or
+      // app, selector, context, type
+      options = {};
+    }
   }
 
   var $el = app.testHelpers.findWithAssert(selector, context);
@@ -387,7 +398,7 @@ helper('currentURL', currentURL);
  @param {String} [context] jQuery selector that will limit the selector
                            argument to find only within the context's children
  @param {String} type The event type to be triggered.
- @param {Object} options The options to be passed to jQuery.Event.
+ @param {Object} [options] The options to be passed to jQuery.Event.
  @return {RSVP.Promise}
  @since 1.5.0
 */
