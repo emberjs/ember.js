@@ -97,7 +97,9 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   if (!meta) meta = metaFor(obj);
   descs = meta.descs;
   existingDesc = meta.descs[keyName];
-  watching = meta.watching[keyName] > 0;
+  var watchEntry = meta.watching[keyName];
+
+  watching = watchEntry !== undefined && watchEntry > 0;
 
   if (existingDesc instanceof Descriptor) {
     existingDesc.teardown(obj, keyName);
