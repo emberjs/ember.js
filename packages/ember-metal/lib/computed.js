@@ -367,13 +367,13 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   @return {Object} The return value of the function backing the CP.
 */
 ComputedPropertyPrototype.set = function(obj, keyName, value) {
-  var cacheable = this._cacheable,
-      func = this.func,
-      meta = metaFor(obj, cacheable),
-      oldSuspended = this._suspended,
-      hadCachedValue = false,
-      cache = meta.cache,
-      funcArgLength, cachedValue, ret;
+  var cacheable = this._cacheable;
+  var func = this.func;
+  var meta = metaFor(obj, cacheable);
+  var oldSuspended = this._suspended;
+  var hadCachedValue = false;
+  var cache = meta.cache;
+  var funcArgLength, cachedValue, ret;
 
   if (this._readOnly) {
     throw new EmberError('Cannot set read-only property "' + keyName + '" on object: ' + inspect(obj));

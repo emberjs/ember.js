@@ -22,10 +22,13 @@ import {
 } from "ember-metal/watch_path";
 
 var metaFor = meta; // utils.js
+import {
+  isPathCache
+} from "ember-metal/path_cache";
 
 // returns true if the passed path is just a keyName
 function isKeyName(path) {
-  return path.indexOf('.') === -1;
+  return !isPathCache.get(path);
 }
 
 /**
