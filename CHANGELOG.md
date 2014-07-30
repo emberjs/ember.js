@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### Ember 1.7.0-beta.4 (July 30, 2014)
+
+* [BUXFIX] link-to helper can be inserted in DOM when the router is not present.
+* [PERFORMANCE] Do not pass `arguments` around in a hot-path.
+* Remove Container.defaultContainer.
+* Polyfill contains for older browsers.
+* [BUGFIX] Ensure that `triggerEvent` handles all argument signatures properly.
+
 ### Ember 1.7.0-beta.3 (July, 24, 2014)
 
 * [BUGFIX] Stub meta on AliasedProperty (fixes regression from beta.2 with Ember Data).
