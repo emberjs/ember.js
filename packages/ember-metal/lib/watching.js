@@ -22,11 +22,9 @@ import {
 } from "ember-metal/watch_path";
 
 var metaFor = meta; // utils.js
-
-// returns true if the passed path is just a keyName
-function isKeyName(path) {
-  return path.indexOf('.') === -1;
-}
+import {
+  isPath
+} from "ember-metal/path_cache";
 
 /**
   Starts watching a property on an object. Whenever the property changes,
@@ -45,7 +43,7 @@ function watch(obj, _keyPath, m) {
   // can't watch length on Array - it is special...
   if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
-  if (isKeyName(_keyPath)) {
+  if (!isPath(_keyPath)) {
     watchKey(obj, _keyPath, m);
   } else {
     watchPath(obj, _keyPath, m);
@@ -65,7 +63,7 @@ export function unwatch(obj, _keyPath, m) {
   // can't watch length on Array - it is special...
   if (_keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
-  if (isKeyName(_keyPath)) {
+  if (!isPath(_keyPath)) {
     unwatchKey(obj, _keyPath, m);
   } else {
     unwatchPath(obj, _keyPath, m);
