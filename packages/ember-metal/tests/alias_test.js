@@ -89,3 +89,15 @@ test("Ember.cacheFor non path CP", function() {
   Ember.get(obj, 'bar');
   equal(Ember.cacheFor(obj, 'bar'), undefined);
 });
+
+
+test("Ember.cacheFor path CP", function() {
+  obj.bro = { };
+  defineProperty(obj.bro, 'bar', computed(function() {
+    return 'hombre';
+  }));
+  defineProperty(obj, 'bar', alias('bro.bar'));
+  equal(Ember.cacheFor(obj, 'bar'), undefined);
+  equal(Ember.get(obj, 'bar'), 'hombre');
+  equal(Ember.cacheFor(obj, 'bar'), 'hombre');
+});
