@@ -35,7 +35,7 @@ import {
 } from "ember-metal/property_events";
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
-
+import { alias } from 'ember-metal/alias';
 // ..........................................................
 // ADD OBSERVER
 //
@@ -904,10 +904,9 @@ QUnit.module('addObserver - dependentkey with chained properties', {
   }
 });
 
-
 testBoth('depending on a chain with a computed property', function (get, set){
   defineProperty(obj, 'computed', computed(function () {
-    return {foo: 'bar'};
+    return { foo: 'bar' };
   }));
 
   var changed = 0;
@@ -920,6 +919,23 @@ testBoth('depending on a chain with a computed property', function (get, set){
   set(obj, 'computed.foo', 'baz');
 
   equal(changed, 1, 'should fire observer');
+});
+
+testBoth('depending on a chain with Alias property of a cp does not computed the CP', function (get, set){
+  defineProperty(obj, 'computed', computed(function () {
+    return { foo: 'bar' };
+  }));
+
+  defineProperty(obj, 'alias', alias('computed'));
+
+  var changed = 0;
+  addObserver(obj, 'alias.foo', function () {
+    changed++;
+  });
+
+  equal(undefined, cacheFor(obj, 'alias'),    'addObserver should not compute CP');
+
+  set(obj, 'computed.foo', 'baz');
 });
 
 testBoth('depending on a simple chain', function(get, set) {

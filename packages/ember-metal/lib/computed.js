@@ -133,7 +133,29 @@ ComputedPropertyPrototype._dependentKeys = undefined;
 ComputedPropertyPrototype._suspended = undefined;
 ComputedPropertyPrototype._meta = undefined;
 
-/**
+ComputedPropertyPrototype.lazyGet = function(obj, meta, key) {
+  if (this.isCacheable(meta)) {
+    return this.cacheGet(meta, key);
+  } else {
+    return this.get(obj, key);
+  }
+};
+
+
+ComputedPropertyPrototype.cacheGet = function(meta, key) {
+  var result = meta.cache[key];
+  if (result === UNDEFINED) {
+    return undefined;
+  } else {
+    return result;
+  }
+};
+
+ComputedPropertyPrototype.isCacheable = function(meta) {
+  return this._cacheable;
+};
+
+ /**
   Properties are cacheable by default. Computed property will automatically
   cache the return value of your function until one of the dependent keys changes.
 
@@ -503,11 +525,19 @@ function computed(func) {
 */
 function cacheFor(obj, key) {
   var meta = obj['__ember_meta__'];
-  var cache = meta && meta.cache;
-  var ret = cache && cache[key];
+  if (meta) {
+    var descs = meta.descs;
+    var desc = descs && descs[key];
+    if (desc) {
+      return desc.cacheGet(meta, key);
+    } else {
+      var cache = meta.cache;
+      var ret = cache && cache[key];
 
-  if (ret === UNDEFINED) { return undefined; }
-  return ret;
+      if (ret === UNDEFINED) { return undefined; }
+      return ret;
+    }
+  }
 }
 
 cacheFor.set = function(cache, key, value) {
