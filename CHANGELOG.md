@@ -2,7 +2,7 @@
 
 ### Ember 1.7.0-beta.4 (July 30, 2014)
 
-* [BUXFIX] link-to helper can be inserted in DOM when the router is not present.
+* [BUGFIX] link-to helper can be inserted in DOM when the router is not present.
 * [PERFORMANCE] Do not pass `arguments` around in a hot-path.
 * Remove Container.defaultContainer.
 * Polyfill contains for older browsers.
