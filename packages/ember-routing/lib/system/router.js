@@ -607,9 +607,6 @@ var defaultActionHandlers = {
         router.intermediateTransitionTo('application_error', error);
         return;
       }
-    } else {
-      // Don't fire an assertion if we found an error substate.
-      return;
     }
 
     logError(error, 'Error while processing route: ' + transition.targetName);
@@ -836,12 +833,7 @@ function listenForTransitionErrors(transition) {
 
     if (error.name === "UnrecognizedURLError") {
       Ember.assert("The URL '" + error.message + "' did not match any routes in your application");
-    } else if (error.name === 'TransitionAborted') {
-      // just ignore TransitionAborted here
-    } else {
-      logError(error);
     }
-
     return error;
   }, 'Ember: Process errors from Router');
 }
