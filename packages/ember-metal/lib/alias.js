@@ -73,3 +73,16 @@ function AliasedProperty_oneWaySet(obj, keyName, value) {
 // Backwards compatibility with Ember Data
 AliasedProperty.prototype._meta = undefined;
 AliasedProperty.prototype.meta = ComputedProperty.prototype.meta;
+
+AliasedProperty.prototype.isCacheable = function(meta) {
+  var desc =  meta.descs[this.altKey];
+  return desc && desc._cacheable;
+};
+
+AliasedProperty.prototype.cacheGet = function(meta, key) {
+  if (meta.cache[this.altKey] !== undefined) {
+    return meta.cache[this.altKey];
+  } else {
+    return undefined;
+  }
+};
