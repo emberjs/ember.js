@@ -132,8 +132,19 @@ var ComputedPropertyPrototype = ComputedProperty.prototype;
 ComputedPropertyPrototype._dependentKeys = undefined;
 ComputedPropertyPrototype._suspended = undefined;
 ComputedPropertyPrototype._meta = undefined;
+ComputedPropertyPrototype.cacheGet = function(meta, key) {
+  if (meta.cache[key] !== undefined) {
+    return meta.cache[key];
+  } else {
+    return undefined;
+  }
+};
 
-/**
+ComputedPropertyPrototype.isCacheable = function(meta) {
+  return this._cacheable;
+};
+
+ /**
   Properties are cacheable by default. Computed property will automatically
   cache the return value of your function until one of the dependent keys changes.
 
