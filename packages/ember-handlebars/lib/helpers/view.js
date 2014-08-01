@@ -335,7 +335,7 @@ export var ViewHelper = EmberObject.create({
   specify a path to a custom view class.
 
   ```handlebars
-  {{#view "MyApp.CustomView"}}
+  {{#view "custom"}}{{! will look up App.CustomView }}
     hello.
   {{/view}}
   ```
@@ -349,7 +349,7 @@ export var ViewHelper = EmberObject.create({
     innerViewClass: Ember.View.extend({
       classNames: ['a-custom-view-class-as-property']
     }),
-    template: Ember.Handlebars.compile('{{#view "view.innerViewClass"}} hi {{/view}}')
+    template: Ember.Handlebars.compile('{{#view view.innerViewClass}} hi {{/view}}')
   });
 
   MyApp.OuterView.create().appendTo('body');
@@ -372,8 +372,21 @@ export var ViewHelper = EmberObject.create({
   supplying a block. Attempts to use both a `templateName` option and supply a
   block will throw an error.
 
+  ```javascript
+  var App = Ember.Application.create();
+  App.WithTemplateDefinedView = Ember.View.extend({
+    templateName: 'defined-template'
+  });
+  ```
+
   ```handlebars
-  {{view "MyApp.ViewWithATemplateDefined"}}
+  {{! application.hbs }}
+  {{view 'with-template-defined'}}
+  ```
+
+  ```handlebars
+  {{! defined-template.hbs }}
+  Some content for the defined template view.
   ```
 
   ### `viewName` property

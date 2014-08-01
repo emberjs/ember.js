@@ -36,7 +36,8 @@ var alias = computed.alias;
   Given an empty `<body>` the following template:
 
   ```handlebars
-  {{#collection contentBinding="App.items"}}
+  {{! application.hbs }}
+  {{#collection content=model}}
     Hi {{view.content.name}}
   {{/collection}}
   ```
@@ -44,44 +45,45 @@ var alias = computed.alias;
   And the following application code
 
   ```javascript
-  App = Ember.Application.create()
-  App.items = [
-    Ember.Object.create({name: 'Dave'}),
-    Ember.Object.create({name: 'Mary'}),
-    Ember.Object.create({name: 'Sara'})
-  ]
+  App = Ember.Application.create();
+  App.ApplicationRoute = Ember.Route.extend({
+    model: function(){
+      return [{name: 'Yehuda'},{name: 'Tom'},{name: 'Peter'}];
+    }
+  });
   ```
 
-  Will result in the HTML structure below
+  The following HTML will result:
 
   ```html
   <div class="ember-view">
-    <div class="ember-view">Hi Dave</div>
-    <div class="ember-view">Hi Mary</div>
-    <div class="ember-view">Hi Sara</div>
+    <div class="ember-view">Hi Yehuda</div>
+    <div class="ember-view">Hi Tom</div>
+    <div class="ember-view">Hi Peter</div>
   </div>
   ```
 
-  ### Blockless use in a collection
+  ### Non-block version of collection
 
-  If you provide an `itemViewClass` option that has its own `template` you can
+  If you provide an `itemViewClass` option that has its own `template` you may
   omit the block.
 
   The following template:
 
   ```handlebars
-  {{collection contentBinding="App.items" itemViewClass="App.AnItemView"}}
+  {{! application.hbs }}
+  {{collection content=model itemViewClass="an-item"}}
   ```
 
   And application code
 
   ```javascript
   App = Ember.Application.create();
-  App.items = [
-    Ember.Object.create({name: 'Dave'}),
-    Ember.Object.create({name: 'Mary'}),
-    Ember.Object.create({name: 'Sara'})
-  ];
+  App.ApplicationRoute = Ember.Route.extend({
+    model: function(){
+      return [{name: 'Yehuda'},{name: 'Tom'},{name: 'Peter'}];
+    }
+  });
 
   App.AnItemView = Ember.View.extend({
     template: Ember.Handlebars.compile("Greetings {{view.content.name}}")
@@ -92,9 +94,9 @@ var alias = computed.alias;
 
   ```html
   <div class="ember-view">
-    <div class="ember-view">Greetings Dave</div>
-    <div class="ember-view">Greetings Mary</div>
-    <div class="ember-view">Greetings Sara</div>
+    <div class="ember-view">Greetings Yehuda</div>
+    <div class="ember-view">Greetings Tom</div>
+    <div class="ember-view">Greetings Peter</div>
   </div>
   ```
 
@@ -105,10 +107,12 @@ var alias = computed.alias;
   the helper by passing it as the first argument:
 
   ```handlebars
-  {{#collection App.MyCustomCollectionClass contentBinding="App.items"}}
+  {{#collection "my-custom-collection" content=model}}
     Hi {{view.content.name}}
   {{/collection}}
   ```
+
+  This example would look for the class `App.MyCustomCollection`.
 
   ### Forwarded `item.*`-named Options
 
@@ -118,7 +122,7 @@ var alias = computed.alias;
   item (note the camelcasing):
 
   ```handlebars
-  {{#collection contentBinding="App.items"
+  {{#collection content=model
                 itemTagName="p"
                 itemClassNames="greeting"}}
     Howdy {{view.content.name}}
@@ -129,9 +133,9 @@ var alias = computed.alias;
 
   ```html
   <div class="ember-view">
-    <p class="ember-view greeting">Howdy Dave</p>
-    <p class="ember-view greeting">Howdy Mary</p>
-    <p class="ember-view greeting">Howdy Sara</p>
+    <p class="ember-view greeting">Howdy Yehuda</p>
+    <p class="ember-view greeting">Howdy Tom</p>
+    <p class="ember-view greeting">Howdy Peter</p>
   </div>
   ```
 

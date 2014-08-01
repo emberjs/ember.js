@@ -260,131 +260,161 @@ GroupedEach.prototype = {
 };
 
 /**
-  The `{{#each}}` helper loops over elements in a collection, rendering its
-  block once for each item. It is an extension of the base Handlebars `{{#each}}`
-  helper:
+  The `{{#each}}` helper loops over elements in a collection. It is an extension
+  of the base Handlebars `{{#each}}` helper.
+
+  The default behavior of `{{#each}}` is to yield its inner block once for every
+  item in an array. Each yield will provide the item as the context of the block.
 
   ```javascript
-  Developers = [{name: 'Yehuda'},{name: 'Tom'}, {name: 'Paul'}];
+  var developers = [{name: 'Yehuda'},{name: 'Tom'}, {name: 'Paul'}];
   ```
 
   ```handlebars
-  {{#each Developers}}
+  {{#each developers}}
     {{name}}
+    {{! `this` is each developer }}
   {{/each}}
   ```
 
-  `{{each}}` supports an alternative syntax with element naming:
+  `{{#each}}` supports an alternative syntax with element naming. This preserves
+  context of the yielded block:
 
   ```handlebars
-  {{#each person in Developers}}
+  {{#each person in developers}}
     {{person.name}}
+    {{! `this` is whatever it was outside the #each }}
   {{/each}}
   ```
 
-  When looping over objects that do not have properties, `{{this}}` can be used
-  to render the object:
+  The same rules apply to arrays of primitives, but the items may need to be
+  references with `{{this}}`.
 
   ```javascript
-  DeveloperNames = ['Yehuda', 'Tom', 'Paul']
+  var developerNames = ['Yehuda', 'Tom', 'Paul']
   ```
 
   ```handlebars
-  {{#each DeveloperNames}}
+  {{#each developerNames}}
     {{this}}
   {{/each}}
   ```
+
   ### {{else}} condition
+
   `{{#each}}` can have a matching `{{else}}`. The contents of this block will render
   if the collection is empty.
 
   ```
-  {{#each person in Developers}}
+  {{#each person in developers}}
     {{person.name}}
   {{else}}
     <p>Sorry, nobody is available for this task.</p>
   {{/each}}
   ```
-  ### Specifying a View class for items
-  If you provide an `itemViewClass` option that references a view class
-  with its own `template` you can omit the block.
+
+  ### Specifying an alternative view for each item
+
+  `itemViewClass` can control which view will be used during the render of each
+  item's template.
 
   The following template:
 
   ```handlebars
-  {{#view App.MyView }}
-    {{each view.items itemViewClass="App.AnItemView"}}
-  {{/view}}
+  <ul>
+  {{#each developers itemViewClass="person"}}
+    {{name}}
+  {{/each}}
+  </ul>
   ```
 
-  And application code
+  Will use the following view for each item
 
   ```javascript
-  App = Ember.Application.create({
-    MyView: Ember.View.extend({
-      items: [
-        Ember.Object.create({name: 'Dave'}),
-        Ember.Object.create({name: 'Mary'}),
-        Ember.Object.create({name: 'Sara'})
-      ]
-    })
-  });
-
-  App.AnItemView = Ember.View.extend({
-    template: Ember.Handlebars.compile("Greetings {{name}}")
+  App.PersonView = Ember.View.extend({
+    tagName: 'li'
   });
   ```
 
-  Will result in the HTML structure below
+  Resulting in HTML output that looks like the following:
 
   ```html
-  <div class="ember-view">
-    <div class="ember-view">Greetings Dave</div>
-    <div class="ember-view">Greetings Mary</div>
-    <div class="ember-view">Greetings Sara</div>
-  </div>
+  <ul>
+    <li class="ember-view">Yehuda</li>
+    <li class="ember-view">Tom</li>
+    <li class="ember-view">Paul</li>
+  </ul>
   ```
 
-  If an `itemViewClass` is defined on the helper, and therefore the helper is not
-  being used as a block, an `emptyViewClass` can also be provided optionally.
-  The `emptyViewClass` will match the behavior of the `{{else}}` condition
-  described above. That is, the `emptyViewClass` will render if the collection
-  is empty.
-
-  ### Representing each item with a Controller.
-  By default the controller lookup within an `{{#each}}` block will be
-  the controller of the template where the `{{#each}}` was used. If each
-  item needs to be presented by a custom controller you can provide a
-  `itemController` option which references a controller by lookup name.
-  Each item in the loop will be wrapped in an instance of this controller
-  and the item itself will be set to the `model` property of that controller.
-
-  This is useful in cases where properties of model objects need transformation
-  or synthesis for display:
+  `itemViewClass` also enables a non-block form of `{{each}}`. The view
+  must {{#crossLink "Ember.View/toc_templates"}}provide its own template{{/crossLink}},
+  and then the block should be dropped. An example that outputs the same HTML
+  as the previous one:
 
   ```javascript
-  App.DeveloperController = Ember.ObjectController.extend({
+  App.PersonView = Ember.View.extend({
+    tagName: 'li',
+    template: '{{name}}'
+  });
+  ```
+
+  ```handlebars
+  <ul>
+    {{each developers itemViewClass="person"}}
+  </ul>
+  ```
+
+  ### Specifying an alternative view for no items (else)
+
+  The `emptyViewClass` option provides the same flexibility to the `{{else}}`
+  case of the each helper.
+
+  ```javascript
+  App.NoPeopleView = Ember.View.extend({
+    tagName: 'li',
+    template: 'No person is available, sorry'
+  });
+  ```
+
+  ```handlebars
+  <ul>
+  {{#each developers emptyViewClass="no-people"}}
+    <li>{{name}}</li>
+  {{/each}}
+  </ul>
+  ```
+
+  ### Wrapping each item in a controller
+
+  Controllers in Ember manage state and decorate data. In many cases,
+  providing a controller for each item in a list can be useful.
+  Specifically, an {{#crossLink "Ember.ObjectController"}}Ember.ObjectController{{/crossLink}}
+  should probably be used. Item controllers are passed the item they
+  will present as a `model` property, and an object controller will
+  proxy property lookups to `model` for us.
+
+  This allows state and decoration to be added to the controller
+  while any other property lookups are delegated to the model. An example:
+
+  ```javascript
+  App.RecruitController = Ember.ObjectController.extend({
     isAvailableForHire: function() {
-      return !this.get('model.isEmployed') && this.get('model.isSeekingWork');
+      return !this.get('isEmployed') && this.get('isSeekingWork');
     }.property('isEmployed', 'isSeekingWork')
   })
   ```
 
   ```handlebars
-  {{#each person in developers itemController="developer"}}
+  {{#each person in developers itemController="recruit"}}
     {{person.name}} {{#if person.isAvailableForHire}}Hire me!{{/if}}
   {{/each}}
   ```
 
-  Each itemController will receive a reference to the current controller as
-  a `parentController` property.
-
   ### (Experimental) Grouped Each
 
-  When used in conjunction with the experimental [group helper](https://github.com/emberjs/group-helper),
-  you can inform Handlebars to re-render an entire group of items instead of
-  re-rendering them one at a time (in the event that they are changed en masse
-  or an item is added/removed).
+  If a list's membership often changes, but properties of items in that
+  group rarely change, a significant improvement in template rendering
+  time can be achieved by using the experimental [group helper](https://github.com/emberjs/group-helper).
 
   ```handlebars
   {{#group}}
@@ -394,33 +424,32 @@ GroupedEach.prototype = {
   {{/group}}
   ```
 
-  This can be faster than the normal way that Handlebars re-renders items
-  in some cases.
+  When the membership of `people` changes, or when any property changes, the entire
+  `{{#group}}` block will be re-rendered.
 
-  If for some reason you have a group with more than one `#each`, you can make
-  one of the collections be updated in normal (non-grouped) fashion by setting
-  the option `groupedRows=true` (counter-intuitive, I know).
-
-  For example,
+  An `{{#each}}` inside the `{{#group}}` helper can opt-out of the special group
+  behavior by passing the `groupedRows` option. For example:
 
   ```handlebars
-  {{dealershipName}}
-
   {{#group}}
     {{#each dealers}}
+      {{! uses group's special behavior }}
       {{firstName}} {{lastName}}
     {{/each}}
 
     {{#each car in cars groupedRows=true}}
+      {{! does not use group's special behavior }}
       {{car.make}} {{car.model}} {{car.color}}
     {{/each}}
   {{/group}}
   ```
-  Any change to `dealershipName` or the `dealers` collection will cause the
-  entire group to be re-rendered. However, changes to the `cars` collection
-  will be re-rendered individually (as normal).
 
-  Note that `group` behavior is also disabled by specifying an `itemViewClass`.
+  Any change to the `dealers` collection will cause the entire group to be re-rendered.
+  Changes to the `cars` collection will be re-rendered individually, as they are with
+  normal `{{#each}}` usage.
+
+  `{{#group}}` is implemented with an `itemViewClass`, so specifying an `itemViewClass`
+  on an `{{#each}}` will also disable the special re-rendering behavior.
 
   @method each
   @for Ember.Handlebars.helpers
@@ -428,6 +457,7 @@ GroupedEach.prototype = {
   @param [path] {String} path
   @param [options] {Object} Handlebars key/value pairs of options
   @param [options.itemViewClass] {String} a path to a view class used for each item
+  @param [options.emptyViewClass] {String} a path to a view class used for each item
   @param [options.itemController] {String} name of a controller to be created for each item
   @param [options.groupedRows] {boolean} enable normal item-by-item rendering when inside a `#group` helper
 */

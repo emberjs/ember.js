@@ -600,8 +600,9 @@ var EMPTY_ARRAY = [];
   on the descendent.
 
   ```javascript
-  OuterView = Ember.View.extend({
-    template: Ember.Handlebars.compile("outer {{#view InnerView}}inner{{/view}} outer"),
+  var App = Ember.Application.create();
+  App.OuterView = Ember.View.extend({
+    template: Ember.Handlebars.compile("outer {{#view 'inner'}}inner{{/view}} outer"),
     eventManager: Ember.Object.create({
       mouseEnter: function(event, view) {
         // view might be instance of either
@@ -611,7 +612,7 @@ var EMPTY_ARRAY = [];
     })
   });
 
-  InnerView = Ember.View.extend({
+  App.InnerView = Ember.View.extend({
     click: function(event) {
       // will be called if rendered inside
       // an OuterView because OuterView's
