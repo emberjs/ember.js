@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
-var mkdir = require('fs').mkdir;
 var rimraf = require('rimraf').sync;
 var chalk = require('chalk');
 var broccoli = require('broccoli');
-var copyRecursivelySync = require('broccoli-kitchen-sink-helpers').copyRecursivelySync;
+var copyDereferenceSync = require('copy-dereference').sync;
 
 process.env.BROCCOLI_ENV = process.env.BROCCOLI_ENV || 'production';
 var tree = broccoli.loadBrocfile();
@@ -17,8 +16,7 @@ console.log('Building HTMLBars "' + process.env.BROCCOLI_ENV + '" to "' + buildP
 builder.build()
   .then(function(results) {
     rimraf(buildPath);
-    mkdir(buildPath);
-    copyRecursivelySync(results.directory, buildPath);
+    copyDereferenceSync(results.directory, buildPath);
   })
   .then(function() {
     console.log(chalk.green('Built project successfully. Stored in "' + buildPath + '/".\n'));
