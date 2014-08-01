@@ -1,10 +1,16 @@
-import {typeOf} from "ember-metal/utils";
-import EmberObject from "ember-runtime/system/object";
-import compare from "ember-runtime/compare";
+import {typeOf} from 'ember-metal/utils';
+import EmberObject from 'ember-runtime/system/object';
+import compare from 'ember-runtime/compare';
+import Comparable from 'ember-runtime/mixins/comparable';
 
 var data = [];
+var Comp = EmberObject.extend(Comparable, {
+  compare: function () {
+    return this.get('val');
+  }
+});
 
-QUnit.module("Ember.compare()", {
+QUnit.module('Ember.compare()', {
   setup: function() {
     data[0]  = null;
     data[1]  = false;
@@ -25,7 +31,7 @@ QUnit.module("Ember.compare()", {
   }
 });
 
-test("ordering should work", function() {
+test('ordering should work', function() {
   var suspect, comparable, failureMessage,
       suspectIndex, comparableIndex;
 
@@ -44,4 +50,18 @@ test("ordering should work", function() {
       equal(compare(suspect, comparable), -1, failureMessage);
     }
   }
+});
+
+test('comparables should return values in the range of -1, 0, 1', function() {
+  var negOne = Comp.create({ val: -1 });
+  var zero = Comp.create({ val: 0 });
+  var one = Comp.create({ val: 1 });
+
+  equal(compare('a', negOne), 1, 'Second item comparable - Should return valid range -1, 0, 1');
+  equal(compare('b', zero), 0, 'Second item comparable - Should return valid range -1, 0, 1');
+  equal(compare('c', one), -1, 'Second item comparable - Should return valid range -1, 0, 1');
+
+  equal(compare(negOne, 'a'), -1, 'First itam comparable - Should return valid range -1, 0, 1');
+  equal(compare(zero, 'b'), 0, 'First itam comparable - Should return valid range -1, 0, 1');
+  equal(compare(one, 'c'), 1, 'First itam comparable - Should return valid range -1, 0, 1');
 });
