@@ -36,6 +36,24 @@ import {
 } from "ember-metal/events";
 import { isWatching } from "ember-metal/watching";
 
+function arrayObserversHelper(obj, target, opts, operation, notify) {
+  var willChange = (opts && opts.willChange) || 'arrayWillChange';
+  var didChange  = (opts && opts.didChange) || 'arrayDidChange';
+  var hasObservers = get(obj, 'hasArrayObservers');
+
+  if (hasObservers === notify) {
+    propertyWillChange(obj, 'hasArrayObservers');
+  }
+
+  operation(obj, '@array:before', target, willChange);
+  operation(obj, '@array:change', target, didChange);
+
+  if (hasObservers === notify) {
+    propertyDidChange(obj, 'hasArrayObservers');
+  }
+  return obj;
+}
+
 // ..........................................................
 // ARRAY
 //
@@ -108,7 +126,7 @@ export default Mixin.create(Enumerable, {
     @return {*} item at index or undefined
   */
   objectAt: function(idx) {
-    if ((idx < 0) || (idx >= get(this, 'length'))) return undefined;
+    if (idx < 0 || idx >= get(this, 'length')) return undefined;
     return get(this, idx);
   },
 
@@ -147,7 +165,7 @@ export default Mixin.create(Enumerable, {
   */
   '[]': computed(function(key, value) {
     if (value !== undefined) this.replace(0, get(this, 'length'), value) ;
-    return this ;
+    return this;
   }),
 
   firstObject: computed(function() {
@@ -290,16 +308,9 @@ export default Mixin.create(Enumerable, {
       `willChange` and `didChange` option.
     @return {Ember.Array} receiver
   */
-  addArrayObserver: function(target, opts) {
-    var willChange = (opts && opts.willChange) || 'arrayWillChange',
-        didChange  = (opts && opts.didChange) || 'arrayDidChange';
 
-    var hasObservers = get(this, 'hasArrayObservers');
-    if (!hasObservers) propertyWillChange(this, 'hasArrayObservers');
-    addListener(this, '@array:before', target, willChange);
-    addListener(this, '@array:change', target, didChange);
-    if (!hasObservers) propertyDidChange(this, 'hasArrayObservers');
-    return this;
+  addArrayObserver: function(target, opts) {
+    return arrayObserversHelper(this, target, opts, addListener, false);
   },
 
   /**
@@ -314,15 +325,7 @@ export default Mixin.create(Enumerable, {
     @return {Ember.Array} receiver
   */
   removeArrayObserver: function(target, opts) {
-    var willChange = (opts && opts.willChange) || 'arrayWillChange',
-        didChange  = (opts && opts.didChange) || 'arrayDidChange';
-
-    var hasObservers = get(this, 'hasArrayObservers');
-    if (hasObservers) propertyWillChange(this, 'hasArrayObservers');
-    removeListener(this, '@array:before', target, willChange);
-    removeListener(this, '@array:change', target, didChange);
-    if (hasObservers) propertyDidChange(this, 'hasArrayObservers');
-    return this;
+    return arrayObserversHelper(this, target, opts, removeListener, true);
   },
 
   /**
