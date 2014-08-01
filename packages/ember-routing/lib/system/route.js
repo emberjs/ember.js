@@ -15,7 +15,7 @@ import {
   typeOf
 } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
-import keys from "ember-runtime/keys";
+import keys from "ember-metal/keys";
 import copy from "ember-runtime/copy";
 import {
   classify,

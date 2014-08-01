@@ -1,12 +1,15 @@
 import Ember from "ember-metal/core";
 import run from "ember-metal/run_loop";
-import {platform} from "ember-metal/platform";
-import {observer} from "ember-metal/mixin";
-import {set} from "ember-metal/property_set";
-import {bind} from "ember-metal/binding";
-import {beginPropertyChanges, endPropertyChanges} from "ember-metal/property_events";
-import objectKeys from "ember-runtime/keys";
-import {testBoth} from 'ember-runtime/tests/props_helper';
+import { platform } from "ember-metal/platform";
+import { observer } from "ember-metal/mixin";
+import { set } from "ember-metal/property_set";
+import { bind } from "ember-metal/binding";
+import {
+  beginPropertyChanges,
+  endPropertyChanges
+} from "ember-metal/property_events";
+import objectKeys from "ember-metal/keys";
+import { testBoth } from 'ember-runtime/tests/props_helper';
 import EmberObject from 'ember-runtime/system/object';
 
 QUnit.module('ember-runtime/system/object/destroy_test');

@@ -8,7 +8,7 @@ import { computed } from "ember-metal/computed";
 import { onLoad } from "ember-runtime/system/lazy_load";
 import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
-import keys from "ember-runtime/keys";
+import keys from "ember-metal/keys";
 import { isSimpleClick } from "ember-views/system/utils";
 import EmberComponent from "ember-views/views/component";
 import EmberHandlebars from "ember-handlebars";

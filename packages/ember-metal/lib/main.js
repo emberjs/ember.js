@@ -56,34 +56,103 @@ import {
 
 import ObserverSet from "ember-metal/observer_set";
 
-import {propertyWillChange, propertyDidChange, overrideChains,
-beginPropertyChanges, endPropertyChanges, changeProperties} from "ember-metal/property_events";
+import {
+  propertyWillChange,
+  propertyDidChange,
+  overrideChains,
+  beginPropertyChanges,
+  endPropertyChanges,
+  changeProperties
+} from "ember-metal/property_events";
 
-import {Descriptor, defineProperty} from "ember-metal/properties";
-import {set, trySet} from "ember-metal/property_set";
+import {
+  Descriptor,
+  defineProperty
+} from "ember-metal/properties";
+import {
+  set,
+  trySet
+} from "ember-metal/property_set";
 
-import {OrderedSet, Map, MapWithDefault} from "ember-metal/map";
+import {
+  OrderedSet,
+  Map,
+  MapWithDefault
+} from "ember-metal/map";
 import getProperties from "ember-metal/get_properties";
 import setProperties from "ember-metal/set_properties";
-import {watchKey, unwatchKey} from "ember-metal/watch_key";
-import {flushPendingChains, removeChainWatcher, ChainNode, finishChains} from "ember-metal/chains";
-import {watchPath, unwatchPath} from "ember-metal/watch_path";
-import {watch, isWatching, unwatch, rewatch, destroy} from "ember-metal/watching";
+import {
+  watchKey,
+  unwatchKey
+} from "ember-metal/watch_key";
+import {
+  flushPendingChains,
+  removeChainWatcher,
+  ChainNode,
+  finishChains
+} from "ember-metal/chains";
+import {
+  watchPath,
+  unwatchPath
+} from "ember-metal/watch_path";
+import {
+  watch,
+  isWatching,
+  unwatch,
+  rewatch,
+  destroy } from "ember-metal/watching";
 import expandProperties from "ember-metal/expand_properties";
-import {ComputedProperty, computed, cacheFor} from "ember-metal/computed";
+import {
+  ComputedProperty,
+  computed,
+  cacheFor
+} from "ember-metal/computed";
 
 // side effect of defining the computed.* macros
 import "ember-metal/computed_macros";
 
-import {addObserver, observersFor, removeObserver, addBeforeObserver, _suspendBeforeObserver, _suspendObserver, _suspendBeforeObservers, _suspendObservers, beforeObserversFor, removeBeforeObserver} from "ember-metal/observer";
-import {IS_BINDING, mixin, Mixin, required, aliasMethod, observer, immediateObserver, beforeObserver} from "ember-metal/mixin";
-import {Binding, isGlobalPath, bind, oneWay} from "ember-metal/binding";
+import {
+  addObserver,
+  observersFor,
+  removeObserver,
+  addBeforeObserver,
+  _suspendBeforeObserver,
+  _suspendObserver,
+  _suspendBeforeObservers,
+  _suspendObservers,
+  beforeObserversFor,
+  removeBeforeObserver
+} from "ember-metal/observer";
+import {
+  IS_BINDING,
+  mixin,
+  Mixin,
+  required,
+  aliasMethod,
+  observer,
+  immediateObserver,
+  beforeObserver
+} from "ember-metal/mixin";
+import {
+  Binding,
+  isGlobalPath,
+  bind,
+  oneWay
+} from "ember-metal/binding";
 import run from "ember-metal/run_loop";
 import libraries from "ember-metal/libraries";
-import {isNone, none} from 'ember-metal/is_none';
-import {isEmpty, empty} from 'ember-metal/is_empty';
+import {
+  isNone,
+  none
+} from 'ember-metal/is_none';
+import {
+  isEmpty,
+  empty
+} from 'ember-metal/is_empty';
 import isBlank from 'ember-metal/is_blank';
 import isPresent from 'ember-metal/is_present';
+import keys from 'ember-metal/keys';
+
 // END IMPORTS
 
 // BEGIN EXPORTS
@@ -101,6 +170,7 @@ Ember._Cache = Cache;
 Ember.generateGuid    = generateGuid;
 Ember.GUID_KEY        = GUID_KEY;
 Ember.create          = create;
+Ember.keys            = keys;
 Ember.platform        = platform;
 
 var EmberArrayPolyfills = Ember.ArrayPolyfills = {};
