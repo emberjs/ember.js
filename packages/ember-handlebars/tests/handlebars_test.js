@@ -1493,20 +1493,24 @@ test("should be able to bind to view attributes with {{bind-attr}}", function() 
   equal(view.$('img').attr('alt'), "Updated", "updates value");
 });
 
-test("should be able to bind to globals with {{bind-attr}}", function() {
+test("should be able to bind to globals with {{bind-attr}} (DEPRECATED)", function() {
   TemplateTests.set('value', 'Test');
 
   view = EmberView.create({
     template: EmberHandlebars.compile('<img src="test.jpg" {{bind-attr alt="TemplateTests.value"}}>')
   });
 
-  appendView();
+  expectDeprecation(function(){
+    appendView();
+  }, /Global lookup of TemplateTests.value from a Handlebars template is deprecated/);
 
   equal(view.$('img').attr('alt'), "Test", "renders initial value");
 
-  run(function() {
-    TemplateTests.set('value', 'Updated');
-  });
+  expectDeprecation(function(){
+    run(function() {
+      TemplateTests.set('value', 'Updated');
+    });
+  }, /Global lookup of TemplateTests.value from a Handlebars template is deprecated/);
 
   equal(view.$('img').attr('alt'), "Updated", "updates value");
 });
@@ -1776,20 +1780,24 @@ test("should be able to add multiple classes using {{bind-attr class}}", functio
   ok(view.$('div').hasClass('disabled'), "falsy class in ternary classname definition is rendered");
 });
 
-test("should be able to bind classes to globals with {{bind-attr class}}", function() {
+test("should be able to bind classes to globals with {{bind-attr class}} (DEPRECATED)", function() {
   TemplateTests.set('isOpen', true);
 
   view = EmberView.create({
     template: EmberHandlebars.compile('<img src="test.jpg" {{bind-attr class="TemplateTests.isOpen"}}>')
   });
 
-  appendView();
+  expectDeprecation(function(){
+    appendView();
+  }, /Global lookup of TemplateTests.isOpen from a Handlebars template is deprecated/);
 
   ok(view.$('img').hasClass('is-open'), "sets classname to the dasherized value of the global property");
 
-  run(function() {
-    TemplateTests.set('isOpen', false);
-  });
+  expectDeprecation(function(){
+    run(function() {
+      TemplateTests.set('isOpen', false);
+    });
+  }, /Global lookup of TemplateTests.isOpen from a Handlebars template is deprecated/);
 
   ok(!view.$('img').hasClass('is-open'), "removes the classname when the global property has changed");
 });

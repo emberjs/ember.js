@@ -28,12 +28,14 @@ test("ID parameters should be looked up on the context", function() {
   deepEqual(params, ["Mr", "Tom", "Dale"]);
 });
 
-test("ID parameters that start with capital letters fall back to Ember.lookup as their context", function() {
+test("ID parameters that start with capital letters fall back to Ember.lookup as their context (DEPRECATED)", function() {
   Ember.lookup.Global = "I'm going global, what you ain't a local?";
 
-  var context = {};
+  var context = {}, params;
 
-  var params = Ember.Handlebars.resolveParams(context, ["Global"], { types: ["ID"], silenceGlobalDeprecation: true });
+  expectDeprecation(function(){
+    params = Ember.Handlebars.resolveParams(context, ["Global"], { types: ["ID"] });
+  }, /Global lookup of Global from a Handlebars template is deprecated./);
   deepEqual(params, [Ember.lookup.Global]);
 });
 

@@ -147,9 +147,11 @@ QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
 test("it should support #with Foo.bar as qux [DEPRECATED]", function() {
   equal(view.$().text(), "baz", "should be properly scoped");
 
-  run(function() {
-    set(lookup.Foo, 'bar', 'updated');
-  });
+  expectDeprecation(function() {
+    run(function() {
+      set(lookup.Foo, 'bar', 'updated');
+    });
+  }, /Global lookup of Foo.bar from a Handlebars template is deprecated/);
 
   equal(view.$().text(), "updated", "should update");
 });
