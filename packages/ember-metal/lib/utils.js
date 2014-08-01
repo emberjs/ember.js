@@ -82,8 +82,9 @@ var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
   @return {String} interned version of the provided string
 */
 function intern(string) {
-  "use strict";
-  return new Function('return "' + string + '"')();
+  var obj = Object.create(null);
+  obj[string] = true;
+  return Object.keys(obj)[0];
 }
 
 /**
