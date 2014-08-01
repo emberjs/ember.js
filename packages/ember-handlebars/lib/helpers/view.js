@@ -18,7 +18,8 @@ import { isGlobalPath } from "ember-metal/binding";
 import merge from "ember-metal/merge";
 import {
   normalizePath,
-  handlebarsGet
+  handlebarsGet,
+  handlebarsGetView
 } from "ember-handlebars/ext";
 import EmberString from "ember-runtime/system/string";
 
@@ -48,7 +49,6 @@ function makeBindings(thisContext, options) {
 
   if (hash.hasOwnProperty('idBinding')) {
     // id can't be bound, so just perform one-time lookup.
-    options.silenceGlobalDeprecation = true;
     hash.id = handlebarsGet(thisContext, hash.idBinding, options);
     hashType.id = 'STRING';
     delete hash.idBinding;
@@ -169,38 +169,13 @@ export var ViewHelper = EmberObject.create({
 
     makeBindings(thisContext, options);
 
-    if ('string' === typeof path) {
-      var lookup;
-      // TODO: this is a lame conditional, this should likely change
-      // but something along these lines will likely need to be added
-      // as deprecation warnings
-      //
-      if (options.types[0] === 'STRING' && LOWERCASE_A_Z.test(path) && !VIEW_PREFIX.test(path)) {
-        lookup = path;
-      } else {
-        options.silenceGlobalDeprecation = true;
-        newView = handlebarsGet(thisContext, path, options);
-        if (typeof newView === 'string') {
-          lookup = newView;
-        }
-      }
-
-      if (lookup) {
-        Ember.assert("View requires a container", !!data.view.container);
-        newView = data.view.container.lookupFactory('view:' + lookup);
-      }
-
-      Ember.assert("Unable to find view at path '" + path + "'", !!newView);
-    } else {
-      newView = path;
-    }
-
-    Ember.assert(EmberString.fmt('You must pass a view to the #view helper, not %@ (%@)', [path, newView]), View.detect(newView) || View.detectInstance(newView));
+    var container = this.container || (data && data.view && data.view.container);
+    newView = handlebarsGetView(thisContext, path, container, options.data);
 
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;
     viewOptions.templateData = data;
-    var newViewProto = newView.proto ? newView.proto() : newView;
+    var newViewProto = newView.proto();
 
     if (fn) {
       Ember.assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !get(newViewProto, 'templateName'));
@@ -210,6 +185,40 @@ export var ViewHelper = EmberObject.create({
     // We only want to override the `_context` computed property if there is
     // no specified controller. See View#_context for more information.
     if (!newViewProto.controller && !newViewProto.controllerBinding && !viewOptions.controller && !viewOptions.controllerBinding) {
+      viewOptions._context = thisContext;
+    }
+
+    // for instrumentation
+    if (options.helperName) {
+      viewOptions.helperName = options.helperName;
+    }
+
+    currentView.appendChild(newView, viewOptions);
+  },
+
+  instanceHelper: function(thisContext, newView, options) {
+    var data = options.data,
+        fn = options.fn;
+
+    makeBindings(thisContext, options);
+
+    Ember.assert(
+      'Only a instance of a view may be passed to the ViewHelper.instanceHelper',
+      View.detectInstance(newView)
+    );
+
+    var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
+    var currentView = data.view;
+    viewOptions.templateData = data;
+
+    if (fn) {
+      Ember.assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !get(newView, 'templateName'));
+      viewOptions.template = fn;
+    }
+
+    // We only want to override the `_context` computed property if there is
+    // no specified controller. See View#_context for more information.
+    if (!newView.controller && !newView.controllerBinding && !viewOptions.controller && !viewOptions.controllerBinding) {
       viewOptions._context = thisContext;
     }
 

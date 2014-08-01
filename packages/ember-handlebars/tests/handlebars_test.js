@@ -1027,17 +1027,44 @@ test("Collection views that specify an example view class have their children be
   });
 });
 
-test("itemViewClass works in the #collection helper", function() {
-  TemplateTests.ExampleController = ArrayProxy.create({
-    content: A(['alpha'])
-  });
-
+test("itemViewClass works in the #collection helper with a global (DEPRECATED)", function() {
   TemplateTests.ExampleItemView = EmberView.extend({
     isAlsoCustom: true
   });
 
   var parentView = EmberView.create({
-    template: EmberHandlebars.compile('{{#collection contentBinding="TemplateTests.ExampleController" itemViewClass="TemplateTests.ExampleItemView"}}beta{{/collection}}')
+    exampleController: ArrayProxy.create({
+      content: A(['alpha'])
+    }),
+    template: EmberHandlebars.compile('{{#collection content=view.exampleController itemViewClass="TemplateTests.ExampleItemView"}}beta{{/collection}}')
+  });
+
+  expectDeprecation(function(){
+    run(parentView, 'append');
+  }, /Resolved the view "TemplateTests.ExampleItemView" on the global context/);
+
+  ok(firstGrandchild(parentView).isAlsoCustom, "uses the example view class specified in the #collection helper");
+
+  run(function() {
+    parentView.destroy();
+  });
+});
+
+test("itemViewClass works in the #collection helper relatively", function() {
+  TemplateTests.ExampleItemView = EmberView.extend({
+    isAlsoCustom: true
+  });
+
+  TemplateTests.CollectionView = CollectionView.extend({
+    possibleItemView: TemplateTests.ExampleItemView
+  });
+
+  var parentView = EmberView.create({
+    collectionView: TemplateTests.CollectionView,
+    exampleController: ArrayProxy.create({
+      content: A(['alpha'])
+    }),
+    template: EmberHandlebars.compile('{{#collection view.collectionView content=view.exampleController itemViewClass="possibleItemView"}}beta{{/collection}}')
   });
 
   run(function() {
@@ -1051,21 +1078,22 @@ test("itemViewClass works in the #collection helper", function() {
   });
 });
 
-test("itemViewClass works in the #collection helper relatively", function() {
-  TemplateTests.ExampleController = ArrayProxy.create({
-    content: A(['alpha'])
-  });
-
-  TemplateTests.ExampleItemView = EmberView.extend({
+test("itemViewClass works in the #collection via container", function() {
+  container.register('view:example-item', EmberView.extend({
     isAlsoCustom: true
-  });
+  }));
 
   TemplateTests.CollectionView = CollectionView.extend({
     possibleItemView: TemplateTests.ExampleItemView
   });
 
   var parentView = EmberView.create({
-    template: EmberHandlebars.compile('{{#collection TemplateTests.CollectionView contentBinding="TemplateTests.ExampleController" itemViewClass="possibleItemView"}}beta{{/collection}}')
+    container: container,
+    collectionView: TemplateTests.CollectionView,
+    exampleController: ArrayProxy.create({
+      content: A(['alpha'])
+    }),
+    template: EmberHandlebars.compile('{{#collection view.collectionView content=view.exampleController itemViewClass="example-item"}}beta{{/collection}}')
   });
 
   run(function() {

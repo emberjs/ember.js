@@ -18,6 +18,9 @@ import {
   observer,
   beforeObserver
 } from "ember-metal/mixin";
+import {
+  handlebarsGetView
+} from "ember-handlebars/ext";
 import EmberArray from "ember-runtime/mixins/array";
 
 /**
@@ -345,14 +348,7 @@ var CollectionView = ContainerView.extend({
 
     if (len) {
       itemViewClass = get(this, 'itemViewClass');
-
-      if ('string' === typeof itemViewClass && isGlobalPath(itemViewClass)) {
-        itemViewClass = get(itemViewClass) || itemViewClass;
-      }
-
-      Ember.assert(fmt("itemViewClass must be a subclass of Ember.View, not %@",
-                       [itemViewClass]),
-                       'string' === typeof itemViewClass || View.detect(itemViewClass));
+      itemViewClass = handlebarsGetView(content, itemViewClass, this.container);
 
       for (idx = start; idx < start+added; idx++) {
         item = content.objectAt(idx);

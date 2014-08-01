@@ -8,7 +8,7 @@ import {
   default as generateController
 } from "ember-routing/system/generate_controller";
 import { handlebarsGet } from "ember-handlebars/ext";
-import { viewHelper } from "ember-handlebars/helpers/view";
+import { ViewHelper } from "ember-handlebars/helpers/view";
 
 import "ember-handlebars/helpers/view";
 
@@ -172,5 +172,5 @@ export default function renderHelper(name, contextString, options) {
 
   options.helperName = options.helperName || ('render "' + name + '"');
 
-  viewHelper.call(this, view, options);
+  ViewHelper.instanceHelper(this, view, options);
 }

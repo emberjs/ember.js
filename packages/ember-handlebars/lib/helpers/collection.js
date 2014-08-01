@@ -14,7 +14,7 @@ var helpers = EmberHandlebars.helpers;
 
 import { fmt } from "ember-runtime/system/string";
 import { get } from "ember-metal/property_get";
-import { handlebarsGet } from "ember-handlebars/ext";
+import { handlebarsGet, handlebarsGetView } from "ember-handlebars/ext";
 import { ViewHelper } from "ember-handlebars/helpers/view";
 import { computed } from "ember-metal/computed";
 import CollectionView from "ember-views/views/collection_view";
@@ -154,21 +154,19 @@ function collectionHelper(path, options) {
     Ember.assert("You cannot pass more than one argument to the collection helper", arguments.length === 2);
   }
 
-  var fn = options.fn;
-  var data = options.data;
-  var inverse = options.inverse;
-  var view = options.data.view;
+  var fn        = options.fn,
+      data      = options.data,
+      inverse   = options.inverse,
+      view      = options.data.view,
+      // This should be deterministic, and should probably come from a
+      // parent view and not the controller.
+      container = (view.controller && view.controller.container ? view.controller.container : view.container);
 
-
-  var controller, container;
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
   var collectionClass;
   if (path) {
-    controller = data.keywords.controller;
-    container = controller && controller.container;
-    options.silenceGlobalDeprecation = true;
-    collectionClass = handlebarsGet(this, path, options) || container.lookupFactory('view:' + path);
+    collectionClass = handlebarsGetView(this, path, container, options.data);
     Ember.assert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
   }
   else {
@@ -184,23 +182,11 @@ function collectionHelper(path, options) {
   var itemViewClass;
 
   if (hash.itemView) {
-    controller = data.keywords.controller;
-    Ember.assert('You specified an itemView, but the current context has no ' +
-                 'container to look the itemView up in. This probably means ' +
-                 'that you created a view manually, instead of through the ' +
-                 'container. Instead, use container.lookup("view:viewName"), ' +
-                 'which will properly instantiate your view.',
-                 controller && controller.container);
-    container = controller.container;
-    itemViewClass = container.lookupFactory('view:' + hash.itemView);
-    Ember.assert('You specified the itemView ' + hash.itemView + ", but it was " +
-                 "not found at " + container.describe("view:" + hash.itemView) +
-                 " (and it was not registered in the container)", !!itemViewClass);
+    itemViewClass = handlebarsGetView(this, hash.itemView, container, options.data);
   } else if (hash.itemViewClass) {
-    options.silenceGlobalDeprecation = true;
-    itemViewClass = handlebarsGet(collectionPrototype, hash.itemViewClass, options);
+    itemViewClass = handlebarsGetView(collectionPrototype, hash.itemViewClass, container, options.data);
   } else {
-    itemViewClass = collectionPrototype.itemViewClass;
+    itemViewClass = handlebarsGetView(collectionPrototype, collectionPrototype.itemViewClass, container, options.data);
   }
 
   Ember.assert(fmt("%@ #collection: Could not find itemViewClass %@", [data.view, itemViewClass]), !!itemViewClass);
@@ -237,8 +223,7 @@ function collectionHelper(path, options) {
           tagName: itemHash.tagName
     });
   } else if (hash.emptyViewClass) {
-    options.silenceGlobalDeprecation = true;
-    emptyViewClass = handlebarsGet(this, hash.emptyViewClass, options);
+    emptyViewClass = handlebarsGetView(this, hash.emptyViewClass, container, options.data);
   }
   if (emptyViewClass) { hash.emptyView = emptyViewClass; }
 
