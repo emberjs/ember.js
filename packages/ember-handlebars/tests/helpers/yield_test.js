@@ -98,7 +98,7 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
 
 test("templates should yield to block, when the yield is embedded in a hierarchy of non-virtual views", function() {
   TemplateTests.NestingView = EmberView.extend({
-    layout: EmberHandlebars.compile('{{#view Ember.View tagName="div" classNames="nesting"}}{{yield}}{{/view}}')
+    layout: EmberHandlebars.compile('{{#view tagName="div" classNames="nesting"}}{{yield}}{{/view}}')
   });
 
   view = EmberView.create({
@@ -114,7 +114,7 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
 
 test("block should not be required", function() {
   TemplateTests.YieldingView = EmberView.extend({
-    layout: EmberHandlebars.compile('{{#view Ember.View tagName="div" classNames="yielding"}}{{yield}}{{/view}}')
+    layout: EmberHandlebars.compile('{{#view tagName="div" classNames="yielding"}}{{yield}}{{/view}}')
   });
 
   view = EmberView.create({
