@@ -19,6 +19,7 @@ import Controller from "ember-runtime/controllers/controller";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
+import SelectView from "ember-handlebars/controls/select";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 //import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
 import jQuery from "ember-views/system/jquery";
@@ -958,6 +959,9 @@ Application.reopenClass({
     container.register('controller:basic', Controller, { instantiate: false });
     container.register('controller:object', ObjectController, { instantiate: false });
     container.register('controller:array', ArrayController, { instantiate: false });
+
+    container.register('view:select', SelectView);
+
     container.register('route:basic', Route, { instantiate: false });
     container.register('event_dispatcher:main', EventDispatcher);
 
