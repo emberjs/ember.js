@@ -266,8 +266,9 @@ test("#each with groupedRows=true behaves like a normal bound #each", function()
 });
 
 test("#each with itemViewClass behaves like a normal bound #each", function() {
+  container.register('view:nothing-special-view', Ember.View);
   createGroupedView(
-    '{{#each people itemViewClass="Ember.View"}}{{name}}{{/each}}',
+    '{{#each people itemViewClass="nothing-special-view"}}{{name}}{{/each}}',
     {people: A([{name: 'Erik'}, {name: 'Peter'}])}
   );
   appendView();

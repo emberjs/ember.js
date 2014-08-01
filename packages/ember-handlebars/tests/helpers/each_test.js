@@ -17,7 +17,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
 var people, view, container;
-var template, templateMyView;
+var template, templateMyView, MyView;
 
 function templateFor(template) {
   return EmberHandlebars.compile(template);
@@ -44,8 +44,8 @@ QUnit.module("the #each helper", {
     });
 
     templateMyView = templateFor("{{name}}");
-    lookup.MyView = EmberView.extend({
-        template: templateMyView
+    lookup.MyView = MyView = EmberView.extend({
+      template: templateMyView
     });
 
     append(view);
@@ -438,10 +438,31 @@ test("it defers all normalization of itemView names to the resolver", function()
 
 });
 
-test("it supports {{itemViewClass=}}", function() {
+test("it supports {{itemViewClass=}} with global (DEPRECATED)", function() {
   run(function() { view.destroy(); }); // destroy existing view
   view = EmberView.create({
     template: templateFor('{{each view.people itemViewClass="MyView"}}'),
+    people: people
+  });
+
+
+  expectDeprecation(function(){
+    append(view);
+  }, /Resolved the view "MyView" on the global context/);
+
+  assertText(view, "Steve HoltAnnabelle");
+});
+
+test("it supports {{itemViewClass=}} via container", function() {
+  run(function() { view.destroy(); }); // destroy existing view
+  view = EmberView.create({
+    container: {
+      lookupFactory: function(name){
+        equal(name, 'view:my-view');
+        return MyView;
+      }
+    },
+    template: templateFor('{{each view.people itemViewClass="my-view"}}'),
     people: people
   });
 
@@ -474,13 +495,18 @@ test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function() {
 
 test("it supports {{itemViewClass=}} with in format", function() {
 
-  lookup.MyView = EmberView.extend({
-      template: templateFor("{{person.name}}")
+  MyView = EmberView.extend({
+    template: templateFor("{{person.name}}")
   });
 
   run(function() { view.destroy(); }); // destroy existing view
   view = EmberView.create({
-    template: templateFor('{{each person in view.people itemViewClass="MyView"}}'),
+    container: {
+      lookupFactory: function(name){
+        return MyView;
+      }
+    },
+    template: templateFor('{{each person in view.people itemViewClass="myView"}}'),
     people: people
   });
 

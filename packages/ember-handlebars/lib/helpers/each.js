@@ -469,8 +469,7 @@ function eachHelper(path, options) {
   if (options.data.insideGroup && !options.hash.groupedRows && !options.hash.itemViewClass) {
     new GroupedEach(ctx, path, options).render();
   } else {
-    // ES6TODO: figure out how to do this without global lookup.
-    return helpers.collection.call(ctx, 'Ember.Handlebars.EachView', options);
+    return helpers.collection.call(ctx, EmberHandlebars.EachView, options);
   }
 }
 
