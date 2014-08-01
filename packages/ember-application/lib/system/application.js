@@ -943,9 +943,9 @@ Application.reopenClass({
     var container = new Container();
 
     container.set = set;
-    container.resolver  = resolverFor(namespace);
-    container.normalize = container.resolver.normalize;
-    container.describe  = container.resolver.describe;
+    container.resolver = resolverFor(namespace);
+    container.normalizeFullName = container.resolver.normalize;
+    container.describe = container.resolver.describe;
     container.makeToString = container.resolver.makeToString;
 
     container.optionsForType('component', { singleton: false });
