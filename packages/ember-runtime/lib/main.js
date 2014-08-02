@@ -9,7 +9,6 @@ Ember Runtime
 // BEGIN IMPORTS
 import Ember from 'ember-metal';
 import { isEqual } from 'ember-runtime/core';
-import keys from 'ember-runtime/keys';
 import compare from 'ember-runtime/compare';
 import copy from 'ember-runtime/copy';
 
@@ -96,7 +95,6 @@ import 'ember-runtime/ext/function'; // just for side effect of extending Functi
 Ember.compare = compare;
 Ember.copy = copy;
 Ember.isEqual = isEqual;
-Ember.keys = keys;
 
 Ember.Array = EmberArray;
 

@@ -8,6 +8,7 @@ import {
   forEach
 } from "ember-metal/array";
 
+import keys from "ember-metal/keys";
 /**
 @module ember-metal
 */
@@ -84,7 +85,7 @@ var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 function intern(string) {
   var obj = Object.create(null);
   obj[string] = true;
-  return Object.keys(obj)[0];
+  return keys(obj)[0];
 }
 
 /**

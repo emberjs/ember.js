@@ -21,7 +21,7 @@ import { arrayComputed } from 'ember-runtime/computed/array_computed';
 import { reduceComputed } from 'ember-runtime/computed/reduce_computed';
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import SubArray from 'ember-runtime/system/subarray';
-import keys from 'ember-runtime/keys';
+import keys from 'ember-metal/keys';
 import compare from 'ember-runtime/compare';
 
 var a_slice = [].slice;

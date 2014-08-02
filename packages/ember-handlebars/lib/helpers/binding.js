@@ -23,7 +23,7 @@ import { bind as emberBind } from "ember-metal/binding";
 import jQuery from "ember-views/system/jquery";
 import { isArray } from "ember-metal/utils";
 import { getEscaped as handlebarsGetEscaped } from "ember-handlebars/ext";
-import keys from "ember-runtime/keys";
+import keys from "ember-metal/keys";
 import Cache from "ember-metal/cache";
 
 import {
