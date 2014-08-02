@@ -116,6 +116,7 @@ SimpleHandlebarsView.prototype = {
     var value = this.normalizedValue();
     // doesn't diff SafeString instances
     if (value !== this._lastNormalizedValue) {
+      this._lastNormalizedValue = value;
       this._morph.update(value);
     }
   },
