@@ -863,3 +863,10 @@ test('Web components - Text-only attributes work', function () {
 test('Web components - Empty components work', function () {
   compilesTo('<x-bar></x-bar>','<x-bar></x-bar>', {});
 });
+
+test('Repaired text nodes are ensured in the right place', function () {
+  var object = { a: "A", b: "B", c: "C", d: "D" };
+  compilesTo('{{a}} {{b}}', 'A B', object);
+  compilesTo('<div>{{a}}{{b}}{{c}}wat{{d}}</div>', '<div>ABCwatD</div>', object);
+  compilesTo('{{a}}{{b}}<img><img><img><img>', 'AB<img><img><img><img>', object);
+});

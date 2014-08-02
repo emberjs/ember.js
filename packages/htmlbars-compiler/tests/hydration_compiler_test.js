@@ -74,7 +74,7 @@ test("mustaches at the root", function() {
   deepEqual(opcodes, [
     [ "morph", [ 0, [ ], 0, 1 ] ],
     [ "morph", [ 1, [ ], 1, 2 ] ],
-    [ "repairClonedNode", [ [ 0, 4 ] ] ],
+    [ "repairClonedNode", [ [ 0, 2 ] ] ],
     mustache('foo', 0),
     mustache('bar', 1)
   ]);
@@ -87,7 +87,7 @@ test("back to back mustaches should have a text node inserted between them", fun
     [ "morph", [ 1, [0], 0, 1 ] ],
     [ "morph", [ 2, [0], 1, 2 ] ],
     [ "morph", [ 3, [0], 2, -1 ] ],
-    [ "repairClonedNode", [ [ 1, 3 ], false ] ],
+    [ "repairClonedNode", [ [ 0, 1 ], false ] ],
     mustache('foo', 0),
     mustache('bar', 1),
     mustache('baz', 2),
