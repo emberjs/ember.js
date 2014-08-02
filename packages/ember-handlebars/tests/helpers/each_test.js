@@ -459,16 +459,9 @@ test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function() {
   expectDeprecation(/Supplying a tagName to Metamorph views is unreliable and is deprecated./);
 
   append(view);
-
-  var html = view.$().html();
-
-  // IE 8 (and prior?) adds the \r\n
-  html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
-  html = html.replace(/<div[^>]*><\/div>/ig, '').replace(/[\r\n]/g, '');
-  html = html.replace(/<li[^>]*/ig, '<li');
-
-  // Use lowercase since IE 8 make tagnames uppercase
-  equal(html.toLowerCase(), "<ul><li>steve holt</li><li>annabelle</li></ul>");
+  equal(view.$('ul').length, 1, 'rendered ul tag');
+  equal(view.$('ul li').length, 2, 'rendered 2 li tags');
+  equal(view.$('ul li').text(), 'Steve HoltAnnabelle');
 });
 
 test("it supports {{itemViewClass=}} with in format", function() {
@@ -650,17 +643,6 @@ test("single-arg each will iterate over controller if present", function() {
   append(view);
 
   equal(view.$().text(), "AdamSteve");
-});
-
-test("it asserts when the morph tags disagree on their parentage", function() {
-  view = EmberView.create({
-    controller: A(['Cyril', 'David']),
-    template: templateFor('<table>{{#each}}<tr><td>{{this}}</td></tr>{{/each}}</table>')
-  });
-
-  expectAssertion(function() {
-    append(view);
-  }, /The metamorph tags, metamorph-\d+-start and metamorph-\d+-end, have different parents.\nThe browser has fixed your template to output valid HTML \(for example, check that you have properly closed all tags and have used a TBODY tag when creating a table with '\{\{#each\}\}'\)/);
 });
 
 test("it doesn't assert when the morph tags have the same parent", function() {

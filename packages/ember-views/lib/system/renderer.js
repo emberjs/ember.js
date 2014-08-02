@@ -48,7 +48,7 @@ EmberRenderer.prototype.createChildViewsMorph =
       return view.createChildViewsMorph(_element);
     }
     var element = _element;
-    if (view.isVirtual) {
+    if (view.tagName === '') {
       if (view._morph) {
         view._childViewsMorph = view._morph;
       } else {
@@ -81,7 +81,7 @@ EmberRenderer.prototype.createElement =
       view.beforeRender(buffer);
     }
 
-    if (!view.isVirtual) {
+    if (view.tagName !== '') {
       if (view.applyAttributesToBuffer) {
         view.applyAttributesToBuffer(buffer);
       }

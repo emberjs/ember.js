@@ -1781,7 +1781,9 @@ var View = CoreView.extend({
     @private
   */
   init: function() {
-    this.elementId = this.elementId || guidFor(this);
+    if (!this.isVirtual && !this.elementId) {
+      this.elementId = guidFor(this);
+    }
 
     this._super();
 
