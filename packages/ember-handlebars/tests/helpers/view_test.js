@@ -55,6 +55,16 @@ test("By default view:toplevel is used", function() {
   }
 });
 
+test("By default, without a container, EmberView is used", function() {
+  view = EmberView.extend({
+    template: Ember.Handlebars.compile('{{view tagName="span"}}'),
+  }).create();
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  ok(jQuery('#qunit-fixture').html().match(/<span/), 'contains view with span');
+});
+
 test("View lookup - App.FuView", function() {
   Ember.lookup = {
     App: {
@@ -148,7 +158,7 @@ test("View lookup - view.computed", function() {
 
 test("id bindings downgrade to one-time property lookup", function() {
   view = EmberView.extend({
-    template: Ember.Handlebars.compile("{{#view Ember.View id=view.meshuggah}}{{view.parentView.meshuggah}}{{/view}}"),
+    template: Ember.Handlebars.compile("{{#view id=view.meshuggah}}{{view.parentView.meshuggah}}{{/view}}"),
     meshuggah: 'stengah'
   }).create();
 
@@ -174,7 +184,7 @@ test("mixing old and new styles of property binding fires a warning, treats valu
   };
 
   view = EmberView.extend({
-    template: Ember.Handlebars.compile("{{#view Ember.View borfBinding=view.snork}}<p id='lol'>{{view.borf}}</p>{{/view}}"),
+    template: Ember.Handlebars.compile("{{#view borfBinding=view.snork}}<p id='lol'>{{view.borf}}</p>{{/view}}"),
     snork: "nerd"
   }).create();
 

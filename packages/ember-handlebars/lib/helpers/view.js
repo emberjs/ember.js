@@ -391,8 +391,11 @@ export function viewHelper(path, options) {
   // and get an instance of the registered `view:toplevel`
   if (path && path.data && path.data.isRenderData) {
     options = path;
-    Ember.assert('{{view}} helper requires parent view to have a container but none was found. This usually happens when you are manually-managing views.', !!options.data.view.container);
-    path = options.data.view.container.lookupFactory('view:toplevel');
+    if (options.data && options.data.view && options.data.view.container) {
+      path = options.data.view.container.lookupFactory('view:toplevel');
+    } else {
+      path = View;
+    }
   }
 
   options.helperName = options.helperName || 'view';

@@ -955,7 +955,7 @@ test("a view helper's bindings are to the parent context", function() {
 test("Child views created using the view helper should have their parent view set properly", function() {
   TemplateTests = {};
 
-  var template = '{{#view "Ember.View"}}{{#view "Ember.View"}}{{view "Ember.View"}}{{/view}}{{/view}}';
+  var template = '{{#view}}{{#view}}{{view}}{{/view}}{{/view}}';
 
   view = EmberView.create({
     template: EmberHandlebars.compile(template)
@@ -970,7 +970,7 @@ test("Child views created using the view helper should have their parent view se
 test("Child views created using the view helper should have their IDs registered for events", function() {
   TemplateTests = {};
 
-  var template = '{{view "Ember.View"}}{{view "Ember.View" id="templateViewTest"}}';
+  var template = '{{view}}{{view id="templateViewTest"}}';
 
   view = EmberView.create({
     template: EmberHandlebars.compile(template)
@@ -991,7 +991,7 @@ test("Child views created using the view helper should have their IDs registered
 test("Child views created using the view helper and that have a viewName should be registered as properties on their parentView", function() {
   TemplateTests = {};
 
-  var template = '{{#view Ember.View}}{{view Ember.View viewName="ohai"}}{{/view}}';
+  var template = '{{#view}}{{view viewName="ohai"}}{{/view}}';
 
   view = EmberView.create({
     template: EmberHandlebars.compile(template)
@@ -1216,7 +1216,7 @@ test("{{view}} class attribute should set class on layer", function() {
 test("{{view}} should not allow attributeBindings to be set", function() {
   expectAssertion(function() {
     view = EmberView.create({
-      template: EmberHandlebars.compile('{{view "Ember.View" attributeBindings="one two"}}')
+      template: EmberHandlebars.compile('{{view attributeBindings="one two"}}')
     });
     appendView();
   }, /Setting 'attributeBindings' via Handlebars is not allowed/);
