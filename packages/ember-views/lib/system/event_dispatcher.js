@@ -13,6 +13,7 @@ import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
 import View from "ember-views/views/view";
+import merge from "ember-metal/merge";
 
 var ActionHelper;
 
@@ -132,7 +133,7 @@ export default EmberObject.extend({
   setup: function(addedEvents, rootElement) {
     var event, events = get(this, 'events');
 
-    jQuery.extend(events, addedEvents || {});
+    merge(events, addedEvents || {});
 
     if (!isNone(rootElement)) {
       set(this, 'rootElement', rootElement);
