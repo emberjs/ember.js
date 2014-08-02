@@ -213,3 +213,19 @@ test("allows you to pass attributes that will be assigned to the class instance,
   ok(jQuery('#bar').hasClass('bar'));
   equal(jQuery('#bar').text(), 'Bar');
 });
+
+test("passes templateHash into the view", function() {
+  expect(1);
+
+  var container = new Container();
+  container.register('view:toplevel', EmberView.extend());
+
+  view = EmberView.extend({
+    template: Ember.Handlebars.compile('{{#view id="foo" bar="qux"}}{{view.templateHash.bar}}{{/view}}'),
+    container: container
+  }).create();
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  equal(jQuery('#foo').text(), 'qux');
+});
