@@ -3225,7 +3225,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-will-change-hooks")) {
 }
 
 test("Errors in transitionTo within redirect hook are logged", function() {
-  expect(2);
+  expect(3);
   var actual = [];
 
   Router.map(function() {
@@ -3239,14 +3239,16 @@ test("Errors in transitionTo within redirect hook are logged", function() {
     }
   });
 
-  Ember.Logger.error = function(message) {
-    actual.push(message);
+  Ember.Logger.error = function() {
+    // push the arguments onto an array so we can detect if the error gets logged twice
+    actual.push(arguments);
   };
 
   bootApplication();
 
-  equal(actual[0], 'Error while processing route: yondo', 'source route is printed');
-  ok(actual[1].match(/More context objects were passed than there are dynamic segments for the route: stink-bomb/), 'the error is printed');
+  equal(actual.length, 1, 'the error is only logged once');
+  equal(actual[0][0], 'Error while processing route: yondo', 'source route is printed');
+  ok(actual[0][1].match(/More context objects were passed than there are dynamic segments for the route: stink-bomb/), 'the error is printed');
 });
 
 test("Errors in transition show error template if available", function() {
