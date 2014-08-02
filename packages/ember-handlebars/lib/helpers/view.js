@@ -15,6 +15,7 @@ import { IS_BINDING } from "ember-metal/mixin";
 import jQuery from "ember-views/system/jquery";
 import View from "ember-views/views/view";
 import { isGlobalPath } from "ember-metal/binding";
+import merge from "ember-metal/merge";
 import {
   normalizePath,
   handlebarsGet
@@ -97,7 +98,7 @@ export var ViewHelper = EmberObject.create({
     }
 
     if (dup) {
-      hash = jQuery.extend({}, hash);
+      hash = merge({}, hash);
       delete hash.id;
       delete hash.tag;
       delete hash['class'];
@@ -139,7 +140,7 @@ export var ViewHelper = EmberObject.create({
       }
     }
 
-    return jQuery.extend(hash, extensions);
+    return merge(hash, extensions);
   },
 
   // Transform bindings from the current context to a context that can be evaluated within the view.
