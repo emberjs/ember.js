@@ -2,6 +2,7 @@ var push = Array.prototype.push;
 
 function Frame() {
   this.parentNode = null;
+  this.children = null;
   this.childIndex = null;
   this.childCount = null;
   this.childTemplateCount = 0;
@@ -78,6 +79,7 @@ TemplateVisitor.prototype.program = function(program) {
   var programFrame = this.pushFrame();
 
   programFrame.parentNode = program;
+  programFrame.children = program.statements;
   programFrame.childCount = program.statements.length;
   programFrame.blankChildTextNodes = [];
   programFrame.actions.push(['endProgram', [program, this.programDepth]]);
@@ -104,6 +106,7 @@ TemplateVisitor.prototype.element = function(element) {
   var parentNode = parentFrame.parentNode;
 
   elementFrame.parentNode = element;
+  elementFrame.children = element.children;
   elementFrame.childCount = element.children.length;
   elementFrame.mustacheCount += element.helpers.length;
   elementFrame.blankChildTextNodes = [];
@@ -165,7 +168,7 @@ TemplateVisitor.prototype.text = function(text) {
   var frame = this.getCurrentFrame();
   var isSingleRoot = frame.parentNode.type === 'program' && frame.childCount === 1;
   if (text.chars === '') {
-    frame.blankChildTextNodes.push(frame.childIndex);
+    frame.blankChildTextNodes.push(domIndexOf(frame.children, text));
   }
   frame.actions.push(['text', [text, frame.childIndex, frame.childCount, isSingleRoot]]);
 };
@@ -193,3 +196,26 @@ TemplateVisitor.prototype.popFrame = function() {
 };
 
 export default TemplateVisitor;
+
+
+// Returns the index of `domNode` in the `nodes` array, skipping
+// over any nodes which do not represent DOM nodes.
+function domIndexOf(nodes, domNode) {
+  var index = -1;
+
+  for (var i = 0; i < nodes.length; i++) {
+    var node = nodes[i];
+
+    if (node.type !== 'text' && node.type !== 'element') {
+      continue;
+    } else {
+      index++;
+    }
+
+    if (node === domNode) {
+      return index;
+    }
+  }
+
+  return -1;
+}
