@@ -1625,6 +1625,9 @@ var View = CoreView.extend({
     this function to do any teardown that requires an element, like removing
     event listeners.
 
+    Please note: any property changes made during this event will have no
+    effect on object observers.
+
     @event willDestroyElement
   */
   willDestroyElement: Ember.K,
