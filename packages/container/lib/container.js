@@ -723,6 +723,7 @@ function factoryFor(container, fullName) {
   if (!factory || typeof factory.extend !== 'function' || (!Ember.MODEL_FACTORY_INJECTIONS && type === 'model')) {
     // TODO: think about a 'safe' merge style extension
     // for now just fallback to create time injection
+    cache[fullName] = factory;
     return factory;
   } else {
     var injections = injectionsFor(container, fullName);
