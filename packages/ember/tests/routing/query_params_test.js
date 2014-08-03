@@ -1427,6 +1427,13 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     equal(Ember.$('#two').attr('href'), "/a/a-2/comments");
   });
 
+  test("can unit test without bucket cache", function() {
+    var controller = container.lookup('controller:article');
+    controller._bucketCache = null;
+
+    controller.set('q', "i used to break");
+    equal(controller.get('q'), "i used to break");
+  });
 
   QUnit.module("Query Params - overlapping query param property names", {
     setup: function() {
