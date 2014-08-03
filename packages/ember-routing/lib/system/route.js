@@ -57,7 +57,7 @@ var Route = EmberObject.extend(ActionHandler, {
 
     @method reset
   */
-  reset: function(isExiting, transition) {
+  _reset: function(isExiting, transition) {
     if (Ember.FEATURES.isEnabled("query-params-new")) {
       var controller = this.controller;
       controller._qpDelegate = get(this, '_qp.states.inactive');
