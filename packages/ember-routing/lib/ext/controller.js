@@ -234,9 +234,11 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
         var cacheKey = this._calculateCacheKey(propMeta.prefix, propMeta.parts, propMeta.values);
         var cache = this._bucketCache;
-        var value = cache.lookup(cacheKey, prop, propMeta.def);
 
-        set(this, prop, value);
+        if (cache) {
+          var value = cache.lookup(cacheKey, prop, propMeta.def);
+          set(this, prop, value);
+        }
       }
     },
 
@@ -248,7 +250,10 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       var value = get(controller, prop);
 
       // 1. Update model-dep cache
-      controller._bucketCache.stash(cacheKey, prop, value);
+      var cache = this._bucketCache;
+      if (cache) {
+        controller._bucketCache.stash(cacheKey, prop, value);
+      }
 
       // 2. Notify a delegate (e.g. to fire a qp transition)
       var delegate = controller._qpDelegate;
