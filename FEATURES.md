@@ -79,3 +79,10 @@ for a detailed explanation.
   using a `|` delimiter, for more control over a link's active state.
 
   Added in [#3673](https://github.com/emberjs/ember.js/pull/3673)
+
+* `ember-runtime-item-controller-inline-class`
+
+  This feature allows you to specify a controller class inline for the `itemController`
+  property of an `array controller`.
+
+  Added in [#5301](https://github.com/emberjs/ember.js/pull/5301)
