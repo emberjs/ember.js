@@ -33,7 +33,7 @@ test("ID parameters that start with capital letters fall back to Ember.lookup as
 
   var context = {};
 
-  var params = Ember.Handlebars.resolveParams(context, ["Global"], { types: ["ID"] });
+  var params = Ember.Handlebars.resolveParams(context, ["Global"], { types: ["ID"], silenceGlobalDeprecation: true });
   deepEqual(params, [Ember.lookup.Global]);
 });
 

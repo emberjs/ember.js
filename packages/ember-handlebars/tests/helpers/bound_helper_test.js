@@ -131,7 +131,9 @@ test("bound helpers should support global paths", function() {
     template: EmberHandlebars.compile("{{capitalize TemplateTests.text}}")
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, /Global lookup of TemplateTests.text from a Handlebars template is deprecated/);
 
   ok(view.$().text() === 'AB', "helper output is correct");
 });
