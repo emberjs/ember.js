@@ -1149,6 +1149,24 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     equal(get(controller, 'foo'), undefined);
   });
 
+  test("query params have been set by the time setupController is called", function() {
+    expect(1);
+
+    App.ApplicationController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: "wat"
+    });
+
+    App.ApplicationRoute = Ember.Route.extend({
+      setupController: function(controller) {
+        equal(controller.get('foo'), 'YEAH', "controller's foo QP property set before setupController called");
+      }
+    });
+
+    startingURL = '/?foo=YEAH';
+    bootApplication();
+  });
+
   QUnit.module("Model Dep Query Params", {
     setup: function() {
       sharedSetup();

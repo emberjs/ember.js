@@ -356,7 +356,7 @@ var Route = EmberObject.extend(ActionHandler, {
           // this controller.
           var value, svalue;
           if (changes && qp.urlKey in changes) {
-            // Controller overrode this value in setupController
+            // Value updated in/before setupController
             value = get(controller, qp.prop);
             svalue = route.serializeQueryParam(value, qp.urlKey, qp.type);
           } else {
@@ -366,10 +366,7 @@ var Route = EmberObject.extend(ActionHandler, {
             } else {
               // No QP provided; use default value.
               svalue = qp.sdef;
-              value = qp.def;
-              if (isArray(value)) {
-                value = Ember.A(value.slice());
-              }
+              value = copyDefaultValue(qp.def);
             }
           }
 
@@ -717,6 +714,10 @@ var Route = EmberObject.extend(ActionHandler, {
           controller._updateCacheParams(transition.params);
         }
         controller._qpDelegate = states.allowOverrides;
+
+        if (transition) {
+          controller.setProperties(getQueryParamsFor(this, transition.state));
+        }
 
         this.setupController(controller, context, transition);
       } else {
@@ -1697,9 +1698,6 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       run.once(this, this._fireQueryParamTransition);
     },
 
-    //_inactiveQPChanged: function(controller, qp) {
-    //},
-
     _updatingQPChanged: function(controller, qp) {
       var router = this.router;
       if (!router._qpUpdates) {
@@ -1719,30 +1717,10 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
       var transition = this.router.router.activeTransition;
       var state = transition ? transition.state : this.router.router.state;
+
       var params = {};
-
       merge(params, state.params[name]);
-
-      if (!state.fullQueryParams) {
-        state.fullQueryParams = {};
-        merge(state.fullQueryParams, state.queryParams);
-
-        var targetRouteName = state.handlerInfos[state.handlerInfos.length-1].name;
-        this.router._deserializeQueryParams(targetRouteName, state.fullQueryParams);
-      }
-
-      // Copy over all the query params for this route/controller into params hash.
-      var qpMeta = get(route, '_qp');
-      var qps = qpMeta.qps;
-      for (var i = 0, len = qps.length; i < len; ++i) {
-        // Put deserialized qp on params hash.
-        var qp = qps[i];
-
-        var qpValueWasPassedIn = (qp.prop in state.fullQueryParams);
-        params[qp.prop] = qpValueWasPassedIn ?
-                          state.fullQueryParams[qp.prop] :
-                          qp.def;
-      }
+      merge(params, getQueryParamsFor(route, state));
 
       return params;
     },
@@ -1925,6 +1903,50 @@ function generateTopLevelTeardown(view) {
 
 function generateOutletTeardown(parentView, outlet) {
   return function() { parentView.disconnectOutlet(outlet); };
+}
+
+function getFullQueryParams(router, state) {
+  if (state.fullQueryParams) { return state.fullQueryParams; }
+
+  state.fullQueryParams = {};
+  merge(state.fullQueryParams, state.queryParams);
+
+  var targetRouteName = state.handlerInfos[state.handlerInfos.length-1].name;
+  router._deserializeQueryParams(targetRouteName, state.fullQueryParams);
+  return state.fullQueryParams;
+}
+
+function getQueryParamsFor(route, state) {
+  state.queryParamsFor = state.queryParamsFor || {};
+  var name = route.routeName;
+
+  if (state.queryParamsFor[name]) { return state.queryParamsFor[name]; }
+
+  var fullQueryParams = getFullQueryParams(route.router, state);
+
+  var params = state.queryParamsFor[name] = {};
+
+  // Copy over all the query params for this route/controller into params hash.
+  var qpMeta = get(route, '_qp');
+  var qps = qpMeta.qps;
+  for (var i = 0, len = qps.length; i < len; ++i) {
+    // Put deserialized qp on params hash.
+    var qp = qps[i];
+
+    var qpValueWasPassedIn = (qp.prop in fullQueryParams);
+    params[qp.prop] = qpValueWasPassedIn ?
+                      fullQueryParams[qp.prop] :
+                      copyDefaultValue(qp.def);
+  }
+
+  return params;
+}
+
+function copyDefaultValue(value) {
+  if (isArray(value)) {
+    return Ember.A(value.slice());
+  }
+  return value;
 }
 
 export default Route;
