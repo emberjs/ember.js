@@ -106,10 +106,22 @@ import EmberError from 'ember-metal/error';
 export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
 
   /**
-    The controller used to wrap items, if any.
+    The controller used to wrap items, if any. If the value is a string, it will
+    be used to lookup the container for the controller. As an alternative, you
+    can also provide a controller class as the value.
+
+    For example:
+
+    ```javascript
+    App.MyArrayController = Ember.ArrayController.extend({
+      itemController: Ember.ObjectController.extend({
+        //Item Controller Implementation
+      })
+    });
+    ```
 
     @property itemController
-    @type String
+    @type String | Ember.Controller
     @default null
   */
   itemController: null,
@@ -213,7 +225,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   controllerAt: function(idx, object, controllerClass) {
     var container = get(this, 'container');
     var subControllers = this._subControllers;
-    var fullName, subController, parentController;
+    var fullName, subController, subControllerFactory, parentController, options;
 
     if (subControllers.length > idx) {
       subController = subControllers[idx];
@@ -223,23 +235,46 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
       }
     }
 
-    fullName = 'controller:' + controllerClass;
-
-    if (!container.has(fullName)) {
-      throw new EmberError('Could not resolve itemController: "' + controllerClass + '"');
-    }
-
     if (this._isVirtual) {
       parentController = get(this, 'parentController');
     } else {
       parentController = this;
     }
 
-    subController = container.lookupFactory(fullName).create({
-      target: parentController,
-      parentController: parentController,
-      model: object
-    });
+    if (Ember.FEATURES.isEnabled("ember-runtime-item-controller-inline-class")) {
+      options = {
+        target: parentController,
+        parentController: parentController,
+        model: object
+      };
+
+      if (typeof controllerClass === 'string') {
+        fullName = 'controller:' + controllerClass;
+
+        if (!container.has(fullName)) {
+          throw new EmberError('Could not resolve itemController: "' + controllerClass + '"');
+        }
+
+        subControllerFactory = container.lookupFactory(fullName);
+      } else {
+        subControllerFactory = controllerClass;
+        options.container = container;
+      }
+
+      subController = subControllerFactory.create(options);
+    } else {
+      fullName = 'controller:' + controllerClass;
+
+      if (!container.has(fullName)) {
+        throw new EmberError('Could not resolve itemController: "' + controllerClass + '"');
+      }
+
+      subController = container.lookupFactory(fullName).create({
+        target: parentController,
+        parentController: parentController,
+        model: object
+      });
+    }
 
     subControllers[idx] = subController;
 

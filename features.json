@@ -12,7 +12,8 @@
     "ember-metal-is-present": null,
     "property-brace-expansion-improvement": null,
     "ember-runtime-proxy-mixin": null,
-    "ember-routing-handlebars-action-with-key-code": null
+    "ember-routing-handlebars-action-with-key-code": null,
+    "ember-runtime-item-controller-inline-class": null
   },
   "debugStatements": [
     "Ember.warn",
