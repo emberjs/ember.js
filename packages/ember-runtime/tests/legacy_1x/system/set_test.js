@@ -34,16 +34,20 @@ QUnit.module("creating Set instances", {
 });
 
 test("new Set() should create empty set", function() {
-  var set = new Set() ;
-  equal(set.length, 0) ;
+  ignoreDeprecation(function() {
+    var set = new Set() ;
+    equal(set.length, 0) ;
+  });
 });
 
 test("new Set([1,2,3]) should create set with three items in them", function() {
-  var set = new Set(Ember.A([a,b,c])) ;
-  equal(set.length, 3) ;
-  equal(set.contains(a), true) ;
-  equal(set.contains(b), true) ;
-  equal(set.contains(c), true) ;
+  ignoreDeprecation(function() {
+    var set = new Set(Ember.A([a,b,c])) ;
+    equal(set.length, 3) ;
+    equal(set.contains(a), true) ;
+    equal(set.contains(b), true) ;
+    equal(set.contains(c), true) ;
+  });
 });
 
 test("new Set() should accept anything that implements EmberArray", function() {
@@ -53,11 +57,13 @@ test("new Set() should accept anything that implements EmberArray", function() {
     objectAt: function(idx) { return this._content[idx]; }
   }) ;
 
-  var set = new Set(arrayLikeObject) ;
-  equal(set.length, 3) ;
-  equal(set.contains(a), true) ;
-  equal(set.contains(b), true) ;
-  equal(set.contains(c), true) ;
+  ignoreDeprecation(function() {
+    var set = new Set(arrayLikeObject) ;
+    equal(set.length, 3) ;
+    equal(set.contains(a), true) ;
+    equal(set.contains(b), true) ;
+    equal(set.contains(c), true) ;
+  });
 });
 
 var set ; // global variables
@@ -67,7 +73,9 @@ var set ; // global variables
 QUnit.module("Set.add + Set.contains", {
 
   setup: function() {
-    set = new Set() ;
+    ignoreDeprecation(function() {
+      set = new Set() ;
+    });
   },
 
   teardown: function() {
@@ -172,11 +180,13 @@ QUnit.module("Set.remove + Set.contains", {
   // generate a set with every type of object, but none of the specific
   // ones we add in the tests below...
   setup: function() {
-    set = new Set(Ember.A([
-      EmberObject.create({ dummy: true }),
-      { isHash: true },
-      "Not the String",
-      16, true, false, 0])) ;
+    ignoreDeprecation(function() {
+      set = new Set(Ember.A([
+        EmberObject.create({ dummy: true }),
+        { isHash: true },
+        "Not the String",
+        16, true, false, 0])) ;
+    });
   },
 
   teardown: function() {
@@ -281,16 +291,18 @@ QUnit.module("Set.pop + Set.copy", {
 // generate a set with every type of object, but none of the specific
 // ones we add in the tests below...
   setup: function() {
-    set = new Set(Ember.A([
-      EmberObject.create({ dummy: true }),
-      { isHash: true },
-      "Not the String",
-      16, false])) ;
-    },
+    ignoreDeprecation(function() {
+      set = new Set(Ember.A([
+        EmberObject.create({ dummy: true }),
+        { isHash: true },
+        "Not the String",
+        16, false])) ;
+    });
+  },
 
-    teardown: function() {
-      set = undefined ;
-    }
+  teardown: function() {
+    set = undefined ;
+  }
 });
 
 test("the pop() should remove an arbitrary object from the set", function() {
@@ -301,16 +313,22 @@ test("the pop() should remove an arbitrary object from the set", function() {
 });
 
 test("should pop false and 0", function() {
-  set = new Set(Ember.A([false]));
-  ok(set.pop() === false, "should pop false");
+  ignoreDeprecation(function() {
+    set = new Set(Ember.A([false]));
+    ok(set.pop() === false, "should pop false");
 
-  set = new Set(Ember.A([0]));
-  ok(set.pop() === 0, "should pop 0");
+    set = new Set(Ember.A([0]));
+    ok(set.pop() === 0, "should pop 0");
+  });
 });
 
 test("the copy() should return an indentical set", function() {
-  var oldLength = set.length ;
-  var obj = set.copy();
+  var oldLength = set.length, obj;
+
+  ignoreDeprecation(function() {
+    obj = set.copy();
+  });
+
   equal(oldLength,obj.length,'length of the clone should be same');
   equal(obj.contains(set[0]), true);
   equal(obj.contains(set[1]), true);
