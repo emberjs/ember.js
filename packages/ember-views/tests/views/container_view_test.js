@@ -42,7 +42,7 @@ test("should be able to insert views after the DOM representation is created", f
 
   equal(view.container, container.container, 'view gains its containerViews container');
   equal(view._parentView, container, 'view\'s _parentView is the container');
-  equal(jQuery.trim(container.$().text()), "This is my moment");
+  equal(trim(container.$().text()), "This is my moment");
 
   run(function() {
     container.destroy();
@@ -291,7 +291,7 @@ test("if a ContainerView starts with a currentView, it is rendered as a child vi
     container.appendTo('#qunit-fixture');
   });
 
-  equal(jQuery.trim(container.$().text()), "This is the main view.", "should render its child");
+  equal(trim(container.$().text()), "This is the main view.", "should render its child");
   equal(get(container, 'length'), 1, "should have one child view");
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
@@ -487,7 +487,7 @@ test("if a ContainerView starts with a currentView and then a different currentV
   equal(container.objectAt(0), secondaryView, "should have the currentView as the only child view");
   equal(mainView.isDestroyed, true, 'should destroy the previous currentView: mainView.');
 
-  equal(jQuery.trim(container.$().text()), "This is the secondary view.", "should render its child");
+  equal(trim(container.$().text()), "This is the secondary view.", "should render its child");
 
   run(function() {
     set(container, 'currentView', tertiaryView);
@@ -497,7 +497,7 @@ test("if a ContainerView starts with a currentView and then a different currentV
   equal(container.objectAt(0), tertiaryView, "should have the currentView as the only child view");
   equal(secondaryView.isDestroyed, true, 'should destroy the previous currentView: secondaryView.');
 
-  equal(jQuery.trim(container.$().text()), "This is the tertiary view.", "should render its child");
+  equal(trim(container.$().text()), "This is the tertiary view.", "should render its child");
 });
 
 test("should be able to modify childViews many times during an run loop", function () {
