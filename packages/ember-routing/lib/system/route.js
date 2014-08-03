@@ -1731,22 +1731,17 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
         this.router._deserializeQueryParams(targetRouteName, state.fullQueryParams);
       }
 
-      var qpMeta = get(route, '_qp');
-
-      if (!qpMeta) {
-        // No query params specified on the controller.
-        return params;
-      }
-
       // Copy over all the query params for this route/controller into params hash.
-      // TODO: is this correct? I think this won't do model dep state.
+      var qpMeta = get(route, '_qp');
       var qps = qpMeta.qps;
       for (var i = 0, len = qps.length; i < len; ++i) {
         // Put deserialized qp on params hash.
         var qp = qps[i];
-        if (!(qp.prop in params)) {
-          params[qp.prop] = state.fullQueryParams[qp.prop] || qp.def;
-        }
+
+        var qpValueWasPassedIn = (qp.prop in state.fullQueryParams);
+        params[qp.prop] = qpValueWasPassedIn ?
+                          state.fullQueryParams[qp.prop] :
+                          qp.def;
       }
 
       return params;
