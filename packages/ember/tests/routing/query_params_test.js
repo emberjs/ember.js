@@ -370,6 +370,24 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     bootApplication();
   });
 
+  test("Route#paramsFor fetches falsy query params", function() {
+    expect(1);
+
+    App.IndexController = Ember.Controller.extend({
+      queryParams: ['foo'],
+      foo: true
+    });
+
+    App.IndexRoute = Ember.Route.extend({
+      model: function(params, transition) {
+        equal(params.foo, false);
+      }
+    });
+
+    startingURL = "/?foo=false";
+    bootApplication();
+  });
+
   test("model hook can query prefix-less application params", function() {
     App.ApplicationController = Ember.Controller.extend({
       queryParams: ['appomg'],
