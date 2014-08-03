@@ -601,4 +601,55 @@ test("Once looked up, assert if a factoryInjection is registered for the factory
   }, "Attempted to register a factoryInjection for a type that has already been looked up. ('apple:main', 'worm', 'worm:main')");
 });
 
+test("factory resolves are cached", function() {
+  var container = new Container();
+  var PostController = factory();
+  var resolveWasCalled = [];
+  container.resolve = function(fullName) {
+    resolveWasCalled.push(fullName);
+    return PostController;
+  };
+
+  deepEqual(resolveWasCalled, []);
+  container.lookupFactory('controller:post');
+  deepEqual(resolveWasCalled, ['controller:post']);
+
+  container.lookupFactory('controller:post');
+  deepEqual(resolveWasCalled, ['controller:post']);
+});
+
+test("factory for non extendables (MODEL) resolves are cached", function() {
+  var container = new Container();
+  var PostController = factory();
+  var resolveWasCalled = [];
+  container.resolve = function(fullName) {
+    resolveWasCalled.push(fullName);
+    return PostController;
+  };
+
+  deepEqual(resolveWasCalled, []);
+  container.lookupFactory('model:post');
+  deepEqual(resolveWasCalled, ['model:post']);
+
+  container.lookupFactory('model:post');
+  deepEqual(resolveWasCalled, ['model:post']);
+});
+
+test("factory for non extendables resolves are cached", function() {
+  var container = new Container();
+  var PostController = {};
+  var resolveWasCalled = [];
+  container.resolve = function(fullName) {
+    resolveWasCalled.push(fullName);
+    return PostController;
+  };
+
+  deepEqual(resolveWasCalled, []);
+  container.lookupFactory('foo:post');
+  deepEqual(resolveWasCalled, ['foo:post']);
+
+  container.lookupFactory('foo:post');
+  deepEqual(resolveWasCalled, ['foo:post']);
+});
+
 
