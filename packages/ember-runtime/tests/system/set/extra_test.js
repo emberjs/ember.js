@@ -7,10 +7,14 @@ import Set from "ember-runtime/system/set";
 QUnit.module('Set.init');
 
 test('passing an array to new Set() should instantiate w/ items', function() {
+  var aSet;
 
   var ary  = [1,2,3];
-  var aSet = new Set(ary);
   var count = 0;
+
+  ignoreDeprecation(function() {
+    aSet = new Set(ary);
+  });
 
   equal(get(aSet, 'length'), 3, 'should have three items');
   aSet.forEach(function(x) {
@@ -23,9 +27,12 @@ test('passing an array to new Set() should instantiate w/ items', function() {
 QUnit.module('Set.clear');
 
 test('should clear a set of its content', function() {
-
-  var aSet = new Set([1,2,3]);
+  var aSet;
   var count = 0;
+
+  ignoreDeprecation(function() {
+    aSet = new Set([1,2,3]);
+  });
 
   equal(get(aSet, 'length'), 3, 'should have three items');
   ok(get(aSet, 'firstObject'), 'firstObject should return an object');
@@ -51,9 +58,13 @@ test('should clear a set of its content', function() {
 QUnit.module('Set.pop');
 
 test('calling pop should return an object and remove it', function() {
-
-  var aSet = new Set([1,2,3]);
+  var aSet;
   var count = 0, obj;
+
+  ignoreDeprecation(function() {
+    aSet = new Set([1,2,3]);
+  });
+
   while(count<10 && (obj = aSet.pop())) {
     equal(aSet.contains(obj), false, 'set should no longer contain object');
     count++;
@@ -72,7 +83,12 @@ test('calling pop should return an object and remove it', function() {
 QUnit.module('Set aliases');
 
 test('method aliases', function() {
-  var aSet = new Set();
+  var aSet;
+
+  ignoreDeprecation(function() {
+    aSet = new Set();
+  });
+
   equal(aSet.add, aSet.addObject, 'add -> addObject');
   equal(aSet.remove, aSet.removeObject, 'remove -> removeObject');
   equal(aSet.addEach, aSet.addObjects, 'addEach -> addObjects');
