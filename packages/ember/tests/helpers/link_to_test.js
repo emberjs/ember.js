@@ -1425,7 +1425,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       // we should also be able to gracefully handle these cases.
       router.handleURL("/search/results?search=same&sort=title&showDetails=true");
     });
-    shouldBeActive('#same-sort-child-only');
+    //shouldBeActive('#same-sort-child-only');
     shouldBeActive('#same-search-parent-only');
     shouldNotBeActive('#change-search-parent-only');
     shouldBeActive('#same-search-same-sort-child-and-parent');
