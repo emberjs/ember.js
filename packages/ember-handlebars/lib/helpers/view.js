@@ -162,7 +162,6 @@ export var ViewHelper = EmberObject.create({
 
   helper: function(thisContext, path, options) {
     var data = options.data,
-        hash = merge({}, options.hash),
         fn = options.fn,
         newView;
 
@@ -199,7 +198,6 @@ export var ViewHelper = EmberObject.create({
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;
     viewOptions.templateData = data;
-    viewOptions.templateHash = hash;
     var newViewProto = newView.proto ? newView.proto() : newView;
 
     if (fn) {
