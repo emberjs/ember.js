@@ -197,20 +197,23 @@ test("should be able to push initial views onto the ContainerView and have it be
         }
       }));
     },
-    lengthSquared: computed(function () {
+    // functions here avoid attaching an observer, which is
+    // not supported.
+    lengthSquared: function () {
       return this.get('length') * this.get('length');
-    }).property('length'),
-
-    names: computed(function () {
-      return this.mapBy('name');
-    }).property('@each.name')
+    },
+    mapViewNames: function(){
+      return this.map(function(_view){
+        return _view.get('name');
+      });
+    }
   });
 
   container = Container.create();
 
-  equal(container.get('lengthSquared'), 4);
+  equal(container.lengthSquared(), 4);
 
-  deepEqual(container.get('names'), ['A','B']);
+  deepEqual(container.mapViewNames(), ['A','B']);
 
   run(container, 'appendTo', '#qunit-fixture');
 
@@ -225,9 +228,9 @@ test("should be able to push initial views onto the ContainerView and have it be
     }));
   });
 
-  equal(container.get('lengthSquared'), 9);
+  equal(container.lengthSquared(), 9);
 
-  deepEqual(container.get('names'), ['A','B','C']);
+  deepEqual(container.mapViewNames(), ['A','B','C']);
 
   equal(container.$().text(), 'ABC');
 
@@ -559,7 +562,7 @@ test("should be able to modify childViews then remove the ContainerView in same 
 });
 
 test("should be able to modify childViews then destroy the ContainerView in same run loop", function () {
-    container = ContainerView.create();
+  container = ContainerView.create();
 
   run(function() {
     container.appendTo('#qunit-fixture');
@@ -580,7 +583,7 @@ test("should be able to modify childViews then destroy the ContainerView in same
 
 
 test("should be able to modify childViews then rerender the ContainerView in same run loop", function () {
-    container = ContainerView.create();
+  container = ContainerView.create();
 
   run(function() {
     container.appendTo('#qunit-fixture');
@@ -760,3 +763,18 @@ test("if a containerView appends a child in its didInsertElement event, the didI
 
 });
 
+
+test("ContainerView is observable [DEPRECATED]", function(){
+  container = ContainerView.create();
+  var observerFired = false;
+  expectDeprecation(function(){
+    container.addObserver('this.[]', function(){
+      observerFired = true;
+    });
+  }, /ContainerViews should not be observed as arrays. This behavior will change in future implementations of ContainerView./);
+
+  ok(!observerFired, 'Nothing changed, no observer fired');
+
+  container.pushObject(View.create());
+  ok(observerFired, 'View pushed, observer fired');
+});

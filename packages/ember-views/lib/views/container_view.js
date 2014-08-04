@@ -187,6 +187,13 @@ var states = cloneStates(EmberViewStates);
 var ContainerView = View.extend(MutableArray, {
   _states: states,
 
+  willWatchProperty: function(prop){
+    Ember.deprecate(
+      "ContainerViews should not be observed as arrays. This behavior will change in future implementations of ContainerView.",
+      !prop.match(/\[]/) && prop.indexOf('@') !== 0
+    );
+  },
+
   init: function() {
     this._super();
 
