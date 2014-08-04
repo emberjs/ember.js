@@ -180,7 +180,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
         return get(m.proto, '_normalizedQueryParams');
       }
 
-      var queryParams = this.queryParams;
+      var queryParams = get(this, 'queryParams');
       if (queryParams._qpMap) {
         return queryParams._qpMap;
       }
