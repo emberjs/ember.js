@@ -3,6 +3,7 @@ import {
   forEach,
   map
 }  from "ember-metal/enumerable_utils";
+import { computed } from "ember-metal/computed";
 import { platform } from 'ember-metal/platform';
 
 var Router, App, AppView, templates, router, container;
@@ -219,6 +220,27 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     expectedReplaceURL = "/?foo=123";
 
     bootApplication();
+  });
+
+  test("Can override inherited QP behavior by specifying queryParams as a computed property", function() {
+    expect(0);
+    var SharedMixin = Ember.Mixin.create({
+      queryParams: ['a'],
+      a: 0
+    });
+
+    App.IndexController = Ember.Controller.extend(SharedMixin, {
+      queryParams: computed(function() {
+        return ['c'];
+      }),
+      c: true
+    });
+
+    bootApplication();
+    var indexController = container.lookup('controller:index');
+
+    expectedReplaceURL = "not gonna happen";
+    Ember.run(indexController, 'set', 'a', 1);
   });
 
   test("model hooks receives query params", function() {
