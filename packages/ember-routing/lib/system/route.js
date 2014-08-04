@@ -1746,9 +1746,9 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
 
       // Use the defaultValueType of the default value (the initial value assigned to a
       // controller query param property), to intelligently deserialize and cast.
-      if (defaultValueType === 'boolean') {
+      if (defaultValueType === 'boolean' && value === 'true' || value === 'false') {
         return (value === 'true') ? true : false;
-      } else if (defaultValueType === 'number') {
+      } else if (defaultValueType === 'number' && !isNaN(parseInt(value,10))) {
         return (Number(value)).valueOf();
       } else if (defaultValueType === 'array') {
         return Ember.A(JSON.parse(value));
