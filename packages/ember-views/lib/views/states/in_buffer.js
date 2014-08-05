@@ -40,7 +40,9 @@ merge(inBuffer, {
 
     //childView.renderToBuffer(buffer); // done later on the render loop
 
-    buffer.pushChildView(childView);
+    if (!childView._morph) {
+      buffer.pushChildView(childView);
+    }
 
     view.propertyDidChange('childViews');
 
