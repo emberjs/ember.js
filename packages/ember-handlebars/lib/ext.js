@@ -396,6 +396,7 @@ function makeBoundHelper(fn) {
       loc, len, hashOption,
       boundOption, property,
       normalizedValue = SimpleHandlebarsView.prototype.normalizedValue;
+    var hashTypes = options.hashTypes;
 
     Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !options.fn);
 
@@ -405,6 +406,8 @@ function makeBoundHelper(fn) {
       if (IS_BINDING.test(hashOption)) {
         // Lop off 'Binding' suffix.
         boundOptions[hashOption.slice(0, -7)] = hash[hashOption];
+      } else if (hashTypes[hashOption] === 'ID') {
+        boundOptions[hashOption] = hash[hashOption];
       }
     }
 

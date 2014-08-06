@@ -178,6 +178,33 @@ test("bound helpers should support bound options", function() {
   equal(view.$().text(), 'YESYES', "helper correctly re-rendered after both bound option and property changed");
 });
 
+test("bound helpers should support unquoted values as bound options", function() {
+
+  registerRepeatHelper();
+
+  view = EmberView.create({
+    controller: EmberObject.create({text: 'ab', numRepeats: 3}),
+    template: EmberHandlebars.compile('{{repeat text count=numRepeats}}')
+  });
+
+  appendView();
+
+  equal(view.$().text(), 'ababab', "helper output is correct");
+
+  run(function() {
+    view.set('controller.numRepeats', 4);
+  });
+
+  equal(view.$().text(), 'abababab', "helper correctly re-rendered after bound option was changed");
+
+  run(function() {
+    view.set('controller.numRepeats', 2);
+    view.set('controller.text', "YES");
+  });
+
+  equal(view.$().text(), 'YESYES', "helper correctly re-rendered after both bound option and property changed");
+});
+
 
 test("bound helpers should support multiple bound properties", function() {
 
