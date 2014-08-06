@@ -1,5 +1,5 @@
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
+import setProperties from "ember-metal/set_properties";
 import { computed } from "ember-metal/computed";
 import { Mixin } from "ember-metal/mixin";
 import EmberError from "ember-metal/error";
@@ -13,16 +13,22 @@ var or = computed.or;
  */
 
 function tap(proxy, promise) {
-  set(proxy, 'isFulfilled', false);
-  set(proxy, 'isRejected', false);
+  setProperties(proxy, {
+    isFulfilled: false,
+    isRejected: false
+  });
 
   return promise.then(function(value) {
-    set(proxy, 'isFulfilled', true);
-    set(proxy, 'content', value);
+    setProperties(proxy, {
+      content: value,
+      isFulfilled: true
+    });
     return value;
   }, function(reason) {
-    set(proxy, 'isRejected', true);
-    set(proxy, 'reason', reason);
+    setProperties(proxy, {
+      reason: reason,
+      isRejected: true
+    });
     throw reason;
   }, "Ember: PromiseProxy");
 }
