@@ -12,3 +12,9 @@ test("Ember.copy date", function() {
       dateCopy = copy(date);
   equal(date.getTime(), dateCopy.getTime(), "dates should be equivalent");
 });
+
+test("Ember.copy null prototype object", function() {
+  var obj = Object.create(null);
+  obj.foo = 'bar';
+  equal(copy(obj).foo, 'bar', 'bar should still be bar');
+});

@@ -39,7 +39,7 @@ function _copy(obj, deep, seen, copies) {
     ret = {};
 
     for (key in obj) {
-      if (!obj.hasOwnProperty(key)) {
+      if (obj.hasOwnProperty && !obj.hasOwnProperty(key)) {
         continue;
       }
 
