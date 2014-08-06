@@ -393,6 +393,7 @@ function makeBoundHelper(fn) {
     var data = options.data;
     var types = data.isUnbound ? slice.call(options.types, 1) : options.types;
     var hash = options.hash;
+    var hashTypes = options.hashTypes;
     var view = data.view;
     var contexts = options.contexts;
     var currentContext = (contexts && contexts.length) ? contexts[0] : this;
@@ -409,6 +410,8 @@ function makeBoundHelper(fn) {
       if (IS_BINDING.test(hashOption)) {
         // Lop off 'Binding' suffix.
         boundOptions[hashOption.slice(0, -7)] = hash[hashOption];
+      } else if (hashTypes[hashOption] === 'ID') {
+        boundOptions[hashOption] = hash[hashOption];
       }
     }
 
