@@ -6,11 +6,20 @@ import Ember from "ember-metal/core"; // Ember.assert
 // var emberAssert = Ember.assert;
 
 import EmberHandlebars from "ember-handlebars-compiler";
+import { handlebarsGet } from "ember-handlebars/ext";
 var helpers = EmberHandlebars.helpers;
 /**
 @module ember
 @submodule ember-handlebars-compiler
 */
+
+function _resolveOption(context, options, key) {
+  if (options.hashTypes[key] === "ID") {
+    return handlebarsGet(context, options.hash[key], options);
+  } else {
+    return options.hash[key];
+  }
+}
 
 /**
 
@@ -192,10 +201,8 @@ export function inputHelper(options) {
 
   var hash = options.hash,
       types = options.hashTypes,
-      inputType = hash.type,
+      inputType = _resolveOption(this, options, 'type'),
       onEvent = hash.on;
-
-  Ember.assert('You can only use a string as a `type` parameter, not a variable', types.type === 'STRING' || types.type === undefined);
 
   delete hash.type;
   delete hash.on;

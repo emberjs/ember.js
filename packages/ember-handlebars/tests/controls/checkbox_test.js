@@ -89,13 +89,19 @@ test("It works", function() {
   }, /you must use `checked=/);
 });
 
-QUnit.module("{{input type='checkbox'}} - prevent dynamic type", {
+QUnit.module("{{input type=boundType}}", {
   setup: function() {
+    controller = {
+      inputType: "checkbox",
+      isChecked: true,
+    };
+
     checkboxView = EmberView.extend({
       controller: controller,
-      inputType: "checkbox",
-      template: compile('{{input type=inputType}}')
+      template: compile('{{input type=inputType checked=isChecked}}')
     }).create();
+
+    append();
   },
 
   teardown: function() {
@@ -103,12 +109,15 @@ QUnit.module("{{input type='checkbox'}} - prevent dynamic type", {
   }
 });
 
-test("It works", function() {
-  expectAssertion(function() {
-    append();
-  }, /not a variable/);
+test("should append a checkbox", function() {
+  equal(checkboxView.$('input[type=checkbox]').length, 1, "A single checkbox is added");
 });
 
+// Checking for the checked property is a good way to verify that the correct
+// view was used.
+test("checkbox checked property is updated", function() {
+  equal(checkboxView.$('input').prop('checked'), true, "the checkbox is checked");
+});
 
 QUnit.module("{{input type='checkbox'}} - static values", {
   setup: function() {
