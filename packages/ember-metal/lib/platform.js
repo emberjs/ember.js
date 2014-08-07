@@ -177,7 +177,7 @@ if (!(Object.create && !Object.create(null).hasOwnProperty)) {
       object.__proto__ = prototype;
     }
 
-    if (properties !== void 0) {
+    if (properties !== undefined) {
       Object.defineProperties(object, properties);
     }
 
