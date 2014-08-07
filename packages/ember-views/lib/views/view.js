@@ -2047,15 +2047,17 @@ var View = CoreView.extend({
 
   _toggleVisibility: function() {
     var $el = this.$();
-    if (!$el) { return; }
-
     var isVisible = get(this, 'isVisible');
 
     if (this._isVisible === isVisible) { return ; }
 
-    $el.toggle(isVisible);
-
+    // It's important to keep these in sync, even if we don't yet have
+    // an element in the DOM to manipulate:
     this._isVisible = isVisible;
+
+    if (!$el) { return; }
+
+    $el.toggle(isVisible);
 
     if (this._isAncestorHidden()) { return; }
 
