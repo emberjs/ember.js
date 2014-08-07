@@ -183,6 +183,7 @@ if (!(Object.create && !Object.create(null).hasOwnProperty)) {
 
     return object;
   };
+  create.isSimulated = true;
 } else {
   create = Object.create;
 }
