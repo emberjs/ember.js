@@ -30,7 +30,8 @@ import {
   tryFinally,
   wrap,
   apply,
-  applyStr
+  applyStr,
+  uuid
 } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
@@ -128,6 +129,7 @@ Ember.tryFinally      = tryFinally;
 Ember.wrap            = wrap;
 Ember.apply           = apply;
 Ember.applyStr        = applyStr;
+Ember.uuid            = uuid;
 
 Ember.Logger = Logger;
 
