@@ -5,6 +5,7 @@ import { uuid } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
 
 import { isSimpleClick } from "ember-views/system/utils";
+import ActionManager from "ember-views/system/action_manager";
 import EmberRouter from "ember-routing/system/router";
 
 import EmberHandlebars from "ember-handlebars";
@@ -33,9 +34,7 @@ function args(options, actionName) {
   return ret.concat(resolveParams(options.context, options.params, { types: types, data: data }));
 }
 
-var ActionHelper = {
-  registeredActions: {}
-};
+var ActionHelper = {};
 
 export { ActionHelper };
 
@@ -80,7 +79,7 @@ function ignoreKeyEvent(eventName, event, keyCode) {
 ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
   var actionId = uuid();
 
-  ActionHelper.registeredActions[actionId] = {
+  ActionManager.registeredActions[actionId] = {
     eventName: options.eventName,
     handler: function handleRegisteredAction(event) {
       if (!isAllowedEvent(event, allowedKeys)) { return true; }
@@ -135,7 +134,7 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
   };
 
   options.view.on('willClearRender', function() {
-    delete ActionHelper.registeredActions[actionId];
+    delete ActionManager.registeredActions[actionId];
   });
 
   return actionId;

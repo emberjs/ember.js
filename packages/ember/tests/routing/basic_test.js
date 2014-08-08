@@ -2,6 +2,7 @@ import "ember";
 import { forEach } from "ember-metal/enumerable_utils";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
+import ActionManager from "ember-views/system/action_manager";
 
 var Router, App, AppView, templates, router, container, originalLoggerError;
 var compile = Ember.Handlebars.compile;
@@ -1165,7 +1166,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var action = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1199,7 +1200,7 @@ asyncTest("Events are triggered on the current state when defined in `actions` o
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var action = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1237,7 +1238,7 @@ asyncTest("Events defined in `actions` object are triggered on the current state
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var action = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1272,7 +1273,7 @@ asyncTest("Events are triggered on the current state when defined in `events` ob
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var action = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1311,7 +1312,7 @@ asyncTest("Events defined in `events` object are triggered on the current state 
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var action = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1394,7 +1395,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
     bootApplication();
 
     var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-    var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+    var action = ActionManager.registeredActions[actionId];
     var event = new Ember.$.Event("click");
     action.handler(event);
   });
@@ -1438,7 +1439,7 @@ if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
     bootApplication();
 
     var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-    var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+    var action = ActionManager.registeredActions[actionId];
     var event = new Ember.$.Event("click");
     action.handler(event);
   });
@@ -1478,7 +1479,7 @@ asyncTest("actions can be triggered with multiple arguments", function() {
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var action = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });

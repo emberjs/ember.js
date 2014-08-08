@@ -2,6 +2,7 @@ import Ember from 'ember-metal/core'; // A, FEATURES, assert, TESTING_DEPRECATIO
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EventDispatcher from "ember-views/system/event_dispatcher";
+import ActionManager from "ember-views/system/action_manager";
 
 import Container from "ember-runtime/system/container";
 import EmberObject from "ember-runtime/system/object";
@@ -328,7 +329,7 @@ test("should register an event handler", function() {
 
   var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
-  ok(ActionHelper.registeredActions[actionId], "The action was registered");
+  ok(ActionManager.registeredActions[actionId], "The action was registered");
 
   view.$('a').trigger('click');
 
@@ -354,7 +355,7 @@ test("handles whitelisted modifier keys", function() {
 
   var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
-  ok(ActionHelper.registeredActions[actionId], "The action was registered");
+  ok(ActionManager.registeredActions[actionId], "The action was registered");
 
   var e = jQuery.Event('click');
   e.altKey = true;
@@ -512,11 +513,11 @@ test("should unregister event handlers on rerender", function() {
     view.rerender();
   });
 
-  ok(!ActionHelper.registeredActions[previousActionId], "On rerender, the event handler was removed");
+  ok(!ActionManager.registeredActions[previousActionId], "On rerender, the event handler was removed");
 
   var newActionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
-  ok(ActionHelper.registeredActions[newActionId], "After rerender completes, a new event handler was added");
+  ok(ActionManager.registeredActions[newActionId], "After rerender completes, a new event handler was added");
 });
 
 test("should unregister event handlers on inside virtual views", function() {
@@ -538,7 +539,7 @@ test("should unregister event handlers on inside virtual views", function() {
     things.removeAt(0);
   });
 
-  ok(!ActionHelper.registeredActions[actionId], "After the virtual view was destroyed, the action was unregistered");
+  ok(!ActionManager.registeredActions[actionId], "After the virtual view was destroyed, the action was unregistered");
 });
 
 test("should properly capture events on child elements of a container with an action", function() {
