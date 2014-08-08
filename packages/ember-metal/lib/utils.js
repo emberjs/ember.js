@@ -22,6 +22,15 @@ import keys from "ember-metal/keys";
 */
 var _uuid = 0;
 
+/**
+  Generates a universally unique identifier. This method
+  is used internally by Ember for assisting with
+  the generation of GUID's and other unique identifiers
+  such as `bind-attr` data attributes.
+
+  @public
+  @return {Number} [description]
+ */
 export function uuid() {
   return ++_uuid;
 }
