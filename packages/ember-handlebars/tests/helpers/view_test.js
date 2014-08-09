@@ -203,3 +203,16 @@ test("allows you to pass attributes that will be assigned to the class instance,
   ok(jQuery('#bar').hasClass('bar'));
   equal(jQuery('#bar').text(), 'Bar');
 });
+
+test("Should apply class without condition always", function() {
+  view = EmberView.create({
+    context: [],
+    controller: Ember.Object.create(),
+    template: Ember.Handlebars.compile('{{#view id="foo" classBinding=":foo"}} Foo{{/view}}')
+  });
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
+
+});
