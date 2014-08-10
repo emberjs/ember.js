@@ -43,7 +43,7 @@ function compilesTo(html, expected, context) {
   return fragment;
 }
 
-module("HTML-based compiler (output)", {
+QUnit.module("HTML-based compiler (output)", {
   setup: function() {
     helpers = {};
     partials = {};

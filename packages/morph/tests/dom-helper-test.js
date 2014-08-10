@@ -6,7 +6,7 @@ var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
 
 var dom;
 
-module('htmlbars-runtime: DOM Helper', {
+QUnit.module('htmlbars-runtime: DOM Helper', {
   setup: function() {
     dom = new DOMHelper();
   },

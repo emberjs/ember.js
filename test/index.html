@@ -52,7 +52,6 @@
       packagesToInject[name] = true;
 
       var deps = packagesConfig.dependencies[name];
-      if (deps && deps.lib) deps.lib.forEach(visitPackage);
     }
 
     for (var i = 0; i < packagesToTest.length; i++) {
@@ -61,7 +60,6 @@
       visitPackage(packageName);
 
       var deps = packagesConfig.dependencies[packageName];
-      if (deps && deps.test) deps.test.forEach(visitPackage);
     }
 
     // Inject lib packages

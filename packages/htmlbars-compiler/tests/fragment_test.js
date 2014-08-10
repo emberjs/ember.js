@@ -30,7 +30,7 @@ function hydratorFor(ast) {
   return new Function("fragment", "context", "dom", "hooks", "env", "contextualElement", program);
 }
 
-module('fragment');
+QUnit.module('fragment');
 
 test('compiles a fragment', function () {
   var ast = preprocess("<div>{{foo}} bar {{baz}}</div>");

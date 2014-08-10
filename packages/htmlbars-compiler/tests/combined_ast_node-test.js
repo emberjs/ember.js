@@ -4,7 +4,7 @@ import { ProgramNode, BlockNode, ComponentNode, ElementNode, MustacheNode, Sexpr
 
 var svgNamespace = "http://www.w3.org/2000/svg";
 
-module("HTML-based compiler (AST)");
+QUnit.module("HTML-based compiler (AST)");
 
 var stripLeft = { left: true, right: false };
 var stripRight = { left: false, right: true };

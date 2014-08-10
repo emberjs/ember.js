@@ -17,34 +17,12 @@ var ES6Tokenizer = pickFiles(bower+'/simple-html-tokenizer/lib/', {
   srcDir: '/',
   destDir: '/'
 });
-/*
-ES6Tokenizer = moveFile(ES6Tokenizer, {
-  srcFile: '/simple-html-tokenizer/simple-html-tokenizer.js',
-  destFile: '/simple-html-tokenizer.js',
-});
-*/
-var transpiledCjsTokenizer = transpileES6(ES6Tokenizer, { type: 'cjs' });
-tokenizerTrees.push(transpiledCjsTokenizer);
-var transpiledAmdTokenizer = transpileES6(ES6Tokenizer, { moduleName: true, type: 'amd' });
-var concatenatedAmdTokenizer = concatFiles(transpiledAmdTokenizer, {
-  inputFiles: ['**/*.js'],
-  outputFile: '/simple-html-tokenizer.amd.js'
-});
-tokenizerTrees.push(concatenatedAmdTokenizer);
 dependableTrees['simple-html-tokenizer'] = ES6Tokenizer;
 
 var ES6Handlebars = pickFiles('node_modules/handlebars/lib/', {
   srcDir: '/handlebars/',
   destDir: '/handlebars/'
 });
-var transpiledCjsHandlebars = transpileES6(ES6Handlebars, { type: 'cjs' });
-handlebarsTrees.push(transpiledCjsHandlebars);
-var transpiledAmdHandlebars = transpileES6(ES6Handlebars, { moduleName: true, type: 'amd' });
-var concatenatedAmdHandlebars = concatFiles(transpiledAmdHandlebars, {
-  inputFiles: ['**/*.js'],
-  outputFile: '/handlebars.amd.js'
-});
-handlebarsTrees.push(concatenatedAmdHandlebars);
 dependableTrees['handlebars'] = ES6Handlebars;
 
 function getDependencyTree(depName) {
@@ -82,27 +60,13 @@ function getPackageTrees(packageName, dependencies) {
     destDir: '/' + packageName + '-tests'
   }));
   // dependencies of tests
-  for (var i=0;i<(dependencies.tests || []).length;i++) {
-    var depName = dependencies.tests[i];
+  for (var i=0;i<(dependencies.test || []).length;i++) {
+    var depName = dependencies.test[i];
     testTrees.push(getDependencyTree(depName));
   }
 
   return [libTrees, testTrees];
 }
-
-/*
-  var transpiledLib = transpileES6(package, { moduleName: true });
-  var concatenatedLib = concatFiles(transpiledLib, {
-    inputFiles: ['** /*.js'],
-    outputFile: '/' + packageName + '.amd.js'
-  });
-  var transpiledTests = transpileES6(allTests, { moduleName: true });
-  var concatenatedTests = concatFiles(transpiledTests, {
-    inputFiles: ['** /*.js'],
-    outputFile: '/test/' + packageName + '-tests.amd.js'
-  });
-  return [packageTrees, concatenatedTests];
-*/
 
 
 // Test Assets
@@ -147,17 +111,6 @@ trees.push(concatFiles(supportES6Transpiled, {
   outputFile: '/test/test-support.amd.js'
 }));
 
-/*
- * They used to make things here. Now they just compile them
- * straight into the htmlbars packages themselves.
-for (var dep in dependableTrees) {
-  trees.push(pickFiles(dependableTrees[dep], {
-    srcDir: '',
-    destDir: 'vendor/',
-  }));
-}
-*/
-
 for (var packageName in packages.dependencies) {
   var packageTrees = getPackageTrees(packageName, packages.dependencies[packageName]);
 
@@ -190,18 +143,22 @@ for (var packageName in packages.dependencies) {
   // jsHint tests
   var jsHintLibTree = pickFiles(libTree, {
     srcDir: packageName+'/',
-    destDir: packageName+'/',
+    destDir: packageName+'/'
   });
   jsHintLibTree = removeFile(jsHintLibTree, {
-    srcFile: 'htmlbars-runtime.js' // Uses ES6 module syntax. Breaks jsHint
+    srcFile: 'htmlbars-runtime.js' // Uses ES6 `module` syntax. Breaks jsHint
   });
   testTrees.push(jsHint(jsHintLibTree, { destFile: '/' + packageName + '-tests/jshint-lib.js' }));
-  testTrees.push(jsHint(testTree, { destFile: '/' + packageName + '-tests/jshint-tests.js' }));
+  var jsHintTestTree = pickFiles(testTree, {
+    srcDir: packageName+'-tests/',
+    destDir: packageName+'-tests/'
+  });
+  testTrees.push(jsHint(jsHintTestTree, { destFile: '/' + packageName + '-tests/jshint-tests.js' }));
 
   // AMD tests
   var transpiledAmdTests = transpileES6(mergeTrees(testTrees), { moduleName: true, type: 'amd' });
   var concatenatedAmdTests = concatFiles(transpiledAmdTests, {
-    inputFiles: [packageName+'-tests/**/*.js'],
+    inputFiles: ['**/*.js'],
     outputFile: '/test/' + packageName + '-tests.amd.js'
   });
   trees.push(concatenatedAmdTests);
@@ -210,7 +167,7 @@ for (var packageName in packages.dependencies) {
   var transpiledCjsTests = transpileES6(mergeTrees(testTrees), { type: 'cjs' });
   var movedCjsTests = pickFiles(transpiledCjsTests, {
     srcDir: packageName+'-tests/',
-    destDir: '/test/'+packageName
+    destDir: '/'+packageName+"-tests/"
   });
   trees.push(movedCjsTests);
 }
