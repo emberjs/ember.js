@@ -85,7 +85,11 @@ prototype.component = function(tag, morphNum) {
 };
 
 prototype.ambiguous = function(str, escaped, morphNum) {
-  this.pushMustacheInContent(string(str), '[]', ['escaped:'+escaped], morphNum);
+  var options = [];
+  options.push('context:context');
+  options.push('escaped:'+escaped);
+  options.push('morph:morph'+morphNum);
+  this.pushMustacheInContent(string(str), '[]', options, morphNum);
 };
 
 prototype.ambiguousAttr = function(str, escaped) {
