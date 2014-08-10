@@ -85,33 +85,6 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   },
 
   /**
-    Invoked by the view system when this view needs to produce an HTML
-    representation. This method will create a new render buffer, if needed,
-    then apply any default attributes, such as class names and visibility.
-    Finally, the `render()` method is invoked, which is responsible for
-    doing the bulk of the rendering.
-
-    You should not need to override this method; instead, implement the
-    `template` property, or if you need more control, override the `render`
-    method.
-
-    @method renderToBuffer
-    @param {Ember.RenderBuffer} buffer the render buffer. If no buffer is
-      passed, a default buffer, using the current view's `tagName`, will
-      be used.
-    @private
-  */
-  renderToBuffer: function() {
-    // TODO bring back instrumentation
-    return this._renderToBuffer();
-  },
-
-  _renderToBuffer: function() {
-    this.constructor.renderer.renderTree(this);
-    return this.buffer;
-  },
-
-  /**
     Override the default event firing from `Ember.Evented` to
     also call methods with the given name.
 
@@ -160,8 +133,6 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   },
 
   clearRenderedChildren: Ember.K,
-  triggerRecursively: Ember.K,
-  invokeRecursively: Ember.K,
   _transitionTo: Ember.K,
   destroyElement: Ember.K
 });

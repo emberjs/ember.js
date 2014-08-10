@@ -28,16 +28,6 @@ merge(hasElement, {
     return jQuery("#" + get(view, 'elementId'))[0];
   },
 
-  setElement: function(view, value) {
-    if (value === null) {
-      view._transitionTo('preRender');
-    } else {
-      throw new EmberError("You cannot set an element to a non-null value when the element is already in the DOM.");
-    }
-
-    return value;
-  },
-
   // once the view has been inserted into the DOM, rerendering is
   // deferred to allow bindings to synchronize.
   rerender: function(view) {

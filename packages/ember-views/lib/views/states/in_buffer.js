@@ -38,8 +38,6 @@ merge(inBuffer, {
     if (!_childViews.length) { _childViews = view._childViews = _childViews.slice(); }
     _childViews.push(childView);
 
-    //childView.renderToBuffer(buffer); // done later on the render loop
-
     if (!childView._morph) {
       buffer.pushChildView(childView);
     }

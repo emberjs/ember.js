@@ -11,15 +11,21 @@ import jQuery from "ember-views/system/jquery";
 */
 var preRender = create(_default);
 
-merge(preRender, {
-  empty: Ember.K,
+var containsElement;
+if (typeof Node === 'object') {
+  containsElement = Node.prototype.contains;
 
-  setElement: function(view, value) {
-    if (value !== null) {
-      view._transitionTo('hasElement');
-    }
-    return value;
+  if (!containsElement && Node.prototype.compareDocumentPosition) {
+    // polyfill for older Firefox.
+    // http://compatibility.shwups-cms.ch/en/polyfills/?&id=52
+    containsElement = function(node){
+      return !!(this.compareDocumentPosition(node) & 16);
+    };
   }
-});
+} else {
+  containsElement = function(element) {
+    return this.contains(element);
+  };
+}
 
 export default preRender;

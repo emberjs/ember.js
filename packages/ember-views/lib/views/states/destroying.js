@@ -21,13 +21,6 @@ merge(destroying, {
   },
   destroyElement: function() {
     throw new EmberError(fmt(destroyingError, ['destroyElement']));
-  },
-  empty: function() {
-    throw new EmberError(fmt(destroyingError, ['empty']));
-  },
-
-  setElement: function() {
-    throw new EmberError(fmt(destroyingError, ["set('element', ...)"]));
   }
 });
 

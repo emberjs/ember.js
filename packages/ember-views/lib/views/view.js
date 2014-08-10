@@ -49,24 +49,11 @@ import jQuery from "ember-views/system/jquery";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 
 import CoreView from "ember-views/views/core_view";
-import ViewCollection from "ember-views/views/view_collection";
 
 /**
 @module ember
 @submodule ember-views
 */
-
-var ContainerView;
-
-function nullViewsBuffer(view) {
-  view.buffer = null;
-
-}
-
-function clearCachedElement(view) {
-  meta(view).cache.element = undefined;
-}
-
 var childViewsProperty = computed(function() {
   var childViews = this._childViews, ret = emberA(), view = this;
 
@@ -1450,11 +1437,9 @@ var View = CoreView.extend({
     @return {Ember.View} receiver
   */
   createElement: function() {
-    if (get(this, 'element')) { return this; }
+    if (this.element) { return this; }
 
-    var element = this.constructor.renderer.renderTree(this);
-
-    set(this, 'element', element);
+    this.constructor.renderer.renderTree(this);
 
     return this;
   },
@@ -1483,65 +1468,6 @@ var View = CoreView.extend({
     @event willClearRender
   */
   willClearRender: Ember.K,
-
-  /**
-    Run this callback on the current view (unless includeSelf is false) and recursively on child views.
-
-    @method invokeRecursively
-    @param fn {Function}
-    @param includeSelf {Boolean} Includes itself if true.
-    @private
-  */
-  invokeRecursively: function(fn, includeSelf) {
-    var childViews = (includeSelf === false) ? this._childViews : [this];
-    var currentViews, view, currentChildViews;
-
-    while (childViews.length) {
-      currentViews = childViews.slice();
-      childViews = [];
-
-      for (var i=0, l=currentViews.length; i<l; i++) {
-        view = currentViews[i];
-        currentChildViews = view._childViews ? view._childViews.slice(0) : null;
-        fn(view);
-        if (currentChildViews) {
-          childViews.push.apply(childViews, currentChildViews);
-        }
-      }
-    }
-  },
-
-  triggerRecursively: function(eventName) {
-    var childViews = [this], currentViews, view, currentChildViews;
-
-    while (childViews.length) {
-      currentViews = childViews.slice();
-      childViews = [];
-
-      for (var i=0, l=currentViews.length; i<l; i++) {
-        view = currentViews[i];
-        currentChildViews = view._childViews ? view._childViews.slice(0) : null;
-        if (view.trigger) { view.trigger(eventName); }
-        if (currentChildViews) {
-          childViews.push.apply(childViews, currentChildViews);
-        }
-
-      }
-    }
-  },
-
-  viewHierarchyCollection: function() {
-    var currentView, viewCollection = new ViewCollection([this]);
-
-    for (var i = 0; i < viewCollection.length; i++) {
-      currentView = viewCollection.objectAt(i);
-      if (currentView._childViews) {
-        viewCollection.push.apply(viewCollection, currentView._childViews);
-      }
-    }
-
-    return viewCollection;
-  },
 
   /**
     Destroys any existing element along with the element for any child views
@@ -1578,24 +1504,6 @@ var View = CoreView.extend({
   willDestroyElement: Ember.K,
 
   /**
-    Triggers the `willDestroyElement` event (which invokes the
-    `willDestroyElement()` method if it exists) on this view and all child
-    views.
-
-    Before triggering `willDestroyElement`, it first triggers the
-    `willClearRender` event recursively.
-
-    @method _notifyWillDestroyElement
-    @private
-  */
-  _notifyWillDestroyElement: function() {
-    var viewCollection = this.viewHierarchyCollection();
-    viewCollection.trigger('willClearRender');
-    viewCollection.trigger('willDestroyElement');
-    return viewCollection;
-  },
-
-  /**
     Called when the parentView property has changed.
 
     @event parentViewDidChange
@@ -1607,14 +1515,6 @@ var View = CoreView.extend({
   instrumentDetails: function(hash) {
     hash.template = get(this, 'templateName');
     this._super(hash);
-  },
-
-  _renderToBuffer: function(buffer) {
-    this.lengthBeforeRender = this._childViews.length;
-    this._super(buffer);
-    this.lengthAfterRender = this._childViews.length;
-
-    return buffer;
   },
 
   beforeRender: function(buffer) {},
@@ -2017,10 +1917,6 @@ var View = CoreView.extend({
     }
 
     return false;
-  },
-
-  clearBuffer: function() {
-    this.invokeRecursively(nullViewsBuffer);
   },
   transitionTo: function(state, children) {
     Ember.deprecate("Ember.View#transitionTo has been deprecated, it is for internal use only");
