@@ -239,7 +239,7 @@ var vendoredPackages = {
   'metamorph':        vendoredPackage('metamorph'),
   'router':           vendoredEs6Package('router'),
   'route-recognizer': vendoredEs6Package('route-recognizer'),
-  'morph':            morphTree('htmlbars/packages/morph')
+  'morph':            htmlbarsPackage('morph')
 };
 
 var emberHandlebarsCompiler = pickFiles('packages/ember-handlebars-compiler/lib', {
@@ -496,14 +496,15 @@ sourceTrees = mergeTrees(sourceTrees);
 testTrees   = mergeTrees(testTrees);
 
 
-function morphTree() {
-  var tree = pickFiles('bower_components/htmlbars/packages/morph/lib', {
-    srcDir: '/', destDir: '/morph'
+function htmlbarsPackage(packageName) {
+  var tree = pickFiles('bower_components/htmlbars/packages/' + packageName + '/lib', {
+    srcDir: '/',
+    destDir: '/' + packageName
   });
 
   tree = moveFile(tree, {
-    srcFile: '/morph/main.js',
-    destFile: 'morph.js'
+    srcFile: '/' + packageName + '/main.js',
+    destFile: packageName + '.js'
   });
 
   return transpileES6(tree, {
