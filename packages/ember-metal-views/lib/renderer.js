@@ -110,12 +110,16 @@ Renderer.prototype.uuid = function Renderer_uuid(view) {
   if (view._uuid === undefined) {
     view._uuid = ++this._uuid;
     view._renderer = this;
-  }
+  } // else assert(view._renderer === this)
   return view._uuid;
 };
 
 Renderer.prototype.scheduleInsert =
-  function Renderer_scheduleInsert(view) {
+  function Renderer_scheduleInsert(view, morph) {
+    if (view._morph || view._elementCreated) {
+      throw new Error("You can't insert a View that has already been rendered");
+    }
+    view._morph = morph;
     var viewId = this.uuid(view);
     this._inserts[viewId] = this.scheduleRender(this, function() {
       this._inserts[viewId] = null;
@@ -125,22 +129,19 @@ Renderer.prototype.scheduleInsert =
 
 Renderer.prototype.appendTo =
   function Renderer_appendTo(view, target) {
-    // TODO check view state, cancel existing insertion.
     // TODO use dom helper for creating this morph.
     var start = document.createTextNode('');
     var end = document.createTextNode('');
     target.appendChild(start);
     target.appendChild(end);
-    view._morph = this._dom.createMorph(target, start, end);
-
-    this.scheduleInsert(view);
+    var morph = this._dom.createMorph(target, start, end);
+    this.scheduleInsert(view, morph);
   };
 
 Renderer.prototype.replaceIn =
   function Renderer_replaceIn(view, target) {
-    view._morph = this._dom.createMorph(target, null, null);
-
-    this.scheduleInsert(view);
+    var morph = this._dom.createMorph(target, null, null);
+    this.scheduleInsert(view, morph);
   };
 
 function Renderer_remove(_view, shouldDestroy, reset) {
