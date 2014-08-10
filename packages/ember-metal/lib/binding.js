@@ -337,7 +337,7 @@ mixinProperties(Binding, {
 
   Properties ending in a `Binding` suffix will be converted to `Ember.Binding`
   instances. The value of this property should be a string representing a path
-  to another object or a custom binding instanced created using Binding helpers
+  to another object or a custom binding instance created using Binding helpers
   (see "One Way Bindings"):
 
   ```

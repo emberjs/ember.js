@@ -89,7 +89,7 @@ if ("undefined" === typeof MetamorphENV) {
 MetamorphENV.DISABLE_RANGE_API = Ember.ENV.DISABLE_RANGE_API;
 
 /**
-  Hash of enabled Canary features. Add to before creating your application.
+  Hash of enabled Canary features. Add to this before creating your application.
 
   You can also define `ENV.FEATURES` if you need to enable features flagged at runtime.
 
