@@ -1,5 +1,16 @@
 # Ember Changelog
 
+### Ember 1.7.0-beta.5 (August 10, 2014)
+
+* Prevent duplicate message getting printed by errors in Route hooks.
+* Deprecate observing container views like arrays.
+* Add `catch` and `finally` to Transition.
+* [BUGFIX] paramsFor: don’t clobber falsy params.
+* [BUGFIX] Controllers with query params are unit testable.
+* [BUGFIX] Controllers have new QP values before setupController.
+* [BUGFIX] Fix initial render of {{input type=bound}} for checkboxes.
+* [BUGFIX] makeBoundHelper supports unquoted bound property options.
+
 ### Ember 1.7.0-beta.4 (July 30, 2014)
 
 * [BUGFIX] link-to helper can be inserted in DOM when the router is not present.
