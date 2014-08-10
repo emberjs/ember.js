@@ -1,6 +1,6 @@
 import {hooks} from "../htmlbars-runtime";
 
-module("htmlbars-runtime");
+QUnit.module("htmlbars-runtime");
 
 test("hooks are present", function () {
   var hookNames = ['content', 'lookupHelper'];

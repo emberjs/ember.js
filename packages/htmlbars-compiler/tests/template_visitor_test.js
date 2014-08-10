@@ -16,7 +16,7 @@ function actionsEqual(input, expectedActions) {
   deepEqual(actualActions, expectedActions);
 }
 
-module("TemplateVisitor");
+QUnit.module("TemplateVisitor");
 
 test("empty", function() {
   var input = "";

@@ -3,7 +3,7 @@ import { preprocess } from "../htmlbars-compiler/parser";
 import { equalHTML } from "../test/support/assertions";
 import { DOMHelper } from "../morph";
 
-module("TemplateCompiler");
+QUnit.module("TemplateCompiler");
 
 var dom = new DOMHelper();
 

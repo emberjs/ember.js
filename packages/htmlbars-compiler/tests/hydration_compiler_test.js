@@ -17,7 +17,7 @@ function helper(name, params, morphNum) {
   return [ "helper", [name, params.length, true, morphNum] ];
 }
 
-module("HydrationOpcodeCompiler opcode generation");
+QUnit.module("HydrationOpcodeCompiler opcode generation");
 
 test("simple example", function() {
   var opcodes = opcodesFor("<div>{{foo}} bar {{baz}}</div>");
