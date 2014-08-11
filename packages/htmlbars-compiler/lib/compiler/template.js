@@ -67,6 +67,7 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     indent+'  var cachedFragment;\n' +
     indent+'  return function template(context, env, contextualElement) {\n' +
     indent+'    var dom = env.dom, hooks = env.hooks;\n' +
+    indent+'    dom.detectNamespace(contextualElement);\n' +
     indent+'    if (cachedFragment === undefined) {\n' +
     indent+'      cachedFragment = build(dom);\n' +
     indent+'    }\n' +
@@ -107,4 +108,8 @@ TemplateCompiler.prototype.text = function(string, i, l, r) {
 TemplateCompiler.prototype.mustache = function (mustache, i, l) {
   this.fragmentOpcodeCompiler.mustache(mustache, i, l);
   this.hydrationOpcodeCompiler.mustache(mustache, i, l);
+};
+
+TemplateCompiler.prototype.setNamespace = function(namespace) {
+  this.fragmentOpcodeCompiler.setNamespace(namespace);
 };
