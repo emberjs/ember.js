@@ -1,10 +1,10 @@
-import { preprocess } from "htmlbars-compiler/parser";
+import { preprocess } from "../htmlbars-compiler/parser";
 import { ProgramNode, BlockNode, ComponentNode, ElementNode, MustacheNode, SexprNode,
-  HashNode, IdNode, StringNode, AttrNode, TextNode } from "htmlbars-compiler/ast";
+  HashNode, IdNode, StringNode, AttrNode, TextNode } from "../htmlbars-compiler/ast";
 
 var svgNamespace = "http://www.w3.org/2000/svg";
 
-module("HTML-based compiler (AST)");
+QUnit.module("HTML-based compiler (AST)");
 
 var stripLeft = { left: true, right: false };
 var stripRight = { left: false, right: true };

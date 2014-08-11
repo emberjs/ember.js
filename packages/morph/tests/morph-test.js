@@ -1,7 +1,7 @@
-import Morph from "morph/morph";
-import { equalHTML } from "test/support/assertions";
-import SafeString from 'handlebars/safe-string';
-import DOMHelper from "morph/dom-helper";
+import Morph from "../morph/morph";
+import { equalHTML } from "../test/support/assertions";
+import SafeString from '../handlebars/safe-string';
+import DOMHelper from "../morph/dom-helper";
 
 var domHelper = new DOMHelper();
 

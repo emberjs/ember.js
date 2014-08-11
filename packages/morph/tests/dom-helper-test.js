@@ -1,12 +1,12 @@
-import {DOMHelper} from "morph";
-import {equalHTML} from "test/support/assertions";
+import {DOMHelper} from "../morph";
+import {equalHTML} from "../test/support/assertions";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace   = "http://www.w3.org/2000/svg";
 
 var dom;
 
-module('htmlbars-runtime: DOM Helper', {
+QUnit.module('htmlbars-runtime: DOM Helper', {
   setup: function() {
     dom = new DOMHelper();
   },

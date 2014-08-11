@@ -1,10 +1,10 @@
-import { FragmentOpcodeCompiler } from "htmlbars-compiler/compiler/fragment_opcode";
-import { HydrationOpcodeCompiler } from "htmlbars-compiler/compiler/hydration_opcode";
-import { FragmentCompiler } from "htmlbars-compiler/compiler/fragment";
-import { HydrationCompiler } from "htmlbars-compiler/compiler/hydration";
-import { DOMHelper } from "morph";
-import { preprocess } from "htmlbars-compiler/parser";
-import { equalHTML } from "test/support/assertions";
+import { FragmentOpcodeCompiler } from "../htmlbars-compiler/compiler/fragment_opcode";
+import { HydrationOpcodeCompiler } from "../htmlbars-compiler/compiler/hydration_opcode";
+import { FragmentCompiler } from "../htmlbars-compiler/compiler/fragment";
+import { HydrationCompiler } from "../htmlbars-compiler/compiler/hydration";
+import { DOMHelper } from "../morph";
+import { preprocess } from "../htmlbars-compiler/parser";
+import { equalHTML } from "../test/support/assertions";
 
 var dom = new DOMHelper();
 
@@ -30,7 +30,7 @@ function hydratorFor(ast) {
   return new Function("fragment", "context", "dom", "hooks", "env", "contextualElement", program);
 }
 
-module('fragment');
+QUnit.module('fragment');
 
 test('compiles a fragment', function () {
   var ast = preprocess("<div>{{foo}} bar {{baz}}</div>");

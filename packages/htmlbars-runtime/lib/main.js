@@ -1,3 +1,3 @@
-var hooks = require('htmlbars-runtime/hooks');
+module hooks from 'htmlbars-runtime/hooks';
 
 export var hooks;
