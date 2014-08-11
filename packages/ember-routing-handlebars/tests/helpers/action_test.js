@@ -1103,42 +1103,6 @@ test("a quoteless parameter that also exists as an action name results in an ass
   Ember.assert = oldAssert;
 });
 
-test("a quoteless parameter that also exists as an action name in deprecated action in controller style results in an assertion", function(){
-  var dropDeprecatedActionStyleOrig = Ember.FEATURES['ember-routing-drop-deprecated-action-style'];
-  Ember.FEATURES['ember-routing-drop-deprecated-action-style'] = false;
-
-  var triggeredAction;
-
-  view = EmberView.create({
-    template: compile("<a id='oops-bound-param' {{action ohNoeNotValid}}>Hi</a>")
-  });
-
-  var controller = EmberController.extend({
-    ohNoeNotValid: function() {
-      triggeredAction = true;
-    }
-  }).create();
-
-  run(function() {
-    view.set('controller', controller);
-    view.appendTo('#qunit-fixture');
-  });
-
-  var oldAssert = Ember.assert;
-  Ember.assert = function(message, test){
-    ok(test, message + " -- was properly asserted");
-  };
-
-  run(function(){
-    view.$("#oops-bound-param").click();
-  });
-
-  ok(triggeredAction, 'the action was triggered');
-
-  Ember.assert = oldAssert;
-  Ember.FEATURES['ember-routing-drop-deprecated-action-style'] = dropDeprecatedActionStyleOrig;
-});
-
 QUnit.module("Ember.Handlebars - action helper - deprecated invoking directly on target", {
   setup: function() {
     originalActionHelper = EmberHandlebars.helpers['action'];
@@ -1158,32 +1122,6 @@ QUnit.module("Ember.Handlebars - action helper - deprecated invoking directly on
     });
   }
 });
-
-if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
-  test("should invoke a handler defined directly on the target (DEPRECATED)", function() {
-    var eventHandlerWasCalled,
-        model = EmberObject.create();
-
-    var controller = EmberController.extend({
-      edit: function() {
-        eventHandlerWasCalled = true;
-      }
-    }).create();
-
-    view = EmberView.create({
-      controller: controller,
-      template: EmberHandlebars.compile('<button {{action "edit"}}>edit</button>')
-    });
-
-    appendView();
-
-    expectDeprecation(/Action handlers implemented directly on controllers are deprecated/);
-
-    view.$('button').trigger('click');
-
-    ok(eventHandlerWasCalled, "the action was called");
-  });
-}
 
 test("should respect preventDefault=false option if provided", function(){
   view = EmberView.create({

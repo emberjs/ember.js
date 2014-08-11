@@ -125,19 +125,6 @@ test("Action can be handled by a superclass' actions object", function() {
 
 QUnit.module('Controller deprecations');
 
-if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
-  test("Action can be handled by method directly on controller (DEPRECATED)", function() {
-    expectDeprecation(/Action handlers implemented directly on controllers are deprecated/);
-    var TestController = Controller.extend({
-      poke: function() {
-        ok(true, 'poked');
-      }
-    });
-    var controller = TestController.create({});
-    controller.send("poke");
-  });
-}
-
 QUnit.module('Controller Content -> Model Alias');
 
 test("`model` is aliased as `content`", function() {

@@ -154,18 +154,6 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     }
   },
 
-  deprecatedSendHandles: function(actionName) {
-    return !!this[actionName];
-  },
-
-  deprecatedSend: function(actionName) {
-    var args = [].slice.call(arguments, 1);
-    Ember.assert('' + this + " has the action " + actionName + " but it is not a function", typeof this[actionName] === 'function');
-    Ember.deprecate('Action handlers implemented directly on views are deprecated in favor of action handlers on an `actions` object ( action: `' + actionName + '` on ' + this + ')', false);
-    this[actionName].apply(this, args);
-    return;
-  },
-
   has: function(name) {
     return typeOf(this[name]) === 'function' || this._super(name);
   },
