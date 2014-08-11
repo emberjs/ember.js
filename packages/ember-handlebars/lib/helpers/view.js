@@ -134,8 +134,10 @@ export var ViewHelper = EmberObject.create({
           //
           //     classNameBinding="_parentView.context.isGreen:green"
           var parsedPath = View._parsePropertyPath(full);
-          path = this.contextualizeBindingPath(parsedPath.path, data);
-          if (path) { extensions.classNameBindings[b] = path + parsedPath.classNames; }
+          if(parsedPath.path !== '') {
+            path = this.contextualizeBindingPath(parsedPath.path, data); 
+            if (path) { extensions.classNameBindings[b] = path + parsedPath.classNames; }
+          }
         }
       }
     }
