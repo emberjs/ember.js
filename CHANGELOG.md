@@ -1,6 +1,8 @@
 # Ember Changelog
 
 * Deprecate usage of Internet Explorer 6 & 7.
+* [BREAKING] Remove deprecated controller action lookup. Support for pre-1.0.0 applications with actions in the root
+  of the controller (instead of inside the `actions` hash) has been removed.
 
 ### Ember 1.7.0-beta.2 (July, 16, 2014)
 
