@@ -35,7 +35,7 @@ export function webComponentFallback(morph, tagName, context, options, env) {
       element.setAttribute(name, hash[name]);
     }
   }
-  element.appendChild(options.render(context, env));
+  element.appendChild(options.render(context, env, morph.contextualElement));
   return element;
 }
 

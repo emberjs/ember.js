@@ -3,6 +3,9 @@ import { tokenize } from "../simple-html-tokenizer";
 import { hydrationHooks } from "../htmlbars-runtime/hooks";
 import { DOMHelper } from "../morph";
 
+var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
+    svgNamespace   = "http://www.w3.org/2000/svg";
+
 function frag(element, string) {
   if (element instanceof DocumentFragment) {
     element = document.createElement('div');
@@ -60,11 +63,12 @@ QUnit.module("HTML-based compiler (output)", {
 
 function equalTokens(fragment, html) {
   var div = document.createElement("div");
-
   div.appendChild(fragment.cloneNode(true));
-
   var fragTokens = tokenize(div.innerHTML);
-  var htmlTokens = tokenize(html);
+
+  div.removeChild(div.childNodes[0]);
+  div.innerHTML = html;
+  var htmlTokens = tokenize(div.innerHTML);
 
   function normalizeTokens(token) {
     if (token.type === 'StartTag') {
@@ -109,7 +113,7 @@ test("Simple elements can have attributes", function() {
 
 test("Null attribute value removes that attribute", function() {
   var template = compile('<input disabled="{{isDisabled}}">');
-  var fragment =template({isDisabled: null}, env);
+  var fragment = template({isDisabled: null}, env);
 
   equalTokens(fragment, '<input>');
 });
@@ -118,6 +122,19 @@ test("Simple elements can have arbitrary attributes", function() {
   var template = compile("<div data-some-data='foo'>content</div>");
   var fragment = template({}, env);
   equalTokens(fragment, '<div data-some-data="foo">content</div>');
+});
+
+test("checked attribute and checked property are present after clone and hydrate", function() {
+  var template = compile("<input checked=\"checked\">");
+  var fragment = template({}, env);
+  ok(fragment.checked, 'input is checked');
+  equalTokens(fragment, "<input checked='checked'>");
+});
+
+test("SVG element can have capitalized attributes", function() {
+  var template = compile("<svg viewBox=\"0 0 0 0\"></svg>");
+  var fragment = template({}, env);
+  equalTokens(fragment, '<svg viewBox=\"0 0 0 0\"></svg>');
 });
 
 test("checked attribute and checked property are present after clone and hydrate", function() {
@@ -154,6 +171,69 @@ test("Void elements are self-closing", function() {
 
 test("The compiler can handle nesting", function() {
   var html = '<div class="foo"><p><span id="bar" data-foo="bar">hi!</span></p></div> More content';
+  var template = compile(html);
+  var fragment = template({}, env);
+
+  equalTokens(fragment, html);
+});
+
+test("The compiler can handle namespaced elements", function() {
+  var html = '<svg><path stroke="black" d="M 0 0 L 100 100"></path></svg>';
+  var template = compile(html);
+  var fragment = template({}, env);
+
+  equal(fragment.namespaceURI, svgNamespace, "creates the svg element with a namespace");
+  equalTokens(fragment, html);
+});
+
+test("The compiler sets namespaces on nested namespaced elements", function() {
+  var html = '<svg><path stroke="black" d="M 0 0 L 100 100"></path></svg>';
+  var template = compile(html);
+  var fragment = template({}, env);
+
+  equal( fragment.childNodes[0].namespaceURI, svgNamespace,
+         "creates the path element with a namespace" );
+  equalTokens(fragment, html);
+});
+
+test("The compiler sets a namespace on an HTML integration point", function() {
+  var html = '<svg><foreignObject>Hi</foreignObject></svg>';
+  var template = compile(html);
+  var fragment = template({}, env);
+
+  equal( fragment.namespaceURI, svgNamespace,
+         "creates the path element with a namespace" );
+  equal( fragment.childNodes[0].namespaceURI, svgNamespace,
+         "creates the path element with a namespace" );
+  equalTokens(fragment, html);
+});
+
+test("The compiler does not set a namespace on an element inside an HTML integration point", function() {
+  var html = '<svg><foreignObject><div></div></foreignObject></svg>';
+  var template = compile(html);
+  var fragment = template({}, env);
+
+  equal( fragment.childNodes[0].childNodes[0].namespaceURI, xhtmlNamespace,
+         "creates the path element with a namespace" );
+  equalTokens(fragment, html);
+});
+
+test("The compiler pops back to the correct namespace", function() {
+  var html = '<svg></svg><svg></svg><div></div>';
+  var template = compile(html);
+  var fragment = template({}, env);
+
+  equal( fragment.childNodes[0].namespaceURI, svgNamespace,
+         "creates the path element with a namespace" );
+  equal( fragment.childNodes[1].namespaceURI, svgNamespace,
+         "creates the path element with a namespace" );
+  equal( fragment.childNodes[2].namespaceURI, xhtmlNamespace,
+         "creates the path element with a namespace" );
+  equalTokens(fragment, html);
+});
+
+test("The compiler preserves capitalization of tags", function() {
+  var html = '<svg><linearGradient id="gradient"></linearGradient></svg>';
   var template = compile(html);
   var fragment = template({}, env);
 
@@ -768,6 +848,104 @@ test("Data-bound block helpers", function() {
   equalTokens(fragment, '<p>hi</p> content  more <em>content</em> here');
 });
 */
+
+test("svg can live with hydration", function() {
+  var template = compile('<svg></svg>{{name}}');
+
+  var fragment = template({ name: 'Milly' }, env);
+  equal(
+    fragment.childNodes[0].namespaceURI, svgNamespace,
+    "svg namespace inside a block is present" );
+});
+
+test("svg can take some hydration", function() {
+  var template = compile('<div><svg>{{name}}</svg></div>');
+
+  var fragment = template({ name: 'Milly' }, env);
+  equal(
+    fragment.childNodes[0].namespaceURI, svgNamespace,
+    "svg namespace inside a block is present" );
+  equalTokens( fragment, '<div><svg>Milly</svg></div>',
+             "html is valid" );
+});
+
+test("root svg can take some hydration", function() {
+  var template = compile('<svg>{{name}}</svg>');
+  var fragment = template({ name: 'Milly' }, env);
+  equal(
+    fragment.namespaceURI, svgNamespace,
+    "svg namespace inside a block is present" );
+  equalTokens( fragment, '<svg>Milly</svg>',
+             "html is valid" );
+});
+
+test("Block helper allows interior namespace", function() {
+  var isTrue = true;
+  hooks.content = function(morph, path, context, params, options, env) {
+    if (isTrue) {
+      morph.update(options.render(context, env, morph.contextualElement));
+    } else {
+     morph.update(options.inverse(context, env, morph.contextualElement));
+    }
+  };
+  var template = compile('{{#testing}}<svg></svg>{{else}}<div><svg></svg></div>{{/testing}}');
+
+  var fragment = template({ isTrue: true }, env);
+  equal(
+    fragment.childNodes[1].namespaceURI, svgNamespace,
+    "svg namespace inside a block is present" );
+
+  isTrue = false;
+  fragment = template({ isTrue: false }, env);
+  equal(
+    fragment.childNodes[1].namespaceURI, xhtmlNamespace,
+    "inverse block path has a normal namespace");
+  equal(
+    fragment.childNodes[1].childNodes[0].namespaceURI, svgNamespace,
+    "svg namespace inside an element inside a block is present" );
+});
+
+test("Block helper allows namespace to bleed through", function() {
+  hooks.content = function(morph, path, context, params, options, env) {
+    morph.update(options.render(context, env, morph.contextualElement));
+  };
+
+  var template = compile('<div><svg>{{#testing}}<circle />{{/testing}}</svg></div>');
+
+  var fragment = template({ isTrue: true }, env);
+  equal( fragment.childNodes[0].namespaceURI, svgNamespace,
+         "svg tag has an svg namespace" );
+  equal( fragment.childNodes[0].childNodes[0].namespaceURI, svgNamespace,
+         "circle tag inside block inside svg has an svg namespace" );
+});
+
+test("Block helper with root svg allows namespace to bleed through", function() {
+  hooks.content = function(morph, path, context, params, options, env) {
+    morph.update(options.render(context, env, morph.contextualElement));
+  };
+
+  var template = compile('<svg>{{#testing}}<circle />{{/testing}}</svg>');
+
+  var fragment = template({ isTrue: true }, env);
+  equal( fragment.namespaceURI, svgNamespace,
+         "svg tag has an svg namespace" );
+  equal( fragment.childNodes[0].namespaceURI, svgNamespace,
+         "circle tag inside block inside svg has an svg namespace" );
+});
+
+test("Block helper with root foreignObject allows namespace to bleed through", function() {
+  hooks.content = function(morph, path, context, params, options, env) {
+    morph.update(options.render(context, env, morph.contextualElement));
+  };
+
+  var template = compile('<foreignObject>{{#testing}}<div></div>{{/testing}}</foreignObject>');
+
+  var fragment = template({ isTrue: true }, env, document.createElementNS(svgNamespace, 'svg'));
+  equal( fragment.namespaceURI, svgNamespace,
+         "foreignObject tag has an svg namespace" );
+  equal( fragment.childNodes[0].namespaceURI, xhtmlNamespace,
+         "div inside morph and foreignObject has xhtml namespace" );
+});
 
 test("Node helpers can modify the node", function() {
   registerHelper('testing', function(params, options) {
