@@ -1,4 +1,4 @@
-import Morph from "morph/morph";
+import Morph from "../morph/morph";
 
 var emptyString = '';
 

@@ -11,6 +11,7 @@
   <script src="qunit.js"></script>
   <script src="/testem.js"></script>
   <script src="loader.js"></script>
+  <script src="test-support.amd.js"></script>
   <script src="packages-config.js"></script>
 
   <script>
@@ -51,7 +52,6 @@
       packagesToInject[name] = true;
 
       var deps = packagesConfig.dependencies[name];
-      if (deps && deps.lib) deps.lib.forEach(visitPackage);
     }
 
     for (var i = 0; i < packagesToTest.length; i++) {
@@ -60,7 +60,6 @@
       visitPackage(packageName);
 
       var deps = packagesConfig.dependencies[packageName];
-      if (deps && deps.test) deps.test.forEach(visitPackage);
     }
 
     // Inject lib packages
@@ -85,16 +84,11 @@
 
       for (var i = 0; i < packagesToTest.length; i++) {
         if (root === packagesToTest[i] + '-tests') {
+          if (key.match(/-jshint\//) && QUnit.urlParams.nojshint) {
+            continue;
+          }
           requireModule(key);
         }
-      }
-    }
-
-    // Run JShint
-    if (!QUnit.urlParams.nojshint) {
-      for (var i = 0; i < packagesToTest.length; i++) {
-        requireModule(packagesToTest[i] + '-jshint/lib');
-        requireModule(packagesToTest[i] + '-jshint/tests');
       }
     }
   </script>

@@ -1,5 +1,5 @@
-import { preprocess } from "htmlbars-compiler/parser";
-import TemplateVisitor from "htmlbars-compiler/compiler/template_visitor";
+import { preprocess } from "../htmlbars-compiler/parser";
+import TemplateVisitor from "../htmlbars-compiler/compiler/template_visitor";
 
 function actionsEqual(input, expectedActions) {
   var ast = preprocess(input);
@@ -16,7 +16,7 @@ function actionsEqual(input, expectedActions) {
   deepEqual(actualActions, expectedActions);
 }
 
-module("TemplateVisitor");
+QUnit.module("TemplateVisitor");
 
 test("empty", function() {
   var input = "";

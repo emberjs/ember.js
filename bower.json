@@ -1,9 +1,9 @@
 {
   "name": "htmlbars",
   "devDependencies": {
-    "handlebars": "~1.3.0",
-    "loader": "stefanpenner/loader.js#3c79fbf03a4c625593cda783c0d51f0da2adaa37",
+    "loader": "stefanpenner/loader.js#7f79173fd5c61dc256af9aa01c56d50ebfec10fe",
     "qunit": "~1.14.0",
-    "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#3575d9f9850f4c5f30f3595e66e0d59866d53fa5"
+    "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#3575d9f9850f4c5f30f3595e66e0d59866d53fa5",
+    "simple-html-tokenizer": "tildeio/simple-html-tokenizer#8e1779cc79cdaf787dacbd013c2069790816c5ac"
   }
 }

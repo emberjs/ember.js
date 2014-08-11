@@ -1,7 +1,7 @@
-import { compile } from "htmlbars-compiler/compiler";
-import { tokenize } from "simple-html-tokenizer";
-import { hydrationHooks } from "htmlbars-runtime/hooks";
-import { DOMHelper } from "morph";
+import { compile } from "../htmlbars-compiler/compiler";
+import { tokenize } from "../simple-html-tokenizer";
+import { hydrationHooks } from "../htmlbars-runtime/hooks";
+import { DOMHelper } from "../morph";
 
 function frag(element, string) {
   if (element instanceof DocumentFragment) {
@@ -43,7 +43,7 @@ function compilesTo(html, expected, context) {
   return fragment;
 }
 
-module("HTML-based compiler (output)", {
+QUnit.module("HTML-based compiler (output)", {
   setup: function() {
     helpers = {};
     partials = {};
