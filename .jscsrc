@@ -1,0 +1,5 @@
+{
+  "esnext": true,
+  "additionalRules": [ "lib/jscs-rules/*.js" ],
+  "disallowMultipleVarDeclWithAssignment": true
+}
