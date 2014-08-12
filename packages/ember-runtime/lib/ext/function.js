@@ -176,7 +176,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
       watched.push(obs);
     };
 
-    for (var i = 0; i < arguments.length; ++i) {
+    for (var i = 0, l = arguments.length; i < l; ++i) {
       expandProperties(arguments[i], addWatchedProperty);
     }
 
