@@ -698,6 +698,37 @@ test("`triggerEvent` can be used to trigger arbitrary events", function() {
   });
 });
 
+
+test("`fillIn` takes context into consideration", function() {
+  expect(2);
+  var fillIn, find, visit, andThen;
+
+  run(function() {
+    App = EmberApplication.create();
+    App.setupForTesting();
+  });
+
+  App.IndexView = EmberView.extend({
+    template: Ember.Handlebars.compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}')
+  });
+
+  App.injectTestHelpers();
+
+  run(App, App.advanceReadiness);
+
+  fillIn = App.testHelpers.fillIn;
+  find = App.testHelpers.find;
+  visit = App.testHelpers.visit;
+  andThen = App.testHelpers.andThen;
+
+  visit('/');
+  fillIn('.current', '#parent', 'current value');
+  andThen(function() {
+    equal(find('#first').val().trim(), 'current value');
+    equal(find('#second').val().trim(), '');
+  });
+});
+
 QUnit.module("ember-testing async router", {
   setup: function(){
     cleanup();

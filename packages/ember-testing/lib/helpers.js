@@ -129,6 +129,8 @@ function fillIn(app, selector, contextOrText, text) {
   var $el, context;
   if (typeof text === 'undefined') {
     text = contextOrText;
+  } else {
+    context = contextOrText;
   }
   $el = app.testHelpers.findWithAssert(selector, context);
   run(function() {
