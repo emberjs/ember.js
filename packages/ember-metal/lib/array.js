@@ -89,10 +89,9 @@ var lastIndexOf = defineNativeShim(ArrayPrototype.lastIndexOf, function(obj, fro
 });
 
 var filter = defineNativeShim(ArrayPrototype.filter, function (fn, context) {
-  var i,
-      value,
-      result = [],
-      length = this.length;
+  var i, value;
+  var result = [];
+  var length = this.length;
 
   for (i = 0; i < length; i++) {
     if (this.hasOwnProperty(i)) {

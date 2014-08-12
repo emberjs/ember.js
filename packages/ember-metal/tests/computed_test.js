@@ -610,7 +610,8 @@ test('adding a computed property should show up in key iteration',function() {
 });
 
 testBoth("when setting a value after it had been retrieved empty don't pass function UNDEFINED as oldValue", function(get, set) {
-    var obj = {}, oldValueIsNoFunction = true;
+    var obj = {};
+    var oldValueIsNoFunction = true;
 
     defineProperty(obj, 'foo', computed(function(key, value, oldValue) {
         if(typeof oldValue === 'function') {
@@ -644,12 +645,12 @@ testBoth('setting a watched computed property', function(get, set) {
       return get(this, 'firstName') + ' ' + get(this, 'lastName');
     }).property('firstName', 'lastName')
   );
-  var fullNameWillChange = 0,
-      fullNameDidChange = 0,
-      firstNameWillChange = 0,
-      firstNameDidChange = 0,
-      lastNameWillChange = 0,
-      lastNameDidChange = 0;
+  var fullNameWillChange = 0;
+  var fullNameDidChange = 0;
+  var firstNameWillChange = 0;
+  var firstNameDidChange = 0;
+  var lastNameWillChange = 0;
+  var lastNameDidChange = 0;
   addBeforeObserver(obj, 'fullName', function () {
     fullNameWillChange++;
   });
@@ -700,8 +701,8 @@ testBoth('setting a cached computed property that modifies the value you give it
       return get(this, 'foo') + 1;
     }).property('foo')
   );
-  var plusOneWillChange = 0,
-      plusOneDidChange = 0;
+  var plusOneWillChange = 0;
+  var plusOneDidChange = 0;
   addBeforeObserver(obj, 'plusOne', function () {
     plusOneWillChange++;
   });
@@ -728,7 +729,8 @@ testBoth('setting a cached computed property that modifies the value you give it
 QUnit.module('computed - default setter');
 
 testBoth("when setting a value on a computed property that doesn't handle sets", function(get, set) {
-  var obj = {}, observerFired = false;
+  var obj = {};
+  var observerFired = false;
 
   defineProperty(obj, 'foo', computed(function() {
     return 'foo';

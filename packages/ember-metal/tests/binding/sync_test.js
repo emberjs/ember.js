@@ -14,7 +14,9 @@ import { defineProperty } from "ember-metal/properties";
 QUnit.module("system/binding/sync_test.js");
 
 testBoth("bindings should not sync twice in a single run loop", function(get, set) {
-  var a, b, setValue, setCalled=0, getCalled=0;
+  var a, b, setValue;
+  var setCalled=0;
+  var getCalled=0;
 
   run(function() {
     a = {};

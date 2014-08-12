@@ -19,7 +19,8 @@ import {
 QUnit.module('system/props/events_test');
 
 test('listener should receive event - removing should remove', function() {
-  var obj = {}, count = 0;
+  var obj = {};
+  var count = 0;
   var F = function() { count++; };
 
   addListener(obj, 'event!', F);
@@ -36,7 +37,8 @@ test('listener should receive event - removing should remove', function() {
 });
 
 test('listeners should be inherited', function() {
-  var obj = {}, count = 0;
+  var obj = {};
+  var count = 0;
   var F = function() { count++; };
 
   addListener(obj, 'event!', F);
@@ -62,7 +64,8 @@ test('listeners should be inherited', function() {
 
 test('adding a listener more than once should only invoke once', function() {
 
-  var obj = {}, count = 0;
+  var obj = {};
+  var count = 0;
   var F = function() { count++; };
   addListener(obj, 'event!', F);
   addListener(obj, 'event!', F);
@@ -138,7 +141,8 @@ test('adding a listener with string method should lookup method on event deliver
 
 test('calling sendEvent with extra params should be passed to listeners', function() {
 
-  var obj = {}, params = null;
+  var obj = {};
+  var params = null;
   addListener(obj, 'event!', function() {
     params = Array.prototype.slice.call(arguments);
   });
@@ -166,7 +170,9 @@ test('implementing sendEvent on object should invoke', function() {
 
 test('hasListeners tells you if there are listeners for a given event', function() {
 
-  var obj = {}, F = function() {}, F2 = function() {};
+  var obj = {};
+  var F = function() {};
+  var F2 = function() {};
 
   equal(hasListeners(obj, 'event!'), false, 'no listeners at first');
 
@@ -186,7 +192,9 @@ test('hasListeners tells you if there are listeners for a given event', function
 });
 
 test('calling removeListener without method should remove all listeners', function() {
-  var obj = {}, F = function() {}, F2 = function() {};
+  var obj = {};
+  var F = function() {};
+  var F2 = function() {};
 
   equal(hasListeners(obj, 'event!'), false, 'no listeners at first');
 

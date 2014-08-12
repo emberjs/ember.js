@@ -10,10 +10,12 @@ import {
 } from "ember-metal/utils";
 import { create } from "ember-metal/platform";
 
-var a_slice = [].slice,
-    metaFor = meta,
-    /* listener flags */
-    ONCE = 1, SUSPENDED = 2;
+var a_slice = [].slice;
+var metaFor = meta;
+
+/* listener flags */
+var ONCE = 1;
+var SUSPENDED = 2;
 
 
 /*
@@ -71,15 +73,15 @@ function actionsFor(obj, eventName) {
 }
 
 export function listenersUnion(obj, eventName, otherActions) {
-  var meta = obj['__ember_meta__'],
-      actions = meta && meta.listeners && meta.listeners[eventName];
+  var meta = obj['__ember_meta__'];
+  var actions = meta && meta.listeners && meta.listeners[eventName];
 
   if (!actions) { return; }
   for (var i = actions.length - 3; i >= 0; i -= 3) {
-    var target = actions[i],
-        method = actions[i+1],
-        flags = actions[i+2],
-        actionIndex = indexOf(otherActions, target, method);
+    var target = actions[i];
+    var method = actions[i+1];
+    var flags = actions[i+2];
+    var actionIndex = indexOf(otherActions, target, method);
 
     if (actionIndex === -1) {
       otherActions.push(target, method, flags);
@@ -94,10 +96,10 @@ export function listenersDiff(obj, eventName, otherActions) {
 
   if (!actions) { return; }
   for (var i = actions.length - 3; i >= 0; i -= 3) {
-    var target = actions[i],
-        method = actions[i+1],
-        flags = actions[i+2],
-        actionIndex = indexOf(otherActions, target, method);
+    var target = actions[i];
+    var method = actions[i+1];
+    var flags = actions[i+2];
+    var actionIndex = indexOf(otherActions, target, method);
 
     if (actionIndex !== -1) { continue; }
 
@@ -127,9 +129,9 @@ export function addListener(obj, eventName, target, method, once) {
     target = null;
   }
 
-  var actions = actionsFor(obj, eventName),
-      actionIndex = indexOf(actions, target, method),
-      flags = 0;
+  var actions = actionsFor(obj, eventName);
+  var actionIndex = indexOf(actions, target, method);
+  var flags = 0;
 
   if (once) flags |= ONCE;
 
@@ -163,8 +165,8 @@ function removeListener(obj, eventName, target, method) {
   }
 
   function _removeListener(target, method) {
-    var actions = actionsFor(obj, eventName),
-        actionIndex = indexOf(actions, target, method);
+    var actions = actionsFor(obj, eventName);
+    var actionIndex = indexOf(actions, target, method);
 
     // action doesn't exist, give up silently
     if (actionIndex === -1) { return; }
@@ -179,8 +181,8 @@ function removeListener(obj, eventName, target, method) {
   if (method) {
     _removeListener(target, method);
   } else {
-    var meta = obj['__ember_meta__'],
-        actions = meta && meta.listeners && meta.listeners[eventName];
+    var meta = obj['__ember_meta__'];
+    var actions = meta && meta.listeners && meta.listeners[eventName];
 
     if (!actions) { return; }
     for (var i = actions.length - 3; i >= 0; i -= 3) {
@@ -213,8 +215,8 @@ export function suspendListener(obj, eventName, target, method, callback) {
     target = null;
   }
 
-  var actions = actionsFor(obj, eventName),
-      actionIndex = indexOf(actions, target, method);
+  var actions = actionsFor(obj, eventName);
+  var actionIndex = indexOf(actions, target, method);
 
   if (actionIndex !== -1) {
     actions[actionIndex+2] |= SUSPENDED; // mark the action as suspended

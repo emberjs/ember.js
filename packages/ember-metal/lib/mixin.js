@@ -36,13 +36,13 @@ import {
   removeListener
 } from "ember-metal/events";
 
-var REQUIRED,
-    a_map = map,
-    a_indexOf = indexOf,
-    a_forEach = forEach,
-    a_slice = [].slice,
-    o_create = create,
-    metaFor = meta;
+var REQUIRED;
+var a_map = map;
+var a_indexOf = indexOf;
+var a_forEach = forEach;
+var a_slice = [].slice;
+var o_create = create;
+var metaFor = meta;
 
 function superFunction(){
   var ret, func = this.__nextSuper;
@@ -55,7 +55,8 @@ function superFunction(){
 }
 
 function mixinsMeta(obj) {
-  var m = metaFor(obj, true), ret = m.mixins;
+  var m = metaFor(obj, true);
+  var ret = m.mixins;
   if (!ret) {
     ret = m.mixins = {};
   } else if (!m.hasOwnProperty('mixins')) {
@@ -179,8 +180,8 @@ function applyMergedProperties(obj, key, value, values) {
 
   if (!baseValue) { return value; }
 
-  var newBase = merge({}, baseValue),
-      hasFunction = false;
+  var newBase = merge({}, baseValue);
+  var hasFunction = false;
 
   for (var prop in value) {
     if (!value.hasOwnProperty(prop)) { continue; }
@@ -352,8 +353,11 @@ function replaceObserversAndListeners(obj, key, observerOrListener) {
 }
 
 function applyMixin(obj, mixins, partial) {
-  var descs = {}, values = {}, m = metaFor(obj),
-      key, value, desc, keys = [];
+  var descs = {};
+  var values = {};
+  var m = metaFor(obj);
+  var keys = [];
+  var key, value, desc;
 
   obj._super = superFunction;
 
@@ -512,7 +516,8 @@ MixinPrototype.reopen = function() {
     this.mixins = [];
   }
 
-  var len = arguments.length, mixins = this.mixins, idx;
+  var len = arguments.length;
+  var mixins = this.mixins, idx;
 
   for(idx=0; idx < len; idx++) {
     mixin = arguments[idx];
@@ -551,7 +556,8 @@ function _detect(curMixin, targetMixin, seen) {
   seen[guid] = true;
 
   if (curMixin === targetMixin) { return true; }
-  var mixins = curMixin.mixins, loc = mixins ? mixins.length : 0;
+  var mixins = curMixin.mixins;
+  var loc = mixins ? mixins.length : 0;
   while (--loc >= 0) {
     if (_detect(mixins[loc], targetMixin, seen)) { return true; }
   }
@@ -566,8 +572,8 @@ function _detect(curMixin, targetMixin, seen) {
 MixinPrototype.detect = function(obj) {
   if (!obj) { return false; }
   if (obj instanceof Mixin) { return _detect(obj, this, {}); }
-  var m = obj['__ember_meta__'],
-      mixins = m && m.mixins;
+  var m = obj['__ember_meta__'];
+  var mixins = m && m.mixins;
   if (mixins) {
     return !!mixins[guidFor(this)];
   }
@@ -595,7 +601,9 @@ function _keys(ret, mixin, seen) {
 }
 
 MixinPrototype.keys = function() {
-  var keys = {}, seen = {}, ret = [];
+  var keys = {};
+  var seen = {};
+  var ret = [];
   _keys(keys, this, seen);
   for(var key in keys) {
     if (keys.hasOwnProperty(key)) { ret.push(key); }
@@ -606,8 +614,9 @@ MixinPrototype.keys = function() {
 // returns the mixins currently applied to the specified object
 // TODO: Make Ember.mixin
 Mixin.mixins = function(obj) {
-  var m = obj['__ember_meta__'],
-      mixins = m && m.mixins, ret = [];
+  var m = obj['__ember_meta__'];
+  var mixins = m && m.mixins;
+  var ret = [];
 
   if (!mixins) { return ret; }
 

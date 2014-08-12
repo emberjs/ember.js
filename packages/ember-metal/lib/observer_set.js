@@ -26,11 +26,11 @@ function ObserverSet() {
 
 
 ObserverSet.prototype.add = function(sender, keyName, eventName) {
-  var observerSet = this.observerSet,
-      observers = this.observers,
-      senderGuid = guidFor(sender),
-      keySet = observerSet[senderGuid],
-      index;
+  var observerSet = this.observerSet;
+  var observers = this.observers;
+  var senderGuid = guidFor(sender);
+  var keySet = observerSet[senderGuid];
+  var index;
 
   if (!keySet) {
     observerSet[senderGuid] = keySet = {};

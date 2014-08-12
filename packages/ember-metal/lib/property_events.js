@@ -88,7 +88,8 @@ function dependentKeysWillChange(obj, depKey, meta) {
 
   var deps;
   if (meta && meta.deps && (deps = meta.deps[depKey])) {
-    var seen = WILL_SEEN, top = !seen;
+    var seen = WILL_SEEN;
+    var top = !seen;
     if (top) { seen = WILL_SEEN = {}; }
     iterDeps(propertyWillChange, obj, deps, depKey, seen, meta);
     if (top) { WILL_SEEN = null; }
@@ -101,7 +102,8 @@ function dependentKeysDidChange(obj, depKey, meta) {
 
   var deps;
   if (meta && meta.deps && (deps = meta.deps[depKey])) {
-    var seen = DID_SEEN, top = !seen;
+    var seen = DID_SEEN;
+    var top = !seen;
     if (top) { seen = DID_SEEN = {}; }
     iterDeps(propertyDidChange, obj, deps, depKey, seen, meta);
     if (top) { DID_SEEN = null; }

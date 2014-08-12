@@ -47,7 +47,8 @@ import { tryCatchFinally } from "ember-metal/utils";
   @namespace Ember
   @static
 */
-var subscribers = [], cache = {};
+var subscribers = [];
+var cache = {};
 
 var populateListeners = function(name) {
   var listeners = [], subscriber;

@@ -27,8 +27,8 @@ import {
 Ember.warn("The CP_DEFAULT_CACHEABLE flag has been removed and computed properties are always cached by default. Use `volatile` if you don't want caching.", Ember.ENV.CP_DEFAULT_CACHEABLE !== false);
 
 
-var metaFor = meta,
-    a_slice = [].slice;
+var metaFor = meta;
+var a_slice = [].slice;
 
 function UNDEFINED() { }
 
