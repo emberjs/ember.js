@@ -22,9 +22,9 @@ test("detects circular dependencies when added", function(){
 });
 
 test("#topsort iterates over the edges respecting precedence order", function(){
-  var graph = new DAG(),
-      names = [],
-      index = 0;
+  var graph = new DAG();
+  var names = [];
+  var index = 0;
 
   graph.addEdges("eat omelette", 1);
   graph.addEdges("buy eggs", 2) ;
@@ -52,9 +52,9 @@ test("#topsort iterates over the edges respecting precedence order", function(){
 });
 
 test("#addEdged supports both strings and arrays to specify precedences", function(){
-  var graph = new DAG(),
-      names = [],
-      index = 0;
+  var graph = new DAG();
+  var names = [];
+  var index = 0;
 
   graph.addEdges("eat omelette", 1);
   graph.addEdges("buy eggs", 2) ;

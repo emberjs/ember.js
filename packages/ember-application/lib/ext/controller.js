@@ -14,7 +14,8 @@ import { meta } from "ember-metal/utils";
 import controllerFor from "ember-routing/system/controller_for";
 
 function verifyNeedsDependencies(controller, container, needs) {
-  var dependency, i, l, missing = [];
+  var dependency, i, l;
+  var missing = [];
 
   for (i=0, l=needs.length; i<l; i++) {
     dependency = needs[i];
@@ -42,8 +43,9 @@ var defaultControllersComputedProperty = computed(function() {
     needs: get(controller, 'needs'),
     container: get(controller, 'container'),
     unknownProperty: function(controllerName) {
-      var needs = this.needs,
-        dependency, i, l;
+      var needs = this.needs;
+      var dependency, i, l;
+
       for (i=0, l=needs.length; i<l; i++) {
         dependency = needs[i];
         if (dependency === controllerName) {
