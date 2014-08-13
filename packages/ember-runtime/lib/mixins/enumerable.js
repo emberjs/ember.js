@@ -441,9 +441,9 @@ export default Mixin.create({
     @return {Array} rejected array
   */
   rejectBy: function(key, value) {
-    var exactValue = function(item) { return get(item, key) === value; },
-        hasValue = function(item) { return !!get(item, key); },
-        use = (arguments.length === 2 ? exactValue : hasValue);
+    var exactValue = function(item) { return get(item, key) === value; };
+    var hasValue = function(item) { return !!get(item, key); };
+    var use = (arguments.length === 2 ? exactValue : hasValue);
 
     return this.reject(use);
   },
@@ -640,11 +640,11 @@ export default Mixin.create({
     @return {Boolean} `true` if the passed function returns `true` for any item
   */
   any: function(callback, target) {
-    var len     = get(this, 'length'),
-        context = popCtx(),
-        found   = false,
-        last    = null,
-        next, idx;
+    var len     = get(this, 'length');
+    var context = popCtx();
+    var found   = false;
+    var last    = null;
+    var next, idx;
 
     if (target === undefined) { target = null; }
 
@@ -897,10 +897,10 @@ export default Mixin.create({
     @return this
   */
   addEnumerableObserver: function(target, opts) {
-    var willChange = (opts && opts.willChange) || 'enumerableWillChange',
-        didChange  = (opts && opts.didChange) || 'enumerableDidChange';
-
+    var willChange = (opts && opts.willChange) || 'enumerableWillChange';
+    var didChange  = (opts && opts.didChange) || 'enumerableDidChange';
     var hasObservers = get(this, 'hasEnumerableObservers');
+
     if (!hasObservers) propertyWillChange(this, 'hasEnumerableObservers');
     addListener(this, '@enumerable:before', target, willChange);
     addListener(this, '@enumerable:change', target, didChange);
@@ -917,8 +917,8 @@ export default Mixin.create({
     @return this
   */
   removeEnumerableObserver: function(target, opts) {
-    var willChange = (opts && opts.willChange) || 'enumerableWillChange',
-        didChange  = (opts && opts.didChange) || 'enumerableDidChange';
+    var willChange = (opts && opts.willChange) || 'enumerableWillChange';
+    var didChange  = (opts && opts.didChange) || 'enumerableDidChange';
 
     var hasObservers = get(this, 'hasEnumerableObservers');
     if (hasObservers) propertyWillChange(this, 'hasEnumerableObservers');

@@ -34,9 +34,9 @@ var slice = [].slice;
   @return {String} HTML string
 */
 export default function unboundHelper(property, fn) {
-  var options = arguments[arguments.length - 1],
-      container = options.data.view.container,
-      helper, context, out, ctx;
+  var options = arguments[arguments.length - 1];
+  var container = options.data.view.container;
+  var helper, context, out, ctx;
 
   ctx = this;
   if (arguments.length > 2) {

@@ -225,7 +225,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
   **/
   _setupPathObservers: function(){
     var helperParameters = this.parameters;
-    var linkTextPath     = helperParameters.options.linkTextPath;
+    var linkTextPath = helperParameters.options.linkTextPath;
     var paths = getResolvedPaths(helperParameters);
     var length = paths.length;
     var path, i, normalizedPath;
@@ -485,8 +485,8 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     var types = options.types;
     var data = options.data;
     var targetRouteName, models;
-
     var onlyQueryParamsSupplied = (parameters.params.length === 0);
+
     if (onlyQueryParamsSupplied) {
       var appController = this.container.lookup('controller:application');
       targetRouteName = get(appController, 'currentRouteName');

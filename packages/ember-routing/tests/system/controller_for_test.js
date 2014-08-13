@@ -33,8 +33,9 @@ var buildContainer = function(namespace) {
 
 function resolverFor(namespace) {
   return function(fullName) {
-    var nameParts = fullName.split(":"),
-        type = nameParts[0], name = nameParts[1];
+    var nameParts = fullName.split(":");
+    var type = nameParts[0];
+    var name = nameParts[1];
 
     if (name === 'basic') {
       name = '';

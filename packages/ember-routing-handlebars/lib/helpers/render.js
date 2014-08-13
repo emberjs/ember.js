@@ -89,9 +89,8 @@ You could render it inside the `post` template using the `render` helper.
 */
 export default function renderHelper(name, contextString, options) {
   var length = arguments.length;
-
-  var contextProvided = length === 3,
-      container, router, controller, view, context, lookupOptions;
+  var contextProvided = length === 3;
+  var container, router, controller, view, context, lookupOptions;
 
   container = (options || contextString).data.keywords.controller.container;
   router = container.lookup('router:main');

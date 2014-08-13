@@ -23,9 +23,9 @@ import { typeOf } from "ember-metal/utils";
   @return {Hash}
 */
 export default function getProperties(obj) {
-  var ret = {},
-      propertyNames = arguments,
-      i = 1;
+  var ret = {};
+  var propertyNames = arguments;
+  var i = 1;
 
   if (arguments.length === 2 && typeOf(arguments[1]) === 'array') {
     i = 0;

@@ -60,9 +60,9 @@ export var ViewHelper = EmberObject.create({
 
   propertiesFromHTMLOptions: function(options) {
     var hash = options.hash, data = options.data;
-    var extensions = {},
-        classes = hash['class'],
-        dup = false;
+    var extensions = {};
+    var classes = hash['class'];
+    var dup = false;
 
     if (hash.id) {
       extensions.elementId = hash.id;
@@ -135,7 +135,7 @@ export var ViewHelper = EmberObject.create({
           //     classNameBinding="_parentView.context.isGreen:green"
           var parsedPath = View._parsePropertyPath(full);
           if(parsedPath.path !== '') {
-            path = this.contextualizeBindingPath(parsedPath.path, data); 
+            path = this.contextualizeBindingPath(parsedPath.path, data);
             if (path) { extensions.classNameBindings[b] = path + parsedPath.classNames; }
           }
         }
@@ -163,9 +163,9 @@ export var ViewHelper = EmberObject.create({
   },
 
   helper: function(thisContext, path, options) {
-    var data = options.data,
-        fn = options.fn,
-        newView;
+    var data = options.data;
+    var fn = options.fn;
+    var newView;
 
     makeBindings(thisContext, options);
 

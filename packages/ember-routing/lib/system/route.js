@@ -320,8 +320,8 @@ var Route = EmberObject.extend(ActionHandler, {
       if (Ember.FEATURES.isEnabled("query-params-new")) {
         var totalChanged = keys(changed).concat(keys(removed));
         for (var i = 0, len = totalChanged.length; i < len; ++i) {
-          var urlKey = totalChanged[i],
-              options = get(this.queryParams, urlKey) || {};
+          var urlKey = totalChanged[i];
+          var options = get(this.queryParams, urlKey) || {};
           if (get(options, 'refreshModel')) {
             this.refresh();
           }
@@ -1612,31 +1612,31 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       for (var propName in qpProps) {
         if (!qpProps.hasOwnProperty(propName)) { continue; }
 
-        var desc = qpProps[propName],
-            urlKey = desc.as || this.serializeQueryParamKey(propName),
-            defaultValue = get(controllerProto, propName);
+        var desc = qpProps[propName];
+        var urlKey = desc.as || this.serializeQueryParamKey(propName);
+        var defaultValue = get(controllerProto, propName);
 
         if (isArray(defaultValue)) {
           defaultValue = Ember.A(defaultValue.slice());
         }
 
-        var type = typeOf(defaultValue),
-            defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type),
-            fprop = controllerName + ':' + propName,
-            qp = {
-              def: defaultValue,
-              sdef: defaultValueSerialized,
-              type: type,
-              urlKey: urlKey,
-              prop: propName,
-              fprop: fprop,
-              ctrl: controllerName,
-              cProto: controllerProto,
-              svalue: defaultValueSerialized,
-              cacheType: desc.scope,
-              route: this,
-              cacheMeta: cacheMeta[propName]
-            };
+        var type = typeOf(defaultValue);
+        var defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type);
+        var fprop = controllerName + ':' + propName;
+        var qp = {
+          def: defaultValue,
+          sdef: defaultValueSerialized,
+          type: type,
+          urlKey: urlKey,
+          prop: propName,
+          fprop: fprop,
+          ctrl: controllerName,
+          cProto: controllerProto,
+          svalue: defaultValueSerialized,
+          cacheType: desc.scope,
+          route: this,
+          cacheMeta: cacheMeta[propName]
+        };
 
         map[propName] = map[urlKey] = map[fprop] = qp;
         qps.push(qp);
@@ -1825,9 +1825,9 @@ function normalizeOptions(route, name, template, options) {
 
   Ember.assert("An outlet ("+options.outlet+") was specified but was not found.", options.outlet === 'main' || options.into);
 
-  var controller = options.controller,
-      model = options.model,
-      namedController;
+  var controller = options.controller;
+  var model = options.model;
+  var namedController;
 
   if (options.controller) {
     controller = options.controller;
