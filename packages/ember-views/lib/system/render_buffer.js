@@ -71,8 +71,8 @@ function escapeAttribute(value) {
 // From http://msdn.microsoft.com/en-us/library/ie/ms536389(v=vs.85).aspx:
 // "To include the NAME attribute at run time on objects created with the createElement method, use the eTag."
 var canSetNameOnInputs = (function() {
-  var div = document.createElement('div'),
-      el = document.createElement('input');
+  var div = document.createElement('div');
+  var el = document.createElement('input');
 
   el.setAttribute('name', 'foo');
   div.appendChild(el);
@@ -357,13 +357,13 @@ _RenderBuffer.prototype = {
       return;
     }
 
-    var buffer = this.buffer,
-        id = this.elementId,
-        classes = this.classes,
-        attrs = this.elementAttributes,
-        props = this.elementProperties,
-        style = this.elementStyle,
-        attr, prop;
+    var buffer = this.buffer;
+    var id = this.elementId;
+    var classes = this.classes;
+    var attrs = this.elementAttributes;
+    var props = this.elementProperties;
+    var style = this.elementStyle;
+    var attr, prop;
 
     buffer += '<' + stripTagName(tagName);
 
@@ -447,8 +447,8 @@ _RenderBuffer.prototype = {
       tagString = tagName;
     }
 
-    var element = document.createElement(tagString),
-        $element = jQuery(element);
+    var element = document.createElement(tagString);
+    var $element = jQuery(element);
 
     if (id) {
       $element.attr('id', id);

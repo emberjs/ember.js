@@ -173,8 +173,8 @@ export default EmberObject.extend({
     var self = this;
 
     rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
-      var view = View.views[this.id],
-          result = true;
+      var view = View.views[this.id];
+      var result = true;
 
       var manager = self.canDispatchToEventManager ? self._findNearestEventManager(view, eventName) : null;
 
@@ -188,8 +188,8 @@ export default EmberObject.extend({
     });
 
     rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
-      var actionId = jQuery(evt.currentTarget).attr('data-ember-action'),
-          action   = ActionManager.registeredActions[actionId];
+      var actionId = jQuery(evt.currentTarget).attr('data-ember-action');
+      var action   = ActionManager.registeredActions[actionId];
 
       // We have to check for action here since in some cases, jQuery will trigger
       // an event on `removeChild` (i.e. focusout) after we've already torn down the

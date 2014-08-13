@@ -1203,7 +1203,7 @@ var View = CoreView.extend({
   */
   _applyAttributeBindings: function(buffer, attributeBindings) {
     var attributeValue;
-    var unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
+    var unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
 
     forEach(attributeBindings, function(binding) {
       var split = binding.split(':'),

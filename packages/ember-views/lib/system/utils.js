@@ -64,8 +64,8 @@ var setInnerHTMLWithoutFix = function(element, html) {
   if (matches.length > 0) {
     var len = matches.length, idx;
     for (idx=0; idx<len; idx++) {
-      var script = findChildById(element, matches[idx][0]),
-          node = document.createTextNode(matches[idx][1]);
+      var script = findChildById(element, matches[idx][0]);
+      var node = document.createTextNode(matches[idx][1]);
       script.parentNode.insertBefore(node, script);
     }
   }
@@ -133,8 +133,8 @@ export function setInnerHTML(element, html) {
     var outerHTML = element.outerHTML || new XMLSerializer().serializeToString(element);
     Ember.assert("Can't set innerHTML on "+element.tagName+" in this browser", outerHTML);
 
-    var startTag = outerHTML.match(new RegExp("<"+tagName+"([^>]*)>", 'i'))[0],
-        endTag = '</'+tagName+'>';
+    var startTag = outerHTML.match(new RegExp("<"+tagName+"([^>]*)>", 'i'))[0];
+    var endTag = '</'+tagName+'>';
 
     var wrapper = document.createElement('div');
     jQuery(startTag + html + endTag).appendTo(wrapper);
@@ -148,8 +148,8 @@ export function setInnerHTML(element, html) {
 }
 
 export function isSimpleClick(event) {
-  var modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey,
-      secondaryClick = event.which > 1; // IE9 may return undefined
+  var modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
+  var secondaryClick = event.which > 1; // IE9 may return undefined
 
   return !modifier && !secondaryClick;
 }
