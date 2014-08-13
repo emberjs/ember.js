@@ -37,8 +37,8 @@ export default Component.extend(TextSupport, {
 
   _updateElementValue: observer('value', function() {
     // We do this check so cursor position doesn't get affected in IE
-    var value = get(this, 'value'),
-        $el = this.$();
+    var value = get(this, 'value');
+    var $el = this.$();
     if ($el && value !== $el.val()) {
       $el.val(value);
     }

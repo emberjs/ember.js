@@ -4,7 +4,6 @@
 @submodule ember-handlebars
 */
 import Ember from "ember-metal/core"; // Ember.assert;, Ember.K
-// var emberAssert = Ember.assert,
 var K = Ember.K;
 
 import EmberHandlebars from "ember-handlebars-compiler";
@@ -155,8 +154,8 @@ runInDebug( function() {
 });
 
 var GroupedEach = EmberHandlebars.GroupedEach = function(context, path, options) {
-  var self = this,
-      normalized = EmberHandlebars.normalizePath(context, path, options.data);
+  var self = this;
+  var normalized = EmberHandlebars.normalizePath(context, path, options.data);
 
   this.context = context;
   this.path = path;
@@ -227,11 +226,11 @@ GroupedEach.prototype = {
   render: function() {
     if (!this.content) { return; }
 
-    var content = this.content,
-        contentLength = get(content, 'length'),
-        options = this.options,
-        data = options.data,
-        template = this.template;
+    var content = this.content;
+    var contentLength = get(content, 'length');
+    var options = this.options;
+    var data = options.data;
+    var template = this.template;
 
     data.insideEach = true;
     for (var i = 0; i < contentLength; i++) {

@@ -1,8 +1,8 @@
 import EmberHandlebars from "ember-handlebars-compiler";
-var precompile = EmberHandlebars.precompile,
-    parse = EmberHandlebars.parse,
-    template = 'Hello World',
-    result;
+var precompile = EmberHandlebars.precompile;
+var parse = EmberHandlebars.parse;
+var template = 'Hello World';
+var result;
 
 QUnit.module("Ember.Handlebars.precompileType");
 
