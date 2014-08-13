@@ -24,3 +24,24 @@ testBoth('Ember.computed.empty', function (get, set) {
   equal(get(obj, 'bestLannisterUnspecified'), false, "empty respects strings");
   equal(get(obj, 'noLannistersKnown'), false, "empty respects array mutations");
 });
+
+testBoth('Ember.computed.notEmpty', function(get, set) {
+  var obj = EmberObject.extend({
+    bestLannister: null,
+    lannisters: null,
+
+    bestLannisterSpecified: computed.notEmpty('bestLannister'),
+    LannistersKnown: computed.notEmpty('lannisters')
+  }).create({
+    lannisters: Ember.A([])
+  });
+
+  equal(get(obj, 'bestLannisterSpecified'), false, "bestLannister initially empty");
+  equal(get(obj, 'LannistersKnown'), false, "lannisters initially empty");
+
+  get(obj, 'lannisters').pushObject('Tyrion');
+  set(obj, 'bestLannister', 'Tyrion');
+
+  equal(get(obj, 'bestLannisterSpecified'), true, "empty respects strings");
+  equal(get(obj, 'LannistersKnown'), true, "empty respects array mutations");
+});
