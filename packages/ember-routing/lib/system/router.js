@@ -760,6 +760,25 @@ function updatePaths(router) {
 
 EmberRouter.reopenClass({
   router: null,
+
+  /**
+    The `Router.map` function allows you to define mappings from URLs to routes
+    and resources in your application. These mappings are defined within the
+    supplied callback function using `this.resource` and `this.route`.
+
+    ```javascript
+    App.Router.map(function({
+      this.route('about');
+      this.resource('article');
+    }));
+    ```
+
+    For more detailed examples please see
+    [the guides](http://emberjs.com/guides/routing/defining-your-routes/).
+
+    @method map
+    @param callback
+  */
   map: function(callback) {
     var router = this.router;
     if (!router) {
