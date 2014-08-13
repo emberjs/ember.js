@@ -51,7 +51,8 @@ DAG.prototype.addEdge = function(fromName, toName) {
   if (!fromName || !toName || fromName === toName) {
     return;
   }
-  var from = this.add(fromName), to = this.add(toName);
+  var from = this.add(fromName);
+  var to = this.add(toName);
   if (to.incoming.hasOwnProperty(fromName)) {
     return;
   }

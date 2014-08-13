@@ -78,35 +78,35 @@ test("initializers can be registered in a specified order", function() {
 });
 
 test("initializers can have multiple dependencies", function () {
-  var order = [],
-      a = {
+  var order = [];
+  var a = {
         name: "a",
         before: "b",
         initialize: function(container) {
           order.push('a');
         }
-      },
-      b = {
+      };
+  var b = {
         name: "b",
         initialize: function(container) {
           order.push('b');
         }
-      },
-      c = {
+      };
+  var c = {
         name: "c",
         after: "b",
         initialize: function(container) {
           order.push('c');
         }
-      },
-      afterB = {
+      };
+  var afterB = {
         name: "after b",
         after: "b",
         initialize: function(container) {
           order.push("after b");
         }
-      },
-      afterC = {
+      };
+  var afterC = {
         name: "after c",
         after: "c",
         initialize: function(container) {
@@ -133,7 +133,8 @@ test("initializers can have multiple dependencies", function () {
 });
 
 test("initializers set on Application subclasses should not be shared between apps", function(){
-  var firstInitializerRunCount = 0, secondInitializerRunCount = 0;
+  var firstInitializerRunCount = 0;
+  var secondInitializerRunCount = 0;
   var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'first',
@@ -168,7 +169,8 @@ test("initializers set on Application subclasses should not be shared between ap
 });
 
 test("initializers are concatenated", function(){
-  var firstInitializerRunCount = 0, secondInitializerRunCount = 0;
+  var firstInitializerRunCount = 0;
+  var secondInitializerRunCount = 0;
   var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'first',

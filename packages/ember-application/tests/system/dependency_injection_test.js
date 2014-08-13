@@ -8,8 +8,8 @@ import Container from "ember-runtime/system/container";
 
 var EmberApplication = Application;
 
-var locator, originalLookup = Ember.lookup, lookup,
-    application, originalModelInjections;
+var originalLookup = Ember.lookup;
+var locator, lookup, application, originalModelInjections;
 
 QUnit.module("Ember.Application Dependency Injection", {
   setup: function() {
@@ -68,9 +68,9 @@ test('injections', function() {
   application.inject('model', 'fruit', 'fruit:favorite');
   application.inject('model:user', 'communication', 'communication:main');
 
-  var user = locator.lookup('model:user'),
-  person = locator.lookup('model:person'),
-  fruit = locator.lookup('fruit:favorite');
+  var user = locator.lookup('model:user');
+  var person = locator.lookup('model:person');
+  var fruit = locator.lookup('fruit:favorite');
 
   equal(user.get('fruit'), fruit);
   equal(person.get('fruit'), fruit);
