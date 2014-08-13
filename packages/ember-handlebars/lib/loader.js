@@ -38,12 +38,12 @@ function bootstrap(ctx) {
 
     var compile = (script.attr('type') === 'text/x-raw-handlebars') ?
                   jQuery.proxy(Handlebars.compile, Handlebars) :
-                  jQuery.proxy(EmberHandlebars.compile, EmberHandlebars),
-      // Get the name of the script, used by Ember.View's templateName property.
-      // First look for data-template-name attribute, then fall back to its
-      // id if no name is found.
-      templateName = script.attr('data-template-name') || script.attr('id') || 'application',
-      template = compile(script.html());
+                  jQuery.proxy(EmberHandlebars.compile, EmberHandlebars);
+    // Get the name of the script, used by Ember.View's templateName property.
+    // First look for data-template-name attribute, then fall back to its
+    // id if no name is found.
+    var templateName = script.attr('data-template-name') || script.attr('id') || 'application';
+    var template = compile(script.html());
 
     // Check if template of same name already exists
     if (Ember.TEMPLATES[templateName] !== undefined) {

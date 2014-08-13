@@ -91,8 +91,8 @@ var appendView = function() {
   run(function() { view.appendTo('#qunit-fixture'); });
 };
 
-var originalLookup = Ember.lookup, lookup;
-var TemplateTests, container;
+var originalLookup = Ember.lookup;
+var TemplateTests, container, lookup;
 
 /**
   This module specifically tests integration with Handlebars and Ember-specific
@@ -397,8 +397,8 @@ test("View should bind properties in the parent context", function() {
 });
 
 test("using Handlebars helper that doesn't exist should result in an error", function() {
-  var names = [{ name: 'Alex' }, { name: 'Stef' }],
-      context = {
+  var names = [{ name: 'Alex' }, { name: 'Stef' }];
+  var context = {
         content: A(names)
       };
 
@@ -999,8 +999,9 @@ test("Child views created using the view helper and that have a viewName should 
 
   appendView();
 
-  var parentView = firstChild(view),
-      childView  = firstGrandchild(view);
+  var parentView = firstChild(view);
+  var childView  = firstGrandchild(view);
+
   equal(get(parentView, 'ohai'), childView);
 });
 
@@ -1575,8 +1576,8 @@ test("should be able to bind use {{bind-attr}} more than once on an element", fu
 
 test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
 
-  var originalBindAttr = EmberHandlebars.helpers['bind-attr'],
-    originalWarn = Ember.warn;
+  var originalBindAttr = EmberHandlebars.helpers['bind-attr'];
+  var originalWarn = Ember.warn;
 
   Ember.warn = function(msg) {
     equal(msg, "The 'bindAttr' view helper is deprecated in favor of 'bind-attr'", 'Warning called');
@@ -1911,8 +1912,9 @@ test("should be able to use unbound helper in #each helper (with objects)", func
 });
 
 test("should work with precompiled templates", function() {
-  var templateString = EmberHandlebars.precompile("{{view.value}}"),
-      compiledTemplate = EmberHandlebars.template(eval(templateString));
+  var templateString = EmberHandlebars.precompile("{{view.value}}");
+  var compiledTemplate = EmberHandlebars.template(eval(templateString));
+
   view = EmberView.create({
     value: "rendered",
     template: compiledTemplate

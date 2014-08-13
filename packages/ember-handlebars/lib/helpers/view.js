@@ -23,12 +23,12 @@ import {
 import EmberString from "ember-runtime/system/string";
 
 
-var LOWERCASE_A_Z = /^[a-z]/,
-    VIEW_PREFIX = /^view\./;
+var LOWERCASE_A_Z = /^[a-z]/;
+var VIEW_PREFIX = /^view\./;
 
 function makeBindings(thisContext, options) {
-  var hash = options.hash,
-      hashType = options.hashTypes;
+  var hash = options.hash;
+  var hashType = options.hashTypes;
 
   for (var prop in hash) {
     if (hashType[prop] === 'ID') {

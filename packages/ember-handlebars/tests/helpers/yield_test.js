@@ -11,7 +11,8 @@ import { A } from "ember-runtime/system/native_array";
 import Component from "ember-views/views/component";
 import EmberError from "ember-metal/error";
 
-var originalLookup = Ember.lookup, lookup, TemplateTests, view, container;
+var originalLookup = Ember.lookup;
+var lookup, TemplateTests, view, container;
 
 QUnit.module("Support for {{yield}} helper", {
   setup: function() {
@@ -77,7 +78,8 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
     layout: EmberHandlebars.compile('<div class="times">{{#each view.index}}{{yield}}{{/each}}</div>'),
     n: null,
     index: computed(function() {
-      var n = get(this, 'n'), indexArray = A();
+      var n = get(this, 'n');
+      var indexArray = A();
       for (var i=0; i < n; i++) {
         indexArray[i] = i;
       }

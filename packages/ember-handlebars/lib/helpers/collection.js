@@ -175,10 +175,13 @@ function collectionHelper(path, options) {
     collectionClass = CollectionView;
   }
 
-  var hash = options.hash, itemHash = {}, match;
+  var hash = options.hash;
+  var itemHash = {};
+  var match;
 
   // Extract item view class if provided else default to the standard class
-  var collectionPrototype = collectionClass.proto(), itemViewClass;
+  var collectionPrototype = collectionClass.proto();
+  var itemViewClass;
 
   if (hash.itemView) {
     controller = data.keywords.controller;

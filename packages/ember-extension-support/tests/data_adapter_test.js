@@ -12,7 +12,8 @@ import EmberDataAdapter from "ember-extension-support/data_adapter";
 import EmberApplication from "ember-application/system/application";
 import DefaultResolver from "ember-application/system/resolver";
 
-var adapter, App, Model = EmberObject.extend();
+var adapter, App;
+var Model = EmberObject.extend();
 
 var DataAdapter = EmberDataAdapter.extend({
   detect: function(klass) {

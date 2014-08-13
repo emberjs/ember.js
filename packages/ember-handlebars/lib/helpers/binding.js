@@ -125,7 +125,8 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
         run.once(view, 'rerender');
       };
 
-      var template, context, result = handlebarsGet(currentContext, property, options);
+      var template, context;
+      var result = handlebarsGet(currentContext, property, options);
 
       result = valueNormalizer ? valueNormalizer(result) : result;
 
@@ -494,7 +495,8 @@ function unboundIfHelper(property, fn) {
   @return {String} HTML string
 */
 function withHelper(context, options) {
-  var bindContext, preserveContext, controller, helperName = 'with';
+  var bindContext, preserveContext, controller;
+  var helperName = 'with';
 
   if (arguments.length === 4) {
     var keywordName, path, rootPath, normalized, contextPath;
@@ -584,7 +586,9 @@ function unlessHelper(context, options) {
   Ember.assert("You must pass exactly one argument to the unless helper", arguments.length === 2);
   Ember.assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
 
-  var fn = options.fn, inverse = options.inverse, helperName = 'unless';
+  var fn = options.fn;
+  var inverse = options.inverse;
+  var helperName = 'unless';
 
   if (context) {
     helperName += ' ' + context;
@@ -855,7 +859,8 @@ function bindAttrHelperDeprecated() {
   @return {Array} An array of class names to add
 */
 function bindClasses(context, classBindings, view, bindAttrId, options) {
-  var ret = [], newClass, value, elem;
+  var ret = [];
+  var newClass, value, elem;
 
   // Helper method to retrieve the property from the context and
   // determine which class string to return, based on whether it is
