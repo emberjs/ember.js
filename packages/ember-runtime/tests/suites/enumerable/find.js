@@ -9,9 +9,10 @@ var suite = SuiteModuleBuilder.create();
 suite.module('find');
 
 suite.test('find should invoke callback on each item as long as you return false', function() {
-  var obj = this.newObject(),
-      ary = this.toArray(obj),
-      found = [], result;
+  var obj = this.newObject();
+  var ary = this.toArray(obj);
+  var found = [];
+  var result;
 
   result = obj.find(function(i) { found.push(i); return false; });
   equal(result, undefined, 'return value of obj.find');
@@ -19,11 +20,12 @@ suite.test('find should invoke callback on each item as long as you return false
 });
 
 suite.test('every should stop invoking when you return true', function() {
-  var obj = this.newObject(),
-      ary = this.toArray(obj),
-      cnt = ary.length - 2,
-      exp = cnt,
-      found = [], result;
+  var obj = this.newObject();
+  var ary = this.toArray(obj);
+  var cnt = ary.length - 2;
+  var exp = cnt;
+  var found = [];
+  var result;
 
   result = obj.find(function(i) { found.push(i); return --cnt >= 0; });
   equal(result, ary[exp-1], 'return value of obj.find');

@@ -4,10 +4,10 @@ import EmberObject from "ember-runtime/system/object";
 QUnit.module("Ember Type Checking");
 
 test("Ember.typeOf", function() {
-  var a = null,
-      arr = [1,2,3],
-      obj = {},
-      object = EmberObject.create({ method: function() {} });
+  var a = null;
+  var arr = [1,2,3];
+  var obj = {};
+  var object = EmberObject.create({ method: function() {} });
 
   equal(typeOf(undefined),     'undefined', "item of type undefined");
   equal(typeOf(a),             'null',      "item of type null");

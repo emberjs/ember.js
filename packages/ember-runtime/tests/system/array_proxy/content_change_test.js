@@ -19,8 +19,8 @@ test("should update length for null content", function() {
 });
 
 test("The `arrangedContentWillChange` method is invoked before `content` is changed.", function() {
-  var callCount = 0,
-      expectedLength;
+  var callCount = 0;
+  var expectedLength;
 
   var proxy = ArrayProxy.extend({
     content: Ember.A([1, 2, 3]),
@@ -43,8 +43,8 @@ test("The `arrangedContentWillChange` method is invoked before `content` is chan
 });
 
 test("The `arrangedContentDidChange` method is invoked after `content` is changed.", function() {
-  var callCount = 0,
-      expectedLength;
+  var callCount = 0;
+  var expectedLength;
 
   var proxy = ArrayProxy.extend({
     content: Ember.A([1, 2, 3]),

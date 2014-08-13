@@ -111,9 +111,9 @@ test('any', function() {
     color: 'black'
   }, {
     color: 'white'
-  }]),
-  foundWhite = kittens.any(function(kitten) { return kitten.color === 'white'; }),
-  foundWhite2 = kittens.isAny('color', 'white');
+  }]);
+  var foundWhite = kittens.any(function(kitten) { return kitten.color === 'white'; });
+  var foundWhite2 = kittens.isAny('color', 'white');
 
   equal(foundWhite, true);
   equal(foundWhite2, true);
@@ -134,16 +134,16 @@ test('every', function() {
     color: 'black'
   }, {
     color: 'white'
-  }]),
-  allWhiteKittens = Ember.A([{
+  }]);
+  var allWhiteKittens = Ember.A([{
     color: 'white'
   }, {
     color: 'white'
   }, {
     color: 'white'
-  }]),
-  allWhite = false,
-  whiteKittenPredicate = function(kitten) { return kitten.color === 'white'; };
+  }]);
+  var allWhite = false;
+  var whiteKittenPredicate = function(kitten) { return kitten.color === 'white'; };
 
   allWhite = allColorsKittens.every(whiteKittenPredicate);
   equal(allWhite, false);
@@ -225,7 +225,9 @@ test('should notify observers when call with no params', function() {
 
 // API variation that included items only
 test('should not notify when passed arrays of same length', function() {
-  var added = ['foo'], removed = ['bar'];
+  var added = ['foo'];
+  var removed = ['bar'];
+
   obj.enumerableContentWillChange(removed, added);
   equal(obj._after, 0);
 
@@ -234,7 +236,9 @@ test('should not notify when passed arrays of same length', function() {
 });
 
 test('should notify when passed arrays of different length', function() {
-  var added = ['foo'], removed = ['bar', 'baz'];
+  var added = ['foo'];
+  var removed = ['bar', 'baz'];
+
   obj.enumerableContentWillChange(removed, added);
   equal(obj._after, 0);
 
@@ -301,7 +305,9 @@ test('should notify enumerable observers when called with no params', function()
 
 // API variation that included items only
 test('should notify when called with same length items', function() {
-  var added = ['foo'], removed = ['bar'];
+  var added = ['foo'];
+  var removed = ['bar'];
+
   obj.enumerableContentWillChange(removed, added);
   deepEqual(observer._before, [obj, removed, added]);
 
@@ -310,7 +316,9 @@ test('should notify when called with same length items', function() {
 });
 
 test('should notify when called with diff length items', function() {
-  var added = ['foo', 'baz'], removed = ['bar'];
+  var added = ['foo', 'baz'];
+  var removed = ['bar'];
+
   obj.enumerableContentWillChange(removed, added);
   deepEqual(observer._before, [obj, removed, added]);
 

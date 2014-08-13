@@ -10,9 +10,10 @@ var suite = SuiteModuleBuilder.create();
 suite.module('any');
 
 suite.test('any should should invoke callback on each item as long as you return false', function() {
-  var obj = this.newObject(),
-      ary = this.toArray(obj),
-      found = [], result;
+  var obj = this.newObject();
+  var ary = this.toArray(obj);
+  var found = [];
+  var result;
 
   result = obj.any(function(i) { found.push(i); return false; });
   equal(result, false, 'return value of obj.any');
@@ -20,11 +21,12 @@ suite.test('any should should invoke callback on each item as long as you return
 });
 
 suite.test('any should stop invoking when you return true', function() {
-  var obj = this.newObject(),
-      ary = this.toArray(obj),
-      cnt = ary.length - 2,
-      exp = cnt,
-      found = [], result;
+  var obj = this.newObject();
+  var ary = this.toArray(obj);
+  var cnt = ary.length - 2;
+  var exp = cnt;
+  var found = [];
+  var result;
 
   result = obj.any(function(i) { found.push(i); return --cnt <= 0; });
   equal(result, true, 'return value of obj.any');
@@ -34,7 +36,8 @@ suite.test('any should stop invoking when you return true', function() {
 
 
 suite.test('any should return true if any object matches the callback', function() {
-  var obj = Ember.A([0, 1, 2]), result;
+  var obj = Ember.A([0, 1, 2]);
+  var result;
 
   result = obj.any(function(i) { return !!i; });
   equal(result, true, 'return value of obj.any');
@@ -42,7 +45,8 @@ suite.test('any should return true if any object matches the callback', function
 
 
 suite.test('any should return false if no object matches the callback', function() {
-  var obj = Ember.A([0, null, false]), result;
+  var obj = Ember.A([0, null, false]);
+  var result;
 
   result = obj.any(function(i) { return !!i; });
   equal(result, false, 'return value of obj.any');
@@ -50,7 +54,8 @@ suite.test('any should return false if no object matches the callback', function
 
 
 suite.test('any should produce correct results even if the matching element is undefined', function() {
-  var obj = Ember.A([undefined]), result;
+  var obj = Ember.A([undefined]);
+  var result;
 
   result = obj.any(function(i) { return true; });
   equal(result, true, 'return value of obj.any');
@@ -58,12 +63,13 @@ suite.test('any should produce correct results even if the matching element is u
 
 
 suite.test('any should be aliased to some', function() {
-  var obj = this.newObject(),
-      ary = this.toArray(obj),
-      anyFound = [], anyResult,
-      someFound = [], someResult,
-      cnt = ary.length - 2,
-      exp = cnt;
+  var obj = this.newObject();
+      var ary = this.toArray(obj);
+      var anyFound = [];
+      var someFound = [];
+      var cnt = ary.length - 2;
+      var exp = cnt;
+      var anyResult, someResult;
 
   anyResult = obj.any(function(i) { anyFound.push(i); return false; });
   someResult = obj.some(function(i) { someFound.push(i); return false; });

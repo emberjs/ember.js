@@ -8,10 +8,10 @@ test('detectInstance detects instances correctly', function() {
   var B = A.extend();
   var C = A.extend();
 
-  var o = EmberObject.create(),
-      a = A.create(),
-      b = B.create(),
-      c = C.create();
+  var o = EmberObject.create();
+  var a = A.create();
+  var b = B.create();
+  var c = C.create();
 
   ok( EmberObject.detectInstance(o), 'o is an instance of EmberObject' );
   ok( EmberObject.detectInstance(a), 'a is an instance of EmberObject' );

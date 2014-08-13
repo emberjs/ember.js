@@ -107,9 +107,9 @@ var TargetActionSupport = Mixin.create({
   */
   triggerAction: function(opts) {
     opts = opts || {};
-    var action = opts.action || get(this, 'action'),
-        target = opts.target || get(this, 'targetObject'),
-        actionContext = opts.actionContext;
+    var action = opts.action || get(this, 'action');
+    var target = opts.target || get(this, 'targetObject');
+    var actionContext = opts.actionContext;
 
     function args(options, actionName) {
       var ret = [];

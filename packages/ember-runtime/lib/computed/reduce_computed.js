@@ -143,9 +143,9 @@ DependentArraysObserver.prototype = {
   },
 
   setupPropertyObservers: function (dependentKey, itemPropertyKeys) {
-    var dependentArray = get(this.instanceMeta.context, dependentKey),
-        length = get(dependentArray, 'length'),
-        observerContexts = new Array(length);
+    var dependentArray = get(this.instanceMeta.context, dependentKey);
+    var length = get(dependentArray, 'length');
+    var observerContexts = new Array(length);
 
     this.resetTransformations(dependentKey, observerContexts);
 
@@ -337,7 +337,8 @@ DependentArraysObserver.prototype = {
   },
 
   flushChanges: function () {
-    var changedItems = this.changedItems, key, c, changeMeta;
+    var changedItems = this.changedItems;
+    var key, c, changeMeta;
 
     for (key in changedItems) {
       c = changedItems[key];
@@ -392,8 +393,8 @@ function addItems(dependentArray, callbacks, cp, propertyName, meta) {
 }
 
 function reset(cp, propertyName) {
-  var callbacks = cp._callbacks(),
-      meta;
+  var callbacks = cp._callbacks();
+  var meta;
 
   if (cp._hasInstanceMeta(this, propertyName)) {
     meta = cp._instanceMeta(this, propertyName);

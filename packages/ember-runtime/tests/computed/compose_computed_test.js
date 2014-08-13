@@ -23,8 +23,8 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('should be able to take a computed property as a parameter for ember objects', function(get, set) {
-    var not = computed.not,
-        equals = computed.equal;
+    var not = computed.not;
+    var equals = computed.equal;
 
     obj = EmberObject.extend({
       firstName: null,
@@ -49,8 +49,8 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('should work with plain JavaScript objects', function(get, set) {
-    var not = computed.not,
-        equals = computed.equal;
+    var not = computed.not;
+    var equals = computed.equal;
 
     obj = {
       firstName: 'Alex',
@@ -72,10 +72,10 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('should be able to take many computed properties as parameters', function(get, set) {
-    var and     = computed.and,
-        equals  = computed.equal,
-        not     = computed.not,
-        obj = EmberObject.extend({
+    var and     = computed.and;
+    var equals  = computed.equal;
+    var not     = computed.not;
+    var obj = EmberObject.extend({
           firstName: null,
           lastName: null,
           state: null,
@@ -107,19 +107,19 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('composable computed properties can be shared between types', function (get, set) {
-    var not = computed.not,
-        equals = computed.equal,
-        notSleepy = not(equals('state', 'sleepy')),
-        Type0 = EmberObject.extend({
-          state: null,
-          napTime: notSleepy
-        }),
-        Type1 = EmberObject.extend({
-          state: null,
-          napTime: notSleepy
-        }),
-        obj0 = Type0.create({ state: 'sleepy'}),
-        obj1 = Type1.create({ state: 'sleepy' });
+    var not = computed.not;
+    var equals = computed.equal;
+    var notSleepy = not(equals('state', 'sleepy'));
+    var Type0 = EmberObject.extend({
+        state: null,
+        napTime: notSleepy
+      });
+    var Type1 = EmberObject.extend({
+        state: null,
+        napTime: notSleepy
+      });
+    var obj0 = Type0.create({ state: 'sleepy'});
+    var obj1 = Type1.create({ state: 'sleepy' });
 
     equal(get(obj0, 'state'), 'sleepy');
     equal(get(obj0, 'napTime'), false);
@@ -137,9 +137,9 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('composable computed properties work with existing CP macros', function(get, set) {
-    var not = computed.not,
-        equals = computed.equal,
-        observerCalls = 0;
+    var not = computed.not;
+    var equals = computed.equal;
+    var observerCalls = 0;
 
     obj = EmberObject.extend({
       firstName: null,
@@ -183,8 +183,8 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('composable computed properties work with CPs that have no dependencies', function (get, set) {
-    var not = computed.not,
-        constant = function (c) {
+    var not = computed.not;
+    var constant = function (c) {
           return computed(function () {
             return c;
           });
@@ -198,8 +198,8 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('composable computed properties work with depKey paths', function (get, set) {
-    var not = computed.not,
-        alias = computed.alias;
+    var not = computed.not;
+    var alias = computed.alias;
 
     obj = EmberObject.extend({
       q: not(alias('indirection.p'))
@@ -215,9 +215,9 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
   });
 
   testBoth('composable computed properties work with macros that have non-cp args', function (get, set) {
-    var equals = computed.equal,
-        not = computed.not,
-        or = computed.or;
+    var equals = computed.equal;
+    var not = computed.not;
+    var or = computed.or;
 
     obj = EmberObject.extend({
       isJaime: equals('name', 'Jaime'),

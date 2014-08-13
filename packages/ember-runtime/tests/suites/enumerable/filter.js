@@ -10,10 +10,11 @@ var suite = SuiteModuleBuilder.create();
 suite.module('filter');
 
 suite.test('filter should invoke on each item', function() {
-  var obj = this.newObject(),
-      ary = this.toArray(obj),
-      cnt = ary.length - 2,
-      found = [], result;
+  var obj = this.newObject();
+  var ary = this.toArray(obj);
+  var cnt = ary.length - 2;
+  var found = [];
+  var result;
 
   // return true on all but the last two
   result = obj.filter(function(i) { found.push(i); return --cnt>=0; });

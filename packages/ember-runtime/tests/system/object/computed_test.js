@@ -68,8 +68,8 @@ testWithDefault('complex depndent keys', function(get, set) {
     count: 20
   });
 
-  var obj1 = new MyClass(),
-      obj2 = new Subclass();
+  var obj1 = new MyClass();
+  var obj2 = new Subclass();
 
   equal(get(obj1, 'foo'), 'BIFF 1');
   equal(get(obj2, 'foo'), 'BIFF 21');

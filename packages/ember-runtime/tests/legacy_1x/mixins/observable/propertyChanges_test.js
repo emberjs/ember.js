@@ -27,7 +27,8 @@ import {observer} from "ember-metal/mixin";
 
 var ObservableObject = EmberObject.extend(Observable);
 
-var revMatches = false , ObjectA;
+var revMatches = false;
+var ObjectA;
 
 QUnit.module("object.propertyChanges", {
   setup: function() {
