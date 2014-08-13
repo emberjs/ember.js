@@ -49,7 +49,8 @@ ObserverSet.prototype.add = function(sender, keyName, eventName) {
 };
 
 ObserverSet.prototype.flush = function() {
-  var observers = this.observers, i, len, observer, sender;
+  var observers = this.observers;
+  var i, len, observer, sender;
   this.clear();
   for (i=0, len=observers.length; i < len; ++i) {
     observer = observers[i];

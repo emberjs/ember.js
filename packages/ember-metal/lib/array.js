@@ -76,7 +76,8 @@ var indexOf = defineNativeShim(ArrayPrototype.indexOf, function (obj, fromIndex)
 });
 
 var lastIndexOf = defineNativeShim(ArrayPrototype.lastIndexOf, function(obj, fromIndex) {
-    var idx, len = this.length;
+    var len = this.length;
+    var idx;
 
     if (fromIndex === undefined) fromIndex = len-1;
     else fromIndex = (fromIndex < 0) ? Math.ceil(fromIndex) : Math.floor(fromIndex);

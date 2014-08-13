@@ -75,7 +75,8 @@ test('adding a listener more than once should only invoke once', function() {
 });
 
 test('adding a listener with a target should invoke with target', function() {
-  var obj = {}, target;
+  var obj = {};
+  var target;
 
   target = {
     count: 0,
@@ -88,7 +89,8 @@ test('adding a listener with a target should invoke with target', function() {
 });
 
 test('suspending a listener should not invoke during callback', function() {
-  var obj = {}, target, otherTarget;
+  var obj = {};
+  var target, otherTarget;
 
   target = {
     count: 0,
@@ -123,7 +125,8 @@ test('suspending a listener should not invoke during callback', function() {
 });
 
 test('adding a listener with string method should lookup method on event delivery', function() {
-  var obj = {}, target;
+  var obj = {};
+  var target;
 
   target = {
     count: 0,
@@ -209,7 +212,8 @@ test('calling removeListener without method should remove all listeners', functi
 });
 
 test('while suspended, it should not be possible to add a duplicate listener', function() {
-  var obj = {}, target;
+  var obj = {};
+  var target;
 
   target = {
     count: 0,

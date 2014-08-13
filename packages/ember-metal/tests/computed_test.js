@@ -20,8 +20,8 @@ import {
 } from "ember-metal/observer";
 import { indexOf } from 'ember-metal/enumerable_utils';
 
-var originalLookup = Ember.lookup, lookup;
-var obj, count, Global;
+var originalLookup = Ember.lookup;
+var obj, count, Global, lookup;
 
 QUnit.module('computed');
 
@@ -449,7 +449,8 @@ testBoth('throws assertion if brace expansion notation has spaces', function (ge
 //
 
 
-var func, moduleOpts = {
+var func;
+var moduleOpts = {
   setup: function() {
     originalLookup = Ember.lookup;
     lookup = Ember.lookup = {};

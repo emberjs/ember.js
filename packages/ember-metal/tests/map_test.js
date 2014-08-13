@@ -4,9 +4,8 @@ import {
   MapWithDefault
 } from "ember-metal/map";
 
-var object, number, string, map;
-
-var varieties = [['Map', Map], ['MapWithDefault', MapWithDefault]], variety;
+var object, number, string, map, variety;
+var varieties = [['Map', Map], ['MapWithDefault', MapWithDefault]];
 
 function testMap(nameAndFunc) {
   variety = nameAndFunc[0];
