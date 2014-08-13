@@ -71,7 +71,8 @@ function makeCtor() {
   // method a lot faster. This is glue code so we want it to be as fast as
   // possible.
 
-  var wasApplied = false, initMixins, initProperties;
+  var wasApplied = false;
+  var initMixins, initProperties;
 
   var Class = function() {
     if (!wasApplied) {
@@ -79,7 +80,8 @@ function makeCtor() {
     }
     o_defineProperty(this, GUID_KEY, nullDescriptor);
     o_defineProperty(this, '__nextSuper', undefinedDescriptor);
-    var m = meta(this), proto = m.proto;
+    var m = meta(this);
+    var proto = m.proto;
     m.proto = this;
     if (initMixins) {
       // capture locally so we can clear the closed over variable
@@ -534,7 +536,8 @@ var ClassMixin = Mixin.create({
     @param {Object} [arguments]* Object containing values to use within the new class
   */
   extend: function() {
-    var Class = makeCtor(), proto;
+    var Class = makeCtor();
+    var proto;
     Class.ClassMixin = Mixin.create(this.ClassMixin);
     Class.PrototypeMixin = Mixin.create(this.PrototypeMixin);
 

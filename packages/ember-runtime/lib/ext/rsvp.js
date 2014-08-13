@@ -5,7 +5,8 @@ import Logger from 'ember-metal/logger';
 import run from "ember-metal/run_loop";
 
 var RSVP = requireModule('rsvp');
-var Test, testModuleName = 'ember-testing/test';
+var testModuleName = 'ember-testing/test';
+var Test;
 
 var asyncStart = function() {
   if (Ember.Test && Ember.Test.adapter) {

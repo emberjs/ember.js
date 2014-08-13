@@ -34,7 +34,9 @@ suite.test("[].insertAt(0, X) => [X] + notify", function() {
 });
 
 suite.test("[].insertAt(200,X) => OUT_OF_RANGE_EXCEPTION exception", function() {
-  var obj = this.newObject([]), that = this;
+  var obj = this.newObject([]);
+  var that = this;
+
   raises(function() {
     obj.insertAt(200, that.newFixture(1)[0]);
   }, Error);
@@ -101,7 +103,9 @@ suite.test("[A].insertAt(1, X) => [A,X] + notify", function() {
 });
 
 suite.test("[A].insertAt(200,X) => OUT_OF_RANGE exception", function() {
-  var obj = this.newObject(this.newFixture(1)), that = this;
+  var obj = this.newObject(this.newFixture(1));
+  var that = this;
+
   raises(function() {
     obj.insertAt(200, that.newFixture(1)[0]);
   }, Error);

@@ -54,7 +54,8 @@ var EachArray = EmberObject.extend(EmberArray, {
 var IS_OBSERVER = /^.+:(before|change)$/;
 
 function addObserverForContentKey(content, keyName, proxy, idx, loc) {
-  var objects = proxy._objects, guid;
+  var objects = proxy._objects;
+  var guid;
   if (!objects) objects = proxy._objects = {};
 
   while(--loc>=idx) {
@@ -136,7 +137,8 @@ var EachProxy = EmberObject.extend({
   // Invokes whenever the content array itself changes.
 
   arrayWillChange: function(content, idx, removedCnt, addedCnt) {
-    var keys = this._keys, key, lim;
+    var keys = this._keys;
+    var key, lim;
 
     lim = removedCnt>0 ? idx+removedCnt : -1;
     beginPropertyChanges(this);
@@ -154,7 +156,8 @@ var EachProxy = EmberObject.extend({
   },
 
   arrayDidChange: function(content, idx, removedCnt, addedCnt) {
-    var keys = this._keys, lim;
+    var keys = this._keys;
+    var lim;
 
     lim = addedCnt>0 ? idx+addedCnt : -1;
     changeProperties(function() {
@@ -195,8 +198,9 @@ var EachProxy = EmberObject.extend({
     if (!keys) keys = this._keys = {};
     if (!keys[keyName]) {
       keys[keyName] = 1;
-      var content = this._content,
-          len = get(content, 'length');
+      var content = this._content;
+      var len = get(content, 'length');
+
       addObserverForContentKey(content, keyName, this, 0, len);
     } else {
       keys[keyName]++;
@@ -206,8 +210,9 @@ var EachProxy = EmberObject.extend({
   stopObservingContentKey: function(keyName) {
     var keys = this._keys;
     if (keys && (keys[keyName]>0) && (--keys[keyName]<=0)) {
-      var content = this._content,
-          len     = get(content, 'length');
+      var content = this._content;
+      var len     = get(content, 'length');
+
       removeObserverForContentKey(content, keyName, this, 0, len);
     }
   },

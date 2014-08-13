@@ -6,10 +6,10 @@ var suite = SuiteModuleBuilder.create();
 suite.module('objectAt');
 
 suite.test("should return object at specified index", function() {
-  var expected = this.newFixture(3),
-      obj      = this.newObject(expected),
-      len      = expected.length,
-      idx;
+  var expected = this.newFixture(3);
+  var obj      = this.newObject(expected);
+  var len      = expected.length;
+  var idx;
 
   for(idx=0;idx<len;idx++) {
     equal(obj.objectAt(idx), expected[idx], fmt('obj.objectAt(%@) should match', [idx]));

@@ -46,11 +46,11 @@ TrackedArray.prototype = {
     var count = get(newItems, 'length');
     if (count < 1) { return; }
 
-    var match = this._findArrayOperation(index),
-        arrayOperation = match.operation,
-        arrayOperationIndex = match.index,
-        arrayOperationRangeStart = match.rangeStart,
-        composeIndex,
+    var match = this._findArrayOperation(index);
+    var arrayOperation = match.operation;
+    var arrayOperationIndex = match.index;
+    var arrayOperationRangeStart = match.rangeStart;
+    var composeIndex,
         splitIndex,
         splitItems,
         splitArrayOperation,
@@ -86,12 +86,11 @@ TrackedArray.prototype = {
   removeItems: function (index, count) {
     if (count < 1) { return; }
 
-    var match = this._findArrayOperation(index),
-        arrayOperation = match.operation,
-        arrayOperationIndex = match.index,
-        arrayOperationRangeStart = match.rangeStart,
-        newArrayOperation,
-        composeIndex;
+    var match = this._findArrayOperation(index);
+    var arrayOperation = match.operation;
+    var arrayOperationIndex = match.index;
+    var arrayOperationRangeStart = match.rangeStart;
+    var newArrayOperation, composeIndex;
 
     newArrayOperation = new ArrayOperation(DELETE, count);
     if (!match.split) {
@@ -122,8 +121,8 @@ TrackedArray.prototype = {
     @param {Function} callback
   */
   apply: function (callback) {
-    var items = [],
-        offset = 0;
+    var items = [];
+    var offset = 0;
 
     forEach(this._operations, function (arrayOperation, operationIndex) {
       callback(arrayOperation.items, offset, arrayOperation.type, operationIndex);
@@ -147,12 +146,10 @@ TrackedArray.prototype = {
     @private
   */
   _findArrayOperation: function (index) {
-    var arrayOperationIndex,
-        len,
-        split = false,
-        arrayOperation,
-        arrayOperationRangeStart,
-        arrayOperationRangeEnd;
+    var split = false;
+    var arrayOperationIndex, arrayOperation,
+        arrayOperationRangeStart, arrayOperationRangeEnd,
+        len;
 
     // OPTIMIZE: we could search these faster if we kept a balanced tree.
     // find leftmost arrayOperation to the right of `index`
@@ -190,11 +187,11 @@ TrackedArray.prototype = {
 
   // see SubArray for a better implementation.
   _composeInsert: function (index) {
-    var newArrayOperation = this._operations[index],
-        leftArrayOperation = this._operations[index-1], // may be undefined
-        rightArrayOperation = this._operations[index+1], // may be undefined
-        leftOp = leftArrayOperation && leftArrayOperation.type,
-        rightOp = rightArrayOperation && rightArrayOperation.type;
+    var newArrayOperation = this._operations[index];
+    var leftArrayOperation = this._operations[index-1]; // may be undefined
+    var rightArrayOperation = this._operations[index+1]; // may be undefined
+    var leftOp = leftArrayOperation && leftArrayOperation.type;
+    var rightOp = rightArrayOperation && rightArrayOperation.type;
 
     if (leftOp === INSERT) {
         // merge left
@@ -219,15 +216,15 @@ TrackedArray.prototype = {
   },
 
   _composeDelete: function (index) {
-    var arrayOperation = this._operations[index],
-        deletesToGo = arrayOperation.count,
-        leftArrayOperation = this._operations[index-1], // may be undefined
-        leftOp = leftArrayOperation && leftArrayOperation.type,
-        nextArrayOperation,
-        nextOp,
-        nextCount,
-        removeNewAndNextOp = false,
-        removedItems = [];
+    var arrayOperation = this._operations[index];
+    var deletesToGo = arrayOperation.count;
+    var leftArrayOperation = this._operations[index-1]; // may be undefined
+    var leftOp = leftArrayOperation && leftArrayOperation.type;
+    var nextArrayOperation;
+    var nextOp;
+    var nextCount;
+    var removeNewAndNextOp = false;
+    var removedItems = [];
 
     if (leftOp === DELETE) {
       arrayOperation = leftArrayOperation;

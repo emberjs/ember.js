@@ -38,10 +38,10 @@ import Observable from 'ember-runtime/mixins/observable';
 // Ember.Observable Tests
 // ========================================================================
 
-var object, ObjectC, ObjectD, objectA, objectB;
+var object, ObjectC, ObjectD, objectA, objectB, lookup;
 
 var ObservableObject = EmberObject.extend(Observable);
-var originalLookup = Ember.lookup, lookup;
+var originalLookup = Ember.lookup;
 
 // ..........................................................
 // GET()
@@ -429,8 +429,8 @@ test("setting values should call function return value", function() {
 
   // verify each call count.  cached should only be called once
   forEach(keys, function(key) {
-    var calls = object[key + 'Calls'], idx;
-    var expectedLength;
+    var calls = object[key + 'Calls'];
+    var idx, expectedLength;
 
     // Cached properties first check their cached value before setting the
     // property. Other properties blindly call set.

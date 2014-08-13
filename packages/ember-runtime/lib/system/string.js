@@ -25,8 +25,8 @@ var CAMELIZE_CACHE = new Cache(1000, function(key) {
 });
 
 var CLASSIFY_CACHE = new Cache(1000, function(str) {
-  var parts = str.split("."),
-  out = [];
+  var parts = str.split(".");
+  var out = [];
 
   for (var i=0, l=parts.length; i<l; i++) {
     var camelized = camelize(parts[i]);

@@ -58,8 +58,8 @@ test('should clear a set of its content', function() {
 QUnit.module('Set.pop');
 
 test('calling pop should return an object and remove it', function() {
-  var aSet;
-  var count = 0, obj;
+  var aSet, obj;
+  var count = 0;
 
   ignoreDeprecation(function() {
     aSet = new Set([1,2,3]);

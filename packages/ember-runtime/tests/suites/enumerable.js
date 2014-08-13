@@ -53,8 +53,9 @@ var ObserverClass = EmberObject.extend({
 
   observeBefore: function(obj) {
     if (obj.addBeforeObserver) {
-      var keys = Array.prototype.slice.call(arguments, 1),
-          loc  = keys.length;
+      var keys = Array.prototype.slice.call(arguments, 1);
+      var loc  = keys.length;
+
       while(--loc>=0) obj.addBeforeObserver(keys[loc], this, 'propertyWillChange');
     }
     return this;
@@ -71,8 +72,9 @@ var ObserverClass = EmberObject.extend({
   */
   observe: function(obj) {
     if (obj.addObserver) {
-      var keys = Array.prototype.slice.call(arguments, 1),
-          loc  = keys.length;
+      var keys = Array.prototype.slice.call(arguments, 1);
+      var loc  = keys.length;
+
       while(--loc>=0) obj.addObserver(keys[loc], this, 'propertyDidChange');
     } else {
       this.isEnabled = false;

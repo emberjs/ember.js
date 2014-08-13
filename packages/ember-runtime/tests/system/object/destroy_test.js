@@ -15,7 +15,8 @@ import EmberObject from 'ember-runtime/system/object';
 QUnit.module('ember-runtime/system/object/destroy_test');
 
 testBoth("should schedule objects to be destroyed at the end of the run loop", function(get, set) {
-  var obj = EmberObject.create(), meta;
+  var obj = EmberObject.create();
+  var meta;
 
   run(function() {
     obj.destroy();
@@ -72,7 +73,8 @@ test("observers should not fire after an object has been destroyed", function() 
 });
 
 test("destroyed objects should not see each others changes during teardown but a long lived object should", function () {
-  var shouldChange = 0, shouldNotChange = 0;
+  var shouldChange = 0;
+  var shouldNotChange = 0;
 
   var objs = {};
 

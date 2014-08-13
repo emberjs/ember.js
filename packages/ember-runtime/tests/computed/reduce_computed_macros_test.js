@@ -81,8 +81,8 @@ test("it maps simple properties", function() {
 });
 
 test("it caches properly", function() {
-  var array = get(obj, 'array'),
-      mapped = get(obj, 'mapped');
+  var array = get(obj, 'array');
+  var mapped = get(obj, 'mapped');
 
   equal(userFnCalls, 4, "precond - mapper called expected number of times");
 
@@ -142,8 +142,8 @@ test("it maps objects", function() {
 });
 
 test("it maps unshifted objects with property observers", function() {
-  var array = Ember.A([]),
-      cObj = { v: 'c' };
+  var array = Ember.A([]);
+  var cObj = { v: 'c' };
 
   run(function() {
     obj = EmberObject.createWithMixins({
@@ -202,8 +202,8 @@ test("it maps properties", function() {
 });
 
 test("it is observerable", function() {
-  var mapped = get(obj, 'mapped'),
-      calls = 0;
+  var mapped = get(obj, 'mapped');
+  var calls = 0;
 
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 1]);
 
@@ -246,8 +246,8 @@ test("it filters according to the specified filter function", function() {
 });
 
 test("it caches properly", function() {
-  var array = get(obj, 'array'),
-      filtered = get(obj, 'filtered');
+  var array = get(obj, 'array');
+  var filtered = get(obj, 'filtered');
 
   equal(userFnCalls, 8, "precond - filter called expected number of times");
 
@@ -263,8 +263,8 @@ test("it caches properly", function() {
 });
 
 test("it updates as the array is modified", function() {
-  var array = get(obj, 'array'),
-      filtered = get(obj, 'filtered');
+  var array = get(obj, 'array');
+  var filtered = get(obj, 'filtered');
 
   deepEqual(filtered, [2,4,6,8], "precond - filtered array is initially correct");
 
@@ -286,8 +286,8 @@ test("it updates as the array is modified", function() {
 });
 
 test("the dependent array can be cleared one at a time", function() {
-  var array = get(obj, 'array'),
-      filtered = get(obj, 'filtered');
+  var array = get(obj, 'array');
+  var filtered = get(obj, 'filtered');
 
   deepEqual(filtered, [2,4,6,8], "precond - filtered array is initially correct");
 
@@ -307,8 +307,8 @@ test("the dependent array can be cleared one at a time", function() {
 });
 
 test("the dependent array can be `clear`ed directly (#3272)", function() {
-  var array = get(obj, 'array'),
-      filtered = get(obj, 'filtered');
+  var array = get(obj, 'array');
+  var filtered = get(obj, 'filtered');
 
   deepEqual(filtered, [2,4,6,8], "precond - filtered array is initially correct");
 
@@ -320,8 +320,8 @@ test("the dependent array can be `clear`ed directly (#3272)", function() {
 });
 
 test("it updates as the array is replaced", function() {
-  var array = get(obj, 'array'),
-      filtered = get(obj, 'filtered');
+  var array = get(obj, 'array');
+  var filtered = get(obj, 'filtered');
 
   deepEqual(filtered, [2,4,6,8], "precond - filtered array is initially correct");
 
@@ -353,9 +353,9 @@ QUnit.module('computedFilterBy', {
 });
 
 test("properties can be filtered by truthiness", function() {
-  var array = get(obj, 'array'),
-      as = get(obj, 'as'),
-      bs = get(obj, 'bs');
+  var array = get(obj, 'array');
+  var as = get(obj, 'as');
+  var bs = get(obj, 'bs');
 
   deepEqual(as.mapBy('name'), ['one', 'two', 'three'], "properties can be filtered by existence");
   deepEqual(bs.mapBy('name'), ['three', 'four'], "booleans can be filtered");
@@ -390,8 +390,8 @@ test("properties can be filtered by truthiness", function() {
 });
 
 test("properties can be filtered by values", function() {
-  var array = get(obj, 'array'),
-      a1s = get(obj, 'a1s');
+  var array = get(obj, 'array');
+  var a1s = get(obj, 'a1s');
 
   deepEqual(a1s.mapBy('name'), ['one', 'three'], "properties can be filtered by matching value");
 
@@ -431,8 +431,8 @@ test("properties values can be replaced", function() {
 });
 
 forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple) {
-  var alias  = tuple[0],
-      testedFunc = tuple[1];
+  var alias  = tuple[0];
+  var testedFunc = tuple[1];
 
   QUnit.module('computed.' + alias, {
     setup: function() {
@@ -454,10 +454,10 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
   });
 
   test("does not include duplicates", function() {
-    var array = get(obj, 'array'),
-        array2 = get(obj, 'array2'),
-        array3 = get(obj, 'array3'),
-        union = get(obj, 'union');
+    var array = get(obj, 'array');
+    var array2 = get(obj, 'array2');
+    var array3 = get(obj, 'array3');
+    var union = get(obj, 'union');
 
     deepEqual(union, [1,2,3,4,5,6,7,8,9,10], alias + " does not include duplicates");
 
@@ -487,10 +487,10 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
   });
 
   test("has set-union semantics", function() {
-    var array = get(obj, 'array'),
-        array2 = get(obj, 'array2'),
-        array3 = get(obj, 'array3'),
-        union = get(obj, 'union');
+    var array = get(obj, 'array');
+    var array2 = get(obj, 'array2');
+    var array3 = get(obj, 'array3');
+    var union = get(obj, 'union');
 
     deepEqual(union, [1,2,3,4,5,6,7,8,9,10], alias + " is initially correct");
 
@@ -543,10 +543,10 @@ QUnit.module('computed.intersect', {
 });
 
 test("it has set-intersection semantics", function() {
-  var array = get(obj, 'array'),
-      array2 = get(obj, 'array2'),
-      array3 = get(obj, 'array3'),
-      intersection = get(obj, 'intersection');
+  var array = get(obj, 'array');
+  var array2 = get(obj, 'array2');
+  var array3 = get(obj, 'array3');
+  var intersection = get(obj, 'intersection');
 
   deepEqual(intersection, [3,5], "intersection is initially correct");
 
@@ -615,9 +615,9 @@ test("it throws an error if given fewer or more than two dependent properties", 
 
 
 test("it has set-diff semantics", function() {
-  var array1 = get(obj, 'array'),
-      array2 = get(obj, 'array2'),
-      diff = get(obj, 'diff');
+  var array1 = get(obj, 'array');
+  var array2 = get(obj, 'array2');
+  var diff = get(obj, 'diff');
 
   deepEqual(diff, [1, 2, 6, 7], "set-diff is initially correct");
 
@@ -748,8 +748,8 @@ function commonSortTests() {
   });
 
   test("guid sort-order fallback with a serach proxy is not confused by non-search ObjectProxys", function() {
-    var tyrion = { fname: "Tyrion", lname: "Lannister" },
-        tyrionInDisguise = ObjectProxy.create({
+    var tyrion = { fname: "Tyrion", lname: "Lannister" };
+    var tyrionInDisguise = ObjectProxy.create({
           fname: "Yollo",
           lname: "",
           content: tyrion
@@ -992,8 +992,8 @@ test("property paths in sort properties update the sorted array", function () {
 });
 
 function sortByLnameFname(a, b) {
-  var lna = get(a, 'lname'),
-      lnb = get(b, 'lname');
+  var lna = get(a, 'lname');
+  var lnb = get(b, 'lname');
 
   if (lna !== lnb) {
     return lna > lnb ? 1 : -1;
@@ -1003,8 +1003,8 @@ function sortByLnameFname(a, b) {
 }
 
 function sortByFnameAsc(a, b) {
-  var fna = get(a, 'fname'),
-      fnb = get(b, 'fname');
+  var fna = get(a, 'fname');
+  var fnb = get(b, 'fname');
 
   if (fna === fnb) {
     return 0;
@@ -1264,8 +1264,8 @@ function todo(name, priority) {
 }
 
 function priorityComparator(todoA, todoB) {
-  var pa = parseInt(get(todoA, 'priority'), 10),
-      pb = parseInt(get(todoB, 'priority'), 10);
+  var pa = parseInt(get(todoA, 'priority'), 10);
+  var pb = parseInt(get(todoB, 'priority'), 10);
 
   return pa - pb;
 }
