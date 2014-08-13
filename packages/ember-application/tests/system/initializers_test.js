@@ -80,39 +80,40 @@ test("initializers can be registered in a specified order", function() {
 test("initializers can have multiple dependencies", function () {
   var order = [];
   var a = {
-        name: "a",
-        before: "b",
-        initialize: function(container) {
-          order.push('a');
-        }
-      };
+    name: "a",
+    before: "b",
+    initialize: function(container) {
+      order.push('a');
+    }
+  };
   var b = {
-        name: "b",
-        initialize: function(container) {
-          order.push('b');
-        }
-      };
+    name: "b",
+    initialize: function(container) {
+      order.push('b');
+    }
+  };
   var c = {
-        name: "c",
-        after: "b",
-        initialize: function(container) {
-          order.push('c');
-        }
-      };
+    name: "c",
+    after: "b",
+    initialize: function(container) {
+      order.push('c');
+    }
+  };
   var afterB = {
-        name: "after b",
-        after: "b",
-        initialize: function(container) {
-          order.push("after b");
-        }
-      };
+    name: "after b",
+    after: "b",
+    initialize: function(container) {
+      order.push("after b");
+    }
+  };
   var afterC = {
-        name: "after c",
-        after: "c",
-        initialize: function(container) {
-          order.push("after c");
-        }
-      };
+    name: "after c",
+    after: "c",
+    initialize: function(container) {
+      order.push("after c");
+    }
+  };
+
   Application.initializer(b);
   Application.initializer(a);
   Application.initializer(afterC);

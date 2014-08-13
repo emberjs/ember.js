@@ -132,8 +132,10 @@ export default EmberObject.extend({
     @return {Function} Method to call to remove all observers
   */
   watchModelTypes: function(typesAdded, typesUpdated) {
-    var modelTypes = this.getModelTypes(),
-        self = this, typesToSend, releaseMethods = emberA();
+    var modelTypes = this.getModelTypes();
+    var self = this;
+    var releaseMethods = emberA();
+    var typesToSend;
 
     typesToSend = modelTypes.map(function(type) {
       var klass = type.klass;
@@ -274,7 +276,8 @@ export default EmberObject.extend({
   */
 
   observeModelType: function(type, typesUpdated) {
-    var self = this, records = this.getRecords(type);
+    var self = this;
+    var records = this.getRecords(type);
 
     var onChange = function() {
       typesUpdated([self.wrapModelType(type)]);
@@ -314,8 +317,9 @@ export default EmberObject.extend({
       release: {Function} The function to remove observers
   */
   wrapModelType: function(type, name) {
-    var release, records = this.getRecords(type),
-        typeToSend, self = this;
+    var records = this.getRecords(type);
+    var self = this;
+    var release, typeToSend;
 
     typeToSend = {
       name: name || type.toString(),
@@ -337,8 +341,9 @@ export default EmberObject.extend({
     @return {Array} Array of model types
   */
   getModelTypes: function() {
-    var types, self = this,
-        containerDebugAdapter = this.get('containerDebugAdapter');
+    var self = this;
+    var containerDebugAdapter = this.get('containerDebugAdapter');
+    var types;
 
     if (containerDebugAdapter.canCatalogEntriesByType('model')) {
       types = containerDebugAdapter.catalogEntriesByType('model');
@@ -369,9 +374,9 @@ export default EmberObject.extend({
     @return {Array} Array of model type strings
   */
   _getObjectsOnNamespaces: function() {
-    var namespaces = emberA(Namespace.NAMESPACES),
-        types = emberA(),
-        self = this;
+    var namespaces = emberA(Namespace.NAMESPACES);
+    var types = emberA();
+    var self = this;
 
     namespaces.forEach(function(namespace) {
       for (var key in namespace) {
@@ -414,7 +419,9 @@ export default EmberObject.extend({
     searchKeywords: {Array}
   */
   wrapRecord: function(record) {
-    var recordToSend = { object: record }, columnValues = {}, self = this;
+    var recordToSend = { object: record };
+    var columnValues = {};
+    var self = this;
 
     recordToSend.columnValues = this.getRecordColumnValues(record);
     recordToSend.searchKeywords = this.getRecordKeywords(record);

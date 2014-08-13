@@ -165,8 +165,8 @@ test("A container lookup has access to the container", function() {
 });
 
 test("Throw exception when trying to inject `type:thing` on all type(s)", function(){
-  var container = new Container(),
-    PostController = factory();
+  var container = new Container();
+  var PostController = factory();
 
   container.register('controller:post', PostController);
 
@@ -508,9 +508,9 @@ test("cannot register an `undefined` factory", function(){
 });
 
 test("can re-register a factory", function(){
-  var container = new Container(),
-    FirstApple = factory('first'),
-    SecondApple = factory('second');
+  var container = new Container();
+  var FirstApple = factory('first');
+  var SecondApple = factory('second');
 
   container.register('controller:apple', FirstApple);
   container.register('controller:apple', SecondApple);
@@ -519,9 +519,9 @@ test("can re-register a factory", function(){
 });
 
 test("cannot re-register a factory if has been looked up", function(){
-  var container = new Container(),
-    FirstApple = factory('first'),
-    SecondApple = factory('second');
+  var container = new Container();
+  var FirstApple = factory('first');
+  var SecondApple = factory('second');
 
   container.register('controller:apple', FirstApple);
   ok(container.lookup('controller:apple') instanceof FirstApple);
@@ -537,9 +537,9 @@ test("cannot re-register a factory if has been looked up", function(){
 test('container.has should not accidentally cause injections on that factory to be run. (Mitigate merely on observing)', function(){
   expect(1);
 
-  var container = new Container(),
-    FirstApple = factory('first'),
-    SecondApple = factory('second');
+  var container = new Container();
+  var FirstApple = factory('first');
+  var SecondApple = factory('second');
 
   SecondApple.extend = function(a,b,c) {
     ok(false, 'should not extend or touch the injected model, merely to inspect existence of another');
@@ -573,9 +573,9 @@ test('once resolved, always return the same result', function() {
 test('once looked up, assert if an injection is registered for the entry', function() {
   expect(1);
 
-  var container = new Container(),
-      Apple = factory(),
-      Worm = factory();
+  var container = new Container();
+  var Apple = factory();
+  var Worm = factory();
 
   container.register('apple:main', Apple);
   container.register('worm:main', Worm);
@@ -588,9 +588,9 @@ test('once looked up, assert if an injection is registered for the entry', funct
 test("Once looked up, assert if a factoryInjection is registered for the factory", function() {
   expect(1);
 
-  var container = new Container(),
-      Apple = factory(),
-      Worm = factory();
+  var container = new Container();
+  var Apple = factory();
+  var Worm = factory();
 
   container.register('apple:main', Apple);
   container.register('worm:main', Worm);

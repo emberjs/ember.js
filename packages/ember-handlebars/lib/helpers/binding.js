@@ -757,8 +757,8 @@ function bindAttrHelper(options) {
   // For each attribute passed, create an observer and emit the
   // current value of the property as an attribute.
   forEach.call(attrKeys, function(attr) {
-    var path = attrs[attr],
-        normalized;
+    var path = attrs[attr];
+    var normalized;
 
     Ember.assert(fmt("You must provide an expression as the value of bound attribute. You specified: %@=%@", [attr, path]), typeof path === 'string');
 
