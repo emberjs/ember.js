@@ -70,8 +70,8 @@ test("should update a view instances attributes, including the _parentView and c
 });
 
 test("should create from string via container lookup", function() {
-  var ChildViewClass = EmberView.extend(),
-  fullName = 'view:bro';
+  var ChildViewClass = EmberView.extend();
+  var fullName = 'view:bro';
 
   view.container.lookupFactory = function(viewName) {
     equal(fullName, viewName);

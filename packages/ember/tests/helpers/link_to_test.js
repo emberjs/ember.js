@@ -667,8 +667,8 @@ test("Quoteless route param performs property lookup", function() {
 
   assertEquality('/');
 
-  var controller = container.lookup('controller:index'),
-      view = Ember.View.views['index-view'];
+  var controller = container.lookup('controller:index');
+  var view = Ember.View.views['index-view'];
   Ember.run(function() {
     controller.set('foo', 'about');
     view.set('foo', 'about');
@@ -717,9 +717,9 @@ test("link-to with null/undefined dynamic parameters are put in a loading state"
     }
   }
 
-  var $contextLink = Ember.$('#context-link', '#qunit-fixture'),
-      $staticLink = Ember.$('#static-link', '#qunit-fixture'),
-      controller = container.lookup('controller:index');
+  var $contextLink = Ember.$('#context-link', '#qunit-fixture');
+  var $staticLink = Ember.$('#static-link', '#qunit-fixture');
+  var controller = container.lookup('controller:index');
 
   assertLinkStatus($contextLink);
   assertLinkStatus($staticLink);
@@ -770,8 +770,8 @@ test("The {{link-to}} helper refreshes href element when one of params changes",
     this.route('post', { path: '/posts/:post_id' });
   });
 
-  var post = Ember.Object.create({id: '1'}),
-      secondPost = Ember.Object.create({id: '2'});
+  var post = Ember.Object.create({id: '1'});
+  var secondPost = Ember.Object.create({id: '2'});
 
   Ember.TEMPLATES.index = compile('{{#link-to "post" post id="post"}}post{{/link-to}}');
 
@@ -800,8 +800,8 @@ test("The {{link-to}} helper's bound parameter functionality works as expected i
     this.route('post', { path: '/posts/:post_id' });
   });
 
-  var post = Ember.Object.create({id: '1'}),
-      secondPost = Ember.Object.create({id: '2'});
+  var post = Ember.Object.create({id: '1'});
+  var secondPost = Ember.Object.create({id: '2'});
 
   Ember.TEMPLATES = {
     index: compile(' '),
@@ -1057,8 +1057,8 @@ test("The non-block form {{link-to}} performs property lookup", function() {
 
   assertEquality('/');
 
-  var controller = container.lookup('controller:index'),
-  view = Ember.View.views['index-view'];
+  var controller = container.lookup('controller:index');
+  var view = Ember.View.views['index-view'];
   Ember.run(function() {
     controller.set('foo', 'about');
     view.set('foo', 'about');

@@ -1406,8 +1406,8 @@ asyncTest("actions can be triggered with multiple arguments", function() {
     });
   });
 
-  var model1 = { name: "Tilde" },
-      model2 = { name: "Tom Dale" };
+  var model1 = { name: "Tilde" };
+  var model2 = { name: "Tom Dale" };
 
   App.RootRoute = Ember.Route.extend({
     actions: {
@@ -1489,8 +1489,8 @@ test('navigating away triggers a url property change', function() {
 });
 
 test("using replaceWith calls location.replaceURL if available", function() {
-  var setCount = 0,
-      replaceCount = 0;
+  var setCount = 0;
+  var replaceCount = 0;
 
   Router.reopen({
     location: Ember.NoneLocation.createWithMixins({
@@ -2012,8 +2012,8 @@ test("Rendering into specified template with slash notation", function() {
 
 
 test("Parent route context change", function() {
-  var editCount = 0,
-      editedPostIds = Ember.A();
+  var editCount = 0;
+  var editedPostIds = Ember.A();
 
   Ember.TEMPLATES.application = compile("{{outlet}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
@@ -2082,10 +2082,9 @@ test("Parent route context change", function() {
 });
 
 test("Router accounts for rootURL on page load when using history location", function() {
-  var rootURL = window.location.pathname + '/app',
-      postsTemplateRendered = false,
-      setHistory,
-      HistoryTestLocation;
+  var rootURL = window.location.pathname + '/app';
+  var postsTemplateRendered = false;
+  var setHistory, HistoryTestLocation;
 
   setHistory = function(obj, path) {
     obj.set('history', { state: { path: path } });
@@ -2138,8 +2137,8 @@ test("Router accounts for rootURL on page load when using history location", fun
 
 test("The rootURL is passed properly to the location implementation", function() {
   expect(1);
-  var rootURL = "/blahzorz",
-      HistoryTestLocation;
+  var rootURL = "/blahzorz";
+  var HistoryTestLocation;
 
   HistoryTestLocation = Ember.HistoryLocation.extend({
     rootURL: 'this is not the URL you are looking for',
@@ -3044,8 +3043,8 @@ test("Redirecting with null model doesn't error out", function() {
 });
 
 test("rejecting the model hooks promise with a non-error prints the `message` property", function() {
-  var rejectedMessage = 'OMG!! SOOOOOO BAD!!!!',
-      rejectedStack   = 'Yeah, buddy: stack gets printed too.';
+  var rejectedMessage = 'OMG!! SOOOOOO BAD!!!!';
+  var rejectedStack   = 'Yeah, buddy: stack gets printed too.';
 
   Router.map(function() {
     this.route("yippie", { path: "/" });
@@ -3085,8 +3084,8 @@ test("rejecting the model hooks promise with no reason still logs error", functi
 });
 
 test("rejecting the model hooks promise with a string shows a good error", function() {
-  var originalLoggerError = Ember.Logger.error,
-      rejectedMessage = "Supercalifragilisticexpialidocious";
+  var originalLoggerError = Ember.Logger.error;
+  var rejectedMessage = "Supercalifragilisticexpialidocious";
 
   Router.map(function() {
     this.route("yondo", { path: "/" });

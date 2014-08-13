@@ -361,12 +361,12 @@ test("should allow changes to content object before layer is created", function(
 });
 
 test("should fire life cycle events when elements are added and removed", function() {
-  var view,
-    didInsertElement = 0,
-    willDestroyElement = 0,
-    willDestroy = 0,
-    destroy = 0,
-    content = Ember.A([1, 2, 3]);
+  var view;
+  var didInsertElement = 0;
+  var willDestroyElement = 0;
+  var willDestroy = 0;
+  var destroy = 0;
+  var content = Ember.A([1, 2, 3]);
   run(function () {
     view = CollectionView.create({
       content: content,

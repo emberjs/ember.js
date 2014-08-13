@@ -12,8 +12,7 @@ import EmberError from "ember-metal/error";
 import { IS_BINDING } from "ember-metal/mixin";
 
 // late bound via requireModule because of circular dependencies.
-var resolveHelper,
-    SimpleHandlebarsView;
+var resolveHelper, SimpleHandlebarsView;
 
 import isEmpty from 'ember-metal/is_empty';
 

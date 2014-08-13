@@ -274,9 +274,9 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     Ember.TEMPLATES.about = compile("<h3>{{link-to 'Home' 'home'  (query-params foo='naw')}}</h3>");
     Ember.TEMPLATES['cats/index'] = compile("<h3>{{link-to 'Cats' 'cats'  (query-params name='domino') id='cats-link'}}</h3>");
 
-    var homeShouldBeCreated = false,
-        aboutShouldBeCreated = false,
-        catsIndexShouldBeCreated = false;
+    var homeShouldBeCreated = false;
+    var aboutShouldBeCreated = false;
+    var catsIndexShouldBeCreated = false;
 
     App.HomeRoute = Ember.Route.extend({
       setup: function() {

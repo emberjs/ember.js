@@ -1206,9 +1206,9 @@ var View = CoreView.extend({
     var unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
 
     forEach(attributeBindings, function(binding) {
-      var split = binding.split(':'),
-          property = split[0],
-          attributeName = split[1] || property;
+      var split = binding.split(':');
+      var property = split[0];
+      var attributeName = split[1] || property;
 
       if (property in this) {
         this._setupAttributeBindingObservation(property, attributeName);
@@ -1323,9 +1323,9 @@ var View = CoreView.extend({
   },
 
   mutateChildViews: function(callback) {
-    var childViews = this._childViews,
-        idx = childViews.length,
-        view;
+    var childViews = this._childViews;
+    var idx = childViews.length;
+    var view;
 
     while(--idx >= 0) {
       view = childViews[idx];
@@ -1340,8 +1340,8 @@ var View = CoreView.extend({
 
     if (!childViews) { return this; }
 
-    var len = childViews.length,
-        view, idx;
+    var len = childViews.length;
+    var view, idx;
 
     for (idx = 0; idx < len; idx++) {
       view = childViews[idx];
@@ -1946,11 +1946,11 @@ var View = CoreView.extend({
     @method destroy
   */
   destroy: function() {
-    var childViews = this._childViews,
-        // get parentView before calling super because it'll be destroyed
-        nonVirtualParentView = get(this, 'parentView'),
-        viewName = this.viewName,
-        childLen, i;
+    var childViews = this._childViews;
+    // get parentView before calling super because it'll be destroyed
+    var nonVirtualParentView = get(this, 'parentView');
+    var viewName = this.viewName;
+    var childLen, i;
 
     if (!this._super()) { return; }
 
@@ -2153,13 +2153,13 @@ var View = CoreView.extend({
       return;
     }
 
-    var view = this,
-        stateCheckedObserver = function() {
-          view.currentState.invokeObserver(this, observer);
-        },
-        scheduledObserver = function() {
-          run.scheduleOnce('render', this, stateCheckedObserver);
-        };
+    var view = this;
+    var stateCheckedObserver = function() {
+      view.currentState.invokeObserver(this, observer);
+    };
+    var scheduledObserver = function() {
+      run.scheduleOnce('render', this, stateCheckedObserver);
+    };
 
     addObserver(root, path, target, scheduledObserver);
 
@@ -2265,11 +2265,10 @@ View.reopenClass({
     @private
   */
   _parsePropertyPath: function(path) {
-    var split = path.split(':'),
-        propertyPath = split[0],
-        classNames = "",
-        className,
-        falsyClassName;
+    var split = path.split(':');
+    var propertyPath = split[0];
+    var classNames = "";
+    var className, falsyClassName;
 
     // check if the property is defined as prop:class or prop:trueClass:falseClass
     if (split.length > 1) {
