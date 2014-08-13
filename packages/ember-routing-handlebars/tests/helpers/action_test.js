@@ -21,8 +21,8 @@ import {
   actionHelper
 } from "ember-routing-handlebars/helpers/action";
 
-var dispatcher, view, originalActionHelper,
-    originalRegisterAction = ActionHelper.registerAction;
+var dispatcher, view, originalActionHelper;
+var originalRegisterAction = ActionHelper.registerAction;
 
 var appendView = function() {
   run(function() { view.appendTo('#qunit-fixture'); });
@@ -97,7 +97,8 @@ test("should allow alternative events to be handled", function() {
 });
 
 test("should by default target the view's controller", function() {
-  var registeredTarget, controller = {};
+  var registeredTarget;
+  var controller = {};
 
   ActionHelper.registerAction = function(actionName, options) {
     registeredTarget = options.target;
@@ -116,7 +117,8 @@ test("should by default target the view's controller", function() {
 });
 
 test("Inside a yield, the target points at the original target", function() {
-  var controller = {}, watted = false;
+  var controller = {};
+  var watted = false;
 
   var component = EmberComponent.extend({
     boundText: "inner",
@@ -273,7 +275,8 @@ test("should allow a target to be specified", function() {
 });
 
 test("should lazily evaluate the target", function() {
-  var firstEdit = 0, secondEdit = 0;
+  var firstEdit = 0;
+  var secondEdit = 0;
 
   var controller = {};
   var first = {
@@ -337,7 +340,8 @@ test("should register an event handler", function() {
 });
 
 test("handles whitelisted modifier keys", function() {
-  var eventHandlerWasCalled = false, shortcutHandlerWasCalled = false;
+  var eventHandlerWasCalled = false;
+  var shortcutHandlerWasCalled = false;
 
   var controller = EmberController.extend({
     actions: {
@@ -371,9 +375,9 @@ test("handles whitelisted modifier keys", function() {
 });
 
 test("should be able to use action more than once for the same event within a view", function() {
-  var editWasCalled = false,
-      deleteWasCalled = false,
-      originalEventHandlerWasCalled = false;
+  var editWasCalled = false;
+  var deleteWasCalled = false;
+  var originalEventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
     actions: {
@@ -413,9 +417,9 @@ test("should be able to use action more than once for the same event within a vi
 });
 
 test("the event should not bubble if `bubbles=false` is passed", function() {
-  var editWasCalled = false,
-      deleteWasCalled = false,
-      originalEventHandlerWasCalled = false;
+  var editWasCalled = false;
+  var deleteWasCalled = false;
+  var originalEventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
     actions: {
@@ -562,8 +566,8 @@ test("should properly capture events on child elements of a container with an ac
 });
 
 test("should allow bubbling of events from action helper to original parent event", function() {
-  var eventHandlerWasCalled = false,
-      originalEventHandlerWasCalled = false;
+  var eventHandlerWasCalled = false;
+  var originalEventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
     actions: { edit: function() { eventHandlerWasCalled = true; } }
@@ -583,8 +587,8 @@ test("should allow bubbling of events from action helper to original parent even
 });
 
 test("should not bubble an event from action helper to original parent event if `bubbles=false` is passed", function() {
-  var eventHandlerWasCalled = false,
-      originalEventHandlerWasCalled = false;
+  var eventHandlerWasCalled = false;
+  var originalEventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
     actions: { edit: function() { eventHandlerWasCalled = true; } }
@@ -669,9 +673,9 @@ test("should only trigger actions for the event they were registered on", functi
 });
 
 test("should unwrap controllers passed as a context", function() {
-  var passedContext,
-      model = EmberObject.create(),
-      controller = EmberObjectController.extend({
+  var passedContext;
+  var model = EmberObject.create();
+  var controller = EmberObjectController.extend({
         model: model,
         actions: {
           edit: function(context) {
@@ -693,8 +697,8 @@ test("should unwrap controllers passed as a context", function() {
 });
 
 test("should allow multiple contexts to be specified", function() {
-  var passedContexts,
-      models = [EmberObject.create(), EmberObject.create()];
+  var passedContexts;
+  var models = [EmberObject.create(), EmberObject.create()];
 
   var controller = EmberController.extend({
     actions: {
@@ -719,8 +723,8 @@ test("should allow multiple contexts to be specified", function() {
 });
 
 test("should allow multiple contexts to be specified mixed with string args", function() {
-  var passedParams,
-      model = EmberObject.create();
+  var passedParams;
+  var model = EmberObject.create();
 
   var controller = EmberController.extend({
     actions: {
@@ -899,7 +903,8 @@ if (Ember.FEATURES.isEnabled("ember-routing-handlebars-action-with-key-code")) {
 }
 test("a quoteless parameter should allow dynamic lookup of the actionName", function(){
   expect(4);
-  var lastAction, actionOrder = [];
+  var lastAction;
+  var actionOrder = [];
 
   view = EmberView.create({
     template: compile("<a id='woot-bound-param'' {{action hookMeUp}}>Hi</a>")
@@ -947,7 +952,8 @@ test("a quoteless parameter should allow dynamic lookup of the actionName", func
 
 test("a quoteless parameter should lookup actionName in context", function(){
   expect(4);
-  var lastAction, actionOrder = [];
+  var lastAction;
+  var actionOrder = [];
 
   view = EmberView.create({
     template: compile("{{#each allactions}}<a {{bind-attr id='name'}} {{action name}}>{{title}}</a>{{/each}}")
@@ -995,7 +1001,8 @@ test("a quoteless parameter should lookup actionName in context", function(){
 
 test("a quoteless parameter should resolve actionName, including path", function(){
   expect(4);
-  var lastAction, actionOrder = [];
+  var lastAction;
+  var actionOrder = [];
 
   view = EmberView.create({
     template: compile("{{#each item in allactions}}<a {{bind-attr id='item.name'}} {{action item.name}}>{{item.title}}</a>{{/each}}")

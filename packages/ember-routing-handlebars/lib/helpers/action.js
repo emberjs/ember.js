@@ -28,8 +28,8 @@ function args(options, actionName) {
   var ret = [];
   if (actionName) { ret.push(actionName); }
 
-  var types = options.options.types.slice(1),
-      data = options.options.data;
+  var types = options.options.types.slice(1);
+  var data = options.options.data;
 
   return ret.concat(resolveParams(options.context, options.params, { types: types, data: data }));
 }
@@ -92,10 +92,10 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
         event.stopPropagation();
       }
 
-      var target = options.target,
-          parameters = options.parameters,
-          eventName = options.eventName,
-          actionName;
+      var target = options.target;
+      var parameters = options.parameters;
+      var eventName = options.eventName;
+      var actionName;
 
       if (Ember.FEATURES.isEnabled("ember-routing-handlebars-action-with-key-code")) {
         if (ignoreKeyEvent(eventName, event, options.withKeyCode)) {

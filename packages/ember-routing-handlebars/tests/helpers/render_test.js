@@ -64,8 +64,9 @@ function buildContainer(namespace) {
 
 function resolverFor(namespace) {
   return function(fullName) {
-    var nameParts = fullName.split(":"),
-        type = nameParts[0], name = nameParts[1];
+    var nameParts = fullName.split(":");
+    var type = nameParts[0];
+    var name = nameParts[1];
 
     if (type === 'template') {
       var templateName = decamelize(name);
@@ -472,10 +473,10 @@ test("{{render}} helper should link child controllers to the parent controller",
 
   appendView(view);
 
-  var button = jQuery("#parent-action"),
-      actionId = button.data('ember-action'),
-      action = ActionManager.registeredActions[actionId],
-      handler = action.handler;
+  var button = jQuery("#parent-action");
+  var actionId = button.data('ember-action');
+  var action = ActionManager.registeredActions[actionId];
+  var handler = action.handler;
 
   equal(button.text(), "Go to Mom", "The parentController property is set on the child controller");
 

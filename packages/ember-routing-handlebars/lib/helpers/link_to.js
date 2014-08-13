@@ -46,8 +46,8 @@ var QueryParams = EmberObject.extend({
 
 function getResolvedPaths(options) {
 
-  var types = options.options.types,
-      data = options.options.data;
+  var types = options.options.types;
+  var data = options.options.data;
 
   return resolvePaths(options.context, options.params, { types: types, data: data });
 }
@@ -224,11 +224,11 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
    @since 1.3.0
   **/
   _setupPathObservers: function(){
-    var helperParameters = this.parameters,
-        linkTextPath     = helperParameters.options.linkTextPath,
-        paths = getResolvedPaths(helperParameters),
-        length = paths.length,
-        path, i, normalizedPath;
+    var helperParameters = this.parameters;
+    var linkTextPath     = helperParameters.options.linkTextPath;
+    var paths = getResolvedPaths(helperParameters);
+    var length = paths.length;
+    var path, i, normalizedPath;
 
     if (linkTextPath) {
       normalizedPath = getNormalizedPath(linkTextPath, helperParameters);
@@ -411,8 +411,8 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
       return false;
     }
 
-    var router = get(this, 'router'),
-        loadedParams = get(this, 'loadedParams');
+    var router = get(this, 'router');
+    var loadedParams = get(this, 'loadedParams');
 
     var transition = router._doTransition(loadedParams.targetRouteName, loadedParams.models, loadedParams.queryParams);
     if (get(this, 'replace')) {
@@ -480,11 +480,11 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     @return {Array}
    */
   resolvedParams: computed('router.url', function() {
-    var parameters = this.parameters,
-        options = parameters.options,
-        types = options.types,
-        data = options.data,
-        targetRouteName, models;
+    var parameters = this.parameters;
+    var options = parameters.options;
+    var types = options.types;
+    var data = options.data;
+    var targetRouteName, models;
 
     var onlyQueryParamsSupplied = (parameters.params.length === 0);
     if (onlyQueryParamsSupplied) {
@@ -519,8 +519,8 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     var router = get(this, 'router');
     if (!router) { return; }
 
-    var resolvedParams = get(this, 'resolvedParams'),
-        namedRoute = resolvedParams.targetRouteName;
+    var resolvedParams = get(this, 'resolvedParams');
+    var namedRoute = resolvedParams.targetRouteName;
 
     if (!namedRoute) { return; }
 
@@ -548,8 +548,8 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
   href: computed('loadedParams', function computeLinkViewHref() {
     if (get(this, 'tagName') !== 'a') { return; }
 
-    var router = get(this, 'router'),
-        loadedParams = get(this, 'loadedParams');
+    var router = get(this, 'router');
+    var loadedParams = get(this, 'loadedParams');
 
     if (!loadedParams) {
       return get(this, 'loadingHref');
@@ -856,9 +856,9 @@ if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
   @see {Ember.LinkView}
 */
 function linkToHelper(name) {
-  var options = slice.call(arguments, -1)[0],
-      params = slice.call(arguments, 0, -1),
-      hash = options.hash;
+  var options = slice.call(arguments, -1)[0];
+  var params = slice.call(arguments, 0, -1);
+  var hash = options.hash;
 
   Ember.assert("You must provide one or more parameters to the link-to helper.", params.length);
 
@@ -923,9 +923,9 @@ function deprecatedLinkToHelper() {
 }
 
 function getResolvedQueryParams(linkView, targetRouteName) {
-  var helperParameters = linkView.parameters,
-      queryParamsObject = linkView.queryParamsObject,
-      resolvedQueryParams = {};
+  var helperParameters = linkView.parameters;
+  var queryParamsObject = linkView.queryParamsObject;
+  var resolvedQueryParams = {};
 
   if (!queryParamsObject) { return resolvedQueryParams; }
   var rawParams = queryParamsObject.values;
@@ -933,8 +933,8 @@ function getResolvedQueryParams(linkView, targetRouteName) {
   for (var key in rawParams) {
     if (!rawParams.hasOwnProperty(key)) { continue; }
 
-    var value = rawParams[key],
-        type = queryParamsObject.types[key];
+    var value = rawParams[key];
+    var type = queryParamsObject.types[key];
 
     if (type === 'ID') {
       var normalizedPath = getNormalizedPath(value, helperParameters);
