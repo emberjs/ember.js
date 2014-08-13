@@ -78,15 +78,11 @@ computed.empty = function (dependentKey) {
   A computed property that returns true if the value of the dependent
   property is NOT null, an empty string, empty array, or empty function.
 
-  Note: When using `computed.notEmpty` to watch an array make sure to
-  use the `array.[]` syntax so the computed can subscribe to transitions
-  from empty to non-empty states.
-
   Example
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    hasStuff: Ember.computed.notEmpty('backpack.[]')
+    hasStuff: Ember.computed.notEmpty('backpack')
   });
 
   var hamster = Hamster.create({ backpack: ['Food', 'Sleeping Bag', 'Tent'] });
@@ -102,9 +98,11 @@ computed.empty = function (dependentKey) {
   @return {Ember.ComputedProperty} computed property which returns true if
   original value for property is not empty.
 */
-registerComputed('notEmpty', function(dependentKey) {
-  return !isEmpty(get(this, dependentKey));
-});
+computed.notEmpty = function(dependentKey) {
+  return computed(dependentKey + '.length', function () {
+    return !isEmpty(get(this, dependentKey));
+  });
+};
 
 /**
   A computed property that returns true if the value of the dependent
