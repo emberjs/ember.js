@@ -210,7 +210,8 @@ ChainNodePrototype.remove = function(path) {
 ChainNodePrototype.count = 0;
 
 ChainNodePrototype.chain = function(key, path, src) {
-  var chains = this._chains, node;
+  var chains = this._chains;
+  var node;
   if (!chains) { chains = this._chains = {}; }
 
   node = chains[key];

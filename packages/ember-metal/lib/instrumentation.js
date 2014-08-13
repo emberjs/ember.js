@@ -51,7 +51,8 @@ var subscribers = [];
 var cache = {};
 
 var populateListeners = function(name) {
-  var listeners = [], subscriber;
+  var listeners = [];
+  var subscriber;
 
   for (var i=0, l=subscribers.length; i<l; i++) {
     subscriber = subscribers[i];

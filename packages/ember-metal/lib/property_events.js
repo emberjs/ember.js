@@ -226,7 +226,8 @@ function changeProperties(cb, binding) {
 function notifyBeforeObservers(obj, keyName) {
   if (obj.isDestroying) { return; }
 
-  var eventName = keyName + ':before', listeners, diff;
+  var eventName = keyName + ':before';
+  var listeners, diff;
   if (deferred) {
     listeners = beforeObserverSet.add(obj, keyName, eventName);
     diff = listenersDiff(obj, eventName, listeners);
@@ -239,7 +240,8 @@ function notifyBeforeObservers(obj, keyName) {
 function notifyObservers(obj, keyName) {
   if (obj.isDestroying) { return; }
 
-  var eventName = keyName + ':change', listeners;
+  var eventName = keyName + ':change';
+  var listeners;
   if (deferred) {
     listeners = observerSet.add(obj, keyName, eventName);
     listenersUnion(obj, eventName, listeners);

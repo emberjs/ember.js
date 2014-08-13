@@ -276,7 +276,8 @@ testBoth('removing an chain before observer on change should not fail', function
 });
 
 testBoth('suspending an observer should not fire during callback', function(get,set) {
-  var obj = {}, target, otherTarget;
+  var obj = {};
+  var target, otherTarget;
 
   target = {
     values: [],
@@ -312,7 +313,8 @@ testBoth('suspending an observer should not fire during callback', function(get,
 
 
 testBoth('suspending an observer should not defer change notifications during callback', function(get,set) {
-  var obj = {}, target, otherTarget;
+  var obj = {};
+  var target, otherTarget;
 
   target = {
     values: [],
@@ -349,7 +351,8 @@ testBoth('suspending an observer should not defer change notifications during ca
 });
 
 testBoth('suspending observers should not fire during callback', function(get,set) {
-  var obj = {}, target, otherTarget;
+  var obj = {};
+  var target, otherTarget;
 
   target = {
     values: [],
@@ -385,7 +388,8 @@ testBoth('suspending observers should not fire during callback', function(get,se
 
 
 testBoth('suspending observers should not defer change notifications during callback', function(get,set) {
-  var obj = {}, target, otherTarget;
+  var obj = {};
+  var target, otherTarget;
 
   target = {
     values: [],
@@ -506,7 +510,8 @@ testBoth('implementing sendEvent on object should invoke when deferring property
 });
 
 testBoth('addObserver should propagate through prototype', function(get,set) {
-  var obj = { foo: 'foo', count: 0 }, obj2;
+  var obj = { foo: 'foo', count: 0 };
+  var obj2;
 
   addObserver(obj, 'foo', function() { this.count++; });
   obj2 = create(obj);
@@ -805,7 +810,8 @@ testBoth('before observer watching multiple properties via brace expansion shoul
 });
 
 testBoth('addBeforeObserver should propagate through prototype', function(get,set) {
-  var obj = { foo: 'foo', count: 0 }, obj2;
+  var obj = { foo: 'foo', count: 0 };
+  var obj2;
 
   addBeforeObserver(obj, 'foo', function() { this.count++; });
   obj2 = create(obj);
@@ -862,8 +868,8 @@ testBoth('addBeforeObserver should respect targets with methods', function(get,s
 // CHAINED OBSERVERS
 //
 
-var obj, count;
-var originalLookup = Ember.lookup, lookup;
+var obj, count, lookup;
+var originalLookup = Ember.lookup;
 
 QUnit.module('addObserver - dependentkey with chained properties', {
   setup: function() {
@@ -955,7 +961,8 @@ testBoth('depending on a simple chain', function(get, set) {
 });
 
 testBoth('depending on a Global chain', function(get, set) {
-  var Global = lookup.Global, val;
+  var Global = lookup.Global;
+  var val;
 
   addObserver(obj, 'Global.foo.bar.baz.biff', function(target, key) {
     val = get(lookup, key);
@@ -1050,7 +1057,8 @@ QUnit.module("Ember.immediateObserver");
 
 testBoth("immediate observers should fire synchronously", function(get, set) {
   var obj = {};
-  var observerCalled = 0, mixin;
+  var observerCalled = 0;
+  var mixin;
 
   // explicitly create a run loop so we do not inadvertently
   // trigger deferred behavior
@@ -1084,7 +1092,8 @@ testBoth("immediate observers should fire synchronously", function(get, set) {
 if (Ember.EXTEND_PROTOTYPES) {
   testBoth('immediate observers added declaratively via brace expansion fire synchronously', function (get, set) {
     var obj = {};
-    var observerCalled = 0, mixin;
+    var observerCalled = 0;
+    var mixin;
 
     // explicitly create a run loop so we do not inadvertently
     // trigger deferred behavior
@@ -1117,7 +1126,8 @@ if (Ember.EXTEND_PROTOTYPES) {
 
 testBoth('immediate observers watching multiple properties via brace expansion fire synchronously', function (get, set) {
   var obj = {};
-  var observerCalled = 0, mixin;
+  var observerCalled = 0;
+  var mixin;
 
   // explicitly create a run loop so we do not inadvertently
   // trigger deferred behavior

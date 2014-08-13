@@ -45,7 +45,8 @@ var o_create = create;
 var metaFor = meta;
 
 function superFunction(){
-  var ret, func = this.__nextSuper;
+  var func = this.__nextSuper;
+  var ret;
   if (func) {
     this.__nextSuper = null;
     ret = apply(this, func, arguments);
@@ -284,7 +285,8 @@ function detectBinding(obj, key, value, m) {
 
 function connectBindings(obj, m) {
   // TODO Mixin.apply(instance) should disconnect binding if exists
-  var bindings = m.bindings, key, binding, to;
+  var bindings = m.bindings;
+  var key, binding, to;
   if (bindings) {
     for (key in bindings) {
       binding = bindings[key];
@@ -311,7 +313,8 @@ function finishPartial(obj, m) {
 }
 
 function followAlias(obj, desc, m, descs, values) {
-  var altKey = desc.methodName, value;
+  var altKey = desc.methodName;
+  var value;
   if (descs[altKey] || values[altKey]) {
     value = values[altKey];
     desc  = descs[altKey];
@@ -517,7 +520,8 @@ MixinPrototype.reopen = function() {
   }
 
   var len = arguments.length;
-  var mixins = this.mixins, idx;
+  var mixins = this.mixins;
+  var idx;
 
   for(idx=0; idx < len; idx++) {
     mixin = arguments[idx];

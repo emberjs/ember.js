@@ -68,7 +68,8 @@ var get = function get(obj, keyName) {
   }
 
   var meta = obj['__ember_meta__'];
-  var desc = meta && meta.descs[keyName], ret;
+  var desc = meta && meta.descs[keyName];
+  var ret;
 
   if (desc === undefined && isPath(keyName)) {
     return _getPath(obj, keyName);

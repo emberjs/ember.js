@@ -50,8 +50,8 @@ function indexOf(array, target, method) {
 }
 
 function actionsFor(obj, eventName) {
-  var meta = metaFor(obj, true),
-      actions;
+  var meta = metaFor(obj, true);
+  var actions;
 
   if (!meta.listeners) { meta.listeners = {}; }
 

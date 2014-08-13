@@ -51,7 +51,8 @@ testBoth("bindings should not sync twice in a single run loop", function(get, se
 });
 
 testBoth("bindings should not infinite loop if computed properties return objects", function(get, set) {
-  var a, b, getCalled=0;
+  var a, b;
+  var getCalled=0;
 
   run(function() {
     a = {};

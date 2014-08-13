@@ -42,8 +42,8 @@ var set = function set(obj, keyName, value, tolerant) {
   }
 
   var meta = obj['__ember_meta__'];
-  var desc = meta && meta.descs[keyName],
-      isUnknown, currentValue;
+  var desc = meta && meta.descs[keyName];
+  var isUnknown, currentValue;
 
   if (desc === undefined && isPath(keyName)) {
     return setPath(obj, keyName, value, tolerant);

@@ -68,7 +68,8 @@ asyncTest('should invoke after specified period of time - target/method/args', f
 });
 
 asyncTest('should always invoke within a separate runloop', function() {
-  var obj = { invoked: 0 }, firstRunLoop, secondRunLoop;
+  var obj = { invoked: 0 };
+  var firstRunLoop, secondRunLoop;
 
   run(function() {
     firstRunLoop = run.currentRunLoop;

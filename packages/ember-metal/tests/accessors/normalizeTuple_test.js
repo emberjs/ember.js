@@ -1,7 +1,8 @@
 /*globals Foo:true, $foo:true */
 import { normalizeTuple } from "ember-metal/property_get";
 
-var obj, moduleOpts = {
+var obj;
+var moduleOpts = {
   setup: function() {
     obj = {
       foo: {
