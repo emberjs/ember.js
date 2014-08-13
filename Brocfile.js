@@ -84,10 +84,16 @@ function vendoredPackage(packageName) {
       /metamorph
         └── metamorph.js
    */
-  return  moveFile(libTree, {
+  var sourceTree = moveFile(libTree, {
     srcFile: packageName + '/main.js',
     destFile: '/' + packageName + '.js'
   });
+
+  if (env !== 'development') {
+    sourceTree = es3recast(sourceTree);
+  }
+
+  return sourceTree;
 }
 
 /*
@@ -505,9 +511,15 @@ function vendoredEs6Package(packageName) {
     srcDir: '/', destDir: '/'
   });
 
-  return transpileES6(tree, {
+  var sourceTree = transpileES6(tree, {
     moduleName: true
   });
+
+  if (env !== 'development') {
+    sourceTree = es3recast(sourceTree);
+  }
+
+  return sourceTree;
 }
 
 /*
