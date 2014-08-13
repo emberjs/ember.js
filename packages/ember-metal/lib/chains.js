@@ -4,9 +4,9 @@ import {meta} from "ember-metal/utils";
 import {forEach} from "ember-metal/array";
 import {watchKey, unwatchKey} from "ember-metal/watch_key";
 
-var metaFor = meta,
-    warn = Ember.warn,
-    FIRST_KEY = /^([^\.]+)/;
+var metaFor = meta;
+var warn = Ember.warn;
+var FIRST_KEY = /^([^\.]+)/;
 
 function firstKey(path) {
   return path.match(FIRST_KEY)[0];
@@ -31,7 +31,8 @@ export function flushPendingChains() {
 function addChainWatcher(obj, keyName, node) {
   if (!obj || ('object' !== typeof obj)) { return; } // nothing to do
 
-  var m = metaFor(obj), nodes = m.chainWatchers;
+  var m = metaFor(obj);
+  var nodes = m.chainWatchers;
 
   if (!m.hasOwnProperty('chainWatchers')) {
     nodes = m.chainWatchers = {};
@@ -136,8 +137,10 @@ ChainNodePrototype.destroy = function() {
 
 // copies a top level object only
 ChainNodePrototype.copy = function(obj) {
-  var ret = new ChainNode(null, null, obj),
-      paths = this._paths, path;
+  var ret = new ChainNode(null, null, obj);
+  var paths = this._paths;
+  var path;
+
   for (path in paths) {
     if (paths[path] <= 0) { continue; } // this check will also catch non-number vals.
     ret.add(path);
@@ -223,7 +226,8 @@ ChainNodePrototype.chain = function(key, path, src) {
 };
 
 ChainNodePrototype.unchain = function(key, path) {
-  var chains = this._chains, node = chains[key];
+  var chains = this._chains;
+  var node = chains[key];
 
   // unchain rest of path first...
   if (path && path.length>1) {

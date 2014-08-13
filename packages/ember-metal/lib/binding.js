@@ -160,7 +160,8 @@ Binding.prototype = {
   connect: function(obj) {
     Ember.assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
-    var fromPath = this._from, toPath = this._to;
+    var fromPath = this._from;
+    var toPath = this._to;
     trySet(obj, toPath, getWithGlobals(obj, fromPath));
 
     // add an observer on the object to be notified when the binding should be updated
@@ -240,7 +241,8 @@ Binding.prototype = {
     var directionMap = this._directionMap;
     var direction = directionMap.get(obj);
 
-    var fromPath = this._from, toPath = this._to;
+    var fromPath = this._from;
+    var toPath = this._to;
 
     directionMap.remove(obj);
 
@@ -288,7 +290,8 @@ mixinProperties(Binding, {
     @static
   */
   from: function() {
-    var C = this, binding = new C();
+    var C = this;
+    var binding = new C();
     return binding.from.apply(binding, arguments);
   },
 
@@ -299,7 +302,8 @@ mixinProperties(Binding, {
     @static
   */
   to: function() {
-    var C = this, binding = new C();
+    var C = this;
+    var binding = new C();
     return binding.to.apply(binding, arguments);
   },
 
@@ -320,7 +324,8 @@ mixinProperties(Binding, {
     @return {Ember.Binding} `this`
   */
   oneWay: function(from, flag) {
-    var C = this, binding = new C(null, from);
+    var C = this;
+    var binding = new C(null, from);
     return binding.oneWay(flag);
   }
 

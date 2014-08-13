@@ -4,8 +4,9 @@ if (Ember.FEATURES.isEnabled('ember-metal-is-present')) {
   QUnit.module("Ember.isPresent");
 
   test("Ember.isPresent", function() {
-    var string = "string", fn = function() {},
-    object = {length: 0};
+    var string = "string";
+    var fn = function() {};
+    var object = {length: 0};
 
     equal(false, isPresent(),          "for no params");
     equal(false, isPresent(null),      "for null");

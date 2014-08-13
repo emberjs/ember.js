@@ -6,8 +6,8 @@ import { forEach } from 'ember-metal/enumerable_utils';
   @module ember-metal
   */
 
-var BRACE_EXPANSION = /^((?:[^\.]*\.)*)\{(.*)\}$/,
-    SPLIT_REGEX = /\{|\}/;
+var BRACE_EXPANSION = /^((?:[^\.]*\.)*)\{(.*)\}$/;
+var SPLIT_REGEX = /\{|\}/;
 
 /**
   Expands `pattern`, invoking `callback` for each expansion.
@@ -62,8 +62,8 @@ function oldExpandProperties(pattern, callback) {
 
 function newExpandProperties(pattern, callback) {
   if ('string' === Ember.typeOf(pattern)) {
-    var parts = pattern.split(SPLIT_REGEX),
-        properties = [parts];
+    var parts = pattern.split(SPLIT_REGEX);
+    var properties = [parts];
 
     forEach(parts, function(part, index) {
       if (part.indexOf(',') >= 0) {

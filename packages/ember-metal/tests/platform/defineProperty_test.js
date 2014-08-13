@@ -71,7 +71,10 @@ test('defining a non enumerable property', function() {
 // and setters don't do anything
 if (platform.hasPropertyAccessors) {
   test('defining a getter/setter', function() {
-    var obj = {}, getCnt = 0, setCnt = 0, v = 'FOO';
+    var obj = {};
+    var getCnt = 0;
+    var setCnt = 0;
+    var v = 'FOO';
 
     var desc = {
       enumerable: true,

@@ -61,8 +61,8 @@ test('calling set on overridden computed properties', function() {
   var SuperMixin, SubMixin;
   var obj;
 
-  var superGetOccurred = false,
-      superSetOccurred = false;
+  var superGetOccurred = false;
+  var superSetOccurred = false;
 
   SuperMixin = Mixin.create({
     aProp: computed(function(key, val) {
