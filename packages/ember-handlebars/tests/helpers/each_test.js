@@ -23,7 +23,8 @@ function templateFor(template) {
   return EmberHandlebars.compile(template);
 }
 
-var originalLookup = Ember.lookup, lookup;
+var originalLookup = Ember.lookup;
+var lookup;
 
 QUnit.module("the #each helper", {
   setup: function() {
@@ -276,8 +277,8 @@ test("itemController specified in template gets a parentController property", fu
         controllerName: computed(function() {
           return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
         })
-      }),
-      parentController = {
+      });
+  var parentController = {
         container: container,
         company: 'Yapp'
       };
@@ -304,8 +305,8 @@ test("itemController specified in ArrayController gets a parentController proper
         controllerName: computed(function() {
           return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
         })
-      }),
-      PeopleController = ArrayController.extend({
+      });
+  var PeopleController = ArrayController.extend({
         model: people,
         itemController: 'person',
         company: 'Yapp'
@@ -332,16 +333,16 @@ test("itemController's parentController property, when the ArrayController has a
         controllerName: computed(function() {
           return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
         })
-      }),
-      PeopleController = ArrayController.extend({
+      });
+  var PeopleController = ArrayController.extend({
         model: people,
         itemController: 'person',
         parentController: computed(function(){
           return this.container.lookup('controller:company');
         }),
         company: 'Yapp'
-      }),
-      CompanyController = EmberController.extend();
+      });
+   var CompanyController = EmberController.extend();
 
   container.register('controller:company', CompanyController);
   container.register('controller:people', PeopleController);
@@ -558,8 +559,8 @@ test("#each accepts a name binding", function() {
 test("#each accepts a name binding and does not change the context", function() {
   var controller = EmberController.create({
     name: 'bob the controller'
-  }),
-  obj = EmberObject.create({
+  });
+  var obj = EmberObject.create({
     name: 'henry the item'
   });
 
@@ -728,14 +729,14 @@ test("itemController specified in ArrayController with name binding does not cha
         controllerName: computed(function() {
           return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
         })
-      }),
-      PeopleController = ArrayController.extend({
+      });
+  var PeopleController = ArrayController.extend({
         model: people,
         itemController: 'person',
         company: 'Yapp',
         controllerName: 'controller:people'
-      }),
-      container = new Container();
+      });
+  var container = new Container();
 
   container.register('controller:people', PeopleController);
   container.register('controller:person', PersonController);

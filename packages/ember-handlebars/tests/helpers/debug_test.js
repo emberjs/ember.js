@@ -5,7 +5,8 @@ import EmberView from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars-compiler";
 import { logHelper } from "ember-handlebars/helpers/debug";
 
-var originalLookup = Ember.lookup, lookup;
+var originalLookup = Ember.lookup;
+var lookup;
 var originalLog, logCalls;
 var originalLogHelper;
 var view;

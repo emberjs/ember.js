@@ -17,7 +17,8 @@ var resolveHelper,
 
 import isEmpty from 'ember-metal/is_empty';
 
-var slice = [].slice, originalTemplate = EmberHandlebars.template;
+var slice = [].slice;
+var originalTemplate = EmberHandlebars.template;
 
 /**
   If a path starts with a reserved keyword, returns the root
@@ -443,7 +444,8 @@ function makeBoundHelper(fn) {
 
     // Override SimpleHandlebarsView's method for generating the view's content.
     bindView.normalizedValue = function() {
-      var args = [], boundOption;
+      var args = [];
+      var boundOption;
 
       // Copy over bound hash options.
       for (boundOption in boundOptions) {

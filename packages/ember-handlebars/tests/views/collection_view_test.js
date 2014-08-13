@@ -28,7 +28,8 @@ function nthChild(view, nth) {
 
 var firstChild = nthChild;
 
-var originalLookup = Ember.lookup, lookup, TemplateTests, view;
+var originalLookup = Ember.lookup;
+var lookup, TemplateTests, view;
 
 QUnit.module("ember-handlebars/tests/views/collection_view_test", {
   setup: function() {

@@ -93,7 +93,9 @@ Ember.deprecate = function(message, test) {
   try { __fail__.fail(); } catch (e) { error = e; }
 
   if (Ember.LOG_STACKTRACE_ON_DEPRECATION && error.stack) {
-    var stack, stackStr = '';
+    var stack;
+    var stackStr = '';
+
     if (error['arguments']) {
       // Chrome
       stack = error.stack.replace(/^\s+at\s+/gm, '').
