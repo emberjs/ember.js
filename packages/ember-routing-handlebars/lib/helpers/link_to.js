@@ -329,7 +329,9 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
       if (!isActive) { return false; }
 
       if (Ember.FEATURES.isEnabled("query-params-new")) {
-        if (!isCurrentWhenSpecified && leafName === loadedParams.targetRouteName) {
+        var emptyQueryParams = Ember.isEmpty(Ember.keys(loadedParams.queryParams));
+
+        if (!isCurrentWhenSpecified && !emptyQueryParams && isActive) {
           var visibleQueryParams = {};
           merge(visibleQueryParams, loadedParams.queryParams);
           router._prepareQueryParams(loadedParams.targetRouteName, loadedParams.models, visibleQueryParams);
