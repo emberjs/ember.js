@@ -45,7 +45,18 @@ export default Mixin.create(ActionHandler, ControllerContentModelAliasDeprecatio
 
   store: null,
 
+  /**
+    The controller's current model. When retrieving or modifying a controller's
+    model, this property should be used instead of the `content` property.
+
+    @property model
+    @public
+   */
   model: null,
+
+  /**
+    @private
+   */
   content: computed.alias('model')
 
 });
