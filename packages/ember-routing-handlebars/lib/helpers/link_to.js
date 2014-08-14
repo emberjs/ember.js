@@ -413,6 +413,13 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
       return false;
     }
 
+    if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
+      var targetAttribute2 = get(this, 'target');
+      if (targetAttribute2 && targetAttribute2 !== '_self') {
+        return false;
+      }
+    }
+
     var router = get(this, 'router');
     var loadedParams = get(this, 'loadedParams');
 

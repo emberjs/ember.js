@@ -526,6 +526,26 @@ if(Ember.FEATURES.isEnabled('ember-routing-linkto-target-attribute')) {
 
     equal(event.isDefaultPrevented(), true, "should preventDefault when target attribute is `_self`");
   });
+
+  test("The {{link-to}} helper should not transition if target is not equal to _self or empty", function() {
+    Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#linkTo 'about' id='about-link' replace=true target='_blank'}}About{{/linkTo}}");
+
+    Router.map(function() {
+      this.route("about");
+    });
+
+    bootApplication();
+
+    Ember.run(function() {
+      router.handleURL("/");
+    });
+
+    Ember.run(function() {
+      Ember.$('#about-link', '#qunit-fixture').click();
+    });
+
+    notEqual(container.lookup('controller:application').get('currentRouteName'), 'about', 'link-to should not transition if target is not equal to _self or empty');
+  });
 }
 
 test("The {{link-to}} helper accepts string/numeric arguments", function() {
