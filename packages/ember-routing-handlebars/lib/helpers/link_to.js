@@ -136,7 +136,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     @type Array | String
     @default ['href', 'title', 'rel']
    **/
-  attributeBindings: ['href', 'title', 'rel'],
+  attributeBindings: ['href', 'title', 'rel', 'tabindex'],
 
   /**
     By default the `{{link-to}}` helper will bind to the `active`, `loading`, and
