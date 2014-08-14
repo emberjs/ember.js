@@ -101,8 +101,8 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     @private
   */
   renderToBuffer: function(buffer) {
-    var name = 'render.' + this.instrumentName,
-        details = {};
+    var name = 'render.' + this.instrumentName;
+    var details = {};
 
     this.instrumentDetails(details);
 

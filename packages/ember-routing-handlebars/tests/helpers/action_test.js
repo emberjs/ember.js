@@ -277,7 +277,6 @@ test("should allow a target to be specified", function() {
 test("should lazily evaluate the target", function() {
   var firstEdit = 0;
   var secondEdit = 0;
-
   var controller = {};
   var first = {
     edit: function() {
@@ -676,13 +675,13 @@ test("should unwrap controllers passed as a context", function() {
   var passedContext;
   var model = EmberObject.create();
   var controller = EmberObjectController.extend({
-        model: model,
-        actions: {
-          edit: function(context) {
-            passedContext = context;
-          }
-        }
-      }).create();
+    model: model,
+    actions: {
+      edit: function(context) {
+        passedContext = context;
+      }
+    }
+  }).create();
 
   view = EmberView.create({
     controller: controller,

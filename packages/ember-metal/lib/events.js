@@ -90,9 +90,9 @@ export function listenersUnion(obj, eventName, otherActions) {
 }
 
 export function listenersDiff(obj, eventName, otherActions) {
-  var meta = obj['__ember_meta__'],
-      actions = meta && meta.listeners && meta.listeners[eventName],
-      diffActions = [];
+  var meta = obj['__ember_meta__'];
+  var actions = meta && meta.listeners && meta.listeners[eventName];
+  var diffActions = [];
 
   if (!actions) { return; }
   for (var i = actions.length - 3; i >= 0; i -= 3) {
@@ -247,9 +247,9 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
     target = null;
   }
 
-  var suspendedActions = [],
-      actionsList = [],
-      eventName, actions, i, l;
+  var suspendedActions = [];
+  var actionsList = [];
+  var eventName, actions, i, l;
 
   for (i=0, l=eventNames.length; i<l; i++) {
     eventName = eventNames[i];
@@ -352,8 +352,8 @@ export function sendEvent(obj, eventName, params, actions) {
   @param {String} eventName
 */
 export function hasListeners(obj, eventName) {
-  var meta = obj['__ember_meta__'],
-      actions = meta && meta.listeners && meta.listeners[eventName];
+  var meta = obj['__ember_meta__'];
+  var actions = meta && meta.listeners && meta.listeners[eventName];
 
   return !!(actions && actions.length);
 }
@@ -367,14 +367,14 @@ export function hasListeners(obj, eventName) {
 */
 export function listenersFor(obj, eventName) {
   var ret = [];
-  var meta = obj['__ember_meta__'],
-      actions = meta && meta.listeners && meta.listeners[eventName];
+  var meta = obj['__ember_meta__'];
+  var actions = meta && meta.listeners && meta.listeners[eventName];
 
   if (!actions) { return ret; }
 
   for (var i = 0, l = actions.length; i < l; i += 3) {
-    var target = actions[i],
-        method = actions[i+1];
+    var target = actions[i];
+    var method = actions[i+1];
     ret.push([target, method]);
   }
 
@@ -405,8 +405,8 @@ export function listenersFor(obj, eventName) {
   @return func
 */
 export function on(){
-  var func = a_slice.call(arguments, -1)[0],
-      events = a_slice.call(arguments, 0, -1);
+  var func = a_slice.call(arguments, -1)[0];
+  var events = a_slice.call(arguments, 0, -1);
   func.__ember_listens__ = events;
   return func;
 }

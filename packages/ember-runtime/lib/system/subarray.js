@@ -120,11 +120,7 @@ SubArray.prototype = {
 
   _findOperation: function (index, foundCallback, notFoundCallback) {
     var seenInSubArray = 0;
-    var operationIndex,
-        len,
-        operation,
-        rangeStart,
-        rangeEnd;
+    var operationIndex, len, operation, rangeStart, rangeEnd;
 
     // OPTIMIZE: change to balanced tree
     // find leftmost operation to the right of `index`

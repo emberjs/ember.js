@@ -6,9 +6,9 @@ import EmberObject from "ember-runtime/system/object";
 import AutoLocation from "ember-routing/location/auto_location";
 import EmberLocation from "ember-routing/location/api";
 
-var AutoTestLocation, location, supportsHistory, supportsHashChange,
-    getSupportsHistory = AutoLocation._getSupportsHistory,
-    getSupportsHashChange = AutoLocation._getSupportsHashChange;
+var AutoTestLocation, location, supportsHistory, supportsHashChange;
+var getSupportsHistory = AutoLocation._getSupportsHistory;
+var getSupportsHashChange = AutoLocation._getSupportsHashChange;
 
 var FakeHistoryLocation = EmberObject.extend({
   implementation: 'history'

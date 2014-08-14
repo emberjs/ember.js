@@ -128,9 +128,9 @@ test("should set the parentView property on views that are added to the child vi
 
   equal(get(view, 'parentView'), container, "sets the parent view after the childView is appended");
 
-  var secondView = ViewKlass.create(),
-      thirdView = ViewKlass.create(),
-      fourthView = ViewKlass.create();
+  var secondView = ViewKlass.create();
+  var thirdView = ViewKlass.create();
+  var fourthView = ViewKlass.create();
 
   run(function() {
     container.pushObject(secondView);
@@ -726,8 +726,8 @@ test("Child view can only be added to one container at a time", function () {
 
 test("if a containerView appends a child in its didInsertElement event, the didInsertElement event of the child view should be fired once", function () {
 
-  var counter = 0,
-      root = ContainerView.create({});
+  var counter = 0;
+  var root = ContainerView.create({});
 
   container = ContainerView.create({
 

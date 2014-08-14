@@ -131,9 +131,13 @@ export function removeObject(array, item) {
 }
 
 export function _replace(array, idx, amt, objects) {
-  var args = [].concat(objects), chunk, ret = [],
-      // https://code.google.com/p/chromium/issues/detail?id=56588
-      size = 60000, start = idx, ends = amt, count;
+  var args = [].concat(objects);
+  var ret = [];
+  // https://code.google.com/p/chromium/issues/detail?id=56588
+  var size = 60000;
+  var start = idx;
+  var ends = amt;
+  var count, chunk;
 
   while (args.length) {
     count = ends > size ? size : ends;

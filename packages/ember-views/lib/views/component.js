@@ -143,8 +143,8 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   template: computed(function(key, value) {
     if (value !== undefined) { return value; }
 
-    var templateName = get(this, 'templateName'),
-        template = this.templateForName(templateName, 'template');
+    var templateName = get(this, 'templateName');
+    var template = this.templateForName(templateName, 'template');
 
     Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
 
@@ -169,9 +169,9 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   },
 
   _yield: function(context, options) {
-    var view = options.data.view,
-        parentView = this._parentView,
-        template = get(this, 'template');
+    var view = options.data.view;
+    var parentView = this._parentView;
+    var template = get(this, 'template');
 
     if (template) {
       Ember.assert("A Component must have a parent view in order to yield.", parentView);
@@ -282,8 +282,8 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     @param [context] {*} a context to send with the action
   */
   sendAction: function(action) {
-    var actionName,
-        contexts = a_slice.call(arguments, 1);
+    var actionName;
+    var contexts = a_slice.call(arguments, 1);
 
     // Send the default action
     if (action === undefined) {

@@ -338,8 +338,8 @@ var CollectionView = ContainerView.extend({
     @param {Number} added number of object added to content
   */
   arrayDidChange: function(content, start, removed, added) {
-    var addedViews = [], view, item, idx, len, itemViewClass,
-      emptyView;
+    var addedViews = [];
+    var view, item, idx, len, itemViewClass, emptyView;
 
     len = content ? get(content, 'length') : 0;
 

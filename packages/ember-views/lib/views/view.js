@@ -755,8 +755,8 @@ var View = CoreView.extend({
   template: computed('templateName', function(key, value) {
     if (value !== undefined) { return value; }
 
-    var templateName = get(this, 'templateName'),
-        template = this.templateForName(templateName, 'template');
+    var templateName = get(this, 'templateName');
+    var template = this.templateForName(templateName, 'template');
 
     Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
 
@@ -790,8 +790,8 @@ var View = CoreView.extend({
     @type Function
   */
   layout: computed(function(key) {
-    var layoutName = get(this, 'layoutName'),
-        layout = this.templateForName(layoutName, 'layout');
+    var layoutName = get(this, 'layoutName');
+    var layout = this.templateForName(layoutName, 'layout');
 
     Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || layout);
 
@@ -950,8 +950,8 @@ var View = CoreView.extend({
     @return Ember.View
   */
   nearestOfType: function(klass) {
-    var view = get(this, 'parentView'),
-        isOfType = klass instanceof Mixin ?
+    var view = get(this, 'parentView');
+    var isOfType = klass instanceof Mixin ?
                    function(view) { return klass.detect(view); } :
                    function(view) { return klass.detect(view.constructor); };
 
@@ -1098,8 +1098,8 @@ var View = CoreView.extend({
   },
 
   clearRenderedChildren: function() {
-    var lengthBefore = this.lengthBeforeRender,
-        lengthAfter  = this.lengthAfterRender;
+    var lengthBefore = this.lengthBeforeRender;
+    var lengthAfter  = this.lengthAfterRender;
 
     // If there were child views created during the last call to render(),
     // remove them under the assumption that they will be re-created when
@@ -1122,8 +1122,8 @@ var View = CoreView.extend({
     @private
   */
   _applyClassNameBindings: function(classBindings) {
-    var classNames = this.classNames,
-    elem, newClass, dasherizedClass;
+    var classNames = this.classNames;
+    var elem, newClass, dasherizedClass;
 
     // Loop through all of the configured bindings. These will be either
     // property names ('isUrgent') or property paths relative to the view
@@ -1202,13 +1202,13 @@ var View = CoreView.extend({
     @private
   */
   _applyAttributeBindings: function(buffer, attributeBindings) {
-    var attributeValue,
-        unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
+    var attributeValue;
+    var unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
 
     forEach(attributeBindings, function(binding) {
-      var split = binding.split(':'),
-          property = split[0],
-          attributeName = split[1] || property;
+      var split = binding.split(':');
+      var property = split[0];
+      var attributeName = split[1] || property;
 
       if (property in this) {
         this._setupAttributeBindingObservation(property, attributeName);
@@ -1323,9 +1323,9 @@ var View = CoreView.extend({
   },
 
   mutateChildViews: function(callback) {
-    var childViews = this._childViews,
-        idx = childViews.length,
-        view;
+    var childViews = this._childViews;
+    var idx = childViews.length;
+    var view;
 
     while(--idx >= 0) {
       view = childViews[idx];
@@ -1340,8 +1340,8 @@ var View = CoreView.extend({
 
     if (!childViews) { return this; }
 
-    var len = childViews.length,
-        view, idx;
+    var len = childViews.length;
+    var view, idx;
 
     for (idx = 0; idx < len; idx++) {
       view = childViews[idx];
@@ -1946,11 +1946,11 @@ var View = CoreView.extend({
     @method destroy
   */
   destroy: function() {
-    var childViews = this._childViews,
-        // get parentView before calling super because it'll be destroyed
-        nonVirtualParentView = get(this, 'parentView'),
-        viewName = this.viewName,
-        childLen, i;
+    var childViews = this._childViews;
+    // get parentView before calling super because it'll be destroyed
+    var nonVirtualParentView = get(this, 'parentView');
+    var viewName = this.viewName;
+    var childLen, i;
 
     if (!this._super()) { return; }
 
@@ -2153,13 +2153,13 @@ var View = CoreView.extend({
       return;
     }
 
-    var view = this,
-        stateCheckedObserver = function() {
-          view.currentState.invokeObserver(this, observer);
-        },
-        scheduledObserver = function() {
-          run.scheduleOnce('render', this, stateCheckedObserver);
-        };
+    var view = this;
+    var stateCheckedObserver = function() {
+      view.currentState.invokeObserver(this, observer);
+    };
+    var scheduledObserver = function() {
+      run.scheduleOnce('render', this, stateCheckedObserver);
+    };
 
     addObserver(root, path, target, scheduledObserver);
 
@@ -2265,11 +2265,10 @@ View.reopenClass({
     @private
   */
   _parsePropertyPath: function(path) {
-    var split = path.split(':'),
-        propertyPath = split[0],
-        classNames = "",
-        className,
-        falsyClassName;
+    var split = path.split(':');
+    var propertyPath = split[0];
+    var classNames = "";
+    var className, falsyClassName;
 
     // check if the property is defined as prop:class or prop:trueClass:falseClass
     if (split.length > 1) {

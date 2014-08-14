@@ -278,12 +278,12 @@ var Test = {
 };
 
 function helper(app, name) {
-  var fn = helpers[name].method,
-      meta = helpers[name].meta;
+  var fn = helpers[name].method;
+  var meta = helpers[name].meta;
 
   return function() {
-    var args = slice.call(arguments),
-        lastPromise = Test.lastPromise;
+    var args = slice.call(arguments);
+    var lastPromise = Test.lastPromise;
 
     args.unshift(app);
 

@@ -115,8 +115,8 @@ test("Slow promises waterfall on startup", function() {
 
   expect(7);
 
-  var grandmaDeferred = Ember.RSVP.defer(),
-  sallyDeferred = Ember.RSVP.defer();
+  var grandmaDeferred = Ember.RSVP.defer();
+  var sallyDeferred = Ember.RSVP.defer();
 
   Router.map(function() {
     this.resource('grandma', function() {
@@ -331,8 +331,8 @@ test("Loading actions bubble to root, but don't enter substates above pivot", fu
 
   delete templates.loading;
 
-  var sallyDeferred = Ember.RSVP.defer(),
-  smellsDeferred = Ember.RSVP.defer();
+  var sallyDeferred = Ember.RSVP.defer();
+  var smellsDeferred = Ember.RSVP.defer();
 
   var shouldBubbleToApplication = true;
 

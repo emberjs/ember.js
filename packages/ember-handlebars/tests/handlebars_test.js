@@ -398,9 +398,7 @@ test("View should bind properties in the parent context", function() {
 
 test("using Handlebars helper that doesn't exist should result in an error", function() {
   var names = [{ name: 'Alex' }, { name: 'Stef' }];
-  var context = {
-        content: A(names)
-      };
+  var context = { content: A(names) };
 
   throws(function() {
     view = EmberView.create({

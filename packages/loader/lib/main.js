@@ -19,11 +19,11 @@ var define, requireModule, require, requirejs, Ember;
         throw new Error("Could not find module " + name);
       }
 
-      var mod = registry[name],
-      deps = mod.deps,
-      callback = mod.callback,
-      reified = [],
-      exports;
+      var mod = registry[name];
+      var deps = mod.deps;
+      var callback = mod.callback;
+      var reified = [];
+      var exports;
 
       for (var i=0, l=deps.length; i<l; i++) {
         if (deps[i] === 'exports') {

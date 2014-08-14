@@ -293,8 +293,8 @@ if (Ember.FEATURES.isEnabled("event-dispatcher-can-disable-event-manager")) {
 
   test("should not dispatch events to view event Manager when canDispatchToEventManager is false", function () {
 
-    var eventManagerCounter=0,
-        viewCounter=0;
+    var eventManagerCounter=0;
+    var viewCounter=0;
 
     run(function() {
       dispatcher.destroy();

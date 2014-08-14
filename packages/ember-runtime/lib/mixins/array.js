@@ -419,9 +419,9 @@ export default Mixin.create(Enumerable, {
     this.enumerableContentDidChange(removeAmt, adding);
     sendEvent(this, '@array:change', [this, startIdx, removeAmt, addAmt]);
 
-    var length      = get(this, 'length'),
-        cachedFirst = cacheFor(this, 'firstObject'),
-        cachedLast  = cacheFor(this, 'lastObject');
+    var length      = get(this, 'length');
+    var cachedFirst = cacheFor(this, 'firstObject');
+    var cachedLast  = cacheFor(this, 'lastObject');
     if (this.objectAt(0) !== cachedFirst) {
       propertyWillChange(this, 'firstObject');
       propertyDidChange(this, 'firstObject');

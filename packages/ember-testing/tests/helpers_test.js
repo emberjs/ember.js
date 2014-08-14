@@ -43,8 +43,8 @@ function assertHelpers(application, helperContainer, expected){
   if (expected === undefined) { expected = true; }
 
   function checkHelperPresent(helper, expected){
-    var presentInHelperContainer = !!helperContainer[helper],
-        presentInTestHelpers = !!application.testHelpers[helper];
+    var presentInHelperContainer = !!helperContainer[helper];
+    var presentInTestHelpers = !!application.testHelpers[helper];
 
     ok(presentInHelperContainer === expected, "Expected '" + helper + "' to be present in the helper container (defaults to window).");
     ok(presentInTestHelpers === expected, "Expected '" + helper + "' to be present in App.testHelpers.");

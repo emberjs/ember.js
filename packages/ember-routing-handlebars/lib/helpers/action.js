@@ -310,11 +310,10 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
   @param {Hash} options
 */
 export function actionHelper(actionName) {
-  var options = arguments[arguments.length - 1],
-      contexts = a_slice.call(arguments, 1, -1);
-
-  var hash = options.hash,
-      controller = options.data.keywords.controller;
+  var options = arguments[arguments.length - 1];
+  var contexts = a_slice.call(arguments, 1, -1);
+  var hash = options.hash;
+  var controller = options.data.keywords.controller;
 
   // create a hash to pass along to registerAction
   var action = {
