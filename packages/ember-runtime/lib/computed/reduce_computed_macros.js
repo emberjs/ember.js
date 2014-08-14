@@ -154,16 +154,17 @@ export function min(dependentKey) {
 
   The callback method you provide should have the following signature.
   `item` is the current item in the iteration.
+  `index` is the integer index of the current item in the iteration.
 
   ```javascript
-  function(item);
+  function(item, index);
   ```
 
   Example
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    excitingChores: Ember.computed.map('chores', function(chore) {
+    excitingChores: Ember.computed.map('chores', function(chore, index) {
       return chore.toUpperCase() + '!';
     })
   });
@@ -184,7 +185,7 @@ export function min(dependentKey) {
 export function map(dependentKey, callback) {
   var options = {
     addedItem: function(array, item, changeMeta, instanceMeta) {
-      var mapped = callback.call(this, item);
+      var mapped = callback.call(this, item, changeMeta.index);
       array.insertAt(changeMeta.index, mapped);
       return array;
     },
@@ -245,14 +246,15 @@ export var mapProperty = mapBy;
 
   The callback method you provide should have the following signature.
   `item` is the current item in the iteration.
+  `index` is the integer index of the current item in the iteration.
 
   ```javascript
-  function(item);
+  function(item, index);
   ```
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    remainingChores: Ember.computed.filter('chores', function(chore) {
+    remainingChores: Ember.computed.filter('chores', function(chore, index) {
       return !chore.done;
     })
   });
@@ -281,7 +283,7 @@ export function filter(dependentKey, callback) {
     },
 
     addedItem: function (array, item, changeMeta, instanceMeta) {
-      var match = !!callback.call(this, item);
+      var match = !!callback.call(this, item, changeMeta.index);
       var filterIndex = instanceMeta.filteredArrayIndexes.addItem(changeMeta.index, match);
 
       if (match) {

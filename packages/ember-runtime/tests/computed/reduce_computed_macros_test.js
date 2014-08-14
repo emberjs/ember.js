@@ -119,6 +119,20 @@ test("it maps simple unshifted properties", function() {
   deepEqual(get(obj, 'mapped'), ['A', 'B'], "properties unshifted in sequence are mapped correctly");
 });
 
+test("it passes the index to the callback", function() {
+  var array = Ember.A(['a', 'b', 'c']);
+
+  run(function() {
+    obj = EmberObject.createWithMixins({
+      array: array,
+      mapped: computedMap('array', function (item, index) { return index; })
+    });
+    get(obj, 'mapped');
+  });
+
+  deepEqual(get(obj, 'mapped'), [0, 1, 2], "index is passed to callback correctly");
+});
+
 test("it maps objects", function() {
   deepEqual(get(obj, 'mappedObjects'), [{ name: 'Robert'}, { name: 'Leanna' }]);
 
@@ -243,6 +257,20 @@ test("it filters according to the specified filter function", function() {
   var filtered = get(obj, 'filtered');
 
   deepEqual(filtered, [2,4,6,8], "computedFilter filters by the specified function");
+});
+
+test("it passes the index to the callback", function() {
+  var array = Ember.A(['a', 'b', 'c']);
+
+  run(function() {
+    obj = EmberObject.createWithMixins({
+      array: array,
+      filtered: computedFilter('array', function (item, index) { return index === 1; })
+    });
+    get(obj, 'filtered');
+  });
+
+  deepEqual(get(obj, 'filtered'), ['b'], "index is passed to callback correctly");
 });
 
 test("it caches properly", function() {
