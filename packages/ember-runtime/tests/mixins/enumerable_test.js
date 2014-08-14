@@ -158,6 +158,12 @@ test('every', function() {
   equal(allWhite, true);
 });
 
+test('contains on frozen array', function(){
+  var arr = Ember.A(["foo", "bar", "baz"]);
+  Object.freeze(arr);
+  equal(arr.contains("foo"), true);
+});
+
 // ..........................................................
 // CONTENT DID CHANGE
 //
