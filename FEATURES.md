@@ -76,7 +76,7 @@ for a detailed explanation.
 * `ember-routing-multi-current-when`
 
   Allows the `link-to` helper's currentWhen property to accept multiple routes
-  using a `|` delimiter, for more control over a link's active state.
+  using a ` ` (space) delimiter, for more control over a link's active state.
 
   Added in [#3673](https://github.com/emberjs/ember.js/pull/3673)
 
