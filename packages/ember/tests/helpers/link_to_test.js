@@ -474,7 +474,7 @@ test("The {{link-to}} helper moves into the named route with context", function(
 });
 
 test("The {{link-to}} helper binds some anchor html tag common attributes", function() {
-  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#link-to 'index' id='self-link' title='title-attr' rel='rel-attr'}}Self{{/link-to}}");
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#link-to 'index' id='self-link' title='title-attr' rel='rel-attr' tabindex='-1'}}Self{{/link-to}}");
   bootApplication();
 
   Ember.run(function() {
@@ -484,6 +484,7 @@ test("The {{link-to}} helper binds some anchor html tag common attributes", func
   var link = Ember.$('#self-link', '#qunit-fixture');
   equal(link.attr('title'), 'title-attr', "The self-link contains title attribute");
   equal(link.attr('rel'), 'rel-attr', "The self-link contains rel attribute");
+  equal(link.attr('tabindex'), '-1', "The self-link contains tabindex attribute");
 });
 
 if(Ember.FEATURES.isEnabled('ember-routing-linkto-target-attribute')) {
