@@ -267,7 +267,9 @@ test("The {{link-to}} helper supports leaving off .index for nested routes", fun
   equal(normalizeUrl(Ember.$('#item a', '#qunit-fixture').attr('href')), '/about');
 });
 
-test("The {{link-to}} helper supports custom, nested, currentWhen", function() {
+test("The {{link-to}} helper supports currentWhen (DEPRECATED)", function() {
+  expectDeprecation('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.');
+
   Router.map(function(match) {
     this.resource("index", { path: "/" }, function() {
       this.route("about");
@@ -277,7 +279,7 @@ test("The {{link-to}} helper supports custom, nested, currentWhen", function() {
   });
 
   Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{outlet}}");
-  Ember.TEMPLATES['index/about'] = Ember.Handlebars.compile("{{#link-to 'item' id='other-link' currentWhen='index'}}ITEM{{/link-to}}");
+  Ember.TEMPLATES['index/about'] = Ember.Handlebars.compile("{{#link-to 'item' id='other-link' current-when='index'}}ITEM{{/link-to}}");
 
   bootApplication();
 
@@ -285,10 +287,31 @@ test("The {{link-to}} helper supports custom, nested, currentWhen", function() {
     router.handleURL("/about");
   });
 
-  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, "The link is active since currentWhen is a parent route");
+  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, "The link is active since current-when is a parent route");
 });
 
-test("The {{link-to}} helper does not disregard currentWhen when it is given explicitly for a resource", function() {
+test("The {{link-to}} helper supports custom, nested, current-when", function() {
+  Router.map(function(match) {
+    this.resource("index", { path: "/" }, function() {
+      this.route("about");
+    });
+
+    this.route("item");
+  });
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{outlet}}");
+  Ember.TEMPLATES['index/about'] = Ember.Handlebars.compile("{{#link-to 'item' id='other-link' current-when='index'}}ITEM{{/link-to}}");
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/about");
+  });
+
+  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, "The link is active since current-when is a parent route");
+});
+
+test("The {{link-to}} helper does not disregard current-when when it is given explicitly for a resource", function() {
   Router.map(function(match) {
     this.resource("index", { path: "/" }, function() {
       this.route("about");
@@ -300,7 +323,7 @@ test("The {{link-to}} helper does not disregard currentWhen when it is given exp
   });
 
   Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{outlet}}");
-  Ember.TEMPLATES['index/about'] = Ember.Handlebars.compile("{{#link-to 'items' id='other-link' currentWhen='index'}}ITEM{{/link-to}}");
+  Ember.TEMPLATES['index/about'] = Ember.Handlebars.compile("{{#link-to 'items' id='other-link' current-when='index'}}ITEM{{/link-to}}");
 
   bootApplication();
 
@@ -308,11 +331,11 @@ test("The {{link-to}} helper does not disregard currentWhen when it is given exp
     router.handleURL("/about");
   });
 
-  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, "The link is active when currentWhen is given for explicitly for a resource");
+  equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, "The link is active when current-when is given for explicitly for a resource");
 });
 
 if (Ember.FEATURES.isEnabled("ember-routing-multi-current-when")) {
-  test("The {{link-to}} helper supports multiple currentWhen routes", function() {
+  test("The {{link-to}} helper supports multiple current-when routes", function() {
     Router.map(function(match) {
       this.resource("index", { path: "/" }, function() {
         this.route("about");
@@ -322,9 +345,9 @@ if (Ember.FEATURES.isEnabled("ember-routing-multi-current-when")) {
     });
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{outlet}}");
-    Ember.TEMPLATES['index/about'] = Ember.Handlebars.compile("{{#link-to 'item' id='link1' currentWhen='item index'}}ITEM{{/link-to}}");
-    Ember.TEMPLATES['item'] = Ember.Handlebars.compile("{{#link-to 'item' id='link2' currentWhen='item index'}}ITEM{{/link-to}}");
-    Ember.TEMPLATES['foo'] = Ember.Handlebars.compile("{{#link-to 'item' id='link3' currentWhen='item index'}}ITEM{{/link-to}}");
+    Ember.TEMPLATES['index/about'] = Ember.Handlebars.compile("{{#link-to 'item' id='link1' current-when='item index'}}ITEM{{/link-to}}");
+    Ember.TEMPLATES['item'] = Ember.Handlebars.compile("{{#link-to 'item' id='link2' current-when='item index'}}ITEM{{/link-to}}");
+    Ember.TEMPLATES['foo'] = Ember.Handlebars.compile("{{#link-to 'item' id='link3' current-when='item index'}}ITEM{{/link-to}}");
 
     bootApplication();
 
@@ -332,7 +355,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-multi-current-when")) {
       router.handleURL("/about");
     });
 
-    equal(Ember.$('#link1.active', '#qunit-fixture').length, 1, "The link is active since currentWhen contains the parent route");
+    equal(Ember.$('#link1.active', '#qunit-fixture').length, 1, "The link is active since current-when contains the parent route");
 
     Ember.run(function() {
       router.handleURL("/item");
@@ -344,7 +367,7 @@ if (Ember.FEATURES.isEnabled("ember-routing-multi-current-when")) {
       router.handleURL("/foo");
     });
 
-    equal(Ember.$('#link3.active', '#qunit-fixture').length, 0, "The link is not active since currentWhen does not contain the active route");
+    equal(Ember.$('#link3.active', '#qunit-fixture').length, 0, "The link is not active since current-when does not contain the active route");
   });
 }
 
@@ -1568,15 +1591,15 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     shouldNotBeActive('#parent-link-qp');
   });
 
-  test("The {{link-to}} helper disregards query-params in activeness computation when currentWhen specified", function() {
+  test("The {{link-to}} helper disregards query-params in activeness computation when current-when specified", function() {
     App.Router.map(function() {
       this.route('parent');
     });
 
     Ember.TEMPLATES.application = Ember.Handlebars.compile(
-        "{{#link-to 'parent' (query-params page=1) currentWhen='parent' id='app-link'}}Parent{{/link-to}} {{outlet}}");
+        "{{#link-to 'parent' (query-params page=1) current-when='parent' id='app-link'}}Parent{{/link-to}} {{outlet}}");
     Ember.TEMPLATES.parent = Ember.Handlebars.compile(
-        "{{#link-to 'parent' (query-params page=1) currentWhen='parent' id='parent-link'}}Parent{{/link-to}} {{outlet}}");
+        "{{#link-to 'parent' (query-params page=1) current-when='parent' id='parent-link'}}Parent{{/link-to}} {{outlet}}");
 
     App.ParentController = Ember.ObjectController.extend({
       queryParams: ['page'],
