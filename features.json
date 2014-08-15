@@ -9,7 +9,7 @@
     "ember-routing-auto-location-uses-replace-state-for-history": true,
     "event-dispatcher-can-disable-event-manager": null,
     "ember-metal-is-present": true,
-    "property-brace-expansion-improvement": null,
+    "property-brace-expansion-improvement": true,
     "ember-routing-handlebars-action-with-key-code": null,
     "ember-runtime-item-controller-inline-class": null,
     "ember-handlebars-compiler-ast-to-precompile": null

@@ -13,17 +13,20 @@ var SPLIT_REGEX = /\{|\}/;
   Expands `pattern`, invoking `callback` for each expansion.
 
   The only pattern supported is brace-expansion, anything else will be passed
-  once to `callback` directly. Brace expansion can only appear at the end of a
-  pattern, for an example see the last call below.
+  once to `callback` directly.
 
   Example
+
   ```js
   function echo(arg){ console.log(arg); }
 
-  Ember.expandProperties('foo.bar', echo);        //=> 'foo.bar'
-  Ember.expandProperties('{foo,bar}', echo);      //=> 'foo', 'bar'
-  Ember.expandProperties('foo.{bar,baz}', echo);  //=> 'foo.bar', 'foo.baz'
-  Ember.expandProperties('{foo,bar}.baz', echo);  //=> '{foo,bar}.baz'
+  Ember.expandProperties('foo.bar', echo);              //=> 'foo.bar'
+  Ember.expandProperties('{foo,bar}', echo);            //=> 'foo', 'bar'
+  Ember.expandProperties('foo.{bar,baz}', echo);        //=> 'foo.bar', 'foo.baz'
+  Ember.expandProperties('{foo,bar}.baz', echo);        //=> '{foo,bar}.baz'
+  Ember.expandProperties('foo.{bar,baz}.@each', echo)   //=> 'foo.bar.@each', 'foo.baz.@each'
+  Ember.expandProperties('{foo,bar}.{spam,eggs}', echo) //=> 'foo.spam', 'foo.eggs', 'bar.spam', 'bar.eggs'
+  Ember.expandProperties('{foo}.bar.{baz}')             //=> 'foo.bar.baz'
   ```
 
   @method
