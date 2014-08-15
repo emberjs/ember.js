@@ -6,7 +6,7 @@
     "ember-routing-linkto-target-attribute": true,
     "ember-routing-will-change-hooks": null,
     "ember-routing-multi-current-when": true,
-    "ember-routing-auto-location-uses-replace-state-for-history": null,
+    "ember-routing-auto-location-uses-replace-state-for-history": true,
     "event-dispatcher-can-disable-event-manager": null,
     "ember-metal-is-present": null,
     "property-brace-expansion-improvement": null,
