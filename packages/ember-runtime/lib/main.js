@@ -43,7 +43,7 @@ import {
   Freezable,
   FROZEN_ERROR
 } from 'ember-runtime/mixins/freezable';
-import ProxyMixin from 'ember-runtime/mixins/proxy';
+import _ProxyMixin from 'ember-runtime/mixins/-proxy';
 
 import Observable from 'ember-runtime/mixins/observable';
 import ActionHandler from 'ember-runtime/mixins/action_handler';
@@ -167,9 +167,7 @@ Ember.ObjectController = ObjectController;
 Ember.Controller = Controller;
 Ember.ControllerMixin = ControllerMixin;
 
-if (Ember.FEATURES.isEnabled('ember-runtime-proxy-mixin')) {
-  Ember.ProxyMixin = ProxyMixin;
-}
+Ember._ProxyMixin = _ProxyMixin;
 
 Ember.RSVP = RSVP;
 // END EXPORTS
