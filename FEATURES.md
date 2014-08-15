@@ -66,13 +66,6 @@ for a detailed explanation.
 
   Added in [#4617](https://github.com/emberjs/ember.js/pull/4617)
 
-* `ember-runtime-proxy-mixin`
-
-  Makes the logic behind `Ember.ObjectProxy` into a `Mixin` that can be used when you cannot
-  inherit from `Ember.ObjectProxy` directly.
-
-  Added in [#5156](https://github.com/emberjs/ember.js/pull/5156)
-
 * `ember-routing-multi-current-when`
 
   Allows the `link-to` helper's currentWhen property to accept multiple routes
