@@ -5,6 +5,7 @@ import {
 }  from "ember-metal/enumerable_utils";
 import { computed } from "ember-metal/computed";
 import { platform } from 'ember-metal/platform';
+import { capitalize } from "ember-runtime/system/string";
 
 var Router, App, AppView, templates, router, container;
 var get = Ember.get;
@@ -1188,6 +1189,27 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
     startingURL = '/?foo=YEAH';
     bootApplication();
   });
+
+  var testParamlessLinks = function(routeName) {
+    test("param-less links in an app booted with query params in the URL don't reset the query params: " + routeName, function() {
+      expect(1);
+
+      Ember.TEMPLATES[routeName] = compile("{{link-to 'index' 'index' id='index-link'}}");
+
+      App[capitalize(routeName) + "Controller"] = Ember.Controller.extend({
+        queryParams: ['foo'],
+        foo: "wat"
+      });
+
+      startingURL = '/?foo=YEAH';
+      bootApplication();
+
+      equal(Ember.$('#index-link').attr('href'), '/?foo=YEAH');
+    });
+  };
+
+  testParamlessLinks('application');
+  testParamlessLinks('index');
 
   QUnit.module("Model Dep Query Params", {
     setup: function() {
