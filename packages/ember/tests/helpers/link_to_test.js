@@ -322,9 +322,9 @@ if (Ember.FEATURES.isEnabled("ember-routing-multi-current-when")) {
     });
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{outlet}}");
-    Ember.TEMPLATES['index/about'] = Ember.Handlebars.compile("{{#link-to 'item' id='link1' currentWhen='item|index'}}ITEM{{/link-to}}");
-    Ember.TEMPLATES['item'] = Ember.Handlebars.compile("{{#link-to 'item' id='link2' currentWhen='item|index'}}ITEM{{/link-to}}");
-    Ember.TEMPLATES['foo'] = Ember.Handlebars.compile("{{#link-to 'item' id='link3' currentWhen='item|index'}}ITEM{{/link-to}}");
+    Ember.TEMPLATES['index/about'] = Ember.Handlebars.compile("{{#link-to 'item' id='link1' currentWhen='item index'}}ITEM{{/link-to}}");
+    Ember.TEMPLATES['item'] = Ember.Handlebars.compile("{{#link-to 'item' id='link2' currentWhen='item index'}}ITEM{{/link-to}}");
+    Ember.TEMPLATES['foo'] = Ember.Handlebars.compile("{{#link-to 'item' id='link3' currentWhen='item index'}}ITEM{{/link-to}}");
 
     bootApplication();
 

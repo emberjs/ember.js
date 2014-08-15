@@ -5,7 +5,7 @@
     "ember-routing-add-model-option": true,
     "ember-routing-linkto-target-attribute": null,
     "ember-routing-will-change-hooks": null,
-    "ember-routing-multi-current-when": null,
+    "ember-routing-multi-current-when": true,
     "ember-routing-auto-location-uses-replace-state-for-history": null,
     "event-dispatcher-can-disable-event-manager": null,
     "ember-metal-is-present": null,
