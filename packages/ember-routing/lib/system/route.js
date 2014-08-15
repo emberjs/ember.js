@@ -710,13 +710,15 @@ var Route = EmberObject.extend(ActionHandler, {
         var states = get(this, '_qp.states');
         if (transition) {
           // Update the model dep values used to calculate cache keys.
+          stashParamNames(this.router, transition.state.handlerInfos);
           controller._qpDelegate = states.changingKeys;
           controller._updateCacheParams(transition.params);
         }
         controller._qpDelegate = states.allowOverrides;
 
         if (transition) {
-          controller.setProperties(getQueryParamsFor(this, transition.state));
+          var qpValues = getQueryParamsFor(this, transition.state);
+          controller.setProperties(qpValues);
         }
 
         this.setupController(controller, context, transition);
