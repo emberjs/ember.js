@@ -126,12 +126,12 @@ QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
-    ignoreDeprecation(function() {
-      lookup.Foo = { bar: 'baz' };
-      view = EmberView.create({
-        template: EmberHandlebars.compile("{{#with Foo.bar as qux}}{{qux}}{{/with}}")
-      });
+    lookup.Foo = { bar: 'baz' };
+    view = EmberView.create({
+      template: EmberHandlebars.compile("{{#with Foo.bar as qux}}{{qux}}{{/with}}")
+    });
 
+    ignoreDeprecation(function() {
       appendView(view);
     });
   },
@@ -147,11 +147,11 @@ QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
 test("it should support #with Foo.bar as qux [DEPRECATED]", function() {
   equal(view.$().text(), "baz", "should be properly scoped");
 
-  ignoreDeprecation(function() {
+  expectDeprecation(function() {
     run(function() {
-        set(lookup.Foo, 'bar', 'updated');
+      set(lookup.Foo, 'bar', 'updated');
     });
-  });
+  }, /Global lookup of Foo.bar from a Handlebars template is deprecated/);
 
   equal(view.$().text(), "updated", "should update");
 });

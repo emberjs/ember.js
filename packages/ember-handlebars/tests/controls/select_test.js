@@ -9,6 +9,8 @@ import Namespace from "ember-runtime/system/namespace";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 
+import SelectView from "ember-handlebars/controls/select";
+
 var trim = jQuery.trim;
 
 var dispatcher, select, view;
@@ -703,13 +705,14 @@ test("works from a template with bindings", function() {
 
   view = EmberView.create({
     app: application,
+    selectView: SelectView,
     template: Ember.Handlebars.compile(
-      '{{view Ember.Select viewName="select"' +
-      '                    contentBinding="view.app.peopleController"' +
-      '                    optionLabelPath="content.fullName"' +
-      '                    optionValuePath="content.id"' +
-      '                    prompt="Pick a person:"' +
-      '                    selectionBinding="view.app.selectedPersonController.person"}}'
+      '{{view view.selectView viewName="select"' +
+      '    contentBinding="view.app.peopleController"' +
+      '    optionLabelPath="content.fullName"' +
+      '    optionValuePath="content.id"' +
+      '    prompt="Pick a person:"' +
+      '    selectionBinding="view.app.selectedPersonController.person"}}'
     )
   });
 
@@ -742,8 +745,9 @@ test("upon content change, the DOM should reflect the selection (#481)", functio
 
   view = EmberView.create({
     user: userOne,
+    selectView: SelectView,
     template: Ember.Handlebars.compile(
-      '{{view Ember.Select viewName="select"' +
+      '{{view view.selectView viewName="select"' +
       '    contentBinding="view.user.options"' +
       '    selectionBinding="view.user.selectedOption"}}'
     )
@@ -778,8 +782,9 @@ test("upon content change with Array-like content, the DOM should reflect the se
 
   view = EmberView.create({
     proxy: proxy,
+    selectView: SelectView,
     template: Ember.Handlebars.compile(
-      '{{view Ember.Select viewName="select"' +
+      '{{view view.selectView viewName="select"' +
       '    contentBinding="view.proxy"' +
       '    selectionBinding="view.proxy.selectedOption"}}'
     )
@@ -806,6 +811,7 @@ function testValueBinding(templateString) {
   view = EmberView.create({
     collection: Ember.A([{name: 'Wes', value: 'w'}, {name: 'Gordon', value: 'g'}]),
     val: 'g',
+    selectView: SelectView,
     template: Ember.Handlebars.compile(templateString)
   });
 
@@ -831,7 +837,7 @@ function testValueBinding(templateString) {
 
 test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding (old xBinding='' syntax)", function() {
   testValueBinding(
-    '{{view Ember.Select viewName="select"' +
+    '{{view view.selectView viewName="select"' +
     '    contentBinding="view.collection"' +
     '    optionLabelPath="content.name"' +
     '    optionValuePath="content.value"' +
@@ -842,7 +848,7 @@ test("select element should correctly initialize and update selectedIndex and bo
 
 test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding (new quoteless binding shorthand)", function() {
   testValueBinding(
-    '{{view Ember.Select viewName="select"' +
+    '{{view view.selectView viewName="select"' +
     '    content=view.collection' +
     '    optionLabelPath="content.name"' +
     '    optionValuePath="content.value"' +

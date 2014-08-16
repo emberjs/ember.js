@@ -35,6 +35,12 @@ test("By default view:toplevel is used", function() {
     template: Ember.Handlebars.compile('hello world')
   });
 
+  function lookupFactory(fullName) {
+    equal(fullName, 'view:toplevel');
+
+    return DefaultView;
+  }
+
   var container = {
     lookupFactory: lookupFactory
   };
@@ -47,12 +53,6 @@ test("By default view:toplevel is used", function() {
   run(view, 'appendTo', '#qunit-fixture');
 
   equal(jQuery('#toplevel-view').text(), 'hello world');
-
-  function lookupFactory(fullName) {
-    equal(fullName, 'view:toplevel');
-
-    return DefaultView;
-  }
 });
 
 test("By default, without a container, EmberView is used", function() {
@@ -65,7 +65,7 @@ test("By default, without a container, EmberView is used", function() {
   ok(jQuery('#qunit-fixture').html().match(/<span/), 'contains view with span');
 });
 
-test("View lookup - App.FuView", function() {
+test("View lookup - App.FuView (DEPRECATED)", function() {
   Ember.lookup = {
     App: {
       FuView: viewClass({
@@ -79,12 +79,14 @@ test("View lookup - App.FuView", function() {
     template: Ember.Handlebars.compile("{{view App.FuView}}")
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  expectDeprecation(function(){
+    run(view, 'appendTo', '#qunit-fixture');
+  }, /Resolved the view "App.FuView" on the global context/);
 
   equal(jQuery('#fu').text(), 'bro');
 });
 
-test("View lookup - 'App.FuView'", function() {
+test("View lookup - 'App.FuView' (DEPRECATED)", function() {
   Ember.lookup = {
     App: {
       FuView: viewClass({
@@ -98,7 +100,9 @@ test("View lookup - 'App.FuView'", function() {
     template: Ember.Handlebars.compile("{{view 'App.FuView'}}")
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  expectDeprecation(function(){
+    run(view, 'appendTo', '#qunit-fixture');
+  }, /Resolved the view "App.FuView" on the global context/);
 
   equal(jQuery('#fu').text(), 'bro');
 });
@@ -108,6 +112,12 @@ test("View lookup - 'fu'", function() {
     elementId: "fu",
     template: Ember.Handlebars.compile("bro")
   });
+
+  function lookupFactory(fullName) {
+    equal(fullName, 'view:fu');
+
+    return FuView;
+  }
 
   var container = {
     lookupFactory: lookupFactory
@@ -121,12 +131,6 @@ test("View lookup - 'fu'", function() {
   run(view, 'appendTo', '#qunit-fixture');
 
   equal(jQuery('#fu').text(), 'bro');
-
-  function lookupFactory(fullName) {
-    equal(fullName, 'view:fu');
-
-    return FuView;
-  }
 });
 
 test("View lookup - view.computed", function() {
@@ -134,6 +138,12 @@ test("View lookup - view.computed", function() {
     elementId: "fu",
     template: Ember.Handlebars.compile("bro")
   });
+
+  function lookupFactory(fullName) {
+    equal(fullName, 'view:fu');
+
+    return FuView;
+  }
 
   var container = {
     lookupFactory: lookupFactory
@@ -148,12 +158,6 @@ test("View lookup - view.computed", function() {
   run(view, 'appendTo', '#qunit-fixture');
 
   equal(jQuery('#fu').text(), 'bro');
-
-  function lookupFactory(fullName) {
-    equal(fullName, 'view:fu');
-
-    return FuView;
-  }
 });
 
 test("id bindings downgrade to one-time property lookup", function() {

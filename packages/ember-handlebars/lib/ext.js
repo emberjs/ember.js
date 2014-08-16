@@ -7,9 +7,14 @@ import EmberHandlebars from "ember-handlebars-compiler";
 var helpers = EmberHandlebars.helpers;
 
 import { get } from "ember-metal/property_get";
-import { isGlobalPath } from "ember-metal/binding";
 import EmberError from "ember-metal/error";
 import { IS_BINDING } from "ember-metal/mixin";
+
+import View from "ember-views/views/view";
+import { _Metamorph } from "ember-handlebars/views/metamorph_view";
+import {
+  isGlobal as detectIsGlobal
+} from "ember-metal/path_cache";
 
 // late bound via requireModule because of circular dependencies.
 var resolveHelper, SimpleHandlebarsView;
@@ -94,19 +99,95 @@ function handlebarsGet(root, path, options) {
   root = normalizedPath.root;
   path = normalizedPath.path;
 
-  value = get(root, path);
+  // Ember.get with a null root and GlobalPath will fall back to
+  // Ember.lookup, which is no longer allowed in templates.
+  //
+  // But when outputting a primitive, root will be the primitive
+  // and path a blank string. These primitives should pass through
+  // to `get`.
+  if (root || path === '') {
+    value = get(root, path);
+  }
 
-  if (isGlobalPath(path)) {
+  if (detectIsGlobal(path)) {
     if (value === undefined && root !== Ember.lookup) {
       root = Ember.lookup;
       value = get(root, path);
     }
     if (root === Ember.lookup || root === null) {
-      Ember.deprecate("Global lookup of "+path+" from a Handlebars template is deprecated.", options.silenceGlobalDeprecation);
+      Ember.deprecate("Global lookup of "+path+" from a Handlebars template is deprecated.");
     }
   }
 
   return value;
+}
+
+/**
+  handlebarsGetView resolves a view based on strings passed into a template.
+  For example:
+
+  ```handlebars
+  {{view "some-view"}}
+  {{view view.someView}}
+  {{view App.SomeView}} {{! deprecated }}
+  ```
+
+  A value is first checked to be a string- non-strings are presumed to be
+  an object and returned. This handles the "access a view on a context"
+  case (line 2 in the above examples).
+
+  Next a string is normalized, then called on the context with `get`. If
+  there is still no value, a GlobalPath will be fetched from the global
+  context (raising a deprecation) and a localPath will be passed to the
+  container to be looked up.
+
+  @private
+  @for Ember.Handlebars
+  @param {Object} context The context of the template being rendered
+  @param {String} path The path to be lookedup
+  @param {Object} container The container
+  @param {Object} data The template's data hash
+*/
+function handlebarsGetView(context, path, container, data) {
+  var viewClass;
+  if ('string' === typeof path) {
+    if (data) {
+      var normalizedPath = normalizePath(context, path, data);
+      context = normalizedPath.root;
+      path = normalizedPath.path;
+    }
+
+    // Only lookup view class on context if there is a context. If not,
+    // the global lookup path on get may kick in.
+    viewClass = context && get(context, path);
+    var isGlobal = detectIsGlobal(path);
+
+    if (!viewClass && !isGlobal) {
+      Ember.assert("View requires a container to resolve views not passed in through the context", !!container);
+      viewClass = container.lookupFactory('view:'+path);
+    }
+    if (!viewClass && isGlobal) {
+      var globalViewClass = get(path);
+      Ember.deprecate('Resolved the view "'+path+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}. http://emberjs.com/guides/deprecations#toc_global-lookup-of-views-since-1-8', !globalViewClass);
+      if (globalViewClass) {
+        viewClass = globalViewClass;
+      }
+    }
+  } else {
+    viewClass = path;
+  }
+
+  // Sometimes a view's value is yet another path
+  if ('string' === typeof viewClass && data && data.view) {
+    viewClass = handlebarsGetView(data.view, viewClass, container, data);
+  }
+
+  Ember.assert(
+    fmt(path+" must be a subclass of Ember.View, not %@", [viewClass]),
+    View.detect(viewClass)
+  );
+
+  return viewClass;
 }
 
 /**
@@ -561,5 +642,6 @@ export {
   normalizePath,
   makeBoundHelper,
   handlebarsGet,
+  handlebarsGetView,
   evaluateUnboundHelper
 };

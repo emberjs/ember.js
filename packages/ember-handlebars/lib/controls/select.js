@@ -115,7 +115,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view Ember.Select content=names}}
+  {{view "select" content=names}}
   ```
 
   Would result in the following HTML:
@@ -138,10 +138,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view Ember.Select
-         content=names
-         value=selectedName
-  }}
+  {{view "select" content=names value=selectedName}}
   ```
 
   Would result in the following HTML with the `<option>` for 'Tom' selected:
@@ -180,7 +177,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view Ember.Select
+  {{view "select"
          content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"}}
@@ -211,7 +208,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view Ember.Select
+  {{view "select"
          content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
@@ -244,15 +241,12 @@ var SelectOptgroup = CollectionView.extend({
 
   App.ApplicationController = Ember.ObjectController.extend({
     selectedPerson: tom,
-    programmers: [
-      yehuda,
-      tom
-    ]
+    programmers: [ yehuda, tom ]
   });
   ```
 
   ```handlebars
-  {{view Ember.Select
+  {{view "select"
          content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
@@ -281,15 +275,12 @@ var SelectOptgroup = CollectionView.extend({
   ```javascript
   App.ApplicationController = Ember.ObjectController.extend({
     selectedProgrammer: null,
-    programmers: [
-      "Yehuda",
-      "Tom"
-    ]
+    programmers: ["Yehuda", "Tom"]
   });
   ```
 
   ``` handlebars
-  {{view Ember.Select
+  {{view "select"
          content=programmers
          value=selectedProgrammer
   }}
@@ -313,15 +304,12 @@ var SelectOptgroup = CollectionView.extend({
   ```javascript
   App.ApplicationController = Ember.ObjectController.extend({
     selectedProgrammer: null,
-    programmers: [
-      "Yehuda",
-      "Tom"
-    ]
+    programmers: [ "Yehuda", "Tom" ]
   });
   ```
 
   ```handlebars
-  {{view Ember.Select
+  {{view "select"
          content=programmers
          value=selectedProgrammer
          prompt="Please select a name"
@@ -391,7 +379,8 @@ var Select = View.extend({
     Otherwise, this should be a list of objects. For instance:
 
     ```javascript
-    Ember.Select.create({
+    var App = Ember.Application.create();
+    var App.MySelect = Ember.Select.extend({
       content: Ember.A([
           { id: 1, firstName: 'Yehuda' },
           { id: 2, firstName: 'Tom' }
