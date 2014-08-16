@@ -104,6 +104,8 @@
   // Handle extending prototypes
   QUnit.config.urlConfig.push({ id: 'extendprototypes', label: 'Extend Prototypes'});
 
+  // Raise on unhandled deprecation
+  QUnit.config.urlConfig.push({ id: 'raiseonunhandleddeprecation', label: 'Raise on Deprecation'});
 
   // Handle JSHint
   QUnit.config.urlConfig.push('nojshint');
