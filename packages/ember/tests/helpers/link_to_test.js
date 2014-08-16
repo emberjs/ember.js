@@ -267,9 +267,7 @@ test("The {{link-to}} helper supports leaving off .index for nested routes", fun
   equal(normalizeUrl(Ember.$('#item a', '#qunit-fixture').attr('href')), '/about');
 });
 
-test("The {{link-to}} helper supports currentWhen (DEPRECATED)", function() {
-  expectDeprecation('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.');
-
+test("The {{link-to}} helper supports currentWhen", function() {
   Router.map(function(match) {
     this.resource("index", { path: "/" }, function() {
       this.route("about");
