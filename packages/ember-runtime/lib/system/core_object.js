@@ -535,7 +535,7 @@ var ClassMixin = Mixin.create({
     @param {Mixin} [mixins]* One or more Mixin classes
     @param {Object} [arguments]* Object containing values to use within the new class
   */
-  extend: function() {
+  extend: function extend() {
     var Class = makeCtor();
     var proto;
     Class.ClassMixin = Mixin.create(this.ClassMixin);
