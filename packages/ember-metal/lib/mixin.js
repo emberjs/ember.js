@@ -48,8 +48,12 @@ function superFunction(){
   var func = this.__nextSuper;
   var ret;
   if (func) {
+    var args = new Array(arguments.length);
+    for (var i = 0, l = args.length; i < l; i++) {
+      args[i] = arguments[i];
+    }
     this.__nextSuper = null;
-    ret = apply(this, func, arguments);
+    ret = apply(this, func, args);
     this.__nextSuper = func;
   }
   return ret;

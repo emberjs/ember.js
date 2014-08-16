@@ -394,9 +394,13 @@ export function metaPath(obj, path, writable) {
 export function wrap(func, superFunc) {
   function superWrapper() {
     var ret;
-    var sup = this && this.__nextSuper;
+    var sup  = this && this.__nextSuper;
+    var args = new Array(arguments.length);
+    for (var i = 0, l = args.length; i < l; i++) {
+      args[i] = arguments[i];
+    }
     if(this) { this.__nextSuper = superFunc; }
-    ret = apply(this, func, arguments);
+    ret = apply(this, func, args);
     if(this) { this.__nextSuper = sup; }
     return ret;
   }
