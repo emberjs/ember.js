@@ -5,17 +5,10 @@ import run from "ember-metal/run_loop";
 import { set } from "ember-metal/property_set";
 
 function EmberRenderer() {
-  EmberRenderer.super.call(this);
+  Renderer.call(this);
 }
-EmberRenderer.super = Renderer;
-EmberRenderer.prototype = Object.create(Renderer.prototype, {
-  constructor: {
-    value: EmberRenderer,
-    enumerable: false,
-    writable: true,
-    configurable: true
-  }
-});
+EmberRenderer.prototype = create(Renderer.prototype);
+EmberRenderer.prototype.constructor = EmberRenderer;
 
 var BAD_TAG_NAME_TEST_REGEXP = /[^a-zA-Z0-9\-]/;
 var BAD_TAG_NAME_REPLACE_REGEXP = /[^a-zA-Z0-9\-]/g;
@@ -103,7 +96,11 @@ EmberRenderer.prototype.createElement =
     }
 
     view.buffer = null;
-    set(view, 'element', element);
+    if (element && element.nodeType === 1) {
+      // We have hooks, we shouldn't make element observable
+      // consider just doing view.element = element
+      set(view, 'element', element);
+    }
     return element;
   };
 
@@ -135,14 +132,14 @@ Renderer.prototype.didInsertElement = function (view) {
   }
   if (view.trigger) { view.trigger('didInsertElement'); }
 }; // inDOM // placed into DOM
-Renderer.prototype.willRemoveElement = function (view) {
-  // removed from DOM  willDestroyElement currently paired with didInsertElement
-  if (view.trigger) { view.trigger('willDestroyElement'); }
-};
+
+Renderer.prototype.willRemoveElement = function (view) {};
+
 Renderer.prototype.willDestroyElement = function (view) {
-  // willClearRender (currently balanced with render) this is now paired with createElement
+  if (view.trigger) { view.trigger('willDestroyElement'); }
   if (view.trigger) { view.trigger('willClearRender'); }
 };
+
 Renderer.prototype.didDestroyElement = function (view) {
   set(view, 'element', null);
   if (view._transitionTo) {

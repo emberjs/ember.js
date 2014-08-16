@@ -18,8 +18,10 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
   var total = 1;
   var levelBase = _parentView ? _parentView._level+1 : 0;
 
-  // if root view && view has a _morph assigned or _parentView._elementInserted
-  var willInsert = _parentView == null ? !!_view._morph : _parentView._elementInserted;
+  var root = _parentView == null ? _view : _parentView._root;
+
+  // if root view has a _morph assigned
+  var willInsert = !!root._morph;
 
   var queue = this._queue;
   queue[0] = 0;
@@ -40,6 +42,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
       // ensure props we add are in same order
       view._morph = null;
     }
+    view._root = root;
     this.uuid(view);
     view._level = levelBase + level;
     if (view._elementCreated) {

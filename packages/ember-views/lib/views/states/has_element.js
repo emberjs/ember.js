@@ -31,6 +31,9 @@ merge(hasElement, {
   // once the view has been inserted into the DOM, rerendering is
   // deferred to allow bindings to synchronize.
   rerender: function(view) {
+    if (view._root._morph && !view._elementInserted) {
+      throw new EmberError("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.");
+    }
     // TODO: should be scheduled with renderer
     run.scheduleOnce('render', function () {
       if (view.isDestroying) return;
