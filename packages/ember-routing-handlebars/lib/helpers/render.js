@@ -114,7 +114,8 @@ export default function renderHelper(name, contextString, options) {
   // \ legacy slash as namespace support
 
 
-  view = container.lookup('view:' + name) || container.lookup('view:default');
+  var lookupView = container.lookup('view:' + name);
+  view = lookupView || container.lookup('view:default');
 
   // provide controller override
   var controllerName = options.hash.controller || name;
@@ -162,7 +163,7 @@ export default function renderHelper(name, contextString, options) {
 
   var templateName = 'template:' + name;
   Ember.assert("You used `{{render '" + name + "'}}`, but '" + name + "' can not be found as either a template or a view.", container.has("view:" + name) || container.has(templateName) || options.fn);
-  options.hash.template = container.lookup(templateName);
+  options.hash.template = (lookupView && lookupView.template) ? lookupView.template : container.lookup(templateName);
 
   options.hash.controller = controller;
 
