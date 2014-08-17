@@ -205,8 +205,12 @@ test("allows you to pass attributes that will be assigned to the class instance,
 });
 
 test("Should apply class without condition always", function() {
+  var container = new Container();
+  container.register('view:toplevel', EmberView.extend());
+
   view = EmberView.create({
     context: [],
+    container: container,
     controller: Ember.Object.create(),
     template: Ember.Handlebars.compile('{{#view id="foo" classBinding=":foo"}} Foo{{/view}}')
   });
