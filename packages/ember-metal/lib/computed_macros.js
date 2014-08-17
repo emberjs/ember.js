@@ -683,6 +683,7 @@ computed.defaultTo = function(defaultPath) {
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which creates an
   alias with a deprecation to the original value for property.
+  @since 1.7.0
 */
 computed.deprecatingAlias = function(dependentKey) {
   return computed(dependentKey, function(key, value) {

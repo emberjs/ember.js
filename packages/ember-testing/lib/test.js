@@ -31,6 +31,7 @@ var Test = {
 
     @property _helpers
     @private
+    @since 1.7.0
   */
   _helpers: helpers,
 
