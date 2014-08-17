@@ -1871,6 +1871,8 @@ var View = CoreView.extend({
 
     Ember.assert("Only arrays are allowed for 'classNames'", typeOf(this.classNames) === 'array');
     this.classNames = emberA(this.classNames.slice());
+
+    this._setupDeprecatedProperties();
   },
 
   appendChild: function(view, options) {
@@ -2025,11 +2027,19 @@ var View = CoreView.extend({
       }
 
       setProperties(view, attrs);
-
     }
 
     return view;
   },
+
+  _setupDeprecatedProperties: function setupDeprecatedProperties() {
+    if (!this._deprecatedProperties) { return; }
+
+    for (var prop in this._deprecatedProperties) {
+      deprecateProperty(this, prop, this._deprecatedProperties[prop]);
+    }
+  },
+
 
   becameVisible: Ember.K,
   becameHidden: Ember.K,
