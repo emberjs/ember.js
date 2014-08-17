@@ -295,13 +295,16 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
   active: computed('loadedParams', function computeLinkViewActive() {
     if (get(this, 'loading')) { return false; }
 
-    var router = get(this, 'router'),
-        loadedParams = get(this, 'loadedParams'),
-        contexts = loadedParams.models,
-        currentWhen = this.currentWhen || loadedParams.targetRouteName,
-        handlers = router.router.recognizer.handlersFor(currentWhen),
-        leafName = handlers[handlers.length-1].handler,
-        maximumContexts = numberOfContextsAcceptedByHandler(currentWhen, handlers);
+    var router = get(this, 'router');
+    var loadedParams = get(this, 'loadedParams');
+    var contexts = loadedParams.models;
+    var currentWhen = this.currentWhen;
+    var isCurrentWhenSpecified = Boolean(currentWhen);
+    currentWhen = currentWhen || loadedParams.targetRouteName;
+
+    var handlers = router.router.recognizer.handlersFor(currentWhen);
+    var leafName = handlers[handlers.length-1].handler;
+    var maximumContexts = numberOfContextsAcceptedByHandler(currentWhen, handlers);
 
     // NOTE: any ugliness in the calculation of activeness is largely
     // due to the fact that we support automatic normalizing of
