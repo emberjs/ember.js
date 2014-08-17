@@ -183,6 +183,25 @@ test("{{render}} helper should not have assertion if view exists without a templ
   equal(view.$().text(), 'HI');
 });
 
+test("{{render}} helper should prefer view's directly assigned template", function() {
+  var template = "{{render 'templated'}}";
+  var controller = EmberController.extend({container: container});
+  view = EmberView.create({
+    controller: controller.create(),
+    template: compile(template)
+  });
+
+  var directTemplate = 'DIRECT';
+  Ember.TEMPLATES['templated'] = compile("FROM_EM_TEMPLATES");
+  container.register('view:templated', EmberView.extend({
+    template: compile(directTemplate)
+  }));
+
+  appendView(view);
+
+  equal(view.$().text(), 'DIRECT');
+});
+
 test("{{render}} helper should render given template with a supplied model", function() {
   var template = "<h1>HI</h1>{{render 'post' post}}";
   var post = {
