@@ -457,12 +457,6 @@ export var union = uniq;
   duplicated elements from the dependent arrays
 */
 export function intersect() {
-  var getDependentKeyGuids = function (changeMeta) {
-    return map(changeMeta.property._dependentKeys, function (dependentKey) {
-      return guidFor(dependentKey);
-    });
-  };
-
   var args = a_slice.call(arguments);
 
   args.push({
@@ -472,7 +466,6 @@ export function intersect() {
 
     addedItem: function(array, item, changeMeta, instanceMeta) {
       var itemGuid = guidFor(item);
-      var dependentGuids = getDependentKeyGuids(changeMeta);
       var dependentGuid = guidFor(changeMeta.arrayChanged);
       var numberOfDependentArrays = changeMeta.property._dependentKeys.length;
       var itemCounts = instanceMeta.itemCounts;
@@ -495,7 +488,6 @@ export function intersect() {
 
     removedItem: function(array, item, changeMeta, instanceMeta) {
       var itemGuid = guidFor(item);
-      var dependentGuids = getDependentKeyGuids(changeMeta);
       var dependentGuid = guidFor(changeMeta.arrayChanged);
       var numberOfDependentArrays = changeMeta.property._dependentKeys.length;
       var numberOfArraysItemAppearsIn;
