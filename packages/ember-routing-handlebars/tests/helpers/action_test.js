@@ -44,8 +44,6 @@ QUnit.module("Ember.Handlebars - action helper", {
 
     delete EmberHandlebars.helpers['action'];
     EmberHandlebars.helpers['action'] = originalActionHelper;
-
-    Ember.TESTING_DEPRECATION = false;
   }
 });
 
@@ -968,7 +966,7 @@ test("a quoteless parameter should resolve actionName, including path", function
 });
 
 test("a quoteless parameter that also exists as an action name functions properly", function(){
-  Ember.TESTING_DEPRECATION = true;
+  expectDeprecation('You specified a quoteless path to the {{action}} helper \'ohNoeNotValid\' which did not resolve to an actionName. Perhaps you meant to use a quoted actionName? (e.g. {{action \'ohNoeNotValid\'}}).');
   var triggeredAction;
 
   view = EmberView.create({
@@ -995,7 +993,9 @@ test("a quoteless parameter that also exists as an action name functions properl
   ok(triggeredAction, 'the action was triggered');
 });
 
-test("a quoteless parameter that also exists as an action name results in an assertion", function(){
+test("a quoteless parameter that also exists as an action name results in a deprecation", function(){
+  expectDeprecation('You specified a quoteless path to the {{action}} helper \'ohNoeNotValid\' which did not resolve to an actionName. Perhaps you meant to use a quoted actionName? (e.g. {{action \'ohNoeNotValid\'}}).');
+
   var triggeredAction;
 
   view = EmberView.create({
@@ -1015,18 +1015,11 @@ test("a quoteless parameter that also exists as an action name results in an ass
     view.appendTo('#qunit-fixture');
   });
 
-  var oldAssert = Ember.assert;
-  Ember.assert = function(message, test){
-    ok(test, message + " -- was properly asserted");
-  };
-
   run(function(){
     view.$("#oops-bound-param").click();
   });
 
   ok(triggeredAction, 'the action was triggered');
-
-  Ember.assert = oldAssert;
 });
 
 test("a quoteless parameter that also exists as an action name in deprecated action in controller style results in an assertion", function(){
