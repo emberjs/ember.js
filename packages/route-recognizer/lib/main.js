@@ -1,7 +1,9 @@
 define("route-recognizer",
-  ["exports"],
-  function(__exports__) {
+  ["route-recognizer/dsl","exports"],
+  function(__dependency1__, __exports__) {
     "use strict";
+    var map = __dependency1__["default"];
+
     var specials = [
       '/', '.', '*', '+', '?', '|',
       '(', ')', '[', ']', '{', '}', '\\'
@@ -427,7 +429,7 @@ define("route-recognizer",
           if (value == null) {
             continue;
           }
-          var pair = key;
+          var pair = encodeURIComponent(key);
           if (isArray(value)) {
             for (var j = 0, l = value.length; j < l; j++) {
               var arrayPair = key + '[]' + '=' + encodeURIComponent(value[j]);
@@ -468,7 +470,7 @@ define("route-recognizer",
           if (isArray) {
             queryParams[key].push(value);
           } else {
-            queryParams[key] = decodeURIComponent(value);
+            queryParams[key] = value;
           }
         }
         return queryParams;
@@ -479,14 +481,14 @@ define("route-recognizer",
             pathLen, i, l, queryStart, queryParams = {},
             isSlashDropped = false;
 
-        path = decodeURI(path);
-
         queryStart = path.indexOf('?');
         if (queryStart !== -1) {
           var queryString = path.substr(queryStart + 1, path.length);
           path = path.substr(0, queryStart);
           queryParams = this.parseQueryString(queryString);
         }
+
+        path = decodeURI(path);
 
         // DEBUG GROUP path
 
@@ -525,8 +527,14 @@ define("route-recognizer",
       }
     };
 
-    __exports__["default"] = RouteRecognizer;
+    RouteRecognizer.prototype.map = map;
 
+    __exports__["default"] = RouteRecognizer;
+  });
+define("route-recognizer/dsl",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
     function Target(path, matcher, delegate) {
       this.path = path;
       this.matcher = matcher;
@@ -616,7 +624,7 @@ define("route-recognizer",
       }
     }
 
-    RouteRecognizer.prototype.map = function(callback, addRouteCallback) {
+    __exports__["default"] = function(callback, addRouteCallback) {
       var matcher = new Matcher();
 
       callback(generateMatch("", matcher, this.delegate));
@@ -625,5 +633,5 @@ define("route-recognizer",
         if (addRouteCallback) { addRouteCallback(this, route); }
         else { this.add(route); }
       }, this);
-    };
+    }
   });
