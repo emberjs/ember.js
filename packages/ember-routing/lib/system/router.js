@@ -228,12 +228,13 @@ var EmberRouter = EmberObject.extend(Evented, {
     manual concatenation of the arguments into a single
     array.
 
-    @method isActive
+    @method isActiveIntent
     @param routeName
     @param models
     @param queryParams
     @return {Boolean}
     @private
+    @since 1.7.0
   */
   isActiveIntent: function(routeName, models, queryParams) {
     var router = this.router;

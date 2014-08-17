@@ -20,6 +20,8 @@ import { Mixin } from 'ember-metal/mixin';
 
   @class ControllerContentModelAliasDeprecation
   @namespace Ember
+  @private
+  @since 1.7.0
 */
 export default Mixin.create({
   /**
