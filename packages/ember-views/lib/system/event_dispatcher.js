@@ -114,6 +114,7 @@ export default EmberObject.extend({
     @property canDispatchToEventManager
     @type boolean
     @default 'true'
+    @since 1.7.0
   */
   canDispatchToEventManager: true,
 

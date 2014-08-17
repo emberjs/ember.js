@@ -55,7 +55,8 @@ var Route = EmberObject.extend(ActionHandler, {
   /**
     @private
 
-    @method reset
+    @method _reset
+    @since 1.7.0
   */
   _reset: function(isExiting, transition) {
     if (Ember.FEATURES.isEnabled("query-params-new")) {
@@ -1785,6 +1786,7 @@ if (Ember.FEATURES.isEnabled("query-params-new")) {
       @param {Controller} controller instance
       @param {Boolean} isExiting
       @param {Object} transition
+      @since 1.7.0
     */
     resetController: Ember.K
   });

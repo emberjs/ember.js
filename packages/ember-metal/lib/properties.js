@@ -164,6 +164,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   @param {String} deprecatedKey The property to add (and print deprecation warnings upon accessing).
   @param {String} newKey The property that will be aliased.
   @private
+  @since 1.7.0
 */
 
 export function deprecateProperty(object, deprecatedKey, newKey) {
