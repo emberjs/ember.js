@@ -59,6 +59,28 @@ function makeBindings(thisContext, options) {
   }
 }
 
+function deprecateProperties(options) {
+  var hash = options.hash;
+  var hashTypes = options.hashTypes;
+  var deprecatedProperties = {};
+
+  for (var prop in hash) {
+    if (!hash.hasOwnProperty(prop)) { continue; }
+
+    var camelized = camelize(prop);
+    if (prop !== camelized) {
+      hash[camelized] = hash[prop];
+      hashTypes[camelized] = hashTypes[prop];
+      delete hash[prop];
+      delete hashTypes[prop];
+
+      deprecatedProperties[prop] = camelized;
+    }
+  }
+
+  hash._deprecatedProperties = deprecatedProperties;
+}
+
 export var ViewHelper = EmberObject.create({
 
   propertiesFromHTMLOptions: function(options) {
@@ -117,7 +139,6 @@ export var ViewHelper = EmberObject.create({
     // as well as class name bindings. If the bindings are local, make them relative to the current context
     // instead of the view.
     var path;
-    var deprecatedProperties = {};
 
     // Evaluate the context of regular attribute bindings:
     for (var prop in hash) {
@@ -130,16 +151,7 @@ export var ViewHelper = EmberObject.create({
       }
 
 
-      var camelized = camelize(prop);
-      if (prop !== camelized) {
-        hash[camelized] = hash[prop];
-        delete hash[prop];
-
-        deprecatedProperties[prop] = camelized;
-      }
     }
-
-    hash._deprecatedProperties = deprecatedProperties;
 
     // Evaluate the context of class name bindings:
     if (extensions.classNameBindings) {
@@ -187,6 +199,7 @@ export var ViewHelper = EmberObject.create({
     var fn = options.fn;
     var newView;
 
+    deprecateProperties(options);
     makeBindings(thisContext, options);
 
     var container = this.container || (data && data.view && data.view.container);
