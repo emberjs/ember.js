@@ -63,7 +63,7 @@ test("By default, without a container, EmberView is used", function() {
 
   run(view, 'appendTo', '#qunit-fixture');
 
-  ok(jQuery('#qunit-fixture').html().match(/<span/), 'contains view with span');
+  ok(jQuery('#qunit-fixture').html().toUpperCase().match(/<SPAN/), 'contains view with span');
 });
 
 test("View lookup - App.FuView (DEPRECATED)", function() {
