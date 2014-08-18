@@ -57,7 +57,7 @@ test("By default view:toplevel is used", function() {
 
 test("By default, without a container, EmberView is used", function() {
   view = EmberView.extend({
-    template: Ember.Handlebars.compile('{{view tagName="span"}}'),
+    template: Ember.Handlebars.compile('{{view tagName="span"}}')
   }).create();
 
   run(view, 'appendTo', '#qunit-fixture');
