@@ -213,7 +213,7 @@ platform.hasPropertyAccessors = true;
 if (!platform.defineProperty) {
   platform.hasPropertyAccessors = false;
 
-  platform.defineProperty = function(obj, keyName, desc) {
+  defineProperty = platform.defineProperty = function(obj, keyName, desc) {
     if (!desc.get) { obj[keyName] = desc.value; }
   };
 
