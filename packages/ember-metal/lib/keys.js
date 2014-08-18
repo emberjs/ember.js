@@ -38,7 +38,7 @@ if (!keys || create.isSimulated) {
       return;
     }
 
-    if (typeof obj.hasOwnProperty === 'function' && !obj.hasOwnProperty(key)) {
+    if (!Object.prototype.hasOwnProperty.call(obj, key)) {
       return;
     }
 

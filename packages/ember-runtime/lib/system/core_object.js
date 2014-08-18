@@ -207,7 +207,6 @@ function makeCtor() {
 */
 var CoreObject = makeCtor();
 CoreObject.toString = function() { return "Ember.CoreObject"; };
-
 CoreObject.PrototypeMixin = Mixin.create({
   reopen: function() {
     var length = arguments.length;
