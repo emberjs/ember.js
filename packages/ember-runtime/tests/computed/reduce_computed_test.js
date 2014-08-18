@@ -8,7 +8,7 @@ import { set } from 'ember-metal/property_set';
 import { meta as metaFor } from 'ember-metal/utils';
 import run from 'ember-metal/run_loop';
 import { observer } from 'ember-metal/mixin';
-import keys from "ember-runtime/keys";
+import keys from "ember-metal/keys";
 import EmberObject from "ember-runtime/system/object";
 import {
   ComputedProperty,
