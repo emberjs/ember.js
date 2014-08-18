@@ -37,7 +37,22 @@ function visit(vertex, fn, visited, path) {
  */
 function DAG() {
   this.names = [];
-  this.vertices = {};
+  this.vertices = Object.create(null);
+}
+
+/**
+ * DAG Vertex
+ *
+ * @class Vertex
+ * @constructor
+ */
+
+function Vertex(name) {
+  this.name = name;
+  this.incoming = {};
+  this.incomingNames = [];
+  this.hasOutgoing = false;
+  this.value = null;
 }
 
 /**
@@ -48,13 +63,13 @@ function DAG() {
  * @param {String} name The name of the vertex to add
  */
 DAG.prototype.add = function(name) {
-  if (!name) { return; }
-  if (this.vertices.hasOwnProperty(name)) {
+  if (!name) {
+    throw new Error("Can't add Vertex without name");
+  }
+  if (this.vertices[name] !== undefined) {
     return this.vertices[name];
   }
-  var vertex = {
-    name: name, incoming: {}, incomingNames: [], hasOutgoing: false, value: null
-  };
+  var vertex = new Vertex(name);
   this.vertices[name] = vertex;
   this.names.push(name);
   return vertex;
