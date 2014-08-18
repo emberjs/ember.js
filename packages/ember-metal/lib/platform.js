@@ -168,13 +168,10 @@ if (!(Object.create && !Object.create(null).hasOwnProperty)) {
         // is...err...probably inappropriate, but the native version allows for it.
         throw new TypeError("Object prototype may only be an Object or null"); // same msg as Chrome
       }
+
       Type.prototype = prototype;
+
       object = new Type();
-      // IE has no built-in implementation of `Object.getPrototypeOf`
-      // neither `__proto__`, but this manually setting `__proto__` will
-      // guarantee that `Object.getPrototypeOf` will work as expected with
-      // objects created using `Object.create`
-      object.__proto__ = prototype;
     }
 
     if (properties !== undefined) {
