@@ -796,7 +796,7 @@ function instantiate(container, fullName) {
 
 function eachDestroyable(container, callback) {
   var cache = container.cache;
-  var keys = Object.keys(cache);
+  var keys = Ember.keys(cache);
   var key, value;
 
   for (var i = 0, l = keys.length; i < l; i++) {
