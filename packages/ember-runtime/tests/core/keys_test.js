@@ -1,5 +1,5 @@
 import { set } from "ember-metal/property_set";
-import keys from "ember-runtime/keys";
+import keys from "ember-metal/keys";
 import {
   addObserver,
   removeObserver
