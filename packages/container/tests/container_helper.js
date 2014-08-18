@@ -1,3 +1,4 @@
+import {create as o_create} from "ember-metal/platform";
 var setProperties = function(object, properties) {
   for (var key in properties) {
     if (properties.hasOwnProperty(key)) {
@@ -5,18 +6,6 @@ var setProperties = function(object, properties) {
     }
   }
 };
-
-var o_create = Object.create || (function(){
-  function F(){}
-
-  return function(o) {
-    if (arguments.length !== 1) {
-      throw new Ember.Error('Object.create implementation only accepts one parameter.');
-    }
-    F.prototype = o;
-    return new F();
-  };
-}());
 
 var guids = 0;
 

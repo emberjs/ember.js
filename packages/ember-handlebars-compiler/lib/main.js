@@ -6,16 +6,11 @@
 */
 
 import Ember from "ember-metal/core";
+import {create as objectCreate} from "ember-metal/platform";
 
 // ES6Todo: you'll need to import debugger once debugger is es6'd.
 if (typeof Ember.assert === 'undefined')   { Ember.assert = function(){}; }
 if (typeof Ember.FEATURES === 'undefined') { Ember.FEATURES = { isEnabled: function(){} }; }
-
-var objectCreate = Object.create || function(parent) {
-  function F() {}
-  F.prototype = parent;
-  return new F();
-};
 
 // set up for circular references later
 var View, Component;
