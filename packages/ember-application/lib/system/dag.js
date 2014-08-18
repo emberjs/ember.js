@@ -38,6 +38,19 @@ function visit(vertex, fn, visited, path) {
 function DAG() {
   this.names = [];
   this.vertices = {};
+/**
+ * DAG Vertex
+ *
+ * @class Vertex
+ * @constructor
+ */
+
+function Vertex(name) {
+  this.name = name;
+  this.incoming = {};
+  this.incomingNames = [];
+  this.hasOutgoing = false;
+  this.value = null;
 }
 
 /**
@@ -52,9 +65,7 @@ DAG.prototype.add = function(name) {
   if (this.vertices.hasOwnProperty(name)) {
     return this.vertices[name];
   }
-  var vertex = {
-    name: name, incoming: {}, incomingNames: [], hasOutgoing: false, value: null
-  };
+  var vertex = new Vertex(name);
   this.vertices[name] = vertex;
   this.names.push(name);
   return vertex;
