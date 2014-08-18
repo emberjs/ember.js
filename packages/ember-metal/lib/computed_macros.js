@@ -508,7 +508,7 @@ registerComputedWithProperties('any', function(properties) {
   values of all passed properties in to an array.
 */
 registerComputedWithProperties('collect', function(properties) {
-  var res = [];
+  var res = Ember.A();
   for (var key in properties) {
     if (properties.hasOwnProperty(key)) {
       if (isNone(properties[key])) {
