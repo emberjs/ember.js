@@ -1,4 +1,10 @@
+import Ember from "ember-metal/core"; // Ember.K
+import { set } from "ember-metal/property_set";
 import keys from "ember-metal/keys";
+import {
+  addObserver,
+  removeObserver
+} from "ember-metal/observer";
 
 QUnit.module("Fetch Keys ");
 
@@ -23,4 +29,91 @@ test("should get a key array for property that is named the same as prototype pr
   var object2 = keys(object1);
 
   deepEqual(object2, ['toString']);
+});
+
+test('should not contain properties declared in the prototype', function () {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
+
+  deepEqual(keys(beer), []);
+});
+
+test('should return properties that were set after object creation', function () {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
+
+  set(beer, 'brand', 'big daddy');
+
+  deepEqual(keys(beer), ['brand']);
+});
+
+QUnit.module('Keys behavior with observers');
+
+test('should not leak properties on the prototype', function () {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
+
+  addObserver(beer, 'type', Ember.K);
+  deepEqual(keys(beer), []);
+  removeObserver(beer, 'type', Ember.K);
+});
+
+test('observing a non existent property', function () {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
+
+  addObserver(beer, 'brand', Ember.K);
+
+  deepEqual(keys(beer), []);
+
+  set(beer, 'brand', 'Corona');
+  deepEqual(keys(beer), ['brand']);
+
+  removeObserver(beer, 'brand', Ember.K);
+});
+
+test('with observers switched on and off', function () {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
+
+  addObserver(beer, 'type', Ember.K);
+  removeObserver(beer, 'type', Ember.K);
+
+  deepEqual(keys(beer), []);
+});
+
+test('observers switched on and off with setter in between', function () {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
+
+  addObserver(beer, 'type', Ember.K);
+  set(beer, 'type', 'ale');
+  removeObserver(beer, 'type', Ember.K);
+
+  deepEqual(keys(beer), ['type']);
+});
+
+test('observer switched on and off and then setter', function () {
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
+
+  addObserver(beer, 'type', Ember.K);
+  removeObserver(beer, 'type', Ember.K);
+  set(beer, 'type', 'ale');
+
+  deepEqual(keys(beer), ['type']);
 });
