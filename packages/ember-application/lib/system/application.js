@@ -37,6 +37,15 @@ import {
 import EmberHandlebars from "ember-handlebars-compiler";
 
 var ContainerDebugAdapter;
+function props(obj) {
+  var properties = [];
+
+  for (var key in obj) {
+    properties.push(key);
+  }
+
+  return properties;
+}
 
 /**
   An instance of `Ember.Application` is the starting point for every Ember
@@ -653,20 +662,21 @@ var Application = Namespace.extend(DeferredMixin, {
     @method runInitializers
   */
   runInitializers: function() {
-    var initializers = get(this.constructor, 'initializers');
+    var initializersByName = get(this.constructor, 'initializers');
+    var initializers = props(initializersByName);
     var container = this.__container__;
     var graph = new DAG();
     var namespace = this;
     var name, initializer;
 
-    for (name in initializers) {
-      initializer = initializers[name];
+    for (var i = 0; i < initializers.length; i++) {
+      initializer = initializersByName[initializers[i]];
       graph.addEdges(initializer.name, initializer.initialize, initializer.before, initializer.after);
     }
 
     graph.topsort(function (vertex) {
       var initializer = vertex.value;
-      Ember.assert("No application initializer named '"+vertex.name+"'", initializer);
+      Ember.assert("No application initializer named '" + vertex.name + "'", initializer);
       initializer(container, namespace);
     });
   },
@@ -776,7 +786,7 @@ var Application = Namespace.extend(DeferredMixin, {
 });
 
 Application.reopenClass({
-  initializers: {},
+  initializers: Object.create(null),
 
   /**
     Initializer receives an object which has the following attributes:
