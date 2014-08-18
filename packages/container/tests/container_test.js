@@ -1,6 +1,5 @@
 import {
   factory,
-  o_create,
   setProperties
 } from 'container/tests/container_helper';
 
