@@ -724,8 +724,8 @@ test("`fillIn` takes context into consideration", function() {
   visit('/');
   fillIn('.current', '#parent', 'current value');
   andThen(function() {
-    equal(find('#first').val().trim(), 'current value');
-    equal(find('#second').val().trim(), '');
+    equal(find('#first').val(), 'current value');
+    equal(find('#second').val(), '');
   });
 });
 
