@@ -1,5 +1,6 @@
 import DAG from "ember-application/system/dag";
 import EmberError from "ember-metal/error";
+import { indexOf } from "ember-metal/enumerable_utils";
 
 QUnit.module("Ember.DAG");
 
@@ -43,12 +44,12 @@ test("#topsort iterates over the edges respecting precedence order", function(){
     index++;
   });
 
-  ok(names.indexOf("buy eggs") < names.indexOf("shake eggs"), "you need eggs to shake them");
-  ok(names.indexOf("buy oil") < names.indexOf("warm oil"), "you need oil to warm it");
-  ok(names.indexOf("eat omelette") < names.indexOf("clear the table"), "you clear the table after eat");
-  ok(names.indexOf("fry omelette") < names.indexOf("eat omelette"), "cook before eat");
-  ok(names.indexOf("shake eggs") < names.indexOf("fry omelette"), "shake before put into the pan");
-  ok(names.indexOf("prepare salad") > -1, "we don't know when we prepare the salad, but we do");
+  ok(indexOf(names, "buy eggs") < indexOf(names, "shake eggs"), "you need eggs to shake them");
+  ok(indexOf(names, "buy oil") < indexOf(names, "warm oil"), "you need oil to warm it");
+  ok(indexOf(names, "eat omelette") < indexOf(names, "clear the table"), "you clear the table after eat");
+  ok(indexOf(names, "fry omelette") < indexOf(names, "eat omelette"), "cook before eat");
+  ok(indexOf(names, "shake eggs") < indexOf(names, "fry omelette"), "shake before put into the pan");
+  ok(indexOf(names, "prepare salad") > -1, "we don't know when we prepare the salad, but we do");
 });
 
 test("#addEdged supports both strings and arrays to specify precedences", function(){
