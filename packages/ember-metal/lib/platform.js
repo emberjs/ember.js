@@ -140,7 +140,6 @@ if (!(Object.create && !Object.create(null).hasOwnProperty)) {
       delete empty.toLocaleString;
       delete empty.toString;
       delete empty.valueOf;
-      empty.__proto__ = null;
 
       function Empty() {}
       Empty.prototype = empty;
