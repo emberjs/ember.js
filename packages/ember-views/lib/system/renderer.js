@@ -115,7 +115,7 @@ EmberRenderer.prototype.childViews = function childViews(view) {
 };
 
 Renderer.prototype.willCreateElement = function (view) {
-  if (subscribers.length) {
+  if (subscribers.length && view.instrumentDetails) {
     view._instrumentEnd = _instrumentStart('render.'+view.instrumentName, function viewInstrumentDetails() {
       var details = {};
       view.instrumentDetails(details);
