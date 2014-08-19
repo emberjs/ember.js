@@ -55,7 +55,9 @@ import CoreView from "ember-views/views/core_view";
 @submodule ember-views
 */
 var childViewsProperty = computed(function() {
-  var childViews = this._childViews, ret = emberA(), view = this;
+  var childViews = this._childViews;
+  var ret = emberA();
+  var view = this;
 
   forEach(childViews, function(view) {
     var currentChildViews;

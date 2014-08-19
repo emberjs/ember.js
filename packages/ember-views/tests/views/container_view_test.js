@@ -7,7 +7,8 @@ import jQuery from "ember-views/system/jquery";
 import View from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 
-var trim = jQuery.trim, container, view, otherContainer;
+var trim = jQuery.trim;
+var container, view, otherContainer;
 
 QUnit.module("ember-views/views/container_view_test", {
   teardown: function() {

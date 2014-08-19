@@ -266,7 +266,8 @@ _RenderBuffer.prototype = {
 
   setClasses: function(classNames) {
     this.elementClasses = null;
-    var len = classNames.length, i;
+    var len = classNames.length;
+    var i;
     for (i = 0; i < len; i++) {
       this.addClass(classNames[i]);
     }
@@ -373,13 +374,14 @@ _RenderBuffer.prototype = {
   },
 
   generateElement: function() {
-    var tagName = this.tagName,
-        id = this.elementId,
-        classes = this.classes,
-        attrs = this.elementAttributes,
-        props = this.elementProperties,
-        style = this.elementStyle,
-        styleBuffer = '', attr, prop, tagString;
+    var tagName = this.tagName;
+    var id = this.elementId;
+    var classes = this.classes;
+    var attrs = this.elementAttributes;
+    var props = this.elementProperties;
+    var style = this.elementStyle;
+    var styleBuffer = '';
+    var attr, prop, tagString;
 
     if (attrs && attrs.name && !canSetNameOnInputs) {
       // IE allows passing a tag to createElement. See note on `canSetNameOnInputs` above as well.
@@ -473,7 +475,8 @@ _RenderBuffer.prototype = {
   string: function() {
     if (this._hasElement && this._element) {
       // Firefox versions < 11 do not have support for element.outerHTML.
-      var thisElement = this.element(), outerHTML = thisElement.outerHTML;
+      var thisElement = this.element();
+      var outerHTML = thisElement.outerHTML;
       if (typeof outerHTML === 'undefined') {
         return jQuery('<div/>').append(thisElement).html();
       }

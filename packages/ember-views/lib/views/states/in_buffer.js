@@ -32,7 +32,8 @@ merge(inBuffer, {
   // view will render that view and append the resulting
   // buffer into its buffer.
   appendChild: function(view, childView, options) {
-    var buffer = view.buffer, _childViews = view._childViews;
+    var buffer = view.buffer;
+    var _childViews = view._childViews;
 
     childView = view.createChildView(childView, options);
     if (!_childViews.length) { _childViews = view._childViews = _childViews.slice(); }
