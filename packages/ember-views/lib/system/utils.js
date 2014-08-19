@@ -35,7 +35,8 @@ var movesWhitespace = typeof document !== 'undefined' && (function() {
 var findChildById = function(element, id) {
   if (element.getAttribute('id') === id) { return element; }
 
-  var len = element.childNodes.length, idx, node, found;
+  var len = element.childNodes.length;
+  var idx, node, found;
   for (idx=0; idx<len; idx++) {
     node = element.childNodes[idx];
     found = node.nodeType === 1 && findChildById(node, id);
@@ -62,7 +63,8 @@ var setInnerHTMLWithoutFix = function(element, html) {
 
   // If we have to do any whitespace adjustments do them now
   if (matches.length > 0) {
-    var len = matches.length, idx;
+    var len = matches.length;
+    var idx;
     for (idx=0; idx<len; idx++) {
       var script = findChildById(element, matches[idx][0]);
       var node = document.createTextNode(matches[idx][1]);

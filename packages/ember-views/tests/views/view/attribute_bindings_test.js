@@ -6,7 +6,8 @@ import { changeProperties } from "ember-metal/property_events";
 
 import EmberView from "ember-views/views/view";
 
-var originalLookup = Ember.lookup, lookup, view;
+var originalLookup = Ember.lookup;
+var lookup, view;
 
 var appendView = function() {
   run(function() { view.appendTo('#qunit-fixture'); });

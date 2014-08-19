@@ -322,7 +322,8 @@ var CollectionView = ContainerView.extend({
     // Loop through child views that correspond with the removed items.
     // Note that we loop from the end of the array to the beginning because
     // we are mutating it as we go.
-    var childViews = this._childViews, childView, idx;
+    var childViews = this._childViews;
+    var childView, idx;
 
     for (idx = start + removedCount - 1; idx >= start; idx--) {
       childView = childViews[idx];
