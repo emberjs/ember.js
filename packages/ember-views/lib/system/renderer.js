@@ -3,6 +3,7 @@ import { create } from 'ember-metal/platform';
 import renderBuffer from "ember-views/system/render_buffer";
 import run from "ember-metal/run_loop";
 import { set } from "ember-metal/property_set";
+import { _instrumentStart, subscribers } from "ember-metal/instrumentation";
 
 function EmberRenderer() {
   Renderer.call(this);
@@ -114,6 +115,13 @@ EmberRenderer.prototype.childViews = function childViews(view) {
 };
 
 Renderer.prototype.willCreateElement = function (view) {
+  if (subscribers.length) {
+    view._instrumentEnd = _instrumentStart('render.'+view.instrumentName, function viewInstrumentDetails() {
+      var details = {};
+      view.instrumentDetails(details);
+      return details;
+    });
+  }
   if (view._transitionTo) {
     view._transitionTo('inBuffer');
   }
@@ -121,6 +129,9 @@ Renderer.prototype.willCreateElement = function (view) {
 Renderer.prototype.didCreateElement = function (view) {
   if (view._transitionTo) {
     view._transitionTo('hasElement');
+  }
+  if (view._instrumentEnd) {
+    view._instrumentEnd();
   }
 }; // hasElement
 Renderer.prototype.willInsertElement = function (view) {
