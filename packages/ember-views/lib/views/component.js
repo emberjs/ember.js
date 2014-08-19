@@ -117,8 +117,19 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     set(this, 'controller', this);
   },
 
-  defaultLayout: function(context, options){
-    Ember.Handlebars.helpers['yield'].call(context, options);
+  defaultLayout: function(context, options) {
+    var buffer = options.data.buffer;
+    var component = options.data.view;
+
+    var element = buffer.element();
+    var start = document.createTextNode('');
+    var end = document.createTextNode('');
+    element.appendChild(start);
+    element.appendChild(end);
+
+    options.morph = buffer.dom.createMorph(element, start, end);
+
+    component._yield(context, options);
   },
 
   /**
