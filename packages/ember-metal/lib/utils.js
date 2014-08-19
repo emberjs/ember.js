@@ -393,9 +393,9 @@ export function metaPath(obj, path, writable) {
 export function wrap(func, superFunc) {
   function superWrapper() {
     var ret, sup = this && this.__nextSuper;
-    if(this) { this.__nextSuper = superFunc; }
+    setSuper(this, superFunc);
     ret = apply(this, func, arguments);
-    if(this) { this.__nextSuper = sup; }
+    setSuper(this, sup);
     return ret;
   }
 
@@ -406,6 +406,10 @@ export function wrap(func, superFunc) {
   superWrapper.__ember_listens__ = func.__ember_listens__;
 
   return superWrapper;
+
+  function setSuper(obj, superFunc) {
+    if(obj && !Object.isFrozen(obj)) { obj.__nextSuper = superFunc; }
+  }
 }
 
 var EmberArray;
