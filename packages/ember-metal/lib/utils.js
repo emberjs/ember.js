@@ -357,7 +357,8 @@ export function setMeta(obj, property, value) {
 */
 export function metaPath(obj, path, writable) {
   Ember.deprecate("Ember.metaPath is deprecated and will be removed from future releases.");
-  var _meta = meta(obj, writable), keyName, value;
+  var _meta = meta(obj, writable);
+  var keyName, value;
 
   for (var i=0, l=path.length; i<l; i++) {
     keyName = path[i];
@@ -392,7 +393,8 @@ export function metaPath(obj, path, writable) {
 */
 export function wrap(func, superFunc) {
   function superWrapper() {
-    var ret, sup = this && this.__nextSuper;
+    var ret;
+    var sup = this && this.__nextSuper;
     if(this) { this.__nextSuper = superFunc; }
     ret = apply(this, func, arguments);
     if(this) { this.__nextSuper = sup; }
@@ -797,7 +799,8 @@ export function inspect(obj) {
     return obj + '';
   }
 
-  var v, ret = [];
+  var v;
+  var ret = [];
   for(var key in obj) {
     if (obj.hasOwnProperty(key)) {
       v = obj[key];
