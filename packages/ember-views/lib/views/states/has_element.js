@@ -17,7 +17,7 @@ var hasElement = create(_default);
 
 merge(hasElement, {
   $: function(view, sel) {
-    var elem = get(view, 'element');
+    var elem = view.get('concreteView').element;
     return sel ? jQuery(sel, elem) : jQuery(elem);
   },
 
@@ -28,25 +28,17 @@ merge(hasElement, {
     return jQuery("#" + get(view, 'elementId'))[0];
   },
 
-  setElement: function(view, value) {
-    if (value === null) {
-      view._transitionTo('preRender');
-    } else {
-      throw new EmberError("You cannot set an element to a non-null value when the element is already in the DOM.");
-    }
-
-    return value;
-  },
-
   // once the view has been inserted into the DOM, rerendering is
   // deferred to allow bindings to synchronize.
   rerender: function(view) {
-    view.triggerRecursively('willClearRender');
-
-    view.clearRenderedChildren();
-
-    view.domManager.replace(view);
-    return view;
+    if (view._root._morph && !view._elementInserted) {
+      throw new EmberError("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.");
+    }
+    // TODO: should be scheduled with renderer
+    run.scheduleOnce('render', function () {
+      if (view.isDestroying) return;
+      view._renderer.renderTree(view, view._parentView);
+    });
   },
 
   // once the view is already in the DOM, destroying it removes it
@@ -54,25 +46,8 @@ merge(hasElement, {
   // preRender state if inDOM.
 
   destroyElement: function(view) {
-    view._notifyWillDestroyElement();
-    view.domManager.remove(view);
-    set(view, 'element', null);
-    if (view._scheduledInsert) {
-      run.cancel(view._scheduledInsert);
-      view._scheduledInsert = null;
-    }
+    view._renderer.remove(view, false);
     return view;
-  },
-
-  empty: function(view) {
-    var _childViews = view._childViews, len, idx;
-    if (_childViews) {
-      len = _childViews.length;
-      for (idx = 0; idx < len; idx++) {
-        _childViews[idx]._notifyWillDestroyElement();
-      }
-    }
-    view.domManager.empty(view);
   },
 
   // Handle events from `Ember.EventDispatcher`

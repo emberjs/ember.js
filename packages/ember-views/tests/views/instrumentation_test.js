@@ -10,11 +10,9 @@ import EmberView from "ember-views/views/view";
 var view, beforeCalls, afterCalls;
 
 function confirmPayload(payload, view) {
-  var objectId = guidFor(view);
-
-  equal(payload.object, view.toString(), 'payload object equals view.toString()');
-  equal(payload.containerKey, view._debugContainerKey, 'payload contains the containerKey');
-  equal(payload.view, view, 'payload contains the view itself');
+  equal(payload && payload.object, view.toString(), 'payload object equals view.toString()');
+  equal(payload && payload.containerKey, view._debugContainerKey, 'payload contains the containerKey');
+  equal(payload && payload.view, view, 'payload contains the view itself');
 }
 
 QUnit.module("EmberView#instrumentation", {

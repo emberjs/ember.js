@@ -99,12 +99,6 @@ function generateBuiltTests() {
 
 function generateOldJQueryTests() {
   testFunctions.push(function() {
-    return run('jquery=1.7.2&nojshint=true');
-  });
-  testFunctions.push(function() {
-    return run('jquery=1.7.2&nojshint=true&enableoptionalfeatures=true');
-  });
-  testFunctions.push(function() {
     return run('jquery=1.8.3&nojshint=true');
   });
   testFunctions.push(function() {

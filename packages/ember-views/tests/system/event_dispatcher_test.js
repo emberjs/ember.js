@@ -108,9 +108,9 @@ test("should not dispatch events to views not inDOM", function() {
 
   var $element = view.$();
 
-  run(function() {
-    view.set('element', null); // Force into preRender
-  });
+  // TODO change this test not to use private API
+  // Force into preRender
+  view._renderer.remove(view, false, true);
 
   $element.trigger('mousedown');
 

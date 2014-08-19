@@ -11,38 +11,21 @@ import jQuery from "ember-views/system/jquery";
 */
 var preRender = create(_default);
 
-merge(preRender, {
-  // a view leaves the preRender state once its element has been
-  // created (createElement).
-  insertElement: function(view, fn) {
-    view.createElement();
-    var viewCollection = view.viewHierarchyCollection();
+var containsElement;
+if (typeof Node === 'object') {
+  containsElement = Node.prototype.contains;
 
-    viewCollection.trigger('willInsertElement');
-
-    fn.call(view);
-
-    // We transition to `inDOM` if the element exists in the DOM
-    var element = view.get('element');
-    if (jQuery.contains(document.body, element)) {
-      viewCollection.transitionTo('inDOM', false);
-      viewCollection.trigger('didInsertElement');
-    }
-  },
-
-  renderToBufferIfNeeded: function(view, buffer) {
-    view.renderToBuffer(buffer);
-    return true;
-  },
-
-  empty: Ember.K,
-
-  setElement: function(view, value) {
-    if (value !== null) {
-      view._transitionTo('hasElement');
-    }
-    return value;
+  if (!containsElement && Node.prototype.compareDocumentPosition) {
+    // polyfill for older Firefox.
+    // http://compatibility.shwups-cms.ch/en/polyfills/?&id=52
+    containsElement = function(node){
+      return !!(this.compareDocumentPosition(node) & 16);
+    };
   }
-});
+} else {
+  containsElement = function(element) {
+    return this.contains(element);
+  };
+}
 
 export default preRender;

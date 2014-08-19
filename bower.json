@@ -10,6 +10,7 @@
     "backburner": "https://github.com/ebryn/backburner.js.git#bf91c46978cced9aa130ca0793c5a72107e649db",
     "rsvp": "https://github.com/tildeio/rsvp.js.git#3.0.13",
     "router.js": "https://github.com/tildeio/router.js.git#1562462f120156a140b9153bf36f1046f85e7812",
-    "route-recognizer": "https://github.com/tildeio/route-recognizer.git#8e1058e29de741b8e05690c69da9ec402a167c69"
+    "route-recognizer": "https://github.com/tildeio/route-recognizer.git#8e1058e29de741b8e05690c69da9ec402a167c69",
+    "htmlbars": "https://github.com/tildeio/htmlbars.git#1a4d5985824f4df23bb6e78829e442fe368937aa"
   }
 }

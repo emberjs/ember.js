@@ -244,7 +244,8 @@ var vendoredPackages = {
   'backburner':       vendoredEs6Package('backburner'),
   'metamorph':        vendoredPackage('metamorph'),
   'router':           vendoredEs6Package('router.js'),
-  'route-recognizer': vendoredEs6Package('route-recognizer')
+  'route-recognizer': vendoredEs6Package('route-recognizer'),
+  'morph':            htmlbarsPackage('morph')
 };
 
 var emberHandlebarsCompiler = pickFiles('packages/ember-handlebars-compiler/lib', {
@@ -500,6 +501,22 @@ vendorTrees = mergeTrees(vendorTrees);
 sourceTrees = mergeTrees(sourceTrees);
 testTrees   = mergeTrees(testTrees);
 
+
+function htmlbarsPackage(packageName) {
+  var tree = pickFiles('bower_components/htmlbars/packages/' + packageName + '/lib', {
+    srcDir: '/',
+    destDir: '/' + packageName
+  });
+
+  tree = moveFile(tree, {
+    srcFile: '/' + packageName + '/main.js',
+    destFile: packageName + '.js'
+  });
+
+  return transpileES6(tree, {
+    moduleName: true
+  });
+}
 
 /*
   Relies on bower to install other Ember micro libs.  Assumes that /lib is

@@ -44,40 +44,6 @@ test("returns element if you set the value", function() {
   equal(get(view, 'element'), dom, 'now has set element');
 });
 
-
-QUnit.module("Ember.View#element - autodiscovery", {
-  setup: function() {
-    parentView = ContainerView.create({
-      childViews: [ EmberView.extend({
-        elementId: 'child-view'
-      }) ]
-    });
-
-    child = get(parentView, 'childViews').objectAt(0);
-
-    // setup parent/child dom
-    parentDom = jQuery("<div><div id='child-view'></div></div>")[0];
-
-    // set parent element...
-    set(parentView, 'element', parentDom);
-  },
-
-  teardown: function() {
-    run(function() {
-      parentView.destroy();
-      if (view) { view.destroy(); }
-    });
-    parentView = child = parentDom = childDom = null ;
-  }
-});
-
-test("discovers element if has no element but parent view does have element", function() {
-  equal(get(parentView, 'element'), parentDom, 'precond - parent has element');
-  ok(parentDom.firstChild, 'precond - parentDom has first child');
-
-  equal(child.$().attr('id'), 'child-view', 'view discovered child');
-});
-
 test("should not allow the elementId to be changed after inserted", function() {
   view = EmberView.create({
     elementId: 'one'
