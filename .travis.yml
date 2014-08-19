@@ -10,8 +10,7 @@ cache:
 install:
   - "npm install"
   - "./bin/generate_docs.js"
-after_failure:
-  - "./bin/bower_ember_build"
+
 after_success:
   - "./bin/publish_to_s3.js"
   - "./bin/bower_ember_build"
