@@ -70,11 +70,17 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
   tagName: 'a',
 
   /**
+    @deprecated Use current-when instead.
+    @property currentWhen
+  */
+  currentWhen: null,
+
+  /**
     Used to determine when this LinkView is active.
 
     @property currentWhen
   */
-  currentWhen: null,
+  'current-when': null,
 
   /**
     Sets the `title` attribute of the `LinkView`'s HTML element.
@@ -205,6 +211,8 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
   init: function() {
     this._super.apply(this, arguments);
 
+    Ember.deprecate('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.', !this.currentWhen);
+
     // Map desired event name to invoke function
     var eventName = get(this, 'eventName');
     this.on(eventName, this, this._invoke);
@@ -307,7 +315,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     var router = get(this, 'router');
     var loadedParams = get(this, 'loadedParams');
     var contexts = loadedParams.models;
-    var currentWhen = this.currentWhen;
+    var currentWhen = this['current-when'] || this.currentWhen;
     var isCurrentWhenSpecified = Boolean(currentWhen);
     currentWhen = currentWhen || loadedParams.targetRouteName;
 

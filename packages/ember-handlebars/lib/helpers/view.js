@@ -21,10 +21,7 @@ import {
   handlebarsGet,
   handlebarsGetView
 } from "ember-handlebars/ext";
-import {
-  fmt,
-  camelize
-} from "ember-runtime/system/string";
+import EmberString from "ember-runtime/system/string";
 
 
 var LOWERCASE_A_Z = /^[a-z]/;
@@ -83,22 +80,18 @@ export var ViewHelper = EmberObject.create({
       dup = true;
     }
 
-    var classBinding = hash.classBinding || hash['class-binding'];
-    if (classBinding) {
-      extensions.classNameBindings = classBinding.split(' ');
-      dup = true;
-    } else {
-      extensions.classNameBindings = [];
-    }
-
-    var classNameBindings = hash.classNameBindings || hash['class-name-bindings'];
-    if (classNameBindings) {
-      extensions.classNameBindings = extensions.classNameBindings.concat(classNameBindings.split(' '));
+    if (hash.classBinding) {
+      extensions.classNameBindings = hash.classBinding.split(' ');
       dup = true;
     }
 
-    var attributeBindings = hash.attributeBindings || hash['attribute-bindings'];
-    if (attributeBindings) {
+    if (hash.classNameBindings) {
+      if (extensions.classNameBindings === undefined) extensions.classNameBindings = [];
+      extensions.classNameBindings = extensions.classNameBindings.concat(hash.classNameBindings.split(' '));
+      dup = true;
+    }
+
+    if (hash.attributeBindings) {
       Ember.assert("Setting 'attributeBindings' via Handlebars is not allowed. Please subclass Ember.View and set it there instead.");
       extensions.attributeBindings = null;
       dup = true;
@@ -110,14 +103,12 @@ export var ViewHelper = EmberObject.create({
       delete hash.tag;
       delete hash['class'];
       delete hash.classBinding;
-      delete hash['class-binding'];
     }
 
     // Set the proper context for all bindings passed to the helper. This applies to regular attribute bindings
     // as well as class name bindings. If the bindings are local, make them relative to the current context
     // instead of the view.
     var path;
-    var deprecatedProperties = {};
 
     // Evaluate the context of regular attribute bindings:
     for (var prop in hash) {
@@ -128,18 +119,7 @@ export var ViewHelper = EmberObject.create({
         path = this.contextualizeBindingPath(hash[prop], data);
         if (path) { hash[prop] = path; }
       }
-
-
-      var camelized = camelize(prop);
-      if (prop !== camelized) {
-        hash[camelized] = hash[prop];
-        delete hash[prop];
-
-        deprecatedProperties[prop] = camelized;
-      }
     }
-
-    hash._deprecatedProperties = deprecatedProperties;
 
     // Evaluate the context of class name bindings:
     if (extensions.classNameBindings) {
