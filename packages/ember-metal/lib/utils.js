@@ -224,6 +224,7 @@ function Meta(obj) {
   this.cache = {};
   this.cacheMeta = {};
   this.source = obj;
+  this.nextSuper = Ember.K;
 }
 
 Meta.prototype = {
@@ -392,10 +393,16 @@ export function metaPath(obj, path, writable) {
 */
 export function wrap(func, superFunc) {
   function superWrapper() {
-    var ret, sup = this && this.__nextSuper;
-    if(this) { this.__nextSuper = superFunc; }
-    ret = apply(this, func, arguments);
-    if(this) { this.__nextSuper = sup; }
+    var ret;
+    if (this) {
+      var m = meta(this);
+      var sup = m.nextSuper;
+      m.nextSuper = superFunc;
+      ret = apply(this, func, arguments);
+      m.nextSuper = sup;
+    } else {
+      ret = apply(this, func, arguments);
+    }
     return ret;
   }
 
