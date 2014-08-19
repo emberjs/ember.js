@@ -67,6 +67,8 @@ ArrayTests.extend({
 
 }).run();
 
+QUnit.module("Basic Mutable Array - misc");
+
 test("the return value of slice has Ember.Array applied", function() {
   var x = EmberObject.createWithMixins(EmberArray, {
     length: 0
@@ -74,6 +76,21 @@ test("the return value of slice has Ember.Array applied", function() {
   var y = x.slice(1);
   equal(EmberArray.detect(y), true, "mixin should be applied");
 });
+
+if (Object.freeze) {
+  test("contains on a froze array does not raise", function() {
+    var testArray = EmberArray.apply([]);
+    var throws = false;
+    Object.freeze(testArray);
+    try {
+      testArray.contains('whatever');
+    } catch(e) {
+      throws = true;
+    }
+
+    ok(!throws, "No exception thrown calling contains");
+  });
+}
 
 test("slice supports negative index arguments", function() {
   var testArray = new TestArray([1,2,3,4]);

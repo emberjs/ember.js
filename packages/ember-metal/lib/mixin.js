@@ -45,12 +45,13 @@ var o_create = create;
 var metaFor = meta;
 
 function superFunction(){
-  var func = this.__nextSuper;
+  var m = metaFor(this);
+  var func = m.nextSuper;
   var ret;
-  if (func) {
-    this.__nextSuper = null;
+  if (func && func !== Ember.K) {
+    m.nextSuper = Ember.K;
     ret = apply(this, func, arguments);
-    this.__nextSuper = func;
+    m.nextSuper = func;
   }
   return ret;
 }
@@ -154,7 +155,7 @@ function giveMethodSuper(obj, key, method, values, descs) {
   // the original object
   superMethod = superMethod || obj[key];
 
-  // Only wrap the new method if the original method was a function
+  // Don't wrap the method if the parent is not a function
   if ('function' !== typeof superMethod) {
     return method;
   }
@@ -208,8 +209,7 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
   if (value instanceof Descriptor) {
     if (value === REQUIRED && descs[key]) { return CONTINUE; }
 
-    // Wrap descriptor function to implement
-    // __nextSuper() if needed
+    // Wrap descriptor function to set meta.nextSuper if needed
     if (value.func) {
       value = giveDescriptorSuper(meta, key, value, values, descs);
     }

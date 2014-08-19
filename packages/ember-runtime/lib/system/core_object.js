@@ -79,7 +79,6 @@ function makeCtor() {
       Class.proto(); // prepare prototype...
     }
     o_defineProperty(this, GUID_KEY, nullDescriptor);
-    o_defineProperty(this, '__nextSuper', undefinedDescriptor);
     var m = meta(this);
     var proto = m.proto;
     m.proto = this;
