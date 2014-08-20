@@ -164,39 +164,43 @@ Morph.prototype.append = function (node) {
 
 Morph.prototype.insert = function (index, node) {
   if (this.morphs === null) this.morphs = [];
-  var parent = this.element || this.parent(),
-    morphs = this.morphs,
-    before = index > 0 ? morphs[index-1] : null,
-    after  = index < morphs.length ? morphs[index] : null,
-    start  = before === null ? this.start : (before.end === null ? parent.lastChild : before.end.previousSibling),
-    end    = after === null ? this.end : (after.start === null ? parent.firstChild : after.start.nextSibling),
-    morph  = new Morph(parent, start, end, this.domHelper, this.contextualElement);
+  var parent = this.element || this.parent();
+  var morphs = this.morphs;
+  var before = index > 0 ? morphs[index-1] : null;
+  var after  = index < morphs.length ? morphs[index] : null;
+  var start  = before === null ? this.start : (before.end === null ? parent.lastChild : before.end.previousSibling);
+  var end    = after === null ? this.end : (after.start === null ? parent.firstChild : after.start.nextSibling);
+  var morph  = new Morph(parent, start, end, this.domHelper, this.contextualElement);
+
   morph.owner = this;
   morph._update(parent, node);
+
   if (before !== null) {
     morph.before = before;
     before.end = start.nextSibling;
     before.after = morph;
   }
+
   if (after !== null) {
     morph.after = after;
     after.before = morph;
     after.start = end.previousSibling;
   }
+
   this.morphs.splice(index, 0, morph);
   return morph;
 };
 
 Morph.prototype.replace = function (index, removedLength, addedNodes) {
   if (this.morphs === null) this.morphs = [];
-  var parent = this.element || this.parent(),
-    morphs = this.morphs,
-    before = index > 0 ? morphs[index-1] : null,
-    after = index+removedLength < morphs.length ? morphs[index+removedLength] : null,
-    start = before === null ? this.start : (before.end === null ? parent.lastChild : before.end.previousSibling),
-    end   = after === null ? this.end : (after.start === null ? parent.firstChild : after.start.nextSibling),
-    addedLength = addedNodes === undefined ? 0 : addedNodes.length,
-    args, i, current;
+  var parent = this.element || this.parent();
+  var morphs = this.morphs;
+  var before = index > 0 ? morphs[index-1] : null;
+  var after = index+removedLength < morphs.length ? morphs[index+removedLength] : null;
+  var start = before === null ? this.start : (before.end === null ? parent.lastChild : before.end.previousSibling);
+  var end   = after === null ? this.end : (after.start === null ? parent.firstChild : after.start.nextSibling);
+  var addedLength = addedNodes === undefined ? 0 : addedNodes.length;
+  var args, i, current;
 
   if (removedLength > 0) {
     clear(parent, start, end);
@@ -243,9 +247,10 @@ Morph.prototype.replace = function (index, removedLength, addedNodes) {
 };
 
 function appendChildren(parent, end, nodeList) {
-  var ref = end,
-      i = nodeList.length,
-      node;
+  var ref = end;
+  var i = nodeList.length;
+  var node;
+
   while (i--) {
     node = nodeList[i];
     parent.insertBefore(node, ref);
