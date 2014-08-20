@@ -242,7 +242,6 @@ var vendoredPackages = {
   'loader':           vendoredPackage('loader'),
   'rsvp':             vendoredEs6Package('rsvp'),
   'backburner':       vendoredEs6Package('backburner'),
-  'metamorph':        vendoredPackage('metamorph'),
   'router':           vendoredEs6Package('router.js'),
   'route-recognizer': vendoredEs6Package('route-recognizer'),
   'morph':            htmlbarsPackage('morph')

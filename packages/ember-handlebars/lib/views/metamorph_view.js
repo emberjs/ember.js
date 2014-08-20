@@ -13,8 +13,6 @@ import run from "ember-metal/run_loop";
 @submodule ember-handlebars
 */
 
-var Metamorph = requireModule('metamorph');
-
 function notifyMutationListeners() {
   run.once(View, 'notifyMutationListeners');
 }
@@ -38,8 +36,6 @@ export var _Metamorph = Mixin.create({
     Ember.deprecate('Supplying a tagName to Metamorph views is unreliable and is deprecated. You may be setting the tagName on a Handlebars helper that creates a Metamorph.', !this.tagName);
   }
 });
-
-export var _wrapMap = Metamorph._wrapMap;
 
 /**
   @class _MetamorphView
