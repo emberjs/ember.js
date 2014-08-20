@@ -394,14 +394,10 @@ function addItems(dependentArray, callbacks, cp, propertyName, meta) {
 
 function reset(cp, propertyName) {
   var callbacks = cp._callbacks();
-  var meta;
+  var hadMeta = cp._hasInstanceMeta(this, propertyName);
+  var meta = cp._instanceMeta(this, propertyName);
 
-  if (cp._hasInstanceMeta(this, propertyName)) {
-    meta = cp._instanceMeta(this, propertyName);
-    meta.setValue(cp.resetValue(meta.getValue()));
-  } else {
-    meta = cp._instanceMeta(this, propertyName);
-  }
+  if (hadMeta) { meta.setValue(cp.resetValue(meta.getValue())); }
 
   if (cp.options.initialize) {
     cp.options.initialize.call(this, meta.getValue(), {
