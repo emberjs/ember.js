@@ -39,7 +39,8 @@ function _copy(obj, deep, seen, copies) {
     ret = {};
 
     for (key in obj) {
-      if (obj.hasOwnProperty && !obj.hasOwnProperty(key)) {
+      // support Null prototype
+      if (!Object.prototype.hasOwnProperty.call(obj, key)) {
         continue;
       }
 
