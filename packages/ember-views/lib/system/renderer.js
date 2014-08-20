@@ -6,6 +6,7 @@ import { set } from "ember-metal/property_set";
 import { _instrumentStart, subscribers } from "ember-metal/instrumentation";
 
 function EmberRenderer() {
+  this.buffer = renderBuffer();
   Renderer.call(this);
 }
 EmberRenderer.prototype = create(Renderer.prototype);
@@ -69,7 +70,9 @@ EmberRenderer.prototype.createElement =
     if (tagName === null || tagName === undefined) {
       tagName = 'div';
     }
-    var buffer = view.buffer = renderBuffer(tagName);
+
+    var buffer = view.buffer = this.buffer;
+    buffer.reset(tagName);
 
     if (view.beforeRender) {
       view.beforeRender(buffer);

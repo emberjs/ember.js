@@ -103,15 +103,25 @@ function _RenderBuffer(tagName) {
   this.buffer = null;
   this.childViews = [];
   this.dom = new DOMHelper();
-
 }
 
 _RenderBuffer.prototype = {
 
+  reset: function(tagName) {
+    this.tagName = tagName;
+    this.buffer = null;
+    this._element = null;
+    this.elementClasses = null;
+    this.elementId = null;
+    this.elementAttributes = null;
+    this.elementProperties = null;
+    this.elementTag = null;
+    this.elementStyle = null;
+    this.childViews.length = 0;
+  },
+
   // The root view's element
   _element: null,
-
-  _hasElement: true,
 
   /**
     An internal set used to de-dupe class names when `addClass()` is
@@ -473,7 +483,7 @@ _RenderBuffer.prototype = {
     @return {String} The generated HTML
   */
   string: function() {
-    if (this._hasElement && this._element) {
+    if (this._element) {
       // Firefox versions < 11 do not have support for element.outerHTML.
       var thisElement = this.element();
       var outerHTML = thisElement.outerHTML;
