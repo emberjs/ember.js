@@ -1141,3 +1141,127 @@ testBoth('computed.deprecatingAlias', function(get, set) {
   equal(get(obj, 'baz'), 'newBaz');
   equal(get(obj, 'quz'), null);
 });
+
+QUnit.module('didChange/willChange');
+
+testBoth("when a non-array dependency changes, didChange is invoked with its name and the old value", function(get, set) {
+
+  var myObject = create({age: 17});
+  var didChangeCount = 0;
+
+  ComputedProperty.prototype.oldDidChange = ComputedProperty.prototype.didChange;
+  ComputedProperty.prototype.didChange = function(obj, keyName, depKey, oldValue){
+    didChangeCount++;
+    equal(myObject, obj, 'the first argument is the object where the propery is defined');
+    equal(keyName, "myCP", 'the second argument is the name of the cp on that object');
+    equal(depKey, "age", 'the third argument is the name of dependency that changed');
+    equal(oldValue, 17, 'the fourth argument is the value of the dependecy before changing');
+    equal(get(obj, depKey), 18, 'the value of the dependent key has already been updated');
+    ComputedProperty.prototype.oldDidChange.call(this, arguments);
+  };
+
+  defineProperty(myObject, 'myCP', computed(function(key) {
+    count++;
+    return 'computed ' + key;
+  }).property('age'));
+
+
+  equal(get(myObject, 'myCP'), 'computed myCP', 'the computed property works');
+  set(myObject, 'age', 18);
+  equal(didChangeCount, 1, 'didChange has been invoked once');
+
+  ComputedProperty.prototype.didChange = ComputedProperty.prototype.oldDidChange;
+  delete ComputedProperty.prototype.oldDidChange;
+});
+
+testBoth("when a non-array dependency changes, willChange is invoked with its name and the new value", function(get, set) {
+
+  var myObject = create({age: 17});
+  var willChangeCount = 0;
+
+  ComputedProperty.prototype.willChange = function(obj, keyName, depKey, newValue){
+    willChangeCount++;
+    equal(myObject, obj, 'the first argument is the object where the propery is defined');
+    equal(keyName, "myCP", 'the second argument is the name of the cp on that object');
+    equal(depKey, "age", 'the third argument is the name of dependency that changed');
+    equal(newValue, 18, 'the fourth argument is the new value of the dependecy that is about to change');
+    equal(get(obj, depKey), 17, 'the value of the dependent key has not been updated yet');
+  };
+
+  defineProperty(myObject, 'myCP', computed(function(key) {
+    count++;
+    return 'computed ' + key;
+  }).property('age'));
+
+  addObserver(myObject, 'myCP', function(){
+    // Added because if nobody is observing myCP, will change is not fired.
+  });
+
+  equal(get(myObject, 'myCP'), 'computed myCP', 'the computed property works');
+  set(myObject, 'age', 18);
+  equal(willChangeCount, 1, 'willChange has been invoked once');
+
+  delete ComputedProperty.prototype.willChange;
+});
+
+testBoth("when an array dependency changes, didChange is invoked with its name but no change", function(get, set) {
+  var friends = Ember.A(['john', 'jane']);
+  var myObject = create({friends: friends});
+  var didChangeCount = 0;
+
+  ComputedProperty.prototype.oldDidChange = ComputedProperty.prototype.didChange;
+  ComputedProperty.prototype.didChange = function(obj, keyName, depKey, change){
+    if (keyName === 'myCP') {
+      didChangeCount++;
+      equal(myObject, obj, 'the first argument is the object where the propery is defined');
+      equal(depKey, "friends.[]", 'the third argument is the name of dependency that changed');
+      deepEqual(change, {removing: 0, adding: 2}, 'the 4th argument is the change made');
+    }
+    ComputedProperty.prototype.oldDidChange.call(this, arguments);
+  };
+
+  defineProperty(myObject, 'myCP', computed(function(key) {
+    count++;
+    return 'computed ' + key;
+  }).property('friends.[]'));
+
+
+  equal(get(myObject, 'myCP'), 'computed myCP', 'the computed property works');
+  friends.pushObjects(Ember.A(['carl', 'lenni']));
+  equal(didChangeCount, 1, 'didChange has been invoked once for the CP');
+
+  ComputedProperty.prototype.didChange = ComputedProperty.prototype.oldDidChange;
+  delete ComputedProperty.prototype.oldDidChange;
+});
+
+
+testBoth("when an array dependency changes, willChange is invoked with its name but no change", function(get, set) {
+  var friends = Ember.A(['john', 'jane']);
+  var myObject = create({friends: friends});
+  var willChangeCount = 0;
+
+  ComputedProperty.prototype.willChange = function(obj, keyName, depKey, change){
+    if (keyName === 'myCP') {
+      willChangeCount++;
+      equal(myObject, obj, 'the first argument is the object where the propery is defined');
+      equal(keyName, "myCP", 'the second argument is the name of the cp on that object');
+      equal(depKey, "friends.[]", 'the third argument is the name of dependency that changed');
+      deepEqual(change, {removing: 0, adding: 2}, 'the fourth argument is change being made');
+    }
+  };
+
+  defineProperty(myObject, 'myCP', computed(function(key) {
+    count++;
+    return 'computed ' + key;
+  }).property('friends.[]'));
+
+  addObserver(myObject, 'myCP', function(){
+    // Added because if nobody is observing myCP, will change is not fired.
+  });
+
+  equal(get(myObject, 'myCP'), 'computed myCP', 'the computed property works');
+  friends.pushObjects(Ember.A(['carl', 'lenni']));
+  equal(willChangeCount, 1, 'willChange has been invoked once for the CP');
+
+  delete ComputedProperty.prototype.willChange;
+});
