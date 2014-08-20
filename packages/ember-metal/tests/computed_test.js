@@ -1067,10 +1067,7 @@ function oneWayTest(methodName) {
 }
 
 testBoth('computed.oneWay', oneWayTest('oneWay'));
-
-if (Ember.FEATURES.isEnabled('query-params-new')) {
-  testBoth('computed.reads', oneWayTest('reads'));
-}
+testBoth('computed.reads', oneWayTest('reads'));
 
 testBoth('computed.readOnly', function(get, set) {
   var obj = {

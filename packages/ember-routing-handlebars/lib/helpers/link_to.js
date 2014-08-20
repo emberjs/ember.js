@@ -342,16 +342,15 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
       var isActive = router.isActive.apply(router, args);
       if (!isActive) { return false; }
 
-      if (Ember.FEATURES.isEnabled("query-params-new")) {
-        var emptyQueryParams = Ember.isEmpty(Ember.keys(loadedParams.queryParams));
+      var emptyQueryParams = Ember.isEmpty(Ember.keys(loadedParams.queryParams));
 
-        if (!isCurrentWhenSpecified && !emptyQueryParams && isActive) {
-          var visibleQueryParams = {};
-          merge(visibleQueryParams, loadedParams.queryParams);
-          router._prepareQueryParams(loadedParams.targetRouteName, loadedParams.models, visibleQueryParams);
-          isActive = shallowEqual(visibleQueryParams, router.router.state.queryParams);
-        }
+      if (!isCurrentWhenSpecified && !emptyQueryParams && isActive) {
+        var visibleQueryParams = {};
+        merge(visibleQueryParams, loadedParams.queryParams);
+        router._prepareQueryParams(loadedParams.targetRouteName, loadedParams.models, visibleQueryParams);
+        isActive = shallowEqual(visibleQueryParams, router.router.state.queryParams);
       }
+
       return isActive;
     }
 
@@ -579,10 +578,8 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     }
 
     var visibleQueryParams = {};
-    if (Ember.FEATURES.isEnabled("query-params-new")) {
-      merge(visibleQueryParams, loadedParams.queryParams);
-      router._prepareQueryParams(loadedParams.targetRouteName, loadedParams.models, visibleQueryParams);
-    }
+    merge(visibleQueryParams, loadedParams.queryParams);
+    router._prepareQueryParams(loadedParams.targetRouteName, loadedParams.models, visibleQueryParams);
 
     var args = routeArgs(loadedParams.targetRouteName, loadedParams.models, visibleQueryParams);
     var result = router.generate.apply(router, args);
@@ -918,15 +915,18 @@ function linkToHelper(name) {
   return viewHelper.call(this, LinkView, options);
 }
 
+/**
+  @method query-params
+  @for Ember.Handlebars.helpers
+  @param {Object} hash takes a hash of query parameters
+  @return {String} HTML string
+*/
+export function queryParamsHelper(options) {
+  Ember.assert(fmt("The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName='%@') as opposed to just (query-params '%@')", [options, options]), arguments.length === 1);
 
-if (Ember.FEATURES.isEnabled("query-params-new")) {
-  EmberHandlebars.registerHelper('query-params', function queryParamsHelper(options) {
-    Ember.assert(fmt("The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName='%@') as opposed to just (query-params '%@')", [options, options]), arguments.length === 1);
-
-    return QueryParams.create({
-      values: options.hash,
-      types: options.hashTypes
-    });
+  return QueryParams.create({
+    values: options.hash,
+    types: options.hashTypes
   });
 }
 

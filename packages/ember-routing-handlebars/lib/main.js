@@ -18,7 +18,8 @@ import {
 import {
   deprecatedLinkToHelper,
   linkToHelper,
-  LinkView
+  LinkView,
+  queryParamsHelper
 } from "ember-routing-handlebars/helpers/link_to";
 
 import {
@@ -45,5 +46,6 @@ EmberHandlebars.registerHelper('action', actionHelper);
 EmberHandlebars.registerHelper('outlet', outletHelper);
 EmberHandlebars.registerHelper('link-to', linkToHelper);
 EmberHandlebars.registerHelper('linkTo', deprecatedLinkToHelper);
+EmberHandlebars.registerHelper('query-params', queryParamsHelper);
 
 export default Ember;
