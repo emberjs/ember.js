@@ -55,15 +55,21 @@ var STRING_UNDERSCORE_REGEXP_1 = (/([a-z\d])([A-Z]+)/g);
 var STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
 
 function fmt(str, formats) {
-  if (!isArray(formats) || arguments.length > 2) {
-    formats = Array.prototype.slice.call(arguments, 1);
+  var cachedFormats = formats;
+
+  if (!isArray(cachedFormats) || arguments.length > 2) {
+    cachedFormats = new Array(arguments.length - 1);
+
+    for (var i = 1, l = arguments.length; i < l; i++) {
+      cachedFormats[i - 1] = arguments[i];
+    }
   }
 
   // first, replace any ORDERED replacements.
   var idx  = 0; // the current index for non-numerical replacements
   return str.replace(/%@([0-9]+)?/g, function(s, argIndex) {
     argIndex = (argIndex) ? parseInt(argIndex, 10) - 1 : idx++;
-    s = formats[argIndex];
+    s = cachedFormats[argIndex];
     return (s === null) ? '(null)' : (s === undefined) ? '' : emberInspect(s);
   });
 }
