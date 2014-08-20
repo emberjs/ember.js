@@ -606,7 +606,10 @@ var minCompiledSource = moveFile(prodCompiledSource, {
   srcFile: 'ember.prod.js',
   destFile: 'ember.min.js'
 });
-minCompiledSource = uglifyJavaScript(minCompiledSource);
+minCompiledSource = uglifyJavaScript(minCompiledSource, {
+  mangle: true,
+  compress: true
+});
 
 // Take testsTrees and compile them for consumption in the browser test suite.
 var compiledTests = concatES6(testTrees, {
