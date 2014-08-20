@@ -48,11 +48,7 @@ EmberRenderer.prototype.createChildViewsMorph =
         view._childViewsMorph = view._morph;
       } else {
         element = document.createDocumentFragment();
-        var start = document.createTextNode('');
-        var end = document.createTextNode('');
-        element.appendChild(start);
-        element.appendChild(end);
-        view._childViewsMorph = this._dom.createMorph(element, start, end);
+        view._childViewsMorph = this._dom.appendMorph(element);
       }
     } else {
       view._childViewsMorph = this._dom.createMorph(element, element.lastChild, null);

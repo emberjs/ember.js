@@ -231,15 +231,11 @@ _RenderBuffer.prototype = {
     var el = this._element;
     for (var i=0,l=childViews.length; i<l; i++) {
       var childView = childViews[i];
-      var morphId = '#morph-'+i;
-      var ref = el.querySelector(morphId);
+      var ref = el.querySelector('#morph-'+i);
       var parent = ref.parentNode;
-      var start = document.createTextNode('');
-      var end = document.createTextNode('');
-      parent.insertBefore(start, ref);
-      parent.insertBefore(end, ref);
+
+      childView._morph = this.dom.insertMorphBefore(parent, ref);
       parent.removeChild(ref);
-      childView._morph = this.dom.createMorph(parent, start, end);
     }
   },
 

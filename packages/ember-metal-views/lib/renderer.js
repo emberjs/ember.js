@@ -132,12 +132,7 @@ Renderer.prototype.scheduleInsert =
 
 Renderer.prototype.appendTo =
   function Renderer_appendTo(view, target) {
-    // TODO use dom helper for creating this morph.
-    var start = document.createTextNode('');
-    var end = document.createTextNode('');
-    target.appendChild(start);
-    target.appendChild(end);
-    var morph = this._dom.createMorph(target, start, end);
+    var morph = this._dom.appendMorph(target);
     this.scheduleInsert(view, morph);
   };
 
