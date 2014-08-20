@@ -1,10 +1,14 @@
 import Ember from 'ember-metal/core';
-import { apply } from 'ember-metal/utils';
+import {
+  apply,
+  GUID_KEY
+} from 'ember-metal/utils';
 import { indexOf } from "ember-metal/array";
 import {
   beginPropertyChanges,
   endPropertyChanges
 } from 'ember-metal/property_events';
+import Backburner from 'backburner';
 
 function onBegin(current) {
   run.currentRunLoop = current;
@@ -15,8 +19,8 @@ function onEnd(current, next) {
 }
 
 // ES6TODO: should Backburner become es6?
-var Backburner = requireModule('backburner').Backburner;
 var backburner = new Backburner(['sync', 'actions', 'destroy'], {
+  GUID_KEY: GUID_KEY,
   sync: {
     before: beginPropertyChanges,
     after: endPropertyChanges
