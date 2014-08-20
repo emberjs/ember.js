@@ -128,7 +128,7 @@ function giveDescriptorSuper(meta, key, property, values, descs) {
   // it on the original object.
   superProperty = superProperty || meta.descs[key];
 
-  if (!superProperty || !(superProperty instanceof ComputedProperty)) {
+  if (superProperty === undefined || !(superProperty instanceof ComputedProperty)) {
     return property;
   }
 
@@ -155,7 +155,7 @@ function giveMethodSuper(obj, key, method, values, descs) {
   superMethod = superMethod || obj[key];
 
   // Only wrap the new method if the original method was a function
-  if ('function' !== typeof superMethod) {
+  if (superMethod === undefined || 'function' !== typeof superMethod) {
     return method;
   }
 
