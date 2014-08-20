@@ -152,7 +152,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
 
   // if key is being watched, override chains that
   // were initialized with the prototype
-  if (watching) { overrideChains(obj, keyName, meta); }
+  if (watching) { overrideChains(obj, keyName, meta, undefined, data); }
 
   // The `value` passed to the `didDefineProperty` hook is
   // either the descriptor or data, whichever was passed.

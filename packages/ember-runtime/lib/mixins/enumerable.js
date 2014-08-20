@@ -969,7 +969,7 @@ export default Mixin.create({
     if (removing === -1) removing = null;
     if (adding   === -1) adding   = null;
 
-    propertyWillChange(this, '[]');
+    propertyWillChange(this, '[]', undefined, {removing: removing, adding: adding});
     if (hasDelta) propertyWillChange(this, 'length');
     sendEvent(this, '@enumerable:before', [this, removing, adding]);
 
@@ -1008,7 +1008,7 @@ export default Mixin.create({
 
     sendEvent(this, '@enumerable:change', [this, removing, adding]);
     if (hasDelta) propertyDidChange(this, 'length');
-    propertyDidChange(this, '[]');
+    propertyDidChange(this, '[]', undefined, {removing: removing, adding: adding});
 
     return this ;
   },
