@@ -295,6 +295,16 @@
     }
   };
 
+  QUnit.testStart(function(){
+    // Silence the default handler so raises()/catch/friends work.
+    Ember.__original_onerror__ = Ember.onerror;
+    Ember.onerror = undefined;
+  });
+
+  QUnit.testDone(function(){
+    Ember.onerror = Ember.__original_onerror__;
+  });
+
   window.ignoreDeprecation = function ignoreDeprecation(fn){
     var stubber = new MethodCallExpectation(Ember, 'deprecate'),
         noop = function(){};
