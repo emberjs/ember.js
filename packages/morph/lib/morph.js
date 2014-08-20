@@ -1,11 +1,22 @@
 var splice = Array.prototype.splice;
 
+function ensureStartEnd(start, end) {
+  if (start === null || end === null) {
+    throw new Error('a fragment parent must have boundary nodes in order to detect insertion');
+  }
+}
+
+function ensureContext(contextualElement) {
+  if (!contextualElement || contextualElement.nodeType !== Node.ELEMENT_NODE) {
+    throw new Error('An element node must be provided for a contextualElement, you provided ' +
+                    (contextualElement ? 'nodeType ' + contextualElement.nodeType : 'nothing'));
+  }
+}
+
+// TODO: this is an internal API, this should be an assert
 function Morph(parent, start, end, domHelper, contextualElement) {
-  // TODO: this is an internal API, this should be an assert
   if (parent.nodeType === 11) {
-    if (start === null || end === null) {
-      throw new Error('a fragment parent must have boundary nodes in order to detect insertion');
-    }
+    ensureStartEnd(start, end);
     this.element = null;
   } else {
     this.element = parent;
@@ -14,17 +25,19 @@ function Morph(parent, start, end, domHelper, contextualElement) {
   this.start = start;
   this.end = end;
   this.domHelper = domHelper;
-  if (!contextualElement || contextualElement.nodeType !== Node.ELEMENT_NODE) {
-    throw new Error('An element node must be provided for a contextualElement, you provided '+(contextualElement ? 'nodeType '+contextualElement.nodeType : 'nothing'));
-  }
+  ensureContext(contextualElement);
   this.contextualElement = contextualElement;
+  this.reset();
+}
+
+Morph.prototype.reset = function() {
   this.text = null;
   this.owner = null;
   this.morphs = null;
   this.before = null;
   this.after = null;
   this.escaped = true;
-}
+};
 
 Morph.prototype.parent = function () {
   if (!this.element) {
