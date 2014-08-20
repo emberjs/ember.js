@@ -331,8 +331,25 @@ Ember.merge = merge;
   @event onerror
   @for Ember
   @param {Exception} error the error object
-*/
-Ember.onerror = null;
+  @param {Exception} errorRecordedForStack error recorded when Ember.run.backburner.DEBUG = true.
+  The Error's .stack property will contain information on where the work was scheduled.
+  */
+Ember.onerror = function(error, errorRecordedForStack){
+  var url;
+  var capableOfStack = new Error().stack;
+  if (!Ember.run.backburner.DEBUG && capableOfStack) {
+    url = 'http://emberjs.com/guides/understanding-ember/debugging/#toc_errors-within-code-ember-run-later-code-a-href-https-github-com-ebryn-backburner-js-backburner-js-a';
+    Logger.warn('Ember.run is currently not running in debug mode. ' +
+                      'Set Ember.run.backburner.DEBUG = true for more debugging information. ' + url);
+  } else if (errorRecordedForStack && capableOfStack) {
+    Logger.warn(
+      'Ember.onerror: Location work that caused error was scheduled',
+      errorRecordedForStack,
+      errorRecordedForStack.stack
+    );
+  }
+  throw error;
+};
 // END EXPORTS
 
 // do this for side-effects of updating Ember.assert, warn, etc when
