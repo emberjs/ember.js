@@ -362,7 +362,10 @@ var minCompiledSource = moveFile(prodCompiledSource, {
   srcFile: 'ember.prod.js',
   destFile: 'ember.min.js'
 });
-minCompiledSource = uglifyJavaScript(minCompiledSource);
+minCompiledSource = uglifyJavaScript(minCompiledSource, {
+  mangle: true,
+  compress: true
+});
 
 var compiledTests = concatES6(testTrees, {
   es3Safe: env !== 'development',
