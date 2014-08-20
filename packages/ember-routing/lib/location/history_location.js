@@ -66,11 +66,9 @@ export default EmberObject.extend({
     baseURL = baseURL.replace(/\/$/, '');
 
     var url = path.replace(baseURL, '').replace(rootURL, '');
+    var search = location.search || '';
 
-    if (Ember.FEATURES.isEnabled("query-params-new")) {
-      var search = location.search || '';
-      url += search;
-    }
+    url += search;
 
     return url;
   },

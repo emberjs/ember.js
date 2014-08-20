@@ -3224,49 +3224,45 @@ test("Errors in transition show error template if available", function() {
   equal(Ember.$('#error').length, 1, "Error template was rendered.");
 });
 
-if (Ember.FEATURES.isEnabled("query-params-new")) {
-  test("Route#resetController gets fired when changing models and exiting routes", function() {
-    expect(4);
+test("Route#resetController gets fired when changing models and exiting routes", function() {
+  expect(4);
 
-    Router.map(function() {
-      this.resource("a", function() {
-        this.resource("b", { path: '/b/:id' }, function() { });
-        this.resource("c", { path: '/c/:id' }, function() { });
-      });
-      this.route('out');
+  Router.map(function() {
+    this.resource("a", function() {
+      this.resource("b", { path: '/b/:id' }, function() { });
+      this.resource("c", { path: '/c/:id' }, function() { });
     });
-
-    var calls = [];
-
-    var SpyRoute = Ember.Route.extend({
-      setupController: function(controller, model, transition) {
-        calls.push(['setup', this.routeName]);
-      },
-
-      resetController: function(controller) {
-        calls.push(['reset', this.routeName]);
-      }
-    });
-
-    App.ARoute = SpyRoute.extend();
-    App.BRoute = SpyRoute.extend();
-    App.CRoute = SpyRoute.extend();
-    App.OutRoute = SpyRoute.extend();
-
-    bootApplication();
-    deepEqual(calls, []);
-
-    Ember.run(router, 'transitionTo', 'b', 'b-1');
-    deepEqual(calls, [['setup', 'a'], ['setup', 'b']]);
-    calls.length = 0;
-
-    Ember.run(router, 'transitionTo', 'c', 'c-1');
-    deepEqual(calls, [['reset', 'b'], ['setup', 'c']]);
-    calls.length = 0;
-
-    Ember.run(router, 'transitionTo', 'out');
-    deepEqual(calls, [['reset', 'c'], ['reset', 'a'], ['setup', 'out']]);
+    this.route('out');
   });
-}
 
+  var calls = [];
 
+  var SpyRoute = Ember.Route.extend({
+    setupController: function(controller, model, transition) {
+      calls.push(['setup', this.routeName]);
+    },
+
+    resetController: function(controller) {
+      calls.push(['reset', this.routeName]);
+    }
+  });
+
+  App.ARoute = SpyRoute.extend();
+  App.BRoute = SpyRoute.extend();
+  App.CRoute = SpyRoute.extend();
+  App.OutRoute = SpyRoute.extend();
+
+  bootApplication();
+  deepEqual(calls, []);
+
+  Ember.run(router, 'transitionTo', 'b', 'b-1');
+  deepEqual(calls, [['setup', 'a'], ['setup', 'b']]);
+  calls.length = 0;
+
+  Ember.run(router, 'transitionTo', 'c', 'c-1');
+  deepEqual(calls, [['reset', 'b'], ['setup', 'c']]);
+  calls.length = 0;
+
+  Ember.run(router, 'transitionTo', 'out');
+  deepEqual(calls, [['reset', 'c'], ['reset', 'a'], ['setup', 'out']]);
+});

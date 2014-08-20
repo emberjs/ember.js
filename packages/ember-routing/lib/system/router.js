@@ -422,10 +422,8 @@ var EmberRouter = EmberObject.extend(Evented, {
     Ember.assert("The route " + targetRouteName + " was not found", targetRouteName && this.router.hasRoute(targetRouteName));
 
     var queryParams = {};
-    if (Ember.FEATURES.isEnabled("query-params-new")) {
-      merge(queryParams, _queryParams);
-      this._prepareQueryParams(targetRouteName, models, queryParams);
-    }
+    merge(queryParams, _queryParams);
+    this._prepareQueryParams(targetRouteName, models, queryParams);
 
     var transitionArgs = routeArgs(targetRouteName, models, queryParams);
     var transitionPromise = this.router.transitionTo.apply(this.router, transitionArgs);
@@ -863,21 +861,17 @@ function resemblesURL(str) {
 }
 
 function forEachQueryParam(router, targetRouteName, queryParams, callback) {
-  if (Ember.FEATURES.isEnabled("query-params-new")) {
-    var qpCache = router._queryParamsFor(targetRouteName);
-    var qps = qpCache.qps;
+  var qpCache = router._queryParamsFor(targetRouteName);
+  var qps = qpCache.qps;
 
-    for (var key in queryParams) {
-      if (!queryParams.hasOwnProperty(key)) { continue; }
-      var value = queryParams[key];
-      var qp = qpCache.map[key];
+  for (var key in queryParams) {
+    if (!queryParams.hasOwnProperty(key)) { continue; }
+    var value = queryParams[key];
+    var qp = qpCache.map[key];
 
-      if (qp) {
-        callback(key, value, qp);
-      }
+    if (qp) {
+      callback(key, value, qp);
     }
-  } else {
-    return {};
   }
 }
 

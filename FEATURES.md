@@ -26,17 +26,6 @@ for a detailed explanation.
 
   Added in [#3696](https://github.com/emberjs/ember.js/pull/3696).
 
-* `query-params-new`
-
-  Add query params support to the ember router. This is a rewrite of a
-  previous attempt at an API for query params. You can define query
-  param properties on route-driven controllers with the `queryParams`
-  property, and any changes to those properties will cause the URL
-  to update, and in the other direction, any URL changes to the query
-  params will cause those controller properties to update.
-
-  Added in [#4008](https://github.com/emberjs/ember.js/pull/4008).
-
 * `ember-routing-will-change-hooks`
   Finer-grained `willTransition`-esque actions:
 
