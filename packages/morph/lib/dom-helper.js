@@ -62,12 +62,16 @@ function DOMHelper(_document){
 var prototype = DOMHelper.prototype;
 prototype.constructor = DOMHelper;
 
+prototype.insertBefore = function(element, childElement, referenceChild) {
+  return element.insertBefore(childElement, referenceChild);
+};
+
 prototype.appendChild = function(element, childElement) {
-  element.appendChild(childElement);
+  return element.appendChild(childElement);
 };
 
 prototype.appendText = function(element, text) {
-  element.appendChild(this.document.createTextNode(text));
+  return element.appendChild(this.document.createTextNode(text));
 };
 
 prototype.setAttribute = function(element, name, value) {
@@ -138,6 +142,22 @@ prototype.createMorphAt = function(parent, startIndex, endIndex, contextualEleme
       start = startIndex === -1 ? null : childNodes[startIndex],
       end = endIndex === -1 ? null : childNodes[endIndex];
   return this.createMorph(parent, start, end, contextualElement);
+};
+
+prototype.insertMorphBefore = function(element, referenceChild, contextualElement) {
+  var start = document.createTextNode('');
+  var end = document.createTextNode('');
+  element.insertBefore(start, referenceChild);
+  element.insertBefore(end, referenceChild);
+  return this.createMorph(element, start, end, contextualElement);
+};
+
+prototype.appendMorph = function(element, contextualElement) {
+  var start = document.createTextNode('');
+  var end = document.createTextNode('');
+  element.appendChild(start);
+  element.appendChild(end);
+  return this.createMorph(element, start, end, contextualElement);
 };
 
 prototype.parseHTML = function(html, contextualElement){
