@@ -24,7 +24,8 @@ test('#createElement', function(){
 
 test('#appendText adds text', function(){
   var node = dom.createElement('div');
-  dom.appendText(node, 'Howdy');
+  var text = dom.appendText(node, 'Howdy');
+  ok(!!text, 'returns node');
   equalHTML(node, '<div>Howdy</div>');
 });
 
@@ -64,6 +65,30 @@ test('#createMorph has optional contextualElement', function(){
 
   morph = dom.createMorph(parent, start, end);
   equal(morph.contextualElement, parent, "morph's contextualElement is parent");
+});
+
+test('#appendMorph', function(){
+  var element = document.createElement('div');
+
+  dom.appendText(element, 'a');
+  var morph = dom.appendMorph(element);
+  dom.appendText(element, 'c');
+
+  morph.update('b');
+
+  equal(element.innerHTML, 'abc');
+});
+
+test('#insertMorphBefore', function(){
+  var element = document.createElement('div');
+
+  dom.appendText(element, 'a');
+  var c = dom.appendText(element, 'c');
+  var morph = dom.insertMorphBefore(element, c);
+
+  morph.update('b');
+
+  equal(element.innerHTML, 'abc');
 });
 
 test('#parseHTML of tr with contextual table element', function(){
