@@ -36,6 +36,10 @@ function args(options, actionName) {
 
 var ActionHelper = {};
 
+// registeredActions is re-exported for compatibility with older plugins
+// that were using this undocumented API.
+ActionHelper.registeredActions = ActionManager.registeredActions;
+
 export { ActionHelper };
 
 var keys = ["alt", "shift", "meta", "ctrl"];
