@@ -1,3 +1,5 @@
+import "ember";
+
 var Router, App, AppView, templates, router, container, counter;
 var get = Ember.get, set = Ember.set, compile = Ember.Handlebars.compile;
 
@@ -35,7 +37,7 @@ function handleURL(path) {
   });
 }
 
-module("Loading/Error Substates", {
+QUnit.module("Loading/Error Substates", {
   setup: function() {
     counter = 1;
 

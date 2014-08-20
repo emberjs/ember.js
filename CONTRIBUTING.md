@@ -23,10 +23,10 @@ this bug already.
 3. Provide JSFiddle or JSBin demo that specifically shows the problem. This
 demo should be fully operational with the exception of the bug you want to
 demonstrate. The more pared down, the better.
-Preconfigured starting points for the latest Ember: [JSFiddle](http://jsfiddle.net/NQKvy/) | [JSBin](http://jsbin.com/ucanam/239/edit) (may not work with older IE versions due to MIME type issues).
+Preconfigured starting points for the latest Ember: [JSFiddle](http://jsfiddle.net/NQKvy/) | [JSBin](http://emberjs.jsbin.com) (may not work with older IE versions due to MIME type issues).
 Issues with fiddles are prioritized.
 
-4. Your issue will be verified. The provided fiddle will be tested for
+4. Your issue will be verified. The provided example will be tested for
 correctness. The Ember team will work with you until your issue can
 be verified.
 
@@ -60,14 +60,12 @@ then that will speed the process along.
 
 # Building Ember.js
 
-With a relatively new ruby ( >= 1.9.3), [Bundler](http://bundler.io/), and [Node.js](http://nodejs.org/)
-building Ember is quite simple.
+Building Ember is quite simple.
 
 ```sh
 cd ember.js
-bundle install
 npm install
-rake
+npm run-script build
 ```
 
 # Pull Requests
@@ -77,19 +75,29 @@ We love pull requests. Here's a quick guide:
 1. Fork the repo.
 
 2. Run the tests. We only take pull requests with passing tests, and it's great
-to know that you have a clean slate: `bundle && npm install && rake test[all]`.
-(To see tests in the browser, run `rackup` and open `http://localhost:9292/`.)
-If you're using ZSH, you'll have to escape the test command (i.e.
-`rake test\[all\]`).
+to know that you have a clean slate: `npm install && npm test`.
+(To see tests in the browser, run `npm start` and open `http://localhost:4200/tests/index.html`.)
 
 3. Add a test for your change. Only refactoring and documentation changes
 require no new tests. If you are adding functionality or fixing a bug, we need
-a test!
+a test! If your change is a new feature, please
+[wrap it in a feature flag](http://emberjs.com/guides/contributing/adding-new-features/).
 
 4. Make the test pass.
 
-5. Commit your changes. If your pull request fixes an issue specify it in the commit message.
-Here's an example: `git commit -m "Close #52 – Fix controller and viewbindings"`
+5. Commit your changes. Please use an appropriate commit prefix.
+If your pull request fixes an issue specify it in the commit message. Some examples:
+
+  ```
+  [DOC beta] Update CONTRIBUTING.md for commit prefixes
+  [FEATURE query-params-new] Message
+  [BUGFIX beta] Message
+  [SECURITY CVE-111-1111] Message
+  ```
+
+  For more information about commit prefixes see
+  [Robert Jacksons slides on contributing to Ember](https://speakerdeck.com/rwjblue/contributing-to-ember).
+
 
 6. Push to your fork and submit a pull request. Please provide us with some
 explanation of why you made the changes you made. For new features make sure to

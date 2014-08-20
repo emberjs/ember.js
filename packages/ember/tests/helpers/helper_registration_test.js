@@ -1,3 +1,5 @@
+import "ember";
+
 var App, container;
 var compile = Ember.Handlebars.compile;
 
@@ -6,7 +8,7 @@ function reverseHelper(value) {
 }
 
 
-module("Application Lifecycle - Helper Registration", {
+QUnit.module("Application Lifecycle - Helper Registration", {
   teardown: function() {
     Ember.run(function() {
       App.destroy();
