@@ -505,7 +505,7 @@ registerComputedWithProperties('any', function(properties) {
   @for Ember
   @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which maps
-  values of all passed properties in to an array.
+  values of all passed in properties to an array.
 */
 registerComputedWithProperties('collect', function(properties) {
   var res = [];
