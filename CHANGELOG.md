@@ -1,7 +1,11 @@
 # Ember Changelog
 
-### Ember 1.7.0-beta.5 (August 10, 2014)
+### Ember 1.7.0 (August 19, 2014)
 
+* Update `Ember.computed.notEmpty` to properly respect arrays.
+* Bind `tabindex` property on LinkView.
+* Update to RSVP 3.0.13 (fixes an error with `RSVP.hash` in IE8 amongst other changes).
+* Fix incorrect quoteless action deprecation warnings.
 * Prevent duplicate message getting printed by errors in Route hooks.
 * Deprecate observing container views like arrays.
 * Add `catch` and `finally` to Transition.
@@ -10,17 +14,11 @@
 * [BUGFIX] Controllers have new QP values before setupController.
 * [BUGFIX] Fix initial render of {{input type=bound}} for checkboxes.
 * [BUGFIX] makeBoundHelper supports unquoted bound property options.
-
-### Ember 1.7.0-beta.4 (July 30, 2014)
-
 * [BUGFIX] link-to helper can be inserted in DOM when the router is not present.
 * [PERFORMANCE] Do not pass `arguments` around in a hot-path.
 * Remove Container.defaultContainer.
 * Polyfill contains for older browsers.
 * [BUGFIX] Ensure that `triggerEvent` handles all argument signatures properly.
-
-### Ember 1.7.0-beta.3 (July, 24, 2014)
-
 * [BUGFIX] Stub meta on AliasedProperty (fixes regression from beta.2 with Ember Data).
 * [DOC] Fixed issue with docs showing 'Ember.run' as 'run.run'.
 * [BUGFIX] SimpleHandlebarsView should not re-render if normalized value is unchanged.
@@ -31,9 +29,6 @@
 * Deprecate Ember.DeferredMixin and Ember.Deferred.
 * Deprecate `.then` on Ember.Application.
 * Revert ember-routing-consistent-resources.
-
-### Ember 1.7.0-beta.2 (July, 16, 2014)
-
 * [BUGFIX] Wrap es3 keywords in quotes.
 * [BUGFIX] Use injected integration test helpers instead of local functions.
 * [BUGFIX] Add alias descriptor, and replace `Ember.computed.alias` with new descriptor.
@@ -44,9 +39,6 @@
 * [BUGFIX] Use view:toplevel for {{view}} instead of view:default.
 * [BUGFIX] Do not throw uncaught errors mid-transition.
 * [BUGFIX] Don't assume that the router has a container.
-
-### Ember 1.7.0-beta.1 (July, 8, 2014)
-
 * Fix components inside group helper.
 * [BUGFIX] Fix wrong view keyword in a component block.
 * Update to RSVP 3.0.7.
@@ -56,7 +48,7 @@
 * `Ember.uuid` is now an internal function instead of a property on `Ember` itself.
 * [BUGFIX] sync back burner: workaround IE's issue with try/finally without Catch.
   Also no longer force deoptimization of the run loop queue flush.
-* [BREAKING BUGFIX] An empty array are treated as falsy value in `bind-attr` to be in consistent
+* [BREAKING BUGFIX] An empty array is treated as falsy value in `bind-attr` to be in consistent
   with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty
   array as truthy value in `bind-attr`.
 * [BREAKING BUGFIX] On Controllers, the content property is now derived from model. This reduces many
