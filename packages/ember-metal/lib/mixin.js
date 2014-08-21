@@ -163,7 +163,17 @@ function giveMethodSuper(obj, key, method, values, descs) {
     return method;
   }
 
-  return wrap(method, superMethod);
+  var hasSuper = method.__hasSuper;
+
+  if (hasSuper === undefined) {
+    hasSuper = method.toString().indexOf('_super');
+  }
+
+  if (hasSuper) {
+    return wrap(method, superMethod);
+  } else {
+    return method;
+  }
 }
 
 function applyConcatenatedProperties(obj, key, value, values) {
