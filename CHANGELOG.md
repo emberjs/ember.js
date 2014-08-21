@@ -3,7 +3,6 @@
 ### Ember 1.8.0-beta.1 (August 20, 2014)
 
 * Remove `metamorph` in favor of `morph` package (removes the need for `<script>` tags in the DOM).
-* [FEATURE] ember-routing-add-model-option
 * [FEATURE] ember-routing-linkto-target-attribute
 * [FEATURE] ember-routing-multi-current-when
 * [FEATURE] ember-routing-auto-location-uses-replace-state-for-history
