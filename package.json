@@ -1,7 +1,7 @@
 {
   "name": "ember",
   "license": "MIT",
-  "version": "1.7.0-beta.5",
+  "version": "1.8.0-beta.1+canary",
   "scripts": {
     "build": "ember build --environment production",
     "postinstall": "bower install",
@@ -22,7 +22,7 @@
     "broccoli-file-mover": "~0.2.0",
     "broccoli-file-remover": "~0.2.0",
     "broccoli-filter": "~0.1.6",
-    "broccoli-jshint": "~0.5.0",
+    "broccoli-jshint": "~0.5.1",
     "broccoli-kitchen-sink-helpers": "~0.2.0",
     "broccoli-merge-trees": "0.1.3",
     "broccoli-replace": "~0.1.6",
@@ -33,7 +33,7 @@
     "chalk": "~0.4.0",
     "defeatureify": "~0.2.0",
     "ember-cli": "0.0.40",
-    "ember-publisher": "0.0.3",
+    "ember-publisher": "0.0.6",
     "es6-module-transpiler": "~0.4.0",
     "express": "^4.5.0",
     "glob": "~3.2.8",

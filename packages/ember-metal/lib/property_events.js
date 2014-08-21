@@ -1,5 +1,4 @@
 import {
-  META_KEY,
   guidFor,
   tryFinally
 } from "ember-metal/utils";
@@ -34,10 +33,10 @@ var deferred = 0;
   @return {void}
 */
 function propertyWillChange(obj, keyName) {
-  var m = obj[META_KEY],
-      watching = (m && m.watching[keyName] > 0) || keyName === 'length',
-      proto = m && m.proto,
-      desc = m && m.descs[keyName];
+  var m = obj['__ember_meta__'];
+  var watching = (m && m.watching[keyName] > 0) || keyName === 'length';
+  var proto = m && m.proto;
+  var desc = m && m.descs[keyName];
 
   if (!watching) { return; }
   if (proto === obj) { return; }
@@ -63,10 +62,10 @@ function propertyWillChange(obj, keyName) {
   @return {void}
 */
 function propertyDidChange(obj, keyName) {
-  var m = obj[META_KEY],
-      watching = (m && m.watching[keyName] > 0) || keyName === 'length',
-      proto = m && m.proto,
-      desc = m && m.descs[keyName];
+  var m = obj['__ember_meta__'];
+  var watching = (m && m.watching[keyName] > 0) || keyName === 'length';
+  var proto = m && m.proto;
+  var desc = m && m.descs[keyName];
 
   if (proto === obj) { return; }
 
@@ -74,44 +73,63 @@ function propertyDidChange(obj, keyName) {
   if (desc && desc.didChange) { desc.didChange(obj, keyName); }
   if (!watching && keyName !== 'length') { return; }
 
-  dependentKeysDidChange(obj, keyName, m);
+  if (m && m.deps && m.deps[keyName]) {
+    dependentKeysDidChange(obj, keyName, m);
+  }
+
   chainsDidChange(obj, keyName, m, false);
   notifyObservers(obj, keyName);
 }
 
 var WILL_SEEN, DID_SEEN;
-
 // called whenever a property is about to change to clear the cache of any dependent keys (and notify those properties of changes, etc...)
 function dependentKeysWillChange(obj, depKey, meta) {
   if (obj.isDestroying) { return; }
 
-  var seen = WILL_SEEN, top = !seen;
-  if (top) { seen = WILL_SEEN = {}; }
-  iterDeps(propertyWillChange, obj, depKey, seen, meta);
-  if (top) { WILL_SEEN = null; }
+  var deps;
+  if (meta && meta.deps && (deps = meta.deps[depKey])) {
+    var seen = WILL_SEEN;
+    var top = !seen;
+    if (top) { seen = WILL_SEEN = {}; }
+    iterDeps(propertyWillChange, obj, deps, depKey, seen, meta);
+    if (top) { WILL_SEEN = null; }
+  }
 }
 
 // called whenever a property has just changed to update dependent keys
 function dependentKeysDidChange(obj, depKey, meta) {
   if (obj.isDestroying) { return; }
 
-  var seen = DID_SEEN, top = !seen;
-  if (top) { seen = DID_SEEN = {}; }
-  iterDeps(propertyDidChange, obj, depKey, seen, meta);
-  if (top) { DID_SEEN = null; }
+  var deps;
+  if (meta && meta.deps && (deps = meta.deps[depKey])) {
+    var seen = DID_SEEN;
+    var top = !seen;
+    if (top) { seen = DID_SEEN = {}; }
+    iterDeps(propertyDidChange, obj, deps, depKey, seen, meta);
+    if (top) { DID_SEEN = null; }
+  }
 }
 
-function iterDeps(method, obj, depKey, seen, meta) {
-  var guid = guidFor(obj);
-  if (!seen[guid]) seen[guid] = {};
-  if (seen[guid][depKey]) return;
-  seen[guid][depKey] = true;
+function keysOf(obj) {
+  var keys = [];
+  for (var key in obj) keys.push(key);
+  return keys;
+}
 
-  var deps = meta.deps;
-  deps = deps && deps[depKey];
+function iterDeps(method, obj, deps, depKey, seen, meta) {
+  var keys, key, i, desc;
+  var guid = guidFor(obj);
+  var current = seen[guid];
+  if (!current) current = seen[guid] = {};
+  if (current[depKey]) return;
+  current[depKey] = true;
+
   if (deps) {
-    for(var key in deps) {
-      var desc = meta.descs[key];
+    keys = keysOf(deps);
+    var descs = meta.descs;
+    for (i=0; i<keys.length; i++) {
+      key = keys[i];
+      desc = descs[key];
       if (desc && desc._suspended === obj) continue;
       method(obj, key);
     }
@@ -124,9 +142,9 @@ function chainsWillChange(obj, keyName, m) {
     return;
   }
 
-  var nodes = m.chainWatchers[keyName],
-      events = [],
-      i, l;
+  var nodes = m.chainWatchers[keyName];
+  var events = [];
+  var i, l;
 
   for(i = 0, l = nodes.length; i < l; i++) {
     nodes[i].willChange(events);
@@ -143,9 +161,9 @@ function chainsDidChange(obj, keyName, m, suppressEvents) {
     return;
   }
 
-  var nodes = m.chainWatchers[keyName],
-      events = suppressEvents ? null : [],
-      i, l;
+  var nodes = m.chainWatchers[keyName];
+  var events = suppressEvents ? null : [];
+  var i, l;
 
   for(i = 0, l = nodes.length; i < l; i++) {
     nodes[i].didChange(events);
@@ -208,7 +226,8 @@ function changeProperties(cb, binding) {
 function notifyBeforeObservers(obj, keyName) {
   if (obj.isDestroying) { return; }
 
-  var eventName = keyName + ':before', listeners, diff;
+  var eventName = keyName + ':before';
+  var listeners, diff;
   if (deferred) {
     listeners = beforeObserverSet.add(obj, keyName, eventName);
     diff = listenersDiff(obj, eventName, listeners);
@@ -221,7 +240,8 @@ function notifyBeforeObservers(obj, keyName) {
 function notifyObservers(obj, keyName) {
   if (obj.isDestroying) { return; }
 
-  var eventName = keyName + ':change', listeners;
+  var eventName = keyName + ':change';
+  var listeners;
   if (deferred) {
     listeners = observerSet.add(obj, keyName, eventName);
     listenersUnion(obj, eventName, listeners);

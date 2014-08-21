@@ -52,7 +52,8 @@ test("triggering an event can have arguments", function() {
 });
 
 test("a listener can be added and removed automatically and have arguments", function() {
-  var self, args, count = 0;
+  var self, args;
+  var count = 0;
 
   var obj = EmberObject.createWithMixins(Evented);
 

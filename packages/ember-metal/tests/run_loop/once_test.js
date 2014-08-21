@@ -17,7 +17,8 @@ test('calling invokeOnce more than once invokes only once', function() {
 
 test('should differentiate based on target', function() {
 
-  var A = { count: 0 }, B = { count: 0 };
+  var A = { count: 0 };
+  var B = { count: 0 };
   run(function() {
     var F = function() { this.count++; };
     run.once(A, F);
@@ -33,7 +34,8 @@ test('should differentiate based on target', function() {
 
 test('should ignore other arguments - replacing previous ones', function() {
 
-  var A = { count: 0 }, B = { count: 0 };
+  var A = { count: 0 };
+  var B = { count: 0 };
   run(function() {
     var F = function(amt) { this.count += amt; };
     run.once(A, F, 10);

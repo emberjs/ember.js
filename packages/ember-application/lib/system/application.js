@@ -19,6 +19,7 @@ import Controller from "ember-runtime/controllers/controller";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
+import SelectView from "ember-handlebars/controls/select";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 //import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
 import jQuery from "ember-views/system/jquery";
@@ -36,6 +37,15 @@ import {
 import EmberHandlebars from "ember-handlebars-compiler";
 
 var ContainerDebugAdapter;
+function props(obj) {
+  var properties = [];
+
+  for (var key in obj) {
+    properties.push(key);
+  }
+
+  return properties;
+}
 
 /**
   An instance of `Ember.Application` is the starting point for every Ember
@@ -255,7 +265,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     this.scheduleInitialize();
 
-    Ember.libraries.registerCoreLibrary('Handlebars', EmberHandlebars.VERSION);
+    Ember.libraries.registerCoreLibrary('Handlebars' + (EmberHandlebars.compile ? '' : '-runtime'), EmberHandlebars.VERSION);
     Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
 
     if ( Ember.LOG_VERSION ) {
@@ -652,20 +662,21 @@ var Application = Namespace.extend(DeferredMixin, {
     @method runInitializers
   */
   runInitializers: function() {
-    var initializers = get(this.constructor, 'initializers');
+    var initializersByName = get(this.constructor, 'initializers');
+    var initializers = props(initializersByName);
     var container = this.__container__;
     var graph = new DAG();
     var namespace = this;
     var name, initializer;
 
-    for (name in initializers) {
-      initializer = initializers[name];
+    for (var i = 0; i < initializers.length; i++) {
+      initializer = initializersByName[initializers[i]];
       graph.addEdges(initializer.name, initializer.initialize, initializer.before, initializer.after);
     }
 
     graph.topsort(function (vertex) {
       var initializer = vertex.value;
-      Ember.assert("No application initializer named '"+vertex.name+"'", initializer);
+      Ember.assert("No application initializer named '" + vertex.name + "'", initializer);
       initializer(container, namespace);
     });
   },
@@ -775,7 +786,7 @@ var Application = Namespace.extend(DeferredMixin, {
 });
 
 Application.reopenClass({
-  initializers: {},
+  initializers: Object.create(null),
 
   /**
     Initializer receives an object which has the following attributes:
@@ -943,9 +954,9 @@ Application.reopenClass({
     var container = new Container();
 
     container.set = set;
-    container.resolver  = resolverFor(namespace);
-    container.normalize = container.resolver.normalize;
-    container.describe  = container.resolver.describe;
+    container.resolver = resolverFor(namespace);
+    container.normalizeFullName = container.resolver.normalize;
+    container.describe = container.resolver.describe;
     container.makeToString = container.resolver.makeToString;
 
     container.optionsForType('component', { singleton: false });
@@ -958,6 +969,9 @@ Application.reopenClass({
     container.register('controller:basic', Controller, { instantiate: false });
     container.register('controller:object', ObjectController, { instantiate: false });
     container.register('controller:array', ArrayController, { instantiate: false });
+
+    container.register('view:select', SelectView);
+
     container.register('route:basic', Route, { instantiate: false });
     container.register('event_dispatcher:main', EventDispatcher);
 

@@ -7,6 +7,10 @@
     "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#1.2.0"
   },
   "devDependencies": {
-    "rsvp": "https://github.com/tildeio/rsvp.js.git#3.0.13"
+    "backburner": "https://github.com/ebryn/backburner.js.git#30d4f505e935f7b588317f94a489dbdf44ec3a0b",
+    "rsvp": "https://github.com/tildeio/rsvp.js.git#3.0.13",
+    "router.js": "https://github.com/tildeio/router.js.git#1562462f120156a140b9153bf36f1046f85e7812",
+    "route-recognizer": "https://github.com/tildeio/route-recognizer.git#8e1058e29de741b8e05690c69da9ec402a167c69",
+    "htmlbars": "https://github.com/tildeio/htmlbars.git#6582d5584146c657dc61de8f5c5d00438d0e248d"
   }
 }

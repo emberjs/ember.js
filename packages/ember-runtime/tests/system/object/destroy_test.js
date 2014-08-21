@@ -1,29 +1,32 @@
 import Ember from "ember-metal/core";
 import run from "ember-metal/run_loop";
-import {platform} from "ember-metal/platform";
-import {observer} from "ember-metal/mixin";
-import {set} from "ember-metal/property_set";
-import {bind} from "ember-metal/binding";
-import {beginPropertyChanges, endPropertyChanges} from "ember-metal/property_events";
-import {META_KEY} from "ember-metal/utils";
-import objectKeys from "ember-runtime/keys";
-import {testBoth} from 'ember-runtime/tests/props_helper';
+import { platform } from "ember-metal/platform";
+import { observer } from "ember-metal/mixin";
+import { set } from "ember-metal/property_set";
+import { bind } from "ember-metal/binding";
+import {
+  beginPropertyChanges,
+  endPropertyChanges
+} from "ember-metal/property_events";
+import objectKeys from "ember-metal/keys";
+import { testBoth } from 'ember-runtime/tests/props_helper';
 import EmberObject from 'ember-runtime/system/object';
 
 QUnit.module('ember-runtime/system/object/destroy_test');
 
 testBoth("should schedule objects to be destroyed at the end of the run loop", function(get, set) {
-  var obj = EmberObject.create(), meta;
+  var obj = EmberObject.create();
+  var meta;
 
   run(function() {
     obj.destroy();
-    meta = obj[META_KEY];
+    meta = obj['__ember_meta__'];
     ok(meta, "meta is not destroyed immediately");
     ok(get(obj, 'isDestroying'), "object is marked as destroying immediately");
     ok(!get(obj, 'isDestroyed'), "object is not destroyed immediately");
   });
 
-  meta = obj[META_KEY];
+  meta = obj['__ember_meta__'];
   ok(!meta, "meta is destroyed after run loop finishes");
   ok(get(obj, 'isDestroyed'), "object is destroyed after run loop finishes");
 });
@@ -70,7 +73,8 @@ test("observers should not fire after an object has been destroyed", function() 
 });
 
 test("destroyed objects should not see each others changes during teardown but a long lived object should", function () {
-  var shouldChange = 0, shouldNotChange = 0;
+  var shouldChange = 0;
+  var shouldNotChange = 0;
 
   var objs = {};
 

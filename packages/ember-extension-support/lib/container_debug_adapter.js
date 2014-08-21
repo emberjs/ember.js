@@ -73,7 +73,7 @@ export default EmberObject.extend({
     classes in the resolver for a given type.
 
     @method canCatalogEntriesByType
-    @param {string} type The type. e.g. "model", "controller", "route"
+    @param {String} type The type. e.g. "model", "controller", "route"
     @return {boolean} whether a list is available for this type.
   */
   canCatalogEntriesByType: function(type) {
@@ -85,7 +85,7 @@ export default EmberObject.extend({
     Returns the available classes a given type.
 
     @method catalogEntriesByType
-    @param {string} type The type. e.g. "model", "controller", "route"
+    @param {String} type The type. e.g. "model", "controller", "route"
     @return {Array} An array of strings.
   */
   catalogEntriesByType: function(type) {

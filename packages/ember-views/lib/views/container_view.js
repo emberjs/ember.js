@@ -6,7 +6,6 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
 import View from "ember-views/views/view";
-import ViewCollection from "ember-views/views/view_collection";
 
 import {
   cloneStates,
@@ -185,6 +184,7 @@ var states = cloneStates(EmberViewStates);
   @extends Ember.View
 */
 var ContainerView = View.extend(MutableArray, {
+  isContainer: true,
   _states: states,
 
   willWatchProperty: function(prop){
@@ -263,9 +263,6 @@ var ContainerView = View.extend(MutableArray, {
     @param {Ember.RenderBuffer} buffer the buffer to render to
   */
   render: function(buffer) {
-    this.forEachChildView(function(view) {
-      view.renderToBuffer(buffer);
-    });
   },
 
   instrumentName: 'container',
@@ -384,46 +381,17 @@ merge(states.hasElement, {
   },
 
   ensureChildrenAreInDOM: function(view) {
-    var childViews = view._childViews, i, len, childView, previous, buffer, viewCollection = new ViewCollection();
+    var childViews = view._childViews;
+    var renderer = view._renderer;
 
+    var i, len, childView;
     for (i = 0, len = childViews.length; i < len; i++) {
       childView = childViews[i];
-
-      if (!buffer) { buffer = renderBuffer(); buffer._hasElement = false; }
-
-      if (childView.renderToBufferIfNeeded(buffer)) {
-        viewCollection.push(childView);
-      } else if (viewCollection.length) {
-        insertViewCollection(view, viewCollection, previous, buffer);
-        buffer = null;
-        previous = childView;
-        viewCollection.clear();
-      } else {
-        previous = childView;
+      if (!childView._elementCreated) {
+        renderer.renderTree(childView, view, i);
       }
-    }
-
-    if (viewCollection.length) {
-      insertViewCollection(view, viewCollection, previous, buffer);
     }
   }
 });
-
-function insertViewCollection(view, viewCollection, previous, buffer) {
-  viewCollection.triggerRecursively('willInsertElement');
-
-  if (previous) {
-    previous.domManager.after(previous, buffer.string());
-  } else {
-    view.domManager.prepend(view, buffer.string());
-  }
-
-  viewCollection.forEach(function(v) {
-    v._transitionTo('inDOM');
-    v.propertyDidChange('element');
-    v.triggerRecursively('didInsertElement');
-  });
-}
-
 
 export default ContainerView;

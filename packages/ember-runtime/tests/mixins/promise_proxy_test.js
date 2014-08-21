@@ -234,3 +234,31 @@ test("should reset isFulfilled and isRejected when promise is reset", function()
   equal(get(proxy, 'isRejected'),  true,  'expects the proxy to indicate that it is  rejected');
   equal(get(proxy, 'isFulfilled'), false, 'expects the proxy to indicate that it is not fulfilled');
 });
+
+test("should have content when isFulfilled is set", function() {
+  var deferred = EmberRSVP.defer();
+
+  var proxy = ObjectPromiseProxy.create({
+    promise: deferred.promise
+  });
+
+  proxy.addObserver('isFulfilled', function() {
+    equal(get(proxy, 'content'), true);
+  });
+
+  run(deferred, 'resolve', true);
+});
+
+test("should have reason when isRejected is set", function() {
+  var deferred = EmberRSVP.defer();
+
+  var proxy = ObjectPromiseProxy.create({
+    promise: deferred.promise
+  });
+
+  proxy.addObserver('isRejected', function() {
+    equal(get(proxy, 'reason'), true);
+  });
+
+  run(deferred, 'reject', true);
+});

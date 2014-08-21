@@ -2,7 +2,7 @@
 @module ember
 @submodule ember-runtime
 */
-import Ember from "ember-metal/core"; // Ember.isNone
+import Ember from "ember-metal/core"; // Ember.isNone, Ember.A
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -358,6 +358,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
   //
 
   init: function(items) {
+    Ember.deprecate('Ember.Set is deprecated and will be removed in a future release.');
     this._super();
     if (items) this.addObjects(items);
   },
@@ -382,10 +383,10 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     if (get(this, 'isFrozen')) throw new EmberError(FROZEN_ERROR);
     if (isNone(obj)) return this; // nothing to do
 
-    var guid = guidFor(obj),
-        idx  = this[guid],
-        len  = get(this, 'length'),
-        added ;
+    var guid = guidFor(obj);
+    var idx  = this[guid];
+    var len  = get(this, 'length');
+    var added;
 
     if (idx>=0 && idx<len && (this[idx] === obj)) return this; // added
 
@@ -410,12 +411,12 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
     if (get(this, 'isFrozen')) throw new EmberError(FROZEN_ERROR);
     if (isNone(obj)) return this; // nothing to do
 
-    var guid = guidFor(obj),
-        idx  = this[guid],
-        len = get(this, 'length'),
-        isFirst = idx === 0,
-        isLast = idx === len-1,
-        last, removed;
+    var guid = guidFor(obj);
+    var idx  = this[guid];
+    var len = get(this, 'length');
+    var isFirst = idx === 0;
+    var isLast = idx === len-1;
+    var last, removed;
 
 
     if (idx>=0 && idx<len && (this[idx] === obj)) {

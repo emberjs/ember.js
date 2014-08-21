@@ -10,9 +10,10 @@ var suite = SuiteModuleBuilder.create();
 suite.module('every');
 
 suite.test('every should should invoke callback on each item as long as you return true', function() {
-  var obj = this.newObject(),
-      ary = this.toArray(obj),
-      found = [], result;
+  var obj = this.newObject();
+  var ary = this.toArray(obj);
+  var found = [];
+  var result;
 
   result = obj.every(function(i) { found.push(i); return true; });
   equal(result, true, 'return value of obj.every');
@@ -20,11 +21,12 @@ suite.test('every should should invoke callback on each item as long as you retu
 });
 
 suite.test('every should stop invoking when you return false', function() {
-  var obj = this.newObject(),
-      ary = this.toArray(obj),
-      cnt = ary.length - 2,
-      exp = cnt,
-      found = [], result;
+  var obj = this.newObject();
+  var ary = this.toArray(obj);
+  var cnt = ary.length - 2;
+  var exp = cnt;
+  var found = [];
+  var result;
 
   result = obj.every(function(i) { found.push(i); return --cnt>0; });
   equal(result, false, 'return value of obj.every');

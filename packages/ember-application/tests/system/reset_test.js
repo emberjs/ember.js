@@ -10,7 +10,8 @@ import EventDispatcher from "ember-views/system/event_dispatcher";
 import jQuery from "ember-views/system/jquery";
 import Container from 'container/container';
 
-var application, EmberApplication = Application;
+var application;
+var EmberApplication = Application;
 
 QUnit.module("Ember.Application - resetting", {
   setup: function() {

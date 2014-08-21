@@ -5,11 +5,11 @@ that you'd normally have to do by hand. There are tasks that are common
 to every web app; Ember.js does those things for you, so you can focus
 on building killer features and UI.
 
-- [Website](http://emberjs.com) 
-- [Guides](http://emberjs.com/guides) 
-- [API](http://emberjs.com/api) 
-- [Community](http://emberjs.com/community) 
-- [Blog](http://emberjs.com/blog) 
+- [Website](http://emberjs.com)
+- [Guides](http://emberjs.com/guides)
+- [API](http://emberjs.com/api)
+- [Community](http://emberjs.com/community)
+- [Blog](http://emberjs.com/blog)
 - [Builds](http://emberjs.com/builds)
 
 # Building Ember.js
@@ -28,7 +28,9 @@ on building killer features and UI.
 
 2. To start the development server, run `npm start`.
 
-3. Then visit: `http://localhost:4200/tests/index.html?package=PACKAGE_NAME`. Replace
+3. Then visit: `http://localhost:4200/`
+
+4. To run a specific package visit: `http://localhost:4200/tests/index.html?package=PACKAGE_NAME` Replace
 `PACKAGE_NAME` with the name of the package you want to run. For
 example:
 

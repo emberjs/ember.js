@@ -204,18 +204,12 @@ var ActionHandler = Mixin.create({
     @param {*} context a context to send with the action
   */
   send: function(actionName) {
-    var args = [].slice.call(arguments, 1), target;
+    var args = [].slice.call(arguments, 1);
+    var target;
 
     if (this._actions && this._actions[actionName]) {
       if (this._actions[actionName].apply(this, args) === true) {
         // handler returned true, so this action will bubble
-      } else {
-        return;
-      }
-    } else if (!Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style') && this.deprecatedSend && this.deprecatedSendHandles && this.deprecatedSendHandles(actionName)) {
-      Ember.warn("The current default is deprecated but will prefer to handle actions directly on the controller instead of a similarly named action in the actions hash. To turn off this deprecated feature set: Ember.FEATURES['ember-routing-drop-deprecated-action-style'] = true");
-      if (this.deprecatedSend.apply(this, [].slice.call(arguments)) === true) {
-        // handler return true, so this action will bubble
       } else {
         return;
       }

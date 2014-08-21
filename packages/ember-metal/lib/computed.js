@@ -3,7 +3,6 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import {
   meta,
-  META_KEY,
   inspect
 } from "ember-metal/utils";
 import expandProperties from "ember-metal/expand_properties";
@@ -28,8 +27,8 @@ import {
 Ember.warn("The CP_DEFAULT_CACHEABLE flag has been removed and computed properties are always cached by default. Use `volatile` if you don't want caching.", Ember.ENV.CP_DEFAULT_CACHEABLE !== false);
 
 
-var metaFor = meta,
-    a_slice = [].slice;
+var metaFor = meta;
+var a_slice = [].slice;
 
 function UNDEFINED() { }
 
@@ -368,13 +367,13 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   @return {Object} The return value of the function backing the CP.
 */
 ComputedPropertyPrototype.set = function(obj, keyName, value) {
-  var cacheable = this._cacheable,
-      func = this.func,
-      meta = metaFor(obj, cacheable),
-      oldSuspended = this._suspended,
-      hadCachedValue = false,
-      cache = meta.cache,
-      funcArgLength, cachedValue, ret;
+  var cacheable = this._cacheable;
+  var func = this.func;
+  var meta = metaFor(obj, cacheable);
+  var oldSuspended = this._suspended;
+  var hadCachedValue = false;
+  var cache = meta.cache;
+  var funcArgLength, cachedValue, ret;
 
   if (this._readOnly) {
     throw new EmberError('Cannot set read-only property "' + keyName + '" on object: ' + inspect(obj));
@@ -503,9 +502,9 @@ function computed(func) {
   @return {Object} the cached value
 */
 function cacheFor(obj, key) {
-  var meta = obj[META_KEY],
-      cache = meta && meta.cache,
-      ret = cache && cache[key];
+  var meta = obj['__ember_meta__'];
+  var cache = meta && meta.cache;
+  var ret = cache && cache[key];
 
   if (ret === UNDEFINED) { return undefined; }
   return ret;

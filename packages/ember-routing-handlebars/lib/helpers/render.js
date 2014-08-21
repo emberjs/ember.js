@@ -8,7 +8,7 @@ import {
   default as generateController
 } from "ember-routing/system/generate_controller";
 import { handlebarsGet } from "ember-handlebars/ext";
-import { viewHelper } from "ember-handlebars/helpers/view";
+import { ViewHelper } from "ember-handlebars/helpers/view";
 
 import "ember-handlebars/helpers/view";
 
@@ -89,9 +89,8 @@ You could render it inside the `post` template using the `render` helper.
 */
 export default function renderHelper(name, contextString, options) {
   var length = arguments.length;
-
-  var contextProvided = length === 3,
-      container, router, controller, view, context, lookupOptions;
+  var contextProvided = length === 3;
+  var container, router, controller, view, context, lookupOptions;
 
   container = (options || contextString).data.keywords.controller.container;
   router = container.lookup('router:main');
@@ -173,5 +172,5 @@ export default function renderHelper(name, contextString, options) {
 
   options.helperName = options.helperName || ('render "' + name + '"');
 
-  viewHelper.call(this, view, options);
+  ViewHelper.instanceHelper(this, view, options);
 }

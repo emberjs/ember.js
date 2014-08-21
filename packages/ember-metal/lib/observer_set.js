@@ -26,11 +26,11 @@ function ObserverSet() {
 
 
 ObserverSet.prototype.add = function(sender, keyName, eventName) {
-  var observerSet = this.observerSet,
-      observers = this.observers,
-      senderGuid = guidFor(sender),
-      keySet = observerSet[senderGuid],
-      index;
+  var observerSet = this.observerSet;
+  var observers = this.observers;
+  var senderGuid = guidFor(sender);
+  var keySet = observerSet[senderGuid];
+  var index;
 
   if (!keySet) {
     observerSet[senderGuid] = keySet = {};
@@ -49,7 +49,8 @@ ObserverSet.prototype.add = function(sender, keyName, eventName) {
 };
 
 ObserverSet.prototype.flush = function() {
-  var observers = this.observers, i, len, observer, sender;
+  var observers = this.observers;
+  var i, len, observer, sender;
   this.clear();
   for (i=0, len=observers.length; i < len; ++i) {
     observer = observers[i];

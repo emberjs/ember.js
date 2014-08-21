@@ -9,6 +9,10 @@ import {
   _suspendObserver
 } from "ember-metal/observer";
 import run from "ember-metal/run_loop";
+import {
+  isGlobal as isGlobalPath
+} from "ember-metal/path_cache";
+
 
 // ES6TODO: where is Ember.lookup defined?
 /**
@@ -31,8 +35,6 @@ import run from "ember-metal/run_loop";
 */
 Ember.LOG_BINDINGS = false || !!Ember.ENV.LOG_BINDINGS;
 
-var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
-
 /**
   Returns true if the provided path is global (e.g., `MyApp.fooController.bar`)
   instead of local (`foo.bar.baz`).
@@ -43,9 +45,6 @@ var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
   @param {String} path
   @return Boolean
 */
-function isGlobalPath(path) {
-  return IS_GLOBAL.test(path);
-}
 
 function getWithGlobals(obj, path) {
   return get(isGlobalPath(path) ? Ember.lookup : obj, path);
@@ -161,7 +160,8 @@ Binding.prototype = {
   connect: function(obj) {
     Ember.assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
-    var fromPath = this._from, toPath = this._to;
+    var fromPath = this._from;
+    var toPath = this._to;
     trySet(obj, toPath, getWithGlobals(obj, fromPath));
 
     // add an observer on the object to be notified when the binding should be updated
@@ -241,7 +241,8 @@ Binding.prototype = {
     var directionMap = this._directionMap;
     var direction = directionMap.get(obj);
 
-    var fromPath = this._from, toPath = this._to;
+    var fromPath = this._from;
+    var toPath = this._to;
 
     directionMap.remove(obj);
 
@@ -289,7 +290,8 @@ mixinProperties(Binding, {
     @static
   */
   from: function() {
-    var C = this, binding = new C();
+    var C = this;
+    var binding = new C();
     return binding.from.apply(binding, arguments);
   },
 
@@ -300,7 +302,8 @@ mixinProperties(Binding, {
     @static
   */
   to: function() {
-    var C = this, binding = new C();
+    var C = this;
+    var binding = new C();
     return binding.to.apply(binding, arguments);
   },
 
@@ -321,7 +324,8 @@ mixinProperties(Binding, {
     @return {Ember.Binding} `this`
   */
   oneWay: function(from, flag) {
-    var C = this, binding = new C(null, from);
+    var C = this;
+    var binding = new C(null, from);
     return binding.oneWay(flag);
   }
 

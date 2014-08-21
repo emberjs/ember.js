@@ -5,9 +5,9 @@ var ComponentLookup = EmberObject.extend({
 
     container = container || this.container;
 
-    var fullName = 'component:' + name,
-        templateFullName = 'template:components/' + name,
-        templateRegistered = container && container.has(templateFullName);
+    var fullName = 'component:' + name;
+    var templateFullName = 'template:components/' + name;
+    var templateRegistered = container && container.has(templateFullName);
 
     if (templateRegistered) {
       container.injection(fullName, 'layout', templateFullName);

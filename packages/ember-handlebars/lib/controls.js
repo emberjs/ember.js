@@ -199,10 +199,10 @@ function _resolveOption(context, options, key) {
 export function inputHelper(options) {
   Ember.assert('You can only pass attributes to the `input` helper, not arguments', arguments.length < 2);
 
-  var hash = options.hash,
-      types = options.hashTypes,
-      inputType = _resolveOption(this, options, 'type'),
-      onEvent = hash.on;
+  var hash = options.hash;
+  var types = options.hashTypes;
+  var inputType = _resolveOption(this, options, 'type');
+  var onEvent = hash.on;
 
   delete hash.type;
   delete hash.on;
@@ -380,7 +380,7 @@ export function inputHelper(options) {
   Internally, `{{textarea}}` creates an instance of `Ember.TextArea`, passing
   arguments from the helper to `Ember.TextArea`'s `create` method. You can
   extend the capabilities of text areas in your application by reopening this
-  class. For example, if you are building a Bootstrap project where `data-*` 
+  class. For example, if you are building a Bootstrap project where `data-*`
   attributes are used, you can globally add support for a `data-*` attribute
   on all `{{textarea}}`s' in your app by reopening `Ember.TextArea` or
   `Ember.TextSupport` and adding it to the `attributeBindings` concatenated
@@ -405,8 +405,8 @@ export function inputHelper(options) {
 export function textareaHelper(options) {
   Ember.assert('You can only pass attributes to the `textarea` helper, not arguments', arguments.length < 2);
 
-  var hash = options.hash,
-      types = options.hashTypes;
+  var hash = options.hash;
+  var types = options.hashTypes;
 
   return helpers.view.call(this, TextArea, options);
 }

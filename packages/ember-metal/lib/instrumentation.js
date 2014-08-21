@@ -47,10 +47,12 @@ import { tryCatchFinally } from "ember-metal/utils";
   @namespace Ember
   @static
 */
-var subscribers = [], cache = {};
+export var subscribers = [];
+var cache = {};
 
 var populateListeners = function(name) {
-  var listeners = [], subscriber;
+  var listeners = [];
+  var subscriber;
 
   for (var i=0, l=subscribers.length; i<l; i++) {
     subscriber = subscribers[i];
@@ -81,53 +83,67 @@ var time = (function() {
   @param {Function} callback Function that you're instrumenting.
   @param {Object} binding Context that instrument function is called with.
 */
-export function instrument(name, payload, callback, binding) {
-  var listeners = cache[name], timeName, ret;
-
-  // ES6TODO: Docs. What is this?
-  if (Ember.STRUCTURED_PROFILE) {
-    timeName = name + ": " + payload.object;
-    console.time(timeName);
+export function instrument(name, _payload, callback, binding) {
+  if (subscribers.length === 0) {
+    return;
   }
+  var payload = _payload || {};
+  var finalizer = _instrumentStart(name, function () {
+    return payload;
+  });
+  if (finalizer) {
+    var tryable = function _instrumenTryable() {
+      return callback.call(binding);
+    };
+    var catchable = function _instrumentCatchable(e) {
+      payload.exception = e;
+    };
+    return tryCatchFinally(tryable, catchable, finalizer);
+  }
+}
+
+// private for now
+export function _instrumentStart(name, _payload) {
+  var listeners = cache[name];
 
   if (!listeners) {
     listeners = populateListeners(name);
   }
 
   if (listeners.length === 0) {
-    ret = callback.call(binding);
-    if (Ember.STRUCTURED_PROFILE) { console.timeEnd(timeName); }
-    return ret;
+    return;
   }
 
-  var beforeValues = [], listener, i, l;
+  var payload = _payload();
 
-  function tryable() {
+  var STRUCTURED_PROFILE = Ember.STRUCTURED_PROFILE;
+  var timeName;
+  if (STRUCTURED_PROFILE) {
+    timeName = name + ": " + payload.object;
+    console.time(timeName);
+  }
+
+  var l = listeners.length;
+  var beforeValues = new Array(l);
+  var i, listener;
+  var timestamp = time();
+  for (i=0; i<l; i++) {
+    listener = listeners[i];
+    beforeValues[i] = listener.before(name, timestamp, payload);
+  }
+
+  return function _instrumentEnd() {
+    var i, l, listener;
+    var timestamp = time();
     for (i=0, l=listeners.length; i<l; i++) {
       listener = listeners[i];
-      beforeValues[i] = listener.before(name, time(), payload);
+      listener.after(name, timestamp, payload, beforeValues[i]);
     }
 
-    return callback.call(binding);
-  }
-
-  function catchable(e) {
-    payload = payload || {};
-    payload.exception = e;
-  }
-
-  function finalizer() {
-    for (i=0, l=listeners.length; i<l; i++) {
-      listener = listeners[i];
-      listener.after(name, time(), payload, beforeValues[i]);
-    }
-
-    if (Ember.STRUCTURED_PROFILE) {
+    if (STRUCTURED_PROFILE) {
       console.timeEnd(timeName);
     }
-  }
-
-  return tryCatchFinally(tryable, catchable, finalizer);
+  };
 }
 
 /**
@@ -196,6 +212,6 @@ export function unsubscribe(subscriber) {
   @namespace Ember.Instrumentation
 */
 export function reset() {
-  subscribers = [];
+  subscribers.length = 0;
   cache = {};
 }

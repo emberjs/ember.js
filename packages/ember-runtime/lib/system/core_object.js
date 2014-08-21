@@ -19,7 +19,6 @@ import {
   generateGuid,
   GUID_KEY,
   meta,
-  META_KEY,
   makeArray
 } from "ember-metal/utils";
 import { rewatch } from "ember-metal/watching";
@@ -33,7 +32,7 @@ import {
 import { indexOf } from "ember-metal/enumerable_utils";
 import EmberError from "ember-metal/error";
 import { platform } from "ember-metal/platform";
-import keys from "ember-runtime/keys";
+import keys from "ember-metal/keys";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import {defineProperty} from "ember-metal/properties";
 import { Binding } from "ember-metal/binding";
@@ -72,7 +71,8 @@ function makeCtor() {
   // method a lot faster. This is glue code so we want it to be as fast as
   // possible.
 
-  var wasApplied = false, initMixins, initProperties;
+  var wasApplied = false;
+  var initMixins, initProperties;
 
   var Class = function() {
     if (!wasApplied) {
@@ -80,7 +80,8 @@ function makeCtor() {
     }
     o_defineProperty(this, GUID_KEY, nullDescriptor);
     o_defineProperty(this, '__nextSuper', undefinedDescriptor);
-    var m = meta(this), proto = m.proto;
+    var m = meta(this);
+    var proto = m.proto;
     m.proto = this;
     if (initMixins) {
       // capture locally so we can clear the closed over variable
@@ -206,7 +207,6 @@ function makeCtor() {
 */
 var CoreObject = makeCtor();
 CoreObject.toString = function() { return "Ember.CoreObject"; };
-
 CoreObject.PrototypeMixin = Mixin.create({
   reopen: function() {
     var length = arguments.length;
@@ -423,9 +423,10 @@ CoreObject.PrototypeMixin = Mixin.create({
     @return {String} string representation
   */
   toString: function toString() {
-    var hasToStringExtension = typeof this.toStringExtension === 'function',
-        extension = hasToStringExtension ? ":" + this.toStringExtension() : '';
+    var hasToStringExtension = typeof this.toStringExtension === 'function';
+    var extension = hasToStringExtension ? ":" + this.toStringExtension() : '';
     var ret = '<'+this.constructor.toString()+':'+guidFor(this)+extension+'>';
+
     this.toString = makeToString(ret);
     return ret;
   }
@@ -533,8 +534,9 @@ var ClassMixin = Mixin.create({
     @param {Mixin} [mixins]* One or more Mixin classes
     @param {Object} [arguments]* Object containing values to use within the new class
   */
-  extend: function() {
-    var Class = makeCtor(), proto;
+  extend: function extend() {
+    var Class = makeCtor();
+    var proto;
     Class.ClassMixin = Mixin.create(this.ClassMixin);
     Class.PrototypeMixin = Mixin.create(this.PrototypeMixin);
 
@@ -780,8 +782,8 @@ var ClassMixin = Mixin.create({
     @param key {String} property name
   */
   metaForProperty: function(key) {
-    var meta = this.proto()[META_KEY],
-        desc = meta && meta.descs[key];
+    var meta = this.proto()['__ember_meta__'];
+    var desc = meta && meta.descs[key];
 
     Ember.assert("metaForProperty() could not find a computed property with key '"+key+"'.", !!desc && desc instanceof ComputedProperty);
     return desc._meta || {};

@@ -151,7 +151,7 @@ test("should insert a new item in DOM when an item is added to the content array
     content.insertAt(1, 'quux');
   });
 
-  equal(jQuery.trim(view.$(':nth-child(2)').text()), 'quux');
+  equal(trim(view.$(':nth-child(2)').text()), 'quux');
 });
 
 test("should remove an item from DOM when an item is removed from the content array", function() {
@@ -210,7 +210,7 @@ test("it updates the view if an item is replaced", function() {
   });
 
   forEach(content, function(item, idx) {
-    equal(jQuery.trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
+    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
   });
 });
 
@@ -241,7 +241,7 @@ test("can add and replace in the same runloop", function() {
   });
 
   forEach(content, function(item, idx) {
-    equal(jQuery.trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
+    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
   });
 
 });
@@ -273,7 +273,7 @@ test("can add and replace the object before the add in the same runloop", functi
   });
 
   forEach(content, function(item, idx) {
-    equal(jQuery.trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
+    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
   });
 });
 
@@ -306,7 +306,7 @@ test("can add and replace complicatedly", function() {
   });
 
   forEach(content, function(item, idx) {
-    equal(jQuery.trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update: "+item.name+"!="+view.$(fmt(':nth-child(%@)', [String(idx+1)])).text());
+    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update: "+item.name+"!="+view.$(fmt(':nth-child(%@)', [String(idx+1)])).text());
   });
 });
 
@@ -340,7 +340,7 @@ test("can add and replace complicatedly harder", function() {
   });
 
   forEach(content, function(item, idx) {
-    equal(jQuery.trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
+    equal(trim(view.$(fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
   });
 });
 
@@ -361,12 +361,12 @@ test("should allow changes to content object before layer is created", function(
 });
 
 test("should fire life cycle events when elements are added and removed", function() {
-  var view,
-    didInsertElement = 0,
-    willDestroyElement = 0,
-    willDestroy = 0,
-    destroy = 0,
-    content = Ember.A([1, 2, 3]);
+  var view;
+  var didInsertElement = 0;
+  var willDestroyElement = 0;
+  var willDestroy = 0;
+  var destroy = 0;
+  var content = Ember.A([1, 2, 3]);
   run(function () {
     view = CollectionView.create({
       content: content,
@@ -464,7 +464,7 @@ test("should allow changing content property to be null", function() {
     set(view, 'content', null);
   });
 
-  equal(jQuery.trim(view.$().children().text()), "(empty)", "should display empty view");
+  equal(trim(view.$().children().text()), "(empty)", "should display empty view");
 });
 
 test("should allow items to access to the CollectionView's current index in the content array", function() {
@@ -487,15 +487,16 @@ test("should allow items to access to the CollectionView's current index in the 
 });
 
 test("should allow declaration of itemViewClass as a string", function() {
-  Ember.lookup = {
-    "Ember": {
-      "View": View
+  var container = {
+    lookupFactory: function(){
+      return Ember.View.extend();
     }
   };
 
   view = CollectionView.create({
+    container: container,
     content: Ember.A([1, 2, 3]),
-    itemViewClass: 'Ember.View'
+    itemViewClass: 'simple-view'
   });
 
   run(function() {

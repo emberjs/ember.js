@@ -6,7 +6,8 @@ QUnit.module("Ember.ArrayProxy - content update");
 
 test("The `contentArrayDidChange` method is invoked after `content` is updated.", function() {
 
-  var proxy, observerCalled = false;
+  var proxy;
+  var observerCalled = false;
 
   proxy = ArrayProxy.createWithMixins({
     content: Ember.A(),

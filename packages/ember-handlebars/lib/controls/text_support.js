@@ -133,7 +133,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   },
 
   /**
-    Called when the text area is blurred. 
+    Called when the text area is blurred.
 
     Uses sendAction to send the `focus-out` action.
 
@@ -168,9 +168,9 @@ TextSupport.KEY_EVENTS = {
 // sendAction semantics for TextField are different from
 // the component semantics so this method normalizes them.
 function sendAction(eventName, view, event) {
-  var action = get(view, eventName),
-      on = get(view, 'onEvent'),
-      value = get(view, 'value');
+  var action = get(view, eventName);
+  var on = get(view, 'onEvent');
+  var value = get(view, 'value');
 
   // back-compat support for keyPress as an event name even though
   // it's also a method name that consumes the event (and therefore

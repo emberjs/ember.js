@@ -37,8 +37,8 @@ test('run.join returns a value if creating a new run-loop', function() {
 });
 
 test('run.join returns undefined if joining another run-loop', function() {
-  var value = 'returned value',
-  result;
+  var value = 'returned value';
+  var result;
 
   run(function() {
     var result = run.join(function() {

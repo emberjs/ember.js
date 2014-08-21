@@ -12,7 +12,8 @@ import EmberDataAdapter from "ember-extension-support/data_adapter";
 import EmberApplication from "ember-application/system/application";
 import DefaultResolver from "ember-application/system/resolver";
 
-var adapter, App, Model = EmberObject.extend();
+var adapter, App;
+var Model = EmberObject.extend();
 
 var DataAdapter = EmberDataAdapter.extend({
   detect: function(klass) {
@@ -66,15 +67,15 @@ test("Model types added with DefaultResolver", function() {
 });
 
 test("Model types added with custom container-debug-adapter", function() {
-  var PostClass = Model.extend() ,
-      StubContainerDebugAdapter = DefaultResolver.extend({
-        canCatalogEntriesByType: function(type){
-          return true;
-        },
-        catalogEntriesByType: function(type){
-          return [PostClass];
-        }
-      });
+  var PostClass = Model.extend();
+  var StubContainerDebugAdapter = DefaultResolver.extend({
+    canCatalogEntriesByType: function(type){
+      return true;
+    },
+    catalogEntriesByType: function(type){
+      return [PostClass];
+    }
+  });
   App.__container__.register('container-debug-adapter:main', StubContainerDebugAdapter);
 
   adapter = App.__container__.lookup('data-adapter:main');

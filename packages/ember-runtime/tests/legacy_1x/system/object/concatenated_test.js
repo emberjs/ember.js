@@ -35,8 +35,9 @@ import EmberObject from 'ember-runtime/system/object';
       values: ['d', 'e', 'f']
     });
 
-    var values = get(obj, 'values'),
-        expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+    var values = get(obj, 'values');
+    var expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+
     deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
   });
 
@@ -46,8 +47,9 @@ import EmberObject from 'ember-runtime/system/object';
     });
     var obj = subKlass.create();
 
-    var values = get(obj, 'values'),
-        expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+    var values = get(obj, 'values');
+    var expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+
     deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
   });
 
@@ -57,8 +59,9 @@ import EmberObject from 'ember-runtime/system/object';
     });
     var obj = klass.create();
 
-    var values = get(obj, 'values'),
-        expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+    var values = get(obj, 'values');
+    var expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+
     deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
   });
 
@@ -71,8 +74,9 @@ import EmberObject from 'ember-runtime/system/object';
     });
     var obj = subKlass.create();
 
-    var values = get(obj, 'values'),
-        expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+    var values = get(obj, 'values');
+    var expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+
     deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
   });
 
@@ -81,8 +85,9 @@ import EmberObject from 'ember-runtime/system/object';
     var subKlass = klass.extend({ values: ['e'] });
     var obj = subKlass.create({ values: ['f'] });
 
-    var values = get(obj, 'values'),
-        expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+    var values = get(obj, 'values');
+    var expected = ['a', 'b', 'c', 'd', 'e', 'f'];
+
     deepEqual(values, expected, EmberStringUtils.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
   });
 
@@ -92,8 +97,9 @@ import EmberObject from 'ember-runtime/system/object';
     });
     var obj = subKlass.create();
 
-    var values = get(obj, 'functions'),
-        expected = [Ember.K, Ember.K];
+    var values = get(obj, 'functions');
+    var expected = [Ember.K, Ember.K];
+
     deepEqual(values, expected, EmberStringUtils.fmt("should concatenate functions property (expected: %@, got: %@)", [expected, values]));
   });
 

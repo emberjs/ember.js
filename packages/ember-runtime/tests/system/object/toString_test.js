@@ -61,7 +61,8 @@ test("toString on a namespace finds the namespace in Ember.lookup", function() {
 });
 
 test("toString on a namespace finds the namespace in Ember.lookup", function() {
-  var Foo = lookup.Foo = Namespace.create(), obj;
+  var Foo = lookup.Foo = Namespace.create();
+  var obj;
 
   Foo.Bar = EmberObject.extend();
 
@@ -76,13 +77,14 @@ test('toString includes toStringExtension if defined', function() {
         toStringExtension: function() {
           return "fooey";
         }
-      }),
-      foo = Foo.create(),
-      Bar = EmberObject.extend({}),
-      bar = Bar.create();
-    // simulate these classes being defined on a Namespace
-    Foo[GUID_KEY+'_name'] = 'Foo';
-    Bar[GUID_KEY+'_name'] = 'Bar';
+      });
+  var foo = Foo.create();
+  var Bar = EmberObject.extend({});
+  var bar = Bar.create();
+
+  // simulate these classes being defined on a Namespace
+  Foo[GUID_KEY+'_name'] = 'Foo';
+  Bar[GUID_KEY+'_name'] = 'Bar';
 
   equal(bar.toString(), '<Bar:'+guidFor(bar)+'>', 'does not include toStringExtension part');
   equal(foo.toString(), '<Foo:'+guidFor(foo)+':fooey>', 'Includes toStringExtension result');

@@ -5,7 +5,8 @@ import { default as EmberController } from "ember-runtime/controllers/controller
 import "ember-extension-support"; // Must be required to export Ember.ContainerDebugAdapter
 import Application from "ember-application/system/application";
 
-var adapter, App, Model = EmberObject.extend();
+var adapter, App;
+var Model = EmberObject.extend();
 
 
 function boot() {

@@ -108,9 +108,9 @@ test("should not dispatch events to views not inDOM", function() {
 
   var $element = view.$();
 
-  run(function() {
-    view.set('element', null); // Force into preRender
-  });
+  // TODO change this test not to use private API
+  // Force into preRender
+  view._renderer.remove(view, false, true);
 
   $element.trigger('mousedown');
 
@@ -293,8 +293,8 @@ if (Ember.FEATURES.isEnabled("event-dispatcher-can-disable-event-manager")) {
 
   test("should not dispatch events to view event Manager when canDispatchToEventManager is false", function () {
 
-    var eventManagerCounter=0,
-        viewCounter=0;
+    var eventManagerCounter=0;
+    var viewCounter=0;
 
     run(function() {
       dispatcher.destroy();

@@ -2,7 +2,8 @@
 
 import { get } from 'ember-metal/property_get';
 
-var obj, moduleOpts = {
+var obj;
+var moduleOpts = {
   setup: function() {
     obj = {
       foo: {
@@ -24,12 +25,15 @@ var obj, moduleOpts = {
         baz: { biff: '$FOOBIFF' }
       }
     };
+
+    window.localPathGlobal = 5;
   },
 
   teardown: function() {
     obj = undefined;
     window.Foo = undefined;
     window.$foo = undefined;
+    window.localPathGlobal = undefined;
   }
 };
 
@@ -61,6 +65,22 @@ test('[obj, this.Foo.bar] -> (null)', function() {
 
 test('[obj, falseValue.notDefined] -> (null)', function() {
   deepEqual(get(obj, 'falseValue.notDefined'), undefined);
+});
+
+// ..........................................................
+// LOCAL PATHS WITH NO TARGET DEPRECATION
+//
+
+test('[null, length] returning data is deprecated', function() {
+  expectDeprecation(function(){
+    equal(5, Ember.get(null, 'localPathGlobal'));
+  }, "Ember.get fetched 'localPathGlobal' from the global context. This behavior will change in the future (issue #3852)");
+});
+
+test('[length] returning data is deprecated', function() {
+  expectDeprecation(function(){
+    equal(5, Ember.get('localPathGlobal'));
+  }, "Ember.get fetched 'localPathGlobal' from the global context. This behavior will change in the future (issue #3852)");
 });
 
 // ..........................................................

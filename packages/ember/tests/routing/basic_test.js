@@ -2,6 +2,7 @@ import "ember";
 import { forEach } from "ember-metal/enumerable_utils";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
+import ActionManager from "ember-views/system/action_manager";
 
 var Router, App, AppView, templates, router, container, originalLoggerError;
 var compile = Ember.Handlebars.compile;
@@ -1165,7 +1166,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var action = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1199,7 +1200,7 @@ asyncTest("Events are triggered on the current state when defined in `actions` o
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var action = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1237,7 +1238,7 @@ asyncTest("Events defined in `actions` object are triggered on the current state
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var action = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1272,7 +1273,7 @@ asyncTest("Events are triggered on the current state when defined in `events` ob
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var action = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1311,7 +1312,7 @@ asyncTest("Events defined in `events` object are triggered on the current state 
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var action = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1355,94 +1356,48 @@ test("Events can be handled by inherited event handlers", function() {
   router.send("baz");
 });
 
-if (Ember.FEATURES.isEnabled('ember-routing-drop-deprecated-action-style')) {
-  asyncTest("Actions are not triggered on the controller if a matching action name is implemented as a method", function() {
-    Router.map(function() {
-      this.route("home", { path: "/" });
-    });
-
-    var model = { name: "Tom Dale" };
-    var stateIsNotCalled = true;
-
-    App.HomeRoute = Ember.Route.extend({
-      model: function() {
-        return model;
-      },
-
-      actions: {
-        showStuff: function(context) {
-          ok (stateIsNotCalled, "an event on the state is not triggered");
-          deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
-          QUnit.start();
-        }
-      }
-    });
-
-    Ember.TEMPLATES.home = Ember.Handlebars.compile(
-      "<a {{action 'showStuff' model}}>{{name}}</a>"
-    );
-
-    var controller = Ember.Controller.extend({
-      showStuff: function(context) {
-        stateIsNotCalled = false;
-        ok (stateIsNotCalled, "an event on the state is not triggered");
-      }
-    });
-
-    container.register('controller:home', controller);
-
-    bootApplication();
-
-    var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-    var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
-    var event = new Ember.$.Event("click");
-    action.handler(event);
+asyncTest("Actions are not triggered on the controller if a matching action name is implemented as a method", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
   });
-} else {
-  asyncTest("Events are triggered on the controller if a matching action name is implemented as a method (DEPRECATED)", function() {
-    Router.map(function() {
-      this.route("home", { path: "/" });
-    });
 
-    var model = { name: "Tom Dale" };
-    var stateIsNotCalled = true;
+  var model = { name: "Tom Dale" };
+  var stateIsNotCalled = true;
 
-    App.HomeRoute = Ember.Route.extend({
-      model: function() {
-        return model;
-      },
+  App.HomeRoute = Ember.Route.extend({
+    model: function() {
+      return model;
+    },
 
-      events: {
-        showStuff: function(obj) {
-          stateIsNotCalled = false;
-          ok (stateIsNotCalled, "an event on the state is not triggered");
-        }
-      }
-    });
-
-    Ember.TEMPLATES.home = Ember.Handlebars.compile(
-      "<a {{action 'showStuff' model}}>{{name}}</a>"
-    );
-
-    var controller = Ember.Controller.extend({
+    actions: {
       showStuff: function(context) {
         ok (stateIsNotCalled, "an event on the state is not triggered");
         deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
         QUnit.start();
       }
-    });
-
-    container.register('controller:home', controller);
-
-    expectDeprecation(/Action handlers contained in an `events` object are deprecated/);
-    bootApplication();
-
-    var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-    var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
-    var event = new Ember.$.Event("click");
-    action.handler(event);
+    }
   });
-}
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<a {{action 'showStuff' model}}>{{name}}</a>"
+  );
+
+  var controller = Ember.Controller.extend({
+    showStuff: function(context) {
+      stateIsNotCalled = false;
+      ok (stateIsNotCalled, "an event on the state is not triggered");
+    }
+  });
+
+  container.register('controller:home', controller);
+
+  bootApplication();
+
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = ActionManager.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
+});
 
 asyncTest("actions can be triggered with multiple arguments", function() {
   Router.map(function() {
@@ -1451,8 +1406,8 @@ asyncTest("actions can be triggered with multiple arguments", function() {
     });
   });
 
-  var model1 = { name: "Tilde" },
-      model2 = { name: "Tom Dale" };
+  var model1 = { name: "Tilde" };
+  var model2 = { name: "Tom Dale" };
 
   App.RootRoute = Ember.Route.extend({
     actions: {
@@ -1478,7 +1433,7 @@ asyncTest("actions can be triggered with multiple arguments", function() {
   bootApplication();
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
-  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var action = ActionManager.registeredActions[actionId];
   var event = new Ember.$.Event("click");
   action.handler(event);
 });
@@ -1534,8 +1489,8 @@ test('navigating away triggers a url property change', function() {
 });
 
 test("using replaceWith calls location.replaceURL if available", function() {
-  var setCount = 0,
-      replaceCount = 0;
+  var setCount = 0;
+  var replaceCount = 0;
 
   Router.reopen({
     location: Ember.NoneLocation.createWithMixins({
@@ -2057,8 +2012,8 @@ test("Rendering into specified template with slash notation", function() {
 
 
 test("Parent route context change", function() {
-  var editCount = 0,
-      editedPostIds = Ember.A();
+  var editCount = 0;
+  var editedPostIds = Ember.A();
 
   Ember.TEMPLATES.application = compile("{{outlet}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
@@ -2127,10 +2082,9 @@ test("Parent route context change", function() {
 });
 
 test("Router accounts for rootURL on page load when using history location", function() {
-  var rootURL = window.location.pathname + '/app',
-      postsTemplateRendered = false,
-      setHistory,
-      HistoryTestLocation;
+  var rootURL = window.location.pathname + '/app';
+  var postsTemplateRendered = false;
+  var setHistory, HistoryTestLocation;
 
   setHistory = function(obj, path) {
     obj.set('history', { state: { path: path } });
@@ -2183,8 +2137,8 @@ test("Router accounts for rootURL on page load when using history location", fun
 
 test("The rootURL is passed properly to the location implementation", function() {
   expect(1);
-  var rootURL = "/blahzorz",
-      HistoryTestLocation;
+  var rootURL = "/blahzorz";
+  var HistoryTestLocation;
 
   HistoryTestLocation = Ember.HistoryLocation.extend({
     rootURL: 'this is not the URL you are looking for',
@@ -3089,8 +3043,8 @@ test("Redirecting with null model doesn't error out", function() {
 });
 
 test("rejecting the model hooks promise with a non-error prints the `message` property", function() {
-  var rejectedMessage = 'OMG!! SOOOOOO BAD!!!!',
-      rejectedStack   = 'Yeah, buddy: stack gets printed too.';
+  var rejectedMessage = 'OMG!! SOOOOOO BAD!!!!';
+  var rejectedStack   = 'Yeah, buddy: stack gets printed too.';
 
   Router.map(function() {
     this.route("yippie", { path: "/" });
@@ -3130,8 +3084,8 @@ test("rejecting the model hooks promise with no reason still logs error", functi
 });
 
 test("rejecting the model hooks promise with a string shows a good error", function() {
-  var originalLoggerError = Ember.Logger.error,
-      rejectedMessage = "Supercalifragilisticexpialidocious";
+  var originalLoggerError = Ember.Logger.error;
+  var rejectedMessage = "Supercalifragilisticexpialidocious";
 
   Router.map(function() {
     this.route("yondo", { path: "/" });
@@ -3270,49 +3224,45 @@ test("Errors in transition show error template if available", function() {
   equal(Ember.$('#error').length, 1, "Error template was rendered.");
 });
 
-if (Ember.FEATURES.isEnabled("query-params-new")) {
-  test("Route#resetController gets fired when changing models and exiting routes", function() {
-    expect(4);
+test("Route#resetController gets fired when changing models and exiting routes", function() {
+  expect(4);
 
-    Router.map(function() {
-      this.resource("a", function() {
-        this.resource("b", { path: '/b/:id' }, function() { });
-        this.resource("c", { path: '/c/:id' }, function() { });
-      });
-      this.route('out');
+  Router.map(function() {
+    this.resource("a", function() {
+      this.resource("b", { path: '/b/:id' }, function() { });
+      this.resource("c", { path: '/c/:id' }, function() { });
     });
-
-    var calls = [];
-
-    var SpyRoute = Ember.Route.extend({
-      setupController: function(controller, model, transition) {
-        calls.push(['setup', this.routeName]);
-      },
-
-      resetController: function(controller) {
-        calls.push(['reset', this.routeName]);
-      }
-    });
-
-    App.ARoute = SpyRoute.extend();
-    App.BRoute = SpyRoute.extend();
-    App.CRoute = SpyRoute.extend();
-    App.OutRoute = SpyRoute.extend();
-
-    bootApplication();
-    deepEqual(calls, []);
-
-    Ember.run(router, 'transitionTo', 'b', 'b-1');
-    deepEqual(calls, [['setup', 'a'], ['setup', 'b']]);
-    calls.length = 0;
-
-    Ember.run(router, 'transitionTo', 'c', 'c-1');
-    deepEqual(calls, [['reset', 'b'], ['setup', 'c']]);
-    calls.length = 0;
-
-    Ember.run(router, 'transitionTo', 'out');
-    deepEqual(calls, [['reset', 'c'], ['reset', 'a'], ['setup', 'out']]);
+    this.route('out');
   });
-}
 
+  var calls = [];
 
+  var SpyRoute = Ember.Route.extend({
+    setupController: function(controller, model, transition) {
+      calls.push(['setup', this.routeName]);
+    },
+
+    resetController: function(controller) {
+      calls.push(['reset', this.routeName]);
+    }
+  });
+
+  App.ARoute = SpyRoute.extend();
+  App.BRoute = SpyRoute.extend();
+  App.CRoute = SpyRoute.extend();
+  App.OutRoute = SpyRoute.extend();
+
+  bootApplication();
+  deepEqual(calls, []);
+
+  Ember.run(router, 'transitionTo', 'b', 'b-1');
+  deepEqual(calls, [['setup', 'a'], ['setup', 'b']]);
+  calls.length = 0;
+
+  Ember.run(router, 'transitionTo', 'c', 'c-1');
+  deepEqual(calls, [['reset', 'b'], ['setup', 'c']]);
+  calls.length = 0;
+
+  Ember.run(router, 'transitionTo', 'out');
+  deepEqual(calls, [['reset', 'c'], ['reset', 'a'], ['setup', 'out']]);
+});

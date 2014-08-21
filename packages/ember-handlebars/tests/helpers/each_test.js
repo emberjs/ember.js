@@ -17,13 +17,14 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
 var people, view, container;
-var template, templateMyView;
+var template, templateMyView, MyView;
 
 function templateFor(template) {
   return EmberHandlebars.compile(template);
 }
 
-var originalLookup = Ember.lookup, lookup;
+var originalLookup = Ember.lookup;
+var lookup;
 
 QUnit.module("the #each helper", {
   setup: function() {
@@ -43,8 +44,8 @@ QUnit.module("the #each helper", {
     });
 
     templateMyView = templateFor("{{name}}");
-    lookup.MyView = EmberView.extend({
-        template: templateMyView
+    lookup.MyView = MyView = EmberView.extend({
+      template: templateMyView
     });
 
     append(view);
@@ -276,8 +277,8 @@ test("itemController specified in template gets a parentController property", fu
         controllerName: computed(function() {
           return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
         })
-      }),
-      parentController = {
+      });
+  var parentController = {
         container: container,
         company: 'Yapp'
       };
@@ -304,8 +305,8 @@ test("itemController specified in ArrayController gets a parentController proper
         controllerName: computed(function() {
           return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
         })
-      }),
-      PeopleController = ArrayController.extend({
+      });
+  var PeopleController = ArrayController.extend({
         model: people,
         itemController: 'person',
         company: 'Yapp'
@@ -332,16 +333,16 @@ test("itemController's parentController property, when the ArrayController has a
         controllerName: computed(function() {
           return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
         })
-      }),
-      PeopleController = ArrayController.extend({
+      });
+  var PeopleController = ArrayController.extend({
         model: people,
         itemController: 'person',
         parentController: computed(function(){
           return this.container.lookup('controller:company');
         }),
         company: 'Yapp'
-      }),
-      CompanyController = EmberController.extend();
+      });
+   var CompanyController = EmberController.extend();
 
   container.register('controller:company', CompanyController);
   container.register('controller:people', PeopleController);
@@ -437,10 +438,31 @@ test("it defers all normalization of itemView names to the resolver", function()
 
 });
 
-test("it supports {{itemViewClass=}}", function() {
+test("it supports {{itemViewClass=}} with global (DEPRECATED)", function() {
   run(function() { view.destroy(); }); // destroy existing view
   view = EmberView.create({
     template: templateFor('{{each view.people itemViewClass="MyView"}}'),
+    people: people
+  });
+
+
+  expectDeprecation(function(){
+    append(view);
+  }, /Resolved the view "MyView" on the global context/);
+
+  assertText(view, "Steve HoltAnnabelle");
+});
+
+test("it supports {{itemViewClass=}} via container", function() {
+  run(function() { view.destroy(); }); // destroy existing view
+  view = EmberView.create({
+    container: {
+      lookupFactory: function(name){
+        equal(name, 'view:my-view');
+        return MyView;
+      }
+    },
+    template: templateFor('{{each view.people itemViewClass="my-view"}}'),
     people: people
   });
 
@@ -459,27 +481,25 @@ test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function() {
   expectDeprecation(/Supplying a tagName to Metamorph views is unreliable and is deprecated./);
 
   append(view);
-
-  var html = view.$().html();
-
-  // IE 8 (and prior?) adds the \r\n
-  html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
-  html = html.replace(/<div[^>]*><\/div>/ig, '').replace(/[\r\n]/g, '');
-  html = html.replace(/<li[^>]*/ig, '<li');
-
-  // Use lowercase since IE 8 make tagnames uppercase
-  equal(html.toLowerCase(), "<ul><li>steve holt</li><li>annabelle</li></ul>");
+  equal(view.$('ul').length, 1, 'rendered ul tag');
+  equal(view.$('ul li').length, 2, 'rendered 2 li tags');
+  equal(view.$('ul li').text(), 'Steve HoltAnnabelle');
 });
 
 test("it supports {{itemViewClass=}} with in format", function() {
 
-  lookup.MyView = EmberView.extend({
-      template: templateFor("{{person.name}}")
+  MyView = EmberView.extend({
+    template: templateFor("{{person.name}}")
   });
 
   run(function() { view.destroy(); }); // destroy existing view
   view = EmberView.create({
-    template: templateFor('{{each person in view.people itemViewClass="MyView"}}'),
+    container: {
+      lookupFactory: function(name){
+        return MyView;
+      }
+    },
+    template: templateFor('{{each person in view.people itemViewClass="myView"}}'),
     people: people
   });
 
@@ -558,8 +578,8 @@ test("#each accepts a name binding", function() {
 test("#each accepts a name binding and does not change the context", function() {
   var controller = EmberController.create({
     name: 'bob the controller'
-  }),
-  obj = EmberObject.create({
+  });
+  var obj = EmberObject.create({
     name: 'henry the item'
   });
 
@@ -652,17 +672,6 @@ test("single-arg each will iterate over controller if present", function() {
   equal(view.$().text(), "AdamSteve");
 });
 
-test("it asserts when the morph tags disagree on their parentage", function() {
-  view = EmberView.create({
-    controller: A(['Cyril', 'David']),
-    template: templateFor('<table>{{#each}}<tr><td>{{this}}</td></tr>{{/each}}</table>')
-  });
-
-  expectAssertion(function() {
-    append(view);
-  }, /The metamorph tags, metamorph-\d+-start and metamorph-\d+-end, have different parents.\nThe browser has fixed your template to output valid HTML \(for example, check that you have properly closed all tags and have used a TBODY tag when creating a table with '\{\{#each\}\}'\)/);
-});
-
 test("it doesn't assert when the morph tags have the same parent", function() {
   view = EmberView.create({
     controller: A(['Cyril', 'David']),
@@ -728,14 +737,14 @@ test("itemController specified in ArrayController with name binding does not cha
         controllerName: computed(function() {
           return "controller:" + get(this, 'model.name') + ' of ' + get(this, 'parentController.company');
         })
-      }),
-      PeopleController = ArrayController.extend({
+      });
+  var PeopleController = ArrayController.extend({
         model: people,
         itemController: 'person',
         company: 'Yapp',
         controllerName: 'controller:people'
-      }),
-      container = new Container();
+      });
+  var container = new Container();
 
   container.register('controller:people', PeopleController);
   container.register('controller:person', PersonController);

@@ -6,8 +6,8 @@ import View from "ember-views/views/view";
 var view, dispatcher;
 
 // Adapted from https://github.com/jquery/jquery/blob/f30f7732e7775b6e417c4c22ced7adb2bf76bf89/test/data/testinit.js
-var canDataTransfer,
-    fireNativeWithDataTransfer;
+var canDataTransfer, fireNativeWithDataTransfer;
+
 if (document.createEvent) {
   canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
   fireNativeWithDataTransfer = function(node, type, dataTransfer) {

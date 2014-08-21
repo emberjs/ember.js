@@ -5,7 +5,8 @@ import { computed } from "ember-metal/computed";
 import EmberObject from "ember-runtime/system/object";
 import EmberView from "ember-views/views/view";
 
-var originalLookup = Ember.lookup, lookup, view;
+var originalLookup = Ember.lookup;
+var lookup, view;
 
 QUnit.module("EmberView.create", {
   setup: function() {

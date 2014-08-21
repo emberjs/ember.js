@@ -29,8 +29,8 @@ testBoth("should proxy properties to content", function(get, set) {
         firstName: 'Tom',
         lastName: 'Dale',
         unknownProperty: function (key) { return key + ' unknown';}
-      },
-      proxy = ObjectProxy.create();
+      };
+  var proxy = ObjectProxy.create();
 
   equal(get(proxy, 'firstName'), undefined, 'get on proxy without content should return undefined');
   expectAssertion(function () {
@@ -55,17 +55,16 @@ testBoth("should proxy properties to content", function(get, set) {
 });
 
 testBoth("should work with watched properties", function(get, set) {
-  var content1 = {firstName: 'Tom', lastName: 'Dale'},
-    content2 = {firstName: 'Yehuda', lastName: 'Katz'},
-    Proxy,
-    proxy,
-    count = 0,
-    last;
+  var content1 = {firstName: 'Tom', lastName: 'Dale'};
+  var content2 = {firstName: 'Yehuda', lastName: 'Katz'};
+  var count = 0;
+  var Proxy, proxy, last;
 
   Proxy = ObjectProxy.extend({
     fullName: computed(function () {
-      var firstName = this.get('firstName'),
-          lastName = this.get('lastName');
+      var firstName = this.get('firstName');
+      var lastName = this.get('lastName');
+
       if (firstName && lastName) {
         return firstName + ' ' + lastName;
       }
@@ -117,9 +116,10 @@ testBoth("should work with watched properties", function(get, set) {
 });
 
 test("set and get should work with paths", function () {
-  var content = {foo: {bar: 'baz'}},
-      proxy = ObjectProxy.create({content: content}),
-      count = 0;
+  var content = {foo: {bar: 'baz'}};
+  var proxy = ObjectProxy.create({content: content});
+  var count = 0;
+
   proxy.set('foo.bar', 'hello');
   equal(proxy.get('foo.bar'), 'hello');
   equal(proxy.get('content.foo.bar'), 'hello');
@@ -136,9 +136,9 @@ test("set and get should work with paths", function () {
 });
 
 testBoth("should transition between watched and unwatched strategies", function(get, set) {
-  var content = {foo: 'foo'},
-      proxy = ObjectProxy.create({content: content}),
-      count = 0;
+  var content = {foo: 'foo'};
+  var proxy = ObjectProxy.create({content: content});
+  var count = 0;
 
   function observer() {
     count++;

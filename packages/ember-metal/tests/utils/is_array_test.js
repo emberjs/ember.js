@@ -4,13 +4,13 @@ QUnit.module("Ember Type Checking");
 var global = this;
 
 test("Ember.isArray" ,function() {
-  var numarray      = [1,2,3],
-      number        = 23,
-      strarray      = ["Hello", "Hi"],
-      string        = "Hello",
-      object        = {},
-      length        = {length: 12},
-      fn            = function() {};
+  var numarray      = [1,2,3];
+  var number        = 23;
+  var strarray      = ["Hello", "Hi"];
+  var string        = "Hello";
+  var object        = {};
+  var length        = {length: 12};
+  var fn            = function() {};
 
   equal( isArray(numarray), true,  "[1,2,3]" );
   equal( isArray(number),   false, "23" );

@@ -11,14 +11,10 @@ import { A } from "ember-runtime/system/native_array";
 import Component from "ember-views/views/component";
 import EmberError from "ember-metal/error";
 
-var originalLookup = Ember.lookup, lookup, TemplateTests, view, container;
+var view, container;
 
 QUnit.module("Support for {{yield}} helper", {
   setup: function() {
-    Ember.lookup = lookup = { Ember: Ember };
-
-    lookup.TemplateTests = TemplateTests = Namespace.create();
-
     container = new Container();
     container.optionsForType('template', { instantiate: false });
   },
@@ -29,18 +25,17 @@ QUnit.module("Support for {{yield}} helper", {
         view.destroy();
       }
     });
-
-    Ember.lookup = originalLookup;
   }
 });
 
 test("a view with a layout set renders its template where the {{yield}} helper appears", function() {
-  TemplateTests.ViewWithLayout = EmberView.extend({
+  var ViewWithLayout = EmberView.extend({
     layout: EmberHandlebars.compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>')
   });
 
   view = EmberView.create({
-    template: EmberHandlebars.compile('{{#view TemplateTests.ViewWithLayout title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}')
+    withLayout: ViewWithLayout,
+    template: EmberHandlebars.compile('{{#view view.withLayout title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}')
   });
 
   run(function() {
@@ -52,12 +47,12 @@ test("a view with a layout set renders its template where the {{yield}} helper a
 
 test("block should work properly even when templates are not hard-coded", function() {
   container.register('template:nester', EmberHandlebars.compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>'));
-  container.register('template:nested', EmberHandlebars.compile('{{#view TemplateTests.ViewWithLayout title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}'));
+  container.register('template:nested', EmberHandlebars.compile('{{#view "with-layout" title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}'));
 
-  TemplateTests.ViewWithLayout = EmberView.extend({
+  container.register('view:with-layout', EmberView.extend({
     container: container,
     layoutName: 'nester'
-  });
+  }));
 
   view = EmberView.create({
     container: container,
@@ -73,11 +68,12 @@ test("block should work properly even when templates are not hard-coded", functi
 });
 
 test("templates should yield to block, when the yield is embedded in a hierarchy of virtual views", function() {
-  TemplateTests.TimesView = EmberView.extend({
+  var TimesView = EmberView.extend({
     layout: EmberHandlebars.compile('<div class="times">{{#each view.index}}{{yield}}{{/each}}</div>'),
     n: null,
     index: computed(function() {
-      var n = get(this, 'n'), indexArray = A();
+      var n = get(this, 'n');
+      var indexArray = A();
       for (var i=0; i < n; i++) {
         indexArray[i] = i;
       }
@@ -86,7 +82,8 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
   });
 
   view = EmberView.create({
-    template: EmberHandlebars.compile('<div id="container"><div class="title">Counting to 5</div>{{#view TemplateTests.TimesView n=5}}<div class="times-item">Hello</div>{{/view}}</div>')
+    timesView: TimesView,
+    template: EmberHandlebars.compile('<div id="container"><div class="title">Counting to 5</div>{{#view view.timesView n=5}}<div class="times-item">Hello</div>{{/view}}</div>')
   });
 
   run(function() {
@@ -97,12 +94,13 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
 });
 
 test("templates should yield to block, when the yield is embedded in a hierarchy of non-virtual views", function() {
-  TemplateTests.NestingView = EmberView.extend({
-    layout: EmberHandlebars.compile('{{#view Ember.View tagName="div" classNames="nesting"}}{{yield}}{{/view}}')
+  var NestingView = EmberView.extend({
+    layout: EmberHandlebars.compile('{{#view tagName="div" classNames="nesting"}}{{yield}}{{/view}}')
   });
 
   view = EmberView.create({
-    template: EmberHandlebars.compile('<div id="container">{{#view TemplateTests.NestingView}}<div id="block">Hello</div>{{/view}}</div>')
+    nestingView: NestingView,
+    template: EmberHandlebars.compile('<div id="container">{{#view view.nestingView}}<div id="block">Hello</div>{{/view}}</div>')
   });
 
   run(function() {
@@ -113,12 +111,13 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
 });
 
 test("block should not be required", function() {
-  TemplateTests.YieldingView = EmberView.extend({
-    layout: EmberHandlebars.compile('{{#view Ember.View tagName="div" classNames="yielding"}}{{yield}}{{/view}}')
+  var YieldingView = EmberView.extend({
+    layout: EmberHandlebars.compile('{{#view tagName="div" classNames="yielding"}}{{yield}}{{/view}}')
   });
 
   view = EmberView.create({
-    template: EmberHandlebars.compile('<div id="container">{{view TemplateTests.YieldingView}}</div>')
+    yieldingView: YieldingView,
+    template: EmberHandlebars.compile('<div id="container">{{view view.yieldingView}}</div>')
   });
 
   run(function() {

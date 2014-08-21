@@ -23,7 +23,6 @@ import {
 
 import  CoreView from "ember-views/views/core_view";
 import  View from "ember-views/views/view";
-import  ViewCollection from "ember-views/views/view_collection";
 import ContainerView from "ember-views/views/container_view";
 import CollectionView from "ember-views/views/collection_view";
 import Component from "ember-views/views/component";
@@ -54,7 +53,6 @@ Ember.View = View;
 Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;
 
-Ember._ViewCollection = ViewCollection;
 Ember.ContainerView = ContainerView;
 Ember.CollectionView = CollectionView;
 Ember.Component = Component;

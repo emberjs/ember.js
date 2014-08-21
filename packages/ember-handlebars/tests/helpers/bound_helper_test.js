@@ -1,4 +1,3 @@
-/*globals TemplateTests*/
 /*jshint newcap:false*/
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
@@ -15,6 +14,8 @@ import EmberHandlebars from "ember-handlebars-compiler";
 var compile = EmberHandlebars.compile;
 
 var view;
+
+var originalLookup = Ember.lookup;
 
 function appendView() {
   run(function() { view.appendTo('#qunit-fixture'); });
@@ -33,7 +34,6 @@ function registerRepeatHelper() {
 
 QUnit.module("Handlebars bound helpers", {
   setup: function() {
-    window.TemplateTests = Namespace.create();
   },
   teardown: function() {
     run(function() {
@@ -41,7 +41,7 @@ QUnit.module("Handlebars bound helpers", {
         view.destroy();
       }
     });
-    window.TemplateTests = undefined;
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -120,18 +120,20 @@ test("bound helpers should support keywords", function() {
   ok(view.$().text() === 'AB', "helper output is correct");
 });
 
-test("bound helpers should support global paths", function() {
+test("bound helpers should support global paths [DEPRECATED]", function() {
   EmberHandlebars.helper('capitalize', function(value) {
     return value.toUpperCase();
   });
 
-  TemplateTests.text = 'ab';
+  Ember.lookup = {Text: 'ab'};
 
   view = EmberView.create({
-    template: EmberHandlebars.compile("{{capitalize TemplateTests.text}}")
+    template: EmberHandlebars.compile("{{capitalize Text}}")
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, /Global lookup of Text from a Handlebars template is deprecated/);
 
   ok(view.$().text() === 'AB', "helper output is correct");
 });

@@ -1,7 +1,8 @@
 /*globals Foo:true, $foo:true */
 import { normalizeTuple } from "ember-metal/property_get";
 
-var obj, moduleOpts = {
+var obj;
+var moduleOpts = {
   setup: function() {
     obj = {
       foo: {
@@ -74,7 +75,9 @@ test('[obj, this.Foo.bar] -> [obj, Foo.bar]', function() {
 //
 
 test('[obj, Foo] -> [obj, Foo]', function() {
-  deepEqual(normalizeTuple(obj, 'Foo'), [obj, 'Foo']);
+  expectDeprecation(function(){
+    deepEqual(normalizeTuple(obj, 'Foo'), [obj, 'Foo']);
+  }, "normalizeTuple will return 'Foo' as a non-global. This behavior will change in the future (issue #3852)");
 });
 
 test('[obj, Foo.bar] -> [Foo, bar]', function() {

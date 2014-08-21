@@ -12,9 +12,9 @@ import { typeOf } from "ember-metal/utils";
 import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
+import ActionManager from "ember-views/system/action_manager";
 import View from "ember-views/views/view";
-
-var ActionHelper;
+import merge from "ember-metal/merge";
 
 //ES6TODO:
 // find a better way to do Ember.View.views without global state
@@ -133,7 +133,7 @@ export default EmberObject.extend({
   setup: function(addedEvents, rootElement) {
     var event, events = get(this, 'events');
 
-    jQuery.extend(events, addedEvents || {});
+    merge(events, addedEvents || {});
 
     if (!isNone(rootElement)) {
       set(this, 'rootElement', rootElement);
@@ -174,8 +174,8 @@ export default EmberObject.extend({
     var self = this;
 
     rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
-      var view = View.views[this.id],
-          result = true;
+      var view = View.views[this.id];
+      var result = true;
 
       var manager = self.canDispatchToEventManager ? self._findNearestEventManager(view, eventName) : null;
 
@@ -189,11 +189,8 @@ export default EmberObject.extend({
     });
 
     rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
-      //ES6TODO: Needed for ActionHelper (generally not available in ember-views test suite)
-      if (!ActionHelper) { ActionHelper = requireModule("ember-routing-handlebars/helpers/action")["ActionHelper"]; }
-
-      var actionId = jQuery(evt.currentTarget).attr('data-ember-action'),
-          action   = ActionHelper.registeredActions[actionId];
+      var actionId = jQuery(evt.currentTarget).attr('data-ember-action');
+      var action   = ActionManager.registeredActions[actionId];
 
       // We have to check for action here since in some cases, jQuery will trigger
       // an event on `removeChild` (i.e. focusout) after we've already torn down the
@@ -244,6 +241,6 @@ export default EmberObject.extend({
   },
 
   toString: function() {
-    return '(EventDisptacher)';
+    return '(EventDispatcher)';
   }
 });

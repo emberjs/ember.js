@@ -1,36 +1,8 @@
 # Ember Changelog
 
-### Ember 1.7.0-beta.5 (August 10, 2014)
-
-* Prevent duplicate message getting printed by errors in Route hooks.
-* Deprecate observing container views like arrays.
-* Add `catch` and `finally` to Transition.
-* [BUGFIX] paramsFor: don’t clobber falsy params.
-* [BUGFIX] Controllers with query params are unit testable.
-* [BUGFIX] Controllers have new QP values before setupController.
-* [BUGFIX] Fix initial render of {{input type=bound}} for checkboxes.
-* [BUGFIX] makeBoundHelper supports unquoted bound property options.
-
-### Ember 1.7.0-beta.4 (July 30, 2014)
-
-* [BUGFIX] link-to helper can be inserted in DOM when the router is not present.
-* [PERFORMANCE] Do not pass `arguments` around in a hot-path.
-* Remove Container.defaultContainer.
-* Polyfill contains for older browsers.
-* [BUGFIX] Ensure that `triggerEvent` handles all argument signatures properly.
-
-### Ember 1.7.0-beta.3 (July, 24, 2014)
-
-* [BUGFIX] Stub meta on AliasedProperty (fixes regression from beta.2 with Ember Data).
-* [DOC] Fixed issue with docs showing 'Ember.run' as 'run.run'.
-* [BUGFIX] SimpleHandlebarsView should not re-render if normalized value is unchanged.
-* Allow Router DSL to nest routes via `this.route`.
-* [BUGFIX] Don't pass function UNDEFINED as oldValue to computed properties.
-* [BUGFIX] dramatically improve performance of eachComputedProperty.
-* [BUGFIX] Prevent strict mode errors from superWrapper.
-* Deprecate Ember.DeferredMixin and Ember.Deferred.
-* Deprecate `.then` on Ember.Application.
-* Revert ember-routing-consistent-resources.
+* Deprecate usage of Internet Explorer 6 & 7.
+* [BREAKING] Remove deprecated controller action lookup. Support for pre-1.0.0 applications with actions in the root
+  of the controller (instead of inside the `actions` hash) has been removed.
 
 ### Ember 1.7.0-beta.2 (July, 16, 2014)
 
@@ -54,11 +26,6 @@
 * [FEATURE ember-routing-consistent-resources]
 * `uuid` is now consistently used across the project.
 * `Ember.uuid` is now an internal function instead of a property on `Ember` itself.
-* [BUGFIX] sync back burner: workaround IE's issue with try/finally without Catch.
-  Also no longer force deoptimization of the run loop queue flush.
-* [BREAKING BUGFIX] An empty array are treated as falsy value in `bind-attr` to be in consistent
-  with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty
-  array as truthy value in `bind-attr`.
 * [BREAKING BUGFIX] On Controllers, the content property is now derived from model. This reduces many
   caveats with model/content, and also sets a simple ground rule: Never set a controllers content,
   rather always set it's model and ember will do the right thing.
@@ -70,6 +37,9 @@
 
 ### Ember 1.6.0 (July, 7, 2014)
 
+* [BREAKING BUGFIX] An empty array is treated as falsy value in `bind-attr` to be in consistent
+  with `if` helper. Breaking for apps that relies on the previous behaviour which treats an empty
+  array as truthy value in `bind-attr`.
 * [BUGFIX] Ensure itemController's do not leak by tying them to the parent controller lifecycle.
 * [BUGFIX] Spaces in brace expansion throws an error.
 * [BUGFIX] Fix `MutableEnumerable.removeObjects`.

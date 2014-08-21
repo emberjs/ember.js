@@ -3,31 +3,32 @@ import { SimpleHandlebarsView } from 'ember-handlebars/views/handlebars_bound_vi
 QUnit.module('SimpleHandlebarsView');
 
 test('does not render if update is triggured by normalizedValue is the same as the previous normalizedValue', function(){
-  var html = null;
+  var value = null;
   var path = 'foo';
   var pathRoot = { 'foo': 'bar' };
-  var isEscaped = false;
+  var isEscaped = true;
   var templateData;
   var view = new SimpleHandlebarsView(path, pathRoot, isEscaped, templateData);
-
-  view.morph.html = function(newHTML) {
-    html = newHTML;
+  view._morph = {
+    update: function(newValue) {
+      value = newValue;
+    }
   };
 
-  equal(html, null);
+  equal(value, null);
 
   view.update();
 
-  equal(html, 'bar', 'expected call to morph.html with "bar"');
-  html = null;
+  equal(value, 'bar', 'expected call to morph.update with "bar"');
+  value = null;
 
   view.update();
 
-  equal(html, null, 'expected no call to morph.html');
+  equal(value, null, 'expected no call to morph.update');
 
   pathRoot.foo = 'baz'; // change property
 
   view.update();
 
-  equal(html, 'baz', 'expected call to morph.html with "baz"');
+  equal(value, 'baz', 'expected call to morph.update with "baz"');
 });

@@ -8,7 +8,7 @@ import { computed } from "ember-metal/computed";
 import { onLoad } from "ember-runtime/system/lazy_load";
 import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
-import keys from "ember-runtime/keys";
+import keys from "ember-metal/keys";
 import { isSimpleClick } from "ember-views/system/utils";
 import EmberComponent from "ember-views/views/component";
 import EmberHandlebars from "ember-handlebars";
@@ -46,8 +46,8 @@ var QueryParams = EmberObject.extend({
 
 function getResolvedPaths(options) {
 
-  var types = options.options.types,
-      data = options.options.data;
+  var types = options.options.types;
+  var data = options.options.data;
 
   return resolvePaths(options.context, options.params, { types: types, data: data });
 }
@@ -68,7 +68,19 @@ function getResolvedPaths(options) {
 **/
 var LinkView = Ember.LinkView = EmberComponent.extend({
   tagName: 'a',
+
+  /**
+    @deprecated Use current-when instead.
+    @property currentWhen
+  */
   currentWhen: null,
+
+  /**
+    Used to determine when this LinkView is active.
+
+    @property currentWhen
+  */
+  'current-when': null,
 
   /**
     Sets the `title` attribute of the `LinkView`'s HTML element.
@@ -199,6 +211,8 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
   init: function() {
     this._super.apply(this, arguments);
 
+    Ember.deprecate('Using currentWhen with {{link-to}} is deprecated in favor of `current-when`.', !this.currentWhen);
+
     // Map desired event name to invoke function
     var eventName = get(this, 'eventName');
     this.on(eventName, this, this._invoke);
@@ -224,11 +238,11 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
    @since 1.3.0
   **/
   _setupPathObservers: function(){
-    var helperParameters = this.parameters,
-        linkTextPath     = helperParameters.options.linkTextPath,
-        paths = getResolvedPaths(helperParameters),
-        length = paths.length,
-        path, i, normalizedPath;
+    var helperParameters = this.parameters;
+    var linkTextPath = helperParameters.options.linkTextPath;
+    var paths = getResolvedPaths(helperParameters);
+    var length = paths.length;
+    var path, i, normalizedPath;
 
     if (linkTextPath) {
       normalizedPath = getNormalizedPath(linkTextPath, helperParameters);
@@ -290,6 +304,9 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     or the application's current route is the route the `LinkView` would trigger
     transitions into.
 
+    The `currentWhen` property can match against multiple routes by separating
+    route names using the ` ` (space) character.
+
     @property active
   **/
   active: computed('loadedParams', function computeLinkViewActive() {
@@ -298,33 +315,33 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     var router = get(this, 'router');
     var loadedParams = get(this, 'loadedParams');
     var contexts = loadedParams.models;
-    var currentWhen = this.currentWhen;
+    var currentWhen = this['current-when'] || this.currentWhen;
     var isCurrentWhenSpecified = Boolean(currentWhen);
     currentWhen = currentWhen || loadedParams.targetRouteName;
 
-    var handlers = router.router.recognizer.handlersFor(currentWhen);
-    var leafName = handlers[handlers.length-1].handler;
-    var maximumContexts = numberOfContextsAcceptedByHandler(currentWhen, handlers);
+    function isActiveForRoute(routeName) {
+      var handlers = router.router.recognizer.handlersFor(routeName);
+      var leafName = handlers[handlers.length-1].handler;
+      var maximumContexts = numberOfContextsAcceptedByHandler(routeName, handlers);
 
-    // NOTE: any ugliness in the calculation of activeness is largely
-    // due to the fact that we support automatic normalizing of
-    // `resource` -> `resource.index`, even though there might be
-    // dynamic segments / query params defined on `resource.index`
-    // which complicates (and makes somewhat ambiguous) the calculation
-    // of activeness for links that link to `resource` instead of
-    // directly to `resource.index`.
+      // NOTE: any ugliness in the calculation of activeness is largely
+      // due to the fact that we support automatic normalizing of
+      // `resource` -> `resource.index`, even though there might be
+      // dynamic segments / query params defined on `resource.index`
+      // which complicates (and makes somewhat ambiguous) the calculation
+      // of activeness for links that link to `resource` instead of
+      // directly to `resource.index`.
 
-    // if we don't have enough contexts revert back to full route name
-    // this is because the leaf route will use one of the contexts
-    if (contexts.length > maximumContexts) {
-      currentWhen = leafName;
-    }
+      // if we don't have enough contexts revert back to full route name
+      // this is because the leaf route will use one of the contexts
+      if (contexts.length > maximumContexts) {
+        routeName = leafName;
+      }
 
-    var args = routeArgs(currentWhen, contexts, null);
-    var isActive = router.isActive.apply(router, args);
-    if (!isActive) { return false; }
+      var args = routeArgs(routeName, contexts, null);
+      var isActive = router.isActive.apply(router, args);
+      if (!isActive) { return false; }
 
-    if (Ember.FEATURES.isEnabled("query-params-new")) {
       var emptyQueryParams = Ember.isEmpty(Ember.keys(loadedParams.queryParams));
 
       if (!isCurrentWhenSpecified && !emptyQueryParams && isActive) {
@@ -333,9 +350,22 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
         router._prepareQueryParams(loadedParams.targetRouteName, loadedParams.models, visibleQueryParams);
         isActive = shallowEqual(visibleQueryParams, router.router.state.queryParams);
       }
+
+      return isActive;
     }
 
-    if (isActive) { return get(this, 'activeClass'); }
+    if (Ember.FEATURES.isEnabled("ember-routing-multi-current-when")) {
+      currentWhen = currentWhen.split(' ');
+      for (var i = 0, len = currentWhen.length; i < len; i++) {
+        if (isActiveForRoute(currentWhen[i])) {
+          return get(this, 'activeClass');
+        }
+      }
+    } else {
+      if (isActiveForRoute(currentWhen)) {
+        return get(this, 'activeClass');
+      }
+    }
   }),
 
   /**
@@ -396,8 +426,15 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
       return false;
     }
 
-    var router = get(this, 'router'),
-        loadedParams = get(this, 'loadedParams');
+    if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
+      var targetAttribute2 = get(this, 'target');
+      if (targetAttribute2 && targetAttribute2 !== '_self') {
+        return false;
+      }
+    }
+
+    var router = get(this, 'router');
+    var loadedParams = get(this, 'loadedParams');
 
     var transition = router._doTransition(loadedParams.targetRouteName, loadedParams.models, loadedParams.queryParams);
     if (get(this, 'replace')) {
@@ -465,13 +502,13 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     @return {Array}
    */
   resolvedParams: computed('router.url', function() {
-    var parameters = this.parameters,
-        options = parameters.options,
-        types = options.types,
-        data = options.data,
-        targetRouteName, models;
-
+    var parameters = this.parameters;
+    var options = parameters.options;
+    var types = options.types;
+    var data = options.data;
+    var targetRouteName, models;
     var onlyQueryParamsSupplied = (parameters.params.length === 0);
+
     if (onlyQueryParamsSupplied) {
       var appController = this.container.lookup('controller:application');
       targetRouteName = get(appController, 'currentRouteName');
@@ -504,8 +541,8 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     var router = get(this, 'router');
     if (!router) { return; }
 
-    var resolvedParams = get(this, 'resolvedParams'),
-        namedRoute = resolvedParams.targetRouteName;
+    var resolvedParams = get(this, 'resolvedParams');
+    var namedRoute = resolvedParams.targetRouteName;
 
     if (!namedRoute) { return; }
 
@@ -533,18 +570,16 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
   href: computed('loadedParams', function computeLinkViewHref() {
     if (get(this, 'tagName') !== 'a') { return; }
 
-    var router = get(this, 'router'),
-        loadedParams = get(this, 'loadedParams');
+    var router = get(this, 'router');
+    var loadedParams = get(this, 'loadedParams');
 
     if (!loadedParams) {
       return get(this, 'loadingHref');
     }
 
     var visibleQueryParams = {};
-    if (Ember.FEATURES.isEnabled("query-params-new")) {
-      merge(visibleQueryParams, loadedParams.queryParams);
-      router._prepareQueryParams(loadedParams.targetRouteName, loadedParams.models, visibleQueryParams);
-    }
+    merge(visibleQueryParams, loadedParams.queryParams);
+    router._prepareQueryParams(loadedParams.targetRouteName, loadedParams.models, visibleQueryParams);
 
     var args = routeArgs(loadedParams.targetRouteName, loadedParams.models, visibleQueryParams);
     var result = router.generate.apply(router, args);
@@ -841,9 +876,9 @@ if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
   @see {Ember.LinkView}
 */
 function linkToHelper(name) {
-  var options = slice.call(arguments, -1)[0],
-      params = slice.call(arguments, 0, -1),
-      hash = options.hash;
+  var options = slice.call(arguments, -1)[0];
+  var params = slice.call(arguments, 0, -1);
+  var hash = options.hash;
 
   Ember.assert("You must provide one or more parameters to the link-to helper.", params.length);
 
@@ -880,15 +915,18 @@ function linkToHelper(name) {
   return viewHelper.call(this, LinkView, options);
 }
 
+/**
+  @method query-params
+  @for Ember.Handlebars.helpers
+  @param {Object} hash takes a hash of query parameters
+  @return {String} HTML string
+*/
+export function queryParamsHelper(options) {
+  Ember.assert(fmt("The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName='%@') as opposed to just (query-params '%@')", [options, options]), arguments.length === 1);
 
-if (Ember.FEATURES.isEnabled("query-params-new")) {
-  EmberHandlebars.registerHelper('query-params', function queryParamsHelper(options) {
-    Ember.assert(fmt("The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName='%@') as opposed to just (query-params '%@')", [options, options]), arguments.length === 1);
-
-    return QueryParams.create({
-      values: options.hash,
-      types: options.hashTypes
-    });
+  return QueryParams.create({
+    values: options.hash,
+    types: options.hashTypes
   });
 }
 
@@ -908,9 +946,9 @@ function deprecatedLinkToHelper() {
 }
 
 function getResolvedQueryParams(linkView, targetRouteName) {
-  var helperParameters = linkView.parameters,
-      queryParamsObject = linkView.queryParamsObject,
-      resolvedQueryParams = {};
+  var helperParameters = linkView.parameters;
+  var queryParamsObject = linkView.queryParamsObject;
+  var resolvedQueryParams = {};
 
   if (!queryParamsObject) { return resolvedQueryParams; }
   var rawParams = queryParamsObject.values;
@@ -918,8 +956,8 @@ function getResolvedQueryParams(linkView, targetRouteName) {
   for (var key in rawParams) {
     if (!rawParams.hasOwnProperty(key)) { continue; }
 
-    var value = rawParams[key],
-        type = queryParamsObject.types[key];
+    var value = rawParams[key];
+    var type = queryParamsObject.types[key];
 
     if (type === 'ID') {
       var normalizedPath = getNormalizedPath(value, helperParameters);

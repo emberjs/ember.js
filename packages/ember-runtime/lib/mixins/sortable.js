@@ -118,10 +118,10 @@ export default Mixin.create(MutableEnumerable, {
   sortFunction: compare,
 
   orderBy: function(item1, item2) {
-    var result = 0,
-        sortProperties = get(this, 'sortProperties'),
-        sortAscending = get(this, 'sortAscending'),
-        sortFunction = get(this, 'sortFunction');
+    var result = 0;
+    var sortProperties = get(this, 'sortProperties');
+    var sortAscending = get(this, 'sortAscending');
+    var sortFunction = get(this, 'sortFunction');
 
     Ember.assert("you need to define `sortProperties`", !!sortProperties);
 
@@ -138,8 +138,8 @@ export default Mixin.create(MutableEnumerable, {
   },
 
   destroy: function() {
-    var content = get(this, 'content'),
-        sortProperties = get(this, 'sortProperties');
+    var content = get(this, 'content');
+    var sortProperties = get(this, 'sortProperties');
 
     if (content && sortProperties) {
       forEach(content, function(item) {
@@ -162,10 +162,10 @@ export default Mixin.create(MutableEnumerable, {
   */
 
   arrangedContent: computed('content', 'sortProperties.@each', function(key, value) {
-    var content = get(this, 'content'),
-        isSorted = get(this, 'isSorted'),
-        sortProperties = get(this, 'sortProperties'),
-        self = this;
+    var content = get(this, 'content');
+    var isSorted = get(this, 'isSorted');
+    var sortProperties = get(this, 'sortProperties');
+    var self = this;
 
     if (content && isSorted) {
       content = content.slice();
@@ -184,8 +184,8 @@ export default Mixin.create(MutableEnumerable, {
   }),
 
   _contentWillChange: beforeObserver('content', function() {
-    var content = get(this, 'content'),
-        sortProperties = get(this, 'sortProperties');
+    var content = get(this, 'content');
+    var sortProperties = get(this, 'sortProperties');
 
     if (content && sortProperties) {
       forEach(content, function(item) {
@@ -238,8 +238,8 @@ export default Mixin.create(MutableEnumerable, {
   },
 
   contentArrayDidChange: function(array, idx, removedCount, addedCount) {
-    var isSorted = get(this, 'isSorted'),
-        sortProperties = get(this, 'sortProperties');
+    var isSorted = get(this, 'isSorted');
+    var sortProperties = get(this, 'sortProperties');
 
     if (isSorted) {
       var addedObjects = array.slice(idx, idx+addedCount);
@@ -265,12 +265,12 @@ export default Mixin.create(MutableEnumerable, {
   },
 
   contentItemSortPropertyDidChange: function(item) {
-    var arrangedContent = get(this, 'arrangedContent'),
-        oldIndex = arrangedContent.indexOf(item),
-        leftItem = arrangedContent.objectAt(oldIndex - 1),
-        rightItem = arrangedContent.objectAt(oldIndex + 1),
-        leftResult = leftItem && this.orderBy(item, leftItem),
-        rightResult = rightItem && this.orderBy(item, rightItem);
+    var arrangedContent = get(this, 'arrangedContent');
+    var oldIndex = arrangedContent.indexOf(item);
+    var leftItem = arrangedContent.objectAt(oldIndex - 1);
+    var rightItem = arrangedContent.objectAt(oldIndex + 1);
+    var leftResult = leftItem && this.orderBy(item, leftItem);
+    var rightResult = rightItem && this.orderBy(item, rightItem);
 
     if (leftResult < 0 || rightResult > 0) {
       arrangedContent.removeObject(item);

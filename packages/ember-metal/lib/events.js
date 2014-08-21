@@ -4,17 +4,18 @@
 import Ember from "ember-metal/core";
 import {
   meta,
-  META_KEY,
   tryFinally,
   apply,
   applyStr
 } from "ember-metal/utils";
 import { create } from "ember-metal/platform";
 
-var a_slice = [].slice,
-    metaFor = meta,
-    /* listener flags */
-    ONCE = 1, SUSPENDED = 2;
+var a_slice = [].slice;
+var metaFor = meta;
+
+/* listener flags */
+var ONCE = 1;
+var SUSPENDED = 2;
 
 
 /*
@@ -49,8 +50,8 @@ function indexOf(array, target, method) {
 }
 
 function actionsFor(obj, eventName) {
-  var meta = metaFor(obj, true),
-      actions;
+  var meta = metaFor(obj, true);
+  var actions;
 
   if (!meta.listeners) { meta.listeners = {}; }
 
@@ -72,15 +73,15 @@ function actionsFor(obj, eventName) {
 }
 
 export function listenersUnion(obj, eventName, otherActions) {
-  var meta = obj[META_KEY],
-      actions = meta && meta.listeners && meta.listeners[eventName];
+  var meta = obj['__ember_meta__'];
+  var actions = meta && meta.listeners && meta.listeners[eventName];
 
   if (!actions) { return; }
   for (var i = actions.length - 3; i >= 0; i -= 3) {
-    var target = actions[i],
-        method = actions[i+1],
-        flags = actions[i+2],
-        actionIndex = indexOf(otherActions, target, method);
+    var target = actions[i];
+    var method = actions[i+1];
+    var flags = actions[i+2];
+    var actionIndex = indexOf(otherActions, target, method);
 
     if (actionIndex === -1) {
       otherActions.push(target, method, flags);
@@ -89,16 +90,16 @@ export function listenersUnion(obj, eventName, otherActions) {
 }
 
 export function listenersDiff(obj, eventName, otherActions) {
-  var meta = obj[META_KEY],
-      actions = meta && meta.listeners && meta.listeners[eventName],
-      diffActions = [];
+  var meta = obj['__ember_meta__'];
+  var actions = meta && meta.listeners && meta.listeners[eventName];
+  var diffActions = [];
 
   if (!actions) { return; }
   for (var i = actions.length - 3; i >= 0; i -= 3) {
-    var target = actions[i],
-        method = actions[i+1],
-        flags = actions[i+2],
-        actionIndex = indexOf(otherActions, target, method);
+    var target = actions[i];
+    var method = actions[i+1];
+    var flags = actions[i+2];
+    var actionIndex = indexOf(otherActions, target, method);
 
     if (actionIndex !== -1) { continue; }
 
@@ -128,9 +129,9 @@ export function addListener(obj, eventName, target, method, once) {
     target = null;
   }
 
-  var actions = actionsFor(obj, eventName),
-      actionIndex = indexOf(actions, target, method),
-      flags = 0;
+  var actions = actionsFor(obj, eventName);
+  var actionIndex = indexOf(actions, target, method);
+  var flags = 0;
 
   if (once) flags |= ONCE;
 
@@ -164,8 +165,8 @@ function removeListener(obj, eventName, target, method) {
   }
 
   function _removeListener(target, method) {
-    var actions = actionsFor(obj, eventName),
-        actionIndex = indexOf(actions, target, method);
+    var actions = actionsFor(obj, eventName);
+    var actionIndex = indexOf(actions, target, method);
 
     // action doesn't exist, give up silently
     if (actionIndex === -1) { return; }
@@ -180,8 +181,8 @@ function removeListener(obj, eventName, target, method) {
   if (method) {
     _removeListener(target, method);
   } else {
-    var meta = obj[META_KEY],
-        actions = meta && meta.listeners && meta.listeners[eventName];
+    var meta = obj['__ember_meta__'];
+    var actions = meta && meta.listeners && meta.listeners[eventName];
 
     if (!actions) { return; }
     for (var i = actions.length - 3; i >= 0; i -= 3) {
@@ -214,8 +215,8 @@ export function suspendListener(obj, eventName, target, method, callback) {
     target = null;
   }
 
-  var actions = actionsFor(obj, eventName),
-      actionIndex = indexOf(actions, target, method);
+  var actions = actionsFor(obj, eventName);
+  var actionIndex = indexOf(actions, target, method);
 
   if (actionIndex !== -1) {
     actions[actionIndex+2] |= SUSPENDED; // mark the action as suspended
@@ -246,9 +247,9 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
     target = null;
   }
 
-  var suspendedActions = [],
-      actionsList = [],
-      eventName, actions, i, l;
+  var suspendedActions = [];
+  var actionsList = [];
+  var eventName, actions, i, l;
 
   for (i=0, l=eventNames.length; i<l; i++) {
     eventName = eventNames[i];
@@ -283,7 +284,7 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
   @param obj
 */
 export function watchedEvents(obj) {
-  var listeners = obj[META_KEY].listeners, ret = [];
+  var listeners = obj['__ember_meta__'].listeners, ret = [];
 
   if (listeners) {
     for(var eventName in listeners) {
@@ -314,7 +315,7 @@ export function sendEvent(obj, eventName, params, actions) {
   }
 
   if (!actions) {
-    var meta = obj[META_KEY];
+    var meta = obj['__ember_meta__'];
     actions = meta && meta.listeners && meta.listeners[eventName];
   }
 
@@ -351,8 +352,8 @@ export function sendEvent(obj, eventName, params, actions) {
   @param {String} eventName
 */
 export function hasListeners(obj, eventName) {
-  var meta = obj[META_KEY],
-      actions = meta && meta.listeners && meta.listeners[eventName];
+  var meta = obj['__ember_meta__'];
+  var actions = meta && meta.listeners && meta.listeners[eventName];
 
   return !!(actions && actions.length);
 }
@@ -366,14 +367,14 @@ export function hasListeners(obj, eventName) {
 */
 export function listenersFor(obj, eventName) {
   var ret = [];
-  var meta = obj[META_KEY],
-      actions = meta && meta.listeners && meta.listeners[eventName];
+  var meta = obj['__ember_meta__'];
+  var actions = meta && meta.listeners && meta.listeners[eventName];
 
   if (!actions) { return ret; }
 
   for (var i = 0, l = actions.length; i < l; i += 3) {
-    var target = actions[i],
-        method = actions[i+1];
+    var target = actions[i];
+    var method = actions[i+1];
     ret.push([target, method]);
   }
 
@@ -404,8 +405,8 @@ export function listenersFor(obj, eventName) {
   @return func
 */
 export function on(){
-  var func = a_slice.call(arguments, -1)[0],
-      events = a_slice.call(arguments, 0, -1);
+  var func = a_slice.call(arguments, -1)[0];
+  var events = a_slice.call(arguments, 0, -1);
   func.__ember_listens__ = events;
   return func;
 }

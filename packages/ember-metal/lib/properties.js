@@ -3,17 +3,14 @@
 */
 
 import Ember from "ember-metal/core";
-import {
-  META_KEY,
-  meta
-} from "ember-metal/utils";
+import { meta } from "ember-metal/utils";
 import { platform } from "ember-metal/platform";
 import { overrideChains } from "ember-metal/property_events";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
-var metaFor = meta,
-    objectDefineProperty = platform.defineProperty;
+var metaFor = meta;
+var objectDefineProperty = platform.defineProperty;
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
@@ -44,7 +41,7 @@ var MANDATORY_SETTER_FUNCTION = Ember.MANDATORY_SETTER_FUNCTION = function(value
 
 var DEFAULT_GETTER_FUNCTION = Ember.DEFAULT_GETTER_FUNCTION = function DEFAULT_GETTER_FUNCTION(name) {
   return function() {
-    var meta = this[META_KEY];
+    var meta = this['__ember_meta__'];
     return meta && meta.values[name];
   };
 };
@@ -100,7 +97,9 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   if (!meta) meta = metaFor(obj);
   descs = meta.descs;
   existingDesc = meta.descs[keyName];
-  watching = meta.watching[keyName] > 0;
+  var watchEntry = meta.watching[keyName];
+
+  watching = watchEntry !== undefined && watchEntry > 0;
 
   if (existingDesc instanceof Descriptor) {
     existingDesc.teardown(obj, keyName);

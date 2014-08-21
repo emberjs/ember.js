@@ -4,7 +4,7 @@ import run from "ember-metal/run_loop";
 
 import EmberView from "ember-views/views/view";
 
-var parentView, childView, childViews;
+var parentView, childView;
 
 QUnit.module('tests/views/view/child_views_tests.js', {
   setup: function() {
@@ -25,8 +25,6 @@ QUnit.module('tests/views/view/child_views_tests.js', {
       parentView.destroy();
       childView.destroy();
     });
-
-    childViews = null;
   }
 });
 
@@ -42,7 +40,7 @@ test("should render an inserted child view when the child is inserted before a D
   equal(parentView.$().text(), 'Ember', 'renders the child view after the parent view');
 });
 
-test("should not duplicate childViews when rerendering in buffer", function() {
+test("should not duplicate childViews when rerendering", function() {
 
   var Inner = EmberView.extend({
     template: function() { return ''; }
@@ -66,16 +64,14 @@ test("should not duplicate childViews when rerendering in buffer", function() {
   });
 
   run(function() {
-    outer.renderToBuffer();
+    outer.append();
   });
 
   equal(outer.get('middle.childViews.length'), 2, 'precond middle has 2 child views rendered to buffer');
 
-  raises(function() {
-    run(function() {
-      outer.middle.rerender();
-    });
-  }, /Something you did caused a view to re-render after it rendered but before it was inserted into the DOM./);
+  run(function() {
+    outer.middle.rerender();
+  });
 
   equal(outer.get('middle.childViews.length'), 2, 'middle has 2 child views rendered to buffer');
 

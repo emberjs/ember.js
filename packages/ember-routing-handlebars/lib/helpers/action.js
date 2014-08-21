@@ -5,6 +5,7 @@ import { uuid } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
 
 import { isSimpleClick } from "ember-views/system/utils";
+import ActionManager from "ember-views/system/action_manager";
 import EmberRouter from "ember-routing/system/router";
 
 import EmberHandlebars from "ember-handlebars";
@@ -27,15 +28,17 @@ function args(options, actionName) {
   var ret = [];
   if (actionName) { ret.push(actionName); }
 
-  var types = options.options.types.slice(1),
-      data = options.options.data;
+  var types = options.options.types.slice(1);
+  var data = options.options.data;
 
   return ret.concat(resolveParams(options.context, options.params, { types: types, data: data }));
 }
 
-var ActionHelper = {
-  registeredActions: {}
-};
+var ActionHelper = {};
+
+// registeredActions is re-exported for compatibility with older plugins
+// that were using this undocumented API.
+ActionHelper.registeredActions = ActionManager.registeredActions;
 
 export { ActionHelper };
 
@@ -67,10 +70,20 @@ var isAllowedEvent = function(event, allowedKeys) {
   return allowed;
 };
 
+function isKeyEvent(eventName) {
+  return ['keyUp', 'keyPress', 'keyDown'].indexOf(eventName) !== -1;
+}
+
+function ignoreKeyEvent(eventName, event, keyCode) {
+  var any = 'any';
+  keyCode = keyCode || any;
+  return isKeyEvent(eventName) && keyCode !== any && keyCode !== event.which.toString();
+}
+
 ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
   var actionId = uuid();
 
-  ActionHelper.registeredActions[actionId] = {
+  ActionManager.registeredActions[actionId] = {
     eventName: options.eventName,
     handler: function handleRegisteredAction(event) {
       if (!isAllowedEvent(event, allowedKeys)) { return true; }
@@ -83,9 +96,16 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
         event.stopPropagation();
       }
 
-      var target = options.target,
-          parameters = options.parameters,
-          actionName;
+      var target = options.target;
+      var parameters = options.parameters;
+      var eventName = options.eventName;
+      var actionName;
+
+      if (Ember.FEATURES.isEnabled("ember-routing-handlebars-action-with-key-code")) {
+        if (ignoreKeyEvent(eventName, event, options.withKeyCode)) {
+          return;
+        }
+      }
 
       if (target.target) {
         target = handlebarsGet(target.root, target.target, target.options);
@@ -118,7 +138,7 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
   };
 
   options.view.on('willClearRender', function() {
-    delete ActionHelper.registeredActions[actionId];
+    delete ActionManager.registeredActions[actionId];
   });
 
   return actionId;
@@ -294,11 +314,10 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
   @param {Hash} options
 */
 export function actionHelper(actionName) {
-  var options = arguments[arguments.length - 1],
-      contexts = a_slice.call(arguments, 1, -1);
-
-  var hash = options.hash,
-      controller = options.data.keywords.controller;
+  var options = arguments[arguments.length - 1];
+  var contexts = a_slice.call(arguments, 1, -1);
+  var hash = options.hash;
+  var controller = options.data.keywords.controller;
 
   // create a hash to pass along to registerAction
   var action = {
@@ -312,6 +331,7 @@ export function actionHelper(actionName) {
     bubbles: hash.bubbles,
     preventDefault: hash.preventDefault,
     target: { options: options },
+    withKeyCode: hash.withKeyCode,
     boundProperty: options.types[0] === "ID"
   };
 

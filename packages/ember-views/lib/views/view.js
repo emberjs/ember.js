@@ -49,26 +49,15 @@ import jQuery from "ember-views/system/jquery";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 
 import CoreView from "ember-views/views/core_view";
-import ViewCollection from "ember-views/views/view_collection";
 
 /**
 @module ember
 @submodule ember-views
 */
-
-var ContainerView;
-
-function nullViewsBuffer(view) {
-  view.buffer = null;
-
-}
-
-function clearCachedElement(view) {
-  meta(view).cache.element = undefined;
-}
-
 var childViewsProperty = computed(function() {
-  var childViews = this._childViews, ret = emberA(), view = this;
+  var childViews = this._childViews;
+  var ret = emberA();
+  var view = this;
 
   forEach(childViews, function(view) {
     var currentChildViews;
@@ -82,12 +71,6 @@ var childViewsProperty = computed(function() {
   });
 
   ret.replace = function (idx, removedCount, addedViews) {
-    if (!ContainerView) { ContainerView = requireModule('ember-views/views/container_view')['default']; } // ES6TODO: stupid circular dep
-
-    if (view instanceof ContainerView) {
-      Ember.deprecate("Manipulating an Ember.ContainerView through its childViews property is deprecated. Please use the ContainerView instance itself as an Ember.MutableArray.");
-      return view.replace(idx, removedCount, addedViews);
-    }
     throw new EmberError("childViews is immutable");
   };
 
@@ -606,8 +589,9 @@ var EMPTY_ARRAY = [];
   on the descendent.
 
   ```javascript
-  OuterView = Ember.View.extend({
-    template: Ember.Handlebars.compile("outer {{#view InnerView}}inner{{/view}} outer"),
+  var App = Ember.Application.create();
+  App.OuterView = Ember.View.extend({
+    template: Ember.Handlebars.compile("outer {{#view 'inner'}}inner{{/view}} outer"),
     eventManager: Ember.Object.create({
       mouseEnter: function(event, view) {
         // view might be instance of either
@@ -617,7 +601,7 @@ var EMPTY_ARRAY = [];
     })
   });
 
-  InnerView = Ember.View.extend({
+  App.InnerView = Ember.View.extend({
     click: function(event) {
       // will be called if rendered inside
       // an OuterView because OuterView's
@@ -761,8 +745,8 @@ var View = CoreView.extend({
   template: computed('templateName', function(key, value) {
     if (value !== undefined) { return value; }
 
-    var templateName = get(this, 'templateName'),
-        template = this.templateForName(templateName, 'template');
+    var templateName = get(this, 'templateName');
+    var template = this.templateForName(templateName, 'template');
 
     Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
 
@@ -796,8 +780,8 @@ var View = CoreView.extend({
     @type Function
   */
   layout: computed(function(key) {
-    var layoutName = get(this, 'layoutName'),
-        layout = this.templateForName(layoutName, 'layout');
+    var layoutName = get(this, 'layoutName');
+    var layout = this.templateForName(layoutName, 'layout');
 
     Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || layout);
 
@@ -956,8 +940,8 @@ var View = CoreView.extend({
     @return Ember.View
   */
   nearestOfType: function(klass) {
-    var view = get(this, 'parentView'),
-        isOfType = klass instanceof Mixin ?
+    var view = get(this, 'parentView');
+    var isOfType = klass instanceof Mixin ?
                    function(view) { return klass.detect(view); } :
                    function(view) { return klass.detect(view.constructor); };
 
@@ -1103,21 +1087,6 @@ var View = CoreView.extend({
     return this.currentState.rerender(this);
   },
 
-  clearRenderedChildren: function() {
-    var lengthBefore = this.lengthBeforeRender,
-        lengthAfter  = this.lengthAfterRender;
-
-    // If there were child views created during the last call to render(),
-    // remove them under the assumption that they will be re-created when
-    // we re-render.
-
-    // VIEW-TODO: Unit test this path.
-    var childViews = this._childViews;
-    for (var i=lengthAfter-1; i>=lengthBefore; i--) {
-      if (childViews[i]) { childViews[i].destroy(); }
-    }
-  },
-
   /**
     Iterates over the view's `classNameBindings` array, inserts the value
     of the specified property into the `classNames` array, then creates an
@@ -1128,8 +1097,8 @@ var View = CoreView.extend({
     @private
   */
   _applyClassNameBindings: function(classBindings) {
-    var classNames = this.classNames,
-    elem, newClass, dasherizedClass;
+    var classNames = this.classNames;
+    var elem, newClass, dasherizedClass;
 
     // Loop through all of the configured bindings. These will be either
     // property names ('isUrgent') or property paths relative to the view
@@ -1208,13 +1177,13 @@ var View = CoreView.extend({
     @private
   */
   _applyAttributeBindings: function(buffer, attributeBindings) {
-    var attributeValue,
-        unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
+    var attributeValue;
+    var unspecifiedAttributeBindings = this._unspecifiedAttributeBindings = this._unspecifiedAttributeBindings || {};
 
     forEach(attributeBindings, function(binding) {
-      var split = binding.split(':'),
-          property = split[0],
-          attributeName = split[1] || property;
+      var split = binding.split(':');
+      var property = split[0];
+      var attributeName = split[1] || property;
 
       if (property in this) {
         this._setupAttributeBindingObservation(property, attributeName);
@@ -1304,13 +1273,7 @@ var View = CoreView.extend({
     @property element
     @type DOMElement
   */
-  element: computed('_parentView', function(key, value) {
-    if (value !== undefined) {
-      return this.currentState.setElement(this, value);
-    } else {
-      return this.currentState.getElement(this);
-    }
-  }),
+  element: null,
 
   /**
     Returns a jQuery object for this view's element. If you pass in a selector
@@ -1329,9 +1292,9 @@ var View = CoreView.extend({
   },
 
   mutateChildViews: function(callback) {
-    var childViews = this._childViews,
-        idx = childViews.length,
-        view;
+    var childViews = this._childViews;
+    var idx = childViews.length;
+    var view;
 
     while(--idx >= 0) {
       view = childViews[idx];
@@ -1346,8 +1309,8 @@ var View = CoreView.extend({
 
     if (!childViews) { return this; }
 
-    var len = childViews.length,
-        view, idx;
+    var len = childViews.length;
+    var view, idx;
 
     for (idx = 0; idx < len; idx++) {
       view = childViews[idx];
@@ -1377,14 +1340,13 @@ var View = CoreView.extend({
     @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
     @return {Ember.View} receiver
   */
-  appendTo: function(target) {
-    // Schedule the DOM element to be created and appended to the given
-    // element after bindings have synchronized.
-    this._insertElementLater(function() {
-      Ember.assert("You tried to append to (" + target + ") but that isn't in the DOM", jQuery(target).length > 0);
-      Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !jQuery(target).is('.ember-view') && !jQuery(target).parents().is('.ember-view'));
-      this.$().appendTo(target);
-    });
+  appendTo: function(selector) {
+    var target = jQuery(selector);
+
+    Ember.assert("You tried to append to (" + selector + ") but that isn't in the DOM", target.length > 0);
+    Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !target.is('.ember-view') && !target.parents().is('.ember-view'));
+
+    this.constructor.renderer.appendTo(this, target[0]);
 
     return this;
   },
@@ -1402,47 +1364,15 @@ var View = CoreView.extend({
     @param {String|DOMElement|jQuery} target A selector, element, HTML string, or jQuery object
     @return {Ember.View} received
   */
-  replaceIn: function(target) {
-    Ember.assert("You tried to replace in (" + target + ") but that isn't in the DOM", jQuery(target).length > 0);
-    Ember.assert("You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.", !jQuery(target).is('.ember-view') && !jQuery(target).parents().is('.ember-view'));
+  replaceIn: function(selector) {
+    var target = jQuery(selector);
 
-    this._insertElementLater(function() {
-      jQuery(target).empty();
-      this.$().appendTo(target);
-    });
+    Ember.assert("You tried to replace in (" + selector + ") but that isn't in the DOM", target.length > 0);
+    Ember.assert("You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.", !target.is('.ember-view') && !target.parents().is('.ember-view'));
+
+    this.constructor.renderer.replaceIn(this, target[0]);
 
     return this;
-  },
-
-  /**
-    Schedules a DOM operation to occur during the next render phase. This
-    ensures that all bindings have finished synchronizing before the view is
-    rendered.
-
-    To use, pass a function that performs a DOM operation.
-
-    Before your function is called, this view and all child views will receive
-    the `willInsertElement` event. After your function is invoked, this view
-    and all of its child views will receive the `didInsertElement` event.
-
-    ```javascript
-    view._insertElementLater(function() {
-      this.createElement();
-      this.$().appendTo('body');
-    });
-    ```
-
-    @method _insertElementLater
-    @param {Function} fn the function that inserts the element into the DOM
-    @private
-  */
-  _insertElementLater: function(fn) {
-    this._scheduledInsert = run.scheduleOnce('render', this, '_insertElement', fn);
-  },
-
-  _insertElement: function (fn) {
-    this._scheduledInsert = null;
-    this.currentState.insertElement(this, fn);
   },
 
   /**
@@ -1478,9 +1408,6 @@ var View = CoreView.extend({
     // In the interim, we will just re-render if that happens. It is more
     // important than elements get garbage collected.
     if (!this.removedFromDOM) { this.destroyElement(); }
-    this.invokeRecursively(function(view) {
-      if (view.clearRenderedChildren) { view.clearRenderedChildren(); }
-    });
   },
 
   elementId: null,
@@ -1502,20 +1429,19 @@ var View = CoreView.extend({
   },
 
   /**
-    Creates a DOM representation of the view and all of its
-    child views by recursively calling the `render()` method.
+    Creates a DOM representation of the view and all of its child views by
+    recursively calling the `render()` method.
 
-    After the element has been created, `didInsertElement` will
+    After the element has been inserted into the DOM, `didInsertElement` will
     be called on this view and all of its child views.
 
     @method createElement
     @return {Ember.View} receiver
   */
   createElement: function() {
-    if (get(this, 'element')) { return this; }
+    if (this.element) { return this; }
 
-    var buffer = this.renderToBuffer();
-    set(this, 'element', buffer.element());
+    this.constructor.renderer.renderTree(this);
 
     return this;
   },
@@ -1546,65 +1472,6 @@ var View = CoreView.extend({
   willClearRender: Ember.K,
 
   /**
-    Run this callback on the current view (unless includeSelf is false) and recursively on child views.
-
-    @method invokeRecursively
-    @param fn {Function}
-    @param includeSelf {Boolean} Includes itself if true.
-    @private
-  */
-  invokeRecursively: function(fn, includeSelf) {
-    var childViews = (includeSelf === false) ? this._childViews : [this];
-    var currentViews, view, currentChildViews;
-
-    while (childViews.length) {
-      currentViews = childViews.slice();
-      childViews = [];
-
-      for (var i=0, l=currentViews.length; i<l; i++) {
-        view = currentViews[i];
-        currentChildViews = view._childViews ? view._childViews.slice(0) : null;
-        fn(view);
-        if (currentChildViews) {
-          childViews.push.apply(childViews, currentChildViews);
-        }
-      }
-    }
-  },
-
-  triggerRecursively: function(eventName) {
-    var childViews = [this], currentViews, view, currentChildViews;
-
-    while (childViews.length) {
-      currentViews = childViews.slice();
-      childViews = [];
-
-      for (var i=0, l=currentViews.length; i<l; i++) {
-        view = currentViews[i];
-        currentChildViews = view._childViews ? view._childViews.slice(0) : null;
-        if (view.trigger) { view.trigger(eventName); }
-        if (currentChildViews) {
-          childViews.push.apply(childViews, currentChildViews);
-        }
-
-      }
-    }
-  },
-
-  viewHierarchyCollection: function() {
-    var currentView, viewCollection = new ViewCollection([this]);
-
-    for (var i = 0; i < viewCollection.length; i++) {
-      currentView = viewCollection.objectAt(i);
-      if (currentView._childViews) {
-        viewCollection.push.apply(viewCollection, currentView._childViews);
-      }
-    }
-
-    return viewCollection;
-  },
-
-  /**
     Destroys any existing element along with the element for any child views
     as well. If the view does not currently have a element, then this method
     will do nothing.
@@ -1631,39 +1498,12 @@ var View = CoreView.extend({
     this function to do any teardown that requires an element, like removing
     event listeners.
 
+    Please note: any property changes made during this event will have no
+    effect on object observers.
+
     @event willDestroyElement
   */
   willDestroyElement: Ember.K,
-
-  /**
-    Triggers the `willDestroyElement` event (which invokes the
-    `willDestroyElement()` method if it exists) on this view and all child
-    views.
-
-    Before triggering `willDestroyElement`, it first triggers the
-    `willClearRender` event recursively.
-
-    @method _notifyWillDestroyElement
-    @private
-  */
-  _notifyWillDestroyElement: function() {
-    var viewCollection = this.viewHierarchyCollection();
-    viewCollection.trigger('willClearRender');
-    viewCollection.trigger('willDestroyElement');
-    return viewCollection;
-  },
-
-  /**
-    If this view's element changes, we need to invalidate the caches of our
-    child views so that we do not retain references to DOM elements that are
-    no longer needed.
-
-    @method _elementDidChange
-    @private
-  */
-  _elementDidChange: observer('element', function() {
-    this.forEachChildView(clearCachedElement);
-  }),
 
   /**
     Called when the parentView property has changed.
@@ -1679,26 +1519,9 @@ var View = CoreView.extend({
     this._super(hash);
   },
 
-  _renderToBuffer: function(buffer) {
-    this.lengthBeforeRender = this._childViews.length;
-    buffer = this._super(buffer);
-    this.lengthAfterRender = this._childViews.length;
+  beforeRender: function(buffer) {},
 
-    return buffer;
-  },
-
-  renderToBufferIfNeeded: function (buffer) {
-    return this.currentState.renderToBufferIfNeeded(this, buffer);
-  },
-
-  beforeRender: function(buffer) {
-    this.applyAttributesToBuffer(buffer);
-    buffer.pushOpeningTag();
-  },
-
-  afterRender: function(buffer) {
-    buffer.pushClosingTag();
-  },
+  afterRender: function(buffer) {},
 
   applyAttributesToBuffer: function(buffer) {
     // Creates observers for all registered class name and attribute bindings,
@@ -1861,7 +1684,9 @@ var View = CoreView.extend({
     @private
   */
   init: function() {
-    this.elementId = this.elementId || guidFor(this);
+    if (!this.isVirtual && !this.elementId) {
+      this.elementId = guidFor(this);
+    }
 
     this._super();
 
@@ -1949,27 +1774,17 @@ var View = CoreView.extend({
     @method destroy
   */
   destroy: function() {
-    var childViews = this._childViews,
-        // get parentView before calling super because it'll be destroyed
-        nonVirtualParentView = get(this, 'parentView'),
-        viewName = this.viewName,
-        childLen, i;
+    var childViews = this._childViews;
+    // get parentView before calling super because it'll be destroyed
+    var nonVirtualParentView = get(this, 'parentView');
+    var viewName = this.viewName;
+    var childLen, i;
 
     if (!this._super()) { return; }
-
-    childLen = childViews.length;
-    for (i=childLen-1; i>=0; i--) {
-      childViews[i].removedFromDOM = true;
-    }
 
     // remove from non-virtual parent view if viewName was specified
     if (viewName && nonVirtualParentView) {
       nonVirtualParentView.set(viewName, null);
-    }
-
-    childLen = childViews.length;
-    for (i=childLen-1; i>=0; i--) {
-      childViews[i].destroy();
     }
 
     return this;
@@ -2050,15 +1865,17 @@ var View = CoreView.extend({
 
   _toggleVisibility: function() {
     var $el = this.$();
-    if (!$el) { return; }
-
     var isVisible = get(this, 'isVisible');
 
     if (this._isVisible === isVisible) { return ; }
 
-    $el.toggle(isVisible);
-
+    // It's important to keep these in sync, even if we don't yet have
+    // an element in the DOM to manipulate:
     this._isVisible = isVisible;
+
+    if (!$el) { return; }
+
+    $el.toggle(isVisible);
 
     if (this._isAncestorHidden()) { return; }
 
@@ -2103,10 +1920,6 @@ var View = CoreView.extend({
 
     return false;
   },
-
-  clearBuffer: function() {
-    this.invokeRecursively(nullViewsBuffer);
-  },
   transitionTo: function(state, children) {
     Ember.deprecate("Ember.View#transitionTo has been deprecated, it is for internal use only");
     this._transitionTo(state, children);
@@ -2114,18 +1927,10 @@ var View = CoreView.extend({
   _transitionTo: function(state, children) {
     var priorState = this.currentState;
     var currentState = this.currentState = this._states[state];
-
     this._state = state;
 
     if (priorState && priorState.exit) { priorState.exit(this); }
     if (currentState.enter) { currentState.enter(this); }
-    if (state === 'inDOM') { meta(this).cache.element = undefined; }
-
-    if (children !== false) {
-      this.forEachChildView(function(view) {
-        view._transitionTo(state);
-      });
-    }
   },
 
   // .......................................................
@@ -2154,13 +1959,13 @@ var View = CoreView.extend({
       return;
     }
 
-    var view = this,
-        stateCheckedObserver = function() {
-          view.currentState.invokeObserver(this, observer);
-        },
-        scheduledObserver = function() {
-          run.scheduleOnce('render', this, stateCheckedObserver);
-        };
+    var view = this;
+    var stateCheckedObserver = function() {
+      view.currentState.invokeObserver(this, observer);
+    };
+    var scheduledObserver = function() {
+      run.scheduleOnce('render', this, stateCheckedObserver);
+    };
 
     addObserver(root, path, target, scheduledObserver);
 
@@ -2202,48 +2007,6 @@ function notifyMutationListeners() {
   run.once(View, 'notifyMutationListeners');
 }
 
-var DOMManager = {
-  prepend: function(view, html) {
-    view.$().prepend(html);
-    notifyMutationListeners();
-  },
-
-  after: function(view, html) {
-    view.$().after(html);
-    notifyMutationListeners();
-  },
-
-  html: function(view, html) {
-    view.$().html(html);
-    notifyMutationListeners();
-  },
-
-  replace: function(view) {
-    var element = get(view, 'element');
-
-    set(view, 'element', null);
-
-    view._insertElementLater(function() {
-      jQuery(element).replaceWith(get(view, 'element'));
-      notifyMutationListeners();
-    });
-  },
-
-  remove: function(view) {
-    view.$().remove();
-    notifyMutationListeners();
-  },
-
-  empty: function(view) {
-    view.$().empty();
-    notifyMutationListeners();
-  }
-};
-
-View.reopen({
-  domManager: DOMManager
-});
-
 View.reopenClass({
 
   /**
@@ -2266,11 +2029,10 @@ View.reopenClass({
     @private
   */
   _parsePropertyPath: function(path) {
-    var split = path.split(':'),
-        propertyPath = split[0],
-        classNames = "",
-        className,
-        falsyClassName;
+    var split = path.split(':');
+    var propertyPath = split[0];
+    var classNames = "";
+    var className, falsyClassName;
 
     // check if the property is defined as prop:class or prop:trueClass:falseClass
     if (split.length > 1) {
@@ -2354,7 +2116,7 @@ View.reopenClass({
 });
 
 var mutation = EmberObject.extend(Evented).create();
-
+// TODO MOVE TO RENDERER HOOKS
 View.addMutationListener = function(callback) {
   mutation.on('change', callback);
 };

@@ -12,6 +12,7 @@ import {
   forEach
 } from "ember-metal/enumerable_utils";
 import { Mixin } from "ember-metal/mixin";
+import { indexOf, lastIndexOf } from "ember-metal/array";
 import EmberArray from "ember-runtime/mixins/array";
 import MutableArray from "ember-runtime/mixins/mutable_array";
 import Observable from "ember-runtime/mixins/observable";
@@ -75,39 +76,15 @@ var NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
   // from member items.
   unknownProperty: function(key, value) {
     var ret;// = this.reducedProperty(key, value) ;
-    if ((value !== undefined) && ret === undefined) {
+    if (value !== undefined && ret === undefined) {
       ret = this[key] = value;
     }
-    return ret ;
+    return ret;
   },
 
-  // If browser did not implement indexOf natively, then override with
-  // specialized version
-  indexOf: function(object, startAt) {
-    var idx, len = this.length;
+  indexOf: indexOf,
 
-    if (startAt === undefined) startAt = 0;
-    else startAt = (startAt < 0) ? Math.ceil(startAt) : Math.floor(startAt);
-    if (startAt < 0) startAt += len;
-
-    for(idx=startAt;idx<len;idx++) {
-      if (this[idx] === object) return idx ;
-    }
-    return -1;
-  },
-
-  lastIndexOf: function(object, startAt) {
-    var idx, len = this.length;
-
-    if (startAt === undefined) startAt = len-1;
-    else startAt = (startAt < 0) ? Math.ceil(startAt) : Math.floor(startAt);
-    if (startAt < 0) startAt += len;
-
-    for(idx=startAt;idx>=0;idx--) {
-      if (this[idx] === object) return idx ;
-    }
-    return -1;
-  },
+  lastIndexOf: lastIndexOf,
 
   copy: function(deep) {
     if (deep) {
@@ -124,7 +101,7 @@ forEach(NativeArray.keys(), function(methodName) {
   if (Array.prototype[methodName]) ignore.push(methodName);
 });
 
-if (ignore.length>0) {
+if (ignore.length > 0) {
   NativeArray = NativeArray.without.apply(NativeArray, ignore);
 }
 

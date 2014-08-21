@@ -18,7 +18,8 @@ QUnit.module("EmberView - Layout Functionality", {
 });
 
 test("should call the function of the associated layout", function() {
-  var templateCalled = 0, layoutCalled = 0;
+  var templateCalled = 0;
+  var layoutCalled = 0;
 
   container.register('template:template', function() { templateCalled++; });
   container.register('template:layout', function() { layoutCalled++; });

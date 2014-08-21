@@ -8,8 +8,8 @@ import EmberHandlebars from "ember-handlebars-compiler";
 
 var compile = EmberHandlebars.compile;
 
-var MyApp;
-var originalLookup = Ember.lookup, lookup, TemplateTests, view, container;
+var MyApp, lookup, TemplateTests, view, container;
+var originalLookup = Ember.lookup;
 
 QUnit.module("Support for {{partial}} helper", {
   setup: function() {

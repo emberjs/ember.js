@@ -9,6 +9,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { setInnerHTML } from "ember-views/system/utils";
 import jQuery from "ember-views/system/jquery";
+import {DOMHelper} from "morph";
 
 function ClassSet() {
   this.seen = {};
@@ -71,8 +72,8 @@ function escapeAttribute(value) {
 // From http://msdn.microsoft.com/en-us/library/ie/ms536389(v=vs.85).aspx:
 // "To include the NAME attribute at run time on objects created with the createElement method, use the eTag."
 var canSetNameOnInputs = (function() {
-  var div = document.createElement('div'),
-      el = document.createElement('input');
+  var div = document.createElement('div');
+  var el = document.createElement('input');
 
   el.setAttribute('name', 'foo');
   div.appendChild(el);
@@ -81,34 +82,46 @@ var canSetNameOnInputs = (function() {
 })();
 
 /**
-  `Ember.RenderBuffer` gathers information regarding the view and generates the
-  final representation. `Ember.RenderBuffer` will generate HTML which can be pushed
+  `Ember.renderBuffer` gathers information regarding the view and generates the
+  final representation. `Ember.renderBuffer` will generate HTML which can be pushed
   to the DOM.
 
    ```javascript
-   var buffer = Ember.RenderBuffer('div');
+   var buffer = Ember.renderBuffer('div');
   ```
 
-  @class RenderBuffer
+  @method renderBuffer
   @namespace Ember
-  @constructor
   @param {String} tagName tag name (such as 'div' or 'p') used for the buffer
 */
-export default function RenderBuffer(tagName) {
+export default function renderBuffer(tagName) {
   return new _RenderBuffer(tagName); // jshint ignore:line
 }
 
 function _RenderBuffer(tagName) {
-  this.tagNames = [tagName || null];
-  this.buffer = "";
+  this.tagName = tagName;
+  this.buffer = null;
+  this.childViews = [];
+  this.dom = new DOMHelper();
 }
 
 _RenderBuffer.prototype = {
 
+  reset: function(tagName) {
+    this.tagName = tagName;
+    this.buffer = null;
+    this._element = null;
+    this.elementClasses = null;
+    this.elementId = null;
+    this.elementAttributes = null;
+    this.elementProperties = null;
+    this.elementTag = null;
+    this.elementStyle = null;
+    this.childViews.length = 0;
+  },
+
   // The root view's element
   _element: null,
-
-  _hasElement: true,
 
   /**
     An internal set used to de-dupe class names when `addClass()` is
@@ -207,6 +220,25 @@ _RenderBuffer.prototype = {
   */
   elementStyle: null,
 
+  pushChildView: function (view) {
+    var index = this.childViews.length;
+    this.childViews[index] = view;
+    this.push("<script id='morph-"+index+"' type='text/x-placeholder'>\x3C/script>");
+  },
+
+  hydrateMorphs: function () {
+    var childViews = this.childViews;
+    var el = this._element;
+    for (var i=0,l=childViews.length; i<l; i++) {
+      var childView = childViews[i];
+      var ref = el.querySelector('#morph-'+i);
+      var parent = ref.parentNode;
+
+      childView._morph = this.dom.insertMorphBefore(parent, ref);
+      parent.removeChild(ref);
+    }
+  },
+
   /**
     Adds a string of HTML to the `RenderBuffer`.
 
@@ -215,6 +247,9 @@ _RenderBuffer.prototype = {
     @chainable
   */
   push: function(string) {
+    if (this.buffer === null) {
+      this.buffer = '';
+    }
     this.buffer += string;
     return this;
   },
@@ -237,7 +272,8 @@ _RenderBuffer.prototype = {
 
   setClasses: function(classNames) {
     this.elementClasses = null;
-    var len = classNames.length, i;
+    var len = classNames.length;
+    var i;
     for (i = 0; i < len; i++) {
       this.addClass(classNames[i]);
     }
@@ -343,102 +379,15 @@ _RenderBuffer.prototype = {
     return this;
   },
 
-  begin: function(tagName) {
-    this.tagNames.push(tagName || null);
-    return this;
-  },
-
-  pushOpeningTag: function() {
-    var tagName = this.currentTagName();
-    if (!tagName) { return; }
-
-    if (this._hasElement && !this._element && this.buffer.length === 0) {
-      this._element = this.generateElement();
-      return;
-    }
-
-    var buffer = this.buffer,
-        id = this.elementId,
-        classes = this.classes,
-        attrs = this.elementAttributes,
-        props = this.elementProperties,
-        style = this.elementStyle,
-        attr, prop;
-
-    buffer += '<' + stripTagName(tagName);
-
-    if (id) {
-      buffer += ' id="' + escapeAttribute(id) + '"';
-      this.elementId = null;
-    }
-    if (classes) {
-      buffer += ' class="' + escapeAttribute(classes.join(' ')) + '"';
-      this.classes = null;
-      this.elementClasses = null;
-    }
-
-    if (style) {
-      buffer += ' style="';
-
-      for (prop in style) {
-        if (style.hasOwnProperty(prop)) {
-          buffer += prop + ':' + escapeAttribute(style[prop]) + ';';
-        }
-      }
-
-      buffer += '"';
-
-      this.elementStyle = null;
-    }
-
-    if (attrs) {
-      for (attr in attrs) {
-        if (attrs.hasOwnProperty(attr)) {
-          buffer += ' ' + attr + '="' + escapeAttribute(attrs[attr]) + '"';
-        }
-      }
-
-      this.elementAttributes = null;
-    }
-
-    if (props) {
-      for (prop in props) {
-        if (props.hasOwnProperty(prop)) {
-          var value = props[prop];
-          if (value || typeof(value) === 'number') {
-            if (value === true) {
-              buffer += ' ' + prop + '="' + prop + '"';
-            } else {
-              buffer += ' ' + prop + '="' + escapeAttribute(props[prop]) + '"';
-            }
-          }
-        }
-      }
-
-      this.elementProperties = null;
-    }
-
-    buffer += '>';
-    this.buffer = buffer;
-  },
-
-  pushClosingTag: function() {
-    var tagName = this.tagNames.pop();
-    if (tagName) { this.buffer += '</' + stripTagName(tagName) + '>'; }
-  },
-
-  currentTagName: function() {
-    return this.tagNames[this.tagNames.length-1];
-  },
-
   generateElement: function() {
-    var tagName = this.tagNames.pop(), // pop since we don't need to close
-        id = this.elementId,
-        classes = this.classes,
-        attrs = this.elementAttributes,
-        props = this.elementProperties,
-        style = this.elementStyle,
-        styleBuffer = '', attr, prop, tagString;
+    var tagName = this.tagName;
+    var id = this.elementId;
+    var classes = this.classes;
+    var attrs = this.elementAttributes;
+    var props = this.elementProperties;
+    var style = this.elementStyle;
+    var styleBuffer = '';
+    var attr, prop, tagString;
 
     if (attrs && attrs.name && !canSetNameOnInputs) {
       // IE allows passing a tag to createElement. See note on `canSetNameOnInputs` above as well.
@@ -447,8 +396,8 @@ _RenderBuffer.prototype = {
       tagString = tagName;
     }
 
-    var element = document.createElement(tagString),
-        $element = jQuery(element);
+    var element = document.createElement(tagString);
+    var $element = jQuery(element);
 
     if (id) {
       $element.attr('id', id);
@@ -492,7 +441,7 @@ _RenderBuffer.prototype = {
       this.elementProperties = null;
     }
 
-    return element;
+    this._element = element;
   },
 
   /**
@@ -503,10 +452,23 @@ _RenderBuffer.prototype = {
   element: function() {
     var html = this.innerString();
 
-    if (html) {
-      this._element = setInnerHTML(this._element, html);
+    if (this._element) {
+      if (html) {
+        this._element = setInnerHTML(this._element, html);
+        this.hydrateMorphs();
+      }
+    } else {
+      if (html) {
+        var frag = this._element = document.createDocumentFragment();
+        var parsed = jQuery.parseHTML(html);
+        for (var i=0,l=parsed.length; i<l; i++) {
+          frag.appendChild(parsed[i]);
+        }
+        this.hydrateMorphs();
+      } else if (html === '') {
+        this._element = html;
+      }
     }
-
     return this._element;
   },
 
@@ -517,9 +479,10 @@ _RenderBuffer.prototype = {
     @return {String} The generated HTML
   */
   string: function() {
-    if (this._hasElement && this._element) {
+    if (this._element) {
       // Firefox versions < 11 do not have support for element.outerHTML.
-      var thisElement = this.element(), outerHTML = thisElement.outerHTML;
+      var thisElement = this.element();
+      var outerHTML = thisElement.outerHTML;
       if (typeof outerHTML === 'undefined') {
         return jQuery('<div/>').append(thisElement).html();
       }

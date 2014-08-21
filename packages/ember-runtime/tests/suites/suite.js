@@ -66,11 +66,13 @@ Suite.reopenClass({
 
   module: function(desc, opts) {
     if (!opts) opts = {};
-    var setup = opts.setup, teardown = opts.teardown;
+    var setup = opts.setup;
+    var teardown = opts.teardown;
     this.reopen({
       run: function() {
         this._super();
-        var title = get(this, 'name')+': '+desc, ctx = this;
+        var title = get(this, 'name')+': '+desc;
+        var ctx = this;
         QUnit.module(title, {
           setup: function() {
             if (setup) setup.call(ctx);

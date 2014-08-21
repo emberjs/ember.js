@@ -1,3 +1,5 @@
+import Rerender from "ember-views/system/renderer";
+
 import {
   cloneStates,
   states
@@ -6,7 +8,7 @@ import EmberObject from "ember-runtime/system/object";
 import Evented from "ember-runtime/mixins/evented";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 
-import { defineProperty, deprecateProperty } from "ember-metal/properties";
+import { deprecateProperty } from "ember-metal/properties";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { computed } from "ember-metal/computed";
@@ -14,9 +16,6 @@ import { computed } from "ember-metal/computed";
 import { typeOf } from "ember-metal/utils";
 
 import { instrument } from "ember-metal/instrumentation";
-
-
-import renderBuffer from "ember-views/system/render_buffer";
 
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
@@ -35,6 +34,8 @@ import renderBuffer from "ember-views/system/render_buffer";
 */
 var CoreView = EmberObject.extend(Evented, ActionHandler, {
   isView: true,
+  isVirtual: false,
+  isContainer: false,
 
   _states: cloneStates(states),
 
@@ -84,55 +85,6 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   },
 
   /**
-    Invoked by the view system when this view needs to produce an HTML
-    representation. This method will create a new render buffer, if needed,
-    then apply any default attributes, such as class names and visibility.
-    Finally, the `render()` method is invoked, which is responsible for
-    doing the bulk of the rendering.
-
-    You should not need to override this method; instead, implement the
-    `template` property, or if you need more control, override the `render`
-    method.
-
-    @method renderToBuffer
-    @param {Ember.RenderBuffer} buffer the render buffer. If no buffer is
-      passed, a default buffer, using the current view's `tagName`, will
-      be used.
-    @private
-  */
-  renderToBuffer: function(buffer) {
-    var name = 'render.' + this.instrumentName,
-        details = {};
-
-    this.instrumentDetails(details);
-
-    return instrument(name, details, function instrumentRenderToBuffer() {
-      return this._renderToBuffer(buffer);
-    }, this);
-  },
-
-  _renderToBuffer: function(_buffer) {
-    // If this is the top-most view, start a new buffer. Otherwise,
-    // create a new buffer relative to the original using the
-    // provided buffer operation (for example, `insertAfter` will
-    // insert a new buffer after the "parent buffer").
-    var tagName = this.tagName;
-
-    if (tagName === null || tagName === undefined) {
-      tagName = 'div';
-    }
-
-    var buffer = this.buffer = _buffer && _buffer.begin(tagName) || renderBuffer(tagName);
-    this._transitionTo('inBuffer', false);
-
-    this.beforeRender(buffer);
-    this.render(buffer);
-    this.afterRender(buffer);
-
-    return buffer;
-  },
-
-  /**
     Override the default event firing from `Ember.Evented` to
     also call methods with the given name.
 
@@ -154,18 +106,6 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     }
   },
 
-  deprecatedSendHandles: function(actionName) {
-    return !!this[actionName];
-  },
-
-  deprecatedSend: function(actionName) {
-    var args = [].slice.call(arguments, 1);
-    Ember.assert('' + this + " has the action " + actionName + " but it is not a function", typeof this[actionName] === 'function');
-    Ember.deprecate('Action handlers implemented directly on views are deprecated in favor of action handlers on an `actions` object ( action: `' + actionName + '` on ' + this + ')', false);
-    this[actionName].apply(this, args);
-    return;
-  },
-
   has: function(name) {
     return typeOf(this[name]) === 'function' || this._super(name);
   },
@@ -175,9 +115,12 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
 
     if (!this._super()) { return; }
 
+
     // destroy the element -- this will avoid each child view destroying
     // the element over and over again...
-    if (!this.removedFromDOM) { this.destroyElement(); }
+    if (!this.removedFromDOM && this._renderer) {
+      this._renderer.remove(this, true);
+    }
 
     // remove from parent if found. Don't call removeFromParent,
     // as removeFromParent will try to remove the element from
@@ -190,10 +133,12 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   },
 
   clearRenderedChildren: Ember.K,
-  triggerRecursively: Ember.K,
-  invokeRecursively: Ember.K,
   _transitionTo: Ember.K,
   destroyElement: Ember.K
+});
+
+CoreView.reopenClass({
+  renderer: new Rerender()
 });
 
 export default CoreView;

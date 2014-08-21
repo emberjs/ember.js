@@ -8,9 +8,9 @@ var global = this;
 suite.module('forEach');
 
 suite.test('forEach should iterate over list', function() {
-  var obj = this.newObject(),
-      ary = this.toArray(obj),
-      found = [];
+  var obj = this.newObject();
+  var ary = this.toArray(obj);
+  var found = [];
 
   obj.forEach(function(i) { found.push(i); });
   deepEqual(found, ary, 'items passed during forEach should match');
@@ -23,9 +23,9 @@ suite.test('forEach should iterate over list after mutation', function() {
     return ;
   }
 
-  var obj = this.newObject(),
-      ary = this.toArray(obj),
-      found = [];
+  var obj = this.newObject();
+  var ary = this.toArray(obj);
+  var found = [];
 
   obj.forEach(function(i) { found.push(i); });
   deepEqual(found, ary, 'items passed during forEach should match');
@@ -39,7 +39,8 @@ suite.test('forEach should iterate over list after mutation', function() {
 });
 
 suite.test('2nd target parameter', function() {
-  var obj = this.newObject(), target = this;
+  var obj = this.newObject();
+  var target = this;
 
   obj.forEach(function() {
     // ES6TODO: When transpiled we will end up with "use strict" which disables automatically binding to the global context.
@@ -57,9 +58,9 @@ suite.test('2nd target parameter', function() {
 
 
 suite.test('callback params', function() {
-  var obj = this.newObject(),
-      ary = this.toArray(obj),
-      loc = 0;
+  var obj = this.newObject();
+  var ary = this.toArray(obj);
+  var loc = 0;
 
 
   obj.forEach(function(item, idx, enumerable) {

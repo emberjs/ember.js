@@ -8,6 +8,7 @@ import {
   forEach
 } from "ember-metal/array";
 
+import keys from "ember-metal/keys";
 /**
 @module ember-metal
 */
@@ -52,6 +53,51 @@ var stringCache  = {};
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
 /**
+  Strongly hint runtimes to intern the provided string.
+
+  When do I need to use this function?
+
+  For the most part, never. Pre-mature optimization is bad, and often the
+  runtime does exactly what you need it to, and more often the trade-off isn't
+  worth it.
+
+  Why?
+
+  Runtimes store strings in at least 2 different representations:
+  Ropes and Symbols (interned strings). The Rope provides a memory efficient
+  data-structure for strings created from concatenation or some other string
+  manipulation like splitting.
+
+  Unfortunately checking equality of different ropes can be quite costly as
+  runtimes must resort to clever string comparison algorithims. These
+  algorithims typically cost in proportion to the length of the string.
+  Luckily, this is where the Symbols (interned strings) shine. As Symbols are
+  unique by their string content, equality checks can be done by pointer
+  comparision.
+
+  How do I know if my string is a rope or symbol?
+
+  Typically (warning general sweeping statement, but truthy in runtimes at
+  present) static strings created as part of the JS source are interned.
+  Strings often used for comparisions can be interned at runtime if some
+  criteria are met.  One of these criteria can be the size of the entire rope.
+  For example, in chrome 38 a rope longer then 12 characters will not
+  intern, nor will segments of that rope.
+
+  Some numbers: http://jsperf.com/eval-vs-keys/8
+
+  Known Trick™
+
+  @private
+  @return {String} interned version of the provided string
+*/
+function intern(string) {
+  var obj = Object.create(null);
+  obj[string] = true;
+  return keys(obj)[0];
+}
+
+/**
   A unique key used to assign guids and other private metadata to objects.
   If you inspect an object in your browser debugger you will often see these.
   They can be safely ignored.
@@ -65,7 +111,7 @@ var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
   @type String
   @final
 */
-var GUID_KEY = '__ember' + (+ new Date());
+var GUID_KEY = intern('__ember' + (+ new Date()));
 
 var GUID_DESC = {
   writable:    false,
@@ -147,7 +193,7 @@ export function guidFor(obj) {
       if (obj[GUID_KEY]) return obj[GUID_KEY];
       if (obj === Object) return '(Object)';
       if (obj === Array)  return '(Array)';
-      ret = 'ember' + uuid();
+      ret = GUID_PREFIX + uuid();
 
       if (obj[GUID_KEY] === null) {
         obj[GUID_KEY] = ret;
@@ -169,17 +215,6 @@ var META_DESC = {
   enumerable: false,
   value: null
 };
-
-/**
-  The key used to store meta information on object for property observing.
-
-  @property META_KEY
-  @for Ember
-  @private
-  @final
-  @type String
-*/
-var META_KEY = '__ember_meta__';
 
 var isDefinePropertySimulated = platform.defineProperty.isSimulated;
 
@@ -244,23 +279,23 @@ if (MANDATORY_SETTER) { EMPTY_META.values = {}; }
 */
 function meta(obj, writable) {
 
-  var ret = obj[META_KEY];
+  var ret = obj['__ember_meta__'];
   if (writable===false) return ret || EMPTY_META;
 
   if (!ret) {
-    if (!isDefinePropertySimulated) o_defineProperty(obj, META_KEY, META_DESC);
+    if (!isDefinePropertySimulated) o_defineProperty(obj, '__ember_meta__', META_DESC);
 
     ret = new Meta(obj);
 
     if (MANDATORY_SETTER) { ret.values = {}; }
 
-    obj[META_KEY] = ret;
+    obj['__ember_meta__'] = ret;
 
     // make sure we don't accidentally try to create constructor like desc
     ret.descs.constructor = null;
 
   } else if (ret.source !== obj) {
-    if (!isDefinePropertySimulated) o_defineProperty(obj, META_KEY, META_DESC);
+    if (!isDefinePropertySimulated) o_defineProperty(obj, '__ember_meta__', META_DESC);
 
     ret = o_create(ret);
     ret.descs     = o_create(ret.descs);
@@ -271,7 +306,7 @@ function meta(obj, writable) {
 
     if (MANDATORY_SETTER) { ret.values = o_create(ret.values); }
 
-    obj[META_KEY] = ret;
+    obj['__ember_meta__'] = ret;
   }
   return ret;
 }
@@ -322,7 +357,8 @@ export function setMeta(obj, property, value) {
 */
 export function metaPath(obj, path, writable) {
   Ember.deprecate("Ember.metaPath is deprecated and will be removed from future releases.");
-  var _meta = meta(obj, writable), keyName, value;
+  var _meta = meta(obj, writable);
+  var keyName, value;
 
   for (var i=0, l=path.length; i<l; i++) {
     keyName = path[i];
@@ -357,9 +393,14 @@ export function metaPath(obj, path, writable) {
 */
 export function wrap(func, superFunc) {
   function superWrapper() {
-    var ret, sup = this && this.__nextSuper;
+    var ret;
+    var sup  = this && this.__nextSuper;
+    var args = new Array(arguments.length);
+    for (var i = 0, l = args.length; i < l; i++) {
+      args[i] = arguments[i];
+    }
     if(this) { this.__nextSuper = superFunc; }
-    ret = apply(this, func, arguments);
+    ret = apply(this, func, args);
     if(this) { this.__nextSuper = sup; }
     return ret;
   }
@@ -762,7 +803,8 @@ export function inspect(obj) {
     return obj + '';
   }
 
-  var v, ret = [];
+  var v;
+  var ret = [];
   for(var key in obj) {
     if (obj.hasOwnProperty(key)) {
       v = obj[key];
@@ -805,10 +847,8 @@ export function applyStr(t /* target */, m /* method */, a /* args */) {
 
 export {
   GUID_KEY,
-  GUID_PREFIX,
   META_DESC,
   EMPTY_META,
-  META_KEY,
   meta,
   typeOf,
   tryCatchFinally,

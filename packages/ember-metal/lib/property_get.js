@@ -3,15 +3,14 @@
 */
 
 import Ember from "ember-metal/core";
-import { META_KEY } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
-
-var get;
+import {
+  isGlobalPath,
+  isPath,
+  hasThis as pathHasThis
+} from "ember-metal/path_cache";
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
-
-var IS_GLOBAL_PATH = /^([A-Z$]|([0-9][A-Z$])).*[\.]/;
-var HAS_THIS  = 'this.';
 var FIRST_KEY = /^([^\.]+)/;
 
 // ..........................................................
@@ -51,7 +50,7 @@ var get = function get(obj, keyName) {
     return obj;
   }
 
-  if (!keyName && 'string'===typeof obj) {
+  if (!keyName && 'string' === typeof obj) {
     keyName = obj;
     obj = null;
   }
@@ -59,11 +58,20 @@ var get = function get(obj, keyName) {
   Ember.assert("Cannot call get with "+ keyName +" key.", !!keyName);
   Ember.assert("Cannot call get with '"+ keyName +"' on an undefined object.", obj !== undefined);
 
-  if (obj === null) { return _getPath(obj, keyName);  }
+  if (obj === null) {
+    var value = _getPath(obj, keyName);
+    Ember.deprecate(
+      "Ember.get fetched '"+keyName+"' from the global context. This behavior will change in the future (issue #3852)",
+      !value || (obj && obj !== Ember.lookup) || isPath(keyName) || isGlobalPath(keyName+".") // Add a . to ensure simple paths are matched.
+    );
+    return value;
+  }
 
-  var meta = obj[META_KEY], desc = meta && meta.descs[keyName], ret;
+  var meta = obj['__ember_meta__'];
+  var desc = meta && meta.descs[keyName];
+  var ret;
 
-  if (desc === undefined && keyName.indexOf('.') !== -1) {
+  if (desc === undefined && isPath(keyName)) {
     return _getPath(obj, keyName);
   }
 
@@ -106,12 +114,17 @@ if (Ember.config.overrideAccessors) {
   @return {Array} a temporary array with the normalized target/path pair.
 */
 function normalizeTuple(target, path) {
-  var hasThis  = path.indexOf(HAS_THIS) === 0,
-      isGlobal = !hasThis && IS_GLOBAL_PATH.test(path),
-      key;
+  var hasThis  = pathHasThis(path);
+  var isGlobal = !hasThis && isGlobalPath(path);
+  var key;
 
   if (!target || isGlobal) target = Ember.lookup;
   if (hasThis) path = path.slice(5);
+
+  Ember.deprecate(
+    "normalizeTuple will return '"+path+"' as a non-global. This behavior will change in the future (issue #3852)",
+    target === Ember.lookup || !target || hasThis || isGlobal || !isGlobalPath(path+'.')
+  );
 
   if (target === Ember.lookup) {
     key = path.match(FIRST_KEY)[0];
@@ -131,10 +144,12 @@ function _getPath(root, path) {
   // If there is no root and path is a key name, return that
   // property from the global object.
   // E.g. get('Ember') -> Ember
-  if (root === null && path.indexOf('.') === -1) { return get(Ember.lookup, path); }
+  if (root === null && !isPath(path)) {
+    return get(Ember.lookup, path);
+  }
 
   // detect complicated paths and normalize them
-  hasThis = path.indexOf(HAS_THIS) === 0;
+  hasThis = pathHasThis(path);
 
   if (!root || hasThis) {
     tuple = normalizeTuple(root, path);

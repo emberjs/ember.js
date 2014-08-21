@@ -36,8 +36,8 @@ export default Mixin.create({
     // there is another Mixin loaded first.
     this._super.apply(this, arguments);
 
-    var deprecatedProperty, replacementProperty,
-        layoutSpecified = (props.layoutName || props.layout || get(this, 'layoutName'));
+    var deprecatedProperty, replacementProperty;
+    var layoutSpecified = (props.layoutName || props.layout || get(this, 'layoutName'));
 
     if (props.templateName && !layoutSpecified) {
       deprecatedProperty = 'templateName';
