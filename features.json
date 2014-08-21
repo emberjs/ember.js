@@ -1,17 +1,17 @@
 {
   "features": {
-    "ember-routing-named-substates": null,
+    "ember-routing-named-substates": false,
     "ember-routing-add-model-option": true,
     "ember-routing-linkto-target-attribute": true,
-    "ember-routing-will-change-hooks": null,
+    "ember-routing-will-change-hooks": false,
     "ember-routing-multi-current-when": true,
     "ember-routing-auto-location-uses-replace-state-for-history": true,
-    "event-dispatcher-can-disable-event-manager": null,
+    "event-dispatcher-can-disable-event-manager": false,
     "ember-metal-is-present": true,
     "property-brace-expansion-improvement": true,
-    "ember-routing-handlebars-action-with-key-code": null,
-    "ember-runtime-item-controller-inline-class": null,
-    "ember-handlebars-compiler-ast-to-precompile": null
+    "ember-routing-handlebars-action-with-key-code": false,
+    "ember-runtime-item-controller-inline-class": false,
+    "ember-handlebars-compiler-ast-to-precompile": false
   },
   "debugStatements": [
     "Ember.warn",
