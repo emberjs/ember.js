@@ -1,6 +1,23 @@
 # Ember Changelog
 
+### Ember 1.8.0-beta.1 (August 20, 2014)
+
+* Remove `metamorph` in favor of `morph` package (removes the need for `<script>` tags in the DOM).
+* [FEATURE] ember-routing-add-model-option
+* [FEATURE] ember-routing-linkto-target-attribute
+* [FEATURE] ember-routing-multi-current-when
+* [FEATURE] ember-routing-auto-location-uses-replace-state-for-history
+* [FEATURE] ember-metal-is-present
+* [FEATURE] property-brace-expansion-improvement
 * Deprecate usage of Internet Explorer 6 & 7.
+* Deprecate global access to view classes from template (see the [deprecation guide](http://emberjs.com/guides/deprecations/)).
+* Deprecate `Ember.Set` (note: this is NOT the `Ember.set`).
+* Deprecate `Ember.computed.defaultTo`.
+* Remove long deprecated `Ember.StateManager` warnings.
+* Use intelligent caching for `Ember.String` (`camelize`, `dasherize`, etc.).
+* Use intelligent caching for container normalization.
+* Polyfill `Object.create` (use for new caching techniques).
+* Refactor internals to make debugging easier (use a single assignment per `var` statement).
 * [BREAKING] Remove deprecated controller action lookup. Support for pre-1.0.0 applications with actions in the root
   of the controller (instead of inside the `actions` hash) has been removed.
 
