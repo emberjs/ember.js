@@ -258,7 +258,7 @@ registerComputed('equal', function(dependentKey, value) {
 });
 
 /**
-  A computed property that returns true if the provied dependent property
+  A computed property that returns true if the provided dependent property
   is greater than the provided value.
 
   Example
