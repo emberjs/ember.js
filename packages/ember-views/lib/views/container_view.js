@@ -184,7 +184,6 @@ var states = cloneStates(EmberViewStates);
   @extends Ember.View
 */
 var ContainerView = View.extend(MutableArray, {
-  isContainer: true,
   _states: states,
 
   willWatchProperty: function(prop){
@@ -263,6 +262,21 @@ var ContainerView = View.extend(MutableArray, {
     @param {Ember.RenderBuffer} buffer the buffer to render to
   */
   render: function(buffer) {
+    var element = buffer.element();
+    var dom = buffer.dom;
+
+    if (this.tagName === '') {
+      if (this._morph) {
+        this._childViewsMorph = this._morph;
+      } else {
+        element = dom.createDocumentFragment();
+        this._childViewsMorph = dom.appendMorph(element);
+      }
+    } else {
+      this._childViewsMorph = dom.createMorph(element, element.lastChild, null);
+    }
+
+    return element;
   },
 
   instrumentName: 'container',
