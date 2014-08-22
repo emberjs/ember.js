@@ -10,8 +10,7 @@
     "ember-metal-is-present": true,
     "property-brace-expansion-improvement": true,
     "ember-routing-handlebars-action-with-key-code": null,
-    "ember-runtime-item-controller-inline-class": null,
-    "ember-handlebars-compiler-ast-to-precompile": null
+    "ember-runtime-item-controller-inline-class": null
   },
   "debugStatements": [
     "Ember.warn",
