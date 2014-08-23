@@ -292,7 +292,7 @@ run.sync = function() {
 
 /**
   Invokes the passed target/method and optional arguments after a specified
-  period if time. The last parameter of this method must always be a number
+  period of time. The last parameter of this method must always be a number
   of milliseconds.
 
   You should use this method whenever you need to run some action after a
