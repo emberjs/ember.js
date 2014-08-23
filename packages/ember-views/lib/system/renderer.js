@@ -37,25 +37,6 @@ EmberRenderer.prototype.cancelRender =
     run.cancel(id);
   };
 
-EmberRenderer.prototype.createChildViewsMorph =
-  function EmberRenderer_createChildViewsMorph(view, _element) {
-    if (view.createChildViewsMorph) {
-      return view.createChildViewsMorph(_element);
-    }
-    var element = _element;
-    if (view.tagName === '') {
-      if (view._morph) {
-        view._childViewsMorph = view._morph;
-      } else {
-        element = document.createDocumentFragment();
-        view._childViewsMorph = this._dom.appendMorph(element);
-      }
-    } else {
-      view._childViewsMorph = this._dom.createMorph(element, element.lastChild, null);
-    }
-    return element;
-  };
-
 EmberRenderer.prototype.createElement =
   function EmberRenderer_createElement(view) {
     // If this is the top-most view, start a new buffer. Otherwise,
@@ -90,10 +71,6 @@ EmberRenderer.prototype.createElement =
     }
 
     var element = buffer.element();
-
-    if (view.isContainer) {
-      this.createChildViewsMorph(view, element);
-    }
 
     view.buffer = null;
     if (element && element.nodeType === 1) {

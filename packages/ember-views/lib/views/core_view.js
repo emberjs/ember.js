@@ -35,7 +35,6 @@ import { instrument } from "ember-metal/instrumentation";
 var CoreView = EmberObject.extend(Evented, ActionHandler, {
   isView: true,
   isVirtual: false,
-  isContainer: false,
 
   _states: cloneStates(states),
 
