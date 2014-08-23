@@ -1,11 +1,54 @@
 # Ember Changelog
 
+### Ember 1.8.0-beta.1 (August 20, 2014)
+
+* Remove `metamorph` in favor of `morph` package (removes the need for `<script>` tags in the DOM).
+* [FEATURE] ember-routing-linkto-target-attribute
+* [FEATURE] ember-routing-multi-current-when
+* [FEATURE] ember-routing-auto-location-uses-replace-state-for-history
+* [FEATURE] ember-metal-is-present
+* [FEATURE] property-brace-expansion-improvement
 * Deprecate usage of Internet Explorer 6 & 7.
+* Deprecate global access to view classes from template (see the [deprecation guide](http://emberjs.com/guides/deprecations/)).
+* Deprecate `Ember.Set` (note: this is NOT the `Ember.set`).
+* Deprecate `Ember.computed.defaultTo`.
+* Remove long deprecated `Ember.StateManager` warnings.
+* Use intelligent caching for `Ember.String` (`camelize`, `dasherize`, etc.).
+* Use intelligent caching for container normalization.
+* Polyfill `Object.create` (use for new caching techniques).
+* Refactor internals to make debugging easier (use a single assignment per `var` statement).
 * [BREAKING] Remove deprecated controller action lookup. Support for pre-1.0.0 applications with actions in the root
   of the controller (instead of inside the `actions` hash) has been removed.
 
-### Ember 1.7.0-beta.2 (July, 16, 2014)
+### Ember 1.7.0 (August 19, 2014)
 
+* Update `Ember.computed.notEmpty` to properly respect arrays.
+* Bind `tabindex` property on LinkView.
+* Update to RSVP 3.0.13 (fixes an error with `RSVP.hash` in IE8 amongst other changes).
+* Fix incorrect quoteless action deprecation warnings.
+* Prevent duplicate message getting printed by errors in Route hooks.
+* Deprecate observing container views like arrays.
+* Add `catch` and `finally` to Transition.
+* [BUGFIX] paramsFor: don’t clobber falsy params.
+* [BUGFIX] Controllers with query params are unit testable.
+* [BUGFIX] Controllers have new QP values before setupController.
+* [BUGFIX] Fix initial render of {{input type=bound}} for checkboxes.
+* [BUGFIX] makeBoundHelper supports unquoted bound property options.
+* [BUGFIX] link-to helper can be inserted in DOM when the router is not present.
+* [PERFORMANCE] Do not pass `arguments` around in a hot-path.
+* Remove Container.defaultContainer.
+* Polyfill contains for older browsers.
+* [BUGFIX] Ensure that `triggerEvent` handles all argument signatures properly.
+* [BUGFIX] Stub meta on AliasedProperty (fixes regression from beta.2 with Ember Data).
+* [DOC] Fixed issue with docs showing 'Ember.run' as 'run.run'.
+* [BUGFIX] SimpleHandlebarsView should not re-render if normalized value is unchanged.
+* Allow Router DSL to nest routes via `this.route`.
+* [BUGFIX] Don't pass function UNDEFINED as oldValue to computed properties.
+* [BUGFIX] dramatically improve performance of eachComputedProperty.
+* [BUGFIX] Prevent strict mode errors from superWrapper.
+* Deprecate Ember.DeferredMixin and Ember.Deferred.
+* Deprecate `.then` on Ember.Application.
+* Revert ember-routing-consistent-resources.
 * [BUGFIX] Wrap es3 keywords in quotes.
 * [BUGFIX] Use injected integration test helpers instead of local functions.
 * [BUGFIX] Add alias descriptor, and replace `Ember.computed.alias` with new descriptor.
@@ -16,9 +59,6 @@
 * [BUGFIX] Use view:toplevel for {{view}} instead of view:default.
 * [BUGFIX] Do not throw uncaught errors mid-transition.
 * [BUGFIX] Don't assume that the router has a container.
-
-### Ember 1.7.0-beta.1 (July, 8, 2014)
-
 * Fix components inside group helper.
 * [BUGFIX] Fix wrong view keyword in a component block.
 * Update to RSVP 3.0.7.
