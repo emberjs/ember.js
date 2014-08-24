@@ -23,6 +23,7 @@ import {
   Descriptor,
   defineProperty
 } from "ember-metal/properties";
+import { get } from "ember-metal/property_get";
 import { ComputedProperty } from "ember-metal/computed";
 import { Binding } from "ember-metal/binding";
 import {
@@ -354,19 +355,84 @@ function updateObserversAndListeners(obj, key, observerOrListener, pathsKey, upd
   }
 }
 
-function replaceObserversAndListeners(obj, key, observerOrListener) {
-  var prev = obj[key];
+var conditionObserver,
+    conditionObserverEnabled,
+    addObserversAndListeners,
+    removeObserversAndListeners;
 
-  if ('function' === typeof prev) {
-    updateObserversAndListeners(obj, key, prev, '__ember_observesBefore__', removeBeforeObserver);
-    updateObserversAndListeners(obj, key, prev, '__ember_observes__', removeObserver);
-    updateObserversAndListeners(obj, key, prev, '__ember_listens__', removeListener);
-  }
+if (Ember.FEATURES.isEnabled("conditional-observers-and-listeners")) {
 
-  if ('function' === typeof observerOrListener) {
+  conditionObserverEnabled = function conditionObserverEnabled() {
+    var obj = arguments[0],
+        propertyNames = arguments[1],
+        i = 0, ret = [];
+    for (var len = propertyNames.length; i < len; i++) {
+      ret = get(obj, propertyNames[i]);
+      if (!ret) { break; }
+    }
+    return ret;
+  };
+
+  conditionObserver = function conditionObserver() {
+    if (conditionObserverEnabled(this.sender, this.func['__ember_conditions__'])) {
+      addObserversAndListeners(this.sender, this.key, this.func);
+    } else {
+      removeObserversAndListeners(this.sender, this.key, this.func);
+    }
+  };
+
+  addObserversAndListeners = function addObserversAndListeners(obj, key, observerOrListener) {
     updateObserversAndListeners(obj, key, observerOrListener, '__ember_observesBefore__', addBeforeObserver);
     updateObserversAndListeners(obj, key, observerOrListener, '__ember_observes__', addObserver);
     updateObserversAndListeners(obj, key, observerOrListener, '__ember_listens__', addListener);
+  };
+
+  removeObserversAndListeners = function removeObserversAndListeners(obj, key, observerOrListener) {
+    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observesBefore__', removeBeforeObserver);
+    updateObserversAndListeners(obj, key, observerOrListener, '__ember_observes__', removeObserver);
+    updateObserversAndListeners(obj, key, observerOrListener, '__ember_listens__', removeListener);
+  };
+}
+
+function replaceObserversAndListeners(obj, key, observerOrListener) {
+  var prev = obj[key], conditionKeys;
+
+  if ('function' === typeof prev) {
+    if (Ember.FEATURES.isEnabled("conditional-observers-and-listeners")) {
+      conditionKeys = prev['__ember_conditions__'];
+      if (conditionKeys) {
+        a_forEach.call(conditionKeys, function (conditionKey) {
+          removeObserver(obj, conditionKey, { sender: obj, key: key, func: observerOrListener }, conditionObserver);
+        });
+        if (conditionObserverEnabled(obj, conditionKeys)) {
+          removeObserversAndListeners(obj, key, prev);
+        }
+      } else {
+        removeObserversAndListeners(obj, key, prev);
+      }
+    } else {
+      updateObserversAndListeners(obj, key, prev, '__ember_observesBefore__', removeBeforeObserver);
+      updateObserversAndListeners(obj, key, prev, '__ember_observes__', removeObserver);
+      updateObserversAndListeners(obj, key, prev, '__ember_listens__', removeListener);
+    }
+  }
+
+  if ('function' === typeof observerOrListener) {
+    if (Ember.FEATURES.isEnabled("conditional-observers-and-listeners")) {
+      conditionKeys = observerOrListener['__ember_conditions__'];
+      if (conditionKeys) {
+        a_forEach.call(conditionKeys, function (conditionKey) {
+          addListener(obj, 'init', { sender: obj, key: key, func: observerOrListener }, conditionObserver, true);
+          addObserver(obj, conditionKey, { sender: obj, key: key, func: observerOrListener }, conditionObserver);
+        });
+      } else {
+        addObserversAndListeners(obj, key, observerOrListener);
+      }
+    } else {
+      updateObserversAndListeners(obj, key, observerOrListener, '__ember_observesBefore__', addBeforeObserver);
+      updateObserversAndListeners(obj, key, observerOrListener, '__ember_observes__', addObserver);
+      updateObserversAndListeners(obj, key, observerOrListener, '__ember_listens__', addListener);
+    }
   }
 }
 
@@ -851,6 +917,68 @@ export function beforeObserver() {
   func.__ember_observesBefore__ = paths;
   return func;
 }
+
+var when;
+if (Ember.FEATURES.isEnabled("conditional-observers-and-listeners")) {
+  /**
+   Specify conditions under which an observer and/or listener should fire. A
+   condition can be any property that evaluates to a boolean value.
+
+   ```javascript
+   App.PersonView = Ember.View.extend({
+    friends: [{ name: 'Tom' }, { name: 'Stefan' }, { name: 'Kris' }],
+
+    inDOM: Ember.observer('state', function(obj, keyName) {
+      return obj.get(keyName) === 'inDOM';
+    }),
+
+    onHover: Ember.on('hover', Ember.when('inDOM', function() {
+      // Will only fire if inDOM is true
+      // ...
+    })),
+
+    valueWillChange: Ember.beforeObserver('content.value', Ember.when('inDOM', function(obj, keyName) {
+      // Will only fire if inDOM is true
+      this.changingFrom = obj.get(keyName);
+    })),
+
+    valueDidChange: Ember.observer('content.value', Ember.when('inDOM', function(obj, keyName) {
+      // Will only fire if inDOM is true
+      var color = obj.get(keyName) > this.changingFrom ? 'green' : 'red';
+      // ...
+    }))
+   ```
+
+   Also available as `Function.prototype.when` if prototype extensions are
+   enabled.
+
+   @method when
+   @for Ember
+   @param {String...} propertyNames
+   @return {Function}
+   */
+  when = function when() {
+    var func = a_slice.call(arguments, -1)[0],
+        args = a_slice.call(arguments, 0, -1),
+        paths = [];
+
+    var addWatchedProperty = function (path) {
+      paths.push(path);
+    };
+
+    for (var i = 0; i < args.length; ++i) {
+      expandProperties(args[i], addWatchedProperty);
+    }
+
+    if (typeof func !== "function") {
+      throw new Ember.Error("Ember.when called without a function");
+    }
+
+    func.__ember_conditions__ = paths;
+    return func;
+  };
+}
+export { when };
 
 export {
   IS_BINDING,

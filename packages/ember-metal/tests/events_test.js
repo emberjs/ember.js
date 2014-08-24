@@ -1,4 +1,6 @@
-import { Mixin } from 'ember-metal/mixin';
+import { Mixin, mixin, when } from 'ember-metal/mixin';
+import { set } from 'ember-metal/property_set';
+import { propertyDidChange } from 'ember-metal/property_events';
 import { create } from 'ember-metal/platform';
 import { meta } from 'ember-metal/utils';
 
@@ -282,3 +284,57 @@ test('a listener added as part of a mixin may be overridden', function() {
   sendEvent(obj, 'baz');
   equal(triggered, 1, 'should invoke from subclass property');
 });
+
+if (Ember.FEATURES.isEnabled("conditional-observers-and-listeners")) {
+  test('conditional listener initially enabled', function () {
+
+    var triggered = 0;
+    var MyMixin = Mixin.create({
+      foo: on('bar', when('baz', function () { triggered++; })),
+      baz: true
+    });
+
+    var obj = mixin({}, MyMixin);
+    equal(triggered, 0, 'listener is enabled; should not invoke listener immediately');
+
+    // This first test requires EmberObject's 'init' event. Simulate it's side
+    // effect for now. A proper test can be found in ember-runtime/events_test.
+    propertyDidChange(obj, 'baz');
+    sendEvent(obj, 'bar');
+    equal(triggered, 1, 'listener is enabled; should invoke listener on event');
+
+    set(obj, 'baz', false);
+    sendEvent(obj, 'bar');
+    equal(triggered, 1, 'listener is disabled; should not invoke listener on event');
+
+    set(obj, 'baz', true);
+    sendEvent(obj, 'bar');
+    equal(triggered, 2, 'listener is re-enabled; should invoke listener on event');
+  });
+
+  test('conditional listener initially disabled', function () {
+
+    var triggered = 0;
+    var MyMixin = Mixin.create({
+      foo: on('bar', when('baz', function () { triggered++; })),
+      baz: false
+    });
+
+    var obj = mixin({}, MyMixin);
+    equal(triggered, 0, 'listener is disabled; should not invoke listener immediately');
+
+    // This first test requires EmberObject's 'init' event. Simulate it's side
+    // effect for now. A proper test can be found in ember-runtime/events_test.
+    propertyDidChange(obj, 'baz');
+    sendEvent(obj, 'bar');
+    equal(triggered, 0, 'listener is disabled; should not invoke listener on event');
+
+    set(obj, 'baz', true);
+    sendEvent(obj, 'bar');
+    equal(triggered, 1, 'listener is enabled; should invoke listener on event');
+
+    set(obj, 'baz', false);
+    sendEvent(obj, 'bar');
+    equal(triggered, 1, 'listener is re-disabled; should not invoke listener on event');
+  });
+}

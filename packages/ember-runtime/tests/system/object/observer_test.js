@@ -3,6 +3,7 @@ import {observer} from "ember-metal/mixin";
 import run from "ember-metal/run_loop";
 import {testBoth} from 'ember-runtime/tests/props_helper';
 import EmberObject from "ember-runtime/system/object";
+import { when } from 'ember-metal/mixin';
 
 QUnit.module('EmberObject observer');
 
@@ -199,3 +200,35 @@ testBoth('chain observer on class', function(get, set) {
   equal(get(obj1, 'count'), 1, 'should not invoke again');
   equal(get(obj2, 'count'), 1, 'should invoke observer on obj2');
 });
+
+if (Ember.FEATURES.isEnabled("conditional-observers-and-listeners")) {
+  testBoth('conditional observer respects initial condition: true', function (get, set) {
+
+    var triggered = 0;
+    var obj = EmberObject.createWithMixins({
+      foo: observer('bar', when('baz', function () { triggered++; })),
+      bar: undefined,
+      baz: true
+    });
+
+    equal(triggered, 0, 'observer is enabled; should not invoke observer immediately');
+
+    set(obj, 'bar', 'QUX');
+    equal(triggered, 1, 'observer is enabled; should invoke observer after change');
+  });
+
+  testBoth('conditional observer respects initial condition: false', function (get, set) {
+
+    var triggered = 0;
+    var obj = EmberObject.createWithMixins({
+      foo: observer('bar', when('baz', function () { triggered++; })),
+      bar: undefined,
+      baz: false
+    });
+
+    equal(triggered, 0, 'observer is disabled; should not invoke observer immediately');
+
+    set(obj, 'bar', 'QUX');
+    equal(triggered, 0, 'observer is disabled; should not invoke observer after change');
+  });
+}
