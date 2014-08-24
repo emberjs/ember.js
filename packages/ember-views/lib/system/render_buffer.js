@@ -6,6 +6,53 @@
 import { setInnerHTML } from "ember-views/system/utils";
 import jQuery from "ember-views/system/jquery";
 import {DOMHelper} from "morph";
+import Ember from "ember-metal/core";
+
+// The HTML spec allows for "omitted start tags". These tags are optional
+// when their intended child is the first thing in the parent tag. For
+// example, this is a tbody start tag:
+//
+// <table>
+//   <tbody>
+//     <tr>
+//
+// The tbody may be omitted, and the browser will accept and render:
+//
+// <table>
+//   <tr>
+//
+// However, the omitted start tag will still be added to the DOM. Here
+// we test the string and context to see if the browser is about to
+// perform this cleanup, but with a special allowance for disregarding
+// <script tags. This disregarding of <script being the first child item
+// may bend the offical spec a bit, and is only needed for Handlebars
+// templates.
+//
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#optional-tags
+// describes which tags are omittable. The spec for tbody and colgroup
+// explains this behavior:
+//
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/tables.html#the-tbody-element
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/tables.html#the-colgroup-element
+//
+var omittedStartTagChildren = {
+  tr: document.createElement('tbody'),
+  col: document.createElement('colgroup')
+};
+
+var omittedStartTagChildTest = /(?:<script)*.*?<([\w:]+)/i;
+
+function detectOmittedStartTag(string, contextualElement){
+  // Omitted start tags are only inside table tags.
+  if (contextualElement.tagName === 'TABLE') {
+    var omittedStartTagChildMatch = omittedStartTagChildTest.exec(string);
+    if (omittedStartTagChildMatch) {
+      // It is already asserted that the contextual element is a table
+      // and not the proper start tag. Just look up the start tag.
+      return omittedStartTagChildren[omittedStartTagChildMatch[1].toLowerCase()];
+    }
+  }
+}
 
 function ClassSet() {
   this.seen = {};
@@ -83,19 +130,20 @@ var canSetNameOnInputs = (function() {
   to the DOM.
 
    ```javascript
-   var buffer = Ember.renderBuffer('div');
+   var buffer = Ember.renderBuffer('div', contextualElement);
   ```
 
   @method renderBuffer
   @namespace Ember
   @param {String} tagName tag name (such as 'div' or 'p') used for the buffer
 */
-export default function renderBuffer(tagName) {
-  return new _RenderBuffer(tagName); // jshint ignore:line
+export default function renderBuffer(tagName, contextualElement) {
+  return new _RenderBuffer(tagName, contextualElement); // jshint ignore:line
 }
 
-function _RenderBuffer(tagName) {
+function _RenderBuffer(tagName, contextualElement) {
   this.tagName = tagName;
+  this._contextualElement = contextualElement;
   this.buffer = null;
   this.childViews = [];
   this.dom = new DOMHelper();
@@ -103,10 +151,11 @@ function _RenderBuffer(tagName) {
 
 _RenderBuffer.prototype = {
 
-  reset: function(tagName) {
+  reset: function(tagName, contextualElement) {
     this.tagName = tagName;
     this.buffer = null;
     this._element = null;
+    this._contextualElement = contextualElement;
     this.elementClasses = null;
     this.elementId = null;
     this.elementAttributes = null;
@@ -118,6 +167,9 @@ _RenderBuffer.prototype = {
 
   // The root view's element
   _element: null,
+
+  // The root view's contextualElement
+  _contextualElement: null,
 
   /**
     An internal set used to de-dupe class names when `addClass()` is
@@ -192,7 +244,7 @@ _RenderBuffer.prototype = {
     example, if you wanted to create a `p` tag, then you would call
 
     ```javascript
-    Ember.RenderBuffer('p')
+    Ember.RenderBuffer('p', contextualElement)
     ```
 
     @property elementTag
@@ -392,7 +444,7 @@ _RenderBuffer.prototype = {
       tagString = tagName;
     }
 
-    var element = document.createElement(tagString);
+    var element = this.dom.createElement(tagString);
     var $element = jQuery(element);
 
     if (id) {
@@ -446,6 +498,10 @@ _RenderBuffer.prototype = {
       of this buffer
   */
   element: function() {
+    if (!this._contextualElement) {
+      Ember.deprecate("buffer.element expects a contextualElement to exist. This ensures DOM that requires context is correctly generated (tr, SVG tags). Defaulting to document.body, but this will be removed in the future");
+      this._contextualElement = document.body;
+    }
     var html = this.innerString();
 
     if (this._element) {
@@ -455,10 +511,11 @@ _RenderBuffer.prototype = {
       }
     } else {
       if (html) {
+        var omittedStartTag = detectOmittedStartTag(html, this._contextualElement);
+        var parsed = this.dom.parseHTML(html, omittedStartTag || this._contextualElement);
         var frag = this._element = document.createDocumentFragment();
-        var parsed = jQuery.parseHTML(html);
         for (var i=0,l=parsed.length; i<l; i++) {
-          frag.appendChild(parsed[i]);
+          frag.appendChild(parsed[0]); // As nodes are appended they are removed from the node list
         }
         this.hydrateMorphs();
       } else if (html === '') {
