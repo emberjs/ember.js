@@ -12,14 +12,12 @@
       "../packages/ember-views/lib",
       "../packages/ember-handlebars/lib",
       "../packages/ember-routing/lib",
+      "../packages/ember-routing-handlebars/lib",
       "../packages/ember-application/lib",
       "../packages/ember-testing/lib",
       "../packages/ember-handlebars-compiler/lib",
       "../packages/ember-extension-support/lib",
-      "../packages/container/lib",
-      "../packages/rsvp/lib",
-      "../packages/metamorph/lib",
-      "../packages/loader/lib"
+      "../bower_components/rsvp/lib"
     ],
     "exclude": "vendor",
     "outdir":   "./build"
