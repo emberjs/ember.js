@@ -1,6 +1,3 @@
-import Ember from "ember-metal/core";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import { Mixin } from "ember-metal/mixin";
 import Controller from "ember-runtime/controllers/controller";
@@ -97,7 +94,7 @@ test("Actions cannot be provided at create time", function() {
     });
   });
   // but should be OK on an object that doesn't mix in Ember.ActionHandler
-  var obj = EmberObject.create({
+  EmberObject.create({
     actions: ['foo']
   });
 });

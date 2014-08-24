@@ -1,5 +1,3 @@
-/*global testBoth:true */
-
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 

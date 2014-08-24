@@ -1,7 +1,5 @@
 import Ember from "ember-metal/core"; // assert, deprecate
 import EmberError from "ember-metal/error";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import { camelize } from "ember-runtime/system/string";
 import {
   generateControllerFactory,
@@ -89,8 +87,7 @@ You could render it inside the `post` template using the `render` helper.
 */
 export default function renderHelper(name, contextString, options) {
   var length = arguments.length;
-  var contextProvided = length === 3;
-  var container, router, controller, view, context, lookupOptions;
+  var container, router, controller, view, context;
 
   container = (options || contextString).data.keywords.controller.container;
   router = container.lookup('router:main');

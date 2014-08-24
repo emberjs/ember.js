@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core'; // deprecateFunc
 import isEmpty from 'ember-metal/is_empty';
 
 /**

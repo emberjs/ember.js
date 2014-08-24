@@ -1,6 +1,5 @@
 import {
-  factory,
-  setProperties
+  factory
 } from 'container/tests/container_helper';
 
 import Container from 'container';

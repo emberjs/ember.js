@@ -19,7 +19,6 @@ import { forEach } from "ember-metal/enumerable_utils";
 import { computed } from "ember-metal/computed";
 import run from "ember-metal/run_loop";
 import { defineProperty } from "ember-metal/properties";
-import renderBuffer from "ember-views/system/render_buffer";
 import {
   observer,
   beforeObserver

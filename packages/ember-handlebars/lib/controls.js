@@ -407,8 +407,5 @@ export function inputHelper(options) {
 export function textareaHelper(options) {
   Ember.assert('You can only pass attributes to the `textarea` helper, not arguments', arguments.length < 2);
 
-  var hash = options.hash;
-  var types = options.hashTypes;
-
   return helpers.view.call(this, TextArea, options);
 }

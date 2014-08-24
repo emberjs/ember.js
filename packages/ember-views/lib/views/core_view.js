@@ -10,13 +10,9 @@ import ActionHandler from "ember-runtime/mixins/action_handler";
 
 import { deprecateProperty } from "ember-metal/properties";
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import { computed } from "ember-metal/computed";
 
 import { typeOf } from "ember-metal/utils";
-
-import { instrument } from "ember-metal/instrumentation";
-
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
   to both Ember's main view class `Ember.View` and other classes like

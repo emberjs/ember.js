@@ -1,7 +1,4 @@
 import Ember from "ember-metal/core"; // Ember.K
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import run from "ember-metal/run_loop";
 import EmberError from "ember-metal/error";
 
 /**

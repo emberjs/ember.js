@@ -1,4 +1,4 @@
-import {Suite, SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import { Suite } from 'ember-runtime/tests/suites/suite';
 import {required} from "ember-metal/mixin";
 
 var CopyableTests = Suite.extend({

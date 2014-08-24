@@ -93,7 +93,7 @@ suite.test("[A,B].replace(1,0,[X,Y]) => [A,X,Y,B] + notify", function() {
 });
 
 suite.test("[A,B,C,D].replace(2,2) => [A,B] + notify", function() {
-  var obj, observer, before, replace, after;
+  var obj, observer, before, after;
 
   before  = this.newFixture(4);
   after   = [before[0], before[1]];

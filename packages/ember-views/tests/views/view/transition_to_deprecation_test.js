@@ -1,4 +1,3 @@
-import { platform } from 'ember-metal/platform';
 import EmberView from 'ember-views/views/view';
 import run from 'ember-metal/run_loop';
 

@@ -1,9 +1,6 @@
 /*globals EmberDev */
 
 import Ember from "ember-metal/core";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { forEach } from "ember-metal/array";
 import run from "ember-metal/run_loop";
 import Application from "ember-application/system/application";
 import DefaultResolver from "ember-application/system/resolver";
@@ -13,12 +10,11 @@ import Controller from "ember-runtime/controllers/controller";
 import NoneLocation from "ember-routing/location/none_location";
 import EmberHandlebars from "ember-handlebars";
 import EmberObject from "ember-runtime/system/object";
-import { outletHelper } from "ember-routing-handlebars/helpers/outlet";
 import jQuery from "ember-views/system/jquery";
 
 var trim = jQuery.trim;
 
-var view, app, application, originalLookup, originalDebug;
+var app, application, originalLookup, originalDebug;
 
 QUnit.module("Ember.Application", {
   setup: function() {

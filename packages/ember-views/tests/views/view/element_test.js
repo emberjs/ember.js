@@ -2,11 +2,10 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
-import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 
-var parentView, child, parentDom, childDom, view;
+var parentView, view;
 
 QUnit.module("Ember.View#element", {
   teardown: function() {

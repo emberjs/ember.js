@@ -110,7 +110,7 @@ test ("setting the value of a controller dependency should not be possible", fun
   container.register('controller:posts', Controller.extend());
 
   var postController = container.lookup('controller:post');
-  var postsController = container.lookup('controller:posts');
+  container.lookup('controller:posts');
 
   throws(function(){
     postController.set('controllers.posts', 'epic-self-troll');

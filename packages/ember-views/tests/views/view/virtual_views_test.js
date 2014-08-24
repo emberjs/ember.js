@@ -1,7 +1,5 @@
-import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
-import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
 

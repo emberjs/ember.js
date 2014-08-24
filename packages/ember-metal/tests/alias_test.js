@@ -1,11 +1,10 @@
 import { alias } from "ember-metal/alias";
-import { Descriptor, defineProperty } from "ember-metal/properties";
+import { defineProperty } from "ember-metal/properties";
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { meta } from 'ember-metal/utils';
 import { isWatching } from "ember-metal/watching";
 import { addObserver, removeObserver } from "ember-metal/observer";
-import { mixin, observer } from 'ember-metal/mixin';
 
 var obj, count;
 

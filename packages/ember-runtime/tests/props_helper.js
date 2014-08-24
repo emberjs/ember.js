@@ -21,7 +21,6 @@ var testBoth = function(testname, callback) {
 };
 
 var testWithDefault = function(testname, callback) {
-  function get(x,y) { return x.get(y); }
   function emberget(x,y) { return getFromEmberMetal(x,y); }
   function embergetwithdefault(x,y,z) { return getWithDefaultFromEmberMetal(x,y,z); }
   function getwithdefault(x,y,z) { return x.getWithDefault(y,z); }

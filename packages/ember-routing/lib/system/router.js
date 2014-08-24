@@ -6,7 +6,6 @@ import { defineProperty } from "ember-metal/properties";
 import { computed } from "ember-metal/computed";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
-import { forEach } from "ember-metal/enumerable_utils";
 
 import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
@@ -36,7 +35,7 @@ import {
 // requireModule("ember-views");
 
 var Router = requireModule("router")['default'];
-var Transition = requireModule("router/transition").Transition;
+requireModule("router/transition");
 
 var slice = [].slice;
 
@@ -448,7 +447,8 @@ var EmberRouter = EmberObject.extend(Evented, {
       return this._qpCache[leafRouteName];
     }
 
-    var map = {}, qps = [], qpCache = this._qpCache[leafRouteName] = {
+    var map = {}, qps = [];
+    this._qpCache[leafRouteName] = {
       map: map,
       qps: qps
     };
@@ -862,7 +862,6 @@ function resemblesURL(str) {
 
 function forEachQueryParam(router, targetRouteName, queryParams, callback) {
   var qpCache = router._queryParamsFor(targetRouteName);
-  var qps = qpCache.qps;
 
   for (var key in queryParams) {
     if (!queryParams.hasOwnProperty(key)) { continue; }

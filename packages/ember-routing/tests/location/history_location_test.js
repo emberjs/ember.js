@@ -1,10 +1,8 @@
-import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import HistoryLocation from "ember-routing/location/history_location";
 
 var FakeHistory, HistoryTestLocation, location;
-var rootURL = window.location.pathname;
 
 function createLocation(options){
   if (!options) { options = {}; }

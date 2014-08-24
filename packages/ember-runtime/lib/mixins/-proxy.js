@@ -21,7 +21,6 @@ import { computed } from "ember-metal/computed";
 import { defineProperty } from "ember-metal/properties";
 import { Mixin, observer } from "ember-metal/mixin";
 import { fmt } from "ember-runtime/system/string";
-import EmberObject from "ember-runtime/system/object";
 
 function contentPropertyWillChange(content, contentKey) {
   var key = contentKey.slice(8); // remove "content."

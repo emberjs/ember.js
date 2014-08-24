@@ -12,21 +12,6 @@ function EmberRenderer() {
 EmberRenderer.prototype = create(Renderer.prototype);
 EmberRenderer.prototype.constructor = EmberRenderer;
 
-var BAD_TAG_NAME_TEST_REGEXP = /[^a-zA-Z0-9\-]/;
-var BAD_TAG_NAME_REPLACE_REGEXP = /[^a-zA-Z0-9\-]/g;
-
-function stripTagName(tagName) {
-  if (!tagName) {
-    return tagName;
-  }
-
-  if (!BAD_TAG_NAME_TEST_REGEXP.test(tagName)) {
-    return tagName;
-  }
-
-  return tagName.replace(BAD_TAG_NAME_REPLACE_REGEXP, '');
-}
-
 EmberRenderer.prototype.scheduleRender =
   function EmberRenderer_scheduleRender(ctx, fn) {
     return run.scheduleOnce('render', ctx, fn);

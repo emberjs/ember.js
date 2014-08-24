@@ -1,4 +1,3 @@
-/*globals Node */
 import { Renderer } from "ember-metal-views";
 
 var renderer;

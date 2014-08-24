@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core'; // A, FEATURES, assert, TESTING_DEPRECATION
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
 import EmberObject from "ember-runtime/system/object";

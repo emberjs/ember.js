@@ -18,8 +18,7 @@ import run from "ember-metal/run_loop";
 import keys from "ember-metal/keys";
 import copy from "ember-runtime/copy";
 import {
-  classify,
-  fmt
+  classify
 } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import ActionHandler from "ember-runtime/mixins/action_handler";
@@ -1874,7 +1873,6 @@ function normalizeOptions(route, name, template, options) {
 
   var controller = options.controller;
   var model = options.model;
-  var namedController;
 
   if (options.controller) {
     controller = options.controller;

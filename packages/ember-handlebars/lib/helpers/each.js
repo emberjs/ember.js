@@ -19,9 +19,7 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import EmberArray from "ember-runtime/mixins/array";
 import copy from "ember-runtime/copy";
 import run from "ember-metal/run_loop";
-import { on } from "ember-metal/events";
 import { handlebarsGet } from "ember-handlebars/ext";
-import { computed } from "ember-metal/computed";
 
 import {
   addObserver,

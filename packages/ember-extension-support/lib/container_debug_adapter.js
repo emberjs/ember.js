@@ -89,7 +89,7 @@ export default EmberObject.extend({
     @return {Array} An array of strings.
   */
   catalogEntriesByType: function(type) {
-    var namespaces = emberA(Namespace.NAMESPACES), types = emberA(), self = this;
+    var namespaces = emberA(Namespace.NAMESPACES), types = emberA();
     var typeSuffixRegex = new RegExp(classify(type) + "$");
 
     namespaces.forEach(function(namespace) {

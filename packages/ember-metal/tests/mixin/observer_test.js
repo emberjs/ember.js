@@ -1,8 +1,6 @@
 /*globals testBoth */
 
 import testBoth from 'ember-metal/tests/props_helper';
-import { get } from 'ember-metal/property_get';
-import { create } from 'ember-metal/platform';
 import {
   observer,
   mixin,

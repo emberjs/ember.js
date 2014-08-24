@@ -4,7 +4,7 @@ import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 
-var View, view, willDestroyCalled, childView;
+var View, view;
 
 QUnit.module("EmberView - replaceIn()", {
   setup: function() {

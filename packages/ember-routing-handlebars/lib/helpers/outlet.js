@@ -1,7 +1,4 @@
 import Ember from "ember-metal/core"; // assert
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { onLoad } from "ember-runtime/system/lazy_load";
 import ContainerView from "ember-views/views/container_view";
 import { _Metamorph } from "ember-handlebars/views/metamorph_view";
 import { viewHelper } from "ember-handlebars/helpers/view";

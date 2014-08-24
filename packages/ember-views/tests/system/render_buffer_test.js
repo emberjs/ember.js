@@ -1,5 +1,3 @@
-import { set } from "ember-metal/property_set";
-import { get } from "ember-metal/property_get";
 import jQuery from "ember-views/system/jquery";
 import RenderBuffer from "ember-views/system/render_buffer";
 

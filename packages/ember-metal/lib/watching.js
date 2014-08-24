@@ -3,7 +3,6 @@
 */
 
 import {
-  meta,
   GUID_KEY,
   typeOf,
   generateGuid
@@ -21,7 +20,6 @@ import {
   unwatchPath
 } from "ember-metal/watch_path";
 
-var metaFor = meta; // utils.js
 import {
   isPath
 } from "ember-metal/path_cache";

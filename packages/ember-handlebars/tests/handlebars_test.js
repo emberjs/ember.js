@@ -21,7 +21,6 @@ import { Binding } from "ember-metal/binding";
 import { observersFor } from "ember-metal/observer";
 import TextField from "ember-handlebars/controls/text_field";
 import Container from "ember-runtime/system/container";
-import Logger from "ember-metal/logger";
 
 import htmlSafe from "ember-handlebars/string";
 
@@ -469,10 +468,6 @@ test("View should not use keyword incorrectly - Issue #1315", function() {
 
 test("View should update when a property changes and no bind helper is used", function() {
   container.register('template:foo', EmberHandlebars.compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>'));
-
-  var templates = EmberObject.create({
-   foo: EmberHandlebars.compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>')
-  });
 
   view = EmberView.create({
     container: container,

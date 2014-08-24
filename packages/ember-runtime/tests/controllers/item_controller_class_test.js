@@ -180,7 +180,7 @@ test("when items are removed from the arrayController, their respective subconta
   createArrayController();
   var jaimeController = arrayController.objectAtContent(1);
   var cerseiController = arrayController.objectAtContent(2);
-  var subControllers = get(arrayController, '_subControllers');
+  get(arrayController, '_subControllers');
 
   equal(!!jaimeController.isDestroyed, false, "precond - nobody is destroyed yet");
   equal(!!cerseiController.isDestroyed, false, "precond - nobody is destroyed yet");
@@ -195,7 +195,6 @@ test("when items are removed from the arrayController, their respective subconta
 
 test("one cannot remove wrapped model directly when specifying `itemController`", function() {
   createArrayController();
-  var jaimeController = arrayController.objectAtContent(1);
   var cerseiController = arrayController.objectAtContent(2);
 
   equal(arrayController.get('length'), 3, "precondition - array is in initial state");
@@ -213,7 +212,7 @@ test("when items are removed from the underlying array, their respective subcont
   createArrayController();
   var jaimeController = arrayController.objectAtContent(1);
   var cerseiController = arrayController.objectAtContent(2);
-  var subContainers = get(arrayController, 'subContainers');
+  get(arrayController, 'subContainers');
 
   equal(!!jaimeController.isDestroying, false, "precond - nobody is destroyed yet");
   equal(!!cerseiController.isDestroying, false, "precond - nobody is destroyed yet");

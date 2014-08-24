@@ -1,4 +1,3 @@
-import Ember from "ember-metal/core";
 import Controller from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import Mixin from "ember-metal/mixin";

@@ -26,7 +26,7 @@ import EmberObject from 'ember-runtime/system/object';
 // EmberObject Base Tests
 // ========================================================================
 
-var obj, obj1, don, don1 ; // global variables
+var obj, obj1, don; // global variables
 var TestNamespace, originalLookup, lookup;
 
 QUnit.module("A new EmberObject instance", {

@@ -1,4 +1,3 @@
-/*globals setup raises */
 import {
   mixin,
   Mixin,

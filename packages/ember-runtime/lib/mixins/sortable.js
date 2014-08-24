@@ -6,7 +6,6 @@
 import Ember from "ember-metal/core"; // Ember.assert, Ember.A
 
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import { forEach } from "ember-metal/enumerable_utils";
 import { Mixin } from "ember-metal/mixin";
 import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";

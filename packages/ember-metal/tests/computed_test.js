@@ -286,8 +286,6 @@ testBoth("the old value is only passed in if the computed property specifies thr
     foo: 0
   };
 
-  var receivedOldValue;
-
   defineProperty(obj, 'plusOne', computed(
     function(key, value) {
       equal(arguments.length, 2, "computed property is only invoked with two arguments");

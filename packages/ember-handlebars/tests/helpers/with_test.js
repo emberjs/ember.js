@@ -1,4 +1,3 @@
-/*globals Foo */
 /*jshint newcap:false*/
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";

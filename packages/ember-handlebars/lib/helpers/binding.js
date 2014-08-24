@@ -8,12 +8,10 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.warn, uuid
 
 import EmberHandlebars from "ember-handlebars-compiler";
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import { apply, uuid } from "ember-metal/utils";
 import { fmt } from "ember-runtime/system/string";
 import { create as o_create } from "ember-metal/platform";
 import isNone from 'ember-metal/is_none';
-import EnumerableUtils from "ember-metal/enumerable_utils";
 import { forEach } from "ember-metal/array";
 import View from "ember-views/views/view";
 import run from "ember-metal/run_loop";
@@ -22,7 +20,7 @@ import { isGlobalPath } from "ember-metal/binding";
 import { bind as emberBind } from "ember-metal/binding";
 import jQuery from "ember-views/system/jquery";
 import { isArray } from "ember-metal/utils";
-import { getEscaped as handlebarsGetEscaped } from "ember-handlebars/ext";
+import { getEscaped } from "ember-handlebars/ext";
 import keys from "ember-metal/keys";
 import Cache from "ember-metal/cache";
 
@@ -186,7 +184,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
   } else {
     // The object is not observable, so just render it out and
     // be done with it.
-    data.buffer.push(handlebarsGetEscaped(currentContext, property, options));
+    data.buffer.push(getEscaped(currentContext, property, options));
   }
 }
 
@@ -208,7 +206,7 @@ function simpleBind(currentContext, property, options) {
         run.once(view, 'rerender');
       };
 
-      output = handlebarsGetEscaped(currentContext, property, options);
+      output = getEscaped(currentContext, property, options);
 
       data.buffer.push(output);
     } else {
@@ -234,7 +232,7 @@ function simpleBind(currentContext, property, options) {
   } else {
     // The object is not observable, so just render it out and
     // be done with it.
-    output = handlebarsGetEscaped(currentContext, property, options);
+    output = getEscaped(currentContext, property, options);
     data.buffer.push(output);
   }
 }
@@ -404,7 +402,7 @@ function unboundIfHelper(property, fn) {
   var data = fn.data;
   var template = fn.fn;
   var inverse = fn.inverse;
-  var normalized, propertyValue, result;
+  var normalized, propertyValue;
 
   normalized = normalizePath(context, property, data);
   propertyValue = handlebarsGet(context, property, fn);
@@ -495,7 +493,7 @@ function unboundIfHelper(property, fn) {
   @return {String} HTML string
 */
 function withHelper(context, options) {
-  var bindContext, preserveContext, controller;
+  var bindContext, preserveContext;
   var helperName = 'with';
 
   if (arguments.length === 4) {

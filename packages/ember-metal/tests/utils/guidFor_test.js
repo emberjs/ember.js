@@ -1,6 +1,5 @@
 import {
-  guidFor,
-  generateGuid
+  guidFor
 } from "ember-metal/utils";
 import { rewatch } from "ember-metal/watching";
 

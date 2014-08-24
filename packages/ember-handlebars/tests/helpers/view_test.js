@@ -3,7 +3,6 @@ import EmberView from "ember-views/views/view";
 import Container from 'container/container';
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
-import { platform } from "ember-metal/platform";
 
 var view, originalLookup;
 

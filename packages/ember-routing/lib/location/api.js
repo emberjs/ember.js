@@ -1,6 +1,4 @@
 import Ember from "ember-metal/core"; // deprecate, assert
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 
 /**
 @module ember

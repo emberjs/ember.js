@@ -6,7 +6,6 @@
 import Ember from "ember-metal/core"; // Ember.EXTEND_PROTOTYPES
 
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import {
   _replace as replace,
   forEach

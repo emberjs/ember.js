@@ -1,5 +1,4 @@
 import {
-  OrderedSet,
   Map,
   MapWithDefault
 } from "ember-metal/map";

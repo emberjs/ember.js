@@ -1,11 +1,9 @@
 import Ember from "ember-metal/core"; // FEATURES, Logger, Handlebars, warn, assert
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
 import { computed } from "ember-metal/computed";
 
-import { onLoad } from "ember-runtime/system/lazy_load";
 import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import keys from "ember-metal/keys";
@@ -13,7 +11,6 @@ import { isSimpleClick } from "ember-views/system/utils";
 import EmberComponent from "ember-views/views/component";
 import EmberHandlebars from "ember-handlebars";
 import { viewHelper } from "ember-handlebars/helpers/view";
-import EmberRouter from "ember-routing/system/router";
 import {
   resolveParams,
   resolvePaths,
