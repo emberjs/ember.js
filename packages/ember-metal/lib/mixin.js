@@ -167,6 +167,7 @@ function giveMethodSuper(obj, key, method, values, descs) {
 
   if (hasSuper === undefined) {
     hasSuper = method.toString().indexOf('_super');
+    method.__hasSuper = hasSuper;
   }
 
   if (hasSuper) {
