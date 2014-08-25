@@ -461,9 +461,45 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   The function should accept two parameters, key and value. If value is not
   undefined you should set the value first. In either case return the
   current value of the property.
+  
+  A computed property defined in this way might look like this:
+
+  ```js
+  var Person = Ember.Object.extend({
+    firstName: 'Betty',
+    lastName: 'Jones',
+
+    fullName: Ember.computed('firstName', 'lastName', function(key, value) {
+      return this.get('firstName') + ' ' + this.get('lastName');
+    })
+  });
+
+  var client = Person.create();
+
+  client.get('fullName'); // 'Betty Jones'
+  
+  client.set('lastName', 'Fuller');
+  client.get('fullName'); // 'Betty Fuller'
+  ```
+
+  _Note: This is the prefered way to define computed properties when writing third-party
+  libraries that depend on or use Ember, since there is no guarantee that the user
+  will have prototype extensions enabled._
+
+  You might use this method if you disabled
+  [Prototype Extensions](http://emberjs.com/guides/configuring-ember/disabling-prototype-extensions/).
+  The alternative syntax might look like this
+  (if prototype extensions are enabled, which is the default behavior):
+
+  ```js
+  fullName: function () {
+    return this.get('firstName') + ' ' + this.get('lastName');
+  }.property('firstName', 'lastName')
+  ```
 
   @method computed
   @for Ember
+  @param {String} [dependentKeys*] Optional dependent keys that trigger this computed property.
   @param {Function} func The computed property function.
   @return {Ember.ComputedProperty} property descriptor instance
 */
