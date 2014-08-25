@@ -174,7 +174,7 @@ test("Query params can be set using setupController at app bootup", function() {
       controller.set('model', model);
       controller.set('foo', '123');
     }
-  })
+  });
 
   App.HomeController = Ember.Controller.extend({
     queryParams: ['foo'],
@@ -184,14 +184,6 @@ test("Query params can be set using setupController at app bootup", function() {
   bootApplication();
 
   equal(router.get('location.path'), "/?foo=123");
-
-  var controller = container.lookup('controller:home');
-
-  setAndFlush(controller, 'foo', '456');
-  equal(router.get('location.path'), "/?foo=456");
-
-  setAndFlush(controller, 'foo', '987');
-  equal(router.get('location.path'), "/?foo=987");
 });
 
 test("Query params can map to different url keys", function() {
