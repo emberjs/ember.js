@@ -581,7 +581,14 @@ function buildRuntimeTree() {
     destFile: '/ember-runtime.js'
   });
 
-  return compiledRuntime;
+
+  var exportsTree = writeFile('export-ember', ';module.exports = Ember;\n');
+
+  return concat(mergeTrees([compiledRuntime, exportsTree]), {
+    wrapInEval: false,
+    inputFiles: ['ember-runtime.js', 'export-ember'],
+    outputFile: '/ember-runtime.js'
+  });
 }
 
 // Takes original source file and removes the ember-debug package.
