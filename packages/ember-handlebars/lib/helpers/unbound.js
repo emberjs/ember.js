@@ -43,6 +43,10 @@ export default function unboundHelper(property, fn) {
     // Unbound helper call.
     options.data.isUnbound = true;
     helper = resolveHelper(container, property) || helpers.helperMissing;
+
+    // Attempt to exec the first field as a helper
+    options.name = arguments[0];
+
     out = helper.apply(ctx, slice.call(arguments, 1));
     delete options.data.isUnbound;
     return out;
