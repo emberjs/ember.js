@@ -34,7 +34,7 @@ Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1. Include "
 Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1, " +
              "COMPILER_REVISION expected: 4, got: " +  Handlebars.COMPILER_REVISION +
              " - Please note: Builds of master may have other COMPILER_REVISION values.",
-             Handlebars.COMPILER_REVISION === 4);
+             Handlebars.COMPILER_REVISION === 6);
 
 /**
   Prepares the Handlebars templating library for use inside Ember's view
