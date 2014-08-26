@@ -50,7 +50,7 @@ Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1, " +
   @class Handlebars
   @namespace Ember
 */
-var EmberHandlebars = Ember.Handlebars = objectCreate(Handlebars);
+var EmberHandlebars = Ember.Handlebars = Handlebars.create();
 
 /**
   Register a bound helper or custom view helper.
