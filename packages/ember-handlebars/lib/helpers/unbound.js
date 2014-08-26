@@ -45,6 +45,10 @@ export default function unboundHelper(property) {
     }
 
     var helper = resolveHelper(container, property) || EmberHandlebars.helpers.helperMissing;
+
+    // Attempt to exec the first field as a helper
+    options.name = arguments[0];
+
     var result = helper.apply(this, args);
 
     delete options.data.isUnbound;
