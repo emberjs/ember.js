@@ -25,7 +25,6 @@ import {
 } from "ember-metal/streams/read";
 
 var slice = [].slice;
-var originalTemplate = EmberHandlebars.template;
 
 /**
   Lookup both on root and on window. If the path starts with
@@ -434,21 +433,6 @@ function makeBoundHelper(fn) {
   }
 
   return helper;
-}
-
-/**
-  Overrides Handlebars.template so that we can distinguish
-  user-created, top-level templates from inner contexts.
-
-  @private
-  @method template
-  @for Ember.Handlebars
-  @param {String} spec
-*/
-export function template(spec) {
-  var t = originalTemplate(spec);
-  t.isTop = true;
-  return t;
 }
 
 export {

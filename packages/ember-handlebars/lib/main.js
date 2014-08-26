@@ -5,7 +5,6 @@ import { runLoadHooks } from "ember-runtime/system/lazy_load";
 import bootstrap from "ember-handlebars/loader";
 
 import {
-  template,
   makeBoundHelper,
   registerBoundHelper,
   helperMissingHelper,
@@ -87,7 +86,6 @@ Ember Handlebars
 
 // Ember.Handlebars.Globals
 EmberHandlebars.bootstrap = bootstrap;
-EmberHandlebars.template = template;
 EmberHandlebars.makeBoundHelper = makeBoundHelper;
 EmberHandlebars.registerBoundHelper = registerBoundHelper;
 EmberHandlebars.resolveHelper = resolveHelper;
