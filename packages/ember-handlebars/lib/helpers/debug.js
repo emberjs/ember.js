@@ -8,7 +8,6 @@ import Ember from "ember-metal/core"; // Ember.FEATURES,
 import { inspect } from "ember-metal/utils";
 import Logger from "ember-metal/logger";
 
-import { get } from "ember-metal/property_get";
 import {
   normalizePath,
   handlebarsGet
@@ -92,6 +91,7 @@ function logHelper() {
 function debuggerHelper(options) {
 
   // These are helpful values you can inspect while debugging.
+  /* jshint unused: false */
   var templateContext = this;
   var typeOfTemplateContext = inspect(templateContext);
   Ember.Logger.info('Use `this` to access the context of the calling template.');

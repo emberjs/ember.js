@@ -1,5 +1,3 @@
-/*globals setup */
-
 QUnit.module('Ember.Mixin concatenatedProperties');
 
 test('defining concatenated properties should concat future version', function() {

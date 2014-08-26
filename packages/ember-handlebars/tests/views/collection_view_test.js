@@ -17,10 +17,6 @@ var trim = jQuery.trim;
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
-function firstGrandchild(view) {
-  return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
-}
-
 function nthChild(view, nth) {
   return get(view, 'childViews').objectAt(nth || 0);
 }

@@ -1,4 +1,3 @@
-/*globals Foo */
 import EmberView from "ember-views/views/view";
 import EmberObject from "ember-runtime/system/object";
 

@@ -1,4 +1,3 @@
-import {get} from "ember-metal/property_get";
 import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 

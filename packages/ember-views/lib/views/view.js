@@ -13,9 +13,8 @@ import setProperties from "ember-metal/set_properties";
 import run from "ember-metal/run_loop";
 import { addObserver, removeObserver } from "ember-metal/observer";
 
-import { defineProperty, deprecateProperty } from "ember-metal/properties";
+import { defineProperty } from "ember-metal/properties";
 import { guidFor } from "ember-metal/utils";
-import { meta } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
 import { observer } from "ember-metal/mixin";
 
@@ -57,7 +56,6 @@ import CoreView from "ember-views/views/core_view";
 var childViewsProperty = computed(function() {
   var childViews = this._childViews;
   var ret = emberA();
-  var view = this;
 
   forEach(childViews, function(view) {
     var currentChildViews;
@@ -1774,11 +1772,9 @@ var View = CoreView.extend({
     @method destroy
   */
   destroy: function() {
-    var childViews = this._childViews;
     // get parentView before calling super because it'll be destroyed
     var nonVirtualParentView = get(this, 'parentView');
     var viewName = this.viewName;
-    var childLen, i;
 
     if (!this._super()) { return; }
 
@@ -2002,10 +1998,6 @@ var View = CoreView.extend({
 
   // once the view has been inserted into the DOM, legal manipulations
   // are done on the DOM element.
-
-function notifyMutationListeners() {
-  run.once(View, 'notifyMutationListeners');
-}
 
 View.reopenClass({
 

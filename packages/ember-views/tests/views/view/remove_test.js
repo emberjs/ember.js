@@ -1,5 +1,4 @@
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import { indexOf } from "ember-metal/enumerable_utils";
 import jQuery from "ember-views/system/jquery";
@@ -114,7 +113,6 @@ test("returns receiver", function() {
 });
 
 test("does nothing if not in parentView", function() {
-  var callCount = 0;
   child = View.create();
 
   // monkey patch for testing...

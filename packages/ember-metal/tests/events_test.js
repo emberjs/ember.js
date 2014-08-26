@@ -9,11 +9,7 @@ import {
   suspendListener,
   suspendListeners,
   sendEvent,
-  hasListeners,
-  watchedEvents,
-  listenersFor,
-  actionsDiff,
-  actionsUnion
+  hasListeners
 } from "ember-metal/events";
 
 QUnit.module('system/props/events_test');

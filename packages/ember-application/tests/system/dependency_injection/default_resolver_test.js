@@ -7,7 +7,7 @@ import EmberHandlebars from "ember-handlebars";
 import Namespace from "ember-runtime/system/namespace";
 import Application from "ember-application/system/application";
 
-var locator, application, lookup, originalLookup, originalLoggerInfo;
+var locator, application, originalLookup, originalLoggerInfo;
 
 QUnit.module("Ember.Application Depedency Injection", {
   setup: function() {

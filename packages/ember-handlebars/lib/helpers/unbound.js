@@ -1,5 +1,3 @@
-/*globals Handlebars */
-
 /**
 @module ember
 @submodule ember-handlebars

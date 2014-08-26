@@ -1,6 +1,5 @@
 import Ember from "ember-metal/core";
 import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
 import EmberStringUtils from 'ember-runtime/system/string';
 import EmberObject from 'ember-runtime/system/object';
 

@@ -2,9 +2,6 @@
 @module ember
 @submodule ember-handlebars
 */
-
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import Component from "ember-views/views/component";
 import TextSupport from "ember-handlebars/controls/text_support";
 

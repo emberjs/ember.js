@@ -9,7 +9,6 @@ import Ember from "ember-metal/core";
 // NOTE: this object should never be included directly. Instead use `Ember.Object`.
 // We only define this separately so that `Ember.Set` can depend on it.
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import {
   guidFor,
   apply

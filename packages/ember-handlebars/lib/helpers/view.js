@@ -1,5 +1,3 @@
-/*globals Handlebars */
-
 /**
 @module ember
 @submodule ember-handlebars
@@ -10,9 +8,7 @@ import Ember from "ember-metal/core"; // Ember.warn, Ember.assert
 
 import EmberObject from "ember-runtime/system/object";
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import { IS_BINDING } from "ember-metal/mixin";
-import jQuery from "ember-views/system/jquery";
 import View from "ember-views/views/view";
 import { isGlobalPath } from "ember-metal/binding";
 import merge from "ember-metal/merge";
@@ -21,11 +17,6 @@ import {
   handlebarsGet,
   handlebarsGetView
 } from "ember-handlebars/ext";
-import EmberString from "ember-runtime/system/string";
-
-
-var LOWERCASE_A_Z = /^[a-z]/;
-var VIEW_PREFIX = /^view\./;
 
 function makeBindings(thisContext, options) {
   var hash = options.hash;

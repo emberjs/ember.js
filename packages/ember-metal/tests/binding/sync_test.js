@@ -1,9 +1,7 @@
 import testBoth from 'ember-metal/tests/props_helper';
 import run from 'ember-metal/run_loop';
 import {
-  addObserver,
-  removeObserver,
-  _suspendObserver
+  addObserver
 } from "ember-metal/observer";
 import { create }  from 'ember-metal/platform';
 import { bind } from "ember-metal/binding";

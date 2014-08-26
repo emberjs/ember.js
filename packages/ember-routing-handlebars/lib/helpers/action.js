@@ -1,19 +1,15 @@
 import Ember from "ember-metal/core"; // Handlebars, uuid, FEATURES, assert, deprecate
-import { get } from "ember-metal/property_get";
 import { forEach } from "ember-metal/array";
 import { uuid } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
 
 import { isSimpleClick } from "ember-views/system/utils";
 import ActionManager from "ember-views/system/action_manager";
-import EmberRouter from "ember-routing/system/router";
 
 import EmberHandlebars from "ember-handlebars";
 import { handlebarsGet } from "ember-handlebars/ext";
-import { viewHelper } from "ember-handlebars/helpers/view";
 import {
-  resolveParams,
-  resolvePath
+  resolveParams
 } from "ember-routing-handlebars/helpers/shared";
 
 /**

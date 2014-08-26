@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 import { get as e_get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 import {
   guidFor,
   meta as metaFor
@@ -13,7 +12,6 @@ import {
 import expandProperties from 'ember-metal/expand_properties';
 import {
   addObserver,
-  observersFor,
   removeObserver,
   addBeforeObserver,
   removeBeforeObserver
@@ -393,7 +391,6 @@ function addItems(dependentArray, callbacks, cp, propertyName, meta) {
 }
 
 function reset(cp, propertyName) {
-  var callbacks = cp._callbacks();
   var hadMeta = cp._hasInstanceMeta(this, propertyName);
   var meta = cp._instanceMeta(this, propertyName);
 
@@ -492,7 +489,6 @@ function ReduceComputedProperty(options) {
   };
 
   var recompute = function(propertyName) {
-    var dependentKeys = cp._dependentKeys;
     var meta = cp._instanceMeta(this, propertyName);
     var callbacks = cp._callbacks();
 
@@ -618,7 +614,7 @@ ReduceComputedProperty.prototype.property = function () {
   var cp = this;
   var args = a_slice.call(arguments);
   var propertyArgs = {};
-  var match, dependentArrayKey, itemPropertyKey;
+  var match, dependentArrayKey;
 
   forEach(args, function (dependentKey) {
     if (doubleEachPropertyPattern.test(dependentKey)) {

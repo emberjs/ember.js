@@ -1,4 +1,4 @@
-/*globals Ember:true,Em:true,ENV,EmberENV,MetamorphENV:true */
+/*globals Ember:true,ENV,EmberENV,MetamorphENV:true */
 
 /**
 @module ember
@@ -32,9 +32,9 @@ if ('undefined' === typeof Ember) {
 }
 
 // Default imports, exports and lookup to the global object;
-var imports = Ember.imports = Ember.imports || this;
-var exports = Ember.exports = Ember.exports || this;
-var lookup  = Ember.lookup  = Ember.lookup  || this;
+Ember.imports = Ember.imports || this;
+Ember.lookup  = Ember.lookup  || this;
+var exports   = Ember.exports = Ember.exports || this;
 
 // aliases needed to keep minifiers from removing the global context
 exports.Em = exports.Ember = Ember;

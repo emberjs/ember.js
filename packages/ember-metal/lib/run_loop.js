@@ -32,7 +32,6 @@ var backburner = new Backburner(['sync', 'actions', 'destroy'], {
   onErrorMethod: 'onerror'
 });
 var slice = [].slice;
-var concat = [].concat;
 
 // ..........................................................
 // run - this is ideally the only public API the dev sees

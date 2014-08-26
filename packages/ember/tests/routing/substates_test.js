@@ -1,7 +1,7 @@
 import "ember";
 
-var Router, App, AppView, templates, router, container, counter;
-var get = Ember.get, set = Ember.set, compile = Ember.Handlebars.compile;
+var Router, App, templates, router, container, counter;
+var compile = Ember.Handlebars.compile;
 
 function step(expectedValue, description) {
   equal(counter, expectedValue, "Step " + expectedValue + ": " + description);
@@ -23,18 +23,6 @@ function bootApplication(startingURL) {
   startingURL = startingURL || '';
   router = container.lookup('router:main');
   Ember.run(App, 'advanceReadiness');
-}
-
-function handleURL(path) {
-  return Ember.run(function() {
-    return router.handleURL(path).then(function(value) {
-      ok(true, 'url: `' + path + '` was handled');
-      return value;
-    }, function(reason) {
-      ok(false, 'failed to visit:`' + path + '` reason: `' + QUnit.jsDump.parse(reason));
-      throw reason;
-    });
-  });
 }
 
 QUnit.module("Loading/Error Substates", {
@@ -333,8 +321,6 @@ test("Loading actions bubble to root, but don't enter substates above pivot", fu
 
   var sallyDeferred = Ember.RSVP.defer();
   var smellsDeferred = Ember.RSVP.defer();
-
-  var shouldBubbleToApplication = true;
 
   Router.map(function() {
     this.resource('grandma', function() {

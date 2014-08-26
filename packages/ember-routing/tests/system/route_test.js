@@ -1,10 +1,9 @@
-import Ember from 'ember-metal/core'; // assert
 import run from "ember-metal/run_loop";
 import Container from 'container/container';
 import EmberObject from "ember-runtime/system/object";
 import EmberRoute from "ember-routing/system/route";
 
-var route, routeOne, routeTwo, router, container, lookupHash;
+var route, routeOne, routeTwo, container, lookupHash;
 
 function createRoute(){
   route = EmberRoute.create();
@@ -116,7 +115,6 @@ test("'store' does not need to be injected", function() {
   expect(1);
 
   run(route, 'destroy');
-  var originalAssert = Ember.assert;
 
   var container = new Container();
   container.register('route:index',  EmberRoute);

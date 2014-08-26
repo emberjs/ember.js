@@ -115,7 +115,6 @@ test("should by default target the view's controller", function() {
 });
 
 test("Inside a yield, the target points at the original target", function() {
-  var controller = {};
   var watted = false;
 
   var component = EmberComponent.extend({
@@ -607,7 +606,6 @@ test("should not bubble an event from action helper to original parent event if 
 
 test("should allow 'send' as action name (#594)", function() {
   var eventHandlerWasCalled = false;
-  var eventObjectSent;
 
   var controller = EmberController.extend({
     send: function() { eventHandlerWasCalled = true; }
@@ -743,13 +741,6 @@ test("should allow multiple contexts to be specified mixed with string args", fu
 
   deepEqual(passedParams, ["herp", model], "the action was called with the passed contexts");
 });
-
-var namespace = {
-  "Component": {
-    toString: function() { return "Component"; },
-    find: function() { return { id: 1 }; }
-  }
-};
 
 var compile = function(string) {
   return EmberHandlebars.compile(string);

@@ -1,4 +1,3 @@
-import Ember from "ember-metal/core"; // FEATURES
 import {get} from "ember-metal/property_get";
 import {set} from "ember-metal/property_set";
 import {guidFor} from "ember-metal/utils";

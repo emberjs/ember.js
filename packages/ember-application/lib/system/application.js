@@ -667,7 +667,7 @@ var Application = Namespace.extend(DeferredMixin, {
     var container = this.__container__;
     var graph = new DAG();
     var namespace = this;
-    var name, initializer;
+    var initializer;
 
     for (var i = 0; i < initializers.length; i++) {
       initializer = initializersByName[initializers[i]];

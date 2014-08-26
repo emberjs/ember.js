@@ -1,8 +1,8 @@
 import {set} from "ember-metal/property_set";
 import {get} from "ember-metal/property_get";
 import {Mixin} from "ember-metal/mixin";
-import {create, platform} from "ember-metal/platform";
-import {Binding, isGlobalPath, bind, oneWay} from "ember-metal/binding";
+import { create } from "ember-metal/platform";
+import { Binding } from "ember-metal/binding";
 import run from "ember-metal/run_loop";
 
 QUnit.module('system/mixin/binding_test');

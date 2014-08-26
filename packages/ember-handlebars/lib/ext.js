@@ -11,7 +11,6 @@ import EmberError from "ember-metal/error";
 import { IS_BINDING } from "ember-metal/mixin";
 
 import View from "ember-views/views/view";
-import { _Metamorph } from "ember-handlebars/views/metamorph_view";
 import {
   isGlobal as detectIsGlobal
 } from "ember-metal/path_cache";

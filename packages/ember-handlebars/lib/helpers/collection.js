@@ -4,7 +4,6 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
-import { inspect } from "ember-metal/utils";
 
 // var emberAssert = Ember.assert;
     // emberDeprecate = Ember.deprecate;
@@ -14,7 +13,7 @@ var helpers = EmberHandlebars.helpers;
 
 import { fmt } from "ember-runtime/system/string";
 import { get } from "ember-metal/property_get";
-import { handlebarsGet, handlebarsGetView } from "ember-handlebars/ext";
+import { handlebarsGetView } from "ember-handlebars/ext";
 import { ViewHelper } from "ember-handlebars/helpers/view";
 import { computed } from "ember-metal/computed";
 import CollectionView from "ember-views/views/collection_view";

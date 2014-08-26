@@ -1,7 +1,4 @@
-import Ember from "ember-metal/core";
 import EmberObject from "ember-runtime/system/object";
-
-var originalLookup, lookup;
 
 QUnit.module('strict mode tests');
 

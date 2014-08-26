@@ -134,7 +134,7 @@ function tryIsNamespace(lookup, prop) {
 
 function findNamespaces() {
   var lookup = Ember.lookup;
-  var obj, isNamespace;
+  var obj;
 
   if (Namespace.PROCESSED) { return; }
 

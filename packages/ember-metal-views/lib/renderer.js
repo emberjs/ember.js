@@ -35,7 +35,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
   var level = 0;
 
   var view = _view;
-  var children, i, l, child;
+  var children, i, child;
   while (length) {
     elements[level] = element;
     if (!view._morph) {
@@ -157,8 +157,7 @@ function Renderer_remove(_view, shouldDestroy, reset) {
   var removeQueue = [];
   var destroyQueue = [];
   var morph = _view._morph;
-  var  idx, len, view, staticChildren, queue,
-    childViews, i, l, parentView;
+  var idx, len, view, queue, childViews, i, l;
 
   removeQueue.push(_view);
 

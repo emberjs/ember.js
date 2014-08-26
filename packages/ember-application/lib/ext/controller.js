@@ -5,7 +5,6 @@
 
 import Ember from "ember-metal/core"; // Ember.assert
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import EmberError from "ember-metal/error";
 import { inspect } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";

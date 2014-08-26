@@ -1,9 +1,4 @@
-import { set } from "ember-metal/property_set";
 import keys from "ember-metal/keys";
-import {
-  addObserver,
-  removeObserver
-} from "ember-metal/observer";
 
 QUnit.module("Fetch Keys ");
 

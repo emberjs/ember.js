@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import {onLoad, runLoadHooks} from "ember-runtime/system/lazy_load";
 

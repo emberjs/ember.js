@@ -80,8 +80,6 @@ test("Retains split filters", function() {
 });
 
 test("`addItem` returns the index of the item in the subarray", function() {
-  var indexes = [];
-
   equal(subarray.addItem(0, true), 0, "`addItem` returns the index of the item in the subarray");
   subarray.addItem(1, false);
   equal(subarray.addItem(2, true), 1, "`addItem` returns the index of the item in the subarray");

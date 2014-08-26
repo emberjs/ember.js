@@ -1,7 +1,7 @@
 import "ember";
 
-var Router, App, AppView, templates, router, eventDispatcher, container;
-var get = Ember.get, set = Ember.set, map = Ember.ArrayPolyfills.map;
+var Router, App, AppView, router, container;
+var set = Ember.set;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -859,7 +859,6 @@ test("The {{link-to}} helper's bound parameter functionality works as expected i
   equal(normalizeUrl($link.attr('href')), '/posts/1', 'self link renders post 1');
 
   Ember.run(postController, 'set', 'model', secondPost);
-  var linkView = Ember.View.views['self-link'];
 
   equal(normalizeUrl($link.attr('href')), '/posts/2', 'self link updated to post 2');
 });

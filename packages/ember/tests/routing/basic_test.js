@@ -4,7 +4,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import ActionManager from "ember-views/system/action_manager";
 
-var Router, App, AppView, templates, router, container, originalLoggerError;
+var Router, App, router, container, originalLoggerError;
 var compile = Ember.Handlebars.compile;
 
 function bootApplication() {
@@ -1035,7 +1035,7 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
     })
   });
 
-  var menuItem, resolve;
+  var menuItem;
 
   App.MenuItem = Ember.Object.extend();
   App.MenuItem.reopenClass({
@@ -1568,7 +1568,7 @@ test("Route inherits model from parent route", function() {
   });
 
   var post1 = {}, post2 = {}, post3 = {}, currentPost;
-  var share1 = {}, share2 = {}, share3 = {}, currentShare;
+  var share1 = {}, share2 = {}, share3 = {};
 
   var posts = {
     1: post1,

@@ -1,6 +1,3 @@
-/*globals raises */
-
-import { get } from 'ember-metal/property_get';
 import { create } from 'ember-metal/platform';
 import {
   mixin,
@@ -28,7 +25,7 @@ test('defining simple methods', function() {
 });
 
 test('overriding public methods', function() {
-  var MixinA, MixinB, MixinC, MixinD, MixinE, MixinF, obj;
+  var MixinA, MixinB, MixinD, MixinF, obj;
 
   MixinA = Mixin.create({
     publicMethod: function() { return 'A'; }

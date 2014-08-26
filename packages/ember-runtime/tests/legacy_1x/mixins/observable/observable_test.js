@@ -1,5 +1,4 @@
 import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 import { forEach } from 'ember-metal/enumerable_utils';
 import { computed } from 'ember-metal/computed';
 import run from 'ember-metal/run_loop';

@@ -11,10 +11,8 @@
 // ========================================================================
 // Ember.Observable Tests
 // ========================================================================
-/*globals module test ok isObj equals expects Namespace */
 
 import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
 import EmberObject from 'ember-runtime/system/object';
 import Observable from 'ember-runtime/mixins/observable';
 

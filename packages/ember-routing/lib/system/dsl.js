@@ -83,7 +83,7 @@ DSL.prototype = {
     return function(match) {
       for (var i=0, l=dslMatches.length; i<l; i++) {
         var dslMatch = dslMatches[i];
-        var matchObj = match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
+        match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
       }
     };
   }

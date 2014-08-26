@@ -3,10 +3,6 @@
 @submodule ember-views
 */
 
-import Ember from 'ember-metal/core'; // jQuery
-
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import { setInnerHTML } from "ember-views/system/utils";
 import jQuery from "ember-views/system/jquery";
 import {DOMHelper} from "morph";
