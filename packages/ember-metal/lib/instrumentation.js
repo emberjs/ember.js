@@ -85,7 +85,7 @@ var time = (function() {
 */
 export function instrument(name, _payload, callback, binding) {
   if (subscribers.length === 0) {
-    return;
+    return callback.call(binding);
   }
   var payload = _payload || {};
   var finalizer = _instrumentStart(name, function () {
@@ -99,6 +99,8 @@ export function instrument(name, _payload, callback, binding) {
       payload.exception = e;
     };
     return tryCatchFinally(tryable, catchable, finalizer);
+  } else {
+    return callback.call(binding);
   }
 }
 
