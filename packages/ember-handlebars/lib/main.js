@@ -6,7 +6,6 @@ import bootstrap from "ember-handlebars/loader";
 
 import {
   normalizePath,
-  template,
   makeBoundHelper,
   registerBoundHelper,
   resolveHash,
@@ -97,7 +96,6 @@ Ember Handlebars
 
 // Ember.Handlebars.Globals
 EmberHandlebars.bootstrap = bootstrap;
-EmberHandlebars.template = template;
 EmberHandlebars.makeBoundHelper = makeBoundHelper;
 EmberHandlebars.registerBoundHelper = registerBoundHelper;
 EmberHandlebars.resolveHash = resolveHash;

@@ -22,7 +22,6 @@ var resolveHelper, SimpleHandlebarsView;
 import isEmpty from 'ember-metal/is_empty';
 
 var slice = [].slice;
-var originalTemplate = EmberHandlebars.template;
 
 /**
   If a path starts with a reserved keyword, returns the root
@@ -621,21 +620,6 @@ function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
   }
   args.push(options);
   return fn.apply(context, args);
-}
-
-/**
-  Overrides Handlebars.template so that we can distinguish
-  user-created, top-level templates from inner contexts.
-
-  @private
-  @method template
-  @for Ember.Handlebars
-  @param {String} spec
-*/
-export function template(spec) {
-  var t = originalTemplate(spec);
-  t.isTop = true;
-  return t;
 }
 
 export {
