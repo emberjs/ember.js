@@ -85,6 +85,57 @@ QUnit.module("Basic Routing", {
   }
 });
 
+
+test('deactivate is called after teardownViews', function() {
+  expect(2);
+
+  Router.map(function() {
+    this.route('home', { path: '/home' });
+    this.route('work', { path: '/work' });
+  });
+
+  Ember.TEMPLATES.home = compile('{{home-work foo=foo}}');
+  Ember.TEMPLATES['components/home-work'] = compile('{{bro}}');
+
+  var count = 0;
+
+  App.HomeController = Ember.Controller.extend({
+    foo: Ember.computed('model.bar', function(){
+      count++;
+      equal(count, 1, 'expected foo to only be computed once');
+      return this.get('model.bar');
+    })
+  });
+
+  App.HomeWorkComponent = Ember.Component.extend({
+    bro: Ember.computed.readOnly('foo.kris')
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    deactivate: function() {
+      this.controller.set('model', undefined);
+    },
+
+    model: function(){
+      return {
+        bar: { kris: 'baz' }
+      };
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function(){
+    router.handleURL('/home');
+  });
+
+  equal(Ember.$('#qunit-fixture').text(), 'baz');
+
+  Ember.run(function(){
+    router.handleURL('/work');
+  });
+});
+
 test("warn on URLs not included in the route set", function () {
   Router.map(function() {
     this.route("home", { path: "/" });

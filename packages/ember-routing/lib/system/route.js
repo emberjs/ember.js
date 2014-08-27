@@ -321,8 +321,9 @@ var Route = EmberObject.extend(ActionHandler, {
     @method exit
   */
   exit: function() {
-    this.deactivate();
     this.teardownViews();
+    // ensure we teardown views before we teardown state, this prevents churn
+    this.deactivate();
   },
 
   /**
