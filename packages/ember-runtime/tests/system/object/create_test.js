@@ -337,3 +337,21 @@ test("created objects should not share a guid with their superclass", function()
 
   ok(guidFor(objA) !== guidFor(objB), "two instances do not share a guid");
 });
+
+test("ensure internal properties do not leak", function(){
+  var obj = EmberObject.create({
+    firstName: 'Joe',
+    lastName:  'Black'
+  });
+
+  var expectedProperties = ['firstName', 'lastName'];
+  var actualProperties   = [];
+
+  for (var name in obj) {
+    if (obj.hasOwnProperty(name)) {
+      actualProperties.push(name);
+    }
+  }
+
+  deepEqual(actualProperties, expectedProperties, 'internal properties do not leak');
+});
