@@ -493,7 +493,7 @@ function ReduceComputedProperty(options) {
     var callbacks = cp._callbacks();
 
     reset.call(this, cp, propertyName);
-    debugger;
+
     meta.dependentArraysObserver.suspendArrayObservers(function () {
       forEach(cp._dependentKeys, function (dependentKey) {
         Ember.assert(
@@ -588,8 +588,7 @@ ReduceComputedProperty.prototype._instanceMeta = function (context, propertyName
 ReduceComputedProperty.prototype.initialValue = function () {
   if (typeof this.options.initialValue === 'function') {
     return this.options.initialValue();
-  }
-  else {
+  } else {
     return this.options.initialValue;
   }
 };
@@ -642,14 +641,20 @@ ReduceComputedProperty.prototype.property = function () {
   return ComputedProperty.prototype.property.apply(this, propertyArgsToArray);
 };
 
-ReduceComputedProperty.prototype.didChange = function (obj, propKey, depKey, oldValue) {
+ReduceComputedProperty.prototype.didChange = function (obj, propKey, depKey, change) {
   // TODO: Do something when the changes are made in an something like
   // totallyInvalidatingDependentArray.[]
   // In those cases it might be impossible to track what have changed in the array.
   if (depKey && this.options.invalidate) {
     var instanceMeta = this._instanceMeta(obj, propKey);
-    instanceMeta._invalidateValues = instanceMeta._invalidateValues || {};
-    instanceMeta._invalidateValues[depKey] = instanceMeta._invalidateValues[depKey] || oldValue;
+    instanceMeta._invalidatingChanges = instanceMeta._invalidatingChanges || {};
+    if (arrayBracketPattern.test(depKey)) {
+      instanceMeta._invalidatingChanges[depKey] = instanceMeta._invalidatingChanges[depKey] || {adding: 0, removing: 0};
+      instanceMeta._invalidatingChanges[depKey].adding += change.adding;
+      instanceMeta._invalidatingChanges[depKey].removing += change.removing;
+    } else if (instanceMeta._invalidatingChanges[depKey] === undefined){
+      instanceMeta._invalidatingChanges[depKey] = change;
+    }
   } else {
     ComputedProperty.prototype.didChange.call(this, arguments);
   }
@@ -658,14 +663,14 @@ ReduceComputedProperty.prototype.didChange = function (obj, propKey, depKey, old
 ReduceComputedProperty.prototype.get = function (obj, key) {
   var hasMeta = this._hasInstanceMeta(obj, key);
   var instanceMeta = hasMeta && this._instanceMeta(obj, key);
-  if (instanceMeta && instanceMeta._invalidateValues) {
+  if (instanceMeta && instanceMeta._invalidatingChanges) {
     var oldVal = instanceMeta.getValue();
     var changeMeta = {
       property: this,
       propertyName: key,
-      oldValues: instanceMeta._invalidateValues
+      changes: instanceMeta._invalidatingChanges
     };
-    delete instanceMeta._invalidateValues;
+    delete instanceMeta._invalidatingChanges;
     var val = this.options.invalidate.call(obj, oldVal, changeMeta, instanceMeta.sugarMeta);
     instanceMeta.setValue(val);
     return val;
