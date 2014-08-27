@@ -86,8 +86,7 @@ var Route = EmberObject.extend(ActionHandler, {
   */
   _qp: computed(function() {
     var controllerName = this.controllerName || this.routeName;
-    var fullName = this.container.normalize('controller:' + controllerName);
-    var controllerClass = this.container.lookupFactory(fullName);
+    var controllerClass = this.container.lookupFactory('controller:' + controllerName);
 
     if (!controllerClass) {
       return defaultQPMeta;
