@@ -851,10 +851,7 @@ CoreObject.reopen({
         cache._computedProperties = undefined;
       }
     }
-
-    this._super();
   }
 });
-
 
 export default CoreObject;
