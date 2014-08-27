@@ -77,12 +77,14 @@ function propertyDidChange(obj, keyName, depKey, changeInfo) {
   if (desc && desc.didChange) { desc.didChange(obj, keyName, depKey, changeInfo); }
   if (!watching && keyName !== 'length') { return; }
 
-  if (m && m.deps && m.deps[keyName]) {
-    dependentKeysDidChange(obj, keyName, changeInfo, m);
-  }
+  if (!depKey || !desc.options || !desc.options.invalidate) {
+    if (m && m.deps && m.deps[keyName]) {
+      dependentKeysDidChange(obj, keyName, changeInfo, m);
+    }
 
-  chainsDidChange(obj, keyName, m, false, depKey, changeInfo);
-  notifyObservers(obj, keyName);
+    chainsDidChange(obj, keyName, m, false, depKey, changeInfo);
+    notifyObservers(obj, keyName);
+  }
 }
 
 var WILL_SEEN, DID_SEEN;

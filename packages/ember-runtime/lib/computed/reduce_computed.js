@@ -672,7 +672,10 @@ ReduceComputedProperty.prototype.get = function (obj, key) {
     };
     delete instanceMeta._invalidatingChanges;
     var val = this.options.invalidate.call(obj, oldVal, changeMeta, instanceMeta.sugarMeta);
-    instanceMeta.setValue(val);
+    if (val !== oldVal) {
+      instanceMeta.setValue(val);
+      propertyDidChange(obj, key); // Notify observers.
+    }
     return val;
   } else {
     return ComputedProperty.prototype.get.call(this, obj, key);
