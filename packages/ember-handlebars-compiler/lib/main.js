@@ -27,12 +27,12 @@ if (!Handlebars && typeof require === 'function') {
   Handlebars = require('handlebars');
 }
 
-Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1. Include " +
+Ember.assert("Ember Handlebars requires Handlebars version 2.0. Include " +
              "a SCRIPT tag in the HTML HEAD linking to the Handlebars file " +
              "before you link to Ember.", Handlebars);
 
-Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1, " +
-             "COMPILER_REVISION expected: 4, got: " +  Handlebars.COMPILER_REVISION +
+Ember.assert("Ember Handlebars requires Handlebars version 2.0, " +
+             "COMPILER_REVISION expected: 6, got: " +  Handlebars.COMPILER_REVISION +
              " - Please note: Builds of master may have other COMPILER_REVISION values.",
              Handlebars.COMPILER_REVISION === 6);
 
