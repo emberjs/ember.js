@@ -1,5 +1,7 @@
 import EmberObject from "ember-runtime/system/object";
 import Evented from "ember-runtime/mixins/evented";
+import { on } from "ember-metal/events";
+import { when } from 'ember-metal/mixin';
 
 QUnit.module("Object events");
 
@@ -140,3 +142,33 @@ test("adding and removing listeners should be chainable", function() {
   ret = obj.one('event!', F);
   equal(ret, obj, '#one returns self');
 });
+
+if (Ember.FEATURES.isEnabled("conditional-observers-and-listeners")) {
+  test('conditional listener respects initial condition: true', function () {
+
+    var triggered = 0;
+    var obj = EmberObject.createWithMixins(Evented, {
+      foo: on('bar', when('baz', function () { triggered++; })),
+      baz: true
+    });
+
+    equal(triggered, 0, 'listener is enabled; should not invoke listener immediately');
+
+    obj.trigger('bar');
+    equal(triggered, 1, 'listener is enabled; should invoke listener on event');
+  });
+
+  test('conditional listener respects initial condition: false', function () {
+
+    var triggered = 0;
+    var obj = EmberObject.createWithMixins(Evented, {
+      foo: on('bar', when('baz', function () { triggered++; })),
+      baz: false
+    });
+
+    equal(triggered, 0, 'listener is disabled; should not invoke listener immediately');
+
+    obj.trigger('bar');
+    equal(triggered, 0, 'listener is disabled; should not invoke listener on event');
+  });
+}

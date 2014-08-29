@@ -407,6 +407,9 @@ export function wrap(func, superFunc) {
 
   superWrapper.wrappedFunction = func;
   superWrapper.wrappedFunction.__ember_arity__ = func.length;
+  if (Ember.FEATURES.isEnabled("conditional-observers-and-listeners")) {
+    superWrapper.__ember_conditions__ = func.__ember_conditions__;
+  }
   superWrapper.__ember_observes__ = func.__ember_observes__;
   superWrapper.__ember_observesBefore__ = func.__ember_observesBefore__;
   superWrapper.__ember_listens__ = func.__ember_listens__;

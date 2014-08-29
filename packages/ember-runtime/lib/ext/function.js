@@ -6,7 +6,7 @@
 import Ember from 'ember-metal/core'; // Ember.EXTEND_PROTOTYPES, Ember.assert
 import expandProperties from 'ember-metal/expand_properties';
 import { computed } from 'ember-metal/computed';
-import { observer } from "ember-metal/mixin";
+import { observer, when } from "ember-metal/mixin";
 
 var a_slice = Array.prototype.slice;
 var FunctionPrototype = Function.prototype;
@@ -212,4 +212,42 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
 
     return this;
   };
+
+  if (Ember.FEATURES.isEnabled("conditional-observers-and-listeners")) {
+    /**
+     The `when` extension of JavaScript's Function prototype is
+     available when `Ember.EXTEND_PROTOTYPES` or
+     `Ember.EXTEND_PROTOTYPES.Function` is true, which is the default.
+
+     You can specify conditions that control when an observer and/or listener
+     should fire. For example:
+
+     ```javascript
+     Ember.TextField.extend({
+
+       isSelectAllTextEnabled: true,
+
+       selectAllText: function() {
+         // Executes whenever the "focusIn" event occurs
+         // and isSelectAllTextEnabled is true
+         this.$().select();
+       }.on('focusIn').when('isSelectAllTextEnabled')
+    });
+     ```
+
+     See `Ember.when`.
+
+     @method when
+     @for Function
+     */
+    FunctionPrototype.when = function () {
+      var length = arguments.length;
+      var args = new Array(length);
+      for (var x = 0; x < length; x++) {
+        args[x] = arguments[x];
+      }
+
+      return when.apply(this, args.concat(this));
+    };
+  }
 }

@@ -104,3 +104,117 @@ testBoth('sets up a ComputedProperty', function(get, set) {
   set(obj, 'lastName', "");
   equal(get(obj, 'fullName'), 'Wilma ', 'should return the new computed value');
 });
+
+if (Ember.FEATURES.isEnabled("conditional-observers-and-listeners")) {
+  QUnit.module('Function.prototype.when() helper');
+
+  testBoth('conditional listener initially enabled', function (get, set) {
+
+    if (Ember.EXTEND_PROTOTYPES === false) {
+      ok("undefined" === typeof Function.prototype.property, 'Function.prototype helper disabled');
+      return;
+    }
+
+    var triggered = 0;
+    var obj = Ember.Object.createWithMixins(Ember.Evented, {
+      foo: function () { triggered++; }.on('bar').when('baz'),
+      baz: true
+    });
+
+    equal(triggered, 0, 'listener is enabled; should not invoke listener immediately');
+
+    obj.trigger('bar');
+    equal(triggered, 1, 'listener is enabled; should invoke listener on event');
+
+    set(obj, 'baz', false);
+    obj.trigger('bar');
+    equal(triggered, 1, 'listener is disabled; should not invoke listener on event');
+
+    set(obj, 'baz', true);
+    obj.trigger('bar');
+    equal(triggered, 2, 'listener is re-enabled; should invoke listener on event');
+  });
+
+  testBoth('conditional listener initially disabled', function (get, set) {
+
+    if (Ember.EXTEND_PROTOTYPES === false) {
+      ok("undefined" === typeof Function.prototype.property, 'Function.prototype helper disabled');
+      return;
+    }
+
+    var triggered = 0;
+    var obj = Ember.Object.createWithMixins(Ember.Evented, {
+      foo: function () { triggered++; }.on('bar').when('baz'),
+      baz: false
+    });
+
+    equal(triggered, 0, 'listener is disabled; should not invoke listener immediately');
+
+    obj.trigger('bar');
+    equal(triggered, 0, 'listener is disabled; should not invoke listener on event');
+
+    set(obj, 'baz', true);
+    obj.trigger('bar');
+    equal(triggered, 1, 'listener is enabled; should invoke listener on event');
+
+    set(obj, 'baz', false);
+    obj.trigger('bar');
+    equal(triggered, 1, 'listener is re-disabled; should not invoke listener on event');
+  });
+
+  testBoth('conditional observer initially enabled', function (get, set) {
+
+    if (Ember.EXTEND_PROTOTYPES === false) {
+      ok("undefined" === typeof Function.prototype.property, 'Function.prototype helper disabled');
+      return;
+    }
+
+    var triggered = 0;
+    var obj = Ember.Object.createWithMixins({
+      foo: function () { triggered++; }.observes('bar').when('baz'),
+      bar: undefined,
+      baz: true
+    });
+
+    equal(triggered, 0, 'observer is enabled; should not invoke observer immediately');
+
+    set(obj, 'bar', 'QUX');
+    equal(triggered, 1, 'observer is enabled; should invoke observer after change');
+
+    set(obj, 'baz', false);
+    set(obj, 'bar', 'QUUX');
+    equal(triggered, 1, 'observer is disabled; should not invoke observer after change');
+
+    set(obj, 'baz', true);
+    set(obj, 'bar', 'QUX');
+    equal(triggered, 2, 'observer is re-enabled; should invoke observer after change');
+  });
+
+  testBoth('conditional observer initially disabled', function (get, set) {
+
+    if (Ember.EXTEND_PROTOTYPES === false) {
+      ok("undefined" === typeof Function.prototype.property, 'Function.prototype helper disabled');
+      return;
+    }
+
+    var triggered = 0;
+    var obj = Ember.Object.createWithMixins({
+      foo: function () { triggered++; }.observes('bar').when('baz'),
+      bar: undefined,
+      baz: false
+    });
+
+    equal(triggered, 0, 'observer is disabled; should not invoke observer immediately');
+
+    set(obj, 'bar', 'QUX');
+    equal(triggered, 0, 'observer is disabled; should not invoke observer after change');
+
+    set(obj, 'baz', true);
+    set(obj, 'bar', 'QUUX');
+    equal(triggered, 1, 'observer is enabled; should invoke observer after change');
+
+    set(obj, 'baz', false);
+    set(obj, 'bar', 'QUX');
+    equal(triggered, 1, 'observer is re-disabled; should not invoke observer after change');
+  });
+}

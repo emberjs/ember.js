@@ -1,8 +1,10 @@
 /*globals testBoth */
 
 import testBoth from 'ember-metal/tests/props_helper';
+import { propertyDidChange } from 'ember-metal/property_events';
 import {
   observer,
+  when,
   mixin,
   Mixin
 } from 'ember-metal/mixin';
@@ -48,7 +50,6 @@ testBoth('global observer helper takes multiple params', function(get, set) {
   set(obj, 'baz', "BAZ");
   equal(get(obj, 'count'), 2, 'should invoke observer after change');
 });
-
 
 testBoth('replacing observer should remove old observer', function(get, set) {
 
@@ -191,7 +192,7 @@ testBoth('observing chain with property in mixin after', function(get, set) {
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
 
-testBoth('observing chain with overriden property', function(get, set) {
+testBoth('observing chain with overridden property', function(get, set) {
   var obj2 = {baz: 'baz'};
   var obj3 = {baz: 'foo'};
 
@@ -216,3 +217,59 @@ testBoth('observing chain with overriden property', function(get, set) {
   set(obj3, 'baz', "BEAR");
   equal(get(obj, 'count'), 1, 'should invoke observer after change');
 });
+
+if (Ember.FEATURES.isEnabled("conditional-observers-and-listeners")) {
+  testBoth('conditional observer initially enabled', function (get, set) {
+
+    var triggered = 0;
+    var MyMixin = Mixin.create({
+      foo: observer('bar', when('baz', function () { triggered++; })),
+      bar: undefined,
+      baz: true
+    });
+
+    var obj = mixin({}, MyMixin);
+    equal(triggered, 0, 'observer is enabled; should not invoke observer immediately');
+
+    // This first test requires EmberObject's 'init' event. Simulate it's side
+    // effect for now. A proper test can be found in ember-runtime/observer_test.
+    propertyDidChange(obj, 'baz');
+    set(obj, 'bar', 'QUX');
+    equal(triggered, 1, 'observer is enabled; should invoke observer after change');
+
+    set(obj, 'baz', false);
+    set(obj, 'bar', 'QUUX');
+    equal(triggered, 1, 'observer is disabled; should not invoke observer after change');
+
+    set(obj, 'baz', true);
+    set(obj, 'bar', 'QUX');
+    equal(triggered, 2, 'observer is re-enabled; should invoke observer after change');
+  });
+
+  testBoth('conditional observer initially disabled', function (get, set) {
+
+    var triggered = 0;
+    var MyMixin = Mixin.create({
+      foo: observer('bar', when('baz', function () { triggered++; })),
+      bar: undefined,
+      baz: false
+    });
+
+    var obj = mixin({}, MyMixin);
+    equal(triggered, 0, 'observer is disabled; should not invoke observer immediately');
+
+    // This first test requires EmberObject's 'init' event. Simulate it's side
+    // effect for now. A proper test can be found in ember-runtime/observer_test.
+    propertyDidChange(obj, 'baz');
+    set(obj, 'bar', 'QUX');
+    equal(triggered, 0, 'observer is disabled; should not invoke observer after change');
+
+    set(obj, 'baz', true);
+    set(obj, 'bar', 'QUUX');
+    equal(triggered, 1, 'observer is enabled; should invoke observer after change');
+
+    set(obj, 'baz', false);
+    set(obj, 'bar', 'QUX');
+    equal(triggered, 1, 'observer is re-disabled; should not invoke observer after change');
+  });
+}
