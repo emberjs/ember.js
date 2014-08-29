@@ -1,6 +1,9 @@
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
+import Service from "ember-runtime/system/service";
+import Container from "ember-runtime/system/container";
+import inject from "ember-runtime/inject";
 
 import EmberView from "ember-views/views/view";
 import Component from "ember-views/views/component";
@@ -178,3 +181,22 @@ test("Calling sendAction on a component with multiple parameters", function() {
 
   deepEqual(actionArguments, [firstContext, secondContext], "arguments were sent to the action");
 });
+
+if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  QUnit.module('Ember.Component - injected properties');
+
+  test("services can be injected into components", function() {
+    var container = new Container();
+
+    container.register('component:application', Component.extend({
+      profilerService: inject.service('profiler')
+    }));
+
+    container.register('service:profiler', Service.extend());
+
+    var appComponent = container.lookup('component:application'),
+    profilerService = container.lookup('service:profiler');
+
+    equal(profilerService, appComponent.get('profilerService'), "service.profiler is injected");
+  });
+}

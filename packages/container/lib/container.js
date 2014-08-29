@@ -486,7 +486,8 @@ Container.prototype = {
     if (this.cache[normalizedName]) {
       throw new Error("Attempted to register an injection for a type that has already been looked up. ('" + normalizedName + "', '" + property + "', '" + injectionName + "')");
     }
-    addInjection(this.injections, normalizedName, property, normalizedInjectionName);
+
+    addInjection(initRules(this.injections, normalizedName), property, normalizedInjectionName);
   },
 
 
@@ -593,7 +594,7 @@ Container.prototype = {
         'been looked up. (\'' + normalizedName + '\', \'' + property + '\', \'' + injectionName + '\')');
     }
 
-    addInjection(this.factoryInjections, normalizedName, property, normalizedInjectionName);
+    addInjection(initRules(this.factoryInjections, normalizedName), property, normalizedInjectionName);
   },
 
   /**
@@ -644,7 +645,7 @@ function has(container, fullName){
     return true;
   }
 
-  return !!container.resolve(fullName);
+  return container.resolve(fullName) !== undefined;
 }
 
 function lookup(container, fullName, options) {
@@ -680,20 +681,30 @@ function buildInjections(container, injections) {
 
   if (!injections) { return hash; }
 
-  var injection, injectable;
+  validateInjections(container, injections);
+
+  var injection;
 
   for (var i = 0, length = injections.length; i < length; i++) {
     injection = injections[i];
-    injectable = lookup(container, injection.fullName);
-
-    if (injectable !== undefined) {
-      hash[injection.property] = injectable;
-    } else {
-      throw new Error('Attempting to inject an unknown injection: `' + injection.fullName + '`');
-    }
+    hash[injection.property] = lookup(container, injection.fullName);
   }
 
   return hash;
+}
+
+function validateInjections(container, injections) {
+  if (!injections) { return; }
+
+  var fullName;
+
+  for (var i = 0, length = injections.length; i < length; i++) {
+    fullName = injections[i].fullName;
+
+    if (!container.has(fullName)) {
+      throw new Error('Attempting to inject an unknown injection: `' + fullName + '`');
+    }
+  }
 }
 
 function option(container, fullName, optionName) {
@@ -769,8 +780,25 @@ function factoryInjectionsFor(container, fullName) {
   return factoryInjections;
 }
 
+if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  var normalizeInjectionsHash = function(hash) {
+    var injections = [];
+
+    for (var key in hash) {
+      if (hash.hasOwnProperty(key)) {
+        Ember.assert("Expected a proper full name, given '" + hash[key] + "'", validateFullName(hash[key]));
+
+        addInjection(injections, key, hash[key]);
+      }
+    }
+
+    return injections;
+  };
+}
+
 function instantiate(container, fullName) {
   var factory = factoryFor(container, fullName);
+  var lazyInjections;
 
   if (option(container, fullName, 'instantiate') === false) {
     return factory;
@@ -780,6 +808,15 @@ function instantiate(container, fullName) {
     if (typeof factory.create !== 'function') {
       throw new Error('Failed to create an instance of \'' + fullName + '\'. ' +
         'Most likely an improperly defined class or an invalid module export.');
+    }
+
+    if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+      // Ensure that all lazy injections are valid at instantiation time
+      if (typeof factory.lazyInjections === 'function') {
+        lazyInjections = factory.lazyInjections();
+
+        validateInjections(container, normalizeInjectionsHash(lazyInjections));
+      }
     }
 
     if (typeof factory.extend === 'function') {
@@ -839,8 +876,11 @@ function validateFullName(fullName) {
   return true;
 }
 
-function addInjection(rules, factoryName, property, injectionName) {
-  var injections = rules[factoryName] = rules[factoryName] || [];
+function initRules(rules, factoryName) {
+  return rules[factoryName] || (rules[factoryName] = []);
+}
+
+function addInjection(injections, property, injectionName) {
   injections.push({
     property: property,
     fullName: injectionName

@@ -50,6 +50,7 @@ var factory = function() {
     Child.prototype = new Parent();
     Child.prototype.constructor = Child;
 
+    setProperties(Child, Klass);
     setProperties(Child.prototype, options);
 
     Child.create = create;

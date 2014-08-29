@@ -11,6 +11,7 @@ import Ember from 'ember-metal';
 import { isEqual } from 'ember-runtime/core';
 import compare from 'ember-runtime/compare';
 import copy from 'ember-runtime/copy';
+import inject from 'ember-runtime/inject';
 
 import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
@@ -85,6 +86,8 @@ import ObjectController from 'ember-runtime/controllers/object_controller';
 import Controller from 'ember-runtime/controllers/controller';
 import ControllerMixin from 'ember-runtime/mixins/controller';
 
+import Service from 'ember-runtime/system/service';
+
 import RSVP from 'ember-runtime/ext/rsvp';     // just for side effect of extending Ember.RSVP
 import 'ember-runtime/ext/string';   // just for side effect of extending String.prototype
 import 'ember-runtime/ext/function'; // just for side effect of extending Function.prototype
@@ -94,6 +97,10 @@ import 'ember-runtime/ext/function'; // just for side effect of extending Functi
 Ember.compare = compare;
 Ember.copy = copy;
 Ember.isEqual = isEqual;
+
+if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  Ember.inject = inject;
+}
 
 Ember.Array = EmberArray;
 
@@ -165,6 +172,10 @@ Ember.ArrayController = ArrayController;
 Ember.ObjectController = ObjectController;
 Ember.Controller = Controller;
 Ember.ControllerMixin = ControllerMixin;
+
+if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  Ember.Service = Service;
+}
 
 Ember._ProxyMixin = _ProxyMixin;
 

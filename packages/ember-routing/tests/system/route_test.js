@@ -1,7 +1,9 @@
 import run from "ember-metal/run_loop";
 import Container from 'container/container';
+import Service from "ember-runtime/system/service";
 import EmberObject from "ember-runtime/system/object";
 import EmberRoute from "ember-routing/system/route";
+import inject from "ember-runtime/inject";
 
 var route, routeOne, routeTwo, container, lookupHash;
 
@@ -199,3 +201,21 @@ test("controllerFor uses route's controllerName if specified", function() {
   equal(routeTwo.controllerFor('one'), testController);
 });
 
+if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  QUnit.module('Route injected properties');
+
+  test("services can be injected into routes", function() {
+    var container = new Container();
+
+    container.register('route:application', EmberRoute.extend({
+      authService: inject.service('auth')
+    }));
+
+    container.register('service:auth', Service.extend());
+
+    var appRoute = container.lookup('route:application'),
+      authService = container.lookup('service:auth');
+
+    equal(authService, appRoute.get('authService'), "service.auth is injected");
+  });
+}

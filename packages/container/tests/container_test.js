@@ -647,4 +647,23 @@ test("factory for non extendables resolves are cached", function() {
   deepEqual(resolveWasCalled, ['foo:post']);
 });
 
+if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  test("A factory's lazy injections are validated when first instantiated", function() {
+    var container = new Container();
+    var Apple = factory();
+    var Orange = factory();
 
+    Apple.reopenClass({
+      lazyInjections: function() {
+        return [ 'orange:main', 'banana:main' ];
+      }
+    });
+
+    container.register('apple:main', Apple);
+    container.register('orange:main', Orange);
+
+    throws(function() {
+      container.lookup('apple:main');
+    }, /Attempting to inject an unknown injection: `banana:main`/);
+  });
+}

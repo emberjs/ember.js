@@ -36,6 +36,7 @@ import ActionHandler from "ember-runtime/mixins/action_handler";
 import {defineProperty} from "ember-metal/properties";
 import { Binding } from "ember-metal/binding";
 import { ComputedProperty } from "ember-metal/computed";
+import InjectedProperty from "ember-metal/injected_property";
 import run from 'ember-metal/run_loop';
 import { destroy } from "ember-metal/watching";
 
@@ -443,7 +444,7 @@ if (Ember.config.overridePrototypeMixin) {
 
 CoreObject.__super__ = null;
 
-var ClassMixin = Mixin.create({
+var ClassMixinProps = {
 
   ClassMixin: required(),
 
@@ -828,7 +829,34 @@ var ClassMixin = Mixin.create({
       callback.call(binding || this, property.name, property.meta || empty);
     }
   }
-});
+};
+
+if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  /**
+    Returns a hash of property names and container names that injected
+    properties will lookup on the container lazily.
+
+    @method lazyInjections
+    @return {Object} Hash of all lazy injected property keys to container names
+  */
+  ClassMixinProps.lazyInjections = function() {
+    var injections = {};
+    var proto = this.proto();
+    var descs = meta(proto).descs;
+    var key, desc;
+
+    for (key in descs) {
+      desc = descs[key];
+      if (desc instanceof InjectedProperty) {
+        injections[key] = desc.type + ':' + (desc.name || key);
+      }
+    }
+
+    return injections;
+  };
+}
+
+var ClassMixin = Mixin.create(ClassMixinProps);
 
 ClassMixin.ownerConstructor = CoreObject;
 
