@@ -77,7 +77,7 @@ function propertyDidChange(obj, keyName, depKey, changeInfo) {
   if (desc && desc.didChange) { desc.didChange(obj, keyName, depKey, changeInfo); }
   if (!watching && keyName !== 'length') { return; }
 
-  if (!depKey || !desc.options || !desc.options.invalidate) {
+  if (!depKey || !desc || !desc.options || !desc.options.invalidate) {
     if (m && m.deps && m.deps[keyName]) {
       dependentKeysDidChange(obj, keyName, changeInfo, m);
     }
