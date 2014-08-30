@@ -291,7 +291,9 @@ var EmberRouter = EmberObject.extend(Evented, {
     var rootURL = get(this, 'rootURL');
 
     if (rootURL && this.container && !this.container.has('-location-setting:root-url')) {
-      this.container.register('-location-setting:root-url', rootURL, { instantiate: false });
+      this.container.register('-location-setting:root-url', rootURL, {
+        instantiate: false
+      });
     }
 
     if ('string' === typeof location && this.container) {
@@ -301,7 +303,9 @@ var EmberRouter = EmberObject.extend(Evented, {
         location = set(this, 'location', resolvedLocation);
       } else {
         // Allow for deprecated registration of custom location API's
-        var options = {implementation: location};
+        var options = {
+          implementation: location
+        };
 
         location = set(this, 'location', EmberLocation.create(options));
       }
@@ -321,7 +325,8 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   _getHandlerFunction: function() {
-    var seen = {}, container = this.container;
+    var seen = Object.create(null);
+    var container = this.container;
     var DefaultRoute = container.lookupFactory('route:basic');
     var self = this;
 
@@ -329,7 +334,9 @@ var EmberRouter = EmberObject.extend(Evented, {
       var routeName = 'route:' + name;
       var handler = container.lookup(routeName);
 
-      if (seen[name]) { return handler; }
+      if (seen[name]) {
+        return handler;
+      }
 
       seen[name] = true;
 
