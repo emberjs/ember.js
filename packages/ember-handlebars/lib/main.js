@@ -5,15 +5,9 @@ import { runLoadHooks } from "ember-runtime/system/lazy_load";
 import bootstrap from "ember-handlebars/loader";
 
 import {
-  normalizePath,
   template,
   makeBoundHelper,
   registerBoundHelper,
-  resolveHash,
-  resolveParams,
-  getEscaped,
-  handlebarsGet,
-  evaluateUnboundHelper,
   helperMissingHelper,
   blockHelperMissingHelper
 } from "ember-handlebars/ext";
@@ -22,7 +16,6 @@ import {
 // side effect of extending StringUtils of htmlSafe
 import "ember-handlebars/string";
 
-import resolvePaths from "ember-handlebars/helpers/shared";
 import {
   bind,
   _triageMustacheHelper,
@@ -50,7 +43,6 @@ import {
 } from "ember-handlebars/helpers/debug";
 import {
   EachView,
-  GroupedEach,
   eachHelper
 } from "ember-handlebars/helpers/each";
 import templateHelper from "ember-handlebars/helpers/template";
@@ -98,19 +90,11 @@ EmberHandlebars.bootstrap = bootstrap;
 EmberHandlebars.template = template;
 EmberHandlebars.makeBoundHelper = makeBoundHelper;
 EmberHandlebars.registerBoundHelper = registerBoundHelper;
-EmberHandlebars.resolveHash = resolveHash;
-EmberHandlebars.resolveParams = resolveParams;
 EmberHandlebars.resolveHelper = resolveHelper;
-EmberHandlebars.get = handlebarsGet;
-EmberHandlebars.getEscaped = getEscaped;
-EmberHandlebars.evaluateUnboundHelper = evaluateUnboundHelper;
 EmberHandlebars.bind = bind;
 EmberHandlebars.bindClasses = bindClasses;
 EmberHandlebars.EachView = EachView;
-EmberHandlebars.GroupedEach = GroupedEach;
-EmberHandlebars.resolvePaths = resolvePaths;
 EmberHandlebars.ViewHelper = ViewHelper;
-EmberHandlebars.normalizePath = normalizePath;
 
 
 // Ember Globals

@@ -5,7 +5,6 @@ import {
   generateControllerFactory,
   default as generateController
 } from "ember-routing/system/generate_controller";
-import { handlebarsGet } from "ember-handlebars/ext";
 import { ViewHelper } from "ember-handlebars/helpers/view";
 
 /**
@@ -85,9 +84,9 @@ You could render it inside the `post` template using the `render` helper.
 */
 export default function renderHelper(name, contextString, options) {
   var length = arguments.length;
-  var container, router, controller, view, context;
+  var container, router, controller, view, initialContext;
 
-  container = (options || contextString).data.keywords.controller.container;
+  container = (options || contextString).data.view._keywords.controller.value().container;
   router = container.lookup('router:main');
 
   if (length === 2) {
@@ -98,7 +97,7 @@ export default function renderHelper(name, contextString, options) {
                  " second argument, as in {{render \"post\" post}}.", !router || !router._lookupActiveView(name));
   } else if (length === 3) {
     // create a new controller
-    context = handlebarsGet(options.contexts[1], contextString, options);
+    initialContext = options.data.view.getStream(contextString).value();
   } else {
     throw new EmberError("You must pass a templateName to render");
   }
@@ -122,15 +121,15 @@ export default function renderHelper(name, contextString, options) {
                  "' did not resolve to a controller.", container.has(controllerFullName));
   }
 
-  var parentController = options.data.keywords.controller;
+  var parentController = options.data.view._keywords.controller.value();
 
   // choose name
   if (length > 2) {
     var factory = container.lookupFactory(controllerFullName) ||
-                  generateControllerFactory(container, controllerName, context);
+                  generateControllerFactory(container, controllerName, initialContext);
 
     controller = factory.create({
-      model: context,
+      modelBinding: options.data.view._getBindingForStream(contextString),
       parentController: parentController,
       target: parentController
     });
@@ -148,14 +147,6 @@ export default function renderHelper(name, contextString, options) {
     });
   }
 
-  var root = options.contexts[1];
-
-  if (root) {
-    view.registerObserver(root, contextString, function() {
-      controller.set('model', handlebarsGet(root, contextString, options));
-    });
-  }
-
   options.hash.viewName = camelize(name);
 
   var templateName = 'template:' + name;
@@ -165,7 +156,7 @@ export default function renderHelper(name, contextString, options) {
 
   options.hash.controller = controller;
 
-  if (router && !context) {
+  if (router && !initialContext) {
     router._connectActiveView(name, view);
   }
 

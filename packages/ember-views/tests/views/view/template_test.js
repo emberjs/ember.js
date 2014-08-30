@@ -142,7 +142,7 @@ test("should provide a controller to the template if a controller is specified o
     controller: controller1,
 
     template: function(buffer, options) {
-      optionsDataKeywordsControllerForView = options.data.keywords.controller;
+      optionsDataKeywordsControllerForView = options.data.view._keywords.controller.value();
     }
   });
 
@@ -165,10 +165,10 @@ test("should provide a controller to the template if a controller is specified o
         templateData: options.data,
         template: function(context, options) {
           contextForView = context;
-          optionsDataKeywordsControllerForChildView = options.data.keywords.controller;
+          optionsDataKeywordsControllerForChildView = options.data.view._keywords.controller.value();
         }
       }));
-      optionsDataKeywordsControllerForView = options.data.keywords.controller;
+      optionsDataKeywordsControllerForView = options.data.view._keywords.controller.value();
     }
   });
 
@@ -191,10 +191,10 @@ test("should provide a controller to the template if a controller is specified o
         templateData: options.data,
         template: function(context, options) {
           contextForControllerlessView = context;
-          optionsDataKeywordsControllerForChildView = options.data.keywords.controller;
+          optionsDataKeywordsControllerForChildView = options.data.view._keywords.controller.value();
         }
       }));
-      optionsDataKeywordsControllerForView = options.data.keywords.controller;
+      optionsDataKeywordsControllerForView = options.data.view._keywords.controller.value();
     }
   });
 

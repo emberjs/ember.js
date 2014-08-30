@@ -4,16 +4,34 @@ var IS_GLOBAL      = /^([A-Z$]|([0-9][A-Z$]))/;
 var IS_GLOBAL_PATH = /^([A-Z$]|([0-9][A-Z$])).*[\.]/;
 var HAS_THIS       = 'this.';
 
-var isGlobalCache     = new Cache(1000, function(key) { return IS_GLOBAL.test(key);          });
-var isGlobalPathCache = new Cache(1000, function(key) { return IS_GLOBAL_PATH.test(key);     });
-var hasThisCache      = new Cache(1000, function(key) { return key.indexOf(HAS_THIS) !== -1; });
-var isPathCache       = new Cache(1000, function(key) { return key.indexOf('.')      !== -1; });
+var isGlobalCache       = new Cache(1000, function(key) { return IS_GLOBAL.test(key);          });
+var isGlobalPathCache   = new Cache(1000, function(key) { return IS_GLOBAL_PATH.test(key);     });
+var hasThisCache        = new Cache(1000, function(key) { return key.indexOf(HAS_THIS) !== -1; });
+var firstDotIndexCache  = new Cache(1000, function(key) { return key.indexOf('.');             });
+
+var firstKeyCache = new Cache(1000, function(path) {
+  var index = firstDotIndexCache.get(path);
+  if (index === -1) {
+    return path;
+  } else {
+    return path.slice(0, index);
+  }
+});
+
+var tailPathCache = new Cache(1000, function(path) {
+  var index = firstDotIndexCache.get(path);
+  if (index !== -1) {
+    return path.slice(index + 1);
+  }
+});
 
 export var caches = {
-  isGlobalCache:     isGlobalCache,
-  isGlobalPathCache: isGlobalPathCache,
-  hasThisCache:      hasThisCache,
-  isPathCache:       isPathCache
+  isGlobalCache:      isGlobalCache,
+  isGlobalPathCache:  isGlobalPathCache,
+  hasThisCache:       hasThisCache,
+  firstDotIndexCache: firstDotIndexCache,
+  firstKeyCache:      firstKeyCache,
+  tailPathCache:      tailPathCache
 };
 
 export function isGlobal(path) {
@@ -29,5 +47,13 @@ export function hasThis(path) {
 }
 
 export function isPath(path) {
-  return isPathCache.get(path);
+  return firstDotIndexCache.get(path) !== -1;
+}
+
+export function getFirstKey(path) {
+  return firstKeyCache.get(path);
+}
+
+export function getTailPath(path) {
+  return tailPathCache.get(path);
 }

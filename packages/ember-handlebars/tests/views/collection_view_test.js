@@ -350,6 +350,28 @@ test("should give its item views the property specified by itemPropertyBinding",
   equal(view.$('ul li:first').text(), "yobaz", "change property of sub view");
 });
 
+test("should unsubscribe stream bindings", function() {
+  view = EmberView.create({
+    baz: "baz",
+    content: A([EmberObject.create(), EmberObject.create(), EmberObject.create()]),
+    template: EmberHandlebars.compile('{{#collection contentBinding="view.content" itemPropertyBinding="view.baz"}}{{view.property}}{{/collection}}')
+  });
+
+  run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  var barStreamBinding = view._streamBindings['view.baz'];
+
+  equal(barStreamBinding.subscribers.length, 3*2, "adds 3 subscribers");
+
+  run(function() {
+    view.get('content').popObject();
+  });
+
+  equal(barStreamBinding.subscribers.length, 2*2, "removes 1 subscriber");
+});
+
 test("should work inside a bound {{#if}}", function() {
   var testData = A([EmberObject.create({ isBaz: false }), EmberObject.create({ isBaz: true }), EmberObject.create({ isBaz: true })]);
   var IfTestCollectionView = CollectionView.extend({

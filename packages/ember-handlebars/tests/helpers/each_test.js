@@ -440,7 +440,7 @@ test("it defers all normalization of itemView names to the resolver", function()
 test("it supports {{itemViewClass=}} with global (DEPRECATED)", function() {
   run(function() { view.destroy(); }); // destroy existing view
   view = EmberView.create({
-    template: templateFor('{{each view.people itemViewClass="MyView"}}'),
+    template: templateFor('{{each view.people itemViewClass=MyView}}'),
     people: people
   });
 
@@ -473,7 +473,7 @@ test("it supports {{itemViewClass=}} via container", function() {
 test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function() {
   run(function() { view.destroy(); }); // destroy existing view
   view = EmberView.create({
-      template: templateFor('{{each view.people itemViewClass="MyView" tagName="ul"}}'),
+      template: templateFor('{{each view.people itemViewClass=MyView tagName="ul"}}'),
       people: people
   });
 

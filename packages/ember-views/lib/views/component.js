@@ -112,7 +112,6 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
   init: function() {
     this._super();
-    set(this, 'origContext', get(this, 'context'));
     set(this, 'context', this);
     set(this, 'controller', this);
   },
@@ -160,12 +159,8 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   */
   templateName: null,
 
-  // during render, isolate keywords
-  cloneKeywords: function() {
-    return {
-      view: this,
-      controller: this
-    };
+  _setupKeywords: function() {
+    this._keywords.view.setSource(this);
   },
 
   _yield: function(context, options) {
@@ -181,9 +176,9 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
         tagName: '',
         _contextView: parentView,
         template: template,
-        context: options.data.insideGroup ? get(this, 'origContext') : get(parentView, 'context'),
+        context: get(parentView, 'context'),
         controller: get(parentView, 'controller'),
-        templateData: { keywords: parentView.cloneKeywords(), insideGroup: options.data.insideGroup }
+        templateData: { keywords: {} }
       });
     }
   },

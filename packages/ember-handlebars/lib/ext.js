@@ -17,108 +17,15 @@ import {
 // late bound via requireModule because of circular dependencies.
 var resolveHelper, SimpleHandlebarsView;
 
-import isEmpty from 'ember-metal/is_empty';
+import Stream from "ember-metal/streams/stream";
+import KeyStream from "ember-views/streams/key_stream";
+import {
+  readArray,
+  readHash
+} from "ember-metal/streams/read";
 
 var slice = [].slice;
 var originalTemplate = EmberHandlebars.template;
-
-/**
-  If a path starts with a reserved keyword, returns the root
-  that should be used.
-
-  @private
-  @method normalizePath
-  @for Ember
-  @param root {Object}
-  @param path {String}
-  @param data {Hash}
-*/
-
-import Cache from 'ember-metal/cache';
-
-var FIRST_SEGMENT_CACHE = new Cache(1000, function(path){
-  return path.split('.', 1)[0];
-});
-
-function normalizePath(root, path, data) {
-  var keywords = (data && data.keywords) || {};
-  var keyword, isKeyword;
-
-  // Get the first segment of the path. For example, if the
-  // path is "foo.bar.baz", returns "foo".
-  keyword = FIRST_SEGMENT_CACHE.get(path);
-
-  // Test to see if the first path is a keyword that has been
-  // passed along in the view's data hash. If so, we will treat
-  // that object as the new root.
-  if (keywords.hasOwnProperty(keyword)) {
-    // Look up the value in the template's data hash.
-    root = keywords[keyword];
-    isKeyword = true;
-
-    // Handle cases where the entire path is the reserved
-    // word. In that case, return the object itself.
-    if (path === keyword) {
-      path = '';
-    } else {
-      // Strip the keyword from the path and look up
-      // the remainder from the newly found root.
-      path = path.substr(keyword.length+1);
-    }
-  }
-
-  return {
-    root: root,
-    path: path,
-    isKeyword: isKeyword
-  };
-}
-
-
-/**
-  Lookup both on root and on window. If the path starts with
-  a keyword, the corresponding object will be looked up in the
-  template's data hash and used to resolve the path.
-
-  @method get
-  @for Ember.Handlebars
-  @param {Object} root The object to look up the property on
-  @param {String} path The path to be lookedup
-  @param {Object} options The template's option hash
-*/
-function handlebarsGet(root, path, options) {
-  var data = options && options.data;
-  var normalizedPath = normalizePath(root, path, data);
-  var value;
-
-  // In cases where the path begins with a keyword, change the
-  // root to the value represented by that keyword, and ensure
-  // the path is relative to it.
-  root = normalizedPath.root;
-  path = normalizedPath.path;
-
-  // Ember.get with a null root and GlobalPath will fall back to
-  // Ember.lookup, which is no longer allowed in templates.
-  //
-  // But when outputting a primitive, root will be the primitive
-  // and path a blank string. These primitives should pass through
-  // to `get`.
-  if (root || path === '') {
-    value = get(root, path);
-  }
-
-  if (detectIsGlobal(path)) {
-    if (value === undefined && root !== Ember.lookup) {
-      root = Ember.lookup;
-      value = get(root, path);
-    }
-    if (root === Ember.lookup || root === null) {
-      Ember.deprecate("Global lookup of "+path+" from a Handlebars template is deprecated.");
-    }
-  }
-
-  return value;
-}
 
 /**
   handlebarsGetView resolves a view based on strings passed into a template.
@@ -149,15 +56,14 @@ function handlebarsGet(root, path, options) {
 function handlebarsGetView(context, path, container, data) {
   var viewClass;
   if ('string' === typeof path) {
-    if (data) {
-      var normalizedPath = normalizePath(context, path, data);
-      context = normalizedPath.root;
-      path = normalizedPath.path;
+    if (!data) {
+      throw new Error("handlebarsGetView: must pass data");
     }
 
     // Only lookup view class on context if there is a context. If not,
     // the global lookup path on get may kick in.
-    viewClass = context && get(context, path);
+    var lazyValue = data.view.getStream(path);
+    viewClass = lazyValue.value();
     var isGlobal = detectIsGlobal(path);
 
     if (!viewClass && !isGlobal) {
@@ -190,67 +96,18 @@ function handlebarsGetView(context, path, container, data) {
   return viewClass;
 }
 
-/**
-  This method uses `Ember.Handlebars.get` to lookup a value, then ensures
-  that the value is escaped properly.
-
-  If `unescaped` is a truthy value then the escaping will not be performed.
-
-  @method getEscaped
-  @for Ember.Handlebars
-  @param {Object} root The object to look up the property on
-  @param {String} path The path to be lookedup
-  @param {Object} options The template's option hash
-  @since 1.4.0
-*/
-export function getEscaped(root, path, options) {
-  var result = handlebarsGet(root, path, options);
-
-  if (result === null || result === undefined) {
-    result = "";
-  } else if (!(result instanceof Handlebars.SafeString)) {
-    result = String(result);
-  }
-  if (!options.hash.unescaped){
-    result = Handlebars.Utils.escapeExpression(result);
+export function stringifyValue(value, shouldEscape) {
+  if (value === null || value === undefined) {
+    value = "";
+  } else if (!(value instanceof Handlebars.SafeString)) {
+    value = String(value);
   }
 
-  return result;
-}
-
-export function resolveParams(context, params, options) {
-  var resolvedParams = [], types = options.types, param, type;
-
-  for (var i=0, l=params.length; i<l; i++) {
-    param = params[i];
-    type = types[i];
-
-    if (type === 'ID') {
-      resolvedParams.push(handlebarsGet(context, param, options));
-    } else {
-      resolvedParams.push(param);
-    }
+  if (shouldEscape) {
+    value = Handlebars.Utils.escapeExpression(value);
   }
 
-  return resolvedParams;
-}
-
-export function resolveHash(context, hash, options) {
-  var resolvedHash = {}, types = options.hashTypes, type;
-
-  for (var key in hash) {
-    if (!hash.hasOwnProperty(key)) { continue; }
-
-    type = types[key];
-
-    if (type === 'ID') {
-      resolvedHash[key] = handlebarsGet(context, hash[key], options);
-    } else {
-      resolvedHash[key] = hash[key];
-    }
-  }
-
-  return resolvedHash;
+  return value;
 }
 
 /**
@@ -470,163 +327,95 @@ function makeBoundHelper(fn) {
     SimpleHandlebarsView = requireModule('ember-handlebars/views/handlebars_bound_view')['SimpleHandlebarsView'];
   } // ES6TODO: stupid circular dep
 
-  var dependentKeys = slice.call(arguments, 1);
+  var dependentKeys = [];
+  for (var i = 1; i < arguments.length; i++) {
+    dependentKeys.push(arguments[i]);
+  }
 
   function helper() {
-    var properties = slice.call(arguments, 0, -1);
-    var numProperties = properties.length;
-    var options = arguments[arguments.length - 1];
-    var normalizedProperties = [];
+    var numParams = arguments.length - 1;
+    var options = arguments[numParams];
     var data = options.data;
-    var types = data.isUnbound ? slice.call(options.types, 1) : options.types;
+    var view = data.view;
+    var types = options.types;
     var hash = options.hash;
     var hashTypes = options.hashTypes;
-    var view = data.view;
-    var contexts = options.contexts;
-    var currentContext = (contexts && contexts.length) ? contexts[0] : this;
-    var prefixPathForDependentKeys = '';
-    var loc, len, hashOption;
-    var boundOption, property;
-    var normalizedValue = SimpleHandlebarsView.prototype.normalizedValue;
+    var context = this;
 
     Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !options.fn);
 
-    // Detect bound options (e.g. countBinding="otherCount")
-    var boundOptions = hash.boundOptions = {};
-    for (hashOption in hash) {
-      if (IS_BINDING.test(hashOption)) {
-        // Lop off 'Binding' suffix.
-        boundOptions[hashOption.slice(0, -7)] = hash[hashOption];
-      } else if (hashTypes[hashOption] === 'ID') {
-        boundOptions[hashOption] = hash[hashOption];
-      }
-    }
+    var properties = new Array(numParams);
+    var params = new Array(numParams);
 
-    // Expose property names on data.properties object.
-    var watchedProperties = [];
-    data.properties = [];
-    for (loc = 0; loc < numProperties; ++loc) {
-      data.properties.push(properties[loc]);
-      if (types[loc] === 'ID') {
-        var normalizedProp = normalizePath(currentContext, properties[loc], data);
-        normalizedProperties.push(normalizedProp);
-        watchedProperties.push(normalizedProp);
+    for (var i = 0; i < numParams; i++) {
+      properties[i] = arguments[i];
+      if (types[i] === 'ID') {
+        params[i] = view.getStream(arguments[i]);
       } else {
-        if (data.isUnbound) {
-          normalizedProperties.push({path: properties[loc]});
-        }else {
-          normalizedProperties.push(null);
-        }
+        params[i] = arguments[i];
       }
     }
 
-    // Handle case when helper invocation is preceded by `unbound`, e.g.
-    // {{unbound myHelper foo}}
-    if (data.isUnbound) {
-      return evaluateUnboundHelper(this, fn, normalizedProperties, options);
+    for (var prop in hash) {
+      if (IS_BINDING.test(prop)) {
+        hash[prop.slice(0, -7)] = view.getStream(hash[prop]);
+        hash[prop] = undefined;
+      } else if (hashTypes[prop] === 'ID') {
+        hash[prop] = view.getStream(hash[prop]);
+      }
     }
 
-    var bindView = new SimpleHandlebarsView(null, null, !options.hash.unescaped, options.data);
-
-    // Override SimpleHandlebarsView's method for generating the view's content.
-    bindView.normalizedValue = function() {
-      var args = [];
-      var boundOption;
-
-      // Copy over bound hash options.
-      for (boundOption in boundOptions) {
-        if (!boundOptions.hasOwnProperty(boundOption)) { continue; }
-        property = normalizePath(currentContext, boundOptions[boundOption], data);
-        bindView.path = property.path;
-        bindView.pathRoot = property.root;
-        hash[boundOption] = normalizedValue.call(bindView);
-      }
-
-      for (loc = 0; loc < numProperties; ++loc) {
-        property = normalizedProperties[loc];
-        if (property) {
-          bindView.path = property.path;
-          bindView.pathRoot = property.root;
-          args.push(normalizedValue.call(bindView));
-        } else {
-          args.push(properties[loc]);
-        }
-      }
-      args.push(options);
-
-      // Run the supplied helper function.
-      return fn.apply(currentContext, args);
+    var valueFn = function() {
+      var args = readArray(params);
+      args.push({
+        hash: readHash(hash),
+        data: { properties: properties }
+      });
+      return fn.apply(context, args);
     };
 
-    view.appendChild(bindView);
+    if (data.isUnbound) {
+      return valueFn();
+    } else {
+      var lazyValue = new Stream(valueFn);
+      var bindView = new SimpleHandlebarsView(lazyValue, !options.hash.unescaped);
+      view.appendChild(bindView);
 
-    // Assemble list of watched properties that'll re-render this helper.
-    for (boundOption in boundOptions) {
-      if (boundOptions.hasOwnProperty(boundOption)) {
-        watchedProperties.push(normalizePath(currentContext, boundOptions[boundOption], data));
+      var scheduledRerender = view._wrapAsScheduled(bindView.rerender);
+      lazyValue.subscribe(scheduledRerender, bindView);
+
+      var param;
+
+      for (i = 0; i < numParams; i++) {
+        param = params[i];
+        if (param && param.isStream) {
+          param.subscribe(lazyValue.notifyAll, lazyValue);
+        }
+      }
+
+      for (prop in hash) {
+        param = hash[prop];
+        if (param && param.isStream) {
+          param.subscribe(lazyValue.notifyAll, lazyValue);
+        }
+      }
+
+      if (numParams > 0) {
+        var onDependentKeyNotify = function onDependentKeyNotify(stream) {
+          stream.value();
+          lazyValue.notify();
+        };
+
+        for (i = 0; i < dependentKeys.length; i++) {
+          param = new KeyStream(params[0], dependentKeys[i]);
+          param.value();
+          param.subscribe(onDependentKeyNotify);
+        }
       }
     }
-
-    // Observe each property.
-    for (loc = 0, len = watchedProperties.length; loc < len; ++loc) {
-      property = watchedProperties[loc];
-      view.registerObserver(property.root, property.path, bindView, bindView.rerender);
-    }
-
-    if (types[0] !== 'ID' || normalizedProperties.length === 0) {
-      return;
-    }
-
-    // Add dependent key observers to the first param
-    var normalized = normalizedProperties[0];
-    var pathRoot = normalized.root;
-    var path = normalized.path;
-
-    if(!isEmpty(path)) {
-      prefixPathForDependentKeys = path + '.';
-    }
-    for (var i=0, l=dependentKeys.length; i<l; i++) {
-      view.registerObserver(pathRoot, prefixPathForDependentKeys + dependentKeys[i], bindView, bindView.rerender);
-    }
   }
 
-  helper._rawFunction = fn;
   return helper;
-}
-
-/**
-  Renders the unbound form of an otherwise bound helper function.
-
-  @private
-  @method evaluateUnboundHelper
-  @param {Function} fn
-  @param {Object} context
-  @param {Array} normalizedProperties
-  @param {String} options
-*/
-function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
-  var args = [];
-  var hash = options.hash;
-  var boundOptions = hash.boundOptions;
-  var types = slice.call(options.types, 1);
-  var loc, len, property, propertyType, boundOption;
-
-  for (boundOption in boundOptions) {
-    if (!boundOptions.hasOwnProperty(boundOption)) { continue; }
-    hash[boundOption] = handlebarsGet(context, boundOptions[boundOption], options);
-  }
-
-  for (loc = 0, len = normalizedProperties.length; loc < len; ++loc) {
-    property = normalizedProperties[loc];
-    propertyType = types[loc];
-    if (propertyType === "ID") {
-      args.push(handlebarsGet(property.root, property.path, options));
-    } else {
-      args.push(property.path);
-    }
-  }
-  args.push(options);
-  return fn.apply(context, args);
 }
 
 /**
@@ -645,9 +434,6 @@ export function template(spec) {
 }
 
 export {
-  normalizePath,
   makeBoundHelper,
-  handlebarsGet,
-  handlebarsGetView,
-  evaluateUnboundHelper
+  handlebarsGetView
 };

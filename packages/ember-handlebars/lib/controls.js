@@ -6,19 +6,11 @@ import Ember from "ember-metal/core"; // Ember.assert
 // var emberAssert = Ember.assert;
 
 import EmberHandlebars from "ember-handlebars-compiler";
-import { handlebarsGet } from "ember-handlebars/ext";
+
 /**
 @module ember
 @submodule ember-handlebars-compiler
 */
-
-function _resolveOption(context, options, key) {
-  if (options.hashTypes[key] === "ID") {
-    return handlebarsGet(context, options.hash[key], options);
-  } else {
-    return options.hash[key];
-  }
-}
 
 /**
 
@@ -198,10 +190,17 @@ function _resolveOption(context, options, key) {
 export function inputHelper(options) {
   Ember.assert('You can only pass attributes to the `input` helper, not arguments', arguments.length < 2);
 
+  var view = options.data.view;
   var hash = options.hash;
   var types = options.hashTypes;
-  var inputType = _resolveOption(this, options, 'type');
   var onEvent = hash.on;
+  var inputType;
+
+  if (types.type === 'ID') {
+    inputType = view.getStream(hash.type).value();
+  } else {
+    inputType = hash.type;
+  }
 
   if (inputType === 'checkbox') {
     delete hash.type;
