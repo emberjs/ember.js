@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core'; // Ember.assert
+import emberKeys from "ember-metal/keys";
 import dictionary from 'ember-metal/dictionary';
 
 // A lightweight container that helps to assemble and decouple components.
@@ -833,7 +834,7 @@ function instantiate(container, fullName) {
 
 function eachDestroyable(container, callback) {
   var cache = container.cache;
-  var keys = Ember.keys(cache);
+  var keys = emberKeys(cache);
   var key, value;
 
   for (var i = 0, l = keys.length; i < l; i++) {
