@@ -307,13 +307,17 @@ var EmberRouter = EmberObject.extend(Evented, {
       }
     }
 
-    if (rootURL && typeof rootURL === 'string') {
-      location.rootURL = rootURL;
-    }
+    if (location !== null && typeof location === 'object') {
+      if (rootURL && typeof rootURL === 'string') {
+        location.rootURL = rootURL;
+      }
 
-    // ensure that initState is called AFTER the rootURL is set on
-    // the location instance
-    if (typeof location.initState === 'function') { location.initState(); }
+      // ensure that initState is called AFTER the rootURL is set on
+      // the location instance
+      if (typeof location.initState === 'function') {
+        location.initState();
+      }
+    }
   },
 
   _getHandlerFunction: function() {
