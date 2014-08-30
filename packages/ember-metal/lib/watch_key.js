@@ -9,6 +9,7 @@ var metaFor = meta; // utils.js
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 var o_defineProperty = platform.defineProperty;
 
+
 export function watchKey(obj, keyName, meta) {
   // can't watch length on Array - it is special...
   if (keyName === 'length' && typeOf(obj) === 'array') { return; }
@@ -26,19 +27,27 @@ export function watchKey(obj, keyName, meta) {
       obj.willWatchProperty(keyName);
     }
 
-    if (MANDATORY_SETTER && keyName in obj) {
-      m.values[keyName] = obj[keyName];
-      o_defineProperty(obj, keyName, {
-        configurable: true,
-        enumerable: obj.propertyIsEnumerable(keyName),
-        set: Ember.MANDATORY_SETTER_FUNCTION,
-        get: Ember.DEFAULT_GETTER_FUNCTION(keyName)
-      });
+    if (MANDATORY_SETTER) {
+      handleMandetorySetter(m, obj, keyName);
     }
   } else {
     watching[keyName] = (watching[keyName] || 0) + 1;
   }
 }
+
+function handleMandetorySetter(m, keyName, obj) {
+  // this x in Y deopts, so keeping it in this function is better;
+  if (keyName in obj) {
+    m.values[keyName] = obj[keyName];
+    o_defineProperty(obj, keyName, {
+      configurable: true,
+      enumerable: obj.propertyIsEnumerable(keyName),
+      set: Ember.MANDATORY_SETTER_FUNCTION,
+      get: Ember.DEFAULT_GETTER_FUNCTION(keyName)
+    });
+  }
+}
+
 
 export function unwatchKey(obj, keyName, meta) {
   var m = meta || metaFor(obj), watching = m.watching;
