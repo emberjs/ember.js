@@ -52,21 +52,26 @@ function indexOf(array, target, method) {
 function actionsFor(obj, eventName) {
   var meta = metaFor(obj, true);
   var actions;
+  var listeners = meta.listeners;
 
-  if (!meta.listeners) { meta.listeners = {}; }
-
-  if (!meta.hasOwnProperty('listeners')) {
+  if (!listeners) {
+    listeners = meta.listeners = create(null);
+    listeners.__source__ = obj;
+  } else if (listeners.__source__ !== obj) {
     // setup inherited copy of the listeners object
-    meta.listeners = create(meta.listeners);
+    listeners = meta.listeners = create(listeners);
+    listeners.__source__ = obj;
   }
 
-  actions = meta.listeners[eventName];
+  actions = listeners[eventName];
 
   // if there are actions, but the eventName doesn't exist in our listeners, then copy them from the prototype
-  if (actions && !meta.listeners.hasOwnProperty(eventName)) {
-    actions = meta.listeners[eventName] = meta.listeners[eventName].slice();
+  if (actions && actions.__source__ !== obj) {
+    actions = listeners[eventName] = listeners[eventName].slice();
+    actions.__source__ = obj;
   } else if (!actions) {
-    actions = meta.listeners[eventName] = [];
+    actions = listeners[eventName] = [];
+    actions.__source__ = obj;
   }
 
   return actions;
@@ -287,8 +292,11 @@ export function watchedEvents(obj) {
   var listeners = obj['__ember_meta__'].listeners, ret = [];
 
   if (listeners) {
-    for(var eventName in listeners) {
-      if (listeners[eventName]) { ret.push(eventName); }
+    for (var eventName in listeners) {
+      if (eventName !== '__source__' &&
+          listeners[eventName]) {
+        ret.push(eventName);
+      }
     }
   }
   return ret;
