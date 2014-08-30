@@ -107,13 +107,13 @@ function run() {
   when called within an existing loop, no return value is possible.
 */
 run.join = function(target, method /* args */) {
-  if (!run.currentRunLoop) {
-    return apply(Ember, run, arguments);
+  if (run.currentRunLoop) {
+    var args = slice.call(arguments);
+    args.unshift('actions');
+    apply(run, run.schedule, args);
+  } else {
+    apply(Ember, run, arguments);
   }
-
-  var args = slice.call(arguments);
-  args.unshift('actions');
-  apply(run, run.schedule, args);
 };
 
 /**
@@ -160,7 +160,7 @@ run.join = function(target, method /* args */) {
 run.bind = function(target, method /* args*/) {
   var args = slice.call(arguments);
   return function() {
-    return apply(run, run.join, args.concat(slice.call(arguments)));
+    apply(run, run.join, args.concat(slice.call(arguments)));
   };
 };
 
