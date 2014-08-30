@@ -72,7 +72,16 @@ test("prevents XSS injection via `style`", function() {
   buffer.generateElement();
 
   var el = buffer.element();
-  equal(el.getAttribute('style'), 'color:blue;" xss="true" style="color:red;');
+  var div = document.createElement('div');
+
+  // some browsers have different escaping strageties
+  // we should ensure the outcome is consistent. Ultimately we now use
+  // setAttribute under the hood, so we should always do the right thing.  But
+  // this test should be kept to ensure we do. Also, I believe/hope it is
+  // alright to assume the browser escapes setAttribute correctly...
+  div.setAttribute('style', 'color:blue;" xss="true" style="color:red;');
+
+  equal(el.getAttribute('style'), div.getAttribute('style'));
 });
 
 test("prevents XSS injection via `tagName`", function() {
