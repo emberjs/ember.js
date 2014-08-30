@@ -124,7 +124,7 @@ Renderer.prototype.scheduleInsert =
     }
     view._morph = morph;
     var viewId = this.uuid(view);
-    this._inserts[viewId] = this.scheduleRender(this, function() {
+    this._inserts[viewId] = this.scheduleRender(this, function scheduledRenderTree() {
       this._inserts[viewId] = null;
       this.renderTree(view);
     });

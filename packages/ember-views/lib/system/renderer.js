@@ -7,10 +7,12 @@ import { _instrumentStart, subscribers } from "ember-metal/instrumentation";
 
 function EmberRenderer() {
   this.buffer = renderBuffer();
-  Renderer.call(this);
+  this._super$constructor();
 }
+
 EmberRenderer.prototype = create(Renderer.prototype);
 EmberRenderer.prototype.constructor = EmberRenderer;
+EmberRenderer.prototype._super$constructor = Renderer;
 
 EmberRenderer.prototype.scheduleRender =
   function EmberRenderer_scheduleRender(ctx, fn) {
