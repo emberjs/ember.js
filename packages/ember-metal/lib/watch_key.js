@@ -27,14 +27,14 @@ export function watchKey(obj, keyName, meta) {
     }
 
     if (MANDATORY_SETTER) {
-      handleMandetorySetter(m, obj, keyName);
+      handleMandatorySetter(m, obj, keyName);
     }
   } else {
     watching[keyName] = (watching[keyName] || 0) + 1;
   }
 }
 
-function handleMandetorySetter(m, keyName, obj) {
+function handleMandatorySetter(m, keyName, obj) {
   // this x in Y deopts, so keeping it in this function is better;
   if (keyName in obj) {
     m.values[keyName] = obj[keyName];
