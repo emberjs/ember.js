@@ -6,9 +6,7 @@ import EmberObject from "ember-runtime/system/object";
 import Evented from "ember-runtime/mixins/evented";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 
-import { defineProperty, deprecateProperty } from "ember-metal/properties";
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import { computed } from "ember-metal/computed";
 
 import { typeOf } from "ember-metal/utils";
@@ -42,9 +40,6 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     this._super();
     this._transitionTo('preRender');
     this._isVisible = get(this, 'isVisible');
-
-    deprecateProperty(this, 'states', '_states');
-    deprecateProperty(this, 'state', '_state');
   },
 
   /**

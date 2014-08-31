@@ -25,6 +25,7 @@ import {
 } from "ember-metal/utils";
 import { isNone } from 'ember-metal/is_none';
 import { Mixin } from 'ember-metal/mixin';
+import { deprecateProperty } from "ember-metal/properties";
 import { A as emberA } from "ember-runtime/system/native_array";
 
 import { dasherize } from "ember-runtime/system/string";
@@ -2170,6 +2171,8 @@ var View = CoreView.extend({
   }
 
 });
+deprecateProperty(View.prototype, 'state', '_state');
+deprecateProperty(View.prototype, 'states', '_states');
 
 /*
   Describe how the specified actions should behave in the various

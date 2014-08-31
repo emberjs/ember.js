@@ -177,8 +177,8 @@ export function deprecateProperty(object, deprecatedKey, newKey) {
     defineProperty(object, deprecatedKey, {
         configurable: true,
         enumerable: false,
-        set: function(value) { deprecate(); set(object, newKey, value); },
-        get: function() { deprecate(); return get(object, newKey); }
+        set: function(value) { deprecate(); set(this, newKey, value); },
+        get: function() { deprecate(); return get(this, newKey); }
     });
   }
 }
