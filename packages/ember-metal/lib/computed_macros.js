@@ -282,7 +282,7 @@ registerComputed('equal', function(dependentKey, value) {
   @param {String} dependentKey
   @param {Number} value
   @return {Ember.ComputedProperty} computed property which returns true if
-  the original value for property is greater then given value.
+  the original value for property is greater than given value.
 */
 registerComputed('gt', function(dependentKey, value) {
   return get(this, dependentKey) > value;
@@ -375,7 +375,7 @@ registerComputed('lt', function(dependentKey, value) {
   @param {String} dependentKey
   @param {Number} value
   @return {Ember.ComputedProperty} computed property which returns true if
-  the original value for property is less or equal then given value.
+  the original value for property is less or equal than given value.
 */
 registerComputed('lte', function(dependentKey, value) {
   return get(this, dependentKey) <= value;
