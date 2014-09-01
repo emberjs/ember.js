@@ -10,8 +10,6 @@ import {
   isPath
 } from "ember-metal/path_cache";
 
-
-var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
 
 /**
@@ -68,7 +66,7 @@ var set = function set(obj, keyName, value, tolerant) {
     if (isUnknown && 'function' === typeof obj.setUnknownProperty) {
       obj.setUnknownProperty(keyName, value);
     } else if (meta && meta.watching[keyName] > 0) {
-      if (MANDATORY_SETTER) {
+      if (Ember.FEATURES.isEnabled('mandatory-setter')) {
         currentValue = meta.values[keyName];
       } else {
         currentValue = obj[keyName];
@@ -76,7 +74,7 @@ var set = function set(obj, keyName, value, tolerant) {
       // only trigger a change if the value has changed
       if (value !== currentValue) {
         propertyWillChange(obj, keyName);
-        if (MANDATORY_SETTER) {
+        if (Ember.FEATURES.isEnabled('mandatory-setter')) {
           if ((currentValue === undefined && !(keyName in obj)) || !obj.propertyIsEnumerable(keyName)) {
             defineProperty(obj, keyName, null, value); // setup mandatory setter
           } else {

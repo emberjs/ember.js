@@ -186,8 +186,8 @@ if (!(Object.create && !Object.create(null).hasOwnProperty)) {
   create = Object.create;
 }
 
-if (Ember.ENV.MANDATORY_SETTER) {
-  Ember.ENV.MANDATORY_SETTER = hasES5CompliantDefineProperty;
+if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+  Ember.FEATURES['mandatory-setter'] = hasES5CompliantDefineProperty;
 }
 
 var hasPropertyAccessors = hasES5CompliantDefineProperty;

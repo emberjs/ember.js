@@ -50,7 +50,6 @@ var o_create = create;
 // Used for guid generation...
 var numberCache  = [];
 var stringCache  = {};
-var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
 /**
   Strongly hint runtimes to intern the provided string.
@@ -255,7 +254,9 @@ if (!canDefineNonEnumerableProperties) {
 // Placeholder for non-writable metas.
 var EMPTY_META = new Meta(null);
 
-if (MANDATORY_SETTER) { EMPTY_META.values = {}; }
+if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+  EMPTY_META.values = {};
+}
 
 /**
   Retrieves the meta hash for an object. If `writable` is true ensures the
@@ -285,7 +286,9 @@ function meta(obj, writable) {
 
     ret = new Meta(obj);
 
-    if (MANDATORY_SETTER) { ret.values = {}; }
+    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+      ret.values = {};
+    }
 
     obj['__ember_meta__'] = ret;
 
@@ -302,7 +305,9 @@ function meta(obj, writable) {
     ret.cacheMeta = {};
     ret.source    = obj;
 
-    if (MANDATORY_SETTER) { ret.values = o_create(ret.values); }
+    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+      ret.values = o_create(ret.values);
+    }
 
     obj['__ember_meta__'] = ret;
   }

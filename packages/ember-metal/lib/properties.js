@@ -12,8 +12,6 @@ import { overrideChains } from "ember-metal/property_events";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
-var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
-
 // ..........................................................
 // DESCRIPTOR
 //
@@ -109,13 +107,17 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     value = desc;
 
     descs[keyName] = desc;
-    if (MANDATORY_SETTER && watching) {
-      objectDefineProperty(obj, keyName, {
-        configurable: true,
-        enumerable: true,
-        writable: true,
-        value: undefined // make enumerable
-      });
+    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+      if (watching) {
+        objectDefineProperty(obj, keyName, {
+          configurable: true,
+          enumerable: true,
+          writable: true,
+          value: undefined // make enumerable
+        });
+      } else {
+        obj[keyName] = undefined; // make enumerable
+      }
     } else {
       obj[keyName] = undefined; // make enumerable
     }
@@ -125,14 +127,18 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     if (desc == null) {
       value = data;
 
-      if (MANDATORY_SETTER && watching) {
-        meta.values[keyName] = data;
-        objectDefineProperty(obj, keyName, {
-          configurable: true,
-          enumerable: true,
-          set: MANDATORY_SETTER_FUNCTION,
-          get: DEFAULT_GETTER_FUNCTION(keyName)
-        });
+      if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+        if (watching) {
+          meta.values[keyName] = data;
+          objectDefineProperty(obj, keyName, {
+            configurable: true,
+            enumerable: true,
+            set: MANDATORY_SETTER_FUNCTION,
+            get: DEFAULT_GETTER_FUNCTION(keyName)
+          });
+        } else {
+          obj[keyName] = data;
+        }
       } else {
         obj[keyName] = data;
       }
