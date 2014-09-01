@@ -40,7 +40,7 @@ test("calls computed property setters", function() {
   equal(o.get('foo'), 'bar');
 });
 
-if (Ember.ENV.MANDATORY_SETTER) {
+if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   test("sets up mandatory setters for watched simple properties", function() {
 
     var MyClass = EmberObject.extend({

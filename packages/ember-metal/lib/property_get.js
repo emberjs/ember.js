@@ -10,7 +10,6 @@ import {
   hasThis as pathHasThis
 } from "ember-metal/path_cache";
 
-var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 var FIRST_KEY = /^([^\.]+)/;
 
 // ..........................................................
@@ -78,8 +77,12 @@ var get = function get(obj, keyName) {
   if (desc) {
     return desc.get(obj, keyName);
   } else {
-    if (MANDATORY_SETTER && meta && meta.watching[keyName] > 0) {
-      ret = meta.values[keyName];
+    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+      if (meta && meta.watching[keyName] > 0) {
+        ret = meta.values[keyName];
+      } else {
+        ret = obj[keyName];
+      }
     } else {
       ret = obj[keyName];
     }

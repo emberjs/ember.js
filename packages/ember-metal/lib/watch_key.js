@@ -6,7 +6,6 @@ import {
 import { defineProperty as o_defineProperty } from "ember-metal/platform";
 
 var metaFor = meta; // utils.js
-var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
 
 export function watchKey(obj, keyName, meta) {
@@ -26,7 +25,7 @@ export function watchKey(obj, keyName, meta) {
       obj.willWatchProperty(keyName);
     }
 
-    if (MANDATORY_SETTER) {
+    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       handleMandatorySetter(m, obj, keyName);
     }
   } else {
@@ -61,22 +60,24 @@ export function unwatchKey(obj, keyName, meta) {
       obj.didUnwatchProperty(keyName);
     }
 
-    if (MANDATORY_SETTER && keyName in obj) {
-      o_defineProperty(obj, keyName, {
-        configurable: true,
-        enumerable: obj.propertyIsEnumerable(keyName),
-        set: function(val) {
-          // redefine to set as enumerable
-          o_defineProperty(obj, keyName, {
-            configurable: true,
-            writable: true,
-            enumerable: true,
-            value: val
-          });
-          delete m.values[keyName];
-        },
-        get: Ember.DEFAULT_GETTER_FUNCTION(keyName)
-      });
+    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+      if (keyName in obj) {
+        o_defineProperty(obj, keyName, {
+          configurable: true,
+          enumerable: obj.propertyIsEnumerable(keyName),
+          set: function(val) {
+            // redefine to set as enumerable
+            o_defineProperty(obj, keyName, {
+              configurable: true,
+              writable: true,
+              enumerable: true,
+              value: val
+            });
+            delete m.values[keyName];
+          },
+          get: Ember.DEFAULT_GETTER_FUNCTION(keyName)
+        });
+      }
     }
   } else if (watching[keyName] > 1) {
     watching[keyName]--;
