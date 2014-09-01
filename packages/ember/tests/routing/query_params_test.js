@@ -1,6 +1,6 @@
 import "ember";
 import { computed } from "ember-metal/computed";
-import { platform } from 'ember-metal/platform';
+import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 import { capitalize } from "ember-runtime/system/string";
 
 var Router, App, router, container;
@@ -8,15 +8,12 @@ var get = Ember.get;
 var compile = Ember.Handlebars.compile;
 
 function withoutMeta(object) {
-  if (platform.defineProperty.isSimulated) {
-    var newObject = Ember.$.extend(true, {}, object);
-
-    delete newObject['__ember_meta__'];
-
-    return newObject;
-  } else {
+  if (canDefineNonEnumerableProperties) {
     return object;
   }
+  var newObject = Ember.$.extend(true, {}, object);
+  delete newObject['__ember_meta__'];
+  return newObject;
 }
 
 function bootApplication() {
