@@ -7,6 +7,7 @@ import {required, Mixin, observer} from "ember-metal/mixin";
 import run from "ember-metal/run_loop";
 import {on} from "ember-metal/events";
 import EmberObject from "ember-runtime/system/object";
+import keys from "ember-metal/keys";
 
 var moduleOptions, originalLookup;
 
@@ -345,13 +346,7 @@ test("ensure internal properties do not leak", function(){
   });
 
   var expectedProperties = ['firstName', 'lastName'];
-  var actualProperties   = [];
-
-  for (var name in obj) {
-    if (obj.hasOwnProperty(name)) {
-      actualProperties.push(name);
-    }
-  }
+  var actualProperties   = keys(obj);
 
   deepEqual(actualProperties, expectedProperties, 'internal properties do not leak');
 });
