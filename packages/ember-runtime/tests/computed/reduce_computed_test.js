@@ -19,7 +19,7 @@ import { reduceComputed } from "ember-runtime/computed/reduce_computed";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import SubArray from "ember-runtime/system/subarray";
 
-var obj, addCalls, removeCalls, callbackItems, shared;
+var obj, addCalls, removeCalls, invalidateCalls, callbackItems, shared;
 
 QUnit.module('arrayComputed', {
   setup: function () {
@@ -823,14 +823,14 @@ test("when initialValue is undefined, everything works as advertised", function(
   equal(get(chars, 'firstUpper'), 'B', "result is the next match when the first matching object is removed");
 });
 
-QUnit.module('arrayComputed - completely invalidating dependencies', {
+QUnit.module('reduceComputed - completely invalidating dependencies', {
   setup: function () {
-    addCalls = removeCalls = 0;
+    addCalls = removeCalls = invalidateCalls = 0;
   }
 });
 
-test("non-array dependencies completely invalidate a reduceComputed CP", function() {
-  var dependentArray = Ember.A();
+test("non-array dependencies completely invalidate a arrayComputed CP", function() {
+  var dependentArray = Ember.A([6,7]);
 
   obj = EmberObject.extend({
     nonArray: 'v0',
@@ -851,19 +851,19 @@ test("non-array dependencies completely invalidate a reduceComputed CP", functio
 
   get(obj, 'computed');
 
-  equal(addCalls, 0, "precond - add has not initially been called");
+  equal(addCalls, 2, "precond - add has been called twice");
   equal(removeCalls, 0, "precond - remove has not initially been called");
 
   dependentArray.pushObjects([1, 2]);
 
-  equal(addCalls, 2, "add called one-at-a-time for dependent array changes");
+  equal(addCalls, 4, "add called one-at-a-time for dependent array changes");
   equal(removeCalls, 0, "remove not called");
 
   run(function() {
     set(obj, 'nonArray', 'v1');
   });
 
-  equal(addCalls, 4, "array completely recomputed when non-array dependency changed");
+  equal(addCalls, 8, "array completely recomputed when non-array dependency changed");
   equal(removeCalls, 0, "remove not called");
 });
 
@@ -949,6 +949,269 @@ test("returning undefined in addedItem/removedItem completely invalidates a redu
   dependentArray.removeObject(1);
   equal(get(obj, 'computed'), 2);
   equal(counter, 1);
+});
+
+test("changes in non-array dependencies invoke the `invalidate` hook of a reduceComputed CP", function() {
+  var dependentArray = Ember.A([5,6]);
+
+  obj = EmberObject.extend({
+    myComputed: reduceComputed('dependentArray', 'nonArray1', 'nonArray2', {
+      initialValue: "123",
+      initialize: function(initialValue, changeMeta, instanceMeta){
+        instanceMeta.customField = "abc";
+      },
+      addedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+        ++addCalls;
+        return accumulatedValue;
+      },
+
+      removedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+        --removeCalls;
+        return accumulatedValue;
+      },
+
+      invalidate: function (accumulatedValue, changeMeta, instanceMeta){
+        ++invalidateCalls;
+        ok(instanceMeta.customField === "abc", "`instanceMeta` has the proper content");
+        ok(this.get('nonArray1') === 2 && this.get('nonArray2') === 5, "`this` has been updated");
+        ok(changeMeta.changes.nonArray1 === 0 && changeMeta.changes.nonArray2 === 1,
+          "changeMeta contains the dependencies that changed and its old values");
+        equal(changeMeta.property.options.initialValue, '123', 'changeMeta contains the property');
+        equal(changeMeta.propertyName, 'myComputed', 'changeMeta contains the name of the property');
+        var accum = "";
+        for (var key in changeMeta.changes) {
+          accum += changeMeta.changes[key];
+        }
+        return accumulatedValue + accum;
+      }
+    })
+  }).create({nonArray1: 0, nonArray2: 1, dependentArray: dependentArray});
+
+  deepEqual(get(obj, 'myComputed'), "123");
+  equal(invalidateCalls, 0, "precond - `invalidate` has not initially been called");
+
+  set(obj, 'nonArray1', 2);
+  set(obj, 'nonArray2', 5);
+
+  equal(addCalls, 2, "add has been called twice");
+  equal(removeCalls, 0, "remove has not been called");
+  equal(invalidateCalls, 0, "invalidate has not been called yet");
+
+  equal(get(obj, 'myComputed'), "12301", 'the computed property is updated properly');
+  equal(addCalls, 2, "add has not been called again");
+  equal(removeCalls, 0, "remove has not been called");
+  equal(invalidateCalls, 1, "invalidate has been called just once");
+
+  equal(get(obj, 'myComputed'), "12301", 'getting the propery does not trigger invalidation again');
+  equal(invalidateCalls, 1, "invalidate has not been called again");
+});
+
+test("changes in array dependencies do not invoke the `invalidate` hook of a reduceComputed CP", function() {
+  var dependentArray = Ember.A();
+
+  obj = EmberObject.extend({
+    myComputed: reduceComputed('dependentArray', 'nonArray', {
+      initialValue: 123,
+      initialize: function(initialValue, changeMeta, instanceMeta){
+        instanceMeta.previousNonArray = this.get('nonArray');
+      },
+      addedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+        ++addCalls;
+        return accumulatedValue;
+      },
+
+      removedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+        --removeCalls;
+        return accumulatedValue;
+      },
+
+      invalidate: function (accumulatedValue, changeMeta, instanceMeta){
+        ++invalidateCalls;
+        ok(instanceMeta.previousNonArray === 0, "`instanceMeta` is wrong");
+        ok(this.get('nonArray') === 1, "`this` is wrong");
+        return accumulatedValue;
+      }
+    })
+  }).create({nonArray: 0, dependentArray: dependentArray});
+
+  deepEqual(get(obj, 'myComputed'), 123);
+  equal(invalidateCalls, 0, "precond - `invalidate` has not initially been called");
+
+  dependentArray.pushObject(3);
+  get(obj, 'myComputed');
+
+  equal(addCalls, 1, "add has not been called");
+  equal(removeCalls, 0, "remove has not been called");
+  equal(invalidateCalls, 0, "invalidate has not been called");
+});
+
+test("multiple changes in non-array dependencies only invoke the `invalidate` hook once", function() {
+  var dependentArray = Ember.A([5,6]);
+  var invalidatingDependentArray = Ember.A();
+
+  obj = EmberObject.extend({
+    nonArray1: 0,
+    nonArray2: 0,
+    invalidatingDependentArray: invalidatingDependentArray,
+    dependentArray: dependentArray,
+
+    computed: reduceComputed('dependentArray', 'nonArray1', 'nonArray2', 'invalidatingDependentArray.[]', {
+      initialValue: 123,
+      addedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+        ++addCalls;
+        return accumulatedValue;
+      },
+
+      removedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+        --removeCalls;
+        return accumulatedValue;
+      },
+
+      invalidate: function (accumulatedValue, changeMeta, instanceMeta){
+        deepEqual(
+          changeMeta.changes,
+          { nonArray1: 0, nonArray2: 0 },
+          '`changeMeta.changes` contains the old values of the dependencies that changed'
+        );
+        ++invalidateCalls;
+        return accumulatedValue;
+      }
+    })
+  }).create();
+
+  deepEqual(get(obj, 'computed'), 123);
+  equal(addCalls, 2, "add has been called twice");
+  equal(invalidateCalls, 0, "precond - `invalidate` has not initially been called");
+
+  set(obj, 'nonArray1', 1);
+  set(obj, 'nonArray2', 9);
+  set(obj, 'nonArray2', 10);
+
+  equal(addCalls, 2, "add has not been called again");
+  equal(removeCalls, 0, "remove has not been called");
+  equal(invalidateCalls, 0, "invalidate has not been called yet");
+
+  get(obj, 'computed');
+  equal(invalidateCalls, 1, "invalidate has been called once");
+});
+
+test("multiple additions/deletions in invalidating array dependencies invoke the `invalidate` hook just once", function() {
+  var dependentArray = Ember.A([5,6]);
+  var invalidatingDependentArray = Ember.A();
+
+  obj = EmberObject.extend({
+    invalidatingDependentArray: invalidatingDependentArray,
+    dependentArray: dependentArray,
+
+    computed: reduceComputed('dependentArray', 'invalidatingDependentArray.[]', {
+      initialValue: 123,
+      addedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+        ++addCalls;
+        return accumulatedValue;
+      },
+
+      removedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+        --removeCalls;
+        return accumulatedValue;
+      },
+
+      invalidate: function (accumulatedValue, changeMeta, instanceMeta) {
+        ++invalidateCalls;
+        deepEqual(
+          changeMeta.changes,
+          { 'invalidatingDependentArray.[]': {adding: 3, removing: 1} },
+          '`changeMeta.changes` contains the aggregated info of all the additions/deletions made'
+        );
+        return accumulatedValue;
+      }
+    })
+  }).create();
+
+  deepEqual(get(obj, 'computed'), 123);
+  equal(addCalls, 2, 'precond - add has been called during initialization');
+  equal(invalidateCalls, 0, "precond - `invalidate` has not initially been called");
+
+  invalidatingDependentArray.pushObject(3);
+  invalidatingDependentArray.pushObjects([4, 5]);
+  invalidatingDependentArray.removeAt(1);
+
+  equal(addCalls, 2, "add has not been called again");
+  equal(removeCalls, 0, "remove has not been called");
+  equal(invalidateCalls, 0, "`invalidate` has not been called yet");
+
+  get(obj, 'computed');
+  equal(invalidateCalls, 1, "`invalidate` has been called just once");
+});
+
+test("changes in non-array properties that do not modify the result of an reduceComputed CP do not invalidate other CP watching the first one", function(){
+  var numbers = Ember.A(),
+    secondGradeCalls = 0;
+
+  obj = EmberObject.extend({
+    min: 3,
+    numbers: numbers,
+
+    countBigNumbers: reduceComputed('numbers', 'min', {
+      initialValue: 0,
+      addedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+        ++addCalls;
+        if (item >= this.get('min')) ++accumulatedValue;
+        return accumulatedValue;
+      },
+
+      removedItem: function (accumulatedValue, item, changeMeta, instanceMeta) {
+        --removeCalls;
+        if (item >= this.get('min')) --accumulatedValue;
+        return accumulatedValue;
+      },
+
+      invalidate: function(accumulatedValue, changeMeta, instanceMeta){
+        ++invalidateCalls;
+        var count = 0;
+        this.get('numbers').forEach(function(num){
+          if (num >= this.get('min')) ++count;
+        }, this);
+        return count;
+      }
+    }),
+
+    doubleCountBigNumbers: computed(function(){
+      ++secondGradeCalls;
+      return this.get('countBigNumbers') * 2;
+    }).property('countBigNumbers')
+  }).create();
+
+  deepEqual(get(obj, 'countBigNumbers'), 0);
+  deepEqual(get(obj, 'doubleCountBigNumbers'), 0);
+  equal(invalidateCalls, 0, "precond - `invalidate` has not initially been called");
+  equal(secondGradeCalls, 1, "precond - `invalidate` of the other CP has not initially been called");
+
+  run(function() {
+    numbers.pushObject(0);
+    numbers.pushObject(1);
+    numbers.pushObject(2);
+    numbers.pushObject(3);
+    numbers.pushObject(4);
+    numbers.pushObject(5);
+    numbers.pushObject(6);
+  });
+
+  deepEqual(get(obj, 'countBigNumbers'), 4);
+  deepEqual(get(obj, 'doubleCountBigNumbers'), 8);
+  equal(addCalls, 7);
+  equal(removeCalls, 0);
+  equal(invalidateCalls, 0);
+  equal(secondGradeCalls, 2);
+
+  run(function() {
+    set(obj, 'min', 5);
+  });
+
+  deepEqual(get(obj, 'countBigNumbers'), 2);
+  deepEqual(get(obj, 'doubleCountBigNumbers'), 4);
+  equal(addCalls, 7);
+  equal(invalidateCalls, 1);
+  equal(secondGradeCalls, 3);
 });
 
 if (!Ember.EXTEND_PROTOTYPES && !Ember.EXTEND_PROTOTYPES.Array) {

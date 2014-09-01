@@ -588,8 +588,7 @@ ReduceComputedProperty.prototype._instanceMeta = function (context, propertyName
 ReduceComputedProperty.prototype.initialValue = function () {
   if (typeof this.options.initialValue === 'function') {
     return this.options.initialValue();
-  }
-  else {
+  } else {
     return this.options.initialValue;
   }
 };
@@ -640,6 +639,47 @@ ReduceComputedProperty.prototype.property = function () {
   }
 
   return ComputedProperty.prototype.property.apply(this, propertyArgsToArray);
+};
+
+ReduceComputedProperty.prototype.didChange = function (obj, propKey, depKey, change) {
+  // TODO: Do something when the changes are made in an something like
+  // totallyInvalidatingDependentArray.[]
+  // In those cases it might be impossible to track what have changed in the array.
+  if (depKey && this.options.invalidate) {
+    var instanceMeta = this._instanceMeta(obj, propKey);
+    instanceMeta._invalidatingChanges = instanceMeta._invalidatingChanges || {};
+    if (arrayBracketPattern.test(depKey)) {
+      instanceMeta._invalidatingChanges[depKey] = instanceMeta._invalidatingChanges[depKey] || {adding: 0, removing: 0};
+      instanceMeta._invalidatingChanges[depKey].adding += change.adding;
+      instanceMeta._invalidatingChanges[depKey].removing += change.removing;
+    } else if (instanceMeta._invalidatingChanges[depKey] === undefined){
+      instanceMeta._invalidatingChanges[depKey] = change;
+    }
+  } else {
+    ComputedProperty.prototype.didChange.call(this, arguments);
+  }
+};
+
+ReduceComputedProperty.prototype.get = function (obj, key) {
+  var hasMeta = this._hasInstanceMeta(obj, key);
+  var instanceMeta = hasMeta && this._instanceMeta(obj, key);
+  if (instanceMeta && instanceMeta._invalidatingChanges) {
+    var oldVal = instanceMeta.getValue();
+    var changeMeta = {
+      property: this,
+      propertyName: key,
+      changes: instanceMeta._invalidatingChanges
+    };
+    delete instanceMeta._invalidatingChanges;
+    var val = this.options.invalidate.call(obj, oldVal, changeMeta, instanceMeta.sugarMeta);
+    if (val !== oldVal) {
+      instanceMeta.setValue(val);
+      propertyDidChange(obj, key); // Notify observers.
+    }
+    return val;
+  } else {
+    return ComputedProperty.prototype.get.call(this, obj, key);
+  }
 };
 
 /**
