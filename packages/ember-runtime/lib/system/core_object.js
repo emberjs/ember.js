@@ -31,10 +31,10 @@ import {
 } from "ember-metal/mixin";
 import { indexOf } from "ember-metal/enumerable_utils";
 import EmberError from "ember-metal/error";
-import { platform } from "ember-metal/platform";
+import { defineProperty as o_defineProperty } from "ember-metal/platform";
 import keys from "ember-metal/keys";
 import ActionHandler from "ember-runtime/mixins/action_handler";
-import {defineProperty} from "ember-metal/properties";
+import { defineProperty } from "ember-metal/properties";
 import { Binding } from "ember-metal/binding";
 import { ComputedProperty } from "ember-metal/computed";
 import run from 'ember-metal/run_loop';
@@ -43,7 +43,6 @@ import { destroy } from "ember-metal/watching";
 import {
   K
 } from 'ember-metal/core';
-var o_defineProperty = platform.defineProperty;
 var schedule = run.schedule;
 var applyMixin = Mixin._apply;
 var finishPartial = Mixin.finishPartial;

@@ -1,5 +1,5 @@
-import EnumerableUtils from 'ember-metal/enumerable_utils';
-import { create } from 'ember-metal/platform';
+import { indexOf } from 'ember-metal/array';
+import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 
 /**
   Returns all of the keys defined on an object or hash. This is useful
@@ -13,7 +13,7 @@ import { create } from 'ember-metal/platform';
 */
 var keys = Object.keys;
 
-if (!keys || create.isSimulated) {
+if (!keys || !canDefineNonEnumerableProperties) {
   var prototypeProperties = [
     'constructor',
     'hasOwnProperty',
@@ -34,7 +34,7 @@ if (!keys || create.isSimulated) {
       return;
     }
 
-    if (EnumerableUtils.indexOf(array, key) >= 0) {
+    if (indexOf(array, key) >= 0) {
       return;
     }
 

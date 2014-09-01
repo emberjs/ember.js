@@ -1,4 +1,4 @@
-import { platform } from 'ember-metal/platform';
+import { defineProperty, hasPropertyAccessors, canDefineNonEnumerableProperties } from 'ember-metal/platform';
 import EnumerableUtils from 'ember-metal/enumerable_utils';
 
 function isEnumerable(obj, keyName) {
@@ -9,11 +9,11 @@ function isEnumerable(obj, keyName) {
   return EnumerableUtils.indexOf(keys, keyName)>=0;
 }
 
-QUnit.module("platform.defineProperty()");
+QUnit.module("defineProperty()");
 
 test("defining a simple property", function() {
   var obj = {};
-  platform.defineProperty(obj, 'foo', {
+  defineProperty(obj, 'foo', {
     enumerable:   true,
     writable:     true,
     value: 'FOO'
@@ -28,7 +28,7 @@ test("defining a simple property", function() {
 
 test('defining a read only property', function() {
   var obj = {};
-  platform.defineProperty(obj, 'foo', {
+  defineProperty(obj, 'foo', {
     enumerable:   true,
     writable:     false,
     value: 'FOO'
@@ -36,10 +36,7 @@ test('defining a read only property', function() {
 
   equal(obj.foo, 'FOO', 'should have added property');
 
-  if (platform.defineProperty.isSimulated) {
-    obj.foo = "BAR";
-    equal(obj.foo, 'BAR', 'simulated defineProperty should silently work');
-  } else {
+  if (hasPropertyAccessors) {
     // cannot set read-only property in strict-mode
     try {
       obj.foo = "BAR";
@@ -48,28 +45,30 @@ test('defining a read only property', function() {
     }finally {
       equal(obj.foo, 'FOO', 'real defined property should not be writable');
     }
+  } else {
+    obj.foo = "BAR";
+    equal(obj.foo, 'BAR', 'simulated defineProperty should silently work');
   }
-
 });
 
 test('defining a non enumerable property', function() {
   var obj = {};
-  platform.defineProperty(obj, 'foo', {
+  defineProperty(obj, 'foo', {
     enumerable:   false,
     writable:     true,
     value: 'FOO'
   });
 
-  if (platform.defineProperty.isSimulated) {
-    equal(isEnumerable(obj, 'foo'), true, 'simulated defineProperty will leave properties enumerable');
-  } else {
+  if (canDefineNonEnumerableProperties) {
     equal(isEnumerable(obj, 'foo'), false, 'real defineProperty will make property not-enumerable');
+  } else {
+    equal(isEnumerable(obj, 'foo'), true, 'simulated defineProperty will leave properties enumerable');
   }
 });
 
 // If accessors don't exist, behavior that relies on getters
 // and setters don't do anything
-if (platform.hasPropertyAccessors) {
+if (hasPropertyAccessors) {
   test('defining a getter/setter', function() {
     var obj = {};
     var getCnt = 0;
@@ -82,23 +81,19 @@ if (platform.hasPropertyAccessors) {
       set: function(val) { setCnt++; v = val; }
     };
 
-    if (platform.hasPropertyAccessors) {
-      platform.defineProperty(obj, 'foo', desc);
-      equal(obj.foo, 'FOO', 'should return getter');
-      equal(getCnt, 1, 'should have invoked getter');
+    defineProperty(obj, 'foo', desc);
+    equal(obj.foo, 'FOO', 'should return getter');
+    equal(getCnt, 1, 'should have invoked getter');
 
-      obj.foo = 'BAR';
-      equal(obj.foo, 'BAR', 'setter should have worked');
-      equal(setCnt, 1, 'should have invoked setter');
-
-    }
-
+    obj.foo = 'BAR';
+    equal(obj.foo, 'BAR', 'setter should have worked');
+    equal(setCnt, 1, 'should have invoked setter');
   });
 
   test('defining getter/setter along with writable', function() {
     var obj  ={};
     raises(function() {
-      platform.defineProperty(obj, 'foo', {
+      defineProperty(obj, 'foo', {
         enumerable: true,
         get: function() {},
         set: function() {},
@@ -110,7 +105,7 @@ if (platform.hasPropertyAccessors) {
   test('defining getter/setter along with value', function() {
     var obj  ={};
     raises(function() {
-      platform.defineProperty(obj, 'foo', {
+      defineProperty(obj, 'foo', {
         enumerable: true,
         get: function() {},
         set: function() {},

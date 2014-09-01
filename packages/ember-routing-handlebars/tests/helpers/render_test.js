@@ -2,7 +2,7 @@ import Ember from 'ember-metal/core'; // TEMPLATES
 import { get } from "ember-metal/property_get";
 import { set as emberSet } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
-import { create } from 'ember-metal/platform';
+import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 import { observer } from 'ember-metal/mixin';
 
 import Container from 'container/container';
@@ -217,10 +217,10 @@ test("{{render}} helper should render given template with a supplied model", fun
   set(controller, 'post', { title: "Rails is unagi" });
 
   equal(view.$().text(), 'HIRails is unagi');
-  if (create.isSimulated) {
-    equal(postController.get('model').title, "Rails is unagi");
-  } else {
+  if (canDefineNonEnumerableProperties) {
     deepEqual(postController.get('model'), { title: "Rails is unagi" });
+  } else {
+    equal(postController.get('model').title, "Rails is unagi");
   }
 });
 
@@ -341,10 +341,10 @@ test("{{render}} helper should render templates with models multiple times", fun
   set(controller, 'post1', { title: "I am new" });
 
   ok(view.$().text().match(/^HI ?I am new ?Then me$/));
-  if (create.isSimulated) {
-    equal(postController1.get('model').title, "I am new");
-  } else {
+  if (canDefineNonEnumerableProperties) {
     deepEqual(postController1.get('model'), { title: "I am new" });
+  } else {
+    equal(postController1.get('model').title, "I am new");
   }
 });
 
@@ -441,10 +441,10 @@ test("{{render}} helper should render templates both with and without models", f
   set(controller, 'post', { title: "Rails is unagi" });
 
   ok(view.$().text().match(/^HI ?Title: ?Title:Rails is unagi$/));
-  if (create.isSimulated) {
-    equal(postController2.get('model').title, "Rails is unagi");
-  } else {
+  if (canDefineNonEnumerableProperties) {
     deepEqual(postController2.get('model'), { title: "Rails is unagi" });
+  } else {
+    equal(postController2.get('model').title, "Rails is unagi");
   }
 });
 

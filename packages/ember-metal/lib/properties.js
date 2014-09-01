@@ -3,14 +3,14 @@
 */
 
 import Ember from "ember-metal/core";
-import { meta } from "ember-metal/utils";
-import { platform } from "ember-metal/platform";
+import { meta as metaFor } from "ember-metal/utils";
+import {
+  defineProperty as objectDefineProperty,
+  hasPropertyAccessors
+} from "ember-metal/platform";
 import { overrideChains } from "ember-metal/property_events";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-
-var metaFor = meta;
-var objectDefineProperty = platform.defineProperty;
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
@@ -172,7 +172,7 @@ export function deprecateProperty(object, deprecatedKey, newKey) {
     Ember.deprecate('Usage of `' + deprecatedKey + '` is deprecated, use `' + newKey + '` instead.');
   }
 
-  if (platform.hasPropertyAccessors) {
+  if (hasPropertyAccessors) {
     defineProperty(object, deprecatedKey, {
         configurable: true,
         enumerable: false,
