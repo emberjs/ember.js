@@ -20,7 +20,13 @@ var calculateVersion = require('./lib/calculate-version');
 
 var env = process.env.EMBER_ENV || 'development';
 var disableJSHint = !!process.env.NO_JSHINT || false;
-var disableDefeatureify = !!process.env.NO_DEFEATUREIFY || env === 'development' || false;
+var disableDefeatureify;
+
+if (process.env.DEFEATUREIFY === 'true') {
+  disableDefeatureify = false;
+} else {
+  disableDefeatureify = env === 'development';
+}
 
 var generateTemplateCompiler = require('./lib/broccoli-ember-template-compiler-generator');
 var inlineTemplatePrecompiler = require('./lib/broccoli-ember-inline-template-precompiler');
@@ -43,12 +49,19 @@ function defeatureifyConfig(options) {
   var stripDebug = false;
   var options = options || {};
   var configJson = JSON.parse(fs.readFileSync("features.json").toString());
+  var features = options.features || configJson.features;
 
   if (configJson.hasOwnProperty('stripDebug')) { stripDebug = configJson.stripDebug; }
   if (options.hasOwnProperty('stripDebug')) { stripDebug = options.stripDebug; }
 
+  for (var flag in features) {
+    if (features[flag] === 'development-only') {
+      features[flag] = options.environment !== 'production';
+    }
+  }
+
   return {
-    enabled:           options.features || configJson.features,
+    enabled:           features,
     debugStatements:   options.debugStatements || configJson.debugStatements,
     namespace:         options.namespace || configJson.namespace,
     enableStripDebug:  stripDebug
@@ -605,7 +618,10 @@ prodCompiledSource = concatES6(prodCompiledSource, {
   vendorTrees: vendorTrees,
   inputFiles: ['**/*.js'],
   destFile: '/ember.prod.js',
-  defeatureifyOptions: {stripDebug: true}
+  defeatureifyOptions: {
+    stripDebug: true,
+    environment: 'production'
+  }
 });
 
 // Take prod output and minify.  This reduces filesize (as you'd expect)
