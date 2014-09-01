@@ -1,4 +1,3 @@
-import { indexOf } from 'ember-metal/array';
 import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 
 /**
@@ -14,54 +13,47 @@ import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 var keys = Object.keys;
 
 if (!keys || !canDefineNonEnumerableProperties) {
-  var prototypeProperties = [
-    'constructor',
-    'hasOwnProperty',
-    'isPrototypeOf',
-    'propertyIsEnumerable',
-    'valueOf',
-    'toLocaleString',
-    'toString'
-  ];
-  var pushPropertyName = function(obj, array, key) {
-    // Prevents browsers that don't respect non-enumerability from
-    // copying internal Ember properties
-    if (key.substring(0, 2) === '__') {
-      return;
-    }
+  // modified from
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
+  keys = (function () {
+    var hasOwnProperty = Object.prototype.hasOwnProperty,
+        hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
+        dontEnums = [
+          'toString',
+          'toLocaleString',
+          'valueOf',
+          'hasOwnProperty',
+          'isPrototypeOf',
+          'propertyIsEnumerable',
+          'constructor'
+        ],
+        dontEnumsLength = dontEnums.length;
 
-    if (key === '_super') {
-      return;
-    }
+    return function keys(obj) {
+      if (typeof obj !== 'object' && (typeof obj !== 'function' || obj === null)) {
+        throw new TypeError('Object.keys called on non-object');
+      }
 
-    if (indexOf(array, key) >= 0) {
-      return;
-    }
+      var result = [], prop, i;
 
-    if (!Object.prototype.hasOwnProperty.call(obj, key)) {
-      return;
-    }
+      for (prop in obj) {
+        if (prop !== '_super' &&
+          prop.lastIndexOf('__',0) !== 0 &&
+          hasOwnProperty.call(obj, prop)) {
+          result.push(prop);
+        }
+      }
 
-    array.push(key);
-  };
-
-  keys = function keys(obj) {
-    var ret = [];
-    var key;
-
-    for (key in obj) {
-      pushPropertyName(obj, ret, key);
-    }
-
-    // IE8 doesn't enumerate property that named the same as prototype properties.
-    for (var i = 0, l = prototypeProperties.length; i < l; i++) {
-      key = prototypeProperties[i];
-
-      pushPropertyName(obj, ret, key);
-    }
-
-    return ret;
-  };
+      if (hasDontEnumBug) {
+        for (i = 0; i < dontEnumsLength; i++) {
+          if (hasOwnProperty.call(obj, dontEnums[i])) {
+            result.push(dontEnums[i]);
+          }
+        }
+      }
+      return result;
+    };
+  }());
 }
 
 export default keys;
