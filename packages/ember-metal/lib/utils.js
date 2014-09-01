@@ -1,6 +1,7 @@
 import Ember from "ember-metal/core";
 import {
-  platform,
+  defineProperty as o_defineProperty,
+  canDefineNonEnumerableProperties,
   create
 } from "ember-metal/platform";
 
@@ -45,7 +46,6 @@ export function uuid() {
 */
 var GUID_PREFIX = 'ember';
 
-var o_defineProperty = platform.defineProperty;
 var o_create = create;
 // Used for guid generation...
 var numberCache  = [];
@@ -216,8 +216,6 @@ var META_DESC = {
   value: null
 };
 
-var isDefinePropertySimulated = platform.defineProperty.isSimulated;
-
 function Meta(obj) {
   this.descs = {};
   this.watching = {};
@@ -242,7 +240,7 @@ Meta.prototype = {
   proto: null
 };
 
-if (isDefinePropertySimulated) {
+if (!canDefineNonEnumerableProperties) {
   // on platforms that don't support enumerable false
   // make meta fail jQuery.isPlainObject() to hide from
   // jQuery.extend() by having a property that fails
@@ -283,7 +281,7 @@ function meta(obj, writable) {
   if (writable===false) return ret || EMPTY_META;
 
   if (!ret) {
-    if (!isDefinePropertySimulated) o_defineProperty(obj, '__ember_meta__', META_DESC);
+    if (canDefineNonEnumerableProperties) o_defineProperty(obj, '__ember_meta__', META_DESC);
 
     ret = new Meta(obj);
 
@@ -295,7 +293,7 @@ function meta(obj, writable) {
     ret.descs.constructor = null;
 
   } else if (ret.source !== obj) {
-    if (!isDefinePropertySimulated) o_defineProperty(obj, '__ember_meta__', META_DESC);
+    if (canDefineNonEnumerableProperties) o_defineProperty(obj, '__ember_meta__', META_DESC);
 
     ret = o_create(ret);
     ret.descs     = o_create(ret.descs);

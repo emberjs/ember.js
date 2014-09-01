@@ -1,4 +1,4 @@
-import { platform } from "ember-metal/platform";
+import { hasPropertyAccessors } from "ember-metal/platform";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 
@@ -12,7 +12,7 @@ QUnit.module("views/view/state_deprecation", {
   }
 });
 
-if (platform.hasPropertyAccessors) {
+if (hasPropertyAccessors) {
   test("view.state should be an alias of view._state with a deprecation", function() {
     expect(2);
     view = EmberView.create();

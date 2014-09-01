@@ -3,11 +3,10 @@ import {
   meta,
   typeOf
 } from "ember-metal/utils";
-import { platform } from "ember-metal/platform";
+import { defineProperty as o_defineProperty } from "ember-metal/platform";
 
 var metaFor = meta; // utils.js
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
-var o_defineProperty = platform.defineProperty;
 
 
 export function watchKey(obj, keyName, meta) {

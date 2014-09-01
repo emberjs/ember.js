@@ -2,7 +2,7 @@
 import Ember from 'ember-metal/core';
 import {
   create,
-  platform
+  canDefineNonEnumerableProperties
 } from 'ember-metal/platform';
 import {
   getMeta,
@@ -55,7 +55,7 @@ test("getMeta and setMeta", function() {
 QUnit.module("Ember.meta enumerable");
 // Tests fix for https://github.com/emberjs/ember.js/issues/344
 // This is primarily for older browsers such as IE8
-if (platform.defineProperty.isSimulated) {
+if (canDefineNonEnumerableProperties) {
   if (Ember.imports.jQuery) {
     test("meta is not jQuery.isPlainObject", function () {
       var proto, obj;
