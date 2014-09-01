@@ -89,7 +89,7 @@ function vendoredPackage(packageName) {
     destFile: '/' + packageName + '.js'
   });
 
-  if (true) {
+  if (env !== 'development') {
     sourceTree = es3recast(sourceTree);
   }
 
@@ -599,7 +599,7 @@ var prodCompiledSource = removeFile(sourceTrees, {
 // Generates prod build.  defeatureify increases the overall runtime speed of ember.js by
 // ~10%.  See defeatureify.
 prodCompiledSource = concatES6(prodCompiledSource, {
-  es3Safe: true, // env !== 'development',
+  es3Safe: env !== 'development',
   includeLoader: true,
   bootstrapModule: 'ember',
   vendorTrees: vendorTrees,
@@ -620,7 +620,7 @@ minCompiledSource = uglifyJavaScript(minCompiledSource, {
 
 // Take testsTrees and compile them for consumption in the browser test suite.
 var compiledTests = concatES6(testTrees, {
-  es3Safe: true, //env !== 'development',
+  es3Safe: env !== 'development',
   includeLoader: true,
   inputFiles: ['**/*.js'],
   destFile: '/ember-tests.js'
