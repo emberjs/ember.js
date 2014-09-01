@@ -4,7 +4,7 @@
 */
 
 import Ember from "ember-metal/core";
-// Ember.ENV.MANDATORY_SETTER, Ember.assert, Ember.K, Ember.config
+// Ember.assert, Ember.K, Ember.config
 
 // NOTE: this object should never be included directly. Instead use `Ember.Object`.
 // We only define this separately so that `Ember.Set` can depend on it.
@@ -47,7 +47,6 @@ var schedule = run.schedule;
 var applyMixin = Mixin._apply;
 var finishPartial = Mixin.finishPartial;
 var reopen = Mixin.prototype.reopen;
-var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 var hasCachedComputedProperties = false;
 
 var undefinedDescriptor = {
@@ -151,10 +150,12 @@ function makeCtor() {
           } else {
             if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
               this.setUnknownProperty(keyName, value);
-            } else if (MANDATORY_SETTER) {
-              defineProperty(this, keyName, null, value); // setup mandatory setter
             } else {
-              this[keyName] = value;
+              if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+                defineProperty(this, keyName, null, value); // setup mandatory setter
+              } else {
+                this[keyName] = value;
+              }
             }
           }
         }
