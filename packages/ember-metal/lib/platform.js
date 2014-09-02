@@ -1,7 +1,5 @@
 /*globals Node */
 
-import Ember from "ember-metal/core";
-
 /**
 @module ember-metal
 */
@@ -184,10 +182,6 @@ if (!(Object.create && !Object.create(null).hasOwnProperty)) {
   };
 } else {
   create = Object.create;
-}
-
-if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-  Ember.FEATURES['mandatory-setter'] = hasES5CompliantDefineProperty;
 }
 
 var hasPropertyAccessors = hasES5CompliantDefineProperty;
