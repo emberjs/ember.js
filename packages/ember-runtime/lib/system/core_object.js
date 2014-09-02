@@ -39,10 +39,11 @@ import { Binding } from "ember-metal/binding";
 import { ComputedProperty } from "ember-metal/computed";
 import run from 'ember-metal/run_loop';
 import { destroy } from "ember-metal/watching";
-
 import {
   K
 } from 'ember-metal/core';
+import { hasPropertyAccessors } from "ember-metal/platform";
+
 var schedule = run.schedule;
 var applyMixin = Mixin._apply;
 var finishPartial = Mixin.finishPartial;
@@ -152,7 +153,11 @@ function makeCtor() {
               this.setUnknownProperty(keyName, value);
             } else {
               if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-                defineProperty(this, keyName, null, value); // setup mandatory setter
+                if (hasPropertyAccessors) {
+                  defineProperty(this, keyName, null, value); // setup mandatory setter
+                } else {
+                  this[keyName] = value;
+                }
               } else {
                 this[keyName] = value;
               }

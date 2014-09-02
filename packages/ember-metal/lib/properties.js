@@ -33,16 +33,16 @@ export function Descriptor() {}
 // DEFINING PROPERTIES API
 //
 
-var MANDATORY_SETTER_FUNCTION = Ember.MANDATORY_SETTER_FUNCTION = function(value) {
+export function MANDATORY_SETTER_FUNCTION(value) {
   Ember.assert("You must use Ember.set() to access this property (of " + this + ")", false);
-};
+}
 
-var DEFAULT_GETTER_FUNCTION = Ember.DEFAULT_GETTER_FUNCTION = function DEFAULT_GETTER_FUNCTION(name) {
-  return function() {
+export function DEFAULT_GETTER_FUNCTION(name) {
+  return function GETTER_FUNCTION() {
     var meta = this['__ember_meta__'];
     return meta && meta.values[name];
   };
-};
+}
 
 /**
   NOTE: This is a low-level method used by other parts of the API. You almost
@@ -108,7 +108,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
 
     descs[keyName] = desc;
     if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-      if (watching) {
+      if (watching && hasPropertyAccessors) {
         objectDefineProperty(obj, keyName, {
           configurable: true,
           enumerable: true,
@@ -128,7 +128,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
       value = data;
 
       if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-        if (watching) {
+        if (watching && hasPropertyAccessors) {
           meta.values[keyName] = data;
           objectDefineProperty(obj, keyName, {
             configurable: true,
