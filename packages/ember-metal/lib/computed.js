@@ -360,6 +360,39 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   Generally speaking if you intend for your computed property to be set
   your backing function should accept either two or three arguments.
 
+  ```javascript
+  var Person = Ember.Object.extend({
+    // these will be supplied by `create`
+    firstName: null,
+    lastName: null,
+
+    fullName: function(key, value, oldValue) {
+      // getter
+      if (arguments.length === 1) {
+        var firstName = this.get('firstName');
+        var lastName = this.get('lastName');
+
+        return firstName + ' ' + lastName;
+
+      // setter
+      } else {
+        var name = value.split(' ');
+
+        this.set('firstName', name[0]);
+        this.set('lastName', name[1]);
+
+        return value;
+      }
+    }.property('firstName', 'lastName')
+  });
+
+  var person = Person.create();
+
+  person.set('fullName', 'Peter Wagenet');
+  person.get('firstName'); // 'Peter'
+  person.get('lastName');  // 'Wagenet'
+  ```
+
   @method set
   @param {String} keyName The key being accessed.
   @param {Object} newValue The new value being assigned.
