@@ -29,12 +29,9 @@ var TextSupport = Mixin.create(TargetActionSupport, {
 
   init: function() {
     this._super();
-    this.on("focusOut", this, this._elementValueDidChange);
-    this.on("change", this, this._elementValueDidChange);
     this.on("paste", this, this._elementValueDidChange);
     this.on("cut", this, this._elementValueDidChange);
     this.on("input", this, this._elementValueDidChange);
-    this.on("keyUp", this, this.interpretKeyEvents);
   },
 
   /**
@@ -120,6 +117,10 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     sendAction('escape-press', this, event);
   },
 
+  change: function(event) {
+    this._elementValueDidChange(event);
+  },
+
   /**
     Called when the text area is focused.
 
@@ -141,6 +142,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     @param {Event} event
   */
   focusOut: function(event) {
+    this._elementValueDidChange(event);
     sendAction('focus-out', this, event);
   },
 
@@ -155,8 +157,36 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   */
   keyPress: function(event) {
     sendAction('key-press', this, event);
-  }
+  },
 
+  /**
+    Called when the browser triggers a `keyup` event on the element.
+
+    Uses sendAction to send the `key-up` action passing the current value
+    and event as parameters.
+
+    @method keyUp
+    @param {Event} event
+  */
+  keyUp: function(event) {
+    this.interpretKeyEvents(event);
+
+    this.sendAction('key-up', get(this, 'value'), event);
+  },
+
+  /**
+    Called when the browser triggers a `keydown` event on the element.
+
+    Uses sendAction to send the `key-down` action passing the current value
+    and event as parameters. Note that generally in key-down the value is unchanged
+    (as the key pressing has not completed yet).
+
+    @method keyDown
+    @param {Event} event
+  */
+  keyDown: function(event) {
+    this.sendAction('key-down', get(this, 'value'), event);
+  }
 });
 
 TextSupport.KEY_EVENTS = {
