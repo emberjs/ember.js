@@ -2,7 +2,7 @@ var pickFiles = require('broccoli-static-compiler');
 var concatFiles = require('broccoli-concat');
 var mergeTrees = require('broccoli-merge-trees');
 var moveFile = require('broccoli-file-mover');
-var replace = require('broccoli-replace');
+var replace = require('broccoli-string-replace');
 var removeFile = require('broccoli-file-remover');
 var transpileES6 = require('broccoli-es6-module-transpiler');
 var jsHint = require('broccoli-jshint');
@@ -79,10 +79,10 @@ var test = pickFiles('test', {
 
 test = replace(test, {
   files: [ 'test/packages-config.js' ],
-  patterns: [{
+  pattern: {
     match: /\{\{PACKAGES_CONFIG\}\}/g,
     replacement: JSON.stringify(packages, null, 2)
-  }]
+  }
 });
 
 var loader = pickFiles(bower, {
