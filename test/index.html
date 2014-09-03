@@ -19,7 +19,7 @@
 
     function injectScript(url) {
       document.write(unescape('%3Cscript src="'+url+'"%3E%3C/script%3E'));
-    };
+    }
 
     function injectVendoredLib(packageName) {
       injectScript("../vendor/" + packageName + ".amd.js");
@@ -33,11 +33,19 @@
       injectScript(packageName + "-tests.amd.js");
     }
 
+    function keys(o) {
+      var arr = [];
+      for (var k in o) {
+        arr.push(k);
+      }
+      return arr;
+    }
+
     function getPackagesToTest() {
       if (QUnit.urlParams.packages) {
         return QUnit.urlParams.packages.split(',');
       } else {
-        return Object.keys(packagesConfig.dependencies);
+        return keys(packagesConfig.dependencies);
       }
     }
 
