@@ -24,7 +24,7 @@
     "broccoli-concat": "0.0.6",
     "broccoli-es6-module-transpiler": "~0.1.0",
     "broccoli-export-tree": "~0.3.0",
-    "broccoli-file-mover": "~0.3.2",
+    "broccoli-file-mover": "0.3.5",
     "broccoli-file-remover": "~0.2.2",
     "broccoli-jshint": "~0.4.0",
     "broccoli-merge-trees": "0.1.3",
