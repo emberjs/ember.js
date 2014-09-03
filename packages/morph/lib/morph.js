@@ -7,7 +7,7 @@ function ensureStartEnd(start, end) {
 }
 
 function ensureContext(contextualElement) {
-  if (!contextualElement || contextualElement.nodeType !== Node.ELEMENT_NODE) {
+  if (!contextualElement || contextualElement.nodeType !== 1) {
     throw new Error('An element node must be provided for a contextualElement, you provided ' +
                     (contextualElement ? 'nodeType ' + contextualElement.nodeType : 'nothing'));
   }

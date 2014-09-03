@@ -162,14 +162,14 @@ test('dom node has empty text after cloning and ensuringBlankTextNode', function
 
   var clonedDiv = dom.cloneNode(div, true);
 
-  equal(clonedDiv.nodeType, Node.ELEMENT_NODE);
+  equal(clonedDiv.nodeType, 1);
   equalHTML(clonedDiv, '<div></div>');
   // IE's native cloneNode drops blank string text
   // nodes. Assert repairClonedNode brings back the blank
   // text node.
   dom.repairClonedNode(clonedDiv, [0]);
   equal(clonedDiv.childNodes.length, 1);
-  equal(clonedDiv.childNodes[0].nodeType, Node.TEXT_NODE);
+  equal(clonedDiv.childNodes[0].nodeType, 3);
 });
 
 test('dom node has empty start text after cloning and ensuringBlankTextNode', function(){
@@ -180,14 +180,14 @@ test('dom node has empty start text after cloning and ensuringBlankTextNode', fu
 
   var clonedDiv = dom.cloneNode(div, true);
 
-  equal(clonedDiv.nodeType, Node.ELEMENT_NODE);
+  equal(clonedDiv.nodeType, 1);
   equalHTML(clonedDiv, '<div><span></span></div>');
   // IE's native cloneNode drops blank string text
   // nodes. Assert denormalizeText brings back the blank
   // text node.
   dom.repairClonedNode(clonedDiv, [0]);
   equal(clonedDiv.childNodes.length, 2);
-  equal(clonedDiv.childNodes[0].nodeType, Node.TEXT_NODE);
+  equal(clonedDiv.childNodes[0].nodeType, 3);
 });
 
 test('dom node checked after cloning and ensuringChecked', function(){

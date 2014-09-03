@@ -126,7 +126,7 @@ prototype.cloneNode = function(element, deep){
 };
 
 prototype.createMorph = function(parent, start, end, contextualElement){
-  if (!contextualElement && parent.nodeType === Node.ELEMENT_NODE) {
+  if (!contextualElement && parent.nodeType === 1) {
     contextualElement = parent;
   }
   if (!contextualElement) {
