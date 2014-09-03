@@ -1,7 +1,9 @@
 import { compile } from "../htmlbars-compiler/compiler";
+import { forEach } from "../htmlbars-compiler/utils";
 import { tokenize } from "../simple-html-tokenizer";
 import { hydrationHooks } from "../htmlbars-runtime/hooks";
 import { DOMHelper } from "../morph";
+
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace   = "http://www.w3.org/2000/svg";
@@ -84,8 +86,8 @@ function equalTokens(fragment, html) {
     }
   }
 
-  fragTokens.forEach(normalizeTokens);
-  htmlTokens.forEach(normalizeTokens);
+  forEach(fragTokens, normalizeTokens);
+  forEach(htmlTokens, normalizeTokens);
 
   deepEqual(fragTokens, htmlTokens);
 }
@@ -164,7 +166,7 @@ function shouldBeVoid(tagName) {
 test("Void elements are self-closing", function() {
   var voidElements = "area base br col command embed hr img input keygen link meta param source track wbr";
 
-  voidElements.split(" ").forEach(function(tagName) {
+  forEach(voidElements.split(" "), function(tagName) {
     shouldBeVoid(tagName);
   });
 });
@@ -728,13 +730,13 @@ test("Attribute runs can contain helpers", function() {
 
   context.url = "www.example.com";
   context.path = "yep";
-  callbacks.forEach(function(callback) { callback(); });
+  forEach(callbacks, function(callback) { callback(); });
 
   equalTokens(fragment, '<a href="http://www.example.com/yep.html/linky">linky</a>');
 
   context.url = "nope.example.com";
   context.path = "nope";
-  callbacks.forEach(function(callback) { callback(); });
+  forEach(callbacks, function(callback) { callback(); });
 
   equalTokens(fragment, '<a href="http://nope.example.com/nope.html/linky">linky</a>');
 });
