@@ -1,5 +1,6 @@
 import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
+import { forEach } from "../utils";
 import { buildHashFromAttributes } from "../html-parser/helpers";
 
 function detectIsElementChecked(element){
@@ -78,8 +79,8 @@ HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, isSi
   this.paths.push(this.currentDOMChildIndex);
   this.currentDOMChildIndex = -1;
 
-  element.attributes.forEach(this.attribute, this);
-  element.helpers.forEach(this.nodeHelper, this);
+  forEach(element.attributes, this.attribute, this);
+  forEach(element.helpers, this.nodeHelper, this);
 };
 
 HydrationOpcodeCompiler.prototype.closeElement = function(element, pos, len, isSingleRoot) {
@@ -209,7 +210,7 @@ HydrationOpcodeCompiler.prototype.INTEGER = function(integer) {
 };
 
 function processParams(compiler, params) {
-  params.forEach(function(param) {
+  forEach(params, function(param) {
     if (param.type === 'text') {
       compiler.STRING({ stringModeValue: param.chars });
     } else if (param.type) {
@@ -222,7 +223,7 @@ function processParams(compiler, params) {
 
 function processHash(compiler, hash) {
   if (hash) {
-    hash.pairs.forEach(function(pair) {
+    forEach(hash.pairs, function(pair) {
       var name = pair[0], param = pair[1];
       compiler[param.type](param);
       compiler.opcode('stackLiteral', name);

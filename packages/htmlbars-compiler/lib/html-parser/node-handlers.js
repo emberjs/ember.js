@@ -1,6 +1,7 @@
 import { BlockNode, ProgramNode, TextNode, PartialNode, appendChild, usesMorph } from "../ast";
 import { postprocessProgram } from "../html-parser/helpers";
 import { Chars } from "../html-parser/tokens";
+import { forEach } from "../utils";
 
 var nodeHandlers = {
 
@@ -52,9 +53,7 @@ var nodeHandlers = {
   content: function(content) {
     var tokens = this.tokenizer.tokenizePart(content.string);
 
-    return tokens.forEach(function(token) {
-      this.acceptToken(token);
-    }, this);
+    return forEach(tokens, this.acceptToken, this);
   },
 
   mustache: function(mustache) {

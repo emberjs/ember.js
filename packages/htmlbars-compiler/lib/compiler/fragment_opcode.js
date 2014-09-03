@@ -1,5 +1,6 @@
 import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
+import { forEach } from "../utils";
 
 function FragmentOpcodeCompiler() {
   this.opcodes = [];
@@ -25,7 +26,7 @@ FragmentOpcodeCompiler.prototype.text = function(text, childIndex, childCount, i
 
 FragmentOpcodeCompiler.prototype.openElement = function(element) {
   this.opcode('createElement', [element.tag]);
-  element.attributes.forEach(this.attribute, this);
+  forEach(element.attributes, this.attribute, this);
 };
 
 FragmentOpcodeCompiler.prototype.closeElement = function(element, childIndex, childCount, isSingleRoot) {
