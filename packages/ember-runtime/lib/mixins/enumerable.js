@@ -381,7 +381,7 @@ export default Mixin.create({
     - `index` is the current index in the iteration.
     - `enumerable` is the enumerable object itself.
 
-    It should return the `true` to include the item in the results, `false`
+    It should return `true` to include the item in the results, `false`
     otherwise.
 
     Note that in addition to a callback, you can also pass an optional target
