@@ -9,6 +9,7 @@ import EmberError from "ember-metal/error";
 import {
   isPath
 } from "ember-metal/path_cache";
+import { hasPropertyAccessors } from "ember-metal/platform";
 
 var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
 
@@ -67,7 +68,11 @@ var set = function set(obj, keyName, value, tolerant) {
       obj.setUnknownProperty(keyName, value);
     } else if (meta && meta.watching[keyName] > 0) {
       if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-        currentValue = meta.values[keyName];
+        if (hasPropertyAccessors) {
+          currentValue = meta.values[keyName];
+        } else {
+          currentValue = obj[keyName];
+        }
       } else {
         currentValue = obj[keyName];
       }
@@ -75,10 +80,14 @@ var set = function set(obj, keyName, value, tolerant) {
       if (value !== currentValue) {
         propertyWillChange(obj, keyName);
         if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-          if ((currentValue === undefined && !(keyName in obj)) || !obj.propertyIsEnumerable(keyName)) {
-            defineProperty(obj, keyName, null, value); // setup mandatory setter
+          if (hasPropertyAccessors) {
+            if ((currentValue === undefined && !(keyName in obj)) || !obj.propertyIsEnumerable(keyName)) {
+              defineProperty(obj, keyName, null, value); // setup mandatory setter
+            } else {
+              meta.values[keyName] = value;
+            }
           } else {
-            meta.values[keyName] = value;
+            obj[keyName] = value;
           }
         } else {
           obj[keyName] = value;

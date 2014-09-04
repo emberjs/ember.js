@@ -2,6 +2,7 @@ import Ember from "ember-metal/core";
 import {
   defineProperty as o_defineProperty,
   canDefineNonEnumerableProperties,
+  hasPropertyAccessors,
   create
 } from "ember-metal/platform";
 
@@ -255,7 +256,9 @@ if (!canDefineNonEnumerableProperties) {
 var EMPTY_META = new Meta(null);
 
 if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-  EMPTY_META.values = {};
+  if (hasPropertyAccessors) {
+    EMPTY_META.values = {};
+  }
 }
 
 /**
@@ -287,7 +290,9 @@ function meta(obj, writable) {
     ret = new Meta(obj);
 
     if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-      ret.values = {};
+      if (hasPropertyAccessors) {
+        ret.values = {};
+      }
     }
 
     obj['__ember_meta__'] = ret;
@@ -306,7 +311,9 @@ function meta(obj, writable) {
     ret.source    = obj;
 
     if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-      ret.values = o_create(ret.values);
+      if (hasPropertyAccessors) {
+        ret.values = o_create(ret.values);
+      }
     }
 
     obj['__ember_meta__'] = ret;

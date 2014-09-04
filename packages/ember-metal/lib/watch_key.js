@@ -3,7 +3,8 @@ import {
   meta,
   typeOf
 } from "ember-metal/utils";
-import { defineProperty as o_defineProperty } from "ember-metal/platform";
+import { defineProperty as o_defineProperty, hasPropertyAccessors } from "ember-metal/platform";
+import { MANDATORY_SETTER_FUNCTION, DEFAULT_GETTER_FUNCTION } from "ember-metal/properties";
 
 var metaFor = meta; // utils.js
 
@@ -26,26 +27,30 @@ export function watchKey(obj, keyName, meta) {
     }
 
     if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-      handleMandatorySetter(m, obj, keyName);
+      if (hasPropertyAccessors) {
+        handleMandatorySetter(m, obj, keyName);
+      }
     }
   } else {
     watching[keyName] = (watching[keyName] || 0) + 1;
   }
 }
 
-function handleMandatorySetter(m, keyName, obj) {
-  // this x in Y deopts, so keeping it in this function is better;
-  if (keyName in obj) {
-    m.values[keyName] = obj[keyName];
-    o_defineProperty(obj, keyName, {
-      configurable: true,
-      enumerable: obj.propertyIsEnumerable(keyName),
-      set: Ember.MANDATORY_SETTER_FUNCTION,
-      get: Ember.DEFAULT_GETTER_FUNCTION(keyName)
-    });
-  }
-}
 
+if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+  var handleMandatorySetter = function handleMandatorySetter(m, keyName, obj) {
+    // this x in Y deopts, so keeping it in this function is better;
+    if (keyName in obj) {
+      m.values[keyName] = obj[keyName];
+      o_defineProperty(obj, keyName, {
+        configurable: true,
+        enumerable: obj.propertyIsEnumerable(keyName),
+        set: MANDATORY_SETTER_FUNCTION,
+        get: DEFAULT_GETTER_FUNCTION(keyName)
+      });
+    }
+  };
+}
 
 export function unwatchKey(obj, keyName, meta) {
   var m = meta || metaFor(obj), watching = m.watching;
@@ -61,7 +66,7 @@ export function unwatchKey(obj, keyName, meta) {
     }
 
     if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-      if (keyName in obj) {
+      if (hasPropertyAccessors && keyName in obj) {
         o_defineProperty(obj, keyName, {
           configurable: true,
           enumerable: obj.propertyIsEnumerable(keyName),
@@ -75,7 +80,7 @@ export function unwatchKey(obj, keyName, meta) {
             });
             delete m.values[keyName];
           },
-          get: Ember.DEFAULT_GETTER_FUNCTION(keyName)
+          get: DEFAULT_GETTER_FUNCTION(keyName)
         });
       }
     }

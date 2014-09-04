@@ -9,6 +9,7 @@ import {
   isPath,
   hasThis as pathHasThis
 } from "ember-metal/path_cache";
+import { hasPropertyAccessors } from "ember-metal/platform";
 
 var FIRST_KEY = /^([^\.]+)/;
 
@@ -78,7 +79,7 @@ var get = function get(obj, keyName) {
     return desc.get(obj, keyName);
   } else {
     if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-      if (meta && meta.watching[keyName] > 0) {
+      if (hasPropertyAccessors && meta && meta.watching[keyName] > 0) {
         ret = meta.values[keyName];
       } else {
         ret = obj[keyName];
