@@ -89,7 +89,7 @@ DAG.prototype.map = function(name, value) {
 
 /**
  * Connects the vertices with the given names, adding them to the graph if
- * necesary, only if this does not produce is any circular dependency.
+ * necessary, only if this does not produce is any circular dependency.
  *
  * @private
  * @method addEdge
