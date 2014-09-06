@@ -222,8 +222,6 @@ var Route = EmberObject.extend(ActionHandler, {
   mergedProperties: ['events', 'queryParams'],
 
   /**
-
-
     Retrives parameters, for current route using the state.params
     variable and getQueryParamsFor. Using the supplied routename.
 
