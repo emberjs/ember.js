@@ -15,7 +15,7 @@ import { IS_BINDING } from "ember-metal/mixin";
 import jQuery from "ember-views/system/jquery";
 import View from "ember-views/views/view";
 import { isGlobalPath } from "ember-metal/binding";
-import merge from "ember-metal/merge";
+import keys  from 'ember-metal/keys';
 import {
   normalizePath,
   handlebarsGet,
@@ -57,92 +57,90 @@ function makeBindings(thisContext, options) {
 }
 
 export var ViewHelper = EmberObject.create({
-
   propertiesFromHTMLOptions: function(options) {
-    var hash = options.hash, data = options.data;
-    var extensions = {};
+    var hash = options.hash;
+    var data = options.data;
+    var extensions = {
+      classNameBindings: [],
+      helperName:        options.helperName || ''
+    };
     var classes = hash['class'];
-    var dup = false;
 
     if (hash.id) {
       extensions.elementId = hash.id;
-      dup = true;
     }
 
     if (hash.tag) {
       extensions.tagName = hash.tag;
-      dup = true;
     }
 
     if (classes) {
       classes = classes.split(' ');
       extensions.classNames = classes;
-      dup = true;
     }
 
     if (hash.classBinding) {
       extensions.classNameBindings = hash.classBinding.split(' ');
-      dup = true;
     }
 
     if (hash.classNameBindings) {
-      if (extensions.classNameBindings === undefined) extensions.classNameBindings = [];
       extensions.classNameBindings = extensions.classNameBindings.concat(hash.classNameBindings.split(' '));
-      dup = true;
     }
 
     if (hash.attributeBindings) {
       Ember.assert("Setting 'attributeBindings' via Handlebars is not allowed. Please subclass Ember.View and set it there instead.");
       extensions.attributeBindings = null;
-      dup = true;
-    }
-
-    if (dup) {
-      hash = merge({}, hash);
-      delete hash.id;
-      delete hash.tag;
-      delete hash['class'];
-      delete hash.classBinding;
     }
 
     // Set the proper context for all bindings passed to the helper. This applies to regular attribute bindings
     // as well as class name bindings. If the bindings are local, make them relative to the current context
     // instead of the view.
     var path;
+    var hashKeys = keys(hash);
 
-    // Evaluate the context of regular attribute bindings:
-    for (var prop in hash) {
-      if (!hash.hasOwnProperty(prop)) { continue; }
+    for (var i = 0, l = hashKeys.length; i < l; i++) {
+      var prop      = hashKeys[i];
+      var isBinding = IS_BINDING.test(prop);
+
+      if (prop !== 'classNameBindings') {
+        extensions[prop] = hash[prop];
+      }
 
       // Test if the property ends in "Binding"
-      if (IS_BINDING.test(prop) && typeof hash[prop] === 'string') {
+      if (isBinding && typeof extensions[prop] === 'string') {
         path = this.contextualizeBindingPath(hash[prop], data);
-        if (path) { hash[prop] = path; }
+        if (path) {
+          extensions[prop] = path;
+        }
       }
     }
 
     // Evaluate the context of class name bindings:
-    if (extensions.classNameBindings) {
-      for (var b in extensions.classNameBindings) {
-        var full = extensions.classNameBindings[b];
-        if (typeof full === 'string') {
-          // Contextualize the path of classNameBinding so this:
-          //
-          //     classNameBinding="isGreen:green"
-          //
-          // is converted to this:
-          //
-          //     classNameBinding="_parentView.context.isGreen:green"
-          var parsedPath = View._parsePropertyPath(full);
-          if(parsedPath.path !== '') {
-            path = this.contextualizeBindingPath(parsedPath.path, data);
-            if (path) { extensions.classNameBindings[b] = path + parsedPath.classNames; }
+    var classNameBindingsKeys = keys(extensions.classNameBindings);
+
+    for (var j = 0, k = classNameBindingsKeys.length; j < k; j++) {
+      var classKey = classNameBindingsKeys[j];
+      var full     = extensions.classNameBindings[classKey];
+
+      if (typeof full === 'string') {
+        // Contextualize the path of classNameBinding so this:
+        //
+        //     classNameBinding="isGreen:green"
+        //
+        // is converted to this:
+        //
+        //     classNameBinding="_parentView.context.isGreen:green"
+        var parsedPath = View._parsePropertyPath(full);
+        if (parsedPath.path !== '') {
+          path = this.contextualizeBindingPath(parsedPath.path, data);
+          if (path) {
+            extensions.classNameBindings[classKey] = path + parsedPath.classNames;
           }
         }
       }
     }
 
-    return merge(hash, extensions);
+    return extensions;
   },
 
   // Transform bindings from the current context to a context that can be evaluated within the view.
@@ -164,7 +162,7 @@ export var ViewHelper = EmberObject.create({
 
   helper: function(thisContext, path, options) {
     var data = options.data;
-    var fn = options.fn;
+    var fn   = options.fn;
     var newView;
 
     makeBindings(thisContext, options);
@@ -188,17 +186,12 @@ export var ViewHelper = EmberObject.create({
       viewOptions._context = thisContext;
     }
 
-    // for instrumentation
-    if (options.helperName) {
-      viewOptions.helperName = options.helperName;
-    }
-
     currentView.appendChild(newView, viewOptions);
   },
 
   instanceHelper: function(thisContext, newView, options) {
-    var data = options.data,
-        fn = options.fn;
+    var data = options.data;
+    var fn   = options.fn;
 
     makeBindings(thisContext, options);
 
@@ -220,11 +213,6 @@ export var ViewHelper = EmberObject.create({
     // no specified controller. See View#_context for more information.
     if (!newView.controller && !newView.controllerBinding && !viewOptions.controller && !viewOptions.controllerBinding) {
       viewOptions._context = thisContext;
-    }
-
-    // for instrumentation
-    if (options.helperName) {
-      viewOptions.helperName = options.helperName;
     }
 
     currentView.appendChild(newView, viewOptions);
