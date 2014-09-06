@@ -50,7 +50,8 @@ function makeBindings(thisContext, options) {
 export var ViewHelper = EmberObject.create({
 
   propertiesFromHTMLOptions: function(options) {
-    var hash = options.hash, data = options.data;
+    var hash = options.hash;
+    var data = options.data;
     var extensions = {};
     var classes = hash['class'];
     var dup = false;
