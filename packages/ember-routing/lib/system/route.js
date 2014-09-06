@@ -223,8 +223,9 @@ var Route = EmberObject.extend(ActionHandler, {
 
   /**
 
-    Retrives parameters, for current route using the state.params variable and getQueryParamsFor.
-    Using the supplied routename.
+
+    Retrives parameters, for current route using the state.params
+    variable and getQueryParamsFor. Using the supplied routename.
 
     @method paramsFor
     @param {String} routename

@@ -913,7 +913,9 @@ function linkToHelper(name) {
 }
 
 /**
-  This is a sub-expression to be used in conjunction with the link-to helper. It will supply url query parameters to the target route.
+
+  This is a sub-expression to be used in conjunction with the link-to helper.
+  It will supply url query parameters to the target route.
 
   Example
 
