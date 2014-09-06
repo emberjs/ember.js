@@ -222,7 +222,13 @@ var Route = EmberObject.extend(ActionHandler, {
   mergedProperties: ['events', 'queryParams'],
 
   /**
+
+    Retrives parameters, for current route using the state.params variable and getQueryParamsFor.
+    Using the supplied routename.
+
     @method paramsFor
+    @param {String} routename
+
   */
   paramsFor: function(name) {
     var route = this.container.lookup('route:' + name);
@@ -242,14 +248,22 @@ var Route = EmberObject.extend(ActionHandler, {
   },
 
   /**
+    Serializes the query parameter key
+
     @method serializeQueryParamKey
+    @param {String} controllerPropertyName
   */
   serializeQueryParamKey: function(controllerPropertyName) {
     return controllerPropertyName;
   },
 
   /**
+    Serializes value of the query parameter based on defaultValueType
+
     @method serializeQueryParam
+    @param {Object} value
+    @param {String} urlKey
+    @param {String} defaultValueType
   */
   serializeQueryParam: function(value, urlKey, defaultValueType) {
     // urlKey isn't used here, but anyone overriding
@@ -262,7 +276,12 @@ var Route = EmberObject.extend(ActionHandler, {
   },
 
   /**
+    Deserializes value of the query parameter based on defaultValueType
+
     @method deserializeQueryParam
+    @param {Object} value
+    @param {String} urlKey
+    @param {String} defaultValueType
   */
   deserializeQueryParam: function(value, urlKey, defaultValueType) {
     // urlKey isn't used here, but anyone overriding
