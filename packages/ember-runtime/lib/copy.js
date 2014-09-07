@@ -6,11 +6,6 @@ import Copyable from 'ember-runtime/mixins/copyable';
 function _copy(obj, deep, seen, copies) {
   var ret, loc, key;
 
-  // primitive data types are immutable, just return them.
-  if (typeof obj !== 'object' || obj === null) {
-    return obj;
-  }
-
   // avoid cyclical loops
   if (deep && (loc = indexOf(seen, obj)) >= 0) {
     return copies[loc];
@@ -77,7 +72,7 @@ function _copy(obj, deep, seen, copies) {
   @return {Object} The cloned object
 */
 export default function copy(obj, deep) {
-  // fast paths
+  // primitive data types are immutable, just return them.
   if ('object' !== typeof obj || obj === null) {
     return obj; // can't copy primitives
   }
