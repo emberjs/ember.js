@@ -23,9 +23,9 @@ ControllerMixin.reopen({
 
   /**
     Defines which query parameters the controller accepts.
-    if you give the names ['category','page'] it will bind
+    If you give the names ['category','page'] it will bind
     the values of these query parameters to the variables
-    this.category and this.page
+    `this.category` and `this.page`
 
     @property queryParams
     @public
