@@ -21,6 +21,7 @@ import {
   classify
 } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
+import Evented from "ember-runtime/mixins/evented";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import generateController from "ember-routing/system/generate_controller";
 import { stashParamNames } from "ember-routing/utils";
@@ -340,6 +341,9 @@ var Route = EmberObject.extend(ActionHandler, {
   */
   exit: function() {
     this.deactivate();
+    if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
+      this.trigger('deactivate');
+    }
     this.teardownViews();
   },
 
@@ -364,6 +368,9 @@ var Route = EmberObject.extend(ActionHandler, {
   */
   enter: function() {
     this.activate();
+    if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
+      this.trigger('activate');
+    }
   },
 
   /**
@@ -1844,6 +1851,12 @@ var Route = EmberObject.extend(ActionHandler, {
     delete this.lastRenderedTemplate;
   }
 });
+
+if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
+  // TODO add mixin directly to `Route` class definition above, once this
+  // feature is merged:
+  Route.reopen(Evented);
+}
 
 var defaultQPMeta = {
   qps: [],

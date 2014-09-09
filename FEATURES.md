@@ -68,3 +68,10 @@ for a detailed explanation.
   property of an `array controller`.
 
   Added in [#5301](https://github.com/emberjs/ember.js/pull/5301)
+
+* `ember-routing-fire-activate-deactivate-events`
+
+  Fire `activate` and `deactivate` events, additionally to the corresponding
+  `Ember.Route` hooks.
+
+  Added in [#5569](https://github.com/emberjs/ember.js/pull/5569)
