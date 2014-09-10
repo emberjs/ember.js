@@ -108,7 +108,7 @@ export function outletHelper(property, options) {
 
   viewClass = viewName ? container.lookupFactory(viewFullName) : options.hash.viewClass || OutletView;
 
-  options.data.view.set('outletSource', outletSource);
+  options.hash.outletSource = outletSource;
   options.hash.currentViewBinding = '_view.outletSource._outlets.' + property;
 
   options.helperName = options.helperName || 'outlet';

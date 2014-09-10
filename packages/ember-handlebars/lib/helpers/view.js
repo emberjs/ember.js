@@ -18,6 +18,8 @@ import {
   handlebarsGetView
 } from "ember-handlebars/ext";
 
+var SELF_BINDING = /^_view\./;
+
 function makeBindings(thisContext, options) {
   var hash = options.hash;
   var hashType = options.hashTypes;
@@ -139,9 +141,10 @@ export var ViewHelper = EmberObject.create({
 
   // Transform bindings from the current context to a context that can be evaluated within the view.
   // Returns null if the path shouldn't be changed.
-  //
-  // TODO: consider the addition of a prefix that would allow this method to return `path`.
   contextualizeBindingPath: function(path, data) {
+    if (SELF_BINDING.test(path)) {
+      return path.slice(6); // Lop off "_view."
+    }
     var normalized = normalizePath(null, path, data);
     if (normalized.isKeyword) {
       return 'templateData.keywords.' + path;

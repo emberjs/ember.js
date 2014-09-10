@@ -1014,7 +1014,6 @@ var View = CoreView.extend({
 
     var keywords = templateData ? copy(templateData.keywords) : {};
     set(keywords, 'view', this.isVirtual ? keywords.view : this);
-    set(keywords, '_view', this);
     set(keywords, 'controller', get(this, 'controller'));
 
     return keywords;
