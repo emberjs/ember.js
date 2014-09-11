@@ -820,7 +820,12 @@ export function inspect(obj) {
       v = obj[key];
       if (v === 'toString') { continue; } // ignore useless items
       if (typeOf(v) === 'function') { v = "function() { ... }"; }
-      ret.push(key + ": " + v);
+
+      if (v && typeof v.toString !== 'function') {
+        ret.push(key + ": " + toString.call(v));
+      } else {
+        ret.push(key + ": " + v);
+      }
     }
   }
   return "{" + ret.join(", ") + "}";
