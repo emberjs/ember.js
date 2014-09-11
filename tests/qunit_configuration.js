@@ -334,9 +334,11 @@
     if (expecteds === EmberDev.deprecations.NONE) {
       var actualMessages = [];
       for (var i=0;i<actuals.length;i++) {
-        actualMessages.push(actuals[i][0]);
+        if (!actuals[i][1]) {
+          actualMessages.push(actuals[i][0]);
+        }
       }
-      ok(actuals.length === 0, "Expected no deprecation calls, got "+actuals.length+": "+actualMessages.join(', '));
+      ok(actualMessages.length === 0, "Expected no deprecation calls, got "+actualMessages.length+": "+actualMessages.join(', '));
     } else {
       for (var o=0;o < expecteds.length; o++) {
         var expected = expecteds[o], match;
