@@ -1,12 +1,15 @@
 import {DOMHelper} from "../morph";
-import {equalHTML} from "../test/support/assertions";
+import {
+  equalHTML,
+  isCheckedInputHTML
+} from "../test/support/assertions";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace   = "http://www.w3.org/2000/svg";
 
 var dom;
 
-QUnit.module('htmlbars-runtime: DOM Helper', {
+QUnit.module('morph: DOM Helper', {
   setup: function() {
     dom = new DOMHelper();
   },
@@ -18,7 +21,6 @@ QUnit.module('htmlbars-runtime: DOM Helper', {
 test('#createElement', function(){
   var node = dom.createElement('div');
   equal(node.tagName, 'DIV');
-  equal(node.namespaceURI, xhtmlNamespace);
   equalHTML(node, '<div></div>');
 });
 
@@ -39,7 +41,6 @@ test('#createElement of tr with contextual table element', function(){
   var tableElement = document.createElement('table'),
       node = dom.createElement('tr');
   equal(node.tagName, 'TR');
-  equal(node.namespaceURI, xhtmlNamespace);
   equalHTML(node, '<tr></tr>');
 });
 
@@ -91,25 +92,35 @@ test('#insertMorphBefore', function(){
   equal(element.innerHTML, 'abc');
 });
 
-test('#parseHTML of tr returns a tr inside a table context', function(){
-  var tableElement = document.createElement('table'),
-      nodes = dom.parseHTML('<tr><td>Yo</td></tr>', tableElement);
-  equal(nodes[0].tagName, 'TR');
-  equal(nodes[0].namespaceURI, xhtmlNamespace);
-});
+test('#parseHTML combinations', function(){
+  var parsingCombinations = [
+    // omitted start tags
+    //
+    ['table', '<tr><td>Yo</td></tr>', 'TR'],
+    ['table', '<tbody><tr></tr></tbody>', 'TBODY'],
+    ['table', '<col></col>', 'COL'],
+    // elements with broken innerHTML in IE9 and down
+    ['select', '<option></option>', 'OPTION'],
+    ['colgroup', '<col></col>', 'COL'],
+    ['tbody', '<tr></tr>', 'TR'],
+    ['tfoot', '<tr></tr>', 'TR'],
+    ['thead', '<tr></tr>', 'TR'],
+    ['tr', '<td></td>', 'TD'],
+    ['div', '<script></script>', 'SCRIPT']
+  ];
 
-test('#parseHTML of tr inside tbody returns a tbody', function(){
-  var tableElement = document.createElement('table'),
-      nodes = dom.parseHTML('<tbody><tr></tr></tbody>', tableElement);
-  equal(nodes[0].tagName, 'TBODY');
-  equal(nodes[0].namespaceURI, xhtmlNamespace);
-});
+  var contextTag, content, expectedTagName, contextElement, nodes;
+  for (var p=0;p<parsingCombinations.length;p++) {
+    contextTag = parsingCombinations[p][0];
+    content = parsingCombinations[p][1];
+    expectedTagName = parsingCombinations[p][2];
 
-test('#parseHTML of col returns a col inside a table context', function(){
-  var tableElement = document.createElement('table'),
-      nodes = dom.parseHTML('<col></col>', tableElement);
-  equal(nodes[0].tagName, 'COL');
-  equal(nodes[0].namespaceURI, xhtmlNamespace);
+    contextElement = document.createElement(contextTag);
+    nodes = dom.parseHTML(content, contextElement);
+    equal(
+      nodes[0].tagName, expectedTagName,
+      '#parseHTML of '+content+' returns a '+expectedTagName+' inside a '+contextTag+' context' );
+  }
 });
 
 test('#parseHTML of script then tr inside table context wraps the tr in a tbody', function(){
@@ -122,34 +133,34 @@ test('#parseHTML of script then tr inside table context wraps the tr in a tbody'
   equal(nodes[1].tagName, 'TBODY');
 });
 
-test('#createElement of svg with svg namespace', function(){
-  dom.setNamespace(svgNamespace);
-  var node = dom.createElement('svg');
-  equal(node.tagName, 'svg');
-  equal(node.namespaceURI, svgNamespace);
+test('#parseHTML with retains whitespace', function(){
+  var div = document.createElement('div');
+  var nodes = dom.parseHTML('leading<script id="first"></script> <script id="second"></script><div><script></script> <script></script>, indeed.</div>', div);
+  equal(nodes[0].data, 'leading');
+  equal(nodes[1].tagName, 'SCRIPT');
+  equal(nodes[2].data, ' ');
+  equal(nodes[3].tagName, 'SCRIPT');
+  equal(nodes[4].tagName, 'DIV');
+  equal(nodes[4].childNodes[0].tagName, 'SCRIPT');
+  equal(nodes[4].childNodes[1].data, ' ');
+  equal(nodes[4].childNodes[2].tagName, 'SCRIPT');
+  equal(nodes[4].childNodes[3].data, ', indeed.');
 });
 
-test('#createElement of path with svg contextual element', function(){
-  dom.setNamespace(svgNamespace);
-  var node = dom.createElement('path');
-  equal(node.tagName, 'path');
-  equal(node.namespaceURI, svgNamespace);
+test('#parseHTML with retains whitespace of top element', function(){
+  var div = document.createElement('div');
+  var nodes = dom.parseHTML('<span>hello <script id="first"></script> yeah</span>', div);
+  equal(nodes[0].tagName, 'SPAN');
+  equalHTML(nodes, '<span>hello <script id="first"></script> yeah</span>');
 });
 
-test('#parseHTML of path with svg contextual element', function(){
-  dom.setNamespace(svgNamespace);
-  var svgElement = document.createElementNS(svgNamespace, 'svg'),
-      nodes = dom.parseHTML('<path></path>', svgElement);
-  equal(nodes[0].tagName.toLowerCase(), 'path');
-  equal(nodes[0].namespaceURI, svgNamespace);
-});
-
-test('#parseHTML of stop with linearGradient contextual element', function(){
-  dom.setNamespace(svgNamespace);
-  var svgElement = document.createElementNS(svgNamespace, 'linearGradient'),
-      nodes = dom.parseHTML('<stop />', svgElement);
-  equal(nodes[0].tagName.toLowerCase(), 'stop');
-  equal(nodes[0].namespaceURI, svgNamespace);
+test('#parseHTML with retains whitespace after script', function(){
+  var div = document.createElement('div');
+  var nodes = dom.parseHTML('<span>hello</span><script id="first"></script><span><script></script> kwoop</span>', div);
+  equal(nodes[0].tagName, 'SPAN');
+  equal(nodes[1].tagName, 'SCRIPT');
+  equal(nodes[2].tagName, 'SPAN');
+  equalHTML(nodes, '<span>hello</span><script id="first"></script><span><script></script> kwoop</span>');
 });
 
 test('#cloneNode shallow', function(){
@@ -160,7 +171,6 @@ test('#cloneNode shallow', function(){
   var node = dom.cloneNode(divElement, false);
 
   equal(node.tagName, 'DIV');
-  equal(node.namespaceURI, xhtmlNamespace);
   equalHTML(node, '<div></div>');
 });
 
@@ -172,7 +182,6 @@ test('#cloneNode deep', function(){
   var node = dom.cloneNode(divElement, true);
 
   equal(node.tagName, 'DIV');
-  equal(node.namespaceURI, xhtmlNamespace);
   equalHTML(node, '<div><span></span></div>');
 });
 
@@ -223,6 +232,54 @@ test('dom node checked after cloning and ensuringChecked', function(){
   // not the checked property of the DOM node.
   dom.repairClonedNode(clone, [], true);
 
-  equalHTML(clone, '<input checked="checked">');
+  isCheckedInputHTML(clone, '<input checked="checked">');
   ok(clone.checked, 'clone is checked');
 });
+
+if ('namespaceURI' in document.createElement('div')) {
+
+QUnit.module('morph: DOM Helper namespaces', {
+  setup: function() {
+    dom = new DOMHelper();
+  },
+  teardown: function() {
+    dom = null;
+  }
+});
+
+test('#createElement div is xhtml', function(){
+  var node = dom.createElement('div');
+  equal(node.namespaceURI, xhtmlNamespace);
+});
+
+test('#createElement of svg with svg namespace', function(){
+  dom.setNamespace(svgNamespace);
+  var node = dom.createElement('svg');
+  equal(node.tagName, 'svg');
+  equal(node.namespaceURI, svgNamespace);
+});
+
+test('#createElement of path with svg contextual element', function(){
+  dom.setNamespace(svgNamespace);
+  var node = dom.createElement('path');
+  equal(node.tagName, 'path');
+  equal(node.namespaceURI, svgNamespace);
+});
+
+test('#parseHTML of path with svg contextual element', function(){
+  dom.setNamespace(svgNamespace);
+  var svgElement = document.createElementNS(svgNamespace, 'svg'),
+      nodes = dom.parseHTML('<path></path>', svgElement);
+  equal(nodes[0].tagName.toLowerCase(), 'path');
+  equal(nodes[0].namespaceURI, svgNamespace);
+});
+
+test('#parseHTML of stop with linearGradient contextual element', function(){
+  dom.setNamespace(svgNamespace);
+  var svgElement = document.createElementNS(svgNamespace, 'linearGradient'),
+      nodes = dom.parseHTML('<stop />', svgElement);
+  equal(nodes[0].tagName.toLowerCase(), 'stop');
+  equal(nodes[0].namespaceURI, svgNamespace);
+});
+
+}
