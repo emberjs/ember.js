@@ -134,6 +134,34 @@ test("View lookup - 'fu'", function() {
   equal(jQuery('#fu').text(), 'bro');
 });
 
+test("View lookup - 'fu' when fu is a keyword", function() {
+  var FuView = viewClass({
+    elementId: "fu",
+    template: Ember.Handlebars.compile("bro")
+  });
+
+  function lookupFactory(fullName) {
+    equal(fullName, 'view:fu');
+
+    return FuView;
+  }
+
+  var container = {
+    lookupFactory: lookupFactory
+  };
+
+  view = EmberView.extend({
+    template: Ember.Handlebars.compile("{{view 'fu'}}"),
+    templateData: { keywords: {fu: 'boom!'} },
+    container: container
+  }).create();
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  equal(jQuery('#fu').text(), 'bro');
+});
+
+
 test("View lookup - view.computed", function() {
   var FuView = viewClass({
     elementId: "fu",
