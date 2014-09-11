@@ -290,8 +290,8 @@ test("The compiler can handle top-level unescaped tr", function() {
                  }, document.createElement('table'));
 
   equal(
-    fragment.childNodes[1].tagName, 'TBODY',
-    "root tr has been wrapped in tbody" );
+    fragment.childNodes[1].tagName, 'TR',
+    "root tr is present" );
 });
 
 test("The compiler can handle top-level unescaped td inside tr contextualElement", function() {
@@ -326,8 +326,8 @@ test("The compiler can handle unescaped tr in top of content", function() {
                  }, document.createElement('table'));
 
   equal(
-    fragment.childNodes[2].tagName, 'TBODY',
-    "root tr has been wrapped in tbody" );
+    fragment.childNodes[2].tagName, 'TR',
+    "root tr is present" );
 });
 
 test("The compiler can handle unescaped tr inside fragment table", function() {
@@ -348,8 +348,8 @@ test("The compiler can handle unescaped tr inside fragment table", function() {
                  }, document.createElement('div'));
 
   equal(
-    fragment.childNodes[1].tagName, 'TBODY',
-    "root tr has been wrapped in tbody" );
+    fragment.childNodes[1].tagName, 'TR',
+    "root tr is present" );
 });
 
 test("The compiler can handle simple helpers", function() {
