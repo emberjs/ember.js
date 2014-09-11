@@ -91,16 +91,37 @@ test('#insertMorphBefore', function(){
   equal(element.innerHTML, 'abc');
 });
 
-test('#parseHTML of tr with contextual table element', function(){
+test('#parseHTML of tr returns a tr inside a table context', function(){
   var tableElement = document.createElement('table'),
       nodes = dom.parseHTML('<tr><td>Yo</td></tr>', tableElement);
-  equal(nodes[0].tagName, 'TBODY');
-  equal(nodes[0].childNodes[0].tagName, 'TR');
+  equal(nodes[0].tagName, 'TR');
   equal(nodes[0].namespaceURI, xhtmlNamespace);
-  equal(nodes[0].childNodes[0].namespaceURI, xhtmlNamespace);
 });
 
-// TODO: Basic svg support
+test('#parseHTML of tr inside tbody returns a tbody', function(){
+  var tableElement = document.createElement('table'),
+      nodes = dom.parseHTML('<tbody><tr></tr></tbody>', tableElement);
+  equal(nodes[0].tagName, 'TBODY');
+  equal(nodes[0].namespaceURI, xhtmlNamespace);
+});
+
+test('#parseHTML of col returns a col inside a table context', function(){
+  var tableElement = document.createElement('table'),
+      nodes = dom.parseHTML('<col></col>', tableElement);
+  equal(nodes[0].tagName, 'COL');
+  equal(nodes[0].namespaceURI, xhtmlNamespace);
+});
+
+test('#parseHTML of script then tr inside table context wraps the tr in a tbody', function(){
+  var tableElement = document.createElement('table'),
+      nodes = dom.parseHTML('<script></script><tr><td>Yo</td></tr>', tableElement);
+  // The HTML spec suggests the first item must be the child of
+  // the omittable start tag. Here script is the first child, so no-go.
+  equal(nodes.length, 2, 'Leading script tag corrupts');
+  equal(nodes[0].tagName, 'SCRIPT');
+  equal(nodes[1].tagName, 'TBODY');
+});
+
 test('#createElement of svg with svg namespace', function(){
   dom.setNamespace(svgNamespace);
   var node = dom.createElement('svg');
