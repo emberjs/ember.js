@@ -1,5 +1,5 @@
 import Morph from "../morph/morph";
-import { equalHTML } from "../test/support/assertions";
+import { equalHTML, equalInnerHTML } from "../test/support/assertions";
 import SafeString from '../handlebars/safe-string';
 import DOMHelper from "../morph/dom-helper";
 
@@ -28,7 +28,7 @@ function morphTests(factory) {
 
     html = startHTML+'<p>updated again</p>'+endHTML;
 
-    equal(fixture.innerHTML, html);
+    equalInnerHTML(fixture, html);
   });
 
   test('updateText '+factory.name, function () {
@@ -53,7 +53,7 @@ function morphTests(factory) {
 
     html = startHTML+'updated again'+endHTML;
 
-    equal(fixture.innerHTML, html);
+    equalInnerHTML(fixture, html);
   });
 
   test('updateHTML '+factory.name, function () {
@@ -78,7 +78,7 @@ function morphTests(factory) {
 
     html = startHTML+'<p>updated</p>'+endHTML;
 
-    equal(fixture.innerHTML, html);
+    equalInnerHTML(fixture, html);
   });
 
   test('destroy '+factory.name, function () {
@@ -111,7 +111,7 @@ function morphTests(factory) {
 
     html = startHTML+endHTML;
 
-    equal(fixture.innerHTML, html);
+    equalInnerHTML(fixture, html);
   });
 
   test('update '+factory.name, function () {
@@ -257,7 +257,7 @@ function morphListTests(factory) {
     );
 
     html = startHTML+'<p>A</p><p>B</p><p>C</p><p>D</p><p>E</p><p>F</p>'+endHTML;
-    equal(fixture.innerHTML, html);
+    equalInnerHTML(fixture, html);
 
     equal(morph.morphs.length, 2);
     checkChildMorphState(morph);
@@ -265,7 +265,7 @@ function morphListTests(factory) {
     morph.replace(1,0,['between']);
 
     html = startHTML+'<p>A</p><p>B</p><p>C</p>between<p>D</p><p>E</p><p>F</p>'+endHTML;
-    equal(fixture.innerHTML, html);
+    equalInnerHTML(fixture, html);
     equal(morph.morphs.length, 3);
     checkChildMorphState(morph);
   });
