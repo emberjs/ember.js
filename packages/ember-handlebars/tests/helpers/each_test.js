@@ -9,7 +9,7 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import EmberHandlebars from "ember-handlebars-compiler";
 // import {expectAssertion} from "ember-metal/tests/debug_helpers";
 import { A } from "ember-runtime/system/native_array";
-import { default as EmberController } from "ember-runtime/controllers/controller";
+import EmberController from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import Container from "ember-runtime/system/container";
 

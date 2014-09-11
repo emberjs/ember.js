@@ -11,9 +11,9 @@ import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import controllerFor from "ember-routing/system/controller_for";
 import {
-  generateControllerFactory,
-  default as generateController
+  generateControllerFactory
 } from "ember-routing/system/generate_controller";
+import generateController from "ember-routing/system/generate_controller";
 
 var buildContainer = function(namespace) {
   var container = new Container();

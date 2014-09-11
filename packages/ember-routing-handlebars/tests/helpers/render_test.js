@@ -12,7 +12,7 @@ import {
   decamelize
 } from "ember-runtime/system/string";
 
-import { default as EmberController } from "ember-runtime/controllers/controller";
+import EmberController from "ember-runtime/controllers/controller";
 import EmberObjectController from "ember-runtime/controllers/object_controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
 
