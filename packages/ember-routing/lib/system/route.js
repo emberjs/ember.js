@@ -23,7 +23,7 @@ import {
 import EmberObject from "ember-runtime/system/object";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import generateController from "ember-routing/system/generate_controller";
-import { stashParamNames } from "ember-routing-handlebars/helpers/shared";
+import { stashParamNames } from "ember-routing/utils";
 
 /**
 @module ember

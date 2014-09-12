@@ -18,7 +18,7 @@ import {
   routeArgs,
   getActiveTargetName,
   stashParamNames
-} from "ember-routing-handlebars/helpers/shared";
+} from "ember-routing/utils";
 
 // requireModule("ember-handlebars");
 // requireModule("ember-runtime");

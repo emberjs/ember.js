@@ -11,10 +11,10 @@ import { isSimpleClick } from "ember-views/system/utils";
 import EmberComponent from "ember-views/views/component";
 import EmberHandlebars from "ember-handlebars";
 import { viewHelper } from "ember-handlebars/helpers/view";
+import { routeArgs } from "ember-routing/utils";
 import {
   resolveParams,
-  resolvePaths,
-  routeArgs
+  resolvePaths
 } from "ember-routing-handlebars/helpers/shared";
 
 /**
