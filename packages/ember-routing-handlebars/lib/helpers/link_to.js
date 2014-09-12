@@ -913,6 +913,13 @@ function linkToHelper(name) {
 }
 
 /**
+  This is a sub-expression to be used in conjunction with the link-to helper.
+  It will supply url query parameters to the target route.
+
+  Example
+
+  {{#link-to 'posts' (query-params direction="asc")}}Sort{{/link-to}}
+
   @method query-params
   @for Ember.Handlebars.helpers
   @param {Object} hash takes a hash of query parameters
