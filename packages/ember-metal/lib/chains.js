@@ -228,7 +228,13 @@ ChainNodePrototype.chain = function(key, path, src) {
 
 ChainNodePrototype.unchain = function(key, path) {
   var chains = this._chains;
-  var node = chains[key];
+  var node = chains ? chains[key] : null;
+  
+  // if we don't have a node then the chain must have already been broken.
+  // this happens with handlebars templates that refer to sub-objects.
+  if ( !node ){
+    return;
+  }
 
   // unchain rest of path first...
   if (path && path.length>1) {
