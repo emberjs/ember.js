@@ -148,7 +148,7 @@ import EmberArray from "ember-runtime/mixins/array";
   ```javascript
   var App = Ember.Application.create();
   App.ListWithNothing = Ember.CollectionView.create({
-    classNames: ['nothing']
+    classNames: ['nothing'],
     content: null,
     emptyView: Ember.View.extend({
       template: Ember.Handlebars.compile("The collection is empty")
