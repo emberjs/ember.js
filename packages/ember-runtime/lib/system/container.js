@@ -1,4 +1,4 @@
-import set from "ember-metal/property_set";
+import { set } from "ember-metal/property_set";
 
 var Container = requireModule('container')["default"];
 Container.set = set;
