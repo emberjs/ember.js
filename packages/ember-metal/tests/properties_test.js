@@ -1,9 +1,8 @@
 import Ember from 'ember-metal/core';
 import { hasPropertyAccessors } from "ember-metal/platform";
 import { computed } from 'ember-metal/computed';
-import { defineProperty,
-         deprecateProperty
-} from "ember-metal/properties";
+import { defineProperty } from "ember-metal/properties";
+import { deprecateProperty } from "ember-metal/deprecate_property";
 
 QUnit.module('Ember.defineProperty');
 
