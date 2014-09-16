@@ -4,7 +4,7 @@
   "description": "HTMLBars compiles Handlebars templates into document fragments rather than string buffers",
   "main": "index.js",
   "scripts": {
-    "postinstall": "bower update",
+    "postinstall": "bower install",
     "build": "bin/build.js",
     "pretest": "bin/build.js",
     "test": "bin/run-tests.js",
