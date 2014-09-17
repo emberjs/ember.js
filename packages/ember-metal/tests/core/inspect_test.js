@@ -1,4 +1,6 @@
 import { inspect } from "ember-metal/utils";
+import { create } from "ember-metal/platform";
+
 import Ember from 'ember-metal/core';
 
 QUnit.module("Ember.inspect");
@@ -31,6 +33,11 @@ test("object", function() {
   equal(inspect({}), "{}");
   equal(inspect({ foo: 'bar' }), "{foo: bar}");
   equal(inspect({ foo: Ember.K }), "{foo: function() { ... }}");
+});
+
+test("objects without a prototype", function() {
+  var prototypelessObj = create(null);
+  equal(inspect({ foo: prototypelessObj }), "{foo: [object Object]}");
 });
 
 test("array", function() {
