@@ -512,9 +512,10 @@ var Select = View.extend({
   selectionDidChange: observer('selection.@each', function() {
     var selection = get(this, 'selection');
     if (get(this, 'multiple')) {
-      if (!isArray(selection)) {
+      if (!selection && selection !== 0) {
+        set(this, 'selection', emberA([]));
+      } else if (!isArray(selection)) {
         set(this, 'selection', emberA([selection]));
-        return;
       }
       this._selectionDidChangeMultiple();
     } else {
@@ -530,9 +531,24 @@ var Select = View.extend({
     var selection;
 
     if (value !== selectedValue) {
-      selection = content ? content.find(function(obj) {
-        return value === (valuePath ? get(obj, valuePath) : obj);
-      }) : null;
+      if (get(this, 'multiple')) {
+        if (!value && value !== 0) {
+          value = [];
+        } else if (!isArray(value)) {
+          value = [value];
+        }
+        if (!value.length) {
+          selection = [];
+        } else {
+          selection = content ? content.filter(function(obj) {
+            return value.indexOf(valuePath ? get(obj, valuePath) : obj) >= 0;
+          }) : null;
+        }
+      } else {
+        selection = content ? content.find(function(obj) {
+          return value === (valuePath ? get(obj, valuePath) : obj);
+        }) : null;
+      }
 
       this.set('selection', selection);
     }
