@@ -359,7 +359,7 @@ export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
   init: function(items) {
     Ember.deprecate('Ember.Set is deprecated and will be removed in a future release.');
-    this._super();
+    this._super$Set_init();
     if (items) this.addObjects(items);
   },
 

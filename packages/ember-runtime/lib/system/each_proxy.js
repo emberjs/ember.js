@@ -32,7 +32,7 @@ import {
 var EachArray = EmberObject.extend(EmberArray, {
 
   init: function(content, keyName, owner) {
-    this._super();
+    this._super$eachArray_init();
     this._keyName = keyName;
     this._owner   = owner;
     this._content = content;
@@ -104,7 +104,7 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
 var EachProxy = EmberObject.extend({
 
   init: function(content) {
-    this._super();
+    this._super$eachProxy_init();
     this._content = content;
     content.addArrayObserver(this);
 

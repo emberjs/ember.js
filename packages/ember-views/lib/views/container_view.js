@@ -193,7 +193,7 @@ var ContainerView = View.extend(MutableArray, {
   },
 
   init: function() {
-    this._super();
+    this._super$ContainerView_init();
 
     var childViews = get(this, 'childViews');
 

@@ -30,7 +30,7 @@ if (!keys || !canDefineNonEnumerableProperties) {
       return;
     }
 
-    if (key === '_super') {
+    if (key === '_super' || key.indexOf('__super') > -1) {
       return;
     }
 

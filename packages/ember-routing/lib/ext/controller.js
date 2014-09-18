@@ -17,7 +17,7 @@ ControllerMixin.reopen({
   concatenatedProperties: ['queryParams', '_pCacheMeta'],
 
   init: function() {
-    this._super.apply(this, arguments);
+    this._super();
     listenForQueryParamChanges(this);
   },
 

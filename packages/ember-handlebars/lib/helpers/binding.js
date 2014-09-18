@@ -8,7 +8,7 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.warn, uuid
 
 import EmberHandlebars from "ember-handlebars-compiler";
 import { get } from "ember-metal/property_get";
-import { apply, uuid } from "ember-metal/utils";
+import { uuid } from "ember-metal/utils";
 import { fmt } from "ember-runtime/system/string";
 import { create as o_create } from "ember-metal/platform";
 import isNone from 'ember-metal/is_none';
@@ -51,7 +51,7 @@ var WithView = _HandlebarsBoundView.extend({
   init: function() {
     var controller;
 
-    apply(this, this._super, arguments);
+    this._super$withView();
 
     var keywords        = this.templateData.keywords;
     var keywordName     = this.templateHash.keywordName;
@@ -89,7 +89,7 @@ var WithView = _HandlebarsBoundView.extend({
 
   },
   willDestroy: function() {
-    this._super();
+    this._super$withView_willDestroy();
 
     if (this._generatedController) {
       this._generatedController.destroy();

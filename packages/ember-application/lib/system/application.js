@@ -261,7 +261,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     this.Router = this.defaultRouter();
 
-    this._super();
+    this._super$application_init();
 
     this.scheduleInitialize();
 
@@ -778,10 +778,10 @@ var Application = Namespace.extend(DeferredMixin, {
     @private
     @deprecated
   */
-  then: function() {
+  then: function(fulfillment, rejection, label) {
     Ember.deprecate('Do not use `.then` on an instance of Ember.Application.  Please use the `.ready` hook instead.');
 
-    this._super.apply(this, arguments);
+    this._super$application_then(fulfillment, rejection, label);
   }
 });
 

@@ -34,7 +34,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   _states: cloneStates(states),
 
   init: function() {
-    this._super();
+    this._super$CoreView_init();
     this._transitionTo('preRender');
     this._isVisible = get(this, 'isVisible');
   },
@@ -84,7 +84,7 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     @private
   */
   trigger: function() {
-    this._super.apply(this, arguments);
+    this._super$CoreView_trigger.apply(this, arguments);
     var name = arguments[0];
     var method = this[name];
     if (method) {
@@ -98,13 +98,13 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
   },
 
   has: function(name) {
-    return typeOf(this[name]) === 'function' || this._super(name);
+    return typeOf(this[name]) === 'function' || this._super$CoreView_has(name);
   },
 
   destroy: function() {
     var parent = this._parentView;
 
-    if (!this._super()) { return; }
+    if (!this._super$CoreView_destroy()) { return; }
 
 
     // destroy the element -- this will avoid each child view destroying

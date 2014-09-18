@@ -1515,7 +1515,7 @@ var View = CoreView.extend({
 
   instrumentDetails: function(hash) {
     hash.template = get(this, 'templateName');
-    this._super(hash);
+    this._super$View_instrumentDetails(hash);
   },
 
   beforeRender: function(buffer) {},
@@ -1687,7 +1687,7 @@ var View = CoreView.extend({
       this.elementId = guidFor(this);
     }
 
-    this._super();
+    this._super$View_init();
 
     // setup child views. be sure to clone the child views array first
     this._childViews = this._childViews.slice();
@@ -1777,7 +1777,7 @@ var View = CoreView.extend({
     var nonVirtualParentView = get(this, 'parentView');
     var viewName = this.viewName;
 
-    if (!this._super()) { return; }
+    if (!this._super$View_destroy()) { return; }
 
     // remove from non-virtual parent view if viewName was specified
     if (viewName && nonVirtualParentView) {
