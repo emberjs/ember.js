@@ -10,6 +10,7 @@ import Ember from 'ember-metal/core'; // ES6TODO: Ember.A
 
 import symbol from 'ember-metal/symbol';
 import { get } from 'ember-metal/property_get';
+import { peekMeta } from 'ember-metal/utils';
 import {
   computed,
   cacheFor
@@ -517,18 +518,22 @@ export default Mixin.create(Enumerable, {
 
     sendEvent(this, '@array:change', [this, startIdx, removeAmt, addAmt]);
 
+    // firstObject/lastObject change notifications
+    // The call to objectAt() should only occur if there is a cached value
     var length = get(this, 'length');
-    var cachedFirst = cacheFor(this, 'firstObject');
-    var cachedLast = cacheFor(this, 'lastObject');
-
-    if (objectAt(this, 0) !== cachedFirst) {
-      propertyWillChange(this, 'firstObject');
-      propertyDidChange(this, 'firstObject');
-    }
-
-    if (objectAt(this, length - 1) !== cachedLast) {
-      propertyWillChange(this, 'lastObject');
-      propertyDidChange(this, 'lastObject');
+    var meta = peekMeta(this);
+    var cache  = meta && meta.readableCache();
+    if (cache) {
+      if (cache['firstObject'] !== undefined &&
+        this.objectAt(0) !== cacheFor(this, 'firstObject')) {
+        propertyWillChange(this, 'firstObject');
+        propertyDidChange(this, 'firstObject');
+      }
+      if (cache['lastObject'] !== undefined &&
+        this.objectAt(length - 1) !== cacheFor(this, 'lastObject')) {
+        propertyWillChange(this, 'lastObject');
+        propertyDidChange(this, 'lastObject');
+      }
     }
 
     return this;
