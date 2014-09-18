@@ -7,6 +7,8 @@
 // HELPERS
 //
 import { symbol } from 'ember-utils';
+
+import { peekMeta } from 'ember-metal';
 import Ember, { // ES6TODO: Ember.A
   get,
   computed,
@@ -135,20 +137,21 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
 
   sendEvent(array, '@array:change', [array, startIdx, removeAmt, addAmt]);
 
-  let length = get(array, 'length');
-  let cachedFirst = cacheFor(array, 'firstObject');
-  let cachedLast = cacheFor(array, 'lastObject');
+  let meta = peekMeta(array);
+  let cache = meta && meta.readableCache();
 
-  if (objectAt(array, 0) !== cachedFirst) {
-    propertyWillChange(array, 'firstObject');
-    propertyDidChange(array, 'firstObject');
+  if (cache) {
+    if (cache.firstObject !== undefined &&
+        objectAt(array, 0) !== cacheFor.get(cache, 'firstObject')) {
+      propertyWillChange(array, 'firstObject');
+      propertyDidChange(array, 'firstObject');
+    }
+    if (cache.lastObject !== undefined &&
+        objectAt(array, get(array, 'length') - 1) !== cacheFor.get(cache, 'lastObject')) {
+      propertyWillChange(array, 'lastObject');
+      propertyDidChange(array, 'lastObject');
+    }
   }
-
-  if (objectAt(array, length - 1) !== cachedLast) {
-    propertyWillChange(array, 'lastObject');
-    propertyDidChange(array, 'lastObject');
-  }
-
   return array;
 }
 
