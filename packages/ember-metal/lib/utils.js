@@ -10,7 +10,6 @@ import {
   forEach
 } from "ember-metal/array";
 
-import keys from "ember-metal/keys";
 /**
 @module ember-metal
 */
@@ -91,10 +90,13 @@ var stringCache  = {};
   @private
   @return {String} interned version of the provided string
 */
-function intern(string) {
-  var obj = Object.create(null);
-  obj[string] = true;
-  return keys(obj)[0];
+function intern(str) {
+  var obj = {};
+  obj[str] = 1;
+  for (var key in obj) {
+    if (key === str) return key;
+  }
+  return str;
 }
 
 /**
