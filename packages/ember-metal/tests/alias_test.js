@@ -61,5 +61,5 @@ test('immediately sets up dependencies if already being watched', function() {
 test('setting alias on self should fail assertion', function() {
   expectAssertion(function() {
     defineProperty(obj, 'bar', alias('bar'));
-  }, /Setting alias on self/);
+  }, "Setting alias 'bar' on self");
 });

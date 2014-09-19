@@ -39,7 +39,7 @@ AliasedProperty.prototype.didUnwatch = function(obj, keyName) {
 };
 
 AliasedProperty.prototype.setup = function(obj, keyName) {
-  Ember.assert("Setting alias on self", this.altKey !== keyName);
+  Ember.assert("Setting alias '" + keyName + "' on self", this.altKey !== keyName);
   var m = meta(obj);
   if (m.watching[keyName]) {
     addDependentKeys(this, obj, keyName, m);
