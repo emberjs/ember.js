@@ -1624,7 +1624,7 @@ test("Route inherits model from parent route", function() {
   handleURL("/posts/3/shares/3");
 });
 
-test("Resource does not inherit model from parent resource", function() {
+test("Resource inherits model from parent resource", function() {
   expect(6);
 
   Router.map(function() {
@@ -1652,7 +1652,7 @@ test("Resource does not inherit model from parent resource", function() {
     afterModel: function(post, transition) {
       var parent_model = this.modelFor('thePost');
 
-      notEqual(post, parent_model);
+      equal(post, parent_model);
     }
   });
 

@@ -1235,7 +1235,7 @@ var Route = EmberObject.extend(ActionHandler, {
 
     if (!name && sawParams) { return copy(params); }
     else if (!name) {
-      if (transition.resolveIndex !== transition.state.handlerInfos.length-1) { return; }
+      if (transition.resolveIndex < 1) { return; }
 
       var parentModel = transition.state.handlerInfos[transition.resolveIndex-1].context;
 
