@@ -657,6 +657,18 @@ var compiledTests = concatES6(testTrees, {
   destFile: '/ember-tests.js'
 });
 
+// Take testsTrees and compile them for consumption in the browser test suite
+// to be used by production builds
+var prodCompiledTests = concatES6(testTrees, {
+  es3Safe: env !== 'development',
+  includeLoader: true,
+  inputFiles: ['**/*.js'],
+  destFile: '/ember-tests.prod.js',
+  defeatureifyOptions: {
+    environment: 'production'
+  }
+});
+
 var distTrees = [templateCompilerTree, compiledSource, compiledTests, testConfig, bowerFiles];
 
 // If you are not running in dev add Production and Minify build to distTrees.
@@ -664,6 +676,7 @@ var distTrees = [templateCompilerTree, compiledSource, compiledTests, testConfig
 // minification and defeaturification
 if (env !== 'development') {
   distTrees.push(prodCompiledSource);
+  distTrees.push(prodCompiledTests);
   distTrees.push(minCompiledSource);
   distTrees.push(buildRuntimeTree());
 }
