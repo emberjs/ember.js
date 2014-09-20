@@ -204,7 +204,22 @@ var testConfig = pickFiles('tests', {
 testConfig = replace(testConfig, {
   files: [ 'tests/ember_configuration.js' ],
   patterns: [
-    { match: /\{\{FEATURES\}\}/g, replacement: JSON.stringify(defeatureifyConfig().enabled) }
+    { match: /\{\{DEV_FEATURES\}\}/g,
+      replacement: function() {
+        var features = defeatureifyConfig().enabled;
+
+        return JSON.stringify(features);
+      }
+    },
+    { match: /\{\{PROD_FEATURES\}\}/g,
+      replacement: function() {
+        var features = defeatureifyConfig({
+          environment: 'production'
+        }).enabled;
+
+        return JSON.stringify(features);
+      }
+    },
   ]
 });
 
