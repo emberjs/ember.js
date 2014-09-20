@@ -22,13 +22,20 @@
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
 
-import { set } from "ember-metal/property_set";
 import { guidFor } from "ember-metal/utils";
 import { indexOf } from "ember-metal/array";
 import { create } from "ember-metal/platform";
 
-function copy(obj) {
-  var output = {};
+function missingFunction(fn) {
+  throw new TypeError('' + Object.prototype.toString.call(fn) + " is not a function");
+}
+
+function missingNew(name) {
+  throw new TypeError("Constructor " + name + "requires 'new'");
+}
+
+function copyNull(obj) {
+  var output = Object.create(null);
 
   for (var prop in obj) {
     // hasOwnPropery is not needed because obj is Object.create(null);
@@ -40,11 +47,11 @@ function copy(obj) {
 
 function copyMap(original, newObject) {
   var keys = original.keys.copy();
-  var values = copy(original.values);
+  var values = copyNull(original.values);
 
   newObject.keys = keys;
   newObject.values = values;
-  newObject.length = original.length;
+  newObject.size = original.size;
 
   return newObject;
 }
@@ -60,7 +67,12 @@ function copyMap(original, newObject) {
   @private
 */
 function OrderedSet() {
-  this.clear();
+
+  if (this instanceof OrderedSet) {
+    this.clear();
+  } else {
+    missingNew("OrderedSet");
+  }
 }
 
 /**
@@ -69,47 +81,77 @@ function OrderedSet() {
   @return {Ember.OrderedSet}
 */
 OrderedSet.create = function() {
-  return new OrderedSet();
+  var Constructor = this;
+
+  return new Constructor();
 };
 
 OrderedSet.prototype = {
+  constructor: OrderedSet,
   /**
     @method clear
   */
   clear: function() {
     this.presenceSet = Object.create(null);
     this.list = [];
+    this.size = 0;
   },
 
   /**
     @method add
     @param obj
+    @param guid (optional, and for internal use)
+    @return {Ember.OrderedSet}
   */
-  add: function(obj) {
-    var guid = guidFor(obj);
+  add: function(obj, _guid) {
+    var guid = _guid || guidFor(obj);
     var presenceSet = this.presenceSet;
     var list = this.list;
 
-    if (presenceSet[guid]) { return; }
+    if (presenceSet[guid]) {
+      return;
+    }
 
     presenceSet[guid] = true;
     list.push(obj);
+    this.size++;
+
+    return this;
   },
 
   /**
+    @deprecated
+
     @method remove
     @param obj
+    @param _guid (optional and for internal use only)
+    @return {Boolean}
   */
-  remove: function(obj) {
-    var guid = guidFor(obj);
+  remove: function(obj, _guid) {
+    return this['delete'](obj, _guid);
+  },
+
+  /**
+    @method delete
+    @param obj
+    @param _guid (optional and for internal use only)
+    @return {Boolean}
+  */
+  'delete': function(obj, _guid) {
+    var guid = _guid || guidFor(obj);
     var presenceSet = this.presenceSet;
     var list = this.list;
 
-    delete presenceSet[guid];
-
-    var index = indexOf.call(list, obj);
-    if (index > -1) {
-      list.splice(index, 1);
+    if (presenceSet[guid] !== undefined) {
+      delete presenceSet[guid];
+      var index = indexOf.call(list, obj);
+      if (index > -1) {
+        list.splice(index, 1);
+      }
+      this.size--;
+      return true;
+    } else {
+      return false;
     }
   },
 
@@ -118,7 +160,7 @@ OrderedSet.prototype = {
     @return {Boolean}
   */
   isEmpty: function() {
-    return this.list.length === 0;
+    return this.size === 0;
   },
 
   /**
@@ -130,7 +172,7 @@ OrderedSet.prototype = {
     var guid = guidFor(obj);
     var presenceSet = this.presenceSet;
 
-    return presenceSet[guid];
+    return !!presenceSet[guid];
   },
 
   /**
@@ -138,12 +180,19 @@ OrderedSet.prototype = {
     @param {Function} fn
     @param self
   */
-  forEach: function(fn, self) {
-    // allow mutation during iteration
-    var list = this.toArray();
+  forEach: function(fn, thisArg) {
+    var list = this.list;
+    var length = arguments.length;
+    var i;
 
-    for (var i = 0, j = list.length; i < j; i++) {
-      fn.call(self, list[i]);
+    if (length === 2) {
+      for (i = 0; i < list.length; i++) {
+        fn.call(thisArg, list[i]);
+      }
+    } else {
+      for (i = 0; i < list.length; i++) {
+        fn(list[i]);
+      }
     }
   },
 
@@ -160,9 +209,10 @@ OrderedSet.prototype = {
     @return {Ember.OrderedSet}
   */
   copy: function() {
-    var set = new OrderedSet();
+    var Constructor = this.constructor;
+    var set = new Constructor();
 
-    set.presenceSet = copy(this.presenceSet);
+    set.presenceSet = copyNull(this.presenceSet);
     set.list = this.toArray();
 
     return set;
@@ -190,8 +240,13 @@ OrderedSet.prototype = {
   @constructor
 */
 function Map() {
-  this.keys = OrderedSet.create();
-  this.values = Object.create(null);
+  if (this instanceof this.constructor) {
+    this.keys = OrderedSet.create();
+    this.values = Object.create(null);
+    this.size = 0;
+  } else {
+    missingNew("OrderedSet");
+  }
 }
 
 Ember.Map = Map;
@@ -201,18 +256,21 @@ Ember.Map = Map;
   @static
 */
 Map.create = function() {
-  return new Map();
+  var Constructor = this;
+  return new Constructor();
 };
 
 Map.prototype = {
+  constructor: Map,
+
   /**
     This property will change as the number of objects in the map changes.
 
-    @property length
+    @property size
     @type number
     @default 0
   */
-  length: 0,
+  size: 0,
 
   /**
     Retrieve the value associated with a given key.
@@ -235,18 +293,23 @@ Map.prototype = {
     @method set
     @param {*} key
     @param {*} value
+    @return {Ember.Map}
   */
   set: function(key, value) {
     var keys = this.keys;
     var values = this.values;
     var guid = guidFor(key);
 
-    keys.add(key);
+    keys.add(key, guid);
     values[guid] = value;
-    set(this, 'length', keys.list.length);
+
+    this.size = keys.size;
+
+    return this;
   },
 
   /**
+    @deprecated see delete
     Removes a value from the map for an associated key.
 
     @method remove
@@ -254,6 +317,17 @@ Map.prototype = {
     @return {Boolean} true if an item was removed, false otherwise
   */
   remove: function(key) {
+    return this['delete'](key);
+  },
+
+  /**
+    Removes a value from the map for an associated key.
+
+    @method delete
+    @param {*} key
+    @return {Boolean} true if an item was removed, false otherwise
+  */
+  'delete': function(key) {
     // don't use ES6 "delete" because it will be annoying
     // to use in browsers that are not ES6 friendly;
     var keys = this.keys;
@@ -261,9 +335,9 @@ Map.prototype = {
     var guid = guidFor(key);
 
     if (values[guid]) {
-      keys.remove(key);
+      keys.remove(key, guid);
       delete values[guid];
-      set(this, 'length', keys.list.length);
+      this.size = keys.size;
       return true;
     } else {
       return false;
@@ -278,10 +352,7 @@ Map.prototype = {
     @return {Boolean} true if the item was present, false otherwise
   */
   has: function(key) {
-    var values = this.values;
-    var guid = guidFor(key);
-
-    return !!values[guid];
+    return this.keys.has(key);
   },
 
   /**
@@ -295,14 +366,26 @@ Map.prototype = {
     @param {*} self if passed, the `this` value inside the
       callback. By default, `this` is the map.
   */
-  forEach: function(callback, self) {
-    var keys = this.keys;
-    var values = this.values;
+  forEach: function(callback, thisArg) {
+    if (typeof callback !== 'function') {
+      missingFunction(callback);
+    }
 
-    keys.forEach(function(key) {
-      var guid = guidFor(key);
-      callback.call(self, key, values[guid]);
-    });
+    var length = arguments.length;
+    var map = this;
+    var cb;
+
+    if (length === 2) {
+      cb = function(key) {
+        callback.call(thisArg, map.get(key), key);
+      };
+    } else {
+      cb = function(key) {
+        callback(map.get(key), key);
+      };
+    }
+
+    this.keys.forEach(cb);
   },
 
   /**
@@ -373,7 +456,8 @@ MapWithDefault.prototype.get = function(key) {
   @return {Ember.MapWithDefault}
 */
 MapWithDefault.prototype.copy = function() {
-  return copyMap(this, new MapWithDefault({
+  var Constructor = this.constructor;
+  return copyMap(this, new Constructor({
     defaultValue: this.defaultValue
   }));
 };
