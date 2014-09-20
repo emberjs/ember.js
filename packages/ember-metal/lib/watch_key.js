@@ -38,7 +38,7 @@ export function watchKey(obj, keyName, meta) {
 
 
 if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-  var handleMandatorySetter = function handleMandatorySetter(m, keyName, obj) {
+  var handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
     // this x in Y deopts, so keeping it in this function is better;
     if (keyName in obj) {
       m.values[keyName] = obj[keyName];

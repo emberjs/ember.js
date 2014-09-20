@@ -5,7 +5,6 @@
     testing: true
   };
   window.ENV = window.ENV || {};
-  ENV.FEATURES = {{FEATURES}};
 
   // Test for "hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed"
   ENV.EMBER_LOAD_HOOKS = ENV.EMBER_LOAD_HOOKS || {};
@@ -14,6 +13,8 @@
   ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__.push(function(object) {
     ENV.__test_hook_count__ += object;
   });
+
+  window.ENV.FEATURES = !!QUnit.urlParams.prod ? {{PROD_FEATURES}} : {{DEV_FEATURES}};
 
   // Handle extending prototypes
   ENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.extendprototypes;

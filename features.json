@@ -11,7 +11,8 @@
     "property-brace-expansion-improvement": true,
     "ember-routing-handlebars-action-with-key-code": null,
     "ember-runtime-item-controller-inline-class": null,
-    "ember-metal-injected-properties": null
+    "ember-metal-injected-properties": null,
+    "mandatory-setter": "development-only"
   },
   "debugStatements": [
     "Ember.warn",

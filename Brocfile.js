@@ -20,7 +20,13 @@ var calculateVersion = require('./lib/calculate-version');
 
 var env = process.env.EMBER_ENV || 'development';
 var disableJSHint = !!process.env.NO_JSHINT || false;
-var disableDefeatureify = !!process.env.NO_DEFEATUREIFY || env === 'development' || false;
+var disableDefeatureify;
+
+if (process.env.DEFEATUREIFY === 'true') {
+  disableDefeatureify = false;
+} else {
+  disableDefeatureify = env === 'development';
+}
 
 var generateTemplateCompiler = require('./lib/broccoli-ember-template-compiler-generator');
 var inlineTemplatePrecompiler = require('./lib/broccoli-ember-inline-template-precompiler');
@@ -43,12 +49,19 @@ function defeatureifyConfig(options) {
   var stripDebug = false;
   var options = options || {};
   var configJson = JSON.parse(fs.readFileSync("features.json").toString());
+  var features = options.features || configJson.features;
 
   if (configJson.hasOwnProperty('stripDebug')) { stripDebug = configJson.stripDebug; }
   if (options.hasOwnProperty('stripDebug')) { stripDebug = options.stripDebug; }
 
+  for (var flag in features) {
+    if (features[flag] === 'development-only') {
+      features[flag] = options.environment !== 'production';
+    }
+  }
+
   return {
-    enabled:           options.features || configJson.features,
+    enabled:           features,
     debugStatements:   options.debugStatements || configJson.debugStatements,
     namespace:         options.namespace || configJson.namespace,
     enableStripDebug:  stripDebug
@@ -191,7 +204,22 @@ var testConfig = pickFiles('tests', {
 testConfig = replace(testConfig, {
   files: [ 'tests/ember_configuration.js' ],
   patterns: [
-    { match: /\{\{FEATURES\}\}/g, replacement: JSON.stringify(defeatureifyConfig().enabled) }
+    { match: /\{\{DEV_FEATURES\}\}/g,
+      replacement: function() {
+        var features = defeatureifyConfig().enabled;
+
+        return JSON.stringify(features);
+      }
+    },
+    { match: /\{\{PROD_FEATURES\}\}/g,
+      replacement: function() {
+        var features = defeatureifyConfig({
+          environment: 'production'
+        }).enabled;
+
+        return JSON.stringify(features);
+      }
+    },
   ]
 });
 
@@ -605,7 +633,10 @@ prodCompiledSource = concatES6(prodCompiledSource, {
   vendorTrees: vendorTrees,
   inputFiles: ['**/*.js'],
   destFile: '/ember.prod.js',
-  defeatureifyOptions: {stripDebug: true}
+  defeatureifyOptions: {
+    stripDebug: true,
+    environment: 'production'
+  }
 });
 
 // Take prod output and minify.  This reduces filesize (as you'd expect)
@@ -626,6 +657,18 @@ var compiledTests = concatES6(testTrees, {
   destFile: '/ember-tests.js'
 });
 
+// Take testsTrees and compile them for consumption in the browser test suite
+// to be used by production builds
+var prodCompiledTests = concatES6(testTrees, {
+  es3Safe: env !== 'development',
+  includeLoader: true,
+  inputFiles: ['**/*.js'],
+  destFile: '/ember-tests.prod.js',
+  defeatureifyOptions: {
+    environment: 'production'
+  }
+});
+
 var distTrees = [templateCompilerTree, compiledSource, compiledTests, testConfig, bowerFiles];
 
 // If you are not running in dev add Production and Minify build to distTrees.
@@ -633,6 +676,7 @@ var distTrees = [templateCompilerTree, compiledSource, compiledTests, testConfig
 // minification and defeaturification
 if (env !== 'development') {
   distTrees.push(prodCompiledSource);
+  distTrees.push(prodCompiledTests);
   distTrees.push(minCompiledSource);
   distTrees.push(buildRuntimeTree());
 }
