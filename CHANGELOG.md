@@ -1,5 +1,19 @@
 # Ember Changelog
 
+### Ember 1.8.0-beta.2 (September, 20, 2014)
+
+* [BUGFIX] Allow for bound property {{input}} type.
+* [BUGFIX] Ensure pushUnique targetQueue is cleared by flush.
+* [BUGFIX] instrument should still call block even without subscribers.
+* [BUGFIX] Remove uneeded normalization in query param controller lookup.
+* [BUGFIX] Do not use defineProperty on each View instance.
+* [PERF] Speedup `watchKey` by preventing for in related deopt.
+* [PERF] Change `ENV.MANDATORY_SETTER` to FEATURES so it can be compiled out of production builds.
+* [PERF] Object.create(null) in Ember.inspect.
+* [PERF] Extracts computed property set into a separate function.
+* [BUGFIX] Make `GUID_KEY = intern(GUID_KEY)` actually work on ES3.
+* [BUGFIX] Ensure nested routes can inherit model from parent.
+
 ### Ember 1.8.0-beta.1 (August 20, 2014)
 
 * Remove `metamorph` in favor of `morph` package (removes the need for `<script>` tags in the DOM).
