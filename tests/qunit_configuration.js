@@ -243,7 +243,9 @@
       }
       Ember.deprecate = function(msg, test) {
         EmberDev.deprecations.actuals = EmberDev.deprecations.actuals || [];
-        EmberDev.deprecations.actuals.push([msg, test]);
+        if (!test) {
+          EmberDev.deprecations.actuals.push([msg, test]);
+        }
       };
     },
     restoreEmber: function(){
