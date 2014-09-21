@@ -1,4 +1,3 @@
-import { indexOf } from 'ember-metal/array';
 import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 
 /**
@@ -14,7 +13,11 @@ import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 var keys = Object.keys;
 
 if (!keys || !canDefineNonEnumerableProperties) {
+  var byPrototypePropertyName = Object.create(null);
+
   var prototypeProperties = [
+    '_super',
+    'constructor',
     'constructor',
     'hasOwnProperty',
     'isPrototypeOf',
@@ -23,18 +26,19 @@ if (!keys || !canDefineNonEnumerableProperties) {
     'toLocaleString',
     'toString'
   ];
+
+  for(var i =0; i< prototypeProperties.length; i++) {
+    byPrototypePropertyName[prototypeProperties[i]] = true;
+  }
+
   var pushPropertyName = function(obj, array, key) {
+    if (byPrototypePropertyName[key] === true) {
+      return;
+    }
+
     // Prevents browsers that don't respect non-enumerability from
     // copying internal Ember properties
     if (key.substring(0, 2) === '__') {
-      return;
-    }
-
-    if (key === '_super') {
-      return;
-    }
-
-    if (indexOf(array, key) >= 0) {
       return;
     }
 
@@ -56,8 +60,9 @@ if (!keys || !canDefineNonEnumerableProperties) {
     // IE8 doesn't enumerate property that named the same as prototype properties.
     for (var i = 0, l = prototypeProperties.length; i < l; i++) {
       key = prototypeProperties[i];
-
-      pushPropertyName(obj, ret, key);
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        ret.push(key);
+      }
     }
 
     return ret;
