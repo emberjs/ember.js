@@ -177,7 +177,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   },
 
   arrangedContentDidChange: function() {
-    this._super();
+    this._super$arraController_arrangedContentDidChange();
     this._resetSubControllers();
   },
 
@@ -199,11 +199,11 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
     // The shadow array of subcontrollers must be updated before we trigger
     // observers, otherwise observers will get the wrong subcontainer when
     // calling `objectAt`
-    this._super(idx, removedCnt, addedCnt);
+    this._super$arrayController_arrayContentDidChange(idx, removedCnt, addedCnt);
   },
 
   init: function() {
-    this._super();
+    this._super$arrayController_init();
     this._subControllers = [];
   },
 
@@ -301,6 +301,6 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
 
   willDestroy: function() {
     this._resetSubControllers();
-    this._super();
+    this._super$arrayController_willDestroy();
   }
 });

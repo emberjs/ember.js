@@ -363,7 +363,7 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
   },
 
   init: function() {
-    this._super();
+    this._super$arrayProxy_init();
     this._setupContent();
     this._setupArrangedContent();
   },

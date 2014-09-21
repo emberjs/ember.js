@@ -17,7 +17,7 @@ EmberView.reopen({
    */
   init: function() {
     set(this, '_outlets', {});
-    this._super();
+    this._super$routingView_init();
   },
 
   /**

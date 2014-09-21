@@ -227,7 +227,7 @@ var CollectionView = ContainerView.extend({
     @method init
   */
   init: function() {
-    var ret = this._super();
+    var ret = this._super$CollectionView_init();
     this._contentDidChange();
     return ret;
   },
@@ -284,7 +284,7 @@ var CollectionView = ContainerView.extend({
     @method destroy
   */
   destroy: function() {
-    if (!this._super()) { return; }
+    if (!this._super$CollectionView_destroy()) { return; }
 
     var content = get(this, 'content');
     if (content) { content.removeArrayObserver(this); }
@@ -400,7 +400,7 @@ var CollectionView = ContainerView.extend({
     @return {Ember.View} new instance
   */
   createChildView: function(view, attrs) {
-    view = this._super(view, attrs);
+    view = this._super$CollectionView_createChildView(view, attrs);
 
     var itemTagName = get(view, 'tagName');
 

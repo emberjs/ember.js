@@ -62,7 +62,7 @@ var EachView = CollectionView.extend(_Metamorph, {
       });
     }
 
-    return this._super();
+    return this._super$eachView_init();
   },
 
   _assertArrayLike: function(content) {
@@ -89,7 +89,7 @@ var EachView = CollectionView.extend(_Metamorph, {
   emptyViewClass: _MetamorphView,
 
   createChildView: function(view, attrs) {
-    view = this._super(view, attrs);
+    view = this._super$eachView_createChildView(view, attrs);
 
     // At the moment, if a container view subclass wants
     // to insert keywords, it is responsible for cloning
@@ -119,7 +119,7 @@ var EachView = CollectionView.extend(_Metamorph, {
   },
 
   destroy: function() {
-    if (!this._super()) { return; }
+    if (!this._super$eachView_destroy()) { return; }
 
     var arrayController = get(this, '_arrayController');
 

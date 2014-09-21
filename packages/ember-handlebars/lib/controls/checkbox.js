@@ -56,12 +56,12 @@ export default View.extend({
   indeterminate: false,
 
   init: function() {
-    this._super();
+    this._super$checkBox_init();
     this.on('change', this, this._updateElementValue);
   },
 
   didInsertElement: function() {
-    this._super();
+    this._super$checkBox_didInsertElement();
     get(this, 'element').indeterminate = !!get(this, 'indeterminate');
   },
 

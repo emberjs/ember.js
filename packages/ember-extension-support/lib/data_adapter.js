@@ -55,7 +55,7 @@ import Application from "ember-application/system/application";
 */
 export default EmberObject.extend({
   init: function() {
-    this._super();
+    this._super$dataAdapter_init();
     this.releaseMethods = emberA();
   },
 
@@ -230,7 +230,7 @@ export default EmberObject.extend({
     @method willDestroy
   */
   willDestroy: function() {
-    this._super();
+    this._super$dataAdapter_willDestroy();
     this.releaseMethods.forEach(function(fn) {
       fn();
     });

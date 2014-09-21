@@ -45,7 +45,7 @@ export default Component.extend(TextSupport, {
   }),
 
   init: function() {
-    this._super();
+    this._super$textArea_init();
     this.on("didInsertElement", this, this._updateElementValue);
   }
 });

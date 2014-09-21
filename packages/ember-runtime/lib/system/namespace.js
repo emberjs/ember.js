@@ -61,7 +61,7 @@ var Namespace = EmberObject.extend({
       delete Namespace.NAMESPACES_BY_ID[toString];
     }
     namespaces.splice(indexOf.call(namespaces, this), 1);
-    this._super();
+    this._super$namespace_destroy();
   }
 });
 

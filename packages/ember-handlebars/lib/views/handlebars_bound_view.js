@@ -333,7 +333,7 @@ var _HandlebarsBoundView = _MetamorphView.extend({
       set(this, 'template', function() { return ''; });
     }
 
-    return this._super(buffer);
+    return this._super$handlebarsBoundView_render(buffer);
   }
 });
 

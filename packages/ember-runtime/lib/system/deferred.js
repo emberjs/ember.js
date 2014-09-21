@@ -5,7 +5,7 @@ import EmberObject from "ember-runtime/system/object";
 var Deferred = EmberObject.extend(DeferredMixin, {
   init: function() {
     Ember.deprecate('Usage of Ember.Deferred is deprecated.');
-    this._super();
+    this._super$deferred_init();
   }
 });
 

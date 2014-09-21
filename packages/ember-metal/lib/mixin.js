@@ -164,14 +164,37 @@ function giveMethodSuper(obj, key, method, values, descs) {
   }
 
   var hasSuper = method.__hasSuper;
+  var methodToString;
+  var superName;
 
   if (hasSuper === undefined) {
-    hasSuper = method.toString().indexOf('_super') > -1;
+    methodToString = method.toString();
+    hasSuper = methodToString.indexOf('_super') > -1;
+
+    if (hasSuper) {
+      var match = methodToString.match(/(_super\$\w+)/);
+      if (match) {
+        superName = match[0];
+      }
+    }
+
     method.__hasSuper = hasSuper;
   }
 
   if (hasSuper) {
-    return wrap(method, superMethod);
+    if (superName) {
+      if (obj[superName] === undefined) {
+        Ember.defineProperty(obj, superName, {
+         value: superMethod,
+         enumerable: false
+        });
+      } else {
+        throw new Error('Conflicting super');
+      }
+      return method;
+    } else {
+      return wrap(method, superMethod);
+    }
   } else {
     return method;
   }
