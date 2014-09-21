@@ -116,12 +116,31 @@ function testMap(nameAndFunc) {
     map.set(number, "winning");
     map.set(string, "winning");
 
-    map.remove(object);
-    map.remove(number);
-    map.remove(string);
+    expectDeprecation(function() {
+      map.remove(object);
+      map.remove(number);
+      map.remove(string);
+
+      // doesn't explode
+      map.remove({});
+    }, 'Calling `Map.prototype.remove` has been deprecated, please use `Map.prototype.delete` instead.');
+
+    mapHasEntries([]);
+  });
+
+  test("delete", function() {
+    expectNoDeprecation();
+
+    map.set(object, "winning");
+    map.set(number, "winning");
+    map.set(string, "winning");
+
+    map.delete(object);
+    map.delete(number);
+    map.delete(string);
 
     // doesn't explode
-    map.remove({});
+    map.delete({});
 
     mapHasEntries([]);
   });
@@ -150,16 +169,16 @@ function testMap(nameAndFunc) {
     ], map2);
   });
 
-  test("copy and then remove", function() {
+  test("copy and then delete", function() {
     map.set(object, "winning");
     map.set(number, "winning");
     map.set(string, "winning");
 
     var map2 = map.copy();
 
-    map2.remove(object);
-    map2.remove(number);
-    map2.remove(string);
+    map2.delete(object);
+    map2.delete(number);
+    map2.delete(string);
 
     mapHasEntries([
       [ object, "winning" ],
@@ -168,6 +187,41 @@ function testMap(nameAndFunc) {
     ]);
 
     mapHasEntries([ ], map2);
+  });
+
+  test("length", function() {
+    expectDeprecation('Usage of `length` is deprecated, use `size` instead.');
+
+    //Add a key twice
+    equal(map.length, 0);
+    map.set(string, "a string");
+    equal(map.length, 1);
+    map.set(string, "the same string");
+    equal(map.length, 1);
+
+    //Add another
+    map.set(number, "a number");
+    equal(map.length, 2);
+
+    //Remove one that doesn't exist
+    map.delete('does not exist');
+    equal(map.length, 2);
+
+    //Check copy
+    var copy = map.copy();
+    equal(copy.length, 2);
+
+    //Remove a key twice
+    map.delete(number);
+    equal(map.length, 1);
+    map.delete(number);
+    equal(map.length, 1);
+
+    //Remove the last key
+    map.delete(string);
+    equal(map.length, 0);
+    map.delete(string);
+    equal(map.length, 0);
   });
 
   test("size", function() {
@@ -183,7 +237,7 @@ function testMap(nameAndFunc) {
     equal(map.size, 2);
 
     //Remove one that doesn't exist
-    map.remove('does not exist');
+    map.delete('does not exist');
     equal(map.size, 2);
 
     //Check copy
@@ -191,15 +245,15 @@ function testMap(nameAndFunc) {
     equal(copy.size, 2);
 
     //Remove a key twice
-    map.remove(number);
+    map.delete(number);
     equal(map.size, 1);
-    map.remove(number);
+    map.delete(number);
     equal(map.size, 1);
 
     //Remove the last key
-    map.remove(string);
+    map.delete(string);
     equal(map.size, 0);
-    map.remove(string);
+    map.delete(string);
     equal(map.size, 0);
   });
 

@@ -23,6 +23,7 @@
 import { guidFor } from "ember-metal/utils";
 import { indexOf } from "ember-metal/array";
 import { create } from "ember-metal/platform";
+import { deprecateProperty } from "ember-metal/deprecate_property";
 
 function missingFunction(fn) {
   throw new TypeError('' + Object.prototype.toString.call(fn) + " is not a function");
@@ -68,6 +69,7 @@ function OrderedSet() {
 
   if (this instanceof OrderedSet) {
     this.clear();
+    this._silenceRemoveDeprecation = false;
   } else {
     missingNew("OrderedSet");
   }
@@ -126,6 +128,8 @@ OrderedSet.prototype = {
     @return {Boolean}
   */
   remove: function(obj, _guid) {
+    Ember.deprecate('Calling `OrderedSet.prototype.remove` has been deprecated, please use `OrderedSet.prototype.delete` instead.', this._silenceRemoveDeprecation);
+
     return this['delete'](obj, _guid);
   },
 
@@ -210,12 +214,15 @@ OrderedSet.prototype = {
     var Constructor = this.constructor;
     var set = new Constructor();
 
+    set._silenceRemoveDeprecation = this._silenceRemoveDeprecation;
     set.presenceSet = copyNull(this.presenceSet);
     set.list = this.toArray();
 
     return set;
   }
 };
+
+deprecateProperty(OrderedSet.prototype, 'length', 'size');
 
 /**
   A Map stores values indexed by keys. Unlike JavaScript's
@@ -240,6 +247,7 @@ OrderedSet.prototype = {
 function Map() {
   if (this instanceof this.constructor) {
     this.keys = OrderedSet.create();
+    this.keys._silenceRemoveDeprecation = true;
     this.values = Object.create(null);
     this.size = 0;
   } else {
@@ -315,6 +323,8 @@ Map.prototype = {
     @return {Boolean} true if an item was removed, false otherwise
   */
   remove: function(key) {
+    Ember.deprecate('Calling `Map.prototype.remove` has been deprecated, please use `Map.prototype.delete` instead.');
+
     return this['delete'](key);
   },
 
@@ -403,6 +413,8 @@ Map.prototype = {
     return copyMap(this, new Map());
   }
 };
+
+deprecateProperty(Map.prototype, 'length', 'size');
 
 /**
   @class MapWithDefault
