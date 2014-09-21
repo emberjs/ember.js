@@ -244,7 +244,7 @@ Binding.prototype = {
     var fromPath = this._from;
     var toPath = this._to;
 
-    directionMap.remove(obj);
+    directionMap.delete(obj);
 
     // if we're synchronizing from the remote object...
     if (direction === 'fwd') {
