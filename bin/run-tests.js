@@ -95,6 +95,9 @@ function generateBuiltTests() {
   testFunctions.push(function() {
     return run('skipPackage=container,ember-testing&dist=prod&prod=true');
   });
+  testFunctions.push(function() {
+    return run('skipPackage=container,ember-testing&enableoptionalfeatures=true&dist=prod&prod=true');
+  });
 }
 
 function generateOldJQueryTests() {
