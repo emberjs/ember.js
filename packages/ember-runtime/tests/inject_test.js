@@ -1,3 +1,5 @@
+/* global EmberDev */
+
 import InjectedProperty from "ember-metal/injected_property";
 import {
   createInjectionHelper,
@@ -10,26 +12,30 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   QUnit.module('inject');
 
   test("calling `inject` directly should error", function() {
-    throws(function() {
+    expectAssertion(function() {
       inject('foo');
     }, /Injected properties must be created through helpers/);
   });
 
-  test("injection type validation function is run once at mixin time", function() {
-    expect(1);
+  if (!EmberDev.runningProdBuild) {
+    // this check is done via an assertion which is stripped from
+    // production builds
+    test("injection type validation function is run once at mixin time", function() {
+      expect(1);
 
-    createInjectionHelper('foo', function() {
-      ok(true, 'should call validation function');
+      createInjectionHelper('foo', function() {
+        ok(true, 'should call validation function');
+      });
+
+      var AnObject = Object.extend({
+        bar: inject.foo(),
+        baz: inject.foo()
+      });
+
+      // Prototype chains are lazy, make sure it's evaluated
+      AnObject.proto();
     });
-
-    var AnObject = Object.extend({
-      bar: inject.foo(),
-      baz: inject.foo()
-    });
-
-    // Prototype chains are lazy, make sure it's evaluated
-    AnObject.proto();
-  });
+  }
 
   test("attempting to inject a nonexistent container key should error", function() {
     var container = new Container();
