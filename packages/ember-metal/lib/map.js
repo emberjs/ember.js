@@ -481,6 +481,7 @@ MapWithDefault.prototype.copy = function() {
   }));
 };
 
+export default Map;
 export {
   OrderedSet,
   Map,
