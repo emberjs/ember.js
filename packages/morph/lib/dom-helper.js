@@ -180,9 +180,6 @@ prototype.createMorph = function(parent, start, end, contextualElement){
   if (!contextualElement && parent.nodeType === 1) {
     contextualElement = parent;
   }
-  if (!contextualElement) {
-    contextualElement = this.document.body;
-  }
   return new Morph(parent, start, end, this, contextualElement);
 };
 

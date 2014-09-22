@@ -43,7 +43,7 @@ function lookupHelper(helperName, context, options) {
 
 function compilesTo(html, expected, context) {
   var template = compile(html);
-  var fragment = template(context, env);
+  var fragment = template(context, env, document.body);
   equalTokens(fragment, expected === undefined ? html : expected);
   return fragment;
 }
@@ -861,7 +861,7 @@ test("Node helpers can be used for attribute bindings", function() {
 
 test('Web components - Called as helpers', function () {
   registerHelper('x-append', function(params, options, env) {
-    var fragment = options.render(options.context, env);
+    var fragment = options.render(options.context, env, options.morph.contextualElement);
     fragment.appendChild(document.createTextNode(options.hash.text));
     return fragment;
   });
@@ -973,7 +973,7 @@ test("The compiler preserves capitalization of tags", function() {
 test("svg can live with hydration", function() {
   var template = compile('<svg></svg>{{name}}');
 
-  var fragment = template({ name: 'Milly' }, env);
+  var fragment = template({ name: 'Milly' }, env, document.body);
   equal(
     fragment.childNodes[0].namespaceURI, svgNamespace,
     "svg namespace inside a block is present" );
@@ -1011,13 +1011,13 @@ test("Block helper allows interior namespace", function() {
   };
   var template = compile('{{#testing}}<svg></svg>{{else}}<div><svg></svg></div>{{/testing}}');
 
-  var fragment = template({ isTrue: true }, env);
+  var fragment = template({ isTrue: true }, env, document.body);
   equal(
     fragment.childNodes[1].namespaceURI, svgNamespace,
     "svg namespace inside a block is present" );
 
   isTrue = false;
-  fragment = template({ isTrue: false }, env);
+  fragment = template({ isTrue: false }, env, document.body);
   equal(
     fragment.childNodes[1].namespaceURI, xhtmlNamespace,
     "inverse block path has a normal namespace");

@@ -51,9 +51,6 @@ test('#createMorph has optional contextualElement', function(){
       end = document.createTextNode(''),
       morph, thrown;
 
-  morph = dom.createMorph(fragment, start, end);
-  equal(morph.contextualElement, document.body, "morph's body is default contextualElement with fragment parent");
-
   try {
     morph = dom.createMorph(fragment, start, end, fragment);
   } catch(e) {
