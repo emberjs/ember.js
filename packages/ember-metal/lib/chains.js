@@ -324,12 +324,26 @@ ChainNodePrototype.didChange = function(events) {
 
 export function finishChains(obj) {
   // We only create meta if we really have to
-  var m = obj['__ember_meta__'], chains = m && m.chains;
-  if (chains) {
-    if (chains.value() !== obj) {
+  var m = obj['__ember_meta__'],
+    chains, chainWatchers, chainNodes;
+  if (m) {
+    // finish any current chains node watchers that reference obj
+    chainWatchers = m.chainWatchers;
+    if (chainWatchers) {
+      for(var key in chainWatchers) {
+        if (!chainWatchers.hasOwnProperty(key)) { continue; }
+        chainNodes = chainWatchers[key];
+        if (chainNodes) {
+          for (var i=0,l=chainNodes.length;i<l;i++) {
+            chainNodes[i].didChange(null);
+          }
+        }
+      }
+    }
+    // copy chains from prototype
+    chains = m.chains;
+    if (chains && chains.value() !== obj) {
       metaFor(obj).chains = chains = chains.copy(obj);
-    } else {
-      chains.didChange(null);
     }
   }
 }
