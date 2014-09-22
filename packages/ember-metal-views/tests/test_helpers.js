@@ -46,7 +46,7 @@ MetalRenderer.prototype.createElement = function (view) {
     }
   }
   if (view.childViews) {
-    view._childViewsMorph = this._dom.createMorph(el, null, null);
+    view._childViewsMorph = this._dom.createMorph(el, null, null, el);
   } else if (view.textContent) {
     el.textContent = view.textContent;
   } else if (view.innerHTML) {

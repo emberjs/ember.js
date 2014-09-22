@@ -226,7 +226,7 @@ test("should read from a global-ish simple local path without deprecation", func
     template: EmberHandlebars.compile('{{NotGlobal}}')
   });
 
-  expectNoDeprecation();
+  expectNoDeprecation(/Global lookup/);
   appendView();
 
   equal(view.$().text(), 'Gwar');
