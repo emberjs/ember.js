@@ -173,6 +173,8 @@ OrderedSet.prototype = {
     @return {Boolean}
   */
   has: function(obj) {
+    if (this.size === 0) { return; }
+
     var guid = guidFor(obj);
     var presenceSet = this.presenceSet;
 
@@ -185,6 +187,8 @@ OrderedSet.prototype = {
     @param self
   */
   forEach: function(fn, thisArg) {
+    if (this.size === 0) { return; }
+
     var list = this.list;
     var length = arguments.length;
     var i;
@@ -219,6 +223,7 @@ OrderedSet.prototype = {
     set._silenceRemoveDeprecation = this._silenceRemoveDeprecation;
     set.presenceSet = copyNull(this.presenceSet);
     set.list = this.toArray();
+    set.size = this.size;
 
     return set;
   }
@@ -288,6 +293,8 @@ Map.prototype = {
     @return {*} the value associated with the key, or `undefined`
   */
   get: function(key) {
+    if (this.size === 0) { return; }
+
     var values = this.values;
     var guid = guidFor(key);
 
@@ -338,6 +345,7 @@ Map.prototype = {
     @return {Boolean} true if an item was removed, false otherwise
   */
   'delete': function(key) {
+    if (this.size === 0) { return false; }
     // don't use ES6 "delete" because it will be annoying
     // to use in browsers that are not ES6 friendly;
     var keys = this.keys;
@@ -362,6 +370,7 @@ Map.prototype = {
     @return {Boolean} true if the item was present, false otherwise
   */
   has: function(key) {
+    if (this.size === 0) { return; }
     return this.keys.has(key);
   },
 
@@ -380,6 +389,8 @@ Map.prototype = {
     if (typeof callback !== 'function') {
       missingFunction(callback);
     }
+
+    if (this.size === 0) { return; }
 
     var length = arguments.length;
     var map = this;
@@ -475,6 +486,7 @@ MapWithDefault.prototype.copy = function() {
 };
 
 export default Map;
+
 export {
   OrderedSet,
   Map,
