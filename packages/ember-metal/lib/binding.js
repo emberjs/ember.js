@@ -2,7 +2,7 @@ import Ember from "ember-metal/core"; // Ember.Logger, Ember.LOG_BINDINGS, asser
 import { get } from "ember-metal/property_get";
 import { trySet } from "ember-metal/property_set";
 import { guidFor } from "ember-metal/utils";
-import { Map } from "ember-metal/map";
+import Map from "ember-metal/map";
 import {
   addObserver,
   removeObserver,
@@ -58,7 +58,7 @@ function Binding(toPath, fromPath) {
   this._direction = 'fwd';
   this._from = fromPath;
   this._to   = toPath;
-  this._directionMap = Map.create();
+  this._directionMap = new Map();
   this._readyToSync = undefined;
   this._oneWay = undefined;
 }
