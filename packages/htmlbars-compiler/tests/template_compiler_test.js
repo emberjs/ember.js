@@ -12,7 +12,7 @@ var hooks = {
     if (helperName === 'if') {
       if (context[params[0]]) {
         options.hooks = this;
-        morph.update(options.render(context, env));
+        morph.update(options.render(context, env, morph.contextualElement));
       }
       return;
     }
@@ -32,7 +32,8 @@ test("it works", function testFunction() {
   };
   var frag = template(
     { working: true, firstName: 'Kris', lastName: 'Selden' },
-    env
+    env,
+    document.body
   );
   equalHTML(frag, '<div>Hello Kris Selden!</div>');
 });
