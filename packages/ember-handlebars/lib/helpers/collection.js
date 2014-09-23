@@ -16,9 +16,9 @@ import { get } from "ember-metal/property_get";
 import { handlebarsGetView } from "ember-handlebars/ext";
 import { ViewHelper } from "ember-handlebars/helpers/view";
 import { computed } from "ember-metal/computed";
+import alias from "ember-metal/alias";
 import CollectionView from "ember-views/views/collection_view";
 
-var alias = computed.alias;
 /**
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
   `Ember.CollectionView` to a template. See [Ember.CollectionView](/api/classes/Ember.CollectionView.html)
