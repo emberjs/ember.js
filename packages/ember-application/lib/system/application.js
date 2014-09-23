@@ -21,7 +21,6 @@ import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import SelectView from "ember-handlebars/controls/select";
 import EventDispatcher from "ember-views/system/event_dispatcher";
-//import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
 import jQuery from "ember-views/system/jquery";
 import Route from "ember-routing/system/route";
 import Router from "ember-routing/system/router";
@@ -31,12 +30,18 @@ import AutoLocation from "ember-routing/location/auto_location";
 import NoneLocation from "ember-routing/location/none_location";
 import BucketCache from "ember-routing/system/cache";
 
+// this is technically incorrect (per @wycats)
+// it should work properly with:
+// `import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';` but
+// es6-module-transpiler 0.4.0 eagerly grabs the module (which is undefined)
+
+module ContainerDebugAdapterModule from "ember-extension-support/container_debug_adapter";
+
 import {
   K
 } from 'ember-metal/core';
 import EmberHandlebars from "ember-handlebars-compiler";
 
-var ContainerDebugAdapter;
 function props(obj) {
   var properties = [];
 
@@ -1000,9 +1005,7 @@ Application.reopenClass({
     container.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
     // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
-    // ES6TODO: resolve this via import once ember-application package is ES6'ed
-    if (!ContainerDebugAdapter) { ContainerDebugAdapter = requireModule('ember-extension-support/container_debug_adapter')['default']; }
-    container.register('container-debug-adapter:main', ContainerDebugAdapter);
+    container.register('container-debug-adapter:main', ContainerDebugAdapterModule['default']);
 
     return container;
   }

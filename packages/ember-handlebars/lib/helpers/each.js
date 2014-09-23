@@ -7,7 +7,6 @@ import Ember from "ember-metal/core"; // Ember.assert;, Ember.K
 var K = Ember.K;
 
 import EmberHandlebars from "ember-handlebars-compiler";
-var helpers = EmberHandlebars.helpers;
 
 import { fmt } from "ember-runtime/system/string";
 import { get } from "ember-metal/property_get";
@@ -477,7 +476,7 @@ function eachHelper(path, options) {
   if (options.data.insideGroup && !options.hash.groupedRows && !options.hash.itemViewClass) {
     new GroupedEach(ctx, path, options).render();
   } else {
-    return helpers.collection.call(ctx, EmberHandlebars.EachView, options);
+    return EmberHandlebars.helpers.collection.call(ctx, EmberHandlebars.EachView, options);
   }
 }
 

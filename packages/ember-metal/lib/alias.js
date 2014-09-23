@@ -11,7 +11,7 @@ import {
   removeDependentKeys
 } from "ember-metal/dependent_keys";
 
-export function alias(altKey) {
+export default function alias(altKey) {
   return new AliasedProperty(altKey);
 }
 

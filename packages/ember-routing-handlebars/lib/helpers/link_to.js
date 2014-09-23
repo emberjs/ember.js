@@ -17,14 +17,14 @@ import {
   resolvePaths
 } from "ember-routing-handlebars/helpers/shared";
 
+import 'ember-handlebars';
+
 /**
 @module ember
 @submodule ember-routing
 */
 
 var slice = [].slice;
-
-requireModule('ember-handlebars');
 
 var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
   var req = 0;

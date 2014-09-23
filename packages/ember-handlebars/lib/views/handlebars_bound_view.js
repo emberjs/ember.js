@@ -7,7 +7,6 @@
 */
 
 import EmberHandlebars from "ember-handlebars-compiler"; // EmberHandlebars.SafeString;
-var SafeString = EmberHandlebars.SafeString;
 
 import Ember from "ember-metal/core"; // Ember.K
 var K = Ember.K;
@@ -19,9 +18,8 @@ import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
 import {
   cloneStates,
-  states
+  states as viewStates
 } from "ember-views/views/states";
-var viewStates = states;
 
 import _MetamorphView from "ember-handlebars/views/metamorph_view";
 import { handlebarsGet } from "ember-handlebars/ext";
@@ -80,8 +78,8 @@ SimpleHandlebarsView.prototype = {
 
     if (result === null || result === undefined) {
       result = "";
-    } else if (!escape && !(result instanceof SafeString)) {
-      result = new SafeString(result);
+    } else if (!escape && !(result instanceof EmberHandlebars.SafeString)) {
+      result = new EmberHandlebars.SafeString(result);
     }
 
     return result;
@@ -111,7 +109,7 @@ SimpleHandlebarsView.prototype = {
   update: function () {
     this.updateId = null;
     var value = this.normalizedValue();
-    // doesn't diff SafeString instances
+    // doesn't diff EmberHandlebars.SafeString instances
     if (value !== this._lastNormalizedValue) {
       this._lastNormalizedValue = value;
       this._morph.update(value);
@@ -123,7 +121,7 @@ SimpleHandlebarsView.prototype = {
   }
 };
 
-states = cloneStates(viewStates);
+var states = cloneStates(viewStates);
 
 merge(states._default, {
   rerenderIfNeeded: K
@@ -312,7 +310,7 @@ var _HandlebarsBoundView = _MetamorphView.extend({
         // expression to the render context and return.
           if (result === null || result === undefined) {
             result = "";
-          } else if (!(result instanceof SafeString)) {
+          } else if (!(result instanceof EmberHandlebars.SafeString)) {
             result = String(result);
           }
 

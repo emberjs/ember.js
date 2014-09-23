@@ -3,7 +3,7 @@
 */
 import Ember from "ember-metal/core";
 import {
-  meta,
+  meta as metaFor,
   tryFinally,
   apply,
   applyStr
@@ -11,7 +11,6 @@ import {
 import { create } from "ember-metal/platform";
 
 var a_slice = [].slice;
-var metaFor = meta;
 
 /* listener flags */
 var ONCE = 1;

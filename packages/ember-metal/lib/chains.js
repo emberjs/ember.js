@@ -1,10 +1,9 @@
 import Ember from "ember-metal/core"; // warn, assert, etc;
 import {get, normalizeTuple} from "ember-metal/property_get";
-import {meta} from "ember-metal/utils";
+import {meta as metaFor} from "ember-metal/utils";
 import {forEach} from "ember-metal/array";
 import {watchKey, unwatchKey} from "ember-metal/watch_key";
 
-var metaFor = meta;
 var warn = Ember.warn;
 var FIRST_KEY = /^([^\.]+)/;
 

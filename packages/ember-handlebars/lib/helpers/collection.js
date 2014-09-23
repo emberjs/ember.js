@@ -9,16 +9,14 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
     // emberDeprecate = Ember.deprecate;
 
 import EmberHandlebars from "ember-handlebars-compiler";
-var helpers = EmberHandlebars.helpers;
 
 import { fmt } from "ember-runtime/system/string";
 import { get } from "ember-metal/property_get";
 import { handlebarsGetView } from "ember-handlebars/ext";
 import { ViewHelper } from "ember-handlebars/helpers/view";
-import { computed } from "ember-metal/computed";
+import alias from "ember-metal/alias";
 import CollectionView from "ember-views/views/collection_view";
 
-var alias = computed.alias;
 /**
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
   `Ember.CollectionView` to a template. See [Ember.CollectionView](/api/classes/Ember.CollectionView.html)
@@ -239,7 +237,7 @@ function collectionHelper(path, options) {
   var viewOptions = ViewHelper.propertiesFromHTMLOptions({ data: data, hash: itemHash }, this);
   hash.itemViewClass = itemViewClass.extend(viewOptions);
 
-  return helpers.view.call(this, collectionClass, options);
+  return EmberHandlebars.helpers.view.call(this, collectionClass, options);
 }
 
 export default collectionHelper;

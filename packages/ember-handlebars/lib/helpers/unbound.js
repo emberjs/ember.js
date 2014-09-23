@@ -4,7 +4,6 @@
 */
 
 import EmberHandlebars from "ember-handlebars-compiler";
-var helpers = EmberHandlebars.helpers;
 
 import { resolveHelper } from "ember-handlebars/helpers/binding";
 import { handlebarsGet } from "ember-handlebars/ext";
@@ -40,7 +39,7 @@ export default function unboundHelper(property, fn) {
   if (arguments.length > 2) {
     // Unbound helper call.
     options.data.isUnbound = true;
-    helper = resolveHelper(container, property) || helpers.helperMissing;
+    helper = resolveHelper(container, property) || EmberHandlebars.helpers.helperMissing;
     out = helper.apply(ctx, slice.call(arguments, 1));
     delete options.data.isUnbound;
     return out;
