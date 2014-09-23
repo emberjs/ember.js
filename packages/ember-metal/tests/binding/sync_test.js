@@ -3,9 +3,7 @@ import run from 'ember-metal/run_loop';
 import {
   addObserver
 } from "ember-metal/observer";
-import { create }  from 'ember-metal/platform';
 import { bind } from "ember-metal/binding";
-import { rewatch } from "ember-metal/watching";
 import { computed } from "ember-metal/computed";
 import { defineProperty } from "ember-metal/properties";
 

@@ -2,7 +2,6 @@ import Ember from "ember-metal/core"; // Ember.Logger, Ember.LOG_BINDINGS, asser
 import { get } from "ember-metal/property_get";
 import { trySet } from "ember-metal/property_set";
 import { guidFor } from "ember-metal/utils";
-import Map from "ember-metal/map";
 import {
   addObserver,
   removeObserver,
@@ -55,10 +54,9 @@ function getWithGlobals(obj, path) {
 //
 
 function Binding(toPath, fromPath) {
-  this._direction = 'fwd';
+  this._direction = undefined;
   this._from = fromPath;
   this._to   = toPath;
-  this._directionMap = new Map();
   this._readyToSync = undefined;
   this._oneWay = undefined;
 }
@@ -214,19 +212,18 @@ Binding.prototype = {
   },
 
   _scheduleSync: function(obj, dir) {
-    var directionMap = this._directionMap;
-    var existingDir = directionMap.get(obj);
+    var existingDir = this._direction;
 
     // if we haven't scheduled the binding yet, schedule it
-    if (!existingDir) {
+    if (existingDir === undefined) {
       run.schedule('sync', this, this._sync, obj);
-      directionMap.set(obj, dir);
+      this._direction  = dir;
     }
 
     // If both a 'back' and 'fwd' sync have been scheduled on the same object,
     // default to a 'fwd' sync so that it remains deterministic.
     if (existingDir === 'back' && dir === 'fwd') {
-      directionMap.set(obj, 'fwd');
+      this._direction = 'fwd';
     }
   },
 
@@ -238,13 +235,12 @@ Binding.prototype = {
 
     // get the direction of the binding for the object we are
     // synchronizing from
-    var directionMap = this._directionMap;
-    var direction = directionMap.get(obj);
+    var direction = this._direction;
 
     var fromPath = this._from;
     var toPath = this._to;
 
-    directionMap.delete(obj);
+    this._direction = undefined;
 
     // if we're synchronizing from the remote object...
     if (direction === 'fwd') {
