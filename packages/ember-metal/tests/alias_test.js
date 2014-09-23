@@ -1,4 +1,4 @@
-import { alias } from "ember-metal/alias";
+import alias from "ember-metal/alias";
 import { defineProperty } from "ember-metal/properties";
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';

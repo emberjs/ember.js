@@ -4,7 +4,7 @@ import { set } from "ember-metal/property_set";
 import { computed } from "ember-metal/computed";
 import isEmpty from 'ember-metal/is_empty';
 import { isNone } from 'ember-metal/is_none';
-import { alias } from 'ember-metal/alias';
+import alias from 'ember-metal/alias';
 
 /**
 @module ember-metal
