@@ -285,10 +285,9 @@ mixinProperties(Binding, {
     @method from
     @static
   */
-  from: function() {
+  from: function(from) {
     var C = this;
-    var binding = new C();
-    return binding.from.apply(binding, arguments);
+    return new C(undefined, from);
   },
 
   /*
@@ -297,10 +296,9 @@ mixinProperties(Binding, {
     @method to
     @static
   */
-  to: function() {
+  to: function(to) {
     var C = this;
-    var binding = new C();
-    return binding.to.apply(binding, arguments);
+    return new C(to, undefined);
   },
 
   /**
@@ -321,8 +319,7 @@ mixinProperties(Binding, {
   */
   oneWay: function(from, flag) {
     var C = this;
-    var binding = new C(null, from);
-    return binding.oneWay(flag);
+    return new C(undefined, from).oneWay(flag);
   }
 
 });
