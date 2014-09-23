@@ -29,9 +29,10 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
 
   var parentIndex = -1;
   var parents = this._parents;
-  var parent = null;
+  var parent = _parentView || null;
   var elements = this._elements;
   var element = null;
+  var contextualElement = null;
   var level = 0;
 
   var view = _view;
@@ -50,7 +51,18 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
     }
 
     this.willCreateElement(view);
-    element = this.createElement(view);
+
+    contextualElement = view._morph && view._morph.contextualElement;
+    if (!contextualElement && parent && parent._childViewsMorph) {
+      contextualElement = parent._childViewsMorph.contextualElement;
+    }
+    if (!contextualElement && view._didCreateElementWithoutMorph) {
+      // This code path is only used by createElement and rerender when createElement
+      // was previously called on a view.
+      contextualElement = document.body;
+    }
+    Ember.assert("Required contextualElement for view "+_view+" is missing", contextualElement);
+    element = this.createElement(view, contextualElement);
 
     parents[level++] = parentIndex;
     parentIndex = index;
@@ -87,7 +99,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
       }
 
       parentIndex = parents[level];
-      parent = views[parentIndex];
+      parent = parentIndex === -1 ? _parentView : views[parentIndex];
       this.insertElement(view, parent, element, -1);
       index = queue[--length];
       view = views[index];
@@ -120,8 +132,9 @@ Renderer.prototype.uuid = function Renderer_uuid(view) {
 Renderer.prototype.scheduleInsert =
   function Renderer_scheduleInsert(view, morph) {
     if (view._morph || view._elementCreated) {
-      throw new Error("You can't insert a View that has already been rendered");
+      throw new Error("You cannot insert a View that has already been rendered");
     }
+    Ember.assert("You cannot insert a View without a morph", morph);
     view._morph = morph;
     var viewId = this.uuid(view);
     this._inserts[viewId] = this.scheduleRender(this, function scheduledRenderTree() {

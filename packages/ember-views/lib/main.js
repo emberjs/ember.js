@@ -11,7 +11,6 @@ Ember Views
 import Ember from "ember-runtime";
 import jQuery from "ember-views/system/jquery";
 import {
-  setInnerHTML,
   isSimpleClick
 } from "ember-views/system/utils";
 import RenderBuffer from "ember-views/system/render_buffer";
@@ -45,7 +44,6 @@ Ember.ViewTargetActionSupport = ViewTargetActionSupport;
 Ember.RenderBuffer = RenderBuffer;
 
 var ViewUtils = Ember.ViewUtils = {};
-ViewUtils.setInnerHTML = setInnerHTML;
 ViewUtils.isSimpleClick = isSimpleClick;
 
 Ember.CoreView = CoreView;

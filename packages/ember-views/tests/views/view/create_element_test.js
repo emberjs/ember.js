@@ -2,6 +2,7 @@ import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
+import { equalHTML } from "ember-metal-views/tests/test_helpers";
 
 var view;
 
@@ -44,6 +45,61 @@ test("calls render and turns resultant string into element", function() {
   ok(elem, 'has element now');
   equal(elem.innerHTML, 'foo', 'has innerHTML from context');
   equal(elem.tagName.toString().toLowerCase(), 'span', 'has tagName from view');
+});
+
+test("calls render and parses the buffer string in the right context", function() {
+  view = ContainerView.create({
+    tagName: 'table',
+    childViews: [ EmberView.create({
+      tagName: '',
+      render: function(buffer) {
+        // Emulate a metamorph
+        buffer.push("<script></script><tr><td>snorfblax</td></tr>");
+      }
+    })]
+  });
+
+  equal(get(view, 'element'), null, 'precondition - has no element');
+  run(function() {
+    view.createElement();
+  });
+
+
+  var elem = get(view, 'element');
+  ok(elem, 'has element now');
+  equalHTML(elem.childNodes, '<script></script><tr><td>snorfblax</td></tr>', 'has innerHTML from context');
+  equal(elem.tagName.toString().toLowerCase(), 'table', 'has tagName from view');
+});
+
+test("does not wrap many tr children in tbody elements", function() {
+  view = ContainerView.create({
+    tagName: 'table',
+    childViews: [
+      EmberView.create({
+        tagName: '',
+        render: function(buffer) {
+          // Emulate a metamorph
+          buffer.push("<script></script><tr><td>snorfblax</td></tr>");
+        } }),
+      EmberView.create({
+        tagName: '',
+        render: function(buffer) {
+          // Emulate a metamorph
+          buffer.push("<script></script><tr><td>snorfblax</td></tr>");
+        } })
+    ]
+  });
+
+  equal(get(view, 'element'), null, 'precondition - has no element');
+  run(function() {
+    view.createElement();
+  });
+
+
+  var elem = get(view, 'element');
+  ok(elem, 'has element now');
+  equalHTML(elem.childNodes, '<script></script><tr><td>snorfblax</td></tr><script></script><tr><td>snorfblax</td></tr>', 'has innerHTML from context');
+  equal(elem.tagName.toString().toLowerCase(), 'table', 'has tagName from view');
 });
 
 test("generated element include HTML from child views as well", function() {
