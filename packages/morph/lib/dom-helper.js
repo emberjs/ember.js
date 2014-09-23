@@ -1,6 +1,5 @@
 import Morph from "../morph/morph";
-
-var emptyString = '';
+import {buildHTMLDOM} from "./dom-helper/build-html-dom";
 
 var deletesBlankTextNodes = (function(){
   var element = document.createElement('div');
@@ -17,7 +16,7 @@ var ignoresCheckedAttribute = (function(){
 })();
 
 var svgNamespace = 'http://www.w3.org/2000/svg',
-    svgHTMLIntegrationPoints = ['foreignObject', 'desc', 'title'];
+    svgHTMLIntegrationPoints = {foreignObject: 1, desc: 1, title: 1};
 
 function isSVG(ns){
   return ns === svgNamespace;
@@ -29,7 +28,7 @@ function interiorNamespace(element){
   if (
     element &&
     element.namespaceURI === svgNamespace &&
-    svgHTMLIntegrationPoints.indexOf(element.tagName) === -1
+    !svgHTMLIntegrationPoints[element.tagName]
   ) {
     return svgNamespace;
   } else {
@@ -77,6 +76,12 @@ function detectOmittedStartTag(string, contextualElement){
   }
 }
 
+function buildSVGDOM(html, dom){
+  var div = dom.document.createElement('div');
+  div.innerHTML = '<svg>'+html+'</svg>';
+  return div.firstChild.childNodes;
+}
+
 /*
  * A class wrapping DOM functions to address environment compatibility,
  * namespaces, contextual elements for morph un-escaped content
@@ -118,13 +123,19 @@ prototype.setAttribute = function(element, name, value) {
   element.setAttribute(name, value);
 };
 
-prototype.createElement = function(tagName) {
-  if (this.namespace) {
-    return this.document.createElementNS(this.namespace, tagName);
-  } else {
+if (document.createElementNS) {
+  prototype.createElement = function(tagName) {
+    if (this.namespace) {
+      return this.document.createElementNS(this.namespace, tagName);
+    } else {
+      return this.document.createElement(tagName);
+    }
+  };
+} else {
+  prototype.createElement = function(tagName) {
     return this.document.createElement(tagName);
-  }
-};
+  };
+}
 
 prototype.setNamespace = function(ns) {
   this.namespace = ns;
@@ -145,7 +156,7 @@ prototype.createTextNode = function(text){
 prototype.repairClonedNode = function(element, blankChildTextNodes, isChecked){
   if (deletesBlankTextNodes && blankChildTextNodes.length > 0) {
     for (var i=0, len=blankChildTextNodes.length;i<len;i++){
-      var textNode = document.createTextNode(emptyString),
+      var textNode = this.document.createTextNode(''),
           offset = blankChildTextNodes[i],
           before = element.childNodes[offset];
       if (before) {
@@ -169,9 +180,6 @@ prototype.createMorph = function(parent, start, end, contextualElement){
   if (!contextualElement && parent.nodeType === 1) {
     contextualElement = parent;
   }
-  if (!contextualElement) {
-    contextualElement = this.document.body;
-  }
   return new Morph(parent, start, end, this, contextualElement);
 };
 
@@ -185,37 +193,39 @@ prototype.createMorphAt = function(parent, startIndex, endIndex, contextualEleme
 };
 
 prototype.insertMorphBefore = function(element, referenceChild, contextualElement) {
-  var start = document.createTextNode('');
-  var end = document.createTextNode('');
+  var start = this.document.createTextNode('');
+  var end = this.document.createTextNode('');
   element.insertBefore(start, referenceChild);
   element.insertBefore(end, referenceChild);
   return this.createMorph(element, start, end, contextualElement);
 };
 
 prototype.appendMorph = function(element, contextualElement) {
-  var start = document.createTextNode('');
-  var end = document.createTextNode('');
+  var start = this.document.createTextNode('');
+  var end = this.document.createTextNode('');
   element.appendChild(start);
   element.appendChild(end);
   return this.createMorph(element, start, end, contextualElement);
 };
 
-prototype.parseHTML = function(html, contextualElement){
-  var element;
-  if (isSVG(this.namespace) && svgHTMLIntegrationPoints.indexOf(contextualElement.tagName) === -1) {
-    html = '<svg>'+html+'</svg>';
-    element = document.createElement('div');
+prototype.parseHTML = function(html, contextualElement) {
+  var isSVGContent = (
+    isSVG(this.namespace) &&
+    !svgHTMLIntegrationPoints[contextualElement.tagName]
+  );
+
+  if (isSVGContent) {
+    return buildSVGDOM(html, this);
   } else {
-    element = this.cloneNode(contextualElement, false);
-  }
-  element.innerHTML = html;
-  if (isSVG(this.namespace)) {
-    return element.firstChild.childNodes;
-  } else {
+    var nodes = buildHTMLDOM(html, contextualElement, this);
     if (detectOmittedStartTag(html, contextualElement)) {
-      return element.firstChild.childNodes;
+      var node = nodes[0];
+      while (node && node.nodeType !== 1) {
+        node = node.nextSibling;
+      }
+      return node.childNodes;
     } else {
-      return element.childNodes;
+      return nodes;
     }
   }
 };

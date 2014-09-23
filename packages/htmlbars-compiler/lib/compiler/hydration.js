@@ -81,6 +81,7 @@ prototype.helper = function(name, size, escaped, morphNum) {
 
 prototype.component = function(tag, morphNum) {
   var prepared = prepareHelper(this.stack, 0);
+  prepared.options.push('morph:morph'+morphNum);
   this.pushWebComponent(string(tag), prepared.options, morphNum);
 };
 
