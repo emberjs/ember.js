@@ -11,7 +11,8 @@ import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
 import {
   guidFor,
-  apply
+  apply,
+  hasOwn
 } from "ember-metal/utils";
 import { create as o_create } from "ember-metal/platform";
 import {
@@ -110,7 +111,7 @@ function makeCtor() {
 
         for (var j = 0, ll = keyNames.length; j < ll; j++) {
           var keyName = keyNames[j];
-          if (!properties.hasOwnProperty(keyName)) { continue; }
+          if (!hasOwn(properties, keyName)) { continue; }
 
           var value = properties[keyName];
 
@@ -118,7 +119,7 @@ function makeCtor() {
             var bindings = m.bindings;
             if (!bindings) {
               bindings = m.bindings = {};
-            } else if (!m.hasOwnProperty('bindings')) {
+            } else if (!hasOwn(m, 'bindings')) {
               bindings = m.bindings = o_create(m.bindings);
             }
             bindings[keyName] = value;

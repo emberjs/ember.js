@@ -14,6 +14,8 @@ import View from "ember-views/views/view";
 import {
   isGlobal as detectIsGlobal
 } from "ember-metal/path_cache";
+import { iterateObject } from "ember-metal/utils";
+import { create as o_create } from "ember-metal/platform";
 
 // late bound via requireModule because of circular dependencies.
 var resolveHelper, SimpleHandlebarsView;
@@ -42,7 +44,7 @@ var FIRST_SEGMENT_CACHE = new Cache(1000, function(path){
 });
 
 function normalizePath(root, path, data) {
-  var keywords = (data && data.keywords) || {};
+  var keywords = (data && data.keywords) || o_create(null);
   var keyword, isKeyword;
 
   // Get the first segment of the path. For example, if the
@@ -52,7 +54,7 @@ function normalizePath(root, path, data) {
   // Test to see if the first path is a keyword that has been
   // passed along in the view's data hash. If so, we will treat
   // that object as the new root.
-  if (keywords.hasOwnProperty(keyword)) {
+  if (Object.prototype.hasOwnProperty.call(keywords, keyword)) {
     // Look up the value in the template's data hash.
     root = keywords[keyword];
     isKeyword = true;
@@ -237,9 +239,7 @@ export function resolveParams(context, params, options) {
 export function resolveHash(context, hash, options) {
   var resolvedHash = {}, types = options.hashTypes, type;
 
-  for (var key in hash) {
-    if (!hash.hasOwnProperty(key)) { continue; }
-
+  iterateObject(hash, function(key, value){
     type = types[key];
 
     if (type === 'ID') {
@@ -247,7 +247,7 @@ export function resolveHash(context, hash, options) {
     } else {
       resolvedHash[key] = hash[key];
     }
-  }
+  });
 
   return resolvedHash;
 }
@@ -479,7 +479,7 @@ function makeBoundHelper(fn) {
     var currentContext = (contexts && contexts.length) ? contexts[0] : this;
     var prefixPathForDependentKeys = '';
     var loc, len, hashOption;
-    var boundOption, property;
+    var property;
     var normalizedValue = SimpleHandlebarsView.prototype.normalizedValue;
 
     Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !options.fn);
@@ -524,16 +524,14 @@ function makeBoundHelper(fn) {
     // Override SimpleHandlebarsView's method for generating the view's content.
     bindView.normalizedValue = function() {
       var args = [];
-      var boundOption;
 
       // Copy over bound hash options.
-      for (boundOption in boundOptions) {
-        if (!boundOptions.hasOwnProperty(boundOption)) { continue; }
+      iterateObject(boundOptions, function(boundOption, value){
         property = normalizePath(currentContext, boundOptions[boundOption], data);
         bindView.path = property.path;
         bindView.pathRoot = property.root;
         hash[boundOption] = normalizedValue.call(bindView);
-      }
+      });
 
       for (loc = 0; loc < numProperties; ++loc) {
         property = normalizedProperties[loc];
@@ -554,11 +552,9 @@ function makeBoundHelper(fn) {
     view.appendChild(bindView);
 
     // Assemble list of watched properties that'll re-render this helper.
-    for (boundOption in boundOptions) {
-      if (boundOptions.hasOwnProperty(boundOption)) {
-        watchedProperties.push(normalizePath(currentContext, boundOptions[boundOption], data));
-      }
-    }
+    iterateObject(boundOptions, function(key, boundOption){
+      watchedProperties.push(normalizePath(currentContext, boundOption, data));
+    });
 
     // Observe each property.
     for (loc = 0, len = watchedProperties.length; loc < len; ++loc) {
@@ -602,12 +598,11 @@ function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
   var hash = options.hash;
   var boundOptions = hash.boundOptions;
   var types = slice.call(options.types, 1);
-  var loc, len, property, propertyType, boundOption;
+  var loc, len, property, propertyType;
 
-  for (boundOption in boundOptions) {
-    if (!boundOptions.hasOwnProperty(boundOption)) { continue; }
-    hash[boundOption] = handlebarsGet(context, boundOptions[boundOption], options);
-  }
+  iterateObject(boundOptions, function(key, boundOption){
+    hash[key] = handlebarsGet(context, boundOption, options);
+  });
 
   for (loc = 0, len = normalizedProperties.length; loc < len; ++loc) {
     property = normalizedProperties[loc];

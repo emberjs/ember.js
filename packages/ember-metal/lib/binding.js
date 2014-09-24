@@ -12,6 +12,7 @@ import run from "ember-metal/run_loop";
 import {
   isGlobal as isGlobalPath
 } from "ember-metal/path_cache";
+import { iterateObject } from "ember-metal/utils";
 
 
 // ES6TODO: where is Ember.lookup defined?
@@ -274,11 +275,9 @@ Binding.prototype = {
 };
 
 function mixinProperties(to, from) {
-  for (var key in from) {
-    if (from.hasOwnProperty(key)) {
-      to[key] = from[key];
-    }
-  }
+  iterateObject(from, function(key, value){
+    to[key] = value;
+  });
 }
 
 mixinProperties(Binding, {

@@ -13,7 +13,7 @@ function visit(vertex, fn, visited, path) {
   if (!path) {
     path = [];
   }
-  if (visited.hasOwnProperty(name)) {
+  if (Object.hasOwnProperty.call(visited, name)) {
     return;
   }
   path.push(name);

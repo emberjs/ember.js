@@ -5,6 +5,8 @@ import { computed } from "ember-metal/computed";
 import { typeOf } from "ember-metal/utils";
 import { meta } from "ember-metal/utils";
 import merge from "ember-metal/merge";
+import { iterateObject } from "ember-metal/utils";
+import { create as o_create } from "ember-metal/platform";
 
 import ControllerMixin from "ember-runtime/mixins/controller";
 
@@ -72,12 +74,10 @@ ControllerMixin.reopen({
       return get(m.proto, '_cacheMeta');
     }
 
-    var cacheMeta = {};
+    var cacheMeta = o_create(null);
     var qpMap = get(this, '_normalizedQueryParams');
-    for (var prop in qpMap) {
-      if (!qpMap.hasOwnProperty(prop)) { continue; }
-
-      var qp = qpMap[prop];
+    var self = this;
+    iterateObject(qpMap, function(prop, qp){
       var scope = qp.scope;
       var parts;
 
@@ -90,9 +90,9 @@ ControllerMixin.reopen({
         values: null, // provided by route
         scope: scope,
         prefix: "",
-        def: get(this, prop)
+        def: get(self, prop)
       };
-    }
+    });
 
     return cacheMeta;
   }),
@@ -103,19 +103,18 @@ ControllerMixin.reopen({
   */
   _updateCacheParams: function(params) {
     var cacheMeta = get(this, '_cacheMeta');
-    for (var prop in cacheMeta) {
-      if (!cacheMeta.hasOwnProperty(prop)) { continue; }
-      var propMeta = cacheMeta[prop];
+    var self = this;
+    iterateObject(cacheMeta, function(prop, propMeta){
       propMeta.values = params;
 
-      var cacheKey = this._calculateCacheKey(propMeta.prefix, propMeta.parts, propMeta.values);
-      var cache = this._bucketCache;
+      var cacheKey = self._calculateCacheKey(propMeta.prefix, propMeta.parts, propMeta.values);
+      var cache = self._bucketCache;
 
       if (cache) {
         var value = cache.lookup(cacheKey, prop, propMeta.def);
-        set(this, prop, value);
+        set(self, prop, value);
       }
-    }
+    });
   },
 
   /**
@@ -307,33 +306,43 @@ var ALL_PERIODS_REGEX = /\./g;
 function accumulateQueryParamDescriptors(_desc, accum) {
   var desc = _desc, tmp;
   if (typeOf(desc) === 'string') {
-    tmp = {};
+    tmp = o_create(null);
     tmp[desc] = { as: null };
     desc = tmp;
   }
 
-  for (var key in desc) {
-    if (!desc.hasOwnProperty(key)) { return; }
+  function createModelDescriptor(){
+    var object = o_create(null);
+    object.as = null;
+    object.scope = 'model';
+    return object;
+  }
 
-    var singleDesc = desc[key];
+  function createSingleDesc(singleDesc){
+    var ret;
     if (typeOf(singleDesc) === 'string') {
-      singleDesc = { as: singleDesc };
+      ret = o_create(null);
+      ret.as = singleDesc;
+      return ret;
     }
+    return singleDesc;
+  }
 
-    tmp = accum[key] || { as: null, scope: 'model' };
+  iterateObject(desc, function(key, value){
+    var singleDesc = createSingleDesc(value);
+
+    tmp = accum[key] || createModelDescriptor();
     merge(tmp, singleDesc);
 
     accum[key] = tmp;
-  }
+  });
 }
 
 function listenForQueryParamChanges(controller) {
   var qpMap = get(controller, '_normalizedQueryParams');
-  for (var prop in qpMap) {
-    if (!qpMap.hasOwnProperty(prop)) { continue; }
+  iterateObject(qpMap, function(prop, _){
     controller.addObserver(prop + '.[]', controller, controller._qpChanged);
-  }
+  });
 }
-
 
 export default ControllerMixin;

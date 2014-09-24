@@ -12,7 +12,9 @@ import { computed } from "ember-metal/computed";
 import merge from "ember-metal/merge";
 import {
   isArray,
-  typeOf
+  typeOf,
+  iterateObject,
+  hasOwn
 } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
 import keys from "ember-metal/keys";
@@ -96,11 +98,8 @@ var Route = EmberObject.extend(ActionHandler, {
     var cacheMeta = get(controllerProto, '_cacheMeta');
 
     var qps = [], map = {}, self = this;
-    for (var propName in qpProps) {
-      if (!qpProps.hasOwnProperty(propName)) { continue; }
-
-      var desc = qpProps[propName];
-      var urlKey = desc.as || this.serializeQueryParamKey(propName);
+    iterateObject(qpProps, function(propName, desc){
+      var urlKey = desc.as || self.serializeQueryParamKey(propName);
       var defaultValue = get(controllerProto, propName);
 
       if (isArray(defaultValue)) {
@@ -108,7 +107,7 @@ var Route = EmberObject.extend(ActionHandler, {
       }
 
       var type = typeOf(defaultValue);
-      var defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type);
+      var defaultValueSerialized = self.serializeQueryParam(defaultValue, urlKey, type);
       var fprop = controllerName + ':' + propName;
       var qp = {
         def: defaultValue,
@@ -121,13 +120,13 @@ var Route = EmberObject.extend(ActionHandler, {
         cProto: controllerProto,
         svalue: defaultValueSerialized,
         cacheType: desc.scope,
-        route: this,
+        route: self,
         cacheMeta: cacheMeta[propName]
       };
 
       map[propName] = map[urlKey] = map[fprop] = qp;
       qps.push(qp);
-    }
+    });
 
     return {
       qps: qps,
@@ -1555,7 +1554,7 @@ var Route = EmberObject.extend(ActionHandler, {
     // resolved parent contexts on the current transitionEvent.
     if (transition) {
       var modelLookupName = (route && route.routeName) || name;
-      if (transition.resolvedModels.hasOwnProperty(modelLookupName)) {
+      if (hasOwn(transition.resolvedModels, modelLookupName)) {
         return transition.resolvedModels[modelLookupName];
       }
     }

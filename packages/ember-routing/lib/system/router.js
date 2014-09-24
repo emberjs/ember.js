@@ -19,6 +19,11 @@ import {
   getActiveTargetName,
   stashParamNames
 } from "ember-routing/utils";
+import { create as o_create } from "ember-metal/platform";
+import {
+  iterateObject,
+  hasOwn
+} from "ember-metal/utils";
 
 // requireModule("ember-handlebars");
 // requireModule("ember-runtime");
@@ -75,10 +80,10 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   init: function() {
     this.router = this.constructor.router || this.constructor.map(Ember.K);
-    this._activeViews = {};
+    this._activeViews = o_create(null);
     this._setupLocation();
-    this._qpCache = {};
-    this._queuedQPChanges = {};
+    this._qpCache = o_create(null);
+    this._queuedQPChanges = o_create(null);
 
     if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
       this.router.log = Ember.Logger.debug;
@@ -179,10 +184,10 @@ var EmberRouter = EmberObject.extend(Evented, {
     }
 
     var possibleQueryParams = args[args.length-1];
-    if (possibleQueryParams && possibleQueryParams.hasOwnProperty('queryParams')) {
+    if (possibleQueryParams && hasOwn(possibleQueryParams, 'queryParams')) {
       queryParams = args.pop().queryParams;
     } else {
-      queryParams = {};
+      queryParams = o_create(null);
     }
 
     var targetRouteName = args.shift();
@@ -385,7 +390,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   _serializeQueryParams: function(targetRouteName, queryParams) {
-    var groupedByUrlKey = {};
+    var groupedByUrlKey = o_create(null);
 
     forEachQueryParam(this, targetRouteName, queryParams, function(key, value, qp) {
       var urlKey = qp.urlKey;
@@ -431,6 +436,8 @@ var EmberRouter = EmberObject.extend(Evented, {
     var targetRouteName = _targetRouteName || getActiveTargetName(this.router);
     Ember.assert("The route " + targetRouteName + " was not found", targetRouteName && this.router.hasRoute(targetRouteName));
 
+    // TODO: switch this over to o_create(null)
+    // For some reason, using o_create(null) here causes many routing related tests to fail.
     var queryParams = {};
     merge(queryParams, _queryParams);
     this._prepareQueryParams(targetRouteName, models, queryParams);
@@ -458,7 +465,7 @@ var EmberRouter = EmberObject.extend(Evented, {
       return this._qpCache[leafRouteName];
     }
 
-    var map = {}, qps = [];
+    var map = o_create(null), qps = [];
     this._qpCache[leafRouteName] = {
       map: map,
       qps: qps
@@ -874,15 +881,12 @@ function resemblesURL(str) {
 function forEachQueryParam(router, targetRouteName, queryParams, callback) {
   var qpCache = router._queryParamsFor(targetRouteName);
 
-  for (var key in queryParams) {
-    if (!queryParams.hasOwnProperty(key)) { continue; }
-    var value = queryParams[key];
+  iterateObject(queryParams, function(key, value){
     var qp = qpCache.map[key];
-
     if (qp) {
       callback(key, value, qp);
     }
-  }
+  });
 }
 
 export default EmberRouter;

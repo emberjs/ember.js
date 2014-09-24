@@ -8,7 +8,10 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { isNone } from 'ember-metal/is_none';
 import run from "ember-metal/run_loop";
-import { typeOf } from "ember-metal/utils";
+import {
+  typeOf,
+  iterateObject
+} from "ember-metal/utils";
 import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
@@ -131,7 +134,7 @@ export default EmberObject.extend({
     @param addedEvents {Hash}
   */
   setup: function(addedEvents, rootElement) {
-    var event, events = get(this, 'events');
+    var events = get(this, 'events');
 
     merge(events, addedEvents || {});
 
@@ -149,11 +152,10 @@ export default EmberObject.extend({
 
     Ember.assert('Unable to add "ember-application" class to rootElement. Make sure you set rootElement to the body or an element in the body.', rootElement.is('.ember-application'));
 
-    for (event in events) {
-      if (events.hasOwnProperty(event)) {
-        this.setupHandler(rootElement, event, events[event]);
-      }
-    }
+    var self = this;
+    iterateObject(events, function(eventName, event){
+      self.setupHandler(rootElement, eventName, event);
+    });
   },
 
   /**

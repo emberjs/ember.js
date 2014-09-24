@@ -2,9 +2,10 @@ import { indexOf } from 'ember-metal/enumerable_utils';
 import { typeOf } from 'ember-metal/utils';
 import EmberObject from 'ember-runtime/system/object';
 import Copyable from 'ember-runtime/mixins/copyable';
+import { iterateObject } from 'ember-metal/utils';
 
 function _copy(obj, deep, seen, copies) {
-  var ret, loc, key;
+  var ret, loc;
 
   // primitive data types are immutable, just return them.
   if (typeof obj !== 'object' || obj === null) {
@@ -38,20 +39,14 @@ function _copy(obj, deep, seen, copies) {
   } else {
     ret = {};
 
-    for (key in obj) {
-      // support Null prototype
-      if (!Object.prototype.hasOwnProperty.call(obj, key)) {
-        continue;
-      }
-
+    iterateObject(obj, function(key, value){
       // Prevents browsers that don't respect non-enumerability from
       // copying internal Ember properties
       if (key.substring(0, 2) === '__') {
-        continue;
+        return;
       }
-
       ret[key] = deep ? _copy(obj[key], deep, seen, copies) : obj[key];
-    }
+    });
   }
 
   if (deep) {

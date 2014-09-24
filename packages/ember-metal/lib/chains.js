@@ -3,6 +3,8 @@ import {get, normalizeTuple} from "ember-metal/property_get";
 import {meta} from "ember-metal/utils";
 import {forEach} from "ember-metal/array";
 import {watchKey, unwatchKey} from "ember-metal/watch_key";
+import { hasOwn, iterateObject } from "ember-metal/utils";
+import { create as o_create } from "ember-metal/platform";
 
 var metaFor = meta;
 var warn = Ember.warn;
@@ -34,8 +36,8 @@ function addChainWatcher(obj, keyName, node) {
   var m = metaFor(obj);
   var nodes = m.chainWatchers;
 
-  if (!m.hasOwnProperty('chainWatchers')) {
-    nodes = m.chainWatchers = {};
+  if (!hasOwn(m, 'chainWatchers')){
+    nodes = m.chainWatchers = o_create(null);
   }
 
   if (!nodes[keyName]) { nodes[keyName] = []; }
@@ -47,7 +49,7 @@ function removeChainWatcher(obj, keyName, node) {
   if (!obj || 'object' !== typeof obj) { return; } // nothing to do
 
   var m = obj['__ember_meta__'];
-  if (m && !m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
+  if (m && !hasOwn(m, 'chainWatchers')) { return; } // nothing to do
 
   var nodes = m && m.chainWatchers;
 
@@ -249,10 +251,9 @@ ChainNodePrototype.unchain = function(key, path) {
 ChainNodePrototype.willChange = function(events) {
   var chains = this._chains;
   if (chains) {
-    for(var key in chains) {
-      if (!chains.hasOwnProperty(key)) { continue; }
+    iterateObject(chains, function(key, _){
       chains[key].willChange(events);
-    }
+    });
   }
 
   if (this._parent) { this._parent.chainWillChange(this, this._key, 1, events); }
@@ -309,10 +310,9 @@ ChainNodePrototype.didChange = function(events) {
   // then notify chains...
   var chains = this._chains;
   if (chains) {
-    for(var key in chains) {
-      if (!chains.hasOwnProperty(key)) { continue; }
+    iterateObject(chains, function(key, _){
       chains[key].didChange(events);
-    }
+    });
   }
 
   // if no events are passed in then we only care about the above wiring update
@@ -324,21 +324,19 @@ ChainNodePrototype.didChange = function(events) {
 
 export function finishChains(obj) {
   // We only create meta if we really have to
-  var m = obj['__ember_meta__'],
-    chains, chainWatchers, chainNodes;
+  var m = obj['__ember_meta__'];
+  var chains, chainWatchers;
   if (m) {
     // finish any current chains node watchers that reference obj
     chainWatchers = m.chainWatchers;
     if (chainWatchers) {
-      for(var key in chainWatchers) {
-        if (!chainWatchers.hasOwnProperty(key)) { continue; }
-        chainNodes = chainWatchers[key];
+      iterateObject(chainWatchers, function(key, chainNodes){
         if (chainNodes) {
           for (var i=0,l=chainNodes.length;i<l;i++) {
             chainNodes[i].didChange(null);
           }
         }
-      }
+      });
     }
     // copy chains from prototype
     chains = m.chains;

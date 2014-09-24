@@ -1,6 +1,7 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 import emberKeys from "ember-metal/keys";
 import dictionary from 'ember-metal/dictionary';
+import { iterateObject } from 'ember-metal/utils';
 
 // A lightweight container that helps to assemble and decouple components.
 // Public api for the container is still in flux.
@@ -785,13 +786,10 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   var normalizeInjectionsHash = function(hash) {
     var injections = [];
 
-    for (var key in hash) {
-      if (hash.hasOwnProperty(key)) {
-        Ember.assert("Expected a proper full name, given '" + hash[key] + "'", validateFullName(hash[key]));
-
-        addInjection(injections, key, hash[key]);
-      }
-    }
+    iterateObject(hash, function(key, value){
+      Ember.assert("Expected a proper full name, given '" + hash[key] + "'", validateFullName(hash[key]));
+      addInjection(injections, key, value);
+    });
 
     return injections;
   };

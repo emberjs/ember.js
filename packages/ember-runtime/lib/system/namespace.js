@@ -9,9 +9,11 @@ import { get } from "ember-metal/property_get";
 import { indexOf } from "ember-metal/array";
 import {
   GUID_KEY,
-  guidFor
+  guidFor,
+  iterateObject
 } from "ember-metal/utils";
 import { Mixin } from "ember-metal/mixin";
+import { create as o_create } from "ember-metal/platform";
 
 import EmberObject from "ember-runtime/system/object";
 
@@ -49,7 +51,7 @@ var Namespace = EmberObject.extend({
   },
 
   nameClasses: function() {
-    processNamespace([this.toString()], this, {});
+    processNamespace([this.toString()], this, o_create(null));
   },
 
   destroy: function() {
@@ -67,7 +69,7 @@ var Namespace = EmberObject.extend({
 
 Namespace.reopenClass({
   NAMESPACES: [Ember],
-  NAMESPACES_BY_ID: {},
+  NAMESPACES_BY_ID: o_create(null),
   PROCESSED: false,
   processAll: processAllNamespaces,
   byName: function(name) {
@@ -81,18 +83,13 @@ Namespace.reopenClass({
 
 var NAMESPACES_BY_ID = Namespace.NAMESPACES_BY_ID;
 
-var hasOwnProp = ({}).hasOwnProperty;
-
 function processNamespace(paths, root, seen) {
   var idx = paths.length;
 
   NAMESPACES_BY_ID[paths.join('.')] = root;
 
   // Loop over all of the keys in the namespace, looking for classes
-  for(var key in root) {
-    if (!hasOwnProp.call(root, key)) { continue; }
-    var obj = root[key];
-
+  iterateObject(root, function(key, obj){
     // If we are processing the `Ember` namespace, for example, the
     // `paths` will start with `["Ember"]`. Every iteration through
     // the loop will update the **second** element of this list with
@@ -110,13 +107,13 @@ function processNamespace(paths, root, seen) {
     // Support nested namespaces
     } else if (obj && obj.isNamespace) {
       // Skip aliased namespaces
-      if (seen[guidFor(obj)]) { continue; }
+      if (seen[guidFor(obj)]) { return; }
       seen[guidFor(obj)] = true;
 
       // Process the child namespace
       processNamespace(paths, obj, seen);
     }
-  }
+  });
 
   paths.length = idx; // cut out last item
 }
@@ -205,7 +202,7 @@ function processAllNamespaces() {
 
     for (var i=0, l=namespaces.length; i<l; i++) {
       namespace = namespaces[i];
-      processNamespace([namespace.toString()], namespace, {});
+      processNamespace([namespace.toString()], namespace, o_create(null));
     }
 
     Ember.anyUnprocessedMixins = false;

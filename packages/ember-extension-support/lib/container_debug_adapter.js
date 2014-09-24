@@ -7,6 +7,7 @@ import {
 } from "ember-runtime/system/string";
 import Namespace from "ember-runtime/system/namespace";
 import EmberObject from "ember-runtime/system/object";
+import { iterateObject } from "ember-metal/utils";
 
 /**
 @module ember
@@ -94,15 +95,11 @@ export default EmberObject.extend({
 
     namespaces.forEach(function(namespace) {
       if (namespace !== Ember) {
-        for (var key in namespace) {
-          if (!namespace.hasOwnProperty(key)) { continue; }
-          if (typeSuffixRegex.test(key)) {
-            var klass = namespace[key];
-            if (typeOf(klass) === 'class') {
-              types.push(dasherize(key.replace(typeSuffixRegex, '')));
-            }
+        iterateObject(namespace, function(key, klass){
+          if (typeSuffixRegex.test(key) && typeOf(klass) === 'class') {
+            types.push(dasherize(key.replace(typeSuffixRegex, '')));
           }
-        }
+        });
       }
     });
     return types;

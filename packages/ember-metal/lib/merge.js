@@ -1,3 +1,4 @@
+import { iterateObject } from "ember-metal/utils";
 /**
   Merge the contents of two objects together into the first object.
 
@@ -14,9 +15,8 @@
   @return {Object}
 */
 export default function merge(original, updates) {
-  for (var prop in updates) {
-    if (!updates.hasOwnProperty(prop)) { continue; }
-    original[prop] = updates[prop];
-  }
+  iterateObject(updates, function(key, value){
+    original[key] = value;
+  });
   return original;
 }

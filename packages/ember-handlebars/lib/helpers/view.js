@@ -17,6 +17,7 @@ import {
   handlebarsGet,
   handlebarsGetView
 } from "ember-handlebars/ext";
+import { iterateObject } from "ember-metal/utils";
 
 var SELF_BINDING = /^_view\./;
 
@@ -24,7 +25,7 @@ function makeBindings(thisContext, options) {
   var hash = options.hash;
   var hashType = options.hashTypes;
 
-  for (var prop in hash) {
+  iterateObject(hash, function(prop, _){
     if (hashType[prop] === 'ID') {
 
       var value = hash[prop];
@@ -38,9 +39,9 @@ function makeBindings(thisContext, options) {
         delete hashType[prop];
       }
     }
-  }
+  });
 
-  if (hash.hasOwnProperty('idBinding')) {
+  if (Object.hasOwnProperty.call(hash, 'idBinding')) {
     // id can't be bound, so just perform one-time lookup.
     hash.id = handlebarsGet(thisContext, hash.idBinding, options);
     hashType.id = 'STRING';
@@ -105,15 +106,14 @@ export var ViewHelper = EmberObject.create({
     var path;
 
     // Evaluate the context of regular attribute bindings:
-    for (var prop in hash) {
-      if (!hash.hasOwnProperty(prop)) { continue; }
-
+    var self = this;
+    iterateObject(hash, function(prop, value){
       // Test if the property ends in "Binding"
       if (IS_BINDING.test(prop) && typeof hash[prop] === 'string') {
-        path = this.contextualizeBindingPath(hash[prop], data);
+        path = self.contextualizeBindingPath(hash[prop], data);
         if (path) { hash[prop] = path; }
       }
-    }
+    });
 
     // Evaluate the context of class name bindings:
     if (extensions.classNameBindings) {
