@@ -281,6 +281,12 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
     the meta hash, allowing the method to avoid making an unnecessary copy.
   @return {Object} the meta hash for an object
 */
+var agent = window.navigator.userAgent;
+
+var mayNeedFix = agent.indexOf('iPhone') > -1 &&
+  agent.indexOf('Version/8.0 Mobile') > -1 &&
+  ({ '__proto__': []} instanceof Array);
+
 function meta(obj, writable) {
 
   var ret = obj['__ember_meta__'];
@@ -305,18 +311,30 @@ function meta(obj, writable) {
   } else if (ret.source !== obj) {
     if (canDefineNonEnumerableProperties) o_defineProperty(obj, '__ember_meta__', META_DESC);
 
-    ret = o_create(ret);
-    ret.descs     = o_create(ret.descs);
-    ret.watching  = o_create(ret.watching);
-    ret.cache     = {};
-    ret.cacheMeta = {};
-    ret.source    = obj;
+    var newRet;
+    if (mayNeedFix) {
+      newRet = { };
+    } else {
+      newRet = o_create(ret);
+
+    }
+    newRet.descs     = o_create(ret.descs);
+    newRet.watching  = o_create(ret.watching);
+    newRet.cache     = {};
+    newRet.cacheMeta = {};
+    newRet.source    = obj;
 
     if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       if (hasPropertyAccessors) {
-        ret.values = o_create(ret.values);
+        newRet.values = o_create(ret.values);
       }
     }
+
+    if (mayNeedFix) {
+      newRet['__proto__'] = ret;
+    }
+
+    ret = newRet;
 
     obj['__ember_meta__'] = ret;
   }
