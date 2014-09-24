@@ -10,6 +10,7 @@ import {
   forEach
 } from "ember-metal/array";
 
+import keys from "ember-metal/keys";
 /**
 @module ember-metal
 */
@@ -862,6 +863,24 @@ export function applyStr(t /* target */, m /* method */, a /* args */) {
   }
 }
 
+function iterateObject(object, callback){
+  if (typeof object !== 'object') {
+    return;
+  }
+  var objectKeys = keys(object);
+  var length = objectKeys.length;
+  var i, key;
+
+  for(i = 0; i < length; i++){
+    key = objectKeys[i];
+    callback(key, object[key]);
+  }
+}
+
+function hasOwn(object, property){
+  return Object.prototype.hasOwnProperty.call(object, property);
+}
+
 export {
   GUID_KEY,
   META_DESC,
@@ -871,5 +890,7 @@ export {
   tryCatchFinally,
   isArray,
   canInvoke,
-  tryFinally
+  tryFinally,
+  iterateObject,
+  hasOwn
 };

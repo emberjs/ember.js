@@ -6,6 +6,7 @@ import inBuffer from "ember-views/views/states/in_buffer";
 import hasElement from "ember-views/views/states/has_element";
 import inDOM from "ember-views/views/states/in_dom";
 import destroying from "ember-views/views/states/destroying";
+import { iterateObject } from "ember-metal/utils";
 
 export function cloneStates(from) {
   var into = {};
@@ -17,10 +18,9 @@ export function cloneStates(from) {
   into.hasElement = create(into._default);
   into.inDOM = create(into.hasElement);
 
-  for (var stateName in from) {
-    if (!from.hasOwnProperty(stateName)) { continue; }
+  iterateObject(from, function(stateName, _){
     merge(into[stateName], from[stateName]);
-  }
+  });
 
   return into;
 }

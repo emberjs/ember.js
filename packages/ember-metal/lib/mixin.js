@@ -35,6 +35,10 @@ import {
   addListener,
   removeListener
 } from "ember-metal/events";
+import {
+  hasOwn,
+  iterateObject
+} from "ember-metal/utils";
 
 var REQUIRED;
 var a_map = map;
@@ -64,7 +68,7 @@ function mixinsMeta(obj) {
   var ret = m.mixins;
   if (!ret) {
     ret = m.mixins = {};
-  } else if (!m.hasOwnProperty('mixins')) {
+  } else if (!hasOwn(m, 'mixins')) {
     ret = m.mixins = o_create(ret);
   }
   return ret;
@@ -199,18 +203,15 @@ function applyMergedProperties(obj, key, value, values) {
   var newBase = merge({}, baseValue);
   var hasFunction = false;
 
-  for (var prop in value) {
-    if (!value.hasOwnProperty(prop)) { continue; }
-
-    var propValue = value[prop];
+  iterateObject(value, function(prop, propValue){
     if (isMethod(propValue)) {
       // TODO: support for Computed Properties, etc?
       hasFunction = true;
-      newBase[prop] = giveMethodSuper(obj, prop, propValue, baseValue, {});
+      newBase[prop] = giveMethodSuper(obj, prop, propValue, baseValue, o_create(null));
     } else {
       newBase[prop] = propValue;
     }
-  }
+  });
 
   if (hasFunction) {
     newBase._super = superFunction;
@@ -248,11 +249,16 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
 }
 
 function mergeMixins(mixins, m, descs, values, base, keys) {
-  var mixin, props, key, concats, mergings, meta;
+  var mixin, props, concats, mergings, meta;
 
   function removeKeys(keyName) {
     delete descs[keyName];
     delete values[keyName];
+  }
+
+  function addProps(key, value){
+    keys.push(key);
+    addNormalizedProperty(base, key, value, meta, descs, values, concats, mergings);
   }
 
   for(var i=0, l=mixins.length; i<l; i++) {
@@ -269,11 +275,7 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
       concats = concatenatedMixinProperties('concatenatedProperties', props, values, base);
       mergings = concatenatedMixinProperties('mergedProperties', props, values, base);
 
-      for (key in props) {
-        if (!props.hasOwnProperty(key)) { continue; }
-        keys.push(key);
-        addNormalizedProperty(base, key, props[key], meta, descs, values, concats, mergings);
-      }
+      iterateObject(props, addProps);
 
       // manually copy toString() because some JS engines do not enumerate it
       if (props.hasOwnProperty('toString')) { base.toString = props.toString; }
@@ -291,7 +293,7 @@ function detectBinding(obj, key, value, m) {
     var bindings = m.bindings;
     if (!bindings) {
       bindings = m.bindings = {};
-    } else if (!m.hasOwnProperty('bindings')) {
+    } else if (!hasOwn(m, 'bindings')) {
       bindings = m.bindings = o_create(m.bindings);
     }
     bindings[key] = value;
@@ -390,7 +392,7 @@ function applyMixin(obj, mixins, partial) {
 
   for(var i = 0, l = keys.length; i < l; i++) {
     key = keys[i];
-    if (key === 'constructor' || !values.hasOwnProperty(key)) { continue; }
+    if (key === 'constructor' || !hasOwn(values, key)) { continue; }
 
     desc = descs[key];
     value = values[key];
@@ -611,9 +613,9 @@ function _keys(ret, mixin, seen) {
 
   if (mixin.properties) {
     var props = mixin.properties;
-    for (var key in props) {
-      if (props.hasOwnProperty(key)) { ret[key] = true; }
-    }
+    iterateObject(props, function(key, _){
+      ret[key] = true;
+    });
   } else if (mixin.mixins) {
     a_forEach.call(mixin.mixins, function(x) { _keys(ret, x, seen); });
   }
@@ -624,9 +626,9 @@ MixinPrototype.keys = function() {
   var seen = {};
   var ret = [];
   _keys(keys, this, seen);
-  for(var key in keys) {
-    if (keys.hasOwnProperty(key)) { ret.push(key); }
-  }
+  iterateObject(keys, function(key, _){
+    ret.push(key);
+  });
   return ret;
 };
 

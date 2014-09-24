@@ -5,6 +5,9 @@ import { computed } from "ember-metal/computed";
 import isEmpty from 'ember-metal/is_empty';
 import { isNone } from 'ember-metal/is_none';
 import { alias } from 'ember-metal/alias';
+import keys from "ember-metal/keys";
+import { iterateObject } from "ember-metal/utils";
+import { create as o_create } from "ember-metal/platform";
 
 /**
 @module ember-metal
@@ -13,7 +16,7 @@ import { alias } from 'ember-metal/alias';
 var a_slice = [].slice;
 
 function getProperties(self, propertyNames) {
-  var ret = {};
+  var ret = o_create(null);
   for(var i = 0; i < propertyNames.length; i++) {
     ret[propertyNames[i]] = get(self, propertyNames[i]);
   }
@@ -408,8 +411,12 @@ registerComputed('lte', function(dependentKey, value) {
   a logical `and` on the values of all the original values for properties.
 */
 registerComputedWithProperties('and', function(properties) {
-  for (var key in properties) {
-    if (properties.hasOwnProperty(key) && !properties[key]) {
+  var propKeys = keys(properties);
+  var length = propKeys.length;
+  var i;
+
+  for (i = 0; i < length; i++){
+    if (!properties[propKeys[i]]){
       return false;
     }
   }
@@ -441,8 +448,12 @@ registerComputedWithProperties('and', function(properties) {
   a logical `or` on the values of all the original values for properties.
 */
 registerComputedWithProperties('or', function(properties) {
-  for (var key in properties) {
-    if (properties.hasOwnProperty(key) && properties[key]) {
+  var propKeys = keys(properties);
+  var length = propKeys.length;
+  var i;
+
+  for (i = 0; i < length; i++){
+    if (properties[propKeys[i]]){
       return true;
     }
   }
@@ -474,9 +485,15 @@ registerComputedWithProperties('or', function(properties) {
   the first truthy value of given list of properties.
 */
 registerComputedWithProperties('any', function(properties) {
-  for (var key in properties) {
-    if (properties.hasOwnProperty(key) && properties[key]) {
-      return properties[key];
+  var propKeys = keys(properties);
+  var length = propKeys.length;
+  var i, key, value;
+
+  for (i = 0; i < length; i++){
+    key = propKeys[i];
+    value = properties[key];
+    if (value) {
+      return  value;
     }
   }
   return null;
@@ -509,15 +526,13 @@ registerComputedWithProperties('any', function(properties) {
 */
 registerComputedWithProperties('collect', function(properties) {
   var res = Ember.A();
-  for (var key in properties) {
-    if (properties.hasOwnProperty(key)) {
-      if (isNone(properties[key])) {
-        res.push(null);
-      } else {
-        res.push(properties[key]);
-      }
+  iterateObject(properties, function(key, value){
+    if (isNone(value)){
+      res.push(null);
+    } else {
+      res.push(value);
     }
-  }
+  });
   return res;
 });
 

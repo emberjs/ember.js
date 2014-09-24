@@ -17,6 +17,7 @@ import { handlebarsGetView } from "ember-handlebars/ext";
 import { ViewHelper } from "ember-handlebars/helpers/view";
 import { computed } from "ember-metal/computed";
 import CollectionView from "ember-views/views/collection_view";
+import { iterateObject } from "ember-metal/utils";
 
 var alias = computed.alias;
 /**
@@ -199,19 +200,17 @@ function collectionHelper(path, options) {
 
   // Go through options passed to the {{collection}} helper and extract options
   // that configure item views instead of the collection itself.
-  for (var prop in hash) {
-    if (hash.hasOwnProperty(prop)) {
-      match = prop.match(/^item(.)(.*)$/);
+  iterateObject(hash, function(prop, value){
+    match = prop.match(/^item(.)(.*)$/);
 
-      if (match && prop !== 'itemController') {
-        // Convert itemShouldFoo -> shouldFoo
-        itemHash[match[1].toLowerCase() + match[2]] = hash[prop];
-        // Delete from hash as this will end up getting passed to the
-        // {{view}} helper method.
-        delete hash[prop];
-      }
+    if (match && prop !== 'itemController') {
+      // Convert itemShouldFoo -> shouldFoo
+      itemHash[match[1].toLowerCase() + match[2]] = hash[prop];
+      // Delete from hash as this will end up getting passed to the
+      // {{view}} helper method.
+      delete hash[prop];
     }
-  }
+  });
 
   if (fn) {
     itemHash.template = fn;

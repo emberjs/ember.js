@@ -24,6 +24,11 @@ import {
   isPath
 } from "ember-metal/path_cache";
 
+import {
+  hasOwn,
+  iterateObject
+} from "ember-metal/utils";
+
 /**
   Starts watching a property on an object. Whenever the property changes,
   invokes `Ember.propertyWillChange` and `Ember.propertyDidChange`. This is the
@@ -82,7 +87,7 @@ export function rewatch(obj) {
   var m = obj['__ember_meta__'], chains = m && m.chains;
 
   // make sure the object has its own guid.
-  if (GUID_KEY in obj && !obj.hasOwnProperty(GUID_KEY)) {
+  if (GUID_KEY in obj && !hasOwn(obj, GUID_KEY)) {
     generateGuid(obj);
   }
 
@@ -104,7 +109,10 @@ var NODE_STACK = [];
   @return {void}
 */
 export function destroy(obj) {
-  var meta = obj['__ember_meta__'], node, nodes, key, nodeObject;
+  var meta = obj['__ember_meta__'], node, nodes, nodeObject;
+  function pushToNodeStack(_, value){
+    NODE_STACK.push(value);
+  }
   if (meta) {
     obj['__ember_meta__'] = null;
     // remove chainWatchers to remove circular references that would prevent GC
@@ -117,11 +125,7 @@ export function destroy(obj) {
         // push children
         nodes = node._chains;
         if (nodes) {
-          for (key in nodes) {
-            if (nodes.hasOwnProperty(key)) {
-              NODE_STACK.push(nodes[key]);
-            }
-          }
+          iterateObject(nodes, pushToNodeStack);
         }
         // remove chainWatcher in node object
         if (node._watching) {

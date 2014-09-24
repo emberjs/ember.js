@@ -16,6 +16,10 @@ import {
   resolveParams,
   resolvePaths
 } from "ember-routing-handlebars/helpers/shared";
+import {
+  iterateObject,
+  hasOwn
+} from "ember-metal/utils";
 
 /**
 @module ember
@@ -258,19 +262,18 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     }
 
     var queryParamsObject = this.queryParamsObject;
+    var self = this;
     if (queryParamsObject) {
       var values = queryParamsObject.values;
 
       // Install observers for all of the hash options
       // provided in the (query-params) subexpression.
-      for (var k in values) {
-        if (!values.hasOwnProperty(k)) { continue; }
-
+      iterateObject(values, function(k, _){
         if (queryParamsObject.types[k] === 'ID') {
           normalizedPath = getNormalizedPath(values[k], helperParameters);
-          this.registerObserver(normalizedPath.root, normalizedPath.path, this, this._paramsChanged);
+          self.registerObserver(normalizedPath.root, normalizedPath.path, self, self._paramsChanged);
         }
-      }
+      });
     }
   },
 
@@ -957,10 +960,7 @@ function getResolvedQueryParams(linkView, targetRouteName) {
   if (!queryParamsObject) { return resolvedQueryParams; }
   var rawParams = queryParamsObject.values;
 
-  for (var key in rawParams) {
-    if (!rawParams.hasOwnProperty(key)) { continue; }
-
-    var value = rawParams[key];
+  iterateObject(rawParams, function(key, value){
     var type = queryParamsObject.types[key];
 
     if (type === 'ID') {
@@ -968,7 +968,7 @@ function getResolvedQueryParams(linkView, targetRouteName) {
       value = EmberHandlebars.get(normalizedPath.root, normalizedPath.path, helperParameters.options);
     }
     resolvedQueryParams[key] = value;
-  }
+  });
   return resolvedQueryParams;
 }
 
@@ -987,12 +987,13 @@ function paramsAreLoaded(params) {
 }
 
 function shallowEqual(a, b) {
+  // TODO: Object.keys and/or a faster algorithm
   var k;
   for (k in a) {
-    if (a.hasOwnProperty(k) && a[k] !== b[k]) { return false; }
+    if (hasOwn(a, k) && a[k] !== b[k]) { return false; }
   }
   for (k in b) {
-    if (b.hasOwnProperty(k) && a[k] !== b[k]) { return false; }
+    if (hasOwn(b, k) && a[k] !== b[k]) { return false; }
   }
   return true;
 }

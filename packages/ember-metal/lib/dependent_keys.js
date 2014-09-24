@@ -1,5 +1,6 @@
 import { create } from "ember-metal/platform";
 import { watch, unwatch } from "ember-metal/watching";
+import { hasOwn } from "ember-metal/utils";
 
 /**
 @module ember-metal
@@ -28,7 +29,7 @@ function keysForDep(depsMeta, depKey) {
     // if there are no dependencies yet for a the given key
     // create a new empty list of dependencies for the key
     keys = depsMeta[depKey] = {};
-  } else if (!depsMeta.hasOwnProperty(depKey)) {
+  } else if (!hasOwn(depsMeta, depKey)) {
     // otherwise if the dependency list is inherited from
     // a superclass, clone the hash
     keys = depsMeta[depKey] = o_create(keys);

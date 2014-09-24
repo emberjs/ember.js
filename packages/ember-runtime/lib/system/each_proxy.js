@@ -18,7 +18,10 @@ import {
   removeBeforeObserver,
   removeObserver
 } from "ember-metal/observer";
-import { typeOf } from "ember-metal/utils";
+import {
+  typeOf,
+  iterateObject
+} from "ember-metal/utils";
 import { watchedEvents } from "ember-metal/events";
 import { defineProperty } from "ember-metal/properties";
 import {
@@ -137,18 +140,18 @@ var EachProxy = EmberObject.extend({
 
   arrayWillChange: function(content, idx, removedCnt, addedCnt) {
     var keys = this._keys;
-    var key, lim;
+    var self = this;
+    var lim;
 
-    lim = removedCnt>0 ? idx+removedCnt : -1;
+    lim = removedCnt > 0 ? idx + removedCnt : -1;
     beginPropertyChanges(this);
 
-    for(key in keys) {
-      if (!keys.hasOwnProperty(key)) { continue; }
-
-      if (lim>0) { removeObserverForContentKey(content, key, this, idx, lim); }
-
-      propertyWillChange(this, key);
-    }
+    iterateObject(keys, function(key, _){
+      if (lim > 0) {
+        removeObserverForContentKey(content, key, self, idx, lim);
+      }
+      propertyWillChange(self, key);
+    });
 
     propertyWillChange(this._content, '@each');
     endPropertyChanges(this);
@@ -156,18 +159,17 @@ var EachProxy = EmberObject.extend({
 
   arrayDidChange: function(content, idx, removedCnt, addedCnt) {
     var keys = this._keys;
+    var self = this;
     var lim;
 
     lim = addedCnt>0 ? idx+addedCnt : -1;
     changeProperties(function() {
-      for(var key in keys) {
-        if (!keys.hasOwnProperty(key)) { continue; }
-
-        if (lim>0) { addObserverForContentKey(content, key, this, idx, lim); }
-
-        propertyDidChange(this, key);
-      }
-
+      iterateObject(keys, function(key){
+        if (lim > 0) {
+          addObserverForContentKey(content, key, self, idx, lim);
+        }
+        propertyDidChange(self, key);
+      });
       propertyDidChange(this._content, '@each');
     }, this);
   },

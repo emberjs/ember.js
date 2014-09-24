@@ -8,6 +8,7 @@ import {
   listenersDiff
 } from "ember-metal/events";
 import ObserverSet from "ember-metal/observer_set";
+import { hasOwn } from "ember-metal/utils";
 
 var beforeObserverSet = new ObserverSet();
 var observerSet = new ObserverSet();
@@ -137,7 +138,7 @@ function iterDeps(method, obj, deps, depKey, seen, meta) {
 }
 
 function chainsWillChange(obj, keyName, m) {
-  if (!(m.hasOwnProperty('chainWatchers') &&
+  if (!(hasOwn(m, 'chainWatchers') &&
         m.chainWatchers[keyName])) {
     return;
   }
@@ -156,7 +157,7 @@ function chainsWillChange(obj, keyName, m) {
 }
 
 function chainsDidChange(obj, keyName, m, suppressEvents) {
-  if (!(m && m.hasOwnProperty('chainWatchers') &&
+  if (!(m && hasOwn(m, 'chainWatchers') &&
         m.chainWatchers[keyName])) {
     return;
   }

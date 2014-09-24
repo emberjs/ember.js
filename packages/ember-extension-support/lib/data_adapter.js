@@ -6,6 +6,7 @@ import Namespace from "ember-runtime/system/namespace";
 import EmberObject from "ember-runtime/system/object";
 import { A as emberA } from "ember-runtime/system/native_array";
 import Application from "ember-application/system/application";
+import { iterateObject } from "ember-metal/utils";
 
 /**
 @module ember
@@ -378,18 +379,17 @@ export default EmberObject.extend({
     var self = this;
 
     namespaces.forEach(function(namespace) {
-      for (var key in namespace) {
-        if (!namespace.hasOwnProperty(key)) { continue; }
+      iterateObject(namespace, function(key, value){
         // Even though we will filter again in `getModelTypes`,
         // we should not call `lookupContainer` on non-models
         // (especially when `Ember.MODEL_FACTORY_INJECTIONS` is `true`)
-        if (!self.detect(namespace[key])) { continue; }
+        if (!self.detect(namespace[key])) { return; }
         var name = dasherize(key);
         if (!(namespace instanceof Application) && namespace.toString()) {
           name = namespace + '/' + name;
         }
         types.push(name);
-      }
+      });
     });
     return types;
   },

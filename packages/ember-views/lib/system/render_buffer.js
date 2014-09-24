@@ -6,6 +6,7 @@
 import { setInnerHTML } from "ember-views/system/utils";
 import jQuery from "ember-views/system/jquery";
 import {DOMHelper} from "morph";
+import { iterateObject } from "ember-metal/utils";
 
 function ClassSet() {
   this.seen = {};
@@ -383,7 +384,7 @@ _RenderBuffer.prototype = {
     var props = this.elementProperties;
     var style = this.elementStyle;
     var styleBuffer = '';
-    var attr, prop, tagString;
+    var tagString;
 
     if (attrs && attrs.name && !canSetNameOnInputs) {
       // IE allows passing a tag to createElement. See note on `canSetNameOnInputs` above as well.
@@ -406,11 +407,9 @@ _RenderBuffer.prototype = {
     }
 
     if (style) {
-      for (prop in style) {
-        if (style.hasOwnProperty(prop)) {
-          styleBuffer += (prop + ':' + style[prop] + ';');
-        }
-      }
+      iterateObject(style, function(prop, styleValue){
+        styleBuffer += (prop + ':' + styleValue + ';');
+      });
 
       $element.attr('style', styleBuffer);
 
@@ -418,21 +417,17 @@ _RenderBuffer.prototype = {
     }
 
     if (attrs) {
-      for (attr in attrs) {
-        if (attrs.hasOwnProperty(attr)) {
-          $element.attr(attr, attrs[attr]);
-        }
-      }
+      iterateObject(attrs, function(key, attr){
+        $element.attr(key, attr);
+      });
 
       this.elementAttributes = null;
     }
 
     if (props) {
-      for (prop in props) {
-        if (props.hasOwnProperty(prop)) {
-          $element.prop(prop, props[prop]);
-        }
-      }
+      iterateObject(props, function(propName, prop){
+        $element.prop(propName, prop);
+      });
 
       this.elementProperties = null;
     }
