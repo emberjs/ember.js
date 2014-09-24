@@ -50,7 +50,7 @@ function click(app, selector, context) {
   var $el = app.testHelpers.findWithAssert(selector, context);
   run($el, 'mousedown');
   if(document.activeElement){
-    Ember.run(app.$(document.activeElement), 'trigger', 'focusout');    
+    Ember.run(app.$(document.activeElement), 'blur');    
   }
 
   if ($el.is(':input')) {
