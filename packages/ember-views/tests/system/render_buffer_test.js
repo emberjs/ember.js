@@ -105,7 +105,7 @@ test("prevents XSS injection via `tagName`", function() {
   var buffer = new RenderBuffer('cool-div><div xss="true"', document.body);
   try {
     buffer.generateElement();
-    equal(buffer.string(), '<cool-divdivxsstrue></cool-divdivxsstrue>');
+    equal(buffer.element().childNodes.length, 0, 'no extra nodes created');
   } catch (e) {
     ok(true, 'dom exception');
   }
@@ -116,7 +116,7 @@ test("handles null props - Issue #2019", function() {
 
   buffer.prop('value', null);
   buffer.generateElement();
-  equal(buffer.string(), '<div></div>');
+  equal(buffer.element().tagName, 'DIV', 'div exists');
 });
 
 test("handles browsers like Firefox < 11 that don't support outerHTML Issue #1952", function() {
@@ -136,7 +136,7 @@ test("lets `setClasses` and `addClass` work together", function() {
   buffer.generateElement();
 
   var el = buffer.element();
-  equal(el.tagName.toLowerCase(), 'div');
+  equal(el.tagName, 'DIV');
   equal(el.getAttribute('class'), 'foo bar baz');
 });
 
@@ -147,7 +147,7 @@ test("generates text and a div and text", function() {
 
   var el = buffer.element();
   equal(el.childNodes[0].data, 'Howdy');
-  equal(el.childNodes[1].tagName.toLowerCase(), 'div');
+  equal(el.childNodes[1].tagName, 'DIV');
   equal(el.childNodes[1].childNodes[0].data, 'Nick');
   equal(el.childNodes[2].data, 'Cage');
 });
@@ -177,7 +177,7 @@ test("generates a tr from a tr innerString with leading comment", function() {
   buffer.buffer = '<!-- blargh! --><tr></tr>';
 
   var el = buffer.element();
-  equal(el.childNodes[1].tagName.toLowerCase(), 'tr');
+  equal(el.childNodes[1].tagName, 'TR');
 });
 
 test("generates a tbody from a tbody innerString", function() {
@@ -186,7 +186,7 @@ test("generates a tbody from a tbody innerString", function() {
   buffer.buffer = '<tbody><tr></tr></tbody>';
 
   var el = buffer.element();
-  equal(el.childNodes[0].tagName.toLowerCase(), 'tbody');
+  equal(el.childNodes[0].tagName, 'TBODY');
 });
 
 test("generates a col from a col innerString", function() {
@@ -195,7 +195,7 @@ test("generates a col from a col innerString", function() {
   buffer.buffer = '<col></col>';
 
   var el = buffer.element();
-  equal(el.childNodes[0].tagName.toLowerCase(), 'col');
+  equal(el.childNodes[0].tagName, 'COL');
 });
 
 QUnit.module("RenderBuffer - without tagName");
