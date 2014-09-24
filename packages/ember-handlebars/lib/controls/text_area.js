@@ -31,7 +31,7 @@ export default Component.extend(TextSupport, {
   classNames: ['ember-text-area'],
 
   tagName: "textarea",
-  attributeBindings: ['rows', 'cols', 'name', 'selectionEnd', 'selectionStart', 'wrap'],
+  attributeBindings: ['rows', 'cols', 'name', 'selectionEnd', 'selectionStart', 'wrap', 'lang', 'dir'],
   rows: null,
   cols: null,
 
