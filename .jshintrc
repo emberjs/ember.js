@@ -41,7 +41,6 @@
     "debug": false,
     "devel": false,
     "eqeqeq": true,
-    "esnext": true,
     "evil": true,
     "forin": false,
     "immed": false,
