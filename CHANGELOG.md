@@ -33,6 +33,8 @@
 * Refactor internals to make debugging easier (use a single assignment per `var` statement).
 * [BREAKING] Remove deprecated controller action lookup. Support for pre-1.0.0 applications with actions in the root
   of the controller (instead of inside the `actions` hash) has been removed.
+* [BREAKING] Ember.View didInsertElement is now called on child views before their parents. Before
+  1.8.0-beta.1 it would be called top-down.
 
 ### Ember 1.7.0 (August 19, 2014)
 
