@@ -1459,6 +1459,9 @@ var View = CoreView.extend({
     or after the view was re-rendered. Override this function to do any
     set up that requires an element in the document body.
 
+    When a view has children, didInsertElement will be called on the
+    child view(s) first, bubbling upwards through the hierarchy.
+
     @event didInsertElement
   */
   didInsertElement: Ember.K,
