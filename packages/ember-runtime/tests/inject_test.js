@@ -2,9 +2,9 @@
 
 import InjectedProperty from "ember-metal/injected_property";
 import {
-  createInjectionHelper,
-  default as inject
+  createInjectionHelper
 } from "ember-runtime/inject";
+import inject from "ember-runtime/inject";
 import Container from "ember-runtime/system/container";
 import Object from "ember-runtime/system/object";
 

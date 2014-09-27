@@ -6,7 +6,7 @@ import ActionManager from "ember-views/system/action_manager";
 
 import Container from "ember-runtime/system/container";
 import EmberObject from "ember-runtime/system/object";
-import { default as EmberController } from "ember-runtime/controllers/controller";
+import EmberController from "ember-runtime/controllers/controller";
 import EmberObjectController from "ember-runtime/controllers/object_controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
 

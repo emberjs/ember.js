@@ -20,9 +20,9 @@ import HistoryLocation from "ember-routing/location/history_location";
 import AutoLocation from "ember-routing/location/auto_location";
 
 import {
-  generateControllerFactory,
-  default as generateController
+  generateControllerFactory
 } from "ember-routing/system/generate_controller";
+import generateController from "ember-routing/system/generate_controller";
 import controllerFor from "ember-routing/system/controller_for";
 import RouterDSL from "ember-routing/system/dsl";
 import Router from "ember-routing/system/router";
