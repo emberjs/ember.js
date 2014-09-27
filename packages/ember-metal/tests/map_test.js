@@ -334,6 +334,30 @@ function testMap(nameAndFunc) {
 
     equal(iteration, 4, 'expected 3 iterations');
   });
+
+  test("clear", function() {
+    var iterations = 0;
+
+    map.set("a", 1);
+    map.set("b", 2);
+    map.set("c", 3);
+    map.set("d", 4);
+
+    equal(map.size, 4);
+
+    map.forEach(function() {
+      iterations++;
+    });
+    equal(iterations, 4);
+
+    map.clear();
+    equal(map.size, 0);
+    iterations = 0;
+    map.forEach(function() {
+      iterations++;
+    });
+    equal(iterations, 0);
+  });
 }
 
 for (var i = 0;  i < varieties.length;  i++) {

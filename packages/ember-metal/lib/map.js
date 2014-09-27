@@ -387,6 +387,15 @@ Map.prototype = {
   },
 
   /**
+    @method clear
+  */
+  clear: function() {
+    this.keys.clear();
+    this.values = Object.create(null);
+    this.size = 0;
+  },
+
+  /**
     @method copy
     @return {Ember.Map}
   */
