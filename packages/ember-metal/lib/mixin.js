@@ -145,6 +145,10 @@ function giveDescriptorSuper(meta, key, property, values, descs) {
   return property;
 }
 
+var sourceAvailable = (function() {
+  return this;
+}).toString().indexOf('return this;') > -1;
+
 function giveMethodSuper(obj, key, method, values, descs) {
   var superMethod;
 
@@ -163,14 +167,17 @@ function giveMethodSuper(obj, key, method, values, descs) {
     return method;
   }
 
-  var hasSuper = method.__hasSuper;
+  var hasSuper;
+  if (sourceAvailable) {
+    hasSuper = method.__hasSuper;
 
-  if (hasSuper === undefined) {
-    hasSuper = method.toString().indexOf('_super') > -1;
-    method.__hasSuper = hasSuper;
+    if (hasSuper === undefined) {
+      hasSuper = method.toString().indexOf('_super') > -1;
+      method.__hasSuper = hasSuper;
+    }
   }
 
-  if (hasSuper) {
+  if (sourceAvailable === false || hasSuper) {
     return wrap(method, superMethod);
   } else {
     return method;
