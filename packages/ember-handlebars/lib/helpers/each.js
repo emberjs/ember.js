@@ -27,10 +27,8 @@ import {
   removeBeforeObserver
 } from "ember-metal/observer";
 
-import {
-  _Metamorph,
-  _MetamorphView
-} from "ember-handlebars/views/metamorph_view";
+import _MetamorphView from "ember-handlebars/views/metamorph_view";
+import { _Metamorph } from "ember-handlebars/views/metamorph_view";
 
 var EachView = CollectionView.extend(_Metamorph, {
 

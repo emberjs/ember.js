@@ -37,7 +37,7 @@ export var _Metamorph = Mixin.create({
   @uses Ember._Metamorph
   @private
 */
-export var _MetamorphView = View.extend(_Metamorph);
+export default View.extend(_Metamorph);
 
 /**
   @class _SimpleMetamorphView
@@ -47,4 +47,3 @@ export var _MetamorphView = View.extend(_Metamorph);
   @private
 */
 export var _SimpleMetamorphView = CoreView.extend(_Metamorph);
-export default View.extend(_Metamorph);

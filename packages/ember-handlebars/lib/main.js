@@ -79,9 +79,9 @@ import {
   _HandlebarsBoundView,
   SimpleHandlebarsView
 } from "ember-handlebars/views/handlebars_bound_view";
+import _MetamorphView from "ember-handlebars/views/metamorph_view";
 import {
   _SimpleMetamorphView,
-  _MetamorphView,
   _Metamorph
 } from "ember-handlebars/views/metamorph_view";
 
