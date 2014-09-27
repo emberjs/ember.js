@@ -130,7 +130,7 @@ OrderedSet.prototype = {
   remove: function(obj, _guid) {
     Ember.deprecate('Calling `OrderedSet.prototype.remove` has been deprecated, please use `OrderedSet.prototype.delete` instead.', this._silenceRemoveDeprecation);
 
-    return this['delete'](obj, _guid);
+    return this.delete(obj, _guid);
   },
 
   /**
@@ -139,7 +139,7 @@ OrderedSet.prototype = {
     @param _guid (optional and for internal use only)
     @return {Boolean}
   */
-  'delete': function(obj, _guid) {
+  delete: function(obj, _guid) {
     var guid = _guid || guidFor(obj);
     var presenceSet = this.presenceSet;
     var list = this.list;
@@ -332,7 +332,7 @@ Map.prototype = {
   remove: function(key) {
     Ember.deprecate('Calling `Map.prototype.remove` has been deprecated, please use `Map.prototype.delete` instead.');
 
-    return this['delete'](key);
+    return this.delete(key);
   },
 
   /**
@@ -342,7 +342,7 @@ Map.prototype = {
     @param {*} key
     @return {Boolean} true if an item was removed, false otherwise
   */
-  'delete': function(key) {
+  delete: function(key) {
     if (this.size === 0) { return false; }
     // don't use ES6 "delete" because it will be annoying
     // to use in browsers that are not ES6 friendly;
@@ -351,7 +351,7 @@ Map.prototype = {
     var guid = guidFor(key);
 
     if (values[guid]) {
-      keys.remove(key, guid);
+      keys.delete(key, guid);
       delete values[guid];
       this.size = keys.size;
       return true;
