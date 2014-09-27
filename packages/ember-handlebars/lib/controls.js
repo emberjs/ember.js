@@ -7,7 +7,6 @@ import Ember from "ember-metal/core"; // Ember.assert
 
 import EmberHandlebars from "ember-handlebars-compiler";
 import { handlebarsGet } from "ember-handlebars/ext";
-var helpers = EmberHandlebars.helpers;
 /**
 @module ember
 @submodule ember-handlebars-compiler
@@ -210,12 +209,12 @@ export function inputHelper(options) {
 
     Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`; you must use `checked=someBooleanValue` instead.", options.hashTypes.value !== 'ID');
 
-    return helpers.view.call(this, Checkbox, options);
+    return EmberHandlebars.helpers.view.call(this, Checkbox, options);
   } else {
     delete hash.on;
 
     hash.onEvent = onEvent || 'enter';
-    return helpers.view.call(this, TextField, options);
+    return EmberHandlebars.helpers.view.call(this, TextField, options);
   }
 }
 
@@ -407,5 +406,5 @@ export function inputHelper(options) {
 export function textareaHelper(options) {
   Ember.assert('You can only pass attributes to the `textarea` helper, not arguments', arguments.length < 2);
 
-  return helpers.view.call(this, TextArea, options);
+  return EmberHandlebars.helpers.view.call(this, TextArea, options);
 }

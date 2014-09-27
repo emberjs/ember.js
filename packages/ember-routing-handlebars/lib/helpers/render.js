@@ -8,8 +8,6 @@ import {
 import { handlebarsGet } from "ember-handlebars/ext";
 import { ViewHelper } from "ember-handlebars/helpers/view";
 
-import "ember-handlebars/helpers/view";
-
 /**
 @module ember
 @submodule ember-routing

@@ -17,7 +17,6 @@ import {
 @submodule ember-routing
 */
 
-var SafeString = EmberHandlebars.SafeString;
 var a_slice = Array.prototype.slice;
 
 function args(options, actionName) {
@@ -339,5 +338,5 @@ export function actionHelper(actionName) {
   }
 
   var actionId = ActionHelper.registerAction(actionName, action, hash.allowedKeys);
-  return new SafeString('data-ember-action="' + actionId + '"');
+  return new EmberHandlebars.SafeString('data-ember-action="' + actionId + '"');
 }

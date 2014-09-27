@@ -4,7 +4,6 @@ import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.assert, Ember.Han
 import { fmt } from "ember-runtime/system/string";
 
 import EmberHandlebars from "ember-handlebars-compiler";
-var helpers = EmberHandlebars.helpers;
 
 import { get } from "ember-metal/property_get";
 import EmberError from "ember-metal/error";
@@ -316,7 +315,7 @@ export function blockHelperMissingHelper(path) {
   if (helper) {
     return helper.apply(this, slice.call(arguments, 1));
   } else {
-    return helpers.helperMissing.call(this, path);
+    return EmberHandlebars.helpers.helperMissing.call(this, path);
   }
 }
 

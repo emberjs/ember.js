@@ -2,7 +2,6 @@ import Ember from "ember-metal/core";
 // var emberDeprecate = Ember.deprecate;
 
 import EmberHandlebars from "ember-handlebars-compiler";
-var helpers = EmberHandlebars.helpers;
 /**
 @module ember
 @submodule ember-handlebars
@@ -56,5 +55,5 @@ export default function templateHelper(name, options) {
 
   options.helperName = options.helperName || 'template';
 
-  return helpers.partial.apply(this, arguments);
+  return EmberHandlebars.helpers.partial.apply(this, arguments);
 }

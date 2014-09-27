@@ -3,7 +3,7 @@ import {
   defineProperty as o_defineProperty,
   canDefineNonEnumerableProperties,
   hasPropertyAccessors,
-  create
+  create as o_create
 } from "ember-metal/platform";
 
 import {
@@ -46,7 +46,6 @@ export function uuid() {
 */
 var GUID_PREFIX = 'ember';
 
-var o_create = create;
 // Used for guid generation...
 var numberCache  = [];
 var stringCache  = {};

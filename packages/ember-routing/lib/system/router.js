@@ -20,22 +20,13 @@ import {
   stashParamNames
 } from "ember-routing/utils";
 
-// requireModule("ember-handlebars");
-// requireModule("ember-runtime");
-// requireModule("ember-views");
-
 /**
 @module ember
 @submodule ember-routing
 */
 
-// // side effect of loading some Ember globals, for now
-// requireModule("ember-handlebars");
-// requireModule("ember-runtime");
-// requireModule("ember-views");
-
-var Router = requireModule("router")['default'];
-requireModule("router/transition");
+import Router from 'router';
+import 'router/transition';
 
 var slice = [].slice;
 

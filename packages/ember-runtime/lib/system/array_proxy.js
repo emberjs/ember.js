@@ -18,6 +18,7 @@ import EmberObject from "ember-runtime/system/object";
 import MutableArray from "ember-runtime/mixins/mutable_array";
 import Enumerable from "ember-runtime/mixins/enumerable";
 import { fmt } from "ember-runtime/system/string";
+import alias from "ember-metal/alias";
 
 /**
 @module ember
@@ -26,7 +27,6 @@ import { fmt } from "ember-runtime/system/string";
 
 var OUT_OF_RANGE_EXCEPTION = "Index out of range";
 var EMPTY = [];
-var alias = computed.alias;
 var K = Ember.K;
 
 /**
