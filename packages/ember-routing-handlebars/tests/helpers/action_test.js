@@ -121,7 +121,7 @@ test("Inside a yield, the target points at the original target", function() {
     boundText: "inner",
     truthy: true,
     obj: {},
-    layout: EmberHandlebars.compile("<p>{{boundText}}</p><p>{{#if truthy}}{{#with obj}}{{yield}}{{/with}}{{/if}}</p>")
+    layout: EmberHandlebars.compile("<div>{{boundText}}</div><div>{{#if truthy}}{{#with obj}}{{yield}}{{/with}}{{/if}}</div>")
   });
 
   view = EmberView.create({
@@ -137,7 +137,7 @@ test("Inside a yield, the target points at the original target", function() {
         boundText: 'insideWith'
       }
     },
-    template: EmberHandlebars.compile('{{#with obj}}{{#if truthy}}{{#view component}}{{#if truthy}}<p {{action "wat"}} class="wat">{{boundText}}</p>{{/if}}{{/view}}{{/if}}{{/with}}')
+    template: EmberHandlebars.compile('{{#with obj}}{{#if truthy}}{{#view component}}{{#if truthy}}<div {{action "wat"}} class="wat">{{boundText}}</div>{{/if}}{{/view}}{{/if}}{{/with}}')
   });
 
   appendView();

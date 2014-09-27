@@ -14,6 +14,7 @@ testsFor("ember-metal-views", {
   }
 });
 
+// Test the behavior of the helper createElement stub
 test("by default, view renders as a div", function() {
   view = {isView: true};
 
@@ -21,6 +22,7 @@ test("by default, view renders as a div", function() {
   equalHTML('qunit-fixture', "<div></div>");
 });
 
+// Test the behavior of the helper createElement stub
 test("tagName can be specified", function() {
   view = {
     isView: true,
@@ -32,6 +34,7 @@ test("tagName can be specified", function() {
   equalHTML('qunit-fixture', "<span></span>");
 });
 
+// Test the behavior of the helper createElement stub
 test("textContent can be specified", function() {
   view = {
     isView: true,
@@ -43,6 +46,7 @@ test("textContent can be specified", function() {
   equalHTML('qunit-fixture', "<div>ohai &lt;a&gt;derp&lt;/a&gt;</div>");
 });
 
+// Test the behavior of the helper createElement stub
 test("innerHTML can be specified", function() {
   view = {
     isView: true,
@@ -54,6 +58,20 @@ test("innerHTML can be specified", function() {
   equalHTML('qunit-fixture', "<div>ohai <a>derp</a></div>");
 });
 
+// Test the behavior of the helper createElement stub
+test("innerHTML tr can be specified", function() {
+  view = {
+    isView: true,
+    tagName: 'table',
+    innerHTML: '<tr><td>ohai</td></tr>'
+  };
+
+  appendTo(view);
+
+  equalHTML('qunit-fixture', "<table><tr><td>ohai</td></tr></table>");
+});
+
+// Test the behavior of the helper createElement stub
 test("element can be specified", function() {
   view = {
     isView: true,

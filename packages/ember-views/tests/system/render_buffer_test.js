@@ -8,8 +8,27 @@ var trim = jQuery.trim;
 //
 QUnit.module("RenderBuffer");
 
-test("RenderBuffers combine strings", function() {
+test("RenderBuffers raise a deprecation warning without a contextualElement", function() {
   var buffer = new RenderBuffer('div');
+  buffer.generateElement();
+  expectDeprecation(function(){
+    var el = buffer.element();
+    equal(el.tagName.toLowerCase(), 'div');
+  }, /buffer.element expects a contextualElement to exist/);
+});
+
+test("reset RenderBuffers raise a deprecation warning without a contextualElement", function() {
+  var buffer = new RenderBuffer('div', document.body);
+  buffer.reset('span');
+  buffer.generateElement();
+  expectDeprecation(function(){
+    var el = buffer.element();
+    equal(el.tagName.toLowerCase(), 'span');
+  }, /buffer.element expects a contextualElement to exist/);
+});
+
+test("RenderBuffers combine strings", function() {
+  var buffer = new RenderBuffer('div', document.body);
   buffer.generateElement();
 
   buffer.push('a');
@@ -22,7 +41,7 @@ test("RenderBuffers combine strings", function() {
 
 test("value of 0 is included in output", function() {
   var buffer, el;
-  buffer = new RenderBuffer('input');
+  buffer = new RenderBuffer('input', document.body);
   buffer.prop('value', 0);
   buffer.generateElement();
   el = buffer.element();
@@ -30,7 +49,7 @@ test("value of 0 is included in output", function() {
 });
 
 test("prevents XSS injection via `id`", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
 
   buffer.id('hacked" megahax="yes');
   buffer.generateElement();
@@ -40,7 +59,7 @@ test("prevents XSS injection via `id`", function() {
 });
 
 test("prevents XSS injection via `attr`", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
 
   buffer.attr('id', 'trololol" onmouseover="pwn()');
   buffer.attr('class', "hax><img src=\"trollface.png\"");
@@ -54,7 +73,7 @@ test("prevents XSS injection via `attr`", function() {
 });
 
 test("prevents XSS injection via `addClass`", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
 
   buffer.addClass('megahax" xss="true');
   buffer.generateElement();
@@ -64,7 +83,7 @@ test("prevents XSS injection via `addClass`", function() {
 });
 
 test("prevents XSS injection via `style`", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
 
   buffer.style('color', 'blue;" xss="true" style="color:red');
   buffer.generateElement();
@@ -83,25 +102,25 @@ test("prevents XSS injection via `style`", function() {
 });
 
 test("prevents XSS injection via `tagName`", function() {
-  var buffer = new RenderBuffer('cool-div><div xss="true"');
+  var buffer = new RenderBuffer('cool-div><div xss="true"', document.body);
   try {
     buffer.generateElement();
-    equal(buffer.string(), '<cool-divdivxsstrue></cool-divdivxsstrue>');
+    equal(buffer.element().childNodes.length, 0, 'no extra nodes created');
   } catch (e) {
     ok(true, 'dom exception');
   }
 });
 
 test("handles null props - Issue #2019", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
 
   buffer.prop('value', null);
   buffer.generateElement();
-  equal(buffer.string(), '<div></div>');
+  equal(buffer.element().tagName, 'DIV', 'div exists');
 });
 
 test("handles browsers like Firefox < 11 that don't support outerHTML Issue #1952", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
   buffer.generateElement();
   // Make sure element.outerHTML is falsy to trigger the fallback.
   var elementStub = '<div></div>';
@@ -111,20 +130,78 @@ test("handles browsers like Firefox < 11 that don't support outerHTML Issue #195
 });
 
 test("lets `setClasses` and `addClass` work together", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
   buffer.setClasses(['foo', 'bar']);
   buffer.addClass('baz');
   buffer.generateElement();
 
   var el = buffer.element();
-  equal(el.tagName.toLowerCase(), 'div');
+  equal(el.tagName, 'DIV');
   equal(el.getAttribute('class'), 'foo bar baz');
+});
+
+test("generates text and a div and text", function() {
+  var div = document.createElement('div');
+  var buffer = new RenderBuffer(undefined, div);
+  buffer.buffer = 'Howdy<div>Nick</div>Cage';
+
+  var el = buffer.element();
+  equal(el.childNodes[0].data, 'Howdy');
+  equal(el.childNodes[1].tagName, 'DIV');
+  equal(el.childNodes[1].childNodes[0].data, 'Nick');
+  equal(el.childNodes[2].data, 'Cage');
+});
+
+
+test("generates a tr from a tr innerString", function() {
+  var table = document.createElement('table');
+  var buffer = new RenderBuffer(undefined, table);
+  buffer.buffer = '<tr></tr>';
+
+  var el = buffer.element();
+  equal(el.childNodes[0].tagName.toLowerCase(), 'tr');
+});
+
+test("generates a tr from a tr innerString with leading <script", function() {
+  var table = document.createElement('table');
+  var buffer = new RenderBuffer(undefined, table);
+  buffer.buffer = '<script></script><tr></tr>';
+
+  var el = buffer.element();
+  equal(el.childNodes[1].tagName.toLowerCase(), 'tr');
+});
+
+test("generates a tr from a tr innerString with leading comment", function() {
+  var table = document.createElement('table');
+  var buffer = new RenderBuffer(undefined, table);
+  buffer.buffer = '<!-- blargh! --><tr></tr>';
+
+  var el = buffer.element();
+  equal(el.childNodes[1].tagName, 'TR');
+});
+
+test("generates a tbody from a tbody innerString", function() {
+  var table = document.createElement('table');
+  var buffer = new RenderBuffer(undefined, table);
+  buffer.buffer = '<tbody><tr></tr></tbody>';
+
+  var el = buffer.element();
+  equal(el.childNodes[0].tagName, 'TBODY');
+});
+
+test("generates a col from a col innerString", function() {
+  var table = document.createElement('table');
+  var buffer = new RenderBuffer(undefined, table);
+  buffer.buffer = '<col></col>';
+
+  var el = buffer.element();
+  equal(el.childNodes[0].tagName, 'COL');
 });
 
 QUnit.module("RenderBuffer - without tagName");
 
 test("It is possible to create a RenderBuffer without a tagName", function() {
-  var buffer = new RenderBuffer();
+  var buffer = new RenderBuffer(undefined, document.body);
   buffer.push('a');
   buffer.push('b');
   buffer.push('c');
@@ -139,7 +216,7 @@ test("It is possible to create a RenderBuffer without a tagName", function() {
 QUnit.module("RenderBuffer#element");
 
 test("properly handles old IE's zero-scope bug", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
   buffer.generateElement();
   buffer.push('<script></script>foo');
 

@@ -1439,6 +1439,7 @@ var View = CoreView.extend({
   createElement: function() {
     if (this.element) { return this; }
 
+    this._didCreateElementWithoutMorph = true;
     this.constructor.renderer.renderTree(this);
 
     return this;

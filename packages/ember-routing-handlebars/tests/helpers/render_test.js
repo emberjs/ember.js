@@ -499,7 +499,7 @@ test("{{render}} helper should be able to render a template again when it was re
   run(function() {
     view.connectOutlet('main', EmberView.create({
       controller: controller.create(),
-      template: compile("<p>1{{render 'home'}}</p>")
+      template: compile("<div>1{{render 'home'}}</div>")
     }));
   });
 
@@ -508,7 +508,7 @@ test("{{render}} helper should be able to render a template again when it was re
   run(function() {
     view.connectOutlet('main', EmberView.create({
       controller: controller.create(),
-      template: compile("<p>2{{render 'home'}}</p>")
+      template: compile("<div>2{{render 'home'}}</div>")
     }));
   });
 
