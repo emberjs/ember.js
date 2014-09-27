@@ -13,9 +13,7 @@
 
   This implementation follows the current iteration of the ES6 proposal for
   maps (http://wiki.ecmascript.org/doku.php?id=harmony:simple_maps_and_sets),
-  with two exceptions. First, because we need our implementation to be pleasant
-  on older browsers, we do not use the `delete` name (using `remove` instead).
-  Second, as we do not have the luxury of in-VM iteration, we implement a
+  with one exception:  as we do not have the luxury of in-VM iteration, we implement a
   forEach method for iteration.
 
   Map is mocked out to look like an Ember object, so you can do
