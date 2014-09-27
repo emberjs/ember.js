@@ -1,5 +1,40 @@
 # Ember Changelog
 
+### Ember 1.8.0-beta.3 (September, 27, 2014)
+
+* [BUGFIX] Use contextualElements to properly handle omitted optional start tags.
+* [BUGFIX] Ensure that `Route.prototype.activate` is not retriggered when the model for the current route changes.
+* [PERF] Fix optimization bailouts for `{{view}}` helper.
+* [BUGFIX] Add `attributeBindings` for `lang` and `dir` (for bidirectional language support) in `Ember.TextField` and `Ember.TextAra`.
+* [BUGFIX] Fix finishChains for all chains that reference an obj not just the ones rooted at that object.
+* [BUGFIX] Refactor ES3 `Ember.keys` implementation.
+* Rewrite Ember.Map to be faster and closer to ES6 implementation:
+  * [PERF + ES6] No longer clone array before enumeration (dramatically reduce allocations)
+  * [PERF] Don’t Rebind the callback of forEach if not needed
+  * [PERF + ES6] No longer allow Map#length to be bindable
+  * [PERF] Don’t double guid keys, as they are passed from map to ordered set (add/remove)
+  * [ES6] Deprecate Map#remove in-favor of the es6 Map#delete
+  * [ES6] Error if callback is not a function
+  * [ES6] Map#set should return the map. This enables chaining map.`map.set(‘foo’,1).set(‘bar’,3);` etc.
+  * [ES6] Remove length in-favor of size.
+  * [ES6] Throw if constructor is invoked without new
+  * [ES6] Make inheritance work correctly
+
+
+### Ember 1.8.0-beta.2 (September, 20, 2014)
+
+* [BUGFIX] Allow for bound property {{input}} type.
+* [BUGFIX] Ensure pushUnique targetQueue is cleared by flush.
+* [BUGFIX] instrument should still call block even without subscribers.
+* [BUGFIX] Remove uneeded normalization in query param controller lookup.
+* [BUGFIX] Do not use defineProperty on each View instance.
+* [PERF] Speedup `watchKey` by preventing for in related deopt.
+* [PERF] Change `ENV.MANDATORY_SETTER` to FEATURES so it can be compiled out of production builds.
+* [PERF] Object.create(null) in Ember.inspect.
+* [PERF] Extracts computed property set into a separate function.
+* [BUGFIX] Make `GUID_KEY = intern(GUID_KEY)` actually work on ES3.
+* [BUGFIX] Ensure nested routes can inherit model from parent.
+
 ### Ember 1.8.0-beta.1 (August 20, 2014)
 
 * Remove `metamorph` in favor of `morph` package (removes the need for `<script>` tags in the DOM).
