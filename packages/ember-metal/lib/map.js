@@ -186,7 +186,11 @@ OrderedSet.prototype = {
     @param {Function} fn
     @param self
   */
-  forEach: function(fn, thisArg) {
+  forEach: function(fn /*, thisArg*/) {
+    if (typeof fn !== 'function') {
+      missingFunction(fn);
+    }
+
     if (this.size === 0) { return; }
 
     var list = this.list;
@@ -195,7 +199,7 @@ OrderedSet.prototype = {
 
     if (length === 2) {
       for (i = 0; i < list.length; i++) {
-        fn.call(thisArg, list[i]);
+        fn.call(arguments[1], list[i]);
       }
     } else {
       for (i = 0; i < list.length; i++) {
@@ -385,7 +389,7 @@ Map.prototype = {
     @param {*} self if passed, the `this` value inside the
       callback. By default, `this` is the map.
   */
-  forEach: function(callback, thisArg) {
+  forEach: function(callback /*, thisArg*/) {
     if (typeof callback !== 'function') {
       missingFunction(callback);
     }
@@ -394,9 +398,10 @@ Map.prototype = {
 
     var length = arguments.length;
     var map = this;
-    var cb;
+    var cb, thisArg;
 
     if (length === 2) {
+      thisArg = arguments[1];
       cb = function(key) {
         callback.call(thisArg, map.get(key), key);
       };

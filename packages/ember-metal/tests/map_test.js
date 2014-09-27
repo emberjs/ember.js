@@ -110,6 +110,15 @@ function testMap(nameAndFunc) {
     equal(map.size, 1);
   });
 
+  test("arity of forEach is 1 – es6 23.1.3.5", function() {
+    equal(map.forEach.length, 1, 'expected arity for map.forEach is 1');
+  });
+
+  test("forEach throws without a callback as the first argument", function() {
+    
+    equal(map.forEach.length, 1, 'expected arity for map.forEach is 1');
+  });
+
   test("remove", function() {
     map.set(object, "winning");
     map.set(number, "winning");
@@ -272,6 +281,15 @@ function testMap(nameAndFunc) {
     QUnit.throws(function() {
       map.forEach({});
     }, '[object Object] is not a function');
+
+    map.forEach(function(value, key) {
+      map.delete(key);
+    });
+    // ensure the error happens even if no data is present
+    equal(map.size, 0);
+    QUnit.throws(function() {
+      map.forEach({});
+    }, '[object Object] is not a function');
   });
 
   test("forEach basic", function() {
@@ -430,6 +448,18 @@ test("Retrieving a value that has not been set returns and sets a default value"
   deepEqual(value, [ 'ohai' ]);
 
   strictEqual(value, map.get('ohai'));
+});
+
+test("Map.prototype.constructor", function() {
+  var map = new Map();
+  equal(map.constructor, Map);
+});
+
+test("MapWithDefault.prototype.constructor", function() {
+  var map = new MapWithDefault({
+    defaultValue: function(key) { return key; }
+  });
+  equal(map.constructor, MapWithDefault);
 });
 
 test("Copying a MapWithDefault copies the default value", function() {
