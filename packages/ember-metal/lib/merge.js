@@ -1,3 +1,5 @@
+import keys from 'ember-metal/keys';
+
 /**
   Merge the contents of two objects together into the first object.
 
@@ -14,9 +16,18 @@
   @return {Object}
 */
 export default function merge(original, updates) {
-  for (var prop in updates) {
-    if (!updates.hasOwnProperty(prop)) { continue; }
+  if (!updates || typeof updates !== 'object') { 
+    return original;
+  }
+
+  var props = keys(updates);
+  var prop;
+  var length = props.length;
+
+  for (var i = 0; i < length; i++) {
+    prop = props[i];
     original[prop] = updates[prop];
   }
+
   return original;
 }
