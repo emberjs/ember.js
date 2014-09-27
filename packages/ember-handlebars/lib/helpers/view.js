@@ -116,11 +116,8 @@ export var ViewHelper = EmberObject.create({
     }
 
     // Evaluate the context of class name bindings:
-    var classNameBindingsKeys = keys(extensions.classNameBindings);
-
-    for (var j = 0, k = classNameBindingsKeys.length; j < k; j++) {
-      var classKey = classNameBindingsKeys[j];
-      var full     = extensions.classNameBindings[classKey];
+    for (var j = 0, k = extensions.classNameBindings.length; j < k; j++) {
+      var full = extensions.classNameBindings[j];
 
       if (typeof full === 'string') {
         // Contextualize the path of classNameBinding so this:
@@ -134,7 +131,7 @@ export var ViewHelper = EmberObject.create({
         if (parsedPath.path !== '') {
           path = this.contextualizeBindingPath(parsedPath.path, data);
           if (path) {
-            extensions.classNameBindings[classKey] = path + parsedPath.classNames;
+            extensions.classNameBindings[j] = path + parsedPath.classNames;
           }
         }
       }

@@ -240,6 +240,8 @@ function collectionHelper(path, options) {
   var viewOptions = ViewHelper.propertiesFromHTMLOptions({ data: data, hash: itemHash }, this);
   hash.itemViewClass = itemViewClass.extend(viewOptions);
 
+  options.helperName = options.helperName || 'collection';
+
   return helpers.view.call(this, collectionClass, options);
 }
 
