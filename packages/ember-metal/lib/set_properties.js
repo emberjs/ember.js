@@ -1,5 +1,6 @@
 import { changeProperties } from "ember-metal/property_events";
 import { set } from "ember-metal/property_set";
+import keys from "ember-metal/keys";
 
 /**
   Set a list of properties on an object. These properties are set inside
@@ -23,8 +24,13 @@ import { set } from "ember-metal/property_set";
 */
 export default function setProperties(self, hash) {
   changeProperties(function() {
-    for(var prop in hash) {
-      if (hash.hasOwnProperty(prop)) { set(self, prop, hash[prop]); }
+    var props = keys(hash);
+    var prop;
+
+    for (var i = 0, l = props.length; i < l; i++) {
+      prop = props[i];
+
+      set(self, prop, hash[prop]);
     }
   });
   return self;
