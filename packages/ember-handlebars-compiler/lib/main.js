@@ -27,14 +27,14 @@ if (!Handlebars && typeof require === 'function') {
   Handlebars = require('handlebars');
 }
 
-Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1. Include " +
+Ember.assert("Ember Handlebars requires Handlebars version 2.0. Include " +
              "a SCRIPT tag in the HTML HEAD linking to the Handlebars file " +
              "before you link to Ember.", Handlebars);
 
-Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1, " +
-             "COMPILER_REVISION expected: 4, got: " +  Handlebars.COMPILER_REVISION +
+Ember.assert("Ember Handlebars requires Handlebars version 2.0, " +
+             "COMPILER_REVISION expected: 6, got: " +  Handlebars.COMPILER_REVISION +
              " - Please note: Builds of master may have other COMPILER_REVISION values.",
-             Handlebars.COMPILER_REVISION === 4);
+             Handlebars.COMPILER_REVISION === 6);
 
 /**
   Prepares the Handlebars templating library for use inside Ember's view
@@ -50,7 +50,7 @@ Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1, " +
   @class Handlebars
   @namespace Ember
 */
-var EmberHandlebars = Ember.Handlebars = objectCreate(Handlebars);
+var EmberHandlebars = Ember.Handlebars = Handlebars.create();
 
 /**
   Register a bound helper or custom view helper.
