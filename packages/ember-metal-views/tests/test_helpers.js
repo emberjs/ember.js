@@ -26,7 +26,7 @@ MetalRenderer.prototype.createElement = function (view, contextualElement) {
   if (view.element) {
     el = view.element;
   } else {
-    el = view.element = this._dom.createElement(view.tagName || 'div');
+    el = view.element = this._dom.createElement(view.tagName || 'div', contextualElement);
   }
   var classNames = view.classNames;
   if (typeof classNames === 'string') {
@@ -51,6 +51,7 @@ MetalRenderer.prototype.createElement = function (view, contextualElement) {
   } else if (view.textContent) {
     setElementText(el, view.textContent);
   } else if (view.innerHTML) {
+    this._dom.detectNamespace(el);
     var nodes = this._dom.parseHTML(view.innerHTML, el);
     while (nodes[0]) {
       el.appendChild(nodes[0]);

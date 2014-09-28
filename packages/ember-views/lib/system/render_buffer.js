@@ -447,7 +447,7 @@ _RenderBuffer.prototype = {
       tagString = tagName;
     }
 
-    var element = this.dom.createElement(tagString);
+    var element = this.dom.createElement(tagString, this._contextualElement);
     var $element = jQuery(element);
 
     if (id) {
@@ -510,6 +510,7 @@ _RenderBuffer.prototype = {
     var nodes;
     if (this._element) {
       if (html) {
+        this.dom.detectNamespace(this._element);
         nodes = this.dom.parseHTML(html, this._element);
         while (nodes[0]) {
           this._element.appendChild(nodes[0]);
@@ -520,6 +521,7 @@ _RenderBuffer.prototype = {
       if (html) {
         var omittedStartTag = detectOmittedStartTag(html, this._contextualElement);
         var contextualElement = omittedStartTag || this._contextualElement;
+        this.dom.detectNamespace(contextualElement);
         nodes = this.dom.parseHTML(html, contextualElement);
         var frag = this._element = document.createDocumentFragment();
         while (nodes[0]) {
