@@ -1,5 +1,9 @@
 import Morph from "../morph/morph";
-import {buildHTMLDOM} from "./dom-helper/build-html-dom";
+import {
+  buildHTMLDOM,
+  svgNamespace,
+  svgHTMLIntegrationPoints
+} from "./dom-helper/build-html-dom";
 
 var deletesBlankTextNodes = (function(){
   var element = document.createElement('div');
@@ -14,9 +18,6 @@ var ignoresCheckedAttribute = (function(){
   var clonedElement = element.cloneNode(false);
   return !clonedElement.checked;
 })();
-
-var svgNamespace = 'http://www.w3.org/2000/svg',
-    svgHTMLIntegrationPoints = {foreignObject: 1, desc: 1, title: 1};
 
 function isSVG(ns){
   return ns === svgNamespace;
