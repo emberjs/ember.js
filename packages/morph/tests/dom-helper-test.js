@@ -256,9 +256,15 @@ test('#createElement of svg with svg namespace', function(){
   equal(node.namespaceURI, svgNamespace);
 });
 
-test('#createElement of path with svg contextual element', function(){
+test('#createElement of path with detected svg contextual element', function(){
   dom.setNamespace(svgNamespace);
   var node = dom.createElement('path');
+  equal(node.tagName, 'path');
+  equal(node.namespaceURI, svgNamespace);
+});
+
+test('#createElement of path with svg contextual element', function(){
+  var node = dom.createElement('path', document.createElementNS(svgNamespace, 'svg'));
   equal(node.tagName, 'path');
   equal(node.namespaceURI, svgNamespace);
 });

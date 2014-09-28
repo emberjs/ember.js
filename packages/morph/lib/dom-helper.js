@@ -124,7 +124,10 @@ prototype.setAttribute = function(element, name, value) {
 };
 
 if (document.createElementNS) {
-  prototype.createElement = function(tagName) {
+  prototype.createElement = function(tagName, contextualElement) {
+    if (contextualElement) {
+      this.detectNamespace(contextualElement);
+    }
     if (this.namespace) {
       return this.document.createElementNS(this.namespace, tagName);
     } else {
