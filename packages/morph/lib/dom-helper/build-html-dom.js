@@ -1,3 +1,14 @@
+export var svgHTMLIntegrationPoints = {foreignObject: 1, desc: 1, title: 1};
+export var svgNamespace = 'http://www.w3.org/2000/svg';
+
+// Safari does not like using innerHTML on SVG HTML integration
+// points.
+var needsIntegrationPointFix = document.createElementNS && (function() {
+  var testEl = document.createElementNS(svgNamespace, 'foreignObject');
+  testEl.innerHTML = "<div></div>";
+  return testEl.childNodes.length === 0;
+})();
+
 // Internet Explorer prior to 9 does not allow setting innerHTML if the first element
 // is a "zero-scope" element. This problem can be worked around by making
 // the first node an invisible text node. We, like Modernizr, use &shy;
@@ -195,6 +206,14 @@ if (tagNamesRequiringInnerHTMLFix.length > 0 || movesWhitespace) {
     }
 
     return nodes;
+  };
+} else if (needsIntegrationPointFix) {
+  buildHTMLDOM = function buildHTMLDOM(html, contextualElement, dom){
+    if (svgHTMLIntegrationPoints[contextualElement.tagName]) {
+      return buildDOM(html, document.createElement('div'), dom);
+    } else {
+      return buildDOM(html, contextualElement, dom);
+    }
   };
 } else {
   buildHTMLDOM = buildDOM;
