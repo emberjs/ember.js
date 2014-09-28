@@ -7,7 +7,9 @@ import {
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace   = "http://www.w3.org/2000/svg";
 
-var dom;
+var foreignNamespaces = ['foreignObject', 'desc', 'title'];
+
+var dom, i, foreignNamespace;
 
 QUnit.module('morph: DOM Helper', {
   setup: function() {
@@ -269,11 +271,29 @@ test('#createElement of path with svg contextual element', function(){
   equal(node.namespaceURI, svgNamespace);
 });
 
+for (i=0;i<foreignNamespaces.length;i++) {
+  foreignNamespace = foreignNamespaces[i];
+
+  test('#createElement of div with '+foreignNamespace+' contextual element', function(){
+    var node = dom.createElement('div', document.createElementNS(svgNamespace, foreignNamespace));
+    equal(node.tagName, 'DIV');
+    equal(node.namespaceURI, xhtmlNamespace);
+  }); // jshint ignore:line
+
+  test('#parseHTML of div with '+foreignNamespace, function(){
+    dom.setNamespace(xhtmlNamespace);
+    var foreignObject = document.createElementNS(svgNamespace, foreignNamespace),
+        nodes = dom.parseHTML('<div></div>', foreignObject);
+    equal(nodes[0].tagName, 'DIV');
+    equal(nodes[0].namespaceURI, xhtmlNamespace);
+  }); // jshint ignore:line
+}
+
 test('#parseHTML of path with svg contextual element', function(){
   dom.setNamespace(svgNamespace);
   var svgElement = document.createElementNS(svgNamespace, 'svg'),
       nodes = dom.parseHTML('<path></path>', svgElement);
-  equal(nodes[0].tagName.toLowerCase(), 'path');
+  equal(nodes[0].tagName, 'path');
   equal(nodes[0].namespaceURI, svgNamespace);
 });
 
@@ -281,7 +301,7 @@ test('#parseHTML of stop with linearGradient contextual element', function(){
   dom.setNamespace(svgNamespace);
   var svgElement = document.createElementNS(svgNamespace, 'linearGradient'),
       nodes = dom.parseHTML('<stop />', svgElement);
-  equal(nodes[0].tagName.toLowerCase(), 'stop');
+  equal(nodes[0].tagName, 'stop');
   equal(nodes[0].namespaceURI, svgNamespace);
 });
 
