@@ -117,15 +117,25 @@ function buildDOMWithFix(html, contextualElement){
   return element ? element.childNodes : [];
 }
 
-function buildDOM(html, contextualElement, dom){
-  contextualElement = dom.cloneNode(contextualElement, false);
-  scriptSafeInnerHTML(contextualElement, html);
-  return contextualElement.childNodes;
+var buildDOM;
+if (needsShy) {
+  buildDOM = function buildDOM(html, contextualElement, dom){
+    contextualElement = dom.cloneNode(contextualElement, false);
+    scriptSafeInnerHTML(contextualElement, html);
+    return contextualElement.childNodes;
+  };
+} else {
+  buildDOM = function buildDOM(html, contextualElement, dom){
+    contextualElement = dom.cloneNode(contextualElement, false);
+    contextualElement.innerHTML = html;
+    return contextualElement.childNodes;
+  };
 }
+
 
 var buildHTMLDOM;
 // Really, this just means IE8 and IE9 get a slower buildHTMLDOM
-if (tagNamesRequiringInnerHTMLFix.length > 0 || needsShy || movesWhitespace) {
+if (tagNamesRequiringInnerHTMLFix.length > 0 || movesWhitespace) {
   buildHTMLDOM = function buildHTMLDOM(html, contextualElement, dom) {
     // Make a list of the leading text on script nodes. Include
     // script tags without any whitespace for easier processing later.
