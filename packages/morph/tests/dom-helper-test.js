@@ -271,6 +271,12 @@ test('#createElement of path with svg contextual element', function(){
   equal(node.namespaceURI, svgNamespace);
 });
 
+test('#createElement of svg with div namespace', function(){
+  var node = dom.createElement('svg', document.createElement('div'));
+  equal(node.tagName, 'svg');
+  equal(node.namespaceURI, svgNamespace);
+});
+
 for (i=0;i<foreignNamespaces.length;i++) {
   foreignNamespace = foreignNamespaces[i];
 

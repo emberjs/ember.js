@@ -125,12 +125,19 @@ prototype.setAttribute = function(element, name, value) {
 };
 
 if (document.createElementNS) {
+  // Only opt into namespace detection if a contextualElement
+  // is passed.
   prototype.createElement = function(tagName, contextualElement) {
+    var namespace = this.namespace;
     if (contextualElement) {
-      this.detectNamespace(contextualElement);
+      if (tagName === 'svg') {
+        namespace = svgNamespace;
+      } else {
+        namespace = interiorNamespace(contextualElement);
+      }
     }
-    if (this.namespace) {
-      return this.document.createElementNS(this.namespace, tagName);
+    if (namespace) {
+      return this.document.createElementNS(namespace, tagName);
     } else {
       return this.document.createElement(tagName);
     }
