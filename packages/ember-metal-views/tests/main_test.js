@@ -68,7 +68,7 @@ test("innerHTML tr can be specified", function() {
 
   appendTo(view);
 
-  equalHTML('qunit-fixture', "<table><tr><td>ohai</td></tr></table>");
+  equalHTML('qunit-fixture', "<table><tbody><tr><td>ohai</td></tr></tbody></table>");
 });
 
 // Test the behavior of the helper createElement stub
