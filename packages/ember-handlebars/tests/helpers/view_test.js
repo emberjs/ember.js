@@ -161,7 +161,6 @@ test("View lookup - 'fu' when fu is a keyword", function() {
   equal(jQuery('#fu').text(), 'bro');
 });
 
-
 test("View lookup - view.computed", function() {
   var FuView = viewClass({
     elementId: "fu",
@@ -169,9 +168,7 @@ test("View lookup - view.computed", function() {
   });
 
   function lookupFactory(fullName) {
-    equal(fullName, 'view:fu');
-
-    return FuView;
+    return fullName === 'view:fu' && FuView;
   }
 
   var container = {

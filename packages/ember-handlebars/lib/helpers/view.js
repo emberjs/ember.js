@@ -170,14 +170,7 @@ export var ViewHelper = EmberObject.create({
     makeBindings(thisContext, options);
 
     var container = this.container || (data && data.view && data.view.container);
-
-    if(options.types[0] === 'STRING' && container) {
-      newView = container.lookupFactory('view:'+path);
-    }
-
-    if(!newView) {
-      newView = handlebarsGetView(thisContext, path, container, data);
-    }
+    newView = handlebarsGetView(thisContext, path, container, options.data);
 
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;

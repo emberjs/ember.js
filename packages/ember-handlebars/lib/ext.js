@@ -122,6 +122,20 @@ function handlebarsGet(root, path, options) {
   return value;
 }
 
+function lookupViewInContainer(container, path) {
+  Ember.assert("View requires a container to resolve views not passed in through the context", !!container);
+  return container.lookupFactory('view:'+path);
+}
+
+function lookupViewByClassName(path) {
+  var viewClass;
+  if (detectIsGlobal(path)) {
+    viewClass = get(path);
+    Ember.deprecate('Resolved the view "'+path+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}. http://emberjs.com/guides/deprecations#toc_global-lookup-of-views-since-1-8', !viewClass);
+    return viewClass;
+  }
+}
+
 /**
   handlebarsGetView resolves a view based on strings passed into a template.
   For example:
@@ -150,28 +164,28 @@ function handlebarsGet(root, path, options) {
 */
 function handlebarsGetView(context, path, container, data) {
   var viewClass;
+
   if ('string' === typeof path) {
+    viewClass = lookupViewByClassName(path);
+    if(!viewClass && container) {
+      viewClass = lookupViewInContainer(container, path);
+    }
+
     if (data) {
       var normalizedPath = normalizePath(context, path, data);
       context = normalizedPath.root;
       path = normalizedPath.path;
     }
 
-    // Only lookup view class on context if there is a context. If not,
-    // the global lookup path on get may kick in.
-    viewClass = context && get(context, path);
-    var isGlobal = detectIsGlobal(path);
-
-    if (!viewClass && !isGlobal) {
-      Ember.assert("View requires a container to resolve views not passed in through the context", !!container);
-      viewClass = container.lookupFactory('view:'+path);
+    if(!viewClass) {
+      // Only lookup view class on context if there is a context. If not,
+      // the global lookup path on get may kick in.
+      viewClass = context && get(context, path);
     }
-    if (!viewClass && isGlobal) {
-      var globalViewClass = get(path);
-      Ember.deprecate('Resolved the view "'+path+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}. http://emberjs.com/guides/deprecations#toc_global-lookup-of-views-since-1-8', !globalViewClass);
-      if (globalViewClass) {
-        viewClass = globalViewClass;
-      }
+
+    if(!viewClass) {
+      // try the container once more with the normalized path
+      viewClass = lookupViewInContainer(container, path);
     }
   } else {
     viewClass = path;
