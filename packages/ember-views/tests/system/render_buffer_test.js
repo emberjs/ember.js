@@ -52,6 +52,16 @@ test("value of 0 is included in output", function() {
   strictEqual(el.value, '0', "generated element has value of '0'");
 });
 
+test("sets attributes with camelCase", function() {
+  var buffer = new RenderBuffer('div', document.body);
+  var content = "javascript:someCode()"; //jshint ignore:line
+
+  buffer.attr('onClick', content);
+  buffer.generateElement();
+  var el = buffer.element();
+  strictEqual(el.getAttribute('onClick'), content, "attribute with camelCase was set");
+});
+
 test("prevents XSS injection via `id`", function() {
   var buffer = new RenderBuffer('div', document.body);
 

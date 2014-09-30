@@ -451,11 +451,11 @@ _RenderBuffer.prototype = {
     var $element = jQuery(element);
 
     if (id) {
-      $element.attr('id', id);
+      this.dom.setAttribute(element, 'id', id);
       this.elementId = null;
     }
     if (classes) {
-      $element.attr('class', classes.join(' '));
+      this.dom.setAttribute(element, 'class', classes.join(' '));
       this.classes = null;
       this.elementClasses = null;
     }
@@ -467,7 +467,7 @@ _RenderBuffer.prototype = {
         }
       }
 
-      $element.attr('style', styleBuffer);
+      this.dom.setAttribute(element, 'style', styleBuffer);
 
       this.elementStyle = null;
     }
@@ -475,7 +475,7 @@ _RenderBuffer.prototype = {
     if (attrs) {
       for (attr in attrs) {
         if (attrs.hasOwnProperty(attr)) {
-          $element.attr(attr, attrs[attr]);
+          this.dom.setAttribute(element, attr, attrs[attr]);
         }
       }
 

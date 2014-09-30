@@ -108,6 +108,25 @@ test("should update attribute bindings", function() {
   ok(!view.$().attr('notNumber'), "removes notNumber attribute when NaN");
 });
 
+test("should update attribute bindings on svg", function() {
+  view = EmberView.create({
+    attributeBindings: ['viewBox'],
+    viewBox: null
+  });
+
+  run(function() {
+    view.createElement();
+  });
+
+  equal(view.$().attr('viewBox'), null, "viewBox can be null");
+
+  run(function() {
+    view.set('viewBox', '0 0 100 100');
+  });
+
+  equal(view.$().attr('viewBox'), '0 0 100 100', "viewBox can be updated");
+});
+
 // This comes into play when using the {{#each}} helper. If the
 // passed array item is a String, it will be converted into a
 // String object instead of a normal string.
