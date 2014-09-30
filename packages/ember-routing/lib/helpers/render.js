@@ -28,12 +28,12 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     });
     ```
 
-    ```handelbars
+    ```handlebars
     <!-- navigation.hbs -->
     Hello, {{who}}.
     ```
 
-    ```handelbars
+    ```handlebars
     <!-- applications.hbs -->
     <h1>My great app</h1>
     {{render navigaton}}
