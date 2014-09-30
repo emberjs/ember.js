@@ -51,13 +51,13 @@ function makeBindings(thisContext, options) {
 
 export var ViewHelper = EmberObject.create({
   propertiesFromHTMLOptions: function(options) {
-    var hash = options.hash;
-    var data = options.data;
-    var extensions = {
-      classNameBindings: [],
-      helperName:        options.helperName || ''
-    };
+    var hash    = options.hash;
+    var data    = options.data;
     var classes = hash['class'];
+
+    var extensions = {
+      helperName: options.helperName || ''
+    };
 
     if (hash.id) {
       extensions.elementId = hash.id;
@@ -77,6 +77,9 @@ export var ViewHelper = EmberObject.create({
     }
 
     if (hash.classNameBindings) {
+      if (extensions.classNameBindings === undefined) {
+        extensions.classNameBindings = [];
+      }
       extensions.classNameBindings = extensions.classNameBindings.concat(hash.classNameBindings.split(' '));
     }
 
@@ -108,23 +111,25 @@ export var ViewHelper = EmberObject.create({
       }
     }
 
-    // Evaluate the context of class name bindings:
-    for (var j = 0, k = extensions.classNameBindings.length; j < k; j++) {
-      var full = extensions.classNameBindings[j];
+    if (extensions.classNameBindings) {
+      // Evaluate the context of class name bindings:
+      for (var j = 0, k = extensions.classNameBindings.length; j < k; j++) {
+        var full = extensions.classNameBindings[j];
 
-      if (typeof full === 'string') {
-        // Contextualize the path of classNameBinding so this:
-        //
-        //     classNameBinding="isGreen:green"
-        //
-        // is converted to this:
-        //
-        //     classNameBinding="_parentView.context.isGreen:green"
-        var parsedPath = View._parsePropertyPath(full);
-        if (parsedPath.path !== '') {
-          path = this.contextualizeBindingPath(parsedPath.path, data);
-          if (path) {
-            extensions.classNameBindings[j] = path + parsedPath.classNames;
+        if (typeof full === 'string') {
+          // Contextualize the path of classNameBinding so this:
+          //
+          //     classNameBinding="isGreen:green"
+          //
+          // is converted to this:
+          //
+          //     classNameBinding="_parentView.context.isGreen:green"
+          var parsedPath = View._parsePropertyPath(full);
+          if (parsedPath.path !== '') {
+            path = this.contextualizeBindingPath(parsedPath.path, data);
+            if (path) {
+              extensions.classNameBindings[j] = path + parsedPath.classNames;
+            }
           }
         }
       }
