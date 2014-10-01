@@ -9,6 +9,7 @@
 */
 
 import Ember from "ember-metal/core";
+import merge from "ember-metal/merge";
 // Ember.assert, Ember.config
 
 // NOTE: this object should never be included directly. Instead use `Ember.Object`.
@@ -86,6 +87,7 @@ function makeCtor() {
       initProperties = null;
 
       var concatenatedProperties = this.concatenatedProperties;
+      var mergedProperties = this.mergedProperties;
 
       for (var i = 0, l = props.length; i < l; i++) {
         var properties = props[i];
@@ -136,6 +138,14 @@ function makeCtor() {
             } else {
               value = makeArray(value);
             }
+          }
+
+          if (mergedProperties &&
+              mergedProperties.length &&
+              indexOf(mergedProperties, keyName) >= 0) {
+            var originalValue = this[keyName];
+
+            value = merge(originalValue, value);
           }
 
           if (desc) {
