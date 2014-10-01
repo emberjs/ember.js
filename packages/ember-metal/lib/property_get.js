@@ -50,11 +50,6 @@ var get = function get(obj, keyName) {
     return obj;
   }
 
-  if (!keyName && 'string' === typeof obj) {
-    keyName = obj;
-    obj = null;
-  }
-
   Ember.assert("Cannot call get with "+ keyName +" key.", !!keyName);
   Ember.assert("Cannot call get with '"+ keyName +"' on an undefined object.", obj !== undefined);
 
