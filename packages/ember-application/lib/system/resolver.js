@@ -76,26 +76,26 @@ export var Resolver = EmberObject.extend({
   Some examples of how names are resolved:
 
   ```
-  'template:post' //=> Ember.TEMPLATES['post']
-  'template:posts/byline' //=> Ember.TEMPLATES['posts/byline']
-  'template:posts.byline' //=> Ember.TEMPLATES['posts/byline']
-  'template:blogPost' //=> Ember.TEMPLATES['blogPost']
-                      //   OR
-                      //   Ember.TEMPLATES['blog_post']
-  'controller:post' //=> App.PostController
-  'controller:posts.index' //=> App.PostsIndexController
-  'controller:blog/post' //=> Blog.PostController
-  'controller:basic' //=> Ember.Controller
-  'route:post' //=> App.PostRoute
-  'route:posts.index' //=> App.PostsIndexRoute
-  'route:blog/post' //=> Blog.PostRoute
-  'route:basic' //=> Ember.Route
-  'view:post' //=> App.PostView
-  'view:posts.index' //=> App.PostsIndexView
-  'view:blog/post' //=> Blog.PostView
-  'view:basic' //=> Ember.View
-  'foo:post' //=> App.PostFoo
-  'model:post' //=> App.Post
+  'template:post'           //=> Ember.TEMPLATES['post']
+  'template:posts/byline'   //=> Ember.TEMPLATES['posts/byline']
+  'template:posts.byline'   //=> Ember.TEMPLATES['posts/byline']
+  'template:blogPost'       //=> Ember.TEMPLATES['blogPost']
+                            //   OR
+                            //   Ember.TEMPLATES['blog_post']
+  'controller:post'         //=> App.PostController
+  'controller:posts.index'  //=> App.PostsIndexController
+  'controller:blog/post'    //=> Blog.PostController
+  'controller:basic'        //=> Ember.Controller
+  'route:post'              //=> App.PostRoute
+  'route:posts.index'       //=> App.PostsIndexRoute
+  'route:blog/post'         //=> Blog.PostRoute
+  'route:basic'             //=> Ember.Route
+  'view:post'               //=> App.PostView
+  'view:posts.index'        //=> App.PostsIndexView
+  'view:blog/post'          //=> Blog.PostView
+  'view:basic'              //=> Ember.View
+  'foo:post'                //=> App.PostFoo
+  'model:post'              //=> App.Post
   ```
 
   @class DefaultResolver

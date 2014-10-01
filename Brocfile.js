@@ -272,6 +272,7 @@ var vendoredPackages = {
   'backburner':       vendoredEs6Package('backburner'),
   'router':           vendoredEs6Package('router.js'),
   'route-recognizer': vendoredEs6Package('route-recognizer'),
+  'dag-map':          vendoredEs6Package('dag-map'),
   'morph':            htmlbarsPackage('morph')
 };
 
