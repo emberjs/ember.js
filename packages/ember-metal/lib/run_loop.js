@@ -312,8 +312,7 @@ run.sync = function() {
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @param {Number} wait Number of milliseconds to wait.
-  @return {String} a string you can use to cancel the timer in
-    `run.cancel` later.
+  @return {Object} Timer information for use in cancelling, see `run.cancel`.
 */
 run.later = function(target, method) {
   return apply(backburner, backburner.later, arguments);
