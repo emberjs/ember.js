@@ -1,6 +1,8 @@
 import jQuery from "ember-views/system/jquery";
 import RenderBuffer from "ember-views/system/render_buffer";
 
+var svgNamespace = "http://www.w3.org/2000/svg";
+var xhtmlNamespace = "http://www.w3.org/1999/xhtml";
 var trim = jQuery.trim;
 
 // .......................................................
@@ -46,6 +48,16 @@ test("value of 0 is included in output", function() {
   buffer.generateElement();
   el = buffer.element();
   strictEqual(el.value, '0', "generated element has value of '0'");
+});
+
+test("sets attributes with camelCase", function() {
+  var buffer = new RenderBuffer('div', document.body);
+  var content = "javascript:someCode()"; //jshint ignore:line
+
+  buffer.attr('onClick', content);
+  buffer.generateElement();
+  var el = buffer.element();
+  strictEqual(el.getAttribute('onClick'), content, "attribute with camelCase was set");
 });
 
 test("prevents XSS injection via `id`", function() {
@@ -224,3 +236,61 @@ test("properly handles old IE's zero-scope bug", function() {
   ok(jQuery(element).html().match(/script/i), "should have script tag");
   ok(!jQuery(element).html().match(/&shy;/), "should not have &shy;");
 });
+
+if ('namespaceURI' in document.createElement('div')) {
+
+QUnit.module("RenderBuffer namespaces");
+
+test("properly makes a content string SVG namespace inside an SVG tag", function() {
+  var buffer = new RenderBuffer('svg', document.body);
+  buffer.generateElement();
+  buffer.push('<path></path>foo');
+
+  var element = buffer.element();
+  ok(element.tagName, 'SVG', 'element is svg');
+  equal(element.namespaceURI, svgNamespace, 'element is svg namespace');
+
+  ok(element.childNodes[0].tagName, 'PATH', 'element is path');
+  equal(element.childNodes[0].namespaceURI, svgNamespace, 'element is svg namespace');
+});
+
+test("properly makes a path element svg namespace inside SVG context", function() {
+  var buffer = new RenderBuffer('path', document.createElementNS(svgNamespace, 'svg'));
+  buffer.generateElement();
+  buffer.push('<g></g>');
+
+  var element = buffer.element();
+  ok(element.tagName, 'PATH', 'element is PATH');
+  equal(element.namespaceURI, svgNamespace, 'element is svg namespace');
+
+  ok(element.childNodes[0].tagName, 'G', 'element is g');
+  equal(element.childNodes[0].namespaceURI, svgNamespace, 'element is svg namespace');
+});
+
+test("properly makes a foreignObject svg namespace inside SVG context", function() {
+  var buffer = new RenderBuffer('foreignObject', document.createElementNS(svgNamespace, 'svg'));
+  buffer.generateElement();
+  buffer.push('<div></div>');
+
+  var element = buffer.element();
+  ok(element.tagName, 'FOREIGNOBJECT', 'element is foreignObject');
+  equal(element.namespaceURI, svgNamespace, 'element is svg namespace');
+
+  ok(element.childNodes[0].tagName, 'DIV', 'element is div');
+  equal(element.childNodes[0].namespaceURI, xhtmlNamespace, 'element is xhtml namespace');
+});
+
+test("properly makes a div xhtml namespace inside foreignObject context", function() {
+  var buffer = new RenderBuffer('div', document.createElementNS(svgNamespace, 'foreignObject'));
+  buffer.generateElement();
+  buffer.push('<div></div>');
+
+  var element = buffer.element();
+  ok(element.tagName, 'DIV', 'element is div');
+  equal(element.namespaceURI, xhtmlNamespace, 'element is xhtml namespace');
+
+  ok(element.childNodes[0].tagName, 'DIV', 'element is div');
+  equal(element.childNodes[0].namespaceURI, xhtmlNamespace, 'element is xhtml namespace');
+});
+
+}

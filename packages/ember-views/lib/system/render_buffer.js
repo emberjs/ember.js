@@ -447,15 +447,15 @@ _RenderBuffer.prototype = {
       tagString = tagName;
     }
 
-    var element = this.dom.createElement(tagString);
+    var element = this.dom.createElement(tagString, this._contextualElement);
     var $element = jQuery(element);
 
     if (id) {
-      $element.attr('id', id);
+      this.dom.setAttribute(element, 'id', id);
       this.elementId = null;
     }
     if (classes) {
-      $element.attr('class', classes.join(' '));
+      this.dom.setAttribute(element, 'class', classes.join(' '));
       this.classes = null;
       this.elementClasses = null;
     }
@@ -467,7 +467,7 @@ _RenderBuffer.prototype = {
         }
       }
 
-      $element.attr('style', styleBuffer);
+      this.dom.setAttribute(element, 'style', styleBuffer);
 
       this.elementStyle = null;
     }
@@ -475,7 +475,7 @@ _RenderBuffer.prototype = {
     if (attrs) {
       for (attr in attrs) {
         if (attrs.hasOwnProperty(attr)) {
-          $element.attr(attr, attrs[attr]);
+          this.dom.setAttribute(element, attr, attrs[attr]);
         }
       }
 
@@ -510,6 +510,7 @@ _RenderBuffer.prototype = {
     var nodes;
     if (this._element) {
       if (html) {
+        this.dom.detectNamespace(this._element);
         nodes = this.dom.parseHTML(html, this._element);
         while (nodes[0]) {
           this._element.appendChild(nodes[0]);
@@ -520,6 +521,7 @@ _RenderBuffer.prototype = {
       if (html) {
         var omittedStartTag = detectOmittedStartTag(html, this._contextualElement);
         var contextualElement = omittedStartTag || this._contextualElement;
+        this.dom.detectNamespace(contextualElement);
         nodes = this.dom.parseHTML(html, contextualElement);
         var frag = this._element = document.createDocumentFragment();
         while (nodes[0]) {
