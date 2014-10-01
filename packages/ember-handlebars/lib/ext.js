@@ -160,32 +160,43 @@ function lookupViewByClassName(path) {
   @param {Object} context The context of the template being rendered
   @param {String} path The path to be lookedup
   @param {Object} container The container
-  @param {Object} data The template's data hash
+  @param {Object} options The options from the template
 */
-function handlebarsGetView(context, path, container, data) {
+function handlebarsGetView(context, path, container, options) {
   var viewClass;
+  var data;
+  var pathType;
+  if (options) {
+    data      = options.data;
+    pathType  = options.types && options.types[0];
+  }
 
   if ('string' === typeof path) {
-    viewClass = lookupViewByClassName(path);
-    if(!viewClass && container) {
+    if('STRING' === pathType && container) {
       viewClass = lookupViewInContainer(container, path);
-    }
+      Ember.deprecate('Quoted view names must refer to a view in the container.', viewClass);
 
-    if (data) {
-      var normalizedPath = normalizePath(context, path, data);
-      context = normalizedPath.root;
-      path = normalizedPath.path;
     }
 
     if(!viewClass) {
+      viewClass = lookupViewByClassName(path);
+    }
+
+    if(!viewClass) {
+      if (data) {
+        var normalizedPath = normalizePath(context, path, data);
+        context = normalizedPath.root;
+        path = normalizedPath.path;
+      }
+
       // Only lookup view class on context if there is a context. If not,
       // the global lookup path on get may kick in.
       viewClass = context && get(context, path);
-    }
 
-    if(!viewClass) {
-      // try the container once more with the normalized path
-      viewClass = lookupViewInContainer(container, path);
+      if(!viewClass) {
+        // try the container once more with the normalized path
+        viewClass = lookupViewInContainer(container, path);
+      }
     }
   } else {
     viewClass = path;
@@ -193,7 +204,10 @@ function handlebarsGetView(context, path, container, data) {
 
   // Sometimes a view's value is yet another path
   if ('string' === typeof viewClass && data && data.view) {
-    viewClass = handlebarsGetView(data.view, viewClass, container, data);
+    viewClass = handlebarsGetView(data.view, viewClass, container, {
+      data: data,
+      types: ['ID']
+    });
   }
 
   Ember.assert(
