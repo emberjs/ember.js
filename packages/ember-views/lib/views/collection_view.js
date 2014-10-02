@@ -325,7 +325,8 @@ var CollectionView = ContainerView.extend({
 
     for (idx = start + removedCount - 1; idx >= start; idx--) {
       childView = childViews[idx];
-      childView.destroy();
+      if(childView)
+        childView.destroy();
     }
   },
 
