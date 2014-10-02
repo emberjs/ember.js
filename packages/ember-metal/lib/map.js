@@ -171,7 +171,7 @@ OrderedSet.prototype = {
     @return {Boolean}
   */
   has: function(obj) {
-    if (this.size === 0) { return; }
+    if (this.size === 0) { return false; }
 
     var guid = guidFor(obj);
     var presenceSet = this.presenceSet;
@@ -372,7 +372,7 @@ Map.prototype = {
     @return {Boolean} true if the item was present, false otherwise
   */
   has: function(key) {
-    if (this.size === 0) { return; }
+    if (this.size === 0) { return false; }
     return this.keys.has(key);
   },
 

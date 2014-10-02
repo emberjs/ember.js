@@ -136,6 +136,11 @@ function testMap(nameAndFunc) {
     mapHasEntries([]);
   });
 
+  test("has empty collection", function() {
+    equal(map.has('foo'), false);
+    equal(map.has(), false);
+  });
+
   test("delete", function() {
     expectNoDeprecation();
 
