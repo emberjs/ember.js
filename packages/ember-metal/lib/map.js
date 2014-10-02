@@ -317,7 +317,11 @@ Map.prototype = {
     var values = this.values;
     var guid = guidFor(key);
 
-    keys.add(key, guid);
+    // ensure we don't store -0
+    var k = key === -0 ? 0 : key;
+
+    keys.add(k, guid);
+
     values[guid] = value;
 
     this.size = keys.size;
