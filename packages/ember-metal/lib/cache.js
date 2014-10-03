@@ -37,7 +37,7 @@ Cache.prototype = {
       value = this.set(key, this.func(key));
     } else if (value === UNDEFINED) {
       this.hits ++;
-      value = UNDEFINED;
+      value = undefined;
     } else {
       this.hits ++;
       // nothing to translate
