@@ -333,6 +333,7 @@ export default Mixin.create({
   },
 
   addBeforeObserver: function(key, target, method) {
+    Ember.deprecate('Before observers are deprecated and will be removed in a future release. If you want to keep track of previous values you have to implement it yourself. See http://emberjs.com/guides/deprecations#toc_deprecate-beforeobservers');
     addBeforeObserver(this, key, target, method);
   },
 
