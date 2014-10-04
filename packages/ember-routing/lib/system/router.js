@@ -154,6 +154,9 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   handleURL: function(url) {
+    // Until we have an ember-idiomatic way of accessing #hashes, we need to
+    // remove it because router.js doesn't know how to handle it.
+    url = url.split(/#(.+)?/)[0];
     return this._doURLTransition('handleURL', url);
   },
 

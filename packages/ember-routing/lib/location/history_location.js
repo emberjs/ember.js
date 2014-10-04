@@ -3,6 +3,7 @@ import {set} from "ember-metal/property_set";
 import {guidFor} from "ember-metal/utils";
 
 import EmberObject from "ember-runtime/system/object";
+import EmberLocation from "ember-routing/location/api";
 import jQuery from "ember-views/system/jquery";
 
 /**
@@ -68,6 +69,7 @@ export default EmberObject.extend({
     var search = location.search || '';
 
     url += search;
+    url += this.getHash();
 
     return url;
   },
@@ -149,7 +151,6 @@ export default EmberObject.extend({
   */
   replaceState: function(path) {
     var state = { path: path };
-
     get(this, 'history').replaceState(state, null, path);
 
     // store state if browser doesn't support `history.state`
@@ -215,5 +216,14 @@ export default EmberObject.extend({
     var guid = guidFor(this);
 
     jQuery(window).off('popstate.ember-location-'+guid);
-  }
+  },
+
+  /**
+    @private
+
+    Returns normalized location.hash
+
+    @method getHash
+  */
+  getHash: EmberLocation._getHash,
 });
