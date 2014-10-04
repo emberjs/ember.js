@@ -72,6 +72,12 @@ test("toString on a namespace finds the namespace in Ember.lookup", function() {
   equal(obj.toString(), "<Foo.Bar:" + guidFor(obj) + ">");
 });
 
+test("toString on a namespace falls back to modulePrefix, if defined", function() {
+  var Foo = Namespace.create({ modulePrefix: 'foo' });
+
+  equal(Foo.toString(), "foo");
+});
+
 test('toString includes toStringExtension if defined', function() {
   var Foo = EmberObject.extend({
         toStringExtension: function() {

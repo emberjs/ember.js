@@ -41,7 +41,7 @@ var Namespace = EmberObject.extend({
   },
 
   toString: function() {
-    var name = get(this, 'name');
+    var name = get(this, 'name') || get(this, 'modulePrefix');
     if (name) { return name; }
 
     findNamespaces();
