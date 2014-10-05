@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### Ember 1.8.0-beta.4 (October, 5, 2014)
+
+* [BUGFIX] Enable setProperties to work on Object.create(null) objects.
+* [PERF] Update RSVP to 3.0.14 (faster instrumentation).
+* [BUGFIX] Add SVG support for metal-views.
+* [BUGFIX] Allow camelCase attributes in DOM elements.
+* [BUGFIX] Update backburner to latest.
+
 ### Ember 1.8.0-beta.3 (September, 27, 2014)
 
 * [BUGFIX] Use contextualElements to properly handle omitted optional start tags.
