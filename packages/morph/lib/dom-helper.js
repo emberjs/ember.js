@@ -5,6 +5,10 @@ import {
   svgNamespace,
   svgHTMLIntegrationPoints
 } from "./dom-helper/build-html-dom";
+import {
+  addClasses,
+  removeClasses
+} from "./dom-helper/classes";
 
 var doc = typeof document === 'undefined' ? false : document;
 
@@ -154,6 +158,9 @@ if (doc && doc.createElementNS) {
     return this.document.createElement(tagName);
   };
 }
+
+prototype.addClasses = addClasses;
+prototype.removeClasses = removeClasses;
 
 prototype.setNamespace = function(ns) {
   this.namespace = ns;
