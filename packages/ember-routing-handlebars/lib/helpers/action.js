@@ -140,17 +140,18 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
 };
 
 /**
-  The `{{action}}` helper registers an HTML element within a template for DOM
-  event handling and forwards that interaction to the templates's controller
-  or supplied `target` option (see 'Specifying a Target').
 
-  If the controller does not implement the event, the event is sent
+  The `{{action}}` helper provides a useful shortcut for registering an HTML
+  element within a template for a single DOM event and forwarding that
+  interaction to the template's controller or specified `target` option.
+
+  If the controller does not implement the specified action, the event is sent
   to the current route, and it bubbles up the route hierarchy from there.
 
-  User interaction with that element will invoke the supplied action name on
-  the appropriate target. Specifying a non-quoted action name will result in
-  a bound property lookup at the time the event will be triggered.
+  For more advanced event handling see [Ember.Component](/api/classes/Ember.Component.html)
 
+
+  ### Use
   Given the following application Handlebars template on the page
 
   ```handlebars
@@ -230,12 +231,6 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
   See `Ember.View` 'Responding to Browser Events' for a list of
   acceptable DOM event names.
 
-  NOTE: Because `{{action}}` depends on Ember's event dispatch system it will
-  only function if an `Ember.EventDispatcher` instance is available. An
-  `Ember.EventDispatcher` instance will be created when a new `Ember.Application`
-  is created. Having an instance of `Ember.Application` will satisfy this
-  requirement.
-
   ### Specifying whitelisted modifier keys
 
   By default the `{{action}}` helper will ignore click event with pressed modifier
@@ -261,7 +256,7 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
 
   There are several possible target objects for `{{action}}` helpers:
 
-  In a typical Ember application, where views are managed through use of the
+  In a typical Ember application, where templates are managed through use of the
   `{{outlet}}` helper, actions will bubble to the current controller, then
   to the current route, and then up the route hierarchy.
 
