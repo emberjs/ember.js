@@ -153,6 +153,7 @@ import {
 import isBlank from 'ember-metal/is_blank';
 import isPresent from 'ember-metal/is_present';
 import keys from 'ember-metal/keys';
+import presence from 'ember-metal/presence';
 
 // END IMPORTS
 
@@ -308,6 +309,10 @@ Ember.isBlank = isBlank;
 
 if (Ember.FEATURES.isEnabled('ember-metal-is-present')) {
   Ember.isPresent = isPresent;
+}
+
+if (Ember.FEATURES.isEnabled('ember-metal-presence')) {
+  Ember.presence = presence;
 }
 
 Ember.merge = merge;
