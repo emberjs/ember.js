@@ -12,7 +12,8 @@
     "ember-routing-handlebars-action-with-key-code": null,
     "ember-runtime-item-controller-inline-class": null,
     "ember-metal-injected-properties": null,
-    "mandatory-setter": "development-only"
+    "mandatory-setter": "development-only",
+    "ember-metal-presence": null
   },
   "debugStatements": [
     "Ember.warn",
