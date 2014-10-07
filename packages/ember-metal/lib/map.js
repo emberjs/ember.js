@@ -108,13 +108,12 @@ OrderedSet.prototype = {
     var presenceSet = this.presenceSet;
     var list = this.list;
 
-    if (presenceSet[guid]) {
+    if (presenceSet[guid] === true) {
       return;
     }
 
     presenceSet[guid] = true;
-    list.push(obj);
-    this.size++;
+    this.size = list.push(obj);
 
     return this;
   },
@@ -144,13 +143,13 @@ OrderedSet.prototype = {
     var presenceSet = this.presenceSet;
     var list = this.list;
 
-    if (presenceSet[guid] !== undefined) {
+    if (presenceSet[guid] === true) {
       delete presenceSet[guid];
       var index = indexOf.call(list, obj);
       if (index > -1) {
         list.splice(index, 1);
       }
-      this.size--;
+      this.size = list.length;
       return true;
     } else {
       return false;
@@ -176,7 +175,7 @@ OrderedSet.prototype = {
     var guid = guidFor(obj);
     var presenceSet = this.presenceSet;
 
-    return !!presenceSet[guid];
+    return presenceSet[guid] === true;
   },
 
   /**
@@ -358,8 +357,7 @@ Map.prototype = {
     var values = this.values;
     var guid = guidFor(key);
 
-    if (values[guid]) {
-      keys.delete(key, guid);
+    if (keys.delete(key, guid)) {
       delete values[guid];
       this.size = keys.size;
       return true;
@@ -376,7 +374,6 @@ Map.prototype = {
     @return {Boolean} true if the item was present, false otherwise
   */
   has: function(key) {
-    if (this.size === 0) { return false; }
     return this.keys.has(key);
   },
 
