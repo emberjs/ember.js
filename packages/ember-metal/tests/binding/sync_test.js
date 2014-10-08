@@ -3,9 +3,7 @@ import run from 'ember-metal/run_loop';
 import {
   addObserver
 } from "ember-metal/observer";
-import { create }  from 'ember-metal/platform';
 import { bind } from "ember-metal/binding";
-import { rewatch } from "ember-metal/watching";
 import { computed } from "ember-metal/computed";
 import { defineProperty } from "ember-metal/properties";
 
@@ -101,49 +99,6 @@ testBoth("bindings should do the right thing when observers trigger bindings in 
   });
 
   equal(get(a, 'foo'), "what is going on");
-});
-
-testBoth("bindings should do the right thing when binding is in prototype", function(get, set) {
-  var obj, proto, a, b, selectionChanged;
-  run(function() {
-    obj = {
-      selection: null
-    };
-
-    selectionChanged = 0;
-
-    addObserver(obj, 'selection', function () {
-      selectionChanged++;
-    });
-
-    proto = {
-      obj: obj,
-      changeSelection: function (value) {
-        set(this, 'selection', value);
-      }
-    };
-    bind(proto, 'selection', 'obj.selection');
-
-    a = create(proto);
-    b = create(proto);
-    rewatch(a);
-    rewatch(b);
-  });
-
-  run(function () {
-    set(a, 'selection', 'a');
-  });
-
-  run(function () {
-    set(b, 'selection', 'b');
-  });
-
-  run(function () {
-    set(a, 'selection', 'a');
-  });
-
-  equal(selectionChanged, 3);
-  equal(get(obj, 'selection'), 'a');
 });
 
 testBoth("bindings should not try to sync destroyed objects", function(get, set) {
