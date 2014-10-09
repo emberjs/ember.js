@@ -39,7 +39,7 @@ DSL.prototype = {
       route(dsl, 'loading');
       route(dsl, 'error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
 
-      if (callback) { callback.call(dsl); }
+      callback.call(dsl);
 
       this.push(options.path, name, dsl.generate());
     } else {
