@@ -291,3 +291,16 @@ test("attributeBindings should not fail if view has been destroyed", function() 
   }
   ok(!error, error);
 });
+
+test("should handle attribute names containing ':'", function() {
+  view = EmberView.create({
+    attributeBindings: ['href:xlink:href'],
+    href: "foo"
+  });
+
+  run(function() {
+    view.createElement();
+  });
+
+  equal(view.$().attr('xlink:href'), "foo", "attribute is set");
+});

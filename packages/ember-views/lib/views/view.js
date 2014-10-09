@@ -1181,7 +1181,7 @@ var View = CoreView.extend({
     forEach(attributeBindings, function(binding) {
       var split = binding.split(':');
       var property = split[0];
-      var attributeName = split[1] || property;
+      var attributeName = binding.substring(binding.indexOf(':') + 1);
 
       if (property in this) {
         this._setupAttributeBindingObservation(property, attributeName);
