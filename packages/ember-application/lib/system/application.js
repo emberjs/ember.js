@@ -262,7 +262,9 @@ var Application = Namespace.extend(DeferredMixin, {
   _readinessDeferrals: 1,
 
   init: function() {
-    if (!this.$) { this.$ = jQuery; }
+    if (!this.$) {
+      this.$ = jQuery;
+    }
     this.__container__ = this.buildContainer();
 
     this.Router = this.defaultRouter();

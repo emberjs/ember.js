@@ -171,7 +171,8 @@ export default {
    container directly.
   */
   registerImplementation: function(name, implementation) {
-    Ember.deprecate('Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.', false);
+    Ember.deprecate('Using the Ember.Location.registerImplementation is no longer supported.' +
+                    ' Register your custom location implementation with the container instead.', false);
 
     this.implementations[name] = implementation;
   },

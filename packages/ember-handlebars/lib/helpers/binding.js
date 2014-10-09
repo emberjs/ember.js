@@ -8,7 +8,10 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.warn, uuid
 
 import EmberHandlebars from "ember-handlebars-compiler";
 import { get } from "ember-metal/property_get";
-import { apply, uuid } from "ember-metal/utils";
+import {
+  apply,
+  uuid
+} from "ember-metal/utils";
 import { fmt } from "ember-runtime/system/string";
 import { create as o_create } from "ember-metal/platform";
 import isNone from 'ember-metal/is_none';
@@ -304,7 +307,8 @@ function resolveHelper(container, name) {
   var helper = container.lookup('helper:' + name);
   if (!helper) {
     var componentLookup = container.lookup('component-lookup:main');
-    Ember.assert("Could not find 'component-lookup:main' on the provided container, which is necessary for performing component lookups", componentLookup);
+    Ember.assert("Could not find 'component-lookup:main' on the provided container," +
+                 " which is necessary for performing component lookups", componentLookup);
 
     var Component = componentLookup.lookupFactory(name, container);
     if (Component) {
@@ -375,7 +379,10 @@ function boundIfHelper(property, fn) {
 
   fn.helperName = fn.helperName || 'boundIf';
 
-  return bind.call(context, property, fn, true, shouldDisplayIfHelperContent, shouldDisplayIfHelperContent, ['isTruthy', 'length']);
+  return bind.call(context, property, fn, true, shouldDisplayIfHelperContent, shouldDisplayIfHelperContent, [
+                     'isTruthy',
+                     'length'
+                   ]);
 }
 
 /**
@@ -498,7 +505,8 @@ function withHelper(context, options) {
   if (arguments.length === 4) {
     var keywordName, path, rootPath, normalized, contextPath;
 
-    Ember.assert("If you pass more than one argument to the with helper, it must be in the form #with foo as bar", arguments[1] === "as");
+    Ember.assert("If you pass more than one argument to the with helper," +
+                 " it must be in the form #with foo as bar", arguments[1] === "as");
     options = arguments[3];
     keywordName = arguments[2];
     path = arguments[0];
@@ -761,14 +769,16 @@ function bindAttrHelper(options) {
     var path = attrs[attr];
     var normalized;
 
-    Ember.assert(fmt("You must provide an expression as the value of bound attribute. You specified: %@=%@", [attr, path]), typeof path === 'string');
+    Ember.assert(fmt("You must provide an expression as the value of bound attribute." +
+                     " You specified: %@=%@", [attr, path]), typeof path === 'string');
 
     normalized = normalizePath(ctx, path, options.data);
 
     var value = (path === 'this') ? normalized.root : handlebarsGet(ctx, path, options);
     var type = typeOf(value);
 
-    Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
+    Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), 
+                 value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
 
     var observer;
 

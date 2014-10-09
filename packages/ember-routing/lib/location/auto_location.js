@@ -333,7 +333,8 @@ export default {
   */
   create: function (options) {
     if (options && options.rootURL) {
-      Ember.assert('rootURL must end with a trailing forward slash e.g. "/app/"', options.rootURL.charAt(options.rootURL.length-1) === '/');
+      Ember.assert('rootURL must end with a trailing forward slash e.g. "/app/"',
+                   options.rootURL.charAt(options.rootURL.length-1) === '/');
       this.rootURL = options.rootURL;
     }
 

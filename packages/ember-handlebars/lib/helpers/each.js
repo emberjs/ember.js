@@ -69,7 +69,11 @@ var EachView = CollectionView.extend(_Metamorph, {
                      !ControllerMixin.detect(content) ||
                        (content && content.isGenerated) ||
                        content instanceof ArrayController);
-    Ember.assert(fmt("The value that #each loops over must be an Array. You passed %@", [(ControllerMixin.detect(content) && content.get('model') !== undefined) ? fmt("'%@' (wrapped in %@)", [content.get('model'), content]) : content]), EmberArray.detect(content));
+    Ember.assert(fmt("The value that #each loops over must be an Array. You passed %@",
+                     [(ControllerMixin.detect(content) &&
+                       content.get('model') !== undefined) ?
+                       fmt("'%@' (wrapped in %@)", [content.get('model'), content]) : content]),
+                     EmberArray.detect(content));
   },
 
   disableContentObservers: function(callback) {
@@ -441,7 +445,8 @@ function eachHelper(path, options) {
   var helperName = 'each';
 
   if (arguments.length === 4) {
-    Ember.assert("If you pass more than one argument to the each helper, it must be in the form #each foo in bar", arguments[1] === "in");
+    Ember.assert("If you pass more than one argument to the each helper," +
+                 " it must be in the form #each foo in bar", arguments[1] === "in");
 
     var keywordName = arguments[0];
 
@@ -451,7 +456,9 @@ function eachHelper(path, options) {
 
     helperName += ' ' + keywordName + ' in ' + path;
 
-    if (path === '') { path = "this"; }
+    if (path === '') {
+      path = "this";
+    }
 
     options.hash.keyword = keywordName;
 

@@ -144,7 +144,8 @@ import CollectionView from "ember-views/views/collection_view";
   @deprecated Use `{{each}}` helper instead.
 */
 function collectionHelper(path, options) {
-  Ember.deprecate("Using the {{collection}} helper without specifying a class has been deprecated as the {{each}} helper now supports the same functionality.", path !== 'collection');
+  Ember.deprecate("Using the {{collection}} helper without specifying a class has been" +
+                  " deprecated as the {{each}} helper now supports the same functionality.", path !== 'collection');
 
   // If no path is provided, treat path param as options.
   if (path && path.data && path.data.isRenderData) {

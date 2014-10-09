@@ -1,6 +1,6 @@
 import EmberObject from "ember-runtime/system/object";
 
-var ComponentLookup = EmberObject.extend({
+export default EmberObject.extend({
   lookupFactory: function(name, container) {
 
     container = container || this.container;
@@ -26,5 +26,3 @@ var ComponentLookup = EmberObject.extend({
     }
   }
 });
-
-export default ComponentLookup;

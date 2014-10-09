@@ -102,7 +102,8 @@ export function outletHelper(property, options) {
 
   if (viewName) {
     viewFullName = 'view:' + viewName;
-    Ember.assert("Using a quoteless view parameter with {{outlet}} is not supported. Please update to quoted usage '{{outlet \"" + viewName + "\"}}.", options.hashTypes.view !== 'ID');
+    Ember.assert("Using a quoteless view parameter with {{outlet}} is not supported." +
+                 " Please update to quoted usage '{{outlet \"" + viewName + "\"}}.", options.hashTypes.view !== 'ID');
     Ember.assert("The view name you supplied '" + viewName + "' did not resolve to a view.", container.has(viewFullName));
   }
 

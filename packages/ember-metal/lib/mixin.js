@@ -86,7 +86,12 @@ function initMixin(mixin, args) {
 function isMethod(obj) {
   return 'function' === typeof obj &&
          obj.isMethod !== false &&
-         obj !== Boolean && obj !== Object && obj !== Number && obj !== Array && obj !== Date && obj !== String;
+         obj !== Boolean &&
+         obj !== Object &&
+         obj !== Number &&
+         obj !== Array &&
+         obj !== Date &&
+         obj !== String;
 }
 
 var CONTINUE = {};
@@ -545,7 +550,8 @@ MixinPrototype.reopen = function() {
   for(idx=0; idx < len; idx++) {
     mixin = arguments[idx];
     Ember.assert('Expected hash or Mixin instance, got ' + Object.prototype.toString.call(mixin),
-                 typeof mixin === 'object' && mixin !== null && Object.prototype.toString.call(mixin) !== '[object Array]');
+                 typeof mixin === 'object' && mixin !== null &&
+                   Object.prototype.toString.call(mixin) !== '[object Array]');
 
     if (mixin instanceof Mixin) {
       mixins.push(mixin);
@@ -779,7 +785,8 @@ export function observer() {
 export function immediateObserver() {
   for (var i=0, l=arguments.length; i<l; i++) {
     var arg = arguments[i];
-    Ember.assert("Immediate observers must observe internal properties only, not properties on other objects.", typeof arg !== "string" || arg.indexOf('.') === -1);
+    Ember.assert("Immediate observers must observe internal properties only, not properties on other objects.",
+                 typeof arg !== "string" || arg.indexOf('.') === -1);
   }
 
   return observer.apply(this, arguments);

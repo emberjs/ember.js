@@ -30,7 +30,10 @@ function makeBindings(thisContext, options) {
       var value = hash[prop];
 
       if (IS_BINDING.test(prop)) {
-        Ember.warn("You're attempting to render a view by passing " + prop + "=" + value + " to a view helper, but this syntax is ambiguous. You should either surround " + value + " in quotes or remove `Binding` from " + prop + ".");
+        Ember.warn("You're attempting to render a view by passing " +
+                   prop + "=" + value +
+                   " to a view helper, but this syntax is ambiguous. You should either surround " +
+                   value + " in quotes or remove `Binding` from " + prop + ".");
       } else {
         hash[prop + 'Binding'] = value;
         hashType[prop + 'Binding'] = 'STRING';
@@ -84,7 +87,8 @@ export var ViewHelper = EmberObject.create({
     }
 
     if (hash.attributeBindings) {
-      Ember.assert("Setting 'attributeBindings' via Handlebars is not allowed. Please subclass Ember.View and set it there instead.");
+      Ember.assert("Setting 'attributeBindings' via Handlebars is not allowed." +
+                   " Please subclass Ember.View and set it there instead.");
       extensions.attributeBindings = null;
     }
 
@@ -172,7 +176,8 @@ export var ViewHelper = EmberObject.create({
     var newViewProto = newView.proto();
 
     if (fn) {
-      Ember.assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !get(newViewProto, 'templateName'));
+      Ember.assert("You cannot provide a template block if you also specified a templateName",
+                   !get(viewOptions, 'templateName') && !get(newViewProto, 'templateName'));
       viewOptions.template = fn;
     }
 
@@ -201,13 +206,15 @@ export var ViewHelper = EmberObject.create({
     viewOptions.templateData = data;
 
     if (fn) {
-      Ember.assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !get(newView, 'templateName'));
+      Ember.assert("You cannot provide a template block if you also specified a templateName",
+                   !get(viewOptions, 'templateName') && !get(newView, 'templateName'));
       viewOptions.template = fn;
     }
 
     // We only want to override the `_context` computed property if there is
     // no specified controller. See View#_context for more information.
-    if (!newView.controller && !newView.controllerBinding && !viewOptions.controller && !viewOptions.controllerBinding) {
+    if (!newView.controller && !newView.controllerBinding &&
+        !viewOptions.controller && !viewOptions.controllerBinding) {
       viewOptions._context = thisContext;
     }
 

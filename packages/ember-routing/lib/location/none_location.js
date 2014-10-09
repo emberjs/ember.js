@@ -1,5 +1,5 @@
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
 import EmberObject from "ember-runtime/system/object";
 
 /**

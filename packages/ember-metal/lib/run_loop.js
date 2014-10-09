@@ -330,10 +330,14 @@ run.later = function(target, method) {
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} Timer information for use in cancelling, see `run.cancel`.
 */
-run.once = function(target, method) {
+run.once = function(/*target, method */) {
   checkAutoRun();
-  var args = slice.call(arguments);
-  args.unshift('actions');
+  var length = arguments.length;
+  var args = new Array(length);
+  args[0] = 'actions';
+  for (var i = 0; i < length; i++) {
+    args[i + 1] = arguments[i];
+  }
   return apply(backburner, backburner.scheduleOnce, args);
 };
 
@@ -607,7 +611,8 @@ run.throttle = function() {
 // Make sure it's not an autorun during testing
 function checkAutoRun() {
   if (!run.currentRunLoop) {
-    Ember.assert("You have turned on testing mode, which disabled the run-loop's autorun. You will need to wrap any code with asynchronous side-effects in an run", !Ember.testing);
+    Ember.assert("You have turned on testing mode, which disabled the run-loop's autorun." +
+                 " You will need to wrap any code with asynchronous side-effects in an run", !Ember.testing);
   }
 }
 

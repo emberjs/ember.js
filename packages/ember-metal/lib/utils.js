@@ -281,7 +281,6 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   @return {Object} the meta hash for an object
 */
 function meta(obj, writable) {
-
   var ret = obj['__ember_meta__'];
   if (writable===false) return ret || EMPTY_META;
 

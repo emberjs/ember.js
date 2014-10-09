@@ -166,7 +166,9 @@ function handlebarsGetView(context, path, container, data) {
     }
     if (!viewClass && isGlobal) {
       var globalViewClass = get(path);
-      Ember.deprecate('Resolved the view "'+path+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}. http://emberjs.com/guides/deprecations#toc_global-lookup-of-views-since-1-8', !globalViewClass);
+      Ember.deprecate('Resolved the view "'+path+'" on the global context. Pass a view name to be looked' +
+                      ' up on the container instead, such as {{view "select"}}.' +
+                      ' http://emberjs.com/guides/deprecations#toc_global-lookup-of-views-since-1-8', !globalViewClass);
       if (globalViewClass) {
         viewClass = globalViewClass;
       }
@@ -266,7 +268,9 @@ export function resolveHash(context, hash, options) {
   @param {Hash} options
 */
 export function helperMissingHelper(path) {
-  if (!resolveHelper) { resolveHelper = requireModule('ember-handlebars/helpers/binding')['resolveHelper']; } // ES6TODO: stupid circular dep
+  if (!resolveHelper) {
+    resolveHelper = requireModule('ember-handlebars/helpers/binding')['resolveHelper'];
+  } // ES6TODO: stupid circular dep
 
   var error, view = "";
 
@@ -300,7 +304,9 @@ export function helperMissingHelper(path) {
   @param {Hash} options
 */
 export function blockHelperMissingHelper(path) {
-  if (!resolveHelper) { resolveHelper = requireModule('ember-handlebars/helpers/binding')['resolveHelper']; } // ES6TODO: stupid circular dep
+  if (!resolveHelper) {
+    resolveHelper = requireModule('ember-handlebars/helpers/binding')['resolveHelper'];
+  } // ES6TODO: stupid circular dep
 
   var options = arguments[arguments.length - 1];
 
@@ -460,7 +466,9 @@ export function registerBoundHelper(name, fn) {
   @since 1.2.0
 */
 function makeBoundHelper(fn) {
-  if (!SimpleHandlebarsView) { SimpleHandlebarsView = requireModule('ember-handlebars/views/handlebars_bound_view')['SimpleHandlebarsView']; } // ES6TODO: stupid circular dep
+  if (!SimpleHandlebarsView) {
+    SimpleHandlebarsView = requireModule('ember-handlebars/views/handlebars_bound_view')['SimpleHandlebarsView'];
+  } // ES6TODO: stupid circular dep
 
   var dependentKeys = slice.call(arguments, 1);
 

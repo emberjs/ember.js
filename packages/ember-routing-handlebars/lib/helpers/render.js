@@ -94,7 +94,8 @@ export default function renderHelper(name, contextString, options) {
     // use the singleton controller
     options = contextString;
     contextString = undefined;
-    Ember.assert("You can only use the {{render}} helper once without a model object as its second argument, as in {{render \"post\" post}}.", !router || !router._lookupActiveView(name));
+    Ember.assert("You can only use the {{render}} helper once without a model object as its" +
+                 " second argument, as in {{render \"post\" post}}.", !router || !router._lookupActiveView(name));
   } else if (length === 3) {
     // create a new controller
     context = handlebarsGet(options.contexts[1], contextString, options);
@@ -102,7 +103,8 @@ export default function renderHelper(name, contextString, options) {
     throw new EmberError("You must pass a templateName to render");
   }
 
-  Ember.deprecate("Using a quoteless parameter with {{render}} is deprecated. Please update to quoted usage '{{render \"" + name + "\"}}.", options.types[0] !== 'ID');
+  Ember.deprecate("Using a quoteless parameter with {{render}} is deprecated. Please update to" +
+                  " quoted usage '{{render \"" + name + "\"}}.", options.types[0] !== 'ID');
 
   // # legacy namespace
   name = name.replace(/\//g, '.');
@@ -116,7 +118,8 @@ export default function renderHelper(name, contextString, options) {
   var controllerFullName = 'controller:' + controllerName;
 
   if (options.hash.controller) {
-    Ember.assert("The controller name you supplied '" + controllerName + "' did not resolve to a controller.", container.has(controllerFullName));
+    Ember.assert("The controller name you supplied '" + controllerName +
+                 "' did not resolve to a controller.", container.has(controllerFullName));
   }
 
   var parentController = options.data.keywords.controller;
@@ -156,7 +159,8 @@ export default function renderHelper(name, contextString, options) {
   options.hash.viewName = camelize(name);
 
   var templateName = 'template:' + name;
-  Ember.assert("You used `{{render '" + name + "'}}`, but '" + name + "' can not be found as either a template or a view.", container.has("view:" + name) || container.has(templateName) || options.fn);
+  Ember.assert("You used `{{render '" + name + "'}}`, but '" + name + "' can not be found as either" +
+               " a template or a view.", container.has("view:" + name) || container.has(templateName) || options.fn);
   options.hash.template = container.lookup(templateName);
 
   options.hash.controller = controller;
