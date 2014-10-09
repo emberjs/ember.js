@@ -2,10 +2,16 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import Ember from "ember-metal/core"; // Ember.assert
 import EmberError from "ember-metal/error";
-import { Descriptor, defineProperty } from "ember-metal/properties";
+import {
+  Descriptor,
+  defineProperty
+} from "ember-metal/properties";
 import { ComputedProperty } from "ember-metal/computed";
 import { create } from "ember-metal/platform";
-import { meta, inspect } from "ember-metal/utils";
+import {
+  meta,
+  inspect
+} from "ember-metal/utils";
 import {
   addDependentKeys,
   removeDependentKeys

@@ -99,4 +99,7 @@ function debuggerHelper(options) {
   debugger;
 }
 
-export {logHelper, debuggerHelper};
+export {
+  logHelper,
+  debuggerHelper
+};

@@ -28,11 +28,31 @@ export default Component.extend(TextSupport, {
 
   classNames: ['ember-text-field'],
   tagName: "input",
-  attributeBindings: ['type', 'value', 'size', 'pattern', 'name', 'min', 'max',
-                      'accept', 'autocomplete', 'autosave', 'formaction',
-                      'formenctype', 'formmethod', 'formnovalidate', 'formtarget',
-                      'height', 'inputmode', 'list', 'multiple', 'step', 'lang', 'dir',
-                      'width'],
+  attributeBindings: [
+    'accept',
+    'autocomplete',
+    'autosave',
+    'dir',
+    'formaction',
+    'formenctype',
+    'formmethod',
+    'formnovalidate',
+    'formtarget',
+    'height',
+    'inputmode',
+    'lang',
+    'list',
+    'max',
+    'min',
+    'multiple',
+    'name',
+    'pattern',
+    'size',
+    'step',
+    'type',
+    'value',
+    'width'
+  ],
 
   /**
     The `value` attribute of the input element. As the user inputs text, this

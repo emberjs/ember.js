@@ -101,5 +101,7 @@ function renderPartial(context, name, options) {
 
   template = template || deprecatedTemplate;
 
-  template(context, { data: options.data });
+  template(context, {
+    data: options.data
+  });
 }

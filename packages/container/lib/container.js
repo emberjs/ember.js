@@ -421,7 +421,10 @@ Container.prototype = {
 
     var fullNameType = fullName.split(':')[0];
     if (fullNameType === type) {
-      throw new Error('Cannot inject a `' + fullName + '` on other ' + type + '(s). Register the `' + fullName + '` as a different type and perform the typeInjection.');
+      throw new Error('Cannot inject a `' + fullName +
+                      '` on other ' + type +
+                      '(s). Register the `' + fullName +
+                      '` as a different type and perform the typeInjection.');
     }
 
     addTypeInjection(this.typeInjections, type, property, fullName);
@@ -485,7 +488,10 @@ Container.prototype = {
     var normalizedName = this.normalize(fullName);
 
     if (this.cache[normalizedName]) {
-      throw new Error("Attempted to register an injection for a type that has already been looked up. ('" + normalizedName + "', '" + property + "', '" + injectionName + "')");
+      throw new Error("Attempted to register an injection for a type that has already been looked up. ('" +
+                      normalizedName + "', '" +
+                      property + "', '" +
+                      injectionName + "')");
     }
 
     addInjection(initRules(this.injections, normalizedName), property, normalizedInjectionName);

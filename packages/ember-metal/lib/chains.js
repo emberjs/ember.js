@@ -24,7 +24,8 @@ export function flushPendingChains() {
 
   forEach.call(queue, function(q) { q[0].add(q[1]); });
 
-  warn('Watching an undefined global, Ember expects watched globals to be setup by the time the run loop is flushed, check for typos', pendingQueue.length === 0);
+  warn('Watching an undefined global, Ember expects watched globals to be' +
+       ' setup by the time the run loop is flushed, check for typos', pendingQueue.length === 0);
 }
 
 function addChainWatcher(obj, keyName, node) {

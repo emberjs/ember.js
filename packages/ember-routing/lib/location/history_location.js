@@ -1,6 +1,6 @@
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {guidFor} from "ember-metal/utils";
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { guidFor } from "ember-metal/utils";
 
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";

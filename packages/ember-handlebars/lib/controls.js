@@ -207,7 +207,8 @@ export function inputHelper(options) {
     delete hash.type;
     delete types.type;
 
-    Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`; you must use `checked=someBooleanValue` instead.", options.hashTypes.value !== 'ID');
+    Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`;" +
+                 " you must use `checked=someBooleanValue` instead.", options.hashTypes.value !== 'ID');
 
     return EmberHandlebars.helpers.view.call(this, Checkbox, options);
   } else {

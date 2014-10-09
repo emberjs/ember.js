@@ -168,7 +168,8 @@ var ActionHandler = Mixin.create({
       if (typeOf(props.actions) === 'object') {
         hashName = 'actions';
       } else if (typeOf(props.events) === 'object') {
-        Ember.deprecate('Action handlers contained in an `events` object are deprecated in favor of putting them in an `actions` object', false);
+        Ember.deprecate('Action handlers contained in an `events` object are deprecated in favor' +
+                        ' of putting them in an `actions` object', false);
         hashName = 'events';
       }
 
@@ -222,7 +223,8 @@ var ActionHandler = Mixin.create({
     }
 
     if (target = get(this, 'target')) {
-      Ember.assert("The `target` for " + this + " (" + target + ") does not have a `send` method", typeof target.send === 'function');
+      Ember.assert("The `target` for " + this + " (" + target +
+                   ") does not have a `send` method", typeof target.send === 'function');
       target.send.apply(target, arguments);
     }
   }

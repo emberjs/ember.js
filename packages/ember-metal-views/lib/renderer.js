@@ -110,7 +110,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
 
   this.insertElement(view, _parentView, element, insertAt);
 
-  for (i=total-1;i>=0;i--) {
+  for (i=total-1; i>=0; i--) {
     if (willInsert) {
       views[i]._elementInserted = true;
       this.didInsertElement(views[i]);

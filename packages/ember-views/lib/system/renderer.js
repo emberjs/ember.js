@@ -3,7 +3,10 @@ import { create } from 'ember-metal/platform';
 import renderBuffer from "ember-views/system/render_buffer";
 import run from "ember-metal/run_loop";
 import { set } from "ember-metal/property_set";
-import { _instrumentStart, subscribers } from "ember-metal/instrumentation";
+import {
+  _instrumentStart,
+  subscribers
+} from "ember-metal/instrumentation";
 
 function EmberRenderer() {
   this.buffer = renderBuffer();

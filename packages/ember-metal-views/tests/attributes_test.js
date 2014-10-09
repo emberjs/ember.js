@@ -1,4 +1,8 @@
-import { testsFor, subject, appendTo } from "ember-metal-views/tests/test_helpers";
+import {
+  appendTo,
+  subject,
+  testsFor
+} from "ember-metal-views/tests/test_helpers";
 
 testsFor("ember-metal-views - attributes");
 

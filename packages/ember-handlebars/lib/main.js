@@ -73,7 +73,6 @@ import {
   textareaHelper
 } from "ember-handlebars/controls";
 
-
 import ComponentLookup from "ember-handlebars/component_lookup";
 import {
   _HandlebarsBoundView,

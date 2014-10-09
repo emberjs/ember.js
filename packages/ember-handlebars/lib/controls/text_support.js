@@ -20,9 +20,21 @@ import TargetActionSupport from "ember-runtime/mixins/target_action_support";
 var TextSupport = Mixin.create(TargetActionSupport, {
   value: "",
 
-  attributeBindings: ['placeholder', 'disabled', 'maxlength', 'tabindex', 'readonly',
-                      'autofocus', 'form', 'selectionDirection', 'spellcheck', 'required',
-                      'title', 'autocapitalize', 'autocorrect'],
+  attributeBindings: [
+    'autocapitalize',
+    'autocorrect',
+    'autofocus',
+    'disabled',
+    'form',
+    'maxlength',
+    'placeholder',
+    'readonly',
+    'required',
+    'selectionDirection',
+    'spellcheck',
+    'tabindex',
+    'title'
+  ],
   placeholder: null,
   disabled: false,
   maxlength: null,

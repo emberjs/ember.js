@@ -4,7 +4,7 @@
 */
 
 import jQuery from "ember-views/system/jquery";
-import {DOMHelper} from "morph";
+import { DOMHelper } from "morph";
 import Ember from "ember-metal/core";
 
 // The HTML spec allows for "omitted start tags". These tags are optional
@@ -54,20 +54,16 @@ function detectOmittedStartTag(string, contextualElement){
 }
 
 function ClassSet() {
-  this.seen = {};
+  this.seen = Object.create(null);
   this.list = [];
 }
 
 ClassSet.prototype = {
   add: function(string) {
-    if (string in this.seen) { return; }
+    if (this.seen[string] === true) { return; }
     this.seen[string] = true;
 
     this.list.push(string);
-  },
-
-  toDOM: function() {
-    return this.list.join(" ");
   }
 };
 
@@ -502,7 +498,9 @@ _RenderBuffer.prototype = {
   */
   element: function() {
     if (!this._contextualElement) {
-      Ember.deprecate("buffer.element expects a contextualElement to exist. This ensures DOM that requires context is correctly generated (tr, SVG tags). Defaulting to document.body, but this will be removed in the future");
+      Ember.deprecate("buffer.element expects a contextualElement to exist." +
+                      " This ensures DOM that requires context is correctly generated (tr, SVG tags)." +
+                      " Defaulting to document.body, but this will be removed in the future");
       this._contextualElement = document.body;
     }
     var html = this.innerString();

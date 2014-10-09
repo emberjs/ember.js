@@ -1,4 +1,9 @@
-import { testsFor, subject, equalHTML, appendTo } from "ember-metal-views/tests/test_helpers";
+import {
+  appendTo,
+  equalHTML,
+  subject,
+  testsFor
+} from "ember-metal-views/tests/test_helpers";
 
 testsFor("ember-metal-views - children");
 

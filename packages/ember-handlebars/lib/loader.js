@@ -3,7 +3,7 @@
 import ComponentLookup from "ember-handlebars/component_lookup";
 import jQuery from "ember-views/system/jquery";
 import EmberError from "ember-metal/error";
-import {onLoad} from "ember-runtime/system/lazy_load";
+import { onLoad } from "ember-runtime/system/lazy_load";
 
 import EmberHandlebars from "ember-handlebars-compiler";
 
