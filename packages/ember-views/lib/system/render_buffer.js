@@ -54,13 +54,13 @@ function detectOmittedStartTag(string, contextualElement){
 }
 
 function ClassSet() {
-  this.seen = {};
+  this.seen = Object.create(null);
   this.list = [];
 }
 
 ClassSet.prototype = {
   add: function(string) {
-    if (string in this.seen) { return; }
+    if (this.seen[string] === true) { return; }
     this.seen[string] = true;
 
     this.list.push(string);
