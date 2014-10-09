@@ -64,10 +64,6 @@ ClassSet.prototype = {
     this.seen[string] = true;
 
     this.list.push(string);
-  },
-
-  toDOM: function() {
-    return this.list.join(" ");
   }
 };
 
