@@ -279,7 +279,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   /**
-    Replace all the the receiver's content with content of the argument.
+    Replace all the receiver's content with content of the argument.
     If argument is an empty array receiver will be cleared.
 
     ```javascript
