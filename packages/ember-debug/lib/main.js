@@ -165,8 +165,42 @@ Ember.runInDebug = function(func) {
   func();
 };
 
-// Inform the developer about the Ember Inspector if not installed.
+/**
+  Will call `Ember.warn()` if ENABLE_ALL_FEATURES, ENABLE_OPTIONAL_FEATURES, or
+  any specific FEATURES flag is truthy.
+
+  This method is called automatically in debug canary builds.
+  
+  @private
+  @method _warnIfUsingStrippedFeatureFlags
+  @return {void}
+*/
+export function _warnIfUsingStrippedFeatureFlags(FEATURES, featuresWereStripped) {
+  if (featuresWereStripped) {
+    Ember.warn('Ember.ENV.ENABLE_ALL_FEATURES is only available in canary builds.', !Ember.ENV.ENABLE_ALL_FEATURES);
+    Ember.warn('Ember.ENV.ENABLE_OPTIONAL_FEATURES is only available in canary builds.', !Ember.ENV.ENABLE_OPTIONAL_FEATURES);
+
+    for (var key in FEATURES) {
+      if (FEATURES.hasOwnProperty(key)) {
+        Ember.warn('FEATURE["' + key + '"] is set as enabled, but FEATURE flags are only available in canary builds.', !FEATURES[key]);
+      }
+    }
+  }
+}
+
 if (!Ember.testing) {
+  // Complain if they're using FEATURE flags in builds other than canary
+  Ember.FEATURES['features-stripped-test'] = true;
+  var featuresWereStripped = true;
+  
+  if (Ember.FEATURES.isEnabled('features-stripped-test')) {
+    featuresWereStripped = false;
+  }
+
+  delete Ember.FEATURES['features-stripped-test'];
+  _warnIfUsingStrippedFeatureFlags(Ember.ENV.FEATURES, featuresWereStripped);
+
+  // Inform the developer about the Ember Inspector if not installed.
   var isFirefox = typeof InstallTrigger !== 'undefined';
   var isChrome = !!window.chrome && !window.opera;
 
