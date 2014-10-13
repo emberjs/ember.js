@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### Ember 1.8.0-beta.5 (October, 13, 2014)
+
+* [BUGFIX] Ensure `Ember.Map` works properly with falsey values.
+* [BUGFIX] Make Ember.Namespace#toString ember-cli aware.
+* [PERF] Avoid using `for x in y` in `Ember.RenderBuffer.prototype.add`.
+
 ### Ember 1.8.0-beta.4 (October, 5, 2014)
 
 * [BUGFIX] Enable setProperties to work on Object.create(null) objects.
