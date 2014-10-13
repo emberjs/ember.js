@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core"; // assert
+import { set } from "ember-metal/property_set";
 import ContainerView from "ember-views/views/container_view";
 import { _Metamorph } from "ember-handlebars/views/metamorph_view";
 import { viewHelper } from "ember-handlebars/helpers/view";
@@ -80,7 +81,6 @@ export { OutletView };
 */
 export function outletHelper(property, options) {
   var outletSource;
-  var container;
   var viewName;
   var viewClass;
   var viewFullName;
@@ -90,12 +90,14 @@ export function outletHelper(property, options) {
     property = 'main';
   }
 
-  container = options.data.view.container;
+  var view = options.data.view;
+  var container = view.container;
 
-  outletSource = options.data.view;
+  outletSource = view;
   while (!outletSource.get('template.isTop')) {
     outletSource = outletSource.get('_parentView');
   }
+  set(view, 'outletSource', outletSource);
 
   // provide controller override
   viewName = options.hash.view;
@@ -108,9 +110,10 @@ export function outletHelper(property, options) {
   }
 
   viewClass = viewName ? container.lookupFactory(viewFullName) : options.hash.viewClass || OutletView;
+  options.types = [ 'ID' ];
 
-  options.hash.outletSource = outletSource;
   options.hash.currentViewBinding = '_view.outletSource._outlets.' + property;
+  options.hashTypes.currentViewBinding = 'STRING';
 
   options.helperName = options.helperName || 'outlet';
 

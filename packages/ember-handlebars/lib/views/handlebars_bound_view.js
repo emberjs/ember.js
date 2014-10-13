@@ -22,14 +22,11 @@ import {
 } from "ember-views/views/states";
 
 import _MetamorphView from "ember-handlebars/views/metamorph_view";
-import { handlebarsGet } from "ember-handlebars/ext";
 import { uuid } from "ember-metal/utils";
 
-function SimpleHandlebarsView(path, pathRoot, isEscaped, templateData) {
-  this.path = path;
-  this.pathRoot = pathRoot;
+function SimpleHandlebarsView(lazyValue, isEscaped) {
+  this.lazyValue = lazyValue;
   this.isEscaped = isEscaped;
-  this.templateData = templateData;
   this[Ember.GUID_KEY] = uuid();
   this._lastNormalizedValue = undefined;
   this.state = 'preRender';
@@ -60,25 +57,11 @@ SimpleHandlebarsView.prototype = {
   propertyDidChange: K,
 
   normalizedValue: function() {
-    var path = this.path;
-    var pathRoot = this.pathRoot;
-    var escape = this.isEscaped;
-    var result, templateData;
-
-    // Use the pathRoot as the result if no path is provided. This
-    // happens if the path is `this`, which gets normalized into
-    // a `pathRoot` of the current Handlebars context and a path
-    // of `''`.
-    if (path === '') {
-      result = pathRoot;
-    } else {
-      templateData = this.templateData;
-      result = handlebarsGet(pathRoot, path, { data: templateData });
-    }
+    var result = this.lazyValue.value();
 
     if (result === null || result === undefined) {
       result = "";
-    } else if (!escape && !(result instanceof EmberHandlebars.SafeString)) {
+    } else if (!this.isEscaped && !(result instanceof EmberHandlebars.SafeString)) {
       result = new EmberHandlebars.SafeString(result);
     }
 
@@ -209,49 +192,12 @@ var _HandlebarsBoundView = _MetamorphView.extend({
   */
   inverseTemplate: null,
 
-
-  /**
-    The path to look up on `pathRoot` that is passed to
-    `shouldDisplayFunc` to determine which template to render.
-
-    In addition, if `preserveContext` is `false,` the object at this path will
-    be passed to the template when rendering.
-
-    @property path
-    @type String
-    @default null
-  */
-  path: null,
-
-  /**
-    The object from which the `path` will be looked up. Sometimes this is the
-    same as the `previousContext`, but in cases where this view has been
-    generated for paths that start with a keyword such as `view` or
-    `controller`, the path root will be that resolved object.
-
-    @property pathRoot
-    @type Object
-  */
-  pathRoot: null,
+  lazyValue: null,
 
   normalizedValue: function() {
-    var path = get(this, 'path');
-    var pathRoot  = get(this, 'pathRoot');
+    var value = this.lazyValue.value();
     var valueNormalizer = get(this, 'valueNormalizerFunc');
-    var result, templateData;
-
-    // Use the pathRoot as the result if no path is provided. This
-    // happens if the path is `this`, which gets normalized into
-    // a `pathRoot` of the current Handlebars context and a path
-    // of `''`.
-    if (path === '') {
-      result = pathRoot;
-    } else {
-      templateData = get(this, 'templateData');
-      result = handlebarsGet(pathRoot, path, { data: templateData });
-    }
-
-    return valueNormalizer ? valueNormalizer(result) : result;
+    return valueNormalizer ? valueNormalizer(value) : value;
   },
 
   rerenderIfNeeded: function() {

@@ -86,27 +86,6 @@ test("View lookup - App.FuView (DEPRECATED)", function() {
   equal(jQuery('#fu').text(), 'bro');
 });
 
-test("View lookup - 'App.FuView' (DEPRECATED)", function() {
-  Ember.lookup = {
-    App: {
-      FuView: viewClass({
-        elementId: "fu",
-        template: Ember.Handlebars.compile("bro")
-      })
-    }
-  };
-
-  view = viewClass({
-    template: Ember.Handlebars.compile("{{view 'App.FuView'}}")
-  }).create();
-
-  expectDeprecation(function(){
-    run(view, 'appendTo', '#qunit-fixture');
-  }, /Resolved the view "App.FuView" on the global context/);
-
-  equal(jQuery('#fu').text(), 'bro');
-});
-
 test("View lookup - 'fu'", function() {
   var FuView = viewClass({
     elementId: "fu",
@@ -217,6 +196,7 @@ test("allows you to pass attributes that will be assigned to the class instance,
   ok(jQuery('#bar').hasClass('bar'));
   equal(jQuery('#bar').text(), 'Bar');
 });
+
 test("Should apply class without condition always", function() {
   view = EmberView.create({
     context: [],
@@ -227,5 +207,4 @@ test("Should apply class without condition always", function() {
   run(view, 'appendTo', '#qunit-fixture');
 
   ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
-
 });

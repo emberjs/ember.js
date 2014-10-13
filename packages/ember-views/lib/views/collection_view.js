@@ -16,9 +16,7 @@ import {
   observer,
   beforeObserver
 } from "ember-metal/mixin";
-import {
-  handlebarsGetView
-} from "ember-handlebars/ext";
+import { readViewFactory } from "ember-views/streams/read";
 import EmberArray from "ember-runtime/mixins/array";
 
 /**
@@ -351,7 +349,7 @@ var CollectionView = ContainerView.extend({
 
     if (len) {
       itemViewClass = get(this, 'itemViewClass');
-      itemViewClass = handlebarsGetView(content, itemViewClass, this.container);
+      itemViewClass = readViewFactory(itemViewClass, this.container);
 
       for (idx = start; idx < start+added; idx++) {
         item = content.objectAt(idx);

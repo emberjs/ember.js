@@ -385,7 +385,9 @@ merge(states.inBuffer, {
 merge(states.hasElement, {
   childViewsWillChange: function(view, views, start, removed) {
     for (var i=start; i<start+removed; i++) {
-      views[i].remove();
+      var _view = views[i];
+      _view._unsubscribeFromStreamBindings();
+      _view.remove();
     }
   },
 

@@ -141,7 +141,7 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
       }
     }),
 
-    template: EmberHandlebars.compile('{{#if view.condition}}{{view "view.ViewWithCallback"}}{{/if}}'),
+    template: EmberHandlebars.compile('{{#if view.condition}}{{view view.ViewWithCallback}}{{/if}}'),
     condition: false
   });
 

@@ -13,6 +13,8 @@ import {
 import {
   create as o_create
 } from "ember-metal/platform";
+import { get } from "ember-metal/property_get";
+import { set, trySet } from "ember-metal/property_set";
 import {
   guidFor,
   meta as metaFor,
@@ -31,7 +33,8 @@ import {
   addObserver,
   removeObserver,
   addBeforeObserver,
-  removeBeforeObserver
+  removeBeforeObserver,
+  _suspendObserver
 } from "ember-metal/observer";
 import {
   addListener,
@@ -307,6 +310,31 @@ function detectBinding(obj, key, value, m) {
   }
 }
 
+function connectStreamBinding(obj, key, stream) {
+  var onNotify = function(stream) {
+    _suspendObserver(obj, key, null, didChange, function() {
+      trySet(obj, key, stream.value());
+    });
+  };
+
+  var didChange = function() {
+    stream.setValue(get(obj, key), onNotify);
+  };
+
+  // Initialize value
+  set(obj, key, stream.value());
+
+  addObserver(obj, key, null, didChange);
+
+  stream.subscribe(onNotify);
+
+  if (obj._streamBindingSubscriptions === undefined) {
+    obj._streamBindingSubscriptions = Object.create(null);
+  }
+
+  obj._streamBindingSubscriptions[key] = onNotify;
+}
+
 function connectBindings(obj, m) {
   // TODO Mixin.apply(instance) should disconnect binding if exists
   var bindings = m.bindings;
@@ -316,7 +344,10 @@ function connectBindings(obj, m) {
       binding = bindings[key];
       if (binding) {
         to = key.slice(0, -7); // strip Binding off end
-        if (binding instanceof Binding) {
+        if (binding.isStream) {
+          connectStreamBinding(obj, to, binding);
+          continue;
+        } else if (binding instanceof Binding) {
           binding = binding.copy(); // copy prototypes' instance
           binding.to(to);
         } else { // binding is string path

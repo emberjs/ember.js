@@ -101,7 +101,7 @@ test("bound helpers should support options", function() {
 
   appendView();
 
-  ok(view.$().text() === 'ababab', "helper output is correct");
+  equal(view.$().text(), 'ababab', "helper output is correct");
 });
 
 test("bound helpers should support keywords", function() {
@@ -116,7 +116,7 @@ test("bound helpers should support keywords", function() {
 
   appendView();
 
-  ok(view.$().text() === 'AB', "helper output is correct");
+  equal(view.$().text(), 'AB', "helper output is correct");
 });
 
 test("bound helpers should support global paths [DEPRECATED]", function() {
@@ -134,7 +134,7 @@ test("bound helpers should support global paths [DEPRECATED]", function() {
     appendView();
   }, /Global lookup of Text from a Handlebars template is deprecated/);
 
-  ok(view.$().text() === 'AB', "helper output is correct");
+  equal(view.$().text(), 'AB', "helper output is correct");
 });
 
 test("bound helper should support this keyword", function() {
@@ -149,7 +149,7 @@ test("bound helper should support this keyword", function() {
 
   appendView();
 
-  ok(view.$().text() === 'AB', "helper output is correct");
+  equal(view.$().text(), 'AB', "helper output is correct");
 });
 
 test("bound helpers should support bound options", function() {
@@ -433,5 +433,3 @@ test("bound helpers can handle `this` keyword when it's a non-object", function(
   run(view.controller.things, 'pushObject', 'wallace');
   equal(view.$().text(), 'wallace!', "helper output is correct");
 });
-
-
