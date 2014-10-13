@@ -276,20 +276,23 @@ var Application = Namespace.extend(DeferredMixin, {
     Ember.libraries.registerCoreLibrary('Handlebars' + (EmberHandlebars.compile ? '' : '-runtime'), EmberHandlebars.VERSION);
     Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
 
-    if ( Ember.LOG_VERSION ) {
-      Ember.LOG_VERSION = false; // we only need to see this once per Application#init
+    if (Ember.LOG_VERSION) {
+      // we only need to see this once per Application#init
+      Ember.LOG_VERSION = false;
+      var libs = Ember.libraries._registry;
 
-      var nameLengths = EnumerableUtils.map(Ember.libraries, function(item) {
-        return get(item, "name.length");
+      var nameLengths = EnumerableUtils.map(libs, function(item) {
+        return get(item, 'name.length');
       });
 
       var maxNameLength = Math.max.apply(this, nameLengths);
 
       Ember.debug('-------------------------------');
-      Ember.libraries.each(function(name, version) {
-        var spaces = new Array(maxNameLength - name.length + 1).join(" ");
-        Ember.debug([name, spaces, ' : ', version].join(""));
-      });
+      for (var i = 0, l = libs.length; i < l; i++) {
+        var lib = libs[i];
+        var spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
+        Ember.debug([lib.name, spaces, ' : ', lib.version].join(''));
+      }
       Ember.debug('-------------------------------');
     }
   },
