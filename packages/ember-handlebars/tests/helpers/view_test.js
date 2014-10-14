@@ -199,9 +199,34 @@ test("allows you to pass attributes that will be assigned to the class instance,
 
 test("Should apply class without condition always", function() {
   view = EmberView.create({
-    context: [],
     controller: Ember.Object.create(),
     template: Ember.Handlebars.compile('{{#view id="foo" classBinding=":foo"}} Foo{{/view}}')
+  });
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
+});
+
+test("Should apply classes when bound controller.* property specified", function() {
+  view = EmberView.create({
+    controller: {
+      someProp: 'foo'
+    },
+    template: Ember.Handlebars.compile('{{#view id="foo" class=controller.someProp}} Foo{{/view}}')
+  });
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
+});
+
+test("Should apply classes when bound property specified", function() {
+  view = EmberView.create({
+    controller: {
+      someProp: 'foo'
+    },
+    template: Ember.Handlebars.compile('{{#view id="foo" class=someProp}} Foo{{/view}}')
   });
 
   run(view, 'appendTo', '#qunit-fixture');

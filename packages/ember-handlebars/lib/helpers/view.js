@@ -40,7 +40,11 @@ function makeBindings(options) {
       }
     } else {
       if (hashType === 'ID') {
-        hash[prop + 'Binding'] = view._getBindingForStream(value);
+        if (prop === 'class') {
+          hash.classBinding = value;
+        } else {
+          hash[prop + 'Binding'] = view._getBindingForStream(value);
+        }
         delete hash[prop];
         delete hashTypes[prop];
       }
