@@ -181,7 +181,7 @@ export function _warnIfUsingStrippedFeatureFlags(FEATURES, featuresWereStripped)
     Ember.warn('Ember.ENV.ENABLE_OPTIONAL_FEATURES is only available in canary builds.', !Ember.ENV.ENABLE_OPTIONAL_FEATURES);
 
     for (var key in FEATURES) {
-      if (FEATURES.hasOwnProperty(key)) {
+      if (FEATURES.hasOwnProperty(key) && key !== 'isEnabled') {
         Ember.warn('FEATURE["' + key + '"] is set as enabled, but FEATURE flags are only available in canary builds.', !FEATURES[key]);
       }
     }

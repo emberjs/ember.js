@@ -1,5 +1,6 @@
 {
   "features": {
+    "features-stripped-test": null,
     "ember-routing-named-substates": null,
     "ember-routing-add-model-option": true,
     "ember-routing-linkto-target-attribute": true,
