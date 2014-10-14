@@ -191,10 +191,10 @@ Ember.LOG_VERSION = (Ember.ENV.LOG_VERSION === false) ? false : true;
   @private
   @return {Object}
 */
-var K = function() { return this; };
-export var K = K;
+function K() { return this; }
+export { K };
 Ember.K = K;
-//TODO: ES6 GLOBL TODO
+//TODO: ES6 GLOBAL TODO
 
 // Stub out the methods defined by the ember-debug package in case it's not loaded
 
