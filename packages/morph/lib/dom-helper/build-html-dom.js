@@ -190,7 +190,7 @@ if (tagNamesRequiringInnerHTMLFix.length > 0 || movesWhitespace) {
     }
 
     // Walk the script tags and put back their leading text nodes.
-    var textNode, spaceBefore, spaceAfter;
+    var scriptNode, textNode, spaceBefore, spaceAfter;
     for (i=0;scriptNode=scriptNodes[i];i++) {
       spaceBefore = spacesBefore[i];
       if (spaceBefore && spaceBefore.length > 0) {
