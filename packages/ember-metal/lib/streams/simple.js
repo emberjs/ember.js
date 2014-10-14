@@ -18,6 +18,14 @@ merge(SimpleStream.prototype, {
     return read(this.source);
   },
 
+  setValue: function(value) {
+    var source = this.source;
+
+    if (source && source.isStream) {
+      source.setValue(value);
+    }
+  },
+
   setSource: function(nextSource) {
     var prevSource = this.source;
     if (nextSource !== prevSource) {
