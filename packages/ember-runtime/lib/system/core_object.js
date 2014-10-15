@@ -20,7 +20,6 @@ import {
   meta,
   makeArray
 } from "ember-metal/utils";
-import { rewatch } from "ember-metal/watching";
 import { finishChains } from "ember-metal/chains";
 import { sendEvent } from "ember-metal/events";
 import {
@@ -196,7 +195,6 @@ function makeCtor() {
     if (!wasApplied) {
       wasApplied = true;
       Class.PrototypeMixin.applyPartial(Class.prototype);
-      rewatch(Class.prototype);
     }
 
     return this.prototype;

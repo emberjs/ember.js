@@ -3,9 +3,7 @@
 */
 
 import {
-  GUID_KEY,
-  typeOf,
-  generateGuid
+  typeOf
 } from "ember-metal/utils";
 import {
   removeChainWatcher,
@@ -65,30 +63,6 @@ export function unwatch(obj, _keyPath, m) {
     unwatchKey(obj, _keyPath, m);
   } else {
     unwatchPath(obj, _keyPath, m);
-  }
-}
-
-/**
-  Call on an object when you first beget it from another object. This will
-  setup any chained watchers on the object instance as needed. This method is
-  safe to call multiple times.
-
-  @private
-  @method rewatch
-  @for Ember
-  @param obj
-*/
-export function rewatch(obj) {
-  var m = obj['__ember_meta__'], chains = m && m.chains;
-
-  // make sure the object has its own guid.
-  if (GUID_KEY in obj && !obj.hasOwnProperty(GUID_KEY)) {
-    generateGuid(obj);
-  }
-
-  // make sure any chained watchers update.
-  if (chains && chains.value() !== obj) {
-    m.chains = chains.copy(obj);
   }
 }
 
