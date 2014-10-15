@@ -5,7 +5,7 @@
   "scripts": {
     "build": "ember build --environment production",
     "postinstall": "bower install",
-    "pretest": "ember build --environment production",
+    "pretest": "ember build --environment production && cd dist/npm && npm install && browserify index.js > ../ember.browserify.js",
     "test": "bin/run-tests.js",
     "start": "ember serve",
     "test-node": "mocha tests/**/*test.js"
@@ -30,6 +30,7 @@
     "broccoli-template": "0.1.1",
     "broccoli-uglify-js": "~0.1.3",
     "broccoli-writer": "~0.1.1",
+    "browserify": "^6.1.0",
     "chalk": "~0.4.0",
     "defeatureify": "~0.2.0",
     "ember-cli": "0.0.46",
@@ -43,5 +44,8 @@
     "rimraf": "~2.2.8",
     "rsvp": "~3.0.6",
     "yuidocjs": "~0.3.46"
+  },
+  "dependencies": {
+    "broccoli-derequire": "0.0.1"
   }
 }
