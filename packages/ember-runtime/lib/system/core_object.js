@@ -110,8 +110,6 @@ function makeCtor() {
 
         for (var j = 0, ll = keyNames.length; j < ll; j++) {
           var keyName = keyNames[j];
-          if (!properties.hasOwnProperty(keyName)) { continue; }
-
           var value = properties[keyName];
 
           if (IS_BINDING.test(keyName)) {
@@ -132,7 +130,9 @@ function makeCtor() {
                        "time, when Ember.ActionHandler is used (i.e. views, " +
                        "controllers & routes).", !((keyName === 'actions') && ActionHandler.detect(this)));
 
-          if (concatenatedProperties && indexOf(concatenatedProperties, keyName) >= 0) {
+          if (concatenatedProperties && 
+              concatenatedProperties.length > 0 &&
+              indexOf(concatenatedProperties, keyName) >= 0) {
             var baseValue = this[keyName];
 
             if (baseValue) {

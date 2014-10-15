@@ -15,6 +15,22 @@ test('defining concatenated properties should concat future version', function()
   deepEqual(Ember.get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f']);
 });
 
+test('defining concatenated properties should concat future version', function() {
+
+  var MixinA = Ember.Mixin.create({
+    concatenatedProperties: null,
+  });
+
+  var MixinB = Ember.Mixin.create({
+    concatenatedProperties: null,
+  });
+
+  var obj = Ember.mixin({}, MixinA, MixinB);
+
+  deepEqual(obj.concatenatedProperties, []);
+});
+
+
 test('concatenatedProperties should be concatenated', function() {
 
   var MixinA = Ember.Mixin.create({
