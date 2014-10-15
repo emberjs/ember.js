@@ -170,7 +170,7 @@ function collectionHelper(path, options) {
   // Otherwise, just default to the standard class.
   var collectionClass;
   if (path) {
-    collectionClass = handlebarsGetView(this, path, container, options.data);
+    collectionClass = handlebarsGetView(this, path, container, options);
     Ember.assert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
   }
   else {
@@ -186,11 +186,11 @@ function collectionHelper(path, options) {
   var itemViewClass;
 
   if (hash.itemView) {
-    itemViewClass = handlebarsGetView(this, hash.itemView, container, options.data);
+    itemViewClass = handlebarsGetView(this, hash.itemView, container, options);
   } else if (hash.itemViewClass) {
-    itemViewClass = handlebarsGetView(collectionPrototype, hash.itemViewClass, container, options.data);
+    itemViewClass = handlebarsGetView(collectionPrototype, hash.itemViewClass, container, options);
   } else {
-    itemViewClass = handlebarsGetView(collectionPrototype, collectionPrototype.itemViewClass, container, options.data);
+    itemViewClass = handlebarsGetView(collectionPrototype, collectionPrototype.itemViewClass, container, options);
   }
 
   Ember.assert(fmt("%@ #collection: Could not find itemViewClass %@", [data.view, itemViewClass]), !!itemViewClass);
@@ -227,7 +227,7 @@ function collectionHelper(path, options) {
           tagName: itemHash.tagName
     });
   } else if (hash.emptyViewClass) {
-    emptyViewClass = handlebarsGetView(this, hash.emptyViewClass, container, options.data);
+    emptyViewClass = handlebarsGetView(this, hash.emptyViewClass, container, options);
   }
   if (emptyViewClass) { hash.emptyView = emptyViewClass; }
 

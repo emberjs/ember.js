@@ -122,6 +122,20 @@ function handlebarsGet(root, path, options) {
   return value;
 }
 
+function lookupViewInContainer(container, path) {
+  Ember.assert("View requires a container to resolve views not passed in through the context", !!container);
+  return container.lookupFactory('view:'+path);
+}
+
+function lookupViewByClassName(path) {
+  var viewClass;
+  if (detectIsGlobal(path)) {
+    viewClass = get(path);
+    Ember.deprecate('Resolved the view "'+path+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}. http://emberjs.com/guides/deprecations#toc_global-lookup-of-views-since-1-8', !viewClass);
+    return viewClass;
+  }
+}
+
 /**
   handlebarsGetView resolves a view based on strings passed into a template.
   For example:
@@ -146,31 +160,42 @@ function handlebarsGet(root, path, options) {
   @param {Object} context The context of the template being rendered
   @param {String} path The path to be lookedup
   @param {Object} container The container
-  @param {Object} data The template's data hash
+  @param {Object} options The options from the template
 */
-function handlebarsGetView(context, path, container, data) {
+function handlebarsGetView(context, path, container, options) {
   var viewClass;
+  var data;
+  var pathType;
+  if (options) {
+    data      = options.data;
+    pathType  = options.types && options.types[0];
+  }
+
   if ('string' === typeof path) {
-    if (data) {
-      var normalizedPath = normalizePath(context, path, data);
-      context = normalizedPath.root;
-      path = normalizedPath.path;
+    if('STRING' === pathType && container) {
+      viewClass = lookupViewInContainer(container, path);
+      Ember.deprecate('Quoted view names must refer to a view in the container.', viewClass);
+
     }
 
-    // Only lookup view class on context if there is a context. If not,
-    // the global lookup path on get may kick in.
-    viewClass = context && get(context, path);
-    var isGlobal = detectIsGlobal(path);
-
-    if (!viewClass && !isGlobal) {
-      Ember.assert("View requires a container to resolve views not passed in through the context", !!container);
-      viewClass = container.lookupFactory('view:'+path);
+    if(!viewClass) {
+      viewClass = lookupViewByClassName(path);
     }
-    if (!viewClass && isGlobal) {
-      var globalViewClass = get(path);
-      Ember.deprecate('Resolved the view "'+path+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}. http://emberjs.com/guides/deprecations#toc_global-lookup-of-views-since-1-8', !globalViewClass);
-      if (globalViewClass) {
-        viewClass = globalViewClass;
+
+    if(!viewClass) {
+      if (data) {
+        var normalizedPath = normalizePath(context, path, data);
+        context = normalizedPath.root;
+        path = normalizedPath.path;
+      }
+
+      // Only lookup view class on context if there is a context. If not,
+      // the global lookup path on get may kick in.
+      viewClass = context && get(context, path);
+
+      if(!viewClass) {
+        // try the container once more with the normalized path
+        viewClass = lookupViewInContainer(container, path);
       }
     }
   } else {
@@ -179,7 +204,10 @@ function handlebarsGetView(context, path, container, data) {
 
   // Sometimes a view's value is yet another path
   if ('string' === typeof viewClass && data && data.view) {
-    viewClass = handlebarsGetView(data.view, viewClass, container, data);
+    viewClass = handlebarsGetView(data.view, viewClass, container, {
+      data: data,
+      types: ['ID']
+    });
   }
 
   Ember.assert(

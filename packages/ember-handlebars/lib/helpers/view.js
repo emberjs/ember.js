@@ -170,7 +170,7 @@ export var ViewHelper = EmberObject.create({
     makeBindings(thisContext, options);
 
     var container = this.container || (data && data.view && data.view.container);
-    newView = handlebarsGetView(thisContext, path, container, options.data);
+    newView = handlebarsGetView(thisContext, path, container, options);
 
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;
