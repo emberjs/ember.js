@@ -11,16 +11,15 @@ import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
 import {
   guidFor,
-  apply
-} from "ember-metal/utils";
-import { create as o_create } from "ember-metal/platform";
-import {
+  apply,
+  NEXT_SUPER,
   generateGuid,
   GUID_KEY,
   meta,
   makeArray,
   META_KEY
 } from "ember-metal/utils";
+import { create as o_create } from "ember-metal/platform";
 import { finishChains } from "ember-metal/chains";
 import { sendEvent } from "ember-metal/events";
 import {
@@ -79,6 +78,7 @@ function makeCtor() {
     }
 
     this[GUID_KEY] = null;
+    this[NEXT_SUPER] = undefined;
     var m = meta(this);
     var proto = m.proto;
     m.proto = this;

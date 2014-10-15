@@ -396,17 +396,19 @@ export function metaPath(obj, path, writable) {
   @param {Function} superFunc The super function.
   @return {Function} wrapped function.
 */
+
+export var NEXT_SUPER = Symbole("next super");
 export function wrap(func, superFunc) {
   function superWrapper() {
     var ret;
-    var sup  = this && this.__nextSuper;
+    var sup  = this && this[NEXT_SUPER];
     var args = new Array(arguments.length);
     for (var i = 0, l = args.length; i < l; i++) {
       args[i] = arguments[i];
     }
-    if(this) { this.__nextSuper = superFunc; }
+    if(this) { this[NEXT_SUPER] = superFunc; }
     ret = apply(this, func, args);
-    if(this) { this.__nextSuper = sup; }
+    if(this) { this[NEXT_SUPER] = sup; }
     return ret;
   }
 
