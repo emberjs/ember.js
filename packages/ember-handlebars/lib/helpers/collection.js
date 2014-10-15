@@ -192,7 +192,7 @@ function collectionHelper(path, options) {
   } else if (hash.itemViewClass) {
     if (hashTypes.itemViewClass === 'ID') {
       var itemViewClassStream = view.getStream(hash.itemViewClass);
-      Ember.deprecate('Resolved the view "'+hash.itemViewClass+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}. http://emberjs.com/guides/deprecations#toc_global-lookup-of-views-since-1-8', !itemViewClassStream.isGlobal());
+      Ember.deprecate('Resolved the view "'+hash.itemViewClass+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}. http://emberjs.com/guides/deprecations#toc_global-lookup-of-views', !itemViewClassStream.isGlobal());
       itemViewClass = itemViewClassStream.value();
     } else {
       itemViewClass = hash.itemViewClass;
