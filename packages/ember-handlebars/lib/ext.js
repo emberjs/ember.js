@@ -74,7 +74,7 @@ function handlebarsGetView(context, path, container, data) {
       var globalViewClass = get(path);
       Ember.deprecate('Resolved the view "'+path+'" on the global context. Pass a view name to be looked' +
                       ' up on the container instead, such as {{view "select"}}.' +
-                      ' http://emberjs.com/guides/deprecations#toc_global-lookup-of-views-since-1-8', !globalViewClass);
+                      ' http://emberjs.com/guides/deprecations#toc_global-lookup-of-views', !globalViewClass);
       if (globalViewClass) {
         viewClass = globalViewClass;
       }

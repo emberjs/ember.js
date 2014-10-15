@@ -387,7 +387,7 @@ export function viewHelper(path) {
     var pathStream;
     if (typeof path === 'string' && types[0] === 'ID') {
       pathStream = view.getStream(path);
-      Ember.deprecate('Resolved the view "'+path+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}. http://emberjs.com/guides/deprecations#toc_global-lookup-of-views-since-1-8', !pathStream.isGlobal());
+      Ember.deprecate('Resolved the view "'+path+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}. http://emberjs.com/guides/deprecations#toc_global-lookup-of-views', !pathStream.isGlobal());
     } else {
       pathStream = path;
     }
