@@ -110,8 +110,6 @@ function makeCtor() {
 
         for (var j = 0, ll = keyNames.length; j < ll; j++) {
           var keyName = keyNames[j];
-          if (!properties.hasOwnProperty(keyName)) { continue; }
-
           var value = properties[keyName];
 
           if (IS_BINDING.test(keyName)) {
