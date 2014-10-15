@@ -3,7 +3,8 @@
 */
 
 import {
-  typeOf
+  typeOf,
+  META_KEY
 } from "ember-metal/utils";
 import {
   removeChainWatcher,
@@ -49,7 +50,7 @@ function watch(obj, _keyPath, m) {
 export { watch };
 
 export function isWatching(obj, key) {
-  var meta = obj['__ember_meta__'];
+  var meta = obj[META_KEY];
   return (meta && meta.watching[key]) > 0;
 }
 
@@ -78,9 +79,9 @@ var NODE_STACK = [];
   @return {void}
 */
 export function destroy(obj) {
-  var meta = obj['__ember_meta__'], node, nodes, key, nodeObject;
+  var meta = obj[META_KEY], node, nodes, key, nodeObject;
   if (meta) {
-    obj['__ember_meta__'] = null;
+    obj[META_KEY] = null;
     // remove chainWatchers to remove circular references that would prevent GC
     node = meta.chains;
     if (node) {

@@ -18,7 +18,8 @@ import {
   generateGuid,
   GUID_KEY,
   meta,
-  makeArray
+  makeArray,
+  META_KEY
 } from "ember-metal/utils";
 import { finishChains } from "ember-metal/chains";
 import { sendEvent } from "ember-metal/events";
@@ -76,8 +77,8 @@ function makeCtor() {
     if (!wasApplied) {
       Class.proto(); // prepare prototype...
     }
-    o_defineProperty(this, GUID_KEY, nullDescriptor);
-    o_defineProperty(this, '__nextSuper', undefinedDescriptor);
+
+    this[GUID_KEY] = null;
     var m = meta(this);
     var proto = m.proto;
     m.proto = this;
@@ -785,7 +786,7 @@ var ClassMixinProps = {
     @param key {String} property name
   */
   metaForProperty: function(key) {
-    var meta = this.proto()['__ember_meta__'];
+    var meta = this.proto()[META_KEY];
     var desc = meta && meta.descs[key];
 
     Ember.assert("metaForProperty() could not find a computed property with key '"+key+"'.", !!desc && desc instanceof ComputedProperty);

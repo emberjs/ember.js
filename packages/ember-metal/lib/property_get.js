@@ -9,6 +9,9 @@ import {
   isPath,
   hasThis as pathHasThis
 } from "ember-metal/path_cache";
+import {
+  META_KEY
+} from "ember-metal/utils";
 import { hasPropertyAccessors } from "ember-metal/platform";
 
 var FIRST_KEY = /^([^\.]+)/;
@@ -67,7 +70,7 @@ var get = function get(obj, keyName) {
     return value;
   }
 
-  var meta = obj['__ember_meta__'];
+  var meta = obj[META_KEY];
   var desc = meta && meta.descs[keyName];
   var ret;
 

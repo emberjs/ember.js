@@ -2,6 +2,7 @@ import "ember";
 import { computed } from "ember-metal/computed";
 import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 import { capitalize } from "ember-runtime/system/string";
+import { META_KEY } from "ember-meta/utils";
 
 var Router, App, router, container;
 var get = Ember.get;
@@ -12,7 +13,7 @@ function withoutMeta(object) {
     return object;
   }
   var newObject = Ember.$.extend(true, {}, object);
-  delete newObject['__ember_meta__'];
+  delete newObject[META_KEY];
   return newObject;
 }
 

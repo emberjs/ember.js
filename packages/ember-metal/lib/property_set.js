@@ -4,6 +4,9 @@ import {
   propertyWillChange,
   propertyDidChange
 } from "ember-metal/property_events";
+import {
+  META_KEY
+} from "ember-metal/utils";
 import { defineProperty } from "ember-metal/properties";
 import EmberError from "ember-metal/error";
 import {
@@ -40,7 +43,7 @@ var set = function set(obj, keyName, value, tolerant) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  var meta = obj['__ember_meta__'];
+  var meta = obj[META_KEY];
   var desc = meta && meta.descs[keyName];
   var isUnknown, currentValue;
 
