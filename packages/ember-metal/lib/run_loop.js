@@ -66,7 +66,7 @@ var slice = [].slice;
 */
 export default run;
 function run() {
-  return apply(backburner, backburner.run, arguments);
+  return backburner.run.apply(backburner, arguments);
 }
 
 /**
@@ -108,12 +108,12 @@ function run() {
 */
 run.join = function(target, method /* args */) {
   if (!run.currentRunLoop) {
-    return apply(Ember, run, arguments);
+    return Ember.run.apply(Ember, arguments);
   }
 
   var args = slice.call(arguments);
   args.unshift('actions');
-  apply(run, run.schedule, args);
+  run.schedule.apply(run, args);
 };
 
 /**
@@ -160,7 +160,7 @@ run.join = function(target, method /* args */) {
 run.bind = function(target, method /* args*/) {
   var args = slice.call(arguments);
   return function() {
-    return apply(run, run.join, args.concat(slice.call(arguments)));
+    return run.join.apply(run, args.concat(slice.call(arguments)));
   };
 };
 
@@ -254,7 +254,7 @@ run.end = function() {
 */
 run.schedule = function(queue, target, method) {
   checkAutoRun();
-  apply(backburner, backburner.schedule, arguments);
+  backburner.schedule.apply(backburner, arguments);
 };
 
 // Used by global test teardown
@@ -314,8 +314,8 @@ run.sync = function() {
   @param {Number} wait Number of milliseconds to wait.
   @return {Object} Timer information for use in cancelling, see `run.cancel`.
 */
-run.later = function(target, method) {
-  return apply(backburner, backburner.later, arguments);
+run.later = function(/*target, method*/) {
+  return backburner.later.apply(backburner, arguments);
 };
 
 /**
@@ -385,9 +385,9 @@ run.once = function(/*target, method */) {
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} Timer information for use in cancelling, see `run.cancel`.
 */
-run.scheduleOnce = function(queue, target, method) {
+run.scheduleOnce = function(/*queue, target, method*/) {
   checkAutoRun();
-  return apply(backburner, backburner.scheduleOnce, arguments);
+  return backburner.scheduleOnce.apply(backburner, arguments);
 };
 
 /**
@@ -566,7 +566,7 @@ run.cancel = function(timer) {
   @return {Array} Timer information for use in cancelling, see `run.cancel`.
 */
 run.debounce = function() {
-  return apply(backburner, backburner.debounce, arguments);
+  return backburner.debounce.apply(backburner, arguments);
 };
 
 /**
@@ -605,7 +605,7 @@ run.debounce = function() {
   @return {Array} Timer information for use in cancelling, see `run.cancel`.
 */
 run.throttle = function() {
-  return apply(backburner, backburner.throttle, arguments);
+  return backburner.throttle.apply(backburner, arguments);
 };
 
 // Make sure it's not an autorun during testing
