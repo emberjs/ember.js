@@ -194,7 +194,11 @@ function applyConcatenatedProperties(obj, key, value, values) {
 
   if (baseValue) {
     if ('function' === typeof baseValue.concat) {
-      return baseValue.concat(value);
+      if (value === null || value === undefined) {
+        return baseValue;
+      } else {
+        return baseValue.concat(value);
+      }
     } else {
       return makeArray(baseValue).concat(value);
     }
