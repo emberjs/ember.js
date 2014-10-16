@@ -119,3 +119,30 @@ test('the last value sent by the source wins', function() {
   equal(source.value(), "hoopla", "value has synced after run loop");
   equal(get(obj, 'to'), "hoopla", "value has synced after run loop");
 });
+
+test('continues to notify subscribers after first consumption, even if not consumed', function() {
+  var counter = 0;
+  var binding = new StreamBinding(source);
+
+  binding.value();
+
+  binding.subscribe(function() {
+    source.value();
+    counter++;
+  });
+
+  equal(counter, 0);
+
+  run(function() {
+    source.setValue("blorg");
+    equal(counter, 0);
+  });
+  equal(counter, 1);
+
+  run(function() {
+    source.setValue("hoopla");
+    source.setValue("zlurp");
+    equal(counter, 1);
+  });
+  equal(counter, 2);
+});
