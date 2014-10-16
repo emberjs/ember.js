@@ -496,7 +496,8 @@ function packageDependencyTree(packageName) {
 }
 
 var vendorTrees          = [];
-var sourceTrees          = [];
+var devSourceTrees       = [];
+var prodSourceTrees      = [];
 var testTrees            = [];
 var compiledPackageTrees = [];
 
@@ -512,7 +513,11 @@ for (var packageName in packages) {
   }
 
   if (packagesTrees.lib) {
-    sourceTrees.push(packagesTrees.lib);
+    devSourceTrees.push(packagesTrees.lib);
+
+    if (!currentPackage.developmentOnly) {
+      prodSourceTrees.push(packagesTrees.lib);
+    }
   }
 
   if (packagesTrees.compiledTree) {
@@ -526,7 +531,7 @@ for (var packageName in packages) {
 
 compiledPackageTrees = mergeTrees(compiledPackageTrees);
 vendorTrees = mergeTrees(vendorTrees);
-sourceTrees = mergeTrees(sourceTrees);
+devSourceTrees = mergeTrees(devSourceTrees);
 testTrees   = mergeTrees(testTrees);
 
 
@@ -568,10 +573,10 @@ function vendoredEs6Package(packageName) {
 }
 
 /*
- Takes sourceTrees and compiles / concats into ember.js (final output).  If
+ Takes devSourceTrees and compiles / concats into ember.js (final output).  If
  non-development will ensure that output is ES3 compliant.
 */
-var compiledSource = concatES6(sourceTrees, {
+var compiledSource = concatES6(devSourceTrees, {
   es3Safe: env !== 'development',
   includeLoader: true,
   bootstrapModule: 'ember',
@@ -620,14 +625,9 @@ function buildRuntimeTree() {
   });
 }
 
-// Takes original source file and removes the ember-debug package.
-var prodCompiledSource = removeFile(sourceTrees, {
-  srcFile: 'ember-debug.js'
-});
-
 // Generates prod build.  defeatureify increases the overall runtime speed of ember.js by
 // ~10%.  See defeatureify.
-prodCompiledSource = concatES6(prodCompiledSource, {
+var prodCompiledSource = concatES6(prodSourceTrees, {
   es3Safe: env !== 'development',
   includeLoader: true,
   bootstrapModule: 'ember',
