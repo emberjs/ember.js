@@ -36,7 +36,7 @@ import { ViewHelper } from "ember-handlebars/helpers/view";
   Hello, {{who}}.
   ```
 
-  ```handelbars
+  ```handlebars
   <!-- application.hbs -->
   <h1>My great app</h1>
   {{render "navigation"}}
