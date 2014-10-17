@@ -970,7 +970,9 @@ test("ApplicationRoute's default error handler can be overridden", function() {
 });
 
 test("ApplicationRoute's default error handler can be overridden (with DEPRECATED `events`)", function() {
-  testOverridableErrorHandler('events');
+  ignoreDeprecation(function() {
+    testOverridableErrorHandler('events');
+  });
 });
 
 asyncTest("Moving from one page to another triggers the correct callbacks", function() {

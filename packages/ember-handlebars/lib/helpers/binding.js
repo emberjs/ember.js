@@ -726,7 +726,8 @@ function bindAttrHelper(options) {
   @return {String} HTML string
 */
 function bindAttrHelperDeprecated() {
-  Ember.warn("The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
+  Ember.deprecate("The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
+
   return helpers['bind-attr'].apply(this, arguments);
 }
 

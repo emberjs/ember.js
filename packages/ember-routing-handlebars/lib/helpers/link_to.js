@@ -959,7 +959,8 @@ export function queryParamsHelper(options) {
   @return {String} HTML string
 */
 function deprecatedLinkToHelper() {
-  Ember.warn("The 'linkTo' view helper is deprecated in favor of 'link-to'");
+  Ember.deprecate("The 'linkTo' view helper is deprecated in favor of 'link-to'");
+
   return linkToHelper.apply(this, arguments);
 }
 

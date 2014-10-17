@@ -1184,7 +1184,7 @@ test("{{view}} should be able to point to a local view", function() {
   equal(view.$().text(), "common", "tries to look up view name locally");
 });
 
-test("{{view}} should evaluate class bindings set to global paths", function() {
+test("{{view}} should evaluate class bindings set to global paths DEPRECATED", function() {
   var App;
 
   run(function() {
@@ -1201,7 +1201,9 @@ test("{{view}} should evaluate class bindings set to global paths", function() {
     template: EmberHandlebars.compile('{{view view.textField class="unbound" classBinding="App.isGreat:great App.directClass App.isApp App.isEnabled:enabled:disabled"}}')
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  });
 
   ok(view.$('input').hasClass('unbound'),     "sets unbound classes directly");
   ok(view.$('input').hasClass('great'),       "evaluates classes bound to global paths");
@@ -1253,7 +1255,7 @@ test("{{view}} should evaluate class bindings set in the current context", funct
   ok(view.$('input').hasClass('disabled'),    "evaluates ternary operator in classBindings");
 });
 
-test("{{view}} should evaluate class bindings set with either classBinding or classNameBindings", function() {
+test("{{view}} should evaluate class bindings set with either classBinding or classNameBindings from globals DEPRECATED", function() {
   var App;
 
   run(function() {
@@ -1268,7 +1270,9 @@ test("{{view}} should evaluate class bindings set with either classBinding or cl
     template: EmberHandlebars.compile('{{view view.textField class="unbound" classBinding="App.isGreat:great App.isEnabled:enabled:disabled" classNameBindings="App.isGreat:really-great App.isEnabled:really-enabled:really-disabled"}}')
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  });
 
   ok(view.$('input').hasClass('unbound'),          "sets unbound classes directly");
   ok(view.$('input').hasClass('great'),            "evaluates classBinding");
@@ -1304,7 +1308,9 @@ test("{{view}} should evaluate other attribute bindings set to global paths", fu
     template: EmberHandlebars.compile('{{view view.textField valueBinding="App.name"}}')
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, 'Global lookup of App.name from a Handlebars template is deprecated.');
 
   equal(view.$('input').val(), "myApp", "evaluates attributes bound to global paths");
 
@@ -1525,24 +1531,25 @@ test("should be able to bind use {{bind-attr}} more than once on an element", fu
 });
 
 test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
+  expect(4);
 
   var originalBindAttr = EmberHandlebars.helpers['bind-attr'];
-  var originalWarn = Ember.warn;
 
-  Ember.warn = function(msg) {
-    equal(msg, "The 'bindAttr' view helper is deprecated in favor of 'bind-attr'", 'Warning called');
-  };
+  try {
+    EmberHandlebars.helpers['bind-attr'] = function() {
+      equal(arguments[0], 'foo', 'First arg match');
+      equal(arguments[1], 'bar', 'Second arg match');
 
-  EmberHandlebars.helpers['bind-attr'] = function() {
-    equal(arguments[0], 'foo', 'First arg match');
-    equal(arguments[1], 'bar', 'Second arg match');
-    return 'result';
-  };
-  var result = EmberHandlebars.helpers.bindAttr('foo', 'bar');
-  equal(result, 'result', 'Result match');
+      return 'result';
+    };
 
-  EmberHandlebars.helpers['bind-attr'] = originalBindAttr;
-  Ember.warn = originalWarn;
+    expectDeprecation(function() {
+      var result = EmberHandlebars.helpers.bindAttr('foo', 'bar');
+      equal(result, 'result', 'Result match');
+    }, "The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
+  } finally {
+    EmberHandlebars.helpers['bind-attr'] = originalBindAttr;
+  }
 });
 
 test("should not reset cursor position when text field receives keyUp event", function() {
@@ -2173,7 +2180,7 @@ test('should cleanup bound properties on rerender', function() {
 
 test("views within an if statement should be sane on re-render", function() {
   view = EmberView.create({
-    template: EmberHandlebars.compile('{{#if view.display}}{{view Ember.TextField}}{{/if}}'),
+    template: EmberHandlebars.compile('{{#if view.display}}{{input}}{{/if}}'),
     display: false
   });
 
@@ -2281,13 +2288,6 @@ test("bindings can be 'this', in which case they *are* the current context", fun
 // https://github.com/emberjs/ember.js/issues/120
 
 test("should not enter an infinite loop when binding an attribute in Handlebars", function() {
-  var App;
-
-  run(function() {
-    lookup.App = App = Namespace.create();
-  });
-
-  App.test = EmberObject.create({ href: 'test' });
   var LinkView = EmberView.extend({
     classNames: ['app-link'],
     tagName: 'a',
@@ -2301,7 +2301,8 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
 
   var parentView = EmberView.create({
     linkView: LinkView,
-    template: EmberHandlebars.compile('{{#view view.linkView hrefBinding="App.test.href"}} Test {{/view}}')
+    test: EmberObject.create({ href: 'test' }),
+    template: EmberHandlebars.compile('{{#view view.linkView hrefBinding="view.test.href"}} Test {{/view}}')
   });
 
 
@@ -2315,10 +2316,6 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
 
   run(function() {
     parentView.destroy();
-  });
-
-  run(function() {
-    lookup.App.destroy();
   });
 });
 
