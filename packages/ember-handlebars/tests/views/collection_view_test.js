@@ -100,12 +100,6 @@ test("collection helper should accept relative paths", function() {
 });
 
 test("empty views should be removed when content is added to the collection (regression, ht: msofaer)", function() {
-  var App;
-
-  run(function() {
-    lookup.App = App = Namespace.create();
-  });
-
   var EmptyView = EmberView.extend({
     template : EmberHandlebars.compile("<td>No Rows Yet</td>")
   });
@@ -114,13 +108,14 @@ test("empty views should be removed when content is added to the collection (reg
     emptyView: EmptyView
   });
 
-  App.listController = ArrayProxy.create({
+  var listController = ArrayProxy.create({
     content : A()
   });
 
   view = EmberView.create({
     listView: ListView,
-    template: EmberHandlebars.compile('{{#collection view.listView contentBinding="App.listController" tagName="table"}} <td>{{view.content.title}}</td> {{/collection}}')
+    listController: listController,
+    template: EmberHandlebars.compile('{{#collection view.listView content=view.listController tagName="table"}} <td>{{view.content.title}}</td> {{/collection}}')
   });
 
   run(function() {
@@ -130,13 +125,11 @@ test("empty views should be removed when content is added to the collection (reg
   equal(view.$('tr').length, 1, 'Make sure the empty view is there (regression)');
 
   run(function() {
-    App.listController.pushObject({title : "Go Away, Placeholder Row!"});
+    listController.pushObject({title : "Go Away, Placeholder Row!"});
   });
 
   equal(view.$('tr').length, 1, 'has one row');
   equal(view.$('tr:nth-child(1) td').text(), 'Go Away, Placeholder Row!', 'The content is the updated data.');
-
-  run(function() { App.destroy(); });
 });
 
 test("should be able to specify which class should be used for the empty view", function() {
@@ -615,15 +608,11 @@ test("should allow view objects to be swapped out without throwing an error (#78
 });
 
 test("context should be content", function() {
-  var App, view;
-
-  run(function() {
-    lookup.App = App = Namespace.create();
-  });
+  var view;
 
   var container = new Container();
 
-  App.items = A([
+  var items = A([
     EmberObject.create({name: 'Dave'}),
     EmberObject.create({name: 'Mary'}),
     EmberObject.create({name: 'Sara'})
@@ -633,14 +622,12 @@ test("context should be content", function() {
     template: EmberHandlebars.compile("Greetings {{name}}")
   }));
 
-  App.AView = EmberView.extend({
-    template: EmberHandlebars.compile('{{collection contentBinding="App.items" itemViewClass="an-item"}}')
-  });
-
-  run(function() {
-    view = App.AView.create({
-      container: container
-    });
+  view = EmberView.create({
+    container: container,
+    controller: {
+      items: items
+    },
+    template: EmberHandlebars.compile('{{collection contentBinding="items" itemViewClass="an-item"}}')
   });
 
   run(function() {
@@ -649,8 +636,5 @@ test("context should be content", function() {
 
   equal(view.$().text(), "Greetings DaveGreetings MaryGreetings Sara");
 
-  run(function() {
-    view.destroy();
-    App.destroy();
-  });
+  run(view, 'destroy');
 });
