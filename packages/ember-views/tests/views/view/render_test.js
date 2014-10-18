@@ -172,3 +172,47 @@ test("should re-render if the context is changed", function() {
 
   equal(jQuery('#qunit-fixture #template-context-test').text(), "bang baz", "re-renders the view with the updated context");
 });
+
+test("renders contained view with omitted start tag and parent view context", function() {
+  view = ContainerView.createWithMixins({
+    tagName: 'table',
+    childViews: ["row"],
+    row: EmberView.createWithMixins({
+      tagName: 'tr'
+    })
+  });
+
+  run(view, view.append);
+
+  equal(view.element.tagName, 'TABLE', 'container view is table');
+  equal(view.element.childNodes[0].tagName, 'TR', 'inner view is tr');
+
+  run(view, view.rerender);
+
+  equal(view.element.tagName, 'TABLE', 'container view is table');
+  equal(view.element.childNodes[0].tagName, 'TR', 'inner view is tr');
+});
+
+test("renders a contained view with omitted start tag and tagless parent view context", function() {
+  view = EmberView.createWithMixins({
+    tagName: 'table',
+    template: Ember.Handlebars.compile("{{view view.pivot}}"),
+    pivot: EmberView.extend({
+      tagName: '',
+      template: Ember.Handlebars.compile("{{view view.row}}"),
+      row: EmberView.extend({
+        tagName: 'tr'
+      })
+    })
+  });
+
+  run(view, view.append);
+
+  equal(view.element.tagName, 'TABLE', 'container view is table');
+  ok(view.$('tr').length, 'inner view is tr');
+
+  run(view, view.rerender);
+
+  equal(view.element.tagName, 'TABLE', 'container view is table');
+  ok(view.$('tr').length, 'inner view is tr');
+});
