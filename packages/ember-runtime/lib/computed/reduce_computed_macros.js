@@ -4,7 +4,6 @@
 */
 
 import Ember from 'ember-metal/core'; // Ember.assert
-import merge from 'ember-metal/merge';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import {
@@ -19,7 +18,6 @@ import run from 'ember-metal/run_loop';
 import { addObserver } from 'ember-metal/observer';
 import { arrayComputed } from 'ember-runtime/computed/array_computed';
 import { reduceComputed } from 'ember-runtime/computed/reduce_computed';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
 import SubArray from 'ember-runtime/system/subarray';
 import keys from 'ember-metal/keys';
 import compare from 'ember-runtime/compare';
@@ -602,8 +600,8 @@ function binarySearch(array, item, low, high) {
   mid = low + Math.floor((high - low) / 2);
   midItem = array.objectAt(mid);
 
-  guidMid = _guidFor(midItem);
-  guidItem = _guidFor(item);
+  guidMid = guidFor(midItem);
+  guidItem = guidFor(item);
 
   if (guidMid === guidItem) {
     return mid;
@@ -623,18 +621,8 @@ function binarySearch(array, item, low, high) {
   }
 
   return mid;
-
-  function _guidFor(item) {
-    if (SearchProxy.detectInstance(item)) {
-      return guidFor(get(item, 'content'));
-    }
-
-    return guidFor(item);
-  }
 }
 
-
-var SearchProxy = ObjectProxy.extend();
 
 /**
   A computed property which returns a new array with all the
@@ -704,17 +692,50 @@ export function sort(itemsKey, sortDefinition) {
   Ember.assert('Ember.computed.sort requires two arguments: an array key to sort and ' +
     'either a sort properties key or sort function', arguments.length === 2);
 
-  var initFn, sortPropertiesKey;
-
   if (typeof sortDefinition === 'function') {
-    initFn = function (array, changeMeta, instanceMeta) {
-      instanceMeta.order = sortDefinition;
-      instanceMeta.binarySearch = binarySearch;
-    };
+    return customSort(itemsKey, sortDefinition);
   } else {
-    sortPropertiesKey = sortDefinition;
+    return propertySort(itemsKey, sortDefinition);
+  }
+}
 
-    initFn = function (array, changeMeta, instanceMeta) {
+function customSort(itemsKey, comparator) {
+  return arrayComputed(itemsKey, {
+    initialize: function (array, changeMeta, instanceMeta) {
+      instanceMeta.order = comparator;
+      instanceMeta.binarySearch = binarySearch;
+      instanceMeta.waitingInsertions = [];
+      instanceMeta.insertWaiting = function() {
+        var index, item;
+        var waiting = instanceMeta.waitingInsertions;
+        instanceMeta.waitingInsertions = [];
+        for (var i=0; i<waiting.length; i++) {
+          item = waiting[i];
+          index = instanceMeta.binarySearch(array, item);
+          array.insertAt(index, item);
+        }
+      };
+      instanceMeta.insertLater = function(item) {
+        this.waitingInsertions.push(item);
+        run.once(this, 'insertWaiting');
+      };
+    },
+
+    addedItem: function (array, item, changeMeta, instanceMeta) {
+      instanceMeta.insertLater(item);
+      return array;
+    },
+
+    removedItem: function (array, item, changeMeta, instanceMeta) {
+      array.removeObject(item);
+      return array;
+    }
+  });
+}
+
+function propertySort(itemsKey, sortPropertiesKey) {
+  return arrayComputed(itemsKey, {
+    initialize: function (array, changeMeta, instanceMeta) {
       function setupSortProperties() {
         var sortPropertyDefinitions = get(this, sortPropertiesKey);
         var sortProperties = instanceMeta.sortProperties = [];
@@ -722,7 +743,7 @@ export function sort(itemsKey, sortDefinition) {
         var sortProperty, idx, asc;
 
         Ember.assert('Cannot sort: \'' + sortPropertiesKey + '\' is not an array.',
-          isArray(sortPropertyDefinitions));
+                     isArray(sortPropertyDefinitions));
 
         changeMeta.property.clearItemPropertyKeys(itemsKey);
 
@@ -756,12 +777,14 @@ export function sort(itemsKey, sortDefinition) {
       setupSortProperties.call(this);
 
       instanceMeta.order = function (itemA, itemB) {
-        var isProxy = itemB instanceof SearchProxy;
         var sortProperty, result, asc;
+        var keyA = this.keyFor(itemA);
+        var keyB = this.keyFor(itemB);
 
         for (var i = 0; i < this.sortProperties.length; ++i) {
           sortProperty = this.sortProperties[i];
-          result = compare(get(itemA, sortProperty), isProxy ? itemB[sortProperty] : get(itemB, sortProperty));
+
+          result = compare(keyA[sortProperty], keyB[sortProperty]);
 
           if (result !== 0) {
             asc = this.sortPropertyAscending[sortProperty];
@@ -773,34 +796,43 @@ export function sort(itemsKey, sortDefinition) {
       };
 
       instanceMeta.binarySearch = binarySearch;
-    };
-  }
-
-  return arrayComputed(itemsKey, {
-    initialize: initFn,
+      setupKeyCache(instanceMeta);
+    },
 
     addedItem: function (array, item, changeMeta, instanceMeta) {
       var index = instanceMeta.binarySearch(array, item);
       array.insertAt(index, item);
-
       return array;
     },
 
     removedItem: function (array, item, changeMeta, instanceMeta) {
-      var proxyProperties, index, searchItem;
-
-      if (changeMeta.previousValues) {
-        proxyProperties = merge({ content: item }, changeMeta.previousValues);
-
-        searchItem = SearchProxy.create(proxyProperties);
-      } else {
-        searchItem = item;
-      }
-
-      index = instanceMeta.binarySearch(array, searchItem);
+      var index = instanceMeta.binarySearch(array, item);
       array.removeAt(index);
-
+      instanceMeta.dropKeyFor(item);
       return array;
     }
   });
+}
+
+function setupKeyCache(instanceMeta) {
+  instanceMeta.keyFor = function(item) {
+    var guid = guidFor(item);
+    if (this.keyCache[guid]) {
+      return this.keyCache[guid];
+    }
+    var sortProperty;
+    var key = {};
+    for (var i = 0; i < this.sortProperties.length; ++i) {
+      sortProperty = this.sortProperties[i];
+      key[sortProperty] = get(item, sortProperty);
+    }
+    return this.keyCache[guid] = key;
+  };
+
+  instanceMeta.dropKeyFor = function(item) {
+    var guid = guidFor(item);
+    this.keyCache[guid] = null;
+  };
+
+  instanceMeta.keyCache = {};
 }
