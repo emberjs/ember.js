@@ -295,28 +295,38 @@ test("bound helpers should not be invoked with blocks", function() {
 
 test("should observe dependent keys passed to registerBoundHelper", function() {
   try {
-    expect(2);
+    expect(3);
 
-    var SimplyObject = EmberObject.create({
+    var simplyObject = EmberObject.create({
       firstName: 'Jim',
-      lastName: 'Owen'
+      lastName: 'Owen',
+      birthday: EmberObject.create({
+        year: '2009'
+      })
     });
 
     EmberHandlebars.registerBoundHelper('fullName', function(value){
-      return value.get('firstName') + ' ' + value.get('lastName');
-    }, 'firstName', 'lastName');
+      return [
+        value.get('firstName'),
+        value.get('lastName'),
+        value.get('birthday.year') ].join(' ');
+    }, 'firstName', 'lastName', 'birthday.year');
 
     view = EmberView.create({
       template: compile('{{fullName this}}'),
-      context: SimplyObject
+      context: simplyObject
     });
     appendView(view);
 
-    equal(view.$().text(), 'Jim Owen', 'simply render the helper');
+    equal(view.$().text(), 'Jim Owen 2009', 'simply render the helper');
 
-    run(SimplyObject, SimplyObject.set, 'firstName', 'Tom');
+    run(simplyObject, simplyObject.set, 'firstName', 'Tom');
 
-    equal(view.$().text(), 'Tom Owen', 'simply render the helper');
+    equal(view.$().text(), 'Tom Owen 2009', 'render the helper after prop change');
+
+    run(simplyObject, simplyObject.set, 'birthday.year', '1692');
+
+    equal(view.$().text(), 'Tom Owen 1692', 'render the helper after path change');
   } finally {
     delete EmberHandlebars.helpers['fullName'];
   }

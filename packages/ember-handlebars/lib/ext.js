@@ -18,7 +18,6 @@ import {
 var resolveHelper, SimpleHandlebarsView;
 
 import Stream from "ember-metal/streams/stream";
-import KeyStream from "ember-views/streams/key_stream";
 import {
   readArray,
   readHash
@@ -419,15 +418,19 @@ function makeBoundHelper(fn) {
       }
 
       if (numParams > 0) {
-        var onDependentKeyNotify = function onDependentKeyNotify(stream) {
-          stream.value();
-          lazyValue.notify();
-        };
-
-        for (i = 0; i < dependentKeys.length; i++) {
-          param = new KeyStream(params[0], dependentKeys[i]);
-          param.value();
-          param.subscribe(onDependentKeyNotify);
+        var firstParam = params[0];
+        // Only bother with subscriptions if the first argument
+        // is a stream itself, and not a primitive.
+        if (firstParam && firstParam.isStream) {
+          var onDependentKeyNotify = function onDependentKeyNotify(stream) {
+            stream.value();
+            lazyValue.notify();
+          };
+          for (i = 0; i < dependentKeys.length; i++) {
+            var childParam = firstParam.get(dependentKeys[i]);
+            childParam.value();
+            childParam.subscribe(onDependentKeyNotify);
+          }
         }
       }
     }
