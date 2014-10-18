@@ -31,9 +31,8 @@ Ember.assert("Ember Handlebars requires Handlebars version 2.0. Include " +
              "a SCRIPT tag in the HTML HEAD linking to the Handlebars file " +
              "before you link to Ember.", Handlebars);
 
-Ember.assert("Ember Handlebars requires Handlebars version 2.0, " +
-             "COMPILER_REVISION expected: 6, got: " +  Handlebars.COMPILER_REVISION +
-             " - Please note: Builds of master may have other COMPILER_REVISION values.",
+Ember.assert("Ember Handlebars requires Handlebars version 2.0. " +
+             "Please see more details at http://emberjs.com/blog/2014/10/16/handlebars-update.html.",
              Handlebars.COMPILER_REVISION === 6);
 
 /**
