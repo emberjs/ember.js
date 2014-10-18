@@ -1,23 +1,14 @@
 import { compile } from "htmlbars-compiler/compiler";
 import { defaultEnv } from "ember-htmlbars";
+import { equalHTML } from "./helpers";
 
-function fragmentHTML(fragment) {
-  var html = '', node;
-  for (var i = 0, l = fragment.childNodes.length; i < l; i++) {
-    node = fragment.childNodes[i];
-    if (node.nodeType === 3) {
-      html += node.nodeValue;
-    } else {
-      html += node.outerHTML;
-    }
-  }
-  return html;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+
+  QUnit.module("ember-htmlbars: main");
+
+  test("HTMLBars is present and can be executed", function() {
+    var template = compile("ohai");
+    var output = template({}, defaultEnv, document.body);
+    equalHTML(output, "ohai");
+  });
 }
-
-QUnit.module("ember-htmlbars");
-
-test("hello world", function() {
-  var template = compile("ohai {{name}}");
-  var output = template({name: 'erik'}, defaultEnv, document.body);
-  equal(fragmentHTML(output), "ohai erik");
-});

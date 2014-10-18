@@ -86,8 +86,8 @@ function defeatureifyConfig(opts) {
 /*
   Returns a tree picked from `packages/#{packageName}/lib` and then move `main.js` to `/#{packageName}.js`.
  */
-function vendoredPackage(packageName, options) {
-  if (!options) { options = {}; }
+function vendoredPackage(packageName, _options) {
+  var options = _options || {};
 
   var libPath = options.libPath || 'packages/' + packageName + '/lib';
   var mainFile = options.mainFile || 'main.js';
@@ -315,7 +315,7 @@ var bowerFiles = [
     files: ['handlebars.js'],
     srcDir: '/',
     destDir: '/handlebars'
-  }),
+  })
 ];
 
 bowerFiles = mergeTrees(bowerFiles);
@@ -582,6 +582,7 @@ var devSourceTrees       = [];
 var prodSourceTrees      = [];
 var testingSourceTrees   = [];
 var testTrees            = [emberDevTestHelpers];
+var testHelpers          = [];
 var compiledPackageTrees = [];
 
 for (var packageName in packages) {
@@ -617,6 +618,11 @@ for (var packageName in packages) {
 compiledPackageTrees = mergeTrees(compiledPackageTrees);
 vendorTrees = mergeTrees(vendorTrees);
 devSourceTrees = mergeTrees(devSourceTrees);
+
+// Grab the HTMLBars test helpers and make them appear they are coming from
+// the ember-htmlbars package.
+testHelpers = htmlbarsTestHelpers('assertions', 'ember-htmlbars/tests/helpers');
+testTrees.push(testHelpers);
 testTrees   = mergeTrees(testTrees);
 
 
@@ -636,6 +642,19 @@ function htmlbarsPackage(packageName) {
   });
 
   return useStrictRemover(tree);
+}
+
+function htmlbarsTestHelpers(helper, rename) {
+  var tree = pickFiles('bower_components/htmlbars/test/support', {
+    files: [helper + '.js'],
+    srcDir: '/',
+    destDir: '/'
+  });
+
+  return moveFile(tree, {
+    srcFile: '/' + helper + '.js',
+    destFile: '/' + rename + '.js'
+  });
 }
 
 /*

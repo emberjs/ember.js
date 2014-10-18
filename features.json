@@ -15,7 +15,8 @@
     "ember-metal-injected-properties": null,
     "mandatory-setter": "development-only",
     "ember-routing-fire-activate-deactivate-events": true,
-    "ember-testing-pause-test": true
+    "ember-testing-pause-test": true,
+    "ember-htmlbars": null
   },
   "debugStatements": [
     "Ember.warn",

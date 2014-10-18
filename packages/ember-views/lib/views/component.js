@@ -163,7 +163,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     this._keywords.view.setSource(this);
   },
 
-  _yield: function(context, options) {
+  _yield: function(context, options, morph) {
     var view = options.data.view;
     var parentView = this._parentView;
     var template = get(this, 'template');
@@ -174,8 +174,9 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
       view.appendChild(View, {
         isVirtual: true,
         tagName: '',
-        _contextView: parentView,
         template: template,
+        _contextView: parentView,
+        _morph: morph,
         context: get(parentView, 'context'),
         controller: get(parentView, 'controller'),
         templateData: { keywords: {} }
