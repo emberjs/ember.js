@@ -11,9 +11,9 @@ QUnit.module('Simple Stream', {
       return value;
     });
 
-    source.setValue = function(_value, callback, context) {
+    source.setValue = function(_value) {
       value = _value;
-      this.notify(callback, context);
+      this.notify();
     };
   },
   teardown: function() {
