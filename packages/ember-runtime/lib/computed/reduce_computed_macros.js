@@ -15,13 +15,13 @@ import {
   forEach
 } from 'ember-metal/enumerable_utils';
 import run from 'ember-metal/run_loop';
-import { addObserver } from 'ember-metal/observer';
-import { arrayComputed } from 'ember-runtime/computed/array_computed';
-import { reduceComputed } from 'ember-runtime/computed/reduce_computed';
-import ObjectProxy from 'ember-runtime/system/object_proxy';
-import SubArray from 'ember-runtime/system/subarray';
-import keys from 'ember-metal/keys';
-import compare from 'ember-runtime/compare';
+import { addObserver, removeObserver } from "ember-metal/observer";
+import { arrayComputed } from "ember-runtime/computed/array_computed";
+import { reduceComputed } from "ember-runtime/computed/reduce_computed";
+import ObjectProxy from "ember-runtime/system/object_proxy";
+import SubArray from "ember-runtime/system/subarray";
+import keys from "ember-runtime/keys";
+import compare from "ember-runtime/compare";
 
 var a_slice = [].slice;
 
@@ -702,7 +702,7 @@ export function sort(itemsKey, sortDefinition) {
   Ember.assert('Ember.computed.sort requires two arguments: an array key to sort and ' +
     'either a sort properties key or sort function', arguments.length === 2);
 
-  var initFn, sortPropertiesKey;
+  var initFn, recomputePropFn, recomputeEachFn, sortPropertiesKey;
 
   if (typeof sortDefinition === 'function') {
     initFn = function (array, changeMeta, instanceMeta) {
@@ -713,6 +713,11 @@ export function sort(itemsKey, sortDefinition) {
     sortPropertiesKey = sortDefinition;
 
     initFn = function (array, changeMeta, instanceMeta) {
+
+      function recomputeOnce() {
+        changeMeta.property.recomputeOnce.call(this, changeMeta.propertyName);
+      }
+      
       function setupSortProperties() {
         var sortPropertyDefinitions = get(this, sortPropertiesKey);
         var sortProperties = instanceMeta.sortProperties = [];
@@ -738,19 +743,17 @@ export function sort(itemsKey, sortDefinition) {
           changeMeta.property.itemPropertyKey(itemsKey, sortProperty);
         });
 
-        sortPropertyDefinitions.addObserver('@each', this, updateSortPropertiesOnce);
+        if (recomputeEachFn) {
+          removeObserver(sortPropertyDefinitions, '@each', this, recomputeEachFn);
+        }
+        addObserver(sortPropertyDefinitions, '@each', this, recomputeEachFn = recomputeOnce);
       }
 
-      function updateSortPropertiesOnce() {
-        run.once(this, updateSortProperties, changeMeta.propertyName);
+      if (recomputePropFn) {
+        removeObserver(this, sortPropertiesKey, recomputePropFn);
       }
+      addObserver(this, sortPropertiesKey, recomputePropFn = recomputeOnce);
 
-      function updateSortProperties(propertyName) {
-        setupSortProperties.call(this);
-        changeMeta.property.recomputeOnce.call(this, propertyName);
-      }
-
-      addObserver(this, sortPropertiesKey, updateSortPropertiesOnce);
       setupSortProperties.call(this);
 
       instanceMeta.order = function (itemA, itemB) {

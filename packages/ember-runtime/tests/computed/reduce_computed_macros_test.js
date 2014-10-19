@@ -1103,6 +1103,128 @@ test("changing item properties not specified via @each does not trigger a resort
   deepEqual(sorted.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb'], "updating an unspecified property on an item does not resort it");
 });
 
+QUnit.module('computedSort - sort observers', {
+  setup: function() {
+    run(function() {
+      obj = EmberObject.createWithMixins({
+        items: Ember.A([{
+          fname: "Jaime", lname: "Lannister", age: 34
+        }, {
+          fname: "Cersei", lname: "Lannister", age: 34
+        }, {
+          fname: "Robb", lname: "Stark", age: 16
+        }, {
+          fname: "Bran", lname: "Stark", age: 8
+        }]),
+        itemSorting: Ember.A(['lname', 'fname']),
+        sortedItems: computedSort('items', 'itemSorting'),
+
+        i: 0,
+        init: function() {
+          this._super();
+
+          var self = this;
+          var cp = Ember.meta(this).descs['sortedItems'];
+          var ro = cp.recomputeOnce;
+          cp.recomputeOnce = function(propertyName) {
+            self.incrementProperty('i', 1);
+            ro.call(this, propertyName);
+          };
+        }
+      });
+    });
+  },
+  teardown: function() {
+    run(function() {
+      obj.destroy();
+    });
+  }
+});
+
+test("updating the sort properties definitions array content triggers recomputeOnce only one time", function() {
+  run(function() {
+    get(obj, 'sortedItems'); // consume computed
+  });
+
+  run(function() {
+    set(obj, 'i', 0);
+    toggleSort(get(obj, 'itemSorting'), 0);
+  });
+
+  equal(get(obj, 'i'), 1, 'recomputeOnce called once when sort direction of the first item in sort property definitions is toggled to desc');
+
+  run(function() {
+    set(obj, 'i', 0);
+    toggleSort(get(obj, 'itemSorting'), 1);
+  });
+
+  equal(get(obj, 'i'), 1, 'recomputeOnce called once when sort direction of the second item in sort property definitions is toggled to desc');
+
+  run(function() {
+    set(obj, 'i', 0);
+    toggleSort(get(obj, 'itemSorting'), 0);
+  });
+
+  equal(get(obj, 'i'), 1, 'recomputeOnce called once when sort direction of the first item in sort property definitions is toggled back to asc');
+
+  run(function() {
+    set(obj, 'i', 0);
+    toggleSort(get(obj, 'itemSorting'), 1);
+  });
+
+  equal(get(obj, 'i'), 1, 'recomputeOnce called once when sort direction of the second item in sort property definitions is toggled back to asc');
+});
+
+test("replacing the sort property definitions array itself triggers recomputeOnce only one time", function() {
+  var spd;
+
+  run(function() {
+    get(obj, 'sortedItems'); // consume computed
+  });
+
+  run(function() {
+    set(obj, 'i', 0);
+    toggleSort(spd = Ember.A(get(obj, 'itemSorting').slice()), 0);
+    set(obj, 'itemSorting', spd);
+  });
+
+  equal(get(obj, 'i'), 1, 'recomputeOnce called once when sort direction of the first item in sort property definitions is toggled to desc');
+
+  run(function() {
+    set(obj, 'i', 0);
+    toggleSort(spd = Ember.A(get(obj, 'itemSorting').slice()), 1);
+    set(obj, 'itemSorting', spd);
+  });
+
+  equal(get(obj, 'i'), 1, 'recomputeOnce called once when sort direction of the second item in sort property definitions is toggled to desc');
+
+  run(function() {
+    set(obj, 'i', 0);
+    toggleSort(spd = Ember.A(get(obj, 'itemSorting').slice()), 0);
+    set(obj, 'itemSorting', spd);
+  });
+
+  equal(get(obj, 'i'), 1, 'recomputeOnce called once when sort direction of the first item in sort property definitions is toggled back to asc');
+
+  run(function() {
+    set(obj, 'i', 0);
+    toggleSort(spd = Ember.A(get(obj, 'itemSorting').slice()), 1);
+    set(obj, 'itemSorting', spd);
+  });
+
+  equal(get(obj, 'i'), 1, 'recomputeOnce called once when sort direction of the second item in sort property definitions is toggled back to asc');
+});
+
+function toggleSort(spd, idx) {
+  var def = spd.objectAt(idx);
+  if (def.indexOf(':desc') !== -1) {
+    def = def.slice(0, -5);
+  } else {
+    def += ':desc';
+  }
+  spd.replace(0, 1, [def]);
+}
+
 QUnit.module('computedMax', {
   setup: function() {
     run(function() {
