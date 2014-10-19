@@ -5,7 +5,7 @@ export function equalInnerHTML(fragment, html) {
 
 export function equalHTML(node, html) {
   var fragment;
-  if (node.length) {
+  if (!node.nodeType && node.length) {
     fragment = document.createDocumentFragment();
     while (node[0]) {
       fragment.appendChild(node[0]);
