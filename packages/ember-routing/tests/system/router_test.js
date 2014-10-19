@@ -162,3 +162,18 @@ test("AutoLocation should replace the url when it's not in the preferred format"
     rootURL: '/rootdir/'
   });
 });
+
+test("Router#handleURL should remove any #hashes before doing URL transition", function() {
+  expect(2);
+
+  router = Router.create({
+    container: container,
+
+    _doURLTransition: function (routerJsMethod, url) {
+      equal(routerJsMethod, 'handleURL');
+      equal(url, '/foo/bar?time=morphin');
+    }
+  });
+
+  router.handleURL('/foo/bar?time=morphin#pink-power-ranger');
+});

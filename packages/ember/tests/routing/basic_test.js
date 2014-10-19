@@ -2100,7 +2100,8 @@ test("Router accounts for rootURL on page load when using history location", fun
 
       setHistory(this, path);
       this.set('location', {
-        pathname: path
+        pathname: path,
+        href: 'http://localhost/' + path
       });
     },
 
