@@ -195,44 +195,6 @@ EmberHandlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) {
   return "data.buffer.push("+string+");";
 };
 
-// Hacks ahead:
-// Handlebars presently has a bug where the `blockHelperMissing` hook
-// doesn't get passed the name of the missing helper name, but rather
-// gets passed the value of that missing helper evaluated on the current
-// context, which is most likely `undefined` and totally useless.
-//
-// So we alter the compiled template function to pass the name of the helper
-// instead, as expected.
-//
-// This can go away once the following is closed:
-// https://github.com/wycats/handlebars.js/issues/634
-
-var DOT_LOOKUP_REGEX = /helpers\.(.*?)\)/;
-var BRACKET_STRING_LOOKUP_REGEX = /helpers\['(.*?)'/;
-var INVOCATION_SPLITTING_REGEX = /(.*blockHelperMissing\.call\(.*)(stack[0-9]+)(,.*)/;
-
-EmberHandlebars.JavaScriptCompiler.stringifyLastBlockHelperMissingInvocation = function(source) {
-  var helperInvocation = source[source.length - 1];
-  var helperName = (DOT_LOOKUP_REGEX.exec(helperInvocation) || BRACKET_STRING_LOOKUP_REGEX.exec(helperInvocation))[1];
-  var matches = INVOCATION_SPLITTING_REGEX.exec(helperInvocation);
-
-  source[source.length - 1] = matches[1] + "'" + helperName + "'" + matches[3];
-};
-
-var stringifyBlockHelperMissing = EmberHandlebars.JavaScriptCompiler.stringifyLastBlockHelperMissingInvocation;
-
-var originalBlockValue = EmberHandlebars.JavaScriptCompiler.prototype.blockValue;
-EmberHandlebars.JavaScriptCompiler.prototype.blockValue = function() {
-  originalBlockValue.apply(this, arguments);
-  stringifyBlockHelperMissing(this.source);
-};
-
-var originalAmbiguousBlockValue = EmberHandlebars.JavaScriptCompiler.prototype.ambiguousBlockValue;
-EmberHandlebars.JavaScriptCompiler.prototype.ambiguousBlockValue = function() {
-  originalAmbiguousBlockValue.apply(this, arguments);
-  stringifyBlockHelperMissing(this.source);
-};
-
 /**
   Rewrite simple mustaches from `{{foo}}` to `{{bind "foo"}}`. This means that
   all simple mustaches in Ember's Handlebars will also set up an observer to
