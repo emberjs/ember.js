@@ -52,11 +52,11 @@ Stream.prototype = {
     throw new Error("Stream error: setValue not implemented");
   },
 
-  notifyAll: function() {
-    this.notify();
+  notify: function() {
+    this.notifyExcept();
   },
 
-  notify: function(callbackToSkip, contextToSkip) {
+  notifyExcept: function(callbackToSkip, contextToSkip) {
     if (this.cache !== NIL) {
       this.cache = NIL;
       this.notifySubscribers(callbackToSkip, contextToSkip);

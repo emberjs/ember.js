@@ -406,14 +406,14 @@ function makeBoundHelper(fn) {
       for (i = 0; i < numParams; i++) {
         param = params[i];
         if (param && param.isStream) {
-          param.subscribe(lazyValue.notifyAll, lazyValue);
+          param.subscribe(lazyValue.notify, lazyValue);
         }
       }
 
       for (prop in hash) {
         param = hash[prop];
         if (param && param.isStream) {
-          param.subscribe(lazyValue.notifyAll, lazyValue);
+          param.subscribe(lazyValue.notify, lazyValue);
         }
       }
 

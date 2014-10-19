@@ -24,7 +24,6 @@ import { isArray } from "ember-metal/utils";
 import keys from "ember-metal/keys";
 import Cache from "ember-metal/cache";
 import SimpleStream from "ember-metal/streams/simple";
-import KeyStream from "ember-views/streams/key_stream";
 
 import {
   _HandlebarsBoundView,
@@ -103,7 +102,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
     };
 
     for (var i = 0; i < childProperties.length; i++) {
-      var childStream = new KeyStream(valueStream, childProperties[i]);
+      var childStream = valueStream.get(childProperties[i]);
       childStream.value();
       childStream.subscribe(subscriber);
     }

@@ -61,7 +61,7 @@ merge(StreamBinding.prototype, {
     // Force StreamBindings to always notify
     this.cache = undefined;
 
-    this.notify(senderCallback, senderContext);
+    this.notifyExcept(senderCallback, senderContext);
   },
 
   destroy: function() {
