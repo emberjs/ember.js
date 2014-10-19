@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### Master
+
+* [BREAKING] Require Handlebars 2.0. See [blog post](http://emberjs.com/blog/2014/10/16/handlebars-update.html) for details.
+
 ### Ember 1.8.0-beta.3 (September, 27, 2014)
 
 * [BUGFIX] Use contextualElements to properly handle omitted optional start tags.

@@ -24,7 +24,6 @@ import {
 } from "ember-metal/streams/read";
 
 var slice = [].slice;
-var originalTemplate = EmberHandlebars.template;
 
 /**
   Lookup both on root and on window. If the path starts with
@@ -149,18 +148,22 @@ export function helperMissingHelper(path) {
   var error, view = "";
 
   var options = arguments[arguments.length - 1];
+  if (options.fn) {
+    // NOP for block helpers as they are handled by the block helper (in all cases)
+    return;
+  }
 
-  var helper = resolveHelper(options.data.view.container, path);
+  var helper = resolveHelper(options.data.view.container, options.name);
 
   if (helper) {
-    return helper.apply(this, slice.call(arguments, 1));
+    return helper.apply(this, arguments);
   }
 
   error = "%@ Handlebars error: Could not find property '%@' on object %@.";
   if (options.data) {
     view = options.data.view;
   }
-  throw new EmberError(fmt(error, [view, path, this]));
+  throw new EmberError(fmt(error, [view, options.name, this]));
 }
 
 /**
@@ -174,10 +177,9 @@ export function helperMissingHelper(path) {
   @private
   @method helperMissing
   @for Ember.Handlebars.helpers
-  @param {String} path
   @param {Hash} options
 */
-export function blockHelperMissingHelper(path) {
+export function blockHelperMissingHelper(/* ..., options */) {
   if (!resolveHelper) {
     resolveHelper = requireModule('ember-handlebars/helpers/binding')['resolveHelper'];
   } // ES6TODO: stupid circular dep
@@ -188,14 +190,15 @@ export function blockHelperMissingHelper(path) {
                "is most likely due to a mismatch between the version of " +
                "Ember.js you're running now and the one used to precompile your " +
                "templates. Please make sure the version of " +
-               "`ember-handlebars-compiler` you're using is up to date.", path);
+               "`ember-handlebars-compiler` you're using is up to date.", options.name);
 
-  var helper = resolveHelper(options.data.view.container, path);
+  var helper = resolveHelper(options.data.view.container, options.name);
 
   if (helper) {
     return helper.apply(this, slice.call(arguments, 1));
   } else {
-    return EmberHandlebars.helpers.helperMissing.call(this, path);
+    // Someone is actually trying to call something, blow up.
+    throw new EmberError("Missing helper: '" + options.name + "'");
   }
 }
 
@@ -437,21 +440,6 @@ function makeBoundHelper(fn) {
   }
 
   return helper;
-}
-
-/**
-  Overrides Handlebars.template so that we can distinguish
-  user-created, top-level templates from inner contexts.
-
-  @private
-  @method template
-  @for Ember.Handlebars
-  @param {String} spec
-*/
-export function template(spec) {
-  var t = originalTemplate(spec);
-  t.isTop = true;
-  return t;
 }
 
 export {
