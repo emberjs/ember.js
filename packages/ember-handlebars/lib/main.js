@@ -8,7 +8,8 @@ import {
   makeBoundHelper,
   registerBoundHelper,
   helperMissingHelper,
-  blockHelperMissingHelper
+  blockHelperMissingHelper,
+  handlebarsGet
 } from "ember-handlebars/ext";
 
 
@@ -97,6 +98,7 @@ EmberHandlebars.ViewHelper = ViewHelper;
 
 // Ember Globals
 Ember.Handlebars = EmberHandlebars;
+EmberHandlebars.get = handlebarsGet;
 Ember.ComponentLookup = ComponentLookup;
 Ember._SimpleHandlebarsView = SimpleHandlebarsView;
 Ember._HandlebarsBoundView = _HandlebarsBoundView;
