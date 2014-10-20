@@ -22,6 +22,7 @@ import {
   readArray,
   readHash
 } from "ember-metal/streams/read";
+import keys from 'ember-metal/keys';
 
 var slice = [].slice;
 
@@ -148,8 +149,15 @@ export function helperMissingHelper(path) {
   var error, view = "";
 
   var options = arguments[arguments.length - 1];
-  if (options.fn) {
-    // NOP for block helpers as they are handled by the block helper (in all cases)
+
+  // due to the issue reported in https://github.com/wycats/handlebars.js/issues/885
+  // we must check to see if we have hash arguments manually
+  //
+  // This should be removed once Handlebars properly calls `blockHelperMissing` when
+  // hash arguments are present.
+  var hashArgs = keys(options.hash);
+  if (options.fn && hashArgs.length === 0) {
+    // NOP for block helpers as they are handled by the block helper (when hash arguments are not present)
     return;
   }
 
