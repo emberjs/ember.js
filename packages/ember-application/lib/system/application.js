@@ -36,7 +36,7 @@ import BucketCache from "ember-routing/system/cache";
 // `import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';` but
 // es6-module-transpiler 0.4.0 eagerly grabs the module (which is undefined)
 
-module ContainerDebugAdapterModule from "ember-extension-support/container_debug_adapter";
+import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
 
 import {
   K
@@ -1008,7 +1008,7 @@ Application.reopenClass({
     container.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
     // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
-    container.register('container-debug-adapter:main', ContainerDebugAdapterModule['default']);
+    container.register('container-debug-adapter:main', ContainerDebugAdapter);
 
     return container;
   }

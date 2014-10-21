@@ -35,7 +35,7 @@ import keys from "ember-metal/keys";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import { defineProperty } from "ember-metal/properties";
 import { Binding } from "ember-metal/binding";
-import { ComputedProperty } from "ember-metal/computed";
+import { ComputedProperty, computed } from "ember-metal/computed";
 import InjectedProperty from "ember-metal/injected_property";
 import run from 'ember-metal/run_loop';
 import { destroy } from "ember-metal/watching";
@@ -794,7 +794,7 @@ var ClassMixinProps = {
     return desc._meta || {};
   },
 
-  _computedProperties: Ember.computed(function() {
+  _computedProperties: computed(function() {
     hasCachedComputedProperties = true;
     var proto = this.proto();
     var descs = meta(proto).descs;
