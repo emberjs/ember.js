@@ -717,7 +717,6 @@ function customSort(itemsKey, comparator) {
       };
       instanceMeta.insertLater = function(item) {
         this.waitingInsertions.push(item);
-        run.once(this, 'insertWaiting');
       };
     },
 
@@ -729,6 +728,10 @@ function customSort(itemsKey, comparator) {
     removedItem: function (array, item, changeMeta, instanceMeta) {
       array.removeObject(item);
       return array;
+    },
+
+    flushedChanges: function(array, instanceMeta) {
+      instanceMeta.insertWaiting();
     }
   });
 }

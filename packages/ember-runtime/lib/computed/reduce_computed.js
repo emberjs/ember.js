@@ -279,6 +279,7 @@ DependentArraysObserver.prototype = {
       this.setValue(removedItem.call(
         this.instanceMeta.context, this.getValue(), item, changeMeta, this.instanceMeta.sugarMeta));
     }
+    this.callbacks.flushedChanges.call(this.instanceMeta.context, this.getValue(), this.instanceMeta.sugarMeta);
   },
 
   dependentArrayDidChange: function (dependentArray, index, removedCount, addedCount) {
@@ -310,7 +311,7 @@ DependentArraysObserver.prototype = {
       this.setValue(addedItem.call(
         this.instanceMeta.context, this.getValue(), item, changeMeta, this.instanceMeta.sugarMeta));
     }, this);
-
+    this.callbacks.flushedChanges.call(this.instanceMeta.context, this.getValue(), this.instanceMeta.sugarMeta);
     this.trackAdd(dependentKey, normalizedIndex, observerContexts);
   },
 
@@ -354,6 +355,7 @@ DependentArraysObserver.prototype = {
     }
 
     this.changedItems = {};
+    this.callbacks.flushedChanges.call(this.instanceMeta.context, this.getValue(), this.instanceMeta.sugarMeta);
   }
 };
 
@@ -390,6 +392,7 @@ function addItems(dependentArray, callbacks, cp, propertyName, meta) {
     meta.setValue( callbacks.addedItem.call(
       this, meta.getValue(), item, new ChangeMeta(dependentArray, item, index, propertyName, cp, dependentArray.length), meta.sugarMeta));
   }, this);
+  callbacks.flushedChanges.call(this, meta.getValue(), meta.sugarMeta);
 }
 
 function reset(cp, propertyName) {
@@ -566,7 +569,8 @@ ReduceComputedProperty.prototype._callbacks = function () {
 
     this.callbacks = {
       removedItem: options.removedItem || defaultCallback,
-      addedItem: options.addedItem || defaultCallback
+      addedItem: options.addedItem || defaultCallback,
+      flushedChanges: options.flushedChanges || defaultCallback
     };
   }
 
