@@ -1191,16 +1191,17 @@ test("sorts correctly with a user-provided comparator when there are concurrent 
   var sorted;
   run(function() {
     sorted = obj.get('customSortedItems');
+    deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], "initial");
   });
-  deepEqual(sorted.mapBy('name'), ['A', 'B', 'C', 'D'], "initial");
+
   run(function() {
     Ember.changeProperties(function(){
       obj.get('items').objectAt(1).set('count', 5);
       obj.get('items').objectAt(2).set('count', 6);
     });
     sorted = obj.get('customSortedItems');
+    deepEqual(sorted.mapBy('name'), ['A', 'D', 'B', 'C'], "final");
   });
-  deepEqual(sorted.mapBy('name'), ['A', 'D', 'B', 'C'], "final");
 });
 
 
