@@ -74,7 +74,7 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   onEvent: 'enter',
 
   /**
-    Whether they `keyUp` event that triggers an `action` to be sent continues
+    Whether the `keyUp` event that triggers an `action` to be sent continues
     propagating to other views.
 
     By default, when the user presses the return key on their keyboard and
