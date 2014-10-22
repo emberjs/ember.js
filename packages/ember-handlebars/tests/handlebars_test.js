@@ -2494,3 +2494,15 @@ test("should teardown observers from bind-attr on rerender", function() {
 
   equal(observersFor(view, 'foo').length, 1);
 });
+
+test("should provide a helpful assertion for bindings within HTML comments", function() {
+  view = EmberView.create({
+    template: EmberHandlebars.compile('<!-- {{view.someThing}} -->'),
+    someThing: 'foo',
+    _debugTemplateName: 'blahzorz'
+  });
+
+  expectAssertion(function() {
+    appendView();
+  }, 'An error occured while setting up template bindings. Please check "blahzorz" template for invalid markup or bindings within HTML comments.');
+});

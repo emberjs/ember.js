@@ -275,6 +275,14 @@ _RenderBuffer.prototype = {
     for (var i=0,l=childViews.length; i<l; i++) {
       var childView = childViews[i];
       var ref = el.querySelector('#morph-'+i);
+
+      Ember.assert('An error occured while setting up template bindings. Please check ' +
+                   (childView && childView._parentView && childView._parentView._debugTemplateName ?
+                        '"' + childView._parentView._debugTemplateName + '" template ' :
+                        ''
+                   )  + 'for invalid markup or bindings within HTML comments.',
+                   ref);
+
       var parent = ref.parentNode;
 
       childView._morph = this.dom.insertMorphBefore(
