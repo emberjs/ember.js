@@ -18,20 +18,20 @@ import keys from "ember-metal/keys";
   ```
 
   @method setProperties
-  @param self
-  @param {Object} hash
-  @return self
+  @param obj
+  @param {Object} properties
+  @return obj
 */
-export default function setProperties(self, hash) {
+export default function setProperties(obj, properties) {
   changeProperties(function() {
-    var props = keys(hash);
-    var prop;
+    var props = keys(properties);
+    var propertyName;
 
     for (var i = 0, l = props.length; i < l; i++) {
-      prop = props[i];
+      propertyName = props[i];
 
-      set(self, prop, hash[prop]);
+      set(obj, propertyName, properties[propertyName]);
     }
   });
-  return self;
+  return obj;
 }
