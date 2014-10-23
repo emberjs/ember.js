@@ -16,7 +16,6 @@ after_success:
   - "./bin/bower_ember_build"
 script:
   - npm test
-  - npm run-script test-node
 
 env:
   global:
