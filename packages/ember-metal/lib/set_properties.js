@@ -23,6 +23,7 @@ import keys from "ember-metal/keys";
   @return obj
 */
 export default function setProperties(obj, properties) {
+  if (!properties || typeof properties !== "object") { return obj; }
   changeProperties(function() {
     var props = keys(properties);
     var propertyName;
