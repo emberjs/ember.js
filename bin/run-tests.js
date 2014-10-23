@@ -99,6 +99,9 @@ function generateBuiltTests() {
   testFunctions.push(function() {
     return run(common + '&enableoptionalfeatures=true&dist=prod&prod=true');
   });
+  testFunctions.push(function(){
+    return run(common + '&dist=browerify&prod=true');
+  });
 }
 
 function generateOldJQueryTests() {

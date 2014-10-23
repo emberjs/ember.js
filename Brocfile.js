@@ -691,4 +691,29 @@ distTrees = replace(distTrees, {
   ]
 });
 
+// ========================= NPM CONFIGURATION =================== //
+
+if (env === 'production') {
+  // npm is only output in production builds. Derequire is currently pretty slow
+  // because we aren't using a symlink verison of ember-cli. Upgrading to
+  // ember-cli >= 0.1.1 and using the caching broccoli writer should help this.
+  // Copy over the browser global files
+  var npmTree = pickFiles(distTrees, {
+    srcDir: '/',
+    files: [ 'ember*.js', 'package.json' ],
+    destDir: '/npm'
+  });
+
+  // Rename require statements for loader.js to _emreq_ so if someone
+  // doesn't use --noparse with browserify the package still works.
+  npmTree = require('broccoli-derequire')(npmTree, {
+    pattern: {
+      from: 'require',
+      to: '_emreq_'
+    }
+  });
+
+  distTrees = mergeTrees([distTrees, npmTree]);
+}
+
 module.exports = distTrees;
