@@ -1674,7 +1674,7 @@ var Route = EmberObject.extend(ActionHandler, {
 
     Not all options need to be passed to `render`. Default values will be used
     based on the name of the route specified in the router or the Route's
-    `controllerName`, `viewName` and and `templateName` properties.
+    `controllerName`, `viewName` and `templateName` properties.
 
     For example:
 
