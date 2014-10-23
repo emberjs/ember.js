@@ -138,7 +138,7 @@ export default function renderBuffer(tagName, contextualElement) {
 
 function _RenderBuffer(tagName, contextualElement) {
   this.tagName = tagName;
-  this._contextualElement = contextualElement;
+  this._outerContextualElement = contextualElement;
   this.buffer = null;
   this.childViews = [];
   this.dom = new DOMHelper();
@@ -150,7 +150,7 @@ _RenderBuffer.prototype = {
     this.tagName = tagName;
     this.buffer = null;
     this._element = null;
-    this._contextualElement = contextualElement;
+    this._outerContextualElement = contextualElement;
     this.elementClasses = null;
     this.elementId = null;
     this.elementAttributes = null;
@@ -164,7 +164,7 @@ _RenderBuffer.prototype = {
   _element: null,
 
   // The root view's contextualElement
-  _contextualElement: null,
+  _outerContextualElement: null,
 
   /**
     An internal set used to de-dupe class names when `addClass()` is
@@ -301,11 +301,11 @@ _RenderBuffer.prototype = {
     @param {String} string HTML to push into the buffer
     @chainable
   */
-  push: function(string) {
+  push: function(content) {
     if (this.buffer === null) {
       this.buffer = '';
     }
-    this.buffer += string;
+    this.buffer += content;
     return this;
   },
 
@@ -451,7 +451,7 @@ _RenderBuffer.prototype = {
       tagString = tagName;
     }
 
-    var element = this.dom.createElement(tagString, this._contextualElement);
+    var element = this.dom.createElement(tagString, this.outerContextualElement());
     var $element = jQuery(element);
 
     if (id) {
@@ -505,39 +505,24 @@ _RenderBuffer.prototype = {
       of this buffer
   */
   element: function() {
-    if (!this._contextualElement) {
-      Ember.deprecate("buffer.element expects a contextualElement to exist." +
-                      " This ensures DOM that requires context is correctly generated (tr, SVG tags)." +
-                      " Defaulting to document.body, but this will be removed in the future");
-      this._contextualElement = document.body;
+    var content = this.innerContent();
+    if (content === null)  {
+      return this._element;
     }
-    var html = this.innerString();
 
-    var nodes;
-    if (this._element) {
-      if (html) {
-        this.dom.detectNamespace(this._element);
-        nodes = this.dom.parseHTML(html, this._element);
-        while (nodes[0]) {
-          this._element.appendChild(nodes[0]);
-        }
-        this.hydrateMorphs(this._element);
-      }
-    } else {
-      if (html) {
-        var omittedStartTag = detectOmittedStartTag(html, this._contextualElement);
-        var contextualElement = omittedStartTag || this._contextualElement;
-        this.dom.detectNamespace(contextualElement);
-        nodes = this.dom.parseHTML(html, contextualElement);
-        var frag = this._element = document.createDocumentFragment();
-        while (nodes[0]) {
-          frag.appendChild(nodes[0]);
-        }
-        this.hydrateMorphs(contextualElement);
-      } else if (html === '') {
-        this._element = html;
-      }
+    var contextualElement = this.innerContextualElement(content);
+    this.dom.detectNamespace(contextualElement);
+
+    if (!this._element) {
+      this._element = document.createDocumentFragment();
     }
+
+    var nodes = this.dom.parseHTML(content, contextualElement);
+    while (nodes[0]) {
+      this._element.appendChild(nodes[0]);
+    }
+    this.hydrateMorphs(contextualElement);
+
     return this._element;
   },
 
@@ -561,7 +546,39 @@ _RenderBuffer.prototype = {
     }
   },
 
+  outerContextualElement: function() {
+    if (!this._outerContextualElement) {
+      Ember.deprecate("The render buffer expects an outer contextualElement to exist." +
+                      " This ensures DOM that requires context is correctly generated (tr, SVG tags)." +
+                      " Defaulting to document.body, but this will be removed in the future");
+      this.outerContextualElement = document.body;
+    }
+    return this._outerContextualElement;
+  },
+
+  innerContextualElement: function(html) {
+    var innerContextualElement;
+    if (this._element && this._element.nodeType === 1) {
+      innerContextualElement = this._element;
+    } else {
+      innerContextualElement = this.outerContextualElement();
+    }
+
+    var omittedStartTag;
+    if (html) {
+      omittedStartTag = detectOmittedStartTag(html, innerContextualElement);
+    }
+    return omittedStartTag || innerContextualElement;
+  },
+
   innerString: function() {
+    var content = this.innerContent();
+    if (content && !content.nodeType) {
+      return content;
+    }
+  },
+
+  innerContent: function() {
     return this.buffer;
   }
 };

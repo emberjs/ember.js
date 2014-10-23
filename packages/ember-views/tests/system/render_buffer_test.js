@@ -12,21 +12,21 @@ QUnit.module("RenderBuffer");
 
 test("RenderBuffers raise a deprecation warning without a contextualElement", function() {
   var buffer = new RenderBuffer('div');
-  buffer.generateElement();
   expectDeprecation(function(){
+    buffer.generateElement();
     var el = buffer.element();
     equal(el.tagName.toLowerCase(), 'div');
-  }, /buffer.element expects a contextualElement to exist/);
+  }, /The render buffer expects an outer contextualElement to exist/);
 });
 
 test("reset RenderBuffers raise a deprecation warning without a contextualElement", function() {
   var buffer = new RenderBuffer('div', document.body);
   buffer.reset('span');
-  buffer.generateElement();
   expectDeprecation(function(){
+    buffer.generateElement();
     var el = buffer.element();
     equal(el.tagName.toLowerCase(), 'span');
-  }, /buffer.element expects a contextualElement to exist/);
+  }, /The render buffer expects an outer contextualElement to exist/);
 });
 
 test("RenderBuffers combine strings", function() {
@@ -190,6 +190,15 @@ test("generates a tr from a tr innerString with leading comment", function() {
 
   var el = buffer.element();
   equal(el.childNodes[1].tagName, 'TR');
+});
+
+test("generates a tr from a tr innerString on rerender", function() {
+  var buffer = new RenderBuffer('table', document.body);
+  buffer.generateElement();
+  buffer.buffer = '<tr></tr>';
+
+  var el = buffer.element();
+  equal(el.childNodes[0].tagName.toLowerCase(), 'tr');
 });
 
 test("generates a tbody from a tbody innerString", function() {
