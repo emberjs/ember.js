@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### Ember 1.7.1 (October 23, 2014)
+
+* [BUGFIX] Allow for bound property `{{input}}` type.
+* Fix minification of assets.
+* Ensure ember-testing is not included in build output.
+* [PERF] Do not use defineProperty on each View instance.
+
 ### Ember 1.7.0 (August 19, 2014)
 
 * Update `Ember.computed.notEmpty` to properly respect arrays.
