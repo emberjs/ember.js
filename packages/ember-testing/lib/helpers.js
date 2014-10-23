@@ -31,6 +31,11 @@ function currentURL(app){
   return get(router, 'location').getURL();
 }
 
+function pauseTest(){
+  Test.adapter.asyncStart();
+  return new Ember.RSVP.Promise(function(){ }, 'TestAdapter paused promise');
+}
+
 function visit(app, url) {
   var router = app.__container__.lookup('router:main');
   router.location.setURL(url);
@@ -390,6 +395,26 @@ click('#some-link-id').then(validateURL);
 @since 1.5.0
 */
 helper('currentURL', currentURL);
+
+if (Ember.FEATURES.isEnabled("ember-testing-pause-test")) {
+  /**
+   Pauses the current test - this is useful for debugging while testing or for test-driving.
+   It allows you to inspect the state of your application at any point.
+
+   Example (The test will pause before clicking the button):
+
+   ```javascript
+   visit('/')
+   return pauseTest();
+
+   click('.btn');
+   ```
+
+   @method pauseTest
+   @return {Object} A promise that will never resolve
+   */
+  helper('pauseTest', pauseTest);
+}
 
 /**
   Triggers the given DOM event on the element identified by the provided selector.
