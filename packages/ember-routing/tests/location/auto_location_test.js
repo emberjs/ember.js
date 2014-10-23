@@ -65,16 +65,16 @@ QUnit.module("Ember.AutoLocation", {
       hash: '',
       search: '',
       replace: function () {
-        ok(false, 'location.replace should not be called');
+        ok(false, 'location.replace should not be called during testing');
       }
     };
 
     AutoTestLocation._history = {
       pushState: function () {
-        ok(false, 'history.pushState should not be called');
+        ok(false, 'history.pushState should not be called during testing');
       },
       replaceState: function () {
-        ok(false, 'history.replaceState should not be called');
+        ok(false, 'history.replaceState should not be called during testing');
       }
     };
   },
