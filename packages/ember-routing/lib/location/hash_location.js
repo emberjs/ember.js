@@ -1,3 +1,4 @@
+import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
@@ -5,7 +6,6 @@ import { guidFor } from "ember-metal/utils";
 
 import EmberObject from "ember-runtime/system/object";
 import EmberLocation from "ember-routing/location/api";
-import jQuery from "ember-views/system/jquery";
 
 /**
 @module ember
@@ -45,7 +45,9 @@ export default EmberObject.extend({
     @method getURL
   */
   getURL: function() {
-    return this.getHash().substr(1);
+    var path = this.getHash().substr(1);
+    Ember.deprecate('location.hash value is ambiguous. Support for this will be removed soon. When using location: "hash|auto" your hash paths MUST begin with a forward slash. e.g. #/' + path + ' NOT #' + path, path.length === 0 || path.charAt(0) === '/');
+    return path;
   },
 
   /**
@@ -88,7 +90,7 @@ export default EmberObject.extend({
     var self = this;
     var guid = guidFor(this);
 
-    jQuery(window).on('hashchange.ember-location-'+guid, function() {
+    Ember.$(window).on('hashchange.ember-location-'+guid, function() {
       run(function() {
         var path = self.getURL();
         if (get(self, 'lastSetURL') === path) { return; }
@@ -124,6 +126,6 @@ export default EmberObject.extend({
   willDestroy: function() {
     var guid = guidFor(this);
 
-    jQuery(window).off('hashchange.ember-location-'+guid);
+    Ember.$(window).off('hashchange.ember-location-'+guid);
   }
 });
