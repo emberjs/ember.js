@@ -9,7 +9,7 @@ cache:
 
 install:
   - "npm install"
-  - "./bin/generate_docs.js"
+  - "npm run docs"
 
 after_success:
   - "./bin/publish_to_s3.js"
