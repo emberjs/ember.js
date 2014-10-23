@@ -51,6 +51,7 @@ RSVP.onerrorDefault = function (error) {
 
       if (Test && Test.adapter) {
         Test.adapter.exception(error);
+        Logger.error(error.stack);
       } else {
         throw error;
       }
