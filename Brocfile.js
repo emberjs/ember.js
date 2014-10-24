@@ -16,7 +16,7 @@ var jshintTree = require('broccoli-jshint');
 var replace = require('broccoli-replace');
 var es3recast = require('broccoli-es3-safe-recast');
 
-var calculateVersion = require('./lib/calculate-version');
+var getVersion = require('git-repo-version');
 
 var env = process.env.EMBER_ENV || 'development';
 var disableJSHint = !!process.env.NO_JSHINT || false;
@@ -687,7 +687,7 @@ distTrees = mergeTrees(distTrees);
 distTrees = replace(distTrees, {
   files: [ '**/*.js', '**/*.json' ],
   patterns: [
-    { match: /VERSION_STRING_PLACEHOLDER/g, replacement: calculateVersion }
+    { match: /VERSION_STRING_PLACEHOLDER/g, replacement: getVersion() }
   ]
 });
 
