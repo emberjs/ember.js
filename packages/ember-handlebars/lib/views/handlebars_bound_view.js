@@ -81,9 +81,7 @@ SimpleHandlebarsView.prototype = {
       result = handlebarsGet(pathRoot, path, { data: templateData });
     }
 
-    if (result === null || result === undefined) {
-      result = "";
-    } else if (!escape && !(result instanceof SafeString)) {
+    if (!escape && !(result instanceof SafeString)) {
       result = new SafeString(result);
     }
 

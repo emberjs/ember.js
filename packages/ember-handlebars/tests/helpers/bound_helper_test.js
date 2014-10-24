@@ -435,4 +435,17 @@ test("bound helpers can handle `this` keyword when it's a non-object", function(
   equal(view.$().text(), 'wallace!', "helper output is correct");
 });
 
+test("should have correct argument types", function() {
+  EmberHandlebars.helper('getType', function(value) {
+    return typeof value;
+  });
 
+  view = EmberView.create({
+    controller: EmberObject.create(),
+    template: EmberHandlebars.compile('{{getType null}}, {{getType undefProp}}, {{getType "string"}}, {{getType 1}}, {{getType}}')
+  });
+
+  appendView();
+
+  equal(view.$().text(), 'undefined, undefined, string, number, object', "helper output is correct");
+});
