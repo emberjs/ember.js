@@ -45,7 +45,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       o_defineProperty(obj, keyName, {
         configurable: true,
         enumerable: obj.propertyIsEnumerable(keyName),
-        set: MANDATORY_SETTER_FUNCTION,
+        set: MANDATORY_SETTER_FUNCTION(keyName),
         get: DEFAULT_GETTER_FUNCTION(keyName)
       });
     }
