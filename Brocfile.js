@@ -18,8 +18,15 @@ var es3recast = require('broccoli-es3-safe-recast');
 
 var calculateVersion = require('./lib/calculate-version');
 
+// To create fast production builds (without ES3 support, minification, or JSHint)
+// run the following:
+//
+// DISABLE_ES3=true DISABLE_JSHINT=true DISABLE_MIN=true ember serve --environment=production
+
 var env = process.env.EMBER_ENV || 'development';
-var disableJSHint = !!process.env.NO_JSHINT || false;
+var disableJSHint = !!process.env.DISABLE_JSHINT || false;
+var disableES3    = !!process.env.DISABLE_ES3 || false;
+var disableMin    = !!process.env.DISABLE_MIN || false;
 var disableDefeatureify;
 
 if (process.env.DEFEATUREIFY === 'true') {
@@ -102,7 +109,7 @@ function vendoredPackage(packageName) {
     destFile: '/' + packageName + '.js'
   });
 
-  if (env !== 'development') {
+  if (env !== 'development' && !disableES3) {
     sourceTree = es3recast(sourceTree);
   }
 
@@ -144,7 +151,7 @@ error:
      {default: "something"}['default']
     ```
    */
-  if (options.es3Safe) {
+  if (options.es3Safe && !disableES3) {
     sourceTrees = es3recast(sourceTrees);
   }
 
@@ -564,7 +571,7 @@ function vendoredEs6Package(packageName) {
     moduleName: true
   });
 
-  if (env !== 'development') {
+  if (env !== 'development' && !disableES3) {
     sourceTree = es3recast(sourceTree);
   }
 
@@ -677,7 +684,10 @@ var distTrees = [templateCompilerTree, compiledSource, compiledTests, testConfig
 if (env !== 'development') {
   distTrees.push(prodCompiledSource);
   distTrees.push(prodCompiledTests);
-  distTrees.push(minCompiledSource);
+
+  if (!disableMin) {
+    distTrees.push(minCompiledSource);
+  }
   distTrees.push(buildRuntimeTree());
 }
 
