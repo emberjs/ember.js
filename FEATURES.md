@@ -75,3 +75,9 @@ for a detailed explanation.
   `Ember.Route` hooks.
 
   Added in [#5569](https://github.com/emberjs/ember.js/pull/5569)
+
+* `ember-testing-pause-test`
+
+  Helper to pause a test, for use in debugging and TDD.
+
+  Added in [#9383](https://github.com/emberjs/ember.js/pull/9383)
