@@ -81,6 +81,10 @@ var get = function get(obj, keyName) {
     if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       if (hasPropertyAccessors && meta && meta.watching[keyName] > 0) {
         ret = meta.values[keyName];
+
+        if (ret === undefined && keyName in obj && !(keyName in meta.values)) {
+          Ember.assert('You must use Ember.set to set `' + keyName + '` (on `' + obj + '`).');
+        }
       } else {
         ret = obj[keyName];
       }

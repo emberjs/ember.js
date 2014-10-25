@@ -32,6 +32,22 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
     }, 'You must use Ember.set() to set the `someProp` property (of custom-object) to `foo-bar`.');
   });
 
+  test('should assert if get a watched property (not on the prototype) that is not set by Ember.set', function() {
+    var obj = {
+      toString: function() {
+        return 'custom-object';
+      }
+    };
+
+    watch(obj, 'someProp');
+
+    obj.someProp = 'foo-bar';
+
+    expectAssertion(function() {
+      get(obj, 'someProp');
+    }, 'You must use Ember.set to set `someProp` (on `custom-object`).');
+  });
+
   test('should not assert if set with Ember.set when property is being watched', function() {
     var obj = {
       someProp: null,
@@ -45,6 +61,20 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
 
     equal(get(obj, 'someProp'), 'foo-bar');
   });
+
+  test('prints a helpful assertion if a watched property (not present at watch time) was not set with Ember.set', function() {
+    var obj = {
+      toString: function() {
+        return 'custom-object';
+      }
+    };
+
+    watch(obj, 'someProp');
+    obj.someProp = 'blastix';
+
+    equal(get(obj, 'someProp'), 'blastix');
+  });
+
 } else {
   test('does not assert', function() {
     var obj = {
