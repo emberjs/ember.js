@@ -45,6 +45,18 @@ QUnit.module("Handlebars bound helpers", {
   }
 });
 
+test("primitives should work correctly", function() {
+  view = EmberView.create({
+    prims: Ember.A(["string", 12]),
+
+    template: compile('{{#each view.prims}}{{#if this}}inside-if{{/if}}{{#with this}}inside-with{{/with}}{{/each}}')
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'inside-ifinside-withinside-ifinside-with');
+});
+
 test("should update bound helpers when properties change", function() {
   EmberHandlebars.helper('capitalize', function(value) {
     return value.toUpperCase();

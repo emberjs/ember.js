@@ -115,78 +115,71 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
   normalized = normalizePath(currentContext, property, data);
 
-  // Set up observers for observable objects
-  if ('object' === typeof this) {
-    if (data.insideGroup) {
-      observer = function() {
-        while (view._contextView) {
-          view = view._contextView;
-        }
-        run.once(view, 'rerender');
-      };
-
-      var template, context;
-      var result = handlebarsGet(currentContext, property, options);
-
-      result = valueNormalizer ? valueNormalizer(result) : result;
-
-      context = preserveContext ? currentContext : result;
-      if (shouldDisplay(result)) {
-        template = fn;
-      } else if (inverse) {
-        template = inverse;
+  if (data.insideGroup) {
+    observer = function() {
+      while (view._contextView) {
+        view = view._contextView;
       }
+      run.once(view, 'rerender');
+    };
 
-      template(context, { data: options.data });
-    } else {
-      var viewClass = _HandlebarsBoundView;
-      var viewOptions = {
-        preserveContext: preserveContext,
-        shouldDisplayFunc: shouldDisplay,
-        valueNormalizerFunc: valueNormalizer,
-        displayTemplate: fn,
-        inverseTemplate: inverse,
-        path: property,
-        pathRoot: currentContext,
-        previousContext: currentContext,
-        isEscaped: !options.hash.unescaped,
-        templateData: options.data,
-        templateHash: options.hash,
-        helperName: options.helperName
-      };
+    var template, context;
+    var result = handlebarsGet(currentContext, property, options);
 
-      if (options.isWithHelper) {
-        viewClass = WithView;
-      }
+    result = valueNormalizer ? valueNormalizer(result) : result;
 
-      // Create the view that will wrap the output of this template/property
-      // and add it to the nearest view's childViews array.
-      // See the documentation of Ember._HandlebarsBoundView for more.
-      var bindView = view.createChildView(viewClass, viewOptions);
-
-      view.appendChild(bindView);
-
-      observer = function() {
-        run.scheduleOnce('render', bindView, 'rerenderIfNeeded');
-      };
+    context = preserveContext ? currentContext : result;
+    if (shouldDisplay(result)) {
+      template = fn;
+    } else if (inverse) {
+      template = inverse;
     }
 
-    // Observes the given property on the context and
-    // tells the Ember._HandlebarsBoundView to re-render. If property
-    // is an empty string, we are printing the current context
-    // object ({{this}}) so updating it is not our responsibility.
-    if (normalized.path !== '') {
-      view.registerObserver(normalized.root, normalized.path, observer);
-      if (childProperties) {
-        for (i=0; i<childProperties.length; i++) {
-          view.registerObserver(normalized.root, normalized.path+'.'+childProperties[i], observer);
-        }
-      }
-    }
+    template(context, { data: options.data });
   } else {
-    // The object is not observable, so just render it out and
-    // be done with it.
-    data.buffer.push(handlebarsGetEscaped(currentContext, property, options));
+    var viewClass = _HandlebarsBoundView;
+    var viewOptions = {
+      preserveContext: preserveContext,
+      shouldDisplayFunc: shouldDisplay,
+      valueNormalizerFunc: valueNormalizer,
+      displayTemplate: fn,
+      inverseTemplate: inverse,
+      path: property,
+      pathRoot: currentContext,
+      previousContext: currentContext,
+      isEscaped: !options.hash.unescaped,
+      templateData: options.data,
+      templateHash: options.hash,
+      helperName: options.helperName
+    };
+
+    if (options.isWithHelper) {
+      viewClass = WithView;
+    }
+
+    // Create the view that will wrap the output of this template/property
+    // and add it to the nearest view's childViews array.
+    // See the documentation of Ember._HandlebarsBoundView for more.
+    var bindView = view.createChildView(viewClass, viewOptions);
+
+    view.appendChild(bindView);
+
+    observer = function() {
+      run.scheduleOnce('render', bindView, 'rerenderIfNeeded');
+    };
+  }
+
+  // Observes the given property on the context and
+  // tells the Ember._HandlebarsBoundView to re-render. If property
+  // is an empty string, we are printing the current context
+  // object ({{this}}) so updating it is not our responsibility.
+  if (typeof this === 'object' && normalized.path !== '') {
+    view.registerObserver(normalized.root, normalized.path, observer);
+    if (childProperties) {
+      for (i=0; i<childProperties.length; i++) {
+        view.registerObserver(normalized.root, normalized.path+'.'+childProperties[i], observer);
+      }
+    }
   }
 }
 
