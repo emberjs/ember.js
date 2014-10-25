@@ -1,5 +1,4 @@
 import Ember from "ember-metal/core";
-import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import RSVP from "ember-runtime/ext/rsvp";
@@ -62,33 +61,15 @@ function assertNoHelpers(application, helperContainer) {
 }
 
 function currentRouteName(app){
-  if(Ember.FEATURES.isEnabled('ember-testing-route-helpers')) {
-    return app.testHelpers.currentRouteName();
-  } else {
-    var appController = app.__container__.lookup('controller:application');
-
-    return get(appController, 'currentRouteName');
-  }
+  return app.testHelpers.currentRouteName();
 }
 
 function currentPath(app){
-  if(Ember.FEATURES.isEnabled('ember-testing-route-helpers')) {
-    return app.testHelpers.currentPath();
-  } else {
-    var appController = app.__container__.lookup('controller:application');
-
-    return get(appController, 'currentPath');
-  }
+  return app.testHelpers.currentPath();
 }
 
 function currentURL(app){
-  if(Ember.FEATURES.isEnabled('ember-testing-route-helpers')) {
-    return app.testHelpers.currentURL();
-  } else {
-    var router = app.__container__.lookup('router:main');
-
-    return get(router, 'location').getURL();
-  }
+  return app.testHelpers.currentURL();
 }
 
 QUnit.module("ember-testing Helpers", {
