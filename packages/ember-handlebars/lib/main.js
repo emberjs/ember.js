@@ -20,16 +20,23 @@ import {
   bind,
   _triageMustacheHelper,
   resolveHelper,
-  bindHelper,
+  bindHelper
+} from "ember-handlebars/helpers/binding";
+
+import {
+  ifHelper,
   boundIfHelper,
   unboundIfHelper,
-  withHelper,
-  ifHelper,
-  unlessHelper,
+  unlessHelper
+} from "ember-handlebars/helpers/if_unless";
+
+import withHelper from "ember-handlebars/helpers/with";
+
+import {
   bindAttrHelper,
   bindAttrHelperDeprecated,
   bindClasses
-} from "ember-handlebars/helpers/binding";
+} from "ember-handlebars/helpers/bind_attr";
 
 import collectionHelper from "ember-handlebars/helpers/collection";
 import {
