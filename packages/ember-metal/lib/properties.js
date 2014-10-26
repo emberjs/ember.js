@@ -30,8 +30,10 @@ export function Descriptor() {}
 // DEFINING PROPERTIES API
 //
 
-export function MANDATORY_SETTER_FUNCTION(value) {
-  Ember.assert("You must use Ember.set() to access this property (of " + this + ")", false);
+export function MANDATORY_SETTER_FUNCTION(name) {
+  return function SETTER_FUNCTION(value) {
+    Ember.assert("You must use Ember.set() to set the `" + name + "` property (of " + this + ") to `" + value + "`.", false);
+  };
 }
 
 export function DEFAULT_GETTER_FUNCTION(name) {
@@ -130,7 +132,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
           objectDefineProperty(obj, keyName, {
             configurable: true,
             enumerable: true,
-            set: MANDATORY_SETTER_FUNCTION,
+            set: MANDATORY_SETTER_FUNCTION(keyName),
             get: DEFAULT_GETTER_FUNCTION(keyName)
           });
         } else {
