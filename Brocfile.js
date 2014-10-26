@@ -2,7 +2,6 @@
 
 var fs  = require('fs');
 var util = require('util');
-var path = require('path');
 var pickFiles = require('broccoli-static-compiler');
 var transpileES6 = require('broccoli-es6-module-transpiler');
 var mergeTrees = require('broccoli-merge-trees');
@@ -52,9 +51,9 @@ var inlineTemplatePrecompiler = require('./lib/broccoli-ember-inline-template-pr
   The `...` and if block would be stripped out of final output unless
   `features.json` has `ember-metal-is-present` set to true.
  */
-function defeatureifyConfig(options) {
+function defeatureifyConfig(opts) {
   var stripDebug = false;
-  var options = options || {};
+  var options = opts || {};
   var configJson = JSON.parse(fs.readFileSync("features.json").toString());
   var features = options.features || configJson.features;
 
@@ -139,7 +138,7 @@ function concatES6(sourceTrees, options) {
   /*
     In order to ensure that tree is compliant with older Javascript versions we
     recast these trees here.  For example, in ie6 the following would be an
-error:
+    error:
 
     ```
      {default: "something"}.default
@@ -432,9 +431,7 @@ function es6Package(packageName) {
 
   compiledTrees = mergeTrees(compiledTrees);
 
-  /*
-    Memoizes trees.  Guard above ensures that if this is set will automatically return.
-  */
+  // Memoizes trees.  Guard above ensures that if this is set will automatically return.
   pkg['trees'] = {lib: libTree, compiledTree: compiledTrees, vendorTrees: vendorTrees};
 
   // tests go boom if you try to pick them and they don't exists
@@ -561,7 +558,7 @@ function htmlbarsPackage(packageName) {
 /*
   Relies on bower to install other Ember micro libs.  Assumes that /lib is
   available and contains all the necessary ES6 modules necessary for the library
-to be required.  And compiles them.
+  to be required.  And compiles them.
 */
 function vendoredEs6Package(packageName) {
   var tree = pickFiles('bower_components/' + packageName + '/lib', {
