@@ -613,6 +613,31 @@ test("can opt into a replace query by specifying replace:true in the Router conf
   setAndFlush(appController, 'alex', 'wallace');
 });
 
+test("Route query params config can be configured using property name instead of URL key", function() {
+  expect(2);
+  App.ApplicationController = Ember.Controller.extend({
+    queryParams: [
+      {commitBy: "commit_by"}
+    ]
+  });
+
+  App.ApplicationRoute = Ember.Route.extend({
+    queryParams: {
+      commitBy: {
+        replace: true
+      }
+    }
+  });
+
+  bootApplication();
+
+  equal(router.get('location.path'), "");
+
+  var appController = container.lookup('controller:application');
+  expectedReplaceURL = "/?commit_by=igor_seb";
+  setAndFlush(appController, 'commitBy', 'igor_seb');
+});
+
 test("An explicit replace:false on a changed QP always wins and causes a pushState", function() {
   expect(3);
   App.ApplicationController = Ember.Controller.extend({
