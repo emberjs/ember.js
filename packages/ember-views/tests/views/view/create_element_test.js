@@ -67,8 +67,10 @@ test("calls render and parses the buffer string in the right context", function(
 
   var elem = get(view, 'element');
   ok(elem, 'has element now');
-  equalHTML(elem.childNodes, '<script></script><tr><td>snorfblax</td></tr>', 'has innerHTML from context');
   equal(elem.tagName.toString().toLowerCase(), 'table', 'has tagName from view');
+  equal(elem.childNodes[0].tagName, 'SCRIPT', 'script tag first');
+  equal(elem.childNodes[1].tagName, 'TR', 'tr tag second');
+  equalHTML(elem.childNodes, '<script></script><tr><td>snorfblax</td></tr>', 'has innerHTML from context');
 });
 
 test("does not wrap many tr children in tbody elements", function() {
