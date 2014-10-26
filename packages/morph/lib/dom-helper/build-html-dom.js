@@ -2,11 +2,12 @@ export var svgHTMLIntegrationPoints = {foreignObject: 1, desc: 1, title: 1};
 export var svgNamespace = 'http://www.w3.org/2000/svg';
 
 // Safari does not like using innerHTML on SVG HTML integration
-// points.
+// points (desc/title/foreignObject).
 var needsIntegrationPointFix = document.createElementNS && (function() {
-  var testEl = document.createElementNS(svgNamespace, 'foreignObject');
+  // In FF title will not accept innerHTML.
+  var testEl = document.createElementNS(svgNamespace, 'title');
   testEl.innerHTML = "<div></div>";
-  return testEl.childNodes.length === 0;
+  return testEl.childNodes.length === 0 || testEl.childNodes[0].nodeType !== 1;
 })();
 
 // Internet Explorer prior to 9 does not allow setting innerHTML if the first element
@@ -52,8 +53,6 @@ if (tableNeedsInnerHTMLFix) {
     thead: ['table'],
     tr: ['table', 'tbody']
   };
-} else {
-  tagNamesRequiringInnerHTMLFix = {};
 }
 
 // IE 8 doesn't allow setting innerHTML on a select tag. Detect this and
@@ -62,6 +61,7 @@ if (tableNeedsInnerHTMLFix) {
 var selectInnerHTMLTestElement = document.createElement('select');
 selectInnerHTMLTestElement.innerHTML = '<option></option>';
 if (selectInnerHTMLTestElement) {
+  tagNamesRequiringInnerHTMLFix = tagNamesRequiringInnerHTMLFix || {};
   tagNamesRequiringInnerHTMLFix.select = [];
 }
 
@@ -144,10 +144,9 @@ if (needsShy) {
 }
 
 
-var buildHTMLDOM;
-// Really, this just means IE8 and IE9 get a slower buildHTMLDOM
-if (tagNamesRequiringInnerHTMLFix.length > 0 || movesWhitespace) {
-  buildHTMLDOM = function buildHTMLDOM(html, contextualElement, dom) {
+var buildIESafeDOM;
+if (tagNamesRequiringInnerHTMLFix || movesWhitespace) {
+  buildIESafeDOM = function buildIESafeDOM(html, contextualElement, dom) {
     // Make a list of the leading text on script nodes. Include
     // script tags without any whitespace for easier processing later.
     var spacesBefore = [];
@@ -207,16 +206,21 @@ if (tagNamesRequiringInnerHTMLFix.length > 0 || movesWhitespace) {
 
     return nodes;
   };
-} else if (needsIntegrationPointFix) {
+} else {
+  buildIESafeDOM = buildDOM;
+}
+
+var buildHTMLDOM;
+if (needsIntegrationPointFix) {
   buildHTMLDOM = function buildHTMLDOM(html, contextualElement, dom){
     if (svgHTMLIntegrationPoints[contextualElement.tagName]) {
-      return buildDOM(html, document.createElement('div'), dom);
+      return buildIESafeDOM(html, document.createElement('div'), dom);
     } else {
-      return buildDOM(html, contextualElement, dom);
+      return buildIESafeDOM(html, contextualElement, dom);
     }
   };
 } else {
-  buildHTMLDOM = buildDOM;
+  buildHTMLDOM = buildIESafeDOM;
 }
 
 export {buildHTMLDOM};
