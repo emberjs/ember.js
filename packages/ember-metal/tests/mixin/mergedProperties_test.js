@@ -128,3 +128,21 @@ test("mergedProperties' overwriting methods can call _super", function() {
   var obj = mixin({}, MixinA, MixinB, MixinC);
   equal(obj.foo.meth("WOOT"), "WAT");
 });
+
+test('Merging an Array should raise an error', function() {
+
+  expect(1);
+
+  var MixinA = Mixin.create({
+    mergedProperties: ['foo'],
+    foo: { a: true, b: true, c: true }
+  });
+
+  var MixinB = Mixin.create({
+    foo: ["a"]
+  });
+
+  expectAssertion(function() {
+    mixin({}, MixinA, MixinB);
+  }, 'You passed in `["a"]` as the value for `foo` but `foo` cannot be an Array');
+});
