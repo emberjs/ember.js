@@ -132,6 +132,14 @@ test('#parseHTML of script then tr inside table context wraps the tr in a tbody'
   equal(nodes[1].tagName, 'TBODY');
 });
 
+test('#parseHTML of script then tr inside tbody context', function(){
+  var tbodyElement = document.createElement('tbody'),
+      nodes = dom.parseHTML('<script></script><tr><td>Yo</td></tr>', tbodyElement);
+  equal(nodes.length, 2, 'Leading script tag corrupts');
+  equal(nodes[0].tagName, 'SCRIPT');
+  equal(nodes[1].tagName, 'TR');
+});
+
 test('#parseHTML with retains whitespace', function(){
   var div = document.createElement('div');
   var nodes = dom.parseHTML('leading<script id="first"></script> <script id="second"></script><div><script></script> <script></script>, indeed.</div>', div);
