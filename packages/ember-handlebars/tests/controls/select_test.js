@@ -61,29 +61,29 @@ test("should begin required if the required attribute is true", function() {
   select.set('required', true);
   append();
 
-  equal(select.$().attr('required'), 'required');
+  ok(select.element.required, 'required property is truthy');
 });
 
 test("should become required if the required attribute is changed", function() {
   append();
-  equal(select.$().attr('required'), undefined);
+  ok(!select.element.required, 'required property is falsy');
 
   run(function() { select.set('required', true); });
-  equal(select.$().attr('required'), 'required');
+  ok(select.element.required, 'required property is truthy');
 
   run(function() { select.set('required', false); });
-  equal(select.$().attr('required'), undefined);
+  ok(!select.element.required, 'required property is falsy');
 });
 
 test("should become disabled if the disabled attribute is changed", function() {
   append();
-  ok(select.$().is(":not(:disabled)"));
+  ok(!select.element.disabled, 'disabled property is falsy');
 
   run(function() { select.set('disabled', true); });
-  ok(select.$().is(":disabled"));
+  ok(select.element.disabled, 'disabled property is truthy');
 
   run(function() { select.set('disabled', false); });
-  ok(select.$().is(":not(:disabled)"));
+  ok(!select.element.disabled, 'disabled property is falsy');
 });
 
 test("can have options", function() {
