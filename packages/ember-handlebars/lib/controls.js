@@ -75,7 +75,7 @@ import EmberHandlebars from "ember-handlebars-compiler";
 
   The helper can send multiple actions based on user events.
 
-  The action property defines the action which is send when
+  The action property defines the action which is sent when
   the user presses the return key.
 
   ```handlebars
@@ -90,6 +90,7 @@ import EmberHandlebars from "ember-handlebars-compiler";
 * `focus-in`
 * `focus-out`
 * `key-press`
+
 
   For example, if you desire an action to be sent when the input is blurred,
   you only need to setup the action name to the event name property.
