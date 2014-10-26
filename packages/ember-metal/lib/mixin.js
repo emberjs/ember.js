@@ -20,7 +20,8 @@ import {
   meta as metaFor,
   wrap,
   makeArray,
-  apply
+  apply,
+  isArray
 } from "ember-metal/utils";
 import expandProperties from "ember-metal/expand_properties";
 import {
@@ -209,6 +210,9 @@ function applyConcatenatedProperties(obj, key, value, values) {
 
 function applyMergedProperties(obj, key, value, values) {
   var baseValue = values[key] || obj[key];
+
+  Ember.assert("You passed in `" + JSON.stringify(value) + "` as the value for `" + key +
+               "` but `" + key + "` cannot be an Array", !isArray(value));
 
   if (!baseValue) { return value; }
 

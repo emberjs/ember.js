@@ -575,6 +575,20 @@ test("can use refreshModel even w URL changes that remove QPs from address bar",
   equal(indexController.get('omg'), 'lol');
 });
 
+test("warn user that routes query params configuration must be an Object, not an Array", function() {
+  expect(1);
+
+  App.ApplicationRoute = Ember.Route.extend({
+    queryParams: [
+      {'commitBy': { replace: true }}
+    ]
+  });
+
+  expectAssertion(function() {
+    bootApplication();
+  }, 'You passed in `[{"commitBy":{"replace":true}}]` as the value for `queryParams` but `queryParams` cannot be an Array');
+});
+
 test("can opt into a replace query by specifying replace:true in the Router config hash", function() {
   expect(2);
   App.ApplicationController = Ember.Controller.extend({
