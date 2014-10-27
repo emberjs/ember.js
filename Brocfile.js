@@ -502,6 +502,7 @@ function packageDependencyTree(packageName) {
 var vendorTrees          = [];
 var devSourceTrees       = [];
 var prodSourceTrees      = [];
+var testingSourceTrees   = [];
 var testTrees            = [];
 var compiledPackageTrees = [];
 
@@ -519,7 +520,9 @@ for (var packageName in packages) {
   if (packagesTrees.lib) {
     devSourceTrees.push(packagesTrees.lib);
 
-    if (!currentPackage.developmentOnly) {
+    if (currentPackage.developmentOnly) {
+      testingSourceTrees.push(packagesTrees.lib);
+    } else {
       prodSourceTrees.push(packagesTrees.lib);
     }
   }
@@ -644,6 +647,15 @@ var prodCompiledSource = concatES6(prodSourceTrees, {
   }
 });
 
+// Generates ember-testing.js to allow testing against production Ember builds.
+var testingCompiledSource = concatES6(testingSourceTrees, {
+  es3Safe: env !== 'development',
+  includeLoader: true,
+  bootstrapModule: 'ember-testing',
+  inputFiles: ['**/*.js'],
+  destFile: '/ember-testing.js'
+});
+
 // Take prod output and minify.  This reduces filesize (as you'd expect)
 var minCompiledSource = moveFile(prodCompiledSource, {
   srcFile: 'ember.prod.js',
@@ -674,7 +686,7 @@ var prodCompiledTests = concatES6(testTrees, {
   }
 });
 
-var distTrees = [templateCompilerTree, compiledSource, compiledTests, testConfig, bowerFiles];
+var distTrees = [templateCompilerTree, compiledSource, compiledTests, testingCompiledSource, testConfig, bowerFiles];
 
 // If you are not running in dev add Production and Minify build to distTrees.
 // This ensures development build speed is not affected by unnecessary
