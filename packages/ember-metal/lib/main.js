@@ -42,7 +42,7 @@ import EnumerableUtils from "ember-metal/enumerable_utils";
 import Cache from "ember-metal/cache";
 import {
   create,
-  platform
+  hasPropertyAccessors
 } from "ember-metal/platform";
 import {
   filter,
@@ -191,7 +191,10 @@ Ember.generateGuid    = generateGuid;
 Ember.GUID_KEY        = GUID_KEY;
 Ember.create          = create;
 Ember.keys            = keys;
-Ember.platform        = platform;
+Ember.platform        = {
+  defineProperty: defineProperty,
+  hasPropertyAccessors: hasPropertyAccessors
+};
 
 var EmberArrayPolyfills = Ember.ArrayPolyfills = {};
 
