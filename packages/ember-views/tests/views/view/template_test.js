@@ -218,7 +218,7 @@ test("should throw an assertion if no container has been set", function() {
   var View;
 
   View = EmberView.extend({
-    templateName: 'foobar',
+    templateName: 'foobar'
   });
 
   raises(function() {

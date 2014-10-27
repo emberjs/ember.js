@@ -18,11 +18,11 @@ test('defining concatenated properties should concat future version', function()
 test('defining concatenated properties should concat future version', function() {
 
   var MixinA = Ember.Mixin.create({
-    concatenatedProperties: null,
+    concatenatedProperties: null
   });
 
   var MixinB = Ember.Mixin.create({
-    concatenatedProperties: null,
+    concatenatedProperties: null
   });
 
   var obj = Ember.mixin({}, MixinA, MixinB);

@@ -458,7 +458,7 @@ QUnit.module("{{#with}} helper binding to view keyword", {
       template: EmberHandlebars.compile("We have: {{#with view.thing as fromView}}{{fromView.name}} and {{fromContext.name}}{{/with}}"),
       thing: { name: 'this is from the view' },
       context: {
-        fromContext: { name: "this is from the context" },
+        fromContext: { name: "this is from the context" }
       }
     });
 

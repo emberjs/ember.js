@@ -1556,7 +1556,7 @@ test("Support shared but overridable mixin pattern", function() {
   });
 
   App.ParentController = Ember.Controller.extend(HasPage, {
-    queryParams: { page: 'yespage' },
+    queryParams: { page: 'yespage' }
   });
 
   App.ParentChildController = Ember.Controller.extend(HasPage);
