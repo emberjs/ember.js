@@ -7,6 +7,9 @@ import {
   beginPropertyChanges,
   endPropertyChanges
 } from "ember-metal/property_events";
+import {
+  META_KEY
+} from "ember-metal/utils";
 import objectKeys from "ember-metal/keys";
 import { testBoth } from 'ember-runtime/tests/props_helper';
 import EmberObject from 'ember-runtime/system/object';
@@ -19,13 +22,13 @@ testBoth("should schedule objects to be destroyed at the end of the run loop", f
 
   run(function() {
     obj.destroy();
-    meta = obj['__ember_meta__'];
+    meta = obj[META_KEY];
     ok(meta, "meta is not destroyed immediately");
     ok(get(obj, 'isDestroying'), "object is marked as destroying immediately");
     ok(!get(obj, 'isDestroyed'), "object is not destroyed immediately");
   });
 
-  meta = obj['__ember_meta__'];
+  meta = obj[META_KEY];
   ok(!meta, "meta is destroyed after run loop finishes");
   ok(get(obj, 'isDestroyed'), "object is destroyed after run loop finishes");
 });

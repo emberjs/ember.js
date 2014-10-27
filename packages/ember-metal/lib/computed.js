@@ -2,7 +2,8 @@ import Ember from "ember-metal/core";
 import { set } from "ember-metal/property_set";
 import {
   meta,
-  inspect
+  inspect,
+  META_KEY
 } from "ember-metal/utils";
 import expandProperties from "ember-metal/expand_properties";
 import EmberError from "ember-metal/error";
@@ -581,7 +582,7 @@ function computed(func) {
   @return {Object} the cached value
 */
 function cacheFor(obj, key) {
-  var meta = obj['__ember_meta__'];
+  var meta = obj[META_KEY];
   var cache = meta && meta.cache;
   var ret = cache && cache[key];
 

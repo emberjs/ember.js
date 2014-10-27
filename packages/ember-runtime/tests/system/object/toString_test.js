@@ -89,8 +89,8 @@ test('toString includes toStringExtension if defined', function() {
   var bar = Bar.create();
 
   // simulate these classes being defined on a Namespace
-  Foo[GUID_KEY+'_name'] = 'Foo';
-  Bar[GUID_KEY+'_name'] = 'Bar';
+  Foo[String(GUID_KEY)+'_name'] = 'Foo';
+  Bar[String(GUID_KEY)+'_name'] = 'Bar';
 
   equal(bar.toString(), '<Bar:'+guidFor(bar)+'>', 'does not include toStringExtension part');
   equal(foo.toString(), '<Foo:'+guidFor(foo)+':fooey>', 'Includes toStringExtension result');

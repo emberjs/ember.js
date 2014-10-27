@@ -3,9 +3,8 @@
 */
 
 import {
-  GUID_KEY,
   typeOf,
-  generateGuid
+  META_KEY
 } from "ember-metal/utils";
 import {
   removeChainWatcher,
@@ -51,7 +50,7 @@ function watch(obj, _keyPath, m) {
 export { watch };
 
 export function isWatching(obj, key) {
-  var meta = obj['__ember_meta__'];
+  var meta = obj[META_KEY];
   return (meta && meta.watching[key]) > 0;
 }
 
@@ -68,30 +67,6 @@ export function unwatch(obj, _keyPath, m) {
   }
 }
 
-/**
-  Call on an object when you first beget it from another object. This will
-  setup any chained watchers on the object instance as needed. This method is
-  safe to call multiple times.
-
-  @private
-  @method rewatch
-  @for Ember
-  @param obj
-*/
-export function rewatch(obj) {
-  var m = obj['__ember_meta__'], chains = m && m.chains;
-
-  // make sure the object has its own guid.
-  if (GUID_KEY in obj && !obj.hasOwnProperty(GUID_KEY)) {
-    generateGuid(obj);
-  }
-
-  // make sure any chained watchers update.
-  if (chains && chains.value() !== obj) {
-    m.chains = chains.copy(obj);
-  }
-}
-
 var NODE_STACK = [];
 
 /**
@@ -104,9 +79,9 @@ var NODE_STACK = [];
   @return {void}
 */
 export function destroy(obj) {
-  var meta = obj['__ember_meta__'], node, nodes, key, nodeObject;
+  var meta = obj[META_KEY], node, nodes, key, nodeObject;
   if (meta) {
-    obj['__ember_meta__'] = null;
+    obj[META_KEY] = null;
     // remove chainWatchers to remove circular references that would prevent GC
     node = meta.chains;
     if (node) {

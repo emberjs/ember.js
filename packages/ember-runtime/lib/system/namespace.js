@@ -154,7 +154,7 @@ function findNamespaces() {
   }
 }
 
-var NAME_KEY = Ember.NAME_KEY = GUID_KEY + '_name';
+var NAME_KEY = Ember.NAME_KEY = String(GUID_KEY) + '_name';
 
 function superClassString(mixin) {
   var superclass = mixin.superclass;

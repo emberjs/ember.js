@@ -6,7 +6,8 @@ import {
   meta as metaFor,
   tryFinally,
   apply,
-  applyStr
+  applyStr,
+  META_KEY
 } from "ember-metal/utils";
 import { create } from "ember-metal/platform";
 
@@ -77,7 +78,7 @@ function actionsFor(obj, eventName) {
 }
 
 export function listenersUnion(obj, eventName, otherActions) {
-  var meta = obj['__ember_meta__'];
+  var meta = obj[META_KEY];
   var actions = meta && meta.listeners && meta.listeners[eventName];
 
   if (!actions) { return; }
@@ -94,7 +95,7 @@ export function listenersUnion(obj, eventName, otherActions) {
 }
 
 export function listenersDiff(obj, eventName, otherActions) {
-  var meta = obj['__ember_meta__'];
+  var meta = obj[META_KEY];
   var actions = meta && meta.listeners && meta.listeners[eventName];
   var diffActions = [];
 
@@ -185,7 +186,7 @@ function removeListener(obj, eventName, target, method) {
   if (method) {
     _removeListener(target, method);
   } else {
-    var meta = obj['__ember_meta__'];
+    var meta = obj[META_KEY];
     var actions = meta && meta.listeners && meta.listeners[eventName];
 
     if (!actions) { return; }
@@ -288,7 +289,7 @@ export function suspendListeners(obj, eventNames, target, method, callback) {
   @param obj
 */
 export function watchedEvents(obj) {
-  var listeners = obj['__ember_meta__'].listeners, ret = [];
+  var listeners = obj[META_KEY].listeners, ret = [];
 
   if (listeners) {
     for (var eventName in listeners) {
@@ -322,7 +323,7 @@ export function sendEvent(obj, eventName, params, actions) {
   }
 
   if (!actions) {
-    var meta = obj['__ember_meta__'];
+    var meta = obj[META_KEY];
     actions = meta && meta.listeners && meta.listeners[eventName];
   }
 
@@ -359,7 +360,7 @@ export function sendEvent(obj, eventName, params, actions) {
   @param {String} eventName
 */
 export function hasListeners(obj, eventName) {
-  var meta = obj['__ember_meta__'];
+  var meta = obj[META_KEY];
   var actions = meta && meta.listeners && meta.listeners[eventName];
 
   return !!(actions && actions.length);
@@ -374,7 +375,7 @@ export function hasListeners(obj, eventName) {
 */
 export function listenersFor(obj, eventName) {
   var ret = [];
-  var meta = obj['__ember_meta__'];
+  var meta = obj[META_KEY];
   var actions = meta && meta.listeners && meta.listeners[eventName];
 
   if (!actions) { return ret; }

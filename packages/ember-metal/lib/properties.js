@@ -3,7 +3,10 @@
 */
 
 import Ember from "ember-metal/core";
-import { meta as metaFor } from "ember-metal/utils";
+import {
+  meta as metaFor,
+  META_KEY
+} from "ember-metal/utils";
 import {
   defineProperty as objectDefineProperty,
   hasPropertyAccessors
@@ -38,7 +41,7 @@ export function MANDATORY_SETTER_FUNCTION(name) {
 
 export function DEFAULT_GETTER_FUNCTION(name) {
   return function GETTER_FUNCTION() {
-    var meta = this['__ember_meta__'];
+    var meta = this[META_KEY];
     return meta && meta.values[name];
   };
 }

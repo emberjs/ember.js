@@ -112,7 +112,7 @@ function intern(str) {
   @type String
   @final
 */
-var GUID_KEY = intern('__ember' + (+ new Date()));
+var GUID_KEY = Symbol('GUID_KEY'); //intern('__ember' + (+ new Date()));
 
 var GUID_DESC = {
   writable:    false,
@@ -145,8 +145,7 @@ export function generateGuid(obj, prefix) {
     if (obj[GUID_KEY] === null) {
       obj[GUID_KEY] = ret;
     } else {
-      GUID_DESC.value = ret;
-      o_defineProperty(obj, GUID_KEY, GUID_DESC);
+      obj[GUID_KEY] = ret;
     }
   }
   return ret;
@@ -166,6 +165,9 @@ export function generateGuid(obj, prefix) {
   @param {Object} obj any object, string, number, Element, or primitive
   @return {String} the unique guid for this instance.
 */
+
+var guids = new WeakMap();
+
 export function guidFor(obj) {
 
   // special cases where we don't want to add a key to object
@@ -191,17 +193,11 @@ export function guidFor(obj) {
       return obj ? '(true)' : '(false)';
 
     default:
-      if (obj[GUID_KEY]) return obj[GUID_KEY];
       if (obj === Object) return '(Object)';
       if (obj === Array)  return '(Array)';
+      if (guids.has(obj)) return guids.get(obj);
       ret = GUID_PREFIX + uuid();
-
-      if (obj[GUID_KEY] === null) {
-        obj[GUID_KEY] = ret;
-      } else {
-        GUID_DESC.value = ret;
-        o_defineProperty(obj, GUID_KEY, GUID_DESC);
-      }
+      guids.set(obj, ret);
       return ret;
   }
 }
@@ -280,13 +276,13 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
     the meta hash, allowing the method to avoid making an unnecessary copy.
   @return {Object} the meta hash for an object
 */
+
+export var META_KEY = Symbol("ember meta");
 function meta(obj, writable) {
-  var ret = obj['__ember_meta__'];
+  var ret = obj[META_KEY];
   if (writable===false) return ret || EMPTY_META;
 
   if (!ret) {
-    if (canDefineNonEnumerableProperties) o_defineProperty(obj, '__ember_meta__', META_DESC);
-
     ret = new Meta(obj);
 
     if (Ember.FEATURES.isEnabled('mandatory-setter')) {
@@ -295,13 +291,12 @@ function meta(obj, writable) {
       }
     }
 
-    obj['__ember_meta__'] = ret;
+    obj[META_KEY] = ret;
 
     // make sure we don't accidentally try to create constructor like desc
     ret.descs.constructor = null;
 
   } else if (ret.source !== obj) {
-    if (canDefineNonEnumerableProperties) o_defineProperty(obj, '__ember_meta__', META_DESC);
 
     ret = o_create(ret);
     ret.descs     = o_create(ret.descs);
@@ -316,7 +311,7 @@ function meta(obj, writable) {
       }
     }
 
-    obj['__ember_meta__'] = ret;
+    obj[META_KEY] = ret;
   }
   return ret;
 }
@@ -401,17 +396,19 @@ export function metaPath(obj, path, writable) {
   @param {Function} superFunc The super function.
   @return {Function} wrapped function.
 */
+
+export var NEXT_SUPER = Symbole("next super");
 export function wrap(func, superFunc) {
   function superWrapper() {
     var ret;
-    var sup  = this && this.__nextSuper;
+    var sup  = this && this[NEXT_SUPER];
     var args = new Array(arguments.length);
     for (var i = 0, l = args.length; i < l; i++) {
       args[i] = arguments[i];
     }
-    if(this) { this.__nextSuper = superFunc; }
+    if(this) { this[NEXT_SUPER] = superFunc; }
     ret = apply(this, func, args);
-    if(this) { this.__nextSuper = sup; }
+    if(this) { this[NEXT_SUPER] = sup; }
     return ret;
   }
 
