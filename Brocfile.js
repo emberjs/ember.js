@@ -15,6 +15,7 @@ var removeFile = require('broccoli-file-remover');
 var jshintTree = require('broccoli-jshint');
 var replace = require('broccoli-replace');
 var es3recast = require('broccoli-es3-safe-recast');
+var useStrictRemover = require('broccoli-use-strict-remover');
 
 var calculateVersion = require('./lib/calculate-version');
 
@@ -28,6 +29,9 @@ var disableJSHint = !!process.env.DISABLE_JSHINT || false;
 var disableES3    = !!process.env.DISABLE_ES3 || false;
 var disableMin    = !!process.env.DISABLE_MIN || false;
 var disableDefeatureify;
+
+// We must increase the maxTickDepth in order to prevent errors from node
+process.maxTickDepth = 2000;
 
 if (process.env.DEFEATUREIFY === 'true') {
   disableDefeatureify = false;
@@ -120,21 +124,26 @@ function vendoredPackage(packageName) {
   Responsible for concatenating ES6 modules together wrapped in loader and iife
   (immediately-invoked function expression)
  */
-function concatES6(sourceTrees, options) {
+function concatES6(inputTrees, options) {
   // see vendoredPackage
   var loader = vendoredPackages['loader'];
   var inputFiles = options.inputFiles;
   var destFile = options.destFile;
+  var sourceTrees;
 
 
   // if given an array of trees merge into single tree
-  if (util.isArray(sourceTrees)) {
-    sourceTrees = mergeTrees(sourceTrees, {overwrite: true});
+  if (util.isArray(inputTrees)) {
+    sourceTrees = mergeTrees(inputTrees, {overwrite: true});
+  } else {
+    sourceTrees = inputTrees;
   }
 
   sourceTrees = transpileES6(sourceTrees, {
     moduleName: true
   });
+
+  sourceTrees = useStrictRemover(sourceTrees);
 
   /*
     In order to ensure that tree is compliant with older Javascript versions we
@@ -555,9 +564,11 @@ function htmlbarsPackage(packageName) {
     destFile: packageName + '.js'
   });
 
-  return transpileES6(tree, {
+  tree = transpileES6(tree, {
     moduleName: true
   });
+
+  return useStrictRemover(tree);
 }
 
 /*
@@ -577,6 +588,8 @@ function vendoredEs6Package(packageName) {
   if (env !== 'development' && !disableES3) {
     sourceTree = es3recast(sourceTree);
   }
+
+  sourceTree = useStrictRemover(sourceTree);
 
   return sourceTree;
 }

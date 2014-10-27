@@ -1,5 +1,10 @@
 /* global Handlebars:true */
 
+// Remove "use strict"; from transpiled module (in browser builds only) until
+// https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
+//
+// REMOVE_USE_STRICT: true
+
 /**
 @module ember
 @submodule ember-handlebars-compiler
