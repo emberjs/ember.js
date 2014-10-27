@@ -22,7 +22,6 @@ import {
   readArray,
   readHash
 } from "ember-metal/streams/read";
-import keys from 'ember-metal/keys';
 
 var slice = [].slice;
 
@@ -150,17 +149,6 @@ export function helperMissingHelper(path) {
 
   var options = arguments[arguments.length - 1];
 
-  // due to the issue reported in https://github.com/wycats/handlebars.js/issues/885
-  // we must check to see if we have hash arguments manually
-  //
-  // This should be removed once Handlebars properly calls `blockHelperMissing` when
-  // hash arguments are present.
-  var hashArgs = keys(options.hash);
-  if (options.fn && hashArgs.length === 0) {
-    // NOP for block helpers as they are handled by the block helper (when hash arguments are not present)
-    return;
-  }
-
   var helper = resolveHelper(options.data.view.container, options.name);
 
   if (helper) {
@@ -175,39 +163,12 @@ export function helperMissingHelper(path) {
 }
 
 /**
-  Registers a helper in Handlebars that will be called if no property with the
-  given name can be found on the current context object, and no helper with
-  that name is registered.
-
-  This throws an exception with a more helpful error message so the user can
-  track down where the problem is happening.
-
   @private
-  @method helperMissing
+  @method blockHelperMissingHelper
   @for Ember.Handlebars.helpers
-  @param {Hash} options
 */
-export function blockHelperMissingHelper(/* ..., options */) {
-  if (!resolveHelper) {
-    resolveHelper = requireModule('ember-handlebars/helpers/binding')['resolveHelper'];
-  } // ES6TODO: stupid circular dep
-
-  var options = arguments[arguments.length - 1];
-
-  Ember.assert("`blockHelperMissing` was invoked without a helper name, which " +
-               "is most likely due to a mismatch between the version of " +
-               "Ember.js you're running now and the one used to precompile your " +
-               "templates. Please make sure the version of " +
-               "`ember-handlebars-compiler` you're using is up to date.", options.name);
-
-  var helper = resolveHelper(options.data.view.container, options.name);
-
-  if (helper) {
-    return helper.apply(this, slice.call(arguments, 1));
-  } else {
-    // Someone is actually trying to call something, blow up.
-    throw new EmberError("Missing helper: '" + options.name + "'");
-  }
+export function blockHelperMissingHelper() {
+  return;
 }
 
 /**
