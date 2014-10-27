@@ -1,50 +1,53 @@
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { watch } from "ember-metal/watching";
+import { hasPropertyAccessors } from "ember-metal/platform";
 
 QUnit.module('mandatory-setters');
 
 if (Ember.FEATURES.isEnabled('mandatory-setter')) {
-  test('does not assert if property is not being watched', function() {
-    var obj = {
-      someProp: null,
-      toString: function() {
-        return 'custom-object';
-      }
-    };
+  if (hasPropertyAccessors) {
+    test('does not assert if property is not being watched', function() {
+      var obj = {
+        someProp: null,
+        toString: function() {
+          return 'custom-object';
+        }
+      };
 
-    obj.someProp = 'blastix';
-    equal(get(obj, 'someProp'), 'blastix');
-  });
+      obj.someProp = 'blastix';
+      equal(get(obj, 'someProp'), 'blastix');
+    });
 
-  test('should assert if set without Ember.set when property is being watched', function() {
-    var obj = {
-      someProp: null,
-      toString: function() {
-        return 'custom-object';
-      }
-    };
+    test('should assert if set without Ember.set when property is being watched', function() {
+      var obj = {
+        someProp: null,
+        toString: function() {
+          return 'custom-object';
+        }
+      };
 
-    watch(obj, 'someProp');
+      watch(obj, 'someProp');
 
-    expectAssertion(function() {
-      obj.someProp = 'foo-bar';
-    }, 'You must use Ember.set() to set the `someProp` property (of custom-object) to `foo-bar`.');
-  });
+      expectAssertion(function() {
+        obj.someProp = 'foo-bar';
+      }, 'You must use Ember.set() to set the `someProp` property (of custom-object) to `foo-bar`.');
+    });
 
-  test('should not assert if set with Ember.set when property is being watched', function() {
-    var obj = {
-      someProp: null,
-      toString: function() {
-        return 'custom-object';
-      }
-    };
+    test('should not assert if set with Ember.set when property is being watched', function() {
+      var obj = {
+        someProp: null,
+        toString: function() {
+          return 'custom-object';
+        }
+      };
 
-    watch(obj, 'someProp');
-    set(obj, 'someProp', 'foo-bar');
+      watch(obj, 'someProp');
+      set(obj, 'someProp', 'foo-bar');
 
-    equal(get(obj, 'someProp'), 'foo-bar');
-  });
+      equal(get(obj, 'someProp'), 'foo-bar');
+    });
+  }
 } else {
   test('does not assert', function() {
     var obj = {
