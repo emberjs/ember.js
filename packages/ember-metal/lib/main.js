@@ -35,8 +35,16 @@ import {
 import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import Cache from "ember-metal/cache";
-import {create, platform} from "ember-metal/platform";
-import {map, forEach, filter, indexOf} from "ember-metal/array";
+import {
+  create,
+  hasPropertyAccessors
+} from "ember-metal/platform";
+import {
+  filter,
+  forEach,
+  indexOf,
+  map
+} from "ember-metal/array";
 import Logger from "ember-metal/logger";
 
 import {get, getWithDefault, normalizeTuple, _getPath} from "ember-metal/property_get";
@@ -172,7 +180,10 @@ Ember.generateGuid    = generateGuid;
 Ember.GUID_KEY        = GUID_KEY;
 Ember.create          = create;
 Ember.keys            = keys;
-Ember.platform        = platform;
+Ember.platform        = {
+  defineProperty: defineProperty,
+  hasPropertyAccessors: hasPropertyAccessors
+};
 
 var EmberArrayPolyfills = Ember.ArrayPolyfills = {};
 
