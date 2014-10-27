@@ -6,7 +6,7 @@ import isNone from 'ember-metal/is_none';
   Verifies that a value is `null` or an empty string, empty array,
   or empty function.
 
-  Constrains the rules on `Ember.isNone` by returning false for empty
+  Constrains the rules on `Ember.isNone` by returning true for empty
   string and empty arrays.
 
   ```javascript
