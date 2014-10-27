@@ -1,4 +1,4 @@
-/*globals Node */
+import { create }  from "ember-metal/platform";
 import { Renderer } from "ember-metal-views";
 
 var renderer;
@@ -7,7 +7,7 @@ function MetalRenderer () {
   MetalRenderer._super.call(this);
 }
 MetalRenderer._super = Renderer;
-MetalRenderer.prototype = Object.create(Renderer.prototype, {
+MetalRenderer.prototype = create(Renderer.prototype, {
   constructor: {
     value: MetalRenderer,
     enumerable: false,
