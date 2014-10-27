@@ -225,5 +225,5 @@ export default EmberObject.extend({
 
     @method getHash
   */
-  getHash: EmberLocation._getHash,
+  getHash: EmberLocation._getHash
 });
