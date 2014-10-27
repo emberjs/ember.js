@@ -34,7 +34,7 @@ function missingNew(name) {
 }
 
 function copyNull(obj) {
-  var output = Object.create(null);
+  var output = create(null);
 
   for (var prop in obj) {
     // hasOwnPropery is not needed because obj is Object.create(null);
@@ -92,7 +92,7 @@ OrderedSet.prototype = {
     @method clear
   */
   clear: function() {
-    this.presenceSet = Object.create(null);
+    this.presenceSet = create(null);
     this.list = [];
     this.size = 0;
   },
@@ -256,7 +256,7 @@ function Map() {
   if (this instanceof this.constructor) {
     this.keys = OrderedSet.create();
     this.keys._silenceRemoveDeprecation = true;
-    this.values = Object.create(null);
+    this.values = create(null);
     this.size = 0;
   } else {
     missingNew("OrderedSet");
@@ -418,7 +418,7 @@ Map.prototype = {
   */
   clear: function() {
     this.keys.clear();
-    this.values = Object.create(null);
+    this.values = create(null);
     this.size = 0;
   },
 

@@ -6,6 +6,7 @@
 import jQuery from "ember-views/system/jquery";
 import { DOMHelper } from "morph";
 import Ember from "ember-metal/core";
+import { create } from "ember-metal/platform";
 
 // The HTML spec allows for "omitted start tags". These tags are optional
 // when their intended child is the first thing in the parent tag. For
@@ -54,7 +55,7 @@ function detectOmittedStartTag(string, contextualElement){
 }
 
 function ClassSet() {
-  this.seen = Object.create(null);
+  this.seen = create(null);
   this.list = [];
 }
 

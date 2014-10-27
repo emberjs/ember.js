@@ -3,6 +3,7 @@
 // Ember.ContainerView circular dependency
 // Ember.ENV
 import Ember from 'ember-metal/core';
+import { create } from 'ember-metal/platform';
 
 import Evented from "ember-runtime/mixins/evented";
 import EmberObject from "ember-runtime/system/object";
@@ -1709,7 +1710,7 @@ var View = CoreView.extend({
     this._streamBindings = undefined;
 
     if (!this._keywords) {
-      this._keywords = Object.create(null);
+      this._keywords = create(null);
     }
     this._keywords.view = new SimpleStream();
     this._keywords._view = this;
@@ -2006,7 +2007,7 @@ var View = CoreView.extend({
 
   _getBindingForStream: function(path) {
     if (this._streamBindings === undefined) {
-      this._streamBindings = Object.create(null);
+      this._streamBindings = create(null);
       this.one('willDestroyElement', this, this._destroyStreamBindings);
     }
 

@@ -333,7 +333,7 @@ function connectStreamBinding(obj, key, stream) {
   stream.subscribe(onNotify);
 
   if (obj._streamBindingSubscriptions === undefined) {
-    obj._streamBindingSubscriptions = Object.create(null);
+    obj._streamBindingSubscriptions = o_create(null);
   }
 
   obj._streamBindingSubscriptions[key] = onNotify;
