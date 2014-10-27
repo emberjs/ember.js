@@ -19,6 +19,7 @@ import {
   getActiveTargetName,
   stashParamNames
 } from "ember-routing/utils";
+import { create } from "ember-metal/platform";
 
 /**
 @module ember
@@ -319,7 +320,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   _getHandlerFunction: function() {
-    var seen = Object.create(null);
+    var seen = create(null);
     var container = this.container;
     var DefaultRoute = container.lookupFactory('route:basic');
     var self = this;

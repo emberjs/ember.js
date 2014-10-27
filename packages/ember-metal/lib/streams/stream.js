@@ -1,3 +1,4 @@
+import { create } from "ember-metal/platform";
 import {
   getFirstKey,
   getTailPath
@@ -23,7 +24,7 @@ Stream.prototype = {
     var tailPath = getTailPath(path);
 
     if (this.children === undefined) {
-      this.children = Object.create(null);
+      this.children = create(null);
     }
 
     var keyStream = this.children[firstKey];

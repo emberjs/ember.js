@@ -794,7 +794,7 @@ var Application = Namespace.extend(DeferredMixin, {
 });
 
 Application.reopenClass({
-  initializers: Object.create(null),
+  initializers: create(null),
 
   /**
     Initializer receives an object which has the following attributes:
