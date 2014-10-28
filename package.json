@@ -16,6 +16,7 @@
     "broccoli": "0.12.0",
     "broccoli-concat": "0.0.6",
     "broccoli-defeatureify": "~0.3.0",
+    "broccoli-derequire": "0.0.1",
     "broccoli-es3-safe-recast": "0.0.8",
     "broccoli-es6-module-transpiler": "~0.1.0",
     "broccoli-file-creator": "~0.1.0",
