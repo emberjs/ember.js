@@ -1,4 +1,8 @@
 import isEmpty from 'ember-metal/is_empty';
+import {
+  Map,
+  OrderedSet
+} from 'ember-metal/map';
 
 QUnit.module("Ember.isEmpty");
 
@@ -18,4 +22,18 @@ test("Ember.isEmpty", function() {
   equal(true,  isEmpty([]),        "for an empty Array");
   equal(false, isEmpty({}),        "for an empty Object");
   equal(true,  isEmpty(object),     "for an Object that has zero 'length'");
+});
+
+test("Ember.isEmpty Ember.Map", function() {
+  var map = new Map();
+  equal(true, isEmpty(map), "Empty map is empty");
+  map.set('foo', 'bar');
+  equal(false, isEmpty(map), "Map is not empty");
+});
+
+test("Ember.isEmpty Ember.OrderedSet", function() {
+  var orderedSet = new OrderedSet();
+  equal(true, isEmpty(orderedSet), "Empty ordered set is empty");
+  orderedSet.add('foo');
+  equal(false, isEmpty(orderedSet), "Ordered set is not empty");
 });
