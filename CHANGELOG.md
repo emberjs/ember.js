@@ -1,21 +1,28 @@
 # Ember Changelog
 
-### Ember 1.8.0-beta.5 (October, 13, 2014)
+### Ember 1.8.0 (October, 28, 2014)
 
+* [BUGFIX] Ensure published builds do not use `define` or `require` internally.
+* [BUGFIX] Remove strict mode for Object.create usage to work around an [iOS bug](https://bugs.webkit.org/show_bug.cgi?id=138038).
+* Enable testing of production builds by publishing `ember-testing.js` along with the standard builds.
+* [DOC] Make mandatory setter assertions more helpful.
+* Deprecate location: 'hash' paths that don't have a forward slash. e.g. #foo vs. #/foo.
+* [BUGFIX] Ensure `Ember.setProperties` can handle non-object properties.
+* [BUGFIX] Refactor buffer to be simpler, single parsing code-path.
+* [BUGFIX] Add assertion when morph is not found in RenderBuffer.
+* [BUGFIX] Make computed.sort generate an answer immediately.
+* [BUGFIX] Fix broken `Ember.computed.sort` semantics.
+* [BUGFIX] Ensure ember-testing is not included in production build output.
+* Deprecate usage of quoted paths in `{{view}}` helper.
+* [BUGFIX] Ensure `{{view}}` lookup works properly when name is a keyword.
 * [BUGFIX] Ensure `Ember.Map` works properly with falsey values.
 * [BUGFIX] Make Ember.Namespace#toString ember-cli aware.
 * [PERF] Avoid using `for x in y` in `Ember.RenderBuffer.prototype.add`.
-
-### Ember 1.8.0-beta.4 (October, 5, 2014)
-
 * [BUGFIX] Enable setProperties to work on Object.create(null) objects.
 * [PERF] Update RSVP to 3.0.14 (faster instrumentation).
 * [BUGFIX] Add SVG support for metal-views.
 * [BUGFIX] Allow camelCase attributes in DOM elements.
 * [BUGFIX] Update backburner to latest.
-
-### Ember 1.8.0-beta.3 (September, 27, 2014)
-
 * [BUGFIX] Use contextualElements to properly handle omitted optional start tags.
 * [BUGFIX] Ensure that `Route.prototype.activate` is not retriggered when the model for the current route changes.
 * [PERF] Fix optimization bailouts for `{{view}}` helper.
@@ -33,10 +40,6 @@
   * [ES6] Remove length in-favor of size.
   * [ES6] Throw if constructor is invoked without new
   * [ES6] Make inheritance work correctly
-
-
-### Ember 1.8.0-beta.2 (September, 20, 2014)
-
 * [BUGFIX] Allow for bound property {{input}} type.
 * [BUGFIX] Ensure pushUnique targetQueue is cleared by flush.
 * [BUGFIX] instrument should still call block even without subscribers.
@@ -48,9 +51,6 @@
 * [PERF] Extracts computed property set into a separate function.
 * [BUGFIX] Make `GUID_KEY = intern(GUID_KEY)` actually work on ES3.
 * [BUGFIX] Ensure nested routes can inherit model from parent.
-
-### Ember 1.8.0-beta.1 (August 20, 2014)
-
 * Remove `metamorph` in favor of `morph` package (removes the need for `<script>` tags in the DOM).
 * [FEATURE] ember-routing-linkto-target-attribute
 * [FEATURE] ember-routing-multi-current-when
