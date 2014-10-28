@@ -19,7 +19,7 @@ import {
   routeArgs,
   getActiveTargetName,
   stashParamNames
-} from "ember-routing/utils";
+} from "ember-routing-handlebars/helpers/shared";
 import { create } from "ember-metal/platform";
 
 /**
