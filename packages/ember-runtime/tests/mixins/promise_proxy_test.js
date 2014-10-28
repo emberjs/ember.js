@@ -20,11 +20,6 @@ QUnit.module("Ember.PromiseProxy - ObjectProxy", {
 });
 
 test("no promise, invoking then should raise", function(){
-  var value = {
-    firstName: 'stef',
-    lastName: 'penner'
-  };
-
   var proxy = ObjectPromiseProxy.create();
 
   raises(function(){
@@ -164,7 +159,7 @@ test("unhandled rejects still propogate to RSVP.on('error', ...) ", function(){
     promise: deferred.promise
   });
 
-  var promise = proxy.get('promise');
+  proxy.get('promise');
 
   function onerror(reason) {
     equal(reason, expectedReason, 'expected reason');

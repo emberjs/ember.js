@@ -1,6 +1,3 @@
-import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
-import { get } from "ember-metal/property_get";
-import EmberObject from "ember-runtime/system/object";
 import { Mixin } from "ember-metal/mixin";
 import { computed } from "ember-metal/computed";
 import ActionHandler from "ember-runtime/mixins/action_handler";

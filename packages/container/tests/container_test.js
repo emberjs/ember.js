@@ -1,6 +1,5 @@
 import {
-  factory,
-  setProperties
+  factory
 } from 'container/tests/container_helper';
 
 import Container from 'container';
@@ -53,7 +52,6 @@ test("A registered factory is returned from lookupFactory is the same factory ea
 test("A factory returned from lookupFactory has a debugkey", function() {
   var container = new Container();
   var PostController = factory();
-  var instance;
 
   container.register('controller:post', PostController);
   var PostFactory = container.lookupFactory('controller:post');
@@ -68,8 +66,6 @@ test("fallback for to create time injections if factory has no extend", function
   var PostController = factory();
 
   PostController.extend = undefined; // remove extend
-
-  var instance;
 
   container.register('controller:apple', AppleController);
   container.register('controller:post', PostController);
@@ -578,7 +574,7 @@ test('once looked up, assert if an injection is registered for the entry', funct
 
   container.register('apple:main', Apple);
   container.register('worm:main', Worm);
-  var apple = container.lookup('apple:main');
+  container.lookup('apple:main');
   throws(function() {
     container.injection('apple:main', 'worm', 'worm:main');
   }, "Attempted to register an injection for a type that has already been looked up. ('apple:main', 'worm', 'worm:main')");
@@ -594,7 +590,7 @@ test("Once looked up, assert if a factoryInjection is registered for the factory
   container.register('apple:main', Apple);
   container.register('worm:main', Worm);
 
-  var AppleFactory = container.lookupFactory('apple:main');
+  container.lookupFactory('apple:main');
   throws(function() {
     container.factoryInjection('apple:main', 'worm', 'worm:main');
   }, "Attempted to register a factoryInjection for a type that has already been looked up. ('apple:main', 'worm', 'worm:main')");
@@ -651,4 +647,23 @@ test("factory for non extendables resolves are cached", function() {
   deepEqual(resolveWasCalled, ['foo:post']);
 });
 
+if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  test("A factory's lazy injections are validated when first instantiated", function() {
+    var container = new Container();
+    var Apple = factory();
+    var Orange = factory();
 
+    Apple.reopenClass({
+      lazyInjections: function() {
+        return [ 'orange:main', 'banana:main' ];
+      }
+    });
+
+    container.register('apple:main', Apple);
+    container.register('orange:main', Orange);
+
+    throws(function() {
+      container.lookup('apple:main');
+    }, /Attempting to inject an unknown injection: `banana:main`/);
+  });
+}

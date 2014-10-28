@@ -4,7 +4,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import ActionManager from "ember-views/system/action_manager";
 
-var Router, App, AppView, templates, router, container, originalLoggerError;
+var Router, App, router, container, originalLoggerError;
 var compile = Ember.Handlebars.compile;
 
 function bootApplication() {
@@ -970,7 +970,9 @@ test("ApplicationRoute's default error handler can be overridden", function() {
 });
 
 test("ApplicationRoute's default error handler can be overridden (with DEPRECATED `events`)", function() {
-  testOverridableErrorHandler('events');
+  ignoreDeprecation(function() {
+    testOverridableErrorHandler('events');
+  });
 });
 
 asyncTest("Moving from one page to another triggers the correct callbacks", function() {
@@ -1035,7 +1037,7 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
     })
   });
 
-  var menuItem, resolve;
+  var menuItem;
 
   App.MenuItem = Ember.Object.extend();
   App.MenuItem.reopenClass({
@@ -1568,7 +1570,7 @@ test("Route inherits model from parent route", function() {
   });
 
   var post1 = {}, post2 = {}, post3 = {}, currentPost;
-  var share1 = {}, share2 = {}, share3 = {}, currentShare;
+  var share1 = {}, share2 = {}, share3 = {};
 
   var posts = {
     1: post1,
@@ -2098,7 +2100,8 @@ test("Router accounts for rootURL on page load when using history location", fun
 
       setHistory(this, path);
       this.set('location', {
-        pathname: path
+        pathname: path,
+        href: 'http://localhost/' + path
       });
     },
 
@@ -2814,6 +2817,66 @@ test("`didTransition` can be reopened", function() {
 
   bootApplication();
 });
+
+if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
+  test("`activate` event fires on the route", function() {
+    expect(2);
+
+    var eventFired = 0;
+
+    Router.map(function(){
+      this.route("nork");
+    });
+
+    App.NorkRoute = Ember.Route.extend({
+      init: function() {
+        this._super();
+
+        this.on("activate", function() {
+          equal(++eventFired, 1, "activate event is fired once");
+        });
+      },
+
+      activate: function() {
+        ok(true, "activate hook is called");
+      }
+    });
+
+    bootApplication();
+
+    Ember.run(router, 'transitionTo', 'nork');
+  });
+
+  test("`deactivate` event fires on the route", function() {
+    expect(2);
+
+    var eventFired = 0;
+
+    Router.map(function(){
+      this.route("nork");
+      this.route("dork");
+    });
+
+    App.NorkRoute = Ember.Route.extend({
+      init: function() {
+        this._super();
+
+        this.on("deactivate", function() {
+          equal(++eventFired, 1, "deactivate event is fired once");
+        });
+      },
+
+      deactivate: function() {
+        ok(true, "deactivate hook is called");
+      }
+    });
+
+    bootApplication();
+
+    Ember.run(router, 'transitionTo', 'nork');
+    Ember.run(router, 'transitionTo', 'dork');
+  });
+}
 
 test("Actions can be handled by inherited action handlers", function() {
 

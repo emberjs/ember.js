@@ -6,14 +6,18 @@
 import Ember from "ember-metal/core"; // warn, assert, wrap, et;
 import merge from "ember-metal/merge";
 import {
-  map,
-  indexOf,
-  forEach
+  map as a_map,
+  indexOf as a_indexOf,
+  forEach as a_forEach
 } from "ember-metal/array";
-import { create } from "ember-metal/platform";
+import {
+  create as o_create
+} from "ember-metal/platform";
+import { get } from "ember-metal/property_get";
+import { set, trySet } from "ember-metal/property_set";
 import {
   guidFor,
-  meta,
+  meta as metaFor,
   wrap,
   makeArray,
   apply,
@@ -30,7 +34,8 @@ import {
   addObserver,
   removeObserver,
   addBeforeObserver,
-  removeBeforeObserver
+  removeBeforeObserver,
+  _suspendObserver
 } from "ember-metal/observer";
 import {
   addListener,
@@ -38,12 +43,7 @@ import {
 } from "ember-metal/events";
 
 var REQUIRED;
-var a_map = map;
-var a_indexOf = indexOf;
-var a_forEach = forEach;
 var a_slice = [].slice;
-var o_create = create;
-var metaFor = meta;
 
 function superFunction(){
   var func = this.__nextSuper;
@@ -90,7 +90,12 @@ function initMixin(mixin, args) {
 function isMethod(obj) {
   return 'function' === typeof obj &&
          obj.isMethod !== false &&
-         obj !== Boolean && obj !== Object && obj !== Number && obj !== Array && obj !== Date && obj !== String;
+         obj !== Boolean &&
+         obj !== Object &&
+         obj !== Number &&
+         obj !== Array &&
+         obj !== Date &&
+         obj !== String;
 }
 
 var CONTINUE = {};
@@ -146,6 +151,10 @@ function giveDescriptorSuper(meta, key, property, values, descs) {
   return property;
 }
 
+var sourceAvailable = (function() {
+  return this;
+}).toString().indexOf('return this;') > -1;
+
 function giveMethodSuper(obj, key, method, values, descs) {
   var superMethod;
 
@@ -164,7 +173,21 @@ function giveMethodSuper(obj, key, method, values, descs) {
     return method;
   }
 
-  return wrap(method, superMethod);
+  var hasSuper;
+  if (sourceAvailable) {
+    hasSuper = method.__hasSuper;
+
+    if (hasSuper === undefined) {
+      hasSuper = method.toString().indexOf('_super') > -1;
+      method.__hasSuper = hasSuper;
+    }
+  }
+
+  if (sourceAvailable === false || hasSuper) {
+    return wrap(method, superMethod);
+  } else {
+    return method;
+  }
 }
 
 function applyConcatenatedProperties(obj, key, value, values) {
@@ -172,7 +195,11 @@ function applyConcatenatedProperties(obj, key, value, values) {
 
   if (baseValue) {
     if ('function' === typeof baseValue.concat) {
-      return baseValue.concat(value);
+      if (value === null || value === undefined) {
+        return baseValue;
+      } else {
+        return baseValue.concat(value);
+      }
     } else {
       return makeArray(baseValue).concat(value);
     }
@@ -291,6 +318,31 @@ function detectBinding(obj, key, value, m) {
   }
 }
 
+function connectStreamBinding(obj, key, stream) {
+  var onNotify = function(stream) {
+    _suspendObserver(obj, key, null, didChange, function() {
+      trySet(obj, key, stream.value());
+    });
+  };
+
+  var didChange = function() {
+    stream.setValue(get(obj, key), onNotify);
+  };
+
+  // Initialize value
+  set(obj, key, stream.value());
+
+  addObserver(obj, key, null, didChange);
+
+  stream.subscribe(onNotify);
+
+  if (obj._streamBindingSubscriptions === undefined) {
+    obj._streamBindingSubscriptions = o_create(null);
+  }
+
+  obj._streamBindingSubscriptions[key] = onNotify;
+}
+
 function connectBindings(obj, m) {
   // TODO Mixin.apply(instance) should disconnect binding if exists
   var bindings = m.bindings;
@@ -300,7 +352,10 @@ function connectBindings(obj, m) {
       binding = bindings[key];
       if (binding) {
         to = key.slice(0, -7); // strip Binding off end
-        if (binding instanceof Binding) {
+        if (binding.isStream) {
+          connectStreamBinding(obj, to, binding);
+          continue;
+        } else if (binding instanceof Binding) {
           binding = binding.copy(); // copy prototypes' instance
           binding.to(to);
         } else { // binding is string path
@@ -534,7 +589,8 @@ MixinPrototype.reopen = function() {
   for(idx=0; idx < len; idx++) {
     mixin = arguments[idx];
     Ember.assert('Expected hash or Mixin instance, got ' + Object.prototype.toString.call(mixin),
-                 typeof mixin === 'object' && mixin !== null && Object.prototype.toString.call(mixin) !== '[object Array]');
+                 typeof mixin === 'object' && mixin !== null &&
+                   Object.prototype.toString.call(mixin) !== '[object Array]');
 
     if (mixin instanceof Mixin) {
       mixins.push(mixin);
@@ -768,7 +824,8 @@ export function observer() {
 export function immediateObserver() {
   for (var i=0, l=arguments.length; i<l; i++) {
     var arg = arguments[i];
-    Ember.assert("Immediate observers must observe internal properties only, not properties on other objects.", typeof arg !== "string" || arg.indexOf('.') === -1);
+    Ember.assert("Immediate observers must observe internal properties only, not properties on other objects.",
+                 typeof arg !== "string" || arg.indexOf('.') === -1);
   }
 
   return observer.apply(this, arguments);

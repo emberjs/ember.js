@@ -1,13 +1,16 @@
 import Ember from "ember-metal/core";
 import {
-  meta,
+  meta as metaFor,
   typeOf
 } from "ember-metal/utils";
-import { defineProperty as o_defineProperty, hasPropertyAccessors } from "ember-metal/platform";
-import { MANDATORY_SETTER_FUNCTION, DEFAULT_GETTER_FUNCTION } from "ember-metal/properties";
-
-var metaFor = meta; // utils.js
-
+import {
+  defineProperty as o_defineProperty,
+  hasPropertyAccessors
+} from "ember-metal/platform";
+import {
+  MANDATORY_SETTER_FUNCTION,
+  DEFAULT_GETTER_FUNCTION
+} from "ember-metal/properties";
 
 export function watchKey(obj, keyName, meta) {
   // can't watch length on Array - it is special...

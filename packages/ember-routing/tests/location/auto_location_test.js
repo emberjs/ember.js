@@ -1,5 +1,4 @@
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import copy from "ember-runtime/copy";
 import EmberObject from "ember-runtime/system/object";
@@ -66,16 +65,16 @@ QUnit.module("Ember.AutoLocation", {
       hash: '',
       search: '',
       replace: function () {
-        ok(false, 'location.replace should not be called');
+        ok(false, 'location.replace should not be called during testing');
       }
     };
 
     AutoTestLocation._history = {
       pushState: function () {
-        ok(false, 'history.pushState should not be called');
+        ok(false, 'history.pushState should not be called during testing');
       },
       replaceState: function () {
-        ok(false, 'history.replaceState should not be called');
+        ok(false, 'history.replaceState should not be called during testing');
       }
     };
   },

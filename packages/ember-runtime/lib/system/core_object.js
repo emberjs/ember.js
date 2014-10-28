@@ -14,7 +14,6 @@ import Ember from "ember-metal/core";
 // NOTE: this object should never be included directly. Instead use `Ember.Object`.
 // We only define this separately so that `Ember.Set` can depend on it.
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import {
   guidFor,
   apply
@@ -41,7 +40,8 @@ import keys from "ember-metal/keys";
 import ActionHandler from "ember-runtime/mixins/action_handler";
 import { defineProperty } from "ember-metal/properties";
 import { Binding } from "ember-metal/binding";
-import { ComputedProperty } from "ember-metal/computed";
+import { ComputedProperty, computed } from "ember-metal/computed";
+import InjectedProperty from "ember-metal/injected_property";
 import run from 'ember-metal/run_loop';
 import { destroy } from "ember-metal/watching";
 import {
@@ -115,8 +115,6 @@ function makeCtor() {
 
         for (var j = 0, ll = keyNames.length; j < ll; j++) {
           var keyName = keyNames[j];
-          if (!properties.hasOwnProperty(keyName)) { continue; }
-
           var value = properties[keyName];
 
           if (IS_BINDING.test(keyName)) {
@@ -137,7 +135,9 @@ function makeCtor() {
                        "time, when Ember.ActionHandler is used (i.e. views, " +
                        "controllers & routes).", !((keyName === 'actions') && ActionHandler.detect(this)));
 
-          if (concatenatedProperties && indexOf(concatenatedProperties, keyName) >= 0) {
+          if (concatenatedProperties && 
+              concatenatedProperties.length > 0 &&
+              indexOf(concatenatedProperties, keyName) >= 0) {
             var baseValue = this[keyName];
 
             if (baseValue) {
@@ -454,7 +454,7 @@ if (Ember.config.overridePrototypeMixin) {
 
 CoreObject.__super__ = null;
 
-var ClassMixin = Mixin.create({
+var ClassMixinProps = {
 
   ClassMixin: required(),
 
@@ -799,7 +799,7 @@ var ClassMixin = Mixin.create({
     return desc._meta || {};
   },
 
-  _computedProperties: Ember.computed(function() {
+  _computedProperties: computed(function() {
     hasCachedComputedProperties = true;
     var proto = this.proto();
     var descs = meta(proto).descs;
@@ -839,7 +839,34 @@ var ClassMixin = Mixin.create({
       callback.call(binding || this, property.name, property.meta || empty);
     }
   }
-});
+};
+
+if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  /**
+    Returns a hash of property names and container names that injected
+    properties will lookup on the container lazily.
+
+    @method lazyInjections
+    @return {Object} Hash of all lazy injected property keys to container names
+  */
+  ClassMixinProps.lazyInjections = function() {
+    var injections = {};
+    var proto = this.proto();
+    var descs = meta(proto).descs;
+    var key, desc;
+
+    for (key in descs) {
+      desc = descs[key];
+      if (desc instanceof InjectedProperty) {
+        injections[key] = desc.type + ':' + (desc.name || key);
+      }
+    }
+
+    return injections;
+  };
+}
+
+var ClassMixin = Mixin.create(ClassMixinProps);
 
 ClassMixin.ownerConstructor = CoreObject;
 

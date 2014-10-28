@@ -15,7 +15,6 @@ import EmberView from "ember-views/views/view";
 import EmberComponent from "ember-views/views/component";
 import jQuery from "ember-views/system/jquery";
 
-import "ember-routing-handlebars/helpers/shared";
 import {
   ActionHelper,
   actionHelper
@@ -99,7 +98,7 @@ test("should by default target the view's controller", function() {
   var controller = {};
 
   ActionHelper.registerAction = function(actionName, options) {
-    registeredTarget = options.target;
+    registeredTarget = options.target.value();
   };
 
   view = EmberView.create({
@@ -109,13 +108,12 @@ test("should by default target the view's controller", function() {
 
   appendView();
 
-  equal(registeredTarget.root, controller, "The controller was registered as the target");
+  equal(registeredTarget, controller, "The controller was registered as the target");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
 
 test("Inside a yield, the target points at the original target", function() {
-  var controller = {};
   var watted = false;
 
   var component = EmberComponent.extend({
@@ -154,7 +152,7 @@ test("should target the current controller inside an {{each}} loop", function() 
   var registeredTarget;
 
   ActionHelper.registerAction = function(actionName, options) {
-    registeredTarget = options.target;
+    registeredTarget = options.target.value();
   };
 
   var itemController = EmberObjectController.create();
@@ -177,7 +175,7 @@ test("should target the current controller inside an {{each}} loop", function() 
 
   appendView();
 
-  equal(registeredTarget.root, itemController, "the item controller is the target of action");
+  equal(registeredTarget, itemController, "the item controller is the target of action");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
@@ -186,7 +184,7 @@ test("should target the with-controller inside an {{#with controller='person'}}"
   var registeredTarget;
 
   ActionHelper.registerAction = function(actionName, options) {
-    registeredTarget = options.target;
+    registeredTarget = options.target.value();
   };
 
   var PersonController = EmberObjectController.extend();
@@ -206,7 +204,7 @@ test("should target the with-controller inside an {{#with controller='person'}}"
 
   appendView();
 
-  ok(registeredTarget.root instanceof PersonController, "the with-controller is the target of action");
+  ok(registeredTarget instanceof PersonController, "the with-controller is the target of action");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
@@ -249,7 +247,7 @@ test("should allow a target to be specified", function() {
   var registeredTarget;
 
   ActionHelper.registerAction = function(actionName, options) {
-    registeredTarget = options.target;
+    registeredTarget = options.target.value();
   };
 
   var anotherTarget = EmberView.create();
@@ -262,8 +260,7 @@ test("should allow a target to be specified", function() {
 
   appendView();
 
-  equal(registeredTarget.options.data.keywords.view, view, "The specified target was registered");
-  equal(registeredTarget.target, 'view.anotherTarget', "The specified target was registered");
+  equal(registeredTarget, anotherTarget, "The specified target was registered");
 
   ActionHelper.registerAction = originalRegisterAction;
 
@@ -303,7 +300,9 @@ test("should lazily evaluate the target", function() {
 
   equal(firstEdit, 1);
 
-  set(controller, 'theTarget', second);
+  run(function() {
+    set(controller, 'theTarget', second);
+  });
 
   run(function() {
     jQuery('a').trigger('click');
@@ -607,7 +606,6 @@ test("should not bubble an event from action helper to original parent event if 
 
 test("should allow 'send' as action name (#594)", function() {
   var eventHandlerWasCalled = false;
-  var eventObjectSent;
 
   var controller = EmberController.extend({
     send: function() { eventHandlerWasCalled = true; }
@@ -693,6 +691,30 @@ test("should unwrap controllers passed as a context", function() {
   equal(passedContext, model, "the action was passed the unwrapped model");
 });
 
+test("should not unwrap controllers passed as `controller`", function() {
+  var passedContext;
+  var model = EmberObject.create();
+  var controller = EmberObjectController.extend({
+    model: model,
+    actions: {
+      edit: function(context) {
+        passedContext = context;
+      }
+    }
+  }).create();
+
+  view = EmberView.create({
+    controller: controller,
+    template: EmberHandlebars.compile('<button {{action "edit" controller}}>edit</button>')
+  });
+
+  appendView();
+
+  view.$('button').trigger('click');
+
+  equal(passedContext, controller, "the action was passed the controller");
+});
+
 test("should allow multiple contexts to be specified", function() {
   var passedContexts;
   var models = [EmberObject.create(), EmberObject.create()];
@@ -743,13 +765,6 @@ test("should allow multiple contexts to be specified mixed with string args", fu
 
   deepEqual(passedParams, ["herp", model], "the action was called with the passed contexts");
 });
-
-var namespace = {
-  "Component": {
-    toString: function() { return "Component"; },
-    find: function() { return { id: 1 }; }
-  }
-};
 
 var compile = function(string) {
   return EmberHandlebars.compile(string);
@@ -931,7 +946,9 @@ test("a quoteless parameter should allow dynamic lookup of the actionName", func
   });
 
   var testBoundAction = function(propertyValue){
-    controller.set('hookMeUp', propertyValue);
+    run(function() {
+      controller.set('hookMeUp', propertyValue);
+    });
 
     run(function(){
       view.$("#woot-bound-param").click();

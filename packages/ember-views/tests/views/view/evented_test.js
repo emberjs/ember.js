@@ -1,4 +1,3 @@
-import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import EmberView from "ember-views/views/view";

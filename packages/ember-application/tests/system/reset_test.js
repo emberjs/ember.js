@@ -6,7 +6,6 @@ import EmberObject from "ember-runtime/system/object";
 import Router from "ember-routing/system/router";
 import View from "ember-views/views/view";
 import Controller from "ember-runtime/controllers/controller";
-import EventDispatcher from "ember-views/system/event_dispatcher";
 import jQuery from "ember-views/system/jquery";
 import Container from 'container/container';
 
@@ -195,7 +194,7 @@ test("When an application is reset, the router URL is reset to `/`", function() 
 });
 
 test("When an application with advance/deferReadiness is reset, the app does correctly become ready after reset", function() {
-  var location, router, readyCallCount;
+  var readyCallCount;
 
   readyCallCount = 0;
 
@@ -222,7 +221,7 @@ test("When an application with advance/deferReadiness is reset, the app does cor
 });
 
 test("With ember-data like initializer and constant", function() {
-  var location, router, readyCallCount;
+  var readyCallCount;
 
   readyCallCount = 0;
 

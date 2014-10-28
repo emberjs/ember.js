@@ -1,5 +1,4 @@
 import Ember from "ember-metal/core";
-import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
@@ -143,7 +142,7 @@ test("rerender should throw inside a template", function() {
             }
           });
 
-          var child2 = view.appendChild(EmberView, {
+          view.appendChild(EmberView, {
             template: function(context, options) {
               options.data.buffer.push("Inside child2");
               child1.rerender();

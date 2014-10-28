@@ -2,7 +2,6 @@
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
-import Namespace from "ember-runtime/system/namespace";
 import { A } from "ember-runtime/system/native_array";
 
 // import {expectAssertion} from "ember-metal/tests/debug_helpers";
@@ -64,7 +63,7 @@ test("should update bound helpers when properties change", function() {
 
   view = EmberView.create({
     controller: EmberObject.create({name: "Brogrammer"}),
-    template: EmberHandlebars.compile("{{capitalize name}}")
+    template: compile("{{capitalize name}}")
   });
 
   appendView();
@@ -89,7 +88,7 @@ test("should allow for computed properties with dependencies", function() {
         name: 'Brogrammer'
       })
     }),
-    template: EmberHandlebars.compile("{{capitalizeName person}}")
+    template: compile("{{capitalizeName person}}")
   });
 
   appendView();
@@ -109,12 +108,12 @@ test("bound helpers should support options", function() {
 
   view = EmberView.create({
     controller: EmberObject.create({text: 'ab'}),
-    template: EmberHandlebars.compile("{{repeat text count=3}}")
+    template: compile("{{repeat text count=3}}")
   });
 
   appendView();
 
-  ok(view.$().text() === 'ababab', "helper output is correct");
+  equal(view.$().text(), 'ababab', "helper output is correct");
 });
 
 test("bound helpers should support keywords", function() {
@@ -124,12 +123,12 @@ test("bound helpers should support keywords", function() {
 
   view = EmberView.create({
     text: 'ab',
-    template: EmberHandlebars.compile("{{capitalize view.text}}")
+    template: compile("{{capitalize view.text}}")
   });
 
   appendView();
 
-  ok(view.$().text() === 'AB', "helper output is correct");
+  equal(view.$().text(), 'AB', "helper output is correct");
 });
 
 test("bound helpers should support global paths [DEPRECATED]", function() {
@@ -140,14 +139,14 @@ test("bound helpers should support global paths [DEPRECATED]", function() {
   Ember.lookup = {Text: 'ab'};
 
   view = EmberView.create({
-    template: EmberHandlebars.compile("{{capitalize Text}}")
+    template: compile("{{capitalize Text}}")
   });
 
   expectDeprecation(function() {
     appendView();
   }, /Global lookup of Text from a Handlebars template is deprecated/);
 
-  ok(view.$().text() === 'AB', "helper output is correct");
+  equal(view.$().text(), 'AB', "helper output is correct");
 });
 
 test("bound helper should support this keyword", function() {
@@ -157,12 +156,12 @@ test("bound helper should support this keyword", function() {
 
   view = EmberView.create({
     controller: EmberObject.create({text: 'ab'}),
-    template: EmberHandlebars.compile("{{capitalize this}}")
+    template: compile("{{capitalize this}}")
   });
 
   appendView();
 
-  ok(view.$().text() === 'AB', "helper output is correct");
+  equal(view.$().text(), 'AB', "helper output is correct");
 });
 
 test("bound helpers should support bound options", function() {
@@ -171,7 +170,7 @@ test("bound helpers should support bound options", function() {
 
   view = EmberView.create({
     controller: EmberObject.create({text: 'ab', numRepeats: 3}),
-    template: EmberHandlebars.compile('{{repeat text countBinding="numRepeats"}}')
+    template: compile('{{repeat text countBinding="numRepeats"}}')
   });
 
   appendView();
@@ -198,7 +197,7 @@ test("bound helpers should support unquoted values as bound options", function()
 
   view = EmberView.create({
     controller: EmberObject.create({text: 'ab', numRepeats: 3}),
-    template: EmberHandlebars.compile('{{repeat text count=numRepeats}}')
+    template: compile('{{repeat text count=numRepeats}}')
   });
 
   appendView();
@@ -228,7 +227,7 @@ test("bound helpers should support multiple bound properties", function() {
 
   view = EmberView.create({
     controller: EmberObject.create({thing1: 'ZOID', thing2: 'BERG'}),
-    template: EmberHandlebars.compile('{{concat thing1 thing2}}')
+    template: compile('{{concat thing1 thing2}}')
   });
 
   appendView();
@@ -271,7 +270,7 @@ test("bound helpers should expose property names in options.data.properties", fu
         foo: 123
       })
     }),
-    template: EmberHandlebars.compile('{{echo thing1 thing2 thing3.foo}}')
+    template: compile('{{echo thing1 thing2 thing3.foo}}')
   });
 
   appendView();
@@ -286,7 +285,7 @@ test("bound helpers can be invoked with zero args", function() {
 
   view = EmberView.create({
     controller: EmberObject.create({trollText: "yumad"}),
-    template: EmberHandlebars.compile('{{troll}} and {{troll text="bork"}}')
+    template: compile('{{troll}} and {{troll text="bork"}}')
   });
 
   appendView();
@@ -298,7 +297,7 @@ test("bound helpers should not be invoked with blocks", function() {
   registerRepeatHelper();
   view = EmberView.create({
     controller: EmberObject.create({}),
-    template: EmberHandlebars.compile("{{#repeat}}Sorry, Charlie{{/repeat}}")
+    template: compile("{{#repeat}}Sorry, Charlie{{/repeat}}")
   });
 
   expectAssertion(function() {
@@ -308,28 +307,38 @@ test("bound helpers should not be invoked with blocks", function() {
 
 test("should observe dependent keys passed to registerBoundHelper", function() {
   try {
-    expect(2);
+    expect(3);
 
-    var SimplyObject = EmberObject.create({
+    var simplyObject = EmberObject.create({
       firstName: 'Jim',
-      lastName: 'Owen'
+      lastName: 'Owen',
+      birthday: EmberObject.create({
+        year: '2009'
+      })
     });
 
     EmberHandlebars.registerBoundHelper('fullName', function(value){
-      return value.get('firstName') + ' ' + value.get('lastName');
-    }, 'firstName', 'lastName');
+      return [
+        value.get('firstName'),
+        value.get('lastName'),
+        value.get('birthday.year') ].join(' ');
+    }, 'firstName', 'lastName', 'birthday.year');
 
     view = EmberView.create({
-      template: EmberHandlebars.compile('{{fullName this}}'),
-      context: SimplyObject
+      template: compile('{{fullName this}}'),
+      context: simplyObject
     });
     appendView(view);
 
-    equal(view.$().text(), 'Jim Owen', 'simply render the helper');
+    equal(view.$().text(), 'Jim Owen 2009', 'simply render the helper');
 
-    run(SimplyObject, SimplyObject.set, 'firstName', 'Tom');
+    run(simplyObject, simplyObject.set, 'firstName', 'Tom');
 
-    equal(view.$().text(), 'Tom Owen', 'simply render the helper');
+    equal(view.$().text(), 'Tom Owen 2009', 'render the helper after prop change');
+
+    run(simplyObject, simplyObject.set, 'birthday.year', '1692');
+
+    equal(view.$().text(), 'Tom Owen 1692', 'render the helper after path change');
   } finally {
     delete EmberHandlebars.helpers['fullName'];
   }
@@ -342,7 +351,7 @@ test("shouldn't treat raw numbers as bound paths", function() {
 
   view = EmberView.create({
     controller: EmberObject.create({aNumber: 1}),
-    template: EmberHandlebars.compile("{{sum aNumber 1}} {{sum 0 aNumber}} {{sum 5 6}}")
+    template: compile("{{sum aNumber 1}} {{sum 0 aNumber}} {{sum 5 6}}")
   });
 
   appendView();
@@ -363,7 +372,7 @@ test("shouldn't treat quoted strings as bound paths", function() {
 
   view = EmberView.create({
     controller: EmberObject.create({word: "jerkwater", loo: "unused"}),
-    template: EmberHandlebars.compile("{{concat word 'loo'}} {{concat '' word}} {{concat 'will' \"didi\"}}")
+    template: compile("{{concat word 'loo'}} {{concat '' word}} {{concat 'will' \"didi\"}}")
   });
 
   appendView();
@@ -387,7 +396,7 @@ test("bound helpers can handle nulls in array (with primitives)", function() {
     controller: EmberObject.create({
       things: A([ null, 0, undefined, false, "OMG" ])
     }),
-    template: EmberHandlebars.compile("{{#each things}}{{this}}|{{reverse this}} {{/each}}{{#each thing in things}}{{thing}}|{{reverse thing}} {{/each}}")
+    template: compile("{{#each things}}{{this}}|{{reverse this}} {{/each}}{{#each thing in things}}{{thing}}|{{reverse thing}} {{/each}}")
   });
 
   appendView();
@@ -411,7 +420,7 @@ test("bound helpers can handle nulls in array (with objects)", function() {
     controller: EmberObject.create({
       things: A([ null, { foo: 5 } ])
     }),
-    template: EmberHandlebars.compile("{{#each things}}{{foo}}|{{print-foo this}} {{/each}}{{#each thing in things}}{{thing.foo}}|{{print-foo thing}} {{/each}}")
+    template: compile("{{#each things}}{{foo}}|{{print-foo this}} {{/each}}{{#each thing in things}}{{thing.foo}}|{{print-foo thing}} {{/each}}")
   });
 
   appendView();
@@ -433,7 +442,7 @@ test("bound helpers can handle `this` keyword when it's a non-object", function(
     controller: EmberObject.create({
       things: A(['alex'])
     }),
-    template: EmberHandlebars.compile("{{#each things}}{{shout this}}{{/each}}")
+    template: compile("{{#each things}}{{shout this}}{{/each}}")
   });
 
   appendView();

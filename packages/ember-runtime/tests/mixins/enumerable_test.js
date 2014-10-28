@@ -5,7 +5,6 @@ import EmberObject from 'ember-runtime/system/object';
 import Enumerable from 'ember-runtime/mixins/enumerable';
 import EmberArray from 'ember-runtime/mixins/array';
 import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 import { computed } from 'ember-metal/computed';
 import { observer as emberObserver } from 'ember-metal/mixin';
 

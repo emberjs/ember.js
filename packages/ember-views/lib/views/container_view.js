@@ -19,7 +19,6 @@ import { forEach } from "ember-metal/enumerable_utils";
 import { computed } from "ember-metal/computed";
 import run from "ember-metal/run_loop";
 import { defineProperty } from "ember-metal/properties";
-import renderBuffer from "ember-views/system/render_buffer";
 import {
   observer,
   beforeObserver
@@ -184,7 +183,6 @@ var states = cloneStates(EmberViewStates);
   @extends Ember.View
 */
 var ContainerView = View.extend(MutableArray, {
-  isContainer: true,
   _states: states,
 
   willWatchProperty: function(prop){
@@ -263,6 +261,21 @@ var ContainerView = View.extend(MutableArray, {
     @param {Ember.RenderBuffer} buffer the buffer to render to
   */
   render: function(buffer) {
+    var element = buffer.element();
+    var dom = buffer.dom;
+
+    if (this.tagName === '') {
+      if (this._morph) {
+        this._childViewsMorph = this._morph;
+      } else {
+        element = dom.createDocumentFragment();
+        this._childViewsMorph = dom.appendMorph(element);
+      }
+    } else {
+      this._childViewsMorph = dom.createMorph(element, element.lastChild, null);
+    }
+
+    return element;
   },
 
   instrumentName: 'container',
@@ -372,7 +385,9 @@ merge(states.inBuffer, {
 merge(states.hasElement, {
   childViewsWillChange: function(view, views, start, removed) {
     for (var i=start; i<start+removed; i++) {
-      views[i].remove();
+      var _view = views[i];
+      _view._unsubscribeFromStreamBindings();
+      _view.remove();
     }
   },
 

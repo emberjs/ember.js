@@ -1,4 +1,3 @@
-/*globals Foo */
 /*jshint newcap:false*/
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
@@ -122,6 +121,7 @@ test("nested {{with}} blocks shadow the outer scoped variable properly.", functi
 
   equal(view.$().text(), "Limbo-Wrath-Treachery-Wrath-Limbo", "should be properly scoped after updating");
 });
+
 QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
@@ -129,10 +129,6 @@ QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
     lookup.Foo = { bar: 'baz' };
     view = EmberView.create({
       template: EmberHandlebars.compile("{{#with Foo.bar as qux}}{{qux}}{{/with}}")
-    });
-
-    ignoreDeprecation(function() {
-      appendView(view);
     });
   },
 
@@ -145,13 +141,15 @@ QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
 });
 
 test("it should support #with Foo.bar as qux [DEPRECATED]", function() {
+  expectDeprecation(function() {
+    appendView(view);
+  }, /Global lookup of Foo.bar from a Handlebars template is deprecated/);
+
   equal(view.$().text(), "baz", "should be properly scoped");
 
-  expectDeprecation(function() {
-    run(function() {
-      set(lookup.Foo, 'bar', 'updated');
-    });
-  }, /Global lookup of Foo.bar from a Handlebars template is deprecated/);
+  run(function() {
+    set(lookup.Foo, 'bar', 'updated');
+  });
 
   equal(view.$().text(), "updated", "should update");
 });

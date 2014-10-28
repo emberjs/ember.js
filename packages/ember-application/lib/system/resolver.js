@@ -76,26 +76,26 @@ export var Resolver = EmberObject.extend({
   Some examples of how names are resolved:
 
   ```
-  'template:post' //=> Ember.TEMPLATES['post']
-  'template:posts/byline' //=> Ember.TEMPLATES['posts/byline']
-  'template:posts.byline' //=> Ember.TEMPLATES['posts/byline']
-  'template:blogPost' //=> Ember.TEMPLATES['blogPost']
-                      //   OR
-                      //   Ember.TEMPLATES['blog_post']
-  'controller:post' //=> App.PostController
-  'controller:posts.index' //=> App.PostsIndexController
-  'controller:blog/post' //=> Blog.PostController
-  'controller:basic' //=> Ember.Controller
-  'route:post' //=> App.PostRoute
-  'route:posts.index' //=> App.PostsIndexRoute
-  'route:blog/post' //=> Blog.PostRoute
-  'route:basic' //=> Ember.Route
-  'view:post' //=> App.PostView
-  'view:posts.index' //=> App.PostsIndexView
-  'view:blog/post' //=> Blog.PostView
-  'view:basic' //=> Ember.View
-  'foo:post' //=> App.PostFoo
-  'model:post' //=> App.Post
+  'template:post'           //=> Ember.TEMPLATES['post']
+  'template:posts/byline'   //=> Ember.TEMPLATES['posts/byline']
+  'template:posts.byline'   //=> Ember.TEMPLATES['posts/byline']
+  'template:blogPost'       //=> Ember.TEMPLATES['blogPost']
+                            //   OR
+                            //   Ember.TEMPLATES['blog_post']
+  'controller:post'         //=> App.PostController
+  'controller:posts.index'  //=> App.PostsIndexController
+  'controller:blog/post'    //=> Blog.PostController
+  'controller:basic'        //=> Ember.Controller
+  'route:post'              //=> App.PostRoute
+  'route:posts.index'       //=> App.PostsIndexRoute
+  'route:blog/post'         //=> Blog.PostRoute
+  'route:basic'             //=> Ember.Route
+  'view:post'               //=> App.PostView
+  'view:posts.index'        //=> App.PostsIndexView
+  'view:blog/post'          //=> Blog.PostView
+  'view:basic'              //=> Ember.View
+  'foo:post'                //=> App.PostFoo
+  'model:post'              //=> App.Post
   ```
 
   @class DefaultResolver
@@ -121,7 +121,9 @@ export default EmberObject.extend({
     var type = split[0];
     var name = split[1];
 
-    Ember.assert("Tried to normalize a container name without a colon (:) in it. You probably tried to lookup a name that did not contain a type, a colon, and a name. A proper lookup name would be `view:post`.", split.length === 2);
+    Ember.assert("Tried to normalize a container name without a colon (:) in it." +
+                 " You probably tried to lookup a name that did not contain a type," +
+                 " a colon, and a name. A proper lookup name would be `view:post`.", split.length === 2);
 
     if (type !== 'template') {
       var result = name;
@@ -206,7 +208,9 @@ export default EmberObject.extend({
       var namespaceName = capitalize(parts.slice(0, -1).join('.'));
       root = Namespace.byName(namespaceName);
 
-      Ember.assert('You are looking for a ' + name + ' ' + type + ' in the ' + namespaceName + ' namespace, but the namespace could not be found', root);
+      Ember.assert('You are looking for a ' + name + ' ' + type +
+                   ' in the ' + namespaceName +
+                   ' namespace, but the namespace could not be found', root);
     }
 
     return {

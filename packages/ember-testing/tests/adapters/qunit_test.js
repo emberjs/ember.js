@@ -1,4 +1,3 @@
-import Ember from "ember-metal/core"; // Ember.K
 import run from "ember-metal/run_loop";
 import QUnitAdapter from "ember-testing/adapters/qunit";
 

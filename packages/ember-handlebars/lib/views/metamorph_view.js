@@ -1,21 +1,14 @@
-/* global Metamorph:true */
-
 /*jshint newcap:false*/
 import Ember from "ember-metal/core"; // Ember.deprecate
 
 import CoreView from "ember-views/views/core_view";
 import View from "ember-views/views/view";
 import { Mixin } from "ember-metal/mixin";
-import run from "ember-metal/run_loop";
 
 /**
 @module ember
 @submodule ember-handlebars
 */
-
-function notifyMutationListeners() {
-  run.once(View, 'notifyMutationListeners');
-}
 
 // The `morph` and `outerHTML` properties are internal only
 // and not observable.
@@ -33,7 +26,8 @@ export var _Metamorph = Mixin.create({
 
   init: function() {
     this._super();
-    Ember.deprecate('Supplying a tagName to Metamorph views is unreliable and is deprecated. You may be setting the tagName on a Handlebars helper that creates a Metamorph.', !this.tagName);
+    Ember.deprecate('Supplying a tagName to Metamorph views is unreliable and is deprecated.' +
+                    ' You may be setting the tagName on a Handlebars helper that creates a Metamorph.', !this.tagName);
   }
 });
 
@@ -44,7 +38,7 @@ export var _Metamorph = Mixin.create({
   @uses Ember._Metamorph
   @private
 */
-export var _MetamorphView = View.extend(_Metamorph);
+export default View.extend(_Metamorph);
 
 /**
   @class _SimpleMetamorphView
@@ -54,4 +48,3 @@ export var _MetamorphView = View.extend(_Metamorph);
   @private
 */
 export var _SimpleMetamorphView = CoreView.extend(_Metamorph);
-export default View.extend(_Metamorph);

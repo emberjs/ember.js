@@ -1,10 +1,9 @@
 import Ember from "ember-metal/core"; // warn, assert, etc;
 import {get, normalizeTuple} from "ember-metal/property_get";
-import {meta} from "ember-metal/utils";
+import {meta as metaFor} from "ember-metal/utils";
 import {forEach} from "ember-metal/array";
 import {watchKey, unwatchKey} from "ember-metal/watch_key";
 
-var metaFor = meta;
 var warn = Ember.warn;
 var FIRST_KEY = /^([^\.]+)/;
 
@@ -25,7 +24,8 @@ export function flushPendingChains() {
 
   forEach.call(queue, function(q) { q[0].add(q[1]); });
 
-  warn('Watching an undefined global, Ember expects watched globals to be setup by the time the run loop is flushed, check for typos', pendingQueue.length === 0);
+  warn('Watching an undefined global, Ember expects watched globals to be' +
+       ' setup by the time the run loop is flushed, check for typos', pendingQueue.length === 0);
 }
 
 function addChainWatcher(obj, keyName, node) {

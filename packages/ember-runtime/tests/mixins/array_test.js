@@ -1,11 +1,11 @@
 import Ember from "ember-metal/core"; // Ember.A
-import {get} from "ember-metal/property_get";
-import {set} from "ember-metal/property_set";
-import {addObserver} from "ember-metal/observer";
-import {observer as emberObserver} from "ember-metal/mixin";
-import {computed} from "ember-metal/computed";
-import {testWithDefault, testBoth} from 'ember-runtime/tests/props_helper';
-import {ArrayTests} from 'ember-runtime/tests/suites/array';
+import { get } from "ember-metal/property_get";
+import { set } from "ember-metal/property_set";
+import { addObserver } from "ember-metal/observer";
+import { observer as emberObserver } from "ember-metal/mixin";
+import { computed } from "ember-metal/computed";
+import { testBoth } from 'ember-runtime/tests/props_helper';
+import { ArrayTests } from 'ember-runtime/tests/suites/array';
 import EmberObject from 'ember-runtime/system/object';
 import EmberArray from "ember-runtime/mixins/array";
 

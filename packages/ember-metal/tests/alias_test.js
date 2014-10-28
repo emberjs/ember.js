@@ -1,11 +1,10 @@
-import { alias } from "ember-metal/alias";
-import { Descriptor, defineProperty } from "ember-metal/properties";
+import alias from "ember-metal/alias";
+import { defineProperty } from "ember-metal/properties";
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import { meta } from 'ember-metal/utils';
 import { isWatching } from "ember-metal/watching";
 import { addObserver, removeObserver } from "ember-metal/observer";
-import { mixin, observer } from 'ember-metal/mixin';
 
 var obj, count;
 
@@ -57,4 +56,10 @@ test('immediately sets up dependencies if already being watched', function() {
   ok(isWatching(obj, 'foo.faz'));
   set(obj, 'foo.faz', 'BAR');
   equal(count, 1);
+});
+
+test('setting alias on self should fail assertion', function() {
+  expectAssertion(function() {
+    defineProperty(obj, 'bar', alias('bar'));
+  }, "Setting alias 'bar' on self");
 });

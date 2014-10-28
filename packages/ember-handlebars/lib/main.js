@@ -5,38 +5,38 @@ import { runLoadHooks } from "ember-runtime/system/lazy_load";
 import bootstrap from "ember-handlebars/loader";
 
 import {
-  normalizePath,
-  template,
   makeBoundHelper,
   registerBoundHelper,
-  resolveHash,
-  resolveParams,
-  getEscaped,
-  handlebarsGet,
-  evaluateUnboundHelper,
   helperMissingHelper,
-  blockHelperMissingHelper
+  blockHelperMissingHelper,
+  handlebarsGet
 } from "ember-handlebars/ext";
 
 
 // side effect of extending StringUtils of htmlSafe
 import "ember-handlebars/string";
 
-import resolvePaths from "ember-handlebars/helpers/shared";
 import {
   bind,
   _triageMustacheHelper,
   resolveHelper,
-  bindHelper,
+  bindHelper
+} from "ember-handlebars/helpers/binding";
+
+import {
+  ifHelper,
   boundIfHelper,
   unboundIfHelper,
-  withHelper,
-  ifHelper,
-  unlessHelper,
+  unlessHelper
+} from "ember-handlebars/helpers/if_unless";
+
+import withHelper from "ember-handlebars/helpers/with";
+
+import {
   bindAttrHelper,
   bindAttrHelperDeprecated,
   bindClasses
-} from "ember-handlebars/helpers/binding";
+} from "ember-handlebars/helpers/bind_attr";
 
 import collectionHelper from "ember-handlebars/helpers/collection";
 import {
@@ -50,7 +50,6 @@ import {
 } from "ember-handlebars/helpers/debug";
 import {
   EachView,
-  GroupedEach,
   eachHelper
 } from "ember-handlebars/helpers/each";
 import templateHelper from "ember-handlebars/helpers/template";
@@ -73,16 +72,14 @@ import {
   textareaHelper
 } from "ember-handlebars/controls";
 
-
 import ComponentLookup from "ember-handlebars/component_lookup";
 import {
   _HandlebarsBoundView,
   SimpleHandlebarsView
 } from "ember-handlebars/views/handlebars_bound_view";
+import _MetamorphView from "ember-handlebars/views/metamorph_view";
 import {
-  _wrapMap,
   _SimpleMetamorphView,
-  _MetamorphView,
   _Metamorph
 } from "ember-handlebars/views/metamorph_view";
 
@@ -97,33 +94,24 @@ Ember Handlebars
 
 // Ember.Handlebars.Globals
 EmberHandlebars.bootstrap = bootstrap;
-EmberHandlebars.template = template;
 EmberHandlebars.makeBoundHelper = makeBoundHelper;
 EmberHandlebars.registerBoundHelper = registerBoundHelper;
-EmberHandlebars.resolveHash = resolveHash;
-EmberHandlebars.resolveParams = resolveParams;
 EmberHandlebars.resolveHelper = resolveHelper;
-EmberHandlebars.get = handlebarsGet;
-EmberHandlebars.getEscaped = getEscaped;
-EmberHandlebars.evaluateUnboundHelper = evaluateUnboundHelper;
 EmberHandlebars.bind = bind;
 EmberHandlebars.bindClasses = bindClasses;
 EmberHandlebars.EachView = EachView;
-EmberHandlebars.GroupedEach = GroupedEach;
-EmberHandlebars.resolvePaths = resolvePaths;
 EmberHandlebars.ViewHelper = ViewHelper;
-EmberHandlebars.normalizePath = normalizePath;
 
 
 // Ember Globals
 Ember.Handlebars = EmberHandlebars;
+EmberHandlebars.get = handlebarsGet;
 Ember.ComponentLookup = ComponentLookup;
 Ember._SimpleHandlebarsView = SimpleHandlebarsView;
 Ember._HandlebarsBoundView = _HandlebarsBoundView;
 Ember._SimpleMetamorphView = _SimpleMetamorphView;
 Ember._MetamorphView = _MetamorphView;
 Ember._Metamorph = _Metamorph;
-Ember._metamorphWrapMap = _wrapMap;
 Ember.TextSupport = TextSupport;
 Ember.Checkbox = Checkbox;
 Ember.Select = Select;

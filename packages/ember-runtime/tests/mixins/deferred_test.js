@@ -1,10 +1,9 @@
-/* global Promise:true,EmberDev */
+/* global EmberDev */
 
 import Ember from 'ember-metal/core';
 import run from 'ember-metal/run_loop';
 import EmberObject from 'ember-runtime/system/object';
 import Deferred from "ember-runtime/mixins/deferred";
-import RSVP from "ember-runtime/ext/rsvp";
 
 var originalDeprecate;
 
@@ -124,7 +123,6 @@ test("resolve prevent reject", function() {
   var deferred;
   var resolved = false;
   var rejected = false;
-  var progress = 0;
 
   run(function() {
     deferred = EmberObject.createWithMixins(Deferred);
@@ -147,7 +145,6 @@ test("reject prevent resolve", function() {
   var deferred;
   var resolved = false;
   var rejected = false;
-  var progress = 0;
 
   run(function() {
     deferred = EmberObject.createWithMixins(Deferred);

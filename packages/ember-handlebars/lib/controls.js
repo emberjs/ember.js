@@ -6,20 +6,11 @@ import Ember from "ember-metal/core"; // Ember.assert
 // var emberAssert = Ember.assert;
 
 import EmberHandlebars from "ember-handlebars-compiler";
-import { handlebarsGet } from "ember-handlebars/ext";
-var helpers = EmberHandlebars.helpers;
+
 /**
 @module ember
 @submodule ember-handlebars-compiler
 */
-
-function _resolveOption(context, options, key) {
-  if (options.hashTypes[key] === "ID") {
-    return handlebarsGet(context, options.hash[key], options);
-  } else {
-    return options.hash[key];
-  }
-}
 
 /**
 
@@ -200,23 +191,31 @@ function _resolveOption(context, options, key) {
 export function inputHelper(options) {
   Ember.assert('You can only pass attributes to the `input` helper, not arguments', arguments.length < 2);
 
+  var view = options.data.view;
   var hash = options.hash;
   var types = options.hashTypes;
-  var inputType = _resolveOption(this, options, 'type');
   var onEvent = hash.on;
+  var inputType;
+
+  if (types.type === 'ID') {
+    inputType = view.getStream(hash.type).value();
+  } else {
+    inputType = hash.type;
+  }
 
   if (inputType === 'checkbox') {
     delete hash.type;
     delete types.type;
 
-    Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`; you must use `checked=someBooleanValue` instead.", options.hashTypes.value !== 'ID');
+    Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`;" +
+                 " you must use `checked=someBooleanValue` instead.", options.hashTypes.value !== 'ID');
 
-    return helpers.view.call(this, Checkbox, options);
+    return EmberHandlebars.helpers.view.call(this, Checkbox, options);
   } else {
     delete hash.on;
 
     hash.onEvent = onEvent || 'enter';
-    return helpers.view.call(this, TextField, options);
+    return EmberHandlebars.helpers.view.call(this, TextField, options);
   }
 }
 
@@ -408,8 +407,5 @@ export function inputHelper(options) {
 export function textareaHelper(options) {
   Ember.assert('You can only pass attributes to the `textarea` helper, not arguments', arguments.length < 2);
 
-  var hash = options.hash;
-  var types = options.hashTypes;
-
-  return helpers.view.call(this, TextArea, options);
+  return EmberHandlebars.helpers.view.call(this, TextArea, options);
 }

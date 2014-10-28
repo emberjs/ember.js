@@ -8,12 +8,6 @@ import Ember from "ember-metal/core"; // Ember.FEATURES,
 import { inspect } from "ember-metal/utils";
 import Logger from "ember-metal/logger";
 
-import { get } from "ember-metal/property_get";
-import {
-  normalizePath,
-  handlebarsGet
-} from "ember-handlebars/ext";
-
 var a_slice = [].slice;
 
 /**
@@ -31,22 +25,14 @@ var a_slice = [].slice;
 function logHelper() {
   var params = a_slice.call(arguments, 0, -1);
   var options = arguments[arguments.length - 1];
+  var view = options.data.view;
   var logger = Logger.log;
   var values = [];
-  var allowPrimitives = true;
 
   for (var i = 0; i < params.length; i++) {
-    var type = options.types[i];
-
-    if (type === 'ID' || !allowPrimitives) {
-      var context = (options.contexts && options.contexts[i]) || this;
-      var normalized = normalizePath(context, params[i], options.data);
-
-      if (normalized.path === 'this') {
-        values.push(normalized.root);
-      } else {
-        values.push(handlebarsGet(normalized.root, normalized.path, options));
-      }
+    if (options.types[i] === 'ID') {
+      var stream = view.getStream(params[i]);
+      values.push(stream.value());
     } else {
       values.push(params[i]);
     }
@@ -92,6 +78,7 @@ function logHelper() {
 function debuggerHelper(options) {
 
   // These are helpful values you can inspect while debugging.
+  /* jshint unused: false */
   var templateContext = this;
   var typeOfTemplateContext = inspect(templateContext);
   Ember.Logger.info('Use `this` to access the context of the calling template.');
@@ -99,4 +86,7 @@ function debuggerHelper(options) {
   debugger;
 }
 
-export {logHelper, debuggerHelper};
+export {
+  logHelper,
+  debuggerHelper
+};

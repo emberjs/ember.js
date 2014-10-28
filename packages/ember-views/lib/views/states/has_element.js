@@ -11,7 +11,6 @@ import EmberError from "ember-metal/error";
 */
 
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 
 var hasElement = create(_default);
 

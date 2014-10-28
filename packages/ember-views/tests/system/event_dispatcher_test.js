@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core'; // A, FEATURES, assert, TESTING_DEPRECATION
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
 import EmberObject from "ember-runtime/system/object";
@@ -35,24 +34,22 @@ test("should dispatch events to views", function() {
   var childKeyDownCalled = 0;
   var parentKeyDownCalled = 0;
 
-  view = ContainerView.createWithMixins({
-    childViews: ['child'],
+  var childView = View.createWithMixins({
+    render: function(buffer) {
+      buffer.push('<span id="wot">ewot</span>');
+    },
 
-    child: View.extend({
-      render: function(buffer) {
-        buffer.push('<span id="wot">ewot</span>');
-      },
+    keyDown: function(evt) {
+      childKeyDownCalled++;
 
-      keyDown: function(evt) {
-        childKeyDownCalled++;
+      return false;
+    }
+  });
 
-        return false;
-      }
-    }),
-
+  view = View.createWithMixins({
     render: function(buffer) {
       buffer.push('some <span id="awesome">awesome</span> content');
-      this._super(buffer);
+      this.appendChild(childView);
     },
 
     mouseDown: function(evt) {

@@ -8,8 +8,6 @@ var setProperties = function(object, properties) {
 
 var guids = 0;
 
-var passedOptions;
-
 var factory = function() {
   /*jshint validthis: true */
 
@@ -35,7 +33,6 @@ var factory = function() {
   return Klass;
 
   function create(options) {
-    var passedOptions = options;
     return new this.prototype.constructor(options);
   }
 
@@ -53,6 +50,7 @@ var factory = function() {
     Child.prototype = new Parent();
     Child.prototype.constructor = Child;
 
+    setProperties(Child, Klass);
     setProperties(Child.prototype, options);
 
     Child.create = create;

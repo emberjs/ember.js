@@ -3,6 +3,7 @@
 // Ember.ContainerView circular dependency
 // Ember.ENV
 import Ember from 'ember-metal/core';
+import { create } from 'ember-metal/platform';
 
 import Evented from "ember-runtime/mixins/evented";
 import EmberObject from "ember-runtime/system/object";
@@ -12,12 +13,14 @@ import { set } from "ember-metal/property_set";
 import setProperties from "ember-metal/set_properties";
 import run from "ember-metal/run_loop";
 import { addObserver, removeObserver } from "ember-metal/observer";
-
-import { defineProperty, deprecateProperty } from "ember-metal/properties";
+import { defineProperty } from "ember-metal/properties";
 import { guidFor } from "ember-metal/utils";
-import { meta } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
 import { observer } from "ember-metal/mixin";
+import SimpleStream from "ember-metal/streams/simple";
+import KeyStream from "ember-views/streams/key_stream";
+import StreamBinding from "ember-metal/streams/stream_binding";
+import ContextStream from "ember-views/streams/context_stream";
 
 import {
   typeOf,
@@ -38,8 +41,6 @@ import {
 } from "ember-metal/enumerable_utils";
 
 import { beforeObserver } from "ember-metal/mixin";
-import copy from "ember-runtime/copy";
-import { isGlobalPath } from "ember-metal/binding";
 
 import {
   propertyWillChange,
@@ -51,6 +52,7 @@ import "ember-views/system/ext";  // for the side effect of extending Ember.run.
 
 import CoreView from "ember-views/views/core_view";
 
+
 /**
 @module ember
 @submodule ember-views
@@ -58,7 +60,6 @@ import CoreView from "ember-views/views/core_view";
 var childViewsProperty = computed(function() {
   var childViews = this._childViews;
   var ret = emberA();
-  var view = this;
 
   forEach(childViews, function(view) {
     var currentChildViews;
@@ -994,6 +995,7 @@ var View = CoreView.extend({
   _parentViewDidChange: observer('_parentView', function() {
     if (this.isDestroying) { return; }
 
+    this._setupKeywords();
     this.trigger('parentViewDidChange');
 
     if (get(this, 'parentView.controller') && !get(this, 'controller')) {
@@ -1011,15 +1013,22 @@ var View = CoreView.extend({
     });
   }),
 
-  cloneKeywords: function() {
-    var templateData = get(this, 'templateData');
+  _setupKeywords: function() {
+    var keywords = this._keywords;
+    var contextView = this._contextView || this._parentView;
 
-    var keywords = templateData ? copy(templateData.keywords) : {};
-    set(keywords, 'view', this.isVirtual ? keywords.view : this);
-    set(keywords, '_view', this);
-    set(keywords, 'controller', get(this, 'controller'));
+    if (contextView) {
+      var parentKeywords = contextView._keywords;
 
-    return keywords;
+      keywords.view.setSource(this.isVirtual ? parentKeywords.view : this);
+
+      for (var name in parentKeywords) {
+        if (keywords[name]) continue;
+        keywords[name] = parentKeywords[name];
+      }
+    } else {
+      keywords.view.setSource(this.isVirtual ? null : this);
+    }
   },
 
   /**
@@ -1042,15 +1051,12 @@ var View = CoreView.extend({
 
     if (template) {
       var context = get(this, 'context');
-      var keywords = this.cloneKeywords();
       var output;
 
       var data = {
         view: this,
         buffer: buffer,
-        isRenderData: true,
-        keywords: keywords,
-        insideGroup: get(this, 'templateData.insideGroup')
+        isRenderData: true
       };
 
       // Invoke the template with the provided template context, which
@@ -1106,20 +1112,30 @@ var View = CoreView.extend({
     // ('content.isUrgent')
     forEach(classBindings, function(binding) {
 
-      Ember.assert("classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. ['foo', ':bar']", binding.indexOf(' ') === -1);
+      var parsedPath;
+
+      if (typeof binding === 'string') {
+        Ember.assert("classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. ['foo', ':bar']", binding.indexOf(' ') === -1);
+        parsedPath = View._parsePropertyPath(binding);
+        if (parsedPath.path === '') {
+          parsedPath.stream = new SimpleStream(true);
+        } else {
+          parsedPath.stream = this.getStream('_view.' + parsedPath.path);
+        }
+      } else {
+        parsedPath = binding;
+      }
 
       // Variable in which the old class value is saved. The observer function
       // closes over this variable, so it knows which string to remove when
       // the property changes.
       var oldClass;
-      // Extract just the property name from bindings like 'foo:bar'
-      var parsedPath = View._parsePropertyPath(binding);
 
       // Set up an observer on the context. If the property changes, toggle the
       // class name.
-      var observer = function() {
+      var observer = this._wrapAsScheduled(function() {
         // Get the current value of the property
-        newClass = this._classStringForProperty(binding);
+        newClass = this._classStringForProperty(parsedPath);
         elem = this.$();
 
         // If we had previously added a class to the element, remove it.
@@ -1138,10 +1154,10 @@ var View = CoreView.extend({
         } else {
           oldClass = null;
         }
-      };
+      });
 
       // Get the class name for the property at its current value
-      dasherizedClass = this._classStringForProperty(binding);
+      dasherizedClass = this._classStringForProperty(parsedPath);
 
       if (dasherizedClass) {
         // Ensure that it gets into the classNames array
@@ -1154,7 +1170,7 @@ var View = CoreView.extend({
         oldClass = dasherizedClass;
       }
 
-      this.registerObserver(this, parsedPath.path, observer);
+      parsedPath.stream.subscribe(observer, this);
       // Remove className so when the view is rerendered,
       // the className is added based on binding reevaluation
       this.one('willClearRender', function() {
@@ -1252,16 +1268,8 @@ var View = CoreView.extend({
     @param property
     @private
   */
-  _classStringForProperty: function(property) {
-    var parsedPath = View._parsePropertyPath(property);
-    var path = parsedPath.path;
-
-    var val = get(this, path);
-    if (val === undefined && isGlobalPath(path)) {
-      val = get(Ember.lookup, path);
-    }
-
-    return View._classStringForValue(path, val, parsedPath.className, parsedPath.falsyClassName);
+  _classStringForProperty: function(parsedPath) {
+    return View._classStringForValue(parsedPath.path, parsedPath.stream.value(), parsedPath.className, parsedPath.falsyClassName);
   },
 
   // ..........................................................
@@ -1697,6 +1705,17 @@ var View = CoreView.extend({
 
     // setup child views. be sure to clone the child views array first
     this._childViews = this._childViews.slice();
+    this._baseContext = undefined;
+    this._contextStream = undefined;
+    this._streamBindings = undefined;
+
+    if (!this._keywords) {
+      this._keywords = create(null);
+    }
+    this._keywords.view = new SimpleStream();
+    this._keywords._view = this;
+    this._keywords.controller = new KeyStream(this, 'controller');
+    this._setupKeywords();
 
     Ember.assert("Only arrays are allowed for 'classNameBindings'", typeOf(this.classNameBindings) === 'array');
     this.classNameBindings = emberA(this.classNameBindings.slice());
@@ -1779,11 +1798,9 @@ var View = CoreView.extend({
     @method destroy
   */
   destroy: function() {
-    var childViews = this._childViews;
     // get parentView before calling super because it'll be destroyed
     var nonVirtualParentView = get(this, 'parentView');
     var viewName = this.viewName;
-    var childLen, i;
 
     if (!this._super()) { return; }
 
@@ -1964,22 +1981,78 @@ var View = CoreView.extend({
       return;
     }
 
-    var view = this;
-    var stateCheckedObserver = function() {
-      view.currentState.invokeObserver(this, observer);
-    };
-    var scheduledObserver = function() {
-      run.scheduleOnce('render', this, stateCheckedObserver);
-    };
+    var scheduledObserver = this._wrapAsScheduled(observer);
 
     addObserver(root, path, target, scheduledObserver);
 
     this.one('willClearRender', function() {
       removeObserver(root, path, target, scheduledObserver);
     });
-  }
+  },
 
+  _wrapAsScheduled: function(fn) {
+    var view = this;
+    var stateCheckedFn = function() {
+      view.currentState.invokeObserver(this, fn);
+    };
+    var scheduledFn = function() {
+      run.scheduleOnce('render', this, stateCheckedFn);
+    };
+    return scheduledFn;
+  },
+
+  getStream: function(path) {
+    return this._getContextStream().get(path);
+  },
+
+  _getBindingForStream: function(path) {
+    if (this._streamBindings === undefined) {
+      this._streamBindings = create(null);
+      this.one('willDestroyElement', this, this._destroyStreamBindings);
+    }
+
+    if (this._streamBindings[path] !== undefined) {
+      return this._streamBindings[path];
+    } else {
+      var stream = this._getContextStream().get(path);
+      return this._streamBindings[path] = new StreamBinding(stream);
+    }
+  },
+
+  _destroyStreamBindings: function() {
+    var streamBindings = this._streamBindings;
+    for (var path in streamBindings) {
+      streamBindings[path].destroy();
+    }
+    this._streamBindings = undefined;
+  },
+
+  _getContextStream: function() {
+    if (this._contextStream === undefined) {
+      this._baseContext = new KeyStream(this, 'context');
+      this._contextStream = new ContextStream(this);
+      this.one('willDestroyElement', this, this._destroyContextStream);
+    }
+
+    return this._contextStream;
+  },
+
+  _destroyContextStream: function() {
+    this._baseContext.destroy();
+    this._baseContext = undefined;
+    this._contextStream.destroy();
+    this._contextStream = undefined;
+  },
+
+  _unsubscribeFromStreamBindings: function() {
+    for (var key in this._streamBindingSubscriptions) {
+      var streamBinding = this[key + 'Binding'];
+      var callback = this._streamBindingSubscriptions[key];
+      streamBinding.unsubscribe(callback);
+    }
+  }
 });
+
 deprecateProperty(View.prototype, 'state', '_state');
 deprecateProperty(View.prototype, 'states', '_states');
 
@@ -2009,10 +2082,6 @@ deprecateProperty(View.prototype, 'states', '_states');
 
   // once the view has been inserted into the DOM, legal manipulations
   // are done on the DOM element.
-
-function notifyMutationListeners() {
-  run.once(View, 'notifyMutationListeners');
-}
 
 View.reopenClass({
 
@@ -2051,6 +2120,7 @@ View.reopenClass({
     }
 
     return {
+      stream: undefined,
       path: propertyPath,
       classNames: classNames,
       className: (className === '') ? undefined : className,

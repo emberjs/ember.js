@@ -1,11 +1,14 @@
-import { create } from "ember-metal/platform";
-import { watch, unwatch } from "ember-metal/watching";
+import {
+  create as o_create
+} from "ember-metal/platform";
+import {
+  watch,
+  unwatch
+} from "ember-metal/watching";
 
 /**
 @module ember-metal
 */
-
-var o_create = create;
 
 // ..........................................................
 // DEPENDENT KEYS

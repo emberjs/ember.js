@@ -1,5 +1,3 @@
-/*globals Handlebars */
-
 /**
 @module ember
 @submodule ember-handlebars
@@ -10,56 +8,62 @@ import Ember from "ember-metal/core"; // Ember.warn, Ember.assert
 
 import EmberObject from "ember-runtime/system/object";
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
+import keys from "ember-metal/keys";
 import { IS_BINDING } from "ember-metal/mixin";
-import jQuery from "ember-views/system/jquery";
+import { readViewFactory } from "ember-views/streams/read";
 import View from "ember-views/views/view";
-import { isGlobalPath } from "ember-metal/binding";
-import keys  from 'ember-metal/keys';
-import {
-  normalizePath,
-  handlebarsGet,
-  handlebarsGetView
-} from "ember-handlebars/ext";
-import EmberString from "ember-runtime/system/string";
+import SimpleStream from "ember-metal/streams/simple";
 
-
-var LOWERCASE_A_Z = /^[a-z]/;
-var VIEW_PREFIX = /^view\./;
-
-function makeBindings(thisContext, options) {
+function makeBindings(options) {
   var hash = options.hash;
-  var hashType = options.hashTypes;
+  var hashTypes = options.hashTypes;
+  var view = options.data.view;
 
   for (var prop in hash) {
-    if (hashType[prop] === 'ID') {
+    var hashType = hashTypes[prop];
+    var value = hash[prop];
 
-      var value = hash[prop];
+    if (IS_BINDING.test(prop)) {
+      // classBinding is processed separately
+      if (prop === 'classBinding') {
+        continue;
+      }
 
-      if (IS_BINDING.test(prop)) {
-        Ember.warn("You're attempting to render a view by passing " + prop + "=" + value + " to a view helper, but this syntax is ambiguous. You should either surround " + value + " in quotes or remove `Binding` from " + prop + ".");
-      } else {
-        hash[prop + 'Binding'] = value;
-        hashType[prop + 'Binding'] = 'STRING';
+      if (hashType === 'ID') {
+        Ember.warn("You're attempting to render a view by passing " +
+                   prop + "=" + value +
+                   " to a view helper, but this syntax is ambiguous. You should either surround " +
+                   value + " in quotes or remove `Binding` from " + prop + ".");
+        hash[prop] = view._getBindingForStream(value);
+      } else if (typeof value === 'string') {
+        hash[prop] = view._getBindingForStream(value);
+      }
+    } else {
+      if (hashType === 'ID') {
+        if (prop === 'class') {
+          hash.classBinding = value;
+        } else {
+          hash[prop + 'Binding'] = view._getBindingForStream(value);
+        }
         delete hash[prop];
-        delete hashType[prop];
+        delete hashTypes[prop];
       }
     }
   }
 
-  if (hash.hasOwnProperty('idBinding')) {
+  if (hash.idBinding) {
     // id can't be bound, so just perform one-time lookup.
-    hash.id = handlebarsGet(thisContext, hash.idBinding, options);
-    hashType.id = 'STRING';
+    hash.id = hash.idBinding.value();
+    hashTypes.id = 'STRING';
     delete hash.idBinding;
-    delete hashType.idBinding;
+    delete hashTypes.idBinding;
   }
 }
 
 export var ViewHelper = EmberObject.create({
   propertiesFromHTMLOptions: function(options) {
+    var view    = options.data.view;
     var hash    = options.hash;
-    var data    = options.data;
     var classes = hash['class'];
 
     var extensions = {
@@ -91,86 +95,46 @@ export var ViewHelper = EmberObject.create({
     }
 
     if (hash.attributeBindings) {
-      Ember.assert("Setting 'attributeBindings' via Handlebars is not allowed. Please subclass Ember.View and set it there instead.");
+      Ember.assert("Setting 'attributeBindings' via Handlebars is not allowed." +
+                   " Please subclass Ember.View and set it there instead.");
       extensions.attributeBindings = null;
     }
 
     // Set the proper context for all bindings passed to the helper. This applies to regular attribute bindings
     // as well as class name bindings. If the bindings are local, make them relative to the current context
     // instead of the view.
-    var path;
+
     var hashKeys = keys(hash);
 
     for (var i = 0, l = hashKeys.length; i < l; i++) {
-      var prop      = hashKeys[i];
-      var isBinding = IS_BINDING.test(prop);
+      var prop = hashKeys[i];
 
       if (prop !== 'classNameBindings') {
         extensions[prop] = hash[prop];
       }
-
-      // Test if the property ends in "Binding"
-      if (isBinding && typeof extensions[prop] === 'string') {
-        path = this.contextualizeBindingPath(hash[prop], data);
-        if (path) {
-          extensions[prop] = path;
-        }
-      }
     }
 
-    if (extensions.classNameBindings) {
-      // Evaluate the context of class name bindings:
-      for (var j = 0, k = extensions.classNameBindings.length; j < k; j++) {
-        var full = extensions.classNameBindings[j];
-
-        if (typeof full === 'string') {
-          // Contextualize the path of classNameBinding so this:
-          //
-          //     classNameBinding="isGreen:green"
-          //
-          // is converted to this:
-          //
-          //     classNameBinding="_parentView.context.isGreen:green"
-          var parsedPath = View._parsePropertyPath(full);
-          if (parsedPath.path !== '') {
-            path = this.contextualizeBindingPath(parsedPath.path, data);
-            if (path) {
-              extensions.classNameBindings[j] = path + parsedPath.classNames;
-            }
-          }
+    var classNameBindings = extensions.classNameBindings;
+    if (classNameBindings) {
+      for (var j = 0; j < classNameBindings.length; j++) {
+        var parsedPath = View._parsePropertyPath(classNameBindings[j]);
+        if (parsedPath.path === '') {
+          parsedPath.stream = new SimpleStream(true);
+        } else {
+          parsedPath.stream = view.getStream(parsedPath.path);
         }
+        classNameBindings[j] = parsedPath;
       }
     }
 
     return extensions;
   },
 
-  // Transform bindings from the current context to a context that can be evaluated within the view.
-  // Returns null if the path shouldn't be changed.
-  //
-  // TODO: consider the addition of a prefix that would allow this method to return `path`.
-  contextualizeBindingPath: function(path, data) {
-    var normalized = normalizePath(null, path, data);
-    if (normalized.isKeyword) {
-      return 'templateData.keywords.' + path;
-    } else if (isGlobalPath(path)) {
-      return null;
-    } else if (path === 'this' || path === '') {
-      return '_parentView.context';
-    } else {
-      return '_parentView.context.' + path;
-    }
-  },
-
-  helper: function(thisContext, path, options) {
+  helper: function(thisContext, newView, options) {
     var data = options.data;
     var fn   = options.fn;
-    var newView;
 
-    makeBindings(thisContext, options);
-
-    var container = this.container || (data && data.view && data.view.container);
-    newView = handlebarsGetView(thisContext, path, container, options);
+    makeBindings(options);
 
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;
@@ -178,7 +142,8 @@ export var ViewHelper = EmberObject.create({
     var newViewProto = newView.proto();
 
     if (fn) {
-      Ember.assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !get(newViewProto, 'templateName'));
+      Ember.assert("You cannot provide a template block if you also specified a templateName",
+                   !get(viewOptions, 'templateName') && !get(newViewProto, 'templateName'));
       viewOptions.template = fn;
     }
 
@@ -195,7 +160,7 @@ export var ViewHelper = EmberObject.create({
     var data = options.data;
     var fn   = options.fn;
 
-    makeBindings(thisContext, options);
+    makeBindings(options);
 
     Ember.assert(
       'Only a instance of a view may be passed to the ViewHelper.instanceHelper',
@@ -207,13 +172,15 @@ export var ViewHelper = EmberObject.create({
     viewOptions.templateData = data;
 
     if (fn) {
-      Ember.assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !get(newView, 'templateName'));
+      Ember.assert("You cannot provide a template block if you also specified a templateName",
+                   !get(viewOptions, 'templateName') && !get(newView, 'templateName'));
       viewOptions.template = fn;
     }
 
     // We only want to override the `_context` computed property if there is
     // no specified controller. See View#_context for more information.
-    if (!newView.controller && !newView.controllerBinding && !viewOptions.controller && !viewOptions.controllerBinding) {
+    if (!newView.controller && !newView.controllerBinding &&
+        !viewOptions.controller && !viewOptions.controllerBinding) {
       viewOptions._context = thisContext;
     }
 
@@ -399,21 +366,36 @@ export var ViewHelper = EmberObject.create({
   @param {Hash} options
   @return {String} HTML string
 */
-export function viewHelper(path, options) {
+export function viewHelper(path) {
   Ember.assert("The view helper only takes a single argument", arguments.length <= 2);
+
+  var options = arguments[arguments.length - 1];
+  var types = options.types;
+  var view = options.data.view;
+  var container = view.container || view._keywords.view.value().container;
+  var viewClass;
 
   // If no path is provided, treat path param as options
   // and get an instance of the registered `view:toplevel`
-  if (path && path.data && path.data.isRenderData) {
-    options = path;
-    if (options.data && options.data.view && options.data.view.container) {
-      path = options.data.view.container.lookupFactory('view:toplevel');
+  if (arguments.length === 1) {
+    if (container) {
+      viewClass = container.lookupFactory('view:toplevel');
     } else {
-      path = View;
+      viewClass = View;
     }
+  } else {
+    var pathStream;
+    if (typeof path === 'string' && types[0] === 'ID') {
+      pathStream = view.getStream(path);
+      Ember.deprecate('Resolved the view "'+path+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}. http://emberjs.com/guides/deprecations#toc_global-lookup-of-views', !pathStream.isGlobal());
+    } else {
+      pathStream = path;
+    }
+
+    viewClass = readViewFactory(pathStream, container);
   }
 
   options.helperName = options.helperName || 'view';
 
-  return ViewHelper.helper(this, path, options);
+  return ViewHelper.helper(this, viewClass, options);
 }

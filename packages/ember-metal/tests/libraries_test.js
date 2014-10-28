@@ -1,4 +1,3 @@
-import Ember from 'ember-metal';
 import libraries from "ember-metal/libraries";
 
 var libs = libraries;

@@ -3,29 +3,19 @@ import { create } from 'ember-metal/platform';
 import renderBuffer from "ember-views/system/render_buffer";
 import run from "ember-metal/run_loop";
 import { set } from "ember-metal/property_set";
-import { _instrumentStart, subscribers } from "ember-metal/instrumentation";
+import {
+  _instrumentStart,
+  subscribers
+} from "ember-metal/instrumentation";
 
 function EmberRenderer() {
   this.buffer = renderBuffer();
-  Renderer.call(this);
+  this._super$constructor();
 }
+
 EmberRenderer.prototype = create(Renderer.prototype);
 EmberRenderer.prototype.constructor = EmberRenderer;
-
-var BAD_TAG_NAME_TEST_REGEXP = /[^a-zA-Z0-9\-]/;
-var BAD_TAG_NAME_REPLACE_REGEXP = /[^a-zA-Z0-9\-]/g;
-
-function stripTagName(tagName) {
-  if (!tagName) {
-    return tagName;
-  }
-
-  if (!BAD_TAG_NAME_TEST_REGEXP.test(tagName)) {
-    return tagName;
-  }
-
-  return tagName.replace(BAD_TAG_NAME_REPLACE_REGEXP, '');
-}
+EmberRenderer.prototype._super$constructor = Renderer;
 
 EmberRenderer.prototype.scheduleRender =
   function EmberRenderer_scheduleRender(ctx, fn) {
@@ -35,25 +25,6 @@ EmberRenderer.prototype.scheduleRender =
 EmberRenderer.prototype.cancelRender =
   function EmberRenderer_cancelRender(id) {
     run.cancel(id);
-  };
-
-EmberRenderer.prototype.createChildViewsMorph =
-  function EmberRenderer_createChildViewsMorph(view, _element) {
-    if (view.createChildViewsMorph) {
-      return view.createChildViewsMorph(_element);
-    }
-    var element = _element;
-    if (view.tagName === '') {
-      if (view._morph) {
-        view._childViewsMorph = view._morph;
-      } else {
-        element = document.createDocumentFragment();
-        view._childViewsMorph = this._dom.appendMorph(element);
-      }
-    } else {
-      view._childViewsMorph = this._dom.createMorph(element, element.lastChild, null);
-    }
-    return element;
   };
 
 EmberRenderer.prototype.createElement =
@@ -90,10 +61,6 @@ EmberRenderer.prototype.createElement =
     }
 
     var element = buffer.element();
-
-    if (view.isContainer) {
-      this.createChildViewsMorph(view, element);
-    }
 
     view.buffer = null;
     if (element && element.nodeType === 1) {

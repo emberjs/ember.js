@@ -9,14 +9,13 @@ cache:
 
 install:
   - "npm install"
-  - "./bin/generate_docs.js"
+  - "npm run docs"
 
 after_success:
   - "./bin/publish_to_s3.js"
   - "./bin/bower_ember_build"
 script:
   - npm test
-  - npm run-script test-node
 
 env:
   global:

@@ -50,7 +50,7 @@ TrackedArray.prototype = {
     var arrayOperation = match.operation;
     var arrayOperationIndex = match.index;
     var arrayOperationRangeStart = match.rangeStart;
-    var composeIndex, splitIndex, splitItems, splitArrayOperation, newArrayOperation;
+    var composeIndex, newArrayOperation;
 
     newArrayOperation = new ArrayOperation(INSERT, count, newItems);
 
@@ -83,7 +83,6 @@ TrackedArray.prototype = {
     if (count < 1) { return; }
 
     var match = this._findArrayOperation(index);
-    var arrayOperation = match.operation;
     var arrayOperationIndex = match.index;
     var arrayOperationRangeStart = match.rangeStart;
     var newArrayOperation, composeIndex;

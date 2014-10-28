@@ -1,7 +1,5 @@
 import Ember from "ember-metal/core"; // assert
-import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { onLoad } from "ember-runtime/system/lazy_load";
 import ContainerView from "ember-views/views/container_view";
 import { _Metamorph } from "ember-handlebars/views/metamorph_view";
 import { viewHelper } from "ember-handlebars/helpers/view";
@@ -83,7 +81,6 @@ export { OutletView };
 */
 export function outletHelper(property, options) {
   var outletSource;
-  var container;
   var viewName;
   var viewClass;
   var viewFullName;
@@ -93,26 +90,30 @@ export function outletHelper(property, options) {
     property = 'main';
   }
 
-  container = options.data.view.container;
+  var view = options.data.view;
+  var container = view.container;
 
-  outletSource = options.data.view;
+  outletSource = view;
   while (!outletSource.get('template.isTop')) {
     outletSource = outletSource.get('_parentView');
   }
+  set(view, 'outletSource', outletSource);
 
   // provide controller override
   viewName = options.hash.view;
 
   if (viewName) {
     viewFullName = 'view:' + viewName;
-    Ember.assert("Using a quoteless view parameter with {{outlet}} is not supported. Please update to quoted usage '{{outlet \"" + viewName + "\"}}.", options.hashTypes.view !== 'ID');
+    Ember.assert("Using a quoteless view parameter with {{outlet}} is not supported." +
+                 " Please update to quoted usage '{{outlet \"" + viewName + "\"}}.", options.hashTypes.view !== 'ID');
     Ember.assert("The view name you supplied '" + viewName + "' did not resolve to a view.", container.has(viewFullName));
   }
 
   viewClass = viewName ? container.lookupFactory(viewFullName) : options.hash.viewClass || OutletView;
+  options.types = [ 'ID' ];
 
-  options.data.view.set('outletSource', outletSource);
   options.hash.currentViewBinding = '_view.outletSource._outlets.' + property;
+  options.hashTypes.currentViewBinding = 'STRING';
 
   options.helperName = options.helperName || 'outlet';
 

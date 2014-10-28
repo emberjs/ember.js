@@ -8,7 +8,6 @@ import EmberHandlebars from "ember-handlebars-compiler";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import { A } from "ember-runtime/system/native_array";
 import Container from "ember-runtime/system/container";
-import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import Component from "ember-views/views/component";
 

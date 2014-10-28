@@ -1,5 +1,4 @@
 import Ember from "ember-metal/core";
-import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import {
   meta,
@@ -24,8 +23,8 @@ import {
 @module ember-metal
 */
 
-Ember.warn("The CP_DEFAULT_CACHEABLE flag has been removed and computed properties are always cached by default. Use `volatile` if you don't want caching.", Ember.ENV.CP_DEFAULT_CACHEABLE !== false);
-
+Ember.warn("The CP_DEFAULT_CACHEABLE flag has been removed and computed properties" +
+           "are always cached by default. Use `volatile` if you don't want caching.", Ember.ENV.CP_DEFAULT_CACHEABLE !== false);
 
 var metaFor = meta;
 var a_slice = [].slice;
@@ -121,6 +120,10 @@ function ComputedProperty(func, opts) {
   func.__ember_arity__ = func.length;
   this.func = func;
 
+  this._dependentKeys = undefined;
+  this._suspended = undefined;
+  this._meta = undefined;
+
   this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : true;
   this._dependentKeys = opts && opts.dependentKeys;
   this._readOnly = opts && (opts.readOnly !== undefined || !!opts.readOnly) || false;
@@ -129,9 +132,6 @@ function ComputedProperty(func, opts) {
 ComputedProperty.prototype = new Descriptor();
 
 var ComputedPropertyPrototype = ComputedProperty.prototype;
-ComputedPropertyPrototype._dependentKeys = undefined;
-ComputedPropertyPrototype._suspended = undefined;
-ComputedPropertyPrototype._meta = undefined;
 
 /**
   Properties are cacheable by default. Computed property will automatically

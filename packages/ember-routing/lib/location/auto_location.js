@@ -1,5 +1,4 @@
 import Ember from "ember-metal/core"; // FEATURES
-import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
 import EmberLocation from "ember-routing/location/api";
@@ -334,7 +333,8 @@ export default {
   */
   create: function (options) {
     if (options && options.rootURL) {
-      Ember.assert('rootURL must end with a trailing forward slash e.g. "/app/"', options.rootURL.charAt(options.rootURL.length-1) === '/');
+      Ember.assert('rootURL must end with a trailing forward slash e.g. "/app/"',
+                   options.rootURL.charAt(options.rootURL.length-1) === '/');
       this.rootURL = options.rootURL;
     }
 

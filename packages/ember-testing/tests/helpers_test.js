@@ -1,6 +1,4 @@
 import Ember from "ember-metal/core";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import RSVP from "ember-runtime/ext/rsvp";
@@ -63,33 +61,15 @@ function assertNoHelpers(application, helperContainer) {
 }
 
 function currentRouteName(app){
-  if(Ember.FEATURES.isEnabled('ember-testing-route-helpers')) {
-    return app.testHelpers.currentRouteName();
-  } else {
-    var appController = app.__container__.lookup('controller:application');
-
-    return get(appController, 'currentRouteName');
-  }
+  return app.testHelpers.currentRouteName();
 }
 
 function currentPath(app){
-  if(Ember.FEATURES.isEnabled('ember-testing-route-helpers')) {
-    return app.testHelpers.currentPath();
-  } else {
-    var appController = app.__container__.lookup('controller:application');
-
-    return get(appController, 'currentPath');
-  }
+  return app.testHelpers.currentPath();
 }
 
 function currentURL(app){
-  if(Ember.FEATURES.isEnabled('ember-testing-route-helpers')) {
-    return app.testHelpers.currentURL();
-  } else {
-    var router = app.__container__.lookup('router:main');
-
-    return get(router, 'location').getURL();
-  }
+  return app.testHelpers.currentURL();
 }
 
 QUnit.module("ember-testing Helpers", {
@@ -445,6 +425,43 @@ test("`wait` respects registerWaiters with optional context", function() {
 
 
 });
+
+if (Ember.FEATURES.isEnabled("ember-testing-pause-test")) {
+
+  QUnit.module("ember-testing debugging helpers", {
+    setup: function(){
+      cleanup();
+
+      run(function() {
+        App = EmberApplication.create();
+        App.Router = EmberRouter.extend({
+          location: 'none'
+        });
+
+        App.setupForTesting();
+      });
+
+      App.injectTestHelpers();
+      run(App, 'advanceReadiness');
+    },
+
+    teardown: function(){
+      cleanup();
+    }
+  });
+
+  test("pauseTest pauses", function() {
+    expect(1);
+    function fakeAdapterAsyncStart() {
+      ok(true, 'Async start should be called');
+    }
+
+    Test.adapter.asyncStart = fakeAdapterAsyncStart;
+
+    App.testHelpers.pauseTest();
+  });
+
+}
 
 QUnit.module("ember-testing routing helpers", {
   setup: function(){

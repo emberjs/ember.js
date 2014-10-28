@@ -24,7 +24,7 @@ import { isArray } from "ember-metal/utils";
 */
 
 export function generateControllerFactory(container, controllerName, context) {
-  var Factory, fullName, instance, name, factoryName, controllerType;
+  var Factory, fullName, factoryName, controllerType;
 
   if (context && isArray(context)) {
     controllerType = 'array';

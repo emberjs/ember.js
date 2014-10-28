@@ -2,7 +2,6 @@
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import {computed} from "ember-metal/computed";
-import Namespace from "ember-runtime/system/namespace";
 import Container from "ember-runtime/system/container";
 import EmberHandlebars from "ember-handlebars-compiler";
 import { get } from "ember-metal/property_get";

@@ -266,7 +266,6 @@ test("it supports itemController", function() {
 
   assertText(view, "controller:Trek Glowackicontroller:Geoffrey Grosenbach");
 
-  var controller = view.get('_childViews')[0].get('controller');
   strictEqual(view.get('_childViews')[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
 });
 
@@ -441,7 +440,7 @@ test("it defers all normalization of itemView names to the resolver", function()
 test("it supports {{itemViewClass=}} with global (DEPRECATED)", function() {
   run(function() { view.destroy(); }); // destroy existing view
   view = EmberView.create({
-    template: templateFor('{{each view.people itemViewClass="MyView"}}'),
+    template: templateFor('{{each view.people itemViewClass=MyView}}'),
     people: people
   });
 
@@ -474,7 +473,7 @@ test("it supports {{itemViewClass=}} via container", function() {
 test("it supports {{itemViewClass=}} with tagName (DEPRECATED)", function() {
   run(function() { view.destroy(); }); // destroy existing view
   view = EmberView.create({
-      template: templateFor('{{each view.people itemViewClass="MyView" tagName="ul"}}'),
+      template: templateFor('{{each view.people itemViewClass=MyView tagName="ul"}}'),
       people: people
   });
 
@@ -726,7 +725,6 @@ test("itemController specified in template with name binding does not change con
 
   assertText(view, "controller:parentController - controller:Trek Glowacki - controller:parentController - controller:Geoffrey Grosenbach - ");
 
-  var controller = view.get('_childViews')[0].get('controller');
   strictEqual(view.get('_childViews')[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
 });
 

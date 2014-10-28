@@ -1,7 +1,6 @@
 import Ember from "ember-metal/core"; // Ember.deprecate;
 
 import EmberHandlebars from "ember-handlebars-compiler";
-var helpers = EmberHandlebars.helpers;
 /**
 @module ember
 @submodule ember-handlebars
@@ -14,9 +13,10 @@ var helpers = EmberHandlebars.helpers;
   @param {String} templateName the template to render
 */
 export default function templateHelper(name, options) {
-  Ember.deprecate("The `template` helper has been deprecated in favor of the `partial` helper. Please use `partial` instead, which will work the same way.");
+  Ember.deprecate("The `template` helper has been deprecated in favor of the `partial` helper." +
+                  " Please use `partial` instead, which will work the same way.");
 
   options.helperName = options.helperName || 'template';
 
-  return helpers.partial.apply(this, arguments);
+  return EmberHandlebars.helpers.partial.apply(this, arguments);
 }

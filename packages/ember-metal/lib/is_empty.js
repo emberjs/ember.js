@@ -57,7 +57,7 @@ function isEmpty(obj) {
   return false;
 }
 
-export var empty = Ember.deprecateFunc("Ember.empty is deprecated. Please use Ember.isEmpty instead.", isEmpty);
+var empty = Ember.deprecateFunc("Ember.empty is deprecated. Please use Ember.isEmpty instead.", isEmpty);
 
 export default isEmpty;
 export {

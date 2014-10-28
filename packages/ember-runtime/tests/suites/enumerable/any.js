@@ -68,7 +68,6 @@ suite.test('any should be aliased to some', function() {
       var anyFound = [];
       var someFound = [];
       var cnt = ary.length - 2;
-      var exp = cnt;
       var anyResult, someResult;
 
   anyResult = obj.any(function(i) { anyFound.push(i); return false; });

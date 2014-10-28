@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core"; // Ember.Logger, Ember.LOG_BINDINGS, assert
 import { get } from "ember-metal/property_get";
-import { set, trySet } from "ember-metal/property_set";
+import { trySet } from "ember-metal/property_set";
 import { guidFor } from "ember-metal/utils";
 import {
   addObserver,

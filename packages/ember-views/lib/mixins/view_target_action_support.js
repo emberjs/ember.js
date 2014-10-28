@@ -1,9 +1,6 @@
 import { Mixin } from 'ember-metal/mixin';
 import TargetActionSupport from "ember-runtime/mixins/target_action_support";
-
-// ES6TODO: computed should have its own export path so you can do import {defaultTo} from computed
-import { computed } from "ember-metal/computed";
-var alias = computed.alias;
+import alias from "ember-metal/alias";
 
 /**
 `Ember.ViewTargetActionSupport` is a mixin that can be included in a

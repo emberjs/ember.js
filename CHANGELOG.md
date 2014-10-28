@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### Master
+
+* [BREAKING] Require Handlebars 2.0. See [blog post](http://emberjs.com/blog/2014/10/16/handlebars-update.html) for details.
+
 ### Ember 1.8.0 (October, 28, 2014)
 
 * [BUGFIX] Ensure published builds do not use `define` or `require` internally.

@@ -3,7 +3,6 @@ import {get} from 'ember-metal/property_get';
 import {guidFor} from "ember-metal/utils";
 
 var suite = SuiteModuleBuilder.create();
-var global = this;
 
 suite.module('forEach');
 

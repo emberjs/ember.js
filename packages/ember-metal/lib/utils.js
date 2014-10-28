@@ -3,7 +3,7 @@ import {
   defineProperty as o_defineProperty,
   canDefineNonEnumerableProperties,
   hasPropertyAccessors,
-  create
+  create as o_create
 } from "ember-metal/platform";
 
 import {
@@ -46,7 +46,6 @@ export function uuid() {
 */
 var GUID_PREFIX = 'ember';
 
-var o_create = create;
 // Used for guid generation...
 var numberCache  = [];
 var stringCache  = {};
@@ -282,7 +281,6 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   @return {Object} the meta hash for an object
 */
 function meta(obj, writable) {
-
   var ret = obj['__ember_meta__'];
   if (writable===false) return ret || EMPTY_META;
 

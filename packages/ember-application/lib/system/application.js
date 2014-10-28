@@ -2,26 +2,26 @@
 @module ember
 @submodule ember-application
 */
+import DAG from 'dag-map';
+import Container from 'container/container';
+
 
 import Ember from "ember-metal"; // Ember.FEATURES, Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { runLoadHooks } from "ember-runtime/system/lazy_load";
-import DAG from "ember-application/system/dag";
 import Namespace from "ember-runtime/system/namespace";
 import DeferredMixin from "ember-runtime/mixins/deferred";
 import DefaultResolver from "ember-application/system/resolver";
 import { create } from "ember-metal/platform";
 import run from "ember-metal/run_loop";
 import { canInvoke } from "ember-metal/utils";
-import Container from 'container/container';
 import Controller from "ember-runtime/controllers/controller";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import SelectView from "ember-handlebars/controls/select";
 import EventDispatcher from "ember-views/system/event_dispatcher";
-//import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
 import jQuery from "ember-views/system/jquery";
 import Route from "ember-routing/system/route";
 import Router from "ember-routing/system/router";
@@ -31,12 +31,18 @@ import AutoLocation from "ember-routing/location/auto_location";
 import NoneLocation from "ember-routing/location/none_location";
 import BucketCache from "ember-routing/system/cache";
 
+// this is technically incorrect (per @wycats)
+// it should work properly with:
+// `import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';` but
+// es6-module-transpiler 0.4.0 eagerly grabs the module (which is undefined)
+
+import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
+
 import {
   K
 } from 'ember-metal/core';
 import EmberHandlebars from "ember-handlebars-compiler";
 
-var ContainerDebugAdapter;
 function props(obj) {
   var properties = [];
 
@@ -256,7 +262,9 @@ var Application = Namespace.extend(DeferredMixin, {
   _readinessDeferrals: 1,
 
   init: function() {
-    if (!this.$) { this.$ = jQuery; }
+    if (!this.$) {
+      this.$ = jQuery;
+    }
     this.__container__ = this.buildContainer();
 
     this.Router = this.defaultRouter();
@@ -667,7 +675,7 @@ var Application = Namespace.extend(DeferredMixin, {
     var container = this.__container__;
     var graph = new DAG();
     var namespace = this;
-    var name, initializer;
+    var initializer;
 
     for (var i = 0; i < initializers.length; i++) {
       initializer = initializersByName[initializers[i]];
@@ -1000,8 +1008,6 @@ Application.reopenClass({
     container.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
     // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
-    // ES6TODO: resolve this via import once ember-application package is ES6'ed
-    if (!ContainerDebugAdapter) { ContainerDebugAdapter = requireModule('ember-extension-support/container_debug_adapter')['default']; }
     container.register('container-debug-adapter:main', ContainerDebugAdapter);
 
     return container;

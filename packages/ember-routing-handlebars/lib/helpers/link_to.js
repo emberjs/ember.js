@@ -1,24 +1,21 @@
 import Ember from "ember-metal/core"; // FEATURES, Logger, Handlebars, warn, assert
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
 import { computed } from "ember-metal/computed";
 
-import { onLoad } from "ember-runtime/system/lazy_load";
 import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
+import ControllerMixin from "ember-runtime/mixins/controller";
 import keys from "ember-metal/keys";
 import { isSimpleClick } from "ember-views/system/utils";
 import EmberComponent from "ember-views/views/component";
-import EmberHandlebars from "ember-handlebars";
 import { viewHelper } from "ember-handlebars/helpers/view";
-import EmberRouter from "ember-routing/system/router";
-import {
-  resolveParams,
-  resolvePaths,
-  routeArgs
-} from "ember-routing-handlebars/helpers/shared";
+import { routeArgs } from "ember-routing/utils";
+import { stringifyValue } from "ember-handlebars/ext";
+import { read } from "ember-metal/streams/read";
+
+import 'ember-handlebars';
 
 /**
 @module ember
@@ -26,8 +23,6 @@ import {
 */
 
 var slice = [].slice;
-
-requireModule('ember-handlebars');
 
 var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
   var req = 0;
@@ -43,14 +38,6 @@ var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
 var QueryParams = EmberObject.extend({
   values: null
 });
-
-function getResolvedPaths(options) {
-
-  var types = options.options.types;
-  var data = options.options.data;
-
-  return resolvePaths(options.context, options.params, { types: types, data: data });
-}
 
 /**
   `Ember.LinkView` renders an element whose `click` event triggers a
@@ -238,40 +225,33 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
    @since 1.3.0
   **/
   _setupPathObservers: function(){
-    var helperParameters = this.parameters;
-    var linkTextPath = helperParameters.options.linkTextPath;
-    var paths = getResolvedPaths(helperParameters);
-    var length = paths.length;
-    var path, i, normalizedPath;
+    var params = this.params;
 
-    if (linkTextPath) {
-      normalizedPath = getNormalizedPath(linkTextPath, helperParameters);
-      this.registerObserver(normalizedPath.root, normalizedPath.path, this, this.rerender);
+    var scheduledRerender = this._wrapAsScheduled(this.rerender);
+    var scheduledParamsChanged = this._wrapAsScheduled(this._paramsChanged);
+
+    if (this.linkTitle) {
+      this.linkTitle.subscribe(scheduledRerender, this);
     }
 
-    for(i=0; i < length; i++) {
-      path = paths[i];
-      if (null === path) {
-        // A literal value was provided, not a path, so nothing to observe.
-        continue;
+    for (var i = 0; i < params.length; i++) {
+      var param = params[i];
+      if (param && param.isStream) {
+        param.subscribe(scheduledParamsChanged, this);
       }
-
-      normalizedPath = getNormalizedPath(path, helperParameters);
-      this.registerObserver(normalizedPath.root, normalizedPath.path, this, this._paramsChanged);
     }
 
     var queryParamsObject = this.queryParamsObject;
     if (queryParamsObject) {
       var values = queryParamsObject.values;
-
-      // Install observers for all of the hash options
-      // provided in the (query-params) subexpression.
       for (var k in values) {
-        if (!values.hasOwnProperty(k)) { continue; }
+        if (!values.hasOwnProperty(k)) {
+          continue;
+        }
 
-        if (queryParamsObject.types[k] === 'ID') {
-          normalizedPath = getNormalizedPath(values[k], helperParameters);
-          this.registerObserver(normalizedPath.root, normalizedPath.path, this, this._paramsChanged);
+        var value = values[k];
+        if (value && value.isStream) {
+          value.subscribe(scheduledParamsChanged, this);
         }
       }
     }
@@ -502,20 +482,20 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     @return {Array}
    */
   resolvedParams: computed('router.url', function() {
-    var parameters = this.parameters;
-    var options = parameters.options;
-    var types = options.types;
-    var data = options.data;
-    var targetRouteName, models;
-    var onlyQueryParamsSupplied = (parameters.params.length === 0);
+    var params = this.params;
+    var targetRouteName;
+    var models = [];
+    var onlyQueryParamsSupplied = (params.length === 0);
 
     if (onlyQueryParamsSupplied) {
       var appController = this.container.lookup('controller:application');
       targetRouteName = get(appController, 'currentRouteName');
-      models = [];
     } else {
-      models = resolveParams(parameters.context, parameters.params, { types: types, data: data });
-      targetRouteName = models.shift();
+      targetRouteName = read(params[0]);
+
+      for (var i = 1; i < params.length; i++) {
+        models.push(read(params[i]));
+      }
     }
 
     var suppliedQueryParams = getResolvedQueryParams(this, targetRouteName);
@@ -878,24 +858,33 @@ if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
 function linkToHelper(name) {
   var options = slice.call(arguments, -1)[0];
   var params = slice.call(arguments, 0, -1);
+  var view = options.data.view;
   var hash = options.hash;
+  var hashTypes = options.hashTypes;
+  var types = options.types;
+  var shouldEscape = !hash.unescaped;
+  var queryParamsObject;
 
   Ember.assert("You must provide one or more parameters to the link-to helper.", params.length);
 
   if (params[params.length - 1] instanceof QueryParams) {
-    hash.queryParamsObject = params.pop();
+    hash.queryParamsObject = queryParamsObject = params.pop();
   }
 
-  hash.disabledBinding = hash.disabledWhen;
+  if (hash.disabledWhen) {
+    hash.disabledBinding = hash.disabledWhen;
+    hashTypes.disabledBinding = hashTypes.disabledWhen;
+    delete hash.disabledWhen;
+    delete hashTypes.disabledWhen;
+  }
 
   if (!options.fn) {
     var linkTitle = params.shift();
-    var linkType = options.types.shift();
-    var context = this;
-    if (linkType === 'ID') {
-      options.linkTextPath = linkTitle;
+    var linkTitleType = types.shift();
+    if (linkTitleType === 'ID') {
+      hash.linkTitle = linkTitle = view.getStream(linkTitle);
       options.fn = function() {
-        return EmberHandlebars.getEscaped(context, linkTitle, options);
+        return stringifyValue(linkTitle.value(), shouldEscape);
       };
     } else {
       options.fn = function() {
@@ -904,11 +893,24 @@ function linkToHelper(name) {
     }
   }
 
-  hash.parameters = {
-    context: this,
-    options: options,
-    params: params
-  };
+  // Setup route & param streams
+  for (var i = 0; i < params.length; i++) {
+    var paramPath = params[i];
+    if (types[i] === 'ID') {
+      var lazyValue = view.getStream(paramPath);
+
+      // TODO: Consider a better approach to unwrapping controllers.
+      if (paramPath !== 'controller') {
+        while (ControllerMixin.detect(lazyValue.value())) {
+          paramPath = (paramPath === '') ? 'model' : paramPath + '.model';
+          lazyValue = view.getStream(paramPath);
+        }
+      }
+      params[i] = lazyValue;
+    }
+  }
+
+  hash.params = params;
 
   options.helperName = options.helperName || 'link-to';
 
@@ -916,6 +918,13 @@ function linkToHelper(name) {
 }
 
 /**
+  This is a sub-expression to be used in conjunction with the link-to helper.
+  It will supply url query parameters to the target route.
+
+  Example
+
+  {#link-to 'posts' (query-params direction="asc")}}Sort{{/link-to}}
+
   @method query-params
   @for Ember.Handlebars.helpers
   @param {Object} hash takes a hash of query parameters
@@ -924,9 +933,18 @@ function linkToHelper(name) {
 export function queryParamsHelper(options) {
   Ember.assert(fmt("The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName='%@') as opposed to just (query-params '%@')", [options, options]), arguments.length === 1);
 
+  var view = options.data.view;
+  var hash = options.hash;
+  var hashTypes = options.hashTypes;
+
+  for (var k in hash) {
+    if (hashTypes[k] === 'ID') {
+      hash[k] = view.getStream(hash[k]);
+    }
+  }
+
   return QueryParams.create({
-    values: options.hash,
-    types: options.hashTypes
+    values: options.hash
   });
 }
 
@@ -941,35 +959,24 @@ export function queryParamsHelper(options) {
   @return {String} HTML string
 */
 function deprecatedLinkToHelper() {
-  Ember.warn("The 'linkTo' view helper is deprecated in favor of 'link-to'");
+  Ember.deprecate("The 'linkTo' view helper is deprecated in favor of 'link-to'");
+
   return linkToHelper.apply(this, arguments);
 }
 
 function getResolvedQueryParams(linkView, targetRouteName) {
-  var helperParameters = linkView.parameters;
   var queryParamsObject = linkView.queryParamsObject;
   var resolvedQueryParams = {};
 
   if (!queryParamsObject) { return resolvedQueryParams; }
-  var rawParams = queryParamsObject.values;
 
-  for (var key in rawParams) {
-    if (!rawParams.hasOwnProperty(key)) { continue; }
-
-    var value = rawParams[key];
-    var type = queryParamsObject.types[key];
-
-    if (type === 'ID') {
-      var normalizedPath = getNormalizedPath(value, helperParameters);
-      value = EmberHandlebars.get(normalizedPath.root, normalizedPath.path, helperParameters.options);
-    }
-    resolvedQueryParams[key] = value;
+  var values = queryParamsObject.values;
+  for (var key in values) {
+    if (!values.hasOwnProperty(key)) { continue; }
+    resolvedQueryParams[key] = read(values[key]);
   }
-  return resolvedQueryParams;
-}
 
-function getNormalizedPath(path, helperParameters) {
-  return EmberHandlebars.normalizePath(helperParameters.context, path, helperParameters.options.data);
+  return resolvedQueryParams;
 }
 
 function paramsAreLoaded(params) {

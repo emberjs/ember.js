@@ -9,7 +9,6 @@ Ember Application
 @requires ember-views, ember-routing
 */
 
-import DAG from 'ember-application/system/dag';
 import {
   Resolver,
   default as DefaultResolver
@@ -18,7 +17,6 @@ import Application from 'ember-application/system/application';
 import 'ember-application/ext/controller'; // side effect of extending ControllerMixin
 
 Ember.Application = Application;
-Ember.DAG = DAG;
 Ember.Resolver = Resolver;
 Ember.DefaultResolver = DefaultResolver;
 
