@@ -1,3 +1,4 @@
+import Ember from "ember-metal/core";
 import Renderer from 'ember-metal-views/renderer';
 import { create } from 'ember-metal/platform';
 import renderBuffer from "ember-views/system/render_buffer";
@@ -63,9 +64,14 @@ EmberRenderer.prototype.createElement =
     // provided buffer operation (for example, `insertAfter` will
     // insert a new buffer after the "parent buffer").
     var tagName = view.tagName;
+    var classNameBindings = view.classNameBindings;
+    var taglessViewWithClassBindings = tagName === '' && classNameBindings.length > 0;
+
     if (tagName === null || tagName === undefined) {
       tagName = 'div';
     }
+
+    Ember.assert('You cannot use `classNameBindings` on a tag-less view: ' + view.toString(), !taglessViewWithClassBindings);
 
     var buffer = view.buffer = this.buffer;
     buffer.reset(tagName, contextualElement);
@@ -74,7 +80,7 @@ EmberRenderer.prototype.createElement =
       view.beforeRender(buffer);
     }
 
-    if (view.tagName !== '') {
+    if (tagName !== '') {
       if (view.applyAttributesToBuffer) {
         view.applyAttributesToBuffer(buffer);
       }
