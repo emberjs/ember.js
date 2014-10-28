@@ -15,19 +15,22 @@ var jshintTree = require('broccoli-jshint');
 var replace = require('broccoli-replace');
 var es3recast = require('broccoli-es3-safe-recast');
 var useStrictRemover = require('broccoli-use-strict-remover');
+var derequire = require('broccoli-derequire');
 
 var getVersion = require('git-repo-version');
 
-// To create fast production builds (without ES3 support, minification, or JSHint)
+// To create fast production builds (without ES3 support, minification, derequire, or JSHint)
 // run the following:
 //
-// DISABLE_ES3=true DISABLE_JSHINT=true DISABLE_MIN=true ember serve --environment=production
+// DISABLE_ES3=true DISABLE_JSHINT=true DISABLE_MIN=true DISABLE_DEREQUIRE=true ember serve --environment=production
 
 var env = process.env.EMBER_ENV || 'development';
 var disableJSHint = !!process.env.DISABLE_JSHINT || false;
 var disableES3    = !!process.env.DISABLE_ES3 || false;
 var disableMin    = !!process.env.DISABLE_MIN || false;
 var disableDefeatureify;
+
+var disableDerequire = !!process.env.DISABLE_DEREQUIRE || false;
 
 // We must increase the maxTickDepth in order to prevent errors from node
 process.maxTickDepth = 2000;
@@ -193,11 +196,17 @@ function concatES6(inputTrees, options) {
 
   // concats the local `concatTrees` variable see concat options here:
   // https://github.com/rlivsey/broccoli-concat/blob/master/README.md
-  return concat(mergeTrees(concatTrees), {
+  var concattedES6 =  concat(mergeTrees(concatTrees), {
     wrapInEval: options.wrapInEval,
     inputFiles: inputFiles,
     outputFile: destFile
   });
+
+  if (options.derequire && !disableDerequire) {
+     concattedES6 =  derequire(concattedES6);
+  }
+
+  return concattedES6;
 }
 
 /*
@@ -598,6 +607,7 @@ function vendoredEs6Package(packageName) {
 */
 var compiledSource = concatES6(devSourceTrees, {
   es3Safe: env !== 'development',
+  derequire: env !== 'development',
   includeLoader: true,
   bootstrapModule: 'ember',
   vendorTrees: vendorTrees,
@@ -649,6 +659,7 @@ function buildRuntimeTree() {
 // ~10%.  See defeatureify.
 var prodCompiledSource = concatES6(prodSourceTrees, {
   es3Safe: env !== 'development',
+  derequire: env !== 'development',
   includeLoader: true,
   bootstrapModule: 'ember',
   vendorTrees: vendorTrees,
@@ -663,6 +674,7 @@ var prodCompiledSource = concatES6(prodSourceTrees, {
 // Generates ember-testing.js to allow testing against production Ember builds.
 var testingCompiledSource = concatES6(testingSourceTrees, {
   es3Safe: env !== 'development',
+  derequire: env !== 'development',
   includeLoader: true,
   bootstrapModule: 'ember-testing',
   inputFiles: ['**/*.js'],
@@ -682,6 +694,7 @@ minCompiledSource = uglifyJavaScript(minCompiledSource, {
 // Take testsTrees and compile them for consumption in the browser test suite.
 var compiledTests = concatES6(testTrees, {
   es3Safe: env !== 'development',
+  derequire: env !== 'development',
   includeLoader: true,
   inputFiles: ['**/*.js'],
   destFile: '/ember-tests.js'
@@ -691,6 +704,7 @@ var compiledTests = concatES6(testTrees, {
 // to be used by production builds
 var prodCompiledTests = concatES6(testTrees, {
   es3Safe: env !== 'development',
+  derequire: env !== 'development',
   includeLoader: true,
   inputFiles: ['**/*.js'],
   destFile: '/ember-tests.prod.js',
