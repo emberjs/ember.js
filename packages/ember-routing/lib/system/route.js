@@ -1159,7 +1159,7 @@ var Route = EmberObject.extend(ActionHandler, {
     });
     ```
 
-    The model for the `post` route is `App.Post.find(params.post_id)`.
+    The model for the `post` route is `store.find('post', params.post_id)`.
 
     By default, if your route has a dynamic segment ending in `_id`:
 
@@ -1202,7 +1202,7 @@ var Route = EmberObject.extend(ActionHandler, {
     ```js
     App.PostRoute = Ember.Route.extend({
       model: function(params) {
-        return App.Post.find(params.post_id);
+        return this.store.find('post', params.post_id);
       }
     });
     ```
@@ -1373,7 +1373,7 @@ var Route = EmberObject.extend(ActionHandler, {
     ```js
     App.PhotosRoute = Ember.Route.extend({
       model: function() {
-        return App.Photo.find();
+        return this.store.find('photo');
       },
 
       setupController: function (controller, model) {
