@@ -44,8 +44,8 @@ var SelectOption = View.extend({
   },
 
   selected: computed(function() {
-    var content = get(this, 'content'),
-        selection = get(this, 'parentView.selection');
+    var content = get(this, 'content');
+    var selection = get(this, 'parentView.selection');
     if (get(this, 'parentView.multiple')) {
       return selection && indexOf(selection, content.valueOf()) > -1;
     } else {
@@ -115,7 +115,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view Ember.Select content=names}}
+  {{view "select" content=names}}
   ```
 
   Would result in the following HTML:
@@ -138,10 +138,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view Ember.Select
-         content=names
-         value=selectedName
-  }}
+  {{view "select" content=names value=selectedName}}
   ```
 
   Would result in the following HTML with the `<option>` for 'Tom' selected:
@@ -180,7 +177,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view Ember.Select
+  {{view "select"
          content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"}}
@@ -211,7 +208,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view Ember.Select
+  {{view "select"
          content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
@@ -244,15 +241,12 @@ var SelectOptgroup = CollectionView.extend({
 
   App.ApplicationController = Ember.ObjectController.extend({
     selectedPerson: tom,
-    programmers: [
-      yehuda,
-      tom
-    ]
+    programmers: [ yehuda, tom ]
   });
   ```
 
   ```handlebars
-  {{view Ember.Select
+  {{view "select"
          content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
@@ -281,15 +275,12 @@ var SelectOptgroup = CollectionView.extend({
   ```javascript
   App.ApplicationController = Ember.ObjectController.extend({
     selectedProgrammer: null,
-    programmers: [
-      "Yehuda",
-      "Tom"
-    ]
+    programmers: ["Yehuda", "Tom"]
   });
   ```
 
   ``` handlebars
-  {{view Ember.Select
+  {{view "select"
          content=programmers
          value=selectedProgrammer
   }}
@@ -313,15 +304,12 @@ var SelectOptgroup = CollectionView.extend({
   ```javascript
   App.ApplicationController = Ember.ObjectController.extend({
     selectedProgrammer: null,
-    programmers: [
-      "Yehuda",
-      "Tom"
-    ]
+    programmers: [ "Yehuda", "Tom" ]
   });
   ```
 
   ```handlebars
-  {{view Ember.Select
+  {{view "select"
          content=programmers
          value=selectedProgrammer
          prompt="Please select a name"
@@ -391,7 +379,8 @@ var Select = View.extend({
     Otherwise, this should be a list of objects. For instance:
 
     ```javascript
-    Ember.Select.create({
+    var App = Ember.Application.create();
+    var App.MySelect = Ember.Select.extend({
       content: Ember.A([
           { id: 1, firstName: 'Yehuda' },
           { id: 2, firstName: 'Tom' }
@@ -534,11 +523,11 @@ var Select = View.extend({
   }),
 
   valueDidChange: observer('value', function() {
-    var content = get(this, 'content'),
-        value = get(this, 'value'),
-        valuePath = get(this, 'optionValuePath').replace(/^content\.?/, ''),
-        selectedValue = (valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection')),
-        selection;
+    var content = get(this, 'content');
+    var value = get(this, 'value');
+    var valuePath = get(this, 'optionValuePath').replace(/^content\.?/, '');
+    var selectedValue = (valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection'));
+    var selection;
 
     if (value !== selectedValue) {
       selection = content ? content.find(function(obj) {
@@ -561,9 +550,9 @@ var Select = View.extend({
   },
 
   _changeSingle: function() {
-    var selectedIndex = this.$()[0].selectedIndex,
-        content = get(this, 'content'),
-        prompt = get(this, 'prompt');
+    var selectedIndex = this.$()[0].selectedIndex;
+    var content = get(this, 'content');
+    var prompt = get(this, 'prompt');
 
     if (!content || !get(content, 'length')) { return; }
     if (prompt && selectedIndex === 0) { set(this, 'selection', null); return; }
@@ -574,11 +563,11 @@ var Select = View.extend({
 
 
   _changeMultiple: function() {
-    var options = this.$('option:selected'),
-        prompt = get(this, 'prompt'),
-        offset = prompt ? 1 : 0,
-        content = get(this, 'content'),
-        selection = get(this, 'selection');
+    var options = this.$('option:selected');
+    var prompt = get(this, 'prompt');
+    var offset = prompt ? 1 : 0;
+    var content = get(this, 'content');
+    var selection = get(this, 'selection');
 
     if (!content) { return; }
     if (options) {
@@ -599,23 +588,23 @@ var Select = View.extend({
     var el = this.get('element');
     if (!el) { return; }
 
-    var content = get(this, 'content'),
-        selection = get(this, 'selection'),
-        selectionIndex = content ? indexOf(content, selection) : -1,
-        prompt = get(this, 'prompt');
+    var content = get(this, 'content');
+    var selection = get(this, 'selection');
+    var selectionIndex = content ? indexOf(content, selection) : -1;
+    var prompt = get(this, 'prompt');
 
     if (prompt) { selectionIndex += 1; }
     if (el) { el.selectedIndex = selectionIndex; }
   },
 
   _selectionDidChangeMultiple: function() {
-    var content = get(this, 'content'),
-        selection = get(this, 'selection'),
-        selectedIndexes = content ? indexesOf(content, selection) : [-1],
-        prompt = get(this, 'prompt'),
-        offset = prompt ? 1 : 0,
-        options = this.$('option'),
-        adjusted;
+    var content = get(this, 'content');
+    var selection = get(this, 'selection');
+    var selectedIndexes = content ? indexesOf(content, selection) : [-1];
+    var prompt = get(this, 'prompt');
+    var offset = prompt ? 1 : 0;
+    var options = this.$('option');
+    var adjusted;
 
     if (options) {
       options.each(function() {

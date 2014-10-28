@@ -6,7 +6,8 @@ import { changeProperties } from "ember-metal/property_events";
 
 import EmberView from "ember-views/views/view";
 
-var originalLookup = Ember.lookup, lookup, view;
+var originalLookup = Ember.lookup;
+var lookup, view;
 
 var appendView = function() {
   run(function() { view.appendTo('#qunit-fixture'); });
@@ -105,6 +106,25 @@ test("should update attribute bindings", function() {
   ok(!view.$().attr('nothing'), "removes nothing attribute when null");
   ok(!view.$().attr('notDefined'), "removes notDefined attribute when undefined");
   ok(!view.$().attr('notNumber'), "removes notNumber attribute when NaN");
+});
+
+test("should update attribute bindings on svg", function() {
+  view = EmberView.create({
+    attributeBindings: ['viewBox'],
+    viewBox: null
+  });
+
+  run(function() {
+    view.createElement();
+  });
+
+  equal(view.$().attr('viewBox'), null, "viewBox can be null");
+
+  run(function() {
+    view.set('viewBox', '0 0 100 100');
+  });
+
+  equal(view.$().attr('viewBox'), '0 0 100 100', "viewBox can be updated");
 });
 
 // This comes into play when using the {{#each}} helper. If the

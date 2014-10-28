@@ -2,7 +2,7 @@
 import Ember from 'ember-metal/core';
 import {
   create,
-  platform
+  canDefineNonEnumerableProperties
 } from 'ember-metal/platform';
 import {
   getMeta,
@@ -53,19 +53,8 @@ test("getMeta and setMeta", function() {
 });
 
 QUnit.module("Ember.meta enumerable");
-// Tests fix for https://github.com/emberjs/ember.js/issues/344
-// This is primarily for older browsers such as IE8
-if (platform.defineProperty.isSimulated) {
-  if (Ember.imports.jQuery) {
-    test("meta is not jQuery.isPlainObject", function () {
-      var proto, obj;
-      proto = {foo: 'bar'};
-      equal(jQuery.isPlainObject(meta(proto)), false, 'meta should not be isPlainObject when meta property cannot be marked as enumerable: false');
-      obj = create(proto);
-      equal(jQuery.isPlainObject(meta(obj)), false, 'meta should not be isPlainObject when meta property cannot be marked as enumerable: false');
-    });
-  }
-} else {
+
+if (canDefineNonEnumerableProperties) {
   test("meta is not enumerable", function () {
     var proto, obj, props, prop;
     proto = {foo: 'bar'};
@@ -86,4 +75,16 @@ if (platform.defineProperty.isSimulated) {
       }
     }
   });
+} else {
+  // Tests fix for https://github.com/emberjs/ember.js/issues/344
+  // This is primarily for older browsers such as IE8
+  if (Ember.imports.jQuery) {
+    test("meta is not jQuery.isPlainObject", function () {
+      var proto, obj;
+      proto = {foo: 'bar'};
+      equal(jQuery.isPlainObject(meta(proto)), false, 'meta should not be isPlainObject when meta property cannot be marked as enumerable: false');
+      obj = create(proto);
+      equal(jQuery.isPlainObject(meta(obj)), false, 'meta should not be isPlainObject when meta property cannot be marked as enumerable: false');
+    });
+  }
 }

@@ -43,8 +43,8 @@ function assertHelpers(application, helperContainer, expected){
   if (expected === undefined) { expected = true; }
 
   function checkHelperPresent(helper, expected){
-    var presentInHelperContainer = !!helperContainer[helper],
-        presentInTestHelpers = !!application.testHelpers[helper];
+    var presentInHelperContainer = !!helperContainer[helper];
+    var presentInTestHelpers = !!application.testHelpers[helper];
 
     ok(presentInHelperContainer === expected, "Expected '" + helper + "' to be present in the helper container (defaults to window).");
     ok(presentInTestHelpers === expected, "Expected '" + helper + "' to be present in App.testHelpers.");
@@ -695,6 +695,37 @@ test("`triggerEvent` can be used to trigger arbitrary events", function() {
   }).then(function() {
     equal(event.type, 'blur', 'correct event was triggered');
     equal(event.target.getAttribute('id'), 'foo', 'triggered on the correct element');
+  });
+});
+
+
+test("`fillIn` takes context into consideration", function() {
+  expect(2);
+  var fillIn, find, visit, andThen;
+
+  run(function() {
+    App = EmberApplication.create();
+    App.setupForTesting();
+  });
+
+  App.IndexView = EmberView.extend({
+    template: Ember.Handlebars.compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}')
+  });
+
+  App.injectTestHelpers();
+
+  run(App, App.advanceReadiness);
+
+  fillIn = App.testHelpers.fillIn;
+  find = App.testHelpers.find;
+  visit = App.testHelpers.visit;
+  andThen = App.testHelpers.andThen;
+
+  visit('/');
+  fillIn('.current', '#parent', 'current value');
+  andThen(function() {
+    equal(find('#first').val(), 'current value');
+    equal(find('#second').val(), '');
   });
 });
 

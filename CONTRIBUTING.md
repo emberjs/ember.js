@@ -24,7 +24,9 @@ this bug already.
 demo should be fully operational with the exception of the bug you want to
 demonstrate. The more pared down, the better.
 Preconfigured starting points for the latest Ember: [JSFiddle](http://jsfiddle.net/NQKvy/) | [JSBin](http://emberjs.jsbin.com) (may not work with older IE versions due to MIME type issues).
-Issues with fiddles are prioritized.
+If it is not possible to produce a fiddle, please make sure you provide very
+specific steps to reproduce the error. If we cannot reproduce it, we will
+close the ticket.
 
 4. Your issue will be verified. The provided example will be tested for
 correctness. The Ember team will work with you until your issue can

@@ -5,6 +5,7 @@ import { uuid } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
 
 import { isSimpleClick } from "ember-views/system/utils";
+import ActionManager from "ember-views/system/action_manager";
 import EmberRouter from "ember-routing/system/router";
 
 import EmberHandlebars from "ember-handlebars";
@@ -27,15 +28,17 @@ function args(options, actionName) {
   var ret = [];
   if (actionName) { ret.push(actionName); }
 
-  var types = options.options.types.slice(1),
-      data = options.options.data;
+  var types = options.options.types.slice(1);
+  var data = options.options.data;
 
   return ret.concat(resolveParams(options.context, options.params, { types: types, data: data }));
 }
 
-var ActionHelper = {
-  registeredActions: {}
-};
+var ActionHelper = {};
+
+// registeredActions is re-exported for compatibility with older plugins
+// that were using this undocumented API.
+ActionHelper.registeredActions = ActionManager.registeredActions;
 
 export { ActionHelper };
 
@@ -67,10 +70,20 @@ var isAllowedEvent = function(event, allowedKeys) {
   return allowed;
 };
 
+function isKeyEvent(eventName) {
+  return ['keyUp', 'keyPress', 'keyDown'].indexOf(eventName) !== -1;
+}
+
+function ignoreKeyEvent(eventName, event, keyCode) {
+  var any = 'any';
+  keyCode = keyCode || any;
+  return isKeyEvent(eventName) && keyCode !== any && keyCode !== event.which.toString();
+}
+
 ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
   var actionId = uuid();
 
-  ActionHelper.registeredActions[actionId] = {
+  ActionManager.registeredActions[actionId] = {
     eventName: options.eventName,
     handler: function handleRegisteredAction(event) {
       if (!isAllowedEvent(event, allowedKeys)) { return true; }
@@ -83,9 +96,16 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
         event.stopPropagation();
       }
 
-      var target = options.target,
-          parameters = options.parameters,
-          actionName;
+      var target = options.target;
+      var parameters = options.parameters;
+      var eventName = options.eventName;
+      var actionName;
+
+      if (Ember.FEATURES.isEnabled("ember-routing-handlebars-action-with-key-code")) {
+        if (ignoreKeyEvent(eventName, event, options.withKeyCode)) {
+          return;
+        }
+      }
 
       if (target.target) {
         target = handlebarsGet(target.root, target.target, target.options);
@@ -118,24 +138,25 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
   };
 
   options.view.on('willClearRender', function() {
-    delete ActionHelper.registeredActions[actionId];
+    delete ActionManager.registeredActions[actionId];
   });
 
   return actionId;
 };
 
 /**
-  The `{{action}}` helper registers an HTML element within a template for DOM
-  event handling and forwards that interaction to the templates's controller
-  or supplied `target` option (see 'Specifying a Target').
 
-  If the controller does not implement the event, the event is sent
+  The `{{action}}` helper provides a useful shortcut for registering an HTML
+  element within a template for a single DOM event and forwarding that
+  interaction to the template's controller or specified `target` option.
+
+  If the controller does not implement the specified action, the event is sent
   to the current route, and it bubbles up the route hierarchy from there.
 
-  User interaction with that element will invoke the supplied action name on
-  the appropriate target. Specifying a non-quoted action name will result in
-  a bound property lookup at the time the event will be triggered.
+  For more advanced event handling see [Ember.Component](/api/classes/Ember.Component.html)
 
+
+  ### Use
   Given the following application Handlebars template on the page
 
   ```handlebars
@@ -215,12 +236,6 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
   See `Ember.View` 'Responding to Browser Events' for a list of
   acceptable DOM event names.
 
-  NOTE: Because `{{action}}` depends on Ember's event dispatch system it will
-  only function if an `Ember.EventDispatcher` instance is available. An
-  `Ember.EventDispatcher` instance will be created when a new `Ember.Application`
-  is created. Having an instance of `Ember.Application` will satisfy this
-  requirement.
-
   ### Specifying whitelisted modifier keys
 
   By default the `{{action}}` helper will ignore click event with pressed modifier
@@ -246,7 +261,7 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
 
   There are several possible target objects for `{{action}}` helpers:
 
-  In a typical Ember application, where views are managed through use of the
+  In a typical Ember application, where templates are managed through use of the
   `{{outlet}}` helper, actions will bubble to the current controller, then
   to the current route, and then up the route hierarchy.
 
@@ -294,11 +309,10 @@ ActionHelper.registerAction = function(actionNameOrPath, options, allowedKeys) {
   @param {Hash} options
 */
 export function actionHelper(actionName) {
-  var options = arguments[arguments.length - 1],
-      contexts = a_slice.call(arguments, 1, -1);
-
-  var hash = options.hash,
-      controller = options.data.keywords.controller;
+  var options = arguments[arguments.length - 1];
+  var contexts = a_slice.call(arguments, 1, -1);
+  var hash = options.hash;
+  var controller = options.data.keywords.controller;
 
   // create a hash to pass along to registerAction
   var action = {
@@ -312,6 +326,7 @@ export function actionHelper(actionName) {
     bubbles: hash.bubbles,
     preventDefault: hash.preventDefault,
     target: { options: options },
+    withKeyCode: hash.withKeyCode,
     boundProperty: options.types[0] === "ID"
   };
 

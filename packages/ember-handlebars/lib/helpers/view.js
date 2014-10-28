@@ -15,19 +15,21 @@ import { IS_BINDING } from "ember-metal/mixin";
 import jQuery from "ember-views/system/jquery";
 import View from "ember-views/views/view";
 import { isGlobalPath } from "ember-metal/binding";
+import keys  from 'ember-metal/keys';
 import {
   normalizePath,
-  handlebarsGet
+  handlebarsGet,
+  handlebarsGetView
 } from "ember-handlebars/ext";
 import EmberString from "ember-runtime/system/string";
 
 
-var LOWERCASE_A_Z = /^[a-z]/,
-    VIEW_PREFIX = /^view\./;
+var LOWERCASE_A_Z = /^[a-z]/;
+var VIEW_PREFIX = /^view\./;
 
 function makeBindings(thisContext, options) {
-  var hash = options.hash,
-      hashType = options.hashTypes;
+  var hash = options.hash;
+  var hashType = options.hashTypes;
 
   for (var prop in hash) {
     if (hashType[prop] === 'ID') {
@@ -55,74 +57,72 @@ function makeBindings(thisContext, options) {
 }
 
 export var ViewHelper = EmberObject.create({
-
   propertiesFromHTMLOptions: function(options) {
-    var hash = options.hash, data = options.data;
-    var extensions = {},
-        classes = hash['class'],
-        dup = false;
+    var hash    = options.hash;
+    var data    = options.data;
+    var classes = hash['class'];
+
+    var extensions = {
+      helperName: options.helperName || ''
+    };
 
     if (hash.id) {
       extensions.elementId = hash.id;
-      dup = true;
     }
 
     if (hash.tag) {
       extensions.tagName = hash.tag;
-      dup = true;
     }
 
     if (classes) {
       classes = classes.split(' ');
       extensions.classNames = classes;
-      dup = true;
     }
 
     if (hash.classBinding) {
       extensions.classNameBindings = hash.classBinding.split(' ');
-      dup = true;
     }
 
     if (hash.classNameBindings) {
-      if (extensions.classNameBindings === undefined) extensions.classNameBindings = [];
+      if (extensions.classNameBindings === undefined) {
+        extensions.classNameBindings = [];
+      }
       extensions.classNameBindings = extensions.classNameBindings.concat(hash.classNameBindings.split(' '));
-      dup = true;
     }
 
     if (hash.attributeBindings) {
       Ember.assert("Setting 'attributeBindings' via Handlebars is not allowed. Please subclass Ember.View and set it there instead.");
       extensions.attributeBindings = null;
-      dup = true;
-    }
-
-    if (dup) {
-      hash = jQuery.extend({}, hash);
-      delete hash.id;
-      delete hash.tag;
-      delete hash['class'];
-      delete hash.classBinding;
     }
 
     // Set the proper context for all bindings passed to the helper. This applies to regular attribute bindings
     // as well as class name bindings. If the bindings are local, make them relative to the current context
     // instead of the view.
     var path;
+    var hashKeys = keys(hash);
 
-    // Evaluate the context of regular attribute bindings:
-    for (var prop in hash) {
-      if (!hash.hasOwnProperty(prop)) { continue; }
+    for (var i = 0, l = hashKeys.length; i < l; i++) {
+      var prop      = hashKeys[i];
+      var isBinding = IS_BINDING.test(prop);
+
+      if (prop !== 'classNameBindings') {
+        extensions[prop] = hash[prop];
+      }
 
       // Test if the property ends in "Binding"
-      if (IS_BINDING.test(prop) && typeof hash[prop] === 'string') {
+      if (isBinding && typeof extensions[prop] === 'string') {
         path = this.contextualizeBindingPath(hash[prop], data);
-        if (path) { hash[prop] = path; }
+        if (path) {
+          extensions[prop] = path;
+        }
       }
     }
 
-    // Evaluate the context of class name bindings:
     if (extensions.classNameBindings) {
-      for (var b in extensions.classNameBindings) {
-        var full = extensions.classNameBindings[b];
+      // Evaluate the context of class name bindings:
+      for (var j = 0, k = extensions.classNameBindings.length; j < k; j++) {
+        var full = extensions.classNameBindings[j];
+
         if (typeof full === 'string') {
           // Contextualize the path of classNameBinding so this:
           //
@@ -132,15 +132,17 @@ export var ViewHelper = EmberObject.create({
           //
           //     classNameBinding="_parentView.context.isGreen:green"
           var parsedPath = View._parsePropertyPath(full);
-          if(parsedPath.path !== '') {
-            path = this.contextualizeBindingPath(parsedPath.path, data); 
-            if (path) { extensions.classNameBindings[b] = path + parsedPath.classNames; }
+          if (parsedPath.path !== '') {
+            path = this.contextualizeBindingPath(parsedPath.path, data);
+            if (path) {
+              extensions.classNameBindings[j] = path + parsedPath.classNames;
+            }
           }
         }
       }
     }
 
-    return jQuery.extend(hash, extensions);
+    return extensions;
   },
 
   // Transform bindings from the current context to a context that can be evaluated within the view.
@@ -161,43 +163,19 @@ export var ViewHelper = EmberObject.create({
   },
 
   helper: function(thisContext, path, options) {
-    var data = options.data,
-        fn = options.fn,
-        newView;
+    var data = options.data;
+    var fn   = options.fn;
+    var newView;
 
     makeBindings(thisContext, options);
 
-    if ('string' === typeof path) {
-      var lookup;
-      // TODO: this is a lame conditional, this should likely change
-      // but something along these lines will likely need to be added
-      // as deprecation warnings
-      //
-      if (options.types[0] === 'STRING' && LOWERCASE_A_Z.test(path) && !VIEW_PREFIX.test(path)) {
-        lookup = path;
-      } else {
-        newView = handlebarsGet(thisContext, path, options);
-        if (typeof newView === 'string') {
-          lookup = newView;
-        }
-      }
-
-      if (lookup) {
-        Ember.assert("View requires a container", !!data.view.container);
-        newView = data.view.container.lookupFactory('view:' + lookup);
-      }
-
-      Ember.assert("Unable to find view at path '" + path + "'", !!newView);
-    } else {
-      newView = path;
-    }
-
-    Ember.assert(EmberString.fmt('You must pass a view to the #view helper, not %@ (%@)', [path, newView]), View.detect(newView) || View.detectInstance(newView));
+    var container = this.container || (data && data.view && data.view.container);
+    newView = handlebarsGetView(thisContext, path, container, options);
 
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;
     viewOptions.templateData = data;
-    var newViewProto = newView.proto ? newView.proto() : newView;
+    var newViewProto = newView.proto();
 
     if (fn) {
       Ember.assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !get(newViewProto, 'templateName'));
@@ -210,9 +188,33 @@ export var ViewHelper = EmberObject.create({
       viewOptions._context = thisContext;
     }
 
-    // for instrumentation
-    if (options.helperName) {
-      viewOptions.helperName = options.helperName;
+    currentView.appendChild(newView, viewOptions);
+  },
+
+  instanceHelper: function(thisContext, newView, options) {
+    var data = options.data;
+    var fn   = options.fn;
+
+    makeBindings(thisContext, options);
+
+    Ember.assert(
+      'Only a instance of a view may be passed to the ViewHelper.instanceHelper',
+      View.detectInstance(newView)
+    );
+
+    var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
+    var currentView = data.view;
+    viewOptions.templateData = data;
+
+    if (fn) {
+      Ember.assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !get(newView, 'templateName'));
+      viewOptions.template = fn;
+    }
+
+    // We only want to override the `_context` computed property if there is
+    // no specified controller. See View#_context for more information.
+    if (!newView.controller && !newView.controllerBinding && !viewOptions.controller && !viewOptions.controllerBinding) {
+      viewOptions._context = thisContext;
     }
 
     currentView.appendChild(newView, viewOptions);
@@ -323,7 +325,7 @@ export var ViewHelper = EmberObject.create({
   specify a path to a custom view class.
 
   ```handlebars
-  {{#view "MyApp.CustomView"}}
+  {{#view "custom"}}{{! will look up App.CustomView }}
     hello.
   {{/view}}
   ```
@@ -337,7 +339,7 @@ export var ViewHelper = EmberObject.create({
     innerViewClass: Ember.View.extend({
       classNames: ['a-custom-view-class-as-property']
     }),
-    template: Ember.Handlebars.compile('{{#view "view.innerViewClass"}} hi {{/view}}')
+    template: Ember.Handlebars.compile('{{#view view.innerViewClass}} hi {{/view}}')
   });
 
   MyApp.OuterView.create().appendTo('body');
@@ -360,8 +362,21 @@ export var ViewHelper = EmberObject.create({
   supplying a block. Attempts to use both a `templateName` option and supply a
   block will throw an error.
 
+  ```javascript
+  var App = Ember.Application.create();
+  App.WithTemplateDefinedView = Ember.View.extend({
+    templateName: 'defined-template'
+  });
+  ```
+
   ```handlebars
-  {{view "MyApp.ViewWithATemplateDefined"}}
+  {{! application.hbs }}
+  {{view 'with-template-defined'}}
+  ```
+
+  ```handlebars
+  {{! defined-template.hbs }}
+  Some content for the defined template view.
   ```
 
   ### `viewName` property
@@ -391,8 +406,11 @@ export function viewHelper(path, options) {
   // and get an instance of the registered `view:toplevel`
   if (path && path.data && path.data.isRenderData) {
     options = path;
-    Ember.assert('{{view}} helper requires parent view to have a container but none was found. This usually happens when you are manually-managing views.', !!options.data.view.container);
-    path = options.data.view.container.lookupFactory('view:toplevel');
+    if (options.data && options.data.view && options.data.view.container) {
+      path = options.data.view.container.lookupFactory('view:toplevel');
+    } else {
+      path = View;
+    }
   }
 
   options.helperName = options.helperName || 'view';

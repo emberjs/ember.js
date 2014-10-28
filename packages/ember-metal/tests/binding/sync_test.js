@@ -5,16 +5,16 @@ import {
   removeObserver,
   _suspendObserver
 } from "ember-metal/observer";
-import { create }  from 'ember-metal/platform';
 import { bind } from "ember-metal/binding";
-import { rewatch } from "ember-metal/watching";
 import { computed } from "ember-metal/computed";
 import { defineProperty } from "ember-metal/properties";
 
 QUnit.module("system/binding/sync_test.js");
 
 testBoth("bindings should not sync twice in a single run loop", function(get, set) {
-  var a, b, setValue, setCalled=0, getCalled=0;
+  var a, b, setValue;
+  var setCalled=0;
+  var getCalled=0;
 
   run(function() {
     a = {};
@@ -49,7 +49,8 @@ testBoth("bindings should not sync twice in a single run loop", function(get, se
 });
 
 testBoth("bindings should not infinite loop if computed properties return objects", function(get, set) {
-  var a, b, getCalled=0;
+  var a, b;
+  var getCalled=0;
 
   run(function() {
     a = {};
@@ -100,49 +101,6 @@ testBoth("bindings should do the right thing when observers trigger bindings in 
   });
 
   equal(get(a, 'foo'), "what is going on");
-});
-
-testBoth("bindings should do the right thing when binding is in prototype", function(get, set) {
-  var obj, proto, a, b, selectionChanged;
-  run(function() {
-    obj = {
-      selection: null
-    };
-
-    selectionChanged = 0;
-
-    addObserver(obj, 'selection', function () {
-      selectionChanged++;
-    });
-
-    proto = {
-      obj: obj,
-      changeSelection: function (value) {
-        set(this, 'selection', value);
-      }
-    };
-    bind(proto, 'selection', 'obj.selection');
-
-    a = create(proto);
-    b = create(proto);
-    rewatch(a);
-    rewatch(b);
-  });
-
-  run(function () {
-    set(a, 'selection', 'a');
-  });
-
-  run(function () {
-    set(b, 'selection', 'b');
-  });
-
-  run(function () {
-    set(a, 'selection', 'a');
-  });
-
-  equal(selectionChanged, 3);
-  equal(get(obj, 'selection'), 'a');
 });
 
 testBoth("bindings should not try to sync destroyed objects", function(get, set) {

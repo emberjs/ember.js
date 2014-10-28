@@ -7,18 +7,31 @@ MutableEnumerableTests.extend({
   name: 'Ember.Set',
 
   newObject: function(ary) {
+    var ret;
     ary = ary ? ary.slice() : this.newFixture(3);
-    var ret = new Set();
-    ret.addObjects(ary);
+
+    ignoreDeprecation(function() {
+      ret =  new Set();
+      ret.addObjects(ary);
+    });
+
     return ret;
   },
 
   mutate: function(obj) {
-    obj.addObject(get(obj, 'length')+1);
+    ignoreDeprecation(function() {
+      obj.addObject(get(obj, 'length')+1);
+    });
   },
 
   toArray: function(obj) {
-    return obj.toArray ? obj.toArray() : obj.slice(); // make a copy.
+    var ret;
+
+    ignoreDeprecation(function() {
+      ret = obj.toArray ? obj.toArray() : obj.slice(); // make a copy.
+    });
+
+    return ret;
   }
 
 }).run();

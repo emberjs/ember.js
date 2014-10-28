@@ -93,7 +93,7 @@ QUnit.module("{{input type=boundType}}", {
   setup: function() {
     controller = {
       inputType: "checkbox",
-      isChecked: true,
+      isChecked: true
     };
 
     checkboxView = EmberView.extend({

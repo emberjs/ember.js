@@ -2,7 +2,7 @@ import Ember from 'ember-metal/core'; // TEMPLATES
 import { get } from "ember-metal/property_get";
 import { set as emberSet } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
-import { create } from 'ember-metal/platform';
+import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 import { observer } from 'ember-metal/mixin';
 
 import Container from 'container/container';
@@ -23,12 +23,10 @@ import EmberHandlebars from "ember-handlebars";
 import EmberView from "ember-routing/ext/view";
 import _MetamorphView from "ember-handlebars/views/metamorph_view";
 import jQuery from "ember-views/system/jquery";
+import ActionManager from "ember-views/system/action_manager";
 
 import renderHelper from "ember-routing-handlebars/helpers/render";
-import {
-  ActionHelper,
-  actionHelper
-} from "ember-routing-handlebars/helpers/action";
+import { actionHelper } from "ember-routing-handlebars/helpers/action";
 import { outletHelper } from "ember-routing-handlebars/helpers/outlet";
 
 function appendView(view) {
@@ -66,8 +64,9 @@ function buildContainer(namespace) {
 
 function resolverFor(namespace) {
   return function(fullName) {
-    var nameParts = fullName.split(":"),
-        type = nameParts[0], name = nameParts[1];
+    var nameParts = fullName.split(":");
+    var type = nameParts[0];
+    var name = nameParts[1];
 
     if (type === 'template') {
       var templateName = decamelize(name);
@@ -218,10 +217,10 @@ test("{{render}} helper should render given template with a supplied model", fun
   set(controller, 'post', { title: "Rails is unagi" });
 
   equal(view.$().text(), 'HIRails is unagi');
-  if (create.isSimulated) {
-    equal(postController.get('model').title, "Rails is unagi");
-  } else {
+  if (canDefineNonEnumerableProperties) {
     deepEqual(postController.get('model'), { title: "Rails is unagi" });
+  } else {
+    equal(postController.get('model').title, "Rails is unagi");
   }
 });
 
@@ -342,10 +341,10 @@ test("{{render}} helper should render templates with models multiple times", fun
   set(controller, 'post1', { title: "I am new" });
 
   ok(view.$().text().match(/^HI ?I am new ?Then me$/));
-  if (create.isSimulated) {
-    equal(postController1.get('model').title, "I am new");
-  } else {
+  if (canDefineNonEnumerableProperties) {
     deepEqual(postController1.get('model'), { title: "I am new" });
+  } else {
+    equal(postController1.get('model').title, "I am new");
   }
 });
 
@@ -442,10 +441,10 @@ test("{{render}} helper should render templates both with and without models", f
   set(controller, 'post', { title: "Rails is unagi" });
 
   ok(view.$().text().match(/^HI ?Title: ?Title:Rails is unagi$/));
-  if (create.isSimulated) {
-    equal(postController2.get('model').title, "Rails is unagi");
-  } else {
+  if (canDefineNonEnumerableProperties) {
     deepEqual(postController2.get('model'), { title: "Rails is unagi" });
+  } else {
+    equal(postController2.get('model').title, "Rails is unagi");
   }
 });
 
@@ -474,10 +473,10 @@ test("{{render}} helper should link child controllers to the parent controller",
 
   appendView(view);
 
-  var button = jQuery("#parent-action"),
-      actionId = button.data('ember-action'),
-      action = ActionHelper.registeredActions[actionId],
-      handler = action.handler;
+  var button = jQuery("#parent-action");
+  var actionId = button.data('ember-action');
+  var action = ActionManager.registeredActions[actionId];
+  var handler = action.handler;
 
   equal(button.text(), "Go to Mom", "The parentController property is set on the child controller");
 
@@ -500,7 +499,7 @@ test("{{render}} helper should be able to render a template again when it was re
   run(function() {
     view.connectOutlet('main', EmberView.create({
       controller: controller.create(),
-      template: compile("<p>1{{render 'home'}}</p>")
+      template: compile("<div>1{{render 'home'}}</div>")
     }));
   });
 
@@ -509,7 +508,7 @@ test("{{render}} helper should be able to render a template again when it was re
   run(function() {
     view.connectOutlet('main', EmberView.create({
       controller: controller.create(),
-      template: compile("<p>2{{render 'home'}}</p>")
+      template: compile("<div>2{{render 'home'}}</div>")
     }));
   });
 

@@ -1,21 +1,27 @@
-import Ember from "ember-metal/core";  // for Ember.ORDER_DEFINITION
-import { typeOf } from "ember-metal/utils";
-import Comparable from "ember-runtime/mixins/comparable";
+import { typeOf } from 'ember-metal/utils';
+import Comparable from 'ember-runtime/mixins/comparable';
 
-// Used by Ember.compare
-Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
-  'undefined',
-  'null',
-  'boolean',
-  'number',
-  'string',
-  'array',
-  'object',
-  'instance',
-  'function',
-  'class',
-  'date'
-];
+var TYPE_ORDER = {
+  'undefined': 0,
+  'null': 1,
+  'boolean': 2,
+  'number': 3,
+  'string': 4,
+  'array': 5,
+  'object': 6,
+  'instance': 7,
+  'function': 8,
+  'class': 9,
+  'date': 10
+};
+
+//
+// the spaceship operator
+//
+function spaceship(a, b) {
+  var diff = a - b;
+  return (diff > 0) - (diff < 0);
+}
 
 /**
  This will compare two javascript values of possibly different types.
@@ -41,74 +47,52 @@ Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
  @return {Number} -1 if v < w, 0 if v = w and 1 if v > w.
 */
 export default function compare(v, w) {
-  if (v === w) { return 0; }
+  if (v === w) {
+    return 0;
+  }
 
   var type1 = typeOf(v);
   var type2 = typeOf(w);
 
   if (Comparable) {
-    if (type1==='instance' && Comparable.detect(v.constructor)) {
+    if (type1 ==='instance' && Comparable.detect(v.constructor)) {
       return v.constructor.compare(v, w);
     }
 
     if (type2 === 'instance' && Comparable.detect(w.constructor)) {
-      return 1-w.constructor.compare(w, v);
+      return 1 - w.constructor.compare(w, v);
     }
   }
 
-  // If we haven't yet generated a reverse-mapping of Ember.ORDER_DEFINITION,
-  // do so now.
-  var mapping = Ember.ORDER_DEFINITION_MAPPING;
-  if (!mapping) {
-    var order = Ember.ORDER_DEFINITION;
-    mapping = Ember.ORDER_DEFINITION_MAPPING = {};
-    var idx, len;
-    for (idx = 0, len = order.length; idx < len;  ++idx) {
-      mapping[order[idx]] = idx;
-    }
-
-    // We no longer need Ember.ORDER_DEFINITION.
-    delete Ember.ORDER_DEFINITION;
+  var res = spaceship(TYPE_ORDER[type1], TYPE_ORDER[type2]);
+  if (res !== 0) {
+    return res;
   }
-
-  var type1Index = mapping[type1];
-  var type2Index = mapping[type2];
-
-  if (type1Index < type2Index) { return -1; }
-  if (type1Index > type2Index) { return 1; }
 
   // types are equal - so we have to check values now
   switch (type1) {
     case 'boolean':
     case 'number':
-      if (v < w) { return -1; }
-      if (v > w) { return 1; }
-      return 0;
+      return spaceship(v,w);
 
     case 'string':
-      var comp = v.localeCompare(w);
-      if (comp < 0) { return -1; }
-      if (comp > 0) { return 1; }
-      return 0;
+      return spaceship(v.localeCompare(w), 0);
 
     case 'array':
       var vLen = v.length;
       var wLen = w.length;
-      var l = Math.min(vLen, wLen);
-      var r = 0;
-      var i = 0;
-      while (r === 0 && i < l) {
-        r = compare(v[i],w[i]);
-        i++;
+      var len = Math.min(vLen, wLen);
+
+      for (var i = 0; i < len; i++) {
+        var r = compare(v[i], w[i]);
+        if (r !== 0) {
+          return r;
+        }
       }
-      if (r !== 0) { return r; }
 
       // all elements are equal now
       // shorter array should be ordered first
-      if (vLen < wLen) { return -1; }
-      if (vLen > wLen) { return 1; }
-      // arrays are equal now
-      return 0;
+      return spaceship(vLen, wLen);
 
     case 'instance':
       if (Comparable && Comparable.detect(v)) {
@@ -117,11 +101,7 @@ export default function compare(v, w) {
       return 0;
 
     case 'date':
-      var vNum = v.getTime();
-      var wNum = w.getTime();
-      if (vNum < wNum) { return -1; }
-      if (vNum > wNum) { return 1; }
-      return 0;
+      return spaceship(v.getTime(), w.getTime());
 
     default:
       return 0;

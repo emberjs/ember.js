@@ -23,7 +23,8 @@ import { bind as emberBind } from "ember-metal/binding";
 import jQuery from "ember-views/system/jquery";
 import { isArray } from "ember-metal/utils";
 import { getEscaped as handlebarsGetEscaped } from "ember-handlebars/ext";
-import keys from "ember-runtime/keys";
+import keys from "ember-metal/keys";
+import Cache from "ember-metal/cache";
 
 import {
   _HandlebarsBoundView,
@@ -101,11 +102,11 @@ var WithView = _HandlebarsBoundView.extend({
 // Binds a property into the DOM. This will create a hook in DOM that the
 // KVO system will look for and update if the property changes.
 function bind(property, options, preserveContext, shouldDisplay, valueNormalizer, childProperties) {
-  var data = options.data,
-      fn = options.fn,
-      inverse = options.inverse,
-      view = data.view,
-      normalized, observer, i;
+  var data = options.data;
+  var fn = options.fn;
+  var inverse = options.inverse;
+  var view = data.view;
+  var normalized, observer, i;
 
   // we relied on the behavior of calling without
   // context to mean this === window, but when running
@@ -114,84 +115,78 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
   normalized = normalizePath(currentContext, property, data);
 
-  // Set up observers for observable objects
-  if ('object' === typeof this) {
-    if (data.insideGroup) {
-      observer = function() {
-        while (view._contextView) {
-          view = view._contextView;
-        }
-        run.once(view, 'rerender');
-      };
-
-      var template, context, result = handlebarsGet(currentContext, property, options);
-
-      result = valueNormalizer ? valueNormalizer(result) : result;
-
-      context = preserveContext ? currentContext : result;
-      if (shouldDisplay(result)) {
-        template = fn;
-      } else if (inverse) {
-        template = inverse;
+  if (data.insideGroup) {
+    observer = function() {
+      while (view._contextView) {
+        view = view._contextView;
       }
+      run.once(view, 'rerender');
+    };
 
-      template(context, { data: options.data });
-    } else {
-      var viewClass = _HandlebarsBoundView;
-      var viewOptions = {
-        preserveContext: preserveContext,
-        shouldDisplayFunc: shouldDisplay,
-        valueNormalizerFunc: valueNormalizer,
-        displayTemplate: fn,
-        inverseTemplate: inverse,
-        path: property,
-        pathRoot: currentContext,
-        previousContext: currentContext,
-        isEscaped: !options.hash.unescaped,
-        templateData: options.data,
-        templateHash: options.hash,
-        helperName: options.helperName
-      };
+    var template, context;
+    var result = handlebarsGet(currentContext, property, options);
 
-      if (options.isWithHelper) {
-        viewClass = WithView;
-      }
+    result = valueNormalizer ? valueNormalizer(result) : result;
 
-      // Create the view that will wrap the output of this template/property
-      // and add it to the nearest view's childViews array.
-      // See the documentation of Ember._HandlebarsBoundView for more.
-      var bindView = view.createChildView(viewClass, viewOptions);
-
-      view.appendChild(bindView);
-
-      observer = function() {
-        run.scheduleOnce('render', bindView, 'rerenderIfNeeded');
-      };
+    context = preserveContext ? currentContext : result;
+    if (shouldDisplay(result)) {
+      template = fn;
+    } else if (inverse) {
+      template = inverse;
     }
 
-    // Observes the given property on the context and
-    // tells the Ember._HandlebarsBoundView to re-render. If property
-    // is an empty string, we are printing the current context
-    // object ({{this}}) so updating it is not our responsibility.
-    if (normalized.path !== '') {
-      view.registerObserver(normalized.root, normalized.path, observer);
-      if (childProperties) {
-        for (i=0; i<childProperties.length; i++) {
-          view.registerObserver(normalized.root, normalized.path+'.'+childProperties[i], observer);
-        }
-      }
-    }
+    template(context, { data: options.data });
   } else {
-    // The object is not observable, so just render it out and
-    // be done with it.
-    data.buffer.push(handlebarsGetEscaped(currentContext, property, options));
+    var viewClass = _HandlebarsBoundView;
+    var viewOptions = {
+      preserveContext: preserveContext,
+      shouldDisplayFunc: shouldDisplay,
+      valueNormalizerFunc: valueNormalizer,
+      displayTemplate: fn,
+      inverseTemplate: inverse,
+      path: property,
+      pathRoot: currentContext,
+      previousContext: currentContext,
+      isEscaped: !options.hash.unescaped,
+      templateData: options.data,
+      templateHash: options.hash,
+      helperName: options.helperName
+    };
+
+    if (options.isWithHelper) {
+      viewClass = WithView;
+    }
+
+    // Create the view that will wrap the output of this template/property
+    // and add it to the nearest view's childViews array.
+    // See the documentation of Ember._HandlebarsBoundView for more.
+    var bindView = view.createChildView(viewClass, viewOptions);
+
+    view.appendChild(bindView);
+
+    observer = function() {
+      run.scheduleOnce('render', bindView, 'rerenderIfNeeded');
+    };
+  }
+
+  // Observes the given property on the context and
+  // tells the Ember._HandlebarsBoundView to re-render. If property
+  // is an empty string, we are printing the current context
+  // object ({{this}}) so updating it is not our responsibility.
+  if (typeof this === 'object' && normalized.path !== '') {
+    view.registerObserver(normalized.root, normalized.path, observer);
+    if (childProperties) {
+      for (i=0; i<childProperties.length; i++) {
+        view.registerObserver(normalized.root, normalized.path+'.'+childProperties[i], observer);
+      }
+    }
   }
 }
 
 function simpleBind(currentContext, property, options) {
-  var data = options.data,
-      view = data.view,
-      normalized, observer, pathRoot, output;
+  var data = options.data;
+  var view = data.view;
+  var normalized, observer, pathRoot, output;
 
   normalized = normalizePath(currentContext, property, data);
   pathRoot = normalized.root;
@@ -274,6 +269,10 @@ function _triageMustacheHelper(property, options) {
   return helpers.bind.call(this, property, options);
 }
 
+export var ISNT_HELPER_CACHE = new Cache(1000, function(key) {
+  return key.indexOf('-') === -1;
+});
+
 /**
   Used to lookup/resolve handlebars helpers. The lookup order is:
 
@@ -294,7 +293,7 @@ function resolveHelper(container, name) {
     return helpers[name];
   }
 
-  if (!container || name.indexOf('-') === -1) {
+  if (!container || ISNT_HELPER_CACHE.get(name)) {
     return;
   }
 
@@ -375,7 +374,6 @@ function boundIfHelper(property, fn) {
   return bind.call(context, property, fn, true, shouldDisplayIfHelperContent, shouldDisplayIfHelperContent, ['isTruthy', 'length']);
 }
 
-
 /**
   @private
 
@@ -395,11 +393,11 @@ function boundIfHelper(property, fn) {
   @since 1.4.0
 */
 function unboundIfHelper(property, fn) {
-  var context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : this,
-      data = fn.data,
-      template = fn.fn,
-      inverse = fn.inverse,
-      normalized, propertyValue, result;
+  var context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : this;
+  var data = fn.data;
+  var template = fn.fn;
+  var inverse = fn.inverse;
+  var normalized, propertyValue, result;
 
   normalized = normalizePath(context, property, data);
   propertyValue = handlebarsGet(context, property, fn);
@@ -490,7 +488,8 @@ function unboundIfHelper(property, fn) {
   @return {String} HTML string
 */
 function withHelper(context, options) {
-  var bindContext, preserveContext, controller, helperName = 'with';
+  var bindContext, preserveContext, controller;
+  var helperName = 'with';
 
   if (arguments.length === 4) {
     var keywordName, path, rootPath, normalized, contextPath;
@@ -580,7 +579,9 @@ function unlessHelper(context, options) {
   Ember.assert("You must pass exactly one argument to the unless helper", arguments.length === 2);
   Ember.assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
 
-  var fn = options.fn, inverse = options.inverse, helperName = 'unless';
+  var fn = options.fn;
+  var inverse = options.inverse;
+  var helperName = 'unless';
 
   if (context) {
     helperName += ' ' + context;
@@ -753,15 +754,15 @@ function bindAttrHelper(options) {
   // For each attribute passed, create an observer and emit the
   // current value of the property as an attribute.
   forEach.call(attrKeys, function(attr) {
-    var path = attrs[attr],
-        normalized;
+    var path = attrs[attr];
+    var normalized;
 
     Ember.assert(fmt("You must provide an expression as the value of bound attribute. You specified: %@=%@", [attr, path]), typeof path === 'string');
 
     normalized = normalizePath(ctx, path, options.data);
 
-    var value = (path === 'this') ? normalized.root : handlebarsGet(ctx, path, options),
-        type = typeOf(value);
+    var value = (path === 'this') ? normalized.root : handlebarsGet(ctx, path, options);
+    var type = typeOf(value);
 
     Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
 
@@ -851,14 +852,15 @@ function bindAttrHelperDeprecated() {
   @return {Array} An array of class names to add
 */
 function bindClasses(context, classBindings, view, bindAttrId, options) {
-  var ret = [], newClass, value, elem;
+  var ret = [];
+  var newClass, value, elem;
 
   // Helper method to retrieve the property from the context and
   // determine which class string to return, based on whether it is
   // a Boolean or not.
   var classStringForPath = function(root, parsedPath, options) {
-    var val,
-        path = parsedPath.path;
+    var val;
+    var path = parsedPath.path;
 
     if (path === 'this') {
       val = root;
@@ -879,13 +881,11 @@ function bindClasses(context, classBindings, view, bindAttrId, options) {
     // closes over this variable, so it knows which string to remove when
     // the property changes.
     var oldClass;
-
     var observer;
-
-    var parsedPath = View._parsePropertyPath(binding),
-        path = parsedPath.path,
-        pathRoot = context,
-        normalized;
+    var parsedPath = View._parsePropertyPath(binding);
+    var path = parsedPath.path;
+    var pathRoot = context;
+    var normalized;
 
     if (path !== '' && path !== 'this') {
       normalized = normalizePath(context, path, options.data);

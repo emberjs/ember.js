@@ -3,6 +3,7 @@ import EmberView from "ember-views/views/view";
 import Container from 'container/container';
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
+import { platform } from "ember-metal/platform";
 
 var view, originalLookup;
 
@@ -35,6 +36,12 @@ test("By default view:toplevel is used", function() {
     template: Ember.Handlebars.compile('hello world')
   });
 
+  function lookupFactory(fullName) {
+    equal(fullName, 'view:toplevel');
+
+    return DefaultView;
+  }
+
   var container = {
     lookupFactory: lookupFactory
   };
@@ -47,15 +54,19 @@ test("By default view:toplevel is used", function() {
   run(view, 'appendTo', '#qunit-fixture');
 
   equal(jQuery('#toplevel-view').text(), 'hello world');
-
-  function lookupFactory(fullName) {
-    equal(fullName, 'view:toplevel');
-
-    return DefaultView;
-  }
 });
 
-test("View lookup - App.FuView", function() {
+test("By default, without a container, EmberView is used", function() {
+  view = EmberView.extend({
+    template: Ember.Handlebars.compile('{{view tagName="span"}}')
+  }).create();
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  ok(jQuery('#qunit-fixture').html().toUpperCase().match(/<SPAN/), 'contains view with span');
+});
+
+test("View lookup - App.FuView (DEPRECATED)", function() {
   Ember.lookup = {
     App: {
       FuView: viewClass({
@@ -69,12 +80,14 @@ test("View lookup - App.FuView", function() {
     template: Ember.Handlebars.compile("{{view App.FuView}}")
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  expectDeprecation(function(){
+    run(view, 'appendTo', '#qunit-fixture');
+  }, /Resolved the view "App.FuView" on the global context/);
 
   equal(jQuery('#fu').text(), 'bro');
 });
 
-test("View lookup - 'App.FuView'", function() {
+test("View lookup - 'App.FuView' (DEPRECATED)", function() {
   Ember.lookup = {
     App: {
       FuView: viewClass({
@@ -88,7 +101,9 @@ test("View lookup - 'App.FuView'", function() {
     template: Ember.Handlebars.compile("{{view 'App.FuView'}}")
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  expectDeprecation(function(){
+    run(view, 'appendTo', '#qunit-fixture');
+  }, /Resolved the view "App.FuView" on the global context/);
 
   equal(jQuery('#fu').text(), 'bro');
 });
@@ -98,6 +113,12 @@ test("View lookup - 'fu'", function() {
     elementId: "fu",
     template: Ember.Handlebars.compile("bro")
   });
+
+  function lookupFactory(fullName) {
+    equal(fullName, 'view:fu');
+
+    return FuView;
+  }
 
   var container = {
     lookupFactory: lookupFactory
@@ -111,12 +132,33 @@ test("View lookup - 'fu'", function() {
   run(view, 'appendTo', '#qunit-fixture');
 
   equal(jQuery('#fu').text(), 'bro');
+});
+
+test("View lookup - 'fu' when fu is a keyword and a view name", function() {
+  var FuView = viewClass({
+    elementId: "fu",
+    template: Ember.Handlebars.compile("bro")
+  });
 
   function lookupFactory(fullName) {
     equal(fullName, 'view:fu');
 
     return FuView;
   }
+
+  var container = {
+    lookupFactory: lookupFactory
+  };
+
+  view = EmberView.extend({
+    template: Ember.Handlebars.compile("{{view 'fu'}}"),
+    templateData: { keywords: {fu: 'boom!'} },
+    container: container
+  }).create();
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  equal(jQuery('#fu').text(), 'bro');
 });
 
 test("View lookup - view.computed", function() {
@@ -124,6 +166,10 @@ test("View lookup - view.computed", function() {
     elementId: "fu",
     template: Ember.Handlebars.compile("bro")
   });
+
+  function lookupFactory(fullName) {
+    return fullName === 'view:fu' && FuView;
+  }
 
   var container = {
     lookupFactory: lookupFactory
@@ -138,17 +184,63 @@ test("View lookup - view.computed", function() {
   run(view, 'appendTo', '#qunit-fixture');
 
   equal(jQuery('#fu').text(), 'bro');
+});
+
+test("View lookup - bar when bar is a keyword and a view name", function() {
+  var FuView = viewClass({
+    elementId: "fu",
+    template: Ember.Handlebars.compile("bro")
+  });
 
   function lookupFactory(fullName) {
-    equal(fullName, 'view:fu');
-
-    return FuView;
+    return fullName === 'view:fu' && FuView;
   }
+
+  var container = {
+    lookupFactory: lookupFactory
+  };
+
+  view = EmberView.extend({
+    template: Ember.Handlebars.compile("{{view bar}}"),
+    templateData: { keywords: {bar: 'fu'} },
+    container: container
+  }).create();
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  equal(jQuery('#fu').text(), 'bro');
+});
+
+test("View lookup - 'view.computed' (DEPRECATED)", function() {
+  var FuView = viewClass({
+    elementId: "fu",
+    template: Ember.Handlebars.compile("bro")
+  });
+
+  function lookupFactory(fullName) {
+    return fullName === 'view:fu' && FuView;
+  }
+
+  var container = {
+    lookupFactory: lookupFactory
+  };
+
+  view = EmberView.extend({
+    template: Ember.Handlebars.compile("{{view 'view.computed'}}"),
+    container: container,
+    computed: 'fu'
+  }).create();
+
+  expectDeprecation(function(){
+    run(view, 'appendTo', '#qunit-fixture');
+  }, /Quoted view names must refer to a view in the container/);
+
+  equal(jQuery('#fu').text(), 'bro');
 });
 
 test("id bindings downgrade to one-time property lookup", function() {
   view = EmberView.extend({
-    template: Ember.Handlebars.compile("{{#view Ember.View id=view.meshuggah}}{{view.parentView.meshuggah}}{{/view}}"),
+    template: Ember.Handlebars.compile("{{#view id=view.meshuggah}}{{view.parentView.meshuggah}}{{/view}}"),
     meshuggah: 'stengah'
   }).create();
 
@@ -174,7 +266,7 @@ test("mixing old and new styles of property binding fires a warning, treats valu
   };
 
   view = EmberView.extend({
-    template: Ember.Handlebars.compile("{{#view Ember.View borfBinding=view.snork}}<p id='lol'>{{view.borf}}</p>{{/view}}"),
+    template: Ember.Handlebars.compile("{{#view borfBinding=view.snork}}<p id='lol'>{{view.borf}}</p>{{/view}}"),
     snork: "nerd"
   }).create();
 
@@ -203,14 +295,9 @@ test("allows you to pass attributes that will be assigned to the class instance,
   ok(jQuery('#bar').hasClass('bar'));
   equal(jQuery('#bar').text(), 'Bar');
 });
-
 test("Should apply class without condition always", function() {
-  var container = new Container();
-  container.register('view:toplevel', EmberView.extend());
-
   view = EmberView.create({
     context: [],
-    container: container,
     controller: Ember.Object.create(),
     template: Ember.Handlebars.compile('{{#view id="foo" classBinding=":foo"}} Foo{{/view}}')
   });

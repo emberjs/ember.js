@@ -20,8 +20,8 @@ import {
 } from "ember-metal/observer";
 import { indexOf } from 'ember-metal/enumerable_utils';
 
-var originalLookup = Ember.lookup, lookup;
-var obj, count, Global;
+var originalLookup = Ember.lookup;
+var obj, count, Global, lookup;
 
 QUnit.module('computed');
 
@@ -449,7 +449,8 @@ testBoth('throws assertion if brace expansion notation has spaces', function (ge
 //
 
 
-var func, moduleOpts = {
+var func;
+var moduleOpts = {
   setup: function() {
     originalLookup = Ember.lookup;
     lookup = Ember.lookup = {};
@@ -610,7 +611,8 @@ test('adding a computed property should show up in key iteration',function() {
 });
 
 testBoth("when setting a value after it had been retrieved empty don't pass function UNDEFINED as oldValue", function(get, set) {
-    var obj = {}, oldValueIsNoFunction = true;
+    var obj = {};
+    var oldValueIsNoFunction = true;
 
     defineProperty(obj, 'foo', computed(function(key, value, oldValue) {
         if(typeof oldValue === 'function') {
@@ -644,12 +646,12 @@ testBoth('setting a watched computed property', function(get, set) {
       return get(this, 'firstName') + ' ' + get(this, 'lastName');
     }).property('firstName', 'lastName')
   );
-  var fullNameWillChange = 0,
-      fullNameDidChange = 0,
-      firstNameWillChange = 0,
-      firstNameDidChange = 0,
-      lastNameWillChange = 0,
-      lastNameDidChange = 0;
+  var fullNameWillChange = 0;
+  var fullNameDidChange = 0;
+  var firstNameWillChange = 0;
+  var firstNameDidChange = 0;
+  var lastNameWillChange = 0;
+  var lastNameDidChange = 0;
   addBeforeObserver(obj, 'fullName', function () {
     fullNameWillChange++;
   });
@@ -700,8 +702,8 @@ testBoth('setting a cached computed property that modifies the value you give it
       return get(this, 'foo') + 1;
     }).property('foo')
   );
-  var plusOneWillChange = 0,
-      plusOneDidChange = 0;
+  var plusOneWillChange = 0;
+  var plusOneDidChange = 0;
   addBeforeObserver(obj, 'plusOne', function () {
     plusOneWillChange++;
   });
@@ -728,7 +730,8 @@ testBoth('setting a cached computed property that modifies the value you give it
 QUnit.module('computed - default setter');
 
 testBoth("when setting a value on a computed property that doesn't handle sets", function(get, set) {
-  var obj = {}, observerFired = false;
+  var obj = {};
+  var observerFired = false;
 
   defineProperty(obj, 'foo', computed(function() {
     return 'foo';
@@ -859,20 +862,31 @@ testBoth('computed.alias set', function(get, set) {
 });
 
 testBoth('computed.defaultTo', function(get, set) {
+  expect(6);
+
   var obj = { source: 'original source value' };
   defineProperty(obj, 'copy', computed.defaultTo('source'));
 
-  equal(get(obj, 'copy'), 'original source value');
+  ignoreDeprecation(function() {
+    equal(get(obj, 'copy'), 'original source value');
 
-  set(obj, 'copy', 'new copy value');
-  equal(get(obj, 'source'), 'original source value');
-  equal(get(obj, 'copy'), 'new copy value');
+    set(obj, 'copy', 'new copy value');
+    equal(get(obj, 'source'), 'original source value');
+    equal(get(obj, 'copy'), 'new copy value');
 
-  set(obj, 'source', 'new source value');
-  equal(get(obj, 'copy'), 'new copy value');
+    set(obj, 'source', 'new source value');
+    equal(get(obj, 'copy'), 'new copy value');
 
-  set(obj, 'copy', null);
-  equal(get(obj, 'copy'), 'new source value');
+    set(obj, 'copy', null);
+    equal(get(obj, 'copy'), 'new source value');
+  });
+
+  expectDeprecation(function() {
+    var obj = { source: 'original source value' };
+    defineProperty(obj, 'copy', computed.defaultTo('source'));
+
+    get(obj, 'copy');
+  }, 'Usage of Ember.computed.defaultTo is deprecated, use `Ember.computed.oneWay` instead.');
 });
 
 testBoth('computed.match', function(get, set) {
@@ -1053,10 +1067,7 @@ function oneWayTest(methodName) {
 }
 
 testBoth('computed.oneWay', oneWayTest('oneWay'));
-
-if (Ember.FEATURES.isEnabled('query-params-new')) {
-  testBoth('computed.reads', oneWayTest('reads'));
-}
+testBoth('computed.reads', oneWayTest('reads'));
 
 testBoth('computed.readOnly', function(get, set) {
   var obj = {

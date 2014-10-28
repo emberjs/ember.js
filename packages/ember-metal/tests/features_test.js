@@ -1,7 +1,7 @@
 import Ember from 'ember-metal/core';
 
-var isEnabled = Ember.FEATURES.isEnabled,
-    origFeatures, origEnableAll, origEnableOptional;
+var isEnabled = Ember.FEATURES.isEnabled;
+var origFeatures, origEnableAll, origEnableOptional;
 
 QUnit.module("Ember.FEATURES.isEnabled", {
   setup: function(){

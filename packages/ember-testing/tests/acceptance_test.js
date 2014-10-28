@@ -57,7 +57,7 @@ QUnit.module("ember-testing Acceptance", {
       });
 
       App.CommentsView = EmberView.extend({
-        defaultTemplate: EmberHandlebars.compile("{{input type=text}}")
+        defaultTemplate: EmberHandlebars.compile('{{input type="text"}}')
       });
 
       App.AbortTransitionRoute = EmberRoute.extend({
@@ -184,6 +184,24 @@ test("Nested async helpers", function() {
 
   andThen(function() {
     equal(currentRoute, 'posts');
+  });
+});
+
+test("Multiple nested async helpers", function() {
+  expect(2);
+
+  visit('/posts');
+
+  andThen(function() {
+    click('a:first', '#comments-link');
+
+    fillIn('.ember-text-field', "hello");
+    fillIn('.ember-text-field', "goodbye");
+  });
+
+  andThen(function() {
+    equal(find('.ember-text-field').val(), 'goodbye', "Fillin successfully works");
+    equal(currentRoute, 'comments', "Successfully visited comments route");
   });
 });
 

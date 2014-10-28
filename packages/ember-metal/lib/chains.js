@@ -1,12 +1,12 @@
 import Ember from "ember-metal/core"; // warn, assert, etc;
 import {get, normalizeTuple} from "ember-metal/property_get";
-import {meta, META_KEY} from "ember-metal/utils";
+import {meta} from "ember-metal/utils";
 import {forEach} from "ember-metal/array";
 import {watchKey, unwatchKey} from "ember-metal/watch_key";
 
-var metaFor = meta,
-    warn = Ember.warn,
-    FIRST_KEY = /^([^\.]+)/;
+var metaFor = meta;
+var warn = Ember.warn;
+var FIRST_KEY = /^([^\.]+)/;
 
 function firstKey(path) {
   return path.match(FIRST_KEY)[0];
@@ -31,7 +31,8 @@ export function flushPendingChains() {
 function addChainWatcher(obj, keyName, node) {
   if (!obj || ('object' !== typeof obj)) { return; } // nothing to do
 
-  var m = metaFor(obj), nodes = m.chainWatchers;
+  var m = metaFor(obj);
+  var nodes = m.chainWatchers;
 
   if (!m.hasOwnProperty('chainWatchers')) {
     nodes = m.chainWatchers = {};
@@ -45,7 +46,7 @@ function addChainWatcher(obj, keyName, node) {
 function removeChainWatcher(obj, keyName, node) {
   if (!obj || 'object' !== typeof obj) { return; } // nothing to do
 
-  var m = obj[META_KEY];
+  var m = obj['__ember_meta__'];
   if (m && !m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
 
   var nodes = m && m.chainWatchers;
@@ -99,7 +100,7 @@ var ChainNodePrototype = ChainNode.prototype;
 function lazyGet(obj, key) {
   if (!obj) return undefined;
 
-  var meta = obj[META_KEY];
+  var meta = obj['__ember_meta__'];
   // check if object meant only to be a prototype
   if (meta && meta.proto === obj) return undefined;
 
@@ -136,8 +137,10 @@ ChainNodePrototype.destroy = function() {
 
 // copies a top level object only
 ChainNodePrototype.copy = function(obj) {
-  var ret = new ChainNode(null, null, obj),
-      paths = this._paths, path;
+  var ret = new ChainNode(null, null, obj);
+  var paths = this._paths;
+  var path;
+
   for (path in paths) {
     if (paths[path] <= 0) { continue; } // this check will also catch non-number vals.
     ret.add(path);
@@ -207,7 +210,8 @@ ChainNodePrototype.remove = function(path) {
 ChainNodePrototype.count = 0;
 
 ChainNodePrototype.chain = function(key, path, src) {
-  var chains = this._chains, node;
+  var chains = this._chains;
+  var node;
   if (!chains) { chains = this._chains = {}; }
 
   node = chains[key];
@@ -223,7 +227,8 @@ ChainNodePrototype.chain = function(key, path, src) {
 };
 
 ChainNodePrototype.unchain = function(key, path) {
-  var chains = this._chains, node = chains[key];
+  var chains = this._chains;
+  var node = chains[key];
 
   // unchain rest of path first...
   if (path && path.length>1) {
@@ -319,12 +324,26 @@ ChainNodePrototype.didChange = function(events) {
 
 export function finishChains(obj) {
   // We only create meta if we really have to
-  var m = obj[META_KEY], chains = m && m.chains;
-  if (chains) {
-    if (chains.value() !== obj) {
+  var m = obj['__ember_meta__'],
+    chains, chainWatchers, chainNodes;
+  if (m) {
+    // finish any current chains node watchers that reference obj
+    chainWatchers = m.chainWatchers;
+    if (chainWatchers) {
+      for(var key in chainWatchers) {
+        if (!chainWatchers.hasOwnProperty(key)) { continue; }
+        chainNodes = chainWatchers[key];
+        if (chainNodes) {
+          for (var i=0,l=chainNodes.length;i<l;i++) {
+            chainNodes[i].didChange(null);
+          }
+        }
+      }
+    }
+    // copy chains from prototype
+    chains = m.chains;
+    if (chains && chains.value() !== obj) {
       metaFor(obj).chains = chains = chains.copy(obj);
-    } else {
-      chains.didChange(null);
     }
   }
 }

@@ -258,7 +258,7 @@ registerComputed('equal', function(dependentKey, value) {
 });
 
 /**
-  A computed property that returns true if the provied dependent property
+  A computed property that returns true if the provided dependent property
   is greater than the provided value.
 
   Example
@@ -282,7 +282,7 @@ registerComputed('equal', function(dependentKey, value) {
   @param {String} dependentKey
   @param {Number} value
   @return {Ember.ComputedProperty} computed property which returns true if
-  the original value for property is greater then given value.
+  the original value for property is greater than given value.
 */
 registerComputed('gt', function(dependentKey, value) {
   return get(this, dependentKey) > value;
@@ -375,7 +375,7 @@ registerComputed('lt', function(dependentKey, value) {
   @param {String} dependentKey
   @param {Number} value
   @return {Ember.ComputedProperty} computed property which returns true if
-  the original value for property is less or equal then given value.
+  the original value for property is less or equal than given value.
 */
 registerComputed('lte', function(dependentKey, value) {
   return get(this, dependentKey) <= value;
@@ -505,7 +505,7 @@ registerComputedWithProperties('any', function(properties) {
   @for Ember
   @param {String} dependentKey*
   @return {Ember.ComputedProperty} computed property which maps
-  values of all passed properties in to an array.
+  values of all passed in properties to an array.
 */
 registerComputedWithProperties('collect', function(properties) {
   var res = [];
@@ -585,19 +585,17 @@ computed.oneWay = function(dependentKey) {
   return alias(dependentKey).oneWay();
 };
 
-if (Ember.FEATURES.isEnabled('query-params-new')) {
-  /**
-    This is a more semantically meaningful alias of `computed.oneWay`,
-    whose name is somewhat ambiguous as to which direction the data flows.
+/**
+  This is a more semantically meaningful alias of `computed.oneWay`,
+  whose name is somewhat ambiguous as to which direction the data flows.
 
-    @method computed.reads
-    @for Ember
-    @param {String} dependentKey
-    @return {Ember.ComputedProperty} computed property which creates a
-      one way computed property to the original value for property.
-   */
-  computed.reads = computed.oneWay;
-}
+  @method computed.reads
+  @for Ember
+  @param {String} dependentKey
+  @return {Ember.ComputedProperty} computed property which creates a
+    one way computed property to the original value for property.
+ */
+computed.reads = computed.oneWay;
 
 /**
   Where `computed.oneWay` provides oneWay bindings, `computed.readOnly` provides
@@ -661,10 +659,13 @@ computed.readOnly = function(dependentKey) {
   @param {String} defaultPath
   @return {Ember.ComputedProperty} computed property which acts like
   a standard getter and setter, but defaults to the value from `defaultPath`.
+  @deprecated Use `Ember.computed.oneWay` or custom CP with default instead.
 */
 // ES6TODO: computed should have its own export path so you can do import {defaultTo} from computed
 computed.defaultTo = function(defaultPath) {
   return computed(function(key, newValue, cachedValue) {
+    Ember.deprecate('Usage of Ember.computed.defaultTo is deprecated, use `Ember.computed.oneWay` instead.');
+
     if (arguments.length === 1) {
       return get(this, defaultPath);
     }

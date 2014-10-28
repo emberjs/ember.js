@@ -7,6 +7,7 @@ import {required, Mixin, observer} from "ember-metal/mixin";
 import run from "ember-metal/run_loop";
 import {on} from "ember-metal/events";
 import EmberObject from "ember-runtime/system/object";
+import keys from "ember-metal/keys";
 
 var moduleOptions, originalLookup;
 
@@ -40,7 +41,7 @@ test("calls computed property setters", function() {
   equal(o.get('foo'), 'bar');
 });
 
-if (Ember.ENV.MANDATORY_SETTER) {
+if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   test("sets up mandatory setters for watched simple properties", function() {
 
     var MyClass = EmberObject.extend({
@@ -129,8 +130,8 @@ test("property name is the same as own prototype property", function() {
 });
 
 test("inherits properties from passed in EmberObject", function() {
-  var baseObj = EmberObject.create({ foo: 'bar' }),
-      secondaryObj = EmberObject.create(baseObj);
+  var baseObj = EmberObject.create({ foo: 'bar' });
+  var secondaryObj = EmberObject.create(baseObj);
 
   equal(secondaryObj.foo, baseObj.foo, "Em.O.create inherits properties from EmberObject parameter");
 });
@@ -332,8 +333,8 @@ test('inherited bindings should only sync on instances', function() {
 test("created objects should not share a guid with their superclass", function() {
   ok(guidFor(EmberObject), "EmberObject has a guid");
 
-  var objA = EmberObject.createWithMixins(),
-      objB = EmberObject.createWithMixins();
+  var objA = EmberObject.createWithMixins();
+  var objB = EmberObject.createWithMixins();
 
   ok(guidFor(objA) !== guidFor(objB), "two instances do not share a guid");
 });

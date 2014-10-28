@@ -1,10 +1,14 @@
 import Ember from 'ember-metal/core';
-import { apply } from 'ember-metal/utils';
+import {
+  apply,
+  GUID_KEY
+} from 'ember-metal/utils';
 import { indexOf } from "ember-metal/array";
 import {
   beginPropertyChanges,
   endPropertyChanges
 } from 'ember-metal/property_events';
+import Backburner from 'backburner';
 
 function onBegin(current) {
   run.currentRunLoop = current;
@@ -15,8 +19,8 @@ function onEnd(current, next) {
 }
 
 // ES6TODO: should Backburner become es6?
-var Backburner = requireModule('backburner').Backburner;
 var backburner = new Backburner(['sync', 'actions', 'destroy'], {
+  GUID_KEY: GUID_KEY,
   sync: {
     before: beginPropertyChanges,
     after: endPropertyChanges
@@ -63,7 +67,7 @@ var concat = [].concat;
 */
 export default run;
 function run() {
-  return apply(backburner, backburner.run, arguments);
+  return backburner.run.apply(backburner, arguments);
 }
 
 /**
@@ -105,12 +109,12 @@ function run() {
 */
 run.join = function(target, method /* args */) {
   if (!run.currentRunLoop) {
-    return apply(Ember, run, arguments);
+    return Ember.run.apply(Ember, arguments);
   }
 
   var args = slice.call(arguments);
   args.unshift('actions');
-  apply(run, run.schedule, args);
+  run.schedule.apply(run, args);
 };
 
 /**
@@ -157,7 +161,7 @@ run.join = function(target, method /* args */) {
 run.bind = function(target, method /* args*/) {
   var args = slice.call(arguments);
   return function() {
-    return apply(run, run.join, args.concat(slice.call(arguments)));
+    return run.join.apply(run, args.concat(slice.call(arguments)));
   };
 };
 
@@ -251,7 +255,7 @@ run.end = function() {
 */
 run.schedule = function(queue, target, method) {
   checkAutoRun();
-  apply(backburner, backburner.schedule, arguments);
+  backburner.schedule.apply(backburner, arguments);
 };
 
 // Used by global test teardown
@@ -288,7 +292,7 @@ run.sync = function() {
 
 /**
   Invokes the passed target/method and optional arguments after a specified
-  period if time. The last parameter of this method must always be a number
+  period of time. The last parameter of this method must always be a number
   of milliseconds.
 
   You should use this method whenever you need to run some action after a
@@ -309,11 +313,10 @@ run.sync = function() {
     target at the time the method is invoked.
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @param {Number} wait Number of milliseconds to wait.
-  @return {String} a string you can use to cancel the timer in
-    `run.cancel` later.
+  @return {Object} Timer information for use in cancelling, see `run.cancel`.
 */
-run.later = function(target, method) {
-  return apply(backburner, backburner.later, arguments);
+run.later = function(/*target, method*/) {
+  return backburner.later.apply(backburner, arguments);
 };
 
 /**
@@ -379,9 +382,9 @@ run.once = function(target, method) {
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} Timer information for use in cancelling, see `run.cancel`.
 */
-run.scheduleOnce = function(queue, target, method) {
+run.scheduleOnce = function(/*queue, target, method*/) {
   checkAutoRun();
-  return apply(backburner, backburner.scheduleOnce, arguments);
+  return backburner.scheduleOnce.apply(backburner, arguments);
 };
 
 /**
@@ -560,7 +563,7 @@ run.cancel = function(timer) {
   @return {Array} Timer information for use in cancelling, see `run.cancel`.
 */
 run.debounce = function() {
-  return apply(backburner, backburner.debounce, arguments);
+  return backburner.debounce.apply(backburner, arguments);
 };
 
 /**
@@ -599,7 +602,7 @@ run.debounce = function() {
   @return {Array} Timer information for use in cancelling, see `run.cancel`.
 */
 run.throttle = function() {
-  return apply(backburner, backburner.throttle, arguments);
+  return backburner.throttle.apply(backburner, arguments);
 };
 
 // Make sure it's not an autorun during testing

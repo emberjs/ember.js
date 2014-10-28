@@ -1,14 +1,16 @@
 import Ember from "ember-metal/core";
 import { _getPath as getPath } from "ember-metal/property_get";
-import { META_KEY } from "ember-metal/utils";
 import {
   propertyWillChange,
   propertyDidChange
 } from "ember-metal/property_events";
 import { defineProperty } from "ember-metal/properties";
 import EmberError from "ember-metal/error";
+import {
+  isPath
+} from "ember-metal/path_cache";
+import { hasPropertyAccessors } from "ember-metal/platform";
 
-var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
 
 /**
@@ -38,10 +40,11 @@ var set = function set(obj, keyName, value, tolerant) {
     return setPath(obj, keyName, value, tolerant);
   }
 
-  var meta = obj[META_KEY], desc = meta && meta.descs[keyName],
-      isUnknown, currentValue;
+  var meta = obj['__ember_meta__'];
+  var desc = meta && meta.descs[keyName];
+  var isUnknown, currentValue;
 
-  if (desc === undefined && keyName.indexOf('.') !== -1) {
+  if (desc === undefined && isPath(keyName)) {
     return setPath(obj, keyName, value, tolerant);
   }
 
@@ -64,19 +67,27 @@ var set = function set(obj, keyName, value, tolerant) {
     if (isUnknown && 'function' === typeof obj.setUnknownProperty) {
       obj.setUnknownProperty(keyName, value);
     } else if (meta && meta.watching[keyName] > 0) {
-      if (MANDATORY_SETTER) {
-        currentValue = meta.values[keyName];
+      if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+        if (hasPropertyAccessors) {
+          currentValue = meta.values[keyName];
+        } else {
+          currentValue = obj[keyName];
+        }
       } else {
         currentValue = obj[keyName];
       }
       // only trigger a change if the value has changed
       if (value !== currentValue) {
         propertyWillChange(obj, keyName);
-        if (MANDATORY_SETTER) {
-          if ((currentValue === undefined && !(keyName in obj)) || !obj.propertyIsEnumerable(keyName)) {
-            defineProperty(obj, keyName, null, value); // setup mandatory setter
+        if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+          if (hasPropertyAccessors) {
+            if ((currentValue === undefined && !(keyName in obj)) || !obj.propertyIsEnumerable(keyName)) {
+              defineProperty(obj, keyName, null, value); // setup mandatory setter
+            } else {
+              meta.values[keyName] = value;
+            }
           } else {
-            meta.values[keyName] = value;
+            obj[keyName] = value;
           }
         } else {
           obj[keyName] = value;

@@ -31,14 +31,14 @@ export default Component.extend(TextSupport, {
   classNames: ['ember-text-area'],
 
   tagName: "textarea",
-  attributeBindings: ['rows', 'cols', 'name', 'selectionEnd', 'selectionStart', 'wrap'],
+  attributeBindings: ['rows', 'cols', 'name', 'selectionEnd', 'selectionStart', 'wrap', 'lang', 'dir'],
   rows: null,
   cols: null,
 
   _updateElementValue: observer('value', function() {
     // We do this check so cursor position doesn't get affected in IE
-    var value = get(this, 'value'),
-        $el = this.$();
+    var value = get(this, 'value');
+    var $el = this.$();
     if ($el && value !== $el.val()) {
       $el.val(value);
     }

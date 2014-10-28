@@ -13,7 +13,8 @@ import { isWatching } from 'ember-metal/watching';
 QUnit.module('isWatching');
 
 function testObserver(setup, teardown, key) {
-  var obj = {}, fn = function() {};
+  var obj = {};
+  var fn = function() {};
   key = key || 'foo';
 
   equal(isWatching(obj, key), false, "precond - isWatching is false by default");

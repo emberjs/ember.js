@@ -351,7 +351,7 @@ export default Mixin.create({
     - `index` is the current index in the iteration.
     - `enumerable` is the enumerable object itself.
 
-    It should return the `true` to include the item in the results, `false`
+    It should return `true` to include the item in the results, `false`
     otherwise.
 
     Note that in addition to a callback, you can also pass an optional target
@@ -441,9 +441,9 @@ export default Mixin.create({
     @return {Array} rejected array
   */
   rejectBy: function(key, value) {
-    var exactValue = function(item) { return get(item, key) === value; },
-        hasValue = function(item) { return !!get(item, key); },
-        use = (arguments.length === 2 ? exactValue : hasValue);
+    var exactValue = function(item) { return get(item, key) === value; };
+    var hasValue = function(item) { return !!get(item, key); };
+    var use = (arguments.length === 2 ? exactValue : hasValue);
 
     return this.reject(use);
   },
@@ -640,11 +640,11 @@ export default Mixin.create({
     @return {Boolean} `true` if the passed function returns `true` for any item
   */
   any: function(callback, target) {
-    var len     = get(this, 'length'),
-        context = popCtx(),
-        found   = false,
-        last    = null,
-        next, idx;
+    var len     = get(this, 'length');
+    var context = popCtx();
+    var found   = false;
+    var last    = null;
+    var next, idx;
 
     if (target === undefined) { target = null; }
 
@@ -897,10 +897,10 @@ export default Mixin.create({
     @return this
   */
   addEnumerableObserver: function(target, opts) {
-    var willChange = (opts && opts.willChange) || 'enumerableWillChange',
-        didChange  = (opts && opts.didChange) || 'enumerableDidChange';
-
+    var willChange = (opts && opts.willChange) || 'enumerableWillChange';
+    var didChange  = (opts && opts.didChange) || 'enumerableDidChange';
     var hasObservers = get(this, 'hasEnumerableObservers');
+
     if (!hasObservers) propertyWillChange(this, 'hasEnumerableObservers');
     addListener(this, '@enumerable:before', target, willChange);
     addListener(this, '@enumerable:change', target, didChange);
@@ -917,8 +917,8 @@ export default Mixin.create({
     @return this
   */
   removeEnumerableObserver: function(target, opts) {
-    var willChange = (opts && opts.willChange) || 'enumerableWillChange',
-        didChange  = (opts && opts.didChange) || 'enumerableDidChange';
+    var willChange = (opts && opts.willChange) || 'enumerableWillChange';
+    var didChange  = (opts && opts.didChange) || 'enumerableDidChange';
 
     var hasObservers = get(this, 'hasEnumerableObservers');
     if (hasObservers) propertyWillChange(this, 'hasEnumerableObservers');
@@ -1028,9 +1028,9 @@ export default Mixin.create({
     var sortKeys = arguments;
     return this.toArray().sort(function(a, b){
       for(var i = 0; i < sortKeys.length; i++) {
-        var key = sortKeys[i],
-        propA = get(a, key),
-        propB = get(b, key);
+        var key = sortKeys[i];
+        var propA = get(a, key);
+        var propB = get(b, key);
         // return 1 or -1 else continue to the next sortKey
         var compareValue = compare(propA, propB);
         if (compareValue) { return compareValue; }

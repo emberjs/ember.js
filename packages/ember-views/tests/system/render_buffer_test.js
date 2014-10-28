@@ -3,6 +3,8 @@ import { get } from "ember-metal/property_get";
 import jQuery from "ember-views/system/jquery";
 import RenderBuffer from "ember-views/system/render_buffer";
 
+var svgNamespace = "http://www.w3.org/2000/svg";
+var xhtmlNamespace = "http://www.w3.org/1999/xhtml";
 var trim = jQuery.trim;
 
 // .......................................................
@@ -10,155 +12,296 @@ var trim = jQuery.trim;
 //
 QUnit.module("RenderBuffer");
 
-test("RenderBuffers combine strings", function() {
+test("RenderBuffers raise a deprecation warning without a contextualElement", function() {
   var buffer = new RenderBuffer('div');
-  buffer.pushOpeningTag();
+  expectDeprecation(function(){
+    buffer.generateElement();
+    var el = buffer.element();
+    equal(el.tagName.toLowerCase(), 'div');
+  }, /The render buffer expects an outer contextualElement to exist/);
+});
+
+test("reset RenderBuffers raise a deprecation warning without a contextualElement", function() {
+  var buffer = new RenderBuffer('div', document.body);
+  buffer.reset('span');
+  expectDeprecation(function(){
+    buffer.generateElement();
+    var el = buffer.element();
+    equal(el.tagName.toLowerCase(), 'span');
+  }, /The render buffer expects an outer contextualElement to exist/);
+});
+
+test("RenderBuffers combine strings", function() {
+  var buffer = new RenderBuffer('div', document.body);
+  buffer.generateElement();
 
   buffer.push('a');
   buffer.push('b');
 
-  // IE8 returns `element name as upper case with extra whitespace.
-  equal("<div>ab</div>", trim(buffer.string().toLowerCase()), "Multiple pushes should concatenate");
+  var el = buffer.element();
+  equal(el.tagName.toLowerCase(), 'div');
+  equal(el.childNodes[0].nodeValue, 'ab', "Multiple pushes should concatenate");
 });
 
 test("value of 0 is included in output", function() {
-  var buffer, $el;
-
-  buffer = new RenderBuffer('input');
+  var buffer, el;
+  buffer = new RenderBuffer('input', document.body);
   buffer.prop('value', 0);
-  buffer.pushOpeningTag();
-  $el = buffer.element();
+  buffer.generateElement();
+  el = buffer.element();
+  strictEqual(el.value, '0', "generated element has value of '0'");
+});
 
-  strictEqual($el.value, '0', "generated element has value of '0'");
+test("sets attributes with camelCase", function() {
+  var buffer = new RenderBuffer('div', document.body);
+  var content = "javascript:someCode()"; //jshint ignore:line
 
-  buffer = new RenderBuffer('input');
-  buffer.prop('value', 0);
-  buffer.push('<div>');
-  buffer.pushOpeningTag();
-  buffer.push('</div>');
-  $el = jQuery(buffer.innerString());
-
-  strictEqual($el.find('input').val(), '0', "raw tag has value of '0'");
+  buffer.attr('onClick', content);
+  buffer.generateElement();
+  var el = buffer.element();
+  strictEqual(el.getAttribute('onClick'), content, "attribute with camelCase was set");
 });
 
 test("prevents XSS injection via `id`", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
 
-  buffer.push('<span></span>'); // We need the buffer to not be empty so we use the string path
   buffer.id('hacked" megahax="yes');
-  buffer.pushOpeningTag();
+  buffer.generateElement();
 
-  equal('<span></span><div id="hacked&quot; megahax=&quot;yes">', buffer.string());
+  var el = buffer.element();
+  equal(el.id, 'hacked" megahax="yes');
 });
 
 test("prevents XSS injection via `attr`", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
 
-  buffer.push('<span></span>'); // We need the buffer to not be empty so we use the string path
   buffer.attr('id', 'trololol" onmouseover="pwn()');
   buffer.attr('class', "hax><img src=\"trollface.png\"");
-  buffer.pushOpeningTag();
+  buffer.generateElement();
 
-  equal('<span></span><div id="trololol&quot; onmouseover=&quot;pwn()" class="hax&gt;&lt;img src=&quot;trollface.png&quot;">', buffer.string());
+  var el = buffer.element();
+  equal(el.tagName.toLowerCase(), 'div');
+  equal(el.childNodes.length, 0);
+  equal(el.id, 'trololol" onmouseover="pwn()');
+  equal(el.getAttribute('class'), "hax><img src=\"trollface.png\"");
 });
 
 test("prevents XSS injection via `addClass`", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
 
-  buffer.push('<span></span>'); // We need the buffer to not be empty so we use the string path
   buffer.addClass('megahax" xss="true');
-  buffer.pushOpeningTag();
+  buffer.generateElement();
 
-  // Regular check then check for IE
-  equal('<span></span><div class="megahax&quot; xss=&quot;true">', buffer.string());
+  var el = buffer.element();
+  equal(el.getAttribute('class'), 'megahax" xss="true');
 });
 
 test("prevents XSS injection via `style`", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
 
-  buffer.push('<span></span>'); // We need the buffer to not be empty so we use the string path
   buffer.style('color', 'blue;" xss="true" style="color:red');
-  buffer.pushOpeningTag();
+  buffer.generateElement();
 
-  equal('<span></span><div style="color:blue;&quot; xss=&quot;true&quot; style=&quot;color:red;">', buffer.string());
+  var el = buffer.element();
+  var div = document.createElement('div');
+
+  // some browsers have different escaping strageties
+  // we should ensure the outcome is consistent. Ultimately we now use
+  // setAttribute under the hood, so we should always do the right thing.  But
+  // this test should be kept to ensure we do. Also, I believe/hope it is
+  // alright to assume the browser escapes setAttribute correctly...
+  div.setAttribute('style', 'color:blue;" xss="true" style="color:red;');
+
+  equal(el.getAttribute('style'), div.getAttribute('style'));
 });
 
 test("prevents XSS injection via `tagName`", function() {
-  var buffer = new RenderBuffer('cool-div><div xss="true"');
-
-  buffer.push('<span></span>'); // We need the buffer to not be empty so we use the string path
-  buffer.pushOpeningTag();
-  buffer.begin('span><span xss="true"');
-  buffer.pushOpeningTag();
-  buffer.pushClosingTag();
-  buffer.pushClosingTag();
-
-  equal('<span></span><cool-divdivxsstrue><spanspanxsstrue></spanspanxsstrue></cool-divdivxsstrue>', buffer.string());
+  var buffer = new RenderBuffer('cool-div><div xss="true"', document.body);
+  try {
+    buffer.generateElement();
+    equal(buffer.element().childNodes.length, 0, 'no extra nodes created');
+  } catch (e) {
+    ok(true, 'dom exception');
+  }
 });
 
 test("handles null props - Issue #2019", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
 
-  buffer.push('<span></span>'); // We need the buffer to not be empty so we use the string path
   buffer.prop('value', null);
-  buffer.pushOpeningTag();
-
-  equal('<span></span><div>', buffer.string());
+  buffer.generateElement();
+  equal(buffer.element().tagName, 'DIV', 'div exists');
 });
 
 test("handles browsers like Firefox < 11 that don't support outerHTML Issue #1952", function() {
-  var buffer = new RenderBuffer('div');
-  buffer.pushOpeningTag();
+  var buffer = new RenderBuffer('div', document.body);
+  buffer.generateElement();
   // Make sure element.outerHTML is falsy to trigger the fallback.
   var elementStub = '<div></div>';
   buffer.element = function() { return elementStub; };
   // IE8 returns `element name as upper case with extra whitespace.
-  equal(elementStub, trim(buffer.string().toLowerCase()));
-});
-
-test("resets classes after pushing the opening tag", function() {
-  var buffer = new RenderBuffer('div');
-  // IE8 renders single class without quote. To pass this test any environments, add class twice.
-  buffer.addClass('foo1');
-  buffer.addClass('foo2');
-  buffer.pushOpeningTag();
-  buffer.begin('div');
-  buffer.addClass('bar1');
-  buffer.addClass('bar2');
-  buffer.pushOpeningTag();
-  buffer.pushClosingTag();
-  buffer.pushClosingTag();
-  equal(trim(buffer.string()).toLowerCase().replace(/\r\n/g, ''), '<div class="foo1 foo2"><div class="bar1 bar2"></div></div>');
+  equal(trim(buffer.string().toLowerCase()), elementStub);
 });
 
 test("lets `setClasses` and `addClass` work together", function() {
-  var buffer = new RenderBuffer('div');
+  var buffer = new RenderBuffer('div', document.body);
   buffer.setClasses(['foo', 'bar']);
   buffer.addClass('baz');
-  buffer.pushOpeningTag();
-  buffer.pushClosingTag();
-  equal(trim(buffer.string().toLowerCase()), '<div class="foo bar baz"></div>');
+  buffer.generateElement();
+
+  var el = buffer.element();
+  equal(el.tagName, 'DIV');
+  equal(el.getAttribute('class'), 'foo bar baz');
+});
+
+test("generates text and a div and text", function() {
+  var div = document.createElement('div');
+  var buffer = new RenderBuffer(undefined, div);
+  buffer.buffer = 'Howdy<div>Nick</div>Cage';
+
+  var el = buffer.element();
+  equal(el.childNodes[0].data, 'Howdy');
+  equal(el.childNodes[1].tagName, 'DIV');
+  equal(el.childNodes[1].childNodes[0].data, 'Nick');
+  equal(el.childNodes[2].data, 'Cage');
+});
+
+
+test("generates a tr from a tr innerString", function() {
+  var table = document.createElement('table');
+  var buffer = new RenderBuffer(undefined, table);
+  buffer.buffer = '<tr></tr>';
+
+  var el = buffer.element();
+  equal(el.childNodes[0].tagName.toLowerCase(), 'tr');
+});
+
+test("generates a tr from a tr innerString with leading <script", function() {
+  var table = document.createElement('table');
+  var buffer = new RenderBuffer(undefined, table);
+  buffer.buffer = '<script></script><tr></tr>';
+
+  var el = buffer.element();
+  equal(el.childNodes[1].tagName.toLowerCase(), 'tr');
+});
+
+test("generates a tr from a tr innerString with leading comment", function() {
+  var table = document.createElement('table');
+  var buffer = new RenderBuffer(undefined, table);
+  buffer.buffer = '<!-- blargh! --><tr></tr>';
+
+  var el = buffer.element();
+  equal(el.childNodes[1].tagName, 'TR');
+});
+
+test("generates a tr from a tr innerString on rerender", function() {
+  var buffer = new RenderBuffer('table', document.body);
+  buffer.generateElement();
+  buffer.buffer = '<tr></tr>';
+
+  var el = buffer.element();
+  equal(el.childNodes[0].tagName.toLowerCase(), 'tr');
+});
+
+test("generates a tbody from a tbody innerString", function() {
+  var table = document.createElement('table');
+  var buffer = new RenderBuffer(undefined, table);
+  buffer.buffer = '<tbody><tr></tr></tbody>';
+
+  var el = buffer.element();
+  equal(el.childNodes[0].tagName, 'TBODY');
+});
+
+test("generates a col from a col innerString", function() {
+  var table = document.createElement('table');
+  var buffer = new RenderBuffer(undefined, table);
+  buffer.buffer = '<col></col>';
+
+  var el = buffer.element();
+  equal(el.childNodes[0].tagName, 'COL');
 });
 
 QUnit.module("RenderBuffer - without tagName");
 
 test("It is possible to create a RenderBuffer without a tagName", function() {
-  var buffer = new RenderBuffer();
+  var buffer = new RenderBuffer(undefined, document.body);
   buffer.push('a');
   buffer.push('b');
   buffer.push('c');
 
-  equal(buffer.string(), "abc", "Buffers without tagNames do not wrap the content in a tag");
+  var el = buffer.element();
+
+  equal(el.nodeType, 11, "Buffers without tagNames do not wrap the content in a tag");
+  equal(el.childNodes.length, 1);
+  equal(el.childNodes[0].nodeValue, 'abc');
 });
 
 QUnit.module("RenderBuffer#element");
 
 test("properly handles old IE's zero-scope bug", function() {
-  var buffer = new RenderBuffer('div');
-  buffer.pushOpeningTag();
+  var buffer = new RenderBuffer('div', document.body);
+  buffer.generateElement();
   buffer.push('<script></script>foo');
 
   var element = buffer.element();
   ok(jQuery(element).html().match(/script/i), "should have script tag");
   ok(!jQuery(element).html().match(/&shy;/), "should not have &shy;");
 });
+
+if ('namespaceURI' in document.createElement('div')) {
+
+QUnit.module("RenderBuffer namespaces");
+
+test("properly makes a content string SVG namespace inside an SVG tag", function() {
+  var buffer = new RenderBuffer('svg', document.body);
+  buffer.generateElement();
+  buffer.push('<path></path>foo');
+
+  var element = buffer.element();
+  ok(element.tagName, 'SVG', 'element is svg');
+  equal(element.namespaceURI, svgNamespace, 'element is svg namespace');
+
+  ok(element.childNodes[0].tagName, 'PATH', 'element is path');
+  equal(element.childNodes[0].namespaceURI, svgNamespace, 'element is svg namespace');
+});
+
+test("properly makes a path element svg namespace inside SVG context", function() {
+  var buffer = new RenderBuffer('path', document.createElementNS(svgNamespace, 'svg'));
+  buffer.generateElement();
+  buffer.push('<g></g>');
+
+  var element = buffer.element();
+  ok(element.tagName, 'PATH', 'element is PATH');
+  equal(element.namespaceURI, svgNamespace, 'element is svg namespace');
+
+  ok(element.childNodes[0].tagName, 'G', 'element is g');
+  equal(element.childNodes[0].namespaceURI, svgNamespace, 'element is svg namespace');
+});
+
+test("properly makes a foreignObject svg namespace inside SVG context", function() {
+  var buffer = new RenderBuffer('foreignObject', document.createElementNS(svgNamespace, 'svg'));
+  buffer.generateElement();
+  buffer.push('<div></div>');
+
+  var element = buffer.element();
+  ok(element.tagName, 'FOREIGNOBJECT', 'element is foreignObject');
+  equal(element.namespaceURI, svgNamespace, 'element is svg namespace');
+
+  ok(element.childNodes[0].tagName, 'DIV', 'element is div');
+  equal(element.childNodes[0].namespaceURI, xhtmlNamespace, 'element is xhtml namespace');
+});
+
+test("properly makes a div xhtml namespace inside foreignObject context", function() {
+  var buffer = new RenderBuffer('div', document.createElementNS(svgNamespace, 'foreignObject'));
+  buffer.generateElement();
+  buffer.push('<div></div>');
+
+  var element = buffer.element();
+  ok(element.tagName, 'DIV', 'element is div');
+  equal(element.namespaceURI, xhtmlNamespace, 'element is xhtml namespace');
+
+  ok(element.childNodes[0].tagName, 'DIV', 'element is div');
+  equal(element.childNodes[0].namespaceURI, xhtmlNamespace, 'element is xhtml namespace');
+});
+
+}

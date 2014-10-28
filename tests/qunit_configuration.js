@@ -104,6 +104,8 @@
   // Handle extending prototypes
   QUnit.config.urlConfig.push({ id: 'extendprototypes', label: 'Extend Prototypes'});
 
+  // Raise on unhandled deprecation
+  QUnit.config.urlConfig.push({ id: 'raiseonunhandleddeprecation', label: 'Raise on Deprecation'});
 
   // Handle JSHint
   QUnit.config.urlConfig.push('nojshint');
@@ -241,7 +243,9 @@
       }
       Ember.deprecate = function(msg, test) {
         EmberDev.deprecations.actuals = EmberDev.deprecations.actuals || [];
-        EmberDev.deprecations.actuals.push([msg, test]);
+        if (!test) {
+          EmberDev.deprecations.actuals.push([msg, test]);
+        }
       };
     },
     restoreEmber: function(){

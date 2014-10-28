@@ -3,20 +3,12 @@
 */
 
 import Ember from "ember-metal/core";
+import { meta as metaFor } from "ember-metal/utils";
 import {
-  META_KEY,
-  meta
-} from "ember-metal/utils";
-import { platform } from "ember-metal/platform";
+  defineProperty as objectDefineProperty,
+  hasPropertyAccessors
+} from "ember-metal/platform";
 import { overrideChains } from "ember-metal/property_events";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-
-var metaFor = meta,
-    objectDefineProperty = platform.defineProperty;
-
-var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
-
 // ..........................................................
 // DESCRIPTOR
 //
@@ -38,16 +30,18 @@ export function Descriptor() {}
 // DEFINING PROPERTIES API
 //
 
-var MANDATORY_SETTER_FUNCTION = Ember.MANDATORY_SETTER_FUNCTION = function(value) {
-  Ember.assert("You must use Ember.set() to access this property (of " + this + ")", false);
-};
+export function MANDATORY_SETTER_FUNCTION(name) {
+  return function SETTER_FUNCTION(value) {
+    Ember.assert("You must use Ember.set() to set the `" + name + "` property (of " + this + ") to `" + value + "`.", false);
+  };
+}
 
-var DEFAULT_GETTER_FUNCTION = Ember.DEFAULT_GETTER_FUNCTION = function DEFAULT_GETTER_FUNCTION(name) {
-  return function() {
-    var meta = this[META_KEY];
+export function DEFAULT_GETTER_FUNCTION(name) {
+  return function GETTER_FUNCTION() {
+    var meta = this['__ember_meta__'];
     return meta && meta.values[name];
   };
-};
+}
 
 /**
   NOTE: This is a low-level method used by other parts of the API. You almost
@@ -100,7 +94,9 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   if (!meta) meta = metaFor(obj);
   descs = meta.descs;
   existingDesc = meta.descs[keyName];
-  watching = meta.watching[keyName] > 0;
+  var watchEntry = meta.watching[keyName];
+
+  watching = watchEntry !== undefined && watchEntry > 0;
 
   if (existingDesc instanceof Descriptor) {
     existingDesc.teardown(obj, keyName);
@@ -110,13 +106,17 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     value = desc;
 
     descs[keyName] = desc;
-    if (MANDATORY_SETTER && watching) {
-      objectDefineProperty(obj, keyName, {
-        configurable: true,
-        enumerable: true,
-        writable: true,
-        value: undefined // make enumerable
-      });
+    if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+      if (watching && hasPropertyAccessors) {
+        objectDefineProperty(obj, keyName, {
+          configurable: true,
+          enumerable: true,
+          writable: true,
+          value: undefined // make enumerable
+        });
+      } else {
+        obj[keyName] = undefined; // make enumerable
+      }
     } else {
       obj[keyName] = undefined; // make enumerable
     }
@@ -126,14 +126,18 @@ export function defineProperty(obj, keyName, desc, data, meta) {
     if (desc == null) {
       value = data;
 
-      if (MANDATORY_SETTER && watching) {
-        meta.values[keyName] = data;
-        objectDefineProperty(obj, keyName, {
-          configurable: true,
-          enumerable: true,
-          set: MANDATORY_SETTER_FUNCTION,
-          get: DEFAULT_GETTER_FUNCTION(keyName)
-        });
+      if (Ember.FEATURES.isEnabled('mandatory-setter')) {
+        if (watching && hasPropertyAccessors) {
+          meta.values[keyName] = data;
+          objectDefineProperty(obj, keyName, {
+            configurable: true,
+            enumerable: true,
+            set: MANDATORY_SETTER_FUNCTION(keyName),
+            get: DEFAULT_GETTER_FUNCTION(keyName)
+          });
+        } else {
+          obj[keyName] = data;
+        }
       } else {
         obj[keyName] = data;
       }
@@ -154,31 +158,4 @@ export function defineProperty(obj, keyName, desc, data, meta) {
   if (obj.didDefineProperty) { obj.didDefineProperty(obj, keyName, value); }
 
   return this;
-}
-
-/**
-  Used internally to allow changing properties in a backwards compatible way, and print a helpful
-  deprecation warning.
-
-  @method deprecateProperty
-  @param {Object} object The object to add the deprecated property to.
-  @param {String} deprecatedKey The property to add (and print deprecation warnings upon accessing).
-  @param {String} newKey The property that will be aliased.
-  @private
-  @since 1.7.0
-*/
-
-export function deprecateProperty(object, deprecatedKey, newKey) {
-  function deprecate() {
-    Ember.deprecate('Usage of `' + deprecatedKey + '` is deprecated, use `' + newKey + '` instead.');
-  }
-
-  if (platform.hasPropertyAccessors) {
-    defineProperty(object, deprecatedKey, {
-        configurable: true,
-        enumerable: false,
-        set: function(value) { deprecate(); set(this, newKey, value); },
-        get: function() { deprecate(); return get(this, newKey); }
-    });
-  }
 }

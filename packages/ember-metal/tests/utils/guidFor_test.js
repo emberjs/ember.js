@@ -20,7 +20,8 @@ var nanGuid = function(obj) {
 };
 
 test("Object", function() {
-  var a = {}, b = {};
+  var a = {};
+  var b = {};
 
   sameGuid( a, a, "same object always yields same guid" );
   diffGuid( a, b, "different objects yield different guids" );
@@ -44,7 +45,9 @@ test("Object with prototype", function() {
 });
 
 test("strings", function() {
-  var a = "string A", aprime = "string A", b = "String B";
+  var a = "string A";
+  var aprime = "string A";
+  var b = "String B";
 
   sameGuid( a, a,      "same string always yields same guid" );
   sameGuid( a, aprime, "identical strings always yield the same guid" );
@@ -53,7 +56,9 @@ test("strings", function() {
 });
 
 test("numbers", function() {
-  var a = 23, aprime = 23, b = 34;
+  var a = 23;
+  var aprime = 23;
+  var b = 34;
 
   sameGuid( a, a,      "same numbers always yields same guid" );
   sameGuid( a, aprime, "identical numbers always yield the same guid" );
@@ -62,7 +67,9 @@ test("numbers", function() {
 });
 
 test("numbers", function() {
-  var a = true, aprime = true, b = false;
+  var a = true;
+  var aprime = true;
+  var b = false;
 
   sameGuid( a, a,      "same booleans always yields same guid" );
   sameGuid( a, aprime, "identical booleans always yield the same guid" );
@@ -72,7 +79,9 @@ test("numbers", function() {
 });
 
 test("null and undefined", function() {
-  var a = null, aprime = null, b;
+  var a = null;
+  var aprime = null;
+  var b;
 
   sameGuid( a, a,      "null always returns the same guid" );
   sameGuid( b, b,      "undefined always returns the same guid" );
@@ -83,7 +92,9 @@ test("null and undefined", function() {
 });
 
 test("arrays", function() {
-  var a = ["a", "b", "c"], aprime = ["a", "b", "c"], b = ["1", "2", "3"];
+  var a = ["a", "b", "c"];
+  var aprime = ["a", "b", "c"];
+  var b = ["1", "2", "3"];
 
   sameGuid( a, a,      "same instance always yields same guid" );
   diffGuid( a, aprime, "identical arrays always yield the same guid" );

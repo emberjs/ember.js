@@ -1,4 +1,3 @@
-/*globals TemplateTests*/
 /*jshint newcap:false*/
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
@@ -15,6 +14,8 @@ import EmberHandlebars from "ember-handlebars-compiler";
 var compile = EmberHandlebars.compile;
 
 var view;
+
+var originalLookup = Ember.lookup;
 
 function appendView() {
   run(function() { view.appendTo('#qunit-fixture'); });
@@ -33,7 +34,6 @@ function registerRepeatHelper() {
 
 QUnit.module("Handlebars bound helpers", {
   setup: function() {
-    window.TemplateTests = Namespace.create();
   },
   teardown: function() {
     run(function() {
@@ -41,8 +41,20 @@ QUnit.module("Handlebars bound helpers", {
         view.destroy();
       }
     });
-    window.TemplateTests = undefined;
+    Ember.lookup = originalLookup;
   }
+});
+
+test("primitives should work correctly", function() {
+  view = EmberView.create({
+    prims: Ember.A(["string", 12]),
+
+    template: compile('{{#each view.prims}}{{#if this}}inside-if{{/if}}{{#with this}}inside-with{{/with}}{{/each}}')
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'inside-ifinside-withinside-ifinside-with');
 });
 
 test("should update bound helpers when properties change", function() {
@@ -120,18 +132,20 @@ test("bound helpers should support keywords", function() {
   ok(view.$().text() === 'AB', "helper output is correct");
 });
 
-test("bound helpers should support global paths", function() {
+test("bound helpers should support global paths [DEPRECATED]", function() {
   EmberHandlebars.helper('capitalize', function(value) {
     return value.toUpperCase();
   });
 
-  TemplateTests.text = 'ab';
+  Ember.lookup = {Text: 'ab'};
 
   view = EmberView.create({
-    template: EmberHandlebars.compile("{{capitalize TemplateTests.text}}")
+    template: EmberHandlebars.compile("{{capitalize Text}}")
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, /Global lookup of Text from a Handlebars template is deprecated/);
 
   ok(view.$().text() === 'AB', "helper output is correct");
 });
@@ -433,4 +447,17 @@ test("bound helpers can handle `this` keyword when it's a non-object", function(
   equal(view.$().text(), 'wallace!', "helper output is correct");
 });
 
+test("should have correct argument types", function() {
+  EmberHandlebars.helper('getType', function(value) {
+    return typeof value;
+  });
 
+  view = EmberView.create({
+    controller: EmberObject.create(),
+    template: EmberHandlebars.compile('{{getType null}}, {{getType undefProp}}, {{getType "string"}}, {{getType 1}}, {{getType}}')
+  });
+
+  appendView();
+
+  equal(view.$().text(), 'undefined, undefined, string, number, object', "helper output is correct");
+});

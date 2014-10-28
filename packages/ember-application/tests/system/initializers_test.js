@@ -78,41 +78,42 @@ test("initializers can be registered in a specified order", function() {
 });
 
 test("initializers can have multiple dependencies", function () {
-  var order = [],
-      a = {
-        name: "a",
-        before: "b",
-        initialize: function(container) {
-          order.push('a');
-        }
-      },
-      b = {
-        name: "b",
-        initialize: function(container) {
-          order.push('b');
-        }
-      },
-      c = {
-        name: "c",
-        after: "b",
-        initialize: function(container) {
-          order.push('c');
-        }
-      },
-      afterB = {
-        name: "after b",
-        after: "b",
-        initialize: function(container) {
-          order.push("after b");
-        }
-      },
-      afterC = {
-        name: "after c",
-        after: "c",
-        initialize: function(container) {
-          order.push("after c");
-        }
-      };
+  var order = [];
+  var a = {
+    name: "a",
+    before: "b",
+    initialize: function(container) {
+      order.push('a');
+    }
+  };
+  var b = {
+    name: "b",
+    initialize: function(container) {
+      order.push('b');
+    }
+  };
+  var c = {
+    name: "c",
+    after: "b",
+    initialize: function(container) {
+      order.push('c');
+    }
+  };
+  var afterB = {
+    name: "after b",
+    after: "b",
+    initialize: function(container) {
+      order.push("after b");
+    }
+  };
+  var afterC = {
+    name: "after c",
+    after: "c",
+    initialize: function(container) {
+      order.push("after c");
+    }
+  };
+
   Application.initializer(b);
   Application.initializer(a);
   Application.initializer(afterC);
@@ -133,7 +134,8 @@ test("initializers can have multiple dependencies", function () {
 });
 
 test("initializers set on Application subclasses should not be shared between apps", function(){
-  var firstInitializerRunCount = 0, secondInitializerRunCount = 0;
+  var firstInitializerRunCount = 0;
+  var secondInitializerRunCount = 0;
   var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'first',
@@ -168,7 +170,8 @@ test("initializers set on Application subclasses should not be shared between ap
 });
 
 test("initializers are concatenated", function(){
-  var firstInitializerRunCount = 0, secondInitializerRunCount = 0;
+  var firstInitializerRunCount = 0;
+  var secondInitializerRunCount = 0;
   var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'first',

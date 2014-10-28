@@ -3,7 +3,8 @@ import isNone from 'ember-metal/is_none';
 QUnit.module("Ember.isNone");
 
 test("Ember.isNone", function() {
-  var string = "string", fn = function() {};
+  var string = "string";
+  var fn = function() {};
 
   equal(true,  isNone(null),      "for null");
   equal(true,  isNone(undefined), "for undefined");

@@ -5,11 +5,11 @@ that you'd normally have to do by hand. There are tasks that are common
 to every web app; Ember.js does those things for you, so you can focus
 on building killer features and UI.
 
-- [Website](http://emberjs.com) 
-- [Guides](http://emberjs.com/guides) 
-- [API](http://emberjs.com/api) 
-- [Community](http://emberjs.com/community) 
-- [Blog](http://emberjs.com/blog) 
+- [Website](http://emberjs.com)
+- [Guides](http://emberjs.com/guides)
+- [API](http://emberjs.com/api)
+- [Community](http://emberjs.com/community)
+- [Blog](http://emberjs.com/blog)
 - [Builds](http://emberjs.com/builds)
 
 # Building Ember.js
@@ -20,7 +20,7 @@ on building killer features and UI.
 
 # Contribution
 
-[See `CONTRIBUTING.md`](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md)
+See [CONTRIBUTING.md](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md)
 
 # How to Run Unit Tests
 
@@ -28,18 +28,17 @@ on building killer features and UI.
 
 2. To start the development server, run `npm start`.
 
-3. Then visit: `http://localhost:4200/tests/index.html?package=PACKAGE_NAME`. Replace
-`PACKAGE_NAME` with the name of the package you want to run. For
+3. Then visit <http://localhost:4200/tests/index.html>. This will run all tests.
+
+4. To test a specific package visit `http://localhost:4200/tests/index.html?package=PACKAGE_NAME` Replace
+`PACKAGE_NAME` with the name of the package you want to test. For
 example:
 
   * [Ember.js Runtime](http://localhost:4200/tests/index.html?package=ember-runtime)
   * [Ember.js Views](http://localhost:4200/tests/index.html?package=ember-views)
   * [Ember.js Handlebars](http://localhost:4200/tests/index.html?package=ember-handlebars)
 
-To run multiple packages, you can separate them with commas. You can run
-all the tests by not specifying a `package` param:
-
-<http://localhost:4200/tests/index.html>
+To test multiple packages, you can separate them with commas. 
 
 You can also pass `jquery=VERSION` in the test URL to test different
 versions of jQuery.

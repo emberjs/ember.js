@@ -143,7 +143,28 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
     }
   },
 
+  /**
+    Override to implement content array `willChange` observer.
+
+    @method contentArrayWillChange
+
+    @param {Ember.Array} contentArray the content array
+    @param {Number} start starting index of the change
+    @param {Number} removeCount count of items removed
+    @param {Number} addCount count of items added
+
+  */
   contentArrayWillChange: K,
+  /**
+    Override to implement content array `didChange` observer.
+
+    @method contentArrayDidChange
+
+    @param {Ember.Array} contentArray the content array
+    @param {Number} start starting index of the change
+    @param {Number} removeCount count of items removed
+    @param {Number} addCount count of items added
+  */
   contentArrayDidChange: K,
 
   /**
@@ -177,8 +198,8 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
   },
 
   _arrangedContentWillChange: beforeObserver('arrangedContent', function() {
-    var arrangedContent = get(this, 'arrangedContent'),
-        len = arrangedContent ? get(arrangedContent, 'length') : 0;
+    var arrangedContent = get(this, 'arrangedContent');
+    var len = arrangedContent ? get(arrangedContent, 'length') : 0;
 
     this.arrangedContentArrayWillChange(this, 0, len, undefined);
     this.arrangedContentWillChange(this);
@@ -187,8 +208,8 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
   }),
 
   _arrangedContentDidChange: observer('arrangedContent', function() {
-    var arrangedContent = get(this, 'arrangedContent'),
-        len = arrangedContent ? get(arrangedContent, 'length') : 0;
+    var arrangedContent = get(this, 'arrangedContent');
+    var len = arrangedContent ? get(arrangedContent, 'length') : 0;
 
     Ember.assert("Can't set ArrayProxy's content to itself", arrangedContent !== this);
 
@@ -268,9 +289,10 @@ var ArrayProxy = EmberObject.extend(MutableArray, {
 
   removeAt: function(start, len) {
     if ('number' === typeof start) {
-      var content = get(this, 'content'),
-          arrangedContent = get(this, 'arrangedContent'),
-          indices = [], i;
+      var content = get(this, 'content');
+      var arrangedContent = get(this, 'arrangedContent');
+      var indices = [];
+      var i;
 
       if ((start < 0) || (start >= get(this, 'length'))) {
         throw new EmberError(OUT_OF_RANGE_EXCEPTION);

@@ -37,15 +37,15 @@ SubArray.prototype = {
 
     @method addItem
 
-    @param {number} index The index of the item in the tracked array.
-    @param {boolean} match `true` iff the item is included in the subarray.
+    @param {Number} index The index of the item in the tracked array.
+    @param {Boolean} match `true` iff the item is included in the subarray.
 
     @return {number} The index of the item in the subarray.
   */
   addItem: function(index, match) {
-    var returnValue = -1,
-        itemType = match ? RETAIN : FILTER,
-        self = this;
+    var returnValue = -1;
+    var itemType = match ? RETAIN : FILTER;
+    var self = this;
 
     this._findOperation(index, function(operation, operationIndex, rangeStart, rangeEnd, seenInSubArray) {
       var newOperation, splitOperation;
@@ -90,14 +90,14 @@ SubArray.prototype = {
 
     @method removeItem
 
-    @param {number} index The index of the item in the tracked array.
+    @param {Number} index The index of the item in the tracked array.
 
     @return {number} The index of the item in the subarray, or `-1` if the item
     was not in the subarray.
   */
   removeItem: function(index) {
-    var returnValue = -1,
-        self = this;
+    var returnValue = -1;
+    var self = this;
 
     this._findOperation(index, function (operation, operationIndex, rangeStart, rangeEnd, seenInSubArray) {
       if (operation.type === RETAIN) {
@@ -119,12 +119,8 @@ SubArray.prototype = {
 
 
   _findOperation: function (index, foundCallback, notFoundCallback) {
-    var operationIndex,
-        len,
-        operation,
-        rangeStart,
-        rangeEnd,
-        seenInSubArray = 0;
+    var seenInSubArray = 0;
+    var operationIndex, len, operation, rangeStart, rangeEnd;
 
     // OPTIMIZE: change to balanced tree
     // find leftmost operation to the right of `index`
@@ -144,8 +140,8 @@ SubArray.prototype = {
   },
 
   _composeAt: function(index) {
-    var op = this._operations[index],
-        otherOp;
+    var op = this._operations[index];
+    var otherOp;
 
     if (!op) {
       // Composing out of bounds is a no-op, as when removing the last operation

@@ -141,7 +141,7 @@ export default Mixin.create({
   },
 
   /**
-    To get multiple properties at once, call `getProperties`
+    To get the values of multiple properties at once, call `getProperties`
     with a list of strings or an array:
 
     ```javascript

@@ -89,7 +89,8 @@ test("you cannot make two default applications without a rootElement error", fun
 });
 
 test("acts like a namespace", function() {
-  var lookup = Ember.lookup = {}, app;
+  var lookup = Ember.lookup = {};
+  var app;
 
   run(function() {
     app = lookup.TestApp = Application.create({ rootElement: '#two', router: false });
@@ -295,4 +296,14 @@ test("throws helpful error if `app.then` is used", function() {
   expectDeprecation(function() {
     run(app, 'then', Ember.K);
   }, /Do not use `.then` on an instance of Ember.Application.  Please use the `.ready` hook instead./);
+});
+
+test("registers controls onto to container", function() {
+  run(function() {
+    app = Application.create({
+      rootElement: '#qunit-fixture'
+    });
+  });
+
+  ok(app.__container__.lookup('view:select'), "Select control is registered into views");
 });

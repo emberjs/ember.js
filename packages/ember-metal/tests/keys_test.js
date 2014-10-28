@@ -1,7 +1,10 @@
-import {set} from "ember-metal/property_set";
-import keys from "ember-runtime/keys";
-import {addObserver, removeObserver} from "ember-metal/observer";
-import EmberObject from "ember-runtime/system/object";
+import Ember from "ember-metal/core"; // Ember.K
+import { set } from "ember-metal/property_set";
+import keys from "ember-metal/keys";
+import {
+  addObserver,
+  removeObserver
+} from "ember-metal/observer";
 
 QUnit.module("Fetch Keys ");
 
@@ -11,18 +14,6 @@ test("should get a key array for a specified object", function() {
   object1.names = "Rahul";
   object1.age = "23";
   object1.place = "Mangalore";
-
-  var object2 = keys(object1);
-
-  deepEqual(object2, ['names','age','place']);
-});
-
-test("should get a key array for a specified Ember.Object", function() {
-  var object1 = EmberObject.create({
-    names: "Rahul",
-    age: "23",
-    place: "Mangalore"
-  });
 
   var object2 = keys(object1);
 
@@ -41,17 +32,19 @@ test("should get a key array for property that is named the same as prototype pr
 });
 
 test('should not contain properties declared in the prototype', function () {
-  var beer = EmberObject.extend({
-    type: 'ipa'
-  }).create();
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
 
   deepEqual(keys(beer), []);
 });
 
 test('should return properties that were set after object creation', function () {
-  var beer = EmberObject.extend({
-    type: 'ipa'
-  }).create();
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
 
   set(beer, 'brand', 'big daddy');
 
@@ -61,9 +54,10 @@ test('should return properties that were set after object creation', function ()
 QUnit.module('Keys behavior with observers');
 
 test('should not leak properties on the prototype', function () {
-  var beer = EmberObject.extend({
-    type: 'ipa'
-  }).create();
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
 
   addObserver(beer, 'type', Ember.K);
   deepEqual(keys(beer), []);
@@ -71,9 +65,10 @@ test('should not leak properties on the prototype', function () {
 });
 
 test('observing a non existent property', function () {
-  var beer = EmberObject.extend({
-    type: 'ipa'
-  }).create();
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
 
   addObserver(beer, 'brand', Ember.K);
 
@@ -86,9 +81,10 @@ test('observing a non existent property', function () {
 });
 
 test('with observers switched on and off', function () {
-  var beer = EmberObject.extend({
-    type: 'ipa'
-  }).create();
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
 
   addObserver(beer, 'type', Ember.K);
   removeObserver(beer, 'type', Ember.K);
@@ -97,9 +93,10 @@ test('with observers switched on and off', function () {
 });
 
 test('observers switched on and off with setter in between', function () {
-  var beer = EmberObject.extend({
-    type: 'ipa'
-  }).create();
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
 
   addObserver(beer, 'type', Ember.K);
   set(beer, 'type', 'ale');
@@ -109,9 +106,10 @@ test('observers switched on and off with setter in between', function () {
 });
 
 test('observer switched on and off and then setter', function () {
-  var beer = EmberObject.extend({
-    type: 'ipa'
-  }).create();
+  function Beer() { }
+  Beer.prototype.type = 'ipa';
+
+  var beer = new Beer();
 
   addObserver(beer, 'type', Ember.K);
   removeObserver(beer, 'type', Ember.K);

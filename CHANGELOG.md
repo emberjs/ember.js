@@ -1,11 +1,75 @@
 # Ember Changelog
 
-### Ember 1.7.1 (October 23, 2014)
+### Ember 1.8.0 (October, 28, 2014)
 
-* [BUGFIX] Allow for bound property `{{input}}` type.
-* Fix minification of assets.
-* Ensure ember-testing is not included in build output.
-* [PERF] Do not use defineProperty on each View instance.
+* [BUGFIX] Ensure published builds do not use `define` or `require` internally.
+* [BUGFIX] Remove strict mode for Object.create usage to work around an [iOS bug](https://bugs.webkit.org/show_bug.cgi?id=138038).
+* Enable testing of production builds by publishing `ember-testing.js` along with the standard builds.
+* [DOC] Make mandatory setter assertions more helpful.
+* Deprecate location: 'hash' paths that don't have a forward slash. e.g. #foo vs. #/foo.
+* [BUGFIX] Ensure `Ember.setProperties` can handle non-object properties.
+* [BUGFIX] Refactor buffer to be simpler, single parsing code-path.
+* [BUGFIX] Add assertion when morph is not found in RenderBuffer.
+* [BUGFIX] Make computed.sort generate an answer immediately.
+* [BUGFIX] Fix broken `Ember.computed.sort` semantics.
+* [BUGFIX] Ensure ember-testing is not included in production build output.
+* Deprecate usage of quoted paths in `{{view}}` helper.
+* [BUGFIX] Ensure `{{view}}` lookup works properly when name is a keyword.
+* [BUGFIX] Ensure `Ember.Map` works properly with falsey values.
+* [BUGFIX] Make Ember.Namespace#toString ember-cli aware.
+* [PERF] Avoid using `for x in y` in `Ember.RenderBuffer.prototype.add`.
+* [BUGFIX] Enable setProperties to work on Object.create(null) objects.
+* [PERF] Update RSVP to 3.0.14 (faster instrumentation).
+* [BUGFIX] Add SVG support for metal-views.
+* [BUGFIX] Allow camelCase attributes in DOM elements.
+* [BUGFIX] Update backburner to latest.
+* [BUGFIX] Use contextualElements to properly handle omitted optional start tags.
+* [BUGFIX] Ensure that `Route.prototype.activate` is not retriggered when the model for the current route changes.
+* [PERF] Fix optimization bailouts for `{{view}}` helper.
+* [BUGFIX] Add `attributeBindings` for `lang` and `dir` (for bidirectional language support) in `Ember.TextField` and `Ember.TextAra`.
+* [BUGFIX] Fix finishChains for all chains that reference an obj not just the ones rooted at that object.
+* [BUGFIX] Refactor ES3 `Ember.keys` implementation.
+* Rewrite Ember.Map to be faster and closer to ES6 implementation:
+  * [PERF + ES6] No longer clone array before enumeration (dramatically reduce allocations)
+  * [PERF] Don’t Rebind the callback of forEach if not needed
+  * [PERF + ES6] No longer allow Map#length to be bindable
+  * [PERF] Don’t double guid keys, as they are passed from map to ordered set (add/remove)
+  * [ES6] Deprecate Map#remove in-favor of the es6 Map#delete
+  * [ES6] Error if callback is not a function
+  * [ES6] Map#set should return the map. This enables chaining map.`map.set(‘foo’,1).set(‘bar’,3);` etc.
+  * [ES6] Remove length in-favor of size.
+  * [ES6] Throw if constructor is invoked without new
+  * [ES6] Make inheritance work correctly
+* [BUGFIX] Allow for bound property {{input}} type.
+* [BUGFIX] Ensure pushUnique targetQueue is cleared by flush.
+* [BUGFIX] instrument should still call block even without subscribers.
+* [BUGFIX] Remove uneeded normalization in query param controller lookup.
+* [BUGFIX] Do not use defineProperty on each View instance.
+* [PERF] Speedup `watchKey` by preventing for in related deopt.
+* [PERF] Change `ENV.MANDATORY_SETTER` to FEATURES so it can be compiled out of production builds.
+* [PERF] Object.create(null) in Ember.inspect.
+* [PERF] Extracts computed property set into a separate function.
+* [BUGFIX] Make `GUID_KEY = intern(GUID_KEY)` actually work on ES3.
+* [BUGFIX] Ensure nested routes can inherit model from parent.
+* Remove `metamorph` in favor of `morph` package (removes the need for `<script>` tags in the DOM).
+* [FEATURE] ember-routing-linkto-target-attribute
+* [FEATURE] ember-routing-multi-current-when
+* [FEATURE] ember-routing-auto-location-uses-replace-state-for-history
+* [FEATURE] ember-metal-is-present
+* [FEATURE] property-brace-expansion-improvement
+* Deprecate usage of Internet Explorer 6 & 7.
+* Deprecate global access to view classes from template (see the [deprecation guide](http://emberjs.com/guides/deprecations/)).
+* Deprecate `Ember.Set` (note: this is NOT the `Ember.set`).
+* Deprecate `Ember.computed.defaultTo`.
+* Remove long deprecated `Ember.StateManager` warnings.
+* Use intelligent caching for `Ember.String` (`camelize`, `dasherize`, etc.).
+* Use intelligent caching for container normalization.
+* Polyfill `Object.create` (use for new caching techniques).
+* Refactor internals to make debugging easier (use a single assignment per `var` statement).
+* [BREAKING] Remove deprecated controller action lookup. Support for pre-1.0.0 applications with actions in the root
+  of the controller (instead of inside the `actions` hash) has been removed.
+* [BREAKING] Ember.View didInsertElement is now called on child views before their parents. Before
+  1.8.0-beta.1 it would be called top-down.
 
 ### Ember 1.7.0 (August 19, 2014)
 

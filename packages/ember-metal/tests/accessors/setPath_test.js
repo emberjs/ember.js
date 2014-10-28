@@ -6,7 +6,8 @@ import { get } from 'ember-metal/property_get';
 
 var originalLookup = Ember.lookup;
 
-var obj, moduleOpts = {
+var obj;
+var moduleOpts = {
   setup: function() {
     obj = {
       foo: {

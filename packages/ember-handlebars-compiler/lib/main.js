@@ -1,5 +1,10 @@
 /* global Handlebars:true */
 
+// Remove "use strict"; from transpiled module (in browser builds only) until
+// https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
+//
+// REMOVE_USE_STRICT: true
+
 /**
 @module ember
 @submodule ember-handlebars-compiler
@@ -93,7 +98,7 @@ var EmberHandlebars = Ember.Handlebars = objectCreate(Handlebars);
   Which is functionally equivalent to:
 
   ```handlebars
-  {{view App.CalendarView}}
+  {{view 'calendar'}}
   ```
 
   Options in the helper will be passed to the view in exactly the same
@@ -206,14 +211,14 @@ EmberHandlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) {
 // This can go away once the following is closed:
 // https://github.com/wycats/handlebars.js/issues/634
 
-var DOT_LOOKUP_REGEX = /helpers\.(.*?)\)/,
-    BRACKET_STRING_LOOKUP_REGEX = /helpers\['(.*?)'/,
-    INVOCATION_SPLITTING_REGEX = /(.*blockHelperMissing\.call\(.*)(stack[0-9]+)(,.*)/;
+var DOT_LOOKUP_REGEX = /helpers\.(.*?)\)/;
+var BRACKET_STRING_LOOKUP_REGEX = /helpers\['(.*?)'/;
+var INVOCATION_SPLITTING_REGEX = /(.*blockHelperMissing\.call\(.*)(stack[0-9]+)(,.*)/;
 
 EmberHandlebars.JavaScriptCompiler.stringifyLastBlockHelperMissingInvocation = function(source) {
-  var helperInvocation = source[source.length - 1],
-      helperName = (DOT_LOOKUP_REGEX.exec(helperInvocation) || BRACKET_STRING_LOOKUP_REGEX.exec(helperInvocation))[1],
-      matches = INVOCATION_SPLITTING_REGEX.exec(helperInvocation);
+  var helperInvocation = source[source.length - 1];
+  var helperName = (DOT_LOOKUP_REGEX.exec(helperInvocation) || BRACKET_STRING_LOOKUP_REGEX.exec(helperInvocation))[1];
+  var matches = INVOCATION_SPLITTING_REGEX.exec(helperInvocation);
 
   source[source.length - 1] = matches[1] + "'" + helperName + "'" + matches[3];
 };
@@ -266,12 +271,12 @@ EmberHandlebars.Compiler.prototype.mustache = function(mustache) {
   @method precompile
   @for Ember.Handlebars
   @static
-  @param {String} string The template to precompile
+  @param {String|Object} value The template to precompile or an Handlebars AST
   @param {Boolean} asObject optional parameter, defaulting to true, of whether or not the
                             compiled template should be returned as an Object or a String
 */
-EmberHandlebars.precompile = function(string, asObject) {
-  var ast = Handlebars.parse(string);
+EmberHandlebars.precompile = function(value, asObject) {
+  var ast = Handlebars.parse(value);
 
   var options = {
     knownHelpers: {

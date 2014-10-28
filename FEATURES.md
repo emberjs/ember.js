@@ -18,13 +18,6 @@ for a detailed explanation.
 
   Added in [#3655](https://github.com/emberjs/ember.js/pull/3655).
 
-* `ember-handlebars-caps-lookup`
-  Forces Handlebars values starting with capital letters, like `{{CONSTANT}}`,
-  to always be looked up on `Ember.lookup`. Previously, these values would be
-  looked up on the controller in certain cases.
-
-  Added in [#3218](https://github.com/emberjs/ember.js/pull/3218)
-
 * `composable-computed-properties`
 
   This feature allows you to combine (compose) different computed
@@ -32,17 +25,6 @@ for a detailed explanation.
   programming" like syntax to deal with complex expressions.
 
   Added in [#3696](https://github.com/emberjs/ember.js/pull/3696).
-
-* `query-params-new`
-
-  Add query params support to the ember router. This is a rewrite of a
-  previous attempt at an API for query params. You can define query
-  param properties on route-driven controllers with the `queryParams`
-  property, and any changes to those properties will cause the URL
-  to update, and in the other direction, any URL changes to the query
-  params will cause those controller properties to update.
-
-  Added in [#4008](https://github.com/emberjs/ember.js/pull/4008).
 
 * `ember-routing-will-change-hooks`
   Finer-grained `willTransition`-esque actions:
@@ -58,3 +40,31 @@ for a detailed explanation.
   to deal with unsaved changes.
 
   Added in [#4760](https://github.com/emberjs/ember.js/pull/4760)
+
+* `ember-metal-is-present`
+
+  Adds `Ember.isPresent` as the inverse of `Ember.isBlank`. This convenience
+  method can lead to more semantic and clearer code.
+
+  Added in [#5136](https://github.com/emberjs/ember.js/pull/5136)
+
+* `property-brace-expansion-improvement`
+
+  Property brace expansion now allows multiple sets of braces to be used,
+  as well as not restricting their location in the string.
+
+  Added in [#4617](https://github.com/emberjs/ember.js/pull/4617)
+
+* `ember-routing-multi-current-when`
+
+  Allows the `link-to` helper's currentWhen property to accept multiple routes
+  using a ` ` (space) delimiter, for more control over a link's active state.
+
+  Added in [#3673](https://github.com/emberjs/ember.js/pull/3673)
+
+* `ember-runtime-item-controller-inline-class`
+
+  This feature allows you to specify a controller class inline for the `itemController`
+  property of an `array controller`.
+
+  Added in [#5301](https://github.com/emberjs/ember.js/pull/5301)

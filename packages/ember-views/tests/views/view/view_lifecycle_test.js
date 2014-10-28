@@ -5,7 +5,8 @@ import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
 
-var originalLookup = Ember.lookup, lookup, view;
+var originalLookup = Ember.lookup;
+var lookup, view;
 
 QUnit.module("views/view/view_lifecycle_test - pre-render", {
   setup: function() {

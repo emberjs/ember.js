@@ -23,7 +23,7 @@ test('deprecates when calling transitionTo', function() {
   }, '');
 });
 
-test("doesn't deprecafte when calling _transitionTo", function() {
+test("doesn't deprecate when calling _transitionTo", function() {
   expect(1);
 
   view = EmberView.create();

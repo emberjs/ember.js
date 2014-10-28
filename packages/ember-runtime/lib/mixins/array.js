@@ -6,35 +6,52 @@
 // ..........................................................
 // HELPERS
 //
-import Ember from "ember-metal/core"; // ES6TODO: Ember.A
-
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
+import Ember from 'ember-metal/core'; // ES6TODO: Ember.A
+import { get } from 'ember-metal/property_get';
 import {
   computed,
   cacheFor
-} from "ember-metal/computed";
+} from 'ember-metal/computed';
 import {
   isNone,
   none
 } from 'ember-metal/is_none';
-import Enumerable from "ember-runtime/mixins/enumerable";
-import { map } from "ember-metal/enumerable_utils";
+import Enumerable from 'ember-runtime/mixins/enumerable';
+import { map } from 'ember-metal/enumerable_utils';
 import {
   Mixin,
   required
-} from "ember-metal/mixin";
+} from 'ember-metal/mixin';
 import {
   propertyWillChange,
   propertyDidChange
-} from "ember-metal/property_events";
+} from 'ember-metal/property_events';
 import {
   addListener,
   removeListener,
   sendEvent,
   hasListeners
-} from "ember-metal/events";
-import { isWatching } from "ember-metal/watching";
+} from 'ember-metal/events';
+import { isWatching } from 'ember-metal/watching';
+
+function arrayObserversHelper(obj, target, opts, operation, notify) {
+  var willChange = (opts && opts.willChange) || 'arrayWillChange';
+  var didChange  = (opts && opts.didChange) || 'arrayDidChange';
+  var hasObservers = get(obj, 'hasArrayObservers');
+
+  if (hasObservers === notify) {
+    propertyWillChange(obj, 'hasArrayObservers');
+  }
+
+  operation(obj, '@array:before', target, willChange);
+  operation(obj, '@array:change', target, didChange);
+
+  if (hasObservers === notify) {
+    propertyDidChange(obj, 'hasArrayObservers');
+  }
+
+  return obj;
+}
 
 // ..........................................................
 // ARRAY
@@ -96,8 +113,9 @@ export default Mixin.create(Enumerable, {
 
     ```javascript
     var arr = ['a', 'b', 'c', 'd'];
-    arr.objectAt(0);   // "a"
-    arr.objectAt(3);   // "d"
+
+    arr.objectAt(0);   // 'a'
+    arr.objectAt(3);   // 'd'
     arr.objectAt(-1);  // undefined
     arr.objectAt(4);   // undefined
     arr.objectAt(5);   // undefined
@@ -108,7 +126,10 @@ export default Mixin.create(Enumerable, {
     @return {*} item at index or undefined
   */
   objectAt: function(idx) {
-    if ((idx < 0) || (idx >= get(this, 'length'))) return undefined;
+    if (idx < 0 || idx >= get(this, 'length')) {
+      return undefined;
+    }
+
     return get(this, idx);
   },
 
@@ -117,8 +138,9 @@ export default Mixin.create(Enumerable, {
 
     ```javascript
     var arr = ['a', 'b', 'c', 'd'];
-    arr.objectsAt([0, 1, 2]);  // ["a", "b", "c"]
-    arr.objectsAt([2, 3, 4]);  // ["c", "d", undefined]
+
+    arr.objectsAt([0, 1, 2]);  // ['a', 'b', 'c']
+    arr.objectsAt([2, 3, 4]);  // ['c', 'd', undefined]
     ```
 
     @method objectsAt
@@ -127,7 +149,10 @@ export default Mixin.create(Enumerable, {
    */
   objectsAt: function(indexes) {
     var self = this;
-    return map(indexes, function(idx) { return self.objectAt(idx); });
+
+    return map(indexes, function(idx) {
+      return self.objectAt(idx);
+    });
   },
 
   // overrides Ember.Enumerable version
@@ -146,8 +171,11 @@ export default Mixin.create(Enumerable, {
     @return this
   */
   '[]': computed(function(key, value) {
-    if (value !== undefined) this.replace(0, get(this, 'length'), value) ;
-    return this ;
+    if (value !== undefined) {
+      this.replace(0, get(this, 'length'), value);
+    }
+
+    return this;
   }),
 
   firstObject: computed(function() {
@@ -155,7 +183,7 @@ export default Mixin.create(Enumerable, {
   }),
 
   lastObject: computed(function() {
-    return this.objectAt(get(this, 'length')-1);
+    return this.objectAt(get(this, 'length') - 1);
   }),
 
   // optimized version from Enumerable
@@ -171,6 +199,7 @@ export default Mixin.create(Enumerable, {
 
     ```javascript
     var arr = ['red', 'green', 'blue'];
+
     arr.slice(0);       // ['red', 'green', 'blue']
     arr.slice(0, 2);    // ['red', 'green']
     arr.slice(1, 100);  // ['green', 'blue']
@@ -183,17 +212,29 @@ export default Mixin.create(Enumerable, {
   */
   slice: function(beginIndex, endIndex) {
     var ret = Ember.A();
-    var length = get(this, 'length') ;
-    if (isNone(beginIndex)) beginIndex = 0 ;
-    if (isNone(endIndex) || (endIndex > length)) endIndex = length ;
+    var length = get(this, 'length');
 
-    if (beginIndex < 0) beginIndex = length + beginIndex;
-    if (endIndex < 0) endIndex = length + endIndex;
-
-    while(beginIndex < endIndex) {
-      ret[ret.length] = this.objectAt(beginIndex++) ;
+    if (isNone(beginIndex)) {
+      beginIndex = 0;
     }
-    return ret ;
+
+    if (isNone(endIndex) || (endIndex > length)) {
+      endIndex = length;
+    }
+
+    if (beginIndex < 0) {
+      beginIndex = length + beginIndex;
+    }
+
+    if (endIndex < 0) {
+      endIndex = length + endIndex;
+    }
+
+    while (beginIndex < endIndex) {
+      ret[ret.length] = this.objectAt(beginIndex++);
+    }
+
+    return ret;
   },
 
   /**
@@ -203,13 +244,14 @@ export default Mixin.create(Enumerable, {
     the end of the array. Returns -1 if no match is found.
 
     ```javascript
-    var arr = ["a", "b", "c", "d", "a"];
-    arr.indexOf("a");       //  0
-    arr.indexOf("z");       // -1
-    arr.indexOf("a", 2);    //  4
-    arr.indexOf("a", -1);   //  4
-    arr.indexOf("b", 3);    // -1
-    arr.indexOf("a", 100);  // -1
+    var arr = ['a', 'b', 'c', 'd', 'a'];
+
+    arr.indexOf('a');       //  0
+    arr.indexOf('z');       // -1
+    arr.indexOf('a', 2);    //  4
+    arr.indexOf('a', -1);   //  4
+    arr.indexOf('b', 3);    // -1
+    arr.indexOf('a', 100);  // -1
     ```
 
     @method indexOf
@@ -218,14 +260,23 @@ export default Mixin.create(Enumerable, {
     @return {Number} index or -1 if not found
   */
   indexOf: function(object, startAt) {
-    var idx, len = get(this, 'length');
+    var len = get(this, 'length');
+    var idx;
 
-    if (startAt === undefined) startAt = 0;
-    if (startAt < 0) startAt += len;
-
-    for(idx = startAt; idx < len; idx++) {
-      if (this.objectAt(idx) === object) return idx;
+    if (startAt === undefined) {
+      startAt = 0;
     }
+
+    if (startAt < 0) {
+      startAt += len;
+    }
+
+    for (idx = startAt; idx < len; idx++) {
+      if (this.objectAt(idx) === object) {
+        return idx;
+      }
+    }
+
     return -1;
   },
 
@@ -236,13 +287,14 @@ export default Mixin.create(Enumerable, {
     from the end of the array. Returns -1 if no match is found.
 
     ```javascript
-    var arr = ["a", "b", "c", "d", "a"];
-    arr.lastIndexOf("a");       //  4
-    arr.lastIndexOf("z");       // -1
-    arr.lastIndexOf("a", 2);    //  0
-    arr.lastIndexOf("a", -1);   //  4
-    arr.lastIndexOf("b", 3);    //  1
-    arr.lastIndexOf("a", 100);  //  4
+    var arr = ['a', 'b', 'c', 'd', 'a'];
+
+    arr.lastIndexOf('a');       //  4
+    arr.lastIndexOf('z');       // -1
+    arr.lastIndexOf('a', 2);    //  0
+    arr.lastIndexOf('a', -1);   //  4
+    arr.lastIndexOf('b', 3);    //  1
+    arr.lastIndexOf('a', 100);  //  4
     ```
 
     @method lastIndexOf
@@ -251,14 +303,23 @@ export default Mixin.create(Enumerable, {
     @return {Number} index or -1 if not found
   */
   lastIndexOf: function(object, startAt) {
-    var idx, len = get(this, 'length');
+    var len = get(this, 'length');
+    var idx;
 
-    if (startAt === undefined || startAt >= len) startAt = len-1;
-    if (startAt < 0) startAt += len;
-
-    for(idx = startAt; idx >= 0; idx--) {
-      if (this.objectAt(idx) === object) return idx;
+    if (startAt === undefined || startAt >= len) {
+      startAt = len-1;
     }
+
+    if (startAt < 0) {
+      startAt += len;
+    }
+
+    for (idx = startAt; idx >= 0; idx--) {
+      if (this.objectAt(idx) === object) {
+        return idx;
+      }
+    }
+
     return -1;
   },
 
@@ -290,16 +351,9 @@ export default Mixin.create(Enumerable, {
       `willChange` and `didChange` option.
     @return {Ember.Array} receiver
   */
-  addArrayObserver: function(target, opts) {
-    var willChange = (opts && opts.willChange) || 'arrayWillChange',
-        didChange  = (opts && opts.didChange) || 'arrayDidChange';
 
-    var hasObservers = get(this, 'hasArrayObservers');
-    if (!hasObservers) propertyWillChange(this, 'hasArrayObservers');
-    addListener(this, '@array:before', target, willChange);
-    addListener(this, '@array:change', target, didChange);
-    if (!hasObservers) propertyDidChange(this, 'hasArrayObservers');
-    return this;
+  addArrayObserver: function(target, opts) {
+    return arrayObserversHelper(this, target, opts, addListener, false);
   },
 
   /**
@@ -314,15 +368,7 @@ export default Mixin.create(Enumerable, {
     @return {Ember.Array} receiver
   */
   removeArrayObserver: function(target, opts) {
-    var willChange = (opts && opts.willChange) || 'arrayWillChange',
-        didChange  = (opts && opts.didChange) || 'arrayDidChange';
-
-    var hasObservers = get(this, 'hasArrayObservers');
-    if (hasObservers) propertyWillChange(this, 'hasArrayObservers');
-    removeListener(this, '@array:before', target, willChange);
-    removeListener(this, '@array:change', target, didChange);
-    if (hasObservers) propertyDidChange(this, 'hasArrayObservers');
-    return this;
+    return arrayObserversHelper(this, target, opts, removeListener, true);
   },
 
   /**
@@ -350,26 +396,36 @@ export default Mixin.create(Enumerable, {
     @return {Ember.Array} receiver
   */
   arrayContentWillChange: function(startIdx, removeAmt, addAmt) {
+    var removing, lim;
 
     // if no args are passed assume everything changes
-    if (startIdx===undefined) {
+    if (startIdx === undefined) {
       startIdx = 0;
       removeAmt = addAmt = -1;
     } else {
-      if (removeAmt === undefined) removeAmt=-1;
-      if (addAmt    === undefined) addAmt=-1;
+      if (removeAmt === undefined) {
+        removeAmt = -1;
+      }
+
+      if (addAmt === undefined) {
+        addAmt = -1;
+      }
     }
 
     // Make sure the @each proxy is set up if anyone is observing @each
-    if (isWatching(this, '@each')) { get(this, '@each'); }
+    if (isWatching(this, '@each')) {
+      get(this, '@each');
+    }
 
     sendEvent(this, '@array:before', [this, startIdx, removeAmt, addAmt]);
 
-    var removing, lim;
-    if (startIdx>=0 && removeAmt>=0 && get(this, 'hasEnumerableObservers')) {
+    if (startIdx >= 0 && removeAmt >= 0 && get(this, 'hasEnumerableObservers')) {
       removing = [];
-      lim = startIdx+removeAmt;
-      for(var idx=startIdx;idx<lim;idx++) removing.push(this.objectAt(idx));
+      lim = startIdx + removeAmt;
+
+      for (var idx = startIdx; idx < lim; idx++) {
+        removing.push(this.objectAt(idx));
+      }
     } else {
       removing = removeAmt;
     }
@@ -394,21 +450,29 @@ export default Mixin.create(Enumerable, {
     @return {Ember.Array} receiver
   */
   arrayContentDidChange: function(startIdx, removeAmt, addAmt) {
+    var adding, lim;
 
     // if no args are passed assume everything changes
-    if (startIdx===undefined) {
+    if (startIdx === undefined) {
       startIdx = 0;
       removeAmt = addAmt = -1;
     } else {
-      if (removeAmt === undefined) removeAmt=-1;
-      if (addAmt    === undefined) addAmt=-1;
+      if (removeAmt === undefined) {
+        removeAmt = -1;
+      }
+
+      if (addAmt === undefined) {
+        addAmt = -1;
+      }
     }
 
-    var adding, lim;
-    if (startIdx>=0 && addAmt>=0 && get(this, 'hasEnumerableObservers')) {
+    if (startIdx >= 0 && addAmt >= 0 && get(this, 'hasEnumerableObservers')) {
       adding = [];
-      lim = startIdx+addAmt;
-      for(var idx=startIdx;idx<lim;idx++) adding.push(this.objectAt(idx));
+      lim = startIdx + addAmt;
+
+      for (var idx = startIdx; idx < lim; idx++) {
+        adding.push(this.objectAt(idx));
+      }
     } else {
       adding = addAmt;
     }
@@ -416,13 +480,15 @@ export default Mixin.create(Enumerable, {
     this.enumerableContentDidChange(removeAmt, adding);
     sendEvent(this, '@array:change', [this, startIdx, removeAmt, addAmt]);
 
-    var length      = get(this, 'length'),
-        cachedFirst = cacheFor(this, 'firstObject'),
-        cachedLast  = cacheFor(this, 'lastObject');
+    var length = get(this, 'length');
+    var cachedFirst = cacheFor(this, 'firstObject');
+    var cachedLast = cacheFor(this, 'lastObject');
+
     if (this.objectAt(0) !== cachedFirst) {
       propertyWillChange(this, 'firstObject');
       propertyDidChange(this, 'firstObject');
     }
+
     if (this.objectAt(length-1) !== cachedLast) {
       propertyWillChange(this, 'lastObject');
       propertyDidChange(this, 'lastObject');

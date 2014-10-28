@@ -171,8 +171,8 @@ test("Calling sendAction on a component with a context", function() {
 test("Calling sendAction on a component with multiple parameters", function() {
   set(component, 'playing', "didStartPlaying");
 
-  var firstContext  = {song: 'She Broke My Ember'},
-      secondContext = {song: 'My Achey Breaky Ember'};
+  var firstContext  = {song: 'She Broke My Ember'};
+  var secondContext = {song: 'My Achey Breaky Ember'};
 
   component.sendAction('playing', firstContext, secondContext);
 

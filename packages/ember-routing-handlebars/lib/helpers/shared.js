@@ -65,8 +65,8 @@ export function stashParamNames(router, handlerInfos) {
 }
 
 export function resolvePaths(context, params, options) {
-  var resolved = handlebarsResolve(context, params, options),
-      types = options.types;
+  var resolved = handlebarsResolve(context, params, options);
+  var types = options.types;
 
   return map.call(resolved, function(object, i) {
     if (types[i] === 'ID') {

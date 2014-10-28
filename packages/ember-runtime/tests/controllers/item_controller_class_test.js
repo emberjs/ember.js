@@ -150,9 +150,9 @@ test("when the underlying array changes, old subcontainers are destroyed", funct
   arrayController.objectAtContent(2);
 
   // Not a public API; just checking for cleanup
-  var subControllers = get(arrayController, '_subControllers'),
-      jaimeController = subControllers[1],
-      cerseiController = subControllers[2];
+  var subControllers = get(arrayController, '_subControllers');
+  var jaimeController = subControllers[1];
+  var cerseiController = subControllers[2];
 
   equal(!!jaimeController.isDestroying, false, "precond - nobody is destroyed yet");
   equal(!!cerseiController.isDestroying, false, "precond - nobody is destroyed yet");
@@ -178,9 +178,9 @@ test("item controllers are created lazily", function() {
 
 test("when items are removed from the arrayController, their respective subcontainers are destroyed", function() {
   createArrayController();
-  var jaimeController = arrayController.objectAtContent(1),
-      cerseiController = arrayController.objectAtContent(2),
-      subControllers = get(arrayController, '_subControllers');
+  var jaimeController = arrayController.objectAtContent(1);
+  var cerseiController = arrayController.objectAtContent(2);
+  var subControllers = get(arrayController, '_subControllers');
 
   equal(!!jaimeController.isDestroyed, false, "precond - nobody is destroyed yet");
   equal(!!cerseiController.isDestroyed, false, "precond - nobody is destroyed yet");
@@ -195,8 +195,8 @@ test("when items are removed from the arrayController, their respective subconta
 
 test("one cannot remove wrapped model directly when specifying `itemController`", function() {
   createArrayController();
-  var jaimeController = arrayController.objectAtContent(1),
-      cerseiController = arrayController.objectAtContent(2);
+  var jaimeController = arrayController.objectAtContent(1);
+  var cerseiController = arrayController.objectAtContent(2);
 
   equal(arrayController.get('length'), 3, "precondition - array is in initial state");
   arrayController.removeObject(cersei);
@@ -211,9 +211,9 @@ test("one cannot remove wrapped model directly when specifying `itemController`"
 
 test("when items are removed from the underlying array, their respective subcontainers are destroyed", function() {
   createArrayController();
-  var jaimeController = arrayController.objectAtContent(1),
-      cerseiController = arrayController.objectAtContent(2),
-      subContainers = get(arrayController, 'subContainers');
+  var jaimeController = arrayController.objectAtContent(1);
+  var cerseiController = arrayController.objectAtContent(2);
+  var subContainers = get(arrayController, 'subContainers');
 
   equal(!!jaimeController.isDestroying, false, "precond - nobody is destroyed yet");
   equal(!!cerseiController.isDestroying, false, "precond - nobody is destroyed yet");
@@ -229,8 +229,8 @@ test("when items are removed from the underlying array, their respective subcont
 test("`itemController` can be dynamic by overwriting `lookupItemController`", function() {
   createDynamicArrayController();
 
-  var tywinController = arrayController.objectAtContent(0),
-      jaimeController = arrayController.objectAtContent(1);
+  var tywinController = arrayController.objectAtContent(0);
+  var jaimeController = arrayController.objectAtContent(1);
 
   ok(controllerClass.detectInstance(tywinController), "lookupItemController can return different classes for different objects");
   ok(otherControllerClass.detectInstance(jaimeController), "lookupItemController can return different classes for different objects");
@@ -297,8 +297,8 @@ test("target and parentController are set to the concrete parentController", fun
 test("array observers can invoke `objectAt` without overwriting existing item controllers", function() {
   createArrayController();
 
-  var tywinController = arrayController.objectAtContent(0),
-      arrayObserverCalled = false;
+  var tywinController = arrayController.objectAtContent(0);
+  var arrayObserverCalled = false;
 
   arrayController.reopen({
     lannistersWillChange: Ember.K,
@@ -323,8 +323,8 @@ test("array observers can invoke `objectAt` without overwriting existing item co
 test("`itemController`'s life cycle should be entangled with its parent controller", function() {
   createDynamicArrayController();
 
-  var tywinController = arrayController.objectAtContent(0),
-      jaimeController = arrayController.objectAtContent(1);
+  var tywinController = arrayController.objectAtContent(0);
+  var jaimeController = arrayController.objectAtContent(1);
 
   run(arrayController, 'destroy');
 

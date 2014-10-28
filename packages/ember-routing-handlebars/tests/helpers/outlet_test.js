@@ -47,8 +47,9 @@ var buildContainer = function(namespace) {
 
 function resolverFor(namespace) {
   return function(fullName) {
-    var nameParts = fullName.split(":"),
-        type = nameParts[0], name = nameParts[1];
+    var nameParts = fullName.split(":");
+    var type = nameParts[0];
+    var name = nameParts[1];
 
     if (type === 'template') {
       var templateName = decamelize(name);
@@ -333,8 +334,9 @@ test("Outlets bind to the current template's view, not inner contexts", function
 });
 
 test("should support layouts", function() {
-  var template = "{{outlet}}",
-      layout = "<h1>HI</h1>{{yield}}";
+  var template = "{{outlet}}";
+  var layout = "<h1>HI</h1>{{yield}}";
+
   view = EmberView.create({
     template: EmberHandlebars.compile(template),
     layout: EmberHandlebars.compile(layout)

@@ -28,7 +28,7 @@ var splice = Array.prototype.splice;
  * @return {Array} An array of mapped values.
  */
 export function map(obj, callback, thisArg) {
-  return obj.map ? obj.map.call(obj, callback, thisArg) : _map.call(obj, callback, thisArg);
+  return obj.map ? obj.map(callback, thisArg) : _map.call(obj, callback, thisArg);
 }
 
 /**
@@ -42,7 +42,7 @@ export function map(obj, callback, thisArg) {
  *
  */
 export function forEach(obj, callback, thisArg) {
-  return obj.forEach ? obj.forEach.call(obj, callback, thisArg) : a_forEach.call(obj, callback, thisArg);
+  return obj.forEach ? obj.forEach(callback, thisArg) : a_forEach.call(obj, callback, thisArg);
 }
 
 /**
@@ -58,7 +58,7 @@ export function forEach(obj, callback, thisArg) {
  * @since 1.4.0
  */
 export function filter(obj, callback, thisArg) {
-  return obj.filter ? obj.filter.call(obj, callback, thisArg) : _filter.call(obj, callback, thisArg);
+  return obj.filter ? obj.filter(callback, thisArg) : _filter.call(obj, callback, thisArg);
 }
 
 /**
@@ -72,7 +72,7 @@ export function filter(obj, callback, thisArg) {
  *
  */
 export function indexOf(obj, element, index) {
-  return obj.indexOf ? obj.indexOf.call(obj, element, index) : _indexOf.call(obj, element, index);
+  return obj.indexOf ? obj.indexOf(element, index) : _indexOf.call(obj, element, index);
 }
 
 /**
@@ -131,9 +131,13 @@ export function removeObject(array, item) {
 }
 
 export function _replace(array, idx, amt, objects) {
-  var args = [].concat(objects), chunk, ret = [],
-      // https://code.google.com/p/chromium/issues/detail?id=56588
-      size = 60000, start = idx, ends = amt, count;
+  var args = [].concat(objects);
+  var ret = [];
+  // https://code.google.com/p/chromium/issues/detail?id=56588
+  var size = 60000;
+  var start = idx;
+  var ends = amt;
+  var count, chunk;
 
   while (args.length) {
     count = ends > size ? size : ends;

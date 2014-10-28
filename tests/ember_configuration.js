@@ -5,7 +5,6 @@
     testing: true
   };
   window.ENV = window.ENV || {};
-  ENV.FEATURES = {{FEATURES}};
 
   // Test for "hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed"
   ENV.EMBER_LOAD_HOOKS = ENV.EMBER_LOAD_HOOKS || {};
@@ -15,6 +14,8 @@
     ENV.__test_hook_count__ += object;
   });
 
+  window.ENV.FEATURES = !!QUnit.urlParams.prod ? {{PROD_FEATURES}} : {{DEV_FEATURES}};
+
   // Handle extending prototypes
   ENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.extendprototypes;
 
@@ -23,6 +24,9 @@
 
   // Don't worry about jQuery version
   ENV['FORCE_JQUERY'] = true;
+
+  // Don't worry about jQuery version
+  ENV['RAISE_ON_DEPRECATION'] = !!QUnit.urlParams.raiseonunhandleddeprecation;
 
   if (EmberDev.jsHint) {
     // jsHint makes its own Object.create stub, we don't want to use this

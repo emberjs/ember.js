@@ -3,21 +3,65 @@
 @submodule ember-views
 */
 
-import Ember from 'ember-metal/core'; // jQuery
-
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { setInnerHTML } from "ember-views/system/utils";
 import jQuery from "ember-views/system/jquery";
+import {DOMHelper} from "morph";
+import Ember from "ember-metal/core";
+import { create } from "ember-metal/platform";
+
+// The HTML spec allows for "omitted start tags". These tags are optional
+// when their intended child is the first thing in the parent tag. For
+// example, this is a tbody start tag:
+//
+// <table>
+//   <tbody>
+//     <tr>
+//
+// The tbody may be omitted, and the browser will accept and render:
+//
+// <table>
+//   <tr>
+//
+// However, the omitted start tag will still be added to the DOM. Here
+// we test the string and context to see if the browser is about to
+// perform this cleanup, but with a special allowance for disregarding
+// <script tags. This disregarding of <script being the first child item
+// may bend the offical spec a bit, and is only needed for Handlebars
+// templates.
+//
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#optional-tags
+// describes which tags are omittable. The spec for tbody and colgroup
+// explains this behavior:
+//
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/tables.html#the-tbody-element
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/tables.html#the-colgroup-element
+//
+var omittedStartTagChildren = {
+  tr: document.createElement('tbody'),
+  col: document.createElement('colgroup')
+};
+
+var omittedStartTagChildTest = /(?:<script)*.*?<([\w:]+)/i;
+
+function detectOmittedStartTag(string, contextualElement){
+  // Omitted start tags are only inside table tags.
+  if (contextualElement.tagName === 'TABLE') {
+    var omittedStartTagChildMatch = omittedStartTagChildTest.exec(string);
+    if (omittedStartTagChildMatch) {
+      // It is already asserted that the contextual element is a table
+      // and not the proper start tag. Just look up the start tag.
+      return omittedStartTagChildren[omittedStartTagChildMatch[1].toLowerCase()];
+    }
+  }
+}
 
 function ClassSet() {
-  this.seen = {};
+  this.seen = create(null);
   this.list = [];
 }
 
 ClassSet.prototype = {
   add: function(string) {
-    if (string in this.seen) { return; }
+    if (this.seen[string] === true) { return; }
     this.seen[string] = true;
 
     this.list.push(string);
@@ -71,8 +115,8 @@ function escapeAttribute(value) {
 // From http://msdn.microsoft.com/en-us/library/ie/ms536389(v=vs.85).aspx:
 // "To include the NAME attribute at run time on objects created with the createElement method, use the eTag."
 var canSetNameOnInputs = (function() {
-  var div = document.createElement('div'),
-      el = document.createElement('input');
+  var div = document.createElement('div');
+  var el = document.createElement('input');
 
   el.setAttribute('name', 'foo');
   div.appendChild(el);
@@ -81,34 +125,51 @@ var canSetNameOnInputs = (function() {
 })();
 
 /**
-  `Ember.RenderBuffer` gathers information regarding the view and generates the
-  final representation. `Ember.RenderBuffer` will generate HTML which can be pushed
+  `Ember.renderBuffer` gathers information regarding the view and generates the
+  final representation. `Ember.renderBuffer` will generate HTML which can be pushed
   to the DOM.
 
    ```javascript
-   var buffer = Ember.RenderBuffer('div');
+   var buffer = Ember.renderBuffer('div', contextualElement);
   ```
 
-  @class RenderBuffer
+  @method renderBuffer
   @namespace Ember
-  @constructor
   @param {String} tagName tag name (such as 'div' or 'p') used for the buffer
 */
-export default function RenderBuffer(tagName) {
-  return new _RenderBuffer(tagName); // jshint ignore:line
+export default function renderBuffer(tagName, contextualElement) {
+  return new _RenderBuffer(tagName, contextualElement); // jshint ignore:line
 }
 
-function _RenderBuffer(tagName) {
-  this.tagNames = [tagName || null];
-  this.buffer = "";
+function _RenderBuffer(tagName, contextualElement) {
+  this.tagName = tagName;
+  this._outerContextualElement = contextualElement;
+  this.buffer = null;
+  this.childViews = [];
+  this.dom = new DOMHelper();
 }
 
 _RenderBuffer.prototype = {
 
+  reset: function(tagName, contextualElement) {
+    this.tagName = tagName;
+    this.buffer = null;
+    this._element = null;
+    this._outerContextualElement = contextualElement;
+    this.elementClasses = null;
+    this.elementId = null;
+    this.elementAttributes = null;
+    this.elementProperties = null;
+    this.elementTag = null;
+    this.elementStyle = null;
+    this.childViews.length = 0;
+  },
+
   // The root view's element
   _element: null,
 
-  _hasElement: true,
+  // The root view's contextualElement
+  _outerContextualElement: null,
 
   /**
     An internal set used to de-dupe class names when `addClass()` is
@@ -183,7 +244,7 @@ _RenderBuffer.prototype = {
     example, if you wanted to create a `p` tag, then you would call
 
     ```javascript
-    Ember.RenderBuffer('p')
+    Ember.RenderBuffer('p', contextualElement)
     ```
 
     @property elementTag
@@ -207,6 +268,37 @@ _RenderBuffer.prototype = {
   */
   elementStyle: null,
 
+  pushChildView: function (view) {
+    var index = this.childViews.length;
+    this.childViews[index] = view;
+    this.push("<script id='morph-"+index+"' type='text/x-placeholder'>\x3C/script>");
+  },
+
+  hydrateMorphs: function (contextualElement) {
+    var childViews = this.childViews;
+    var el = this._element;
+    for (var i=0,l=childViews.length; i<l; i++) {
+      var childView = childViews[i];
+      var ref = el.querySelector('#morph-'+i);
+
+      Ember.assert('An error occured while setting up template bindings. Please check ' +
+                   (childView && childView._parentView && childView._parentView._debugTemplateName ?
+                        '"' + childView._parentView._debugTemplateName + '" template ' :
+                        ''
+                   )  + 'for invalid markup or bindings within HTML comments.',
+                   ref);
+
+      var parent = ref.parentNode;
+
+      childView._morph = this.dom.insertMorphBefore(
+        parent,
+        ref,
+        parent.nodeType === 1 ? parent : contextualElement
+      );
+      parent.removeChild(ref);
+    }
+  },
+
   /**
     Adds a string of HTML to the `RenderBuffer`.
 
@@ -214,8 +306,11 @@ _RenderBuffer.prototype = {
     @param {String} string HTML to push into the buffer
     @chainable
   */
-  push: function(string) {
-    this.buffer += string;
+  push: function(content) {
+    if (this.buffer === null) {
+      this.buffer = '';
+    }
+    this.buffer += content;
     return this;
   },
 
@@ -237,7 +332,8 @@ _RenderBuffer.prototype = {
 
   setClasses: function(classNames) {
     this.elementClasses = null;
-    var len = classNames.length, i;
+    var len = classNames.length;
+    var i;
     for (i = 0; i < len; i++) {
       this.addClass(classNames[i]);
     }
@@ -343,102 +439,15 @@ _RenderBuffer.prototype = {
     return this;
   },
 
-  begin: function(tagName) {
-    this.tagNames.push(tagName || null);
-    return this;
-  },
-
-  pushOpeningTag: function() {
-    var tagName = this.currentTagName();
-    if (!tagName) { return; }
-
-    if (this._hasElement && !this._element && this.buffer.length === 0) {
-      this._element = this.generateElement();
-      return;
-    }
-
-    var buffer = this.buffer,
-        id = this.elementId,
-        classes = this.classes,
-        attrs = this.elementAttributes,
-        props = this.elementProperties,
-        style = this.elementStyle,
-        attr, prop;
-
-    buffer += '<' + stripTagName(tagName);
-
-    if (id) {
-      buffer += ' id="' + escapeAttribute(id) + '"';
-      this.elementId = null;
-    }
-    if (classes) {
-      buffer += ' class="' + escapeAttribute(classes.join(' ')) + '"';
-      this.classes = null;
-      this.elementClasses = null;
-    }
-
-    if (style) {
-      buffer += ' style="';
-
-      for (prop in style) {
-        if (style.hasOwnProperty(prop)) {
-          buffer += prop + ':' + escapeAttribute(style[prop]) + ';';
-        }
-      }
-
-      buffer += '"';
-
-      this.elementStyle = null;
-    }
-
-    if (attrs) {
-      for (attr in attrs) {
-        if (attrs.hasOwnProperty(attr)) {
-          buffer += ' ' + attr + '="' + escapeAttribute(attrs[attr]) + '"';
-        }
-      }
-
-      this.elementAttributes = null;
-    }
-
-    if (props) {
-      for (prop in props) {
-        if (props.hasOwnProperty(prop)) {
-          var value = props[prop];
-          if (value || typeof(value) === 'number') {
-            if (value === true) {
-              buffer += ' ' + prop + '="' + prop + '"';
-            } else {
-              buffer += ' ' + prop + '="' + escapeAttribute(props[prop]) + '"';
-            }
-          }
-        }
-      }
-
-      this.elementProperties = null;
-    }
-
-    buffer += '>';
-    this.buffer = buffer;
-  },
-
-  pushClosingTag: function() {
-    var tagName = this.tagNames.pop();
-    if (tagName) { this.buffer += '</' + stripTagName(tagName) + '>'; }
-  },
-
-  currentTagName: function() {
-    return this.tagNames[this.tagNames.length-1];
-  },
-
   generateElement: function() {
-    var tagName = this.tagNames.pop(), // pop since we don't need to close
-        id = this.elementId,
-        classes = this.classes,
-        attrs = this.elementAttributes,
-        props = this.elementProperties,
-        style = this.elementStyle,
-        styleBuffer = '', attr, prop, tagString;
+    var tagName = this.tagName;
+    var id = this.elementId;
+    var classes = this.classes;
+    var attrs = this.elementAttributes;
+    var props = this.elementProperties;
+    var style = this.elementStyle;
+    var styleBuffer = '';
+    var attr, prop, tagString;
 
     if (attrs && attrs.name && !canSetNameOnInputs) {
       // IE allows passing a tag to createElement. See note on `canSetNameOnInputs` above as well.
@@ -447,15 +456,15 @@ _RenderBuffer.prototype = {
       tagString = tagName;
     }
 
-    var element = document.createElement(tagString),
-        $element = jQuery(element);
+    var element = this.dom.createElement(tagString, this.outerContextualElement());
+    var $element = jQuery(element);
 
     if (id) {
-      $element.attr('id', id);
+      this.dom.setAttribute(element, 'id', id);
       this.elementId = null;
     }
     if (classes) {
-      $element.attr('class', classes.join(' '));
+      this.dom.setAttribute(element, 'class', classes.join(' '));
       this.classes = null;
       this.elementClasses = null;
     }
@@ -467,7 +476,7 @@ _RenderBuffer.prototype = {
         }
       }
 
-      $element.attr('style', styleBuffer);
+      this.dom.setAttribute(element, 'style', styleBuffer);
 
       this.elementStyle = null;
     }
@@ -475,7 +484,7 @@ _RenderBuffer.prototype = {
     if (attrs) {
       for (attr in attrs) {
         if (attrs.hasOwnProperty(attr)) {
-          $element.attr(attr, attrs[attr]);
+          this.dom.setAttribute(element, attr, attrs[attr]);
         }
       }
 
@@ -492,7 +501,7 @@ _RenderBuffer.prototype = {
       this.elementProperties = null;
     }
 
-    return element;
+    this._element = element;
   },
 
   /**
@@ -501,11 +510,23 @@ _RenderBuffer.prototype = {
       of this buffer
   */
   element: function() {
-    var html = this.innerString();
-
-    if (html) {
-      this._element = setInnerHTML(this._element, html);
+    var content = this.innerContent();
+    if (content === null)  {
+      return this._element;
     }
+
+    var contextualElement = this.innerContextualElement(content);
+    this.dom.detectNamespace(contextualElement);
+
+    if (!this._element) {
+      this._element = document.createDocumentFragment();
+    }
+
+    var nodes = this.dom.parseHTML(content, contextualElement);
+    while (nodes[0]) {
+      this._element.appendChild(nodes[0]);
+    }
+    this.hydrateMorphs(contextualElement);
 
     return this._element;
   },
@@ -517,9 +538,10 @@ _RenderBuffer.prototype = {
     @return {String} The generated HTML
   */
   string: function() {
-    if (this._hasElement && this._element) {
+    if (this._element) {
       // Firefox versions < 11 do not have support for element.outerHTML.
-      var thisElement = this.element(), outerHTML = thisElement.outerHTML;
+      var thisElement = this.element();
+      var outerHTML = thisElement.outerHTML;
       if (typeof outerHTML === 'undefined') {
         return jQuery('<div/>').append(thisElement).html();
       }
@@ -529,7 +551,39 @@ _RenderBuffer.prototype = {
     }
   },
 
+  outerContextualElement: function() {
+    if (!this._outerContextualElement) {
+      Ember.deprecate("The render buffer expects an outer contextualElement to exist." +
+                      " This ensures DOM that requires context is correctly generated (tr, SVG tags)." +
+                      " Defaulting to document.body, but this will be removed in the future");
+      this.outerContextualElement = document.body;
+    }
+    return this._outerContextualElement;
+  },
+
+  innerContextualElement: function(html) {
+    var innerContextualElement;
+    if (this._element && this._element.nodeType === 1) {
+      innerContextualElement = this._element;
+    } else {
+      innerContextualElement = this.outerContextualElement();
+    }
+
+    var omittedStartTag;
+    if (html) {
+      omittedStartTag = detectOmittedStartTag(html, innerContextualElement);
+    }
+    return omittedStartTag || innerContextualElement;
+  },
+
   innerString: function() {
+    var content = this.innerContent();
+    if (content && !content.nodeType) {
+      return content;
+    }
+  },
+
+  innerContent: function() {
     return this.buffer;
   }
 };

@@ -131,12 +131,12 @@ test("should provide a controller to the template if a controller is specified o
     toString: function() { return "Controller2"; }
   });
 
-  var controller1 = Controller1.create(),
-      controller2 = Controller2.create(),
-      optionsDataKeywordsControllerForView,
-      optionsDataKeywordsControllerForChildView,
-      contextForView,
-      contextForControllerlessView;
+  var controller1 = Controller1.create();
+  var controller2 = Controller2.create();
+  var optionsDataKeywordsControllerForView;
+  var optionsDataKeywordsControllerForChildView;
+  var contextForView;
+  var contextForControllerlessView;
 
   view = EmberView.create({
     controller: controller1,
@@ -218,7 +218,7 @@ test("should throw an assertion if no container has been set", function() {
   var View;
 
   View = EmberView.extend({
-    templateName: 'foobar',
+    templateName: 'foobar'
   });
 
   raises(function() {

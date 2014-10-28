@@ -41,7 +41,7 @@ var Namespace = EmberObject.extend({
   },
 
   toString: function() {
-    var name = get(this, 'name');
+    var name = get(this, 'name') || get(this, 'modulePrefix');
     if (name) { return name; }
 
     findNamespaces();
@@ -53,8 +53,8 @@ var Namespace = EmberObject.extend({
   },
 
   destroy: function() {
-    var namespaces = Namespace.NAMESPACES,
-        toString = this.toString();
+    var namespaces = Namespace.NAMESPACES;
+    var toString = this.toString();
 
     if (toString) {
       Ember.lookup[toString] = undefined;
@@ -133,7 +133,8 @@ function tryIsNamespace(lookup, prop) {
 }
 
 function findNamespaces() {
-  var lookup = Ember.lookup, obj, isNamespace;
+  var lookup = Ember.lookup;
+  var obj, isNamespace;
 
   if (Namespace.PROCESSED) { return; }
 
@@ -190,8 +191,8 @@ function classToString() {
 }
 
 function processAllNamespaces() {
-  var unprocessedNamespaces = !Namespace.PROCESSED,
-      unprocessedMixins = Ember.anyUnprocessedMixins;
+  var unprocessedNamespaces = !Namespace.PROCESSED;
+  var unprocessedMixins = Ember.anyUnprocessedMixins;
 
   if (unprocessedNamespaces) {
     findNamespaces();
@@ -199,7 +200,9 @@ function processAllNamespaces() {
   }
 
   if (unprocessedNamespaces || unprocessedMixins) {
-    var namespaces = Namespace.NAMESPACES, namespace;
+    var namespaces = Namespace.NAMESPACES;
+    var namespace;
+
     for (var i=0, l=namespaces.length; i<l; i++) {
       namespace = namespaces[i];
       processNamespace([namespace.toString()], namespace, {});

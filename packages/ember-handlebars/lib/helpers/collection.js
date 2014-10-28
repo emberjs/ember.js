@@ -14,7 +14,7 @@ var helpers = EmberHandlebars.helpers;
 
 import { fmt } from "ember-runtime/system/string";
 import { get } from "ember-metal/property_get";
-import { handlebarsGet } from "ember-handlebars/ext";
+import { handlebarsGet, handlebarsGetView } from "ember-handlebars/ext";
 import { ViewHelper } from "ember-handlebars/helpers/view";
 import { computed } from "ember-metal/computed";
 import CollectionView from "ember-views/views/collection_view";
@@ -36,7 +36,8 @@ var alias = computed.alias;
   Given an empty `<body>` the following template:
 
   ```handlebars
-  {{#collection contentBinding="App.items"}}
+  {{! application.hbs }}
+  {{#collection content=model}}
     Hi {{view.content.name}}
   {{/collection}}
   ```
@@ -44,44 +45,45 @@ var alias = computed.alias;
   And the following application code
 
   ```javascript
-  App = Ember.Application.create()
-  App.items = [
-    Ember.Object.create({name: 'Dave'}),
-    Ember.Object.create({name: 'Mary'}),
-    Ember.Object.create({name: 'Sara'})
-  ]
+  App = Ember.Application.create();
+  App.ApplicationRoute = Ember.Route.extend({
+    model: function(){
+      return [{name: 'Yehuda'},{name: 'Tom'},{name: 'Peter'}];
+    }
+  });
   ```
 
-  Will result in the HTML structure below
+  The following HTML will result:
 
   ```html
   <div class="ember-view">
-    <div class="ember-view">Hi Dave</div>
-    <div class="ember-view">Hi Mary</div>
-    <div class="ember-view">Hi Sara</div>
+    <div class="ember-view">Hi Yehuda</div>
+    <div class="ember-view">Hi Tom</div>
+    <div class="ember-view">Hi Peter</div>
   </div>
   ```
 
-  ### Blockless use in a collection
+  ### Non-block version of collection
 
-  If you provide an `itemViewClass` option that has its own `template` you can
+  If you provide an `itemViewClass` option that has its own `template` you may
   omit the block.
 
   The following template:
 
   ```handlebars
-  {{collection contentBinding="App.items" itemViewClass="App.AnItemView"}}
+  {{! application.hbs }}
+  {{collection content=model itemViewClass="an-item"}}
   ```
 
   And application code
 
   ```javascript
   App = Ember.Application.create();
-  App.items = [
-    Ember.Object.create({name: 'Dave'}),
-    Ember.Object.create({name: 'Mary'}),
-    Ember.Object.create({name: 'Sara'})
-  ];
+  App.ApplicationRoute = Ember.Route.extend({
+    model: function(){
+      return [{name: 'Yehuda'},{name: 'Tom'},{name: 'Peter'}];
+    }
+  });
 
   App.AnItemView = Ember.View.extend({
     template: Ember.Handlebars.compile("Greetings {{view.content.name}}")
@@ -92,9 +94,9 @@ var alias = computed.alias;
 
   ```html
   <div class="ember-view">
-    <div class="ember-view">Greetings Dave</div>
-    <div class="ember-view">Greetings Mary</div>
-    <div class="ember-view">Greetings Sara</div>
+    <div class="ember-view">Greetings Yehuda</div>
+    <div class="ember-view">Greetings Tom</div>
+    <div class="ember-view">Greetings Peter</div>
   </div>
   ```
 
@@ -105,10 +107,12 @@ var alias = computed.alias;
   the helper by passing it as the first argument:
 
   ```handlebars
-  {{#collection App.MyCustomCollectionClass contentBinding="App.items"}}
+  {{#collection "my-custom-collection" content=model}}
     Hi {{view.content.name}}
   {{/collection}}
   ```
+
+  This example would look for the class `App.MyCustomCollection`.
 
   ### Forwarded `item.*`-named Options
 
@@ -118,7 +122,7 @@ var alias = computed.alias;
   item (note the camelcasing):
 
   ```handlebars
-  {{#collection contentBinding="App.items"
+  {{#collection content=model
                 itemTagName="p"
                 itemClassNames="greeting"}}
     Howdy {{view.content.name}}
@@ -129,9 +133,9 @@ var alias = computed.alias;
 
   ```html
   <div class="ember-view">
-    <p class="ember-view greeting">Howdy Dave</p>
-    <p class="ember-view greeting">Howdy Mary</p>
-    <p class="ember-view greeting">Howdy Sara</p>
+    <p class="ember-view greeting">Howdy Yehuda</p>
+    <p class="ember-view greeting">Howdy Tom</p>
+    <p class="ember-view greeting">Howdy Peter</p>
   </div>
   ```
 
@@ -154,48 +158,39 @@ function collectionHelper(path, options) {
     Ember.assert("You cannot pass more than one argument to the collection helper", arguments.length === 2);
   }
 
-  var fn = options.fn;
-  var data = options.data;
-  var inverse = options.inverse;
-  var view = options.data.view;
+  var fn        = options.fn,
+      data      = options.data,
+      inverse   = options.inverse,
+      view      = options.data.view,
+      // This should be deterministic, and should probably come from a
+      // parent view and not the controller.
+      container = (view.controller && view.controller.container ? view.controller.container : view.container);
 
-
-  var controller, container;
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
   var collectionClass;
   if (path) {
-    controller = data.keywords.controller;
-    container = controller && controller.container;
-    collectionClass = handlebarsGet(this, path, options) || container.lookupFactory('view:' + path);
+    collectionClass = handlebarsGetView(this, path, container, options);
     Ember.assert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
   }
   else {
     collectionClass = CollectionView;
   }
 
-  var hash = options.hash, itemHash = {}, match;
+  var hash = options.hash;
+  var itemHash = {};
+  var match;
 
   // Extract item view class if provided else default to the standard class
-  var collectionPrototype = collectionClass.proto(), itemViewClass;
+  var collectionPrototype = collectionClass.proto();
+  var itemViewClass;
 
   if (hash.itemView) {
-    controller = data.keywords.controller;
-    Ember.assert('You specified an itemView, but the current context has no ' +
-                 'container to look the itemView up in. This probably means ' +
-                 'that you created a view manually, instead of through the ' +
-                 'container. Instead, use container.lookup("view:viewName"), ' +
-                 'which will properly instantiate your view.',
-                 controller && controller.container);
-    container = controller.container;
-    itemViewClass = container.lookupFactory('view:' + hash.itemView);
-    Ember.assert('You specified the itemView ' + hash.itemView + ", but it was " +
-                 "not found at " + container.describe("view:" + hash.itemView) +
-                 " (and it was not registered in the container)", !!itemViewClass);
+    itemViewClass = handlebarsGetView(this, hash.itemView, container, options);
   } else if (hash.itemViewClass) {
-    itemViewClass = handlebarsGet(collectionPrototype, hash.itemViewClass, options);
+    itemViewClass = handlebarsGetView(collectionPrototype, hash.itemViewClass, container, options);
   } else {
-    itemViewClass = collectionPrototype.itemViewClass;
+    itemViewClass = handlebarsGetView(collectionPrototype, collectionPrototype.itemViewClass, container, options);
   }
 
   Ember.assert(fmt("%@ #collection: Could not find itemViewClass %@", [data.view, itemViewClass]), !!itemViewClass);
@@ -232,7 +227,7 @@ function collectionHelper(path, options) {
           tagName: itemHash.tagName
     });
   } else if (hash.emptyViewClass) {
-    emptyViewClass = handlebarsGet(this, hash.emptyViewClass, options);
+    emptyViewClass = handlebarsGetView(this, hash.emptyViewClass, container, options);
   }
   if (emptyViewClass) { hash.emptyView = emptyViewClass; }
 

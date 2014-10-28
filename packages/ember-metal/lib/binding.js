@@ -2,13 +2,16 @@ import Ember from "ember-metal/core"; // Ember.Logger, Ember.LOG_BINDINGS, asser
 import { get } from "ember-metal/property_get";
 import { set, trySet } from "ember-metal/property_set";
 import { guidFor } from "ember-metal/utils";
-import { Map } from "ember-metal/map";
 import {
   addObserver,
   removeObserver,
   _suspendObserver
 } from "ember-metal/observer";
 import run from "ember-metal/run_loop";
+import {
+  isGlobal as isGlobalPath
+} from "ember-metal/path_cache";
+
 
 // ES6TODO: where is Ember.lookup defined?
 /**
@@ -31,8 +34,6 @@ import run from "ember-metal/run_loop";
 */
 Ember.LOG_BINDINGS = false || !!Ember.ENV.LOG_BINDINGS;
 
-var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
-
 /**
   Returns true if the provided path is global (e.g., `MyApp.fooController.bar`)
   instead of local (`foo.bar.baz`).
@@ -43,9 +44,6 @@ var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
   @param {String} path
   @return Boolean
 */
-function isGlobalPath(path) {
-  return IS_GLOBAL.test(path);
-}
 
 function getWithGlobals(obj, path) {
   return get(isGlobalPath(path) ? Ember.lookup : obj, path);
@@ -56,10 +54,9 @@ function getWithGlobals(obj, path) {
 //
 
 function Binding(toPath, fromPath) {
-  this._direction = 'fwd';
+  this._direction = undefined;
   this._from = fromPath;
   this._to   = toPath;
-  this._directionMap = Map.create();
   this._readyToSync = undefined;
   this._oneWay = undefined;
 }
@@ -161,7 +158,8 @@ Binding.prototype = {
   connect: function(obj) {
     Ember.assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
-    var fromPath = this._from, toPath = this._to;
+    var fromPath = this._from;
+    var toPath = this._to;
     trySet(obj, toPath, getWithGlobals(obj, fromPath));
 
     // add an observer on the object to be notified when the binding should be updated
@@ -214,19 +212,18 @@ Binding.prototype = {
   },
 
   _scheduleSync: function(obj, dir) {
-    var directionMap = this._directionMap;
-    var existingDir = directionMap.get(obj);
+    var existingDir = this._direction;
 
     // if we haven't scheduled the binding yet, schedule it
-    if (!existingDir) {
+    if (existingDir === undefined) {
       run.schedule('sync', this, this._sync, obj);
-      directionMap.set(obj, dir);
+      this._direction  = dir;
     }
 
     // If both a 'back' and 'fwd' sync have been scheduled on the same object,
     // default to a 'fwd' sync so that it remains deterministic.
     if (existingDir === 'back' && dir === 'fwd') {
-      directionMap.set(obj, 'fwd');
+      this._direction = 'fwd';
     }
   },
 
@@ -238,12 +235,12 @@ Binding.prototype = {
 
     // get the direction of the binding for the object we are
     // synchronizing from
-    var directionMap = this._directionMap;
-    var direction = directionMap.get(obj);
+    var direction = this._direction;
 
-    var fromPath = this._from, toPath = this._to;
+    var fromPath = this._from;
+    var toPath = this._to;
 
-    directionMap.remove(obj);
+    this._direction = undefined;
 
     // if we're synchronizing from the remote object...
     if (direction === 'fwd') {
@@ -288,9 +285,9 @@ mixinProperties(Binding, {
     @method from
     @static
   */
-  from: function() {
-    var C = this, binding = new C();
-    return binding.from.apply(binding, arguments);
+  from: function(from) {
+    var C = this;
+    return new C(undefined, from);
   },
 
   /*
@@ -299,9 +296,9 @@ mixinProperties(Binding, {
     @method to
     @static
   */
-  to: function() {
-    var C = this, binding = new C();
-    return binding.to.apply(binding, arguments);
+  to: function(to) {
+    var C = this;
+    return new C(to, undefined);
   },
 
   /**
@@ -321,8 +318,8 @@ mixinProperties(Binding, {
     @return {Ember.Binding} `this`
   */
   oneWay: function(from, flag) {
-    var C = this, binding = new C(null, from);
-    return binding.oneWay(flag);
+    var C = this;
+    return new C(undefined, from).oneWay(flag);
   }
 
 });

@@ -19,8 +19,11 @@ QUnit.module("EmberView#render", {
 });
 
 test("default implementation does not render child views", function() {
+  var rendered = 0;
+  var updated = 0;
+  var parentRendered = 0;
+  var parentUpdated = 0 ;
 
-  var rendered = 0, updated = 0, parentRendered = 0, parentUpdated = 0 ;
   view = ContainerView.createWithMixins({
     childViews: ["child"],
 
@@ -47,8 +50,10 @@ test("default implementation does not render child views", function() {
 });
 
 test("should invoke renderChildViews if layer is destroyed then re-rendered", function() {
+  var rendered = 0;
+  var parentRendered = 0;
+  var parentUpdated = 0 ;
 
-  var rendered = 0, parentRendered = 0, parentUpdated = 0 ;
   view = ContainerView.createWithMixins({
     childViews: ["child"],
 
@@ -87,7 +92,9 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
 });
 
 test("should render child views with a different tagName", function() {
-  var rendered = 0, parentRendered = 0, parentUpdated = 0 ;
+  var rendered = 0;
+  var parentRendered = 0;
+  var parentUpdated = 0 ;
 
   view = ContainerView.create({
     childViews: ["child"],
@@ -164,4 +171,48 @@ test("should re-render if the context is changed", function() {
   });
 
   equal(jQuery('#qunit-fixture #template-context-test').text(), "bang baz", "re-renders the view with the updated context");
+});
+
+test("renders contained view with omitted start tag and parent view context", function() {
+  view = ContainerView.createWithMixins({
+    tagName: 'table',
+    childViews: ["row"],
+    row: EmberView.createWithMixins({
+      tagName: 'tr'
+    })
+  });
+
+  run(view, view.append);
+
+  equal(view.element.tagName, 'TABLE', 'container view is table');
+  equal(view.element.childNodes[0].tagName, 'TR', 'inner view is tr');
+
+  run(view, view.rerender);
+
+  equal(view.element.tagName, 'TABLE', 'container view is table');
+  equal(view.element.childNodes[0].tagName, 'TR', 'inner view is tr');
+});
+
+test("renders a contained view with omitted start tag and tagless parent view context", function() {
+  view = EmberView.createWithMixins({
+    tagName: 'table',
+    template: Ember.Handlebars.compile("{{view view.pivot}}"),
+    pivot: EmberView.extend({
+      tagName: '',
+      template: Ember.Handlebars.compile("{{view view.row}}"),
+      row: EmberView.extend({
+        tagName: 'tr'
+      })
+    })
+  });
+
+  run(view, view.append);
+
+  equal(view.element.tagName, 'TABLE', 'container view is table');
+  ok(view.$('tr').length, 'inner view is tr');
+
+  run(view, view.rerender);
+
+  equal(view.element.tagName, 'TABLE', 'container view is table');
+  ok(view.$('tr').length, 'inner view is tr');
 });

@@ -43,7 +43,15 @@
       }
     </script>
 
-    <script src="../ember-tests.js"></script>
+    <script>
+      var prod = QUnit.urlParams.prod;
+
+      if (prod) {
+        loadScript('../ember-tests.prod.js');
+      } else {
+        loadScript('../ember-tests.js');
+      }
+    </script>
     <script>
       var packages     = QUnit.urlParams.package;
       packages = (packages && packages.split(',')) || [".*"];

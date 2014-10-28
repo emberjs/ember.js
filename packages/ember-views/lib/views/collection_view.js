@@ -18,6 +18,9 @@ import {
   observer,
   beforeObserver
 } from "ember-metal/mixin";
+import {
+  handlebarsGetView
+} from "ember-handlebars/ext";
 import EmberArray from "ember-runtime/mixins/array";
 
 /**
@@ -41,27 +44,32 @@ import EmberArray from "ember-runtime/mixins/array";
   The view for each item in the collection will have its `content` property set
   to the item.
 
-  ## Specifying itemViewClass
+  ## Specifying `itemViewClass`
 
   By default the view class for each item in the managed collection will be an
   instance of `Ember.View`. You can supply a different class by setting the
   `CollectionView`'s `itemViewClass` property.
 
-  Given an empty `<body>` and the following code:
+  Given the following application code:
 
   ```javascript
-  someItemsView = Ember.CollectionView.create({
+  var App = Ember.Application.create();
+  App.ItemListView = Ember.CollectionView.extend({
     classNames: ['a-collection'],
     content: ['A','B','C'],
     itemViewClass: Ember.View.extend({
       template: Ember.Handlebars.compile("the letter: {{view.content}}")
     })
   });
-
-  someItemsView.appendTo('body');
   ```
 
-  Will result in the following HTML structure
+  And a simple application template:
+
+  ```handlebars
+  {{view 'item-list'}}
+  ```
+
+  The following HTML will result:
 
   ```html
   <div class="ember-view a-collection">
@@ -77,21 +85,26 @@ import EmberArray from "ember-runtime/mixins/array";
   "ul", "ol", "table", "thead", "tbody", "tfoot", "tr", or "select" will result
   in the item views receiving an appropriately matched `tagName` property.
 
-  Given an empty `<body>` and the following code:
+  Given the following application code:
 
   ```javascript
-  anUnorderedListView = Ember.CollectionView.create({
+  var App = Ember.Application.create();
+  App.UnorderedListView = Ember.CollectionView.create({
     tagName: 'ul',
     content: ['A','B','C'],
     itemViewClass: Ember.View.extend({
       template: Ember.Handlebars.compile("the letter: {{view.content}}")
     })
   });
-
-  anUnorderedListView.appendTo('body');
   ```
 
-  Will result in the following HTML structure
+  And a simple application template:
+
+  ```handlebars
+  {{view 'unordered-list-view'}}
+  ```
+
+  The following HTML will result:
 
   ```html
   <ul class="ember-view a-collection">
@@ -102,7 +115,7 @@ import EmberArray from "ember-runtime/mixins/array";
   ```
 
   Additional `tagName` pairs can be provided by adding to
-  `Ember.CollectionView.CONTAINER_MAP `
+  `Ember.CollectionView.CONTAINER_MAP`. For example:
 
   ```javascript
   Ember.CollectionView.CONTAINER_MAP['article'] = 'section'
@@ -115,7 +128,7 @@ import EmberArray from "ember-runtime/mixins/array";
   `createChildView` method can be overidden:
 
   ```javascript
-  CustomCollectionView = Ember.CollectionView.extend({
+  App.CustomCollectionView = Ember.CollectionView.extend({
     createChildView: function(viewClass, attrs) {
       if (attrs.content.kind == 'album') {
         viewClass = App.AlbumView;
@@ -135,18 +148,23 @@ import EmberArray from "ember-runtime/mixins/array";
   will be the `CollectionView`s only child.
 
   ```javascript
-  aListWithNothing = Ember.CollectionView.create({
-    classNames: ['nothing']
+  var App = Ember.Application.create();
+  App.ListWithNothing = Ember.CollectionView.create({
+    classNames: ['nothing'],
     content: null,
     emptyView: Ember.View.extend({
       template: Ember.Handlebars.compile("The collection is empty")
     })
   });
-
-  aListWithNothing.appendTo('body');
   ```
 
-  Will result in the following HTML structure
+  And a simple application template:
+
+  ```handlebars
+  {{view 'list-with-nothing'}}
+  ```
+
+  The following HTML will result:
 
   ```html
   <div class="ember-view nothing">
@@ -304,18 +322,8 @@ var CollectionView = ContainerView.extend({
     // Loop through child views that correspond with the removed items.
     // Note that we loop from the end of the array to the beginning because
     // we are mutating it as we go.
-    var childViews = this._childViews, childView, idx, len;
-
-    len = this._childViews.length;
-
-    var removingAll = removedCount === len;
-
-    if (removingAll) {
-      this.currentState.empty(this);
-      this.invokeRecursively(function(view) {
-        view.removedFromDOM = true;
-      }, false);
-    }
+    var childViews = this._childViews;
+    var childView, idx;
 
     for (idx = start + removedCount - 1; idx >= start; idx--) {
       childView = childViews[idx];
@@ -338,21 +346,14 @@ var CollectionView = ContainerView.extend({
     @param {Number} added number of object added to content
   */
   arrayDidChange: function(content, start, removed, added) {
-    var addedViews = [], view, item, idx, len, itemViewClass,
-      emptyView;
+    var addedViews = [];
+    var view, item, idx, len, itemViewClass, emptyView;
 
     len = content ? get(content, 'length') : 0;
 
     if (len) {
       itemViewClass = get(this, 'itemViewClass');
-
-      if ('string' === typeof itemViewClass && isGlobalPath(itemViewClass)) {
-        itemViewClass = get(itemViewClass) || itemViewClass;
-      }
-
-      Ember.assert(fmt("itemViewClass must be a subclass of Ember.View, not %@",
-                       [itemViewClass]),
-                       'string' === typeof itemViewClass || View.detect(itemViewClass));
+      itemViewClass = handlebarsGetView(content, itemViewClass, this.container);
 
       for (idx = start; idx < start+added; idx++) {
         item = content.objectAt(idx);

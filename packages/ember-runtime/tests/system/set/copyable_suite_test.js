@@ -3,12 +3,29 @@ import Set from "ember-runtime/system/set";
 import {generateGuid} from 'ember-metal/utils';
 import {get} from 'ember-metal/property_get';
 
+ignoreDeprecation(function() {
 CopyableTests.extend({
   name: 'Ember.Set Copyable',
 
   newObject: function() {
-    var set = new Set();
+    var set, originalCopy;
+    ignoreDeprecation(function() {
+      set = new Set();
+    });
+
     set.addObject(generateGuid());
+
+    originalCopy = set.copy;
+    set.copy = function() {
+      var ret;
+
+      ignoreDeprecation(function() {
+        ret = originalCopy.apply(set, arguments);
+      });
+
+      return ret;
+    };
+
     return set;
   },
 
@@ -21,4 +38,4 @@ CopyableTests.extend({
   shouldBeFreezable: true
 }).run();
 
-
+});

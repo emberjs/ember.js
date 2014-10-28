@@ -1,4 +1,3 @@
-import { META_KEY } from 'ember-metal/utils';
 import { addObserver } from "ember-metal/observer";
 import { finishChains } from "ember-metal/chains";
 import { create } from 'ember-metal/platform';
@@ -14,5 +13,5 @@ test("finishChains should properly copy chains from prototypes to instances", fu
   var childObj = create(obj);
   finishChains(childObj);
 
-  ok(obj[META_KEY].chains !== childObj[META_KEY].chains, "The chains object is copied");
+  ok(obj['__ember_meta__'].chains !== childObj['__ember_meta__'].chains, "The chains object is copied");
 });

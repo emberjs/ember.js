@@ -12,7 +12,6 @@ import {instrument, subscribe, unsubscribe, reset} from "ember-metal/instrumenta
 import {
   generateGuid,
   GUID_KEY,
-  GUID_PREFIX,
   guidFor,
   META_DESC,
   EMPTY_META,
@@ -35,9 +34,17 @@ import {
 } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
-
-import {create, platform} from "ember-metal/platform";
-import {map, forEach, filter, indexOf} from "ember-metal/array";
+import Cache from "ember-metal/cache";
+import {
+  create,
+  hasPropertyAccessors
+} from "ember-metal/platform";
+import {
+  filter,
+  forEach,
+  indexOf,
+  map
+} from "ember-metal/array";
 import Logger from "ember-metal/logger";
 
 import {get, getWithDefault, normalizeTuple, _getPath} from "ember-metal/property_get";
@@ -58,33 +65,103 @@ import {
 
 import ObserverSet from "ember-metal/observer_set";
 
-import {propertyWillChange, propertyDidChange, overrideChains,
-beginPropertyChanges, endPropertyChanges, changeProperties} from "ember-metal/property_events";
+import {
+  propertyWillChange,
+  propertyDidChange,
+  overrideChains,
+  beginPropertyChanges,
+  endPropertyChanges,
+  changeProperties
+} from "ember-metal/property_events";
 
-import {Descriptor, defineProperty} from "ember-metal/properties";
-import {set, trySet} from "ember-metal/property_set";
+import {
+  Descriptor,
+  defineProperty
+} from "ember-metal/properties";
+import {
+  set,
+  trySet
+} from "ember-metal/property_set";
 
-import {OrderedSet, Map, MapWithDefault} from "ember-metal/map";
+import {
+  OrderedSet,
+  Map,
+  MapWithDefault
+} from "ember-metal/map";
 import getProperties from "ember-metal/get_properties";
 import setProperties from "ember-metal/set_properties";
-import {watchKey, unwatchKey} from "ember-metal/watch_key";
-import {flushPendingChains, removeChainWatcher, ChainNode, finishChains} from "ember-metal/chains";
-import {watchPath, unwatchPath} from "ember-metal/watch_path";
-import {watch, isWatching, unwatch, rewatch, destroy} from "ember-metal/watching";
+import {
+  watchKey,
+  unwatchKey
+} from "ember-metal/watch_key";
+import {
+  flushPendingChains,
+  removeChainWatcher,
+  ChainNode,
+  finishChains
+} from "ember-metal/chains";
+import {
+  watchPath,
+  unwatchPath
+} from "ember-metal/watch_path";
+import {
+  watch,
+  isWatching,
+  unwatch,
+  rewatch,
+  destroy } from "ember-metal/watching";
 import expandProperties from "ember-metal/expand_properties";
-import {ComputedProperty, computed, cacheFor} from "ember-metal/computed";
+import {
+  ComputedProperty,
+  computed,
+  cacheFor
+} from "ember-metal/computed";
 
 // side effect of defining the computed.* macros
 import "ember-metal/computed_macros";
 
-import {addObserver, observersFor, removeObserver, addBeforeObserver, _suspendBeforeObserver, _suspendObserver, _suspendBeforeObservers, _suspendObservers, beforeObserversFor, removeBeforeObserver} from "ember-metal/observer";
-import {IS_BINDING, mixin, Mixin, required, aliasMethod, observer, immediateObserver, beforeObserver} from "ember-metal/mixin";
-import {Binding, isGlobalPath, bind, oneWay} from "ember-metal/binding";
+import {
+  addObserver,
+  observersFor,
+  removeObserver,
+  addBeforeObserver,
+  _suspendBeforeObserver,
+  _suspendObserver,
+  _suspendBeforeObservers,
+  _suspendObservers,
+  beforeObserversFor,
+  removeBeforeObserver
+} from "ember-metal/observer";
+import {
+  IS_BINDING,
+  mixin,
+  Mixin,
+  required,
+  aliasMethod,
+  observer,
+  immediateObserver,
+  beforeObserver
+} from "ember-metal/mixin";
+import {
+  Binding,
+  isGlobalPath,
+  bind,
+  oneWay
+} from "ember-metal/binding";
 import run from "ember-metal/run_loop";
 import libraries from "ember-metal/libraries";
-import {isNone, none} from 'ember-metal/is_none';
-import {isEmpty, empty} from 'ember-metal/is_empty';
+import {
+  isNone,
+  none
+} from 'ember-metal/is_none';
+import {
+  isEmpty,
+  empty
+} from 'ember-metal/is_empty';
 import isBlank from 'ember-metal/is_blank';
+import isPresent from 'ember-metal/is_present';
+import keys from 'ember-metal/keys';
+
 // END IMPORTS
 
 // BEGIN EXPORTS
@@ -97,11 +174,16 @@ EmberInstrumentation.reset  = reset;
 Ember.instrument = instrument;
 Ember.subscribe = subscribe;
 
+Ember._Cache = Cache;
+
 Ember.generateGuid    = generateGuid;
 Ember.GUID_KEY        = GUID_KEY;
-Ember.GUID_PREFIX     = GUID_PREFIX;
 Ember.create          = create;
-Ember.platform        = platform;
+Ember.keys            = keys;
+Ember.platform        = {
+  defineProperty: defineProperty,
+  hasPropertyAccessors: hasPropertyAccessors
+};
 
 var EmberArrayPolyfills = Ember.ArrayPolyfills = {};
 
@@ -234,6 +316,10 @@ Ember.isEmpty = isEmpty;
 Ember.empty = empty;
 
 Ember.isBlank = isBlank;
+
+if (Ember.FEATURES.isEnabled('ember-metal-is-present')) {
+  Ember.isPresent = isPresent;
+}
 
 Ember.merge = merge;
 

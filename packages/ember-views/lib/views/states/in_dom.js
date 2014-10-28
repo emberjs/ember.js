@@ -33,10 +33,6 @@ merge(inDOM, {
     if (!View) { View = requireModule('ember-views/views/view')["default"]; } // ES6TODO: this sucks. Have to avoid cycles...
 
     if (!this.isVirtual) delete View.views[view.elementId];
-  },
-
-  insertElement: function(view, fn) {
-    throw new EmberError("You can't insert an element into the DOM that has already been inserted");
   }
 });
 

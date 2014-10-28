@@ -13,8 +13,6 @@ var SafeString = EmberHandlebars.SafeString;
 import Ember from "ember-metal/core"; // Ember.K
 var K = Ember.K;
 
-var Metamorph = requireModule('metamorph');
-
 import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -30,19 +28,20 @@ var viewStates = states;
 
 import _MetamorphView from "ember-handlebars/views/metamorph_view";
 import { handlebarsGet } from "ember-handlebars/ext";
+import { uuid } from "ember-metal/utils";
 
 function SimpleHandlebarsView(path, pathRoot, isEscaped, templateData) {
   this.path = path;
   this.pathRoot = pathRoot;
   this.isEscaped = isEscaped;
   this.templateData = templateData;
-
+  this[Ember.GUID_KEY] = uuid();
   this._lastNormalizedValue = undefined;
-  this.morph = Metamorph();
   this.state = 'preRender';
   this.updateId = null;
   this._parentView = null;
   this.buffer = null;
+  this._morph = null;
 }
 
 SimpleHandlebarsView.prototype = {
@@ -68,6 +67,7 @@ SimpleHandlebarsView.prototype = {
   normalizedValue: function() {
     var path = this.path;
     var pathRoot = this.pathRoot;
+    var escape = this.isEscaped;
     var result, templateData;
 
     // Use the pathRoot as the result if no path is provided. This
@@ -81,33 +81,17 @@ SimpleHandlebarsView.prototype = {
       result = handlebarsGet(pathRoot, path, { data: templateData });
     }
 
-    return result;
-  },
-
-  renderToBuffer: function(buffer) {
-    var string = '';
-
-    string += this.morph.startTag();
-    string += this.render();
-    string += this.morph.endTag();
-
-    buffer.push(string);
-  },
-
-  render: function(value) {
-    // If not invoked via a triple-mustache ({{{foo}}}), escape
-    // the content of the template.
-    var escape = this.isEscaped;
-    var result = value || this.normalizedValue();
-    this._lastNormalizedValue = result;
-    if (result === null || result === undefined) {
-      result = "";
-    } else if (!(result instanceof SafeString)) {
-      result = String(result);
+    if (!escape && !(result instanceof SafeString)) {
+      result = new SafeString(result);
     }
 
-    if (escape) { result = Handlebars.Utils.escapeExpression(result); }
     return result;
+  },
+
+  render: function(buffer) {
+    var value = this.normalizedValue();
+    this._lastNormalizedValue = value;
+    buffer._element = value;
   },
 
   rerender: function() {
@@ -122,15 +106,16 @@ SimpleHandlebarsView.prototype = {
         this.updateId = run.scheduleOnce('render', this, 'update');
         break;
     }
-
     return this;
   },
 
   update: function () {
     this.updateId = null;
     var value = this.normalizedValue();
+    // doesn't diff SafeString instances
     if (value !== this._lastNormalizedValue) {
-      this.morph.html(this.render(value));
+      this._lastNormalizedValue = value;
+      this._morph.update(value);
     }
   },
 
@@ -253,10 +238,10 @@ var _HandlebarsBoundView = _MetamorphView.extend({
   pathRoot: null,
 
   normalizedValue: function() {
-    var path = get(this, 'path'),
-        pathRoot  = get(this, 'pathRoot'),
-        valueNormalizer = get(this, 'valueNormalizerFunc'),
-        result, templateData;
+    var path = get(this, 'path');
+    var pathRoot  = get(this, 'pathRoot');
+    var valueNormalizer = get(this, 'valueNormalizerFunc');
+    var result, templateData;
 
     // Use the pathRoot as the result if no path is provided. This
     // happens if the path is `this`, which gets normalized into
@@ -298,14 +283,15 @@ var _HandlebarsBoundView = _MetamorphView.extend({
     // the content of the template.
     var escape = get(this, 'isEscaped');
 
-    var shouldDisplay = get(this, 'shouldDisplayFunc'),
-        preserveContext = get(this, 'preserveContext'),
-        context = get(this, 'previousContext');
+    var shouldDisplay = get(this, 'shouldDisplayFunc');
+    var preserveContext = get(this, 'preserveContext');
+    var context = get(this, 'previousContext');
 
-    var inverseTemplate = get(this, 'inverseTemplate'),
-        displayTemplate = get(this, 'displayTemplate');
+    var inverseTemplate = get(this, 'inverseTemplate');
+    var displayTemplate = get(this, 'displayTemplate');
 
     var result = this.normalizedValue();
+
     this._lastNormalizedValue = result;
 
     // First, test the conditional to see if we should

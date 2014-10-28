@@ -10,7 +10,8 @@ var metaFor = meta;
 // chains inherited from the proto they will be cloned and reconfigured for
 // the current object.
 function chainsFor(obj, meta) {
-  var m = meta || metaFor(obj), ret = m.chains;
+  var m = meta || metaFor(obj);
+  var ret = m.chains;
   if (!ret) {
     ret = m.chains = new ChainNode(null, null, obj);
   } else if (ret.value() !== obj) {
@@ -23,7 +24,8 @@ export function watchPath(obj, keyPath, meta) {
   // can't watch length on Array - it is special...
   if (keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
-  var m = meta || metaFor(obj), watching = m.watching;
+  var m = meta || metaFor(obj);
+  var watching = m.watching;
 
   if (!watching[keyPath]) { // activate watching first time
     watching[keyPath] = 1;
@@ -34,7 +36,8 @@ export function watchPath(obj, keyPath, meta) {
 }
 
 export function unwatchPath(obj, keyPath, meta) {
-  var m = meta || metaFor(obj), watching = m.watching;
+  var m = meta || metaFor(obj);
+  var watching = m.watching;
 
   if (watching[keyPath] === 1) {
     watching[keyPath] = 0;

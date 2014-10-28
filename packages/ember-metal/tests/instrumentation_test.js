@@ -14,10 +14,18 @@ QUnit.module("Ember Instrumentation", {
   }
 });
 
+test("execute block even if no listeners", function() {
+  var result = instrument("render", {}, function() {
+    return "hello";
+  });
+  equal(result, "hello", 'called block');
+});
+
 test("subscribing to a simple path receives the listener", function() {
   expect(12);
 
-  var sentPayload = {}, count = 0;
+  var sentPayload = {};
+  var count = 0;
 
   subscribe("render", {
     before: function(name, timestamp, payload) {
@@ -57,7 +65,8 @@ test("subscribing to a simple path receives the listener", function() {
 test("returning a value from the before callback passes it to the after callback", function() {
   expect(2);
 
-  var passthru1 = {}, passthru2 = {};
+  var passthru1 = {};
+  var passthru2 = {};
 
   subscribe("render", {
     before: function(name, timestamp, payload) {

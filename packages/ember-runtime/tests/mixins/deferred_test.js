@@ -20,7 +20,8 @@ QUnit.module("Deferred", {
 });
 
 test("can resolve deferred", function() {
-  var deferred, count = 0;
+  var deferred;
+  var count = 0;
 
   run(function() {
     deferred = EmberObject.createWithMixins(Deferred);
@@ -37,7 +38,8 @@ test("can resolve deferred", function() {
 
 test("can reject deferred", function() {
 
-  var deferred, count = 0;
+  var deferred;
+  var count = 0;
 
   run(function() {
     deferred = EmberObject.createWithMixins(Deferred);
@@ -54,7 +56,9 @@ test("can reject deferred", function() {
 
 test("can resolve with then", function() {
 
-  var deferred, count1 = 0 ,count2 = 0;
+  var deferred;
+  var count1 = 0;
+  var count2 = 0;
 
   run(function() {
     deferred = EmberObject.createWithMixins(Deferred);
@@ -74,7 +78,9 @@ test("can resolve with then", function() {
 
 test("can reject with then", function() {
 
-  var deferred, count1 = 0 ,count2 = 0;
+  var deferred;
+  var count1 = 0;
+  var count2 = 0;
 
   run(function() {
     deferred = EmberObject.createWithMixins(Deferred);
@@ -94,7 +100,8 @@ test("can reject with then", function() {
 
 test("can call resolve multiple times", function() {
 
-  var deferred, count = 0;
+  var deferred;
+  var count = 0;
 
   run(function() {
     deferred = EmberObject.createWithMixins(Deferred);
@@ -114,7 +121,10 @@ test("can call resolve multiple times", function() {
 });
 
 test("resolve prevent reject", function() {
-  var deferred, resolved = false, rejected = false, progress = 0;
+  var deferred;
+  var resolved = false;
+  var rejected = false;
+  var progress = 0;
 
   run(function() {
     deferred = EmberObject.createWithMixins(Deferred);
@@ -134,7 +144,10 @@ test("resolve prevent reject", function() {
 });
 
 test("reject prevent resolve", function() {
-  var deferred, resolved = false, rejected = false, progress = 0;
+  var deferred;
+  var resolved = false;
+  var rejected = false;
+  var progress = 0;
 
   run(function() {
     deferred = EmberObject.createWithMixins(Deferred);
@@ -155,7 +168,8 @@ test("reject prevent resolve", function() {
 
 test("will call callbacks if they are added after resolution", function() {
 
-  var deferred, count1 = 0;
+  var deferred;
+  var count1 = 0;
 
   run(function() {
     deferred = EmberObject.createWithMixins(Deferred);
@@ -181,7 +195,8 @@ test("will call callbacks if they are added after resolution", function() {
 });
 
 test("then is chainable", function() {
-  var deferred, count = 0;
+  var deferred;
+  var count = 0;
 
   run(function() {
     deferred = EmberObject.createWithMixins(Deferred);
@@ -235,7 +250,8 @@ test("can self reject", function() {
 
 test("can fulfill to a custom value", function() {
   expect(1);
-  var deferred, obj = {};
+  var deferred;
+  var obj = {};
 
   run(function() {
     deferred = EmberObject.createWithMixins(Deferred);
@@ -273,7 +289,8 @@ test("can chain self fulfilling objects", function() {
 
 test("can do multi level assimilation", function() {
   expect(1);
-  var firstDeferred, secondDeferred, firstDeferredResolved = false;
+  var firstDeferred, secondDeferred;
+  var firstDeferredResolved = false;
 
   run(function() {
     firstDeferred = EmberObject.createWithMixins(Deferred);
@@ -333,7 +350,8 @@ test("can handle fulfillment without  fulfillment handler", function() {
 
 if (!EmberDev.runningProdBuild){
   test("causes a deprecation warning when used", function() {
-    var deferred, deprecationMade, obj = {};
+    var deferred, deprecationMade;
+    var obj = {};
 
     Ember.deprecate = function(message) {
       deprecationMade = message;

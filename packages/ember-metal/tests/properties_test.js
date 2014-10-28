@@ -1,11 +1,8 @@
 import Ember from 'ember-metal/core';
-import { platform } from "ember-metal/platform";
-import { set } from 'ember-metal/property_set';
-import { get } from 'ember-metal/property_get';
+import { hasPropertyAccessors } from "ember-metal/platform";
 import { computed } from 'ember-metal/computed';
-import { defineProperty,
-         deprecateProperty
-} from "ember-metal/properties";
+import { defineProperty } from "ember-metal/properties";
+import { deprecateProperty } from "ember-metal/deprecate_property";
 
 QUnit.module('Ember.defineProperty');
 
@@ -44,7 +41,7 @@ test("for descriptor properties, didDefineProperty hook should be called if impl
   defineProperty(obj, 'foo', computedProperty);
 });
 
-if (platform.hasPropertyAccessors) {
+if (hasPropertyAccessors) {
 
   QUnit.module('Ember.deprecateProperty');
 

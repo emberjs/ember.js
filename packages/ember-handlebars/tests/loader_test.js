@@ -3,7 +3,8 @@ import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 var trim = jQuery.trim;
 
-var originalLookup = Ember.lookup, lookup, Tobias, App, view;
+var originalLookup = Ember.lookup;
+var lookup, Tobias, App, view;
 
 QUnit.module("test Ember.Handlebars.bootstrap", {
   setup: function() {

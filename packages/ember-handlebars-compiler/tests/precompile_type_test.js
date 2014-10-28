@@ -1,7 +1,8 @@
 import EmberHandlebars from "ember-handlebars-compiler";
-var precompile = EmberHandlebars.precompile,
-    template = 'Hello World',
-    result;
+var precompile = EmberHandlebars.precompile;
+var parse = EmberHandlebars.parse;
+var template = 'Hello World';
+var result;
 
 QUnit.module("Ember.Handlebars.precompileType");
 
@@ -19,3 +20,4 @@ test("precompile creates a string when asObject is false", function(){
   result = precompile(template, false);
   equal(typeof(result), "string");
 });
+

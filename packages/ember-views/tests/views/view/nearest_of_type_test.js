@@ -16,12 +16,12 @@ QUnit.module("View#nearest*", {
 });
 
 (function() {
-  var Mixin = EmberMixin.create({}),
-      Parent = View.extend(Mixin, {
-        render: function(buffer) {
-          this.appendChild( View.create() );
-        }
-      });
+  var Mixin = EmberMixin.create({});
+  var Parent = View.extend(Mixin, {
+    render: function(buffer) {
+      this.appendChild( View.create() );
+    }
+  });
 
   test("nearestOfType should find the closest view by view class", function() {
     var child;

@@ -20,10 +20,7 @@ import {
   getActiveTargetName,
   stashParamNames
 } from "ember-routing-handlebars/helpers/shared";
-
-// requireModule("ember-handlebars");
-// requireModule("ember-runtime");
-// requireModule("ember-views");
+import { create } from "ember-metal/platform";
 
 /**
 @module ember
@@ -308,13 +305,17 @@ var EmberRouter = EmberObject.extend(Evented, {
       }
     }
 
-    if (rootURL && typeof rootURL === 'string') {
-      location.rootURL = rootURL;
-    }
+    if (location !== null && typeof location === 'object') {
+      if (rootURL && typeof rootURL === 'string') {
+        location.rootURL = rootURL;
+      }
 
-    // ensure that initState is called AFTER the rootURL is set on
-    // the location instance
-    if (typeof location.initState === 'function') { location.initState(); }
+      // ensure that initState is called AFTER the rootURL is set on
+      // the location instance
+      if (typeof location.initState === 'function') {
+        location.initState();
+      }
+    }
   },
 
   _getHandlerFunction: function() {
@@ -422,10 +423,8 @@ var EmberRouter = EmberObject.extend(Evented, {
     Ember.assert("The route " + targetRouteName + " was not found", targetRouteName && this.router.hasRoute(targetRouteName));
 
     var queryParams = {};
-    if (Ember.FEATURES.isEnabled("query-params-new")) {
-      merge(queryParams, _queryParams);
-      this._prepareQueryParams(targetRouteName, models, queryParams);
-    }
+    merge(queryParams, _queryParams);
+    this._prepareQueryParams(targetRouteName, models, queryParams);
 
     var transitionArgs = routeArgs(targetRouteName, models, queryParams);
     var transitionPromise = this.router.transitionTo.apply(this.router, transitionArgs);
@@ -455,8 +454,8 @@ var EmberRouter = EmberObject.extend(Evented, {
       qps: qps
     };
 
-    var routerjs = this.router,
-        recogHandlerInfos = routerjs.recognizer.handlersFor(leafRouteName);
+    var routerjs = this.router;
+    var recogHandlerInfos = routerjs.recognizer.handlersFor(leafRouteName);
 
     for (var i = 0, len = recogHandlerInfos.length; i < len; ++i) {
       var recogHandler = recogHandlerInfos[i];
@@ -743,8 +742,8 @@ function updatePaths(router) {
     return;
   }
 
-  var infos = router.router.currentHandlerInfos,
-      path = EmberRouter._routePath(infos);
+  var infos = router.router.currentHandlerInfos;
+  var path = EmberRouter._routePath(infos);
 
   if (!('currentPath' in appController)) {
     defineProperty(appController, 'currentPath');
@@ -863,21 +862,17 @@ function resemblesURL(str) {
 }
 
 function forEachQueryParam(router, targetRouteName, queryParams, callback) {
-  if (Ember.FEATURES.isEnabled("query-params-new")) {
-    var qpCache = router._queryParamsFor(targetRouteName),
-    qps = qpCache.qps;
+  var qpCache = router._queryParamsFor(targetRouteName);
+  var qps = qpCache.qps;
 
-    for (var key in queryParams) {
-      if (!queryParams.hasOwnProperty(key)) { continue; }
-      var value = queryParams[key],
-      qp = qpCache.map[key];
+  for (var key in queryParams) {
+    if (!queryParams.hasOwnProperty(key)) { continue; }
+    var value = queryParams[key];
+    var qp = qpCache.map[key];
 
-      if (qp) {
-        callback(key, value, qp);
-      }
+    if (qp) {
+      callback(key, value, qp);
     }
-  } else {
-    return {};
   }
 }
 
