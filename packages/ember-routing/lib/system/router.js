@@ -19,16 +19,8 @@ import {
   routeArgs,
   getActiveTargetName,
   stashParamNames
-<<<<<<< HEAD
-} from "ember-routing-handlebars/helpers/shared";
-
-// requireModule("ember-handlebars");
-// requireModule("ember-runtime");
-// requireModule("ember-views");
-=======
 } from "ember-routing/utils";
 import { create } from "ember-metal/platform";
->>>>>>> 1647fdd... Ensure consistent use of Ember.create.
 
 /**
 @module ember
