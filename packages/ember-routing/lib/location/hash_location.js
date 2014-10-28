@@ -46,7 +46,7 @@ export default EmberObject.extend({
   */
   getURL: function() {
     var path = this.getHash().substr(1);
-    Ember.deprecate('location.hash value is ambiguous. Support for this will be removed soon. When using location: "hash|auto" your hash paths MUST begin with a forward slash. e.g. #/' + path + ' NOT #' + path, path.length === 0 || path.charAt(0) === '/');
+    Ember.deprecate('location.hash value is ambiguous. Support for this will be removed soon. When using location: "hash|auto" your hash paths MUST begin with a forward slash. e.g. #/' + path + ' NOT #' + path + '. See http://emberjs.com/guides/deprecations/#toc_deprecate-location-hash-paths-that-don-t-include-a-forward-slash-e-g-foo-not-foo', path.length === 0 || path.charAt(0) === '/');
     return path;
   },
 
