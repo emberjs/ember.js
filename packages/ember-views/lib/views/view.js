@@ -1186,6 +1186,8 @@ var View = CoreView.extend({
       var property = split[0];
       var attributeName = split[1] || property;
 
+      Ember.assert('You cannot use class as an attributeBinding, use classNameBindings instead.', attributeName !== 'class');
+
       if (property in this) {
         this._setupAttributeBindingObservation(property, attributeName);
 
