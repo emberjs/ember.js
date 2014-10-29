@@ -1268,6 +1268,108 @@ test("{{view}} should be able to point to a local view", function() {
   equal(view.$().text(), "common", "tries to look up view name locally");
 });
 
+test("{{view}} should be able to point to a local instance of view", function() {
+  view = EmberView.create({
+    template: EmberHandlebars.compile("{{view view.common}}"),
+
+    common: EmberView.create({
+      template: EmberHandlebars.compile("common")
+    })
+  });
+
+  appendView();
+
+  equal(view.$().text(), "common", "tries to look up view name locally");
+});
+
+test("{{view}} should be able to point to a local subclass of view", function() {
+  var MyView = EmberView.extend();
+  view = EmberView.create({
+    template: EmberHandlebars.compile("{{view view.subclassed}}"),
+    subclassed: MyView.extend({
+      template: EmberHandlebars.compile("subclassed")
+    })
+  });
+
+  appendView();
+
+  equal(view.$().text(), "subclassed", "tries to look up view name locally");
+});
+
+test("{{view}} should be able to point to a local instance of subclass of view", function() {
+  var MyView = EmberView.extend();
+  view = EmberView.create({
+    template: EmberHandlebars.compile("{{view view.subclassed}}"),
+    subclassed: MyView.create({
+      template: EmberHandlebars.compile("subclassed")
+    })
+  });
+
+  appendView();
+
+  equal(view.$().text(), "subclassed", "tries to look up view name locally");
+});
+
+test("{{view}} asserts that a view class is present", function() {
+  var MyView = EmberObject.extend();
+  view = EmberView.create({
+    template: EmberHandlebars.compile("{{view view.notView}}"),
+    notView: MyView.extend({
+      template: EmberHandlebars.compile("notView")
+    })
+  });
+
+  expectAssertion(function(){
+    appendView();
+  }, /must be a subclass of Ember.View, not/);
+});
+
+test("{{view}} asserts that a view class is present off controller", function() {
+  var MyView = EmberObject.extend();
+  view = EmberView.create({
+    template: EmberHandlebars.compile("{{view notView}}"),
+    controller: EmberObject.create({
+      notView: MyView.extend({
+        template: EmberHandlebars.compile("notView")
+      })
+    })
+  });
+
+  expectAssertion(function(){
+    appendView();
+  }, /must be a subclass of Ember.View, not/);
+});
+
+test("{{view}} asserts that a view instance is present", function() {
+  var MyView = EmberObject.extend();
+  view = EmberView.create({
+    template: EmberHandlebars.compile("{{view view.notView}}"),
+    notView: MyView.create({
+      template: EmberHandlebars.compile("notView")
+    })
+  });
+
+  expectAssertion(function(){
+    appendView();
+  }, /must be a subclass of Ember.View, not/);
+});
+
+test("{{view}} asserts that a view subclass instance is present off controller", function() {
+  var MyView = EmberObject.extend();
+  view = EmberView.create({
+    template: EmberHandlebars.compile("{{view notView}}"),
+    controller: EmberObject.create({
+      notView: MyView.create({
+        template: EmberHandlebars.compile("notView")
+      })
+    })
+  });
+
+  expectAssertion(function(){
+    appendView();
+  }, /must be a subclass of Ember.View, not/);
+});
+
 test("{{view}} should evaluate class bindings set to global paths", function() {
   var App;
 

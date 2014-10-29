@@ -170,7 +170,12 @@ export var ViewHelper = EmberObject.create({
     makeBindings(thisContext, options);
 
     var container = this.container || (data && data.view && data.view.container);
-    newView = handlebarsGetView(thisContext, path, container, options);
+    debugger;
+    if (View.detectInstance(path)) {
+      newView = path;
+    } else {
+      newView = handlebarsGetView(thisContext, path, container, options);
+    }
 
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;
@@ -198,7 +203,7 @@ export var ViewHelper = EmberObject.create({
     makeBindings(thisContext, options);
 
     Ember.assert(
-      'Only a instance of a view may be passed to the ViewHelper.instanceHelper',
+      'Only an instance of a view may be passed to the ViewHelper.instanceHelper',
       View.detectInstance(newView)
     );
 
