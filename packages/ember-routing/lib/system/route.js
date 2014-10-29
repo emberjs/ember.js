@@ -311,6 +311,15 @@ var Route = EmberObject.extend(ActionHandler, {
   },
 
   /**
+    @private
+
+    @property _optionsForQueryParam
+  */
+  _optionsForQueryParam: function(qp) {
+    return get(this, 'queryParams.' + qp.urlKey) || get(this, 'queryParams.' + qp.prop) || {};
+  },
+
+  /**
     A hook you can use to reset controller values either when the model
     changes or the route is exiting.
 
@@ -520,7 +529,7 @@ var Route = EmberObject.extend(ActionHandler, {
           this.router.one('didTransition', function() {
             view.destroy();
           });
-          
+
           return true; // Bubble the loading event
         }
       }
@@ -617,11 +626,12 @@ var Route = EmberObject.extend(ActionHandler, {
   _actions: {
 
     queryParamsDidChange: function(changed, totalPresent, removed) {
+      var qpMap = this.get('_qp').map;
+
       var totalChanged = keys(changed).concat(keys(removed));
       for (var i = 0, len = totalChanged.length; i < len; ++i) {
-        var urlKey = totalChanged[i];
-        var options = get(this.queryParams, urlKey) || {};
-        if (get(options, 'refreshModel')) {
+        var qp = qpMap[totalChanged[i]];
+        if (qp && get(this._optionsForQueryParam(qp), 'refreshModel')) {
           this.refresh();
         }
       }
@@ -672,9 +682,8 @@ var Route = EmberObject.extend(ActionHandler, {
 
         var thisQueryParamChanged = (svalue !== qp.svalue);
         if (thisQueryParamChanged) {
-          var options = get(route, 'queryParams.' + qp.urlKey) || {};
-
           if (transition.queryParamsOnly && replaceUrl !== false) {
+            var options = route._optionsForQueryParam(qp);
             var replaceConfigValue = get(options, 'replace');
             if (replaceConfigValue) {
               replaceUrl = true;
@@ -833,7 +842,7 @@ var Route = EmberObject.extend(ActionHandler, {
     ```javascript
     App.Router.map(function() {
       this.route('index');
-      
+
       this.resource('breakfast', { path: ':breakfastId' }, function() {
         this.resource('cereal', { path: ':cerealId' });
       });
