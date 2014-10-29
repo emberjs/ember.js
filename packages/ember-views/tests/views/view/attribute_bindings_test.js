@@ -291,3 +291,13 @@ test("attributeBindings should not fail if view has been destroyed", function() 
   }
   ok(!error, error);
 });
+
+test("asserts if an attributeBinding is setup on class", function() {
+  view = EmberView.create({
+    attributeBindings: ['class']
+  });
+
+  expectAssertion(function() {
+    appendView();
+  }, 'You cannot use class as an attributeBinding, use classNameBindings instead.');
+});
