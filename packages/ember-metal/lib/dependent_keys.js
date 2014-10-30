@@ -1,11 +1,19 @@
-import { create } from "ember-metal/platform";
-import { watch, unwatch } from "ember-metal/watching";
+// Remove "use strict"; from transpiled module until
+// https://bugs.webkit.org/show_bug.cgi?id=138038 is fixed
+//
+// REMOVE_USE_STRICT: true
+
+import {
+  create as o_create
+} from "ember-metal/platform";
+import {
+  watch,
+  unwatch
+} from "ember-metal/watching";
 
 /**
 @module ember-metal
 */
-
-var o_create = create;
 
 // ..........................................................
 // DEPENDENT KEYS
