@@ -22,6 +22,7 @@ import { observersFor } from "ember-metal/observer";
 import TextField from "ember-handlebars/controls/text_field";
 import Container from "ember-runtime/system/container";
 import Logger from "ember-metal/logger";
+import { create as o_create } from "ember-metal/platform";
 
 import htmlSafe from "ember-handlebars/string";
 
@@ -289,6 +290,24 @@ test("should read an escaped number value", function() {
     Ember.set(context, 'aNumber', 2);
   });
   equal(view.$().text(), '2');
+});
+
+test("should read from an Object.create(null)", function() {
+  // Use ember's polyfill for Object.create
+  var nullObject = o_create(null);
+  nullObject['foo'] = 'bar';
+  view = EmberView.create({
+    context: { nullObject: nullObject },
+    template: EmberHandlebars.compile('{{nullObject.foo}}')
+  });
+
+  appendView();
+  equal(view.$().text(), 'bar');
+
+  Ember.run(function(){
+    Ember.set(nullObject, 'foo', 'baz');
+  });
+  equal(view.$().text(), 'baz');
 });
 
 test("htmlSafe should return an instance of Handlebars.SafeString", function() {
