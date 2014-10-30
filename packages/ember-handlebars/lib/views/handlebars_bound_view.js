@@ -18,8 +18,8 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
-import { computed } from "ember-metal/computed";
 import View from "ember-views/views/view";
+import htmlSafe from "ember-handlebars/string";
 import {
   cloneStates,
   states
@@ -82,7 +82,7 @@ SimpleHandlebarsView.prototype = {
     }
 
     if (!escape && !(result instanceof SafeString)) {
-      result = new SafeString(result);
+      result = htmlSafe(result);
     }
 
     return result;

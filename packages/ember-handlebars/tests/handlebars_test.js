@@ -259,6 +259,38 @@ test("should read from a global-ish simple local path without deprecation", func
   equal(view.$().text(), 'Gwar');
 });
 
+test("should read a number value", function() {
+  var context = { aNumber: 1 };
+  view = EmberView.create({
+    context: context,
+    template: EmberHandlebars.compile('{{aNumber}}')
+  });
+
+  appendView();
+  equal(view.$().text(), '1');
+
+  Ember.run(function(){
+    Ember.set(context, 'aNumber', 2);
+  });
+  equal(view.$().text(), '2');
+});
+
+test("should read an escaped number value", function() {
+  var context = { aNumber: 1 };
+  view = EmberView.create({
+    context: context,
+    template: EmberHandlebars.compile('{{{aNumber}}}')
+  });
+
+  appendView();
+  equal(view.$().text(), '1');
+
+  Ember.run(function(){
+    Ember.set(context, 'aNumber', 2);
+  });
+  equal(view.$().text(), '2');
+});
+
 test("htmlSafe should return an instance of Handlebars.SafeString", function() {
   var safeString = htmlSafe("you need to be more <b>bold</b>");
 
