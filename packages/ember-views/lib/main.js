@@ -11,7 +11,9 @@ Ember Views
 import Ember from "ember-runtime";
 import jQuery from "ember-views/system/jquery";
 import {
-  isSimpleClick
+  isSimpleClick,
+  getViewClientRects,
+  getViewBoundingClientRect
 } from "ember-views/system/utils";
 import RenderBuffer from "ember-views/system/render_buffer";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
@@ -20,8 +22,8 @@ import {
   states
 } from "ember-views/views/states";
 
-import  CoreView from "ember-views/views/core_view";
-import  View from "ember-views/views/view";
+import CoreView from "ember-views/views/core_view";
+import View from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 import CollectionView from "ember-views/views/collection_view";
 import Component from "ember-views/views/component";
@@ -45,6 +47,8 @@ Ember.RenderBuffer = RenderBuffer;
 
 var ViewUtils = Ember.ViewUtils = {};
 ViewUtils.isSimpleClick = isSimpleClick;
+ViewUtils.getViewClientRects = getViewClientRects;
+ViewUtils.getViewBoundingClientRect = getViewBoundingClientRect;
 
 Ember.CoreView = CoreView;
 Ember.View = View;
