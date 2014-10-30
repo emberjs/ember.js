@@ -16,6 +16,9 @@ import EmberStringUtils from "ember-runtime/system/string";
   @return {Handlebars.SafeString} a string that will not be html escaped by Handlebars
 */
 function htmlSafe(str) {
+  if (typeof str !== 'string') {
+    str = ''+str;
+  }
   return new Handlebars.SafeString(str);
 }
 

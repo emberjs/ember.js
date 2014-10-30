@@ -507,6 +507,8 @@ _RenderBuffer.prototype = {
   */
   element: function() {
     var content = this.innerContent();
+    // No content means a text node buffer, with the content
+    // in _element. HandlebarsBoundView is an example.
     if (content === null)  {
       return this._element;
     }
