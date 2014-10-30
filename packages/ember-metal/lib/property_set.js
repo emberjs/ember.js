@@ -81,7 +81,10 @@ var set = function set(obj, keyName, value, tolerant) {
         propertyWillChange(obj, keyName);
         if (Ember.FEATURES.isEnabled('mandatory-setter')) {
           if (hasPropertyAccessors) {
-            if ((currentValue === undefined && !(keyName in obj)) || !obj.propertyIsEnumerable(keyName)) {
+            if (
+              (currentValue === undefined && !(keyName in obj)) ||
+              !Object.prototype.propertyIsEnumerable.call(obj, keyName)
+            ) {
               defineProperty(obj, keyName, null, value); // setup mandatory setter
             } else {
               meta.values[keyName] = value;
