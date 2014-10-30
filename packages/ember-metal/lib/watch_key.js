@@ -47,7 +47,7 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
       m.values[keyName] = obj[keyName];
       o_defineProperty(obj, keyName, {
         configurable: true,
-        enumerable: obj.propertyIsEnumerable(keyName),
+        enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
         set: MANDATORY_SETTER_FUNCTION(keyName),
         get: DEFAULT_GETTER_FUNCTION(keyName)
       });
@@ -72,7 +72,7 @@ export function unwatchKey(obj, keyName, meta) {
       if (hasPropertyAccessors && keyName in obj) {
         o_defineProperty(obj, keyName, {
           configurable: true,
-          enumerable: obj.propertyIsEnumerable(keyName),
+          enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
           set: function(val) {
             // redefine to set as enumerable
             o_defineProperty(obj, keyName, {
