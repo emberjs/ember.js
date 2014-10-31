@@ -3,7 +3,7 @@ export var svgNamespace = 'http://www.w3.org/2000/svg';
 
 // Safari does not like using innerHTML on SVG HTML integration
 // points (desc/title/foreignObject).
-var needsIntegrationPointFix = document.createElementNS && (function() {
+var needsIntegrationPointFix = document && document.createElementNS && (function() {
   // In FF title will not accept innerHTML.
   var testEl = document.createElementNS(svgNamespace, 'title');
   testEl.innerHTML = "<div></div>";
@@ -13,7 +13,7 @@ var needsIntegrationPointFix = document.createElementNS && (function() {
 // Internet Explorer prior to 9 does not allow setting innerHTML if the first element
 // is a "zero-scope" element. This problem can be worked around by making
 // the first node an invisible text node. We, like Modernizr, use &shy;
-var needsShy = (function() {
+var needsShy = document && (function() {
   var testEl = document.createElement('div');
   testEl.innerHTML = "<div></div>";
   testEl.firstChild.innerHTML = "<script><\/script>";
@@ -29,6 +29,31 @@ var movesWhitespace = document && (function() {
   return testEl.childNodes[0].nodeValue === 'Test:' &&
           testEl.childNodes[2].nodeValue === ' Value';
 })();
+
+// IE8 create a selected attribute where they should only
+// create a property
+var createsSelectedAttribute = document && (function() {
+  var testEl = document.createElement('div');
+  testEl.innerHTML = "<select><option></option></select>";
+  return testEl.childNodes[0].childNodes[0].getAttribute('selected') === 'selected';
+})();
+
+var detectAutoSelectedOption;
+if (createsSelectedAttribute) {
+  var detectAutoSelectedOptionRegex = /<option[^>]*selected/;
+  detectAutoSelectedOption = function detectAutoSelectedOption(select, option, html) { //jshint ignore:line
+    return select.selectedIndex === 0 &&
+           !detectAutoSelectedOptionRegex.test(html);
+  };
+} else {
+  detectAutoSelectedOption = function detectAutoSelectedOption(select, option, html) { //jshint ignore:line
+    var selectedAttribute = option.getAttribute('selected');
+    return select.selectedIndex === 0 && (
+             selectedAttribute === null ||
+             ( selectedAttribute !== '' && selectedAttribute.toLowerCase() !== 'selected' )
+            );
+  };
+}
 
 // IE 9 and earlier don't allow us to set innerHTML on col, colgroup, frameset,
 // html, style, table, tbody, tfoot, thead, title, tr. Detect this and add
@@ -143,9 +168,8 @@ if (needsShy) {
   };
 }
 
-
 var buildIESafeDOM;
-if (tagNamesRequiringInnerHTMLFix.length > 0 || movesWhitespace) {
+if (tagNamesRequiringInnerHTMLFix || movesWhitespace) {
   buildIESafeDOM = function buildIESafeDOM(html, contextualElement, dom) {
     // Make a list of the leading text on script nodes. Include
     // script tags without any whitespace for easier processing later.
@@ -210,17 +234,45 @@ if (tagNamesRequiringInnerHTMLFix.length > 0 || movesWhitespace) {
   buildIESafeDOM = buildDOM;
 }
 
+// When parsing innerHTML, the browser may set up DOM with some things
+// not desired. For example, with a select element context and option
+// innerHTML the first option will be marked selected.
+//
+// This method cleans up some of that, resetting those values back to
+// their defaults.
+//
+function buildSafeDOM(html, contextualElement, dom) {
+  var childNodes = buildIESafeDOM(html, contextualElement, dom);
+
+  if (contextualElement.tagName === 'SELECT') {
+    // Walk child nodes
+    for (var i = 0; childNodes[i]; i++) {
+      // Find and process the first option child node
+      if (childNodes[i].tagName === 'OPTION') {
+        if (detectAutoSelectedOption(childNodes[i].parentNode, childNodes[i], html)) {
+          // If the first node is selected but does not have an attribute,
+          // presume it is not really selected.
+          childNodes[i].parentNode.selectedIndex = -1;
+        }
+        break;
+      }
+    }
+  }
+
+  return childNodes;
+}
+
 var buildHTMLDOM;
 if (needsIntegrationPointFix) {
   buildHTMLDOM = function buildHTMLDOM(html, contextualElement, dom){
     if (svgHTMLIntegrationPoints[contextualElement.tagName]) {
-      return buildIESafeDOM(html, document.createElement('div'), dom);
+      return buildSafeDOM(html, document.createElement('div'), dom);
     } else {
-      return buildIESafeDOM(html, contextualElement, dom);
+      return buildSafeDOM(html, contextualElement, dom);
     }
   };
 } else {
-  buildHTMLDOM = buildIESafeDOM;
+  buildHTMLDOM = buildSafeDOM;
 }
 
 export {buildHTMLDOM};
