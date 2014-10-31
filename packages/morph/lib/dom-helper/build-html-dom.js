@@ -145,7 +145,7 @@ if (needsShy) {
 
 
 var buildIESafeDOM;
-if (tagNamesRequiringInnerHTMLFix || movesWhitespace) {
+if (tagNamesRequiringInnerHTMLFix.length > 0 || movesWhitespace) {
   buildIESafeDOM = function buildIESafeDOM(html, contextualElement, dom) {
     // Make a list of the leading text on script nodes. Include
     // script tags without any whitespace for easier processing later.
