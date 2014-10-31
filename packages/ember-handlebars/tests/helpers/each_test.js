@@ -172,6 +172,31 @@ test("can add and replace complicatedly harder", function() {
   assertHTML(view, "Steve HoltKazukiFirestoneMcMunch");
 });
 
+test("it works inside a select element", function() {
+  var selectView = EmberView.create({
+    template: templateFor('<select id="people-select"><option value="">Please select a name</option>{{#each view.people}}<option {{bind-attr value=name}}>{{name}}</option>{{/each}}</select>'),
+    people: people
+  });
+
+  append(selectView);
+
+  equal(selectView.$('option').length, 3, "renders 3 <option> elements");
+
+  equal(selectView.$().find(':selected').text(), 'Please select a name', 'first option is selected');
+
+  run(function() {
+    people.pushObject({name: "Black Francis"});
+  });
+
+  equal(selectView.$().find(':selected').text(), 'Please select a name', 'first option is selected');
+
+  equal(selectView.$('option').length, 4, "renders an additional <option> element when an object is added");
+
+  run(function() {
+    selectView.destroy();
+  });
+});
+
 test("it works inside a ul element", function() {
   var ulView = EmberView.create({
     template: templateFor('<ul>{{#each view.people}}<li>{{name}}</li>{{/each}}</ul>'),
