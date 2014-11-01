@@ -13,9 +13,7 @@ import {
   computed,
   cacheFor
 } from 'ember-metal/computed';
-import {
-  isNone
-} from 'ember-metal/is_none';
+import isNone from 'ember-metal/is_none';
 import Enumerable from 'ember-runtime/mixins/enumerable';
 import { map } from 'ember-metal/enumerable_utils';
 import {

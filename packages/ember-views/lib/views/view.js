@@ -26,7 +26,7 @@ import {
   typeOf,
   isArray
 } from "ember-metal/utils";
-import { isNone } from 'ember-metal/is_none';
+import isNone from 'ember-metal/is_none';
 import { Mixin } from 'ember-metal/mixin';
 import { deprecateProperty } from "ember-metal/deprecate_property";
 import { A as emberA } from "ember-runtime/system/native_array";

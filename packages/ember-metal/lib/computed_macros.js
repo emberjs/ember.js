@@ -3,7 +3,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { computed } from "ember-metal/computed";
 import isEmpty from 'ember-metal/is_empty';
-import { isNone } from 'ember-metal/is_none';
+import isNone from 'ember-metal/is_none';
 import alias from 'ember-metal/alias';
 
 /**

@@ -7,7 +7,7 @@ import Ember from "ember-metal/core"; // Ember.isNone, Ember.A
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { guidFor } from "ember-metal/utils";
-import { isNone } from 'ember-metal/is_none';
+import isNone from 'ember-metal/is_none';
 import { fmt } from "ember-runtime/system/string";
 import CoreObject from "ember-runtime/system/core_object";
 import MutableEnumerable from "ember-runtime/mixins/mutable_enumerable";

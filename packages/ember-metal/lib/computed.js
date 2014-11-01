@@ -1,4 +1,3 @@
-import Ember from "ember-metal/core";
 import { set } from "ember-metal/property_set";
 import {
   meta,

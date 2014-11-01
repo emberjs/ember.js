@@ -7,7 +7,7 @@ import {
   forEach,
   replace
 }from "ember-metal/enumerable_utils";
-import { isNone } from "ember-metal/is_none";
+import isNone from "ember-metal/is_none";
 import { computed } from "ember-metal/computed";
 import merge from "ember-metal/merge";
 import {
