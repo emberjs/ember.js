@@ -228,31 +228,30 @@ function Meta(obj) {
   this.cache = {};
   this.cacheMeta = {};
   this.source = obj;
+
+  this.deps = null;
+  this.listeners = null;
+  this.mixins = null;
+  this.bindings = null;
+  this.chains = null;
+  this.chainWatchers = null;
+  this.values = null;
+  this.proto = null;
+
+  if (!canDefineNonEnumerableProperties) {
+    // on platforms that don't support enumerable false
+    // make meta fail jQuery.isPlainObject() to hide from
+    // jQuery.extend() by having a property that fails
+    // hasOwnProperty check.
+    this.__preventPlainObject__ = true;
+  }
 }
 
 Meta.prototype = {
-  descs: null,
-  deps: null,
-  watching: null,
-  listeners: null,
-  cache: null,
-  cacheMeta: null,
-  source: null,
-  mixins: null,
-  bindings: null,
-  chains: null,
-  chainWatchers: null,
-  values: null,
-  proto: null
+
 };
 
 if (!canDefineNonEnumerableProperties) {
-  // on platforms that don't support enumerable false
-  // make meta fail jQuery.isPlainObject() to hide from
-  // jQuery.extend() by having a property that fails
-  // hasOwnProperty check.
-  Meta.prototype.__preventPlainObject__ = true;
-
   // Without non-enumerable properties, meta objects will be output in JSON
   // unless explicitly suppressed
   Meta.prototype.toJSON = function () { };
