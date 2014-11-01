@@ -161,14 +161,8 @@ import {
 } from "ember-metal/binding";
 import run from "ember-metal/run_loop";
 import libraries from "ember-metal/libraries";
-import {
-  isNone,
-  none
-} from 'ember-metal/is_none';
-import {
-  isEmpty,
-  empty
-} from 'ember-metal/is_empty';
+import isNone from 'ember-metal/is_none';
+import isEmpty from 'ember-metal/is_empty';
 import isBlank from 'ember-metal/is_blank';
 import isPresent from 'ember-metal/is_present';
 import keys from 'ember-metal/keys';
@@ -321,11 +315,7 @@ Ember.libraries = libraries;
 Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
 
 Ember.isNone = isNone;
-Ember.none = none;
-
 Ember.isEmpty = isEmpty;
-Ember.empty = empty;
-
 Ember.isBlank = isBlank;
 
 if (Ember.FEATURES.isEnabled('ember-metal-is-present')) {
