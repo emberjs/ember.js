@@ -1426,8 +1426,12 @@ var Route = EmberObject.extend(ActionHandler, {
 
     var name = params[0], object = {};
 
-    if (/_id$/.test(name) && params.length === 1) {
-      object[name] = get(model, "id");
+    if (params.length === 1) {
+      if (name in model) {
+        object[name] = get(model, name);
+      } else if (/_id$/.test(name)) {
+        object[name] = get(model, "id");
+      }
     } else {
       object = getProperties(model, params);
     }
