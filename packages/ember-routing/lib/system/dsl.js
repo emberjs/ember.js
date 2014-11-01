@@ -23,7 +23,7 @@ DSL.prototype = {
     }
 
     var type = options.resetNamespace === true ? 'resource' : 'route';
-    Ember.assert("'basic' cannot be used as a " + type + " name.", name !== 'basic');
+    Ember.assert("'" + name + "' cannot be used as a " + type + " name.", name !== 'array' && name !== 'basic' && name !== 'object');
 
     if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
       createRoute(this, name + '_loading', {resetNamespace: options.resetNamespace});
