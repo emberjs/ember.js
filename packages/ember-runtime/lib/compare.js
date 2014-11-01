@@ -55,16 +55,17 @@ export default function compare(v, w) {
   var type2 = typeOf(w);
 
   if (Comparable) {
-    if (type1 ==='instance' && Comparable.detect(v.constructor)) {
+    if (type1 === 'instance' && Comparable.detect(v) && v.constructor.compare) {
       return v.constructor.compare(v, w);
     }
 
-    if (type2 === 'instance' && Comparable.detect(w.constructor)) {
-      return 1 - w.constructor.compare(w, v);
+    if (type2 === 'instance' && Comparable.detect(w) && w.constructor.compare) {
+      return w.constructor.compare(w, v) * -1;
     }
   }
 
   var res = spaceship(TYPE_ORDER[type1], TYPE_ORDER[type2]);
+
   if (res !== 0) {
     return res;
   }

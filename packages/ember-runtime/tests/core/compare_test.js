@@ -4,9 +4,11 @@ import compare from 'ember-runtime/compare';
 import Comparable from 'ember-runtime/mixins/comparable';
 
 var data = [];
-var Comp = EmberObject.extend(Comparable, {
-  compare: function () {
-    return this.get('val');
+var Comp = EmberObject.extend(Comparable);
+
+Comp.reopenClass({
+  compare: function (obj) {
+    return obj.get('val');
   }
 });
 
@@ -53,15 +55,23 @@ test('ordering should work', function() {
 });
 
 test('comparables should return values in the range of -1, 0, 1', function() {
-  var negOne = Comp.create({ val: -1 });
-  var zero = Comp.create({ val: 0 });
-  var one = Comp.create({ val: 1 });
+  var negOne = Comp.create({
+    val: -1
+  });
+
+  var zero = Comp.create({
+    val: 0
+  });
+
+  var one = Comp.create({
+    val: 1
+  });
 
   equal(compare(negOne, 'a'), -1, 'First item comparable - returns -1 (not negated)');
-  equal(compare(zero, 'b'), 0, 'First item comparable - returns 0 (not negated)');
-  equal(compare(one, 'c'), 1, 'First item comparable - returns 1 (not negated)');
+  equal(compare(zero, 'b'),    0, 'First item comparable - returns  0 (not negated)');
+  equal(compare(one, 'c'),     1, 'First item comparable - returns  1 (not negated)');
 
-  equal(compare('a', negOne), 1, 'Second item comparable - returns -1 (negated)');
-  equal(compare('b', zero), 0, 'Second item comparable - returns 0 (negated)');
-  equal(compare('c', one), -1, 'Second item comparable - returns 1 (negated)');
+  equal(compare('a', negOne),  1, 'Second item comparable - returns -1 (negated)');
+  equal(compare('b', zero),    0, 'Second item comparable - returns  0 (negated)');
+  equal(compare('c', one),    -1, 'Second item comparable - returns  1 (negated)');
 });
