@@ -244,6 +244,7 @@ test("should have content when isFulfilled is set", function() {
 });
 
 test("should have reason when isRejected is set", function() {
+  var error = new Error('Y U REJECT?!?');
   var deferred = EmberRSVP.defer();
 
   var proxy = ObjectPromiseProxy.create({
@@ -251,8 +252,12 @@ test("should have reason when isRejected is set", function() {
   });
 
   proxy.addObserver('isRejected', function() {
-    equal(get(proxy, 'reason'), true);
+    equal(get(proxy, 'reason'), error);
   });
 
-  run(deferred, 'reject', true);
+  try {
+    run(deferred, 'reject', error);
+  } catch(e) {
+    equal(e, error);
+  }
 });
