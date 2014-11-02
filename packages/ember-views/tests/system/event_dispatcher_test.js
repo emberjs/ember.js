@@ -228,6 +228,7 @@ test("should dispatch events to nearest event manager", function() {
 });
 
 test("event manager should be able to re-dispatch events to view", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   var receivedEvent=0;
   view = ContainerView.createWithMixins({

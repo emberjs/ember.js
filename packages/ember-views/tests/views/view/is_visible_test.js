@@ -8,33 +8,6 @@ var View, view, parentBecameVisible, childBecameVisible, grandchildBecameVisible
 var parentBecameHidden, childBecameHidden, grandchildBecameHidden;
 
 QUnit.module("EmberView#isVisible", {
-  setup: function() {
-    parentBecameVisible=0;
-    childBecameVisible=0;
-    grandchildBecameVisible=0;
-    parentBecameHidden=0;
-    childBecameHidden=0;
-    grandchildBecameHidden=0;
-
-    View = ContainerView.extend({
-      childViews: ['child'],
-      becameVisible: function() { parentBecameVisible++; },
-      becameHidden: function() { parentBecameHidden++; },
-
-      child: ContainerView.extend({
-        childViews: ['grandchild'],
-        becameVisible: function() { childBecameVisible++; },
-        becameHidden: function() { childBecameHidden++; },
-
-        grandchild: EmberView.extend({
-          template: function() { return "seems weird bro"; },
-          becameVisible: function() { grandchildBecameVisible++; },
-          becameHidden: function() { grandchildBecameHidden++; }
-        })
-      })
-    });
-  },
-
   teardown: function() {
     if (view) {
       run(function() { view.destroy(); });
@@ -95,6 +68,43 @@ test("should hide element if isVisible is false before element is created", func
   run(function() {
     view.remove();
   });
+});
+
+QUnit.module("EmberView#isVisible with Container", {
+  setup: function() {
+    expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
+    parentBecameVisible=0;
+    childBecameVisible=0;
+    grandchildBecameVisible=0;
+    parentBecameHidden=0;
+    childBecameHidden=0;
+    grandchildBecameHidden=0;
+
+    View = ContainerView.extend({
+      childViews: ['child'],
+      becameVisible: function() { parentBecameVisible++; },
+      becameHidden: function() { parentBecameHidden++; },
+
+      child: ContainerView.extend({
+        childViews: ['grandchild'],
+        becameVisible: function() { childBecameVisible++; },
+        becameHidden: function() { childBecameHidden++; },
+
+        grandchild: EmberView.extend({
+          template: function() { return "seems weird bro"; },
+          becameVisible: function() { grandchildBecameVisible++; },
+          becameHidden: function() { grandchildBecameHidden++; }
+        })
+      })
+    });
+  },
+
+  teardown: function() {
+    if (view) {
+      run(function() { view.destroy(); });
+    }
+  }
 });
 
 test("view should be notified after isVisible is set to false and the element has been hidden", function() {
