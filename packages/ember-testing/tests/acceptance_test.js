@@ -262,6 +262,22 @@ test("Unhandled exceptions are logged via Ember.Test.adapter#exception", functio
   asyncHandled = click(".does-not-exist");
 });
 
+test("Unhandled exceptions in `andThen` are logged via Ember.Test.adapter#exception", function () {
+  expect(1);
+
+  Test.adapter = QUnitAdapter.create({
+    exception: function(error) {
+      equal(error.message, "Catch me", "Exception successfully caught and passed to Ember.Test.adapter.exception");
+    }
+  });
+
+  visit('/posts');
+
+  andThen(function() {
+    throw new Error('Catch me');
+  });
+});
+
 test("should not start routing on the root URL when visiting another", function(){
   visit('/posts');
 
