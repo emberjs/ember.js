@@ -1,10 +1,11 @@
-import Ember from "ember-metal/core"; // Ember.K
 import { set } from "ember-metal/property_set";
 import keys from "ember-metal/keys";
 import {
   addObserver,
   removeObserver
 } from "ember-metal/observer";
+
+function K() { return this; }
 
 QUnit.module("Fetch Keys ");
 
@@ -59,9 +60,9 @@ test('should not leak properties on the prototype', function () {
 
   var beer = new Beer();
 
-  addObserver(beer, 'type', Ember.K);
+  addObserver(beer, 'type', K);
   deepEqual(keys(beer), []);
-  removeObserver(beer, 'type', Ember.K);
+  removeObserver(beer, 'type', K);
 });
 
 test('observing a non existent property', function () {
@@ -70,14 +71,14 @@ test('observing a non existent property', function () {
 
   var beer = new Beer();
 
-  addObserver(beer, 'brand', Ember.K);
+  addObserver(beer, 'brand', K);
 
   deepEqual(keys(beer), []);
 
   set(beer, 'brand', 'Corona');
   deepEqual(keys(beer), ['brand']);
 
-  removeObserver(beer, 'brand', Ember.K);
+  removeObserver(beer, 'brand', K);
 });
 
 test('with observers switched on and off', function () {
@@ -86,8 +87,8 @@ test('with observers switched on and off', function () {
 
   var beer = new Beer();
 
-  addObserver(beer, 'type', Ember.K);
-  removeObserver(beer, 'type', Ember.K);
+  addObserver(beer, 'type', K);
+  removeObserver(beer, 'type', K);
 
   deepEqual(keys(beer), []);
 });
@@ -98,9 +99,9 @@ test('observers switched on and off with setter in between', function () {
 
   var beer = new Beer();
 
-  addObserver(beer, 'type', Ember.K);
+  addObserver(beer, 'type', K);
   set(beer, 'type', 'ale');
-  removeObserver(beer, 'type', Ember.K);
+  removeObserver(beer, 'type', K);
 
   deepEqual(keys(beer), ['type']);
 });
@@ -111,8 +112,8 @@ test('observer switched on and off and then setter', function () {
 
   var beer = new Beer();
 
-  addObserver(beer, 'type', Ember.K);
-  removeObserver(beer, 'type', Ember.K);
+  addObserver(beer, 'type', K);
+  removeObserver(beer, 'type', K);
   set(beer, 'type', 'ale');
 
   deepEqual(keys(beer), ['type']);

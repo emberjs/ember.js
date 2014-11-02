@@ -4,6 +4,8 @@ import {observer} from "ember-metal/mixin";
 import { testWithDefault } from 'ember-runtime/tests/props_helper';
 import EmberObject from "ember-runtime/system/object";
 
+function K() { return this; }
+
 QUnit.module('EmberObject computed property');
 
 testWithDefault('computed property on instance', function(get, set) {
@@ -207,13 +209,13 @@ test("can iterate over a list of computed properties for a class", function() {
 
 test("list of properties updates when an additional property is added (such cache busting)", function() {
   var MyClass = EmberObject.extend({
-    foo: computed(Ember.K),
+    foo: computed(K),
 
     fooDidChange: observer('foo', function() {
 
     }),
 
-    bar: computed(Ember.K)
+    bar: computed(K)
   });
 
   var list = [];
@@ -225,7 +227,7 @@ test("list of properties updates when an additional property is added (such cach
   deepEqual(list.sort(), ['bar', 'foo'].sort(), 'expected two computed properties');
 
   MyClass.reopen({
-    baz: computed(Ember.K)
+    baz: computed(K)
   });
 
   MyClass.create(); // force apply mixins

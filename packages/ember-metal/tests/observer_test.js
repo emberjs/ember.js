@@ -1155,7 +1155,7 @@ testBoth('immediate observers watching multiple properties via brace expansion f
 
 testBoth("immediate observers are for internal properties only", function(get, set) {
   expectAssertion(function() {
-    immediateObserver('foo.bar', Ember.K);
+    immediateObserver('foo.bar', function() { return this; });
   }, 'Immediate observers must observe internal properties only, not properties on other objects.');
 });
 

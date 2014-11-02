@@ -506,7 +506,7 @@ export function makeArray(obj) {
   Checks to see if the `methodName` exists on the `obj`.
 
   ```javascript
-  var foo = { bar: Ember.K, baz: null };
+  var foo = { bar: function() { return 'bar'; }, baz: null };
 
   Ember.canInvoke(foo, 'bar'); // true
   Ember.canInvoke(foo, 'baz'); // false

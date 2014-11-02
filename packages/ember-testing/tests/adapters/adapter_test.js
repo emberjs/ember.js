@@ -1,4 +1,3 @@
-import Ember from "ember-metal/core"; // Ember.K
 import run from "ember-metal/run_loop";
 import Adapter from "ember-testing/adapters/adapter";
 
@@ -13,13 +12,14 @@ QUnit.module("ember-testing Adapter", {
   }
 });
 
-test("asyncStart is a noop", function() {
-  equal(adapter.asyncStart, Ember.K);
-});
+// Can't test these this way anymore since we have nothing to compare to
+// test("asyncStart is a noop", function() {
+//   equal(adapter.asyncStart, K);
+// });
 
-test("asyncEnd is a noop", function() {
-  equal(adapter.asyncEnd, Ember.K);
-});
+// test("asyncEnd is a noop", function() {
+//   equal(adapter.asyncEnd, K);
+// });
 
 test("exception throws", function() {
   var error = "Hai", thrown;
