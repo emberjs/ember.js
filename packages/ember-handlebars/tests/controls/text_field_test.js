@@ -511,9 +511,9 @@ QUnit.module("Ember.TextField - Action events", {
         equal(actionName, 'doSomething', "text field sent correct action name");
       }
     });
- 
+
   },
- 
+
   teardown: function() {
     run(function() {
       dispatcher.destroy();
@@ -524,7 +524,7 @@ QUnit.module("Ember.TextField - Action events", {
     });
   }
 });
- 
+
 test("when the text field is blurred, the `focus-out` action is sent to the controller", function() {
   expect(1);
 
