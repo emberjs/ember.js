@@ -12,6 +12,8 @@ import ContainerView from "ember-views/views/container_view";
 var parentView, child;
 QUnit.module("View#removeChild", {
   setup: function() {
+    expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
     parentView = ContainerView.create({ childViews: [View] });
     child = get(parentView, 'childViews').objectAt(0);
   },
@@ -45,6 +47,8 @@ test("sets parentView property to null", function() {
 var view, childViews;
 QUnit.module("View#removeAllChildren", {
   setup: function() {
+    expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
     view = ContainerView.create({
       childViews: [View, View, View]
     });
@@ -83,6 +87,8 @@ QUnit.module("View#removeFromParent", {
 });
 
 test("removes view from parent view", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   parentView = ContainerView.create({ childViews: [View] });
   child = get(parentView, 'childViews').objectAt(0);
   ok(get(child, 'parentView'), 'precond - has parentView');
@@ -103,6 +109,8 @@ test("removes view from parent view", function() {
 });
 
 test("returns receiver", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   parentView = ContainerView.create({ childViews: [View] });
   child = get(parentView, 'childViews').objectAt(0);
   var removed = run(function() {

@@ -29,6 +29,8 @@ test("if it has no element, does nothing", function() {
 });
 
 test("if it has a element, calls willDestroyElement on receiver and child views then deletes the element", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   var parentCount = 0;
   var childCount = 0;
 

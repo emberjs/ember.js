@@ -64,6 +64,8 @@ test("calls render and turns resultant string into element", function() {
 });
 
 test("calls render and parses the buffer string in the right context", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   view = ContainerView.create({
     tagName: 'table',
     childViews: [ EmberView.create({
@@ -90,6 +92,8 @@ test("calls render and parses the buffer string in the right context", function(
 });
 
 test("does not wrap many tr children in tbody elements", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   view = ContainerView.create({
     tagName: 'table',
     childViews: [
@@ -121,6 +125,8 @@ test("does not wrap many tr children in tbody elements", function() {
 });
 
 test("generated element include HTML from child views as well", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   view = ContainerView.create({
     childViews: [ EmberView.create({ elementId: "foo" })]
   });
