@@ -1,5 +1,6 @@
-import Ember from "ember-metal/core"; // Ember.K
 import EmberError from "ember-metal/error";
+
+function K() { return this; }
 
 /**
 @module ember
@@ -30,6 +31,6 @@ export default {
     return view;
   },
 
-  rerender: Ember.K,
-  invokeObserver: Ember.K
+  rerender: K,
+  invokeObserver: K
 };

@@ -3,7 +3,7 @@
 @module ember
 @submodule ember-handlebars
 */
-import Ember from "ember-metal/core"; // Ember.assert;, Ember.K
+import Ember from "ember-metal/core"; // Ember.assert;
 
 import EmberHandlebars from "ember-handlebars-compiler";
 

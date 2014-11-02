@@ -1,7 +1,5 @@
 /*globals TestObject:true */
 
-import Ember from "ember-metal/core"; // Ember.K
-
 import run from "ember-metal/run_loop";
 import { get } from "ember-metal/property_get";
 import { set as o_set } from "ember-metal/property_set";
@@ -12,8 +10,9 @@ import TextField from "ember-handlebars/controls/text_field";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import jQuery from "ember-views/system/jquery";
 
+function K() { return this; }
+
 var textField;
-var K = Ember.K;
 var controller;
 var TestObject;
 
@@ -512,9 +511,9 @@ QUnit.module("Ember.TextField - Action events", {
         equal(actionName, 'doSomething', "text field sent correct action name");
       }
     });
- 
+
   },
- 
+
   teardown: function() {
     run(function() {
       dispatcher.destroy();
@@ -525,7 +524,7 @@ QUnit.module("Ember.TextField - Action events", {
     });
   }
 });
- 
+
 test("when the text field is blurred, the `focus-out` action is sent to the controller", function() {
   expect(1);
 
@@ -536,7 +535,7 @@ test("when the text field is blurred, the `focus-out` action is sent to the cont
 
   append();
 
-  run(function() { 
+  run(function() {
     textField.$().blur();
   });
 
@@ -552,7 +551,7 @@ test("when the text field is focused, the `focus-in` action is sent to the contr
 
   append();
 
-  run(function() { 
+  run(function() {
     textField.$().focusin();
   });
 
@@ -568,8 +567,8 @@ test("when the user presses a key, the `key-press` action is sent to the control
   });
 
   append();
-  
-  run(function() { 
+
+  run(function() {
     var event = jQuery.Event("keypress");
     event.keyCode = event.which = 13;
     textField.$().trigger(event);
@@ -586,8 +585,8 @@ test("when the user inserts a new line, the `insert-newline` action is sent to t
   });
 
   append();
-  
-  run(function() { 
+
+  run(function() {
     var event = jQuery.Event("keyup");
     event.keyCode = event.which = 13;
     textField.$().trigger(event);
@@ -605,8 +604,8 @@ test("when the user presses the `enter` key, the `enter` action is sent to the c
   });
 
   append();
-  
-  run(function() { 
+
+  run(function() {
     var event = jQuery.Event("keyup");
     event.keyCode = event.which = 13;
     textField.$().trigger(event);
@@ -623,8 +622,8 @@ test("when the user hits escape, the `escape-press` action is sent to the contro
   });
 
   append();
-  
-  run(function() { 
+
+  run(function() {
     var event = jQuery.Event("keyup");
     event.keyCode = event.which = 27;
     textField.$().trigger(event);

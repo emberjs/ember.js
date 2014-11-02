@@ -1,4 +1,4 @@
-import Ember from "ember-metal/core"; // Ember.K, Ember.assert
+import Ember from "ember-metal/core"; // Ember.assert
 import { get } from "ember-metal/property_get";
 import {
   isArray,
@@ -27,7 +27,8 @@ import alias from "ember-metal/alias";
 
 var OUT_OF_RANGE_EXCEPTION = "Index out of range";
 var EMPTY = [];
-var K = Ember.K;
+
+function K() { return this; }
 
 /**
   An ArrayProxy wraps any other object that implements `Ember.Array` and/or

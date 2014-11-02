@@ -1,4 +1,4 @@
-import Ember from "ember-metal/core"; // FEATURES, Logger, K, assert
+import Ember from "ember-metal/core"; // FEATURES, Logger, assert
 import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -28,6 +28,8 @@ import { create } from "ember-metal/platform";
 
 import Router from 'router';
 import 'router/transition';
+
+function K() { return this; }
 
 var slice = [].slice;
 
@@ -66,7 +68,7 @@ var EmberRouter = EmberObject.extend(Evented, {
   rootURL: '/',
 
   init: function() {
-    this.router = this.constructor.router || this.constructor.map(Ember.K);
+    this.router = this.constructor.router || this.constructor.map(K);
     this._activeViews = {};
     this._setupLocation();
     this._qpCache = {};
@@ -98,7 +100,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     @private
   */
   startRouting: function() {
-    this.router = this.router || this.constructor.map(Ember.K);
+    this.router = this.router || this.constructor.map(K);
 
     var router = this.router;
     var location = get(this, 'location');
@@ -792,8 +794,8 @@ EmberRouter.reopenClass({
       if (Ember.FEATURES.isEnabled("ember-routing-will-change-hooks")) {
         router._willChangeContextEvent = 'willChangeModel';
       } else {
-        router._triggerWillChangeContext = Ember.K;
-        router._triggerWillLeave = Ember.K;
+        router._triggerWillChangeContext = K;
+        router._triggerWillLeave = K;
       }
 
       router.callbacks = [];

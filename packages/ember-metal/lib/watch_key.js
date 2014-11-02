@@ -42,8 +42,11 @@ export function watchKey(obj, keyName, meta) {
 
 if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   var handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
+    var descriptor = Object.getOwnPropertyDescriptor && Object.getOwnPropertyDescriptor(obj, keyName);
+    var configurable = descriptor ? descriptor.configurable : true;
+
     // this x in Y deopts, so keeping it in this function is better;
-    if (keyName in obj) {
+    if (configurable && keyName in obj) {
       m.values[keyName] = obj[keyName];
       o_defineProperty(obj, keyName, {
         configurable: true,

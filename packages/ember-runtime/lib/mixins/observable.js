@@ -27,7 +27,7 @@ import {
   observersFor
 } from "ember-metal/observer";
 import { cacheFor } from "ember-metal/computed";
-import { isNone } from "ember-metal/is_none";
+import isNone from "ember-metal/is_none";
 
 
 var slice = Array.prototype.slice;

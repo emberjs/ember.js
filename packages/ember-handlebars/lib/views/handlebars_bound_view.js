@@ -8,8 +8,9 @@
 
 import EmberHandlebars from "ember-handlebars-compiler"; // EmberHandlebars.SafeString;
 
-import Ember from "ember-metal/core"; // Ember.K
-var K = Ember.K;
+import Ember from "ember-metal/core"; // Ember.GUID_KEY
+
+function K() { return this; }
 
 import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";

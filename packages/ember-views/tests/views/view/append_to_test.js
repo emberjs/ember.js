@@ -150,6 +150,8 @@ test("destroy more forcibly removes the view", function() {
 
 QUnit.module("EmberView - append() and appendTo() in a view hierarchy", {
   setup: function() {
+    expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
     View = ContainerView.extend({
       childViews: ['child'],
       child: EmberView.extend({
@@ -197,6 +199,8 @@ test("should be added to the document body when calling append()", function() {
 
 QUnit.module("EmberView - removing views in a view hierarchy", {
   setup: function() {
+    expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
     willDestroyCalled = 0;
 
     view = ContainerView.create({

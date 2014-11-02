@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core'; // deprecateFunc
 import { get } from 'ember-metal/property_get';
 import isNone from 'ember-metal/is_none';
 
@@ -57,10 +56,4 @@ function isEmpty(obj) {
   return false;
 }
 
-var empty = Ember.deprecateFunc("Ember.empty is deprecated. Please use Ember.isEmpty instead.", isEmpty);
-
 export default isEmpty;
-export {
-  isEmpty,
-  empty
-};

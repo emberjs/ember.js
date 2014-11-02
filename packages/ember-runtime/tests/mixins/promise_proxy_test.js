@@ -1,4 +1,3 @@
-import Ember from "ember-metal/core";
 import {create} from "ember-metal/platform";
 import {get} from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
@@ -23,7 +22,7 @@ test("no promise, invoking then should raise", function(){
   var proxy = ObjectPromiseProxy.create();
 
   raises(function(){
-    proxy.then(Ember.K, Ember.K);
+    proxy.then(function() { return this; }, function() { return this; });
   }, new RegExp("PromiseProxy's promise must be set"));
 });
 

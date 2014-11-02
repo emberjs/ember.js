@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core';
 import { hasPropertyAccessors } from "ember-metal/platform";
 import { computed } from 'ember-metal/computed';
 import { defineProperty } from "ember-metal/properties";
@@ -29,7 +28,7 @@ test("for data properties, didDefineProperty hook should be called if implemente
 test("for descriptor properties, didDefineProperty hook should be called if implemented", function() {
   expect(2);
 
-  var computedProperty = computed(Ember.K);
+  var computedProperty = computed(function() { return this; });
 
   var obj = {
     didDefineProperty: function(obj, keyName, value) {

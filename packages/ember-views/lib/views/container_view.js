@@ -1,4 +1,4 @@
-import Ember from "ember-metal/core"; // Ember.assert, Ember.K
+import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
 
 import merge from "ember-metal/merge";
 import MutableArray from "ember-runtime/mixins/mutable_array";
@@ -24,6 +24,8 @@ import {
   beforeObserver
 } from "ember-metal/mixin";
 import { A as emberA } from "ember-runtime/system/native_array";
+
+function K() { return this; }
 
 /**
 @module ember
@@ -196,6 +198,7 @@ var ContainerView = View.extend(MutableArray, {
     this._super();
 
     var childViews = get(this, 'childViews');
+    Ember.deprecate('Setting `childViews` on a Container is deprecated.', Ember.isEmpty(childViews));
 
     // redefine view's childViews property that was obliterated
     defineProperty(this, 'childViews', View.childViewsProperty);
@@ -371,9 +374,9 @@ var ContainerView = View.extend(MutableArray, {
 });
 
 merge(states._default, {
-  childViewsWillChange: Ember.K,
-  childViewsDidChange: Ember.K,
-  ensureChildrenAreInDOM: Ember.K
+  childViewsWillChange: K,
+  childViewsDidChange: K,
+  ensureChildrenAreInDOM: K
 });
 
 merge(states.inBuffer, {

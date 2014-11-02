@@ -12,6 +12,9 @@ import { get } from "ember-metal/property_get";
 import { computed } from "ember-metal/computed";
 
 import { typeOf } from "ember-metal/utils";
+
+function K() { return this; }
+
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
   to both Ember's main view class `Ember.View` and other classes like
@@ -123,9 +126,9 @@ var CoreView = EmberObject.extend(Evented, ActionHandler, {
     return this;
   },
 
-  clearRenderedChildren: Ember.K,
-  _transitionTo: Ember.K,
-  destroyElement: Ember.K
+  clearRenderedChildren: K,
+  _transitionTo: K,
+  destroyElement: K
 });
 
 CoreView.reopenClass({

@@ -300,7 +300,7 @@ test("array observers can invoke `objectAt` without overwriting existing item co
   var arrayObserverCalled = false;
 
   arrayController.reopen({
-    lannistersWillChange: Ember.K,
+    lannistersWillChange: function() { return this; },
     lannistersDidChange: function(_, idx, removedAmt, addedAmt) {
       arrayObserverCalled = true;
       equal(this.objectAt(idx).get('name'), "Tyrion", "Array observers get the right object via `objectAt`");

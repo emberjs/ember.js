@@ -9,7 +9,7 @@
 */
 
 import Ember from "ember-metal/core";
-// Ember.assert, Ember.K, Ember.config
+// Ember.assert, Ember.config
 
 // NOTE: this object should never be included directly. Instead use `Ember.Object`.
 // We only define this separately so that `Ember.Set` can depend on it.
@@ -25,7 +25,6 @@ import {
   meta,
   makeArray
 } from "ember-metal/utils";
-import { rewatch } from "ember-metal/watching";
 import { finishChains } from "ember-metal/chains";
 import { sendEvent } from "ember-metal/events";
 import {
@@ -135,7 +134,7 @@ function makeCtor() {
                        "time, when Ember.ActionHandler is used (i.e. views, " +
                        "controllers & routes).", !((keyName === 'actions') && ActionHandler.detect(this)));
 
-          if (concatenatedProperties && 
+          if (concatenatedProperties &&
               concatenatedProperties.length > 0 &&
               indexOf(concatenatedProperties, keyName) >= 0) {
             var baseValue = this[keyName];
@@ -201,7 +200,6 @@ function makeCtor() {
     if (!wasApplied) {
       wasApplied = true;
       Class.PrototypeMixin.applyPartial(Class.prototype);
-      rewatch(Class.prototype);
     }
 
     return this.prototype;
