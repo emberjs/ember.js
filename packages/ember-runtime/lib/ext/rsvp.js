@@ -42,7 +42,7 @@ RSVP.Promise.prototype.fail = function(callback, label){
 };
 
 RSVP.onerrorDefault = function (error) {
-  if (error instanceof Error) {
+  if (error && error.name !== 'TransitionAborted') {
     if (Ember.testing) {
       // ES6TODO: remove when possible
       if (!Test && Ember.__loader.registry[testModuleName]) {
