@@ -2406,6 +2406,8 @@ test("should update bound values after the view is removed and then re-appended"
 });
 
 test("should update bound values after view's parent is removed and then re-appended", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   var controller = EmberObject.create();
 
   var parentView = ContainerView.create({

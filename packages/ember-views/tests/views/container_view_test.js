@@ -52,6 +52,8 @@ test("should be able to insert views after the DOM representation is created", f
 });
 
 test("should be able to observe properties that contain child views", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   run(function() {
     var Container = ContainerView.extend({
       childViews: ['displayView'],
@@ -663,6 +665,8 @@ test("should be able to modify childViews then rerender again the ContainerView 
 });
 
 test("should invalidate `element` on itself and childViews when being rendered by ensureChildrenAreInDOM", function () {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   var root = ContainerView.create();
 
   view = View.create({ template: function() {} });
