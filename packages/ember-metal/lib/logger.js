@@ -1,5 +1,7 @@
-import Ember from "ember-metal/core";
+import Ember from "ember-metal/core"; // Ember.imports
 import EmberError from "ember-metal/error";
+
+function K() { return this; }
 
 function consoleMethod(name) {
   var consoleObj, logToConsole;
@@ -63,7 +65,7 @@ export default {
    @for Ember.Logger
    @param {*} arguments
   */
-  log:   consoleMethod('log')   || Ember.K,
+  log:   consoleMethod('log')   || K,
 
   /**
    Prints the arguments to the console with a warning icon.
@@ -78,7 +80,7 @@ export default {
    @for Ember.Logger
    @param {*} arguments
   */
-  warn:  consoleMethod('warn')  || Ember.K,
+  warn:  consoleMethod('warn')  || K,
 
   /**
    Prints the arguments to the console with an error icon, red text and a stack trace.
@@ -93,7 +95,7 @@ export default {
    @for Ember.Logger
    @param {*} arguments
   */
-  error: consoleMethod('error') || Ember.K,
+  error: consoleMethod('error') || K,
 
   /**
    Logs the arguments to the console.
@@ -109,7 +111,7 @@ export default {
    @for Ember.Logger
    @param {*} arguments
   */
-  info:  consoleMethod('info')  || Ember.K,
+  info:  consoleMethod('info')  || K,
 
   /**
    Logs the arguments to the console in blue text.
@@ -125,7 +127,7 @@ export default {
    @for Ember.Logger
    @param {*} arguments
   */
-  debug: consoleMethod('debug') || consoleMethod('info') || Ember.K,
+  debug: consoleMethod('debug') || consoleMethod('info') || K,
 
   /**
    If the value passed into `Ember.Logger.assert` is not truthy it will throw an error with a stack trace.

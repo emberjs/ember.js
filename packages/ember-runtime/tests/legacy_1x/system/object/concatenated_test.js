@@ -1,4 +1,3 @@
-import Ember from "ember-metal/core";
 import {get} from 'ember-metal/property_get';
 import EmberStringUtils from 'ember-runtime/system/string';
 import EmberObject from 'ember-runtime/system/object';
@@ -15,7 +14,7 @@ import EmberObject from 'ember-runtime/system/object';
     always defined
 */
 
-
+function K() { return this; }
 
   var klass;
 
@@ -24,7 +23,7 @@ import EmberObject from 'ember-runtime/system/object';
       klass = EmberObject.extend({
         concatenatedProperties: ['values', 'functions'],
         values: ['a', 'b', 'c'],
-        functions: [Ember.K]
+        functions: [K]
       });
     }
   });
@@ -92,12 +91,12 @@ import EmberObject from 'ember-runtime/system/object';
 
   test("concatenates subclasses when the values are functions", function() {
     var subKlass = klass.extend({
-      functions: Ember.K
+      functions: K
     });
     var obj = subKlass.create();
 
     var values = get(obj, 'functions');
-    var expected = [Ember.K, Ember.K];
+    var expected = [K, K];
 
     deepEqual(values, expected, EmberStringUtils.fmt("should concatenate functions property (expected: %@, got: %@)", [expected, values]));
   });

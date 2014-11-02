@@ -1,5 +1,5 @@
 // Ember.assert, Ember.deprecate, Ember.warn, Ember.TEMPLATES,
-// Ember.K, jQuery, Ember.lookup,
+// jQuery, Ember.lookup,
 // Ember.ContainerView circular dependency
 // Ember.ENV
 import Ember from 'ember-metal/core';
@@ -52,6 +52,7 @@ import "ember-views/system/ext";  // for the side effect of extending Ember.run.
 
 import CoreView from "ember-views/views/core_view";
 
+function K() { return this; }
 
 /**
 @module ember
@@ -1463,7 +1464,7 @@ var View = CoreView.extend({
 
     @event willInsertElement
   */
-  willInsertElement: Ember.K,
+  willInsertElement: K,
 
   /**
     Called when the element of the view has been inserted into the DOM
@@ -1475,7 +1476,7 @@ var View = CoreView.extend({
 
     @event didInsertElement
   */
-  didInsertElement: Ember.K,
+  didInsertElement: K,
 
   /**
     Called when the view is about to rerender, but before anything has
@@ -1484,7 +1485,7 @@ var View = CoreView.extend({
 
     @event willClearRender
   */
-  willClearRender: Ember.K,
+  willClearRender: K,
 
   /**
     Destroys any existing element along with the element for any child views
@@ -1518,14 +1519,14 @@ var View = CoreView.extend({
 
     @event willDestroyElement
   */
-  willDestroyElement: Ember.K,
+  willDestroyElement: K,
 
   /**
     Called when the parentView property has changed.
 
     @event parentViewDidChange
   */
-  parentViewDidChange: Ember.K,
+  parentViewDidChange: K,
 
   instrumentName: 'view',
 
@@ -1872,8 +1873,8 @@ var View = CoreView.extend({
     return view;
   },
 
-  becameVisible: Ember.K,
-  becameHidden: Ember.K,
+  becameVisible: K,
+  becameHidden: K,
 
   /**
     When the view's `isVisible` property changes, toggle the visibility

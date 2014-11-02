@@ -290,7 +290,7 @@ test("throws helpful error if `app.then` is used", function() {
   });
 
   expectDeprecation(function() {
-    run(app, 'then', Ember.K);
+    run(app, 'then', function() { return this; });
   }, /Do not use `.then` on an instance of Ember.Application.  Please use the `.ready` hook instead./);
 });
 

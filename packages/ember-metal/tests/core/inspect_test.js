@@ -1,8 +1,6 @@
 import { inspect } from "ember-metal/utils";
 import { create } from "ember-metal/platform";
 
-import Ember from 'ember-metal/core';
-
 QUnit.module("Ember.inspect");
 
 test("strings", function() {
@@ -32,7 +30,7 @@ test("false", function() {
 test("object", function() {
   equal(inspect({}), "{}");
   equal(inspect({ foo: 'bar' }), "{foo: bar}");
-  equal(inspect({ foo: Ember.K }), "{foo: function() { ... }}");
+  equal(inspect({ foo: function() { return this; } }), "{foo: function() { ... }}");
 });
 
 test("objects without a prototype", function() {

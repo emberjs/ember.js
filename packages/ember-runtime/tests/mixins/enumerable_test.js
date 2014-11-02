@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // for Ember.K and Ember.A
+import Ember from 'ember-metal/core'; // for Ember.A
 import EnumerableTests from 'ember-runtime/tests/suites/enumerable';
 import { indexOf } from 'ember-metal/enumerable_utils';
 import EmberObject from 'ember-runtime/system/object';
@@ -7,6 +7,10 @@ import EmberArray from 'ember-runtime/mixins/array';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
 import { observer as emberObserver } from 'ember-metal/mixin';
+
+
+function K() { return this; }
+
 
 /*
   Implement a basic fake enumerable.  This validates that any non-native
@@ -65,25 +69,25 @@ QUnit.module('Ember.Enumerable');
 
 test("should apply Ember.Array to return value of map", function() {
   var x = EmberObject.createWithMixins(Enumerable);
-  var y = x.map(Ember.K);
+  var y = x.map(K);
   equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
 test("should apply Ember.Array to return value of filter", function() {
   var x = EmberObject.createWithMixins(Enumerable);
-  var y = x.filter(Ember.K);
+  var y = x.filter(K);
   equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
 test("should apply Ember.Array to return value of invoke", function() {
   var x = EmberObject.createWithMixins(Enumerable);
-  var y = x.invoke(Ember.K);
+  var y = x.invoke(K);
   equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
 test("should apply Ember.Array to return value of toArray", function() {
   var x = EmberObject.createWithMixins(Enumerable);
-  var y = x.toArray(Ember.K);
+  var y = x.toArray(K);
   equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
@@ -93,13 +97,13 @@ test("should apply Ember.Array to return value of without", function() {
       return true;
     }
   });
-  var y = x.without(Ember.K);
+  var y = x.without(K);
   equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
 test("should apply Ember.Array to return value of uniq", function() {
   var x = EmberObject.createWithMixins(Enumerable);
-  var y = x.uniq(Ember.K);
+  var y = x.uniq(K);
   equal(EmberArray.detect(y), true, "should have mixin applied");
 });
 
