@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // A, FEATURES, assert, TESTING_DEPRECATION
+import Ember from 'ember-metal/core'; // A, FEATURES, assert
 import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 
