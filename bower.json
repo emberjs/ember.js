@@ -1,9 +1,11 @@
 {
   "name": "htmlbars",
+  "dependencies": {
+    "simple-html-tokenizer": "tildeio/simple-html-tokenizer#83952381ed525eaff9b81c79ccd2ae5af1c9ed9f"
+  },
   "devDependencies": {
     "loader": "stefanpenner/loader.js#7f79173fd5c61dc256af9aa01c56d50ebfec10fe",
     "qunit": "~1.14.0",
-    "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#3575d9f9850f4c5f30f3595e66e0d59866d53fa5",
-    "simple-html-tokenizer": "tildeio/simple-html-tokenizer#83952381ed525eaff9b81c79ccd2ae5af1c9ed9f"
+    "qunit-phantom-runner": "jonkemp/qunit-phantomjs-runner#3575d9f9850f4c5f30f3595e66e0d59866d53fa5" 
   }
 }
