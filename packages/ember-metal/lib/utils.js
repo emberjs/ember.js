@@ -477,8 +477,8 @@ function isArray(obj) {
 
 /**
   Forces the passed object to be part of an array. If the object is already
-  an array or array-like, returns the object. Otherwise adds the object to
-  an array. If obj is `null` or `undefined`, returns an empty array.
+  an array or array-like, it will return the object. Otherwise, it will add the object to
+  an array. If obj is `null` or `undefined`, it will return an empty array.
 
   ```javascript
   Ember.makeArray();            // []
