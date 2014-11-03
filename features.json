@@ -15,7 +15,8 @@
     "ember-metal-injected-properties": null,
     "mandatory-setter": "development-only",
     "ember-routing-fire-activate-deactivate-events": null,
-    "ember-testing-pause-test": null
+    "ember-testing-pause-test": null,
+    "computed-property-syntax-new": true
   },
   "debugStatements": [
     "Ember.warn",
