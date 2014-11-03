@@ -563,6 +563,9 @@ function computed(opts) {
       } else {
         func = opts.get;
       }
+    } else if (typeof opts === "function"){
+      func = opts;
+      Ember.deprecate("Using the same function as getter and setter is deprecated. Pass an object containing `get` and `set` properties instead", func.length < 2);
     }
   }
 

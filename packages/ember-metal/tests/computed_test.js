@@ -640,6 +640,15 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')){
     testObj.set('aInt', '123');
     ok(testObj.get('aInt') === '123', 'cp has been updated too');
   });
+
+  test('Passing a function that acts both as getter and setter is deprecated', function() {
+    var regex = /Using the same function as getter and setter is deprecated/;
+    expectDeprecation(function(){
+      Ember.Object.extend({
+        aInt: computed('a', function(keyName, value, oldValue){})
+      });
+    }, regex);
+  });
 }
 
 // ..........................................................
