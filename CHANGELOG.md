@@ -4,6 +4,15 @@
 
 * [BREAKING] Require Handlebars 2.0. See [blog post](http://emberjs.com/blog/2014/10/16/handlebars-update.html) for details.
 
+### Ember 1.8.1 (November, 4, 2014)
+
+* [BUGFIX] Make sure that `{{view}}` can accept a Ember.View instance.
+* [BUGFIX] Throw an assertion if `classNameBindings` are specified on a tag-less view.
+* [BUGFIX] Setting an `attributeBinding` for `class` attribute triggers assertion.
+* [BUGFIX] Fix `htmlSafe` to allow non-strings in unescaped code.
+* [BUGFIX] Add support for null prototype object to mandatory setter code. Prevents errors when operating on Ember Data `meta` objects.
+* [BUGFIX] Fix an issue with select/each that causes the last item rendered to be selected.
+
 ### Ember 1.8.0 (October, 28, 2014)
 
 * [BUGFIX] Ensure published builds do not use `define` or `require` internally.
