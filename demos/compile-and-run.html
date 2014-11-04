@@ -13,8 +13,6 @@
     <hr>
 
     <script src="../bower_components/loader/loader.js"></script>
-    <script src="../dist/vendor/simple-html-tokenizer.amd.js"></script>
-    <script src="../dist/vendor/handlebars.amd.js"></script>
     <script src="../dist/morph.amd.js"></script>
     <script src="../dist/htmlbars-compiler.amd.js"></script>
     <script src="../dist/htmlbars-runtime.amd.js"></script>
@@ -39,7 +37,7 @@
         try {
           var templateSpec = compileSpec(source),
               template     = compile(source),
-              dom          = template(data, {hooks: hooks, dom: new DOMHelper()});
+              dom          = template(data, {hooks: hooks, dom: new DOMHelper()}, output);
           output.innerHTML = '<pre><code>'+JSON.stringify(data)+'</code></pre><hr><pre><code>'+templateSpec+'</code></pre><hr>';
           output.appendChild(dom);
         } catch(e) {
