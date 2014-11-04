@@ -134,7 +134,29 @@ if (ignore.length > 0) {
 */
 var A = function(arr) {
   if (arr === undefined) { arr = []; }
-  return EmberArray.detect(arr) ? arr : NativeArray.apply(arr);
+
+  if (EmberArray.detect(arr)) {
+    return arr;
+  }
+
+  NativeArray.apply(arr);
+
+  var arrayReturners = ['sort', 'splice', 'concat', 'slice', 'filter', 'map'];
+
+  // make sure that native methods that return arrays are wrapped to return an Ember.A
+  forEach(arrayReturners, function (fn) {
+    if (!arr[fn]) {
+      return;
+    }
+
+    var nativeFn = arr[fn];
+
+    arr[fn] = function () {
+      return Ember.A(nativeFn.apply(this, arguments));
+    };
+  });
+
+  return arr;
 };
 
 /**
