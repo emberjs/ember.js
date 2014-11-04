@@ -17,8 +17,7 @@ import {
   removeBeforeObserver
 } from 'ember-metal/observer';
 import {
-  ComputedProperty,
-  cacheFor
+  ComputedProperty
 } from 'ember-metal/computed';
 import { create as o_create } from 'ember-metal/platform';
 import { forEach } from 'ember-metal/enumerable_utils';
@@ -27,9 +26,6 @@ import EmberArray from 'ember-runtime/mixins/array';
 import run from 'ember-metal/run_loop';
 import { isArray } from 'ember-metal/utils';
 
-var cacheSet = cacheFor.set;
-var cacheGet = cacheFor.get;
-var cacheRemove = cacheFor.remove;
 var a_slice = [].slice;
 // Here we explicitly don't allow `@each.foo`; it would require some special
 // testing, but there's no particular reason why it should be disallowed.
