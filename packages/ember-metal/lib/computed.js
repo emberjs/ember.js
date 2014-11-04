@@ -112,17 +112,15 @@ function UNDEFINED() { }
   @extends Ember.Descriptor
   @constructor
 */
-function ComputedProperty(func, opts) {
+function ComputedProperty(func) {
   func.__ember_arity__ = func.length;
   this.func = func;
 
   this._dependentKeys = undefined;
   this._suspended = undefined;
   this._meta = undefined;
-
-  this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : true;
-  this._dependentKeys = opts && opts.dependentKeys;
-  this._readOnly = opts && (opts.readOnly !== undefined || !!opts.readOnly) || false;
+  this._cacheable = true;
+  this._readOnly = false;
 }
 
 ComputedProperty.prototype = new Descriptor();
@@ -500,7 +498,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   The function should accept two parameters, key and value. If value is not
   undefined you should set the value first. In either case return the
   current value of the property.
-  
+
   A computed property defined in this way might look like this:
 
   ```js
@@ -516,7 +514,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   var client = Person.create();
 
   client.get('fullName'); // 'Betty Jones'
-  
+
   client.set('lastName', 'Fuller');
   client.get('fullName'); // 'Betty Fuller'
   ```
