@@ -62,8 +62,8 @@ test('With concatenatedProperties', function(){
   var another = new AnotherClass();
   var yetAnother = new YetAnotherClass();
   deepEqual(some.get('things'), ['foo'], 'base class should have just its value');
-  deepEqual(another.get('things'), ['foo', 'bar'], "subclass should have base class' and it's own");
-  deepEqual(yetAnother.get('things'), ['foo', 'baz'], "subclass should have base class' and it's own");
+  deepEqual(another.get('things'), ['foo', 'bar'], "subclass should have base class' and its own");
+  deepEqual(yetAnother.get('things'), ['foo', 'baz'], "subclass should have base class' and its own");
 });
 
 test('With concatenatedProperties class properties', function(){
@@ -80,7 +80,7 @@ test('With concatenatedProperties class properties', function(){
   var another = new AnotherClass();
   var yetAnother = new YetAnotherClass();
   deepEqual(get(some.constructor, 'things'), ['foo'], 'base class should have just its value');
-  deepEqual(get(another.constructor, 'things'), ['foo', 'bar'], "subclass should have base class' and it's own");
-  deepEqual(get(yetAnother.constructor, 'things'), ['foo', 'baz'], "subclass should have base class' and it's own");
+  deepEqual(get(another.constructor, 'things'), ['foo', 'bar'], "subclass should have base class' and its own");
+  deepEqual(get(yetAnother.constructor, 'things'), ['foo', 'baz'], "subclass should have base class' and its own");
 });
 

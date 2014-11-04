@@ -48,7 +48,7 @@ function UNDEFINED() { }
   `.property()` on the fullName function) and setup the properties
   dependencies (depending on firstName and lastName). The fullName function
   will be called once (regardless of how many times it is accessed) as long
-  as it's dependencies have not been changed. Once firstName or lastName are updated
+  as its dependencies have not been changed. Once firstName or lastName are updated
   any future calls (or anything bound) to fullName will incorporate the new
   values.
 

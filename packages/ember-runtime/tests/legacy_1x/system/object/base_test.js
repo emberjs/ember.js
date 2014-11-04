@@ -48,7 +48,7 @@ QUnit.module("A new EmberObject instance", {
 
 });
 
-test("Should return it's properties when requested using EmberObject#get", function() {
+test("Should return its properties when requested using EmberObject#get", function() {
   equal(get(obj, 'foo'), 'bar') ;
   equal(get(obj, 'total'), 12345) ;
 });

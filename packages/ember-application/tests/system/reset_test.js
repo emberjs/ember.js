@@ -28,7 +28,7 @@ QUnit.module("Ember.Application - resetting", {
   }
 });
 
-test("Brings it's own run-loop if not provided", function() {
+test("Brings its own run-loop if not provided", function() {
   application = run(Application, 'create');
   application.ready = function() {
     QUnit.start();
@@ -39,7 +39,7 @@ test("Brings it's own run-loop if not provided", function() {
   application.reset();
 });
 
-test("does not bring it's own run loop if one is already provided", function() {
+test("does not bring its own run loop if one is already provided", function() {
   expect(3);
 
   var didBecomeReady = false;

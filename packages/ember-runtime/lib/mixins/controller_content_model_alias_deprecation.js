@@ -12,7 +12,7 @@ import { Mixin } from 'ember-metal/mixin';
 
   This change reduces many caveats with model/content, and also sets a
   simple ground rule: Never set a controllers content, rather always set
-  it's model and ember will do the right thing.
+  its model and ember will do the right thing.
 
 
   `Ember.ControllerContentModelAliasDeprecation` is used internally by Ember in

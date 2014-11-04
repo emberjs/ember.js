@@ -141,7 +141,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
 
   /**
     By default the `{{link-to}}` helper will bind to the `href` and
-    `title` attributes. It's discourage that you override these defaults,
+    `title` attributes. It's discouraged that you override these defaults,
     however you can push onto the array if needed.
 
     @property attributeBindings
