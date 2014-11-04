@@ -26,7 +26,8 @@ function InjectedProperty(type, name) {
                  "instantiated via a container.", this.container);
 
     return this.container.lookup(type + ':' + (name || keyName));
-  }, { readOnly: true });
+  });
+  this.readOnly();
 }
 
 InjectedProperty.prototype = create(Descriptor.prototype);
@@ -37,6 +38,7 @@ var ComputedPropertyPrototype = ComputedProperty.prototype;
 InjectedPropertyPrototype._super$Constructor = ComputedProperty;
 
 InjectedPropertyPrototype.get = ComputedPropertyPrototype.get;
+InjectedPropertyPrototype.readOnly = ComputedPropertyPrototype.readOnly;
 
 InjectedPropertyPrototype.set = function(obj, keyName) {
   throw new EmberError("Cannot set injected property '" + keyName + "' on object: " + inspect(obj));
