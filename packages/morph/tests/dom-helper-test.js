@@ -132,6 +132,46 @@ test('#parseHTML of script then tr inside table context wraps the tr in a tbody'
   equal(nodes[1].tagName, 'TBODY');
 });
 
+test('#parseHTML of select allows the initial implicit option selection to remain', function(){
+  var div = document.createElement('div');
+  var select = dom.parseHTML('<select><option></option></select>', div)[0];
+
+  ok(select.childNodes[0].selected, 'first element is selected');
+});
+
+test('#parseHTML of options removes an implicit selection', function(){
+  var select = document.createElement('select');
+  var options = dom.parseHTML(
+    '<option value="1"></option><option value="2"></option>',
+    select
+  );
+
+  ok(!options[0].selected, 'first element is not selected');
+  ok(!options[1].selected, 'second element is not selected');
+});
+
+test('#parseHTML of options leaves an explicit first selection', function(){
+  var select = document.createElement('select');
+  var options = dom.parseHTML(
+    '<option value="1" selected></option><option value="2"></option>',
+    select
+  );
+
+  ok(options[0].selected, 'first element is selected');
+  ok(!options[1].selected, 'second element is not selected');
+});
+
+test('#parseHTML of options leaves an explicit second selection', function(){
+  var select = document.createElement('select');
+  var options = dom.parseHTML(
+    '<option value="1"></option><option value="2" selected="selected"></option>',
+    select
+  );
+
+  ok(!options[0].selected, 'first element is not selected');
+  ok(options[1].selected, 'second element is selected');
+});
+
 test('#parseHTML of script then tr inside tbody context', function(){
   var tbodyElement = document.createElement('tbody'),
       nodes = dom.parseHTML('<script></script><tr><td>Yo</td></tr>', tbodyElement);
