@@ -558,7 +558,7 @@ test("should properly capture events on child elements of a container with an ac
 
   view.$('button').trigger('click');
 
-  ok(eventHandlerWasCalled, "Event on a child element triggered the action of it's parent");
+  ok(eventHandlerWasCalled, "Event on a child element triggered the action of its parent");
 });
 
 test("should allow bubbling of events from action helper to original parent event", function() {

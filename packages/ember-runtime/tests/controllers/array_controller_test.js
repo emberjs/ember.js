@@ -25,9 +25,9 @@ MutableArrayTests.extend({
   }
 }).run();
 
-test("defaults it's `model` to an empty array", function () {
+test("defaults its `model` to an empty array", function () {
   var Controller = ArrayController.extend();
-  deepEqual(Controller.create().get("model"), [], "`ArrayController` defaults it's model to an empty array");
+  deepEqual(Controller.create().get("model"), [], "`ArrayController` defaults its model to an empty array");
   equal(Controller.create().get('firstObject'), undefined, 'can fetch firstObject');
   equal(Controller.create().get('lastObject'), undefined, 'can fetch lastObject');
 });

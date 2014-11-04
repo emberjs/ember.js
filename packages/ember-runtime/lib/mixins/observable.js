@@ -473,7 +473,7 @@ export default Mixin.create({
   },
 
   /**
-    Set the value of a boolean property to the opposite of it's
+    Set the value of a boolean property to the opposite of its
     current value.
 
     ```javascript

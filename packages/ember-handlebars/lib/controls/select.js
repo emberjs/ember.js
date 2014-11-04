@@ -410,7 +410,7 @@ var Select = View.extend({
 
   /**
     In single selection mode (when `multiple` is `false`), value can be used to
-    get the current selection's value or set the selection by it's value.
+    get the current selection's value or set the selection by its value.
 
     It is not currently supported in multiple selection mode.
 
