@@ -1,8 +1,21 @@
 # Ember Changelog
 
-### Master
+### 1.9.0-beta.1
 
 * [BREAKING] Require Handlebars 2.0. See [blog post](http://emberjs.com/blog/2014/10/16/handlebars-update.html) for details.
+* Allow all rejection types in promises to be handled.
+* Mandatory setter checks for configurable, and does not clobber non-configurable properties.
+* Remove long deprecated `Ember.empty` and `Ember.none`.
+* Refactor `Ember.platform`.
+* `Ember.HashLocation` no longer assumes any hash is a route, uses forward slash prefix convention `#/foo`.
+* Log unhandled promise rejections in testing.
+* Deprecate `Ember.Handlebars.get`.
+* Warn if FEATURES flagging is used in non-canary, debug builds.
+* Streamify template bindings.
+* Make Ember.Namespace#toString ember-cli aware.
+* Prevent extra `method.toString` checks when setting `_super`.
+* [PERF] Speedup watchKey by preventing for in related deopt.
+
 
 ### Ember 1.8.1 (November, 4, 2014)
 
