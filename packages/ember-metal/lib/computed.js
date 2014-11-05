@@ -500,7 +500,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   The function should accept two parameters, key and value. If value is not
   undefined you should set the value first. In either case return the
   current value of the property.
-  
+
   A computed property defined in this way might look like this:
 
   ```js
@@ -516,7 +516,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   var client = Person.create();
 
   client.get('fullName'); // 'Betty Jones'
-  
+
   client.set('lastName', 'Fuller');
   client.get('fullName'); // 'Betty Fuller'
   ```
@@ -539,21 +539,41 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   @method computed
   @for Ember
   @param {String} [dependentKeys*] Optional dependent keys that trigger this computed property.
-  @param {Function} func The computed property function.
+  @param {Function} opts The computed property function.
   @return {Ember.ComputedProperty} property descriptor instance
 */
-function computed(func) {
-  var args;
+function computed(opts) {
+  var args, func;
 
   if (arguments.length > 1) {
     args = a_slice.call(arguments);
-    func = args.pop();
+    opts = args.pop();
   }
+
+  if (Ember.FEATURES.isEnabled('improved-cp-syntax')){
+    if (typeof opts === "object"){
+      if (opts.set){
+        func = function(keyName, value, oldValue){
+          if (arguments.length > 1){
+            return opts.set.call(this, keyName, value, oldValue);
+          } else {
+            return opts.get.call(this, keyName);
+          }
+        };
+      } else {
+        func = opts.get;
+      }
+    } else if (typeof opts === "function"){
+      func = opts;
+      Ember.deprecate("Using the same function as getter and setter is deprecated. Pass an object containing `get` and `set` properties instead", func.length < 2);
+    }
+  }
+
+  func = func || opts;
 
   if (typeof func !== "function") {
     throw new EmberError("Computed Property declared without a property function");
   }
-
   var cp = new ComputedProperty(func);
 
   if (args) {
