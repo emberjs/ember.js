@@ -14,8 +14,8 @@
     "ember-runtime-item-controller-inline-class": false,
     "ember-metal-injected-properties": false,
     "mandatory-setter": "development-only",
-    "ember-routing-fire-activate-deactivate-events": false,
-    "ember-testing-pause-test": false
+    "ember-routing-fire-activate-deactivate-events": true,
+    "ember-testing-pause-test": true
   },
   "debugStatements": [
     "Ember.warn",

@@ -15,6 +15,8 @@
 * Make Ember.Namespace#toString ember-cli aware.
 * Prevent extra `method.toString` checks when setting `_super`.
 * [PERF] Speedup watchKey by preventing for in related deopt.
+* [FEATURE] ember-routing-fire-activate-deactivate-events.
+* [FEATURE] ember-testing-pause-test.
 
 
 ### Ember 1.8.1 (November, 4, 2014)
