@@ -845,11 +845,23 @@ test('Components - Empty components work', function () {
   compilesTo('<x-bar></x-bar>','<x-bar></x-bar>', {});
 });
 
+test('Components - Text-only dashed attributes work', function () {
+  var object = { foo: 'qux' };
+  compilesTo('<x-bar aria-label="foo" id="test">{{foo}}</x-bar>','<x-bar aria-label="foo" id="test">qux</x-bar>', object);
+});
+
 test('Repaired text nodes are ensured in the right place', function () {
   var object = { a: "A", b: "B", c: "C", d: "D" };
   compilesTo('{{a}} {{b}}', 'A B', object);
   compilesTo('<div>{{a}}{{b}}{{c}}wat{{d}}</div>', '<div>ABCwatD</div>', object);
   compilesTo('{{a}}{{b}}<img><img><img><img>', 'AB<img><img><img><img>', object);
+});
+
+test("Simple elements can have dashed attributes", function() {
+  var template = compile("<div aria-label='foo'>content</div>");
+  var fragment = template({}, env);
+
+  equalTokens(fragment, '<div aria-label="foo">content</div>');
 });
 
 if (document.createElement('div').namespaceURI) {
