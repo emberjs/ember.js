@@ -550,7 +550,7 @@ function ReduceComputedProperty(options) {
       }, this);
       recompute.call(this, propertyName);
     }
-    if(cp._instanceMeta(this, propertyName).value == undefined){
+    if(cp._instanceMeta(this, propertyName).value === undefined){
       recompute.call(this, propertyName);
     }
     return cp._instanceMeta(this, propertyName).getValue();

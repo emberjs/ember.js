@@ -2,9 +2,7 @@ import Ember from 'ember-metal/core';
 import {
   ReduceComputedProperty
 } from 'ember-runtime/computed/reduce_computed';
-import { forEach } from 'ember-metal/enumerable_utils';
 import { create as o_create } from 'ember-metal/platform';
-import { addObserver } from 'ember-metal/observer';
 import EmberError from 'ember-metal/error';
 
 var a_slice = [].slice;
