@@ -12,8 +12,8 @@ export function prepareHelper(stack, size) {
 
   for (i=0; i<hashSize; i++) {
     keyName = stack.pop();
-    hashPairs.unshift(keyName + ':' + stack.pop());
-    hashTypes.unshift(keyName + ':' + stack.pop());
+    hashPairs.unshift('"' + keyName + '":' + stack.pop());
+    hashTypes.unshift('"' + keyName + '":' + stack.pop());
   }
 
   for (i=0; i<size; i++) {
