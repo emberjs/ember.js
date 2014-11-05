@@ -231,10 +231,10 @@ ChainNodePrototype.unchain = function(key, path) {
   var node = chains[key];
 
   // unchain rest of path first...
-  if (path && path.length>1) {
-    key  = firstKey(path);
-    path = path.slice(key.length+1);
-    node.unchain(key, path);
+  if (path && path.length > 1) {
+    var nextKey  = firstKey(path);
+    var nextPath = path.slice(nextKey.length + 1);
+    node.unchain(nextKey, nextPath);
   }
 
   // delete node if needed.
