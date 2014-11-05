@@ -16,6 +16,11 @@ import { createInjectionHelper } from 'ember-runtime/inject';
 */
 var Controller = EmberObject.extend(Mixin);
 
+function controllerInjectionHelper(factory) {
+  Ember.assert("Defining an injected controller property on a " +
+               "non-controller is not allowed.", Controller.detect(factory));
+}
+
 if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   /**
     Creates a property that lazily looks up another controller in the container.
@@ -46,10 +51,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
            to the property's name
     @return {Ember.InjectedProperty} injection descriptor instance
     */
-  createInjectionHelper('controller', function(factory) {
-    Ember.assert("Defining an injected controller property on a " +
-                 "non-controller is not allowed.", Controller.detect(factory));
-  });
+  createInjectionHelper('controller', controllerInjectionHelper);
 }
 
 export default Controller;
