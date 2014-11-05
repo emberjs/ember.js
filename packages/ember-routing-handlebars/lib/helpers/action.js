@@ -140,7 +140,6 @@ ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys)
 };
 
 /**
-
   The `{{action}}` helper provides a useful shortcut for registering an HTML
   element within a template for a single DOM event and forwarding that
   interaction to the template's controller or specified `target` option.
