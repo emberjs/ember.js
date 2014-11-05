@@ -106,14 +106,8 @@ function run() {
   @return {Object} Return value from invoking the passed function. Please note,
   when called within an existing loop, no return value is possible.
 */
-run.join = function(target, method /* args */) {
-  if (!run.currentRunLoop) {
-    return Ember.run.apply(Ember, arguments);
-  }
-
-  var args = slice.call(arguments);
-  args.unshift('actions');
-  run.schedule.apply(run, args);
+run.join = function() {
+  return backburner.join.apply(backburner, arguments);
 };
 
 /**
