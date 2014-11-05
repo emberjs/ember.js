@@ -1988,11 +1988,15 @@ function appendView(route, view, options) {
 }
 
 function generateTopLevelTeardown(view) {
-  return function() { view.destroy(); };
+  return function() {
+    view.destroy();
+  };
 }
 
 function generateOutletTeardown(parentView, outlet) {
-  return function() { parentView.disconnectOutlet(outlet); };
+  return function() {
+    parentView.disconnectOutlet(outlet);
+  };
 }
 
 function getFullQueryParams(router, state) {
