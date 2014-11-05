@@ -23,6 +23,12 @@ EmberObject.toString = function() {
   return "Ember.Object";
 };
 
+function injectedPropertyAssertion(props) {
+  // Injection validations are a debugging aid only, so ensure that they are
+  // not performed in production builds by invoking from an assertion
+  Ember.assert("Injected properties are invalid", validatePropertyInjections(this.constructor, props));
+}
+
 if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   EmberObject.reopen({
     /**
@@ -31,11 +37,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
       @private
       @method willMergeMixin
     */
-    willMergeMixin: function(props) {
-      // Injection validations are a debugging aid only, so ensure that they are
-      // not performed in production builds by invoking from an assertion
-      Ember.assert("Injected properties are invalid", validatePropertyInjections(this.constructor, props));
-    }
+    willMergeMixin: injectedPropertyAssertion
   });
 }
 

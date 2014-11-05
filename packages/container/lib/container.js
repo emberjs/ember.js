@@ -787,20 +787,18 @@ function factoryInjectionsFor(container, fullName) {
   return factoryInjections;
 }
 
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  var normalizeInjectionsHash = function(hash) {
-    var injections = [];
+function normalizeInjectionsHash(hash) {
+  var injections = [];
 
-    for (var key in hash) {
-      if (hash.hasOwnProperty(key)) {
-        Ember.assert("Expected a proper full name, given '" + hash[key] + "'", validateFullName(hash[key]));
+  for (var key in hash) {
+    if (hash.hasOwnProperty(key)) {
+      Ember.assert("Expected a proper full name, given '" + hash[key] + "'", validateFullName(hash[key]));
 
-        addInjection(injections, key, hash[key]);
-      }
+      addInjection(injections, key, hash[key]);
     }
+  }
 
-    return injections;
-  };
+  return injections;
 }
 
 function instantiate(container, fullName) {
