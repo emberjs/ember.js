@@ -18,6 +18,7 @@ var useStrictRemover = require('broccoli-use-strict-remover');
 var derequire = require('broccoli-derequire');
 
 var getVersion = require('git-repo-version');
+var yuidocPlugin = require('ember-cli-yuidoc');
 
 // To create fast production builds (without ES3 support, minification, derequire, or JSHint)
 // run the following:
@@ -28,6 +29,7 @@ var env = process.env.EMBER_ENV || 'development';
 var disableJSHint = !!process.env.DISABLE_JSHINT || false;
 var disableES3    = !!process.env.DISABLE_ES3 || false;
 var disableMin    = !!process.env.DISABLE_MIN || false;
+var enableDocs    = !!process.env.ENABLE_DOCS || false;
 var disableDefeatureify;
 
 var disableDerequire = !!process.env.DISABLE_DEREQUIRE || false;
@@ -730,6 +732,11 @@ if (env !== 'development') {
 
 // merge distTrees and sub out version placeholders for distribution
 distTrees = mergeTrees(distTrees);
+
+if (enableDocs && process.argv[2] === "serve") {
+  distTrees = yuidocPlugin.addDocsToTree(distTrees);
+}
+
 distTrees = replace(distTrees, {
   files: [ '**/*.js', '**/*.json' ],
   patterns: [
