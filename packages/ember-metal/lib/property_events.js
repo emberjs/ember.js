@@ -38,9 +38,18 @@ function propertyWillChange(obj, keyName) {
   var proto = m && m.proto;
   var desc = m && m.descs[keyName];
 
-  if (!watching) { return; }
-  if (proto === obj) { return; }
-  if (desc && desc.willChange) { desc.willChange(obj, keyName); }
+  if (!watching) {
+    return;
+  }
+
+  if (proto === obj) {
+    return;
+  }
+
+  if (desc && desc.willChange) {
+    desc.willChange(obj, keyName);
+  }
+
   dependentKeysWillChange(obj, keyName, m);
   chainsWillChange(obj, keyName, m);
   notifyBeforeObservers(obj, keyName);
@@ -67,11 +76,18 @@ function propertyDidChange(obj, keyName) {
   var proto = m && m.proto;
   var desc = m && m.descs[keyName];
 
-  if (proto === obj) { return; }
+  if (proto === obj) {
+    return;
+  }
 
   // shouldn't this mean that we're watching this key?
-  if (desc && desc.didChange) { desc.didChange(obj, keyName); }
-  if (!watching && keyName !== 'length') { return; }
+  if (desc && desc.didChange) {
+    desc.didChange(obj, keyName);
+  }
+
+  if (!watching && keyName !== 'length') {
+    return;
+  }
 
   if (m && m.deps && m.deps[keyName]) {
     dependentKeysDidChange(obj, keyName, m);
@@ -90,9 +106,16 @@ function dependentKeysWillChange(obj, depKey, meta) {
   if (meta && meta.deps && (deps = meta.deps[depKey])) {
     var seen = WILL_SEEN;
     var top = !seen;
-    if (top) { seen = WILL_SEEN = {}; }
+
+    if (top) {
+      seen = WILL_SEEN = {};
+    }
+
     iterDeps(propertyWillChange, obj, deps, depKey, seen, meta);
-    if (top) { WILL_SEEN = null; }
+
+    if (top) {
+      WILL_SEEN = null;
+    }
   }
 }
 
@@ -104,15 +127,26 @@ function dependentKeysDidChange(obj, depKey, meta) {
   if (meta && meta.deps && (deps = meta.deps[depKey])) {
     var seen = DID_SEEN;
     var top = !seen;
-    if (top) { seen = DID_SEEN = {}; }
+
+    if (top) {
+      seen = DID_SEEN = {};
+    }
+
     iterDeps(propertyDidChange, obj, deps, depKey, seen, meta);
-    if (top) { DID_SEEN = null; }
+
+    if (top) {
+      DID_SEEN = null;
+    }
   }
 }
 
 function keysOf(obj) {
   var keys = [];
-  for (var key in obj) keys.push(key);
+
+  for (var key in obj) {
+    keys.push(key);
+  }
+
   return keys;
 }
 
@@ -120,8 +154,15 @@ function iterDeps(method, obj, deps, depKey, seen, meta) {
   var keys, key, i, desc;
   var guid = guidFor(obj);
   var current = seen[guid];
-  if (!current) current = seen[guid] = {};
-  if (current[depKey]) return;
+
+  if (!current) {
+    current = seen[guid] = {};
+  }
+
+  if (current[depKey]) {
+    return;
+  }
+
   current[depKey] = true;
 
   if (deps) {
@@ -130,7 +171,11 @@ function iterDeps(method, obj, deps, depKey, seen, meta) {
     for (i=0; i<keys.length; i++) {
       key = keys[i];
       desc = descs[key];
-      if (desc && desc._suspended === obj) continue;
+
+      if (desc && desc._suspended === obj) {
+        continue;
+      }
+
       method(obj, key);
     }
   }

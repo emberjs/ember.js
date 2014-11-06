@@ -342,7 +342,9 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
     }
 
     chainNodes = meta.chainWatchers && meta.chainWatchers[keyName];
-    if (chainNodes) { finishChains(chainNodes); }
+    if (chainNodes) {
+      finishChains(chainNodes);
+    }
     addDependentKeys(this, obj, keyName, meta);
   } else {
     ret = this.func.call(obj, keyName);
@@ -584,7 +586,9 @@ function cacheFor(obj, key) {
   var cache = meta && meta.cache;
   var ret = cache && cache[key];
 
-  if (ret === UNDEFINED) { return undefined; }
+  if (ret === UNDEFINED) {
+    return undefined;
+  }
   return ret;
 }
 
@@ -598,7 +602,9 @@ cacheFor.set = function(cache, key, value) {
 
 cacheFor.get = function(cache, key) {
   var ret = cache[key];
-  if (ret === UNDEFINED) { return undefined; }
+  if (ret === UNDEFINED) {
+    return undefined;
+  }
   return ret;
 };
 
