@@ -14,7 +14,7 @@
     "ember-runtime-item-controller-inline-class": null,
     "ember-metal-injected-properties": null,
     "mandatory-setter": "development-only",
-    "ember-routing-fire-activate-deactivate-events": null,
+    "ember-routing-fire-activate-deactivate-events": true,
     "ember-testing-pause-test": true
   },
   "debugStatements": [
