@@ -929,6 +929,7 @@ Application.reopenClass({
 
     Ember.assert("The initializer '" + initializer.name + "' has already been registered", !this.initializers[initializer.name]);
     Ember.assert("An initializer cannot be registered without an initialize function", canInvoke(initializer, 'initialize'));
+    Ember.assert("An initializer cannot be registered without a name property", initializer.name !== undefined);
 
     this.initializers[initializer.name] = initializer;
   },

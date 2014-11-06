@@ -16,6 +16,23 @@ QUnit.module("Ember.Application initializers", {
   }
 });
 
+test("initializers require proper 'name' and 'initialize' properties", function() {
+  var MyApplication = Application.extend();
+
+  expectAssertion(function() {
+    run(function() {
+      MyApplication.initializer({name:'initializer'});
+    });
+  });
+
+  expectAssertion(function() {
+    run(function() {
+      MyApplication.initializer({initialize:Ember.K});
+    });
+  });
+
+});
+
 test("initializers can be registered in a specified order", function() {
   var order = [];
   var MyApplication = Application.extend();
