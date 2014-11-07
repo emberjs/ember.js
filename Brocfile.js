@@ -231,7 +231,7 @@ var testConfig = pickFiles('tests', {
   broccoli-defeatureify requires that format.
 */
 testConfig = replace(testConfig, {
-  files: [ 'tests/ember_configuration.js' ],
+  files: [ 'tests/index.html' ],
   patterns: [
     { match: /\{\{DEV_FEATURES\}\}/g,
       replacement: function() {
@@ -279,6 +279,12 @@ var bowerFiles = [
 ];
 
 bowerFiles = mergeTrees(bowerFiles);
+
+var emberDevTestHelpers = pickFiles('bower_components/ember-dev/addon', {
+  srcDir: '/',
+  destDir: '/ember-dev',
+  files: ['**/*.js']
+});
 
 // iife - Immediately Invoking Function Expression
 // http://en.wikipedia.org/wiki/Immediately-invoked_function_expression
@@ -526,7 +532,7 @@ var vendorTrees          = [];
 var devSourceTrees       = [];
 var prodSourceTrees      = [];
 var testingSourceTrees   = [];
-var testTrees            = [];
+var testTrees            = [emberDevTestHelpers];
 var compiledPackageTrees = [];
 
 for (var packageName in packages) {

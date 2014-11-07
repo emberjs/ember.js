@@ -5,6 +5,7 @@ import Mixin from "ember-metal/mixin";
 import Object from "ember-runtime/system/object";
 import Container from "ember-runtime/system/container";
 import inject from "ember-runtime/inject";
+import { get } from "ember-metal/property_get";
 
 QUnit.module('Controller event handling');
 
@@ -165,13 +166,16 @@ test("specifying `content` (without `model` specified) results in deprecation", 
 });
 
 test("specifying `content` (with `model` specified) does not result in deprecation", function() {
-  expect(1);
+  expect(3);
   expectNoDeprecation();
 
-  Controller.extend({
+  var controller = Controller.extend({
     content: 'foo-bar',
     model: 'blammo'
   }).create();
+
+  equal(get(controller, 'content'), 'foo-bar');
+  equal(get(controller, 'model'), 'blammo');
 });
 
 if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
