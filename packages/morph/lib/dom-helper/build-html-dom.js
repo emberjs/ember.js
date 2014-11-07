@@ -40,11 +40,13 @@ var createsSelectedAttribute = document && (function() {
 
 var detectAutoSelectedOption;
 if (createsSelectedAttribute) {
-  var detectAutoSelectedOptionRegex = /<option[^>]*selected/;
-  detectAutoSelectedOption = function detectAutoSelectedOption(select, option, html) { //jshint ignore:line
-    return select.selectedIndex === 0 &&
-           !detectAutoSelectedOptionRegex.test(html);
-  };
+  detectAutoSelectedOption = (function(){
+    var detectAutoSelectedOptionRegex = /<option[^>]*selected/;
+    return function detectAutoSelectedOption(select, option, html) { //jshint ignore:line
+      return select.selectedIndex === 0 &&
+             !detectAutoSelectedOptionRegex.test(html);
+    };
+  })();
 } else {
   detectAutoSelectedOption = function detectAutoSelectedOption(select, option, html) { //jshint ignore:line
     var selectedAttribute = option.getAttribute('selected');
@@ -55,40 +57,47 @@ if (createsSelectedAttribute) {
   };
 }
 
-// IE 9 and earlier don't allow us to set innerHTML on col, colgroup, frameset,
-// html, style, table, tbody, tfoot, thead, title, tr. Detect this and add
-// them to an initial list of corrected tags.
-//
-// Here we are only dealing with the ones which can have child nodes.
-//
-var tagNamesRequiringInnerHTMLFix, tableNeedsInnerHTMLFix;
-var tableInnerHTMLTestElement = document.createElement('table');
-try {
-  tableInnerHTMLTestElement.innerHTML = '<tbody></tbody>';
-} catch (e) {
-} finally {
-  tableNeedsInnerHTMLFix = (tableInnerHTMLTestElement.childNodes.length === 0);
-}
-if (tableNeedsInnerHTMLFix) {
-  tagNamesRequiringInnerHTMLFix = {
-    colgroup: ['table'],
-    table: [],
-    tbody: ['table'],
-    tfoot: ['table'],
-    thead: ['table'],
-    tr: ['table', 'tbody']
-  };
-}
+var tagNamesRequiringInnerHTMLFix;
+(function(_doc){
+  if (!_doc) {
+    return;
+  }
 
-// IE 8 doesn't allow setting innerHTML on a select tag. Detect this and
-// add it to the list of corrected tags.
-//
-var selectInnerHTMLTestElement = document.createElement('select');
-selectInnerHTMLTestElement.innerHTML = '<option></option>';
-if (selectInnerHTMLTestElement) {
-  tagNamesRequiringInnerHTMLFix = tagNamesRequiringInnerHTMLFix || {};
-  tagNamesRequiringInnerHTMLFix.select = [];
-}
+  // IE 9 and earlier don't allow us to set innerHTML on col, colgroup, frameset,
+  // html, style, table, tbody, tfoot, thead, title, tr. Detect this and add
+  // them to an initial list of corrected tags.
+  //
+  // Here we are only dealing with the ones which can have child nodes.
+  //
+  var tableNeedsInnerHTMLFix;
+  var tableInnerHTMLTestElement = _doc.createElement('table');
+  try {
+    tableInnerHTMLTestElement.innerHTML = '<tbody></tbody>';
+  } catch (e) {
+  } finally {
+    tableNeedsInnerHTMLFix = (tableInnerHTMLTestElement.childNodes.length === 0);
+  }
+  if (tableNeedsInnerHTMLFix) {
+    tagNamesRequiringInnerHTMLFix = {
+      colgroup: ['table'],
+      table: [],
+      tbody: ['table'],
+      tfoot: ['table'],
+      thead: ['table'],
+      tr: ['table', 'tbody']
+    };
+  }
+
+  // IE 8 doesn't allow setting innerHTML on a select tag. Detect this and
+  // add it to the list of corrected tags.
+  //
+  var selectInnerHTMLTestElement = _doc.createElement('select');
+  selectInnerHTMLTestElement.innerHTML = '<option></option>';
+  if (!selectInnerHTMLTestElement.childNodes[0]) {
+    tagNamesRequiringInnerHTMLFix = tagNamesRequiringInnerHTMLFix || {};
+    tagNamesRequiringInnerHTMLFix.select = [];
+  }
+})(document);
 
 function scriptSafeInnerHTML(element, html) {
   // without a leading text node, IE will drop a leading script tag.
