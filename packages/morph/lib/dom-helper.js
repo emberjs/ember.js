@@ -5,19 +5,21 @@ import {
   svgHTMLIntegrationPoints
 } from "./dom-helper/build-html-dom";
 
-var deletesBlankTextNodes = (function(){
+var doc = typeof document === 'undefined' ? false : document;
+
+var deletesBlankTextNodes = doc && (function(document){
   var element = document.createElement('div');
   element.appendChild( document.createTextNode('') );
   var clonedElement = element.cloneNode(true);
   return clonedElement.childNodes.length === 0;
-})();
+})(doc);
 
-var ignoresCheckedAttribute = (function(){
+var ignoresCheckedAttribute = doc && (function(document){
   var element = document.createElement('input');
   element.setAttribute('checked', 'checked');
   var clonedElement = element.cloneNode(false);
   return !clonedElement.checked;
-})();
+})(doc);
 
 function isSVG(ns){
   return ns === svgNamespace;
@@ -124,7 +126,7 @@ prototype.setAttribute = function(element, name, value) {
   element.setAttribute(name, value);
 };
 
-if (document.createElementNS) {
+if (doc && doc.createElementNS) {
   // Only opt into namespace detection if a contextualElement
   // is passed.
   prototype.createElement = function(tagName, contextualElement) {
