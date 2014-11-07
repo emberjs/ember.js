@@ -1,42 +1,45 @@
 export var svgHTMLIntegrationPoints = {foreignObject: 1, desc: 1, title: 1};
 export var svgNamespace = 'http://www.w3.org/2000/svg';
 
+var doc = typeof document === 'undefined' ? false : document;
+
 // Safari does not like using innerHTML on SVG HTML integration
 // points (desc/title/foreignObject).
-var needsIntegrationPointFix = document && document.createElementNS && (function() {
+var needsIntegrationPointFix = doc && (function(document) {
+  if (document.createElementNS === undefined) return; 
   // In FF title will not accept innerHTML.
   var testEl = document.createElementNS(svgNamespace, 'title');
   testEl.innerHTML = "<div></div>";
   return testEl.childNodes.length === 0 || testEl.childNodes[0].nodeType !== 1;
-})();
+})(doc);
 
 // Internet Explorer prior to 9 does not allow setting innerHTML if the first element
 // is a "zero-scope" element. This problem can be worked around by making
 // the first node an invisible text node. We, like Modernizr, use &shy;
-var needsShy = document && (function() {
+var needsShy = doc && (function(document) {
   var testEl = document.createElement('div');
   testEl.innerHTML = "<div></div>";
   testEl.firstChild.innerHTML = "<script><\/script>";
   return testEl.firstChild.innerHTML === '';
-})();
+})(doc);
 
 // IE 8 (and likely earlier) likes to move whitespace preceeding
 // a script tag to appear after it. This means that we can
 // accidentally remove whitespace when updating a morph.
-var movesWhitespace = document && (function() {
+var movesWhitespace = doc && (function(document) {
   var testEl = document.createElement('div');
   testEl.innerHTML = "Test: <script type='text/x-placeholder'><\/script>Value";
   return testEl.childNodes[0].nodeValue === 'Test:' &&
           testEl.childNodes[2].nodeValue === ' Value';
-})();
+})(doc);
 
 // IE8 create a selected attribute where they should only
 // create a property
-var createsSelectedAttribute = document && (function() {
+var createsSelectedAttribute = doc && (function(document) {
   var testEl = document.createElement('div');
   testEl.innerHTML = "<select><option></option></select>";
   return testEl.childNodes[0].childNodes[0].getAttribute('selected') === 'selected';
-})();
+})(doc);
 
 var detectAutoSelectedOption;
 if (createsSelectedAttribute) {
@@ -57,12 +60,8 @@ if (createsSelectedAttribute) {
   };
 }
 
-var tagNamesRequiringInnerHTMLFix;
-(function(_doc){
-  if (!_doc) {
-    return;
-  }
-
+var tagNamesRequiringInnerHTMLFix = doc && (function(document) {
+  var tagNamesRequiringInnerHTMLFix;
   // IE 9 and earlier don't allow us to set innerHTML on col, colgroup, frameset,
   // html, style, table, tbody, tfoot, thead, title, tr. Detect this and add
   // them to an initial list of corrected tags.
@@ -70,7 +69,7 @@ var tagNamesRequiringInnerHTMLFix;
   // Here we are only dealing with the ones which can have child nodes.
   //
   var tableNeedsInnerHTMLFix;
-  var tableInnerHTMLTestElement = _doc.createElement('table');
+  var tableInnerHTMLTestElement = document.createElement('table');
   try {
     tableInnerHTMLTestElement.innerHTML = '<tbody></tbody>';
   } catch (e) {
@@ -91,13 +90,14 @@ var tagNamesRequiringInnerHTMLFix;
   // IE 8 doesn't allow setting innerHTML on a select tag. Detect this and
   // add it to the list of corrected tags.
   //
-  var selectInnerHTMLTestElement = _doc.createElement('select');
+  var selectInnerHTMLTestElement = document.createElement('select');
   selectInnerHTMLTestElement.innerHTML = '<option></option>';
   if (!selectInnerHTMLTestElement.childNodes[0]) {
     tagNamesRequiringInnerHTMLFix = tagNamesRequiringInnerHTMLFix || {};
     tagNamesRequiringInnerHTMLFix.select = [];
   }
-})(document);
+  return tagNamesRequiringInnerHTMLFix;
+})(doc);
 
 function scriptSafeInnerHTML(element, html) {
   // without a leading text node, IE will drop a leading script tag.
