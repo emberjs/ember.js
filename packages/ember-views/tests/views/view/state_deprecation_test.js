@@ -33,8 +33,10 @@ if (hasPropertyAccessors) {
 }
 
 test("no deprecation is printed if view.state or view._state is not looked up", function() {
-  expect(1);
+  expect(2);
   expectNoDeprecation();
 
-  EmberView.create();
+  var view = EmberView.create();
+
+  ok(view, 'view was created');
 });
