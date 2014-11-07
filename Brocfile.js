@@ -733,7 +733,7 @@ if (env !== 'development') {
 // merge distTrees and sub out version placeholders for distribution
 distTrees = mergeTrees(distTrees);
 
-if (enableDocs && process.argv[2] === "serve") {
+if (enableDocs && ["serve", "s"].indexOf(process.argv[2]) !== -1 ) {
   distTrees = yuidocPlugin.addDocsToTree(distTrees);
 }
 
