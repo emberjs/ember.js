@@ -75,10 +75,10 @@ function generateEachPackageTests() {
     if (packages[packageName].skipTests) { return; }
 
     testFunctions.push(function() {
-      return run('package=' + packageName + '&raiseonunhandleddeprecation=true');
+      return run('package=' + packageName);
     });
     testFunctions.push(function() {
-      return run('package=' + packageName + '&enableoptionalfeatures=true&raiseonunhandleddeprecation=true');
+      return run('package=' + packageName + '&enableoptionalfeatures=true');
     });
   });
 }
