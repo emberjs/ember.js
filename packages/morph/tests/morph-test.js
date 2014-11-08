@@ -397,7 +397,9 @@ function iterateCombinations(parents, starts, ends, contents, callback) {
       for (var k=0; k<ends.length; k++) {
         for (var l=0; l<contents.length; l++) {
           var factory = buildFactory(parents[i], starts[j], ends[k], contents[l]);
-          if (factory.create() === null) continue; // unsupported combo
+          if (factory.create() === null) {
+            continue; // unsupported combo
+          }
           callback(factory);
         }
       }

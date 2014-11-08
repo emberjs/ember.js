@@ -105,8 +105,12 @@ function astEqual(actual, expected, message) {
   // (e.g. line/column information about the compiled template)
   // that we don't want to have to write into our test cases.
 
-  if (typeof actual === 'string') actual = preprocess(actual);
-  if (typeof expected === 'string') expected = preprocess(expected);
+  if (typeof actual === 'string') {
+    actual = preprocess(actual);
+  }
+  if (typeof expected === 'string') {
+    expected = preprocess(expected);
+  }
 
   removeLocInfo(actual);
   removeLocInfo(expected);

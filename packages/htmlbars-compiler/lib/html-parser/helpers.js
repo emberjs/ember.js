@@ -26,7 +26,9 @@ export function buildHashFromAttributes(attributes) {
 export function postprocessProgram(program) {
   var statements = program.statements;
 
-  if (statements.length === 0) return;
+  if (statements.length === 0) {
+    return;
+  }
 
   if (usesMorph(statements[0])) {
     statements.unshift(new TextNode(''));
@@ -41,7 +43,9 @@ export function postprocessProgram(program) {
   for (var i = 0; i < l; i++) {
     var statement = statements[i];
 
-    if (statement.type !== 'text') continue;
+    if (statement.type !== 'text') {
+      continue;
+    }
 
     if ((i > 0 && statements[i-1].strip && statements[i-1].strip.right) ||
       (i === 0 && program.strip.left)) {

@@ -59,8 +59,12 @@ export function TextNode(chars) {
 }
 
 export function childrenFor(node) {
-  if (node.type === 'program') return node.statements;
-  if (node.type === 'element') return node.children;
+  if (node.type === 'program') {
+    return node.statements;
+  }
+  if (node.type === 'element') {
+    return node.children;
+  }
 }
 
 export function usesMorph(node) {

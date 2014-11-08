@@ -8,9 +8,16 @@
     "deepEqual": true,
     "ok": true
   },
-  "esnext": true,
-  "boss": true,
-  "debug": true,
+  "camelcase": true,
+  "curly": true,
+  "eqeqeq": true,
+  "freeze": true,
+  "immed": true,
+  "indent": 2,
+  "latedef": "nofunc",
+  "newcap": true,
+  "noarg": true,
   "undef": true,
-  "unused": true
+  "unused": true,
+  "esnext": true
 }
