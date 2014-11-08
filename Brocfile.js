@@ -252,6 +252,45 @@ testConfig = replace(testConfig, {
   ]
 });
 
+var s3TestRunner = pickFiles(testConfig, {
+  srcDir: '/tests',
+  destDir: '/ember-tests',
+  files: ['index.html']
+});
+
+s3TestRunner = replace(s3TestRunner, {
+  files: ['ember-tests/index.html'],
+  patterns: [
+    { match: new RegExp('../ember', 'g'), replacement: './ember' },
+    { match: new RegExp('../qunit/qunit.css', 'g'), replacement: 'http://code.jquery.com/qunit/qunit-1.15.0.css' },
+    { match: new RegExp('../qunit/qunit.js', 'g'), replacement: 'http://code.jquery.com/qunit/qunit-1.15.0.js' },
+    { match: new RegExp('../handlebars/handlebars.js', 'g'), replacement: 'http://builds.handlebarsjs.com.s3.amazonaws.com/handlebars-v2.0.0.js' },
+    { match: new RegExp('../jquery/jquery.js', 'g'), replacement: 'http://code.jquery.com/jquery-1.11.1.js'}
+  ]
+});
+
+testConfig = replace(testConfig, {
+  files: [ 'tests/index.html' ],
+  patterns: [
+    { match: /\{\{DEV_FEATURES\}\}/g,
+      replacement: function() {
+        var features = defeatureifyConfig().enabled;
+
+        return JSON.stringify(features);
+      }
+    },
+    { match: /\{\{PROD_FEATURES\}\}/g,
+      replacement: function() {
+        var features = defeatureifyConfig({
+          environment: 'production'
+        }).enabled;
+
+        return JSON.stringify(features);
+      }
+    },
+  ]
+});
+
 // List of bower component trees that require no special handling.  These will
 // be included in the distTrees for use within testsConfig/index.html
 var bowerFiles = [
@@ -730,6 +769,7 @@ var distTrees = [templateCompilerTree, compiledSource, compiledTests, testingCom
 // This ensures development build speed is not affected by unnecessary
 // minification and defeaturification
 if (env !== 'development') {
+  distTrees.push(s3TestRunner);
   distTrees.push(prodCompiledSource);
   distTrees.push(prodCompiledTests);
 
