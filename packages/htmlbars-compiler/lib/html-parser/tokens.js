@@ -34,7 +34,9 @@ StartTag.prototype.finalize = function() {
 StartTag.prototype.finalizeAttributeValue = function() {
   var attr = this.currentAttribute;
 
-  if (!attr) return;
+  if (!attr) {
+    return;
+  }
 
   if (attr.value.length === 1) {
     // Unwrap a single TextNode or MustacheNode

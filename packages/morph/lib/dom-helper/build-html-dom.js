@@ -7,7 +7,9 @@ var doc = typeof document === 'undefined' ? false : document;
 // Safari does not like using innerHTML on SVG HTML integration
 // points (desc/title/foreignObject).
 var needsIntegrationPointFix = doc && (function(document) {
-  if (document.createElementNS === undefined) return; 
+  if (document.createElementNS === undefined) {
+    return;
+  }
   // In FF title will not accept innerHTML.
   var testEl = document.createElementNS(svgNamespace, 'title');
   testEl.innerHTML = "<div></div>";
@@ -208,7 +210,8 @@ if (tagNamesRequiringInnerHTMLFix || movesWhitespace) {
     // mutated as we add test nodes.
     var i, j, node, nodeScriptNodes;
     var scriptNodes = [];
-    for (i=0;node=nodes[i];i++) {
+    for (i=0;i<nodes.length;i++) {
+      node=nodes[i];
       if (node.nodeType !== 1) {
         continue;
       }
@@ -224,7 +227,8 @@ if (tagNamesRequiringInnerHTMLFix || movesWhitespace) {
 
     // Walk the script tags and put back their leading text nodes.
     var scriptNode, textNode, spaceBefore, spaceAfter;
-    for (i=0;scriptNode=scriptNodes[i];i++) {
+    for (i=0;i<scriptNodes.length;i++) {
+      scriptNode = scriptNodes[i];
       spaceBefore = spacesBefore[i];
       if (spaceBefore && spaceBefore.length > 0) {
         textNode = dom.document.createTextNode(spaceBefore);

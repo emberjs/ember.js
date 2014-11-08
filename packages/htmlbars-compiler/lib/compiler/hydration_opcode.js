@@ -125,7 +125,9 @@ HydrationOpcodeCompiler.prototype.opcode = function(type) {
 };
 
 HydrationOpcodeCompiler.prototype.attribute = function(attr) {
-  if (attr.value.type === 'text') return;
+  if (attr.value.type === 'text') {
+    return;
+  }
 
   // We treat attribute like a attribute helper evaluated by the element hook.
   // <p {{attribute 'class' 'foo ' (bar)}}></p>

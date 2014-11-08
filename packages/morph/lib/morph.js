@@ -73,7 +73,9 @@ Morph.prototype.update = function (nodeOrString) {
 
 Morph.prototype.updateNode = function (node) {
   var parent = this.element || this.parent();
-  if (!node) return this._updateText(parent, '');
+  if (!node) {
+    return this._updateText(parent, '');
+  }
   this._updateNode(parent, node);
 };
 
@@ -83,7 +85,9 @@ Morph.prototype.updateText = function (text) {
 
 Morph.prototype.updateHTML = function (html) {
   var parent = this.element || this.parent();
-  if (!html) return this._updateText(parent, '');
+  if (!html) {
+    return this._updateText(parent, '');
+  }
   this._updateHTML(parent, html);
 };
 
@@ -157,13 +161,17 @@ Morph.prototype._updateHTML = function (parent, html) {
 };
 
 Morph.prototype.append = function (node) {
-  if (this.morphs === null) this.morphs = [];
+  if (this.morphs === null) {
+    this.morphs = [];
+  }
   var index = this.morphs.length;
   return this.insert(index, node);
 };
 
 Morph.prototype.insert = function (index, node) {
-  if (this.morphs === null) this.morphs = [];
+  if (this.morphs === null) {
+    this.morphs = [];
+  }
   var parent = this.element || this.parent();
   var morphs = this.morphs;
   var before = index > 0 ? morphs[index-1] : null;
@@ -192,7 +200,9 @@ Morph.prototype.insert = function (index, node) {
 };
 
 Morph.prototype.replace = function (index, removedLength, addedNodes) {
-  if (this.morphs === null) this.morphs = [];
+  if (this.morphs === null) {
+    this.morphs = [];
+  }
   var parent = this.element || this.parent();
   var morphs = this.morphs;
   var before = index > 0 ? morphs[index-1] : null;
