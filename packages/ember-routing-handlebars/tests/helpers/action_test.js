@@ -148,7 +148,7 @@ test("Inside a yield, the target points at the original target", function() {
   equal(watted, true, "The action was called on the right context");
 });
 
-test("should target the current controller inside an {{each}} loop", function() {
+test("should target the current controller inside an {{each}} loop [DEPRECATED]", function() {
   var registeredTarget;
 
   ActionHelper.registerAction = function(actionName, options) {
@@ -173,7 +173,9 @@ test("should target the current controller inside an {{each}} loop", function() 
     template: EmberHandlebars.compile('{{#each controller}}{{action "editTodo"}}{{/each}}')
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(registeredTarget, itemController, "the item controller is the target of action");
 
@@ -209,7 +211,7 @@ test("should target the with-controller inside an {{#with controller='person'}}"
   ActionHelper.registerAction = originalRegisterAction;
 });
 
-test("should target the with-controller inside an {{each}} in a {{#with controller='person'}}", function() {
+test("should target the with-controller inside an {{each}} in a {{#with controller='person'}} [DEPRECATED]", function() {
   var eventsCalled = [];
 
   var PeopleController = EmberArrayController.extend({
@@ -236,7 +238,9 @@ test("should target the with-controller inside an {{each}} in a {{#with controll
 
   container.register('controller:people', PeopleController);
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   view.$('a').trigger('click');
 
@@ -467,7 +471,7 @@ test("should work properly in an #each block", function() {
   view = EmberView.create({
     controller: controller,
     items: Ember.A([1, 2, 3, 4]),
-    template: EmberHandlebars.compile('{{#each view.items}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
+    template: EmberHandlebars.compile('{{#each item in view.items}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
   });
 
   appendView();
@@ -527,7 +531,7 @@ test("should unregister event handlers on inside virtual views", function() {
     }
   ]);
   view = EmberView.create({
-    template: EmberHandlebars.compile('{{#each view.things}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
+    template: EmberHandlebars.compile('{{#each thing in view.things}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
     things: things
   });
 
@@ -964,8 +968,8 @@ test("a quoteless parameter should allow dynamic lookup of the actionName", func
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-test("a quoteless parameter should lookup actionName in context", function(){
-  expect(4);
+test("a quoteless parameter should lookup actionName in context [DEPRECATED]", function(){
+  expect(5);
   var lastAction;
   var actionOrder = [];
 
@@ -993,10 +997,12 @@ test("a quoteless parameter should lookup actionName in context", function(){
     }
   }).create();
 
-  run(function() {
-    view.set('controller', controller);
-    view.appendTo('#qunit-fixture');
-  });
+  expectDeprecation(function() {
+    run(function() {
+      view.set('controller', controller);
+      view.appendTo('#qunit-fixture');
+    });
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   var testBoundAction = function(propertyValue){
     run(function(){

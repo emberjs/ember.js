@@ -391,7 +391,7 @@ test("should work inside a bound {{#if}}", function() {
   equal(view.$('ul li').length, 3, "collection renders when conditional changes to true");
 });
 
-test("should pass content as context when using {{#each}} helper", function() {
+test("should pass content as context when using {{#each}} helper [DEPRECATED]", function() {
   view = EmberView.create({
     template: EmberHandlebars.compile('{{#each view.releases}}Mac OS X {{version}}: {{name}} {{/each}}'),
 
@@ -405,7 +405,9 @@ test("should pass content as context when using {{#each}} helper", function() {
               ])
   });
 
-  run(function() { view.appendTo('#qunit-fixture'); });
+  expectDeprecation(function() {
+    run(view, 'appendTo', '#qunit-fixture');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), "Mac OS X 10.7: Lion Mac OS X 10.6: Snow Leopard Mac OS X 10.5: Leopard ", "prints each item in sequence");
 });

@@ -44,14 +44,16 @@ QUnit.module("Handlebars bound helpers", {
   }
 });
 
-test("primitives should work correctly", function() {
+test("primitives should work correctly [DEPRECATED]", function() {
   view = EmberView.create({
     prims: Ember.A(["string", 12]),
 
     template: compile('{{#each view.prims}}{{#if this}}inside-if{{/if}}{{#with this}}inside-with{{/with}}{{/each}}')
   });
 
-  appendView(view);
+  expectDeprecation(function() {
+    appendView(view);
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), 'inside-ifinside-withinside-ifinside-with');
 });
@@ -387,7 +389,7 @@ test("shouldn't treat quoted strings as bound paths", function() {
   equal(helperCount, 5, "changing controller property with same name as quoted string doesn't re-render helper");
 });
 
-test("bound helpers can handle nulls in array (with primitives)", function() {
+test("bound helpers can handle nulls in array (with primitives) [DEPRECATED]", function() {
   EmberHandlebars.helper('reverse', function(val) {
     return val ? val.split('').reverse().join('') : "NOPE";
   });
@@ -399,7 +401,9 @@ test("bound helpers can handle nulls in array (with primitives)", function() {
     template: compile("{{#each things}}{{this}}|{{reverse this}} {{/each}}{{#each thing in things}}{{thing}}|{{reverse thing}} {{/each}}")
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), '|NOPE 0|NOPE |NOPE false|NOPE OMG|GMO |NOPE 0|NOPE |NOPE false|NOPE OMG|GMO ', "helper output is correct");
 
@@ -423,7 +427,9 @@ test("bound helpers can handle nulls in array (with objects)", function() {
     template: compile("{{#each things}}{{foo}}|{{print-foo this}} {{/each}}{{#each thing in things}}{{thing.foo}}|{{print-foo thing}} {{/each}}")
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), '|NOPE 5|5 |NOPE 5|5 ', "helper output is correct");
 
@@ -439,20 +445,24 @@ test("bound helpers can handle `this` keyword when it's a non-object", function(
   });
 
   view = EmberView.create({
-    controller: EmberObject.create({
-      things: A(['alex'])
-    }),
-    template: compile("{{#each things}}{{shout this}}{{/each}}")
+    context: 'alex',
+    template: compile("{{shout this}}")
   });
 
   appendView();
 
   equal(view.$().text(), 'alex!', "helper output is correct");
 
-  run(view.controller.things, 'shiftObject');
-  equal(view.$().text(), '', "helper output is correct");
+  run(function() {
+    set(view, 'context', '');
+  });
 
-  run(view.controller.things, 'pushObject', 'wallace');
+  equal(view.$().text(), '!', "helper output is correct");
+
+  run(function() {
+    set(view, 'context', 'wallace');
+  });
+
   equal(view.$().text(), 'wallace!', "helper output is correct");
 });
 
