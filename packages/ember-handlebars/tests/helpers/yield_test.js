@@ -68,7 +68,7 @@ test("block should work properly even when templates are not hard-coded", functi
 
 test("templates should yield to block, when the yield is embedded in a hierarchy of virtual views", function() {
   var TimesView = EmberView.extend({
-    layout: EmberHandlebars.compile('<div class="times">{{#each view.index}}{{yield}}{{/each}}</div>'),
+    layout: EmberHandlebars.compile('<div class="times">{{#each item in view.index}}{{yield}}{{/each}}</div>'),
     n: null,
     index: computed(function() {
       var n = get(this, 'n');
