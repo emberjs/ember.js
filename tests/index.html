@@ -56,8 +56,7 @@
         // Don't worry about jQuery version
         ENV['FORCE_JQUERY'] = true;
 
-        // Don't worry about jQuery version
-        ENV['RAISE_ON_DEPRECATION'] = !!QUnit.urlParams.raiseonunhandleddeprecation;
+        ENV['RAISE_ON_DEPRECATION'] = true;
       })();
     </script>
 
@@ -119,8 +118,6 @@
         QUnit.config.urlConfig.push({ id: 'enableoptionalfeatures', label: "Enable Opt Features"});
         // Handle extending prototypes
         QUnit.config.urlConfig.push({ id: 'extendprototypes', label: 'Extend Prototypes'});
-        // Raise on unhandled deprecation
-        QUnit.config.urlConfig.push({ id: 'raiseonunhandleddeprecation', label: 'Raise on Deprecation'});
         // Handle JSHint
         QUnit.config.urlConfig.push('nojshint');
       })();
