@@ -1,4 +1,4 @@
-import { array, hash, string } from "./quoting";
+import { array, hash } from "./quoting";
 
 export function prepareHelper(stack, size) {
   var args = [],

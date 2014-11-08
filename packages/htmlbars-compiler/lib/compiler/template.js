@@ -4,7 +4,7 @@ import { HydrationOpcodeCompiler } from './hydration_opcode';
 import { HydrationCompiler } from './hydration';
 import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
-import { string, repeat } from "./quoting";
+import { repeat } from "./quoting";
 
 export function TemplateCompiler() {
   this.fragmentOpcodeCompiler = new FragmentOpcodeCompiler();

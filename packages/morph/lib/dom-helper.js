@@ -1,3 +1,4 @@
+/* global window:false */
 import Morph from "../morph/morph";
 import {
   buildHTMLDOM,

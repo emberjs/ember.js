@@ -41,7 +41,7 @@ test('#setAttribute', function(){
 
 test('#createElement of tr with contextual table element', function(){
   var tableElement = document.createElement('table'),
-      node = dom.createElement('tr');
+      node = dom.createElement('tr', tableElement);
   equal(node.tagName, 'TR');
   equalHTML(node, '<tr></tr>');
 });

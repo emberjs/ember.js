@@ -1,5 +1,16 @@
 {
+  "predef": {
+    "document": true,
+    "QUnit": true,
+    "test": true,
+    "expect": true,
+    "equal": true,
+    "deepEqual": true,
+    "ok": true
+  },
   "esnext": true,
   "boss": true,
-  "debug": true
+  "debug": true,
+  "undef": true,
+  "unused": true
 }

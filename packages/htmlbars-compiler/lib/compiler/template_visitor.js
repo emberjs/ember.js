@@ -172,7 +172,6 @@ TemplateVisitor.prototype.attr = function(attr) {
 
 TemplateVisitor.prototype.block = function(node) {
   var frame = this.getCurrentFrame();
-  var parentNode = frame.parentNode;
 
   frame.mustacheCount++;
   frame.actions.push([node.type, [node, frame.childIndex, frame.childCount]]);

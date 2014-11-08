@@ -1,4 +1,3 @@
-import Morph from "../morph/morph";
 import { equalHTML, equalInnerHTML } from "../test/support/assertions";
 import SafeString from '../handlebars/safe-string';
 import DOMHelper from "../morph/dom-helper";
@@ -12,7 +11,6 @@ function morphTests(factory) {
       fragment = setup.fragment,
       morph = setup.morph,
       startHTML = setup.startHTML,
-      contentHTML = setup.contentHTML,
       endHTML = setup.endHTML,
       html;
 
@@ -37,7 +35,6 @@ function morphTests(factory) {
       fragment = setup.fragment,
       morph = setup.morph,
       startHTML = setup.startHTML,
-      contentHTML = setup.contentHTML,
       endHTML = setup.endHTML,
       html;
 
@@ -62,7 +59,6 @@ function morphTests(factory) {
       fragment = setup.fragment,
       morph = setup.morph,
       startHTML = setup.startHTML,
-      contentHTML = setup.contentHTML,
       endHTML = setup.endHTML,
       html;
 
@@ -285,10 +281,6 @@ function element(tag, text) {
   return el;
 }
 
-function textNode(text) {
-  return document.createTextNode(text);
-}
-
 var parents = [
   {
     name: 'with parent as an element',
@@ -322,7 +314,7 @@ var starts = [
   },
   {
     name: 'with no sibling before',
-    create: function (parent) {
+    create: function () {
       return -1;
     },
     HTML: ''
@@ -341,7 +333,7 @@ var ends = [
   },
   {
     name: 'and no sibling after',
-    create: function (parent) {
+    create: function () {
       return -1;
     },
     HTML: ''
@@ -351,7 +343,7 @@ var ends = [
 var contents = [
   {
     name: 'with an empty Morph',
-    create: function (parent) { },
+    create: function () { },
     HTML: ''
   },
   {
@@ -380,7 +372,6 @@ function iterateCombinations(parents, starts, ends, contents, callback) {
         var fragment = document.createDocumentFragment(),
         parent = parentFactory.create(fragment),
         startIndex = startFactory.create(parent),
-        content = contentFactory.create(parent),
         endIndex = endFactory.create(parent);
 
         // this is prevented in the parser by generating

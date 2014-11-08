@@ -1,6 +1,6 @@
 import { processOpcodes } from "./utils";
 import { prepareHelper } from "./helpers";
-import { string, quotedArray, hash, array } from "./quoting";
+import { string, hash, array } from "./quoting";
 
 function HydrationCompiler() {
   this.stack = [];

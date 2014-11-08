@@ -46,7 +46,7 @@ export function element(domElement, helperName, context, params, options, env) {
   }
 }
 
-export function attribute(params, options, env) {
+export function attribute(params, options /*, env*/) {
   var attrName = params[0];
   var attrValue = params[1];
 
@@ -57,7 +57,7 @@ export function attribute(params, options, env) {
   }
 }
 
-export function concat(params, options, env) {
+export function concat(params, options /*, env*/) {
   var context = options.context;
   var value = "";
   for (var i = 0, l = params.length; i < l; i++) {
@@ -83,7 +83,7 @@ export function subexpr(helperName, context, params, options, env) {
   }
 }
 
-export function lookupHelper(helperName, context, options) {
+export function lookupHelper(helperName /*, context, options*/) {
   if (helperName === 'attribute') {
     return this.attribute;
   }
@@ -95,7 +95,7 @@ export function lookupHelper(helperName, context, options) {
   }
 }
 
-export function simple(context, name, options) {
+export function simple(context, name /*, options*/) {
   return context[name];
 }
 

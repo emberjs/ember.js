@@ -8,17 +8,6 @@ import { normalizeInnerHTML } from "../test/support/assertions";
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace   = "http://www.w3.org/2000/svg";
 
-function frag(element, string) {
-  if (element instanceof DocumentFragment) {
-    element = document.createElement('div');
-  }
-
-  var range = document.createRange();
-  range.setStart(element, 0);
-  range.collapse(false);
-  return range.createContextualFragment(string);
-}
-
 var hooks, helpers, partials, env;
 
 function registerHelper(name, callback) {
@@ -29,7 +18,7 @@ function registerPartial(name, html) {
   partials[name] = compile(html);
 }
 
-function lookupHelper(helperName, context, options) {
+function lookupHelper(helperName) {
   if (helperName === 'attribute') {
     return this.attribute;
   } else if (helperName === 'concat') {
@@ -299,7 +288,7 @@ test("The compiler can handle simple helpers", function() {
 });
 
 test("The compiler can handle sexpr helpers", function() {
-  registerHelper('testing', function(params, options) {
+  registerHelper('testing', function(params) {
     return params[0] + "!";
   });
 
@@ -355,7 +344,7 @@ test("The compiler passes along the types of the hash arguments", function() {
 });
 
 test("It is possible to override the resolution mechanism", function() {
-  hooks.simple = function(context, name, options) {
+  hooks.simple = function(context, name) {
     if (name === 'zomg') {
       return context.zomg;
     } else {
@@ -371,7 +360,7 @@ test("It is possible to override the resolution mechanism", function() {
 test("Simple data binding using text nodes", function() {
   var callback;
 
-  hooks.content = function(morph, path, context, params, options) {
+  hooks.content = function(morph, path, context) {
     callback = function() {
       morph.update(context[path]);
     };
@@ -395,7 +384,7 @@ test("Simple data binding using text nodes", function() {
 test("Simple data binding on fragments", function() {
   var callback;
 
-  hooks.content = function(morph, path, context, params, options) {
+  hooks.content = function(morph, path, context) {
     morph.escaped = false;
     callback = function() {
       morph.update(context[path]);
@@ -474,33 +463,6 @@ test("Mountain range of nesting", function() {
 // test("Attributes can use computed paths", function() {
 //   compilesTo('<a href="{{post.url}}">linky</a>', '<a href="linky.html">linky</a>', { post: { url: 'linky.html' }});
 // });
-
-function streamValue(value) {
-  return {
-    subscribe: function(callback) {
-      callback(value);
-      return { connect: function() {} };
-    }
-  };
-}
-
-function boundValue(valueGetter, binding) {
-  var subscription;
-
-  var stream = {
-    subscribe: function(next) {
-      subscription = next;
-      callback();
-      return { connect: function() {} };
-    }
-  };
-
-  return stream;
-
-  function callback() {
-    subscription(valueGetter.call(binding, callback));
-  }
-}
 
 test("It is possible to override the resolution mechanism for attributes", function() {
   hooks.attribute = function(params, options) {
@@ -594,7 +556,7 @@ test("Attributes containing multiple helpers are treated like a block", function
 test("Attributes containing a helper are treated like a block", function() {
   expect(2);
 
-  registerHelper('testing', function(params, options) {
+  registerHelper('testing', function(params) {
     deepEqual(params, [123]);
     return "example.com";
   });
@@ -797,7 +759,7 @@ test("Node helpers can modify the node", function() {
 });
 
 test("Node helpers can modify the node after one node appended by top-level helper", function() {
-  registerHelper('top-helper', function(params, options) {
+  registerHelper('top-helper', function() {
     return document.createElement('span');
   });
   registerHelper('attr-helper', function(params, options) {
@@ -808,7 +770,7 @@ test("Node helpers can modify the node after one node appended by top-level help
 });
 
 test("Node helpers can modify the node after one node prepended by top-level helper", function() {
-  registerHelper('top-helper', function(params, options) {
+  registerHelper('top-helper', function() {
     return document.createElement('span');
   });
   registerHelper('attr-helper', function(params, options) {
@@ -819,7 +781,7 @@ test("Node helpers can modify the node after one node prepended by top-level hel
 });
 
 test("Node helpers can modify the node after many nodes returned from top-level helper", function() {
-  registerHelper('top-helper', function(params, options) {
+  registerHelper('top-helper', function() {
     var frag = document.createDocumentFragment();
     frag.appendChild(document.createElement('span'));
     frag.appendChild(document.createElement('span'));
