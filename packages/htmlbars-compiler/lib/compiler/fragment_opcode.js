@@ -40,7 +40,7 @@ FragmentOpcodeCompiler.prototype.startProgram = function(program) {
   }
 };
 
-FragmentOpcodeCompiler.prototype.endProgram = function(program) {
+FragmentOpcodeCompiler.prototype.endProgram = function(/* program */) {
   this.opcode('returnNode');
 };
 

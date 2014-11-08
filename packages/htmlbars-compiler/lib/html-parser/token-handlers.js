@@ -66,7 +66,7 @@ var tokenHandlers = {
     }
   },
 
-  block: function(block) {
+  block: function(/*block*/) {
     if (this.tokenizer.state !== 'data') {
       throw new Error("A block may only be used inside an HTML element or another block.");
     }

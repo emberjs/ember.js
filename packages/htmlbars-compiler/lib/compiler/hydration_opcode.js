@@ -46,11 +46,11 @@ HydrationOpcodeCompiler.prototype.startProgram = function(p, c, blankChildTextNo
   }
 };
 
-HydrationOpcodeCompiler.prototype.endProgram = function(program) {
+HydrationOpcodeCompiler.prototype.endProgram = function(/* program */) {
   distributeMorphs(this.morphs, this.opcodes);
 };
 
-HydrationOpcodeCompiler.prototype.text = function(string, pos, len) {
+HydrationOpcodeCompiler.prototype.text = function(/* string, pos, len */) {
   ++this.currentDOMChildIndex;
 };
 

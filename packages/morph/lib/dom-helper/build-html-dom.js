@@ -1,3 +1,4 @@
+/* global XMLSerializer:false */
 export var svgHTMLIntegrationPoints = {foreignObject: 1, desc: 1, title: 1};
 export var svgNamespace = 'http://www.w3.org/2000/svg';
 
