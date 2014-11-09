@@ -14,8 +14,12 @@ function consoleMethod(name) {
   var method = typeof consoleObj === 'object' ? consoleObj[name] : null;
 
   if (method) {
-    // Older IE doesn't support apply, but Chrome needs it
-    if (typeof method.apply === 'function') {
+    // Older IE doesn't support bind, but Chrome needs it
+    if (typeof method.bind === 'function') {
+      logToConsole = method.bind(consoleObj);
+      logToConsole.displayName = 'console.' + name;
+      return logToConsole;
+    } else if (typeof method.apply === 'function') {
       logToConsole = function() {
         method.apply(consoleObj, arguments);
       };
