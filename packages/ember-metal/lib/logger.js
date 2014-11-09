@@ -19,6 +19,12 @@ function consoleMethod(name) {
       logToConsole = method.bind(consoleObj);
       logToConsole.displayName = 'console.' + name;
       return logToConsole;
+    } else if (typeof method.apply === 'function') {
+      logToConsole = function() {
+        method.apply(consoleObj, arguments);
+      };
+      logToConsole.displayName = 'console.' + name;
+      return logToConsole;
     } else {
       return function() {
         var message = Array.prototype.join.call(arguments, ', ');
