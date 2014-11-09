@@ -43,16 +43,6 @@ import { bind } from "ember-handlebars/helpers/binding";
   changes, the partial will be re-rendered using the new template
   name.
 
-  ## Setting the partial's context with `with`
-
-  The `partial` helper can be used in conjunction with the `with`
-  helper to set a context that will be used by the partial:
-
-  ```handlebars
-  {{#with currentUser}}
-    {{partial "user_info"}}
-  {{/with}}
-  ```
 
   @method partial
   @for Ember.Handlebars.helpers

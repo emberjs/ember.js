@@ -220,7 +220,7 @@ test("it should support #with this as qux", function() {
 
 QUnit.module("Handlebars {{#with foo}} insideGroup");
 
-test("it should render without fail", function() {
+test("it should render without fail [DEPRECATED]", function() {
   var View = EmberView.extend({
     template: EmberHandlebars.compile("{{#view view.childView}}{{#with person}}{{name}}{{/with}}{{/view}}"),
     controller: EmberObject.create({ person: { name: "Ivan IV Vasilyevich" } }),
@@ -233,7 +233,11 @@ test("it should render without fail", function() {
   });
 
   var view = View.create();
-  appendView(view);
+
+  expectDeprecation(function(){
+    appendView(view);
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+
   equal(view.$().text(), "Ivan IV Vasilyevich", "should be properly scoped");
 
   run(function() {
@@ -249,7 +253,7 @@ test("it should render without fail", function() {
 
 QUnit.module("Handlebars {{#with foo}} with defined controller");
 
-test("it should wrap context with object controller", function() {
+test("it should wrap context with object controller [DEPRECATED]", function() {
   var Controller = ObjectController.extend({
     controllerName: computed(function() {
       return "controller:"+this.get('model.name') + ' and ' + this.get('parentController.name');
@@ -273,7 +277,9 @@ test("it should wrap context with object controller", function() {
 
   container.register('controller:person', Controller);
 
-  appendView(view);
+  expectDeprecation(function(){
+    appendView(view);
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
 
@@ -302,7 +308,7 @@ test("it should wrap context with object controller", function() {
   run(function() { view.destroy(); }); // destroy existing view
 });
 
-test("it should still have access to original parentController within an {{#each}}", function() {
+test("it should still have access to original parentController within an {{#each}} [DEPRECATED]", function() {
   var Controller = ObjectController.extend({
     controllerName: computed(function() {
       return "controller:"+this.get('model.name') + ' and ' + this.get('parentController.name');
@@ -326,7 +332,9 @@ test("it should still have access to original parentController within an {{#each
 
   container.register('controller:person', Controller);
 
-  appendView(view);
+  expectDeprecation(function() {
+    appendView(view);
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), "controller:Steve Holt and Bob Loblawcontroller:Carl Weathers and Bob Loblaw");
 
@@ -384,7 +392,7 @@ test("it should wrap keyword with object controller", function() {
   run(function() { view.destroy(); }); // destroy existing view
 });
 
-test("destroys the controller generated with {{with foo controller='blah'}}", function() {
+test("destroys the controller generated with {{with foo as bar controller='blah'}}", function() {
   var destroyed = false;
   var Controller = ObjectController.extend({
     willDestroy: function() {
@@ -404,7 +412,7 @@ test("destroys the controller generated with {{with foo controller='blah'}}", fu
 
   view = EmberView.create({
     container: container,
-    template: EmberHandlebars.compile('{{#with person controller="person"}}{{controllerName}}{{/with}}'),
+    template: EmberHandlebars.compile('{{#with person as otherPerson controller="person"}}{{controllerName}}{{/with}}'),
     controller: parentController
   });
 

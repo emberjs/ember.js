@@ -21,14 +21,16 @@ QUnit.module("Handlebars {{#if}} and {{#unless}} helpers", {
   }
 });
 
-test("unless should keep the current context (#784)", function() {
+test("unless should keep the current context (#784) [DEPRECATED]", function() {
   view = EmberView.create({
     o: EmberObject.create({foo: '42'}),
 
     template: compile('{{#with view.o}}{{#view}}{{#unless view.doesNotExist}}foo: {{foo}}{{/unless}}{{/view}}{{/with}}')
   });
 
-  appendView(view);
+  expectDeprecation(function() {
+    appendView(view);
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), 'foo: 42');
 });
