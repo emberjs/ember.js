@@ -310,7 +310,7 @@ test("view should support disconnectOutlet for the main outlet", function() {
   equal(trim(view.$().text()), 'HI');
 });
 
-test("Outlets bind to the current template's view, not inner contexts", function() {
+test("Outlets bind to the current template's view, not inner contexts [DEPRECATED]", function() {
   var parentTemplate = "<h1>HI</h1>{{#if view.alwaysTrue}}{{#with this}}{{outlet}}{{/with}}{{/if}}";
   var bottomTemplate = "<h3>BOTTOM</h3>";
 
@@ -323,7 +323,9 @@ test("Outlets bind to the current template's view, not inner contexts", function
     template: compile(bottomTemplate)
   });
 
-  appendView(view);
+  expectDeprecation(function() {
+    appendView(view);
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   run(function() {
     view.connectOutlet('main', bottomView);

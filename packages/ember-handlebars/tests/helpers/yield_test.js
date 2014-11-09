@@ -144,7 +144,7 @@ test("yield uses the outer context", function() {
   equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "Yield points at the right context");
 });
 
-test("yield inside a conditional uses the outer context", function() {
+test("yield inside a conditional uses the outer context [DEPRECATED]", function() {
   var component = Component.extend({
     boundText: "inner",
     truthy: true,
@@ -157,9 +157,9 @@ test("yield inside a conditional uses the outer context", function() {
     template: EmberHandlebars.compile('{{#with obj}}{{#if truthy}}{{#view component}}{{#if truthy}}{{boundText}}{{/if}}{{/view}}{{/if}}{{/with}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  expectDeprecation(function() {
+    run(view, 'appendTo', '#qunit-fixture');
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$('div p:contains(inner) + p:contains(insideWith)').length, 1, "Yield points at the right context");
 });
@@ -224,7 +224,7 @@ test("can bind a keyword to a component and use it in yield", function() {
   equal(view.$('div p:contains(update) + p:contains(update)').length, 1, "keyword has correctly propagated update");
 });
 
-test("yield uses the layout context for non component", function() {
+test("yield uses the layout context for non component [DEPRECATED]", function() {
   view = EmberView.create({
     controller: {
       boundText: "outer",
@@ -236,9 +236,9 @@ test("yield uses the layout context for non component", function() {
     template: EmberHandlebars.compile('{{boundText}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  expectDeprecation(function() {
+    run(view, 'appendTo', '#qunit-fixture');
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal('outerinner', view.$('p').text(), "Yield points at the right context");
 });
