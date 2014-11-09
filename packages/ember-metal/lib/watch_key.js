@@ -59,7 +59,8 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
 }
 
 export function unwatchKey(obj, keyName, meta) {
-  var m = meta || metaFor(obj), watching = m.watching;
+  var m = meta || metaFor(obj);
+  var watching = m.watching;
 
   if (watching[keyName] === 1) {
     watching[keyName] = 0;
