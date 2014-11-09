@@ -221,7 +221,7 @@ export default Mixin.create({
     var found = this.find(function(item) {
       return item === obj;
     });
-    
+
     return found !== undefined;
   },
 
@@ -987,7 +987,7 @@ export default Mixin.create({
     var didChange  = (opts && opts.didChange) || 'enumerableDidChange';
     var hasObservers = get(this, 'hasEnumerableObservers');
 
-    if (!hasObservers) { 
+    if (!hasObservers) {
       propertyWillChange(this, 'hasEnumerableObservers');
     }
 
@@ -1081,7 +1081,7 @@ export default Mixin.create({
       adding = null;
     }
 
-    propertyWillChange(this, '[]');
+    propertyWillChange(this, '[]', undefined, {removing: removing, adding: adding});
 
     if (hasDelta) {
       propertyWillChange(this, 'length');
@@ -1141,7 +1141,7 @@ export default Mixin.create({
       propertyDidChange(this, 'length');
     }
 
-    propertyDidChange(this, '[]');
+    propertyDidChange(this, '[]', undefined, {removing: removing, adding: adding});
 
     return this ;
   },
