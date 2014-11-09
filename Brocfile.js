@@ -86,7 +86,11 @@ function defeatureifyConfig(opts) {
 /*
   Returns a tree picked from `packages/#{packageName}/lib` and then move `main.js` to `/#{packageName}.js`.
  */
-function vendoredPackage(packageName) {
+function vendoredPackage(packageName, _options) {
+  var options = _options || {};
+
+  var libPath = options.libPath || 'packages/' + packageName + '/lib';
+  var mainFile = options.mainFile || 'main.js';
   /*
     For example:
       Given the following dir:
@@ -97,8 +101,8 @@ function vendoredPackage(packageName) {
         /metamorph
           └── main.js
    */
-  var libTree = pickFiles('packages/' + packageName + '/lib', {
-    files: ['main.js'],
+  var libTree = pickFiles(libPath, {
+    files: [ mainFile ],
     srcDir: '/',
     destDir: '/' + packageName
   });
@@ -113,7 +117,7 @@ function vendoredPackage(packageName) {
         └── metamorph.js
    */
   var sourceTree = moveFile(libTree, {
-    srcFile: packageName + '/main.js',
+    srcFile: packageName + '/' + mainFile,
     destFile: '/' + packageName + '.js'
   });
 
@@ -311,7 +315,7 @@ var bowerFiles = [
     files: ['handlebars.js'],
     srcDir: '/',
     destDir: '/handlebars'
-  }),
+  })
 ];
 
 bowerFiles = mergeTrees(bowerFiles);
@@ -337,14 +341,23 @@ var iifeStop  = writeFile('iife-stop', '})();');
       'ember-metal': {trees: null,  vendorRequirements: ['backburner']}
     ```
  */
+var handlebarsConfig = {
+  libPath: 'node_modules/handlebars/dist',
+  mainFile: 'handlebars.amd.js'
+};
+
 var vendoredPackages = {
-  'loader':           vendoredPackage('loader'),
-  'rsvp':             vendoredEs6Package('rsvp'),
-  'backburner':       vendoredEs6Package('backburner'),
-  'router':           vendoredEs6Package('router.js'),
-  'route-recognizer': vendoredEs6Package('route-recognizer'),
-  'dag-map':          vendoredEs6Package('dag-map'),
-  'morph':            htmlbarsPackage('morph')
+  'loader':                vendoredPackage('loader'),
+  'rsvp':                  vendoredEs6Package('rsvp'),
+  'backburner':            vendoredEs6Package('backburner'),
+  'router':                vendoredEs6Package('router.js'),
+  'route-recognizer':      vendoredEs6Package('route-recognizer'),
+  'dag-map':               vendoredEs6Package('dag-map'),
+  'morph':                 htmlbarsPackage('morph'),
+  'htmlbars':              htmlbarsPackage('htmlbars-runtime'),
+  'htmlbars-compiler':     htmlbarsPackage('htmlbars-compiler'),
+  'simple-html-tokenizer': vendoredEs6Package('simple-html-tokenizer'),
+  'handlebars':            vendoredPackage('handlebars', handlebarsConfig)
 };
 
 var emberHandlebarsCompiler = pickFiles('packages/ember-handlebars-compiler/lib', {
@@ -569,6 +582,7 @@ var devSourceTrees       = [];
 var prodSourceTrees      = [];
 var testingSourceTrees   = [];
 var testTrees            = [emberDevTestHelpers];
+var testHelpers          = [];
 var compiledPackageTrees = [];
 
 for (var packageName in packages) {
@@ -604,6 +618,11 @@ for (var packageName in packages) {
 compiledPackageTrees = mergeTrees(compiledPackageTrees);
 vendorTrees = mergeTrees(vendorTrees);
 devSourceTrees = mergeTrees(devSourceTrees);
+
+// Grab the HTMLBars test helpers and make them appear they are coming from
+// the ember-htmlbars package.
+testHelpers = htmlbarsTestHelpers('assertions', 'ember-htmlbars/tests/helpers');
+testTrees.push(testHelpers);
 testTrees   = mergeTrees(testTrees);
 
 
@@ -623,6 +642,19 @@ function htmlbarsPackage(packageName) {
   });
 
   return useStrictRemover(tree);
+}
+
+function htmlbarsTestHelpers(helper, rename) {
+  var tree = pickFiles('bower_components/htmlbars/test/support', {
+    files: [helper + '.js'],
+    srcDir: '/',
+    destDir: '/'
+  });
+
+  return moveFile(tree, {
+    srcFile: '/' + helper + '.js',
+    destFile: '/' + rename + '.js'
+  });
 }
 
 /*

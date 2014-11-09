@@ -54,6 +54,15 @@ import CoreView from "ember-views/views/core_view";
 
 function K() { return this; }
 
+// Circular dep
+var _htmlbarsDefaultEnv;
+function buildHTMLBarsDefaultEnv(){
+  if (!_htmlbarsDefaultEnv) {
+    _htmlbarsDefaultEnv = require('ember-htmlbars').defaultEnv;
+  }
+  return create(_htmlbarsDefaultEnv);
+}
+
 /**
 @module ember
 @submodule ember-views
@@ -791,9 +800,25 @@ var View = CoreView.extend({
     return layout || get(this, 'defaultLayout');
   }).property('layoutName'),
 
-  _yield: function(context, options) {
+  _yield: function(context, options, morph) {
     var template = get(this, 'template');
-    if (template) { template(context, options); }
+    var result;
+
+    if (template) {
+      var useHTMLBars = false;
+      if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+        useHTMLBars = template.length === 3;
+      }
+
+      if (useHTMLBars) {
+        result = template(this, options, morph.contextualElement);
+      } else {
+        result = template(context, options);
+      }
+    }
+    if (morph) {
+      morph.update(result);
+    }
   },
 
   templateForName: function(name, type) {
@@ -1067,7 +1092,19 @@ var View = CoreView.extend({
       Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
       // The template should write directly to the render buffer instead
       // of returning a string.
-      output = template(context, { data: data });
+      var options = { data: data };
+      var useHTMLBars = false;
+
+      if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+        useHTMLBars = template.length === 3;
+      }
+
+      if (useHTMLBars) {
+        var env = Ember.merge(buildHTMLBarsDefaultEnv(), options);
+        output = template(this, env, buffer.innerContextualElement());
+      } else {
+        output = template(context, options);
+      }
 
       // If the template returned a string instead of writing to the buffer,
       // push the string onto the buffer.
