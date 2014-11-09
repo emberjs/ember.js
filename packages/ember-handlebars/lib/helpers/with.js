@@ -5,58 +5,10 @@
 
 import Ember from "ember-metal/core"; // Ember.assert
 
-import { set } from "ember-metal/property_set";
-import { apply } from "ember-metal/utils";
 import { create as o_create } from "ember-metal/platform";
 import isNone from 'ember-metal/is_none';
 import { bind } from "ember-handlebars/helpers/binding";
-import { _HandlebarsBoundView } from "ember-handlebars/views/handlebars_bound_view";
-
-function exists(value) {
-  return !isNone(value);
-}
-
-var WithView = _HandlebarsBoundView.extend({
-  init: function() {
-    apply(this, this._super, arguments);
-
-    var keywordName     = this.templateHash.keywordName;
-    var controllerName  = this.templateHash.controller;
-
-    if (controllerName) {
-      var previousContext = this.previousContext;
-      var controller = this.container.lookupFactory('controller:'+controllerName).create({
-        parentController: previousContext,
-        target: previousContext
-      });
-
-      this._generatedController = controller;
-
-      if (this.preserveContext) {
-        this._keywords[keywordName] = controller;
-        this.lazyValue.subscribe(function(modelStream) {
-          set(controller, 'model', modelStream.value());
-        });
-      } else {
-        set(this, 'controller', controller);
-        this.valueNormalizerFunc = function(result) {
-          controller.set('model', result);
-          return controller;
-        };
-      }
-
-      set(controller, 'model', this.lazyValue.value());
-    }
-  },
-
-  willDestroy: function() {
-    this._super();
-
-    if (this._generatedController) {
-      this._generatedController.destroy();
-    }
-  }
-});
+import WithView from "ember-views/views/with_view";
 
 /**
   Use the `{{with}}` helper when you want to scope context. Take the following code as an example:
@@ -177,4 +129,8 @@ export default function withHelper(contextPath) {
   options.helperName = helperName;
 
   return bind.call(bindContext, contextPath, options, preserveContext, exists, undefined, undefined, WithView);
+}
+
+function exists(value) {
+  return !isNone(value);
 }
