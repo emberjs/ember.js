@@ -13,7 +13,7 @@ import Evented from "ember-runtime/mixins/evented";
 import EmberRouterDSL from "ember-routing/system/dsl";
 import EmberView from "ember-views/views/view";
 import EmberLocation from "ember-routing/location/api";
-import _MetamorphView from "ember-handlebars/views/metamorph_view";
+import _MetamorphView from "ember-views/views/metamorph_view";
 import {
   routeArgs,
   getActiveTargetName,

@@ -23,7 +23,7 @@ import {
   states as viewStates
 } from "ember-views/views/states";
 
-import _MetamorphView from "ember-handlebars/views/metamorph_view";
+import _MetamorphView from "ember-views/views/metamorph_view";
 import { uuid } from "ember-metal/utils";
 
 function SimpleHandlebarsView(lazyValue, isEscaped) {

@@ -77,11 +77,11 @@ import {
   _HandlebarsBoundView,
   SimpleHandlebarsView
 } from "ember-handlebars/views/handlebars_bound_view";
-import _MetamorphView from "ember-handlebars/views/metamorph_view";
+import _MetamorphView from "ember-views/views/metamorph_view";
 import {
   _SimpleMetamorphView,
   _Metamorph
-} from "ember-handlebars/views/metamorph_view";
+} from "ember-views/views/metamorph_view";
 
 
 /**

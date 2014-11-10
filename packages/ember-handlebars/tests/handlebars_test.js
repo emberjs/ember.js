@@ -6,7 +6,7 @@ import { forEach } from "ember-metal/enumerable_utils";
 import run from "ember-metal/run_loop";
 import Namespace from "ember-runtime/system/namespace";
 import EmberView from "ember-views/views/view";
-import _MetamorphView from "ember-handlebars/views/metamorph_view";
+import _MetamorphView from "ember-views/views/metamorph_view";
 import EmberHandlebars from "ember-handlebars";
 import EmberObject from "ember-runtime/system/object";
 import ObjectController from "ember-runtime/controllers/object_controller";
