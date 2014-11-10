@@ -181,7 +181,7 @@ test("template view should call the function of the associated template with its
 
 test("should allow values from normal JavaScript hash objects to be used", function() {
   view = EmberView.create({
-    template: EmberHandlebars.compile('{{#with view.person}}{{firstName}} {{lastName}} (and {{pet.name}}){{/with}}'),
+    template: EmberHandlebars.compile('{{#with view.person as person}}{{person.firstName}} {{person.lastName}} (and {{person.pet.name}}){{/with}}'),
 
     person: {
       firstName: 'Señor',
@@ -396,7 +396,7 @@ test("child views can be inserted using the {{view}} Handlebars helper", functio
 
 test("child views can be inserted inside a bind block", function() {
   container.register('template:nester', EmberHandlebars.compile("<h1 id='hello-world'>Hello {{world}}</h1>{{view view.bqView}}"));
-  container.register('template:nested', EmberHandlebars.compile("<div id='child-view'>Goodbye {{#with content}}{{blah}} {{view view.otherView}}{{/with}} {{world}}</div>"));
+  container.register('template:nested', EmberHandlebars.compile("<div id='child-view'>Goodbye {{#with content as thing}}{{thing.blah}} {{view view.otherView}}{{/with}} {{world}}</div>"));
   container.register('template:other', EmberHandlebars.compile("cruel"));
 
   var context = {
@@ -447,7 +447,7 @@ test("using Handlebars helper that doesn't exist should result in an error", fun
 });
 
 test("View should update when a property changes and the bind helper is used", function() {
-  container.register('template:foo', EmberHandlebars.compile('<h1 id="first">{{#with view.content}}{{bind "wham"}}{{/with}}</h1>'));
+  container.register('template:foo', EmberHandlebars.compile('<h1 id="first">{{#with view.content as thing}}{{bind "thing.wham"}}{{/with}}</h1>'));
 
   view = EmberView.create({
     container: container,
@@ -487,7 +487,7 @@ test("View should not use keyword incorrectly - Issue #1315", function() {
 });
 
 test("View should update when a property changes and no bind helper is used", function() {
-  container.register('template:foo', EmberHandlebars.compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>'));
+  container.register('template:foo', EmberHandlebars.compile('<h1 id="first">{{#with view.content as thing}}{{thing.wham}}{{/with}}</h1>'));
 
   view = EmberView.create({
     container: container,
@@ -508,7 +508,7 @@ test("View should update when a property changes and no bind helper is used", fu
   equal(view.$('#first').text(), "bazam", "view updates when a bound property changes");
 });
 
-test("View should update when the property used with the #with helper changes", function() {
+test("View should update when the property used with the #with helper changes [DEPRECATED]", function() {
   container.register('template:foo', EmberHandlebars.compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>'));
 
   view = EmberView.create({
@@ -521,7 +521,9 @@ test("View should update when the property used with the #with helper changes", 
     })
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$('#first').text(), "bam", "precond - view renders Handlebars template");
 
@@ -877,7 +879,7 @@ test("views set the template of their children to a passed block", function() {
 });
 
 test("views render their template in the context of the parent view's context", function() {
-  container.register('template:parent', EmberHandlebars.compile('<h1>{{#with content}}{{#view}}{{firstName}} {{lastName}}{{/view}}{{/with}}</h1>'));
+  container.register('template:parent', EmberHandlebars.compile('<h1>{{#with content as person}}{{#view}}{{person.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
 
   var context = {
     content: {
@@ -897,7 +899,7 @@ test("views render their template in the context of the parent view's context", 
 });
 
 test("views make a view keyword available that allows template to reference view context", function() {
-  container.register('template:parent', EmberHandlebars.compile('<h1>{{#with view.content}}{{#view subview}}{{view.firstName}} {{lastName}}{{/view}}{{/with}}</h1>'));
+  container.register('template:parent', EmberHandlebars.compile('<h1>{{#with view.content as person}}{{#view person.subview}}{{view.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
 
   view = EmberView.create({
     container: container,
@@ -1625,7 +1627,7 @@ test("should expose a controller keyword that persists through Ember.ContainerVi
   equal(trim(viewInstanceToBeInserted.$().text()), "bar", "renders value from parent's controller");
 });
 
-test("should expose a view keyword", function() {
+test("should expose a view keyword [DEPRECATED]", function() {
   var templateString = '{{#with view.differentContent}}{{view.foo}}{{#view baz="bang"}}{{view.baz}}{{/view}}{{/with}}';
   view = EmberView.create({
     container: container,
@@ -1641,7 +1643,9 @@ test("should expose a view keyword", function() {
     template: EmberHandlebars.compile(templateString)
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), "barbang", "renders values from view and child view");
 });
@@ -1926,7 +1930,7 @@ test("bindings should respect keywords", function() {
   equal(trim(view.$().text()), "Name: SFMoMA Price: $20", "should print baz twice");
 });
 
-test("bindings can be 'this', in which case they *are* the current context", function() {
+test("bindings can be 'this', in which case they *are* the current context [DEPRECATED]", function() {
   view = EmberView.create({
     museumOpen: true,
 
@@ -1939,10 +1943,12 @@ test("bindings can be 'this', in which case they *are* the current context", fun
     }),
 
 
-    template: EmberHandlebars.compile('{{#if view.museumOpen}} {{#with view.museumDetails}}{{view museumView museumBinding="this"}} {{/with}}{{/if}}')
+    template: EmberHandlebars.compile('{{#if view.museumOpen}} {{#with view.museumDetails}}{{view museumView museum=this}} {{/with}}{{/if}}')
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(trim(view.$().text()), "Name: SFMoMA Price: $20", "should print baz twice");
 });

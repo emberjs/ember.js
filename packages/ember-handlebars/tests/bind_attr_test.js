@@ -227,7 +227,7 @@ test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
 });
 
 test("should be able to bind element attributes using {{bind-attr}} inside a block", function() {
-  var template = EmberHandlebars.compile('{{#with view.content}}<img {{bind-attr src="url" alt="title"}}>{{/with}}');
+  var template = EmberHandlebars.compile('{{#with view.content as image}}<img {{bind-attr src=image.url alt=image.title}}>{{/with}}');
 
   view = EmberView.create({
     template: template,

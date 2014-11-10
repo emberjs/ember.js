@@ -120,7 +120,7 @@ test("Inside a yield, the target points at the original target", function() {
     boundText: "inner",
     truthy: true,
     obj: {},
-    layout: EmberHandlebars.compile("<div>{{boundText}}</div><div>{{#if truthy}}{{#with obj}}{{yield}}{{/with}}{{/if}}</div>")
+    layout: EmberHandlebars.compile("<div>{{boundText}}</div><div>{{#if truthy}}{{yield}}{{/if}}</div>")
   });
 
   view = EmberView.create({
@@ -130,13 +130,9 @@ test("Inside a yield, the target points at the original target", function() {
       wat: function() {
         watted = true;
       },
-      obj: {
-        component: component,
-        truthy: true,
-        boundText: 'insideWith'
-      }
+      component: component
     },
-    template: EmberHandlebars.compile('{{#with obj}}{{#if truthy}}{{#view component}}{{#if truthy}}<div {{action "wat"}} class="wat">{{boundText}}</div>{{/if}}{{/view}}{{/if}}{{/with}}')
+    template: EmberHandlebars.compile('{{#if truthy}}{{#view component}}{{#if truthy}}<div {{action "wat"}} class="wat">{{boundText}}</div>{{/if}}{{/view}}{{/if}}')
   });
 
   appendView();
@@ -182,7 +178,7 @@ test("should target the current controller inside an {{each}} loop [DEPRECATED]"
   ActionHelper.registerAction = originalRegisterAction;
 });
 
-test("should target the with-controller inside an {{#with controller='person'}}", function() {
+test("should target the with-controller inside an {{#with controller='person'}} [DEPRECATED]", function() {
   var registeredTarget;
 
   ActionHelper.registerAction = function(actionName, options) {
@@ -204,7 +200,9 @@ test("should target the with-controller inside an {{#with controller='person'}}"
 
   container.register('controller:person', PersonController);
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   ok(registeredTarget instanceof PersonController, "the with-controller is the target of action");
 
@@ -212,6 +210,9 @@ test("should target the with-controller inside an {{#with controller='person'}}"
 });
 
 test("should target the with-controller inside an {{each}} in a {{#with controller='person'}} [DEPRECATED]", function() {
+  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+  expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+
   var eventsCalled = [];
 
   var PeopleController = EmberArrayController.extend({
@@ -238,9 +239,7 @@ test("should target the with-controller inside an {{each}} in a {{#with controll
 
   container.register('controller:people', PeopleController);
 
-  expectDeprecation(function() {
-    appendView();
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+  appendView();
 
   view.$('a').trigger('click');
 
@@ -481,7 +480,27 @@ test("should work properly in an #each block", function() {
   ok(eventHandlerWasCalled, "The event handler was called");
 });
 
-test("should work properly in a #with block", function() {
+test("should work properly in a {{#with foo as bar}} block", function() {
+  var eventHandlerWasCalled = false;
+
+  var controller = EmberController.extend({
+    actions: { edit: function() { eventHandlerWasCalled = true; } }
+  }).create();
+
+  view = EmberView.create({
+    controller: controller,
+    something: {ohai: 'there'},
+    template: EmberHandlebars.compile('{{#with view.something as somethingElse}}<a href="#" {{action "edit"}}>click me</a>{{/with}}')
+  });
+
+  appendView();
+
+  view.$('a').trigger('click');
+
+  ok(eventHandlerWasCalled, "The event handler was called");
+});
+
+test("should work properly in a #with block [DEPRECATED]", function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -494,7 +513,9 @@ test("should work properly in a #with block", function() {
     template: EmberHandlebars.compile('{{#with view.something}}<a href="#" {{action "edit"}}>click me</a>{{/with}}')
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   view.$('a').trigger('click');
 
@@ -644,8 +665,8 @@ test("should send the view, event and current Handlebars context to the action",
   var aContext = { aTarget: aTarget };
 
   view = EmberView.create({
-    aContext: aContext,
-    template: EmberHandlebars.compile('{{#with view.aContext}}<a id="edit" href="#" {{action "edit" this target="aTarget"}}>edit</a>{{/with}}')
+    context: aContext,
+    template: EmberHandlebars.compile('<a id="edit" href="#" {{action "edit" this target="aTarget"}}>edit</a>')
   });
 
   appendView();

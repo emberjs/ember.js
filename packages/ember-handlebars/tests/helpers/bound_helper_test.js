@@ -45,15 +45,16 @@ QUnit.module("Handlebars bound helpers", {
 });
 
 test("primitives should work correctly [DEPRECATED]", function() {
+  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+  expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+
   view = EmberView.create({
     prims: Ember.A(["string", 12]),
 
     template: compile('{{#each view.prims}}{{#if this}}inside-if{{/if}}{{#with this}}inside-with{{/with}}{{/each}}')
   });
 
-  expectDeprecation(function() {
-    appendView(view);
-  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+  appendView(view);
 
   equal(view.$().text(), 'inside-ifinside-withinside-ifinside-with');
 });
