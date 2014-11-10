@@ -647,7 +647,7 @@ test("The Homepage with a computed context that does not get overridden", functi
   });
 
   Ember.TEMPLATES.home = Ember.Handlebars.compile(
-    "<ul>{{#each}}<li>{{this}}</li>{{/each}}</ul>"
+    "<ul>{{#each passage in model}}<li>{{passage}}</li>{{/each}}</ul>"
   );
 
   bootApplication();

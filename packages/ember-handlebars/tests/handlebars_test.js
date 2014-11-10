@@ -1498,7 +1498,7 @@ test("should be able to use unbound helper in #each helper", function() {
   view = EmberView.create({
     items: A(['a', 'b', 'c', 1, 2, 3]),
     template: EmberHandlebars.compile(
-      "<ul>{{#each view.items}}<li>{{unbound this}}</li>{{/each}}</ul>")
+      "<ul>{{#each item in view.items}}<li>{{unbound item}}</li>{{/each}}</ul>")
   });
 
   appendView();
@@ -1511,7 +1511,7 @@ test("should be able to use unbound helper in #each helper (with objects)", func
   view = EmberView.create({
     items: A([{wham: 'bam'}, {wham: 1}]),
     template: EmberHandlebars.compile(
-      "<ul>{{#each view.items}}<li>{{unbound wham}}</li>{{/each}}</ul>")
+      "<ul>{{#each item in view.items}}<li>{{unbound item.wham}}</li>{{/each}}</ul>")
   });
 
   appendView();
@@ -1668,30 +1668,33 @@ test("should be able to explicitly set a view's context", function() {
 
 test("should escape HTML in primitive value contexts when using normal mustaches", function() {
   view = EmberView.create({
-    template: EmberHandlebars.compile('{{#each view.kiddos}}{{this}}{{/each}}'),
-    kiddos: A(['<b>Max</b>', '<b>James</b>'])
+    context: '<b>Max</b><b>James</b>',
+    template: EmberHandlebars.compile('{{this}}'),
   });
 
   appendView();
+
   equal(view.$('b').length, 0, "does not create an element");
   equal(view.$().text(), '<b>Max</b><b>James</b>', "inserts entities, not elements");
 
-  run(function() { set(view, 'kiddos', A(['<i>Max</i>','<i>James</i>'])); });
+  run(function() { set(view, 'context', '<i>Max</i><i>James</i>'); });
+
   equal(view.$().text(), '<i>Max</i><i>James</i>', "updates with entities, not elements");
   equal(view.$('i').length, 0, "does not create an element when value is updated");
 });
 
 test("should not escape HTML in primitive value contexts when using triple mustaches", function() {
   view = EmberView.create({
-    template: EmberHandlebars.compile('{{#each view.kiddos}}{{{this}}}{{/each}}'),
-    kiddos: A(['<b>Max</b>', '<b>James</b>'])
+    context: '<b>Max</b><b>James</b>',
+    template: EmberHandlebars.compile('{{{this}}}'),
   });
 
   appendView();
 
   equal(view.$('b').length, 2, "creates an element");
 
-  run(function() { set(view, 'kiddos', A(['<i>Max</i>','<i>James</i>'])); });
+  run(function() { set(view, 'context', '<i>Max</i><i>James</i>'); });
+
   equal(view.$('i').length, 2, "creates an element when value is updated");
 });
 
@@ -1747,15 +1750,14 @@ test("should be able to log a view property", function() {
 
 test("should be able to log `this`", function() {
   view = EmberView.create({
-    template: EmberHandlebars.compile('{{#each view.items}}{{log this}}{{/each}}'),
-    items: A(['one', 'two'])
+    context: 'one',
+    template: EmberHandlebars.compile('{{log this}}'),
   });
 
   appendView();
 
   equal(view.$().text(), "", "shouldn't render any text");
   equal(logCalls[0], 'one', "should call log with item one");
-  equal(logCalls[1], 'two', "should call log with item two");
 });
 
 var MyApp;
@@ -1863,9 +1865,9 @@ test("views within an if statement should be sane on re-render", function() {
 
 test("the {{this}} helper should not fail on removal", function() {
   view = EmberView.create({
-    template: EmberHandlebars.compile('{{#if view.show}}{{#each view.list}}{{this}}{{/each}}{{/if}}'),
-    show: true,
-    list: A(['a', 'b', 'c'])
+    context: 'abc',
+    template: EmberHandlebars.compile('{{#if view.show}}{{this}}{{/if}}'),
+    show: true
   });
 
   appendView();

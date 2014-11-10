@@ -26,7 +26,7 @@ function templateFor(template) {
 var originalLookup = Ember.lookup;
 var lookup;
 
-QUnit.module("the #each helper", {
+QUnit.module("the #each helper [DEPRECATED]", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
@@ -48,7 +48,9 @@ QUnit.module("the #each helper", {
       template: templateMyView
     });
 
-    append(view);
+    expectDeprecation(function() {
+      append(view);
+    },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
   },
 
   teardown: function() {
@@ -552,6 +554,8 @@ test("it supports {{else}}", function() {
 });
 
 test("it works with the controller keyword", function() {
+  run(view, 'destroy'); // destroy existing view
+
   var controller = ArrayController.create({
     model: A(["foo", "bar", "baz"])
   });
@@ -566,6 +570,55 @@ test("it works with the controller keyword", function() {
   append(view);
 
   equal(view.$().text(), "foobarbaz");
+});
+
+test("views inside #each preserve the new context [DEPRECATED]", function() {
+  run(view, 'destroy'); // destroy existing view
+
+  var controller = A([ { name: "Adam" }, { name: "Steve" } ]);
+
+  view = EmberView.create({
+    container: container,
+    controller: controller,
+    template: templateFor('{{#each controller}}{{#view}}{{name}}{{/view}}{{/each}}')
+  });
+
+
+  expectDeprecation(function() {
+    append(view);
+  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+
+  equal(view.$().text(), "AdamSteve");
+});
+
+test("single-arg each defaults to current context [DEPRECATED]", function() {
+  run(view, 'destroy'); // destroy existing view
+
+  view = EmberView.create({
+    context: A([ { name: "Adam" }, { name: "Steve" } ]),
+    template: templateFor('{{#each}}{{name}}{{/each}}')
+  });
+
+  expectDeprecation(function() {
+    append(view);
+  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+
+  equal(view.$().text(), "AdamSteve");
+});
+
+test("single-arg each will iterate over controller if present [DEPRECATED]", function() {
+  run(view, 'destroy'); // destroy existing view
+
+  view = EmberView.create({
+    controller: A([ { name: "Adam" }, { name: "Steve" } ]),
+    template: templateFor('{{#each}}{{name}}{{/each}}')
+  });
+
+  expectDeprecation(function() {
+    append(view);
+  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+
+  equal(view.$().text(), "AdamSteve");
 });
 
 QUnit.module("{{#each foo in bar}}", {
@@ -644,7 +697,7 @@ test("#each accepts 'this' as the right hand side", function() {
   equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
 });
 
-test("views inside #each preserve the new context", function() {
+test("views inside #each preserve the new context [DEPRECATED]", function() {
   var controller = A([ { name: "Adam" }, { name: "Steve" } ]);
 
   view = EmberView.create({
@@ -653,7 +706,9 @@ test("views inside #each preserve the new context", function() {
     template: templateFor('{{#each controller}}{{#view}}{{name}}{{/view}}{{/each}}')
   });
 
-  append(view);
+  expectDeprecation(function() {
+    append(view);
+  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), "AdamSteve");
 });
@@ -674,32 +729,10 @@ test("controller is assignable inside an #each", function() {
   equal(view.$().text(), "AdamSteve");
 });
 
-test("single-arg each defaults to current context", function() {
-  view = EmberView.create({
-    context: A([ { name: "Adam" }, { name: "Steve" } ]),
-    template: templateFor('{{#each}}{{name}}{{/each}}')
-  });
-
-  append(view);
-
-  equal(view.$().text(), "AdamSteve");
-});
-
-test("single-arg each will iterate over controller if present", function() {
-  view = EmberView.create({
-    controller: A([ { name: "Adam" }, { name: "Steve" } ]),
-    template: templateFor('{{#each}}{{name}}{{/each}}')
-  });
-
-  append(view);
-
-  equal(view.$().text(), "AdamSteve");
-});
-
 test("it doesn't assert when the morph tags have the same parent", function() {
   view = EmberView.create({
     controller: A(['Cyril', 'David']),
-    template: templateFor('<table><tbody>{{#each}}<tr><td>{{this}}</td></tr>{{/each}}<tbody></table>')
+    template: templateFor('<table><tbody>{{#each name in this}}<tr><td>{{name}}</td></tr>{{/each}}<tbody></table>')
   });
 
   append(view);
@@ -782,4 +815,34 @@ test("itemController specified in ArrayController with name binding does not cha
   append(view);
 
   equal(view.$().text(), "controller:people - controller:Steve Holt of Yapp - controller:people - controller:Annabelle of Yapp - ");
+});
+
+test("{{each}} without arguments [DEPRECATED]", function() {
+  expect(2);
+
+  view = EmberView.create({
+    controller: A([ { name: "Adam" }, { name: "Steve" } ]),
+    template: templateFor('{{#each}}{{name}}{{/each}}')
+  });
+
+  expectDeprecation(function() {
+    append(view);
+  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+
+  equal(view.$().text(), "AdamSteve");
+});
+
+test("{{each this}} without keyword [DEPRECATED]", function() {
+  expect(2);
+
+  view = EmberView.create({
+    controller: A([ { name: "Adam" }, { name: "Steve" } ]),
+    template: templateFor('{{#each this}}{{name}}{{/each}}')
+  });
+
+  expectDeprecation(function() {
+    append(view);
+  },'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+
+  equal(view.$().text(), "AdamSteve");
 });

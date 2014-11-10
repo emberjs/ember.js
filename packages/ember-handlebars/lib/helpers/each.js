@@ -122,21 +122,11 @@ var EachView = CollectionView.extend(_Metamorph, {
   of the base Handlebars `{{#each}}` helper.
 
   The default behavior of `{{#each}}` is to yield its inner block once for every
-  item in an array. Each yield will provide the item as the context of the block.
+  item in an array.
 
   ```javascript
   var developers = [{name: 'Yehuda'},{name: 'Tom'}, {name: 'Paul'}];
   ```
-
-  ```handlebars
-  {{#each developers}}
-    {{name}}
-    {{! `this` is each developer }}
-  {{/each}}
-  ```
-
-  `{{#each}}` supports an alternative syntax with element naming. This preserves
-  context of the yielded block:
 
   ```handlebars
   {{#each person in developers}}
@@ -153,8 +143,8 @@ var EachView = CollectionView.extend(_Metamorph, {
   ```
 
   ```handlebars
-  {{#each developerNames}}
-    {{this}}
+  {{#each name in developerNames}}
+    {{name}}
   {{/each}}
   ```
 
@@ -180,8 +170,8 @@ var EachView = CollectionView.extend(_Metamorph, {
 
   ```handlebars
   <ul>
-  {{#each developers itemViewClass="person"}}
-    {{name}}
+  {{#each developer in developers itemViewClass="person"}}
+    {{developer.name}}
   {{/each}}
   </ul>
   ```
@@ -212,13 +202,13 @@ var EachView = CollectionView.extend(_Metamorph, {
   ```javascript
   App.PersonView = Ember.View.extend({
     tagName: 'li',
-    template: '{{name}}'
+    template: '{{developer.name}}'
   });
   ```
 
   ```handlebars
   <ul>
-    {{each developers itemViewClass="person"}}
+    {{each developer in developers itemViewClass="person"}}
   </ul>
   ```
 
@@ -236,8 +226,8 @@ var EachView = CollectionView.extend(_Metamorph, {
 
   ```handlebars
   <ul>
-  {{#each developers emptyViewClass="no-people"}}
-    <li>{{name}}</li>
+  {{#each developer in developers emptyViewClass="no-people"}}
+    <li>{{developer.name}}</li>
   {{/each}}
   </ul>
   ```
@@ -280,12 +270,13 @@ var EachView = CollectionView.extend(_Metamorph, {
 function eachHelper(path) {
   var options = arguments[arguments.length - 1];
   var helperName = 'each';
+  var keywordName;
 
   if (arguments.length === 4) {
     Ember.assert("If you pass more than one argument to the each helper," +
                  " it must be in the form #each foo in bar", arguments[1] === "in");
 
-    var keywordName = arguments[0];
+    keywordName = arguments[0];
     path = arguments[2];
 
     helperName += ' ' + keywordName + ' in ' + path;
@@ -296,6 +287,8 @@ function eachHelper(path) {
   } else {
     helperName += ' ' + path;
   }
+
+  Ember.deprecate('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.', keywordName);
 
   options.hash.emptyViewClass = Ember._MetamorphView;
   options.hash.dataSourceBinding = path;
