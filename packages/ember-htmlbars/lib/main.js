@@ -17,6 +17,7 @@ import {
   unboundIfHelper,
   boundIfHelper
 } from "ember-htmlbars/helpers/if_unless";
+import { locHelper } from "ember-htmlbars/helpers/loc";
 
 registerHelper('bindHelper', bindHelper);
 registerHelper('bind', bindHelper);
@@ -29,6 +30,7 @@ registerHelper('unboundIf', unboundIfHelper);
 registerHelper('boundIf', boundIfHelper);
 registerHelper('log', logHelper);
 registerHelper('debugger', debuggerHelper);
+registerHelper('loc', locHelper);
 
 export var defaultEnv = {
   dom: new DOMHelper(),
