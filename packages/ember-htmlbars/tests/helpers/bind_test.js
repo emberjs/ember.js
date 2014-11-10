@@ -1,7 +1,8 @@
 import EmberView from "ember-views/views/view";
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
-import { compile } from "htmlbars-compiler/compiler";
+import EmberHandlebars from "ember-handlebars";
+import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
 
 function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
@@ -9,7 +10,12 @@ function appendView(view) {
 
 var view;
 
+var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
 
 QUnit.module("ember-htmlbars: {{#bind}} helper", {
   teardown: function() {
@@ -55,5 +61,3 @@ test("it should render the current value of a path on the context", function() {
 
   equal(view.$().text(), "MWEEER", "value can be updated");
 });
-
-}
