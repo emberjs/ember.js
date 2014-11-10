@@ -76,7 +76,7 @@ import ComponentLookup from "ember-handlebars/component_lookup";
 import {
   _HandlebarsBoundView,
   SimpleHandlebarsView
-} from "ember-handlebars/views/handlebars_bound_view";
+} from "ember-views/views/handlebars_bound_view";
 import _MetamorphView from "ember-views/views/metamorph_view";
 import {
   _SimpleMetamorphView,

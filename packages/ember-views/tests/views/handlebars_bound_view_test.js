@@ -1,5 +1,5 @@
 import Stream from "ember-metal/streams/stream";
-import { SimpleHandlebarsView } from 'ember-handlebars/views/handlebars_bound_view';
+import { SimpleHandlebarsView } from 'ember-views/views/handlebars_bound_view';
 
 QUnit.module('SimpleHandlebarsView');
 
