@@ -3,7 +3,7 @@ import Ember from "ember-metal/core"; // Ember.lookup;
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
-import _MetamorphView from "ember-handlebars/views/metamorph_view";
+import _MetamorphView from "ember-views/views/metamorph_view";
 import { computed } from "ember-metal/computed";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import EmberHandlebars from "ember-handlebars-compiler";

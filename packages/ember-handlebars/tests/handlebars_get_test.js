@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core"; // Ember.lookup
-import _MetamorphView from "ember-handlebars/views/metamorph_view";
+import _MetamorphView from "ember-views/views/metamorph_view";
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import EmberHandlebars from "ember-handlebars";

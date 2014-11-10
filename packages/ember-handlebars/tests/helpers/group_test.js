@@ -3,7 +3,7 @@
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
-import _MetamorphView from "ember-handlebars/views/metamorph_view";
+import _MetamorphView from "ember-views/views/metamorph_view";
 import EmberHandlebars from "ember-handlebars-compiler";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import { A } from "ember-runtime/system/native_array";

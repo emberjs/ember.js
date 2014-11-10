@@ -313,7 +313,7 @@ export function registerBoundHelper(name, fn) {
 */
 function makeBoundHelper(fn) {
   if (!SimpleHandlebarsView) {
-    SimpleHandlebarsView = requireModule('ember-handlebars/views/handlebars_bound_view')['SimpleHandlebarsView'];
+    SimpleHandlebarsView = requireModule('ember-views/views/handlebars_bound_view')['SimpleHandlebarsView'];
   } // ES6TODO: stupid circular dep
 
   var dependentKeys = [];

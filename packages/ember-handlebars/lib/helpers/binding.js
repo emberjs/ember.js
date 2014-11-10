@@ -14,7 +14,7 @@ import SimpleStream from "ember-metal/streams/simple";
 import {
   _HandlebarsBoundView,
   SimpleHandlebarsView
-} from "ember-handlebars/views/handlebars_bound_view";
+} from "ember-views/views/handlebars_bound_view";
 
 var helpers = EmberHandlebars.helpers;
 
