@@ -2,15 +2,21 @@ import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import ObjectProxy from "ember-runtime/system/object_proxy";
-import { compile } from "htmlbars-compiler/compiler";
+import EmberHandlebars from "ember-handlebars";
+import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
+
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
 
 function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
 var view;
-
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
 QUnit.module("Handlebars {{#if}} and {{#unless}} helpers", {
   teardown: function() {
@@ -22,19 +28,19 @@ QUnit.module("Handlebars {{#if}} and {{#unless}} helpers", {
   }
 });
 
-/* requires with
-test("unless should keep the current context (#784)", function() {
+test("unless should keep the current context (#784) [DEPRECATED]", function() {
   view = EmberView.create({
     o: EmberObject.create({foo: '42'}),
 
     template: compile('{{#with view.o}}{{#view}}{{#unless view.doesNotExist}}foo: {{foo}}{{/unless}}{{/view}}{{/with}}')
   });
 
-  appendView(view);
+  expectDeprecation(function() {
+    appendView(view);
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), 'foo: 42');
 });
-*/
 
 test("The `if` helper tests for `isTruthy` if available", function() {
   view = EmberView.create({
@@ -123,7 +129,9 @@ test("The `if` helper updates when the value changes", function() {
   equal(view.$().text(), '');
 });
 
-/* requires unbound helper
+// requires the unbound helper
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+
 test("The `unbound if` helper does not update when the value changes", function() {
   view = EmberView.create({
     conditional: true,
@@ -136,7 +144,8 @@ test("The `unbound if` helper does not update when the value changes", function(
   });
   equal(view.$().text(), 'Yep');
 });
-*/
+
+}
 
 test("The `unless` helper updates when the value changes", function() {
   view = EmberView.create({
@@ -151,7 +160,9 @@ test("The `unless` helper updates when the value changes", function() {
   equal(view.$().text(), '');
 });
 
-/* requires unbound helper
+// requires unbound helper
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+
 test("The `unbound if` helper does not update when the value changes", function() {
   view = EmberView.create({
     conditional: false,
@@ -164,7 +175,8 @@ test("The `unbound if` helper does not update when the value changes", function(
   });
   equal(view.$().text(), 'Nope');
 });
-*/
+
+}
 
 test("The `if` helper ignores a controller option", function() {
   var lookupCalled = false;
@@ -184,5 +196,3 @@ test("The `if` helper ignores a controller option", function() {
 
   equal(lookupCalled, false, 'controller option should NOT be used');
 });
-
-}
