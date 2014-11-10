@@ -10,6 +10,7 @@ import { viewHelper } from "ember-htmlbars/helpers/view";
 import { yieldHelper } from "ember-htmlbars/helpers/yield";
 import { withHelper } from "ember-htmlbars/helpers/with";
 import { logHelper } from "ember-htmlbars/helpers/log";
+import { debuggerHelper } from "ember-htmlbars/helpers/debugger";
 import {
   ifHelper,
   unlessHelper,
@@ -27,6 +28,7 @@ registerHelper('unless', unlessHelper);
 registerHelper('unboundIf', unboundIfHelper);
 registerHelper('boundIf', boundIfHelper);
 registerHelper('log', logHelper);
+registerHelper('debugger', debuggerHelper);
 
 export var defaultEnv = {
   dom: new DOMHelper(),
