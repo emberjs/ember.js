@@ -388,7 +388,7 @@ testBoth('circular keys should not blow up', function(get, set) {
   equal(get(obj, 'foo'), 'foo 3', 'cached retrieve');
 });
 
-testBoth('redefining a property should undo old depenent keys', function(get ,set) {
+testBoth('redefining a property should undo old dependent keys', function(get ,set) {
 
   equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
   equal(get(obj, 'foo'), 'bar 1');
