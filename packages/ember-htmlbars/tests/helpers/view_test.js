@@ -3,7 +3,15 @@ import EmberView from "ember-views/views/view";
 import Container from 'container/container';
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
-import { compile } from "htmlbars-compiler/compiler";
+import EmberHandlebars from "ember-handlebars";
+import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
+
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
 
 var view, originalLookup;
 
@@ -15,8 +23,6 @@ function viewClass(options) {
   options.container = options.container || container;
   return EmberView.extend(options);
 }
-
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
 QUnit.module("ember-htmlbars: {{#view}} helper", {
   setup: function() {
@@ -193,7 +199,7 @@ test("mixing old and new styles of property binding fires a warning, treats valu
   var oldWarn = Ember.warn;
 
   Ember.warn = function(msg) {
-    equal(msg, "You're attempting to render a view by passing borfBinding to a view helper without a quoted value, but this syntax is ambiguous. You should either surround borfBinding's value in quotes or remove `Binding` from borfBinding.");
+    ok(msg.match(/You're attempting to render a view by passing borfBinding.+, but this syntax is ambiguous./));
   };
 
   view = EmberView.extend({
@@ -263,5 +269,3 @@ test("Should apply classes when bound property specified", function() {
 
   ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
 });
-
-}

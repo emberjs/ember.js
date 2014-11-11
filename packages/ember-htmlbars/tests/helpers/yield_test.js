@@ -1,22 +1,31 @@
 /*jshint newcap:false*/
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
-// import { computed } from "ember-metal/computed";
+import { computed } from "ember-metal/computed";
 import Container from "ember-runtime/system/container";
-// import { get } from "ember-metal/property_get";
+import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-// import { A } from "ember-runtime/system/native_array";
+import { A } from "ember-runtime/system/native_array";
 import Component from "ember-views/views/component";
 import EmberError from "ember-metal/error";
-import { compile } from "htmlbars-compiler/compiler";
 import {
-  helper,
+  helper as htmlbarsHelper,
   default as helpers
 } from "ember-htmlbars/helpers";
 
-var view, container;
+import EmberHandlebars from "ember-handlebars";
+import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
 
+var compile, helper;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+  helper = htmlbarsHelper;
+} else {
+  compile = EmberHandlebars.compile;
+  helper = EmberHandlebars.helper;
+}
+
+var view, container;
 
 QUnit.module("ember-htmlbars: Support for {{yield}} helper", {
   setup: function() {
@@ -72,10 +81,11 @@ test("block should work properly even when templates are not hard-coded", functi
 
 });
 
-/* NOPE
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+
 test("templates should yield to block, when the yield is embedded in a hierarchy of virtual views", function() {
   var TimesView = EmberView.extend({
-    layout: compile('<div class="times">{{#each view.index}}{{yield}}{{/each}}</div>'),
+    layout: compile('<div class="times">{{#each item in view.index}}{{yield}}{{/each}}</div>'),
     n: null,
     index: computed(function() {
       var n = get(this, 'n');
@@ -99,7 +109,8 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
   equal(view.$('div#container div.times-item').length, 5, 'times-item is embedded within wrapping container 5 times, as expected');
 });
 
-*/
+}
+
 test("templates should yield to block, when the yield is embedded in a hierarchy of non-virtual views", function() {
   var NestingView = EmberView.extend({
     layout: compile('{{#view tagName="div" classNames="nesting"}}{{yield}}{{/view}}')
@@ -152,8 +163,8 @@ test("yield uses the outer context", function() {
   equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "Yield points at the right context");
 });
 
-/* requires with helper
-test("yield inside a conditional uses the outer context", function() {
+
+test("yield inside a conditional uses the outer context [DEPRECATED]", function() {
   var component = Component.extend({
     boundText: "inner",
     truthy: true,
@@ -166,15 +177,13 @@ test("yield inside a conditional uses the outer context", function() {
     template: compile('{{#with obj}}{{#if truthy}}{{#view component}}{{#if truthy}}{{boundText}}{{/if}}{{/view}}{{/if}}{{/with}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  expectDeprecation(function() {
+    run(view, 'appendTo', '#qunit-fixture');
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$('div p:contains(inner) + p:contains(insideWith)').length, 1, "Yield points at the right context");
 });
-*/
 
-/* requires with helper
 test("outer keyword doesn't mask inner component property", function () {
   var component = Component.extend({
     item: "inner",
@@ -192,9 +201,7 @@ test("outer keyword doesn't mask inner component property", function () {
 
   equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "inner component property isn't masked by outer keyword");
 });
-*/
 
-/* requires with helper
 test("inner keyword doesn't mask yield property", function() {
   var component = Component.extend({
     boundText: "inner",
@@ -212,9 +219,7 @@ test("inner keyword doesn't mask yield property", function() {
 
   equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "outer property isn't masked by inner keyword");
 });
-*/
 
-/* requires with helper
 test("can bind a keyword to a component and use it in yield", function() {
   var component = Component.extend({
     content: null,
@@ -238,10 +243,10 @@ test("can bind a keyword to a component and use it in yield", function() {
 
   equal(view.$('div p:contains(update) + p:contains(update)').length, 1, "keyword has correctly propagated update");
 });
-*/
 
-/* requires with helper
-test("yield uses the layout context for non component", function() {
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+
+test("yield uses the layout context for non component [DEPRECATED]", function() {
   view = EmberView.create({
     controller: {
       boundText: "outer",
@@ -253,13 +258,14 @@ test("yield uses the layout context for non component", function() {
     template: compile('{{boundText}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  expectDeprecation(function() {
+    run(view, 'appendTo', '#qunit-fixture');
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal('outerinner', view.$('p').text(), "Yield points at the right context");
 });
-*/
+
+}
 
 test("yield view should be a virtual view", function() {
   var component = Component.extend({
@@ -414,5 +420,3 @@ test("view keyword works inside component yield", function () {
 
   equal(view.$('div > p').text(), "hello", "view keyword inside component yield block should refer to the correct view");
 });
-
-}

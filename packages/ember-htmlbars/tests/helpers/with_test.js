@@ -8,7 +8,15 @@ import { get } from "ember-metal/property_get";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import Container from "ember-runtime/system/container";
 // import { A } from "ember-runtime/system/native_array";
-import { compile } from "htmlbars-compiler/compiler";
+import EmberHandlebars from "ember-handlebars";
+import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
+
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
 
 function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
@@ -16,8 +24,6 @@ function appendView(view) {
 
 var view, lookup;
 var originalLookup = Ember.lookup;
-
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
 QUnit.module("ember-htmlbars: {{#with}} helper", {
   setup: function() {
@@ -486,5 +492,3 @@ QUnit.module("{{#with}} helper binding to view keyword", {
 test("{{with}} helper can bind to keywords with 'as'", function(){
   equal(view.$().text(), "We have: this is from the view and this is from the context", "should render");
 });
-
-}
