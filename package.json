@@ -4,7 +4,7 @@
   "description": "HTMLBars compiles Handlebars templates into document fragments rather than string buffers",
   "main": "index.js",
   "scripts": {
-    "postinstall": "bower install",
+    "prepublish": "bower install",
     "build": "bin/build.js",
     "pretest": "bin/build.js",
     "test": "bin/run-tests.js",
@@ -17,6 +17,10 @@
   "author": "Tilde, Inc.",
   "license": "MIT",
   "readmeFilename": "README.md",
+  "dependencies": {
+    "handlebars": "1.3.0",
+    "broccoli-funnel": "^0.1.6"
+  },
   "devDependencies": {
     "bower": "~1.3.3",
     "broccoli": "0.12.0",
@@ -26,10 +30,9 @@
     "broccoli-export-tree": "~0.3.0",
     "broccoli-file-mover": "0.3.5",
     "broccoli-file-remover": "~0.2.2",
-    "broccoli-jshint": "~0.4.0",
-    "broccoli-merge-trees": "0.1.3",
+    "broccoli-jshint": "~0.5.3",
+    "broccoli-merge-trees": "0.2.1",
     "broccoli-string-replace": "~0.0.2",
-    "broccoli-static-compiler": "0.1.4",
     "broccoli-uglify-js": "~0.1.3",
     "chalk": "~0.4.0",
     "copy-dereference": "~1.0.0",

@@ -1,4 +1,4 @@
-var pickFiles = require('broccoli-static-compiler');
+var Funnel = require('broccoli-funnel');
 var concatFiles = require('broccoli-concat');
 var mergeTrees = require('broccoli-merge-trees');
 var moveFile = require('broccoli-file-mover');
@@ -6,6 +6,7 @@ var replace = require('broccoli-string-replace');
 var removeFile = require('broccoli-file-remover');
 var transpileES6 = require('broccoli-es6-module-transpiler');
 var jsHint = require('broccoli-jshint');
+var handlebarsInlineTree = require('./build-support/handlebars-inliner');
 
 var packages = require('./packages');
 
@@ -13,17 +14,10 @@ var dependableTrees = {};
 
 var bower = 'bower_components';
 
-var ES6Tokenizer = pickFiles(bower+'/simple-html-tokenizer/lib/', {
-  srcDir: '/',
-  destDir: '/'
-});
+var ES6Tokenizer = new Funnel(bower+'/simple-html-tokenizer/lib/');
 dependableTrees['simple-html-tokenizer'] = ES6Tokenizer;
 
-var ES6Handlebars = pickFiles('node_modules/handlebars/lib/', {
-  srcDir: '/handlebars/',
-  destDir: '/handlebars/'
-});
-dependableTrees['handlebars'] = ES6Handlebars;
+dependableTrees['handlebars-inliner'] = handlebarsInlineTree;
 
 function getDependencyTree(depName) {
   var dep = dependableTrees[depName];
@@ -34,12 +28,14 @@ function getDependencyTree(depName) {
 }
 
 function getPackageLibTree(packageName) {
-  return moveFile(pickFiles('packages/' + packageName + '/lib', {
-    srcDir: '/',
-    destDir: '/' + packageName
-  }), {
-    srcFile: packageName + '/main.js',
-    destFile: '/' + packageName + '.js'
+  return new Funnel('packages/' + packageName + '/lib', {
+    getDestinationPath: function(relativePath) {
+      if (relativePath === 'main.js') {
+        return packageName + '.js';
+      }
+
+      return packageName + '/' + relativePath;
+    }
   });
 };
 
@@ -55,7 +51,7 @@ function getPackageTrees(packageName, dependencies) {
 
   var testTrees = [];
   // main test
-  testTrees.push(pickFiles('packages/' + packageName + '/tests', {
+  testTrees.push(new Funnel('packages/' + packageName + '/tests', {
     srcDir: '/',
     destDir: '/' + packageName + '-tests'
   }));
@@ -71,7 +67,7 @@ function getPackageTrees(packageName, dependencies) {
 
 // Test Assets
 
-var test = pickFiles('test', {
+var test = new Funnel('test', {
   srcDir: '/',
   files: [ 'index.html', 'packages-config.js' ],
   destDir: '/test'
@@ -85,13 +81,13 @@ test = replace(test, {
   }
 });
 
-var loader = pickFiles(bower, {
+var loader = new Funnel(bower, {
   srcDir: '/loader',
   files: [ 'loader.js' ],
   destDir: '/test'
 });
 
-var qunit = pickFiles(bower, {
+var qunit = new Funnel(bower, {
   srcDir: '/qunit/qunit',
   destDir: '/test'
 });
@@ -99,12 +95,14 @@ var qunit = pickFiles(bower, {
 // Export trees
 var trees = [test, loader, qunit];
 
-var supportTree = pickFiles('test/support', {
+var supportTree = new Funnel('test/support', {
   srcDir: '/',
   destDir: '/test/support'
 });
+
 var supportCjsTranspiled = transpileES6(supportTree, { type: 'cjs' });
 trees.push( supportCjsTranspiled );
+
 var supportES6Transpiled = transpileES6(supportTree, { moduleName: true,type: 'amd' });
 trees.push(concatFiles(supportES6Transpiled, {
   inputFiles: ['test/support/**/*.js'],
@@ -127,12 +125,12 @@ for (var packageName in packages.dependencies) {
 
   // CJS lib
   var transpiledCjsLib = transpileES6(libTree, { type: 'cjs' });
-  var pickedCjsLib = pickFiles(transpiledCjsLib, {
+  var pickedCjsLib = new Funnel(transpiledCjsLib, {
     srcDir: '/',
     destDir: '/'
   });
   trees.push(pickedCjsLib);
-  var pickedCjsMain = pickFiles(transpiledCjsLib, {
+  var pickedCjsMain = new Funnel(transpiledCjsLib, {
     srcDir: packageName+'.js',
     destDir: packageName+'.js'
   });
@@ -141,15 +139,16 @@ for (var packageName in packages.dependencies) {
   var testTrees = [testTree];
 
   // jsHint tests
-  var jsHintLibTree = pickFiles(libTree, {
-    srcDir: packageName+'/',
-    destDir: packageName+'/'
+  var jsHintLibTree = new Funnel(libTree, {
+    include: [new RegExp(packageName), new RegExp(packageName + '.+\.js$')],
+    exclude: [/htmlbars-compiler\/handlebars/]
   });
   jsHintLibTree = removeFile(jsHintLibTree, {
     srcFile: 'htmlbars-runtime.js' // Uses ES6 `module` syntax. Breaks jsHint
   });
   testTrees.push(jsHint(jsHintLibTree, { destFile: '/' + packageName + '-tests/jshint-lib.js' }));
-  var jsHintTestTree = pickFiles(testTree, {
+
+  var jsHintTestTree = new Funnel(testTree, {
     srcDir: packageName+'-tests/',
     destDir: packageName+'-tests/'
   });
@@ -165,7 +164,7 @@ for (var packageName in packages.dependencies) {
 
   // CJS tests
   var transpiledCjsTests = transpileES6(mergeTrees(testTrees), { type: 'cjs' });
-  var movedCjsTests = pickFiles(transpiledCjsTests, {
+  var movedCjsTests = new Funnel(transpiledCjsTests, {
     srcDir: packageName+'-tests/',
     destDir: '/'+packageName+"-tests/"
   });
