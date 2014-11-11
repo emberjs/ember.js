@@ -1,5 +1,5 @@
 import { merge } from "./utils";
-import SafeString from '../handlebars/safe-string';
+import SafeString from '../htmlbars-util/safe-string';
 
 export function content(morph, helperName, context, params, options, env) {
   var value, helper = this.lookupHelper(helperName, context, options);
