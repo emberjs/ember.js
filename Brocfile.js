@@ -16,6 +16,7 @@ var replace = require('broccoli-replace');
 var es3recast = require('broccoli-es3-safe-recast');
 var useStrictRemover = require('broccoli-use-strict-remover');
 var derequire = require('broccoli-derequire');
+var htmlbarsHandlebarsInliner = require('htmlbars/build-support/handlebars-inliner');
 
 var getVersion = require('git-repo-version');
 var yuidocPlugin = require('ember-cli-yuidoc');
@@ -627,7 +628,9 @@ testTrees   = mergeTrees(testTrees);
 
 
 function htmlbarsPackage(packageName) {
-  var tree = pickFiles('bower_components/htmlbars/packages/' + packageName + '/lib', {
+  var trees = [];
+
+  var tree = pickFiles('node_modules/htmlbars/packages/' + packageName + '/lib', {
     srcDir: '/',
     destDir: '/' + packageName
   });
@@ -637,7 +640,13 @@ function htmlbarsPackage(packageName) {
     destFile: packageName + '.js'
   });
 
-  tree = transpileES6(tree, {
+  trees.push(tree);
+  
+  if (packageName === 'htmlbars-compiler') {
+    trees.push(htmlbarsHandlebarsInliner);
+  }
+
+  tree = transpileES6(mergeTrees(trees), {
     moduleName: true
   });
 
@@ -645,7 +654,7 @@ function htmlbarsPackage(packageName) {
 }
 
 function htmlbarsTestHelpers(helper, rename) {
-  var tree = pickFiles('bower_components/htmlbars/test/support', {
+  var tree = pickFiles('node_modules/htmlbars/test/support', {
     files: [helper + '.js'],
     srcDir: '/',
     destDir: '/'
