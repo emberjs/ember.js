@@ -1,6 +1,3 @@
-import Stream from "ember-metal/streams/stream";
-import {readArray} from "ember-metal/streams/read";
-
 function streamifyArgs(view, params, options, env) {
   if (params.length === 3 && params[1] === "as") {
     params.splice(0, 3, {
@@ -70,34 +67,5 @@ export function subexpr(path, view, params, options, env) {
 }
 
 export function lookupHelper(name, env) {
-  if (name === 'concat') { return concat; }
-  if (name === 'attribute') { return attribute; }
   return env.helpers[name];
-}
-
-function attribute(element, params, options) {
-  var name = params[0];
-  var value = params[1];
-
-  value.subscribe(function(lazyValue) {
-    element.setAttribute(name, lazyValue.value());
-  });
-
-  element.setAttribute(name, value.value());
-}
-
-function concat(params, options) {
-  var stream = new Stream(function() {
-    return readArray(params).join('');
-  });
-
-  for (var i = 0, l = params.length; i < l; i++) {
-    var param = params[i];
-
-    if (param && param.isStream) {
-      param.subscribe(stream.notifyAll, stream);
-    }
-  }
-
-  return stream;
 }
