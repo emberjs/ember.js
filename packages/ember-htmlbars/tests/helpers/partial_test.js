@@ -5,11 +5,17 @@ import jQuery from "ember-views/system/jquery";
 var trim = jQuery.trim;
 import Container from "ember-runtime/system/container";
 import EmberHandlebars from "ember-handlebars-compiler";
-
-var compile = EmberHandlebars.compile;
+import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
 
 var MyApp, lookup, view, container;
 var originalLookup = Ember.lookup;
+
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
 
 QUnit.module("Support for {{partial}} helper", {
   setup: function() {
@@ -105,4 +111,3 @@ test("Quoteless parameters passed to {{template}} perform a bound property looku
 
   equal(trim(view.$().text()), "This  is pretty great.");
 });
-
