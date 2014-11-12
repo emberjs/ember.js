@@ -5,6 +5,7 @@
 
 import isNone from 'ember-metal/is_none';
 import run from "ember-metal/run_loop";
+import { get } from "ember-metal/property_get";
 import SimpleStream from "ember-metal/streams/simple";
 
 import {
@@ -49,7 +50,7 @@ function bind(property, options, env, preserveContext, shouldDisplay, valueNorma
     displayTemplate: options.render,
     inverseTemplate: options.inverse,
     lazyValue: lazyValue,
-    previousContext: this.get('context'),
+    previousContext: get(this, 'context'),
     isEscaped: !options.hash.unescaped,
     templateData: env.data,
     templateHash: options.hash,
