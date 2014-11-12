@@ -5,6 +5,8 @@ import {
   registerHelper,
   default as helpers
 } from "ember-htmlbars/helpers";
+import { concat } from "ember-htmlbars/helpers/concat";
+import { attribute } from "ember-htmlbars/helpers/attribute";
 import { bindHelper } from "ember-htmlbars/helpers/binding";
 import { viewHelper } from "ember-htmlbars/helpers/view";
 import { yieldHelper } from "ember-htmlbars/helpers/yield";
@@ -19,6 +21,8 @@ import {
 } from "ember-htmlbars/helpers/if_unless";
 import { locHelper } from "ember-htmlbars/helpers/loc";
 
+registerHelper('concat', concat);
+registerHelper('attribute', attribute);
 registerHelper('bindHelper', bindHelper);
 registerHelper('bind', bindHelper);
 registerHelper('view', viewHelper);
