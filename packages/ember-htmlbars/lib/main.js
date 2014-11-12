@@ -18,6 +18,8 @@ import {
   boundIfHelper
 } from "ember-htmlbars/helpers/if_unless";
 import { locHelper } from "ember-htmlbars/helpers/loc";
+import { partialHelper } from "ember-htmlbars/helpers/partial";
+import { templateHelper } from "ember-htmlbars/helpers/template";
 
 registerHelper('bindHelper', bindHelper);
 registerHelper('bind', bindHelper);
@@ -31,6 +33,8 @@ registerHelper('boundIf', boundIfHelper);
 registerHelper('log', logHelper);
 registerHelper('debugger', debuggerHelper);
 registerHelper('loc', locHelper);
+registerHelper('partial', partialHelper);
+registerHelper('template', templateHelper);
 
 export var defaultEnv = {
   dom: new DOMHelper(),
