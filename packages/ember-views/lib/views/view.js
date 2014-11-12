@@ -760,7 +760,7 @@ var View = CoreView.extend({
     var templateName = get(this, 'templateName');
     var template = this.templateForName(templateName, 'template');
 
-    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
+    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
 
     return template || get(this, 'defaultTemplate');
   }),
@@ -795,7 +795,7 @@ var View = CoreView.extend({
     var layoutName = get(this, 'layoutName');
     var layout = this.templateForName(layoutName, 'layout');
 
-    Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || layout);
+    Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || !!layout);
 
     return layout || get(this, 'defaultLayout');
   }).property('layoutName'),

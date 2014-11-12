@@ -12,7 +12,7 @@
     "router.js": "https://github.com/tildeio/router.js.git#f7b4b11543222c52d91df861544592a8c1dcea8a",
     "route-recognizer": "https://github.com/tildeio/route-recognizer.git#8e1058e29de741b8e05690c69da9ec402a167c69",
     "dag-map": "https://github.com/krisselden/dag-map.git#e307363256fe918f426e5a646cb5f5062d3245be",
-    "ember-dev": "https://github.com/emberjs/ember-dev.git#fb788b5367a592ac39165416d05a39e78b50a520",
+    "ember-dev": "https://github.com/emberjs/ember-dev.git#1c30a1666273ab2a9b134a42bad28c774f9ecdfc",
     "simple-html-tokenizer": "tildeio/simple-html-tokenizer#83952381ed525eaff9b81c79ccd2ae5af1c9ed9f"
   },
   "resolutions": {

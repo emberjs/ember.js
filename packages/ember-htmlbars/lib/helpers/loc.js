@@ -39,16 +39,14 @@ import { loc } from 'ember-runtime/system/string';
   @see {Ember.String#loc}
 */
 export function locHelper(params, options, env) {
-  function ifParamsContainBindings() {
+  Ember.assert('You cannot pass bindings to `loc` helper', function ifParamsContainBindings() {
     for (var i = 0, l = params.length; i < l; i++) {
       if (options.types[i] === 'id') {
         return false;
       }
     }
     return true;
-  }
-
-  Ember.assert('You cannot pass bindings to `loc` helper', ifParamsContainBindings());
+  });
 
   options.morph.update(loc.apply(this, params));
 }

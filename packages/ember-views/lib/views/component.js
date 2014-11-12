@@ -145,7 +145,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     var templateName = get(this, 'templateName');
     var template = this.templateForName(templateName, 'template');
 
-    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
+    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
 
     return template || get(this, 'defaultTemplate');
   }).property('templateName'),
