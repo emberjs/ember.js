@@ -85,7 +85,7 @@ function lookupPartial(view, templateName) {
     template = view.templateForName(templateName);
   }
 
-  Ember.assert('Unable to find partial with name "'+templateName+'"', template);
+  Ember.assert('Unable to find partial with name "'+templateName+'"', !!template);
 
   return template;
 }

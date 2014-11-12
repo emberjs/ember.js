@@ -685,7 +685,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     graph.topsort(function (vertex) {
       var initializer = vertex.value;
-      Ember.assert("No application initializer named '" + vertex.name + "'", initializer);
+      Ember.assert("No application initializer named '" + vertex.name + "'", !!initializer);
       initializer(container, namespace);
     });
   },

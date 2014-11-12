@@ -87,7 +87,7 @@ function renderPartial(context, name, options) {
   var template = view.templateForName(underscoredName);
   var deprecatedTemplate = !template && view.templateForName(name);
 
-  Ember.assert("Unable to find partial with name '"+name+"'.", template || deprecatedTemplate);
+  Ember.assert("Unable to find partial with name '"+name+"'.", !!template || !!deprecatedTemplate);
 
   template = template || deprecatedTemplate;
 

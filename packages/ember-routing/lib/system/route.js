@@ -1332,7 +1332,7 @@ var Route = EmberObject.extend(ActionHandler, {
         Ember.assert("You used the dynamic segment " + name + "_id in your route " +
                      routeName + ", but " + namespace + "." + classify(name) +
                      " did not exist and you did not override your route's `model` " +
-                     "hook.", modelClass);
+                     "hook.", !!modelClass);
 
         if (!modelClass) { return; }
 

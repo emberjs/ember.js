@@ -35,7 +35,15 @@ Ember Debug
     falsy, an exception will be thrown.
 */
 Ember.assert = function(desc, test) {
-  if (!test) {
+  var throwAssertion;
+
+  if (typeof test === 'function') {
+    throwAssertion = !test();
+  } else {
+    throwAssertion = !test;
+  }
+
+  if (throwAssertion) {
     throw new EmberError("Assertion Failed: " + desc);
   }
 };
@@ -83,7 +91,15 @@ Ember.debug = function(message) {
     will be displayed.
 */
 Ember.deprecate = function(message, test) {
-  if (test) { return; }
+  var noDeprecation;
+
+  if (typeof test === 'function') {
+    noDeprecation = test();
+  } else {
+    noDeprecation = test;
+  }
+
+  if (noDeprecation) { return; }
 
   if (Ember.ENV.RAISE_ON_DEPRECATION) { throw new EmberError(message); }
 

@@ -65,7 +65,7 @@ export function withHelper(params, options, env) {
     params.length === 1
   );
 
-  Ember.assert("The {{#with}} helper must be called with a block", options.render);
+  Ember.assert("The {{#with}} helper must be called with a block", !!options.render);
 
   var source, keyword;
   var preserveContext, context;

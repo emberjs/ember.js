@@ -87,7 +87,7 @@ function unboundIfHelper(params, options, env) {
 */
 function ifHelper(params, options, env) {
   Ember.assert("You must pass exactly one argument to the if helper", params.length === 1);
-  Ember.assert("You must pass a block to the if helper", options.render);
+  Ember.assert("You must pass a block to the if helper", !!options.render);
 
   options.helperName = options.helperName || ('if ');
 
@@ -109,7 +109,7 @@ function ifHelper(params, options, env) {
 */
 function unlessHelper(params, options, env) {
   Ember.assert("You must pass exactly one argument to the unless helper", params.length === 1);
-  Ember.assert("You must pass a block to the unless helper", options.render);
+  Ember.assert("You must pass a block to the unless helper", !!options.render);
 
   var fn = options.render;
   var inverse = options.inverse || function(){ return ''; };
