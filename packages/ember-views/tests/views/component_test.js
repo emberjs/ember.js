@@ -208,3 +208,41 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
     equal(profilerService, appComponent.get('profilerService'), "service.profiler is injected");
   });
 }
+
+
+QUnit.module('Ember.Component - subscribed and sent actions trigger errors');
+
+test('something', function() {
+  expect(2);
+
+  var appComponent = Component.extend({
+    actions: {
+      foo: function(message) {
+        equal('bar', message);
+      }
+    }
+  }).create();
+
+  appComponent.send('foo', 'bar');
+ 
+  throws(function() {
+    appComponent.send('baz', 'bar');
+  }, /had no action handler for: baz/, 'asdf');
+});
+
+test('component with target', function() {
+  expect(2);
+
+  var target = {
+    send: function(message, payload) {
+      equal('foo', message);
+      equal('baz', payload);
+    }
+  };
+
+  var appComponent = Component.create({
+    target: target
+  });
+
+  appComponent.send('foo', 'baz');
+});
