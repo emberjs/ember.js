@@ -72,7 +72,6 @@ import {
   textareaHelper
 } from "ember-handlebars/controls";
 
-import ComponentLookup from "ember-handlebars/component_lookup";
 import {
   _HandlebarsBoundView,
   SimpleHandlebarsView
@@ -106,7 +105,6 @@ EmberHandlebars.ViewHelper = ViewHelper;
 // Ember Globals
 Ember.Handlebars = EmberHandlebars;
 EmberHandlebars.get = handlebarsGet;
-Ember.ComponentLookup = ComponentLookup;
 Ember._SimpleHandlebarsView = SimpleHandlebarsView;
 Ember._HandlebarsBoundView = _HandlebarsBoundView;
 Ember._SimpleMetamorphView = _SimpleMetamorphView;

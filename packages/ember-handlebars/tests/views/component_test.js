@@ -3,7 +3,7 @@ import Container from 'container/container';
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import EmberHandlebars from 'ember-handlebars-compiler';
-import ComponentLookup from 'ember-handlebars/component_lookup';
+import ComponentLookup from 'ember-views/component_lookup';
 
 var compile = EmberHandlebars.compile;
 var container, view;
