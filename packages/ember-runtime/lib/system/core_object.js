@@ -170,16 +170,22 @@ function makeCtor() {
         }
       }
     }
+
     finishPartial(this, m);
+
     var length = arguments.length;
-    var args = new Array(length);
-    for (var x = 0; x < length; x++) {
-      args[x] = arguments[x];
+
+    if (length === 0) {
+      this.init();
+    } else if (length === 1) {
+      this.init(arguments[0]);
+    } else {
+      this.init.apply(this, arguments);
     }
-    apply(this, this.init, args);
+
     m.proto = proto;
     finishChains(this);
-    sendEvent(this, "init");
+    sendEvent(this, 'init');
   };
 
   Class.toString = Mixin.prototype.toString;
