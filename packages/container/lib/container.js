@@ -104,20 +104,6 @@ Container.prototype = {
   },
 
   /**
-    Sets a key-value pair on the current container. If a parent container,
-    has the same key, once set on a child, the parent and child will diverge
-    as expected.
-
-    @method set
-    @param {Object} object
-    @param {String} key
-    @param {any} value
-  */
-  set: function(object, key, value) {
-    object[key] = value;
-  },
-
-  /**
     Registers a factory for later injection.
 
     Example:
