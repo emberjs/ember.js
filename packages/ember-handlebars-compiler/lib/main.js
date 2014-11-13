@@ -10,7 +10,7 @@
 @submodule ember-handlebars-compiler
 */
 
-import Ember from "ember-metal/core";
+import Ember from "ember-metal/core"; // Ember.assert
 
 // ES6Todo: you'll need to import debugger once debugger is es6'd.
 if (typeof Ember.assert === 'undefined')   { Ember.assert = function(){}; }
@@ -25,8 +25,6 @@ var objectCreate = Object.create || function(parent) {
 // set up for circular references later
 var View, Component;
 
-// ES6Todo: when ember-debug is es6'ed import this.
-// var emberAssert = Ember.assert;
 var Handlebars = (Ember.imports && Ember.imports.Handlebars) || (this && this.Handlebars);
 if (!Handlebars && typeof require === 'function') {
   Handlebars = require('handlebars');

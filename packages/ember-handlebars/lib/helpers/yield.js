@@ -3,8 +3,7 @@
 @submodule ember-handlebars
 */
 
-import Ember from "ember-metal/core";
-// var emberAssert = Ember.assert;
+import Ember from "ember-metal/core"; // Ember.assert
 
 import { get } from "ember-metal/property_get";
 

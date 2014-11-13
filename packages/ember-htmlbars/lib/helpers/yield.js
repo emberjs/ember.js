@@ -4,7 +4,6 @@
 */
 
 import Ember from "ember-metal/core";
-// var emberAssert = Ember.assert;
 
 import { get } from "ember-metal/property_get";
 

@@ -4,7 +4,6 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.warn, Ember.assert
-// var emberWarn = Ember.warn, emberAssert = Ember.assert;
 
 import EmberObject from "ember-runtime/system/object";
 import { get } from "ember-metal/property_get";

@@ -3,7 +3,6 @@ import TextField from "ember-handlebars/controls/text_field";
 import TextArea from "ember-handlebars/controls/text_area";
 
 import Ember from "ember-metal/core"; // Ember.assert
-// var emberAssert = Ember.assert;
 
 import EmberHandlebars from "ember-handlebars-compiler";
 
