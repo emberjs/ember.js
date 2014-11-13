@@ -21,7 +21,6 @@ import { locHelper } from "ember-htmlbars/helpers/loc";
 import { partialHelper } from "ember-htmlbars/helpers/partial";
 import { templateHelper } from "ember-htmlbars/helpers/template";
 
-registerHelper('bindHelper', bindHelper);
 registerHelper('bind', bindHelper);
 registerHelper('view', viewHelper);
 registerHelper('yield', yieldHelper);
