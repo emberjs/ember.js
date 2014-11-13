@@ -1,3 +1,4 @@
+import {create as o_create} from "ember-metal/platform";
 var setProperties = function(object, properties) {
   for (var key in properties) {
     if (properties.hasOwnProperty(key)) {
