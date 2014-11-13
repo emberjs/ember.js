@@ -55,8 +55,6 @@ export default Mixin.create({
       delete props['template'];
     }
 
-    if (deprecatedProperty) {
-      Ember.deprecate('Do not specify ' + deprecatedProperty + ' on a Component, use ' + replacementProperty + ' instead.', false);
-    }
+    Ember.deprecate('Do not specify ' + deprecatedProperty + ' on a Component, use ' + replacementProperty + ' instead.', !deprecatedProperty);
   }
 });

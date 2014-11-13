@@ -1036,9 +1036,7 @@ Application.reopenClass({
   @return {*} the resolved value for a given lookup
 */
 function resolverFor(namespace) {
-  if (namespace.get('resolver')) {
-    Ember.deprecate('Application.resolver is deprecated in favor of Application.Resolver', false);
-  }
+  Ember.deprecate('Application.resolver is deprecated in favor of Application.Resolver', !namespace.get('resolver'));
 
   var ResolverClass = namespace.get('resolver') || namespace.get('Resolver') || DefaultResolver;
   var resolver = ResolverClass.create({
