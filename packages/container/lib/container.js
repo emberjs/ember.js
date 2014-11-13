@@ -358,11 +358,13 @@ Container.prototype = {
 
   /**
     @method options
-    @param {String} type
+    @param {String} fullName
     @param {Object} options
   */
-  options: function(type, options) {
-    this.optionsForType(type, options);
+  options: function(fullName, options) {
+    options = options || {};
+    var normalizedName = this.normalize(fullName);
+    this._options[normalizedName] = options;
   },
 
   /**
