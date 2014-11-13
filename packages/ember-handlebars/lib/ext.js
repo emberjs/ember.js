@@ -1,5 +1,4 @@
 import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.assert, Ember.Handlebars, Ember.lookup
-// var emberAssert = Ember.assert;
 
 import { fmt } from "ember-runtime/system/string";
 

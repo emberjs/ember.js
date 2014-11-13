@@ -1,5 +1,4 @@
 import Ember from "ember-metal/core"; // Ember.assert
-// var emberAssert = Ember.assert;
 
 import isNone from 'ember-metal/is_none';
 import { bind } from "ember-handlebars/helpers/binding";
