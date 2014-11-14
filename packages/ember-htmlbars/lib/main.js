@@ -1,4 +1,4 @@
-import { content, element, subexpr, lookupHelper } from "ember-htmlbars/hooks";
+import { content, element, subexpr } from "ember-htmlbars/hooks";
 import { DOMHelper } from "morph";
 
 import {
@@ -42,8 +42,7 @@ export var defaultEnv = {
   hooks: {
     content: content,
     element: element,
-    subexpr: subexpr,
-    lookupHelper: lookupHelper
+    subexpr: subexpr
   },
 
   helpers: helpers

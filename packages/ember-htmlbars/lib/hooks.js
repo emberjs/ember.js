@@ -1,5 +1,4 @@
-import Stream from "ember-metal/streams/stream";
-import {readArray} from "ember-metal/streams/read";
+import { lookupHelper } from "ember-htmlbars/system/lookup-helper";
 
 function streamifyArgs(view, params, options, env) {
   if (params.length === 3 && params[1] === "as") {
@@ -29,13 +28,11 @@ function streamifyArgs(view, params, options, env) {
 }
 
 export function content(morph, path, view, params, options, env) {
-  var hooks = env.hooks;
-
   // TODO: just set escaped on the morph in HTMLBars
   morph.escaped = options.escaped;
-  var helper = hooks.lookupHelper(path, env);
+  var helper = lookupHelper(path, view, env);
   if (!helper) {
-    helper = hooks.lookupHelper('bindHelper', env);
+    helper = lookupHelper('bindHelper', view, env);
     // Modify params to include the first word
     params.unshift(path);
     options.types = ['id'];
@@ -46,8 +43,7 @@ export function content(morph, path, view, params, options, env) {
 }
 
 export function element(element, path, view, params, options, env) { //jshint ignore:line
-  var hooks = env.hooks;
-  var helper = hooks.lookupHelper(path, env);
+  var helper = lookupHelper(path, view, env);
 
   if (helper) {
     streamifyArgs(view, params, options, env);
@@ -58,8 +54,7 @@ export function element(element, path, view, params, options, env) { //jshint ig
 }
 
 export function subexpr(path, view, params, options, env) {
-  var hooks = env.hooks;
-  var helper = hooks.lookupHelper(path, env);
+  var helper = lookupHelper(path, view, env);
 
   if (helper) {
     streamifyArgs(view, params, options, env);
@@ -67,37 +62,4 @@ export function subexpr(path, view, params, options, env) {
   } else {
     return view.getStream(path);
   }
-}
-
-export function lookupHelper(name, env) {
-  if (name === 'concat') { return concat; }
-  if (name === 'attribute') { return attribute; }
-  return env.helpers[name];
-}
-
-function attribute(element, params, options) {
-  var name = params[0];
-  var value = params[1];
-
-  value.subscribe(function(lazyValue) {
-    element.setAttribute(name, lazyValue.value());
-  });
-
-  element.setAttribute(name, value.value());
-}
-
-function concat(params, options) {
-  var stream = new Stream(function() {
-    return readArray(params).join('');
-  });
-
-  for (var i = 0, l = params.length; i < l; i++) {
-    var param = params[i];
-
-    if (param && param.isStream) {
-      param.subscribe(stream.notifyAll, stream);
-    }
-  }
-
-  return stream;
 }

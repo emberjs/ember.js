@@ -30,6 +30,7 @@ import Component from "ember-views/views/component";
 
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import ViewTargetActionSupport from "ember-views/mixins/view_target_action_support";
+import ComponentLookup from "ember-views/component_lookup";
 // END IMPORTS
 
 /**
@@ -55,6 +56,7 @@ Ember.View = View;
 Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;
 
+Ember.ComponentLookup = ComponentLookup;
 Ember.ContainerView = ContainerView;
 Ember.CollectionView = CollectionView;
 Ember.Component = Component;
