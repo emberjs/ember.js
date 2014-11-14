@@ -57,7 +57,7 @@ import WithView from "ember-views/views/with_view";
   @param {Hash} options
   @return {String} HTML string
 */
-export function withHelper(params, options, env) {
+export function withHelper(params, hash, options, env) {
 
   Ember.assert(
     '{{#with foo}} must be called with a single argument or the use the '+
@@ -84,13 +84,13 @@ export function withHelper(params, options, env) {
 
     localizedOptions.keywords = {};
     localizedOptions.keywords[keyword] = source;
-    localizedOptions.hash.keywordName = keyword;
+    hash.keywordName = keyword;
 
     options = localizedOptions;
     preserveContext = true;
   }
 
-  bind.call(this, source, options, env, preserveContext, exists, undefined, undefined, WithView);
+  bind.call(this, source, hash, options, env, preserveContext, exists, undefined, undefined, WithView);
 }
 
 function exists(value) {

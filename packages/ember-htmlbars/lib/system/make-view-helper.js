@@ -13,10 +13,10 @@ import { viewHelper } from "ember-htmlbars/helpers/view";
   @since 1.2.0
 */
 export default function makeViewHelper(ViewClass) {
-  return function(params, options, env) {
+  return function(params, hash, options, env) {
     Ember.assert("You can only pass attributes (such as name=value) not bare " +
                  "values to a helper for a View found in '" + ViewClass.toString() + "'", params.length === 0);
 
-    return viewHelper.call(this, [ViewClass], options, env);
+    return viewHelper.call(this, [ViewClass], hash, options, env);
   };
 }

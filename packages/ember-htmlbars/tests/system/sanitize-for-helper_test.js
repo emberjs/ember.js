@@ -8,13 +8,12 @@ QUnit.module('ember-htmlbars: sanitize-for-helper', {
 
   teardown: function() {
     ok(options.types, 'types is present');
-    ok(options.hash, 'hash is present');
     ok(options.hashTypes, 'hashTypes is present');
   }
 });
 
 test('will not override `types` if present', function() {
-  expect(4);
+  expect(3);
 
   var types = [];
   options.types = types;
@@ -25,34 +24,15 @@ test('will not override `types` if present', function() {
 });
 
 test('will add `types` if not present', function() {
-  expect(4);
+  expect(3);
 
   sanitizeOptionsForHelper(options);
 
   deepEqual(options.types, [], 'types is added when not present');
 });
 
-test('will not override `hash` if present', function() {
-  expect(4);
-
-  var hash = {};
-  options.hash = hash;
-
-  sanitizeOptionsForHelper(options);
-
-  equal(options.hash, hash, 'hash is not changed when present');
-});
-
-test('will add `hash` if not present', function() {
-  expect(4);
-
-  sanitizeOptionsForHelper(options);
-
-  deepEqual(options.hash, {}, 'hash is added when not present');
-});
-
 test('will not override `hashTypes` if present', function() {
-  expect(4);
+  expect(3);
 
   var hashTypes = {};
   options.hashTypes = hashTypes;
@@ -63,7 +43,7 @@ test('will not override `hashTypes` if present', function() {
 });
 
 test('will add `hashTypes` if not present', function() {
-  expect(4);
+  expect(3);
 
   sanitizeOptionsForHelper(options);
 

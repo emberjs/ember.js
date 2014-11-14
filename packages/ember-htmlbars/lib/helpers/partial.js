@@ -48,7 +48,7 @@ import { bind } from "./binding";
   @param {String} partialName the name of the template to render minus the leading underscore
 */
 
-export function partialHelper(params, options, env) {
+export function partialHelper(params, hash, options, env) {
   var parentView = this;
 
   options.helperName = options.helperName || 'partial';
@@ -62,7 +62,7 @@ export function partialHelper(params, options, env) {
       renderPartial(renderView, partialNameStream.value(), renderView._morph, renderEnv);
     };
 
-    return bind.call(parentView, partialNameStream, options, env, true, exists);
+    return bind.call(parentView, partialNameStream, hash, options, env, true, exists);
   } else {
     // Render the partial right into parent template.
     renderPartial(parentView, params[0], options.morph, env);

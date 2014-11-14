@@ -10,10 +10,6 @@ export function sanitizeOptionsForHelper(options) {
     options.types = [];
   }
 
-  if (!options.hash) {
-    options.hash = {};
-  }
-
   if (!options.hashTypes) {
     options.hashTypes = {};
   }

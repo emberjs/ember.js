@@ -38,7 +38,7 @@ import { loc } from 'ember-runtime/system/string';
   @param {String} str The string to format
   @see {Ember.String#loc}
 */
-export function locHelper(params, options, env) {
+export function locHelper(params, hash, options, env) {
   Ember.assert('You cannot pass bindings to `loc` helper', function ifParamsContainBindings() {
     for (var i = 0, l = params.length; i < l; i++) {
       if (options.types[i] === 'id') {
