@@ -35,7 +35,7 @@ export function content(morph, path, view, params, options, env) {
   morph.escaped = options.escaped;
   var helper = hooks.lookupHelper(path, env);
   if (!helper) {
-    helper = hooks.lookupHelper('bindHelper', env);
+    helper = hooks.lookupHelper('bind', env);
     // Modify params to include the first word
     params.unshift(path);
     options.types = ['id'];
