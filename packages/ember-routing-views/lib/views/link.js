@@ -270,10 +270,15 @@ var LinkView = EmberComponent.extend({
     When `true` interactions with the element will not trigger route changes.
     @property disabled
   */
-  disabled: computed(function computeLinkViewDisabled(key, value) {
-    if (value !== undefined) { this.set('_isDisabled', value); }
+  disabled: computed({
+    get: function(key, value) {
+      return false;
+    },
+    set: function(key, value) {
+      if (value !== undefined) { this.set('_isDisabled', value); }
 
-    return value ? get(this, 'disabledClass') : false;
+      return value ? get(this, 'disabledClass') : false;
+    }
   }),
 
   /**

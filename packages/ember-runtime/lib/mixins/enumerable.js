@@ -956,8 +956,8 @@ export default Mixin.create({
     @type Array
     @return this
   */
-  '[]': computed(function(key, value) {
-    return this;
+  '[]': computed({
+    get: function(key) { return this; }
   }),
 
   // ..........................................................

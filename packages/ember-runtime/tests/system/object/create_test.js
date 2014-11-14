@@ -31,9 +31,13 @@ QUnit.test("simple properties are set", function() {
 
 QUnit.test("calls computed property setters", function() {
   var MyClass = EmberObject.extend({
-    foo: computed(function(key, val) {
-      if (arguments.length === 2) { return val; }
-      return "this is not the value you're looking for";
+    foo: computed({
+      get: function() {
+        return "this is not the value you're looking for";
+      },
+      set: function(key, value) {
+        return value;
+      }
     })
   });
 

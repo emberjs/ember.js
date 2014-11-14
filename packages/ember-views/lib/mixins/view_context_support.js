@@ -16,12 +16,13 @@ var ViewContextSupport = Mixin.create({
     @property context
     @type Object
   */
-  context: computed(function(key, value) {
-    if (arguments.length === 2) {
+  context: computed({
+    get: function() {
+      return get(this, '_context');
+    },
+    set: function(key, value) {
       set(this, '_context', value);
       return value;
-    } else {
-      return get(this, '_context');
     }
   }).volatile(),
 
@@ -43,23 +44,23 @@ var ViewContextSupport = Mixin.create({
     @property _context
     @private
   */
-  _context: computed(function(key, value) {
-    if (arguments.length === 2) {
+  _context: computed({
+    get: function() {
+      var parentView, controller;
+
+      if (controller = get(this, 'controller')) {
+        return controller;
+      }
+
+      parentView = this._parentView;
+      if (parentView) {
+        return get(parentView, '_context');
+      }
+      return null;
+    },
+    set: function(key, value) {
       return value;
     }
-
-    var parentView, controller;
-
-    if (controller = get(this, 'controller')) {
-      return controller;
-    }
-
-    parentView = this._parentView;
-    if (parentView) {
-      return get(parentView, '_context');
-    }
-
-    return null;
   }),
 
   _controller: null,
@@ -71,18 +72,18 @@ var ViewContextSupport = Mixin.create({
     @property controller
     @type Object
   */
-  controller: computed(function(key, value) {
-    if (arguments.length === 2) {
+  controller: computed({
+    get: function() {
+      if (this._controller) {
+        return this._controller;
+      }
+
+      return this._parentView ? get(this._parentView, 'controller') : null;
+    },
+    set: function(_, value) {
       this._controller = value;
       return value;
     }
-
-    if (this._controller) {
-      return this._controller;
-    }
-
-    var parentView = this._parentView;
-    return parentView ? get(parentView, 'controller') : null;
   })
 });
 

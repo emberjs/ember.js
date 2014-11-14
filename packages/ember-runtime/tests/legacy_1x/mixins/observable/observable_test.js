@@ -238,11 +238,14 @@ QUnit.module("object.set()", {
 
       // computed property
       _computed: "computed",
-      computed: computed(function(key, value) {
-        if (value !== undefined) {
+      computed: computed({
+        get: function(key) {
+          return this._computed;
+        },
+        set: function(key, value) {
           this._computed = value;
+          return this._computed;
         }
-        return this._computed;
       }).volatile(),
 
       // method, but not a property
@@ -322,38 +325,62 @@ QUnit.module("Computed properties", {
       // REGULAR
 
       computedCalls: [],
-      computed: computed(function(key, value) {
-        this.computedCalls.push(value);
-        return 'computed';
+      computed: computed({
+        get: function() {
+          this.computedCalls.push('getter-called');
+          return 'computed';
+        },
+        set: function(key, value) {
+          this.computedCalls.push(value);
+        }
       }).volatile(),
 
       computedCachedCalls: [],
-      computedCached: computed(function(key, value) {
-        this.computedCachedCalls.push(value);
-        return 'computedCached';
+      computedCached: computed({
+        get: function() {
+          this.computedCachedCalls.push('getter-called');
+          return 'computedCached';
+        },
+        set: function(key, value) {
+          this.computedCachedCalls.push(value);
+        }
       }),
-
 
       // DEPENDENT KEYS
 
       changer: 'foo',
 
       dependentCalls: [],
-      dependent: computed(function(key, value) {
-        this.dependentCalls.push(value);
-        return 'dependent';
+      dependent: computed({
+        get: function() {
+          this.dependentCalls.push('getter-called');
+          return 'dependent';
+        },
+        set: function(key, value) {
+          this.dependentCalls.push(value);
+        }
       }).property('changer').volatile(),
 
       dependentFrontCalls: [],
-      dependentFront: computed('changer', function(key, value) {
-        this.dependentFrontCalls.push(value);
-        return 'dependentFront';
+      dependentFront: computed('changer', {
+        get: function() {
+          this.dependentFrontCalls.push('getter-called');
+          return 'dependentFront';
+        },
+        set: function(key, value) {
+          this.dependentFrontCalls.push(value);
+        }
       }).volatile(),
 
       dependentCachedCalls: [],
-      dependentCached: computed(function(key, value) {
-        this.dependentCachedCalls.push(value);
-        return 'dependentCached';
+      dependentCached: computed({
+        get: function() {
+          this.dependentCachedCalls.push('getter-called!');
+          return 'dependentCached';
+        },
+        set: function(key, value) {
+          this.dependentCachedCalls.push(value);
+        }
       }).property('changer'),
 
       // every time it is recomputed, increments call
@@ -364,26 +391,31 @@ QUnit.module("Computed properties", {
 
       // depends on cached property which depends on another property...
       nestedIncCallCount: 0,
-      nestedInc: computed(function(key, value) {
+      nestedInc: computed(function(key) {
         get(this, 'inc');
         return this.nestedIncCallCount++;
       }).property('inc'),
 
       // two computed properties that depend on a third property
       state: 'on',
-      isOn: computed(function(key, value) {
-        if (value !== undefined) {
+      isOn: computed({
+        get: function() {
+          return this.get('state') === 'on';
+        },
+        set: function(key, value) {
           this.set('state', 'on');
+          return this.get('state') === 'on';
         }
-
-        return this.get('state') === 'on';
       }).property('state').volatile(),
 
-      isOff: computed(function(key, value) {
-        if (value !== undefined) {
+      isOff: computed({
+        get: function() {
+          return this.get('state') === 'off';
+        },
+        set: function(key, value) {
           this.set('state', 'off');
+          return this.get('state') === 'off';
         }
-        return this.get('state') === 'off';
       }).property('state').volatile()
 
     });

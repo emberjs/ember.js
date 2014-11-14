@@ -430,11 +430,15 @@ var Select = View.extend({
     @type String
     @default null
   */
-  value: computed('_valuePath', 'selection', function(key, value) {
-    if (arguments.length === 2) { return value; }
-    var valuePath = get(this, '_valuePath');
-    return valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection');
-  }),
+  value: computed({
+    get: function(key) {
+      var valuePath = get(this, '_valuePath');
+      return valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection');
+    },
+    set: function(key, value) {
+      return value;
+    }
+  }).property('_valuePath', 'selection'),
 
   /**
     If given, a top-most dummy option will be rendered to serve as a user
