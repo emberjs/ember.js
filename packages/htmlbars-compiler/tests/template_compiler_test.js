@@ -8,7 +8,7 @@ QUnit.module("TemplateCompiler");
 var dom = new DOMHelper();
 
 var hooks = {
-  content: function(morph, helperName, context, params, options, env) {
+  content: function(morph, helperName, context, params, hash, options, env) {
     if (helperName === 'if') {
       if (context[params[0]]) {
         options.hooks = this;

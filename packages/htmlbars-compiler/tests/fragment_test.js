@@ -79,12 +79,13 @@ test('hydrates a fragment with morph mustaches', function () {
   var env = {
     dom: new DOMHelper(),
     hooks: {
-      content: function(morph, path, context, params, options) {
+      content: function(morph, path, context, params, hash, options) {
         contentResolves.push({
           morph: morph,
           context: context,
           path: path,
           params: params,
+          hash: hash,
           options: options
         });
       }
@@ -100,8 +101,8 @@ test('hydrates a fragment with morph mustaches', function () {
   equal(foo.context, context);
   equal(foo.path, 'foo');
   deepEqual(foo.params, ["foo",3,"blah"]);
+  deepEqual(foo.hash, {ack:"syn",bar:"baz"});
   deepEqual(foo.options.types, ["string","number","id"]);
-  deepEqual(foo.options.hash, {ack:"syn",bar:"baz"});
   deepEqual(foo.options.hashTypes, {ack:"string",bar:"id"});
   equal(foo.options.escaped, true);
 
