@@ -429,7 +429,7 @@ test("Mustache in unquoted attribute value", function() {
   ]));
 });
 
-test("Web components", function() {
+test("Components", function() {
   var t = "<x-foo id='{{bar}}' class='foo-{{bar}}'>{{a}}{{b}}c{{d}}</x-foo>{{e}}";
   astEqual(t, root([
     text(''),
