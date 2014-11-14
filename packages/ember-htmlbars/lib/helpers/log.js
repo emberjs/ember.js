@@ -16,7 +16,7 @@ import Logger from "ember-metal/logger";
   @for Ember.Handlebars.helpers
   @param {String} property
 */
-export function logHelper(params, options, env) {
+export function logHelper(params, hash, options, env) {
   var logger = Logger.log;
   var values = [];
 

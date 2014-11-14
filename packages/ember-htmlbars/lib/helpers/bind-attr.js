@@ -136,31 +136,30 @@ import jQuery from "ember-views/system/jquery";
   @param {Hash} options
   @return {String} HTML string
 */
-function bindAttrHelper(params, options, env) {
+function bindAttrHelper(params, hash, options, env) {
   var element  = jQuery(options.element);
-  var attrs = options.hash;
 
-  Ember.assert("You must specify at least one hash argument to bind-attr", !!keys(attrs).length);
+  Ember.assert("You must specify at least one hash argument to bind-attr", !!keys(hash).length);
 
   var view = this;
 
   // Handle classes differently, as we can bind multiple classes
-  var classBindings = attrs['class'];
+  var classBindings = hash['class'];
   if (classBindings != null) {
 
     var classResults = bindClasses(element, classBindings, view, options);
 
     View.applyAttributeBindings(element, 'class', classResults.join(' '));
 
-    delete attrs['class'];
+    delete hash['class'];
   }
 
-  var attrKeys = keys(attrs);
+  var attrKeys = keys(hash);
 
   // For each attribute passed, create an observer and emit the
   // current value of the property as an attribute.
   forEach.call(attrKeys, function(attr) {
-    var path = attrs[attr];
+    var path = hash[attr];
 
     var lazyValue;
 

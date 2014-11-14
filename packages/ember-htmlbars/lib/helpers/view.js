@@ -14,8 +14,7 @@ import { readViewFactory } from "ember-views/streams/read";
 import View from "ember-views/views/view";
 import SimpleStream from "ember-metal/streams/simple";
 
-function makeBindings(options, view) {
-  var hash = options.hash;
+function makeBindings(hash, options, view) {
   var hashTypes = options.hashTypes;
 
   for (var prop in hash) {
@@ -44,9 +43,8 @@ function makeBindings(options, view) {
 }
 
 export var ViewHelper = EmberObject.create({
-  propertiesFromHTMLOptions: function(options, env) {
+  propertiesFromHTMLOptions: function(hash, options, env) {
     var view    = env.data.view;
-    var hash    = options.hash || {};
     var classes = read(hash['class']);
 
     var extensions = {
@@ -113,13 +111,13 @@ export var ViewHelper = EmberObject.create({
     return extensions;
   },
 
-  helper: function(newView, options, env) {
+  helper: function(newView, hash, options, env) {
     var data = env.data;
     var fn   = options.render;
 
-    makeBindings(options, env.data.view);
+    makeBindings(hash, options, env.data.view);
 
-    var viewOptions = this.propertiesFromHTMLOptions(options, env);
+    var viewOptions = this.propertiesFromHTMLOptions(hash, options, env);
     var currentView = data.view;
     viewOptions.templateData = data;
     var newViewProto = newView.proto();
@@ -141,7 +139,7 @@ export var ViewHelper = EmberObject.create({
     currentView.appendChild(newView, viewOptions);
   },
 
-  instanceHelper: function(newView, options, env) {
+  instanceHelper: function(newView, hash, options, env) {
     var data = env.data;
     var fn   = options.render;
 
@@ -152,7 +150,7 @@ export var ViewHelper = EmberObject.create({
       View.detectInstance(newView)
     );
 
-    var viewOptions = this.propertiesFromHTMLOptions(options, env);
+    var viewOptions = this.propertiesFromHTMLOptions(hash, options, env);
     var currentView = data.view;
     viewOptions.templateData = data;
 
@@ -351,7 +349,7 @@ export var ViewHelper = EmberObject.create({
   @param {Hash} options
   @return {String} HTML string
 */
-export function viewHelper(params, options, env) {
+export function viewHelper(params, hash, options, env) {
   Ember.assert("The view helper only takes a single argument", params.length <= 2);
 
   var container = this.container || this._keywords.view.value().container;
@@ -372,5 +370,5 @@ export function viewHelper(params, options, env) {
 
   options.helperName = options.helperName || 'view';
 
-  return ViewHelper.helper(viewClass, options, env);
+  return ViewHelper.helper(viewClass, hash, options, env);
 }

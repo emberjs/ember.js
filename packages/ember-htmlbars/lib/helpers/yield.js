@@ -89,7 +89,7 @@ import { get } from "ember-metal/property_get";
   @param {Hash} options
   @return {String} HTML string
 */
-export function yieldHelper(params, options, env) {
+export function yieldHelper(params, hash, options, env) {
   var view = this;
 
   // Yea gods

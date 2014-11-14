@@ -1,7 +1,7 @@
 import { lookupHelper } from "ember-htmlbars/system/lookup-helper";
 import { sanitizeOptionsForHelper } from "ember-htmlbars/system/sanitize-for-helper";
 
-function streamifyArgs(view, params, options, env) {
+function streamifyArgs(view, params, hash, options, env) {
   if (params.length === 3 && params[1] === "as") {
     params.splice(0, 3, {
       from: params[0],
@@ -19,7 +19,6 @@ function streamifyArgs(view, params, options, env) {
   }
 
   // Convert hash ID values to streams
-  var hash = options.hash;
   var hashTypes = options.hashTypes;
   for (var key in hash) {
     if (hashTypes[key] === 'id' && key !== 'classBinding') {
@@ -28,7 +27,7 @@ function streamifyArgs(view, params, options, env) {
   }
 }
 
-export function content(morph, path, view, params, options, env) {
+export function content(morph, path, view, params, hash, options, env) {
   // TODO: just set escaped on the morph in HTMLBars
   morph.escaped = options.escaped;
   var helper = lookupHelper(path, view, env);
@@ -39,30 +38,30 @@ export function content(morph, path, view, params, options, env) {
     options.types = ['id'];
   }
 
-  streamifyArgs(view, params, options, env);
+  streamifyArgs(view, params, hash, options, env);
   sanitizeOptionsForHelper(options);
-  return helper.call(view, params, options, env);
+  return helper.call(view, params, hash, options, env);
 }
 
-export function element(element, path, view, params, options, env) { //jshint ignore:line
+export function element(element, path, view, params, hash, options, env) { //jshint ignore:line
   var helper = lookupHelper(path, view, env);
 
   if (helper) {
-    streamifyArgs(view, params, options, env);
+    streamifyArgs(view, params, hash, options, env);
     sanitizeOptionsForHelper(options);
-    return helper.call(view, params, options, env);
+    return helper.call(view, params, hash, options, env);
   } else {
     return view.getStream(path);
   }
 }
 
-export function subexpr(path, view, params, options, env) {
+export function subexpr(path, view, params, hash, options, env) {
   var helper = lookupHelper(path, view, env);
 
   if (helper) {
-    streamifyArgs(view, params, options, env);
+    streamifyArgs(view, params, hash, options, env);
     sanitizeOptionsForHelper(options);
-    return helper.call(view, params, options, env);
+    return helper.call(view, params, hash, options, env);
   } else {
     return view.getStream(path);
   }

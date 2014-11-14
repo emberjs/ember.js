@@ -19,7 +19,7 @@ function exists(value) {
 
 // Binds a property into the DOM. This will create a hook in DOM that the
 // KVO system will look for and update if the property changes.
-function bind(property, options, env, preserveContext, shouldDisplay, valueNormalizer, childProperties, _viewClass) {
+function bind(property, hash, options, env, preserveContext, shouldDisplay, valueNormalizer, childProperties, _viewClass) {
   var valueStream = property.isStream ? property : this.getStream(property);
   var lazyValue;
 
@@ -51,9 +51,9 @@ function bind(property, options, env, preserveContext, shouldDisplay, valueNorma
     inverseTemplate: options.inverse,
     lazyValue: lazyValue,
     previousContext: get(this, 'context'),
-    isEscaped: !options.hash.unescaped,
+    isEscaped: !hash.unescaped,
     templateData: env.data,
-    templateHash: options.hash,
+    templateHash: hash,
     helperName: options.helperName
   };
 
@@ -112,14 +112,14 @@ function simpleBind(params, options, env) {
   @param {Function} fn Context to provide for rendering
   @return {String} HTML string
 */
-function bindHelper(params, options, env) {
+function bindHelper(params, hash, options, env) {
   Ember.assert("You must pass exactly one argument to the bind helper", params.length === 1);
 
   var property = params[0];
 
   if (options.fn) {
     options.helperName = 'bind';
-    bind.call(this, property, options, env, false, exists);
+    bind.call(this, property, hash, options, env, false, exists);
   } else {
     simpleBind.call(this, params, options, env);
   }

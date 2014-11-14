@@ -40,7 +40,7 @@ import Logger from "ember-metal/logger";
   @for Ember.Handlebars.helpers
   @param {String} property
 */
-export function debuggerHelper(options) {
+export function debuggerHelper() {
 
   // These are helpful values you can inspect while debugging.
   /* jshint unused: false */

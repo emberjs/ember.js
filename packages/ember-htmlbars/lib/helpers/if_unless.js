@@ -4,7 +4,6 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert
-import { default as helpers } from "ember-htmlbars/helpers";
 import { bind } from "ember-htmlbars/helpers/binding";
 
 import { get } from "ember-metal/property_get";
@@ -38,9 +37,9 @@ function shouldDisplayIfHelperContent(result) {
   @param {Function} fn Context to provide for rendering
   @return {String} HTML string
 */
-function boundIfHelper(params, options, env) {
+function boundIfHelper(params, hash, options, env) {
   options.helperName = options.helperName || 'boundIf';
-  return bind.call(this, params[0], options, env, true, shouldDisplayIfHelperContent, shouldDisplayIfHelperContent, [
+  return bind.call(this, params[0], hash, options, env, true, shouldDisplayIfHelperContent, shouldDisplayIfHelperContent, [
    'isTruthy',
    'length'
  ]);
@@ -64,7 +63,7 @@ function boundIfHelper(params, options, env) {
   @return {String} HTML string
   @since 1.4.0
 */
-function unboundIfHelper(params, options, env) {
+function unboundIfHelper(params, hash, options, env) {
   var template = options.render;
 
   if (!shouldDisplayIfHelperContent(params[0].value())) {
@@ -85,7 +84,7 @@ function unboundIfHelper(params, options, env) {
   @param {Hash} options
   @return {String} HTML string
 */
-function ifHelper(params, options, env) {
+function ifHelper(params, hash, options, env) {
   Ember.assert("You must pass exactly one argument to the if helper", params.length === 1);
   Ember.assert("You must pass a block to the if helper", !!options.render);
 
@@ -94,9 +93,9 @@ function ifHelper(params, options, env) {
   options.inverse = options.inverse || function(){ return ''; };
 
   if (options.isUnbound) {
-    return helpers.unboundIf.call(this, params, options, env);
+    return env.helpers.unboundIf.call(this, params, hash, options, env);
   } else {
-    return helpers.boundIf.call(this, params, options, env);
+    return env.helpers.boundIf.call(this, params, hash, options, env);
   }
 }
 
@@ -107,7 +106,7 @@ function ifHelper(params, options, env) {
   @param {Hash} options
   @return {String} HTML string
 */
-function unlessHelper(params, options, env) {
+function unlessHelper(params, hash, options, env) {
   Ember.assert("You must pass exactly one argument to the unless helper", params.length === 1);
   Ember.assert("You must pass a block to the unless helper", !!options.render);
 
@@ -121,9 +120,9 @@ function unlessHelper(params, options, env) {
   options.helperName = options.helperName || helperName;
 
   if (options.isUnbound) {
-    return helpers.unboundIf.call(this, params, options, env);
+    return env.helpers.unboundIf.call(this, params, hash, options, env);
   } else {
-    return helpers.boundIf.call(this, params, options, env);
+    return env.helpers.boundIf.call(this, params, hash, options, env);
   }
 }
 
