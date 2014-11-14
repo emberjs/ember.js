@@ -82,7 +82,7 @@ prototype.helper = function(name, size, escaped, morphNum) {
 prototype.component = function(tag, morphNum) {
   var prepared = prepareHelper(this.stack, 0);
   prepared.options.push('morph:morph'+morphNum);
-  this.pushWebComponent(string(tag), prepared.options, morphNum);
+  this.pushComponent(string(tag), prepared.options, morphNum);
 };
 
 prototype.ambiguous = function(str, escaped, morphNum) {
@@ -137,8 +137,8 @@ prototype.element = function(elementNum){
   this.parents[this.parents.length-1] = elementNodesName;
 };
 
-prototype.pushWebComponent = function(name, pairs, morphNum) {
-  this.source.push(this.indent+'  hooks.webComponent(morph' + morphNum + ', ' + name + ', context, ' + hash(pairs) + ', env);\n');
+prototype.pushComponent = function(name, pairs, morphNum) {
+  this.source.push(this.indent+'  hooks.component(morph' + morphNum + ', ' + name + ', context, ' + hash(pairs) + ', env);\n');
 };
 
 prototype.repairClonedNode = function(blankChildTextNodes, isElementChecked) {
