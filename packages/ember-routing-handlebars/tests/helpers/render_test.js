@@ -25,7 +25,7 @@ import _MetamorphView from "ember-views/views/metamorph_view";
 import jQuery from "ember-views/system/jquery";
 import ActionManager from "ember-views/system/action_manager";
 
-import renderHelper from "ember-routing-handlebars/helpers/render";
+import { renderHelper } from "ember-routing-handlebars/helpers/render";
 import { actionHelper } from "ember-routing-handlebars/helpers/action";
 import { outletHelper } from "ember-routing-handlebars/helpers/outlet";
 

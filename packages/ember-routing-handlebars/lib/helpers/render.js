@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-routing-handlebars
+*/
+
 import Ember from "ember-metal/core"; // assert, deprecate
 import EmberError from "ember-metal/error";
 import { camelize } from "ember-runtime/system/string";
@@ -6,11 +11,6 @@ import {
   default as generateController
 } from "ember-routing/system/generate_controller";
 import { ViewHelper } from "ember-handlebars/helpers/view";
-
-/**
-@module ember
-@submodule ember-routing
-*/
 
 /**
   Calling ``{{render}}`` from within a template will insert another
@@ -82,7 +82,7 @@ You could render it inside the `post` template using the `render` helper.
   @param {Hash} options
   @return {String} HTML string
 */
-export default function renderHelper(name, contextString, options) {
+export function renderHelper(name, contextString, options) {
   var length = arguments.length;
   var container, router, controller, view, initialContext;
 

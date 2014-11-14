@@ -3,7 +3,7 @@ Ember Routing Handlebars
 
 @module ember
 @submodule ember-routing-handlebars
-@requires ember-views
+@requires ember-routing
 */
 
 import Ember from "ember-metal/core";
@@ -11,26 +11,19 @@ import EmberHandlebars from "ember-handlebars";
 
 import {
   deprecatedLinkToHelper,
-  linkToHelper,
-  LinkView,
-  queryParamsHelper
+  linkToHelper
 } from "ember-routing-handlebars/helpers/link_to";
 
-import {
-  outletHelper,
-  OutletView
-} from "ember-routing-handlebars/helpers/outlet";
-
-import renderHelper from "ember-routing-handlebars/helpers/render";
+import { queryParamsHelper } from "ember-routing-handlebars/helpers/query_params";
+import { outletHelper } from "ember-routing-handlebars/helpers/outlet";
+import { renderHelper } from "ember-routing-handlebars/helpers/render";
 
 import {
   ActionHelper,
   actionHelper
 } from "ember-routing-handlebars/helpers/action";
 
-Ember.LinkView = LinkView;
 EmberHandlebars.ActionHelper = ActionHelper;
-EmberHandlebars.OutletView = OutletView;
 
 EmberHandlebars.registerHelper('render', renderHelper);
 EmberHandlebars.registerHelper('action', actionHelper);
