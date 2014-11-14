@@ -1,10 +1,10 @@
 import { merge } from "./utils";
 import SafeString from '../htmlbars-util/safe-string';
 
-export function content(morph, helperName, context, params, options, env) {
+export function content(morph, helperName, context, params, hash, options, env) {
   var value, helper = this.lookupHelper(helperName, context, options);
   if (helper) {
-    value = helper(params, options, env);
+    value = helper.call(context, params, hash, options, env);
   } else {
     value = this.simple(context, helperName, options);
   }
@@ -14,19 +14,19 @@ export function content(morph, helperName, context, params, options, env) {
   morph.update(value);
 }
 
-export function component(morph, tagName, context, options, env) {
+export function component(morph, tagName, context, hash, options, env) {
   var value, helper = this.lookupHelper(tagName, context, options);
   if (helper) {
-    value = helper(null, options, env);
+    value = helper.call(context, null, hash, options, env);
   } else {
-    value = this.componentFallback(morph, tagName, context, options, env);
+    value = this.componentFallback(morph, tagName, context, hash, options, env);
   }
   morph.update(value);
 }
 
-export function componentFallback(morph, tagName, context, options, env) {
+export function componentFallback(morph, tagName, context, hash, options, env) {
   var element = env.dom.createElement(tagName);
-  var hash = options.hash, hashTypes = options.hashTypes;
+  var hashTypes = options.hashTypes;
 
   for (var name in hash) {
     if (hashTypes[name] === 'id') {
@@ -39,14 +39,14 @@ export function componentFallback(morph, tagName, context, options, env) {
   return element;
 }
 
-export function element(domElement, helperName, context, params, options, env) {
+export function element(domElement, helperName, context, params, hash, options, env) {
   var helper = this.lookupHelper(helperName, context, options);
   if (helper) {
-    helper(params, options, env);
+    helper.call(context, params, hash, options, env);
   }
 }
 
-export function attribute(params, options /*, env*/) {
+export function attribute(params, hash, options /*, env*/) {
   var attrName = params[0];
   var attrValue = params[1];
 
@@ -57,12 +57,11 @@ export function attribute(params, options /*, env*/) {
   }
 }
 
-export function concat(params, options /*, env*/) {
-  var context = options.context;
+export function concat(params, hash, options /*, env*/) {
   var value = "";
   for (var i = 0, l = params.length; i < l; i++) {
     if (options.types[i] === 'id') {
-      value += this.simple(context, params[i], options);
+      value += this.simple(this, params[i], options);
     } else {
       value += params[i];
     }
@@ -70,14 +69,14 @@ export function concat(params, options /*, env*/) {
   return value;
 }
 
-export function partial(params, options, env) {
-  return env.partials[params[0]](options.context, env);
+export function partial(params, hash, options, env) {
+  return env.partials[params[0]](this, env);
 }
 
-export function subexpr(helperName, context, params, options, env) {
+export function subexpr(helperName, context, params, hash, options, env) {
   var helper = this.lookupHelper(helperName, context, options);
   if (helper) {
-    return helper(params, options, env);
+    return helper.call(context, params, hash, options, env);
   } else {
     return this.simple(context, helperName, options);
   }
