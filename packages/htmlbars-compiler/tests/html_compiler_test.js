@@ -821,7 +821,7 @@ test("Node helpers can be used for attribute bindings", function() {
 });
 
 
-test('Web components - Called as helpers', function () {
+test('Components - Called as helpers', function () {
   registerHelper('x-append', function(params, options, env) {
     var fragment = options.render(options.context, env, options.morph.contextualElement);
     fragment.appendChild(document.createTextNode(options.hash.text));
@@ -831,17 +831,17 @@ test('Web components - Called as helpers', function () {
   compilesTo('a<x-append text="d{{bar}}">b{{baz}}</x-append>f','abcdef', object);
 });
 
-test('Web components - Unknown helpers fall back to elements', function () {
+test('Components - Unknown helpers fall back to elements', function () {
   var object = { size: 'med', foo: 'b' };
   compilesTo('<x-bar class="btn-{{size}}">a{{foo}}c</x-bar>','<x-bar class="btn-med">abc</x-bar>', object);
 });
 
-test('Web components - Text-only attributes work', function () {
+test('Components - Text-only attributes work', function () {
   var object = { foo: 'qux' };
   compilesTo('<x-bar id="test">{{foo}}</x-bar>','<x-bar id="test">qux</x-bar>', object);
 });
 
-test('Web components - Empty components work', function () {
+test('Components - Empty components work', function () {
   compilesTo('<x-bar></x-bar>','<x-bar></x-bar>', {});
 });
 

@@ -14,17 +14,17 @@ export function content(morph, helperName, context, params, options, env) {
   morph.update(value);
 }
 
-export function webComponent(morph, tagName, context, options, env) {
+export function component(morph, tagName, context, options, env) {
   var value, helper = this.lookupHelper(tagName, context, options);
   if (helper) {
     value = helper(null, options, env);
   } else {
-    value = this.webComponentFallback(morph, tagName, context, options, env);
+    value = this.componentFallback(morph, tagName, context, options, env);
   }
   morph.update(value);
 }
 
-export function webComponentFallback(morph, tagName, context, options, env) {
+export function componentFallback(morph, tagName, context, options, env) {
   var element = env.dom.createElement(tagName);
   var hash = options.hash, hashTypes = options.hashTypes;
 
@@ -102,8 +102,8 @@ export function simple(context, name /*, options*/) {
 export function hydrationHooks(extensions) {
   var base = {
     content: content,
-    webComponent: webComponent,
-    webComponentFallback: webComponentFallback,
+    component: component,
+    componentFallback: componentFallback,
     element: element,
     attribute: attribute,
     concat: concat,
