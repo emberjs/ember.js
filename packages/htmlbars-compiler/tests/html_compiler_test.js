@@ -37,21 +37,6 @@ function compilesTo(html, expected, context) {
   return fragment;
 }
 
-QUnit.module("HTML-based compiler (output)", {
-  setup: function() {
-    helpers = {};
-    partials = {};
-    hooks = hydrationHooks({lookupHelper : lookupHelper});
-
-    env = {
-      hooks: hooks,
-      helpers: helpers,
-      dom: new DOMHelper(),
-      partials: partials
-    };
-  }
-});
-
 function equalTokens(fragment, html) {
   var div = document.createElement("div");
   div.appendChild(fragment.cloneNode(true));
@@ -80,6 +65,35 @@ function equalTokens(fragment, html) {
 
   deepEqual(fragTokens, htmlTokens);
 }
+
+QUnit.module("HTML-based compiler (output)", {
+  setup: function() {
+    helpers = {};
+    partials = {};
+    hooks = hydrationHooks({lookupHelper : lookupHelper});
+
+    env = {
+      hooks: hooks,
+      helpers: helpers,
+      dom: new DOMHelper(),
+      partials: partials
+    };
+  }
+});
+
+
+test("Root template has a isTop property", function() {
+  expect(3);
+  env.hooks.content = function(morph, helperName, context, params, options) {
+    equal(options.render.name, 'template', 'expected a child template');
+    ok(!options.render.isTop, 'template', 'child template isTop isnt present');
+  };
+
+  var template = compile("<div>{{#if}} {{/if}}</div>");
+  template({}, env);
+
+  ok(template.isTop, 'expected isTop to be present');
+});
 
 test("Simple content produces a document fragment", function() {
   var template = compile("content");
