@@ -145,7 +145,7 @@ export function helperMissingHelper(path) {
     resolveHelper = requireModule('ember-handlebars/helpers/binding')['resolveHelper'];
   } // ES6TODO: stupid circular dep
 
-  var error, view = "";
+  var error, fmtError, view = "";
 
   var options = arguments[arguments.length - 1];
 
@@ -155,11 +155,19 @@ export function helperMissingHelper(path) {
     return helper.apply(this, arguments);
   }
 
-  error = "%@ Handlebars error: Could not find property '%@' on object %@.";
   if (options.data) {
     view = options.data.view;
   }
-  throw new EmberError(fmt(error, [view, options.name, this]));
+
+  if (options.name.match(/-/)) {
+    error = "%@ Handlebars error: Could not find component or helper named '%@'";
+    fmtError = fmt(error, [view, options.name]);
+  } else {
+    error = "%@ Handlebars error: Could not find property '%@' on object %@.";
+    fmtError = fmt(error, [view, options.name, this]);
+  }
+
+  throw new EmberError(fmtError);
 }
 
 /**

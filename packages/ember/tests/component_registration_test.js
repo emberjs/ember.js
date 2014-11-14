@@ -197,6 +197,14 @@ test("Assigning templateName and layoutName should use the templates specified",
   equal(Ember.$('#wrapper').text(), "inner-outer", "The component is composed correctly");
 });
 
+test('Using name of component that does not exist', function () {
+  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#no-good}} {{/no-good}}</div>");
+
+  throws(function () {
+    boot();
+  }, /Could not find component or helper named 'no-good'/);
+});
+
 QUnit.module("Application Lifecycle - Component Context", {
   setup: prepare,
   teardown: cleanup
