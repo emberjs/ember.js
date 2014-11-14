@@ -1,17 +1,16 @@
+/**
+@module ember
+@submodule ember-routing-handlebars
+*/
+
 import Ember from "ember-metal/core"; // Handlebars, uuid, FEATURES, assert, deprecate
+import EmberHandlebars from "ember-handlebars";
 import { forEach } from "ember-metal/array";
 import { uuid } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
-
 import { readUnwrappedModel } from "ember-views/streams/read";
 import { isSimpleClick } from "ember-views/system/utils";
 import ActionManager from "ember-views/system/action_manager";
-import EmberHandlebars from "ember-handlebars";
-
-/**
-@module ember
-@submodule ember-routing
-*/
 
 function actionArgs(parameters, actionName) {
   var ret, i;
