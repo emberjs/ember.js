@@ -1,4 +1,5 @@
 import { lookupHelper } from "ember-htmlbars/system/lookup-helper";
+import { sanitizeOptionsForHelper } from "ember-htmlbars/system/sanitize-for-helper";
 
 function streamifyArgs(view, params, options, env) {
   if (params.length === 3 && params[1] === "as") {
@@ -39,6 +40,7 @@ export function content(morph, path, view, params, options, env) {
   }
 
   streamifyArgs(view, params, options, env);
+  sanitizeOptionsForHelper(options);
   return helper.call(view, params, options, env);
 }
 
@@ -47,6 +49,7 @@ export function element(element, path, view, params, options, env) { //jshint ig
 
   if (helper) {
     streamifyArgs(view, params, options, env);
+    sanitizeOptionsForHelper(options);
     return helper.call(view, element, params, options, env);
   } else {
     return view.getStream(path);
@@ -58,6 +61,7 @@ export function subexpr(path, view, params, options, env) {
 
   if (helper) {
     streamifyArgs(view, params, options, env);
+    sanitizeOptionsForHelper(options);
     return helper.call(view, params, options, env);
   } else {
     return view.getStream(path);
