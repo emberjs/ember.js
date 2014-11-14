@@ -50,7 +50,7 @@ export function element(element, path, view, params, options, env) { //jshint ig
   if (helper) {
     streamifyArgs(view, params, options, env);
     sanitizeOptionsForHelper(options);
-    return helper.call(view, element, params, options, env);
+    return helper.call(view, params, options, env);
   } else {
     return view.getStream(path);
   }

@@ -12,6 +12,22 @@ import { observersFor } from "ember-metal/observer";
 import Container from "ember-runtime/system/container";
 import { set } from "ember-metal/property_set";
 
+import {
+  default as htmlbarsHelpers
+} from "ember-htmlbars/helpers";
+import {
+  compile as htmlbarsCompile
+} from "htmlbars-compiler/compiler";
+
+var compile, helpers;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+  helpers = htmlbarsHelpers;
+} else {
+  compile = EmberHandlebars.compile;
+  helpers = EmberHandlebars.helpers;
+}
+
 var view;
 
 var appendView = function() {
@@ -28,7 +44,7 @@ var TemplateTests, container, lookup;
   If you add additional template support to View, you should create a new
   file in which to test.
 */
-QUnit.module("View - handlebars integration", {
+QUnit.module("ember-htmlbars: {{bind-attr}}", {
   setup: function() {
     Ember.lookup = lookup = {};
     lookup.TemplateTests = TemplateTests = Namespace.create();
@@ -54,7 +70,7 @@ QUnit.module("View - handlebars integration", {
 });
 
 test("should be able to bind element attributes using {{bind-attr}}", function() {
-  var template = EmberHandlebars.compile('<img {{bind-attr src="view.content.url" alt="view.content.title"}}>');
+  var template = compile('<img {{bind-attr src=view.content.url alt=view.content.title}}>');
 
   view = EmberView.create({
     template: template,
@@ -108,7 +124,7 @@ test("should be able to bind element attributes using {{bind-attr}}", function()
 test("should be able to bind to view attributes with {{bind-attr}}", function() {
   view = EmberView.create({
     value: 'Test',
-    template: EmberHandlebars.compile('<img src="test.jpg" {{bind-attr alt="view.value"}}>')
+    template: compile('<img src="test.jpg" {{bind-attr alt=view.value}}>')
   });
 
   appendView();
@@ -126,7 +142,7 @@ test("should be able to bind to globals with {{bind-attr}} (DEPRECATED)", functi
   TemplateTests.set('value', 'Test');
 
   view = EmberView.create({
-    template: EmberHandlebars.compile('<img src="test.jpg" {{bind-attr alt="TemplateTests.value"}}>')
+    template: compile('<img src="test.jpg" {{bind-attr alt=TemplateTests.value}}>')
   });
 
   expectDeprecation(function(){
@@ -138,7 +154,7 @@ test("should be able to bind to globals with {{bind-attr}} (DEPRECATED)", functi
 
 test("should not allow XSS injection via {{bind-attr}}", function() {
   view = EmberView.create({
-    template: EmberHandlebars.compile('<img src="test.jpg" {{bind-attr alt="view.content.value"}}>'),
+    template: compile('<img src="test.jpg" {{bind-attr alt=view.content.value}}>'),
     content: {
       value: 'Trololol" onmouseover="alert(\'HAX!\');'
     }
@@ -152,7 +168,7 @@ test("should not allow XSS injection via {{bind-attr}}", function() {
 });
 
 test("should be able to bind use {{bind-attr}} more than once on an element", function() {
-  var template = EmberHandlebars.compile('<img {{bind-attr src="view.content.url"}} {{bind-attr alt="view.content.title"}}>');
+  var template = compile('<img {{bind-attr src=view.content.url}} {{bind-attr alt=view.content.title}}>');
 
   view = EmberView.create({
     template: template,
@@ -207,10 +223,10 @@ test("should be able to bind use {{bind-attr}} more than once on an element", fu
 test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
   expect(4);
 
-  var originalBindAttr = EmberHandlebars.helpers['bind-attr'];
+  var originalBindAttr = helpers['bind-attr'];
 
   try {
-    EmberHandlebars.helpers['bind-attr'] = function() {
+    helpers['bind-attr'] = function() {
       equal(arguments[0], 'foo', 'First arg match');
       equal(arguments[1], 'bar', 'Second arg match');
 
@@ -218,16 +234,16 @@ test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
     };
 
     expectDeprecation(function() {
-      var result = EmberHandlebars.helpers.bindAttr('foo', 'bar');
+      var result = helpers.bindAttr('foo', 'bar');
       equal(result, 'result', 'Result match');
     }, "The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
   } finally {
-    EmberHandlebars.helpers['bind-attr'] = originalBindAttr;
+    helpers['bind-attr'] = originalBindAttr;
   }
 });
 
 test("should be able to bind element attributes using {{bind-attr}} inside a block", function() {
-  var template = EmberHandlebars.compile('{{#with view.content as image}}<img {{bind-attr src=image.url alt=image.title}}>{{/with}}');
+  var template = compile('{{#with view.content as image}}<img {{bind-attr src=image.url alt=image.title}}>{{/with}}');
 
   view = EmberView.create({
     template: template,
@@ -250,7 +266,7 @@ test("should be able to bind element attributes using {{bind-attr}} inside a blo
 });
 
 test("should be able to bind class attribute with {{bind-attr}}", function() {
-  var template = EmberHandlebars.compile('<img {{bind-attr class="view.foo"}}>');
+  var template = compile('<img {{bind-attr class="view.foo"}}>');
 
   view = EmberView.create({
     template: template,
@@ -269,7 +285,7 @@ test("should be able to bind class attribute with {{bind-attr}}", function() {
 });
 
 test("should be able to bind class attribute via a truthy property with {{bind-attr}}", function() {
-  var template = EmberHandlebars.compile('<img {{bind-attr class="view.isNumber:is-truthy"}}>');
+  var template = compile('<img {{bind-attr class="view.isNumber:is-truthy"}}>');
 
   view = EmberView.create({
     template: template,
@@ -288,7 +304,7 @@ test("should be able to bind class attribute via a truthy property with {{bind-a
 });
 
 test("should be able to bind class to view attribute with {{bind-attr}}", function() {
-  var template = EmberHandlebars.compile('<img {{bind-attr class="view.foo"}}>');
+  var template = compile('<img {{bind-attr class="view.foo"}}>');
 
   view = EmberView.create({
     template: template,
@@ -308,7 +324,7 @@ test("should be able to bind class to view attribute with {{bind-attr}}", functi
 
 test("should not allow XSS injection via {{bind-attr}} with class", function() {
   view = EmberView.create({
-    template: EmberHandlebars.compile('<img {{bind-attr class="view.foo"}}>'),
+    template: compile('<img {{bind-attr class="view.foo"}}>'),
     foo: '" onmouseover="alert(\'I am in your classes hacking your app\');'
   });
 
@@ -320,7 +336,7 @@ test("should not allow XSS injection via {{bind-attr}} with class", function() {
 });
 
 test("should be able to bind class attribute using ternary operator in {{bind-attr}}", function() {
-  var template = EmberHandlebars.compile('<img {{bind-attr class="view.content.isDisabled:disabled:enabled"}} />');
+  var template = compile('<img {{bind-attr class="view.content.isDisabled:disabled:enabled"}} />');
   var content = EmberObject.create({
     isDisabled: true
   });
@@ -344,7 +360,7 @@ test("should be able to bind class attribute using ternary operator in {{bind-at
 });
 
 test("should be able to add multiple classes using {{bind-attr class}}", function() {
-  var template = EmberHandlebars.compile('<div {{bind-attr class="view.content.isAwesomeSauce view.content.isAlsoCool view.content.isAmazing:amazing :is-super-duper view.content.isEnabled:enabled:disabled"}}></div>');
+  var template = compile('<div {{bind-attr class="view.content.isAwesomeSauce view.content.isAlsoCool view.content.isAmazing:amazing :is-super-duper view.content.isEnabled:enabled:disabled"}}></div>');
   var content = EmberObject.create({
     isAwesomeSauce: true,
     isAlsoCool: true,
@@ -383,7 +399,7 @@ test("should be able to bind classes to globals with {{bind-attr class}} (DEPREC
   TemplateTests.set('isOpen', true);
 
   view = EmberView.create({
-    template: EmberHandlebars.compile('<img src="test.jpg" {{bind-attr class="TemplateTests.isOpen"}}>')
+    template: compile('<img src="test.jpg" {{bind-attr class="TemplateTests.isOpen"}}>')
   });
 
   expectDeprecation(function(){
@@ -393,11 +409,14 @@ test("should be able to bind classes to globals with {{bind-attr class}} (DEPREC
   ok(view.$('img').hasClass('is-open'), "sets classname to the dasherized value of the global property");
 });
 
+// HTMLBars TODO: Needs {{#each}} helper
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+
 test("should be able to bind-attr to 'this' in an {{#each}} block [DEPRECATED]", function() {
   expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   view = EmberView.create({
-    template: EmberHandlebars.compile('{{#each view.images}}<img {{bind-attr src="this"}}>{{/each}}'),
+    template: compile('{{#each view.images}}<img {{bind-attr src=this}}>{{/each}}'),
     images: A(['one.png', 'two.jpg', 'three.gif'])
   });
 
@@ -413,7 +432,7 @@ test("should be able to bind classes to 'this' in an {{#each}} block with {{bind
   expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   view = EmberView.create({
-    template: EmberHandlebars.compile('{{#each view.items}}<li {{bind-attr class="this"}}>Item</li>{{/each}}'),
+    template: compile('{{#each view.items}}<li {{bind-attr class="this"}}>Item</li>{{/each}}'),
     items: A(['a', 'b', 'c'])
   });
 
@@ -426,7 +445,7 @@ test("should be able to bind classes to 'this' in an {{#each}} block with {{bind
 
 test("should be able to bind-attr to var in {{#each var in list}} block", function() {
   view = EmberView.create({
-    template: EmberHandlebars.compile('{{#each image in view.images}}<img {{bind-attr src="image"}}>{{/each}}'),
+    template: compile('{{#each image in view.images}}<img {{bind-attr src=image}}>{{/each}}'),
     images: A(['one.png', 'two.jpg', 'three.gif'])
   });
 
@@ -448,9 +467,11 @@ test("should be able to bind-attr to var in {{#each var in list}} block", functi
   ok(/three\.gif$/.test(images[1].src));
 });
 
+}
+
 test("should teardown observers from bind-attr on rerender", function() {
   view = EmberView.create({
-    template: EmberHandlebars.compile('<span {{bind-attr class="view.foo" name="view.foo"}}>wat</span>'),
+    template: compile('<span {{bind-attr class="view.foo" name=view.foo}}>wat</span>'),
     foo: 'bar'
   });
 
@@ -463,4 +484,25 @@ test("should teardown observers from bind-attr on rerender", function() {
   });
 
   equal(observersFor(view, 'foo').length, 1);
+});
+
+test('should allow either quoted or unquoted values', function() {
+  view = EmberView.create({
+    value: 'Test',
+    source: 'test.jpg',
+    template: compile('<img {{bind-attr alt="view.value" src=view.source}}>')
+  });
+
+  appendView();
+
+  equal(view.$('img').attr('alt'), "Test", "renders initial value");
+  equal(view.$('img').attr('src'), "test.jpg", "renders initial value");
+
+  run(function() {
+    view.set('value', 'Updated');
+    view.set('source', 'test2.jpg');
+  });
+
+  equal(view.$('img').attr('alt'), "Updated", "updates value");
+  equal(view.$('img').attr('src'), "test2.jpg", "updates value");
 });

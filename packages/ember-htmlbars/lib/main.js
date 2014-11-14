@@ -12,6 +12,10 @@ import { withHelper } from "ember-htmlbars/helpers/with";
 import { logHelper } from "ember-htmlbars/helpers/log";
 import { debuggerHelper } from "ember-htmlbars/helpers/debugger";
 import {
+  bindAttrHelper,
+  bindAttrHelperDeprecated
+} from "ember-htmlbars/helpers/bind-attr";
+import {
   ifHelper,
   unlessHelper,
   unboundIfHelper,
@@ -35,6 +39,8 @@ registerHelper('debugger', debuggerHelper);
 registerHelper('loc', locHelper);
 registerHelper('partial', partialHelper);
 registerHelper('template', templateHelper);
+registerHelper('bind-attr', bindAttrHelper);
+registerHelper('bindAttr', bindAttrHelperDeprecated);
 
 export var defaultEnv = {
   dom: new DOMHelper(),
