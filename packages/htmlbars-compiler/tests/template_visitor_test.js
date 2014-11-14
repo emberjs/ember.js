@@ -136,7 +136,7 @@ test("nested blocks", function() {
   ]);
 });
 
-test("web component", function() {
+test("component", function() {
   var input = "<x-foo>bar</x-foo>";
   actionsEqual(input, [
     ['startProgram', [0, []]],
