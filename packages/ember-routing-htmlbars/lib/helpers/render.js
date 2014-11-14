@@ -4,6 +4,7 @@ import {
 } from "ember-routing/system/generate_controller";
 import { camelize } from "ember-runtime/system/string";
 import EmberError from "ember-metal/error";
+import { ViewHelper } from "ember-htmlbars/helpers/view";
 
 /**
 @module ember
@@ -81,60 +82,62 @@ You could render it inside the `post` template using the `render` helper.
   @return {String} HTML string
 */
 export function renderHelper(params, options, env) {
-  var length = params.length;
-  var name = params[0];
+  var name          = params[0];
+  var parentView    = this;
+  var container     = this._keywords.controller.value().container;
+  var controller    = options.hash.controller;
   var passedContext = params[1];
-  var passedController = options.hash.controller;
 
-  var container          = this._keywords.controller.value().container;
-  var parentController   = this._keywords.controller.value();
-  var controllerName     = passedController || name;
+  var controllerName     = controller || name;
   var controllerFullName = 'controller:' + controllerName;
-  var router             = container.lookup('router:main');
 
-  var initialContext, view;
-
-  if (passedController) {
-    Ember.assert("The controller name you supplied '" + controllerName +
-                 "' did not resolve to a controller.", container.has(controllerFullName));
-  }
+  var view;
 
   Ember.deprecate('Using a quoteless parameter with {{render}} is deprecated. Please update to' +
-                  " quoted usage '{{render \"" + name + "\"}}.", options.types[0] !== 'id');
+                  ' quoted usage "{{render "' + name + '"}}.', options.types[0] !== 'id');
 
   if (!name) {
     throw new EmberError('You must pass a templateName to render');
   }
 
-  // controller = lookupController(params);
-  if (length === 2) {
-    // template name + context
-  } else if (length === 3) {
-    // ?
+  if (controller) {
+    Ember.assert("The controller name you supplied '" + controllerName +
+                 "' did not resolve to a controller.", container.has(controllerFullName));
+  } else {
+    controller = lookupController(container, parentView, params);
   }
 
-  // legacy slash as namespace support
-  name = name.replace(/\//g, '.');
+  sanitizeName(name);
+
+  var templateName = 'template:' + name;
+  Ember.assert("You used `{{render '" + name + "'}}`, but '" + name + "' can not be found as either" +
+               " a template or a view.", container.has("view:" + name) || container.has(templateName) || !!options.render);
+
+  options.helperName      = options.helperName || ('render "' + name + '"');
+  options.hash.controller = controller;
+  options.hash.template   = container.lookup(templateName);
 
   view = container.lookup('view:' + name) || container.lookup('view:default');
 
-  connectActiveView(router, name, view);
-
-  render(view, name, container, options, env);
+  ViewHelper.instanceHelper(view, options, env);
 }
 
-function connectActiveView(router, name, view) {
-  if (router) {
-    router._connectActiveView(name, view);
-  }
+function lookupController(container, view, params) {
+  var name               = params[0];
+  var controllerFullName = 'controller:' + name;
+  var parentController   = view._keywords.controller.value();
+
+  var controller = container.lookup(controllerFullName) || generateController(container, name);
+
+  controller.setProperties({
+    target:           parentController,
+    parentController: parentController
+  });
+
+  return controller;
 }
 
-function render(view, name, container, options, env) {
-  var templateName = 'template:' + name;
-  Ember.assert("You used `{{render '" + name + "'}}`, but '" + name + "' can not be found as either" +
-               " a template or a view.", container.has("view:" + name) || container.has(templateName) || !!options.fn);
-
-  var template = container.lookup(templateName);
-  var fragment = template(view, env, options.morph.contextualElement);
-  options.morph.update(fragment);
+function sanitizeName(name) {
+  // # legacy namespace
+  name = name.replace(/\//g, '.');
 }
