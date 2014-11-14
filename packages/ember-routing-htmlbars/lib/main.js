@@ -1,4 +1,5 @@
 /**
+<<<<<<< HEAD
 Ember Routing HTMLBars Helpers
 
 @module ember
@@ -17,11 +18,13 @@ import {
 } from "ember-routing-htmlbars/helpers/link-to";
 import { actionHelper } from "ember-routing-htmlbars/helpers/action";
 import { queryParamsHelper } from "ember-routing-htmlbars/helpers/query-params";
+import { renderHelper } from 'ember-routing-htmlbars/helpers/render';
 
 registerHelper('outlet', outletHelper);
 registerHelper('link-to', linkToHelper);
 registerHelper('linkTo', deprecatedLinkToHelper);
 registerHelper('action', actionHelper);
 registerHelper('query-params', queryParamsHelper);
+registerHelper('render', renderHelper);
 
 export default Ember;
