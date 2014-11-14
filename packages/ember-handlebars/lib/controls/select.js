@@ -115,7 +115,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view "select" content=names}}
+  {{view Ember.Select content=names}}
   ```
 
   Would result in the following HTML:
@@ -138,7 +138,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view "select" content=names value=selectedName}}
+  {{view Ember.Select content=names value=selectedName}}
   ```
 
   Would result in the following HTML with the `<option>` for 'Tom' selected:
@@ -177,7 +177,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view "select"
+  {{view Ember.Select
          content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"}}
@@ -208,7 +208,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view "select"
+  {{view Ember.Select
          content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
@@ -246,7 +246,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view "select"
+  {{view Ember.Select
          content=programmers
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
@@ -280,7 +280,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ``` handlebars
-  {{view "select"
+  {{view Ember.Select
          content=programmers
          value=selectedProgrammer
   }}
@@ -309,7 +309,7 @@ var SelectOptgroup = CollectionView.extend({
   ```
 
   ```handlebars
-  {{view "select"
+  {{view Ember.Select
          content=programmers
          value=selectedProgrammer
          prompt="Please select a name"
