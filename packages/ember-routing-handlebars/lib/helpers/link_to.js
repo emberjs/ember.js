@@ -36,6 +36,7 @@ var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
 };
 
 var QueryParams = EmberObject.extend({
+  isQueryParams: true,
   values: null
 });
 
@@ -867,7 +868,9 @@ function linkToHelper(name) {
 
   Ember.assert("You must provide one or more parameters to the link-to helper.", params.length);
 
-  if (params[params.length - 1] instanceof QueryParams) {
+  var lastParam = params[params.length - 1];
+
+  if (lastParam && lastParam.isQueryParams) {
     hash.queryParamsObject = queryParamsObject = params.pop();
   }
 
