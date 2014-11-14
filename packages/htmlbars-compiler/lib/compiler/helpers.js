@@ -24,7 +24,7 @@ export function prepareHelper(stack, size) {
   var programId = stack.pop();
   var inverseId = stack.pop();
 
-  var options = ['context:context', 'types:' + array(types), 'hashTypes:' + hash(hashTypes), 'hash:' + hash(hashPairs)];
+  var options = ['types:' + array(types), 'hashTypes:' + hash(hashTypes)];
 
   if (programId !== null) {
     options.push('render:child' + programId);
@@ -36,6 +36,7 @@ export function prepareHelper(stack, size) {
 
   return {
     options: options,
-    args: array(args)
+    args: array(args),
+    hash: hash(hashPairs)
   };
 }

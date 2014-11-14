@@ -76,21 +76,20 @@ prototype.helper = function(name, size, escaped, morphNum) {
   var prepared = prepareHelper(this.stack, size);
   prepared.options.push('escaped:'+escaped);
   prepared.options.push('morph:morph'+morphNum);
-  this.pushMustacheInContent(string(name), prepared.args, prepared.options, morphNum);
+  this.pushMustacheInContent(string(name), prepared.args, prepared.hash, prepared.options, morphNum);
 };
 
 prototype.component = function(tag, morphNum) {
   var prepared = prepareHelper(this.stack, 0);
   prepared.options.push('morph:morph'+morphNum);
-  this.pushComponent(string(tag), prepared.options, morphNum);
+  this.pushComponent(string(tag), prepared.hash, prepared.options, morphNum);
 };
 
 prototype.ambiguous = function(str, escaped, morphNum) {
   var options = [];
-  options.push('context:context');
   options.push('escaped:'+escaped);
   options.push('morph:morph'+morphNum);
-  this.pushMustacheInContent(string(str), '[]', options, morphNum);
+  this.pushMustacheInContent(string(str), '[]', '{}', options, morphNum);
 };
 
 prototype.ambiguousAttr = function(str, escaped) {
@@ -100,12 +99,12 @@ prototype.ambiguousAttr = function(str, escaped) {
 prototype.helperAttr = function(name, size, escaped) {
   var prepared = prepareHelper(this.stack, size);
   prepared.options.push('escaped:'+escaped);
-  this.stack.push('['+string(name)+','+prepared.args+','+ hash(prepared.options)+']');
+  this.stack.push('['+string(name)+','+prepared.args+','+ prepared.hash +',' + hash(prepared.options)+']');
 };
 
 prototype.sexpr = function(name, size) {
   var prepared = prepareHelper(this.stack, size);
-  this.stack.push('hooks.subexpr(' + string(name) + ', context, ' + prepared.args + ', ' + hash(prepared.options) + ', env)');
+  this.stack.push('hooks.subexpr(' + string(name) + ', context, ' + prepared.args + ', ' + prepared.hash + ',' + hash(prepared.options) + ', env)');
 };
 
 prototype.string = function(str) {
@@ -115,7 +114,7 @@ prototype.string = function(str) {
 prototype.nodeHelper = function(name, size, elementNum) {
   var prepared = prepareHelper(this.stack, size);
   prepared.options.push('element:element'+elementNum);
-  this.pushMustacheInNode(string(name), prepared.args, prepared.options, elementNum);
+  this.pushMustacheInNode(string(name), prepared.args, prepared.hash, prepared.options, elementNum);
 };
 
 prototype.morph = function(num, parentPath, startIndex, endIndex) {
@@ -137,8 +136,8 @@ prototype.element = function(elementNum){
   this.parents[this.parents.length-1] = elementNodesName;
 };
 
-prototype.pushComponent = function(name, pairs, morphNum) {
-  this.source.push(this.indent+'  hooks.component(morph' + morphNum + ', ' + name + ', context, ' + hash(pairs) + ', env);\n');
+prototype.pushComponent = function(name, hashArgs, pairs, morphNum) {
+  this.source.push(this.indent+'  hooks.component(morph' + morphNum + ', ' + name + ', context, ' + hashArgs + ', ' + hash(pairs) + ', env);\n');
 };
 
 prototype.repairClonedNode = function(blankChildTextNodes, isElementChecked) {
@@ -152,12 +151,12 @@ prototype.repairClonedNode = function(blankChildTextNodes, isElementChecked) {
   );
 };
 
-prototype.pushMustacheInContent = function(name, args, pairs, morphNum) {
-  this.source.push(this.indent+'  hooks.content(morph' + morphNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', env);\n');
+prototype.pushMustacheInContent = function(name, args, hashArgs, pairs, morphNum) {
+  this.source.push(this.indent+'  hooks.content(morph' + morphNum + ', ' + name + ', context, ' + args + ', ' + hashArgs + ', ' + hash(pairs) + ', env);\n');
 };
 
-prototype.pushMustacheInNode = function(name, args, pairs, elementNum) {
-  this.source.push(this.indent+'  hooks.element(element' + elementNum + ', ' + name + ', context, ' + args + ', ' + hash(pairs) + ', env);\n');
+prototype.pushMustacheInNode = function(name, args, hashArgs, optionPairs, elementNum) {
+  this.source.push(this.indent+'  hooks.element(element' + elementNum + ', ' + name + ', context, ' + args + ', ' + hashArgs + ', ' + hash(optionPairs) + ', env);\n');
 };
 
 prototype.shareParent = function(i) {
