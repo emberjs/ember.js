@@ -37,14 +37,15 @@ module.exports = {
     "htmlbars-compiler": {
       node: true,
       lib: ["handlebars-inliner", "htmlbars-util", "simple-html-tokenizer", "morph"],
-      test: ["htmlbars-runtime"]
+      test: ["htmlbars-runtime", "htmlbars-test-helpers"]
     },
     "htmlbars-util": { },
     "htmlbars-runtime": {
       lib: ["htmlbars-util", "morph"]
     },
     "morph": {
-      test: ["htmlbars-util"]
-    }
+      test: ["htmlbars-util", "htmlbars-test-helpers"]
+    },
+    "htmlbars-test-helpers": { }
   }
 };

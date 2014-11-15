@@ -3,7 +3,7 @@ import { forEach } from "../htmlbars-compiler/utils";
 import { tokenize } from "../simple-html-tokenizer";
 import { hydrationHooks } from "../htmlbars-runtime/hooks";
 import { DOMHelper } from "../morph";
-import { normalizeInnerHTML } from "../test/support/assertions";
+import { normalizeInnerHTML } from "../htmlbars-test-helpers";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace   = "http://www.w3.org/2000/svg";
