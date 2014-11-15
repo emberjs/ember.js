@@ -1,4 +1,4 @@
-import Checkbox from "ember-handlebars/controls/checkbox";
+import Checkbox from "ember-views/views/checkbox";
 import TextField from "ember-handlebars/controls/text_field";
 import TextArea from "ember-handlebars/controls/text_area";
 

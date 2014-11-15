@@ -58,7 +58,6 @@ import yieldHelper from "ember-handlebars/helpers/yield";
 import locHelper from "ember-handlebars/helpers/loc";
 
 
-import Checkbox from "ember-handlebars/controls/checkbox";
 import {
   Select,
   SelectOption,
@@ -111,7 +110,6 @@ Ember._SimpleMetamorphView = _SimpleMetamorphView;
 Ember._MetamorphView = _MetamorphView;
 Ember._Metamorph = _Metamorph;
 Ember.TextSupport = TextSupport;
-Ember.Checkbox = Checkbox;
 Ember.Select = Select;
 Ember.SelectOption = SelectOption;
 Ember.SelectOptgroup = SelectOptgroup;
