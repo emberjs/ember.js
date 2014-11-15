@@ -1,5 +1,5 @@
 import Checkbox from "ember-views/views/checkbox";
-import TextField from "ember-handlebars/controls/text_field";
+import TextField from "ember-views/views/text_field";
 import TextArea from "ember-handlebars/controls/text_area";
 
 import Ember from "ember-metal/core"; // Ember.assert

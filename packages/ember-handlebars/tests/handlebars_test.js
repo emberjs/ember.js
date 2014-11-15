@@ -19,7 +19,7 @@ import CollectionView from "ember-views/views/collection_view";
 import ContainerView from "ember-views/views/container_view";
 import { Binding } from "ember-metal/binding";
 import { observersFor } from "ember-metal/observer";
-import TextField from "ember-handlebars/controls/text_field";
+import TextField from "ember-views/views/text_field";
 import Container from "ember-runtime/system/container";
 import { create as o_create } from "ember-metal/platform";
 

@@ -33,6 +33,7 @@ import ViewTargetActionSupport from "ember-views/mixins/view_target_action_suppo
 import ComponentLookup from "ember-views/component_lookup";
 import Checkbox from "ember-views/views/checkbox";
 import TextSupport from "ember-views/mixins/text_support";
+import TextField from "ember-views/views/text_field";
 // END IMPORTS
 
 /**
@@ -58,6 +59,7 @@ Ember.View = View;
 Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;
 Ember.Checkbox = Checkbox;
+Ember.TextField = TextField;
 
 Ember.TextSupport = TextSupport;
 Ember.ComponentLookup = ComponentLookup;

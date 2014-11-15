@@ -64,7 +64,6 @@ import {
   SelectOptgroup
 } from "ember-handlebars/controls/select";
 import TextArea from "ember-handlebars/controls/text_area";
-import TextField from "ember-handlebars/controls/text_field";
 import {
   inputHelper,
   textareaHelper
@@ -112,7 +111,6 @@ Ember.Select = Select;
 Ember.SelectOption = SelectOption;
 Ember.SelectOptgroup = SelectOptgroup;
 Ember.TextArea = TextArea;
-Ember.TextField = TextField;
 
 // register helpers
 EmberHandlebars.registerHelper('helperMissing', helperMissingHelper);
