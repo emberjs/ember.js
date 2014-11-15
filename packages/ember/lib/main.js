@@ -9,6 +9,7 @@ import "ember-routing";
 import "ember-routing-handlebars";
 import "ember-application";
 import "ember-extension-support";
+import "ember-htmlbars";
 
 // do this to ensure that Ember.Test is defined properly on the global
 // if it is present.
