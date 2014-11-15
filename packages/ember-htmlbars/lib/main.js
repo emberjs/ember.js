@@ -1,5 +1,10 @@
 import Ember from "ember-metal/core";
-import { content, element, subexpr } from "ember-htmlbars/hooks";
+import {
+  content,
+  element,
+  subexpr,
+  component
+} from "ember-htmlbars/hooks";
 import { DOMHelper } from "morph";
 import template from "ember-htmlbars/system/template";
 import compile from "ember-htmlbars/system/compile";
@@ -58,7 +63,8 @@ export var defaultEnv = {
   hooks: {
     content: content,
     element: element,
-    subexpr: subexpr
+    subexpr: subexpr,
+    component: component
   },
 
   helpers: helpers

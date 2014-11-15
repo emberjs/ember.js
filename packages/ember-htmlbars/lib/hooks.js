@@ -1,3 +1,4 @@
+import Ember from "ember-metal/core";
 import { lookupHelper } from "ember-htmlbars/system/lookup-helper";
 import { sanitizeOptionsForHelper } from "ember-htmlbars/system/sanitize-for-helper";
 
@@ -37,6 +38,17 @@ export function content(morph, path, view, params, hash, options, env) {
     params.unshift(path);
     options.types = ['id'];
   }
+
+  streamifyArgs(view, params, hash, options, env);
+  sanitizeOptionsForHelper(options);
+  return helper.call(view, params, hash, options, env);
+}
+
+export function component(morph, tagName, view, hash, options, env) {
+  var params = [];
+  var helper = lookupHelper(tagName, view, env);
+
+  Ember.assert('You specified `' + tagName + '` in your template, but a component for `' + tagName + '` could not be found.', !!helper);
 
   streamifyArgs(view, params, hash, options, env);
   sanitizeOptionsForHelper(options);
