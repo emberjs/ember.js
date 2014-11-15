@@ -42,7 +42,7 @@
     "git-repo-version": "0.0.1",
     "glob": "~3.2.8",
     "handlebars": "^2.0",
-    "htmlbars": "tildeio/htmlbars#e6cfd7517b279de437b93fc2f66775b37c029c5d",
+    "htmlbars": "0.1.3",
     "ncp": "~0.5.1",
     "rimraf": "~2.2.8",
     "rsvp": "~3.0.6"
