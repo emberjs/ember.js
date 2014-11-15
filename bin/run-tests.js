@@ -96,7 +96,7 @@ Object.keys(packages.dependencies).forEach(function(packageName){
     return runBrowserTests("?packages=" + packageName);
   });
   if (packages.dependencies[packageName].node) {
-    var testDir = 'dist/'+packageName+'-tests/';
+    var testDir = 'dist/cjs/'+packageName+'-tests/';
     testRuns = testRuns.then(function(){
       console.log('----');
       return runNodeTests(testDir);

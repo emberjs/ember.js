@@ -115,24 +115,29 @@ for (var packageName in packages.dependencies) {
   var libTree = mergeTrees(packageTrees[0]),
       testTree = mergeTrees(packageTrees[1]);
 
+  // ES6
+  var pickedEs6Lib = new Funnel(libTree, {
+    destDir: '/lib/'
+  });
+  trees.push(pickedEs6Lib);
+
   // AMD lib
   var transpiledAmdLib = transpileES6(libTree, { moduleName: true, type: 'amd' });
   var concatenatedAmdLib = concatFiles(transpiledAmdLib, {
     inputFiles: ['**/*.js'],
-    outputFile: '/' + packageName + '.amd.js'
+    outputFile: '/amd/' + packageName + '.amd.js'
   });
   trees.push(concatenatedAmdLib);
 
   // CJS lib
   var transpiledCjsLib = transpileES6(libTree, { type: 'cjs' });
   var pickedCjsLib = new Funnel(transpiledCjsLib, {
-    srcDir: '/',
-    destDir: '/'
+    destDir: '/cjs/'
   });
   trees.push(pickedCjsLib);
   var pickedCjsMain = new Funnel(transpiledCjsLib, {
     srcDir: packageName+'.js',
-    destDir: packageName+'.js'
+    destDir: '/cjs/' + packageName+'.js'
   });
   trees.push(pickedCjsMain);
 
@@ -166,7 +171,7 @@ for (var packageName in packages.dependencies) {
   var transpiledCjsTests = transpileES6(mergeTrees(testTrees), { type: 'cjs' });
   var movedCjsTests = new Funnel(transpiledCjsTests, {
     srcDir: packageName+'-tests/',
-    destDir: '/'+packageName+"-tests/"
+    destDir: '/cjs/'+packageName+"-tests/"
   });
   trees.push(movedCjsTests);
 }
