@@ -117,7 +117,7 @@ for (var packageName in packages.dependencies) {
 
   // ES6
   var pickedEs6Lib = new Funnel(libTree, {
-    destDir: '/lib/'
+    destDir: '/es6/'
   });
   trees.push(pickedEs6Lib);
 
