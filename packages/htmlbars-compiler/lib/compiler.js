@@ -34,9 +34,7 @@ import { TemplateCompiler } from "./compiler/template";
  */
 export function compile(string) {
   var program = compileSpec(string);
-  var template =  new Function("return " + program)();
-  template.isTop = true;
-  return template;
+  return new Function("return " + program)();
 }
 
 /*
