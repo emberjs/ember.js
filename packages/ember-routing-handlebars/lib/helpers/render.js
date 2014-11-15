@@ -116,10 +116,8 @@ export function renderHelper(name, contextString, options) {
   var controllerName = options.hash.controller || name;
   var controllerFullName = 'controller:' + controllerName;
 
-  if (options.hash.controller) {
-    Ember.assert("The controller name you supplied '" + controllerName +
-                 "' did not resolve to a controller.", container.has(controllerFullName));
-  }
+  Ember.assert("The controller name you supplied '" + controllerName +
+               "' did not resolve to a controller.", !options.hash.controller || container.has(controllerFullName));
 
   var parentController = options.data.view._keywords.controller.value();
 
