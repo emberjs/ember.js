@@ -25,7 +25,7 @@ import jQuery from "ember-views/system/jquery";
 import { outletHelper as handlebarsOutletHelper } from "ember-routing-handlebars/helpers/outlet";
 import { outletHelper as htmlbarsOutletHelper } from "ember-routing-htmlbars/helpers/outlet";
 
-import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 import { registerHelper as htmlbarsRegisterHelper } from "ember-htmlbars/helpers";
 import htmlbarsHelpers from "ember-htmlbars/helpers";
 
