@@ -1,6 +1,6 @@
 import { compile } from "htmlbars-compiler/compiler";
 import { defaultEnv } from "ember-htmlbars";
-import { equalHTML } from "./helpers";
+import { equalHTML } from "htmlbars-test-helpers";
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 

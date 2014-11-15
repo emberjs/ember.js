@@ -16,7 +16,6 @@ var replace = require('broccoli-replace');
 var es3recast = require('broccoli-es3-safe-recast');
 var useStrictRemover = require('broccoli-use-strict-remover');
 var derequire = require('broccoli-derequire');
-var htmlbarsHandlebarsInliner = require('htmlbars/build-support/handlebars-inliner');
 
 var getVersion = require('git-repo-version');
 var yuidocPlugin = require('ember-cli-yuidoc');
@@ -355,9 +354,9 @@ var vendoredPackages = {
   'route-recognizer':      vendoredEs6Package('route-recognizer'),
   'dag-map':               vendoredEs6Package('dag-map'),
   'morph':                 htmlbarsPackage('morph'),
-  'htmlbars':              htmlbarsPackage('htmlbars-runtime'),
   'htmlbars-compiler':     htmlbarsPackage('htmlbars-compiler'),
-  'simple-html-tokenizer': vendoredEs6Package('simple-html-tokenizer'),
+  'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer'),
+  'htmlbars-test-helpers': htmlbarsPackage('htmlbars-test-helpers', { singleFile: true } ),
   'handlebars':            vendoredPackage('handlebars', handlebarsConfig)
 };
 
@@ -620,50 +619,31 @@ compiledPackageTrees = mergeTrees(compiledPackageTrees);
 vendorTrees = mergeTrees(vendorTrees);
 devSourceTrees = mergeTrees(devSourceTrees);
 
-// Grab the HTMLBars test helpers and make them appear they are coming from
-// the ember-htmlbars package.
-testHelpers = htmlbarsTestHelpers('assertions', 'ember-htmlbars/tests/helpers');
-testTrees.push(testHelpers);
 testTrees   = mergeTrees(testTrees);
 
 
-function htmlbarsPackage(packageName) {
-  var trees = [];
+function htmlbarsPackage(packageName, _options) {
+  var options = _options || {};
+  var fileGlobs = [packageName + '.js'];
 
-  var tree = pickFiles('node_modules/htmlbars/packages/' + packageName + '/lib', {
-    srcDir: '/',
-    destDir: '/' + packageName
-  });
-
-  tree = moveFile(tree, {
-    srcFile: '/' + packageName + '/main.js',
-    destFile: packageName + '.js'
-  });
-
-  trees.push(tree);
-  
-  if (packageName === 'htmlbars-compiler') {
-    trees.push(htmlbarsHandlebarsInliner);
+  if (!options.singleFile === true) {
+    fileGlobs.push(packageName + '/**/*.js');
   }
 
-  tree = transpileES6(mergeTrees(trees), {
-    moduleName: true
-  });
-
-  return useStrictRemover(tree);
-}
-
-function htmlbarsTestHelpers(helper, rename) {
-  var tree = pickFiles('node_modules/htmlbars/test/support', {
-    files: [helper + '.js'],
+  var tree = pickFiles('node_modules/htmlbars/dist/es6/', {
+    files: fileGlobs,
     srcDir: '/',
     destDir: '/'
   });
 
-  return moveFile(tree, {
-    srcFile: '/' + helper + '.js',
-    destFile: '/' + rename + '.js'
+  tree = transpileES6(tree, {
+    moduleName: true
   });
+
+  if (env !== 'development' && !disableES3) {
+    tree = es3recast(tree);
+  }
+  return tree;
 }
 
 /*
