@@ -4,7 +4,7 @@ import { FragmentCompiler } from "../htmlbars-compiler/compiler/fragment";
 import { HydrationCompiler } from "../htmlbars-compiler/compiler/hydration";
 import { DOMHelper } from "../morph";
 import { preprocess } from "../htmlbars-compiler/parser";
-import { equalHTML } from "../test/support/assertions";
+import { equalHTML } from "../htmlbars-test-helpers";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
     svgNamespace = "http://www.w3.org/2000/svg";

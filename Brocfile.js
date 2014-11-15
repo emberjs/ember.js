@@ -95,20 +95,6 @@ var qunit = new Funnel(bower, {
 // Export trees
 var trees = [test, loader, qunit];
 
-var supportTree = new Funnel('test/support', {
-  srcDir: '/',
-  destDir: '/test/support'
-});
-
-var supportCjsTranspiled = transpileES6(supportTree, { type: 'cjs' });
-trees.push( supportCjsTranspiled );
-
-var supportES6Transpiled = transpileES6(supportTree, { moduleName: true,type: 'amd' });
-trees.push(concatFiles(supportES6Transpiled, {
-  inputFiles: ['test/support/**/*.js'],
-  outputFile: '/test/test-support.amd.js'
-}));
-
 for (var packageName in packages.dependencies) {
   var packageTrees = getPackageTrees(packageName, packages.dependencies[packageName]);
 
