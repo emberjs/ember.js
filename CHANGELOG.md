@@ -1,5 +1,29 @@
 # Ember Changelog
 
+### 1.9.0-beta.3
+
+* Ensure initializers have a `name` property (provides a helpful assertion if missing).
+* [BUILD TOOLING] Enable easier cross-browser testing by publishing builds and tests to S3.
+* Enable `Ember.run.join` to return a value even if within an existing run loop.
+* Update `Ember.EventDispatcher` to use `Ember.run.join`. This is required so that synchronous
+  events (like focus) do not spawn a nested run loop.
+* Deprecate context switching for of {{each}}.
+* Deprecate context switching form of {{with}}.
+* Add improved error message when a component lookup fails.
+* Ensure that component actions that are subscribed to, trigger an assertion when unhandled. Consider the following example:
+
+```handlebars
+{{!component-a.hbs}}
+
+{{some-other-component action="saveMe"}}
+```
+
+Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Previously, if `component-a` did not handle the action
+it would silently continue.  Now, an assertion would be triggered.
+
+* [PERF] Speedup Mixin creation.
+
+
 ### 1.9.0-beta.1
 
 * [BREAKING] Require Handlebars 2.0. See [blog post](http://emberjs.com/blog/2014/10/16/handlebars-update.html) for details.
