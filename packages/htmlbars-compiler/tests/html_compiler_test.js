@@ -84,7 +84,7 @@ QUnit.module("HTML-based compiler (output)", {
 test("Root template has a isTop property", function() {
   expect(2);
   env.hooks.content = function(morph, helperName, context, params, hash, options) {
-    ok(!options.render.isTop, 'template', 'child template isTop isnt present');
+    ok(!options.render.isTop, 'child template isTop isnt present');
   };
 
   var template = compile("<div>{{#if}} {{/if}}</div>");
