@@ -65,7 +65,6 @@ import {
 } from "ember-handlebars/controls/select";
 import TextArea from "ember-handlebars/controls/text_area";
 import TextField from "ember-handlebars/controls/text_field";
-import TextSupport from "ember-handlebars/controls/text_support";
 import {
   inputHelper,
   textareaHelper
@@ -109,13 +108,11 @@ Ember._HandlebarsBoundView = _HandlebarsBoundView;
 Ember._SimpleMetamorphView = _SimpleMetamorphView;
 Ember._MetamorphView = _MetamorphView;
 Ember._Metamorph = _Metamorph;
-Ember.TextSupport = TextSupport;
 Ember.Select = Select;
 Ember.SelectOption = SelectOption;
 Ember.SelectOptgroup = SelectOptgroup;
 Ember.TextArea = TextArea;
 Ember.TextField = TextField;
-Ember.TextSupport = TextSupport;
 
 // register helpers
 EmberHandlebars.registerHelper('helperMissing', helperMissingHelper);

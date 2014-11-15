@@ -32,6 +32,7 @@ import EventDispatcher from "ember-views/system/event_dispatcher";
 import ViewTargetActionSupport from "ember-views/mixins/view_target_action_support";
 import ComponentLookup from "ember-views/component_lookup";
 import Checkbox from "ember-views/views/checkbox";
+import TextSupport from "ember-views/mixins/text_support";
 // END IMPORTS
 
 /**
@@ -58,6 +59,7 @@ Ember.View.states = states;
 Ember.View.cloneStates = cloneStates;
 Ember.Checkbox = Checkbox;
 
+Ember.TextSupport = TextSupport;
 Ember.ComponentLookup = ComponentLookup;
 Ember.ContainerView = ContainerView;
 Ember.CollectionView = CollectionView;
