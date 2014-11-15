@@ -4,7 +4,7 @@ import Container from 'container/container';
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import EmberHandlebars from "ember-handlebars";
-import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {

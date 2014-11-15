@@ -9,7 +9,7 @@ import ObjectController from "ember-runtime/controllers/object_controller";
 import Container from "ember-runtime/system/container";
 // import { A } from "ember-runtime/system/native_array";
 import EmberHandlebars from "ember-handlebars";
-import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {

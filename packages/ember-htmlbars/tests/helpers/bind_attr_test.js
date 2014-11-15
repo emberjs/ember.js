@@ -15,9 +15,7 @@ import { set } from "ember-metal/property_set";
 import {
   default as htmlbarsHelpers
 } from "ember-htmlbars/helpers";
-import {
-  compile as htmlbarsCompile
-} from "htmlbars-compiler/compiler";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 var compile, helpers;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {

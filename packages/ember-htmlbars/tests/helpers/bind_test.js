@@ -2,7 +2,7 @@ import EmberView from "ember-views/views/view";
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
 import EmberHandlebars from "ember-handlebars";
-import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });

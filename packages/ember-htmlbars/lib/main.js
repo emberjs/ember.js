@@ -1,5 +1,8 @@
+import Ember from "ember-metal/core";
 import { content, element, subexpr } from "ember-htmlbars/hooks";
 import { DOMHelper } from "morph";
+import template from "ember-htmlbars/system/template";
+import compile from "ember-htmlbars/system/compile";
 
 import {
   registerHelper,
@@ -41,6 +44,13 @@ registerHelper('partial', partialHelper);
 registerHelper('template', templateHelper);
 registerHelper('bind-attr', bindAttrHelper);
 registerHelper('bindAttr', bindAttrHelperDeprecated);
+
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  Ember.HTMLBars = {
+    template: template,
+    compile: compile
+  };
+}
 
 export var defaultEnv = {
   dom: new DOMHelper(),
