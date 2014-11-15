@@ -14,7 +14,7 @@ import {
 } from "ember-htmlbars/helpers";
 
 import EmberHandlebars from "ember-handlebars";
-import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 var compile, helper;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {

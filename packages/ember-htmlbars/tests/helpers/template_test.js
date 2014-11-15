@@ -6,7 +6,7 @@ var trim = jQuery.trim;
 
 import Container from "ember-runtime/system/container";
 import EmberHandlebars from "ember-handlebars-compiler";
-import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 var MyApp, lookup, view, container;
 var originalLookup = Ember.lookup;

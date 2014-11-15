@@ -1,7 +1,7 @@
 import run from 'ember-metal/run_loop';
 import EmberView from 'ember-views/views/view';
 import EmberHandlebars from 'ember-handlebars-compiler';
-import { compile as htmlbarsCompile } from 'htmlbars-compiler/compiler';
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {

@@ -3,7 +3,7 @@ import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 import EmberHandlebars from "ember-handlebars";
-import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
