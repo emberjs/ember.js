@@ -1,5 +1,5 @@
 /**
-Ember Routing Handlebars
+Ember Routing Handlebars Helpers
 
 @module ember
 @submodule ember-routing-handlebars

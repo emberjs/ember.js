@@ -1,4 +1,5 @@
 import Ember from 'ember-metal/core'; // TEMPLATES
+import EmberHandlebars from "ember-handlebars";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
@@ -16,13 +17,32 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import EmberRouter from "ember-routing/system/router";
 import HashLocation from "ember-routing/location/hash_location";
 
-import EmberHandlebars from "ember-handlebars";
 import _MetamorphView from "ember-views/views/metamorph_view";
 import EmberView from "ember-routing/ext/view";
 import EmberContainerView from "ember-views/views/container_view";
 import jQuery from "ember-views/system/jquery";
 
-import { outletHelper } from "ember-routing-handlebars/helpers/outlet";
+import { outletHelper as handlebarsOutletHelper } from "ember-routing-handlebars/helpers/outlet";
+import { outletHelper as htmlbarsOutletHelper } from "ember-routing-htmlbars/helpers/outlet";
+
+import { compile as htmlbarsCompile } from "htmlbars-compiler/compiler";
+import { registerHelper as htmlbarsRegisterHelper } from "ember-htmlbars/helpers";
+import htmlbarsHelpers from "ember-htmlbars/helpers";
+
+var compile, helpers, registerHelper, outletHelper;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  outletHelper = htmlbarsOutletHelper;
+  compile = htmlbarsCompile;
+  helpers = htmlbarsHelpers;
+  registerHelper = htmlbarsRegisterHelper;
+} else {
+  outletHelper = handlebarsOutletHelper;
+  compile = EmberHandlebars.compile;
+  helpers = EmberHandlebars.helpers;
+  registerHelper = function(name, fn) {
+    EmberHandlebars.registerHelper(name, fn);
+  };
+}
 
 var buildContainer = function(namespace) {
   var container = new Container();
@@ -69,16 +89,15 @@ var appendView = function(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 };
 
-var compile = EmberHandlebars.compile;
 var trim = jQuery.trim;
 
 var view, container, originalOutletHelper;
 
-QUnit.module("Handlebars {{outlet}} helpers", {
+QUnit.module("ember-routing-htmlbars: {{outlet}} helper", {
 
   setup: function() {
-    originalOutletHelper = EmberHandlebars.helpers['outlet'];
-    EmberHandlebars.registerHelper('outlet', outletHelper);
+    originalOutletHelper = helpers['outlet'];
+    registerHelper('outlet', outletHelper);
 
     var namespace = Namespace.create();
     container = buildContainer(namespace);
@@ -86,8 +105,8 @@ QUnit.module("Handlebars {{outlet}} helpers", {
     container.register('router:main', EmberRouter.extend());
   },
   teardown: function() {
-    delete EmberHandlebars.helpers['outlet'];
-    EmberHandlebars.helpers['outlet'] = originalOutletHelper;
+    delete helpers['outlet'];
+    helpers['outlet'] = originalOutletHelper;
 
     run(function () {
       if (container) {
@@ -103,7 +122,7 @@ QUnit.module("Handlebars {{outlet}} helpers", {
 test("view should support connectOutlet for the main outlet", function() {
   var template = "<h1>HI</h1>{{outlet}}";
   view = EmberView.create({
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   appendView(view);
@@ -123,7 +142,7 @@ test("view should support connectOutlet for the main outlet", function() {
 test("outlet should support connectOutlet in slots in prerender state", function() {
   var template = "<h1>HI</h1>{{outlet}}";
   view = EmberView.create({
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   view.connectOutlet('main', EmberView.create({
@@ -136,9 +155,9 @@ test("outlet should support connectOutlet in slots in prerender state", function
 });
 
 test("outlet should support an optional name", function() {
-  var template = "<h1>HI</h1>{{outlet mainView}}";
+  var template = "<h1>HI</h1>{{outlet 'mainView'}}";
   view = EmberView.create({
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   appendView(view);
@@ -169,7 +188,7 @@ test("outlet should correctly lookup a view", function() {
   template = "<h1>HI</h1>{{outlet view='containerView'}}";
 
   view = EmberView.create({
-    template: EmberHandlebars.compile(template),
+    template: compile(template),
     container : container
   });
 
@@ -199,7 +218,7 @@ test("outlet should assert view is specified as a string", function() {
   expectAssertion(function () {
 
     view = EmberView.create({
-      template: EmberHandlebars.compile(template),
+      template: compile(template),
       container : container
     });
 
@@ -216,7 +235,7 @@ test("outlet should assert view path is successfully resolved", function() {
   expectAssertion(function () {
 
     view = EmberView.create({
-      template: EmberHandlebars.compile(template),
+      template: compile(template),
       container : container
     });
 
@@ -229,7 +248,7 @@ test("outlet should assert view path is successfully resolved", function() {
 test("outlet should support an optional view class", function() {
   var template = "<h1>HI</h1>{{outlet viewClass=view.outletView}}";
   view = EmberView.create({
-    template: EmberHandlebars.compile(template),
+    template: compile(template),
     outletView: EmberContainerView.extend()
   });
 
@@ -286,7 +305,7 @@ test("Outlets bind to the current view, not the current concrete view", function
 test("view should support disconnectOutlet for the main outlet", function() {
   var template = "<h1>HI</h1>{{outlet}}";
   view = EmberView.create({
-    template: EmberHandlebars.compile(template)
+    template: compile(template)
   });
 
   appendView(view);
@@ -309,6 +328,9 @@ test("view should support disconnectOutlet for the main outlet", function() {
   // Replace whitespace for older IE
   equal(trim(view.$().text()), 'HI');
 });
+
+// TODO: Remove flag when {{with}} is fixed.
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
 test("Outlets bind to the current template's view, not inner contexts [DEPRECATED]", function() {
   var parentTemplate = "<h1>HI</h1>{{#if view.alwaysTrue}}{{#with this}}{{outlet}}{{/with}}{{/if}}";
@@ -335,13 +357,15 @@ test("Outlets bind to the current template's view, not inner contexts [DEPRECATE
   equal(output, "BOTTOM", "all templates were rendered");
 });
 
+}
+
 test("should support layouts", function() {
   var template = "{{outlet}}";
   var layout = "<h1>HI</h1>{{yield}}";
 
   view = EmberView.create({
-    template: EmberHandlebars.compile(template),
-    layout: EmberHandlebars.compile(layout)
+    template: compile(template),
+    layout: compile(layout)
   });
 
   appendView(view);
