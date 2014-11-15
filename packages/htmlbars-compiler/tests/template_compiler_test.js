@@ -1,6 +1,6 @@
 import { TemplateCompiler } from "../htmlbars-compiler/compiler/template";
 import { preprocess } from "../htmlbars-compiler/parser";
-import { equalHTML } from "../test/support/assertions";
+import { equalHTML } from "../htmlbars-test-helpers";
 import { DOMHelper } from "../morph";
 
 QUnit.module("TemplateCompiler");

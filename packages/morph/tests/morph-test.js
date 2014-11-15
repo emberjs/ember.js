@@ -1,4 +1,4 @@
-import { equalHTML, equalInnerHTML } from "../test/support/assertions";
+import { equalHTML, equalInnerHTML } from "../htmlbars-test-helpers";
 import SafeString from '../htmlbars-util/safe-string';
 import DOMHelper from "../morph/dom-helper";
 
