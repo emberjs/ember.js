@@ -356,3 +356,39 @@ test("should support layouts", function() {
   // Replace whitespace for older IE
   equal(trim(view.$().text()), 'HIBYE');
 });
+
+test("should not throw deprecations if {{outlet}} is used without a name", function() {
+  expectNoDeprecation();
+  view = EmberView.create({
+    template: compile("{{outlet}}")
+  });
+  appendView(view);
+});
+
+test("should not throw deprecations if {{outlet}} is used with a quoted name", function() {
+  expectNoDeprecation();
+  view = EmberView.create({
+    template: compile("{{outlet \"foo\"}}"),
+  });
+  appendView(view);
+});
+
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  test("should throw an assertion if {{outlet}} used with unquoted name", function() {
+    view = EmberView.create({
+      template: compile("{{outlet foo}}"),
+    });
+    expectAssertion(function() {
+      appendView(view);
+    }, "Using {{outlet}} with an unquoted name is not supported.");
+  });
+} else {
+  test("should throw a deprecation if {{outlet}} is used with an unquoted name", function() {
+    view = EmberView.create({
+      template: compile("{{outlet foo}}")
+    });
+    expectDeprecation(function() {
+      appendView(view);
+    }, 'Using {{outlet}} with an unquoted name is not supported. Please update to quoted usage \'{{outlet "foo"}}\'.');
+  });
+}
