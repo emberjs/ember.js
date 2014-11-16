@@ -22,7 +22,7 @@ function streamifyArgs(view, params, hash, options, env) {
   // Convert hash ID values to streams
   var hashTypes = options.hashTypes;
   for (var key in hash) {
-    if (hashTypes[key] === 'id' && key !== 'classBinding') {
+    if (hashTypes[key] === 'id' && key !== 'classBinding' && key !== 'class') {
       hash[key] = view.getStream(hash[key]);
     }
   }
