@@ -69,7 +69,7 @@ export function withHelper(params, hash, options, env) {
 
   var source, keyword;
   var preserveContext, context;
-  if (options.types[0] === 'id') {
+  if (options.types[0] === 'stream') {
     Ember.deprecate('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
     source = params[0];

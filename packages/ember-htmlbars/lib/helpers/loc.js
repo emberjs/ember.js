@@ -41,7 +41,7 @@ import { loc } from 'ember-runtime/system/string';
 export function locHelper(params, hash, options, env) {
   Ember.assert('You cannot pass bindings to `loc` helper', function ifParamsContainBindings() {
     for (var i = 0, l = params.length; i < l; i++) {
-      if (options.types[i] === 'id') {
+      if (options.types[i] === 'stream') {
         return false;
       }
     }

@@ -15,6 +15,7 @@ function streamifyArgs(view, params, hash, options, env) {
     for (var i = 0, l = params.length; i < l; i++) {
       if (options.types[i] === 'id') {
         params[i] = view.getStream(params[i]);
+        options.types[i] = 'stream';
       }
     }
   }
@@ -24,6 +25,7 @@ function streamifyArgs(view, params, hash, options, env) {
   for (var key in hash) {
     if (hashTypes[key] === 'id' && key !== 'classBinding' && key !== 'class') {
       hash[key] = view.getStream(hash[key]);
+      hashTypes[key] = 'stream';
     }
   }
 }

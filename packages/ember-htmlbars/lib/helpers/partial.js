@@ -53,7 +53,7 @@ export function partialHelper(params, hash, options, env) {
 
   options.helperName = options.helperName || 'partial';
 
-  if (options.types[0] === "id") {
+  if (options.types[0] === "stream") {
     var partialNameStream = params[0];
     // Helper was passed a property path; we need to
     // create a binding that will re-render whenever
