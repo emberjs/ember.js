@@ -77,8 +77,10 @@ export function outletHelper(params, hash, options, env) {
   var viewClass;
   var viewFullName;
 
-  Ember.assert("Outlet names must be a string literal, e.g. {{outlet \"header\"}}",
-    params.length === 0 || options.types[0] === 'string');
+  Ember.assert(
+    "Using {{outlet}} with an unquoted name is not supported.",
+    params.length === 0 || options.types[0] === 'string'
+  );
 
   var property = params[0] || 'main';
 
@@ -93,9 +95,15 @@ export function outletHelper(params, hash, options, env) {
 
   if (viewName) {
     viewFullName = 'view:' + viewName;
-    Ember.assert("Using a quoteless view parameter with {{outlet}} is not supported." +
-                 " Please update to quoted usage '{{outlet \"" + viewName + "\"}}.", options.hashTypes.view === 'string');
-    Ember.assert("The view name you supplied '" + viewName + "' did not resolve to a view.", this.container.has(viewFullName));
+    Ember.assert(
+      "Using a quoteless view parameter with {{outlet}} is not supported." +
+      " Please update to quoted usage '{{outlet ... view=\"" + viewName + "\"}}.",
+      options.hashTypes.view === 'string'
+    );
+    Ember.assert(
+      "The view name you supplied '" + viewName + "' did not resolve to a view.",
+      this.container.has(viewFullName)
+    );
   }
 
   viewClass = viewName ? this.container.lookupFactory(viewFullName) : hash.viewClass || OutletView;
