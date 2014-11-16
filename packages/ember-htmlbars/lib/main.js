@@ -32,6 +32,7 @@ import {
 import { locHelper } from "ember-htmlbars/helpers/loc";
 import { partialHelper } from "ember-htmlbars/helpers/partial";
 import { templateHelper } from "ember-htmlbars/helpers/template";
+import { inputHelper } from "ember-htmlbars/helpers/input";
 
 registerHelper('bindHelper', bindHelper);
 registerHelper('bind', bindHelper);
@@ -49,6 +50,7 @@ registerHelper('partial', partialHelper);
 registerHelper('template', templateHelper);
 registerHelper('bind-attr', bindAttrHelper);
 registerHelper('bindAttr', bindAttrHelperDeprecated);
+registerHelper('input', inputHelper);
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   Ember.HTMLBars = {
