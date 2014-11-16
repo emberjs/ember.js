@@ -21,12 +21,12 @@ function makeBindings(hash, options, view) {
     var hashType = hashTypes[prop];
     var valueOrStream = hash[prop];
 
-    if (IS_BINDING.test(prop)) {
-      // classBinding is processed separately
-      if (prop === 'classBinding') {
-        continue;
-      }
+    // classBinding is processed separately
+    if (prop === 'classBinding') {
+      continue;
+    }
 
+    if (IS_BINDING.test(prop)) {
       if (hashType === 'id') {
         // valueOrStream is a stream, streamifyArgs took care of it
         Ember.warn("You're attempting to render a view by passing " +
@@ -37,6 +37,13 @@ function makeBindings(hash, options, view) {
                    "from " + prop + ".");
       } else if (typeof valueOrStream === 'string') {
         hash[prop] = view._getBindingForStream(valueOrStream);
+      }
+    } else {
+      if (hashType === 'id' && prop !== 'id') {
+        hash[prop + 'Binding'] = valueOrStream;
+
+        delete hash[prop];
+        delete hashTypes[prop];
       }
     }
   }

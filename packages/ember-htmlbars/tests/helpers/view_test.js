@@ -1,4 +1,5 @@
 /*globals EmberDev */
+import { set } from "ember-metal/property_set";
 import EmberView from "ember-views/views/view";
 import Container from 'container/container';
 import run from "ember-metal/run_loop";
@@ -188,6 +189,17 @@ test("id bindings downgrade to one-time property lookup", function() {
   equal(jQuery('#stengah').text(), 'omg', "id didn't change");
 });
 
+test("specifying `id` as a static value works properly", function() {
+  view = EmberView.extend({
+    template: compile("{{#view id='blah'}}{{view.parentView.meshuggah}}{{/view}}"),
+    meshuggah: 'stengah'
+  }).create();
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  equal(view.$('#blah').text(), 'stengah', "id binding performed property lookup");
+});
+
 test("mixing old and new styles of property binding fires a warning, treats value as if it were quoted", function() {
   if (EmberDev && EmberDev.runningProdBuild){
     ok(true, 'Logging does not occur in production builds');
@@ -268,4 +280,88 @@ test("Should apply classes when bound property specified", function() {
   run(view, 'appendTo', '#qunit-fixture');
 
   ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
+});
+
+test("Should not apply classes when bound property specified is false", function() {
+  view = EmberView.create({
+    controller: {
+      someProp: false
+    },
+    template: compile('{{#view id="foo" class=someProp}} Foo{{/view}}')
+  });
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  ok(!jQuery('#foo').hasClass('some-prop'), "does not add class when value is falsey");
+});
+
+test("Should apply classes of the dasherized property name when bound property specified is true", function() {
+  view = EmberView.create({
+    controller: {
+      someProp: true
+    },
+    template: compile('{{#view id="foo" class=someProp}} Foo{{/view}}')
+  });
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  ok(jQuery('#foo').hasClass('some-prop'), "adds dasherized class when value is true");
+});
+
+test("Should update classes from a bound property", function() {
+  var controller = {
+    someProp: true
+  };
+
+  view = EmberView.create({
+    controller: controller,
+    template: compile('{{#view id="foo" class=someProp}} Foo{{/view}}')
+  });
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  ok(jQuery('#foo').hasClass('some-prop'), "adds dasherized class when value is true");
+
+  run(function() {
+    set(controller, 'someProp', false);
+  });
+
+  ok(!jQuery('#foo').hasClass('some-prop'), "does not add class when value is falsey");
+
+  run(function() {
+    set(controller, 'someProp', 'fooBar');
+  });
+
+  ok(jQuery('#foo').hasClass('fooBar'), "changes property to string value (but does not dasherize)");
+});
+
+test("bound properties should be available in the view", function() {
+  var FuView = viewClass({
+    elementId: 'fu',
+    template: compile("{{view.foo}}")
+  });
+
+  function lookupFactory(fullName) {
+    return FuView;
+  }
+
+  var container = {
+    lookupFactory: lookupFactory
+  };
+
+  view = EmberView.extend({
+    template: compile("{{view 'fu' foo=view.someProp}}"),
+    container: container,
+    someProp: 'initial value'
+  }).create();
+
+  run(view, 'appendTo', '#qunit-fixture');
+
+  equal(view.$('#fu').text(), 'initial value');
+
+  run(function() {
+    set(view, 'someProp', 'second value');
+  });
+
+  equal(view.$('#fu').text(), 'second value');
 });
