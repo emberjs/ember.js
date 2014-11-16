@@ -2,14 +2,20 @@ import run from "ember-metal/run_loop";
 import View from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars";
 import { set as o_set } from "ember-metal/property_set";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
+
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
 
 var textArea, controller;
 
 function set(object, key, value) {
   run(function() { o_set(object, key, value); });
 }
-
-var compile = EmberHandlebars.compile;
 
 function append() {
   run(function() {
