@@ -14,8 +14,6 @@ import { A } from "ember-runtime/system/native_array";
 import { computed } from "ember-metal/computed";
 import { fmt } from "ember-runtime/system/string";
 import { typeOf } from "ember-metal/utils";
-import ArrayProxy from "ember-runtime/system/array_proxy";
-import CollectionView from "ember-views/views/collection_view";
 import ContainerView from "ember-views/views/container_view";
 import { Binding } from "ember-metal/binding";
 import { observersFor } from "ember-metal/observer";
@@ -1013,90 +1011,6 @@ test("Child views created using the view helper and that have a viewName should 
   var childView  = firstGrandchild(view);
 
   equal(get(parentView, 'ohai'), childView);
-});
-
-test("Collection views that specify an example view class have their children be of that class", function() {
-  var ExampleViewCollection = CollectionView.extend({
-    itemViewClass: EmberView.extend({
-      isCustom: true
-    }),
-
-    content: A(['foo'])
-  });
-
-  view = EmberView.create({
-    exampleViewCollection: ExampleViewCollection,
-    template: EmberHandlebars.compile('{{#collection view.exampleViewCollection}}OHAI{{/collection}}')
-  });
-
-  run(function() {
-    view.append();
-  });
-
-  ok(firstGrandchild(view).isCustom, "uses the example view class");
-});
-
-test("itemViewClass works in the #collection helper with a global (DEPRECATED)", function() {
-  TemplateTests.ExampleItemView = EmberView.extend({
-    isAlsoCustom: true
-  });
-
-  view = EmberView.create({
-    exampleController: ArrayProxy.create({
-      content: A(['alpha'])
-    }),
-    template: EmberHandlebars.compile('{{#collection content=view.exampleController itemViewClass=TemplateTests.ExampleItemView}}beta{{/collection}}')
-  });
-
-  expectDeprecation(function(){
-    run(view, 'append');
-  }, /Resolved the view "TemplateTests.ExampleItemView" on the global context/);
-
-  ok(firstGrandchild(view).isAlsoCustom, "uses the example view class specified in the #collection helper");
-});
-
-test("itemViewClass works in the #collection helper with a property", function() {
-  var ExampleItemView = EmberView.extend({
-    isAlsoCustom: true
-  });
-
-  var ExampleCollectionView = CollectionView;
-
-  view = EmberView.create({
-    possibleItemView: ExampleItemView,
-    exampleCollectionView: ExampleCollectionView,
-    exampleController: ArrayProxy.create({
-      content: A(['alpha'])
-    }),
-    template: EmberHandlebars.compile('{{#collection view.exampleCollectionView content=view.exampleController itemViewClass=view.possibleItemView}}beta{{/collection}}')
-  });
-
-  run(function() {
-    view.append();
-  });
-
-  ok(firstGrandchild(view).isAlsoCustom, "uses the example view class specified in the #collection helper");
-});
-
-test("itemViewClass works in the #collection via container", function() {
-  container.register('view:example-item', EmberView.extend({
-    isAlsoCustom: true
-  }));
-
-  view = EmberView.create({
-    container: container,
-    exampleCollectionView: CollectionView.extend(),
-    exampleController: ArrayProxy.create({
-      content: A(['alpha'])
-    }),
-    template: EmberHandlebars.compile('{{#collection view.exampleCollectionView content=view.exampleController itemViewClass="example-item"}}beta{{/collection}}')
-  });
-
-  run(function() {
-    view.append();
-  });
-
-  ok(firstGrandchild(view).isAlsoCustom, "uses the example view class specified in the #collection helper");
 });
 
 test("should update boundIf blocks if the conditional changes", function() {

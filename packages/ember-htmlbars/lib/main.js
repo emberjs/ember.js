@@ -34,6 +34,8 @@ import { partialHelper } from "ember-htmlbars/helpers/partial";
 import { templateHelper } from "ember-htmlbars/helpers/template";
 import { inputHelper } from "ember-htmlbars/helpers/input";
 import { textareaHelper } from "ember-htmlbars/helpers/text_area";
+import { collectionHelper } from "ember-htmlbars/helpers/collection";
+import { eachHelper } from "ember-htmlbars/helpers/each";
 
 registerHelper('bindHelper', bindHelper);
 registerHelper('bind', bindHelper);
@@ -53,6 +55,8 @@ registerHelper('bind-attr', bindAttrHelper);
 registerHelper('bindAttr', bindAttrHelperDeprecated);
 registerHelper('input', inputHelper);
 registerHelper('textarea', textareaHelper);
+registerHelper('collection', collectionHelper);
+registerHelper('each', eachHelper);
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   Ember.HTMLBars = {

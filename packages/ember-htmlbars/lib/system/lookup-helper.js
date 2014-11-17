@@ -8,19 +8,19 @@ export var ISNT_HELPER_CACHE = new Cache(1000, function(key) {
   return key.indexOf('-') === -1;
 });
 
-export function attribute(element, params, options, env) {
+export function attribute(params, hash, options, env) {
   var dom = env.dom;
   var name = params[0];
   var value = params[1];
 
   value.subscribe(function(lazyValue) {
-    dom.setAttribute(element, name, lazyValue.value());
+    dom.setAttribute(options.element, name, lazyValue.value());
   });
 
-  dom.setAttribute(element, name, value.value());
+  dom.setAttribute(options.element, name, value.value());
 }
 
-export function concat(params, options) {
+export function concat(params, hash, options, env) {
   var stream = new Stream(function() {
     return readArray(params).join('');
   });

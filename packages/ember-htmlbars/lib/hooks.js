@@ -10,6 +10,13 @@ function streamifyArgs(view, params, hash, options, env) {
       stream: view.getStream(params[0])
     });
     options.types.splice(0, 3, 'keyword');
+  } else if (params.length === 3 && params[1] === "in") {
+    params.splice(0, 3, {
+      from: params[2],
+      to: params[0],
+      stream: view.getStream(params[2])
+    });
+    options.types.splice(0, 3, 'keyword');
   } else {
     // Convert ID params to streams
     for (var i = 0, l = params.length; i < l; i++) {
