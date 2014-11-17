@@ -49,14 +49,13 @@ import {
   debuggerHelper
 } from "ember-handlebars/helpers/debug";
 import {
-  EachView,
   eachHelper
 } from "ember-handlebars/helpers/each";
 import templateHelper from "ember-handlebars/helpers/template";
 import partialHelper from "ember-handlebars/helpers/partial";
 import yieldHelper from "ember-handlebars/helpers/yield";
 import locHelper from "ember-handlebars/helpers/loc";
-
+import EachView from "ember-views/views/each";
 
 import {
   Select,
@@ -67,16 +66,6 @@ import {
   inputHelper,
   textareaHelper
 } from "ember-handlebars/controls";
-
-import {
-  _HandlebarsBoundView,
-  SimpleHandlebarsView
-} from "ember-views/views/handlebars_bound_view";
-import _MetamorphView from "ember-views/views/metamorph_view";
-import {
-  _SimpleMetamorphView,
-  _Metamorph
-} from "ember-views/views/metamorph_view";
 
 
 /**
@@ -96,16 +85,11 @@ EmberHandlebars.bind = bind;
 EmberHandlebars.bindClasses = bindClasses;
 EmberHandlebars.EachView = EachView;
 EmberHandlebars.ViewHelper = ViewHelper;
+EmberHandlebars.get = handlebarsGet;
 
 
 // Ember Globals
 Ember.Handlebars = EmberHandlebars;
-EmberHandlebars.get = handlebarsGet;
-Ember._SimpleHandlebarsView = SimpleHandlebarsView;
-Ember._HandlebarsBoundView = _HandlebarsBoundView;
-Ember._SimpleMetamorphView = _SimpleMetamorphView;
-Ember._MetamorphView = _MetamorphView;
-Ember._Metamorph = _Metamorph;
 Ember.Select = Select;
 Ember.SelectOption = SelectOption;
 Ember.SelectOptgroup = SelectOptgroup;

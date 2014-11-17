@@ -35,6 +35,16 @@ import Checkbox from "ember-views/views/checkbox";
 import TextSupport from "ember-views/mixins/text_support";
 import TextField from "ember-views/views/text_field";
 import TextArea from "ember-views/views/text_area";
+
+import {
+  _HandlebarsBoundView,
+  SimpleHandlebarsView
+} from "ember-views/views/handlebars_bound_view";
+import _MetamorphView from "ember-views/views/metamorph_view";
+import {
+  _SimpleMetamorphView,
+  _Metamorph
+} from "ember-views/views/metamorph_view";
 // END IMPORTS
 
 /**
@@ -62,6 +72,12 @@ Ember.View.cloneStates = cloneStates;
 Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
+
+Ember._SimpleHandlebarsView = SimpleHandlebarsView;
+Ember._HandlebarsBoundView = _HandlebarsBoundView;
+Ember._SimpleMetamorphView = _SimpleMetamorphView;
+Ember._MetamorphView = _MetamorphView;
+Ember._Metamorph = _Metamorph;
 
 Ember.TextSupport = TextSupport;
 Ember.ComponentLookup = ComponentLookup;
