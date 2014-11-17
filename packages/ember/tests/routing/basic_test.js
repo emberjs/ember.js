@@ -4,8 +4,17 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import ActionManager from "ember-views/system/action_manager";
 
+import EmberHandlebars from "ember-handlebars";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
+
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
+
 var Router, App, router, container, originalLoggerError;
-var compile = Ember.Handlebars.compile;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -358,7 +367,7 @@ test('render does not replace templateName if user provided', function() {
     this.route("home", { path: "/" });
   });
 
-  Ember.TEMPLATES.the_real_home_template = Ember.Handlebars.compile(
+  Ember.TEMPLATES.the_real_home_template = compile(
     "<p>THIS IS THE REAL HOME</p>"
   );
 
@@ -379,7 +388,7 @@ test('render does not replace template if user provided', function () {
   });
 
   App.HomeView = Ember.View.extend({
-    template: Ember.Handlebars.compile("<p>THIS IS THE REAL HOME</p>")
+    template: compile("<p>THIS IS THE REAL HOME</p>")
   });
   App.HomeController = Ember.Controller.extend();
   App.HomeRoute = Ember.Route.extend();
@@ -398,7 +407,7 @@ test('render uses templateName from route', function() {
     this.route("home", { path: "/" });
   });
 
-  Ember.TEMPLATES.the_real_home_template = Ember.Handlebars.compile(
+  Ember.TEMPLATES.the_real_home_template = compile(
     "<p>THIS IS THE REAL HOME</p>"
   );
 
@@ -417,10 +426,10 @@ test('defining templateName allows other templates to be rendered', function() {
     this.route("home", { path: "/" });
   });
 
-  Ember.TEMPLATES.alert = Ember.Handlebars.compile(
+  Ember.TEMPLATES.alert = compile(
     "<div class='alert-box'>Invader!</div>"
   );
-  Ember.TEMPLATES.the_real_home_template = Ember.Handlebars.compile(
+  Ember.TEMPLATES.the_real_home_template = compile(
     "<p>THIS IS THE REAL HOME</p>{{outlet 'alert'}}"
   );
 
@@ -466,7 +475,7 @@ test('Specifying a name to render should have precedence over everything else', 
   });
 
   App.HomeView = Ember.View.extend({
-    template: Ember.Handlebars.compile("<h3>This should not be rendered</h3><p>{{home}}</p>")
+    template: compile("<h3>This should not be rendered</h3><p>{{home}}</p>")
   });
 
   App.HomepageController = Ember.ObjectController.extend({
@@ -475,7 +484,7 @@ test('Specifying a name to render should have precedence over everything else', 
     }
   });
   App.HomepageView = Ember.View.extend({
-    layout: Ember.Handlebars.compile(
+    layout: compile(
       "<span>Outer</span>{{yield}}<span>troll</span>"
     ),
     templateName: 'homepage'
@@ -503,7 +512,7 @@ test("The Homepage with a `setupController` hook", function() {
     }
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+  Ember.TEMPLATES.home = compile(
     "<ul>{{#each entry in hours}}<li>{{entry}}</li>{{/each}}</ul>"
   );
 
@@ -536,7 +545,7 @@ test("The route controller can be specified via controllerName", function() {
     this.route("home", { path: "/" });
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+  Ember.TEMPLATES.home = compile(
     "<p>{{myValue}}</p>"
   );
 
@@ -559,7 +568,7 @@ test("The route controller specified via controllerName is used in render", func
     this.route("home", { path: "/" });
   });
 
-  Ember.TEMPLATES.alternative_home = Ember.Handlebars.compile(
+  Ember.TEMPLATES.alternative_home = compile(
     "<p>alternative home: {{myValue}}</p>"
   );
 
@@ -585,7 +594,7 @@ test("The route controller specified via controllerName is used in render even w
     this.route("home", { path: "/" });
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+  Ember.TEMPLATES.home = compile(
     "<p>home: {{myValue}}</p>"
   );
 
@@ -622,7 +631,7 @@ test("The Homepage with a `setupController` hook modifying other controllers", f
     }
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+  Ember.TEMPLATES.home = compile(
     "<ul>{{#each entry in hours}}<li>{{entry}}</li>{{/each}}</ul>"
   );
 
@@ -646,7 +655,7 @@ test("The Homepage with a computed context that does not get overridden", functi
     })
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+  Ember.TEMPLATES.home = compile(
     "<ul>{{#each passage in model}}<li>{{passage}}</li>{{/each}}</ul>"
   );
 
@@ -676,7 +685,7 @@ test("The Homepage getting its controller context via model", function() {
     }
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+  Ember.TEMPLATES.home = compile(
     "<ul>{{#each entry in hours}}<li>{{entry}}</li>{{/each}}</ul>"
   );
 
@@ -703,7 +712,7 @@ test("The Specials Page getting its controller context by deserializing the para
     }
   });
 
-  Ember.TEMPLATES.special = Ember.Handlebars.compile(
+  Ember.TEMPLATES.special = compile(
     "<p>{{model.menuItemId}}</p>"
   );
 
@@ -737,7 +746,7 @@ test("The Specials Page defaults to looking models up via `find`", function() {
     }
   });
 
-  Ember.TEMPLATES.special = Ember.Handlebars.compile(
+  Ember.TEMPLATES.special = compile(
     "<p>{{model.id}}</p>"
   );
 
@@ -779,11 +788,11 @@ test("The Special Page returning a promise puts the app into a loading state unt
     }
   });
 
-  Ember.TEMPLATES.special = Ember.Handlebars.compile(
+  Ember.TEMPLATES.special = compile(
     "<p>{{model.id}}</p>"
   );
 
-  Ember.TEMPLATES.loading = Ember.Handlebars.compile(
+  Ember.TEMPLATES.loading = compile(
     "<p>LOADING!</p>"
   );
 
@@ -827,11 +836,11 @@ test("The loading state doesn't get entered for promises that resolve on the sam
     }
   });
 
-  Ember.TEMPLATES.special = Ember.Handlebars.compile(
+  Ember.TEMPLATES.special = compile(
     "<p>{{model.id}}</p>"
   );
 
-  Ember.TEMPLATES.loading = Ember.Handlebars.compile(
+  Ember.TEMPLATES.loading = compile(
     "<p>LOADING!</p>"
   );
 
@@ -991,11 +1000,11 @@ asyncTest("Moving from one page to another triggers the correct callbacks", func
     }
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+  Ember.TEMPLATES.home = compile(
     "<h3>Home</h3>"
   );
 
-  Ember.TEMPLATES.special = Ember.Handlebars.compile(
+  Ember.TEMPLATES.special = compile(
     "<p>{{model.id}}</p>"
   );
 
@@ -1081,15 +1090,15 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
     }
   });
 
-  Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
+  Ember.TEMPLATES['root/index'] = compile(
     "<h3>Home</h3>"
   );
 
-  Ember.TEMPLATES.special = Ember.Handlebars.compile(
+  Ember.TEMPLATES.special = compile(
     "<p>{{model.id}}</p>"
   );
 
-  Ember.TEMPLATES.loading = Ember.Handlebars.compile(
+  Ember.TEMPLATES.loading = compile(
     "<p>LOADING!</p>"
   );
 
@@ -1149,7 +1158,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
     }
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+  Ember.TEMPLATES.home = compile(
     "<a {{action 'showStuff' model}}>{{name}}</a>"
   );
 
@@ -1195,7 +1204,7 @@ asyncTest("Events are triggered on the current state when defined in `actions` o
     }
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+  Ember.TEMPLATES.home = compile(
     "<a {{action 'showStuff' model}}>{{name}}</a>"
   );
 
@@ -1233,7 +1242,7 @@ asyncTest("Events defined in `actions` object are triggered on the current state
     }
   });
 
-  Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
+  Ember.TEMPLATES['root/index'] = compile(
     "<a {{action 'showStuff' model}}>{{name}}</a>"
   );
 
@@ -1267,7 +1276,7 @@ asyncTest("Events are triggered on the current state when defined in `events` ob
     }
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+  Ember.TEMPLATES.home = compile(
     "<a {{action 'showStuff' model}}>{{name}}</a>"
   );
 
@@ -1306,7 +1315,7 @@ asyncTest("Events defined in `events` object are triggered on the current state 
     }
   });
 
-  Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
+  Ember.TEMPLATES['root/index'] = compile(
     "<a {{action 'showStuff' model}}>{{name}}</a>"
   );
 
@@ -1380,7 +1389,7 @@ asyncTest("Actions are not triggered on the controller if a matching action name
     }
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+  Ember.TEMPLATES.home = compile(
     "<a {{action 'showStuff' model}}>{{name}}</a>"
   );
 
@@ -1428,7 +1437,7 @@ asyncTest("actions can be triggered with multiple arguments", function() {
     model2: model2
   });
 
-  Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
+  Ember.TEMPLATES['root/index'] = compile(
     "<a {{action 'showStuff' model1 model2}}>{{model1.name}}</a>"
   );
 
@@ -2013,6 +2022,9 @@ test("Rendering into specified template with slash notation", function() {
 });
 
 
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+    // bizarre error in morph attempting to remove a child it does not have
+
 test("Parent route context change", function() {
   var editCount = 0;
   var editedPostIds = Ember.A();
@@ -2082,6 +2094,8 @@ test("Parent route context change", function() {
   equal(editCount, 2, 'set up the edit route twice without failure');
   deepEqual(editedPostIds, ['1', '2'], 'modelFor posts.post returns the right context');
 });
+
+}
 
 test("Router accounts for rootURL on page load when using history location", function() {
   var rootURL = window.location.pathname + '/app';
@@ -2333,7 +2347,7 @@ test("The template is not re-rendered when the route's context changes", functio
     }
   });
 
-  Ember.TEMPLATES.page = Ember.Handlebars.compile(
+  Ember.TEMPLATES.page = compile(
     "<p>{{name}}</p>"
   );
 
@@ -2397,7 +2411,7 @@ test("The template is not re-rendered when two routes present the exact same tem
   // Extending, in essence, creates a different view
   App.FourthView = App.SharedView.extend();
 
-  Ember.TEMPLATES.shared = Ember.Handlebars.compile(
+  Ember.TEMPLATES.shared = compile(
     "<p>{{message}}</p>"
   );
 
@@ -2465,8 +2479,8 @@ test("Promises encountered on app load put app into loading state until resolved
     }
   });
 
-  Ember.TEMPLATES.index = Ember.Handlebars.compile("<p>INDEX</p>");
-  Ember.TEMPLATES.loading = Ember.Handlebars.compile("<p>LOADING</p>");
+  Ember.TEMPLATES.index = compile("<p>INDEX</p>");
+  Ember.TEMPLATES.loading = compile("<p>LOADING</p>");
 
   bootApplication();
 

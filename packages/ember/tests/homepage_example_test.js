@@ -1,11 +1,21 @@
 import "ember";
 
+import EmberHandlebars from "ember-handlebars";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
+
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
+
 var App, $fixture;
 
 function setupExample() {
   // setup templates
-  Ember.TEMPLATES.application = Ember.Handlebars.compile("{{outlet}}");
-  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h1>People</h1><ul>{{#each person in model}}<li>Hello, <b>{{person.fullName}}</b>!</li>{{/each}}</ul>");
+  Ember.TEMPLATES.application = compile("{{outlet}}");
+  Ember.TEMPLATES.index = compile("<h1>People</h1><ul>{{#each person in model}}<li>Hello, <b>{{person.fullName}}</b>!</li>{{/each}}</ul>");
 
 
   App.Person = Ember.Object.extend({
