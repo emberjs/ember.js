@@ -121,6 +121,7 @@ import { computed } from "ember-metal/computed";
   @uses Ember.Copyable
   @uses Ember.Freezable
   @since Ember 0.9
+  @deprecated
 */
 export default CoreObject.extend(MutableEnumerable, Copyable, Freezable, {
 
