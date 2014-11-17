@@ -16,11 +16,19 @@ import Container from "ember-runtime/system/container";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
+import htmlbarsCompile from "ember-htmlbars/system/compile";
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
+
 var people, view, container;
 var template, templateMyView, MyView;
 
 function templateFor(template) {
-  return EmberHandlebars.compile(template);
+  return compile(template);
 }
 
 var originalLookup = Ember.lookup;
@@ -471,10 +479,14 @@ test("it supports {{itemViewClass=}} with global (DEPRECATED)", function() {
     people: people
   });
 
+  var deprecation = /Resolved the view "MyView" on the global context/;
+  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+    deprecation = /Global lookup of MyView from a Handlebars template is deprecated/;
+  }
 
   expectDeprecation(function(){
     append(view);
-  }, /Resolved the view "MyView" on the global context/);
+  }, deprecation);
 
   assertText(view, "Steve HoltAnnabelle");
 });
@@ -732,7 +744,7 @@ test("controller is assignable inside an #each", function() {
 test("it doesn't assert when the morph tags have the same parent", function() {
   view = EmberView.create({
     controller: A(['Cyril', 'David']),
-    template: templateFor('<table><tbody>{{#each name in this}}<tr><td>{{name}}</td></tr>{{/each}}<tbody></table>')
+    template: templateFor('<table><tbody>{{#each name in this}}<tr><td>{{name}}</td></tr>{{/each}}</tbody></table>')
   });
 
   append(view);
