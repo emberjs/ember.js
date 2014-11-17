@@ -150,7 +150,7 @@ export var ViewHelper = EmberObject.create({
     var data = env.data;
     var fn   = options.render;
 
-    makeBindings(options, env.data.view);
+    makeBindings(hash, options, env.data.view);
 
     Ember.assert(
       'Only a instance of a view may be passed to the ViewHelper.instanceHelper',
@@ -173,6 +173,8 @@ export var ViewHelper = EmberObject.create({
         !viewOptions.controller && !viewOptions.controllerBinding) {
       viewOptions._context = get(currentView, 'context'); // TODO: is this right?!
     }
+
+    viewOptions._morph = options.morph;
 
     currentView.appendChild(newView, viewOptions);
   }
