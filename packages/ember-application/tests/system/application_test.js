@@ -11,10 +11,19 @@ import NoneLocation from "ember-routing/location/none_location";
 import EmberHandlebars from "ember-handlebars";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 var trim = jQuery.trim;
 
 var app, application, originalLookup, originalDebug;
+
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
+
 
 QUnit.module("Ember.Application", {
   setup: function() {
@@ -117,10 +126,10 @@ test('initialized application go to initial route', function() {
     });
 
     app.register('template:application',
-      EmberHandlebars.compile("{{outlet}}")
+      compile("{{outlet}}")
     );
 
-    Ember.TEMPLATES.index = EmberHandlebars.compile(
+    Ember.TEMPLATES.index = compile(
       "<h1>Hi from index</h1>"
     );
   });
