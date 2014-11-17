@@ -5,8 +5,8 @@
 
 import Ember from "ember-metal/core"; // assert
 import { LinkView } from "ember-routing-views/views/link";
-import { readUnwrappedModel } from "ember-views/streams/read";
 import { read } from "ember-metal/streams/read";
+import ControllerMixin from "ember-runtime/mixins/controller";
 
 // We need the HTMLBars view helper from ensure ember-htmlbars.
 // This ensures it is loaded first:
@@ -323,7 +323,13 @@ function linkToHelper(params, hash, options, env) {
 
   for (var i = 0; i < params.length; i++) {
     if (types[i] === 'id') {
-      var lazyValue = readUnwrappedModel(params[i]);
+      var lazyValue = params[i];
+
+      if (!lazyValue._isController) {
+        while (ControllerMixin.detect(lazyValue.value())) {
+          lazyValue = lazyValue.get('model');
+        }
+      }
 
       params[i] = lazyValue;
     }
