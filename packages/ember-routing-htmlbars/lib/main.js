@@ -15,9 +15,11 @@ import {
   linkToHelper,
   deprecatedLinkToHelper
 } from "ember-routing-htmlbars/helpers/link-to";
+import { actionHelper } from "ember-routing-htmlbars/helpers/action";
 
 registerHelper('outlet', outletHelper);
 registerHelper('link-to', linkToHelper);
 registerHelper('linkTo', deprecatedLinkToHelper);
+registerHelper('action', actionHelper);
 
 export default Ember;

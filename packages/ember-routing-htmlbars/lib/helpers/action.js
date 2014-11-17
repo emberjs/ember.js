@@ -1,29 +1,28 @@
 /**
 @module ember
-@submodule ember-routing-handlebars
+@submodule ember-routing-htmlbars
 */
 
 import Ember from "ember-metal/core"; // Handlebars, uuid, FEATURES, assert, deprecate
-import EmberHandlebars from "ember-handlebars";
-import { forEach } from "ember-metal/array";
 import { uuid } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
 import { readUnwrappedModel } from "ember-views/streams/read";
 import { isSimpleClick } from "ember-views/system/utils";
 import ActionManager from "ember-views/system/action_manager";
+import { indexOf } from "ember-metal/array";
 
 function actionArgs(parameters, actionName) {
-  var ret, i;
+  var ret, i, l;
 
   if (actionName === undefined) {
     ret = new Array(parameters.length);
-    for (i = 0; i < parameters.length; i++) {
+    for (i=0, l=parameters.length;i<l;i++) {
       ret[i] = readUnwrappedModel(parameters[i]);
     }
   } else {
     ret = new Array(parameters.length + 1);
     ret[0] = actionName;
-    for (i = 0; i < parameters.length; i++) {
+    for (i=0, l=parameters.length;i<l; i++) {
       ret[i + 1] = readUnwrappedModel(parameters[i]);
     }
   }
@@ -56,25 +55,21 @@ var isAllowedEvent = function(event, allowedKeys) {
     return true;
   }
 
-  var allowed = true;
-
-  forEach.call(keys, function(key) {
-    if (event[key + "Key"] && allowedKeys.indexOf(key) === -1) {
-      allowed = false;
+  for (var i=0, l=keys.length;i<l;i++) {
+    if (event[keys[i] + "Key"] && allowedKeys.indexOf(keys[i]) === -1) {
+      return false;
     }
-  });
+  }
 
-  return allowed;
+  return true;
 };
 
-function isKeyEvent(eventName) {
-  return ['keyUp', 'keyPress', 'keyDown'].indexOf(eventName) !== -1;
-}
+var keyEvents = ['keyUp', 'keyPress', 'keyDown'];
 
 function ignoreKeyEvent(eventName, event, keyCode) {
   var any = 'any';
   keyCode = keyCode || any;
-  return isKeyEvent(eventName) && keyCode !== any && keyCode !== event.which.toString();
+  return indexOf.call(keyEvents, eventName) !== -1 && keyCode !== any && keyCode !== event.which.toString();
 }
 
 ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys) {
@@ -297,43 +292,30 @@ ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys)
   @param {Object} [context]*
   @param {Hash} options
 */
-export function actionHelper(actionName) {
-  var length = arguments.length;
-  var options = arguments[length - 1];
-  var view = options.data.view;
-  var hash = options.hash;
-  var types = options.types;
+export function actionHelper(params, hash, options, env) {
 
-  // create a hash to pass along to registerAction
-  var parameters = [];
+  var target;
+  if (!hash.target) {
+    target = this.getStream('controller');
+  } else if (hash.target.isStream) {
+    target = hash.target;
+  } else {
+    target = this.getStream(hash.target);
+  }
+
+  // Ember.assert("You specified a quoteless path to the {{action}} helper which did not resolve to an action name (a string). Perhaps you meant to use a quoted actionName? (e.g. {{action 'save'}}).", !params[0].isStream);
+  // Ember.deprecate("You specified a quoteless path to the {{action}} helper which did not resolve to an action name (a string). Perhaps you meant to use a quoted actionName? (e.g. {{action 'save'}}).", params[0].isStream);
 
   var actionOptions = {
     eventName: hash.on || "click",
-    parameters: parameters,
-    view: options.data.view,
+    parameters: params.slice(1),
+    view: this,
     bubbles: hash.bubbles,
     preventDefault: hash.preventDefault,
-    target: view.getStream(hash.target || 'controller'),
+    target: target,
     withKeyCode: hash.withKeyCode
   };
 
-  var actionNameStream;
-
-  if (types[0] === "ID") {
-    actionNameStream = view.getStream(actionName);
-    actionNameStream._originalPath = actionName;
-  } else {
-    actionNameStream = actionName;
-  }
-
-  for (var i = 1; i < length - 1; i++) {
-    if (types[i] === "ID") {
-      parameters.push(view.getStream(arguments[i]));
-    } else {
-      parameters.push(arguments[i]);
-    }
-  }
-
-  var actionId = ActionHelper.registerAction(actionNameStream, actionOptions, hash.allowedKeys);
-  return new EmberHandlebars.SafeString('data-ember-action="' + actionId + '"');
+  var actionId = ActionHelper.registerAction(params[0], actionOptions, hash.allowedKeys);
+  env.dom.setAttribute(options.element, 'data-ember-action', actionId);
 }
