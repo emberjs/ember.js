@@ -206,7 +206,7 @@ test("replacing a Metamorph should invalidate childView elements", function() {
   run(function() { view.destroy(); });
 });
 
-test("trigger rerender of parent and SimpleHandlebarsView", function () {
+test("trigger rerender of parent and SimpleBoundView", function () {
   var view = EmberView.create({
     show: true,
     foo: 'bar',

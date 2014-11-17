@@ -1,7 +1,7 @@
 import Stream from "ember-metal/streams/stream";
-import { SimpleHandlebarsView } from 'ember-views/views/handlebars_bound_view';
+import SimpleBoundView from "ember-views/views/simple_bound_view";
 
-QUnit.module('SimpleHandlebarsView');
+QUnit.module('SimpleBoundView');
 
 test('does not render if update is triggured by normalizedValue is the same as the previous normalizedValue', function(){
   var value = null;
@@ -10,7 +10,7 @@ test('does not render if update is triggured by normalizedValue is the same as t
     return obj.foo;
   });
   var isEscaped = true;
-  var view = new SimpleHandlebarsView(lazyValue, isEscaped);
+  var view = new SimpleBoundView(lazyValue, isEscaped);
   view._morph = {
     update: function(newValue) {
       value = newValue;
