@@ -6,7 +6,7 @@ import "ember-runtime";
 import "ember-handlebars";
 import "ember-views";
 import "ember-routing";
-import "ember-routing-handlebars";
+import "ember-routing-htmlbars";
 import "ember-application";
 import "ember-extension-support";
 import "ember-htmlbars";

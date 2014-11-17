@@ -92,6 +92,6 @@ function lookupPartial(view, templateName) {
 
 function renderPartial(view, name, morph, env) {
   var template = lookupPartial(view, name);
-  var fragment = template(view, env, morph.contextualElement); 
+  var fragment = template(view, env, morph.contextualElement);
   morph.update(fragment);
 }

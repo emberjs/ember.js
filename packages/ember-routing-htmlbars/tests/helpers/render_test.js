@@ -28,6 +28,14 @@ import ActionManager from "ember-views/system/action_manager";
 import { renderHelper } from "ember-routing-handlebars/helpers/render";
 import { actionHelper } from "ember-routing-handlebars/helpers/action";
 import { outletHelper } from "ember-routing-handlebars/helpers/outlet";
+import { compile as htmlbarsCompile } from 'htmlbars-compiler/compiler';
+
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
 
 function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
@@ -35,10 +43,6 @@ function appendView(view) {
 
 function set(object, key, value) {
   run(function() { emberSet(object, key, value); });
-}
-
-function compile(template) {
-  return EmberHandlebars.compile(template);
 }
 
 function buildContainer(namespace) {
@@ -84,7 +88,7 @@ function resolverFor(namespace) {
 
 var view, container, originalRenderHelper, originalActionHelper, originalOutletHelper;
 
-QUnit.module("Handlebars {{render}} helper", {
+QUnit.module("ember-htmlbars: {{#render}} helper", {
   setup: function() {
     originalOutletHelper = EmberHandlebars.helpers['outlet'];
     EmberHandlebars.registerHelper('outlet', outletHelper);

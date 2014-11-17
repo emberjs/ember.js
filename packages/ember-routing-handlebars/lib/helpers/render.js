@@ -109,7 +109,6 @@ export function renderHelper(name, contextString, options) {
   name = name.replace(/\//g, '.');
   // \ legacy slash as namespace support
 
-
   view = container.lookup('view:' + name) || container.lookup('view:default');
 
   // provide controller override
