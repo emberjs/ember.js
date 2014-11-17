@@ -20,14 +20,42 @@ import EmberRouter from "ember-routing/system/router";
 import HashLocation from "ember-routing/location/hash_location";
 
 import EmberHandlebars from "ember-handlebars";
+import { registerHelper as htmlbarsRegisterHelper } from "ember-htmlbars/helpers";
+import htmlbarsHelpers from "ember-htmlbars/helpers";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
+
 import EmberView from "ember-routing/ext/view";
 import _MetamorphView from "ember-views/views/metamorph_view";
 import jQuery from "ember-views/system/jquery";
 import ActionManager from "ember-views/system/action_manager";
 
-import { renderHelper } from "ember-routing-handlebars/helpers/render";
-import { actionHelper } from "ember-routing-handlebars/helpers/action";
-import { outletHelper } from "ember-routing-handlebars/helpers/outlet";
+import { renderHelper as handlebarsRenderHelper } from "ember-routing-handlebars/helpers/render";
+import { actionHelper as handlebarsActionHelper } from "ember-routing-handlebars/helpers/action";
+import { outletHelper as handlebarsOutletHelper } from "ember-routing-handlebars/helpers/outlet";
+
+import { renderHelper as htmlbarsRenderHelper } from "ember-routing-htmlbars/helpers/render";
+import { actionHelper as htmlbarsActionHelper } from "ember-routing-htmlbars/helpers/action";
+import { outletHelper as htmlbarsOutletHelper } from "ember-routing-htmlbars/helpers/outlet";
+
+var compile, helpers, registerHelper;
+var renderHelper, actionHelper, outletHelper;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  renderHelper = htmlbarsRenderHelper;
+  actionHelper = htmlbarsActionHelper;
+  outletHelper = htmlbarsOutletHelper;
+  compile = htmlbarsCompile;
+  helpers = htmlbarsHelpers;
+  registerHelper = htmlbarsRegisterHelper;
+} else {
+  renderHelper = handlebarsRenderHelper;
+  actionHelper = handlebarsActionHelper;
+  outletHelper = handlebarsOutletHelper;
+  compile = EmberHandlebars.compile;
+  helpers = EmberHandlebars.helpers;
+  registerHelper = function(name, fn) {
+    EmberHandlebars.registerHelper(name, fn);
+  };
+}
 
 function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
@@ -35,10 +63,6 @@ function appendView(view) {
 
 function set(object, key, value) {
   run(function() { emberSet(object, key, value); });
-}
-
-function compile(template) {
-  return EmberHandlebars.compile(template);
 }
 
 function buildContainer(namespace) {
@@ -84,16 +108,16 @@ function resolverFor(namespace) {
 
 var view, container, originalRenderHelper, originalActionHelper, originalOutletHelper;
 
-QUnit.module("Handlebars {{render}} helper", {
+QUnit.module("ember-routing-htmlbars: {{render}} helper", {
   setup: function() {
-    originalOutletHelper = EmberHandlebars.helpers['outlet'];
-    EmberHandlebars.registerHelper('outlet', outletHelper);
+    originalOutletHelper = helpers['outlet'];
+    registerHelper('outlet', outletHelper);
 
-    originalRenderHelper = EmberHandlebars.helpers['render'];
-    EmberHandlebars.registerHelper('render', renderHelper);
+    originalRenderHelper = helpers['render'];
+    registerHelper('render', renderHelper);
 
-    originalActionHelper = EmberHandlebars.helpers['action'];
-    EmberHandlebars.registerHelper('action', actionHelper);
+    originalActionHelper = helpers['action'];
+    registerHelper('action', actionHelper);
 
 
     var namespace = Namespace.create();
@@ -102,14 +126,14 @@ QUnit.module("Handlebars {{render}} helper", {
     container.register('router:main', EmberRouter.extend());
   },
   teardown: function() {
-    delete EmberHandlebars.helpers['render'];
-    EmberHandlebars.helpers['render'] = originalRenderHelper;
+    delete helpers['render'];
+    helpers['render'] = originalRenderHelper;
 
-    delete EmberHandlebars.helpers['action'];
-    EmberHandlebars.helpers['action'] = originalActionHelper;
+    delete helpers['action'];
+    helpers['action'] = originalActionHelper;
 
-    delete EmberHandlebars.helpers['outlet'];
-    EmberHandlebars.helpers['outlet'] = originalOutletHelper;
+    delete helpers['outlet'];
+    helpers['outlet'] = originalOutletHelper;
 
     run(function () {
       if (container) {
@@ -288,7 +312,7 @@ test("{{render}} helper should render with given controller", function() {
 });
 
 test("{{render}} helper should render a template without a model only once", function() {
-  var template = "<h1>HI</h1>{{render 'home'}}<hr/>{{render home}}";
+  var template = "<h1>HI</h1>{{render 'home'}}<hr/>{{render 'home'}}";
   var controller = EmberController.extend({container: container});
   view = EmberView.create({
     controller: controller.create(),
@@ -555,6 +579,40 @@ test("{{render}} works with slash notation", function() {
   equal(container.lookup('controller:blog.post'), renderedView.get('controller'), 'rendered with correct controller');
 });
 
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+
+test("throws an assertion if {{render}} is called with an unquoted template name", function(){
+  var template = '<h1>HI</h1>{{render home}}';
+  var controller = EmberController.extend({container: container});
+  view = EmberView.create({
+    controller: controller.create(),
+    template: compile(template)
+  });
+
+  Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
+
+  expectAssertion(function() {
+    appendView(view);
+  }, "The first argument of {{render}} must be quoted, e.g. {{render \"sidebar\"}}.");
+});
+
+test("throws an assertion if {{render}} is called with a literal for a model", function(){
+  var template = '<h1>HI</h1>{{render "home" "model"}}';
+  var controller = EmberController.extend({container: container});
+  view = EmberView.create({
+    controller: controller.create(),
+    template: compile(template)
+  });
+
+  Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
+
+  expectAssertion(function() {
+    appendView(view);
+  }, "The second argument of {{render}} must be a path, e.g. {{render \"post\" post}}.");
+});
+
+} else {
+
 test("Using quoteless templateName works properly (DEPRECATED)", function(){
   var template = '<h1>HI</h1>{{render home}}';
   var controller = EmberController.extend({container: container});
@@ -570,3 +628,5 @@ test("Using quoteless templateName works properly (DEPRECATED)", function(){
 
   equal(view.$('p:contains(BYE)').length, 1, "template was rendered");
 });
+
+}
