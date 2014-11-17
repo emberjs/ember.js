@@ -12,7 +12,7 @@ import QueryParams from "ember-routing/system/query_params";
 
   Example
 
-  {#link-to 'posts' (query-params direction="asc")}}Sort{{/link-to}}
+  {{#link-to 'posts' (query-params direction="asc")}}Sort{{/link-to}}
 
   @method query-params
   @for Ember.Handlebars.helpers
