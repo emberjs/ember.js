@@ -14,6 +14,14 @@ import {
 import EmberObject from 'ember-runtime/system/object';
 import Namespace from 'ember-runtime/system/namespace';
 import EmberHandlebars from 'ember-handlebars';
+import htmlbarsHelpers from 'ember-htmlbars/helpers';
+
+var helpers;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  helpers = htmlbarsHelpers;
+} else {
+  helpers = EmberHandlebars.helpers;
+}
 
 export var Resolver = EmberObject.extend({
   /**
@@ -350,7 +358,7 @@ export default EmberObject.extend({
     @method resolveHelper
   */
   resolveHelper: function(parsedName) {
-    return this.resolveOther(parsedName) || EmberHandlebars.helpers[parsedName.fullNameWithoutType];
+    return this.resolveOther(parsedName) || helpers[parsedName.fullNameWithoutType];
   },
   /**
     Look up the specified object (from parsedName) on the appropriate
