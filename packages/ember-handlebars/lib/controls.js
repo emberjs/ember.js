@@ -77,9 +77,11 @@ import EmberHandlebars from "ember-handlebars-compiler";
   The action property defines the action which is sent when
   the user presses the return key.
 
+
   ```handlebars
   {{input action="submit"}}
   ```
+
 
   The helper allows some user events to send actions.
 
@@ -94,9 +96,11 @@ import EmberHandlebars from "ember-handlebars-compiler";
   For example, if you desire an action to be sent when the input is blurred,
   you only need to setup the action name to the event name property.
 
+
   ```handlebars
   {{input focus-in="alertMessage"}}
   ```
+
 
   See more about [Text Support Actions](/api/classes/Ember.TextField.html)
 
