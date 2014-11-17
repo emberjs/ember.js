@@ -3,7 +3,7 @@
 
 /**
 @module ember
-@submodule ember-handlebars
+@submodule ember-views
 */
 
 import EmberHandlebars from "ember-handlebars-compiler"; // EmberHandlebars.SafeString;
@@ -17,7 +17,11 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
-import htmlSafe from "ember-handlebars/string";
+import handlebarsHtmlSafe from "ember-handlebars/string";
+import {
+  SafeString as htmlbarsSafeString,
+  htmlSafe as htmlbarsHtmlSafe
+} from "ember-htmlbars/utils/string";
 import {
   cloneStates,
   states as viewStates
@@ -25,6 +29,16 @@ import {
 
 import _MetamorphView from "ember-views/views/metamorph_view";
 import { uuid } from "ember-metal/utils";
+
+var SafeString, htmlSafe;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  SafeString = htmlbarsSafeString;
+  htmlSafe = htmlbarsHtmlSafe;
+} else {
+  SafeString = EmberHandlebars.SafeString;
+  htmlSafe = handlebarsHtmlSafe;
+}
+
 
 function SimpleHandlebarsView(lazyValue, isEscaped) {
   this.lazyValue = lazyValue;
@@ -63,7 +77,7 @@ SimpleHandlebarsView.prototype = {
 
     if (result === null || result === undefined) {
       result = "";
-    } else if (!this.isEscaped && !(result instanceof EmberHandlebars.SafeString)) {
+    } else if (!this.isEscaped && !(result instanceof SafeString)) {
       result = htmlSafe(result);
     }
 
@@ -94,7 +108,7 @@ SimpleHandlebarsView.prototype = {
   update: function () {
     this.updateId = null;
     var value = this.normalizedValue();
-    // doesn't diff EmberHandlebars.SafeString instances
+    // doesn't diff SafeString instances
     if (value !== this._lastNormalizedValue) {
       this._lastNormalizedValue = value;
       this._morph.update(value);
@@ -258,7 +272,7 @@ var _HandlebarsBoundView = _MetamorphView.extend({
         // expression to the render context and return.
           if (result === null || result === undefined) {
             result = "";
-          } else if (!(result instanceof EmberHandlebars.SafeString)) {
+          } else if (!(result instanceof SafeString)) {
             result = String(result);
           }
 

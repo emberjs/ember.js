@@ -4,6 +4,16 @@ import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 
+import EmberHandlebars from "ember-handlebars-compiler";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
+
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
+
 var view;
 
 // .......................................................
@@ -197,10 +207,10 @@ test("renders contained view with omitted start tag and parent view context", fu
 test("renders a contained view with omitted start tag and tagless parent view context", function() {
   view = EmberView.createWithMixins({
     tagName: 'table',
-    template: Ember.Handlebars.compile("{{view view.pivot}}"),
+    template: compile("{{view view.pivot}}"),
     pivot: EmberView.extend({
       tagName: '',
-      template: Ember.Handlebars.compile("{{view view.row}}"),
+      template: compile("{{view view.row}}"),
       row: EmberView.extend({
         tagName: 'tr'
       })

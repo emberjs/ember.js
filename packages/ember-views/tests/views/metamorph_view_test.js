@@ -4,9 +4,16 @@ import EmberView from "ember-views/views/view";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { observer } from "ember-metal/mixin";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 import EmberHandlebars from "ember-handlebars-compiler";
 
 import _MetamorphView from "ember-views/views/metamorph_view";
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
 
 var view, childView, metamorphView;
 
@@ -130,7 +137,7 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
 
   parentView = EmberView.create({
     ViewWithCallback: EmberView.extend({
-      template: EmberHandlebars.compile('<div id="do-i-exist"></div>'),
+      template: compile('<div id="do-i-exist"></div>'),
 
       willInsertElement: function() {
         willInsertElementCalled = true;
@@ -141,7 +148,7 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
       }
     }),
 
-    template: EmberHandlebars.compile('{{#if view.condition}}{{view view.ViewWithCallback}}{{/if}}'),
+    template: compile('{{#if view.condition}}{{view view.ViewWithCallback}}{{/if}}'),
     condition: false
   });
 
@@ -186,7 +193,7 @@ test("replacing a Metamorph should invalidate childView elements", function() {
       }
     }),
 
-    template: EmberHandlebars.compile("{{#if view.show}}{{view view.CustomView}}{{/if}}")
+    template: compile("{{#if view.show}}{{view view.CustomView}}{{/if}}")
   });
 
   run(function() { view.append(); });
@@ -203,7 +210,7 @@ test("trigger rerender of parent and SimpleHandlebarsView", function () {
   var view = EmberView.create({
     show: true,
     foo: 'bar',
-    template: EmberHandlebars.compile("{{#if view.show}}{{#if view.foo}}{{view.foo}}{{/if}}{{/if}}")
+    template: compile("{{#if view.show}}{{#if view.foo}}{{view.foo}}{{/if}}{{/if}}")
   });
 
   run(function() { view.append(); });
@@ -227,7 +234,7 @@ test("re-rendering and then changing the property does not raise an exception", 
     show: true,
     foo: 'bar',
     metamorphView: _MetamorphView,
-    template: EmberHandlebars.compile("{{#view view.metamorphView}}truth{{/view}}")
+    template: compile("{{#view view.metamorphView}}truth{{/view}}")
   });
 
   run(function() { view.appendTo('#qunit-fixture'); });

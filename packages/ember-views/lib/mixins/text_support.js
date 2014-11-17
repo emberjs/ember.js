@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-handlebars
+@submodule ember-views
 */
 
 import { get } from "ember-metal/property_get";

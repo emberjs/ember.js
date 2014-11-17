@@ -11,6 +11,7 @@ import compile from "ember-htmlbars/system/compile";
 
 import {
   registerHelper,
+  helper,
   default as helpers
 } from "ember-htmlbars/helpers";
 import { bindHelper } from "ember-htmlbars/helpers/binding";
@@ -60,6 +61,9 @@ registerHelper('each', eachHelper);
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   Ember.HTMLBars = {
+    helpers: helpers,
+    helper: helper,
+    registerHelper: registerHelper,
     template: template,
     compile: compile
   };
