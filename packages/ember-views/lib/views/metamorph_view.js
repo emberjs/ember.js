@@ -7,7 +7,7 @@ import { Mixin } from "ember-metal/mixin";
 
 /**
 @module ember
-@submodule ember-handlebars
+@submodule ember-views
 */
 
 // The `morph` and `outerHTML` properties are internal only

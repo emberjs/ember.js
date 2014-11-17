@@ -4,7 +4,7 @@ import View from "ember-views/views/view";
 
 /**
 @module ember
-@submodule ember-handlebars
+@submodule ember-views
 */
 
 /**

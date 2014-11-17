@@ -357,6 +357,7 @@ var vendoredPackages = {
   'htmlbars-compiler':     htmlbarsPackage('htmlbars-compiler'),
   'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer'),
   'htmlbars-test-helpers': htmlbarsPackage('htmlbars-test-helpers', { singleFile: true } ),
+  'htmlbars-util':         htmlbarsPackage('htmlbars-util'),
   'handlebars':            vendoredPackage('handlebars', handlebarsConfig)
 };
 
@@ -624,10 +625,14 @@ testTrees   = mergeTrees(testTrees);
 
 function htmlbarsPackage(packageName, _options) {
   var options = _options || {};
-  var fileGlobs = [packageName + '.js'];
+  var fileGlobs = [];
 
   if (!options.singleFile === true) {
     fileGlobs.push(packageName + '/**/*.js');
+  }
+
+  if (!options.ignoreMain === true) {
+    fileGlobs.push(packageName + '.js');
   }
 
   var tree = pickFiles('node_modules/htmlbars/dist/es6/', {

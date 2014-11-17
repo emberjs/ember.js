@@ -117,7 +117,13 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   },
 
   defaultLayout: function(context, options){
-    Ember.Handlebars.helpers['yield'].call(context, options);
+    if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+      // ES6TODO: must use global here, to prevent circular require issue
+      // remove and replace with standard import once we have lazy binding
+      Ember.HTMLBars.helpers.yield.call(context, [], {}, options, { data: { view: context }});
+    } else {
+      Ember.Handlebars.helpers['yield'].call(context, options);
+    }
   },
 
   /**

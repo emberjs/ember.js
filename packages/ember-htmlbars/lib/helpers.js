@@ -3,11 +3,16 @@
 @submodule ember-htmlbars
 */
 
+var helpers = { };
+
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 import View from "ember-views/views/view";
 import Component from "ember-views/views/component";
-import makeViewHelper from "./system/make-view-helper";
-
-var helpers = { };
+import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 
 /**
   Register a bound helper or custom view helper.
@@ -67,7 +72,7 @@ export function helper(name, value) {
                "', but component names must include a '-'", !Component.detect(value) || name.match(/-/));
 
   if (View.detect(value)) {
-    registerHelper(name, makeViewHelper(value));
+    helpers[name] = makeViewHelper(value);
   } else {
     // HTMLBars TODO: Support bound helpers
     // EmberHandlebars.registerBoundHelper.apply(null, arguments);

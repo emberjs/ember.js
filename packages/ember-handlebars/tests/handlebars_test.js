@@ -21,8 +21,6 @@ import TextField from "ember-views/views/text_field";
 import Container from "ember-runtime/system/container";
 import { create as o_create } from "ember-metal/platform";
 
-import htmlSafe from "ember-handlebars/string";
-
 var trim = jQuery.trim;
 
 import { get } from "ember-metal/property_get";
@@ -305,12 +303,6 @@ test("should read from an Object.create(null)", function() {
     Ember.set(nullObject, 'foo', 'baz');
   });
   equal(view.$().text(), 'baz');
-});
-
-test("htmlSafe should return an instance of Handlebars.SafeString", function() {
-  var safeString = htmlSafe("you need to be more <b>bold</b>");
-
-  ok(safeString instanceof Handlebars.SafeString, "should return SafeString");
 });
 
 test("should escape HTML in normal mustaches", function() {
