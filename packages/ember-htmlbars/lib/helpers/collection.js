@@ -10,11 +10,10 @@ import { IS_BINDING } from "ember-metal/mixin";
 import { fmt } from "ember-runtime/system/string";
 import { get } from "ember-metal/property_get";
 import SimpleStream from "ember-metal/streams/simple";
-import { ViewHelper } from "ember-handlebars/helpers/view";
+import { ViewHelper } from "ember-htmlbars/helpers/view";
 import alias from "ember-metal/alias";
 import View from "ember-views/views/view";
 import CollectionView from "ember-views/views/collection_view";
-import { viewHelper } from "ember-htmlbars/helpers/view";
 import { readViewFactory } from "ember-views/streams/read";
 
 /**
@@ -241,7 +240,7 @@ export function collectionHelper(params, hash, options, env) {
     itemHash._context = alias('content');
   }
 
-  var viewOptions = ViewHelper.propertiesFromHTMLOptions({ data: data, hash: itemHash }, this);
+  var viewOptions = ViewHelper.propertiesFromHTMLOptions(itemHash, {}, { data: data });
 
   if (hash.itemClassBinding) {
     var itemClassBindings = hash.itemClassBinding.split(' ');
@@ -263,5 +262,5 @@ export function collectionHelper(params, hash, options, env) {
 
   options.helperName = options.helperName || 'collection';
 
-  return viewHelper.call(this, [collectionClass], hash, options, env);
+  return env.helpers.view.call(this, [collectionClass], hash, options, env);
 }

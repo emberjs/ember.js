@@ -14,7 +14,6 @@ import { Binding } from "ember-metal/binding";
 import ControllerMixin from "ember-runtime/mixins/controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import EmberArray from "ember-runtime/mixins/array";
-import { collectionHelper } from "ember-htmlbars/helpers/collection";
 
 import {
   addObserver,
@@ -297,7 +296,7 @@ function eachHelper(params, hash, options, env) {
   hash.dataSourceBinding = path;
   options.helperName = options.helperName || helperName;
 
-  return collectionHelper.call(this, [EachView], hash, options, env);
+  return env.helpers.collection.call(this, [EachView], hash, options, env);
 }
 
 export {
