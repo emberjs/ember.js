@@ -3,8 +3,11 @@ var Funnel = require('broccoli-funnel');
 
 var files = [
   'handlebars/exception.js',
+  'handlebars/safe-string.js',
+  'handlebars/utils.js',
   'handlebars/compiler/ast.js',
   'handlebars/compiler/base.js',
+  'handlebars/compiler/helpers.js',
   'handlebars/compiler/parser.js'
 ];
 
