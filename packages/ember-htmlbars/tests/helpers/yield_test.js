@@ -81,8 +81,6 @@ test("block should work properly even when templates are not hard-coded", functi
 
 });
 
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-
 test("templates should yield to block, when the yield is embedded in a hierarchy of virtual views", function() {
   var TimesView = EmberView.extend({
     layout: compile('<div class="times">{{#each item in view.index}}{{yield}}{{/each}}</div>'),
@@ -108,8 +106,6 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
 
   equal(view.$('div#container div.times-item').length, 5, 'times-item is embedded within wrapping container 5 times, as expected');
 });
-
-}
 
 test("templates should yield to block, when the yield is embedded in a hierarchy of non-virtual views", function() {
   var NestingView = EmberView.extend({
