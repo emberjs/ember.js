@@ -102,7 +102,7 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLe
   this.opcode('program', this.templateId++, block.inverse === null ? null : this.templateId++);
   processParams(this, sexpr.params);
   processHash(this, sexpr.hash);
-  this.opcode('helper', sexpr.id.string, sexpr.params.length, true, morphNum);
+  this.opcode('helper', sexpr.id.string, sexpr.params.length, morphNum);
 };
 
 HydrationOpcodeCompiler.prototype.component = function(component, childIndex, childrenLength) {
@@ -160,15 +160,15 @@ HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, chil
       end = (childIndex === childrenLength - 1 ? -1 : currentDOMChildIndex + 1);
 
   var morphNum = this.morphNum++;
-  this.morphs.push([morphNum, this.paths.slice(), start, end]);
+  this.morphs.push([morphNum, this.paths.slice(), start, end, mustache.escaped]);
 
   if (mustache.isHelper) {
     this.opcode('program', null, null);
     processParams(this, mustache.params);
     processHash(this, mustache.hash);
-    this.opcode('helper', mustache.id.string, mustache.params.length, mustache.escaped, morphNum);
+    this.opcode('helper', mustache.id.string, mustache.params.length, morphNum);
   } else {
-    this.opcode('ambiguous', mustache.id.string, mustache.escaped, morphNum);
+    this.opcode('ambiguous', mustache.id.string, morphNum);
   }
 };
 
@@ -189,9 +189,9 @@ HydrationOpcodeCompiler.prototype.mustacheInAttr = function(mustache) {
     this.opcode('program', null, null);
     processParams(this, mustache.params);
     processHash(this, mustache.hash);
-    this.opcode('helperAttr', mustache.id.string, mustache.params.length, mustache.escaped);
+    this.opcode('helperAttr', mustache.id.string, mustache.params.length);
   } else {
-    this.opcode('ambiguousAttr', mustache.id.string, mustache.escaped);
+    this.opcode('ambiguousAttr', mustache.id.string);
   }
 };
 
@@ -252,8 +252,7 @@ function distributeMorphs(morphs, opcodes) {
 
   var spliceArgs = [o + 1, 0];
   for (var i = 0; i < morphs.length; ++i) {
-    var p = morphs[i];
-    spliceArgs.push(['morph', [p[0], p[1], p[2], p[3]]]);
+    spliceArgs.push(['morph', morphs[i].slice()]);
   }
   opcodes.splice.apply(opcodes, spliceArgs);
   morphs.length = 0;

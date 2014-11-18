@@ -97,6 +97,7 @@ test('hydrates a fragment with morph mustaches', function () {
   equal(contentResolves.length, 2);
 
   var foo = contentResolves[0];
+  equal(foo.morph.escaped, true);
   equal(foo.morph.parent(), fragment);
   equal(foo.context, context);
   equal(foo.path, 'foo');
@@ -104,14 +105,13 @@ test('hydrates a fragment with morph mustaches', function () {
   deepEqual(foo.hash, {ack:"syn",bar:"baz"});
   deepEqual(foo.options.types, ["string","number","id"]);
   deepEqual(foo.options.hashTypes, {ack:"string",bar:"id"});
-  equal(foo.options.escaped, true);
 
   var baz = contentResolves[1];
+  equal(baz.morph.escaped, true);
   equal(baz.morph.parent(), fragment);
   equal(baz.context, context);
   equal(baz.path, 'baz');
   equal(baz.params.length, 0);
-  equal(baz.options.escaped, true);
 
   foo.morph.update('A');
   baz.morph.update('B');
