@@ -6,11 +6,6 @@ var svgNamespace = "http://www.w3.org/2000/svg";
 
 QUnit.module("HTML-based compiler (AST)");
 
-var stripLeft = { left: true, right: false };
-var stripRight = { left: false, right: true };
-var stripBoth = { left: true, right: true };
-var stripNone = { left: false, right: false };
-
 function id(string) {
   return new IdNode([{ part: string }]);
 }
@@ -27,7 +22,7 @@ function hash(pairs) {
   return pairs ? new HashNode(pairs) : undefined;
 }
 
-function mustache(string, pairs, strip, raw) {
+function mustache(string, pairs, raw) {
   var params;
 
   if (({}).toString.call(string) === '[object Array]') {
@@ -36,7 +31,7 @@ function mustache(string, pairs, strip, raw) {
     params = [id(string)];
   }
 
-  return new MustacheNode(params, hash(pairs), raw ? '{{{' : '{{', strip || stripNone);
+  return new MustacheNode(params, hash(pairs), raw ? '{{{' : '{{');
 }
 
 function concat(params) {
@@ -75,27 +70,28 @@ function text(chars) {
   return new TextNode(chars);
 }
 
-function block(mustache, program, inverse, strip) {
-  return new BlockNode(mustache, program, inverse || null, strip || stripNone);
+function block(mustache, program, inverse) {
+  return new BlockNode(mustache, program, inverse || null);
 }
 
-function program(children, strip) {
-  return new ProgramNode(children || [], strip || stripNone);
+function program(children) {
+  return new ProgramNode(children || []);
 }
 
 function root(children) {
   return program(children || [], {});
 }
 
-function removeLocInfo(obj) {
+function removeLocInfoAndStrip(obj) {
   delete obj.firstColumn;
   delete obj.firstLine;
   delete obj.lastColumn;
   delete obj.lastLine;
+  delete obj.strip;
 
   for (var k in obj) {
     if (obj.hasOwnProperty(k) && obj[k] && typeof obj[k] === 'object') {
-      removeLocInfo(obj[k]);
+      removeLocInfoAndStrip(obj[k]);
     }
   }
 }
@@ -112,8 +108,8 @@ function astEqual(actual, expected, message) {
     expected = preprocess(expected);
   }
 
-  removeLocInfo(actual);
-  removeLocInfo(expected);
+  removeLocInfoAndStrip(actual);
+  removeLocInfoAndStrip(expected);
 
   deepEqual(actual, expected, message);
 }
@@ -270,7 +266,7 @@ test("Simple embedded block helpers", function() {
   var t = "{{#if foo}}<div>{{content}}</div>{{/if}}";
   astEqual(t, root([
     text(''),
-    block(mustache([id('if'), id('foo')]), program([
+    block(sexpr([id('if'), id('foo')]), program([
       element('div', [], [], [
         mustache('content')
       ])
@@ -286,7 +282,7 @@ test("Involved block helper", function() {
       text('hi')
     ]),
     text(' content '),
-    block(mustache([id('testing'), id('shouldRender')]), program([
+    block(sexpr([id('testing'), id('shouldRender')]), program([
       element('p', [], [], [
         text('Appears!')
       ])
@@ -316,9 +312,9 @@ test('Auto insertion of text nodes between blocks and mustaches', function () {
     text(''),
     mustache([id('two')]),
     text(''),
-    block(mustache([id('three')]), program()),
+    block(sexpr([id('three')]), program()),
     text(''),
-    block(mustache([id('four')]), program()),
+    block(sexpr([id('four')]), program()),
     text(''),
     mustache([id('five')]),
     text('')
@@ -329,14 +325,14 @@ test("Stripping - mustaches", function() {
   var t = "foo {{~content}} bar";
   astEqual(t, root([
     text('foo'),
-    mustache([id('content')], null, stripLeft),
+    mustache([id('content')]),
     text(' bar')
   ]));
 
   t = "foo {{content~}} bar";
   astEqual(t, root([
     text('foo '),
-    mustache([id('content')], null, stripRight),
+    mustache([id('content')]),
     text('bar')
   ]));
 });
@@ -345,14 +341,14 @@ test("Stripping - blocks", function() {
   var t = "foo {{~#wat}}{{/wat}} bar";
   astEqual(t, root([
     text('foo'),
-    block(mustache([id('wat')], null, stripLeft), program(), null, stripLeft),
+    block(sexpr([id('wat')]), program()),
     text(' bar')
   ]));
 
   t = "foo {{#wat}}{{/wat~}} bar";
   astEqual(t, root([
     text('foo '),
-    block(mustache([id('wat')]), program(), null, stripRight),
+    block(sexpr([id('wat')]), program()),
     text('bar')
   ]));
 });
@@ -362,36 +358,36 @@ test("Stripping - programs", function() {
   var t = "{{#wat~}} foo {{else}}{{/wat}}";
   astEqual(t, root([
     text(''),
-    block(mustache([id('wat')], null, stripRight), program([
+    block(sexpr([id('wat')]), program([
       text('foo ')
-    ], stripLeft), program()),
+    ]), program()),
     text('')
   ]));
 
   t = "{{#wat}} foo {{~else}}{{/wat}}";
   astEqual(t, root([
     text(''),
-    block(mustache([id('wat')]), program([
+    block(sexpr([id('wat')]), program([
       text(' foo')
-    ], stripRight), program()),
+    ]), program()),
     text('')
   ]));
 
   t = "{{#wat}}{{else~}} foo {{/wat}}";
   astEqual(t, root([
     text(''),
-    block(mustache([id('wat')]), program(), program([
+    block(sexpr([id('wat')]), program(), program([
       text('foo ')
-    ], stripLeft)),
+    ])),
     text('')
   ]));
 
   t = "{{#wat}}{{else}} foo {{~/wat}}";
   astEqual(t, root([
     text(''),
-    block(mustache([id('wat')]), program(), program([
+    block(sexpr([id('wat')]), program(), program([
       text(' foo')
-    ], stripRight)),
+    ])),
     text('')
   ]));
 });
@@ -400,9 +396,9 @@ test("Stripping - removes unnecessary text nodes", function() {
   var t = "{{#each~}}\n  <li> foo </li>\n{{~/each}}";
   astEqual(t, root([
     text(''),
-    block(mustache([id('each')], null, stripRight), program([
+    block(sexpr([id('each')]), program([
       element('li', [], [], [text(' foo ')])
-    ], stripBoth)),
+    ])),
     text('')
   ]));
 });
