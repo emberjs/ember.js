@@ -405,14 +405,14 @@ test("Simple data binding on fragments", function() {
   equalTokens(fragment, '<div><p>brown cow</p> to the world</div>');
 });
 
-test("content hook receives escaping information", function() {
+test("morph receives escaping information", function() {
   expect(3);
 
-  hooks.content = function(morph, path, context, params, hash, options) {
+  hooks.content = function(morph, path) {
     if (path === 'escaped') {
-      equal(options.escaped, true);
+      equal(morph.escaped, true);
     } else if (path === 'unescaped') {
-      equal(options.escaped, false);
+      equal(morph.escaped, false);
     }
 
     morph.update(path);
@@ -429,9 +429,9 @@ test("Helpers receive escaping information", function() {
 
   registerHelper('testing', function(params, hash, options) {
     if (params[0] === 'escaped') {
-      equal(options.escaped, true);
+      equal(options.morph.escaped, true);
     } else if (params[0] === 'unescaped') {
-      equal(options.escaped, false);
+      equal(options.morph.escaped, false);
     }
 
     return params[0];

@@ -197,6 +197,12 @@ prototype.createMorph = function(parent, start, end, contextualElement){
   return new Morph(parent, start, end, this, contextualElement);
 };
 
+prototype.createUnsafeMorph = function(parent, start, end, contextualElement){
+  var morph = this.createMorph(parent, start, end, contextualElement);
+  morph.escaped = false;
+  return morph;
+};
+
 // This helper is just to keep the templates good looking,
 // passing integers instead of element references.
 prototype.createMorphAt = function(parent, startIndex, endIndex, contextualElement){
@@ -204,6 +210,12 @@ prototype.createMorphAt = function(parent, startIndex, endIndex, contextualEleme
       start = startIndex === -1 ? null : childNodes[startIndex],
       end = endIndex === -1 ? null : childNodes[endIndex];
   return this.createMorph(parent, start, end, contextualElement);
+};
+
+prototype.createUnsafeMorphAt = function(parent, startIndex, endIndex, contextualElement) {
+  var morph = this.createMorphAt(parent, startIndex, endIndex, contextualElement);
+  morph.escaped = false;
+  return morph;
 };
 
 prototype.insertMorphBefore = function(element, referenceChild, contextualElement) {
