@@ -407,9 +407,6 @@ test("should be able to bind classes to globals with {{bind-attr class}} (DEPREC
   ok(view.$('img').hasClass('is-open'), "sets classname to the dasherized value of the global property");
 });
 
-// HTMLBars TODO: Needs {{#each}} helper
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-
 test("should be able to bind-attr to 'this' in an {{#each}} block [DEPRECATED]", function() {
   expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
@@ -464,8 +461,6 @@ test("should be able to bind-attr to var in {{#each var in list}} block", functi
   ok(/two\.jpg$/.test(images[0].src));
   ok(/three\.gif$/.test(images[1].src));
 });
-
-}
 
 test("should teardown observers from bind-attr on rerender", function() {
   view = EmberView.create({
