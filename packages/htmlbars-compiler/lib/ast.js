@@ -12,9 +12,9 @@ export function ProgramNode(statements, strip) {
   this.strip = strip;
 }
 
-export function BlockNode(mustache, program, inverse, strip) {
+export function BlockNode(sexpr, program, inverse, strip) {
   this.type = 'block';
-  this.mustache = mustache;
+  this.sexpr = sexpr;
   this.program = program;
   this.inverse = inverse;
   this.strip = strip;
