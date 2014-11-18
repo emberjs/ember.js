@@ -107,7 +107,7 @@ function simpleBind(params, options, env) {
   @method bind
   @for Ember.Handlebars.helpers
   @param {String} property Property to bind
-  @param {Function} fn Context to provide for rendering
+  @param {Function} render Context to provide for rendering
   @return {String} HTML string
 */
 function bindHelper(params, hash, options, env) {
@@ -115,8 +115,9 @@ function bindHelper(params, hash, options, env) {
 
   var property = params[0];
 
-  if (options.fn) {
+  if (options.render) {
     options.helperName = 'bind';
+    Ember.deprecate("The block form of bind, {{#bind foo}}{{/bind}}, has been deprecated and will be removed.");
     bind.call(this, property, hash, options, env, false, exists);
   } else {
     simpleBind.call(this, params, options, env);
