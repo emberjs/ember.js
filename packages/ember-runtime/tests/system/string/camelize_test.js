@@ -44,6 +44,13 @@ test("camelize dot notation string", function() {
   }
 });
 
+test("camelize string with initialism as first word", function() {
+  deepEqual(camelize('HTMLElement'), 'htmlElement');
+  if (Ember.EXTEND_PROTOTYPES) {
+    deepEqual('HTMLElement'.camelize(), 'htmlElement');
+  }
+});
+
 test("does nothing with camelcased string", function() {
   deepEqual(camelize('innerHTML'), 'innerHTML');
   if (Ember.EXTEND_PROTOTYPES) {

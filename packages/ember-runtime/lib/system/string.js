@@ -19,7 +19,7 @@ var STRING_DASHERIZE_CACHE = new Cache(1000, function(key) {
 var CAMELIZE_CACHE = new Cache(1000, function(key) {
   return key.replace(STRING_CAMELIZE_REGEXP, function(match, separator, chr) {
     return chr ? chr.toUpperCase() : '';
-  }).replace(/^([A-Z])/, function(match, separator, chr) {
+  }).replace(/^([A-Z](?![a-z]))+/, function(match, separator, chr) {
     return match.toLowerCase();
   });
 });
