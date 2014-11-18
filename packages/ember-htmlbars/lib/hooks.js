@@ -2,27 +2,15 @@ import Ember from "ember-metal/core";
 import { lookupHelper } from "ember-htmlbars/system/lookup-helper";
 import { sanitizeOptionsForHelper } from "ember-htmlbars/system/sanitize-for-helper";
 
-function streamifyArgs(view, params, hash, options, env) {
-  if (params.length === 3 && params[1] === "as") {
-    params.splice(0, 3, {
-      from: params[0],
-      to: params[2],
-      stream: view.getStream(params[0])
-    });
-    options.types.splice(0, 3, 'keyword');
-  } else if (params.length === 3 && params[1] === "in") {
-    params.splice(0, 3, {
-      from: params[2],
-      to: params[0],
-      stream: view.getStream(params[2])
-    });
-    options.types.splice(0, 3, 'keyword');
-  } else {
-    // Convert ID params to streams
-    for (var i = 0, l = params.length; i < l; i++) {
-      if (options.types[i] === 'id') {
-        params[i] = view.getStream(params[i]);
-      }
+function streamifyArgs(view, params, hash, options, env, helper) {
+  if (helper._preprocessArguments) {
+    helper._preprocessArguments(view, params, hash, options, env);
+  }
+
+  // Convert ID params to streams
+  for (var i = 0, l = params.length; i < l; i++) {
+    if (options.types[i] === 'id') {
+      params[i] = view.getStream(params[i]);
     }
   }
 
@@ -46,7 +34,7 @@ export function content(morph, path, view, params, hash, options, env) {
     options.types = ['id'];
   }
 
-  streamifyArgs(view, params, hash, options, env);
+  streamifyArgs(view, params, hash, options, env, helper);
   sanitizeOptionsForHelper(options);
   return helper.call(view, params, hash, options, env);
 }
@@ -57,7 +45,7 @@ export function component(morph, tagName, view, hash, options, env) {
 
   Ember.assert('You specified `' + tagName + '` in your template, but a component for `' + tagName + '` could not be found.', !!helper);
 
-  streamifyArgs(view, params, hash, options, env);
+  streamifyArgs(view, params, hash, options, env, helper);
   sanitizeOptionsForHelper(options);
   return helper.call(view, params, hash, options, env);
 }
@@ -66,7 +54,7 @@ export function element(element, path, view, params, hash, options, env) { //jsh
   var helper = lookupHelper(path, view, env);
 
   if (helper) {
-    streamifyArgs(view, params, hash, options, env);
+    streamifyArgs(view, params, hash, options, env, helper);
     sanitizeOptionsForHelper(options);
     return helper.call(view, params, hash, options, env);
   } else {
@@ -78,7 +66,7 @@ export function subexpr(path, view, params, hash, options, env) {
   var helper = lookupHelper(path, view, env);
 
   if (helper) {
-    streamifyArgs(view, params, hash, options, env);
+    streamifyArgs(view, params, hash, options, env, helper);
     sanitizeOptionsForHelper(options);
     return helper.call(view, params, hash, options, env);
   } else {

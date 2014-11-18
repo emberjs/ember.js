@@ -93,6 +93,18 @@ export function withHelper(params, hash, options, env) {
   bind.call(this, source, hash, options, env, preserveContext, exists, undefined, undefined, WithView);
 }
 
+withHelper._preprocessArguments = function(view, params, hash, options, env) {
+  if (params.length === 3 && params[1] === "as") {
+    params.splice(0, 3, {
+      from: params[0],
+      to: params[2],
+      stream: view.getStream(params[0])
+    });
+
+    options.types.splice(0, 3, 'keyword');
+  }
+};
+
 function exists(value) {
   return !isNone(value);
 }

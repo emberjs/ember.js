@@ -189,6 +189,17 @@ function eachHelper(params, hash, options, env) {
   return env.helpers.collection.call(this, [EachView], hash, options, env);
 }
 
+eachHelper._preprocessArguments = function(view, params, hash, options, env) {
+  if (params.length === 3 && params[1] === "in") {
+    params.splice(0, 3, {
+      from: params[2],
+      to: params[0],
+      stream: view.getStream(params[2])
+    });
+    options.types.splice(0, 3, 'keyword');
+  }
+};
+
 export {
   EachView,
   eachHelper
