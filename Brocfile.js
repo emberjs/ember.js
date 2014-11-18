@@ -7,6 +7,7 @@ var removeFile = require('broccoli-file-remover');
 var transpileES6 = require('broccoli-es6-module-transpiler');
 var jsHint = require('broccoli-jshint');
 var handlebarsInlineTree = require('./build-support/handlebars-inliner');
+var getVersion = require('git-repo-version');
 
 var packages = require('./packages');
 
@@ -162,4 +163,11 @@ for (var packageName in packages.dependencies) {
   trees.push(movedCjsTests);
 }
 
-module.exports = mergeTrees(trees, {overwrite: true});
+trees = replace(mergeTrees(trees, {overwrite: true}), {
+  files: [ 'es6/htmlbars.js', 'amd/htmlbars.js', 'cjs/htmlbars.js' ],
+  patterns: [
+    { match: /VERSION_STRING_PLACEHOLDER/g, replacement: getVersion() }
+  ]
+});
+
+module.exports = trees;
