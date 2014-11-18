@@ -192,7 +192,7 @@ export function inputHelper(params, hash, options, env) {
   var onEvent = hash.on;
   var inputType;
 
-  inputType = read(types.type);
+  inputType = read(hash.type);
 
   if (inputType === 'checkbox') {
     delete hash.type;
@@ -201,11 +201,11 @@ export function inputHelper(params, hash, options, env) {
     Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`;" +
                  " you must use `checked=someBooleanValue` instead.", options.hashTypes.value !== 'id');
 
-    return env.helpers.view.call(this, [Checkbox], hash, options, env);
+    env.helpers.view.call(this, [Checkbox], hash, options, env);
   } else {
     delete hash.on;
 
     hash.onEvent = onEvent || 'enter';
-    return env.helpers.view.call(this, [TextField], hash, options, env);
+    env.helpers.view.call(this, [TextField], hash, options, env);
   }
 }
