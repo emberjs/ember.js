@@ -91,7 +91,7 @@ HydrationOpcodeCompiler.prototype.closeElement = function(element, pos, len, isS
 
 HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLength) {
   var currentDOMChildIndex = this.currentDOMChildIndex,
-      mustache = block.mustache;
+      sexpr = block.sexpr;
 
   var start = (currentDOMChildIndex < 0 ? null : currentDOMChildIndex),
       end = (childIndex === childrenLength - 1 ? null : currentDOMChildIndex + 1);
@@ -100,9 +100,9 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLe
   this.morphs.push([morphNum, this.paths.slice(), start, end]);
 
   this.opcode('program', this.templateId++, block.inverse === null ? null : this.templateId++);
-  processParams(this, mustache.params);
-  processHash(this, mustache.hash);
-  this.opcode('helper', mustache.id.string, mustache.params.length, mustache.escaped, morphNum);
+  processParams(this, sexpr.params);
+  processHash(this, sexpr.hash);
+  this.opcode('helper', sexpr.id.string, sexpr.params.length, true, morphNum);
 };
 
 HydrationOpcodeCompiler.prototype.component = function(component, childIndex, childrenLength) {
@@ -207,7 +207,7 @@ HydrationOpcodeCompiler.prototype.BOOLEAN = function(boolean) {
   this.opcode('literal', boolean.stringModeValue);
 };
 
-HydrationOpcodeCompiler.prototype.INTEGER = function(integer) {
+HydrationOpcodeCompiler.prototype.NUMBER = function(integer) {
   this.opcode('literal', integer.stringModeValue);
 };
 

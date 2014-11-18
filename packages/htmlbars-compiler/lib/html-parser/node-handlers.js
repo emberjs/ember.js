@@ -35,7 +35,7 @@ var nodeHandlers = {
     switchToHandlebars(this);
     this.acceptToken(block);
 
-    var mustache = block.mustache;
+    var sexpr = block.sexpr;
     var program = this.acceptNode(block.program);
     var inverse = block.inverse ? this.acceptNode(block.inverse) : null;
     var strip = block.strip;
@@ -45,7 +45,7 @@ var nodeHandlers = {
       inverse.strip.left = false;
     }
 
-    var node = new BlockNode(mustache, program, inverse, strip);
+    var node = new BlockNode(sexpr, program, inverse, strip);
     var parentProgram = this.currentElement();
     appendChild(parentProgram, node);
   },
