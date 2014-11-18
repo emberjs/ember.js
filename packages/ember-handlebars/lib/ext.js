@@ -14,7 +14,7 @@ import {
 } from "ember-metal/path_cache";
 
 // late bound via requireModule because of circular dependencies.
-var resolveHelper, SimpleHandlebarsView;
+var resolveHelper, SimpleBoundView;
 
 import Stream from "ember-metal/streams/stream";
 import {
@@ -319,8 +319,8 @@ export function registerBoundHelper(name, fn) {
   @since 1.2.0
 */
 function makeBoundHelper(fn) {
-  if (!SimpleHandlebarsView) {
-    SimpleHandlebarsView = requireModule('ember-views/views/handlebars_bound_view')['SimpleHandlebarsView'];
+  if (!SimpleBoundView) {
+    SimpleBoundView = requireModule('ember-views/views/simple_bound_view')['default'];
   } // ES6TODO: stupid circular dep
 
   var dependentKeys = [];
@@ -374,7 +374,7 @@ function makeBoundHelper(fn) {
       return valueFn();
     } else {
       var lazyValue = new Stream(valueFn);
-      var bindView = new SimpleHandlebarsView(lazyValue, !options.hash.unescaped);
+      var bindView = new SimpleBoundView(lazyValue, !options.hash.unescaped);
       view.appendChild(bindView);
 
       var scheduledRerender = view._wrapAsScheduled(bindView.rerender);

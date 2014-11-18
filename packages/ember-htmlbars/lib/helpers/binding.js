@@ -8,10 +8,8 @@ import run from "ember-metal/run_loop";
 import { get } from "ember-metal/property_get";
 import SimpleStream from "ember-metal/streams/simple";
 
-import {
-  _HandlebarsBoundView,
-  SimpleHandlebarsView
-} from "ember-views/views/handlebars_bound_view";
+import BoundView from "ember-views/views/bound_view";
+import SimpleBoundView from "ember-views/views/simple_bound_view";
 
 function exists(value) {
   return !isNone(value);
@@ -41,7 +39,7 @@ function bind(property, hash, options, env, preserveContext, shouldDisplay, valu
   }
 
   // Set up observers for observable objects
-  var viewClass = _viewClass || _HandlebarsBoundView;
+  var viewClass = _viewClass || BoundView;
   var viewOptions = {
     _morph: options.morph,
     preserveContext: preserveContext,
@@ -63,7 +61,7 @@ function bind(property, hash, options, env, preserveContext, shouldDisplay, valu
 
   // Create the view that will wrap the output of this template/property
   // and add it to the nearest view's childViews array.
-  // See the documentation of Ember._HandlebarsBoundView for more.
+  // See the documentation of Ember._BoundView for more.
   var bindView = this.createChildView(viewClass, viewOptions);
 
   this.appendChild(bindView);
@@ -76,7 +74,7 @@ function bind(property, hash, options, env, preserveContext, shouldDisplay, valu
 function simpleBind(params, options, env) {
   var lazyValue = params[0];
 
-  var view = new SimpleHandlebarsView(
+  var view = new SimpleBoundView(
     lazyValue, options.escaped
   );
 

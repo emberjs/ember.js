@@ -1,22 +1,13 @@
-/*jshint newcap:false*/
-
-
 /**
 @module ember
 @submodule ember-views
 */
 
+import Ember from "ember-metal/core"; // Ember.FEATURES
 import EmberHandlebars from "ember-handlebars-compiler"; // EmberHandlebars.SafeString;
-
-import Ember from "ember-metal/core"; // Ember.GUID_KEY
-
-function K() { return this; }
-
-import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import merge from "ember-metal/merge";
-import run from "ember-metal/run_loop";
 import handlebarsHtmlSafe from "ember-handlebars/string";
 import {
   SafeString as htmlbarsSafeString,
@@ -26,9 +17,9 @@ import {
   cloneStates,
   states as viewStates
 } from "ember-views/views/states";
-
 import _MetamorphView from "ember-views/views/metamorph_view";
-import { uuid } from "ember-metal/utils";
+
+function K() { return this; }
 
 var SafeString, htmlSafe;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -38,87 +29,6 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   SafeString = EmberHandlebars.SafeString;
   htmlSafe = handlebarsHtmlSafe;
 }
-
-
-function SimpleHandlebarsView(lazyValue, isEscaped) {
-  this.lazyValue = lazyValue;
-  this.isEscaped = isEscaped;
-  this[Ember.GUID_KEY] = uuid();
-  this._lastNormalizedValue = undefined;
-  this.state = 'preRender';
-  this.updateId = null;
-  this._parentView = null;
-  this.buffer = null;
-  this._morph = null;
-}
-
-SimpleHandlebarsView.prototype = {
-  isVirtual: true,
-  isView: true,
-
-  destroy: function () {
-    if (this.updateId) {
-      run.cancel(this.updateId);
-      this.updateId = null;
-    }
-    if (this._parentView) {
-      this._parentView.removeChild(this);
-    }
-    this.morph = null;
-    this.state = 'destroyed';
-  },
-
-  propertyWillChange: K,
-
-  propertyDidChange: K,
-
-  normalizedValue: function() {
-    var result = this.lazyValue.value();
-
-    if (result === null || result === undefined) {
-      result = "";
-    } else if (!this.isEscaped && !(result instanceof SafeString)) {
-      result = htmlSafe(result);
-    }
-
-    return result;
-  },
-
-  render: function(buffer) {
-    var value = this.normalizedValue();
-    this._lastNormalizedValue = value;
-    buffer._element = value;
-  },
-
-  rerender: function() {
-    switch(this.state) {
-      case 'preRender':
-      case 'destroyed':
-        break;
-      case 'inBuffer':
-        throw new EmberError("Something you did tried to replace an {{expression}} before it was inserted into the DOM.");
-      case 'hasElement':
-      case 'inDOM':
-        this.updateId = run.scheduleOnce('render', this, 'update');
-        break;
-    }
-    return this;
-  },
-
-  update: function () {
-    this.updateId = null;
-    var value = this.normalizedValue();
-    // doesn't diff SafeString instances
-    if (value !== this._lastNormalizedValue) {
-      this._lastNormalizedValue = value;
-      this._morph.update(value);
-    }
-  },
-
-  _transitionTo: function(state) {
-    this.state = state;
-  }
-};
 
 var states = cloneStates(viewStates);
 
@@ -135,21 +45,21 @@ merge(states.inDOM, {
 });
 
 /**
-  `Ember._HandlebarsBoundView` is a private view created by the Handlebars
+  `Ember._BoundView` is a private view created by the Handlebars
   `{{bind}}` helpers that is used to keep track of bound properties.
 
   Every time a property is bound using a `{{mustache}}`, an anonymous subclass
-  of `Ember._HandlebarsBoundView` is created with the appropriate sub-template
+  of `Ember._BoundView` is created with the appropriate sub-template
   and context set up. When the associated property changes, just the template
   for this view will re-render.
 
-  @class _HandlebarsBoundView
+  @class _BoundView
   @namespace Ember
   @extends Ember._MetamorphView
   @private
 */
-var _HandlebarsBoundView = _MetamorphView.extend({
-  instrumentName: 'boundHandlebars',
+var BoundView = _MetamorphView.extend({
+  instrumentName: 'bound',
 
   _states: states,
 
@@ -229,7 +139,7 @@ var _HandlebarsBoundView = _MetamorphView.extend({
     `true,` the `displayTemplate` function will be rendered to DOM. Otherwise,
     `inverseTemplate`, if specified, will be rendered.
 
-    For example, if this `Ember._HandlebarsBoundView` represented the `{{#with
+    For example, if this `Ember._BoundView` represented the `{{#with
     foo}}` helper, it would look up the `foo` property of its context, and
     `shouldDisplayFunc` would always return true. The object found by looking
     up `foo` would be passed to `displayTemplate`.
@@ -297,7 +207,4 @@ var _HandlebarsBoundView = _MetamorphView.extend({
   }
 });
 
-export {
-  _HandlebarsBoundView,
-  SimpleHandlebarsView
-};
+export default BoundView;

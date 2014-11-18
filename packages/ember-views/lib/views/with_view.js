@@ -6,9 +6,9 @@
 
 import { set } from "ember-metal/property_set";
 import { apply } from "ember-metal/utils";
-import { _HandlebarsBoundView } from "ember-views/views/handlebars_bound_view";
+import BoundView from "ember-views/views/bound_view";
 
-export default _HandlebarsBoundView.extend({
+export default BoundView.extend({
   init: function() {
     apply(this, this._super, arguments);
 
