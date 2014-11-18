@@ -61,7 +61,7 @@ import {
   Select,
   SelectOption,
   SelectOptgroup
-} from "ember-handlebars/controls/select";
+} from "ember-htmlbars/views/select";
 import {
   inputHelper,
   textareaHelper

@@ -4,6 +4,7 @@
 */
 
 import EmberHandlebars from "ember-handlebars-compiler";
+import { default as htmlbarsCompile } from 'ember-htmlbars/system/compile';
 
 import {
   forEach,
@@ -23,7 +24,14 @@ import { A as emberA } from "ember-runtime/system/native_array";
 import { observer } from "ember-metal/mixin";
 import { defineProperty } from "ember-metal/properties";
 
-var precompileTemplate = EmberHandlebars.compile;
+import { simpleBind } from "ember-htmlbars/helpers/binding";
+
+var precompileTemplate;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  precompileTemplate = htmlbarsCompile;
+} else {
+  precompileTemplate = EmberHandlebars.compile;
+}
 
 var SelectOption = View.extend({
   instrumentDisplay: 'Ember.SelectOption',
@@ -31,9 +39,13 @@ var SelectOption = View.extend({
   tagName: 'option',
   attributeBindings: ['value', 'selected'],
 
-  defaultTemplate: function(context, options) {
-    options = { data: options.data, hash: {} };
-    EmberHandlebars.helpers.bind.call(context, "view.label", options);
+  defaultTemplate: function(context, env, contextualElement) {
+    if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+      simpleBind.call(context, [context.getStream('view.label')], {}, env);
+    } else {
+      var options = { data: env.data, hash: {} };
+      EmberHandlebars.helpers.bind.call(context, "view.label", options);
+    }
   },
 
   init: function() {
