@@ -56,9 +56,6 @@ var boot = function(callback) {
   });
 };
 
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  // need to make container lookup of helpers normalize the path to
-  // old format (currently using `params, hash, options, env`)
 test("Unbound dashed helpers registered on the container can be late-invoked", function() {
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-borf}} {{x-borf YES}}</div>");
@@ -73,6 +70,8 @@ test("Unbound dashed helpers registered on the container can be late-invoked", f
   ok(!helpers['x-borf'], "Container-registered helper doesn't wind up on global helpers hash");
 });
 
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  // need to make `makeBoundHelper` for HTMLBars
 test("Bound helpers registered on the container can be late-invoked", function() {
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-reverse}} {{x-reverse foo}}</div>");

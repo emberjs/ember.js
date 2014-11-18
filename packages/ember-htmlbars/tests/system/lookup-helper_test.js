@@ -77,11 +77,41 @@ test('does a lookup in the container if the name contains a dash (and helper is 
   };
 
   function someName() {}
+  someName._isHTMLBars = true;
   view.container.register('helper:some-name', someName);
 
   var actual = lookupHelper('some-name', view, env);
 
-  equal(actual, someName, 'does not blow up if view does not have a container');
+  equal(actual, someName, 'does not wrap provided function if `_isHTMLBars` is truthy');
+});
+
+test('wraps helper from container in a Handlebars compat helper', function() {
+  expect(2);
+  var env = generateEnv();
+  var view = {
+    container: generateContainer()
+  };
+  var called;
+
+  function someName() {
+    called = true;
+  }
+  view.container.register('helper:some-name', someName);
+
+  var actual = lookupHelper('some-name', view, env);
+
+  ok(actual._isHTMLBars, 'wraps provided helper in an HTMLBars compatible helper');
+
+  var fakeParams = [];
+  var fakeHash = {};
+  var fakeOptions = {
+    _raw: { params: []},
+    morph: { update: function() { } }
+  };
+  var fakeEnv = {};
+  actual(fakeParams, fakeHash, fakeOptions, fakeEnv);
+
+  ok(called, 'HTMLBars compatible wrapper is wraping the provided function');
 });
 
 test('asserts if component-lookup:main cannot be found', function() {

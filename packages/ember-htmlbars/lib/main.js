@@ -14,6 +14,9 @@ import {
   helper,
   default as helpers
 } from "ember-htmlbars/helpers";
+import {
+  registerHandlebarsCompatibleHelper
+} from "ember-htmlbars/compat/helper";
 import { bindHelper } from "ember-htmlbars/helpers/binding";
 import { viewHelper } from "ember-htmlbars/helpers/view";
 import { yieldHelper } from "ember-htmlbars/helpers/yield";
