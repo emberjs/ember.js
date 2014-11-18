@@ -379,7 +379,7 @@ Map.prototype = {
 
   /**
     Iterate over all the keys and values. Calls the function once
-    for each key, passing in the key and value, in that order.
+    for each key, passing in the value and key, in that order.
 
     The keys are guaranteed to be iterated over in insertion order.
 
