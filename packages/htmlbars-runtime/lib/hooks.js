@@ -8,9 +8,6 @@ export function content(morph, helperName, context, params, hash, options, env) 
   } else {
     value = this.simple(context, helperName, options);
   }
-  if (!options.escaped) {
-    value = new SafeString(value);
-  }
   morph.update(value);
 }
 

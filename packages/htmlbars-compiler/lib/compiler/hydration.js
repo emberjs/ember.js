@@ -72,9 +72,8 @@ prototype.stackLiteral = function(literal) {
   this.stack.push(literal);
 };
 
-prototype.helper = function(name, size, escaped, morphNum) {
+prototype.helper = function(name, size, morphNum) {
   var prepared = prepareHelper(this.stack, size);
-  prepared.options.push('escaped:'+escaped);
   prepared.options.push('morph:morph'+morphNum);
   this.pushMustacheInContent(string(name), prepared.args, prepared.hash, prepared.options, morphNum);
 };
@@ -85,20 +84,18 @@ prototype.component = function(tag, morphNum) {
   this.pushComponent(string(tag), prepared.hash, prepared.options, morphNum);
 };
 
-prototype.ambiguous = function(str, escaped, morphNum) {
+prototype.ambiguous = function(str, morphNum) {
   var options = [];
-  options.push('escaped:'+escaped);
   options.push('morph:morph'+morphNum);
   this.pushMustacheInContent(string(str), '[]', '{}', options, morphNum);
 };
 
-prototype.ambiguousAttr = function(str, escaped) {
-  this.stack.push('['+string(str)+', [], {escaped:'+escaped+'}]');
+prototype.ambiguousAttr = function(str) {
+  this.stack.push('['+string(str)+', [], {}]');
 };
 
-prototype.helperAttr = function(name, size, escaped) {
+prototype.helperAttr = function(name, size) {
   var prepared = prepareHelper(this.stack, size);
-  prepared.options.push('escaped:'+escaped);
   this.stack.push('['+string(name)+','+prepared.args+','+ prepared.hash +',' + hash(prepared.options)+']');
 };
 
@@ -117,11 +114,12 @@ prototype.nodeHelper = function(name, size, elementNum) {
   this.pushMustacheInNode(string(name), prepared.args, prepared.hash, prepared.options, elementNum);
 };
 
-prototype.morph = function(num, parentPath, startIndex, endIndex) {
+prototype.morph = function(num, parentPath, startIndex, endIndex, escaped) {
   var isRoot = parentPath.length === 0;
   var parent = this.getParent();
 
-  var morph = "dom.createMorphAt("+parent+
+  var morphMethod = escaped ? 'createMorphAt' : 'createUnsafeMorphAt';
+  var morph = "dom."+morphMethod+"("+parent+
     ","+(startIndex === null ? "-1" : startIndex)+
     ","+(endIndex === null ? "-1" : endIndex)+
     (isRoot ? ",contextualElement)" : ")");
