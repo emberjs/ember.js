@@ -325,7 +325,7 @@ helper('findWithAssert', findWithAssert);
   Ember.Test.registerAsyncHelper('loginUser', function(app, username, password) {
     visit('secured/path/here')
     .fillIn('#username', username)
-    .fillIn('#password', username)
+    .fillIn('#password', password)
     .click('.submit')
 
     return app.testHelpers.wait();
