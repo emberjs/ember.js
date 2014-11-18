@@ -1,6 +1,9 @@
 import Ember from "ember-metal/core";
 import Cache from "ember-metal/cache";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
+import {
+  makeHandlebarsCompatibleHelper
+} from "ember-htmlbars/compat/helper";
 import Stream from "ember-metal/streams/stream";
 import {readArray} from "ember-metal/streams/read";
 
@@ -70,7 +73,8 @@ export function lookupHelper(name, view, env) {
     return;
   }
 
-  var helper = container.lookup('helper:' + name);
+  var helperName = 'helper:' + name;
+  var helper = container.lookup(helperName);
   if (!helper) {
     var componentLookup = container.lookup('component-lookup:main');
     Ember.assert("Could not find 'component-lookup:main' on the provided container," +
@@ -79,8 +83,14 @@ export function lookupHelper(name, view, env) {
     var Component = componentLookup.lookupFactory(name, container);
     if (Component) {
       helper = makeViewHelper(Component);
-      container.register('helper:' + name, helper);
+      container.register(helperName, helper);
     }
+  }
+
+  if (helper && !helper._isHTMLBars) {
+    helper = makeHandlebarsCompatibleHelper(helper);
+    container.unregister(helperName);
+    container.register(helperName, helper);
   }
 
   return helper;
