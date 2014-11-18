@@ -7,9 +7,9 @@ import isNone from 'ember-metal/is_none';
 import run from "ember-metal/run_loop";
 import { get } from "ember-metal/property_get";
 import SimpleStream from "ember-metal/streams/simple";
+import simpleBind from "ember-htmlbars/system/simple-bind";
 
 import BoundView from "ember-views/views/bound_view";
-import SimpleBoundView from "ember-views/views/simple_bound_view";
 
 function exists(value) {
   return !isNone(value);
@@ -71,22 +71,6 @@ function bind(property, hash, options, env, preserveContext, shouldDisplay, valu
   }));
 }
 
-function simpleBind(params, options, env) {
-  var lazyValue = params[0];
-
-  var view = new SimpleBoundView(
-    lazyValue, options.escaped
-  );
-
-  view._parentView = this;
-  view._morph = options.morph;
-  this.appendChild(view);
-
-  lazyValue.subscribe(this._wrapAsScheduled(function() {
-    run.scheduleOnce('render', view, 'rerender');
-  }));
-}
-
 /**
   `bind` can be used to display a value, then update that value if it
   changes. For example, if you wanted to print the `title` property of
@@ -120,12 +104,11 @@ function bindHelper(params, hash, options, env) {
     Ember.deprecate("The block form of bind, {{#bind foo}}{{/bind}}, has been deprecated and will be removed.");
     bind.call(this, property, hash, options, env, false, exists);
   } else {
-    simpleBind.call(this, params, options, env);
+    simpleBind.call(this, params, hash, options, env);
   }
 }
 
 export {
   bind,
-  simpleBind,
   bindHelper
 };

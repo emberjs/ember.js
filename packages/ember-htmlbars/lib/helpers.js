@@ -75,9 +75,7 @@ export function helper(name, value) {
   if (View.detect(value)) {
     helpers[name] = makeViewHelper(value);
   } else {
-    // HTMLBars TODO: Support bound helpers
-    // EmberHandlebars.registerBoundHelper.apply(null, arguments);
-    throw new Error('unimplemented');
+    throw new Error('registerBoundHelper not implemented yet.');
   }
 }
 
