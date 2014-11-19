@@ -13,11 +13,12 @@ function Helper(helper, preprocessArguments) {
   if (preprocessArguments) {
     this.preprocessArguments = preprocessArguments;
   }
+
+  this.isHTMLBars = true;
 }
 
 Helper.prototype = {
-  preprocessArguments: function() { },
-  isHTMLBars: true
+  preprocessArguments: function() { }
 };
 
 export default Helper;
