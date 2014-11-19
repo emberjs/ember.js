@@ -3,14 +3,17 @@ import "ember";
 import EmberHandlebars from "ember-handlebars";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
 import htmlbarsHelpers from "ember-htmlbars/helpers";
+import htmlbarsMakeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 
-var compile, helpers;
+var compile, helpers, makeBoundHelper;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   compile = htmlbarsCompile;
   helpers = htmlbarsHelpers;
+  makeBoundHelper = htmlbarsMakeBoundHelper;
 } else {
   compile = EmberHandlebars.compile;
   helpers = EmberHandlebars.helpers;
+  makeBoundHelper = EmberHandlebars.makeBoundHelper;
 }
 
 var App, container;
@@ -70,7 +73,6 @@ test("Unbound dashed helpers registered on the container can be late-invoked", f
   ok(!helpers['x-borf'], "Container-registered helper doesn't wind up on global helpers hash");
 });
 
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
   // need to make `makeBoundHelper` for HTMLBars
 test("Bound helpers registered on the container can be late-invoked", function() {
 
@@ -80,13 +82,17 @@ test("Bound helpers registered on the container can be late-invoked", function()
     container.register('controller:application', Ember.Controller.extend({
       foo: "alex"
     }));
-    container.register('helper:x-reverse', Ember.Handlebars.makeBoundHelper(reverseHelper));
+    container.register('helper:x-reverse', makeBoundHelper(reverseHelper));
   });
 
   equal(Ember.$('#wrapper').text(), "-- xela", "The bound helper was invoked from the container");
   ok(!helpers['x-reverse'], "Container-registered helper doesn't wind up on global helpers hash");
 });
 
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+
+  // we have unit tests for this in ember-htmlbars/tests/system/lookup-helper
+  // and we are not going to recreate the handlebars helperMissing concept
 test("Undashed helpers registered on the container can not (presently) be invoked", function() {
 
   var realHelperMissing = helpers.helperMissing;
@@ -104,7 +110,7 @@ test("Undashed helpers registered on the container can not (presently) be invoke
     container.register('helper:omg', function() {
       return "OMG";
     });
-    container.register('helper:yorp', Ember.Handlebars.makeBoundHelper(function() {
+    container.register('helper:yorp', makeBoundHelper(function() {
       return "YORP";
     }));
   });

@@ -15,17 +15,22 @@ import {
 
 import Container from 'ember-runtime/system/container';
 
-import { makeBoundHelper } from 'ember-handlebars/ext';
+import {
+  makeBoundHelper as handlebarsMakeBoundHelper
+} from 'ember-handlebars/ext';
+import htmlbarsMakeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 
-var compile, helpers, registerBoundHelper;
+var compile, helpers, registerBoundHelper, makeBoundHelper;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   compile = htmlbarsCompile;
   registerBoundHelper = registerHTMLBarsHelper;
+  makeBoundHelper = htmlbarsMakeBoundHelper;
   helpers = htmlbarsHelpers;
 } else {
   compile = EmberHandlebars.compile;
   registerBoundHelper = EmberHandlebars.registerBoundHelper;
   helpers = EmberHandlebars.helpers;
+  makeBoundHelper = handlebarsMakeBoundHelper;
 }
 
 function appendView(view) {

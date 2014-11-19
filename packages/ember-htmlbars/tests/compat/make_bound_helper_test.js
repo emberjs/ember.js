@@ -10,7 +10,23 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
 import EmberHandlebars from "ember-handlebars-compiler";
-var compile = EmberHandlebars.compile;
+import htmlbarsHelpers from "ember-htmlbars/helpers";
+import htmlbarsRegisterBoundHelper from "ember-htmlbars/compat/register-bound-helper";
+
+import EmberHandlebars from "ember-handlebars";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
+
+var compile, helpers, helper;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+  helpers = htmlbarsHelpers;
+  helper = htmlbarsRegisterBoundHelper;
+} else {
+  compile = EmberHandlebars.compile;
+  helpers = EmberHandlebars.helpers;
+  helper = EmberHandlebars.helper;
+}
+
 
 var view;
 
@@ -21,7 +37,7 @@ function appendView() {
 }
 
 function registerRepeatHelper() {
-  EmberHandlebars.helper('repeat', function(value, options) {
+  helper('repeat', function(value, options) {
     var count = options.hash.count;
     var a = [];
     while(a.length < count) {
@@ -31,7 +47,7 @@ function registerRepeatHelper() {
   });
 }
 
-QUnit.module("Handlebars bound helpers", {
+QUnit.module("ember-htmlbars: makeBoundHelper", {
   setup: function() {
   },
   teardown: function() {
@@ -60,7 +76,7 @@ test("primitives should work correctly [DEPRECATED]", function() {
 });
 
 test("should update bound helpers when properties change", function() {
-  EmberHandlebars.helper('capitalize', function(value) {
+  helper('capitalize', function(value) {
     return value.toUpperCase();
   });
 
@@ -81,7 +97,7 @@ test("should update bound helpers when properties change", function() {
 });
 
 test("should allow for computed properties with dependencies", function() {
-  EmberHandlebars.helper('capitalizeName', function(value) {
+  helper('capitalizeName', function(value) {
     return get(value, 'name').toUpperCase();
   }, 'name');
 
@@ -120,7 +136,7 @@ test("bound helpers should support options", function() {
 });
 
 test("bound helpers should support keywords", function() {
-  EmberHandlebars.helper('capitalize', function(value) {
+  helper('capitalize', function(value) {
     return value.toUpperCase();
   });
 
@@ -135,7 +151,7 @@ test("bound helpers should support keywords", function() {
 });
 
 test("bound helpers should support global paths [DEPRECATED]", function() {
-  EmberHandlebars.helper('capitalize', function(value) {
+  helper('capitalize', function(value) {
     return value.toUpperCase();
   });
 
@@ -153,7 +169,7 @@ test("bound helpers should support global paths [DEPRECATED]", function() {
 });
 
 test("bound helper should support this keyword", function() {
-  EmberHandlebars.helper('capitalize', function(value) {
+  helper('capitalize', function(value) {
     return get(value, 'text').toUpperCase();
   });
 
@@ -224,13 +240,13 @@ test("bound helpers should support unquoted values as bound options", function()
 
 test("bound helpers should support multiple bound properties", function() {
 
-  EmberHandlebars.helper('concat', function() {
+  helper('combine', function() {
     return [].slice.call(arguments, 0, -1).join('');
   });
 
   view = EmberView.create({
     controller: EmberObject.create({thing1: 'ZOID', thing2: 'BERG'}),
-    template: compile('{{concat thing1 thing2}}')
+    template: compile('{{combine thing1 thing2}}')
   });
 
   appendView();
@@ -254,7 +270,7 @@ test("bound helpers should support multiple bound properties", function() {
 });
 
 test("bound helpers should expose property names in options.data.properties", function() {
-  EmberHandlebars.helper('echo', function() {
+  helper('echo', function() {
     var options = arguments[arguments.length - 1];
     var values = [].slice.call(arguments, 0, -1);
     var a = [];
@@ -282,7 +298,7 @@ test("bound helpers should expose property names in options.data.properties", fu
 });
 
 test("bound helpers can be invoked with zero args", function() {
-  EmberHandlebars.helper('troll', function(options) {
+  helper('troll', function(options) {
     return options.hash.text || "TROLOLOL";
   });
 
@@ -320,7 +336,7 @@ test("should observe dependent keys passed to registerBoundHelper", function() {
       })
     });
 
-    EmberHandlebars.registerBoundHelper('fullName', function(value){
+    helper('fullName', function(value){
       return [
         value.get('firstName'),
         value.get('lastName'),
@@ -343,12 +359,12 @@ test("should observe dependent keys passed to registerBoundHelper", function() {
 
     equal(view.$().text(), 'Tom Owen 1692', 'render the helper after path change');
   } finally {
-    delete EmberHandlebars.helpers['fullName'];
+    delete helpers['fullName'];
   }
 });
 
 test("shouldn't treat raw numbers as bound paths", function() {
-  EmberHandlebars.helper('sum', function(a, b) {
+  helper('sum', function(a, b) {
     return a + b;
   });
 
@@ -368,14 +384,14 @@ test("shouldn't treat raw numbers as bound paths", function() {
 
 test("shouldn't treat quoted strings as bound paths", function() {
   var helperCount = 0;
-  EmberHandlebars.helper('concat', function(a, b, opt) {
+  helper('combine', function(a, b, opt) {
     helperCount++;
     return a + b;
   });
 
   view = EmberView.create({
     controller: EmberObject.create({word: "jerkwater", loo: "unused"}),
-    template: compile("{{concat word 'loo'}} {{concat '' word}} {{concat 'will' \"didi\"}}")
+    template: compile("{{combine word 'loo'}} {{combine '' word}} {{combine 'will' \"didi\"}}")
   });
 
   appendView();
@@ -391,7 +407,7 @@ test("shouldn't treat quoted strings as bound paths", function() {
 });
 
 test("bound helpers can handle nulls in array (with primitives) [DEPRECATED]", function() {
-  EmberHandlebars.helper('reverse', function(val) {
+  helper('reverse', function(val) {
     return val ? val.split('').reverse().join('') : "NOPE";
   });
 
@@ -417,7 +433,7 @@ test("bound helpers can handle nulls in array (with primitives) [DEPRECATED]", f
 });
 
 test("bound helpers can handle nulls in array (with objects)", function() {
-  EmberHandlebars.helper('print-foo', function(val) {
+  helper('print-foo', function(val) {
     return val ? get(val, 'foo') : "NOPE";
   });
 
@@ -441,7 +457,7 @@ test("bound helpers can handle nulls in array (with objects)", function() {
 
 test("bound helpers can handle `this` keyword when it's a non-object", function() {
 
-  EmberHandlebars.helper("shout", function(value) {
+  helper("shout", function(value) {
     return value + '!';
   });
 
@@ -468,13 +484,13 @@ test("bound helpers can handle `this` keyword when it's a non-object", function(
 });
 
 test("should have correct argument types", function() {
-  EmberHandlebars.helper('getType', function(value) {
+  helper('getType', function(value) {
     return typeof value;
   });
 
   view = EmberView.create({
     controller: EmberObject.create(),
-    template: EmberHandlebars.compile('{{getType null}}, {{getType undefProp}}, {{getType "string"}}, {{getType 1}}, {{getType}}')
+    template: compile('{{getType null}}, {{getType undefProp}}, {{getType "string"}}, {{getType 1}}, {{getType}}')
   });
 
   appendView();
