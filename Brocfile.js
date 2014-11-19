@@ -133,18 +133,14 @@ for (var packageName in packages.dependencies) {
   // jsHint tests
   var jsHintLibTree = new Funnel(libTree, {
     include: [new RegExp(packageName), new RegExp(packageName + '.+\.js$')],
-    exclude: [/htmlbars-compiler\/handlebars/]
+    exclude: [/htmlbars-compiler\/handlebars/],
+    destDir: packageName+'-tests/'
   });
   jsHintLibTree = removeFile(jsHintLibTree, {
     srcFile: 'htmlbars-runtime.js' // Uses ES6 `module` syntax. Breaks jsHint
   });
   testTrees.push(jsHint(jsHintLibTree, { destFile: '/' + packageName + '-tests/jshint-lib.js' }));
-
-  var jsHintTestTree = new Funnel(testTree, {
-    srcDir: packageName+'-tests/',
-    destDir: packageName+'-tests/'
-  });
-  testTrees.push(jsHint(jsHintTestTree, { destFile: '/' + packageName + '-tests/jshint-tests.js' }));
+  testTrees.push(jsHint(testTree, { destFile: '/' + packageName + '-tests/jshint-tests.js' }));
 
   // AMD tests
   var transpiledAmdTests = transpileES6(mergeTrees(testTrees), { moduleName: true, type: 'amd' });

@@ -92,7 +92,7 @@
 
       for (var i = 0; i < packagesToTest.length; i++) {
         if (root === packagesToTest[i] + '-tests') {
-          if (key.match(/-jshint\//) && QUnit.urlParams.nojshint) {
+          if (key.match(/\.jshint$/) && QUnit.urlParams.nojshint) {
             continue;
           }
           requireModule(key);
