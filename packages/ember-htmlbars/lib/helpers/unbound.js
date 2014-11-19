@@ -1,5 +1,7 @@
 import { lookupHelper } from 'ember-htmlbars/system/lookup-helper';
 import { read } from 'ember-metal/streams/read';
+import EmberError from "ember-metal/error";
+import merge from "ember-metal/merge";
 
 /**
 @module ember
@@ -35,7 +37,9 @@ export function unboundHelper(params, hash, options, env) {
   if (length === 1) {
     result = params[0].value();
   } else if (length >= 2) {
-    var helperName = params[0];
+    env.data.isUnbound = true;
+
+    var helperName = options._raw.params[0];
     var args = [];
 
     for (var i = 1, l = params.length; i < l; i++) {
@@ -46,8 +50,21 @@ export function unboundHelper(params, hash, options, env) {
 
     var helper = lookupHelper(helperName, this, env);
 
-    result = helper.call(this, args, hash, options, env);
+    if (!helper) {
+      throw new EmberError('HTMLBars error: Could not find component or helper named ' + helperName + '.');
+    }
+
+    result = helper.helperFunction.call(this, args, hash, options, env);
+
+    delete env.data.isUnbound;
   }
 
   options.morph.update(result);
+}
+
+export function preprocessArgumentsForUnbound(view, params, hash, options, env) {
+  options._raw = {
+    params: params.slice(),
+    hash:   merge({}, hash)
+  };
 }
