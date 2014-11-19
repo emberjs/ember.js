@@ -3,9 +3,7 @@ import { lookupHelper } from "ember-htmlbars/system/lookup-helper";
 import { sanitizeOptionsForHelper } from "ember-htmlbars/system/sanitize-for-helper";
 
 function streamifyArgs(view, params, hash, options, env, helper) {
-  if (helper._preprocessArguments) {
-    helper._preprocessArguments(view, params, hash, options, env);
-  }
+  helper.preprocessArguments(view, params, hash, options, env);
 
   // Convert ID params to streams
   for (var i = 0, l = params.length; i < l; i++) {
@@ -36,7 +34,7 @@ export function content(morph, path, view, params, hash, options, env) {
 
   streamifyArgs(view, params, hash, options, env, helper);
   sanitizeOptionsForHelper(options);
-  return helper.call(view, params, hash, options, env);
+  return helper.helperFunction.call(view, params, hash, options, env);
 }
 
 export function component(morph, tagName, view, hash, options, env) {
@@ -47,7 +45,7 @@ export function component(morph, tagName, view, hash, options, env) {
 
   streamifyArgs(view, params, hash, options, env, helper);
   sanitizeOptionsForHelper(options);
-  return helper.call(view, params, hash, options, env);
+  return helper.helperFunction.call(view, params, hash, options, env);
 }
 
 export function element(element, path, view, params, hash, options, env) { //jshint ignore:line
@@ -56,7 +54,7 @@ export function element(element, path, view, params, hash, options, env) { //jsh
   if (helper) {
     streamifyArgs(view, params, hash, options, env, helper);
     sanitizeOptionsForHelper(options);
-    return helper.call(view, params, hash, options, env);
+    return helper.helperFunction.call(view, params, hash, options, env);
   } else {
     return view.getStream(path);
   }
@@ -68,7 +66,7 @@ export function subexpr(path, view, params, hash, options, env) {
   if (helper) {
     streamifyArgs(view, params, hash, options, env, helper);
     sanitizeOptionsForHelper(options);
-    return helper.call(view, params, hash, options, env);
+    return helper.helperFunction.call(view, params, hash, options, env);
   } else {
     return view.getStream(path);
   }

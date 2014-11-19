@@ -1,11 +1,10 @@
 import Ember from "ember-metal/core";
 import Cache from "ember-metal/cache";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
-import {
-  makeHandlebarsCompatibleHelper
-} from "ember-htmlbars/compat/helper";
+import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
 import Stream from "ember-metal/streams/stream";
 import {readArray} from "ember-metal/streams/read";
+import Helper from "ember-htmlbars/system/helper";
 
 export var ISNT_HELPER_CACHE = new Cache(1000, function(key) {
   return key.indexOf('-') === -1;
@@ -23,6 +22,8 @@ export function attribute(params, hash, options, env) {
   dom.setAttribute(options.element, name, value.value());
 }
 
+var attributeHelper = new Helper(attribute);
+
 export function concat(params, hash, options, env) {
   var stream = new Stream(function() {
     return readArray(params).join('');
@@ -38,6 +39,8 @@ export function concat(params, hash, options, env) {
 
   return stream;
 }
+
+var concatHelper = new Helper(concat);
 
 /**
   Used to lookup/resolve handlebars helpers. The lookup order is:
@@ -56,11 +59,11 @@ export function concat(params, hash, options, env) {
 */
 export function lookupHelper(name, view, env) {
   if (name === 'concat') {
-    return concat;
+    return concatHelper;
   }
 
   if (name === 'attribute') {
-    return attribute;
+    return attributeHelper;
   }
 
   if (env.helpers[name]) {
@@ -87,8 +90,8 @@ export function lookupHelper(name, view, env) {
     }
   }
 
-  if (helper && !helper._isHTMLBars) {
-    helper = makeHandlebarsCompatibleHelper(helper);
+  if (helper && !helper.isHTMLBars) {
+    helper = new HandlebarsCompatibleHelper(helper);
     container.unregister(helperName);
     container.register(helperName, helper);
   }

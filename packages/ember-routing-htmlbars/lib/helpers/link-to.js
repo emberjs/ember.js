@@ -339,7 +339,7 @@ function linkToHelper(params, hash, options, env) {
 
   options.helperName = options.helperName || 'link-to';
 
-  return env.helpers.view.call(this, [LinkView], hash, options, env);
+  return env.helpers.view.helperFunction.call(this, [LinkView], hash, options, env);
 }
 
 /**
@@ -355,7 +355,7 @@ function linkToHelper(params, hash, options, env) {
 function deprecatedLinkToHelper(params, hash, options, env) {
   Ember.deprecate("The 'linkTo' view helper is deprecated in favor of 'link-to'");
 
-  return env.helpers['link-to'].call(this, params, hash, options, env);
+  return env.helpers['link-to'].helperFunction.call(this, params, hash, options, env);
 }
 
 export {

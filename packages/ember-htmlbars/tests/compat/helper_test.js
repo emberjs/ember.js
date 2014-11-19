@@ -1,6 +1,4 @@
-import {
-  makeHandlebarsCompatibleHelper
-} from "ember-htmlbars/compat/helper";
+import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
 
 var fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv;
 
@@ -30,12 +28,12 @@ test('wraps provided function so that original path params are provided to the h
     equal(param2, 'blazzico');
   }
 
-  var compatHelper = makeHandlebarsCompatibleHelper(someHelper);
+  var compatHelper = new HandlebarsCompatibleHelper(someHelper);
 
   fakeParams = [ 'blammo', 'blazzico' ];
-  compatHelper._preprocessArguments(fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv);
+  compatHelper.preprocessArguments(fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv);
 
-  compatHelper(fakeParams, fakeHash, fakeOptions, fakeEnv);
+  compatHelper.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
 });
 
 test('combines `env` and `options` for the wrapped helper', function() {
@@ -46,13 +44,13 @@ test('combines `env` and `options` for the wrapped helper', function() {
     equal(options.second, 'James');
   }
 
-  var compatHelper = makeHandlebarsCompatibleHelper(someHelper);
+  var compatHelper = new HandlebarsCompatibleHelper(someHelper);
 
   fakeOptions.first = 'Max';
   fakeEnv.second = 'James';
 
-  compatHelper._preprocessArguments(fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv);
-  compatHelper(fakeParams, fakeHash, fakeOptions, fakeEnv);
+  compatHelper.preprocessArguments(fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv);
+  compatHelper.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
 });
 
 test('calls morph.update with the return value from the helper', function() {
@@ -62,12 +60,12 @@ test('calls morph.update with the return value from the helper', function() {
     return 'Lucy!';
   }
 
-  var compatHelper = makeHandlebarsCompatibleHelper(someHelper);
+  var compatHelper = new HandlebarsCompatibleHelper(someHelper);
 
   fakeOptions.morph.update = function(value) {
     equal(value, 'Lucy!');
   };
 
-  compatHelper._preprocessArguments(fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv);
-  compatHelper(fakeParams, fakeHash, fakeOptions, fakeEnv);
+  compatHelper.preprocessArguments(fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv);
+  compatHelper.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
 });

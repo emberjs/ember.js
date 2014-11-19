@@ -93,9 +93,9 @@ function ifHelper(params, hash, options, env) {
   options.inverse = options.inverse || function(){ return ''; };
 
   if (options.isUnbound) {
-    return env.helpers.unboundIf.call(this, params, hash, options, env);
+    return env.helpers.unboundIf.helperFunction.call(this, params, hash, options, env);
   } else {
-    return env.helpers.boundIf.call(this, params, hash, options, env);
+    return env.helpers.boundIf.helperFunction.call(this, params, hash, options, env);
   }
 }
 
@@ -120,9 +120,9 @@ function unlessHelper(params, hash, options, env) {
   options.helperName = options.helperName || helperName;
 
   if (options.isUnbound) {
-    return env.helpers.unboundIf.call(this, params, hash, options, env);
+    return env.helpers.unboundIf.helperFunction.call(this, params, hash, options, env);
   } else {
-    return env.helpers.boundIf.call(this, params, hash, options, env);
+    return env.helpers.boundIf.helperFunction.call(this, params, hash, options, env);
   }
 }
 

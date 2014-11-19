@@ -186,10 +186,10 @@ function eachHelper(params, hash, options, env) {
   hash.dataSourceBinding = path;
   options.helperName = options.helperName || helperName;
 
-  return env.helpers.collection.call(this, [EachView], hash, options, env);
+  return env.helpers.collection.helperFunction.call(this, [EachView], hash, options, env);
 }
 
-eachHelper._preprocessArguments = function(view, params, hash, options, env) {
+export function preprocessArgumentsForEach(view, params, hash, options, env) {
   if (params.length === 3 && params[1] === "in") {
     params.splice(0, 3, {
       from: params[2],
@@ -198,7 +198,7 @@ eachHelper._preprocessArguments = function(view, params, hash, options, env) {
     });
     options.types.splice(0, 3, 'keyword');
   }
-};
+}
 
 export {
   EachView,

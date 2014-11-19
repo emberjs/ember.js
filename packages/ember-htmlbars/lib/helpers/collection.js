@@ -262,5 +262,5 @@ export function collectionHelper(params, hash, options, env) {
 
   options.helperName = options.helperName || 'collection';
 
-  return env.helpers.view.call(this, [collectionClass], hash, options, env);
+  return env.helpers.view.helperFunction.call(this, [collectionClass], hash, options, env);
 }
