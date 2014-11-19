@@ -92,8 +92,19 @@ test("the default resolver resolves helpers", function(){
   function barBazResolverTestHelper(){ return 'BAZ'; }
   registerHelper('fooresolvertest', fooresolvertestHelper);
   registerHelper('bar-baz-resolver-test', barBazResolverTestHelper);
-  equal(fooresolvertestHelper, locator.lookup('helper:fooresolvertest'), "looks up fooresolvertestHelper helper");
-  equal(barBazResolverTestHelper, locator.lookup('helper:bar-baz-resolver-test'), "looks up barBazResolverTestHelper helper");
+
+  var retrievedFooResolverTestHelper, retrievedBarBazResolverTestHelper;
+
+  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+    retrievedFooResolverTestHelper = locator.lookup('helper:fooresolvertest').helperFunction;
+    retrievedBarBazResolverTestHelper = locator.lookup('helper:bar-baz-resolver-test').helperFunction;
+  } else {
+    retrievedFooResolverTestHelper = locator.lookup('helper:fooresolvertest');
+    retrievedBarBazResolverTestHelper = locator.lookup('helper:bar-baz-resolver-test');
+  }
+
+  equal(fooresolvertestHelper, retrievedFooResolverTestHelper, "looks up fooresolvertestHelper helper");
+  equal(barBazResolverTestHelper, retrievedBarBazResolverTestHelper, "looks up barBazResolverTestHelper helper");
 });
 
 test("the default resolver resolves container-registered helpers", function(){

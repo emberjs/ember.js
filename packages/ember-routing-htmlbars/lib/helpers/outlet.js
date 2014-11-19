@@ -5,7 +5,6 @@
 
 import Ember from "ember-metal/core"; // assert
 import { set } from "ember-metal/property_set";
-import { viewHelper } from "ember-htmlbars/helpers/view";
 import { OutletView } from "ember-routing-views/views/outlet";
 
 /**
@@ -114,5 +113,5 @@ export function outletHelper(params, hash, options, env) {
 
   options.helperName = options.helperName || 'outlet';
 
-  return viewHelper.call(this, [viewClass], hash, options, env);
+  return env.helpers.view.helperFunction.call(this, [viewClass], hash, options, env);
 }

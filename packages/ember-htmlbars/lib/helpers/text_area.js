@@ -189,5 +189,5 @@ import TextArea from "ember-views/views/text_area";
 export function textareaHelper(params, hash, options, env) {
   Ember.assert('You can only pass attributes to the `textarea` helper, not arguments', params.length === 0);
 
-  return env.helpers.view.call(this, [TextArea], hash, options, env);
+  return env.helpers.view.helperFunction.call(this, [TextArea], hash, options, env);
 }

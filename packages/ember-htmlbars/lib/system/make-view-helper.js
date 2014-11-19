@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core"; // Ember.assert
+import Helper from "ember-htmlbars/system/helper";
 
 /**
   Returns a helper function that renders the provided ViewClass.
@@ -16,10 +17,8 @@ export default function makeViewHelper(ViewClass) {
     Ember.assert("You can only pass attributes (such as name=value) not bare " +
                  "values to a helper for a View found in '" + ViewClass.toString() + "'", params.length === 0);
 
-    return env.helpers.view.call(this, [ViewClass], hash, options, env);
+    return env.helpers.view.helperFunction.call(this, [ViewClass], hash, options, env);
   }
 
-  helperFunc._isHTMLBars = true;
-
-  return helperFunc;
+  return new Helper(helperFunc);
 }

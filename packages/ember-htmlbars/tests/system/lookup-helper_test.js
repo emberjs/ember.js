@@ -27,13 +27,13 @@ QUnit.module('ember-htmlbars: lookupHelper hook');
 test('returns concat when helper is `concat`', function() {
   var actual = lookupHelper('concat');
 
-  equal(actual, concat, 'concat is a hard-coded helper');
+  equal(actual.helperFunction, concat, 'concat is a hard-coded helper');
 });
 
 test('returns attribute when helper is `attribute`', function() {
   var actual = lookupHelper('attribute');
 
-  equal(actual, attribute, 'attribute is a hard-coded helper');
+  equal(actual.helperFunction, attribute, 'attribute is a hard-coded helper');
 });
 
 test('looks for helpers in the provided `env.helpers`', function() {
@@ -77,12 +77,12 @@ test('does a lookup in the container if the name contains a dash (and helper is 
   };
 
   function someName() {}
-  someName._isHTMLBars = true;
+  someName.isHTMLBars = true;
   view.container.register('helper:some-name', someName);
 
   var actual = lookupHelper('some-name', view, env);
 
-  equal(actual, someName, 'does not wrap provided function if `_isHTMLBars` is truthy');
+  equal(actual, someName, 'does not wrap provided function if `isHTMLBars` is truthy');
 });
 
 test('wraps helper from container in a Handlebars compat helper', function() {
@@ -100,7 +100,7 @@ test('wraps helper from container in a Handlebars compat helper', function() {
 
   var actual = lookupHelper('some-name', view, env);
 
-  ok(actual._isHTMLBars, 'wraps provided helper in an HTMLBars compatible helper');
+  ok(actual.isHTMLBars, 'wraps provided helper in an HTMLBars compatible helper');
 
   var fakeParams = [];
   var fakeHash = {};
@@ -109,7 +109,7 @@ test('wraps helper from container in a Handlebars compat helper', function() {
     morph: { update: function() { } }
   };
   var fakeEnv = {};
-  actual(fakeParams, fakeHash, fakeOptions, fakeEnv);
+  actual.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
 
   ok(called, 'HTMLBars compatible wrapper is wraping the provided function');
 });

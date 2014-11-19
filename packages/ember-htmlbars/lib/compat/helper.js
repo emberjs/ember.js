@@ -1,8 +1,8 @@
 import merge from "ember-metal/merge";
 import helpers from "ember-htmlbars/helpers";
 
-export function makeHandlebarsCompatibleHelper(fn) {
-  function helperFunc(params, hash, options, env) {
+function HandlebarsCompatibleHelper(fn) {
+  this.helperFunction = function helperFunc(params, hash, options, env) {
     var handlebarsOptions = {};
     merge(handlebarsOptions, options);
     merge(handlebarsOptions, env);
@@ -12,20 +12,20 @@ export function makeHandlebarsCompatibleHelper(fn) {
 
     var result = fn.apply(this, args);
     options.morph.update(result);
-  }
+  };
 
-  helperFunc._preprocessArguments = function(view, params, hash, options, env) {
+  this.preprocessArguments = function(view, params, hash, options, env) {
     options._raw = {
       params: params.slice(),
       hash: merge({}, hash)
     };
   };
 
-  helperFunc._isHTMLBars = true;
-
-  return helperFunc;
+  this.isHTMLBars = true;
 }
 
 export function registerHandlebarsCompatibleHelper(name, value) {
-  helpers[name] = makeHandlebarsCompatibleHelper(value);
+  helpers[name] = new HandlebarsCompatibleHelper(value);
 }
+
+export default HandlebarsCompatibleHelper;

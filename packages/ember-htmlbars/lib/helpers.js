@@ -13,6 +13,7 @@ var helpers = { };
 import View from "ember-views/views/view";
 import Component from "ember-views/views/component";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
+import Helper from "ember-htmlbars/system/helper";
 
 /**
   Register a bound helper or custom view helper.
@@ -80,8 +81,8 @@ export function helper(name, value) {
   }
 }
 
-export function registerHelper(name, value) {
-  helpers[name] = value;
+export function registerHelper(name, helperFunc, preprocessFunction) {
+  helpers[name] = new Helper(helperFunc, preprocessFunction);
 }
 
 export default helpers;

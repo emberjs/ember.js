@@ -232,7 +232,13 @@ test("{{bindAttr}} is aliased to {{bind-attr}}", function() {
     };
 
     expectDeprecation(function() {
-      var result = helpers.bindAttr('foo', 'bar');
+      var result;
+
+      if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+        result = helpers.bindAttr.helperFunction('foo', 'bar');
+      } else {
+        result = helpers.bindAttr('foo', 'bar');
+      }
       equal(result, 'result', 'Result match');
     }, "The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
   } finally {

@@ -20,7 +20,10 @@ import {
 import { bindHelper } from "ember-htmlbars/helpers/binding";
 import { viewHelper } from "ember-htmlbars/helpers/view";
 import { yieldHelper } from "ember-htmlbars/helpers/yield";
-import { withHelper } from "ember-htmlbars/helpers/with";
+import {
+  withHelper,
+  preprocessArgumentsForWith
+} from "ember-htmlbars/helpers/with";
 import { logHelper } from "ember-htmlbars/helpers/log";
 import { debuggerHelper } from "ember-htmlbars/helpers/debugger";
 import {
@@ -39,14 +42,17 @@ import { templateHelper } from "ember-htmlbars/helpers/template";
 import { inputHelper } from "ember-htmlbars/helpers/input";
 import { textareaHelper } from "ember-htmlbars/helpers/text_area";
 import { collectionHelper } from "ember-htmlbars/helpers/collection";
-import { eachHelper } from "ember-htmlbars/helpers/each";
+import {
+  eachHelper,
+  preprocessArgumentsForEach
+} from "ember-htmlbars/helpers/each";
 import { unboundHelper } from "ember-htmlbars/helpers/unbound";
 
 registerHelper('bindHelper', bindHelper);
 registerHelper('bind', bindHelper);
 registerHelper('view', viewHelper);
 registerHelper('yield', yieldHelper);
-registerHelper('with', withHelper);
+registerHelper('with', withHelper, preprocessArgumentsForWith);
 registerHelper('if', ifHelper);
 registerHelper('unless', unlessHelper);
 registerHelper('unboundIf', unboundIfHelper);
@@ -61,7 +67,7 @@ registerHelper('bindAttr', bindAttrHelperDeprecated);
 registerHelper('input', inputHelper);
 registerHelper('textarea', textareaHelper);
 registerHelper('collection', collectionHelper);
-registerHelper('each', eachHelper);
+registerHelper('each', eachHelper, preprocessArgumentsForEach);
 registerHelper('unbound', unboundHelper);
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
