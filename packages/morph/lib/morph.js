@@ -27,6 +27,7 @@ function Morph(parent, start, end, domHelper, contextualElement) {
   this.domHelper = domHelper;
   ensureContext(contextualElement);
   this.contextualElement = contextualElement;
+  this.escaped = true;
   this.reset();
 }
 
@@ -36,7 +37,6 @@ Morph.prototype.reset = function() {
   this.morphs = null;
   this.before = null;
   this.after = null;
-  this.escaped = true;
 };
 
 Morph.prototype.parent = function () {
