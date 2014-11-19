@@ -9,9 +9,10 @@ import EmberHandlebars from 'ember-handlebars-compiler';
 import { compile as htmlbarsCompile } from 'htmlbars-compiler/compiler';
 import EmberError from 'ember-metal/error';
 import {
-  registerHelper as registerHTMLBarsHelper,
   default as htmlbarsHelpers
 } from "ember-htmlbars/helpers";
+import registerHTMLBarsHelper from "ember-htmlbars/compat/register-bound-helper";
+import htmlbarsMakeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 
 import Container from 'ember-runtime/system/container';
 
@@ -75,9 +76,6 @@ test('it should not re-render if the property changes', function() {
   });
   equal(view.$().text(), 'BORK BORK', 'should not re-render if the property changes');
 });
-
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  // need registerBoundHelper and makeBoundHelper
 
 test('it should throw the helper missing error if multiple properties are provided', function() {
   throws(function() {
@@ -224,7 +222,6 @@ test("should be able to render an unbound helper invocation for helpers with dep
   equal(view.$().text(), "SALLY SHOOBY sallytaylor shoobytaylor", "only bound values change");
 });
 
-
 test("should be able to render an unbound helper invocation in #each helper", function() {
   view = EmberView.create({
     template: compile(
@@ -247,7 +244,6 @@ test("should be able to render an unbound helper invocation in #each helper", fu
 
   equal(view.$().text(), "SHOOBY SHOOBYCINDY CINDY", "unbound rendered correctly");
 });
-
 
 test("should be able to render an unbound helper invocation with bound hash options", function() {
   try {
@@ -317,5 +313,3 @@ test("should lookup helpers in the container", function() {
 
   equal(view.$().text(), "SUCH AWESOME", "only bound values change");
 });
-
-}

@@ -46,7 +46,10 @@ import {
   eachHelper,
   preprocessArgumentsForEach
 } from "ember-htmlbars/helpers/each";
-import { unboundHelper } from "ember-htmlbars/helpers/unbound";
+import {
+  unboundHelper,
+  preprocessArgumentsForUnbound
+} from "ember-htmlbars/helpers/unbound";
 
 registerHelper('bindHelper', bindHelper);
 registerHelper('bind', bindHelper);
@@ -68,7 +71,7 @@ registerHelper('input', inputHelper);
 registerHelper('textarea', textareaHelper);
 registerHelper('collection', collectionHelper);
 registerHelper('each', eachHelper, preprocessArgumentsForEach);
-registerHelper('unbound', unboundHelper);
+registerHelper('unbound', unboundHelper, preprocessArgumentsForUnbound);
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   Ember.HTMLBars = {
