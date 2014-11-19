@@ -75,7 +75,7 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     hydrationProgram +
     indent+'    return fragment;\n' +
     indent+'  };\n' +
-    indent+'}());';
+    indent+'}())';
 
   this.templates.push(template);
 };
