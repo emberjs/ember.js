@@ -391,7 +391,16 @@ function es6Package(packageName) {
     #TODO: moar detail!!!
   */
   var dependencyTrees = packageDependencyTree(packageName);
-  var vendorTrees = packages[packageName].vendorTrees;
+  var vendorTrees = pkg.vendorTrees;
+
+  /*
+    The list of files to select. This is passed to `pickFiles` below.
+  */
+  var files = [ '**/*.js'];
+
+  if (pkg.hasTemplates) {
+    files.push('**/*.hbs');
+  }
 
   /*
     For packages that are maintained by ember we assume the following structure:
@@ -428,7 +437,7 @@ function es6Package(packageName) {
   */
   libTree = pickFiles('packages/' + packageName + '/lib', {
     srcDir: '/',
-    files: ['**/*.js'],
+    files: files,
     destDir: packageName
   });
 
@@ -448,27 +457,29 @@ function es6Package(packageName) {
     destFile: packageName + '.js'
   });
 
-  /*
-     Add templateCompiler to libTree.  This is done to ensure that the templates
-     are precompiled with the local version of `ember-handlebars-compiler` (NOT
-     the `npm` version), and includes any changes.  Specifically, so that you
-     can work on the template compiler and still have functional builds.
-  */
-  libTree = mergeTrees([libTree, templateCompilerTree]);
-
-  /*
-    Utilizing the templateCompiler to compile inline handlebars templates to
-    handlebar template functions.  This is done so that only Handlebars runtime
-    is required instead of all of Handlebars.
-  */
-  libTree = inlineTemplatePrecompiler(libTree);
-
-  // Remove templateCompiler from libTree as it is no longer needed.
-  libTree = removeFile(libTree, {
-    srcFile: 'ember-template-compiler.js'
-  });
-
   var libJSHintTree = jshintTree(libTree);
+
+  if (pkg.hasTemplates) {
+    /*
+       Add templateCompiler to libTree.  This is done to ensure that the templates
+       are precompiled with the local version of `ember-handlebars-compiler` (NOT
+       the `npm` version), and includes any changes.  Specifically, so that you
+       can work on the template compiler and still have functional builds.
+    */
+    libTree = mergeTrees([libTree, templateCompilerTree]);
+
+    /*
+      Utilizing the templateCompiler to compile inline handlebars templates to
+      handlebar template functions.  This is done so that only Handlebars runtime
+      is required instead of all of Handlebars.
+    */
+    libTree = inlineTemplatePrecompiler(libTree);
+
+    // Remove templateCompiler from libTree as it is no longer needed.
+    libTree = removeFile(libTree, {
+      srcFile: 'ember-template-compiler.js'
+    });
+  }
 
   var testTree = pickFiles('packages/' + packageName + '/tests', {
     srcDir: '/',

@@ -82,7 +82,7 @@ test("works from a template with bindings", function() {
   var select = view.get('select');
   ok(select.$().length, "Select was rendered");
   equal(select.$('option').length, 5, "Options were rendered");
-  equal(select.$().text(), "Pick a person:Yehuda KatzTom DalePeter WagenetErik Bryn", "Option values were rendered");
+  equal(select.$().text(), "Pick a person:Yehuda KatzTom DalePeter WagenetErik Bryn\n", "Option values were rendered");
   equal(select.get('selection'), null, "Nothing has been selected");
 
   run(function() {

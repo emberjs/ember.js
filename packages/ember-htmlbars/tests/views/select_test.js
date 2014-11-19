@@ -380,7 +380,7 @@ test("select with group doesn't break options", function() {
   run(function() {
     content.set('firstObject.firstName', 'Peter');
   });
-  equal(select.$().text(), 'PeterTomKeith');
+  equal(select.$().text(), 'PeterTomKeith\n');
 
   select.$('option').get(0).selected = true;
   select.$().trigger('change');

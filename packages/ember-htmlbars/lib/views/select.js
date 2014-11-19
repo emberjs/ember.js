@@ -4,7 +4,6 @@
 */
 
 import EmberHandlebars from "ember-handlebars-compiler";
-import { default as htmlbarsCompile } from 'ember-htmlbars/system/compile';
 
 import {
   forEach,
@@ -24,13 +23,15 @@ import { A as emberA } from "ember-runtime/system/native_array";
 import { observer } from "ember-metal/mixin";
 import { defineProperty } from "ember-metal/properties";
 
-import { simpleBind } from "ember-htmlbars/helpers/binding";
+import simpleBind from "ember-htmlbars/system/simple-bind";
+import handlebarsTemplate from "ember-handlebars/templates/select";
+import htmlbarsTemplate from "ember-htmlbars/templates/select";
 
-var precompileTemplate;
+var defaultTemplate;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  precompileTemplate = htmlbarsCompile;
+  defaultTemplate = htmlbarsTemplate;
 } else {
-  precompileTemplate = EmberHandlebars.compile;
+  defaultTemplate = handlebarsTemplate;
 }
 
 var SelectOption = View.extend({
@@ -40,10 +41,13 @@ var SelectOption = View.extend({
   attributeBindings: ['value', 'selected'],
 
   defaultTemplate: function(context, env, contextualElement) {
+    var options;
     if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-      simpleBind.call(context, [context.getStream('view.label')], {}, env);
+      var params = [context.getStream('view.label')];
+
+      simpleBind.call(context, params, {}, {}, env);
     } else {
-      var options = { data: env.data, hash: {} };
+      options = { data: env.data, hash: {} };
       EmberHandlebars.helpers.bind.call(context, "view.label", options);
     }
   },
@@ -347,7 +351,7 @@ var Select = View.extend({
 
   tagName: 'select',
   classNames: ['ember-select'],
-  defaultTemplate: precompileTemplate('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#if view.optionGroupPath}}{{#each group in view.groupedContent}}{{view view.groupView content=group.content label=group.label}}{{/each}}{{else}}{{#each item in view.content}}{{view view.optionView content=item}}{{/each}}{{/if}}'),
+  defaultTemplate: defaultTemplate,
   attributeBindings: ['multiple', 'disabled', 'tabindex', 'name', 'required', 'autofocus',
                       'form', 'size'],
 
