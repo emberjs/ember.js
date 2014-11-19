@@ -8,10 +8,16 @@
   @namespace Ember.HTMLBars
 */
 function Helper(helper, preprocessArguments) {
-  this.isHTMLBars = true;
   this.helperFunction = helper;
-  this.preprocessArguments = preprocessArguments || function() { };
+
+  if (preprocessArguments) {
+    this.preprocessArguments = preprocessArguments;
+  }
 }
 
+Helper.prototype = {
+  preprocessArguments: function() { },
+  isHTMLBars: true
+};
 
 export default Helper;
