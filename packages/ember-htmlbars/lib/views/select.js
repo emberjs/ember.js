@@ -22,6 +22,7 @@ import { computed } from "ember-metal/computed";
 import { A as emberA } from "ember-runtime/system/native_array";
 import { observer } from "ember-metal/mixin";
 import { defineProperty } from "ember-metal/properties";
+import run from "ember-metal/run_loop";
 
 import simpleBind from "ember-htmlbars/system/simple-bind";
 import handlebarsTemplate from "ember-handlebars/templates/select";
@@ -43,9 +44,13 @@ var SelectOption = View.extend({
   defaultTemplate: function(context, env, contextualElement) {
     var options;
     if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-      var params = [context.getStream('view.label')];
+      var lazyValue = context.getStream('view.label');
 
-      simpleBind.call(context, params, {}, {}, env);
+      lazyValue.subscribe(context._wrapAsScheduled(function() {
+        run.scheduleOnce('render', context, 'rerender');
+      }));
+
+      return lazyValue.value();
     } else {
       options = { data: env.data, hash: {} };
       EmberHandlebars.helpers.bind.call(context, "view.label", options);
