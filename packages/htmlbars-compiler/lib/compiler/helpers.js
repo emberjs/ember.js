@@ -6,6 +6,8 @@ export function prepareHelper(stack, size) {
       hashPairs = [],
       hashTypes = [],
       keyName,
+      name,
+      type,
       i;
 
   var hashSize = stack.pop();
@@ -21,10 +23,16 @@ export function prepareHelper(stack, size) {
     paramTypes.unshift(stack.pop());
   }
 
+  name = stack.pop();
+  type = stack.pop();
+
   var programId = stack.pop();
   var inverseId = stack.pop();
 
-  var options = ['paramTypes:' + array(paramTypes), 'hashTypes:' + hash(hashTypes)];
+  var options = [];
+  options.push('type:' + type);
+  options.push('paramTypes:' + array(paramTypes));
+  options.push('hashTypes:' + hash(hashTypes));
 
   if (programId !== null) {
     options.push('render:child' + programId);
@@ -35,6 +43,7 @@ export function prepareHelper(stack, size) {
   }
 
   return {
+    name: name,
     params: array(params),
     hash: hash(hashPairs),
     options: options
