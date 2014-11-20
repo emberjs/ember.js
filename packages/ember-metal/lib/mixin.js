@@ -24,7 +24,6 @@ import {
   meta as metaFor,
   wrap,
   makeArray,
-  apply,
   isArray
 } from "ember-metal/utils";
 import expandProperties from "ember-metal/expand_properties";
@@ -51,18 +50,32 @@ var a_slice = [].slice;
 
 function superFunction(){
   var func = this.__nextSuper;
-  var ret;
+
   if (func) {
-    var args = new Array(arguments.length);
-    for (var i = 0, l = args.length; i < l; i++) {
-      args[i] = arguments[i];
+    var length = arguments.length;
+
+    if (length === 0){
+      return this.__nextSuper();
+    } else if (length === 1) {
+      return this.__nextSuper(arguments[0]);
+    } else if (length === 2) {
+      return this.__nextSuper(arguments[0], arguments[1]);
+    } else {
+      return this.__nextSuper.apply(this, arguments);
     }
-    this.__nextSuper = null;
-    ret = apply(this, func, args);
-    this.__nextSuper = func;
   }
-  return ret;
 }
+
+// ensure we prime superFunction to mitigate
+// v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
+var primer = {
+  __nextSuper: function(a,b,c,d ) { }
+};
+
+superFunction.call(primer);
+superFunction.call(primer, 1);
+superFunction.call(primer, 1, 2);
+superFunction.call(primer, 1, 2, 3);
 
 function mixinsMeta(obj) {
   var m = metaFor(obj, true);

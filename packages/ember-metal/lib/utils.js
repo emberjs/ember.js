@@ -406,17 +406,35 @@ export function metaPath(obj, path, writable) {
   @param {Function} superFunc The super function.
   @return {Function} wrapped function.
 */
+
 export function wrap(func, superFunc) {
   function superWrapper() {
     var ret;
     var sup  = this && this.__nextSuper;
-    var args = new Array(arguments.length);
-    for (var i = 0, l = args.length; i < l; i++) {
-      args[i] = arguments[i];
+    var length = arguments.length;
+
+    if (this) {
+      this.__nextSuper = superFunc;
     }
-    if(this) { this.__nextSuper = superFunc; }
-    ret = apply(this, func, args);
-    if(this) { this.__nextSuper = sup; }
+
+    if (length === 0) {
+      ret = func.call(this);
+    } else if (length === 1) {
+      ret = func.call(this, arguments[0]);
+    } else if (length === 2) {
+      ret = func.call(this, arguments[0], arguments[1]);
+    } else {
+      var args = new Array(length);
+      for (var i = 0; i < length; i++) {
+        args[i] = arguments[i];
+      }
+      ret = apply(this, func, args);
+    }
+
+    if (this) {
+      this.__nextSuper = sup;
+    }
+
     return ret;
   }
 
