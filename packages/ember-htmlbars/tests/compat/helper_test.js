@@ -53,6 +53,21 @@ test('combines `env` and `options` for the wrapped helper', function() {
   compatHelper.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
 });
 
+test('adds `hash` into options `options` for the wrapped helper', function() {
+  expect(1);
+
+  function someHelper(options) {
+    equal(options.hash.bestFriend, 'Jacquie');
+  }
+
+  var compatHelper = new HandlebarsCompatibleHelper(someHelper);
+
+  fakeHash.bestFriend = 'Jacquie';
+
+  compatHelper.preprocessArguments(fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv);
+  compatHelper.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
+});
+
 test('calls morph.update with the return value from the helper', function() {
   expect(1);
 

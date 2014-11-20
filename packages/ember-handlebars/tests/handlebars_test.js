@@ -20,6 +20,8 @@ import { observersFor } from "ember-metal/observer";
 import TextField from "ember-views/views/text_field";
 import Container from "ember-runtime/system/container";
 import { create as o_create } from "ember-metal/platform";
+import { ViewHelper as handlebarsViewHelper } from "ember-handlebars/helpers/view";
+import { ViewHelper as htmlbarsViewHelper } from "ember-htmlbars/helpers/view";
 
 var trim = jQuery.trim;
 
@@ -422,6 +424,9 @@ test("child views can be inserted inside a bind block", function() {
   ok(view.$().text().match(/Hello world!.*Goodbye.*wot.*cruel.*world\!/), "parent view should appear before the child view");
 });
 
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  // HTMLBars does not throw an error when a missing helper is found
+
 test("using Handlebars helper that doesn't exist should result in an error", function() {
   var names = [{ name: 'Alex' }, { name: 'Stef' }];
   var context = { content: A(names) };
@@ -435,6 +440,8 @@ test("using Handlebars helper that doesn't exist should result in an error", fun
     appendView();
   }, "Missing helper: 'group'");
 });
+
+}
 
 test("View should update when a property changes and the bind helper is used", function() {
   container.register('template:foo', EmberHandlebars.compile('<h1 id="first">{{#with view.content as thing}}{{bind "thing.wham"}}{{/with}}</h1>'));
@@ -625,6 +632,9 @@ test("should update the block when object passed to #if helper changes and an in
   });
 });
 
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  // Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.
+
 test("edge case: child conditional should not render children if parent conditional becomes false", function() {
   var childCreated = false;
   var child = null;
@@ -657,6 +667,8 @@ test("edge case: child conditional should not render children if parent conditio
   ok(child.isDestroyed, 'child should be gone');
   equal(view.$().text(), '');
 });
+
+}
 
 test("Template views return throw if their template cannot be found", function() {
   view = EmberView.create({
@@ -970,7 +982,7 @@ test("{{view}} should not allow attributeBindings to be set", function() {
       template: EmberHandlebars.compile('{{view attributeBindings="one two"}}')
     });
     appendView();
-  }, /Setting 'attributeBindings' via Handlebars is not allowed/);
+  }, /Setting 'attributeBindings' via template helpers is not allowed/);
 });
 
 test("{{view}} should be able to point to a local view", function() {
@@ -1864,9 +1876,19 @@ test("should accept bindings as a string or an Ember.Binding", function() {
 
   EmberHandlebars.registerHelper('boogie', function(id, options) {
     options.hash = options.hash || {};
+    options.hashTypes = options.hashTypes || {};
+
     options.hash.bindingTestBinding = Binding.oneWay('context.' + id);
     options.hash.stringTestBinding = id;
-    return EmberHandlebars.ViewHelper.helper(this, viewClass, options);
+
+    var result;
+    if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+      result = htmlbarsViewHelper.helper(viewClass, options.hash, options, options);
+    } else {
+      result = handlebarsViewHelper.helper(this, viewClass, options);
+    }
+
+    return result;
   });
 
   view = EmberView.create({
@@ -1898,6 +1920,9 @@ test("should teardown observers from bound properties on rerender", function() {
   equal(observersFor(view, 'foo').length, 1);
 });
 
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  // need https://github.com/tildeio/htmlbars/pull/150 to handle HTML Comments
+
 test("should provide a helpful assertion for bindings within HTML comments", function() {
   view = EmberView.create({
     template: EmberHandlebars.compile('<!-- {{view.someThing}} -->'),
@@ -1909,3 +1934,5 @@ test("should provide a helpful assertion for bindings within HTML comments", fun
     appendView();
   }, 'An error occured while setting up template bindings. Please check "blahzorz" template for invalid markup or bindings within HTML comments.');
 });
+
+}
