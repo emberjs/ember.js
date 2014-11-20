@@ -24,14 +24,44 @@ TemplateCompiler.prototype.compile = function(ast) {
   return this.templates.pop();
 };
 
-TemplateCompiler.prototype.startProgram = function(program, childTemplateCount, blankChildTextNodes) {
-  this.fragmentOpcodeCompiler.startProgram(program, childTemplateCount, blankChildTextNodes);
-  this.hydrationOpcodeCompiler.startProgram(program, childTemplateCount, blankChildTextNodes);
+TemplateCompiler.prototype.startProgram = function(program, childTemplateCount, blankChildTextNodes, scopeVars) {
+  this.fragmentOpcodeCompiler.startProgram(program, childTemplateCount, blankChildTextNodes, scopeVars);
+  this.hydrationOpcodeCompiler.startProgram(program, childTemplateCount, blankChildTextNodes, scopeVars);
 
   this.childTemplates.length = 0;
   while(childTemplateCount--) {
     this.childTemplates.push(this.templates.pop());
   }
+};
+
+TemplateCompiler.prototype.getScopeVars = function(indent, blockParams) {
+  var vars = '';
+  if (blockParams) {
+    for (var i = 0; i < blockParams.length; i++) {
+      vars += indent + 'var $' + blockParams[i] + ';\n';
+    }
+  }
+  return vars;
+};
+
+TemplateCompiler.prototype.getChildTemplateVars = function(indent) {
+  var vars = '';
+  if (this.childTemplates) {
+    for (var i = 0; i < this.childTemplates.length; i++) {
+      vars += indent + 'var child' + i + ' = ' + this.childTemplates[i] + '\n';
+    }
+  }
+  return vars;
+};
+
+TemplateCompiler.prototype.getScopeAssignments = function(indent, blockParams) {
+  var assignments = '';
+  if (blockParams) {
+    for (var i = 0; i < blockParams.length; i++) {
+      assignments += indent + '$' + blockParams[i] + ' = blockArguments[' + i + '];\n';
+    }
+  }
+  return assignments;
 };
 
 TemplateCompiler.prototype.endProgram = function(program, programDepth) {
@@ -55,18 +85,23 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     options
   );
 
-  var childTemplateVars = "";
-  for (var i=0, l=this.childTemplates.length; i<l; i++) {
-    childTemplateVars += indent+'  var child' + i + ' = ' + this.childTemplates[i] + '\n';
+  var blockParams = program.blockParams;
+  var hasBlockParams = blockParams && blockParams.length > 0;
+
+  var templateSignature = 'context, env, contextualElement';
+  if (hasBlockParams) {
+    templateSignature += ', blockArguments';
   }
 
   var template =
     '(function() {\n' +
-    childTemplateVars +
+    this.getScopeVars(indent + '  ', blockParams) +
+    this.getChildTemplateVars(indent + '  ') +
     fragmentProgram +
     indent+'  var cachedFragment;\n' +
-    indent+'  return function template(context, env, contextualElement) {\n' +
-    indent+'    var dom = env.dom, hooks = env.hooks;\n' +
+    indent+'  return function template(' + templateSignature + ') {\n' +
+    indent+'    var dom = env.dom, hooks = env.hooks, get = env.get;\n' +
+    this.getScopeAssignments(indent + '    ', blockParams) +
     indent+'    dom.detectNamespace(contextualElement);\n' +
     indent+'    if (cachedFragment === undefined) {\n' +
     indent+'      cachedFragment = build(dom);\n' +

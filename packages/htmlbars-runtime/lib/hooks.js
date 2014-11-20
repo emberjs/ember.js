@@ -5,7 +5,11 @@ export function content(morph, helperName, context, params, hash, options, env) 
   if (helper) {
     value = helper.call(context, params, hash, options, env);
   } else {
-    value = this.simple(context, helperName, options);
+    if (options.type === 'value') {
+      value = helperName;
+    } else {
+      value = this.simple(context, helperName, options);
+    }
   }
   morph.update(value);
 }
