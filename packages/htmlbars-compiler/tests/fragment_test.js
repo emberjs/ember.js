@@ -103,7 +103,7 @@ test('hydrates a fragment with morph mustaches', function () {
   equal(foo.path, 'foo');
   deepEqual(foo.params, ["foo",3,"blah"]);
   deepEqual(foo.hash, {ack:"syn",bar:"baz"});
-  deepEqual(foo.options.types, ["string","number","id"]);
+  deepEqual(foo.options.paramTypes, ["string","number","id"]);
   deepEqual(foo.options.hashTypes, {ack:"string",bar:"id"});
 
   var baz = contentResolves[1];

@@ -58,6 +58,17 @@ prototype.id = function(parts) {
   this.stack.push(string(parts.join('.')));
 };
 
+prototype.scopeId = function(parts) {
+  this.stack.push(string('value'));
+  var id = '$' + parts[0];
+  var path = parts.slice(1).join('.');
+  if (parts.length === 1) {
+    this.stack.push(id);
+  } else {
+    this.stack.push('get(' + id + ', ' + string(path) + ')');
+  }
+};
+
 prototype.literal = function(literal) {
   this.stack.push(string(typeof literal));
   this.stack.push(literal);
@@ -72,46 +83,51 @@ prototype.stackLiteral = function(literal) {
   this.stack.push(literal);
 };
 
-prototype.helper = function(name, size, morphNum) {
+prototype.helper = function(size, morphNum) {
   var prepared = prepareHelper(this.stack, size);
   prepared.options.push('morph:morph'+morphNum);
-  this.pushMustacheInContent(string(name), prepared.args, prepared.hash, prepared.options, morphNum);
+  this.pushMustacheInContent(prepared.name, prepared.params, prepared.hash, prepared.options, morphNum);
 };
 
-prototype.component = function(tag, morphNum) {
+prototype.component = function(morphNum) {
   var prepared = prepareHelper(this.stack, 0);
   prepared.options.push('morph:morph'+morphNum);
-  this.pushComponent(string(tag), prepared.hash, prepared.options, morphNum);
+  this.pushComponent(prepared.name, prepared.hash, prepared.options, morphNum);
 };
 
-prototype.ambiguous = function(str, morphNum) {
+prototype.ambiguous = function(morphNum) {
+  var name = this.stack.pop();
+  var type = this.stack.pop();
   var options = [];
+  options.push('type:'+type);
   options.push('morph:morph'+morphNum);
-  this.pushMustacheInContent(string(str), '[]', '{}', options, morphNum);
+  this.pushMustacheInContent(name, '[]', '{}', options, morphNum);
 };
 
-prototype.ambiguousAttr = function(str) {
-  this.stack.push('['+string(str)+', [], {}]');
+prototype.ambiguousAttr = function() {
+  var name = this.stack.pop();
+  var type = this.stack.pop();
+  this.stack.push('[' + name + ', [], {}, { type: ' + type + ' }]');
 };
 
-prototype.helperAttr = function(name, size) {
+prototype.helperAttr = function(size) {
   var prepared = prepareHelper(this.stack, size);
-  this.stack.push('['+string(name)+','+prepared.args+','+ prepared.hash +',' + hash(prepared.options)+']');
+  this.stack.push('['+prepared.name+','+prepared.params+','+ prepared.hash +',' + hash(prepared.options)+']');
 };
 
-prototype.sexpr = function(name, size) {
+prototype.sexpr = function(size) {
   var prepared = prepareHelper(this.stack, size);
-  this.stack.push('hooks.subexpr(' + string(name) + ', context, ' + prepared.args + ', ' + prepared.hash + ',' + hash(prepared.options) + ', env)');
+  this.stack.push('hooks.subexpr(' + prepared.name + ', context, ' + prepared.params + ', ' + prepared.hash + ',' + hash(prepared.options) + ', env)');
 };
 
 prototype.string = function(str) {
   this.stack.push(string(str));
 };
 
-prototype.nodeHelper = function(name, size, elementNum) {
+prototype.nodeHelper = function(size, elementNum) {
   var prepared = prepareHelper(this.stack, size);
   prepared.options.push('element:element'+elementNum);
-  this.pushMustacheInNode(string(name), prepared.args, prepared.hash, prepared.options, elementNum);
+  this.pushMustacheInNode(prepared.name, prepared.params, prepared.hash, prepared.options, elementNum);
 };
 
 prototype.morph = function(num, parentPath, startIndex, endIndex, escaped) {
