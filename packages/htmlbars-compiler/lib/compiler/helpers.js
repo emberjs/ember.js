@@ -1,7 +1,7 @@
 import { array, hash } from "./quoting";
 
 export function prepareHelper(stack, size) {
-  var args = [],
+  var params = [],
       paramTypes = [],
       hashPairs = [],
       hashTypes = [],
@@ -17,7 +17,7 @@ export function prepareHelper(stack, size) {
   }
 
   for (i=0; i<size; i++) {
-    args.unshift(stack.pop());
+    params.unshift(stack.pop());
     paramTypes.unshift(stack.pop());
   }
 
@@ -35,8 +35,8 @@ export function prepareHelper(stack, size) {
   }
 
   return {
-    options: options,
-    args: array(args),
-    hash: hash(hashPairs)
+    params: array(params),
+    hash: hash(hashPairs),
+    options: options
   };
 }
