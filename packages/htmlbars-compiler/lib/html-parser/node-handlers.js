@@ -7,7 +7,7 @@ var nodeHandlers = {
 
   program: function(program) {
     var statements = [];
-    var node = new ProgramNode(statements, program.strip);
+    var node = new ProgramNode(statements, program.blockParams || null, program.strip);
     var i, l = program.statements.length;
 
     this.elementStack.push(node);

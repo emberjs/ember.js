@@ -5,7 +5,11 @@ export function content(morph, helperName, context, params, hash, options, env) 
   if (helper) {
     value = helper.call(context, params, hash, options, env);
   } else {
-    value = this.simple(context, helperName, options);
+    if (options.type === 'value') {
+      value = helperName;
+    } else {
+      value = this.simple(context, helperName, options);
+    }
   }
   morph.update(value);
 }
@@ -56,7 +60,7 @@ export function attribute(params, hash, options /*, env*/) {
 export function concat(params, hash, options /*, env*/) {
   var value = "";
   for (var i = 0, l = params.length; i < l; i++) {
-    if (options.types[i] === 'id') {
+    if (options.paramTypes[i] === 'id') {
       value += this.simple(this, params[i], options);
     } else {
       value += params[i];

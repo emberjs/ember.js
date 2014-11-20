@@ -6,9 +6,10 @@ export var HashNode = AST.HashNode;
 export var IdNode = AST.IdNode;
 export var StringNode = AST.StringNode;
 
-export function ProgramNode(statements, strip) {
+export function ProgramNode(statements, blockParams, strip) {
   this.type = 'program';
   this.statements = statements;
+  this.blockParams = blockParams;
   this.strip = strip;
 }
 

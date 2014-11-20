@@ -74,12 +74,12 @@ function block(mustache, program, inverse) {
   return new BlockNode(mustache, program, inverse || null);
 }
 
-function program(children) {
-  return new ProgramNode(children || []);
+function program(children, blockParams) {
+  return new ProgramNode(children || [], blockParams || null);
 }
 
 function root(children) {
-  return program(children || [], {});
+  return program(children || []);
 }
 
 function removeLocInfoAndStrip(obj) {
