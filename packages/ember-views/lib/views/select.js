@@ -558,15 +558,15 @@ var Select = View.extend({
     }
   }),
 
-
-  _triggerChange: function() {
+  _setDefaults: function() {
     var selection = get(this, 'selection');
     var value = get(this, 'value');
 
     if (!isNone(selection)) { this.selectionDidChange(); }
     if (!isNone(value)) { this.valueDidChange(); }
-
-    this._change();
+    if (isNone(selection)) {
+      this._change();
+    }
   },
 
   _changeSingle: function() {
@@ -580,7 +580,6 @@ var Select = View.extend({
     if (prompt) { selectedIndex -= 1; }
     set(this, 'selection', content.objectAt(selectedIndex));
   },
-
 
   _changeMultiple: function() {
     var options = this.$('option:selected');
@@ -605,11 +604,25 @@ var Select = View.extend({
   },
 
   _selectionDidChangeSingle: function() {
-    var el = this.get('element');
-    if (!el) { return; }
-
     var content = get(this, 'content');
     var selection = get(this, 'selection');
+    var self = this;
+    if (selection && selection.then) {
+      selection.then(function(resolved) {
+        // Ensure that we don't overwrite a new selection
+        if (self.get('selection') === selection) {
+          self._setSelectionIndex(content, resolved);
+        }
+      });
+    } else {
+      this._setSelectionIndex(content, selection);
+    }
+  },
+
+  _setSelectionIndex: function(content, selection) {
+    var el = get(this, 'element');
+    if (!el) { return; }
+
     var selectionIndex = content ? indexOf(content, selection) : -1;
     var prompt = get(this, 'prompt');
 
@@ -636,7 +649,7 @@ var Select = View.extend({
 
   init: function() {
     this._super();
-    this.on("didInsertElement", this, this._triggerChange);
+    this.on("didInsertElement", this, this._setDefaults);
     this.on("change", this, this._change);
   }
 });
