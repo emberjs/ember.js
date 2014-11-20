@@ -59,6 +59,11 @@ export function TextNode(chars) {
   this.chars = chars;
 }
 
+export function CommentNode(chars) {
+  this.type = 'comment';
+  this.chars = chars;
+}
+
 export function childrenFor(node) {
   if (node.type === 'program') {
     return node.statements;
