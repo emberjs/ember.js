@@ -1,9 +1,17 @@
-import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
+import Namespace from 'ember-runtime/system/namespace';
+import Container from 'ember-runtime/system/container';
 import EmberView from "ember-views/views/view";
 import ObjectProxy from "ember-runtime/system/object_proxy";
+import EmberObject from "ember-runtime/system/object";
+import _MetamorphView from 'ember-views/views/metamorph_view';
 import EmberHandlebars from "ember-handlebars";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
+
+import { set } from 'ember-metal/property_set';
+import { fmt } from 'ember-runtime/system/string';
+import { typeOf } from 'ember-metal/utils';
+import { forEach } from 'ember-metal/enumerable_utils';
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -16,15 +24,33 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-var view;
+var originalLookup = Ember.lookup;
+
+var view, lookup, container, TemplateTests;
 
 QUnit.module("ember-htmlbars: {{#if}} and {{#unless}} helpers", {
+  setup: function() {
+    Ember.lookup = lookup = {};
+    lookup.TemplateTests = TemplateTests = Namespace.create();
+    container = new Container();
+    container.optionsForType('template', { instantiate: false });
+    container.register('view:default', _MetamorphView);
+    container.register('view:toplevel', EmberView.extend());
+  },
+
   teardown: function() {
     run(function() {
+      if (container) {
+        container.destroy();
+      }
       if (view) {
         view.destroy();
       }
+      container = view = null;
     });
+
+    Ember.lookup = lookup = originalLookup;
+    TemplateTests = null;
   }
 });
 
@@ -195,4 +221,442 @@ test("The `if` helper ignores a controller option", function() {
   appendView(view);
 
   equal(lookupCalled, false, 'controller option should NOT be used');
+});
+
+test('should not update boundIf if truthiness does not change', function() {
+  var renderCount = 0;
+
+  view = EmberView.create({
+    template: compile('<h1 id="first">{{#boundIf "view.shouldDisplay"}}{{view view.InnerViewClass}}{{/boundIf}}</h1>'),
+
+    shouldDisplay: true,
+
+    InnerViewClass: EmberView.extend({
+      template: compile('bam'),
+
+      render: function() {
+        renderCount++;
+        return this._super.apply(this, arguments);
+      }
+    })
+  });
+
+  appendView(view);
+
+  equal(renderCount, 1, 'precond - should have rendered once');
+  equal(view.$('#first').text(), 'bam', 'renders block when condition is true');
+
+  run(function() {
+    set(view, 'shouldDisplay', 1);
+  });
+
+  equal(renderCount, 1, 'should not have rerendered');
+  equal(view.$('#first').text(), 'bam', 'renders block when condition is true');
+});
+
+test('should update the block when object passed to #unless helper changes', function() {
+  container.register('template:advice', compile('<h1>{{#unless view.onDrugs}}{{view.doWellInSchool}}{{/unless}}</h1>'));
+
+  view = EmberView.create({
+    container: container,
+    templateName: 'advice',
+
+    onDrugs: true,
+    doWellInSchool: 'Eat your vegetables'
+  });
+
+  appendView(view);
+
+  equal(view.$('h1').text(), '', 'hides block if true');
+
+  var tests = [false, null, undefined, [], '', 0];
+
+  forEach(tests, function(val) {
+    run(function() {
+      set(view, 'onDrugs', val);
+    });
+
+    equal(view.$('h1').text(), 'Eat your vegetables', fmt('renders block when conditional is "%@"; %@', [String(val), typeOf(val)]));
+
+    run(function() {
+      set(view, 'onDrugs', true);
+    });
+
+    equal(view.$('h1').text(), '', 'precond - hides block when conditional is true');
+  });
+});
+
+test('properties within an if statement should not fail on re-render', function() {
+  view = EmberView.create({
+    template: compile('{{#if view.value}}{{view.value}}{{/if}}'),
+    value: null
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), '');
+
+  run(function() {
+    view.set('value', 'test');
+  });
+
+  equal(view.$().text(), 'test');
+
+  run(function() {
+    view.set('value', null);
+  });
+
+  equal(view.$().text(), '');
+});
+
+test('views within an if statement should be sane on re-render', function() {
+  view = EmberView.create({
+    template: compile('{{#if view.display}}{{input}}{{/if}}'),
+    display: false
+  });
+
+  appendView(view);
+
+  equal(view.$('input').length, 0);
+
+  run(function() {
+    // Setting twice will trigger the observer twice, this is intentional
+    view.set('display', true);
+    view.set('display', 'yes');
+  });
+
+  var textfield = view.$('input');
+  equal(textfield.length, 1);
+
+  // Make sure the view is still registered in View.views
+  ok(EmberView.views[textfield.attr('id')]);
+});
+
+test('should update the block when object passed to #if helper changes', function() {
+  container.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
+
+  view = EmberView.create({
+    container: container,
+    templateName: 'menu',
+
+    INCEPTION: 'BOOOOOOOONG doodoodoodoodooodoodoodoo',
+    inception: 'OOOOoooooOOOOOOooooooo'
+  });
+
+  appendView(view);
+
+  equal(view.$('h1').text(), 'BOOOOOOOONG doodoodoodoodooodoodoodoo', 'renders block if a string');
+
+  var tests = [false, null, undefined, [], '', 0];
+
+  forEach(tests, function(val) {
+    run(function() {
+      set(view, 'inception', val);
+    });
+
+    equal(view.$('h1').text(), '', fmt('hides block when conditional is "%@"', [String(val)]));
+
+    run(function() {
+      set(view, 'inception', true);
+    });
+
+    equal(view.$('h1').text(), 'BOOOOOOOONG doodoodoodoodooodoodoodoo', 'precond - renders block when conditional is true');
+  });
+});
+
+test('should update the block when object passed to #if helper changes and an inverse is supplied', function() {
+  container.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{else}}{{view.SAD}}{{/if}}</h1>'));
+
+  view = EmberView.create({
+    container: container,
+    templateName: 'menu',
+
+    INCEPTION: 'BOOOOOOOONG doodoodoodoodooodoodoodoo',
+    inception: false,
+    SAD: 'BOONG?'
+  });
+
+  appendView(view);
+
+  equal(view.$('h1').text(), 'BOONG?', 'renders alternate if false');
+
+  run(function() { set(view, 'inception', true); });
+
+  var tests = [false, null, undefined, [], '', 0];
+
+  forEach(tests, function(val) {
+    run(function() {
+      set(view, 'inception', val);
+    });
+
+    equal(view.$('h1').text(), 'BOONG?', fmt('renders alternate if %@', [String(val)]));
+
+    run(function() {
+      set(view, 'inception', true);
+    });
+
+    equal(view.$('h1').text(), 'BOOOOOOOONG doodoodoodoodooodoodoodoo', 'precond - renders block when conditional is true');
+  });
+});
+
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+test('edge case: child conditional should not render children if parent conditional becomes false', function() {
+  var childCreated = false;
+  var child = null;
+
+  view = EmberView.create({
+    cond1: true,
+    cond2: false,
+    viewClass: EmberView.extend({
+      init: function() {
+        this._super();
+        childCreated = true;
+        child = this;
+      }
+    }),
+    template: compile('{{#if view.cond1}}{{#if view.cond2}}{{#view view.viewClass}}test{{/view}}{{/if}}{{/if}}')
+  });
+
+  appendView(view);
+
+  ok(!childCreated, 'precondition');
+
+  run(function() {
+    // The order of these sets is important for the test
+    view.set('cond2', true);
+    view.set('cond1', false);
+  });
+
+  // TODO: Priority Queue, for now ensure correct result.
+  //ok(!childCreated, 'child should not be created');
+  ok(child.isDestroyed, 'child should be gone');
+  equal(view.$().text(), '');
+});
+}
+
+test('views within an if statement should be sane on re-render', function() {
+  view = EmberView.create({
+    template: compile('{{#if view.display}}{{input}}{{/if}}'),
+    display: false
+  });
+
+  appendView(view);
+
+  equal(view.$('input').length, 0);
+
+  run(function() {
+    // Setting twice will trigger the observer twice, this is intentional
+    view.set('display', true);
+    view.set('display', 'yes');
+  });
+
+  var textfield = view.$('input');
+  equal(textfield.length, 1);
+
+  // Make sure the view is still registered in View.views
+  ok(EmberView.views[textfield.attr('id')]);
+});
+
+test('the {{this}} helper should not fail on removal', function() {
+  view = EmberView.create({
+    context: 'abc',
+    template: compile('{{#if view.show}}{{this}}{{/if}}'),
+    show: true
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'abc', 'should start property - precond');
+
+  run(function() {
+    view.set('show', false);
+  });
+
+  equal(view.$().text(), '');
+});
+
+test('should update the block when object passed to #unless helper changes', function() {
+  container.register('template:advice', compile('<h1>{{#unless view.onDrugs}}{{view.doWellInSchool}}{{/unless}}</h1>'));
+
+  view = EmberView.create({
+    container: container,
+    templateName: 'advice',
+
+    onDrugs: true,
+    doWellInSchool: 'Eat your vegetables'
+  });
+
+  appendView(view);
+
+  equal(view.$('h1').text(), '', 'hides block if true');
+
+  var tests = [false, null, undefined, [], '', 0];
+
+  forEach(tests, function(val) {
+    run(function() {
+      set(view, 'onDrugs', val);
+    });
+
+    equal(view.$('h1').text(), 'Eat your vegetables', fmt('renders block when conditional is "%@"; %@', [String(val), typeOf(val)]));
+
+    run(function() {
+      set(view, 'onDrugs', true);
+    });
+
+    equal(view.$('h1').text(), '', 'precond - hides block when conditional is true');
+  });
+});
+
+test('properties within an if statement should not fail on re-render', function() {
+  view = EmberView.create({
+    template: compile('{{#if view.value}}{{view.value}}{{/if}}'),
+    value: null
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), '');
+
+  run(function() {
+    view.set('value', 'test');
+  });
+
+  equal(view.$().text(), 'test');
+
+  run(function() {
+    view.set('value', null);
+  });
+
+  equal(view.$().text(), '');
+});
+
+test('views within an if statement should be sane on re-render', function() {
+  view = EmberView.create({
+    template: compile('{{#if view.display}}{{input}}{{/if}}'),
+    display: false
+  });
+
+  appendView(view);
+
+  equal(view.$('input').length, 0);
+
+  run(function() {
+    // Setting twice will trigger the observer twice, this is intentional
+    view.set('display', true);
+    view.set('display', 'yes');
+  });
+
+  var textfield = view.$('input');
+  equal(textfield.length, 1);
+
+  // Make sure the view is still registered in View.views
+  ok(EmberView.views[textfield.attr('id')]);
+});
+
+test('should update the block when object passed to #if helper changes', function() {
+  container.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
+
+  view = EmberView.create({
+    container: container,
+    templateName: 'menu',
+
+    INCEPTION: 'BOOOOOOOONG doodoodoodoodooodoodoodoo',
+    inception: 'OOOOoooooOOOOOOooooooo'
+  });
+
+  appendView(view);
+
+  equal(view.$('h1').text(), 'BOOOOOOOONG doodoodoodoodooodoodoodoo', 'renders block if a string');
+
+  var tests = [false, null, undefined, [], '', 0];
+
+  forEach(tests, function(val) {
+    run(function() {
+      set(view, 'inception', val);
+    });
+
+    equal(view.$('h1').text(), '', fmt('hides block when conditional is "%@"', [String(val)]));
+
+    run(function() {
+      set(view, 'inception', true);
+    });
+
+    equal(view.$('h1').text(), 'BOOOOOOOONG doodoodoodoodooodoodoodoo', 'precond - renders block when conditional is true');
+  });
+});
+
+test('should update the block when object passed to #if helper changes and an inverse is supplied', function() {
+  container.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{else}}{{view.SAD}}{{/if}}</h1>'));
+
+  view = EmberView.create({
+    container: container,
+    templateName: 'menu',
+
+    INCEPTION: 'BOOOOOOOONG doodoodoodoodooodoodoodoo',
+    inception: false,
+    SAD: 'BOONG?'
+  });
+
+  appendView(view);
+
+  equal(view.$('h1').text(), 'BOONG?', 'renders alternate if false');
+
+  run(function() { set(view, 'inception', true); });
+
+  var tests = [false, null, undefined, [], '', 0];
+
+  forEach(tests, function(val) {
+    run(function() {
+      set(view, 'inception', val);
+    });
+
+    equal(view.$('h1').text(), 'BOONG?', fmt('renders alternate if %@', [String(val)]));
+
+    run(function() {
+      set(view, 'inception', true);
+    });
+
+    equal(view.$('h1').text(), 'BOOOOOOOONG doodoodoodoodooodoodoodoo', 'precond - renders block when conditional is true');
+  });
+});
+
+test('views within an if statement should be sane on re-render', function() {
+  view = EmberView.create({
+    template: compile('{{#if view.display}}{{input}}{{/if}}'),
+    display: false
+  });
+
+  appendView(view);
+
+  equal(view.$('input').length, 0);
+
+  run(function() {
+    // Setting twice will trigger the observer twice, this is intentional
+    view.set('display', true);
+    view.set('display', 'yes');
+  });
+
+  var textfield = view.$('input');
+  equal(textfield.length, 1);
+
+  // Make sure the view is still registered in View.views
+  ok(EmberView.views[textfield.attr('id')]);
+});
+
+test('the {{this}} helper should not fail on removal', function() {
+  view = EmberView.create({
+    context: 'abc',
+    template: compile('{{#if view.show}}{{this}}{{/if}}'),
+    show: true
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'abc', 'should start property - precond');
+
+  run(function() {
+    view.set('show', false);
+  });
+
+  equal(view.$().text(), '');
 });
