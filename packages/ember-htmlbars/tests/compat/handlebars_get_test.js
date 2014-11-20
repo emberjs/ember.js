@@ -3,10 +3,19 @@ import _MetamorphView from "ember-views/views/metamorph_view";
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import EmberHandlebars from "ember-handlebars";
-import { handlebarsGet } from "ember-handlebars/ext";
+import handlebarsGet from "ember-htmlbars/compat/handlebars-get";
 import Container from "ember-runtime/system/container";
 
-var compile = EmberHandlebars.compile;
+import EmberHandlebars from "ember-handlebars";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
+
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
+
 var originalLookup = Ember.lookup;
 var TemplateTests, container, lookup, view;
 
@@ -14,7 +23,7 @@ function appendView() {
   run(view, 'appendTo', '#qunit-fixture');
 }
 
-QUnit.module("Ember.Handlebars.get", {
+QUnit.module("ember-htmlbars: Ember.Handlebars.get", {
   setup: function() {
     Ember.lookup = lookup = {};
     container = new Container();
