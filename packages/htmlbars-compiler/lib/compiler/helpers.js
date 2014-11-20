@@ -2,7 +2,7 @@ import { array, hash } from "./quoting";
 
 export function prepareHelper(stack, size) {
   var args = [],
-      types = [],
+      paramTypes = [],
       hashPairs = [],
       hashTypes = [],
       keyName,
@@ -18,13 +18,13 @@ export function prepareHelper(stack, size) {
 
   for (i=0; i<size; i++) {
     args.unshift(stack.pop());
-    types.unshift(stack.pop());
+    paramTypes.unshift(stack.pop());
   }
 
   var programId = stack.pop();
   var inverseId = stack.pop();
 
-  var options = ['types:' + array(types), 'hashTypes:' + hash(hashTypes)];
+  var options = ['paramTypes:' + array(paramTypes), 'hashTypes:' + hash(hashTypes)];
 
   if (programId !== null) {
     options.push('render:child' + programId);

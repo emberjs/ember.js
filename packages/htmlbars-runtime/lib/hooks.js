@@ -56,7 +56,7 @@ export function attribute(params, hash, options /*, env*/) {
 export function concat(params, hash, options /*, env*/) {
   var value = "";
   for (var i = 0, l = params.length; i < l; i++) {
-    if (options.types[i] === 'id') {
+    if (options.paramTypes[i] === 'id') {
       value += this.simple(this, params[i], options);
     } else {
       value += params[i];
