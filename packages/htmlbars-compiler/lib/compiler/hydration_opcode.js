@@ -32,13 +32,14 @@ HydrationOpcodeCompiler.prototype.compile = function(ast) {
   return this.opcodes;
 };
 
-HydrationOpcodeCompiler.prototype.startProgram = function(p, c, blankChildTextNodes) {
+HydrationOpcodeCompiler.prototype.startProgram = function(program, c, blankChildTextNodes, scopeVars) {
   this.opcodes.length = 0;
   this.paths.length = 0;
   this.morphs.length = 0;
   this.templateId = 0;
   this.currentDOMChildIndex = -1;
   this.morphNum = 0;
+  this.scopeVars = scopeVars;
 
   if (blankChildTextNodes.length > 0){
     this.opcode( 'repairClonedNode',
@@ -203,7 +204,11 @@ HydrationOpcodeCompiler.prototype.mustacheInAttr = function(mustache) {
 };
 
 HydrationOpcodeCompiler.prototype.ID = function(id) {
-  this.opcode('id', id.parts);
+  if (id.parts.length > 0 && this.scopeVars[id.parts[0]]) {
+    this.opcode('scopeId', id.parts);
+  } else {
+    this.opcode('id', id.parts);
+  }
 };
 
 HydrationOpcodeCompiler.prototype.STRING = function(string) {

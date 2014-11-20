@@ -865,6 +865,28 @@ test("Simple elements can have dashed attributes", function() {
   equalTokens(fragment, '<div aria-label="foo">content</div>');
 });
 
+test("Block params", function() {
+  registerHelper('a', function(params, hash, options, env) {
+    var span = document.createElement('span');
+    span.appendChild(options.render(this, env, document.body, ['W', 'X1']));
+    return 'A(' + span.innerHTML + ')';
+  });
+  registerHelper('b', function(params, hash, options, env) {
+    var span = document.createElement('span');
+    span.appendChild(options.render(this, env, document.body, ['X2', 'Y']));
+    return 'B(' + span.innerHTML + ')';
+  });
+  registerHelper('c', function(params, hash, options, env) {
+    var span = document.createElement('span');
+    span.appendChild(options.render(this, env, document.body, ['Z']));
+    return 'C(' + span.innerHTML + ')';
+    // return "C(" + options.render() + ")";
+  });
+  var t = '{{#a as |w x|}}{{w}},{{x}} {{#b as |x y|}}{{x}},{{y}}{{/b}} {{w}},{{x}} {{#c as |z|}}{{x}},{{z}}{{/c}}{{/a}}';
+
+  compilesTo(t, 'A(W,X1 B(X2,Y) W,X1 C(X1,Z))', {});
+});
+
 if (document.createElement('div').namespaceURI) {
 
 QUnit.module("HTML-based compiler (output, svg)", {

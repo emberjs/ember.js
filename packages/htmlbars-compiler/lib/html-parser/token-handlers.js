@@ -103,7 +103,7 @@ var tokenHandlers = {
     if (element.tag.indexOf("-") === -1) {
       appendChild(parent, element);
     } else {
-      var program = new ProgramNode(element.children, { left: false, right: false });
+      var program = new ProgramNode(element.children, null, { left: false, right: false });
       postprocessProgram(program);
       var component = new ComponentNode(element.tag, element.attributes, program);
       appendChild(parent, component);
