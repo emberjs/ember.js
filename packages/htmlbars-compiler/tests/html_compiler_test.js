@@ -304,8 +304,8 @@ test("The compiler can handle multiple invocations of sexprs", function() {
   }
 
   registerHelper('testing', function(params, hash, options) {
-    return evalParam(this, params[0], options.types[0]) +
-           evalParam(this, params[1], options.types[1]);
+    return evalParam(this, params[0], options.paramTypes[0]) +
+           evalParam(this, params[1], options.paramTypes[1]);
   });
 
   compilesTo('<div>{{testing (testing "hello" foo) (testing (testing bar "lol") baz)}}</div>', '<div>helloFOOBARlolBAZ</div>', { foo: "FOO", bar: "BAR", baz: "BAZ" });
@@ -313,7 +313,7 @@ test("The compiler can handle multiple invocations of sexprs", function() {
 
 test("The compiler tells helpers what kind of expression the path is", function() {
   registerHelper('testing', function(params, hash, options) {
-    return options.types[0] + '-' + params[0];
+    return options.paramTypes[0] + '-' + params[0];
   });
 
   compilesTo('<div>{{testing "title"}}</div>', '<div>string-title</div>');
@@ -330,7 +330,7 @@ test("The compiler passes along the hash arguments", function() {
   compilesTo('<div>{{testing first="one" second="two"}}</div>', '<div>one-two</div>');
 });
 
-test("The compiler passes along the types of the hash arguments", function() {
+test("The compiler passes along the paramTypes of the hash arguments", function() {
   registerHelper('testing', function(params, hash, options) {
     return options.hashTypes.first + '-' + hash.first;
   });
@@ -542,7 +542,7 @@ test("Attribute helpers can use the hash for data binding", function() {
 */
 test("Attributes containing multiple helpers are treated like a block", function() {
   registerHelper('testing', function(params, hash, options) {
-    if (options.types[0] === 'id') {
+    if (options.paramTypes[0] === 'id') {
       return this[params[0]];
     } else {
       return params[0];
@@ -615,7 +615,7 @@ test("Attribute runs can contain helpers", function() {
     return boundValue(function(c) {
       callbacks.push(c);
 
-      if (options.types[0] === 'id') {
+      if (options.paramTypes[0] === 'id') {
         return this[path] + '.html';
       } else {
         return path;
