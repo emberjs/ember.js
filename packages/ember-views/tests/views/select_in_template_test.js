@@ -7,7 +7,7 @@ import { computed } from "ember-metal/computed";
 import Namespace from "ember-runtime/system/namespace";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import ArrayProxy from "ember-runtime/system/array_proxy";
-import SelectView from "ember-htmlbars/views/select";
+import SelectView from "ember-views/views/select";
 import EmberHandlebars from 'ember-handlebars-compiler';
 import { default as htmlbarsCompile } from 'ember-htmlbars/system/compile';
 

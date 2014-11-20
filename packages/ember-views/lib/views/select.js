@@ -24,7 +24,6 @@ import { observer } from "ember-metal/mixin";
 import { defineProperty } from "ember-metal/properties";
 import run from "ember-metal/run_loop";
 
-import simpleBind from "ember-htmlbars/system/simple-bind";
 import handlebarsTemplate from "ember-handlebars/templates/select";
 import htmlbarsTemplate from "ember-htmlbars/templates/select";
 

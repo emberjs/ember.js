@@ -43,6 +43,11 @@ import {
   _SimpleMetamorphView,
   _Metamorph
 } from "ember-views/views/metamorph_view";
+import {
+  Select,
+  SelectOption,
+  SelectOptgroup
+} from "ember-views/views/select";
 // END IMPORTS
 
 /**
@@ -76,6 +81,9 @@ Ember._BoundView = BoundView;
 Ember._SimpleMetamorphView = _SimpleMetamorphView;
 Ember._MetamorphView = _MetamorphView;
 Ember._Metamorph = _Metamorph;
+Ember.Select = Select;
+Ember.SelectOption = SelectOption;
+Ember.SelectOptgroup = SelectOptgroup;
 
 Ember.TextSupport = TextSupport;
 Ember.ComponentLookup = ComponentLookup;
