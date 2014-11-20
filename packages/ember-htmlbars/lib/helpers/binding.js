@@ -99,12 +99,16 @@ function bindHelper(params, hash, options, env) {
 
   var property = params[0];
 
+  if (options.types[0] === 'string') {
+    property = this.getStream(property);
+  }
+
   if (options.render) {
     options.helperName = 'bind';
     Ember.deprecate("The block form of bind, {{#bind foo}}{{/bind}}, has been deprecated and will be removed.");
     bind.call(this, property, hash, options, env, false, exists);
   } else {
-    simpleBind.call(this, params, hash, options, env);
+    simpleBind.call(this, [property], hash, options, env);
   }
 }
 
