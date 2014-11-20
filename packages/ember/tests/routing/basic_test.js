@@ -2021,10 +2021,6 @@ test("Rendering into specified template with slash notation", function() {
   equal(Ember.$('#qunit-fixture:contains(profile details!)').length, 1, "The templates were rendered");
 });
 
-
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-    // bizarre error in morph attempting to remove a child it does not have
-
 test("Parent route context change", function() {
   var editCount = 0;
   var editedPostIds = Ember.A();
@@ -2094,8 +2090,6 @@ test("Parent route context change", function() {
   equal(editCount, 2, 'set up the edit route twice without failure');
   deepEqual(editedPostIds, ['1', '2'], 'modelFor posts.post returns the right context');
 });
-
-}
 
 test("Router accounts for rootURL on page load when using history location", function() {
   var rootURL = window.location.pathname + '/app';
