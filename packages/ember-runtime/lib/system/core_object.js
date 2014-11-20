@@ -180,7 +180,13 @@ function makeCtor() {
     } else if (length === 1) {
       this.init(arguments[0]);
     } else {
-      this.init.apply(this, arguments);
+      // v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
+      // we may want to keep this arround till this ages out on mobile
+      var args = new Array(length);
+      for (var x = 0; x < length; x++) {
+        args[x] = arguments[x];
+      }
+      this.init.apply(this, args);
     }
 
     m.proto = proto;
