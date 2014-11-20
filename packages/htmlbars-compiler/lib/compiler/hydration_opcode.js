@@ -98,7 +98,7 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLe
       end = (childIndex === childrenLength - 1 ? null : currentDOMChildIndex + 1);
 
   var morphNum = this.morphNum++;
-  this.morphs.push([morphNum, this.paths.slice(), start, end]);
+  this.morphs.push([morphNum, this.paths.slice(), start, end, true]);
 
   this.opcode('program', this.templateId++, block.inverse === null ? null : this.templateId++);
   processSexpr(this, sexpr);

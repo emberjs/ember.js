@@ -22,6 +22,17 @@ test("simple example", function() {
   ]);
 });
 
+test("simple block", function() {
+  var opcodes = opcodesFor("<div>{{#foo}}{{/foo}}</div>");
+  deepEqual(opcodes, [
+    [ "morph", [ 0, [ 0 ], null, null, true ] ],
+    [ "program", [ 0, null ] ],
+    [ "id", [ [ "foo" ] ] ],
+    [ "stackLiteral", [ 0 ] ],
+    [ "helper", [ 0, 0 ] ]
+  ]);
+});
+
 test("element with a sole mustache child", function() {
   var opcodes = opcodesFor("<div>{{foo}}</div>");
   deepEqual(opcodes, [
