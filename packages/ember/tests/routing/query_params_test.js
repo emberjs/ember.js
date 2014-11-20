@@ -679,9 +679,6 @@ test("An explicit replace:false on a changed QP always wins and causes a pushSta
   Ember.run(appController, 'setProperties', { alex: 'sriracha' });
 });
 
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-    // bizarre error in morph attempting to remove a child it does not have
-
 test("can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent", function() {
   Ember.TEMPLATES.parent = compile('{{outlet}}');
   Ember.TEMPLATES['parent/child'] = compile("{{link-to 'Parent' 'parent' (query-params foo='change') id='parent-link'}}");
@@ -720,8 +717,6 @@ test("can opt into full transition by setting refreshModel in route queryParams 
 
   equal(parentModelCount, 2);
 });
-
-}
 
 test("Use Ember.get to retrieve query params 'replace' configuration", function() {
   expect(2);

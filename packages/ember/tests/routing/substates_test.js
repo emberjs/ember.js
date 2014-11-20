@@ -108,8 +108,6 @@ test("Slow promise from a child route of application enters nested loading state
   equal(Ember.$('#app', '#qunit-fixture').text(), "BRO", "bro template has loaded and replaced loading template");
 });
 
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-
 test("Slow promises waterfall on startup", function() {
 
   expect(7);
@@ -198,8 +196,6 @@ test("ApplicationRoute#currentPath reflects loading state path", function() {
   equal(Ember.$('#app', '#qunit-fixture').text(), "GRANDMA MOM");
   equal(appController.get('currentPath'), "grandma.mom", "currentPath reflects final state");
 });
-
-}
 
 test("Slow promises returned from ApplicationRoute#model don't enter LoadingRoute", function() {
 
@@ -624,9 +620,6 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
     equal(Ember.$('#app', '#qunit-fixture').text(), "FOOBAR ERROR: did it broke?", "foo.bar_error was entered (as opposed to something like foo/foo/bar_error)");
   });
 
-  if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-    // bizarre error in morph attempting to remove a child it does not have
-
   test("Prioritized loading substate entry works with auto-generated index routes", function() {
 
     expect(2);
@@ -663,8 +656,6 @@ if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
 
     equal(Ember.$('#app', '#qunit-fixture').text(), "YAY");
   });
-
-  }
 
   test("Prioritized error substate entry works with auto-generated index routes", function() {
 
