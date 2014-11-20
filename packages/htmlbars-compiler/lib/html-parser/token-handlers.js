@@ -1,4 +1,11 @@
-import { ProgramNode, ComponentNode, ElementNode, TextNode, appendChild } from "../ast";
+import {
+  ProgramNode,
+  ComponentNode,
+  ElementNode,
+  TextNode,
+  CommentNode,
+  appendChild
+} from "../ast";
 import { postprocessProgram } from "./helpers";
 import { forEach } from "../utils";
 
@@ -49,6 +56,12 @@ function applyHTMLIntegrationPoint(tag, element){
 // Except for `mustache`, all tokens are only allowed outside of
 // a start or end tag.
 var tokenHandlers = {
+  CommentToken: function(token) {
+    var current = this.currentElement();
+    var comment = new CommentNode(token.chars);
+
+    appendChild(current, comment);
+  },
 
   Chars: function(token) {
     var current = this.currentElement();
