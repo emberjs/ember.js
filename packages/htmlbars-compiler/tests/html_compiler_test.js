@@ -180,10 +180,11 @@ test("The compiler can handle comments", function() {
   compilesTo("<div>{{! Better not break! }}content</div>", '<div>content</div>', {});
 });
 
-test("The compiler can handle partials in handlebars partial syntax", function() {
-  registerPartial('partial_name', "<b>Partial Works!</b>");
-  compilesTo('<div>{{>partial_name}} Plaintext content</div>', '<div><b>Partial Works!</b> Plaintext content</div>', {});
-});
+// TODO: Revisit partial syntax.
+// test("The compiler can handle partials in handlebars partial syntax", function() {
+//   registerPartial('partial_name', "<b>Partial Works!</b>");
+//   compilesTo('<div>{{>partial_name}} Plaintext content</div>', '<div><b>Partial Works!</b> Plaintext content</div>', {});
+// });
 
 test("The compiler can handle partials in helper partial syntax", function() {
   registerPartial('partial_name', "<b>Partial Works!</b>");
