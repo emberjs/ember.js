@@ -22,8 +22,17 @@ import { computed } from "ember-metal/computed";
 import { A as emberA } from "ember-runtime/system/native_array";
 import { observer } from "ember-metal/mixin";
 import { defineProperty } from "ember-metal/properties";
+import run from "ember-metal/run_loop";
 
-var precompileTemplate = EmberHandlebars.compile;
+import handlebarsTemplate from "ember-handlebars/templates/select";
+import htmlbarsTemplate from "ember-htmlbars/templates/select";
+
+var defaultTemplate;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  defaultTemplate = htmlbarsTemplate;
+} else {
+  defaultTemplate = handlebarsTemplate;
+}
 
 var SelectOption = View.extend({
   instrumentDisplay: 'Ember.SelectOption',
@@ -31,9 +40,20 @@ var SelectOption = View.extend({
   tagName: 'option',
   attributeBindings: ['value', 'selected'],
 
-  defaultTemplate: function(context, options) {
-    options = { data: options.data, hash: {} };
-    EmberHandlebars.helpers.bind.call(context, "view.label", options);
+  defaultTemplate: function(context, env, contextualElement) {
+    var options;
+    if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+      var lazyValue = context.getStream('view.label');
+
+      lazyValue.subscribe(context._wrapAsScheduled(function() {
+        run.scheduleOnce('render', context, 'rerender');
+      }));
+
+      return lazyValue.value();
+    } else {
+      options = { data: env.data, hash: {} };
+      EmberHandlebars.helpers.bind.call(context, "view.label", options);
+    }
   },
 
   init: function() {
@@ -335,7 +355,7 @@ var Select = View.extend({
 
   tagName: 'select',
   classNames: ['ember-select'],
-  defaultTemplate: precompileTemplate('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#if view.optionGroupPath}}{{#each group in view.groupedContent}}{{view view.groupView content=group.content label=group.label}}{{/each}}{{else}}{{#each item in view.content}}{{view view.optionView content=item}}{{/each}}{{/if}}'),
+  defaultTemplate: defaultTemplate,
   attributeBindings: ['multiple', 'disabled', 'tabindex', 'name', 'required', 'autofocus',
                       'form', 'size'],
 

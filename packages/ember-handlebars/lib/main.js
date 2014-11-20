@@ -58,11 +58,6 @@ import locHelper from "ember-handlebars/helpers/loc";
 import EachView from "ember-views/views/each";
 
 import {
-  Select,
-  SelectOption,
-  SelectOptgroup
-} from "ember-handlebars/controls/select";
-import {
   inputHelper,
   textareaHelper
 } from "ember-handlebars/controls";
@@ -90,9 +85,6 @@ EmberHandlebars.get = handlebarsGet;
 
 // Ember Globals
 Ember.Handlebars = EmberHandlebars;
-Ember.Select = Select;
-Ember.SelectOption = SelectOption;
-Ember.SelectOptgroup = SelectOptgroup;
 
 // register helpers
 EmberHandlebars.registerHelper('helperMissing', helperMissingHelper);

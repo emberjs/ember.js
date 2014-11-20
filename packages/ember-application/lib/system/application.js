@@ -20,7 +20,7 @@ import Controller from "ember-runtime/controllers/controller";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
-import SelectView from "ember-handlebars/controls/select";
+import SelectView from "ember-views/views/select";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import jQuery from "ember-views/system/jquery";
 import Route from "ember-routing/system/route";
