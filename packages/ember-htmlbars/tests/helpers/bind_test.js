@@ -67,6 +67,25 @@ test("it should render the current value of a path on the context", function() {
   equal(view.$().text(), "MWEEER", "value can be updated");
 });
 
+test("it should render the current value of a string path on the context", function() {
+  view = EmberView.create({
+    template: compile('{{bind "foo.bar"}}'),
+    context: EmberObject.create({
+      foo: {
+        bar: "BORK"
+      }
+    })
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), "BORK", "initial value is rendered");
+
+  run(view, view.set, 'context.foo.bar', 'MWEEER');
+
+  equal(view.$().text(), "MWEEER", "value can be updated");
+});
+
 QUnit.module("ember-htmlbars: {{bind}} with a container, block forms", {
   setup: function() {
     container = new Container();
