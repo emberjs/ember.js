@@ -266,12 +266,9 @@ var ContainerView = View.extend(MutableArray, {
     var dom = buffer.dom;
 
     if (this.tagName === '') {
-      if (this._morph) {
-        this._childViewsMorph = this._morph;
-      } else {
-        element = dom.createDocumentFragment();
-        this._childViewsMorph = dom.appendMorph(element);
-      }
+      element = dom.createDocumentFragment();
+      buffer._element = element;
+      this._childViewsMorph = dom.appendMorph(element, this._morph.contextualElement);
     } else {
       this._childViewsMorph = dom.createMorph(element, element.lastChild, null);
     }
