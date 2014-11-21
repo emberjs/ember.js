@@ -10,6 +10,14 @@ import { A } from "ember-runtime/system/native_array";
 import Container from "ember-runtime/system/container";
 import { set } from "ember-metal/property_set";
 import Component from "ember-views/views/component";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
+
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
 
 var trim = jQuery.trim;
 var container, view;
@@ -18,7 +26,7 @@ function appendView() {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-QUnit.module("EmberHandlebars - group flag", {
+QUnit.module("ember-htmlbars: group flag", {
   setup: function() {
     container = new Container();
     container.register('view:default', _MetamorphView);
@@ -43,7 +51,7 @@ function createGroupedView(template, context) {
   var options = {
     container: container,
     context: context,
-    template: EmberHandlebars.compile(template),
+    template: compile(template),
     templateData: {insideGroup: true, keywords: {}}
   };
   run(function() {
