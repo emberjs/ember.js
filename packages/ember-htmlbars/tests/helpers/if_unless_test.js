@@ -18,7 +18,7 @@ function appendView(view) {
 
 var view;
 
-QUnit.module("Handlebars {{#if}} and {{#unless}} helpers", {
+QUnit.module("ember-htmlbars: {{#if}} and {{#unless}} helpers", {
   teardown: function() {
     run(function() {
       if (view) {
