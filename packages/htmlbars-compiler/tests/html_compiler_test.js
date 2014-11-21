@@ -426,19 +426,43 @@ test("morph receives escaping information", function() {
 });
 
 test("Helpers receive escaping information", function() {
-  expect(3);
+  expect(8);
 
-  registerHelper('testing', function(params, hash, options) {
-    if (params[0] === 'escaped') {
-      equal(options.morph.escaped, true);
-    } else if (params[0] === 'unescaped') {
+  function emptyHash(hash) {
+    for(var key in hash) { // jshint ignore:line
+      return false;
+    }
+    return true;
+  }
+
+  registerHelper('testing-unescaped', function(params, hash, options) {
+    if (params.length === 0 && emptyHash(hash)) {
+      //ambiguous mustache
+      equal(options.morph.escaped, false);
+    } else {
       equal(options.morph.escaped, false);
     }
 
     return params[0];
   });
 
-  compilesTo('<div>{{testing escaped}}-{{{testing unescaped}}}</div>', '<div>escaped-unescaped</div>');
+  registerHelper('testing-escaped', function(params, hash, options, env) {
+    if (options.render) {
+      equal(options.morph.escaped, true);
+      return options.render({}, env, options.morph.contextualElement);
+    } else if (params.length === 0 && emptyHash(hash)) {
+      //ambiguous mustache
+      equal(options.morph.escaped, true);
+    } else {
+      equal(options.morph.escaped, true);
+    }
+
+    return params[0];
+  });
+
+  compilesTo('<div>{{{testing-unescaped}}}-{{{testing-unescaped a}}}</div>', '<div>-a</div>');
+  compilesTo('<div>{{testing-escaped}}-{{testing-escaped b}}</div>', '<div>-b</div>');
+  compilesTo('<div>{{#testing-escaped}}c{{/testing-escaped}}</div>', '<div>c</div>');
 });
 
 test("Attributes can use computed values", function() {
