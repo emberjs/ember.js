@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core";
-import { lookupHelper } from "ember-htmlbars/system/lookup-helper";
+import lookupHelper from "ember-htmlbars/system/lookup-helper";
 import { sanitizeOptionsForHelper } from "ember-htmlbars/system/sanitize-for-helper";
 
 function streamifyArgs(view, params, hash, options, env, helper) {
