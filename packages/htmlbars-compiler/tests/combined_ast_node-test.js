@@ -1,6 +1,18 @@
 import { preprocess } from "../htmlbars-compiler/parser";
-import { ProgramNode, BlockNode, ComponentNode, ElementNode, MustacheNode, SexprNode,
-  HashNode, IdNode, StringNode, AttrNode, TextNode } from "../htmlbars-compiler/ast";
+import {
+  ProgramNode,
+  BlockNode,
+  ComponentNode,
+  ElementNode,
+  MustacheNode,
+  SexprNode,
+  HashNode,
+  IdNode,
+  StringNode,
+  AttrNode,
+  TextNode,
+  CommentNode
+} from "../htmlbars-compiler/ast";
 
 var svgNamespace = "http://www.w3.org/2000/svg";
 
@@ -68,6 +80,10 @@ function attr(name, value) {
 
 function text(chars) {
   return new TextNode(chars);
+}
+
+function comment(value) {
+  return new CommentNode(value);
 }
 
 function block(mustache, program, inverse) {
@@ -444,5 +460,14 @@ test("Components", function() {
     text(''),
     mustache('e'),
     text('')
+  ]));
+});
+
+test("an HTML comment", function() {
+  var t = 'before <!-- some comment --> after';
+  astEqual(t, root([
+    text("before "),
+    comment(" some comment "),
+    text(" after")
   ]));
 });
