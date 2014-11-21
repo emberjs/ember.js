@@ -2,19 +2,12 @@ import Ember from "ember-metal/core"; // Ember.lookup
 import _MetamorphView from "ember-views/views/metamorph_view";
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
-import EmberHandlebars from "ember-handlebars";
 import handlebarsGet from "ember-htmlbars/compat/handlebars-get";
 import Container from "ember-runtime/system/container";
 
-import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import EmberHandlebars from "ember-htmlbars/compat";
 
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
+var compile = EmberHandlebars.compile;
 
 var originalLookup = Ember.lookup;
 var TemplateTests, container, lookup, view;

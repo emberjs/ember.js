@@ -9,24 +9,12 @@ import { A } from "ember-runtime/system/native_array";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
-import EmberHandlebars from "ember-handlebars-compiler";
-import htmlbarsHelpers from "ember-htmlbars/helpers";
-import htmlbarsRegisterBoundHelper from "ember-htmlbars/compat/register-bound-helper";
-
-import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import EmberHandlebars from "ember-htmlbars/compat";
 
 var compile, helpers, helper;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-  helpers = htmlbarsHelpers;
-  helper = htmlbarsRegisterBoundHelper;
-} else {
-  compile = EmberHandlebars.compile;
-  helpers = EmberHandlebars.helpers;
-  helper = EmberHandlebars.helper;
-}
-
+compile = EmberHandlebars.compile;
+helpers = EmberHandlebars.helpers;
+helper = EmberHandlebars.helper;
 
 var view;
 

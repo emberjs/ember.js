@@ -6,6 +6,10 @@ var result;
 
 QUnit.module("Ember.Handlebars.precompileType");
 
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  // precompile does not accept the same args with ember-htmlbars/system/compile
+  // Do we need to support `asObject` param?
+
 test("precompile creates an object when asObject isn't defined", function(){
   result = precompile(template);
   equal(typeof(result), "object");
@@ -26,3 +30,5 @@ test("precompile creates an object when passed an AST", function(){
   result = precompile(ast);
   equal(typeof(result), "object");
 });
+
+}

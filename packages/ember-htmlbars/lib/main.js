@@ -14,9 +14,6 @@ import {
   helper,
   default as helpers
 } from "ember-htmlbars/helpers";
-import {
-  registerHandlebarsCompatibleHelper
-} from "ember-htmlbars/compat/helper";
 import { bindHelper } from "ember-htmlbars/helpers/binding";
 import { viewHelper } from "ember-htmlbars/helpers/view";
 import { yieldHelper } from "ember-htmlbars/helpers/yield";
@@ -55,6 +52,10 @@ import {
 // initializer to enable embedded templates
 import "ember-htmlbars/system/bootstrap";
 
+// importing ember-htmlbars/compat updates the
+// Ember.Handlebars global if htmlbars is enabled
+import "ember-htmlbars/compat";
+
 registerHelper('bindHelper', bindHelper);
 registerHelper('bind', bindHelper);
 registerHelper('view', viewHelper);
@@ -85,6 +86,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     template: template,
     compile: compile
   };
+
 }
 
 export var defaultEnv = {

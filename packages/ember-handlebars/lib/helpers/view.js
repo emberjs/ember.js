@@ -94,7 +94,7 @@ export var ViewHelper = EmberObject.create({
     }
 
     if (hash.attributeBindings) {
-      Ember.assert("Setting 'attributeBindings' via Handlebars is not allowed." +
+      Ember.assert("Setting 'attributeBindings' via template helpers is not allowed." +
                    " Please subclass Ember.View and set it there instead.");
       extensions.attributeBindings = null;
     }

@@ -1,15 +1,9 @@
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
-import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import EmberHandlebars from "ember-htmlbars/compat";
 
 var view;
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
+var compile = EmberHandlebars.compile;
 
 
 function appendView(view) {

@@ -3,7 +3,6 @@ import EmberLogger from "ember-metal/logger";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars-compiler";
-import { logHelper } from "ember-handlebars/helpers/debug";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 var compile;
@@ -16,7 +15,6 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 var originalLookup = Ember.lookup;
 var lookup;
 var originalLog, logCalls;
-var originalLogHelper;
 var view;
 
 function appendView() {
@@ -26,9 +24,6 @@ function appendView() {
 QUnit.module("Handlebars {{log}} helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
-
-    originalLogHelper = EmberHandlebars.helpers.log;
-    EmberHandlebars.registerHelper("log", logHelper);
 
     originalLog = EmberLogger.log;
     logCalls = [];
@@ -44,7 +39,6 @@ QUnit.module("Handlebars {{log}} helper", {
     }
 
     EmberLogger.log = originalLog;
-    EmberHandlebars.helpers.log = originalLogHelper;
     Ember.lookup = originalLookup;
   }
 });
