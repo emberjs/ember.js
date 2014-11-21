@@ -1,11 +1,11 @@
 /*globals Handlebars */
 
+import Ember from "ember-metal/core";
 import ComponentLookup from "ember-views/component_lookup";
 import jQuery from "ember-views/system/jquery";
 import EmberError from "ember-metal/error";
 import { onLoad } from "ember-runtime/system/lazy_load";
-
-import EmberHandlebars from "ember-handlebars-compiler";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 /**
 @module ember
@@ -38,7 +38,7 @@ function bootstrap(ctx) {
 
     var compile = (script.attr('type') === 'text/x-raw-handlebars') ?
                   jQuery.proxy(Handlebars.compile, Handlebars) :
-                  jQuery.proxy(EmberHandlebars.compile, EmberHandlebars);
+                  htmlbarsCompile;
     // Get the name of the script, used by Ember.View's templateName property.
     // First look for data-template-name attribute, then fall back to its
     // id if no name is found.
@@ -78,7 +78,7 @@ function registerComponentLookup(container) {
 */
 
 onLoad('Ember.Application', function(Application) {
-  if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
   Application.initializer({
     name: 'domTemplates',
