@@ -51,6 +51,10 @@ import {
   preprocessArgumentsForUnbound
 } from "ember-htmlbars/helpers/unbound";
 
+// importing adds template bootstrapping
+// initializer to enable embedded templates
+import "ember-htmlbars/system/bootstrap";
+
 registerHelper('bindHelper', bindHelper);
 registerHelper('bind', bindHelper);
 registerHelper('view', viewHelper);
