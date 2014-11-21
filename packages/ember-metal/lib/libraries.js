@@ -1,45 +1,70 @@
-// Provides a way to register library versions with ember.
+import Ember from "ember-metal/core";
 import {
   forEach,
   indexOf
 } from "ember-metal/enumerable_utils";
 
-var libraries = function() {
-  var _libraries   = [];
-  var coreLibIndex = 0;
+/**
+  Helper class that allows you to register your library with Ember.
 
-  var getLibrary = function(name) {
-    for (var i = 0; i < _libraries.length; i++) {
-      if (_libraries[i].name === name) {
-        return _libraries[i];
+  Singleton created at `Ember.libraries`.
+
+  @class Libraries
+  @constructor
+  @private
+*/
+function Libraries() {
+  this._registry = [];
+  this._coreLibIndex = 0;
+}
+
+Libraries.prototype = {
+  constructor: Libraries,
+
+  _getLibraryByName: function(name) {
+    var libs = this._registry;
+    var count = libs.length;
+
+    for (var i = 0; i < count; i++) {
+      if (libs[i].name === name) {
+        return libs[i];
       }
     }
-  };
+  },
 
-  _libraries.register = function(name, version) {
-    if (!getLibrary(name)) {
-      _libraries.push({name: name, version: version});
+  register: function(name, version, isCoreLibrary) {
+    var index = this._registry.length;
+
+    if (!this._getLibraryByName(name)) {
+      if (isCoreLibrary) {
+        index = this._coreLibIndex++;
+      }
+      this._registry.splice(index, 0, { name: name, version: version });
+    } else {
+      Ember.warn('Library "' + name + '" is already registered with Ember.');
     }
-  };
+  },
 
-  _libraries.registerCoreLibrary = function(name, version) {
-    if (!getLibrary(name)) {
-      _libraries.splice(coreLibIndex++, 0, {name: name, version: version});
+  registerCoreLibrary: function(name, version) {
+    this.register(name, version, true);
+  },
+
+  deRegister: function(name) {
+    var lib = this._getLibraryByName(name);
+    var index;
+
+    if (lib) {
+      index = indexOf(this._registry, lib);
+      this._registry.splice(index, 1);
     }
-  };
+  },
 
-  _libraries.deRegister = function(name) {
-    var lib = getLibrary(name);
-    if (lib) _libraries.splice(indexOf(_libraries, lib), 1);
-  };
-
-  _libraries.each = function (callback) {
-    forEach(_libraries, function(lib) {
+  each: function(callback) {
+    Ember.deprecate('Using Ember.libraries.each() is deprecated. Access to a list of registered libraries is currently a private API. If you are not knowingly accessing this method, your out-of-date Ember Inspector may be doing so.');
+    forEach(this._registry, function(lib) {
       callback(lib.name, lib.version);
     });
-  };
+  }
+};
 
-  return _libraries;
-}();
-
-export default libraries;
+export default Libraries;

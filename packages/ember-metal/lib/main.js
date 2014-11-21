@@ -160,7 +160,7 @@ import {
   oneWay
 } from "ember-metal/binding";
 import run from "ember-metal/run_loop";
-import libraries from "ember-metal/libraries";
+import Libraries from "ember-metal/libraries";
 import isNone from 'ember-metal/is_none';
 import isEmpty from 'ember-metal/is_empty';
 import isBlank from 'ember-metal/is_blank';
@@ -311,7 +311,7 @@ Ember.isGlobalPath = isGlobalPath;
 
 Ember.run = run;
 
-Ember.libraries = libraries;
+Ember.libraries = new Libraries();
 Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
 
 Ember.isNone = isNone;
