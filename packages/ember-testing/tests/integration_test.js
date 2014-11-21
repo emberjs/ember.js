@@ -8,16 +8,10 @@ import Test from "ember-testing/test";
 import EmberRoute from "ember-routing/system/route";
 import EmberApplication from "ember-application/system/application";
 import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 import 'ember-application';
 
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
+var compile = EmberHandlebars.compile;
 
 var App, find, visit, originalAdapter = Test.adapter;
 

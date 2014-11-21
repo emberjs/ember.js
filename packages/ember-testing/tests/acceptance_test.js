@@ -7,17 +7,11 @@ import "ember-testing/initializers"; // ensure the initializer is setup
 import EmberApplication from "ember-application/system/application";
 import EmberRoute from "ember-routing/system/route";
 import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 //ES6TODO: we need {{link-to}}  and {{outlet}} to exist here
 import "ember-routing"; //ES6TODO: fixme?
 
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
+var compile = EmberHandlebars.compile;
 
 var App, find, click, fillIn, currentRoute, visit, originalAdapter, andThen, indexHitCount;
 

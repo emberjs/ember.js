@@ -4,16 +4,10 @@ import EmberView from "ember-views/views/view";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { observer } from "ember-metal/mixin";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
 import EmberHandlebars from "ember-handlebars-compiler";
 
 import _MetamorphView from "ember-views/views/metamorph_view";
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
+var compile = EmberHandlebars.compile;
 
 var view, childView, metamorphView;
 

@@ -1,17 +1,10 @@
 import "ember";
 
 import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
-import htmlbarsHelpers from "ember-htmlbars/helpers";
 
 var compile, helpers;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-  helpers = htmlbarsHelpers;
-} else {
-  compile = EmberHandlebars.compile;
-  helpers = EmberHandlebars.helpers;
-}
+compile = EmberHandlebars.compile;
+helpers = EmberHandlebars.helpers;
 
 var App, container;
 var originalHelpers;

@@ -6,21 +6,12 @@ import EmberObject from "ember-runtime/system/object";
 import EmberHandlebars from "ember-handlebars";
 import Namespace from "ember-runtime/system/namespace";
 import Application from "ember-application/system/application";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
-import {
-  registerHelper as htmlbarsRegisterHelper
-} from "ember-htmlbars/helpers";
 
 var compile, registerHelper;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  registerHelper  = htmlbarsRegisterHelper;
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-  registerHelper = function(name, fn) {
-    EmberHandlebars.registerHelper(name, fn);
-  };
-}
+compile = EmberHandlebars.compile;
+registerHelper = function(name, fn) {
+  EmberHandlebars.registerHelper(name, fn);
+};
 
 var locator, application, originalLookup, originalLoggerInfo;
 
@@ -88,8 +79,14 @@ test("the default resolver resolves models on the namespace", function() {
 });
 
 test("the default resolver resolves helpers", function(){
-  function fooresolvertestHelper(){ return 'FOO'; }
-  function barBazResolverTestHelper(){ return 'BAZ'; }
+  expect(2);
+
+  function fooresolvertestHelper(){
+    ok(true, 'found fooresolvertestHelper');
+  }
+  function barBazResolverTestHelper(){
+    ok(true, 'found barBazResolverTestHelper');
+  }
   registerHelper('fooresolvertest', fooresolvertestHelper);
   registerHelper('bar-baz-resolver-test', barBazResolverTestHelper);
 
@@ -103,8 +100,8 @@ test("the default resolver resolves helpers", function(){
     retrievedBarBazResolverTestHelper = locator.lookup('helper:bar-baz-resolver-test');
   }
 
-  equal(fooresolvertestHelper, retrievedFooResolverTestHelper, "looks up fooresolvertestHelper helper");
-  equal(barBazResolverTestHelper, retrievedBarBazResolverTestHelper, "looks up barBazResolverTestHelper helper");
+  fooresolvertestHelper();
+  barBazResolverTestHelper();
 });
 
 test("the default resolver resolves container-registered helpers", function(){

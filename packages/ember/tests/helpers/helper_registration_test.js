@@ -1,20 +1,11 @@
 import "ember";
 
 import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
-import htmlbarsHelpers from "ember-htmlbars/helpers";
-import htmlbarsMakeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 
 var compile, helpers, makeBoundHelper;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-  helpers = htmlbarsHelpers;
-  makeBoundHelper = htmlbarsMakeBoundHelper;
-} else {
-  compile = EmberHandlebars.compile;
-  helpers = EmberHandlebars.helpers;
-  makeBoundHelper = EmberHandlebars.makeBoundHelper;
-}
+compile = EmberHandlebars.compile;
+helpers = EmberHandlebars.helpers;
+makeBoundHelper = EmberHandlebars.makeBoundHelper;
 
 var App, container;
 
