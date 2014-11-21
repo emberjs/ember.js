@@ -1,3 +1,8 @@
-import { compile } from "htmlbars-compiler/compiler";
+import { compile, compileSpec } from "htmlbars-compiler/compiler";
 
-export default compile;
+export default function(string) {
+  var asObject = arguments[1] === undefined ? true : arguments[1];
+  var compileFunc = asObject ? compile : compileSpec;
+
+  return compileFunc(string);
+}
