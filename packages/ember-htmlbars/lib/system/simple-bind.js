@@ -4,7 +4,7 @@ import SimpleBoundView from "ember-views/views/simple_bound_view";
 export default function simpleBind(params, hash, options, env) {
   var lazyValue = params[0];
 
-  var view = new SimpleBoundView(lazyValue, options.escaped);
+  var view = new SimpleBoundView(lazyValue, options.morph.escaped);
 
   view._parentView = this;
   view._morph = options.morph;

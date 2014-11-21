@@ -21,7 +21,7 @@ export function logHelper(params, hash, options, env) {
   var values = [];
 
   for (var i = 0; i < params.length; i++) {
-    if (options.types[i] === 'id') {
+    if (options.paramTypes[i] === 'id') {
       var stream = params[i];
       values.push(stream.value());
     } else {

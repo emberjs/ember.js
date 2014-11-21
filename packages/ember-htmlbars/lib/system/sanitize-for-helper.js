@@ -6,8 +6,8 @@
   @param {Object} options The options hash provided by the template engine.
 */
 export function sanitizeOptionsForHelper(options) {
-  if (!options.types) {
-    options.types = [];
+  if (!options.paramTypes) {
+    options.paramTypes = [];
   }
 
   if (!options.hashTypes) {

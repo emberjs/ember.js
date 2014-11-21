@@ -69,13 +69,13 @@ export function withHelper(params, hash, options, env) {
 
   var source, keyword;
   var preserveContext, context;
-  if (options.types[0] === 'id') {
+  if (options.paramTypes[0] === 'id') {
     Ember.deprecate('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
     source = params[0];
     preserveContext = false;
     context = source.value();
-  } else if (options.types[0] === 'keyword') {
+  } else if (options.paramTypes[0] === 'keyword') {
     source = params[0].stream;
     keyword = params[0].to;
     context = this.get('context');
@@ -101,7 +101,7 @@ export function preprocessArgumentsForWith(view, params, hash, options, env) {
       stream: view.getStream(params[0])
     });
 
-    options.types.splice(0, 3, 'keyword');
+    options.paramTypes.splice(0, 3, 'keyword');
   }
 }
 
