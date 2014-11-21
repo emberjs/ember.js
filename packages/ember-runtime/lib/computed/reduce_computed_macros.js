@@ -244,14 +244,15 @@ export var mapProperty = mapBy;
   The callback method you provide should have the following signature.
   `item` is the current item in the iteration.
   `index` is the integer index of the current item in the iteration.
+  `array` is the dependant array itself.
 
   ```javascript
-  function(item, index);
+  function(item, index, array);
   ```
 
   ```javascript
   var Hamster = Ember.Object.extend({
-    remainingChores: Ember.computed.filter('chores', function(chore, index) {
+    remainingChores: Ember.computed.filter('chores', function(chore, index, array) {
       return !chore.done;
     })
   });
@@ -280,7 +281,7 @@ export function filter(dependentKey, callback) {
     },
 
     addedItem: function (array, item, changeMeta, instanceMeta) {
-      var match = !!callback.call(this, item, changeMeta.index);
+      var match = !!callback.call(this, item, changeMeta.index, changeMeta.arrayChanged);
       var filterIndex = instanceMeta.filteredArrayIndexes.addItem(changeMeta.index, match);
 
       if (match) {
