@@ -5,14 +5,8 @@ import { set } from "ember-metal/property_set";
 import ActionManager from "ember-views/system/action_manager";
 
 import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
 
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
+var compile = EmberHandlebars.compile;
 
 var Router, App, router, container, originalLoggerError;
 

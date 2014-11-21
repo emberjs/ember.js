@@ -3,14 +3,8 @@ import run from "ember-metal/run_loop";
 
 import EmberView from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars-compiler";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
 
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
+var compile = EmberHandlebars.compile;
 
 var container, view;
 

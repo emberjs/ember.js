@@ -11,18 +11,12 @@ import NoneLocation from "ember-routing/location/none_location";
 import EmberHandlebars from "ember-handlebars";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 var trim = jQuery.trim;
 
 var app, application, originalLookup, originalDebug;
 
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
+var compile = EmberHandlebars.compile;
 
 
 QUnit.module("Ember.Application", {

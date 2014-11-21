@@ -13,16 +13,10 @@ import EmberRouter from "ember-routing/system/router";
 import EmberRoute from "ember-routing/system/route";
 import EmberApplication from "ember-application/system/application";
 import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
 
 var App, originalAdapter = Test.adapter;
 
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
+var compile = EmberHandlebars.compile;
 
 function cleanup(){
   // Teardown setupForTesting
