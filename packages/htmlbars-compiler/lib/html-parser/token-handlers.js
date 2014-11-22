@@ -9,16 +9,6 @@ import {
 import { postprocessProgram } from "./helpers";
 import { forEach } from "../utils";
 
-// This table maps from the state names in the tokenizer to a smaller
-// number of states that control how mustaches are handled
-var states = {
-  "beforeAttributeValue": "before-attr",
-  "attributeValueDoubleQuoted": "attr",
-  "attributeValueSingleQuoted": "attr",
-  "attributeValueUnquoted": "attr",
-  "beforeAttributeName": "in-tag"
-};
-
 // The HTML elements in this list are speced by
 // http://www.w3.org/TR/html-markup/syntax.html#syntax-elements,
 // and will be forced to close regardless of if they have a
@@ -89,15 +79,20 @@ var tokenHandlers = {
     var state = this.tokenizer.state;
     var token = this.tokenizer.token;
 
-    switch(states[state]) {
-      case "before-attr":
+    switch(state) {
+      case "beforeAttributeValue":
         this.tokenizer.state = 'attributeValueUnquoted';
-        token.addToAttributeValue(mustache);
+        token.addToAttributeValue(mustache.sexpr);
         return;
-      case "attr":
-        token.addToAttributeValue(mustache);
+      case "attributeValueDoubleQuoted":
+      case "attributeValueSingleQuoted":
+        token.addToAttributeValue(mustache.sexpr);
+        token.attributes[token.attributes.length - 1].quoted = true;
         return;
-      case "in-tag":
+      case "attributeValueUnquoted":
+        token.addToAttributeValue(mustache.sexpr);
+        return;
+      case "beforeAttributeName":
         token.addTagHelper(mustache);
         return;
       default:

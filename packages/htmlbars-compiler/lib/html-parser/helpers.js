@@ -9,10 +9,20 @@ export function buildHashFromAttributes(attributes) {
 
   for (var i = 0; i < attributes.length; i++) {
     var attr = attributes[i];
-    if (attr.value.type === 'mustache') {
-      pairs.push([attr.name, attr.value.sexpr]);
+    if (attr.value.type === 'sexpr') {
+      pairs.push([attr.name, attr.value]);
     } else if (attr.value.type === 'text') {
       pairs.push([attr.name, new StringNode(attr.value.chars)]);
+    } else {
+      pairs.push([attr.name, {
+        type: 'sexpr',
+        id: {
+          string: 'concat',
+          parts: ['concat']
+        },
+        params: attr.value,
+        hash: null
+      }]);
     }
   }
 

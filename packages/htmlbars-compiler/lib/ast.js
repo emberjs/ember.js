@@ -48,10 +48,11 @@ export function PartialNode(name) {
   this.isHelper = true;
 }
 
-export function AttrNode(name, value) {
+export function AttrNode(name, value, quoted) {
   this.type = 'attr';
   this.name = name;
   this.value = value;
+  this.quoted = quoted;
 }
 
 export function TextNode(chars) {
