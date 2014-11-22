@@ -62,17 +62,6 @@ prototype.id = function(parts) {
   }
 };
 
-prototype.scopeId = function(parts) {
-  this.stack.push(string('value'));
-  var id = '$' + parts[0];
-  var path = parts.slice(1).join('.');
-  if (parts.length === 1) {
-    this.stack.push(id);
-  } else {
-    this.stack.push('get(' + id + ', ' + string(path) + ')');
-  }
-};
-
 prototype.literal = function(literal) {
   this.stack.push(string(typeof literal));
   this.stack.push(literal);
@@ -104,9 +93,8 @@ prototype.component = function(morphNum) {
 
 prototype.ambiguous = function(morphNum) {
   var name = this.stack.pop();
-  var type = this.stack.pop();
+  this.stack.pop();
   var options = [];
-  options.push('type:'+type);
   options.push('morph:morph'+morphNum);
   this.pushMustacheInContent(name, '[]', '{}', options, morphNum);
 };

@@ -18,7 +18,6 @@ function Frame() {
   this.childCount = null;
   this.childTemplateCount = 0;
   this.mustacheCount = 0;
-  this.scopeVars = null;
   this.actions = [];
 }
 
@@ -89,19 +88,6 @@ TemplateVisitor.prototype.program = function(program) {
 
   var parentFrame = this.getCurrentFrame();
   var programFrame = this.pushFrame();
-  programFrame.scopeVars = {};
-
-  if (parentFrame && parentFrame.scopeVars) {
-    for (var name in parentFrame.scopeVars) {
-      programFrame.scopeVars[name] = true;
-    }
-  }
-
-  if (program.blockParams) {
-    for (var j = 0; j < program.blockParams.length; j++) {
-      programFrame.scopeVars[program.blockParams[j]] = true;
-    }
-  }
 
   programFrame.parentNode = program;
   programFrame.children = program.statements;
@@ -116,8 +102,7 @@ TemplateVisitor.prototype.program = function(program) {
 
   programFrame.actions.push(['startProgram', [
     program, programFrame.childTemplateCount,
-    programFrame.blankChildTextNodes.reverse(),
-    programFrame.scopeVars
+    programFrame.blankChildTextNodes.reverse()
   ]]);
   this.popFrame();
 
