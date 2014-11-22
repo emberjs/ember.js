@@ -110,7 +110,7 @@ prototype.ambiguous = function(morphNum) {
 
 prototype.attribute = function(quoted, name, size, elementNum) {
   var prepared = prepareHelper(this.stack, size);
-  this.source.push(this.indent + 'hooks.attribute(element' + elementNum + ', ' + string(name) + ', ' + quoted + ', context, ' + prepared.params + ', ' + hash(prepared.options) + ', env);\n');
+  this.source.push(this.indent + '  hooks.attribute(element' + elementNum + ', ' + string(name) + ', ' + quoted + ', context, ' + prepared.params + ', ' + hash(prepared.options) + ', env);\n');
 };
 
 prototype.ambiguousAttr = function() {
