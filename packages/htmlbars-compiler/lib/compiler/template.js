@@ -4,7 +4,7 @@ import { HydrationOpcodeCompiler } from './hydration_opcode';
 import { HydrationCompiler } from './hydration';
 import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
-import { repeat } from "./quoting";
+import { string, repeat } from "./quoting";
 
 export function TemplateCompiler(options) {
   this.options = options || {};
@@ -25,24 +25,14 @@ TemplateCompiler.prototype.compile = function(ast) {
   return this.templates.pop();
 };
 
-TemplateCompiler.prototype.startProgram = function(program, childTemplateCount, blankChildTextNodes, scopeVars) {
-  this.fragmentOpcodeCompiler.startProgram(program, childTemplateCount, blankChildTextNodes, scopeVars);
-  this.hydrationOpcodeCompiler.startProgram(program, childTemplateCount, blankChildTextNodes, scopeVars);
+TemplateCompiler.prototype.startProgram = function(program, childTemplateCount, blankChildTextNodes) {
+  this.fragmentOpcodeCompiler.startProgram(program, childTemplateCount, blankChildTextNodes);
+  this.hydrationOpcodeCompiler.startProgram(program, childTemplateCount, blankChildTextNodes);
 
   this.childTemplates.length = 0;
   while(childTemplateCount--) {
     this.childTemplates.push(this.templates.pop());
   }
-};
-
-TemplateCompiler.prototype.getScopeVars = function(indent, blockParams) {
-  var vars = '';
-  if (blockParams) {
-    for (var i = 0; i < blockParams.length; i++) {
-      vars += indent + 'var $' + blockParams[i] + ';\n';
-    }
-  }
-  return vars;
 };
 
 TemplateCompiler.prototype.getChildTemplateVars = function(indent) {
@@ -55,11 +45,11 @@ TemplateCompiler.prototype.getChildTemplateVars = function(indent) {
   return vars;
 };
 
-TemplateCompiler.prototype.getScopeAssignments = function(indent, blockParams) {
+TemplateCompiler.prototype.getContextAssignments = function(indent, blockParams) {
   var assignments = '';
   if (blockParams) {
     for (var i = 0; i < blockParams.length; i++) {
-      assignments += indent + '$' + blockParams[i] + ' = blockArguments[' + i + '];\n';
+      assignments += indent + 'hooks.set(context, ' + string(blockParams[i]) +', blockArguments[' + i + ']);\n';
     }
   }
   return assignments;
@@ -96,13 +86,12 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
 
   var template =
     '(function() {\n' +
-    this.getScopeVars(indent + '  ', blockParams) +
     this.getChildTemplateVars(indent + '  ') +
     fragmentProgram +
     indent+'  var cachedFragment;\n' +
     indent+'  return function template(' + templateSignature + ') {\n' +
-    indent+'    var dom = env.dom, hooks = env.hooks, get = env.get;\n' +
-    this.getScopeAssignments(indent + '    ', blockParams) +
+    indent+'    var dom = env.dom, hooks = env.hooks;\n' +
+    this.getContextAssignments(indent + '    ', blockParams) +
     indent+'    dom.detectNamespace(contextualElement);\n' +
     indent+'    if (cachedFragment === undefined) {\n' +
     indent+'      cachedFragment = build(dom);\n' +

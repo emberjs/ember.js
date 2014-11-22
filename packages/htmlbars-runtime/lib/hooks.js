@@ -103,6 +103,10 @@ export function simple(context, name /*, options*/) {
   return context[name];
 }
 
+export function set(context, name, value) {
+  context[name] = value;
+}
+
 export function hydrationHooks(extensions) {
   var base = {
     content: content,
@@ -114,7 +118,8 @@ export function hydrationHooks(extensions) {
     subexpr: subexpr,
     lookupHelper: lookupHelper,
     simple: simple,
-    partial: partial
+    partial: partial,
+    set: set
   };
 
   return extensions ? merge(extensions, base) : base;
