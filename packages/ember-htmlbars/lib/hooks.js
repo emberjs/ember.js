@@ -69,7 +69,7 @@ export function subexpr(path, view, params, hash, options, env) {
   }
 }
 
-export function attribute(element, attributeName, quoted, context, parts, options, env) {
+export function attribute(element, attributeName, quoted, view, parts, options, env) {
   var dom = env.dom;
   var isDirty, lastRenderedValue, attrValueStream;
 
@@ -103,5 +103,7 @@ export function attribute(element, attributeName, quoted, context, parts, option
 
   lastRenderedValue = attrValueStream.value();
 
-  dom.setAttribute(element, attributeName, lastRenderedValue);
+  if (lastRenderedValue !== null) {
+    dom.setAttribute(element, attributeName, lastRenderedValue);
+  }
 }
