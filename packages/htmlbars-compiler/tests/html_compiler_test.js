@@ -495,14 +495,6 @@ test("Mountain range of nesting", function() {
 //   compilesTo('<a href="{{post.url}}">linky</a>', '<a href="linky.html">linky</a>', { post: { url: 'linky.html' }});
 // });
 
-test("It is possible to override the resolution mechanism for attributes", function() {
-  hooks.attribute = function(params, hash, options) {
-    options.element.setAttribute(params[0], 'http://google.com/' + params[1]);
-  };
-
-  compilesTo('<a href="{{url}}">linky</a>', '<a href="http://google.com/linky.html">linky</a>', { url: 'linky.html' });
-});
-
 /*
 
 test("It is possible to use RESOLVE_IN_ATTR for data binding", function() {

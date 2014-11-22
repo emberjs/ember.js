@@ -149,11 +149,7 @@ test("attribute mustache", function() {
   var opcodes = opcodesFor("<div class='before {{foo}} after'></div>");
   deepEqual(opcodes, [
     [ "program", [null, null] ],
-    [ "id", [ [ "attribute" ] ] ],
-    [ "stringLiteral", ["class"] ],
-    [ "string", ["sexpr"] ],
-    [ "program", [null, null] ],
-    [ "id", [ [ "concat" ] ] ],
+    [ "id", [ null ] ],
     [ "stringLiteral", ["before "] ],
     [ "string", ["sexpr"] ],
     [ "program", [null, null] ],
@@ -162,10 +158,8 @@ test("attribute mustache", function() {
     [ "sexpr", [ 0 ] ],
     [ "stringLiteral", [" after"] ],
     [ "stackLiteral", [0] ],
-    [ "sexpr", [ 3 ] ],
-    [ "stackLiteral", [0] ],
     [ "element", [0] ],
-    [ "nodeHelper", [ 2, 0 ] ]
+    [ "attribute", [ true, "class", 3, 0 ] ]
   ]);
 });
 
@@ -174,11 +168,7 @@ test("attribute helper", function() {
   var opcodes = opcodesFor("<div class='before {{foo 'bar'}} after'></div>");
   deepEqual(opcodes, [
     [ "program", [ null, null ] ],
-    [ "id", [ [ "attribute" ] ] ],
-    [ "stringLiteral", [ "class" ] ],
-    [ "string", [ "sexpr" ] ],
-    [ "program", [ null, null ] ],
-    [ "id", [ [ "concat" ] ] ],
+    [ "id", [ null ] ],
     [ "stringLiteral", [ "before " ] ],
     [ "string", [ "sexpr" ] ],
     [ "program", [ null, null ] ],
@@ -188,9 +178,7 @@ test("attribute helper", function() {
     [ "sexpr", [ 1 ] ],
     [ "stringLiteral", [ " after" ] ],
     [ "stackLiteral", [ 0 ] ],
-    [ "sexpr", [ 3 ] ],
-    [ "stackLiteral", [ 0 ] ],
     [ "element", [0] ],
-    [ "nodeHelper", [ 2, 0 ] ]
+    [ "attribute", [ true, "class", 3, 0] ]
   ]);
 });
