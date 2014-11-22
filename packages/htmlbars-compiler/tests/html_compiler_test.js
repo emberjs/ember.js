@@ -102,8 +102,15 @@ test("Simple elements can have attributes", function() {
   equalTokens(fragment, '<div class="foo" id="bar">content</div>');
 });
 
-test("Null attribute value removes that attribute", function() {
+test("Null quoted attribute value calls toString on the value", function() {
   var template = compile('<input disabled="{{isDisabled}}">');
+  var fragment = template({isDisabled: null}, env);
+
+  equalTokens(fragment, '<input disabled="null">');
+});
+
+test("Null unquoted attribute value removes that attribute", function() {
+  var template = compile('<input disabled={{isDisabled}}>');
   var fragment = template({isDisabled: null}, env);
 
   equalTokens(fragment, '<input>');

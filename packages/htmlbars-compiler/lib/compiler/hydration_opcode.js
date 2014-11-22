@@ -135,12 +135,28 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
     return;
   }
 
+  var sexpr;
+  if (attr.value.type === 'sexpr') {
+    sexpr = attr.value;
+  } else {
+    sexpr = {
+      type: 'sexpr',
+      id: {
+        string: 'concat',
+        parts: ['concat']
+      },
+      params: attr.value,
+      hash: null
+    };
+  }
+
   // We treat attribute like a attribute helper evaluated by the element hook.
   // <p {{attribute 'class' 'foo ' (bar)}}></p>
   // Unwrapped any mustaches to just be their internal sexprs.
   this.nodeHelper({
     sexpr: {
-      params: [attr.name, attr.value.sexpr],
+      type: 'sexpr',
+      params: [attr.name, sexpr],
       hash: null,
       id: {
         string: 'attribute',
