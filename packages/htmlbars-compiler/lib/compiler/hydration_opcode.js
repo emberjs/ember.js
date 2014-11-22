@@ -135,35 +135,17 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
     return;
   }
 
-  var sexpr;
-  if (attr.value.type === 'sexpr') {
-    sexpr = attr.value;
-  } else {
-    sexpr = {
-      type: 'sexpr',
-      id: {
-        string: 'concat',
-        parts: ['concat']
-      },
-      params: attr.value,
-      hash: null
-    };
-  }
+  var quoted = attr.quoted;
+  var params = quoted ? attr.value : [ attr.value ];
 
-  // We treat attribute like a attribute helper evaluated by the element hook.
-  // <p {{attribute 'class' 'foo ' (bar)}}></p>
-  // Unwrapped any mustaches to just be their internal sexprs.
-  this.nodeHelper({
-    sexpr: {
-      type: 'sexpr',
-      params: [attr.name, sexpr],
-      hash: null,
-      id: {
-        string: 'attribute',
-        parts: ['attribute']
-      }
-    }
-  });
+  this.opcode('program', null, null);
+  processSexpr(this, { params: params });
+
+  if (this.element !== null) {
+    this.opcode('element', ++this.elementNum);
+    this.element = null;
+  }
+  this.opcode('attribute', quoted, attr.name, params.length, this.elementNum);
 };
 
 HydrationOpcodeCompiler.prototype.nodeHelper = function(mustache) {
@@ -246,7 +228,11 @@ function processSexpr(compiler, sexpr) {
 }
 
 function processName(compiler, id) {
-  compiler.ID(id);
+  if (id) {
+    compiler.ID(id);
+  } else {
+    compiler.opcode('id', null);
+  }
 }
 
 function processParams(compiler, params) {
