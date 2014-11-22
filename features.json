@@ -16,7 +16,8 @@
     "mandatory-setter": "development-only",
     "ember-routing-fire-activate-deactivate-events": true,
     "ember-testing-pause-test": true,
-    "ember-htmlbars": null
+    "ember-htmlbars": null,
+    "ember-htmlbars-component-generation": null
   },
   "debugStatements": [
     "Ember.warn",
