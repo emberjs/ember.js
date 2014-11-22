@@ -30,9 +30,6 @@ export function prepareHelper(stack, size) {
   var inverseId = stack.pop();
 
   var options = [];
-  if (name !== null) {
-    options.push('type:' + type);
-  }
   options.push('paramTypes:' + array(paramTypes));
   options.push('hashTypes:' + hash(hashTypes));
 

@@ -13,7 +13,20 @@ function keys(obj) {
 }
 
 test("hooks are present", function () {
-  var hookNames = ["content", "component", "componentFallback", "element", "attribute", "concat", "partial", "subexpr", "lookupHelper", "simple", "hydrationHooks"];
+  var hookNames = [
+    "content",
+    "component",
+    "componentFallback",
+    "element",
+    "attribute",
+    "concat",
+    "partial",
+    "subexpr",
+    "lookupHelper",
+    "simple",
+    "hydrationHooks",
+    "set"
+  ];
   for (var i=0;i<hookNames.length;i++) {
     ok(hooks[hookNames[i]], "hook "+hookNames[i]+" is present");
   }

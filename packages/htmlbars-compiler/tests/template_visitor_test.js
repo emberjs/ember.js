@@ -21,7 +21,7 @@ QUnit.module("TemplateVisitor");
 test("empty", function() {
   var input = "";
   actionsEqual(input, [
-    ['startProgram', [0, [], {}]],
+    ['startProgram', [0, []]],
     ['endProgram', [0]]
   ]);
 });
@@ -29,7 +29,7 @@ test("empty", function() {
 test("basic", function() {
   var input = "foo{{bar}}<div></div>";
   actionsEqual(input, [
-    ['startProgram', [0, [], {}]],
+    ['startProgram', [0, []]],
     ['text', [0, 3, false]],
     ['mustache', [1, 3]],
     ['openElement', [2, 3, false, 0, []]],
@@ -41,7 +41,7 @@ test("basic", function() {
 test("nested HTML", function() {
   var input = "<a></a><a><a><a></a></a></a>";
   actionsEqual(input, [
-    ['startProgram', [0, [], {}]],
+    ['startProgram', [0, []]],
     ['openElement', [0, 2, false, 0, []]],
     ['closeElement', [0, 2, false]],
     ['openElement', [1, 2, false, 0, []]],
@@ -57,7 +57,7 @@ test("nested HTML", function() {
 test("mustaches are counted correctly", function() {
   var input = "<a><a>{{foo}}</a><a {{foo}}><a>{{foo}}</a><a>{{foo}}</a></a></a>";
   actionsEqual(input, [
-    ['startProgram', [0, [], {}]],
+    ['startProgram', [0, []]],
     ['openElement', [0, 1, true, 2, []]],
     ['openElement', [0, 2, false, 1, []]],
     ['mustache', [0, 1]],
@@ -78,9 +78,9 @@ test("mustaches are counted correctly", function() {
 test("empty block", function() {
   var input = "{{#a}}{{/a}}";
   actionsEqual(input, [
-    ['startProgram', [0, [], {}]],
+    ['startProgram', [0, []]],
     ['endProgram', [1]],
-    ['startProgram', [1, [0, 1], {}]],
+    ['startProgram', [1, [0, 1]]],
     ['text', [0, 3, false]],
     ['block', [1, 3]],
     ['text', [2, 3, false]],
@@ -91,12 +91,12 @@ test("empty block", function() {
 test("block with inverse", function() {
   var input = "{{#a}}b{{^}}{{/a}}";
   actionsEqual(input, [
-    ['startProgram', [0, [], {}]],
+    ['startProgram', [0, []]],
     ['endProgram', [1]],
-    ['startProgram', [0, [], {}]],
+    ['startProgram', [0, []]],
     ['text', [0, 1, true]],
     ['endProgram', [1]],
-    ['startProgram', [2, [0, 1], {}]],
+    ['startProgram', [2, [0, 1]]],
     ['text', [0, 3, false]],
     ['block', [1, 3]],
     ['text', [2, 3, false]],
@@ -107,26 +107,26 @@ test("block with inverse", function() {
 test("nested blocks", function() {
   var input = "{{#a}}{{#a}}<b></b>{{/a}}{{#a}}{{b}}{{/a}}{{/a}}{{#a}}b{{/a}}";
   actionsEqual(input, [
-    ['startProgram', [0, [], {}]],
+    ['startProgram', [0, []]],
     ['text', [0, 1, true]],
     ['endProgram', [1]],
-    ['startProgram', [0, [0, 1], {}]],
+    ['startProgram', [0, [0, 1]]],
     ['text', [0, 3, false]],
     ['mustache', [1, 3]],
     ['text', [2, 3, false]],
     ['endProgram', [2]],
-    ['startProgram', [0, [], {}]],
+    ['startProgram', [0, []]],
     ['openElement', [0, 1, true, 0, []]],
     ['closeElement', [0, 1, true]],
     ['endProgram', [2]],
-    ['startProgram', [2, [0, 1, 2], {}]],
+    ['startProgram', [2, [0, 1, 2]]],
     ['text', [0, 5, false]],
     ['block', [1, 5]],
     ['text', [2, 5, false]],
     ['block', [3, 5]],
     ['text', [4, 5, false]],
     ['endProgram', [1]],
-    ['startProgram', [2, [0, 1, 2], {}]],
+    ['startProgram', [2, [0, 1, 2]]],
     ['text', [0, 5, false]],
     ['block', [1, 5]],
     ['text', [2, 5, false]],
@@ -139,10 +139,10 @@ test("nested blocks", function() {
 test("component", function() {
   var input = "<x-foo>bar</x-foo>";
   actionsEqual(input, [
-    ['startProgram', [0, [], {}]],
+    ['startProgram', [0, []]],
     ['text', [0, 1, true]],
     ['endProgram', [1]],
-    ['startProgram', [1, [0, 1], {}]],
+    ['startProgram', [1, [0, 1]]],
     ['text', [0, 3, false]],
     ['component', [1, 3]],
     ['text', [2, 3, false]],
