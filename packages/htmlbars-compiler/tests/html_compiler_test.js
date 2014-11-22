@@ -897,18 +897,21 @@ test("Simple elements can have dashed attributes", function() {
 
 test("Block params", function() {
   registerHelper('a', function(params, hash, options, env) {
+    var context = Object.create(this);
     var span = document.createElement('span');
-    span.appendChild(options.render(this, env, document.body, ['W', 'X1']));
+    span.appendChild(options.render(context, env, document.body, ['W', 'X1']));
     return 'A(' + span.innerHTML + ')';
   });
   registerHelper('b', function(params, hash, options, env) {
+    var context = Object.create(this);
     var span = document.createElement('span');
-    span.appendChild(options.render(this, env, document.body, ['X2', 'Y']));
+    span.appendChild(options.render(context, env, document.body, ['X2', 'Y']));
     return 'B(' + span.innerHTML + ')';
   });
   registerHelper('c', function(params, hash, options, env) {
+    var context = Object.create(this);
     var span = document.createElement('span');
-    span.appendChild(options.render(this, env, document.body, ['Z']));
+    span.appendChild(options.render(context, env, document.body, ['Z']));
     return 'C(' + span.innerHTML + ')';
     // return "C(" + options.render() + ")";
   });
