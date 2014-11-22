@@ -30,10 +30,11 @@ import { TemplateCompiler } from "./compiler/template";
  *
  * @method compile
  * @param {String} string An htmlbars template string
+ * @param {Object} options A set of options to provide to the compiler
  * @return {Function} A function for rendering the template
  */
-export function compile(string) {
-  var program = compileSpec(string);
+export function compile(string, options) {
+  var program = compileSpec(string, options);
   return new Function("return " + program)();
 }
 
@@ -52,9 +53,9 @@ export function compile(string) {
  * @param {String} string An htmlbars template string
  * @return {Function} A template spec string
  */
-export function compileSpec(string) {
-  var ast = preprocess(string);
-  var compiler = new TemplateCompiler();
+export function compileSpec(string, options) {
+  var ast = preprocess(string, options);
+  var compiler = new TemplateCompiler(options);
   var program = compiler.compile(ast);
   return program;
 }
