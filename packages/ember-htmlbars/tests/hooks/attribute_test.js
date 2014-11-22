@@ -31,6 +31,58 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', "attribute is output");
   });
 
+  test("quoted attributes are concatenated", function() {
+    view = EmberView.create({
+      context: {firstName: 'max', lastName: 'jackson'},
+      template: compile("<div data-name='{{firstName}} {{lastName}}'>Hi!</div>")
+    });
+    appendView(view);
+
+    equalInnerHTML(view.element, '<div data-name="max jackson">Hi!</div>', "attribute is output");
+  });
+
+  test("quoted attributes are updated when changed", function() {
+    view = EmberView.create({
+      context: {firstName: 'max', lastName: 'jackson'},
+      template: compile("<div data-name='{{firstName}} {{lastName}}'>Hi!</div>")
+    });
+    appendView(view);
+
+    equalInnerHTML(view.element, '<div data-name="max jackson">Hi!</div>', "precond - attribute is output");
+
+    run(view, view.set, 'context.firstName', 'james');
+
+    equalInnerHTML(view.element, '<div data-name="james jackson">Hi!</div>', "attribute is output");
+  });
+
+  test("quoted attributes are not removed when value is null", function() {
+    view = EmberView.create({
+      context: {firstName: 'max', lastName: 'jackson'},
+      template: compile("<div data-name='{{firstName}}'>Hi!</div>")
+    });
+    appendView(view);
+
+    equalInnerHTML(view.element, '<div data-name="max">Hi!</div>', "precond - attribute is output");
+
+    run(view, view.set, 'context.firstName', null);
+
+    equalInnerHTML(view.element, '<div data-name="">Hi!</div>', "attribute is output");
+  });
+
+  test("unquoted attributes are removed when value is null", function() {
+    view = EmberView.create({
+      context: {firstName: 'max'},
+      template: compile("<div data-name={{firstName}}>Hi!</div>")
+    });
+    appendView(view);
+
+    equalInnerHTML(view.element, '<div data-name="max">Hi!</div>', "precond - attribute is output");
+
+    run(view, view.set, 'context.firstName', null);
+
+    equalInnerHTML(view.element, '<div>Hi!</div>', "attribute is output");
+  });
+
   test("property value is directly added to attribute", function() {
     view = EmberView.create({
       context: {name: '"" data-foo="blah"'},
