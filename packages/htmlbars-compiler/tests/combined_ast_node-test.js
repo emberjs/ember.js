@@ -46,10 +46,6 @@ function mustache(string, pairs, raw) {
   return new MustacheNode(params, hash(pairs), raw ? '{{{' : '{{');
 }
 
-function concat(params) {
-  return mustache([id('concat')].concat(params));
-}
-
 function string(data) {
   return new StringNode(data);
 }
@@ -74,8 +70,8 @@ function component(tagName, attributes, children) {
   return new ComponentNode(tagName, attributes || [], children || []);
 }
 
-function attr(name, value) {
-  return new AttrNode(name, value);
+function attr(name, value, quoted) {
+  return new AttrNode(name, value, quoted);
 }
 
 function text(chars) {
@@ -211,11 +207,22 @@ test("a piece of Handlebars with HTML", function() {
   ]));
 });
 
-test("Handlebars embedded in an attribute", function() {
+test("Handlebars embedded in an attribute (quoted)", function() {
   var t = 'some <div class="{{foo}}">content</div> done';
   astEqual(t, root([
     text("some "),
-    element("div", [ attr("class", mustache('foo')) ], [], [
+    element("div", [ attr("class", [ sexpr([id('foo')]) ], true) ], [], [
+      text("content")
+    ]),
+    text(" done")
+  ]));
+});
+
+test("Handlebars embedded in an attribute (unquoted)", function() {
+  var t = 'some <div class={{foo}}>content</div> done';
+  astEqual(t, root([
+    text("some "),
+    element("div", [ attr("class", sexpr([id('foo')])) ], [], [
       text("content")
     ]),
     text(" done")
@@ -227,7 +234,7 @@ test("Handlebars embedded in an attribute (sexprs)", function() {
   astEqual(t, root([
     text("some "),
     element("div", [
-      attr("class", mustache([id('foo'), sexpr([id('foo'), string('abc')])]))
+      attr("class", [ sexpr([id('foo'), sexpr([id('foo'), string('abc')])]) ], true)
     ], [], [
       text("content")
     ]),
@@ -241,11 +248,11 @@ test("Handlebars embedded in an attribute with other content surrounding it", fu
   astEqual(t, root([
     text("some "),
     element("a", [
-      attr("href", concat([
+      attr("href", [
         string("http://"),
         sexpr([id('link')]),
         string("/")
-      ]))
+      ], true)
     ], [], [
       text("content")
     ]),
@@ -264,11 +271,11 @@ test("A more complete embedding example", function() {
     mustache([id('some'), string('content')]),
     text(' '),
     element("div", [
-      attr("class", concat([
+      attr("class", [
         sexpr([id('foo')]),
         string(' '),
         sexpr([id('bind-class'), id('isEnabled')], hash([['truthy', string('enabled')]]))
-      ]))
+      ], true)
     ], [], [
       mustache('content')
     ]),
@@ -419,57 +426,34 @@ test("Stripping - removes unnecessary text nodes", function() {
   ]));
 });
 
-test("Mustache in unquoted attribute value", function() {
-  var t = "<div class=a{{foo}}></div>";
-  astEqual(t, root([
-    element('div', [ attr('class', concat([string("a"), sexpr([id('foo')])])) ])
-  ]));
-
-  t = "<div class={{foo}}></div>";
-  astEqual(t, root([
-    element('div', [ attr('class', mustache('foo')) ])
-  ]));
-
-  t = "<div class=a{{foo}}b></div>";
-  astEqual(t, root([
-    element('div', [ attr('class', concat([string("a"), sexpr([id('foo')]), string("b")])) ])
-  ]));
-
-  t = "<div class={{foo}}b></div>";
-  astEqual(t, root([
-    element('div', [ attr('class', concat([sexpr([id('foo')]), string("b")])) ])
-  ]));
-});
+// TODO: Make these throw an error.
+//test("Awkward mustache in unquoted attribute value", function() {
+//  var t = "<div class=a{{foo}}></div>";
+//  astEqual(t, root([
+//    element('div', [ attr('class', concat([string("a"), sexpr([id('foo')])])) ])
+//  ]));
+//
+//  t = "<div class=a{{foo}}b></div>";
+//  astEqual(t, root([
+//    element('div', [ attr('class', concat([string("a"), sexpr([id('foo')]), string("b")])) ])
+//  ]));
+//
+//  t = "<div class={{foo}}b></div>";
+//  astEqual(t, root([
+//    element('div', [ attr('class', concat([sexpr([id('foo')]), string("b")])) ])
+//  ]));
+//});
 
 test("Components", function() {
-  var t = "<x-foo id='{{bar}}' class='foo-{{bar}}'>{{a}}{{b}}c{{d}}</x-foo>{{e}}";
+  var t = "<x-foo a=b c='d' e={{f}} id='{{bar}}' class='foo-{{bar}}'>{{a}}{{b}}c{{d}}</x-foo>{{e}}";
   astEqual(t, root([
     text(''),
     component('x-foo', [
-      attr('id', mustache('bar')),
-      attr('class', concat([ string('foo-'), sexpr([id('bar')]) ]))
-    ], program([
-      text(''),
-      mustache('a'),
-      text(''),
-      mustache('b'),
-      text('c'),
-      mustache('d'),
-      text('')
-    ])),
-    text(''),
-    mustache('e'),
-    text('')
-  ]));
-});
-
-test("Components", function() {
-  var t = "<x-foo id='{{bar}}' class='foo-{{bar}}'>{{a}}{{b}}c{{d}}</x-foo>{{e}}";
-  astEqual(t, root([
-    text(''),
-    component('x-foo', [
-      attr('id', mustache('bar')),
-      attr('class', concat([ string('foo-'), sexpr([id('bar')]) ]))
+      attr('a', text('b')),
+      attr('c', text('d')),
+      attr('e',  sexpr([id('f')])),
+      attr('id', [ sexpr([id('bar')]) ], true),
+      attr('class', [ string('foo-'), sexpr([id('bar')]) ], true)
     ], program([
       text(''),
       mustache('a'),

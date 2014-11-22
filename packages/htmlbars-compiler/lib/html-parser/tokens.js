@@ -1,5 +1,5 @@
 import { Chars, StartTag, EndTag } from "../../simple-html-tokenizer";
-import { AttrNode, TextNode, MustacheNode, StringNode, IdNode } from "../ast";
+import { AttrNode, TextNode, StringNode } from "../ast";
 
 StartTag.prototype.startAttribute = function(char) {
   this.finalizeAttributeValue();
@@ -14,7 +14,7 @@ StartTag.prototype.addToAttributeName = function(char) {
 StartTag.prototype.addToAttributeValue = function(char) {
   var value = this.currentAttribute.value;
 
-  if (char.type === 'mustache') {
+  if (char.type === 'sexpr') {
     value.push(char);
   } else {
     if (value.length > 0 && value[value.length - 1].type === 'text') {
@@ -33,36 +33,30 @@ StartTag.prototype.finalize = function() {
 
 StartTag.prototype.finalizeAttributeValue = function() {
   var attr = this.currentAttribute;
+  var part;
 
   if (!attr) {
     return;
   }
 
   if (attr.value.length === 1) {
-    // Unwrap a single TextNode or MustacheNode
-    attr.value = attr.value[0];
+    part = attr.value[0];
+    if (part.type === 'sexpr') {
+      if (!attr.quoted) {
+        attr.value = part;
+      }
+    } else {
+      attr.value = part;
+    }
   } else {
-    // If the attr value has multiple parts combine them into
-    // a single MustacheNode with the concat helper
-    var params = [ new IdNode([{ part: 'concat' }]) ];
-
+    // Convert TextNode to StringNode
     for (var i = 0; i < attr.value.length; i++) {
-      var part = attr.value[i];
+      part = attr.value[i];
+
       if (part.type === 'text') {
-        params.push(new StringNode(part.chars));
-      } else if (part.type === 'mustache') {
-        var sexpr = part.sexpr;
-        delete sexpr.isRoot;
-
-        if (sexpr.isHelper) {
-          sexpr.isHelper = true;
-        }
-
-        params.push(sexpr);
+        attr.value[i] = new StringNode(part.chars);
       }
     }
-
-    attr.value = new MustacheNode(params, undefined, true, { left: false, right: false });
   }
 };
 
