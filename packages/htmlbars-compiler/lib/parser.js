@@ -3,13 +3,14 @@ import { Tokenizer } from "../simple-html-tokenizer";
 import nodeHandlers from "./html-parser/node-handlers";
 import tokenHandlers from "./html-parser/token-handlers";
 
-export function preprocess(html) {
+export function preprocess(html, options) {
   var ast = parse(html);
-  var combined = new HTMLProcessor().acceptNode(ast);
+  var combined = new HTMLProcessor(options).acceptNode(ast);
   return combined;
 }
 
-function HTMLProcessor() {
+function HTMLProcessor(options) {
+  this.options = options || {};
   this.elementStack = [];
   this.tokenizer = new Tokenizer('');
   this.nodeHandlers = nodeHandlers;

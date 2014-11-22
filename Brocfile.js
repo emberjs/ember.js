@@ -14,6 +14,9 @@ var packages = require('./packages');
 var dependableTrees = {};
 
 var bower = 'bower_components';
+var demos = new Funnel('demos', {
+  destDir: '/demos'
+});
 
 var ES6Tokenizer = new Funnel(bower+'/simple-html-tokenizer/lib/');
 dependableTrees['simple-html-tokenizer'] = ES6Tokenizer;
@@ -85,7 +88,7 @@ test = replace(test, {
 var loader = new Funnel(bower, {
   srcDir: '/loader',
   files: [ 'loader.js' ],
-  destDir: '/test'
+  destDir: '/assets'
 });
 
 var qunit = new Funnel(bower, {
@@ -94,7 +97,7 @@ var qunit = new Funnel(bower, {
 });
 
 // Export trees
-var trees = [test, loader, qunit];
+var trees = [demos, test, loader, qunit];
 
 for (var packageName in packages.dependencies) {
   var packageTrees = getPackageTrees(packageName, packages.dependencies[packageName]);
