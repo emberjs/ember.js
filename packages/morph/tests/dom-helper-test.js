@@ -39,6 +39,16 @@ test('#setAttribute', function(){
   equalHTML(node, '<div id="super-tag"></div>');
 });
 
+test('#removeAttribute', function(){
+  var node = dom.createElement('div');
+  dom.setAttribute(node, 'id', 'super-tag');
+  equalHTML(node, '<div id="super-tag"></div>', 'precond - attribute exists');
+
+
+  dom.removeAttribute(node, 'id');
+  equalHTML(node, '<div></div>', 'attribute was removed');
+});
+
 test('#createElement of tr with contextual table element', function(){
   var tableElement = document.createElement('table'),
       node = dom.createElement('tr', tableElement);

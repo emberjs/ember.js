@@ -127,6 +127,10 @@ prototype.setAttribute = function(element, name, value) {
   element.setAttribute(name, value);
 };
 
+prototype.removeAttribute = function(element, name) {
+  element.removeAttribute(name);
+};
+
 if (doc && doc.createElementNS) {
   // Only opt into namespace detection if a contextualElement
   // is passed.
