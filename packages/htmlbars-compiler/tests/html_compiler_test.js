@@ -917,6 +917,22 @@ test("Block params", function() {
   compilesTo(t, 'A(W,X1 B(X2,Y) W,X1 C(X1,Z))', {});
 });
 
+test("Block params - Helper should know how many block params it was called with", function() {
+  expect(4);
+
+  registerHelper('without-block-params', function(params, hash, options) {
+    ok(!('blockParams' in options), 'Helpers should not be passed a blockParams option if not called with block params.');
+  });
+  registerHelper('with-block-params', function(params, hash, options) {
+    equal(options.blockParams, this.count, 'Helpers should recieve the correct number of block params in options.blockParams.');
+  });
+
+  compile('{{#without-block-params}}{{/without-block-params}}')({}, env, document.body);
+  compile('{{#with-block-params as |x|}}{{/with-block-params}}')({ count: 1 }, env, document.body);
+  compile('{{#with-block-params as |x y|}}{{/with-block-params}}')({ count: 2 }, env, document.body);
+  compile('{{#with-block-params as |x y z|}}{{/with-block-params}}')({ count: 3 }, env, document.body);
+});
+
 if (document.createElement('div').namespaceURI) {
 
 QUnit.module("HTML-based compiler (output, svg)", {
