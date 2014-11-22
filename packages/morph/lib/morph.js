@@ -43,7 +43,10 @@ Morph.prototype.parent = function () {
   if (!this.element) {
     var parent = this.start.parentNode;
     if (this._parent !== parent) {
-      this.element = this._parent = parent;
+      this._parent = parent;
+    }
+    if (parent.nodeType === 1) {
+      this.element = parent;
     }
   }
   return this._parent;

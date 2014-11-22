@@ -111,7 +111,8 @@ function morphTests(factory) {
   });
 
   test('update '+factory.name, function () {
-    var setup = factory.create(),
+    var div = document.createElement('div'),
+      setup = factory.create(),
       fragment = setup.fragment,
       morph = setup.morph,
       startHTML = setup.startHTML,
@@ -136,6 +137,27 @@ function morphTests(factory) {
     morph.update(duckTypedSafeString);
     html = startHTML+'<div>updated</div>'+endHTML;
     equalHTML(fragment, html);
+
+    var newFrag = document.createDocumentFragment();
+    newFrag.appendChild(fragment);
+
+    morph.update('oh hai');
+    html = startHTML+'oh hai'+endHTML;
+    equalHTML(newFrag, html);
+
+    morph.update('oh bai');
+    html = startHTML+'oh bai'+endHTML;
+    equalHTML(newFrag, html);
+
+    div.appendChild(newFrag);
+
+    morph.update('oh hai');
+    html = '<div>'+startHTML+'oh hai'+endHTML+'</div>';
+    equalHTML(div, html);
+
+    morph.update('oh bai');
+    html = '<div>'+startHTML+'oh bai'+endHTML+'</div>';
+    equalHTML(div, html);
   });
 }
 
