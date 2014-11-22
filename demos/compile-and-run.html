@@ -7,20 +7,23 @@
     <textarea id="data">{"name": "Bob"}</textarea>
     <label>Template</label>
     <textarea id="template">Howdy {{name}}</textarea>
+    <label>Options</label>
+    <textarea id="options">{ "disableComponentGeneration": true }</textarea>
     <button id="run-template">Render</button>
     <hr>
     <div id="output"></div>
     <hr>
 
-    <script src="../bower_components/loader/loader.js"></script>
-    <script src="../dist/amd/morph.amd.js"></script>
-    <script src="../dist/amd/htmlbars-compiler.amd.js"></script>
-    <script src="../dist/amd/htmlbars-runtime.amd.js"></script>
+    <script src="../assets/loader.js"></script>
+    <script src="../amd/morph.amd.js"></script>
+    <script src="../amd/htmlbars-compiler.amd.js"></script>
+    <script src="../amd/htmlbars-runtime.amd.js"></script>
     <script>
       var button   = document.getElementById('run-template'),
           dataarea = document.getElementById('data'),
           textarea = document.getElementById('template'),
-          output   = document.getElementById('output');
+          output   = document.getElementById('output'),
+          options  = document.getElementById('options');
 
       var compiler    = requireModule('htmlbars-compiler/compiler'),
           compile     = compiler.compile,
@@ -30,13 +33,18 @@
 
       button.addEventListener('click', function(){
         var source = textarea.value,
-            data = {};
+          data = {}, compileOptions = {} ;
+
         try {
           data = JSON.parse(dataarea.value);
         } catch(e) {}
+
         try {
-          var templateSpec = compileSpec(source),
-              template     = compile(source),
+          compileOptions = JSON.parse(options.value);
+        } catch(e) { }
+        try {
+          var templateSpec = compileSpec(source, compileOptions),
+              template     = compile(source, compileOptions),
               dom          = template(data, {hooks: hooks, dom: new DOMHelper()}, output);
           output.innerHTML = '<pre><code>'+JSON.stringify(data)+'</code></pre><hr><pre><code>'+templateSpec+'</code></pre><hr>';
           output.appendChild(dom);
