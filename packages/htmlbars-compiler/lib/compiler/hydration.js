@@ -87,9 +87,12 @@ prototype.stackLiteral = function(literal) {
   this.stack.push(literal);
 };
 
-prototype.helper = function(size, morphNum) {
+prototype.helper = function(size, morphNum, blockParamsLength) {
   var prepared = prepareHelper(this.stack, size);
   prepared.options.push('morph:morph'+morphNum);
+  if (blockParamsLength) {
+    prepared.options.push('blockParams:'+blockParamsLength);
+  }
   this.pushMustacheInContent(prepared.name, prepared.params, prepared.hash, prepared.options, morphNum);
 };
 
