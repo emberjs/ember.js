@@ -3,7 +3,8 @@ import {
   content,
   element,
   subexpr,
-  component
+  component,
+  attribute
 } from "ember-htmlbars/hooks";
 import { DOMHelper } from "morph";
 import template from "ember-htmlbars/system/template";
@@ -14,8 +15,6 @@ import {
   helper,
   default as helpers
 } from "ember-htmlbars/helpers";
-import { attributeHelper} from "ember-htmlbars/helpers/attribute";
-import { concatHelper } from "ember-htmlbars/helpers/concat";
 import { bindHelper } from "ember-htmlbars/helpers/binding";
 import { viewHelper } from "ember-htmlbars/helpers/view";
 import { yieldHelper } from "ember-htmlbars/helpers/yield";
@@ -58,8 +57,6 @@ import "ember-htmlbars/system/bootstrap";
 // Ember.Handlebars global if htmlbars is enabled
 import "ember-htmlbars/compat";
 
-registerHelper('attribute', attributeHelper);
-registerHelper('concat', concatHelper);
 registerHelper('bindHelper', bindHelper);
 registerHelper('bind', bindHelper);
 registerHelper('view', viewHelper);
@@ -100,7 +97,8 @@ export var defaultEnv = {
     content: content,
     element: element,
     subexpr: subexpr,
-    component: component
+    component: component,
+    attribute: attribute
   },
 
   helpers: helpers

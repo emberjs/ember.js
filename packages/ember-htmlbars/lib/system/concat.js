@@ -1,7 +1,7 @@
 import Stream from "ember-metal/streams/stream";
 import {readArray} from "ember-metal/streams/read";
 
-export function concatHelper(params, hash, options, env) {
+export default function concat(params) {
   var stream = new Stream(function() {
     return readArray(params).join('');
   });
@@ -10,7 +10,7 @@ export function concatHelper(params, hash, options, env) {
     var param = params[i];
 
     if (param && param.isStream) {
-      param.subscribe(stream.notifyAll, stream);
+      param.subscribe(stream.notify, stream);
     }
   }
 

@@ -1,5 +1,7 @@
 import Ember from "ember-metal/core";
+import run from "ember-metal/run_loop";
 import lookupHelper from "ember-htmlbars/system/lookup-helper";
+import concat from "ember-htmlbars/system/concat";
 import { sanitizeOptionsForHelper } from "ember-htmlbars/system/sanitize-for-helper";
 
 function streamifyArgs(view, params, hash, options, env, helper) {
@@ -65,4 +67,41 @@ export function subexpr(path, view, params, hash, options, env) {
   } else {
     return view.getStream(path);
   }
+}
+
+export function attribute(element, attributeName, quoted, context, parts, options, env) {
+  var dom = env.dom;
+  var isDirty, lastRenderedValue, attrValueStream;
+
+  if (quoted) {
+    attrValueStream = concat(parts);
+  } else {
+    attrValueStream = parts[0];
+  }
+
+  attrValueStream.subscribe(function() {
+    isDirty = true;
+
+    run.schedule('render', this, function() {
+      var value = attrValueStream.value();
+
+      if (isDirty) {
+        isDirty = false;
+
+        if (value !== lastRenderedValue) {
+          lastRenderedValue = value;
+
+          if (lastRenderedValue === null) {
+            dom.removeAttribute(element, attributeName);
+          } else {
+            dom.setAttribute(element, attributeName, lastRenderedValue);
+          }
+        }
+      }
+    });
+  });
+
+  lastRenderedValue = attrValueStream.value();
+
+  dom.setAttribute(element, attributeName, lastRenderedValue);
 }
