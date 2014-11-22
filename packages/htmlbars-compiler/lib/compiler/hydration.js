@@ -116,17 +116,6 @@ prototype.attribute = function(quoted, name, size, elementNum) {
   this.source.push(this.indent + '  hooks.attribute(element' + elementNum + ', ' + string(name) + ', ' + quoted + ', context, ' + prepared.params + ', ' + hash(prepared.options) + ', env);\n');
 };
 
-prototype.ambiguousAttr = function() {
-  var name = this.stack.pop();
-  var type = this.stack.pop();
-  this.stack.push('[' + name + ', [], {}, { type: ' + type + ' }]');
-};
-
-prototype.helperAttr = function(size) {
-  var prepared = prepareHelper(this.stack, size);
-  this.stack.push('['+prepared.name+','+prepared.params+','+ prepared.hash +',' + hash(prepared.options)+']');
-};
-
 prototype.sexpr = function(size) {
   var prepared = prepareHelper(this.stack, size);
   this.stack.push('hooks.subexpr(' + prepared.name + ', context, ' + prepared.params + ', ' + prepared.hash + ',' + hash(prepared.options) + ', env)');

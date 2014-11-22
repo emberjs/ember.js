@@ -193,17 +193,6 @@ HydrationOpcodeCompiler.prototype.string = function(str) {
   this.opcode('string', str);
 };
 
-HydrationOpcodeCompiler.prototype.mustacheInAttr = function(mustache) {
-  if (mustache.isHelper) {
-    this.opcode('program', null, null);
-    processSexpr(this, mustache);
-    this.opcode('helperAttr', mustache.params.length);
-  } else {
-    this.ID(mustache.id);
-    this.opcode('ambiguousAttr');
-  }
-};
-
 HydrationOpcodeCompiler.prototype.ID = function(id) {
   if (id.parts.length > 0 && this.scopeVars[id.parts[0]]) {
     this.opcode('scopeId', id.parts);
