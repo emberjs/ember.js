@@ -78,7 +78,7 @@ export function outletHelper(params, hash, options, env) {
 
   Ember.assert(
     "Using {{outlet}} with an unquoted name is not supported.",
-    params.length === 0 || options.types[0] === 'string'
+    params.length === 0 || options.paramTypes[0] === 'string'
   );
 
   var property = params[0] || 'main';
@@ -106,7 +106,7 @@ export function outletHelper(params, hash, options, env) {
   }
 
   viewClass = viewName ? this.container.lookupFactory(viewFullName) : hash.viewClass || OutletView;
-  options.types = ['id'];
+  options.paramTypes = ['id'];
 
   hash.currentViewBinding = '_view.outletSource._outlets.' + property;
   options.hashTypes.currentViewBinding = 'string';

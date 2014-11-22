@@ -164,7 +164,7 @@ function eachHelper(params, hash, options, env) {
   Ember.assert("If you pass more than one argument to the each helper," +
                " it must be in the form #each foo in bar", params.length <= 1);
 
-  if (options.types[0] === 'keyword') {
+  if (options.paramTypes[0] === 'keyword') {
     keywordName = path.to;
 
     helperName += ' ' + keywordName + ' in ' + path.from;
@@ -196,7 +196,7 @@ export function preprocessArgumentsForEach(view, params, hash, options, env) {
       to: params[0],
       stream: view.getStream(params[2])
     });
-    options.types.splice(0, 3, 'keyword');
+    options.paramTypes.splice(0, 3, 'keyword');
   }
 }
 

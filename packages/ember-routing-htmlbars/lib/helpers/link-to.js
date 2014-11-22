@@ -276,7 +276,7 @@ import 'ember-htmlbars';
 */
 function linkToHelper(params, hash, options, env) {
   var hashTypes = options.hashTypes;
-  var types = options.types;
+  var paramTypes = options.paramTypes;
   var shouldEscape = !hash.unescaped;
   var queryParamsObject;
 
@@ -298,7 +298,7 @@ function linkToHelper(params, hash, options, env) {
 
   if (!options.render) {
     var linkTitle = params.shift();
-    var linkTitleType = types.shift();
+    var linkTitleType = paramTypes.shift();
 
     if (linkTitleType === 'id') {
       hash.linkTitle = linkTitle = linkTitle;
@@ -322,7 +322,7 @@ function linkToHelper(params, hash, options, env) {
   }
 
   for (var i = 0; i < params.length; i++) {
-    if (types[i] === 'id') {
+    if (paramTypes[i] === 'id') {
       var lazyValue = params[i];
 
       if (!lazyValue._isController) {

@@ -93,12 +93,12 @@ export function renderHelper(params, hash, options, env) {
 
   Ember.assert(
     "The first argument of {{render}} must be quoted, e.g. {{render \"sidebar\"}}.",
-    options.types[0] === 'string'
+    options.paramTypes[0] === 'string'
   );
 
   Ember.assert(
     "The second argument of {{render}} must be a path, e.g. {{render \"post\" post}}.",
-    params.length < 2 || options.types[1] === 'id'
+    params.length < 2 || options.paramTypes[1] === 'id'
   );
 
 
