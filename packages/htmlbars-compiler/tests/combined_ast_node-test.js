@@ -463,6 +463,60 @@ test("Components", function() {
   ]));
 });
 
+test("Components", function() {
+  var t = "<x-foo id='{{bar}}' class='foo-{{bar}}'>{{a}}{{b}}c{{d}}</x-foo>{{e}}";
+  astEqual(t, root([
+    text(''),
+    component('x-foo', [
+      attr('id', mustache('bar')),
+      attr('class', concat([ string('foo-'), sexpr([id('bar')]) ]))
+    ], program([
+      text(''),
+      mustache('a'),
+      text(''),
+      mustache('b'),
+      text('c'),
+      mustache('d'),
+      text('')
+    ])),
+    text(''),
+    mustache('e'),
+    text('')
+  ]));
+});
+
+test("Components with disableComponentGeneration", function() {
+  var t = "begin <x-foo>content</x-foo> finish";
+  var actual = preprocess(t, {
+    disableComponentGeneration: true
+  });
+
+  astEqual(actual, root([
+    text("begin "),
+    element("x-foo", [], [], [
+      text("content")
+    ]),
+    text(" finish")
+  ]));
+});
+
+test("Components with disableComponentGeneration === false", function() {
+  var t = "begin <x-foo>content</x-foo> finish";
+  var actual = preprocess(t, {
+    disableComponentGeneration: false
+  });
+
+  astEqual(actual, root([
+    text("begin "),
+    component("x-foo", [],
+      program([
+        text("content")
+      ])
+    ),
+    text(" finish")
+  ]));
+});
+
 test("an HTML comment", function() {
   var t = 'before <!-- some comment --> after';
   astEqual(t, root([

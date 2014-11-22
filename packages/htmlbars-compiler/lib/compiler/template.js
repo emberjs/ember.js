@@ -6,7 +6,8 @@ import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
 import { repeat } from "./quoting";
 
-export function TemplateCompiler() {
+export function TemplateCompiler(options) {
+  this.options = options || {};
   this.fragmentOpcodeCompiler = new FragmentOpcodeCompiler();
   this.fragmentCompiler = new FragmentCompiler();
   this.hydrationOpcodeCompiler = new HydrationOpcodeCompiler();

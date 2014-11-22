@@ -108,12 +108,13 @@ var tokenHandlers = {
   EndTag: function(tag) {
     var element = this.elementStack.pop();
     var parent = this.currentElement();
+    var disableComponentGeneration = this.options.disableComponentGeneration === true;
 
     if (element.tag !== tag.tagName) {
       throw new Error("Closing tag " + tag.tagName + " did not match last open tag " + element.tag);
     }
 
-    if (element.tag.indexOf("-") === -1) {
+    if (disableComponentGeneration || element.tag.indexOf("-") === -1) {
       appendChild(parent, element);
     } else {
       var program = new ProgramNode(element.children, null, { left: false, right: false });
