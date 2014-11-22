@@ -29,7 +29,18 @@ test("simple block", function() {
     [ "program", [ 0, null ] ],
     [ "id", [ [ "foo" ] ] ],
     [ "stackLiteral", [ 0 ] ],
-    [ "helper", [ 0, 0 ] ]
+    [ "helper", [ 0, 0, 0 ] ]
+  ]);
+});
+
+test("simple block with block params", function() {
+  var opcodes = opcodesFor("<div>{{#foo as |bar baz|}}{{/foo}}</div>");
+  deepEqual(opcodes, [
+    [ "morph", [ 0, [ 0 ], null, null, true ] ],
+    [ "program", [ 0, null ] ],
+    [ "id", [ [ "foo" ] ] ],
+    [ "stackLiteral", [ 0 ] ],
+    [ "helper", [ 0, 0, 2 ] ]
   ]);
 });
 

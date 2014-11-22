@@ -91,18 +91,21 @@ HydrationOpcodeCompiler.prototype.closeElement = function(element, pos, len, isS
 };
 
 HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLength) {
-  var currentDOMChildIndex = this.currentDOMChildIndex,
-      sexpr = block.sexpr;
+  var sexpr = block.sexpr;
+  var program = block.program;
 
-  var start = (currentDOMChildIndex < 0 ? null : currentDOMChildIndex),
-      end = (childIndex === childrenLength - 1 ? null : currentDOMChildIndex + 1);
+  var blockParamsLength = program && program.blockParams ? program.blockParams.length : 0;
+
+  var currentDOMChildIndex = this.currentDOMChildIndex;
+  var start = (currentDOMChildIndex < 0) ? null : currentDOMChildIndex;
+  var end = (childIndex === childrenLength - 1) ? null : currentDOMChildIndex + 1;
 
   var morphNum = this.morphNum++;
   this.morphs.push([morphNum, this.paths.slice(), start, end, true]);
 
   this.opcode('program', this.templateId++, block.inverse === null ? null : this.templateId++);
   processSexpr(this, sexpr);
-  this.opcode('helper', sexpr.params.length, morphNum);
+  this.opcode('helper', sexpr.params.length, morphNum, blockParamsLength);
 };
 
 HydrationOpcodeCompiler.prototype.component = function(component, childIndex, childrenLength) {
