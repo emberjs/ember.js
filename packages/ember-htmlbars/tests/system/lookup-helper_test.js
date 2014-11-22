@@ -1,8 +1,4 @@
-import {
-  concat,
-  attribute,
-  lookupHelper
-} from "ember-htmlbars/system/lookup-helper";
+import lookupHelper from "ember-htmlbars/system/lookup-helper";
 import ComponentLookup from "ember-views/component_lookup";
 import Container from "container";
 import Component from "ember-views/views/component";
@@ -23,18 +19,6 @@ function generateContainer() {
 }
 
 QUnit.module('ember-htmlbars: lookupHelper hook');
-
-test('returns concat when helper is `concat`', function() {
-  var actual = lookupHelper('concat');
-
-  equal(actual.helperFunction, concat, 'concat is a hard-coded helper');
-});
-
-test('returns attribute when helper is `attribute`', function() {
-  var actual = lookupHelper('attribute');
-
-  equal(actual.helperFunction, attribute, 'attribute is a hard-coded helper');
-});
 
 test('looks for helpers in the provided `env.helpers`', function() {
   var env = generateEnv({
