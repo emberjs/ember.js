@@ -81,3 +81,8 @@ for a detailed explanation.
   Helper to pause a test, for use in debugging and TDD.
 
   Added in [#9383](https://github.com/emberjs/ember.js/pull/9383)
+
+* `ember-htmlbars-component-generation`
+
+  Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
+  invocation (instead of a standard HTML5 style element).
