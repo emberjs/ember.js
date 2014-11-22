@@ -39,7 +39,9 @@ StartTag.prototype.finalizeAttributeValue = function() {
     return;
   }
 
-  if (attr.value.length === 1) {
+  if (attr.value.length === 0) {
+    attr.value = new TextNode("");
+  } else if (attr.value.length === 1) {
     part = attr.value[0];
     if (part.type === 'sexpr') {
       if (!attr.quoted) {
