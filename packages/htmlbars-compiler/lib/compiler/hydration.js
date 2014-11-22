@@ -55,7 +55,11 @@ prototype.program = function(programId, inverseId) {
 
 prototype.id = function(parts) {
   this.stack.push(string('id'));
-  this.stack.push(string(parts.join('.')));
+  if (parts) {
+    this.stack.push(string(parts.join('.')));
+  } else {
+    this.stack.push(null);
+  }
 };
 
 prototype.scopeId = function(parts) {
@@ -102,6 +106,11 @@ prototype.ambiguous = function(morphNum) {
   options.push('type:'+type);
   options.push('morph:morph'+morphNum);
   this.pushMustacheInContent(name, '[]', '{}', options, morphNum);
+};
+
+prototype.attribute = function(quoted, name, size, elementNum) {
+  var prepared = prepareHelper(this.stack, size);
+  this.source.push(this.indent + 'hooks.attribute(element' + elementNum + ', ' + string(name) + ', ' + quoted + ', context, ' + prepared.params + ', ' + hash(prepared.options) + ', env);\n');
 };
 
 prototype.ambiguousAttr = function() {

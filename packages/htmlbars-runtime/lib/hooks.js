@@ -46,14 +46,19 @@ export function element(domElement, helperName, context, params, hash, options, 
   }
 }
 
-export function attribute(params, hash, options /*, env*/) {
-  var attrName = params[0];
-  var attrValue = params[1];
+export function attribute(domElement, attributeName, quoted, context, parts, options, env) {
+  var attrValue;
+
+  if (quoted) {
+    attrValue = concat.call(this, parts, null, options, env);
+  } else {
+    attrValue = parts[0];
+  }
 
   if (attrValue === null) {
-    options.element.removeAttribute(attrName);
+    domElement.removeAttribute(attributeName);
   } else {
-    options.element.setAttribute(attrName, attrValue);
+    domElement.setAttribute(attributeName, attrValue);
   }
 }
 
