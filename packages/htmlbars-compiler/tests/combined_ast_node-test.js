@@ -140,6 +140,15 @@ test("self-closed element", function() {
   ]));
 });
 
+test("elements can have empty attributes", function() {
+  var t = '<img id="">';
+  astEqual(t, root([
+    element("img", [
+      attr("id", text(""))
+    ])
+  ]));
+});
+
 test("svg content", function() {
   var t = "<svg></svg>";
   astEqual(t, root([
