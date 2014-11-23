@@ -107,3 +107,41 @@ testBoth('unwatching "length" property on an object', function(get, set) {
   equal(didCount, 0, 'should NOT have invoked didCount');
 
 });
+
+test("unwatching a chain", function() {
+  var Bar = {};
+  var obj = { foo: Bar };
+  addListeners(obj, 'foo.Bar');
+
+  watch(obj, 'foo.Bar');
+
+  set(obj, 'foo.Bar', 'FOOBAR');
+  equal(willCount, 1, 'should have invoked willCount');
+  equal(didCount, 1, 'should have invoked didCount');
+
+  unwatch(obj, 'foo.Bar');
+  willCount = didCount = 0;
+  set(obj, 'foo.Bar', 'BARFOO');
+  equal(willCount, 0, 'should NOT have invoked willCount');
+  equal(didCount, 0, 'should NOT have invoked didCount');
+
+});
+
+test("unwatching a chain with capitalize property names", function() {
+  var Bar = {};
+  var obj = { Foo: Bar };
+  addListeners(obj, 'Foo.Bar');
+
+  watch(obj, 'Foo.Bar');
+
+  set(obj, 'Foo.Bar', 'FOOBAR');
+  equal(willCount, 1, 'should have invoked willCount');
+  equal(didCount, 1, 'should have invoked didCount');
+
+  unwatch(obj, 'Foo.Bar');
+  willCount = didCount = 0;
+  set(obj, 'Foo.Bar', 'BARFOO');
+  equal(willCount, 0, 'should NOT have invoked willCount');
+  equal(didCount, 0, 'should NOT have invoked didCount');
+
+});
