@@ -83,6 +83,30 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     equalInnerHTML(view.element, '<div>Hi!</div>', "attribute is output");
   });
 
+  test("unquoted attributes that are null are not added", function() {
+    view = EmberView.create({
+      context: {firstName: null},
+      template: compile("<div data-name={{firstName}}>Hi!</div>")
+    });
+    appendView(view);
+
+    equalInnerHTML(view.element, '<div>Hi!</div>', "attribute is not present");
+  });
+
+  test("unquoted attributes are added when changing from null", function() {
+    view = EmberView.create({
+      context: {firstName: null},
+      template: compile("<div data-name={{firstName}}>Hi!</div>")
+    });
+    appendView(view);
+
+    equalInnerHTML(view.element, '<div>Hi!</div>', "precond - attribute is not present");
+
+    run(view, view.set, 'context.firstName', 'max');
+
+    equalInnerHTML(view.element, '<div data-name="max">Hi!</div>', "attribute is added output");
+  });
+
   test("property value is directly added to attribute", function() {
     view = EmberView.create({
       context: {name: '"" data-foo="blah"'},
