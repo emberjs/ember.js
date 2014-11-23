@@ -1,12 +1,10 @@
 import Ember from "ember-metal/core";
-import {
-  set,
-  content,
-  element,
-  subexpr,
-  component,
-  attribute
-} from "ember-htmlbars/hooks";
+import content from "ember-htmlbars/hooks/content";
+import component from "ember-htmlbars/hooks/component";
+import element from "ember-htmlbars/hooks/element";
+import subexpr from "ember-htmlbars/hooks/subexpr";
+import attribute from "ember-htmlbars/hooks/attribute";
+import set from "ember-htmlbars/hooks/set";
 import { DOMHelper } from "morph";
 import template from "ember-htmlbars/system/template";
 import compile from "ember-htmlbars/system/compile";
