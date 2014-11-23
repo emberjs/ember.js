@@ -25,60 +25,64 @@ function appendView(view) {
 var view, lookup;
 var originalLookup = Ember.lookup;
 
-QUnit.module("ember-htmlbars: {{#with}} helper", {
-  setup: function() {
-    Ember.lookup = lookup = { Ember: Ember };
+function testWithAs(moduleName, templateString) {
+  QUnit.module(moduleName, {
+    setup: function() {
+      Ember.lookup = lookup = { Ember: Ember };
 
-    view = EmberView.create({
-      template: compile("{{#with person as tom}}{{title}}: {{tom.name}}{{/with}}"),
-      context: {
-        title: "Señor Engineer",
-        person: { name: "Tom Dale" }
-      }
-    });
+      view = EmberView.create({
+        template: compile(templateString),
+        context: {
+          title: "Señor Engineer",
+          person: { name: "Tom Dale" }
+        }
+      });
 
-    appendView(view);
-  },
+      appendView(view);
+    },
 
-  teardown: function() {
+    teardown: function() {
+      run(function() {
+        view.destroy();
+      });
+      Ember.lookup = originalLookup;
+    }
+  });
+
+  test("it should support #with-as syntax", function() {
+    equal(view.$().text(), "Señor Engineer: Tom Dale", "should be properly scoped");
+  });
+
+  test("updating the context should update the alias", function() {
     run(function() {
-      view.destroy();
+      view.set('context.person', {
+        name: "Yehuda Katz"
+      });
     });
-    Ember.lookup = originalLookup;
-  }
-});
 
-test("it should support #with foo as bar", function() {
-  equal(view.$().text(), "Señor Engineer: Tom Dale", "should be properly scoped");
-});
+    equal(view.$().text(), "Señor Engineer: Yehuda Katz", "should be properly scoped after updating");
+  });
 
-test("updating the context should update the alias", function() {
-  run(function() {
-    view.set('context.person', {
-      name: "Yehuda Katz"
+  test("updating a property on the context should update the HTML", function() {
+    run(function() {
+      set(view, 'context.person.name', "Yehuda Katz");
     });
+
+    equal(view.$().text(), "Señor Engineer: Yehuda Katz", "should be properly scoped after updating");
   });
 
-  equal(view.$().text(), "Señor Engineer: Yehuda Katz", "should be properly scoped after updating");
-});
+  test("updating a property on the view should update the HTML", function() {
+    run(function() {
+      view.set('context.title', "Señorette Engineer");
+    });
 
-test("updating a property on the context should update the HTML", function() {
-  run(function() {
-    set(view, 'context.person.name', "Yehuda Katz");
+    equal(view.$().text(), "Señorette Engineer: Tom Dale", "should be properly scoped after updating");
   });
+}
 
-  equal(view.$().text(), "Señor Engineer: Yehuda Katz", "should be properly scoped after updating");
-});
+testWithAs("ember-htmlbars: {{#with}} helper", "{{#with person as tom}}{{title}}: {{tom.name}}{{/with}}");
 
-test("updating a property on the view should update the HTML", function() {
-  run(function() {
-    view.set('context.title', "Señorette Engineer");
-  });
-
-  equal(view.$().text(), "Señorette Engineer: Tom Dale", "should be properly scoped after updating");
-});
-
-QUnit.module("Multiple Handlebars {{with}} helpers with 'as'", {
+QUnit.module("Multiple Handlebars {{with foo as bar}} helpers", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
@@ -492,3 +496,63 @@ QUnit.module("{{#with}} helper binding to view keyword", {
 test("{{with}} helper can bind to keywords with 'as'", function(){
   equal(view.$().text(), "We have: this is from the view and this is from the context", "should render");
 });
+
+if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
+  testWithAs("ember-htmlbars: {{#with x as |y|}}", "{{#with person as |tom|}}{{title}}: {{tom.name}}{{/with}}");
+}
+
+if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
+  QUnit.module("Multiple Handlebars {{with foo as |bar|}} helpers", {
+    setup: function() {
+      Ember.lookup = lookup = { Ember: Ember };
+
+      view = EmberView.create({
+        template: compile("Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}"),
+        context: {
+          admin: { name: "Tom Dale" },
+          user: { name: "Yehuda Katz"}
+        }
+      });
+
+      appendView(view);
+    },
+
+    teardown: function() {
+      run(function() {
+        view.destroy();
+      });
+      Ember.lookup = originalLookup;
+    }
+  });
+
+  test("re-using the same variable with different #with blocks does not override each other", function(){
+    equal(view.$().text(), "Admin: Tom Dale User: Yehuda Katz", "should be properly scoped");
+  });
+
+  test("the scoped variable is not available outside the {{with}} block.", function(){
+    run(function() {
+      view.set('template', compile("{{name}}-{{#with other as |name|}}{{name}}{{/with}}-{{name}}"));
+      view.set('context', {
+        name: 'Stef',
+        other: 'Yehuda'
+      });
+    });
+
+    equal(view.$().text(), "Stef-Yehuda-Stef", "should be properly scoped after updating");
+  });
+
+  test("nested {{with}} blocks shadow the outer scoped variable properly.", function(){
+    run(function() {
+      view.set('template', compile("{{#with first as |ring|}}{{ring}}-{{#with fifth as |ring|}}{{ring}}-{{#with ninth as |ring|}}{{ring}}-{{/with}}{{ring}}-{{/with}}{{ring}}{{/with}}"));
+      view.set('context', {
+        first: 'Limbo',
+        fifth: 'Wrath',
+        ninth: 'Treachery'
+      });
+    });
+
+    equal(view.$().text(), "Limbo-Wrath-Treachery-Wrath-Limbo", "should be properly scoped after updating");
+  });
+}
+
+
