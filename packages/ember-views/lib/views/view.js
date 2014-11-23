@@ -807,7 +807,7 @@ var View = CoreView.extend({
     if (template) {
       var useHTMLBars = false;
       if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-        useHTMLBars = template.length === 3;
+        useHTMLBars = template.length >= 3;
       }
 
       if (useHTMLBars) {
@@ -820,6 +820,8 @@ var View = CoreView.extend({
       morph.update(result);
     }
   },
+
+  _blockArguments: EMPTY_ARRAY,
 
   templateForName: function(name, type) {
     if (!name) { return; }
@@ -1096,12 +1098,12 @@ var View = CoreView.extend({
       var useHTMLBars = false;
 
       if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-        useHTMLBars = template.length === 3;
+        useHTMLBars = template.length >= 3;
       }
 
       if (useHTMLBars) {
         var env = Ember.merge(buildHTMLBarsDefaultEnv(), options);
-        output = template(this, env, buffer.innerContextualElement());
+        output = template(this, env, buffer.innerContextualElement(), this._blockArguments);
       } else {
         output = template(context, options);
       }

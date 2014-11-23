@@ -1,5 +1,6 @@
 import Ember from "ember-metal/core";
 import {
+  set,
   content,
   element,
   subexpr,
@@ -94,6 +95,7 @@ export var defaultEnv = {
   dom: new DOMHelper(),
 
   hooks: {
+    set: set,
     content: content,
     element: element,
     subexpr: subexpr,

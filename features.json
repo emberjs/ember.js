@@ -17,6 +17,7 @@
     "ember-routing-fire-activate-deactivate-events": true,
     "ember-testing-pause-test": true,
     "ember-htmlbars": null,
+    "ember-htmlbars-block-params": null,
     "ember-htmlbars-component-generation": null
   },
   "debugStatements": [

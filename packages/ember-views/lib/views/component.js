@@ -169,7 +169,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     this._keywords.view.setSource(this);
   },
 
-  _yield: function(context, options, morph) {
+  _yield: function(context, options, morph, blockArguments) {
     var view = options.data.view;
     var parentView = this._parentView;
     var template = get(this, 'template');
@@ -181,6 +181,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
         isVirtual: true,
         tagName: '',
         template: template,
+        _blockArguments: blockArguments,
         _contextView: parentView,
         _morph: morph,
         context: get(parentView, 'context'),

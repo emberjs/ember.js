@@ -1,4 +1,5 @@
 import Ember from "ember-metal/core";
+import EmberError from "ember-metal/error";
 import run from "ember-metal/run_loop";
 import lookupHelper from "ember-htmlbars/system/lookup-helper";
 import concat from "ember-htmlbars/system/concat";
@@ -21,6 +22,17 @@ function streamifyArgs(view, params, hash, options, env, helper) {
     if (hashTypes[key] === 'id' && key !== 'classBinding' && key !== 'class') {
       hash[key] = view.getStream(hash[key]);
     }
+  }
+}
+
+export function set(view, name, value) {
+  if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
+    view._keywords[name] = value;
+  } else {
+    throw new EmberError(
+      "You must enable the ember-htmlbars-block-params feature " +
+      "flag to use the block params feature in Ember."
+    );
   }
 }
 
