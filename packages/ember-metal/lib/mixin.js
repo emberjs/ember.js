@@ -50,19 +50,22 @@ var a_slice = [].slice;
 
 function superFunction(){
   var func = this.__nextSuper;
+  var ret;
 
   if (func) {
     var length = arguments.length;
-
-    if (length === 0){
-      return this.__nextSuper();
+    this.__nextSuper = null;
+    if (length === 0) {
+      ret = func.call(this);
     } else if (length === 1) {
-      return this.__nextSuper(arguments[0]);
+      ret = func.call(this, arguments[0]);
     } else if (length === 2) {
-      return this.__nextSuper(arguments[0], arguments[1]);
+      ret = func.call(this, arguments[0], arguments[1]);
     } else {
-      return this.__nextSuper.apply(this, arguments);
+      ret = func.apply(this, arguments);
     }
+    this.__nextSuper = func;
+    return ret;
   }
 }
 

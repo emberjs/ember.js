@@ -13,15 +13,17 @@ test('using reopen() to add more properties to a simple', function() {
   equal(Ember.get(obj, 'bar'), 'BAR', 'include MixinB props');
 });
 
-test('using reopen() and calling _super does not cause infinite recursion', function(){
+test('using reopen() and calling _super where there is not a super function does not cause infinite recursion', function(){
 
   var Taco = Ember.Object.extend({
     createBreakfast: function(){
+      // There is no original createBreakfast function.
+      // Calling the wrapped _super function here
+      // used to end in an infinite call loop
       this._super.apply(this, arguments);
-      return "Breakfast";
+      return "Breakfast!";
     }
   });
-
 
   Taco.reopen({
     createBreakfast: function(){
@@ -34,9 +36,9 @@ test('using reopen() and calling _super does not cause infinite recursion', func
   var result;
   Ember.run(function(){
     try {
-    result = taco.createBreakfast();
+      result = taco.createBreakfast();
     } catch (e) {
-      result = "Oatmeal :( This should not error.";
+      result = "Your breakfast was interrupted by an infinite stack error.";
     }
   });
 
