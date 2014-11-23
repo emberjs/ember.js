@@ -399,41 +399,6 @@ test('should update the block when object passed to #if helper changes and an in
   });
 });
 
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-test('edge case: child conditional should not render children if parent conditional becomes false', function() {
-  var childCreated = false;
-  var child = null;
-
-  view = EmberView.create({
-    cond1: true,
-    cond2: false,
-    viewClass: EmberView.extend({
-      init: function() {
-        this._super();
-        childCreated = true;
-        child = this;
-      }
-    }),
-    template: compile('{{#if view.cond1}}{{#if view.cond2}}{{#view view.viewClass}}test{{/view}}{{/if}}{{/if}}')
-  });
-
-  appendView(view);
-
-  ok(!childCreated, 'precondition');
-
-  run(function() {
-    // The order of these sets is important for the test
-    view.set('cond2', true);
-    view.set('cond1', false);
-  });
-
-  // TODO: Priority Queue, for now ensure correct result.
-  //ok(!childCreated, 'child should not be created');
-  ok(child.isDestroyed, 'child should be gone');
-  equal(view.$().text(), '');
-});
-}
-
 test('views within an if statement should be sane on re-render', function() {
   view = EmberView.create({
     template: compile('{{#if view.display}}{{input}}{{/if}}'),
@@ -659,4 +624,54 @@ test('the {{this}} helper should not fail on removal', function() {
   });
 
   equal(view.$().text(), '');
+});
+
+test('edge case: child conditional should not render children if parent conditional becomes false', function() {
+  var childCreated = false;
+  var child = null;
+
+  view = EmberView.create({
+    cond1: true,
+    cond2: false,
+    viewClass: EmberView.extend({
+      init: function() {
+        this._super();
+        childCreated = true;
+        child = this;
+      }
+    }),
+    template: compile('{{#if view.cond1}}{{#if view.cond2}}{{#view view.viewClass}}test{{/view}}{{/if}}{{/if}}')
+  });
+
+  appendView(view);
+
+  ok(!childCreated, 'precondition');
+
+  run(function() {
+    // The order of these sets is important for the test
+    view.set('cond2', true);
+    view.set('cond1', false);
+  });
+
+  // TODO: Priority Queue, for now ensure correct result.
+  //ok(!childCreated, 'child should not be created');
+  ok(child.isDestroyed, 'child should be gone');
+  equal(view.$().text(), '');
+});
+
+test('edge case: rerender appearance of inner virtual view', function() {
+  view = EmberView.create({
+    tagName: '',
+    cond2: false,
+    template: compile('{{#if view.cond2}}test{{/if}}')
+  });
+
+  appendView(view);
+  equal(Ember.$('#qunit-fixture').text(), '');
+
+  run(function() {
+    view.set('cond2', true);
+  });
+
+  equal(Ember.$('#qunit-fixture').text(), 'test');
 });
