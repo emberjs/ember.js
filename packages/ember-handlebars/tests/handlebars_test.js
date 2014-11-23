@@ -1012,25 +1012,6 @@ test("should not reset cursor position when text field receives keyUp event", fu
   });
 });
 
-test("should be able to output a property without binding", function() {
-  var context = {
-    content: EmberObject.create({
-      anUnboundString: "No spans here, son."
-    })
-  };
-
-  view = EmberView.create({
-    context: context,
-    template: EmberHandlebars.compile(
-      '<div id="first">{{unbound content.anUnboundString}}</div>'
-    )
-  });
-
-  appendView();
-
-  equal(view.$('#first').html(), "No spans here, son.");
-});
-
 test("should allow standard Handlebars template usage", function() {
   view = EmberView.create({
     context: { name: "Erik" },
@@ -1051,32 +1032,6 @@ test("should be able to use standard Handlebars #each helper", function() {
   appendView();
 
   equal(view.$().html(), "abc");
-});
-
-test("should be able to use unbound helper in #each helper", function() {
-  view = EmberView.create({
-    items: A(['a', 'b', 'c', 1, 2, 3]),
-    template: EmberHandlebars.compile(
-      "<ul>{{#each item in view.items}}<li>{{unbound item}}</li>{{/each}}</ul>")
-  });
-
-  appendView();
-
-  equal(view.$().text(), "abc123");
-  equal(view.$('li').children().length, 0, "No markers");
-});
-
-test("should be able to use unbound helper in #each helper (with objects)", function() {
-  view = EmberView.create({
-    items: A([{wham: 'bam'}, {wham: 1}]),
-    template: EmberHandlebars.compile(
-      "<ul>{{#each item in view.items}}<li>{{unbound item.wham}}</li>{{/each}}</ul>")
-  });
-
-  appendView();
-
-  equal(view.$().text(), "bam1");
-  equal(view.$('li').children().length, 0, "No markers");
 });
 
 test("should work with precompiled templates", function() {

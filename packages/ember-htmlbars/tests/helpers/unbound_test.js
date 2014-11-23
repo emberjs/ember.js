@@ -1,6 +1,8 @@
+/*jshint newcap:false*/
 import EmberView from 'ember-views/views/view';
 import EmberObject from 'ember-runtime/system/object';
 
+import { A } from 'ember-runtime/system/native_array';
 import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
@@ -312,4 +314,45 @@ test("should lookup helpers in the container", function() {
   });
 
   equal(view.$().text(), "SUCH AWESOME", "only bound values change");
+});
+
+test("should be able to output a property without binding", function() {
+  var context = {
+    content: EmberObject.create({
+      anUnboundString: "No spans here, son."
+    })
+  };
+
+  view = EmberView.create({
+    context: context,
+    template: compile('<div id="first">{{unbound content.anUnboundString}}</div>')
+  });
+
+  appendView(view);
+
+  equal(view.$('#first').html(), "No spans here, son.");
+});
+
+test("should be able to use unbound helper in #each helper", function() {
+  view = EmberView.create({
+    items: A(['a', 'b', 'c', 1, 2, 3]),
+    template: compile('<ul>{{#each item in view.items}}<li>{{unbound item}}</li>{{/each}}</ul>')
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'abc123');
+  equal(view.$('li').children().length, 0, 'No markers');
+});
+
+test("should be able to use unbound helper in #each helper (with objects)", function() {
+  view = EmberView.create({
+    items: A([{wham: 'bam'}, {wham: 1}]),
+    template: compile('<ul>{{#each item in view.items}}<li>{{unbound item.wham}}</li>{{/each}}</ul>')
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'bam1');
+  equal(view.$('li').children().length, 0, 'No markers');
 });
