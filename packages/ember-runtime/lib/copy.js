@@ -67,8 +67,9 @@ function _copy(obj, deep, seen, copies) {
   any type of object and create a clone of it, including primitive values
   (which are not actually cloned because they are immutable).
 
-  If the passed object implements the `clone()` method, then this function
-  will simply call that method and return the result.
+  If the passed object implements the `copy()` method, then this function
+  will simply call that method and return the result. Please see
+  `Ember.Copyable` for further details.
 
   @method copy
   @for Ember
