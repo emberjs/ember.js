@@ -155,9 +155,6 @@ test("The `if` helper updates when the value changes", function() {
   equal(view.$().text(), '');
 });
 
-// requires the unbound helper
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-
 test("The `unbound if` helper does not update when the value changes", function() {
   view = EmberView.create({
     conditional: true,
@@ -170,8 +167,6 @@ test("The `unbound if` helper does not update when the value changes", function(
   });
   equal(view.$().text(), 'Yep');
 });
-
-}
 
 test("The `unless` helper updates when the value changes", function() {
   view = EmberView.create({
@@ -186,9 +181,6 @@ test("The `unless` helper updates when the value changes", function() {
   equal(view.$().text(), '');
 });
 
-// requires unbound helper
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-
 test("The `unbound if` helper does not update when the value changes", function() {
   view = EmberView.create({
     conditional: false,
@@ -201,8 +193,6 @@ test("The `unbound if` helper does not update when the value changes", function(
   });
   equal(view.$().text(), 'Nope');
 });
-
-}
 
 test("The `if` helper ignores a controller option", function() {
   var lookupCalled = false;
