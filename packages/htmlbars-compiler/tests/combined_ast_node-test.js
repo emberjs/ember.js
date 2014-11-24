@@ -144,7 +144,7 @@ test("elements can have empty attributes", function() {
   var t = '<img id="">';
   astEqual(t, root([
     element("img", [
-      attr("id", text(""))
+      attr("id", text(""), true)
     ])
   ]));
 });
@@ -220,7 +220,7 @@ test("Handlebars embedded in an attribute (quoted)", function() {
   var t = 'some <div class="{{foo}}">content</div> done';
   astEqual(t, root([
     text("some "),
-    element("div", [ attr("class", [ sexpr([id('foo')]) ], true) ], [], [
+    element("div", [ attr("class", sexpr([id('foo')]), true) ], [], [
       text("content")
     ]),
     text(" done")
@@ -231,7 +231,7 @@ test("Handlebars embedded in an attribute (unquoted)", function() {
   var t = 'some <div class={{foo}}>content</div> done';
   astEqual(t, root([
     text("some "),
-    element("div", [ attr("class", sexpr([id('foo')])) ], [], [
+    element("div", [ attr("class", sexpr([id('foo')]), false) ], [], [
       text("content")
     ]),
     text(" done")
@@ -243,7 +243,7 @@ test("Handlebars embedded in an attribute (sexprs)", function() {
   astEqual(t, root([
     text("some "),
     element("div", [
-      attr("class", [ sexpr([id('foo'), sexpr([id('foo'), string('abc')])]) ], true)
+      attr("class", sexpr([id('foo'), sexpr([id('foo'), string('abc')])]), true)
     ], [], [
       text("content")
     ]),
@@ -330,7 +330,7 @@ test("Involved block helper", function() {
 test("Node helpers", function() {
   var t = "<p {{action 'boom'}} class='bar'>Some content</p>";
   astEqual(t, root([
-    element('p', [attr('class', text('bar'))], [mustache([id('action'), string('boom')])], [
+    element('p', [attr('class', text('bar'), true)], [mustache([id('action'), string('boom')])], [
       text('Some content')
     ])
   ]));
@@ -458,10 +458,10 @@ test("Components", function() {
   astEqual(t, root([
     text(''),
     component('x-foo', [
-      attr('a', text('b')),
-      attr('c', text('d')),
-      attr('e',  sexpr([id('f')])),
-      attr('id', [ sexpr([id('bar')]) ], true),
+      attr('a', text('b'), false),
+      attr('c', text('d'), true),
+      attr('e', sexpr([id('f')]), false),
+      attr('id', sexpr([id('bar')]), true),
       attr('class', [ string('foo-'), sexpr([id('bar')]) ], true)
     ], program([
       text(''),

@@ -141,8 +141,12 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
     return;
   }
 
-  var quoted = attr.quoted;
-  var params = quoted ? attr.value : [ attr.value ];
+  var params;
+  if (attr.value.type === 'sexpr') {
+    params = [ attr.value ];
+  } else {
+    params = attr.value;
+  }
 
   this.opcode('program', null, null);
   processSexpr(this, { params: params });
@@ -151,7 +155,7 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
     this.opcode('element', ++this.elementNum);
     this.element = null;
   }
-  this.opcode('attribute', quoted, attr.name, params.length, this.elementNum);
+  this.opcode('attribute', attr.quoted, attr.name, params.length, this.elementNum);
 };
 
 HydrationOpcodeCompiler.prototype.nodeHelper = function(mustache) {
