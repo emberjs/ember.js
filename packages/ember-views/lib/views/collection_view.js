@@ -18,6 +18,7 @@ import {
 } from "ember-metal/mixin";
 import { readViewFactory } from "ember-views/streams/read";
 import EmberArray from "ember-runtime/mixins/array";
+import merge from "ember-metal/merge";
 
 /**
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing
@@ -343,21 +344,25 @@ var CollectionView = ContainerView.extend({
   */
   arrayDidChange: function(content, start, removed, added) {
     var addedViews = [];
-    var view, item, idx, len, itemViewClass, emptyView;
+    var view, item, idx, len, itemViewClass, emptyView, itemViewFactory, childAttrs;
 
     len = content ? get(content, 'length') : 0;
 
     if (len) {
+      childAttrs = {};
       itemViewClass = get(this, 'itemViewClass');
+      if (itemViewClass.isFactory) {
+        itemViewFactory = itemViewClass;
+        itemViewClass = itemViewFactory.class;
+        merge(childAttrs, itemViewFactory.attrs);
+      }
       itemViewClass = readViewFactory(itemViewClass, this.container);
 
       for (idx = start; idx < start+added; idx++) {
         item = content.objectAt(idx);
-
-        view = this.createChildView(itemViewClass, {
-          content: item,
-          contentIndex: idx
-        });
+        childAttrs.content = item;
+        childAttrs.contentIndex = idx;
+        view = this.createChildView(itemViewClass, childAttrs);
 
         addedViews.push(view);
       }
