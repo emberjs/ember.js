@@ -54,6 +54,15 @@ import CoreView from "ember-views/views/core_view";
 
 function K() { return this; }
 
+// Circular dep
+var _htmlbarsDefaultEnv;
+function buildHTMLBarsDefaultEnv(){
+  if (!_htmlbarsDefaultEnv) {
+    _htmlbarsDefaultEnv = require('ember-htmlbars').defaultEnv;
+  }
+  return create(_htmlbarsDefaultEnv);
+}
+
 /**
 @module ember
 @submodule ember-views
@@ -751,7 +760,7 @@ var View = CoreView.extend({
     var templateName = get(this, 'templateName');
     var template = this.templateForName(templateName, 'template');
 
-    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
+    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
 
     return template || get(this, 'defaultTemplate');
   }),
@@ -786,15 +795,29 @@ var View = CoreView.extend({
     var layoutName = get(this, 'layoutName');
     var layout = this.templateForName(layoutName, 'layout');
 
-    Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || layout);
+    Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || !!layout);
 
     return layout || get(this, 'defaultLayout');
   }).property('layoutName'),
 
-  _yield: function(context, options) {
+  _yield: function(context, options, morph) {
     var template = get(this, 'template');
-    if (template) { template(context, options); }
+
+    if (template) {
+      var useHTMLBars = false;
+      if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+        useHTMLBars = template.length >= 3;
+      }
+
+      if (useHTMLBars) {
+        return template(this, options, morph.contextualElement);
+      } else {
+        return template(context, options);
+      }
+    }
   },
+
+  _blockArguments: EMPTY_ARRAY,
 
   templateForName: function(name, type) {
     if (!name) { return; }
@@ -1067,7 +1090,19 @@ var View = CoreView.extend({
       Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
       // The template should write directly to the render buffer instead
       // of returning a string.
-      output = template(context, { data: data });
+      var options = { data: data };
+      var useHTMLBars = false;
+
+      if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+        useHTMLBars = template.length >= 3;
+      }
+
+      if (useHTMLBars) {
+        var env = Ember.merge(buildHTMLBarsDefaultEnv(), options);
+        output = template(this, env, buffer.innerContextualElement(), this._blockArguments);
+      } else {
+        output = template(context, options);
+      }
 
       // If the template returned a string instead of writing to the buffer,
       // push the string onto the buffer.

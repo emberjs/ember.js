@@ -1,21 +1,13 @@
-import Ember from "ember-metal/core"; // assert
-import { set } from "ember-metal/property_set";
-import ContainerView from "ember-views/views/container_view";
-import { _Metamorph } from "ember-handlebars/views/metamorph_view";
-import { viewHelper } from "ember-handlebars/helpers/view";
-
 /**
 @module ember
-@submodule ember-routing
+@submodule ember-routing-handlebars
 */
 
-  /**
-  @module ember
-  @submodule ember-routing
-  */
+import Ember from "ember-metal/core"; // assert
+import { set } from "ember-metal/property_set";
+import { viewHelper } from "ember-handlebars/helpers/view";
+import { OutletView } from "ember-routing-views/views/outlet";
 
-var OutletView = ContainerView.extend(_Metamorph);
-export { OutletView };
 /**
   The `outlet` helper is a placeholder that the router will fill in with
   the appropriate template based on the current state of the application.
@@ -90,6 +82,12 @@ export function outletHelper(property, options) {
     property = 'main';
   }
 
+  Ember.deprecate(
+    "Using {{outlet}} with an unquoted name is not supported. " +
+    "Please update to quoted usage '{{outlet \"" + property + "\"}}'.",
+    arguments.length === 1 || options.types[0] === 'STRING'
+  );
+
   var view = options.data.view;
   var container = view.container;
 
@@ -104,9 +102,15 @@ export function outletHelper(property, options) {
 
   if (viewName) {
     viewFullName = 'view:' + viewName;
-    Ember.assert("Using a quoteless view parameter with {{outlet}} is not supported." +
-                 " Please update to quoted usage '{{outlet \"" + viewName + "\"}}.", options.hashTypes.view !== 'ID');
-    Ember.assert("The view name you supplied '" + viewName + "' did not resolve to a view.", container.has(viewFullName));
+    Ember.assert(
+      "Using a quoteless view parameter with {{outlet}} is not supported." +
+      " Please update to quoted usage '{{outlet ... view=\"" + viewName + "\"}}.",
+      options.hashTypes.view !== 'ID'
+    );
+    Ember.assert(
+      "The view name you supplied '" + viewName + "' did not resolve to a view.",
+      container.has(viewFullName)
+    );
   }
 
   viewClass = viewName ? container.lookupFactory(viewFullName) : options.hash.viewClass || OutletView;

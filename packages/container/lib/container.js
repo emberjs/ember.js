@@ -104,20 +104,6 @@ Container.prototype = {
   },
 
   /**
-    Sets a key-value pair on the current container. If a parent container,
-    has the same key, once set on a child, the parent and child will diverge
-    as expected.
-
-    @method set
-    @param {Object} object
-    @param {String} key
-    @param {any} value
-  */
-  set: function(object, key, value) {
-    object[key] = value;
-  },
-
-  /**
     Registers a factory for later injection.
 
     Example:
@@ -372,11 +358,13 @@ Container.prototype = {
 
   /**
     @method options
-    @param {String} type
+    @param {String} fullName
     @param {Object} options
   */
-  options: function(type, options) {
-    this.optionsForType(type, options);
+  options: function(fullName, options) {
+    options = options || {};
+    var normalizedName = this.normalize(fullName);
+    this._options[normalizedName] = options;
   },
 
   /**
@@ -787,20 +775,18 @@ function factoryInjectionsFor(container, fullName) {
   return factoryInjections;
 }
 
-if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
-  var normalizeInjectionsHash = function(hash) {
-    var injections = [];
+function normalizeInjectionsHash(hash) {
+  var injections = [];
 
-    for (var key in hash) {
-      if (hash.hasOwnProperty(key)) {
-        Ember.assert("Expected a proper full name, given '" + hash[key] + "'", validateFullName(hash[key]));
+  for (var key in hash) {
+    if (hash.hasOwnProperty(key)) {
+      Ember.assert("Expected a proper full name, given '" + hash[key] + "'", validateFullName(hash[key]));
 
-        addInjection(injections, key, hash[key]);
-      }
+      addInjection(injections, key, hash[key]);
     }
+  }
 
-    return injections;
-  };
+  return injections;
 }
 
 function instantiate(container, fullName) {

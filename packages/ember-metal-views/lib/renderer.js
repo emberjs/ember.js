@@ -225,7 +225,10 @@ function Renderer_remove(_view, shouldDestroy, reset) {
 }
 
 function Renderer_insertElement(view, parentView, element, index) {
-  if (element === null || element === undefined) return;
+  if (element === null || element === undefined) {
+    return;
+  }
+
   if (view._morph) {
     view._morph.update(element);
   } else if (parentView) {

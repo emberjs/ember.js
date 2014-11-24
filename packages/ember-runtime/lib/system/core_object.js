@@ -170,16 +170,28 @@ function makeCtor() {
         }
       }
     }
+
     finishPartial(this, m);
+
     var length = arguments.length;
-    var args = new Array(length);
-    for (var x = 0; x < length; x++) {
-      args[x] = arguments[x];
+
+    if (length === 0) {
+      this.init();
+    } else if (length === 1) {
+      this.init(arguments[0]);
+    } else {
+      // v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
+      // we may want to keep this arround till this ages out on mobile
+      var args = new Array(length);
+      for (var x = 0; x < length; x++) {
+        args[x] = arguments[x];
+      }
+      this.init.apply(this, args);
     }
-    apply(this, this.init, args);
+
     m.proto = proto;
     finishChains(this);
-    sendEvent(this, "init");
+    sendEvent(this, 'init');
   };
 
   Class.toString = Mixin.prototype.toString;

@@ -303,10 +303,16 @@ _RenderBuffer.prototype = {
     @chainable
   */
   push: function(content) {
-    if (this.buffer === null) {
-      this.buffer = '';
+    if (content.nodeType) {
+      Ember.assert("A fragment cannot be pushed into a buffer that contains content", !this.buffer);
+      this.buffer = content;
+    } else {
+      if (this.buffer === null) {
+        this.buffer = '';
+      }
+      Ember.assert("A string cannot be pushed into the buffer after a fragment", !this.buffer.nodeType);
+      this.buffer += content;
     }
-    this.buffer += content;
     return this;
   },
 
@@ -508,7 +514,7 @@ _RenderBuffer.prototype = {
   element: function() {
     var content = this.innerContent();
     // No content means a text node buffer, with the content
-    // in _element. HandlebarsBoundView is an example.
+    // in _element. Ember._BoundView is an example.
     if (content === null)  {
       return this._element;
     }
@@ -520,9 +526,14 @@ _RenderBuffer.prototype = {
       this._element = document.createDocumentFragment();
     }
 
-    var nodes = this.dom.parseHTML(content, contextualElement);
-    while (nodes[0]) {
-      this._element.appendChild(nodes[0]);
+    if (content.nodeType) {
+      this._element.appendChild(content);
+    } else {
+      var nodes;
+      nodes = this.dom.parseHTML(content, contextualElement);
+      while (nodes[0]) {
+        this._element.appendChild(nodes[0]);
+      }
     }
     this.hydrateMorphs(contextualElement);
 

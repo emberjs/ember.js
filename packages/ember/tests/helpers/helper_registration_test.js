@@ -1,7 +1,13 @@
 import "ember";
 
+import EmberHandlebars from "ember-handlebars";
+
+var compile, helpers, makeBoundHelper;
+compile = EmberHandlebars.compile;
+helpers = EmberHandlebars.helpers;
+makeBoundHelper = EmberHandlebars.makeBoundHelper;
+
 var App, container;
-var compile = Ember.Handlebars.compile;
 
 function reverseHelper(value) {
   return arguments.length > 1 ? value.split('').reverse().join('') : "--";
@@ -55,9 +61,10 @@ test("Unbound dashed helpers registered on the container can be late-invoked", f
   });
 
   equal(Ember.$('#wrapper').text(), "BORF YES", "The helper was invoked from the container");
-  ok(!Ember.Handlebars.helpers['x-borf'], "Container-registered helper doesn't wind up on global helpers hash");
+  ok(!helpers['x-borf'], "Container-registered helper doesn't wind up on global helpers hash");
 });
 
+  // need to make `makeBoundHelper` for HTMLBars
 test("Bound helpers registered on the container can be late-invoked", function() {
 
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-reverse}} {{x-reverse foo}}</div>");
@@ -66,17 +73,21 @@ test("Bound helpers registered on the container can be late-invoked", function()
     container.register('controller:application', Ember.Controller.extend({
       foo: "alex"
     }));
-    container.register('helper:x-reverse', Ember.Handlebars.makeBoundHelper(reverseHelper));
+    container.register('helper:x-reverse', makeBoundHelper(reverseHelper));
   });
 
   equal(Ember.$('#wrapper').text(), "-- xela", "The bound helper was invoked from the container");
-  ok(!Ember.Handlebars.helpers['x-reverse'], "Container-registered helper doesn't wind up on global helpers hash");
+  ok(!helpers['x-reverse'], "Container-registered helper doesn't wind up on global helpers hash");
 });
 
+if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+
+  // we have unit tests for this in ember-htmlbars/tests/system/lookup-helper
+  // and we are not going to recreate the handlebars helperMissing concept
 test("Undashed helpers registered on the container can not (presently) be invoked", function() {
 
-  var realHelperMissing = Ember.Handlebars.helpers.helperMissing;
-  Ember.Handlebars.helpers.helperMissing = function() {
+  var realHelperMissing = helpers.helperMissing;
+  helpers.helperMissing = function() {
     return "NOHALPER";
   };
 
@@ -90,12 +101,14 @@ test("Undashed helpers registered on the container can not (presently) be invoke
     container.register('helper:omg', function() {
       return "OMG";
     });
-    container.register('helper:yorp', Ember.Handlebars.makeBoundHelper(function() {
+    container.register('helper:yorp', makeBoundHelper(function() {
       return "YORP";
     }));
   });
 
   equal(Ember.$('#wrapper').text(), "|NOHALPER||NOHALPER", "The undashed helper was invoked from the container");
 
-  Ember.Handlebars.helpers.helperMissing = realHelperMissing;
+  helpers.helperMissing = realHelperMissing;
 });
+
+}

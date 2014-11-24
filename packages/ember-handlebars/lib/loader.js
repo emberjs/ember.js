@@ -1,6 +1,6 @@
 /*globals Handlebars */
 
-import ComponentLookup from "ember-handlebars/component_lookup";
+import ComponentLookup from "ember-views/component_lookup";
 import jQuery from "ember-views/system/jquery";
 import EmberError from "ember-metal/error";
 import { onLoad } from "ember-runtime/system/lazy_load";
@@ -78,6 +78,8 @@ function registerComponentLookup(container) {
 */
 
 onLoad('Ember.Application', function(Application) {
+  if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+
   Application.initializer({
     name: 'domTemplates',
     initialize: _bootstrap
@@ -88,6 +90,8 @@ onLoad('Ember.Application', function(Application) {
     after: 'domTemplates',
     initialize: registerComponentLookup
   });
+
+  }
 });
 
 export default bootstrap;

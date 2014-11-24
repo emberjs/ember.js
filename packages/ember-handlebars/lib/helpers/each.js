@@ -6,137 +6,18 @@
 import Ember from "ember-metal/core"; // Ember.assert;
 
 import EmberHandlebars from "ember-handlebars-compiler";
-
-import { fmt } from "ember-runtime/system/string";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import CollectionView from "ember-views/views/collection_view";
-import { Binding } from "ember-metal/binding";
-import ControllerMixin from "ember-runtime/mixins/controller";
-import ArrayController from "ember-runtime/controllers/array_controller";
-import EmberArray from "ember-runtime/mixins/array";
-
-import {
-  addObserver,
-  removeObserver,
-  addBeforeObserver,
-  removeBeforeObserver
-} from "ember-metal/observer";
-
-import _MetamorphView from "ember-handlebars/views/metamorph_view";
-import { _Metamorph } from "ember-handlebars/views/metamorph_view";
-
-var EachView = CollectionView.extend(_Metamorph, {
-
-  init: function() {
-    var itemController = get(this, 'itemController');
-    var binding;
-
-    if (itemController) {
-      var controller = get(this, 'controller.container').lookupFactory('controller:array').create({
-        _isVirtual: true,
-        parentController: get(this, 'controller'),
-        itemController: itemController,
-        target: get(this, 'controller'),
-        _eachView: this
-      });
-
-      this.disableContentObservers(function() {
-        set(this, 'content', controller);
-        binding = new Binding('content', '_eachView.dataSource').oneWay();
-        binding.connect(controller);
-      });
-
-      set(this, '_arrayController', controller);
-    } else {
-      this.disableContentObservers(function() {
-        binding = new Binding('content', 'dataSource').oneWay();
-        binding.connect(this);
-      });
-    }
-
-    return this._super();
-  },
-
-  _assertArrayLike: function(content) {
-    Ember.assert(fmt("The value that #each loops over must be an Array. You " +
-                     "passed %@, but it should have been an ArrayController",
-                     [content.constructor]),
-                     !ControllerMixin.detect(content) ||
-                       (content && content.isGenerated) ||
-                       content instanceof ArrayController);
-    Ember.assert(fmt("The value that #each loops over must be an Array. You passed %@",
-                     [(ControllerMixin.detect(content) &&
-                       content.get('model') !== undefined) ?
-                       fmt("'%@' (wrapped in %@)", [content.get('model'), content]) : content]),
-                     EmberArray.detect(content));
-  },
-
-  disableContentObservers: function(callback) {
-    removeBeforeObserver(this, 'content', null, '_contentWillChange');
-    removeObserver(this, 'content', null, '_contentDidChange');
-
-    callback.call(this);
-
-    addBeforeObserver(this, 'content', null, '_contentWillChange');
-    addObserver(this, 'content', null, '_contentDidChange');
-  },
-
-  itemViewClass: _MetamorphView,
-  emptyViewClass: _MetamorphView,
-
-  createChildView: function(view, attrs) {
-    view = this._super(view, attrs);
-
-    var content = get(view, 'content');
-    var keyword = get(this, 'keyword');
-
-    if (keyword) {
-      view._keywords[keyword] = content;
-    }
-
-    // If {{#each}} is looping over an array of controllers,
-    // point each child view at their respective controller.
-    if (content && content.isController) {
-      set(view, 'controller', content);
-    }
-
-    return view;
-  },
-
-  destroy: function() {
-    if (!this._super()) { return; }
-
-    var arrayController = get(this, '_arrayController');
-
-    if (arrayController) {
-      arrayController.destroy();
-    }
-
-    return this;
-  }
-});
+import EachView from "ember-views/views/each";
 
 /**
   The `{{#each}}` helper loops over elements in a collection. It is an extension
   of the base Handlebars `{{#each}}` helper.
 
   The default behavior of `{{#each}}` is to yield its inner block once for every
-  item in an array. Each yield will provide the item as the context of the block.
+  item in an array.
 
   ```javascript
   var developers = [{name: 'Yehuda'},{name: 'Tom'}, {name: 'Paul'}];
   ```
-
-  ```handlebars
-  {{#each developers}}
-    {{name}}
-    {{! `this` is each developer }}
-  {{/each}}
-  ```
-
-  `{{#each}}` supports an alternative syntax with element naming. This preserves
-  context of the yielded block:
 
   ```handlebars
   {{#each person in developers}}
@@ -153,8 +34,8 @@ var EachView = CollectionView.extend(_Metamorph, {
   ```
 
   ```handlebars
-  {{#each developerNames}}
-    {{this}}
+  {{#each name in developerNames}}
+    {{name}}
   {{/each}}
   ```
 
@@ -180,8 +61,8 @@ var EachView = CollectionView.extend(_Metamorph, {
 
   ```handlebars
   <ul>
-  {{#each developers itemViewClass="person"}}
-    {{name}}
+  {{#each developer in developers itemViewClass="person"}}
+    {{developer.name}}
   {{/each}}
   </ul>
   ```
@@ -212,13 +93,13 @@ var EachView = CollectionView.extend(_Metamorph, {
   ```javascript
   App.PersonView = Ember.View.extend({
     tagName: 'li',
-    template: '{{name}}'
+    template: '{{developer.name}}'
   });
   ```
 
   ```handlebars
   <ul>
-    {{each developers itemViewClass="person"}}
+    {{each developer in developers itemViewClass="person"}}
   </ul>
   ```
 
@@ -236,8 +117,8 @@ var EachView = CollectionView.extend(_Metamorph, {
 
   ```handlebars
   <ul>
-  {{#each developers emptyViewClass="no-people"}}
-    <li>{{name}}</li>
+  {{#each developer in developers emptyViewClass="no-people"}}
+    <li>{{developer.name}}</li>
   {{/each}}
   </ul>
   ```
@@ -280,12 +161,13 @@ var EachView = CollectionView.extend(_Metamorph, {
 function eachHelper(path) {
   var options = arguments[arguments.length - 1];
   var helperName = 'each';
+  var keywordName;
 
   if (arguments.length === 4) {
     Ember.assert("If you pass more than one argument to the each helper," +
                  " it must be in the form #each foo in bar", arguments[1] === "in");
 
-    var keywordName = arguments[0];
+    keywordName = arguments[0];
     path = arguments[2];
 
     helperName += ' ' + keywordName + ' in ' + path;
@@ -296,6 +178,8 @@ function eachHelper(path) {
   } else {
     helperName += ' ' + path;
   }
+
+  Ember.deprecate('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.', keywordName);
 
   options.hash.emptyViewClass = Ember._MetamorphView;
   options.hash.dataSourceBinding = path;

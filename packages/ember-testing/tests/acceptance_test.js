@@ -11,6 +11,8 @@ import EmberHandlebars from "ember-handlebars";
 //ES6TODO: we need {{link-to}}  and {{outlet}} to exist here
 import "ember-routing"; //ES6TODO: fixme?
 
+var compile = EmberHandlebars.compile;
+
 var App, find, click, fillIn, currentRoute, visit, originalAdapter, andThen, indexHitCount;
 
 QUnit.module("ember-testing Acceptance", {
@@ -45,7 +47,7 @@ QUnit.module("ember-testing Acceptance", {
       });
 
       App.PostsView = EmberView.extend({
-        defaultTemplate: EmberHandlebars.compile("<a class=\"dummy-link\"></a><div id=\"comments-link\">{{#link-to 'comments'}}Comments{{/link-to}}</div>"),
+        defaultTemplate: compile("<a class=\"dummy-link\"></a><div id=\"comments-link\">{{#link-to 'comments'}}Comments{{/link-to}}</div>"),
         classNames: ['posts-view']
       });
 
@@ -57,7 +59,7 @@ QUnit.module("ember-testing Acceptance", {
       });
 
       App.CommentsView = EmberView.extend({
-        defaultTemplate: EmberHandlebars.compile('{{input type="text"}}')
+        defaultTemplate: compile('{{input type="text"}}')
       });
 
       App.AbortTransitionRoute = EmberRoute.extend({

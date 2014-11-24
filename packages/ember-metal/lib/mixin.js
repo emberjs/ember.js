@@ -11,7 +11,6 @@
 import Ember from "ember-metal/core"; // warn, assert, wrap, et;
 import merge from "ember-metal/merge";
 import {
-  map as a_map,
   indexOf as a_indexOf,
   forEach as a_forEach
 } from "ember-metal/array";
@@ -25,7 +24,6 @@ import {
   meta as metaFor,
   wrap,
   makeArray,
-  apply,
   isArray
 } from "ember-metal/utils";
 import expandProperties from "ember-metal/expand_properties";
@@ -53,17 +51,34 @@ var a_slice = [].slice;
 function superFunction(){
   var func = this.__nextSuper;
   var ret;
+
   if (func) {
-    var args = new Array(arguments.length);
-    for (var i = 0, l = args.length; i < l; i++) {
-      args[i] = arguments[i];
-    }
+    var length = arguments.length;
     this.__nextSuper = null;
-    ret = apply(this, func, args);
+    if (length === 0) {
+      ret = func.call(this);
+    } else if (length === 1) {
+      ret = func.call(this, arguments[0]);
+    } else if (length === 2) {
+      ret = func.call(this, arguments[0], arguments[1]);
+    } else {
+      ret = func.apply(this, arguments);
+    }
     this.__nextSuper = func;
+    return ret;
   }
-  return ret;
 }
+
+// ensure we prime superFunction to mitigate
+// v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
+var primer = {
+  __nextSuper: function(a,b,c,d ) { }
+};
+
+superFunction.call(primer);
+superFunction.call(primer, 1);
+superFunction.call(primer, 1, 2);
+superFunction.call(primer, 1, 2, 3);
 
 function mixinsMeta(obj) {
   var m = metaFor(obj, true);
@@ -74,22 +89,6 @@ function mixinsMeta(obj) {
     ret = m.mixins = o_create(ret);
   }
   return ret;
-}
-
-function initMixin(mixin, args) {
-  if (args && args.length > 0) {
-    mixin.mixins = a_map.call(args, function(x) {
-      if (x instanceof Mixin) { return x; }
-
-      // Note: Manually setup a primitive mixin here. This is the only
-      // way to actually get a primitive mixin. This way normal creation
-      // of mixins will give you combined mixins...
-      var mixin = new Mixin();
-      mixin.properties = x;
-      return mixin;
-    });
-  }
-  return mixin;
 }
 
 function isMethod(obj) {
@@ -538,12 +537,29 @@ export function mixin(obj) {
   @namespace Ember
 */
 export default Mixin;
-function Mixin() { return initMixin(this, arguments); }
-Mixin.prototype = {
-  properties: null,
-  mixins: null,
-  ownerConstructor: null
-};
+function Mixin(args, properties) {
+  this.properties = properties;
+
+  var length = args && args.length;
+
+  if (length > 0) {
+    var m = new Array(length);
+
+    for (var i = 0; i < length; i++) {
+      var x = args[i];
+      if (x instanceof Mixin) {
+        m[i] = x;
+      } else {
+        m[i] = new Mixin(undefined, x);
+      }
+    }
+
+    this.mixins = m;
+  } else {
+    this.mixins = undefined;
+  }
+  this.ownerConstructor = undefined;
+}
 
 Mixin._apply = applyMixin;
 
@@ -566,7 +582,12 @@ Mixin.create = function() {
   // ES6TODO: this relies on a global state?
   Ember.anyUnprocessedMixins = true;
   var M = this;
-  return initMixin(new M(), arguments);
+  var length = arguments.length;
+  var args = new Array(length);
+  for (var i = 0; i < length; i++) {
+    args[i] = arguments[i];
+  }
+  return new M(args, undefined);
 };
 
 var MixinPrototype = Mixin.prototype;
@@ -576,12 +597,11 @@ var MixinPrototype = Mixin.prototype;
   @param arguments*
 */
 MixinPrototype.reopen = function() {
-  var mixin, tmp;
+  var mixin;
 
   if (this.properties) {
-    mixin = Mixin.create();
-    mixin.properties = this.properties;
-    delete this.properties;
+    mixin = new Mixin(undefined, this.properties);
+    this.properties = undefined;
     this.mixins = [mixin];
   } else if (!this.mixins) {
     this.mixins = [];
@@ -600,9 +620,7 @@ MixinPrototype.reopen = function() {
     if (mixin instanceof Mixin) {
       mixins.push(mixin);
     } else {
-      tmp = Mixin.create();
-      tmp.properties = mixin;
-      mixins.push(tmp);
+      mixins.push(new Mixin(undefined, mixin));
     }
   }
 
@@ -654,7 +672,7 @@ MixinPrototype.detect = function(obj) {
 };
 
 MixinPrototype.without = function() {
-  var ret = new Mixin(this);
+  var ret = new Mixin([this]);
   ret._without = a_slice.call(arguments);
   return ret;
 };
@@ -679,7 +697,9 @@ MixinPrototype.keys = function() {
   var ret = [];
   _keys(keys, this, seen);
   for(var key in keys) {
-    if (keys.hasOwnProperty(key)) { ret.push(key); }
+    if (keys.hasOwnProperty(key)) {
+      ret.push(key);
+    }
   }
   return ret;
 };

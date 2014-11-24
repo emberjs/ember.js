@@ -7,6 +7,12 @@ import EmberHandlebars from "ember-handlebars";
 import Namespace from "ember-runtime/system/namespace";
 import Application from "ember-application/system/application";
 
+var compile, registerHelper;
+compile = EmberHandlebars.compile;
+registerHelper = function(name, fn) {
+  EmberHandlebars.registerHelper(name, fn);
+};
+
 var locator, application, originalLookup, originalLoggerInfo;
 
 QUnit.module("Ember.Application Depedency Injection", {
@@ -72,13 +78,30 @@ test("the default resolver resolves models on the namespace", function() {
   detectEqual(application.Post, locator.lookupFactory('model:post'), "looks up Post model on application");
 });
 
-test("the default resolver resolves helpers from EmberHandlebars.helpers", function(){
-  function fooresolvertestHelper(){ return 'FOO'; }
-  function barBazResolverTestHelper(){ return 'BAZ'; }
-  EmberHandlebars.registerHelper('fooresolvertest', fooresolvertestHelper);
-  EmberHandlebars.registerHelper('bar-baz-resolver-test', barBazResolverTestHelper);
-  equal(fooresolvertestHelper, locator.lookup('helper:fooresolvertest'), "looks up fooresolvertestHelper helper");
-  equal(barBazResolverTestHelper, locator.lookup('helper:bar-baz-resolver-test'), "looks up barBazResolverTestHelper helper");
+test("the default resolver resolves helpers", function(){
+  expect(2);
+
+  function fooresolvertestHelper(){
+    ok(true, 'found fooresolvertestHelper');
+  }
+  function barBazResolverTestHelper(){
+    ok(true, 'found barBazResolverTestHelper');
+  }
+  registerHelper('fooresolvertest', fooresolvertestHelper);
+  registerHelper('bar-baz-resolver-test', barBazResolverTestHelper);
+
+  var retrievedFooResolverTestHelper, retrievedBarBazResolverTestHelper;
+
+  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+    retrievedFooResolverTestHelper = locator.lookup('helper:fooresolvertest').helperFunction;
+    retrievedBarBazResolverTestHelper = locator.lookup('helper:bar-baz-resolver-test').helperFunction;
+  } else {
+    retrievedFooResolverTestHelper = locator.lookup('helper:fooresolvertest');
+    retrievedBarBazResolverTestHelper = locator.lookup('helper:bar-baz-resolver-test');
+  }
+
+  fooresolvertestHelper();
+  barBazResolverTestHelper();
 });
 
 test("the default resolver resolves container-registered helpers", function(){

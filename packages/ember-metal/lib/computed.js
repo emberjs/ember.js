@@ -32,18 +32,18 @@ function UNDEFINED() { }
 //
 
 /**
-  A computed property transforms an objects function into a property.
+  A computed property transforms an object's function into a property.
 
   By default the function backing the computed property will only be called
   once and the result will be cached. You can specify various properties
-  that your computed property is dependent on. This will force the cached
+  that your computed property depends on. This will force the cached
   result to be recomputed if the dependencies are modified.
 
   In the following example we declare a computed property (by calling
-  `.property()` on the fullName function) and setup the properties
+  `.property()` on the fullName function) and setup the property
   dependencies (depending on firstName and lastName). The fullName function
   will be called once (regardless of how many times it is accessed) as long
-  as it's dependencies have not been changed. Once firstName or lastName are updated
+  as its dependencies have not changed. Once firstName or lastName are updated
   any future calls (or anything bound) to fullName will incorporate the new
   values.
 
@@ -358,7 +358,9 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
     }
 
     chainNodes = meta.chainWatchers && meta.chainWatchers[keyName];
-    if (chainNodes) { finishChains(chainNodes); }
+    if (chainNodes) {
+      finishChains(chainNodes);
+    }
     addDependentKeys(this, obj, keyName, meta);
   } else {
     ret = this.func.call(obj, keyName);
@@ -639,7 +641,9 @@ function cacheFor(obj, key) {
   var cache = meta && meta.cache;
   var ret = cache && cache[key];
 
-  if (ret === UNDEFINED) { return undefined; }
+  if (ret === UNDEFINED) {
+    return undefined;
+  }
   return ret;
 }
 
@@ -653,7 +657,9 @@ cacheFor.set = function(cache, key, value) {
 
 cacheFor.get = function(cache, key) {
   var ret = cache[key];
-  if (ret === UNDEFINED) { return undefined; }
+  if (ret === UNDEFINED) {
+    return undefined;
+  }
   return ret;
 };
 

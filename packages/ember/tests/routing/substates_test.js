@@ -1,7 +1,10 @@
 import "ember";
 
+import EmberHandlebars from "ember-handlebars";
+
+var compile = EmberHandlebars.compile;
+
 var Router, App, templates, router, container, counter;
-var compile = Ember.Handlebars.compile;
 
 function step(expectedValue, description) {
   equal(counter, expectedValue, "Step " + expectedValue + ": " + description);

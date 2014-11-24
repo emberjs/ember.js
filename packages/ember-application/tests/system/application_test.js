@@ -16,6 +16,9 @@ var trim = jQuery.trim;
 
 var app, application, originalLookup, originalDebug;
 
+var compile = EmberHandlebars.compile;
+
+
 QUnit.module("Ember.Application", {
   setup: function() {
     originalLookup = Ember.lookup;
@@ -117,10 +120,10 @@ test('initialized application go to initial route', function() {
     });
 
     app.register('template:application',
-      EmberHandlebars.compile("{{outlet}}")
+      compile("{{outlet}}")
     );
 
-    Ember.TEMPLATES.index = EmberHandlebars.compile(
+    Ember.TEMPLATES.index = compile(
       "<h1>Hi from index</h1>"
     );
   });

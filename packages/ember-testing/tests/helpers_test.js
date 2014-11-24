@@ -12,8 +12,11 @@ import setupForTesting from "ember-testing/setup_for_testing";
 import EmberRouter from "ember-routing/system/router";
 import EmberRoute from "ember-routing/system/route";
 import EmberApplication from "ember-application/system/application";
+import EmberHandlebars from "ember-handlebars";
 
 var App, originalAdapter = Test.adapter;
+
+var compile = EmberHandlebars.compile;
 
 function cleanup(){
   // Teardown setupForTesting
@@ -208,7 +211,7 @@ test("`click` triggers appropriate events in order", function() {
     })
   });
 
-  Ember.TEMPLATES.index = Ember.Handlebars.compile('{{input type="text"}} {{view view.Checkbox}} {{textarea}}');
+  Ember.TEMPLATES.index = compile('{{input type="text"}} {{view view.Checkbox}} {{textarea}}');
 
   App.injectTestHelpers();
 
@@ -583,7 +586,7 @@ test("`triggerEvent accepts an optional options hash and context", function(){
   });
 
   App.IndexView = EmberView.extend({
-    template: Ember.Handlebars.compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
+    template: compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
 
     didInsertElement: function() {
       this.$('.input').on('blur change', function(e) {
@@ -620,7 +623,7 @@ test("`triggerEvent accepts an optional options hash without context", function(
   });
 
   App.IndexView = EmberView.extend({
-    template: Ember.Handlebars.compile('{{input type="text" id="scope" class="input"}}'),
+    template: compile('{{input type="text" id="scope" class="input"}}'),
 
     didInsertElement: function() {
       this.$('.input').on('blur change', function(e) {
@@ -656,7 +659,7 @@ test("`triggerEvent can limit searching for a selector to a scope", function(){
   });
 
   App.IndexView = EmberView.extend({
-    template: Ember.Handlebars.compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
+    template: compile('{{input type="text" id="outside-scope" class="input"}}<div id="limited">{{input type="text" id="inside-scope" class="input"}}</div>'),
 
     didInsertElement: function() {
       this.$('.input').on('blur change', function(e) {
@@ -691,7 +694,7 @@ test("`triggerEvent` can be used to trigger arbitrary events", function() {
   });
 
   App.IndexView = EmberView.extend({
-    template: Ember.Handlebars.compile('{{input type="text" id="foo"}}'),
+    template: compile('{{input type="text" id="foo"}}'),
 
     didInsertElement: function() {
       this.$('#foo').on('blur change', function(e) {
@@ -726,7 +729,7 @@ test("`fillIn` takes context into consideration", function() {
   });
 
   App.IndexView = EmberView.extend({
-    template: Ember.Handlebars.compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}')
+    template: compile('<div id="parent">{{input type="text" id="first" class="current"}}</div>{{input type="text" id="second" class="current"}}')
   });
 
   App.injectTestHelpers();

@@ -166,7 +166,9 @@ Binding.prototype = {
     addObserver(obj, fromPath, this, this.fromDidChange);
 
     // if the binding is a two-way binding, also set up an observer on the target
-    if (!this._oneWay) { addObserver(obj, toPath, this, this.toDidChange); }
+    if (!this._oneWay) {
+      addObserver(obj, toPath, this, this.toDidChange);
+    }
 
     this._readyToSync = true;
 
@@ -191,7 +193,9 @@ Binding.prototype = {
     removeObserver(obj, this._from, this, this.fromDidChange);
 
     // if the binding is two-way, remove the observer from the target as well
-    if (twoWay) { removeObserver(obj, this._to, this, this.toDidChange); }
+    if (twoWay) {
+      removeObserver(obj, this._to, this, this.toDidChange);
+    }
 
     this._readyToSync = false; // disable scheduled syncs...
     return this;

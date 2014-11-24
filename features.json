@@ -14,21 +14,19 @@
     "ember-runtime-item-controller-inline-class": null,
     "ember-metal-injected-properties": null,
     "mandatory-setter": "development-only",
-    "ember-routing-fire-activate-deactivate-events": null,
-    "ember-testing-pause-test": null,
+    "ember-routing-fire-activate-deactivate-events": true,
+    "ember-testing-pause-test": true,
+    "ember-htmlbars": null,
+    "ember-htmlbars-block-params": null,
+    "ember-htmlbars-component-generation": null,
     "computed-property-syntax-new": true
   },
   "debugStatements": [
     "Ember.warn",
-    "emberWarn",
     "Ember.assert",
-    "emberAssert",
     "Ember.deprecate",
-    "emberDeprecate",
     "Ember.debug",
-    "emberDebug",
     "Ember.Logger.info",
-    "Ember.runInDebug",
-    "runInDebug"
+    "Ember.runInDebug"
   ]
 }

@@ -1,5 +1,4 @@
 import Ember from "ember-metal/core"; // Ember.assert
-// var emberAssert = Ember.assert;
 
 import isNone from 'ember-metal/is_none';
 import { bind } from "ember-handlebars/helpers/binding";
@@ -43,16 +42,6 @@ import { bind } from "ember-handlebars/helpers/binding";
   changes, the partial will be re-rendered using the new template
   name.
 
-  ## Setting the partial's context with `with`
-
-  The `partial` helper can be used in conjunction with the `with`
-  helper to set a context that will be used by the partial:
-
-  ```handlebars
-  {{#with currentUser}}
-    {{partial "user_info"}}
-  {{/with}}
-  ```
 
   @method partial
   @for Ember.Handlebars.helpers
@@ -97,7 +86,7 @@ function renderPartial(context, name, options) {
   var template = view.templateForName(underscoredName);
   var deprecatedTemplate = !template && view.templateForName(name);
 
-  Ember.assert("Unable to find partial with name '"+name+"'.", template || deprecatedTemplate);
+  Ember.assert("Unable to find partial with name '"+name+"'.", !!template || !!deprecatedTemplate);
 
   template = template || deprecatedTemplate;
 

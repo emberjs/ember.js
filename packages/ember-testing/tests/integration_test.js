@@ -11,6 +11,8 @@ import EmberHandlebars from "ember-handlebars";
 
 import 'ember-application';
 
+var compile = EmberHandlebars.compile;
+
 var App, find, visit, originalAdapter = Test.adapter;
 
 QUnit.module("ember-testing Integration", {
@@ -32,7 +34,7 @@ QUnit.module("ember-testing Integration", {
       });
 
       App.PeopleView = EmberView.extend({
-        defaultTemplate: EmberHandlebars.compile("{{#each person in controller}}<div class=\"name\">{{person.firstName}}</div>{{/each}}")
+        defaultTemplate: compile("{{#each person in controller}}<div class=\"name\">{{person.firstName}}</div>{{/each}}")
       });
 
       App.PeopleController = ArrayController.extend({});
@@ -48,7 +50,7 @@ QUnit.module("ember-testing Integration", {
       });
 
       App.ApplicationView = EmberView.extend({
-        defaultTemplate: EmberHandlebars.compile("{{outlet}}")
+        defaultTemplate: compile("{{outlet}}")
       });
 
       App.setupForTesting();

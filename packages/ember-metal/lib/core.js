@@ -167,7 +167,7 @@ if (typeof Ember.EXTEND_PROTOTYPES === 'undefined') {
 Ember.LOG_STACKTRACE_ON_DEPRECATION = (Ember.ENV.LOG_STACKTRACE_ON_DEPRECATION !== false);
 
 /**
-  Determines whether Ember should add ECMAScript 5 shims to older browsers.
+  Determines whether Ember should add ECMAScript 5 Array shims to older browsers.
 
   @property SHIM_ES5
   @type Boolean

@@ -18,6 +18,7 @@ var useStrictRemover = require('broccoli-use-strict-remover');
 var derequire = require('broccoli-derequire');
 
 var getVersion = require('git-repo-version');
+var yuidocPlugin = require('ember-cli-yuidoc');
 
 // To create fast production builds (without ES3 support, minification, derequire, or JSHint)
 // run the following:
@@ -28,6 +29,7 @@ var env = process.env.EMBER_ENV || 'development';
 var disableJSHint = !!process.env.DISABLE_JSHINT || false;
 var disableES3    = !!process.env.DISABLE_ES3 || false;
 var disableMin    = !!process.env.DISABLE_MIN || false;
+var enableDocs    = !!process.env.ENABLE_DOCS || false;
 var disableDefeatureify;
 
 var disableDerequire = !!process.env.DISABLE_DEREQUIRE || false;
@@ -84,7 +86,11 @@ function defeatureifyConfig(opts) {
 /*
   Returns a tree picked from `packages/#{packageName}/lib` and then move `main.js` to `/#{packageName}.js`.
  */
-function vendoredPackage(packageName) {
+function vendoredPackage(packageName, _options) {
+  var options = _options || {};
+
+  var libPath = options.libPath || 'packages/' + packageName + '/lib';
+  var mainFile = options.mainFile || 'main.js';
   /*
     For example:
       Given the following dir:
@@ -95,8 +101,8 @@ function vendoredPackage(packageName) {
         /metamorph
           └── main.js
    */
-  var libTree = pickFiles('packages/' + packageName + '/lib', {
-    files: ['main.js'],
+  var libTree = pickFiles(libPath, {
+    files: [ mainFile ],
     srcDir: '/',
     destDir: '/' + packageName
   });
@@ -111,7 +117,7 @@ function vendoredPackage(packageName) {
         └── metamorph.js
    */
   var sourceTree = moveFile(libTree, {
-    srcFile: packageName + '/main.js',
+    srcFile: packageName + '/' + mainFile,
     destFile: '/' + packageName + '.js'
   });
 
@@ -226,7 +232,46 @@ var testConfig = pickFiles('tests', {
   broccoli-defeatureify requires that format.
 */
 testConfig = replace(testConfig, {
-  files: [ 'tests/ember_configuration.js' ],
+  files: [ 'tests/index.html' ],
+  patterns: [
+    { match: /\{\{DEV_FEATURES\}\}/g,
+      replacement: function() {
+        var features = defeatureifyConfig().enabled;
+
+        return JSON.stringify(features);
+      }
+    },
+    { match: /\{\{PROD_FEATURES\}\}/g,
+      replacement: function() {
+        var features = defeatureifyConfig({
+          environment: 'production'
+        }).enabled;
+
+        return JSON.stringify(features);
+      }
+    },
+  ]
+});
+
+var s3TestRunner = pickFiles(testConfig, {
+  srcDir: '/tests',
+  destDir: '/ember-tests',
+  files: ['index.html']
+});
+
+s3TestRunner = replace(s3TestRunner, {
+  files: ['ember-tests/index.html'],
+  patterns: [
+    { match: new RegExp('../ember', 'g'), replacement: './ember' },
+    { match: new RegExp('../qunit/qunit.css', 'g'), replacement: 'http://code.jquery.com/qunit/qunit-1.15.0.css' },
+    { match: new RegExp('../qunit/qunit.js', 'g'), replacement: 'http://code.jquery.com/qunit/qunit-1.15.0.js' },
+    { match: new RegExp('../handlebars/handlebars.js', 'g'), replacement: 'http://builds.handlebarsjs.com.s3.amazonaws.com/handlebars-v2.0.0.js' },
+    { match: new RegExp('../jquery/jquery.js', 'g'), replacement: 'http://code.jquery.com/jquery-1.11.1.js'}
+  ]
+});
+
+testConfig = replace(testConfig, {
+  files: [ 'tests/index.html' ],
   patterns: [
     { match: /\{\{DEV_FEATURES\}\}/g,
       replacement: function() {
@@ -270,10 +315,16 @@ var bowerFiles = [
     files: ['handlebars.js'],
     srcDir: '/',
     destDir: '/handlebars'
-  }),
+  })
 ];
 
 bowerFiles = mergeTrees(bowerFiles);
+
+var emberDevTestHelpers = pickFiles('bower_components/ember-dev/addon', {
+  srcDir: '/',
+  destDir: '/ember-dev',
+  files: ['**/*.js']
+});
 
 // iife - Immediately Invoking Function Expression
 // http://en.wikipedia.org/wiki/Immediately-invoked_function_expression
@@ -290,14 +341,24 @@ var iifeStop  = writeFile('iife-stop', '})();');
       'ember-metal': {trees: null,  vendorRequirements: ['backburner']}
     ```
  */
+var handlebarsConfig = {
+  libPath: 'node_modules/handlebars/dist',
+  mainFile: 'handlebars.amd.js'
+};
+
 var vendoredPackages = {
-  'loader':           vendoredPackage('loader'),
-  'rsvp':             vendoredEs6Package('rsvp'),
-  'backburner':       vendoredEs6Package('backburner'),
-  'router':           vendoredEs6Package('router.js'),
-  'route-recognizer': vendoredEs6Package('route-recognizer'),
-  'dag-map':          vendoredEs6Package('dag-map'),
-  'morph':            htmlbarsPackage('morph')
+  'loader':                vendoredPackage('loader'),
+  'rsvp':                  vendoredEs6Package('rsvp'),
+  'backburner':            vendoredEs6Package('backburner'),
+  'router':                vendoredEs6Package('router.js'),
+  'route-recognizer':      vendoredEs6Package('route-recognizer'),
+  'dag-map':               vendoredEs6Package('dag-map'),
+  'morph':                 htmlbarsPackage('morph'),
+  'htmlbars-compiler':     htmlbarsPackage('htmlbars-compiler'),
+  'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer'),
+  'htmlbars-test-helpers': htmlbarsPackage('htmlbars-test-helpers', { singleFile: true } ),
+  'htmlbars-util':         htmlbarsPackage('htmlbars-util'),
+  'handlebars':            vendoredPackage('handlebars', handlebarsConfig)
 };
 
 var emberHandlebarsCompiler = pickFiles('packages/ember-handlebars-compiler/lib', {
@@ -330,7 +391,16 @@ function es6Package(packageName) {
     #TODO: moar detail!!!
   */
   var dependencyTrees = packageDependencyTree(packageName);
-  var vendorTrees = packages[packageName].vendorTrees;
+  var vendorTrees = pkg.vendorTrees;
+
+  /*
+    The list of files to select. This is passed to `pickFiles` below.
+  */
+  var files = [ '**/*.js'];
+
+  if (pkg.hasTemplates) {
+    files.push('**/*.hbs');
+  }
 
   /*
     For packages that are maintained by ember we assume the following structure:
@@ -367,7 +437,7 @@ function es6Package(packageName) {
   */
   libTree = pickFiles('packages/' + packageName + '/lib', {
     srcDir: '/',
-    files: ['**/*.js'],
+    files: files,
     destDir: packageName
   });
 
@@ -387,27 +457,29 @@ function es6Package(packageName) {
     destFile: packageName + '.js'
   });
 
-  /*
-     Add templateCompiler to libTree.  This is done to ensure that the templates
-     are precompiled with the local version of `ember-handlebars-compiler` (NOT
-     the `npm` version), and includes any changes.  Specifically, so that you
-     can work on the template compiler and still have functional builds.
-  */
-  libTree = mergeTrees([libTree, templateCompilerTree]);
-
-  /*
-    Utilizing the templateCompiler to compile inline handlebars templates to
-    handlebar template functions.  This is done so that only Handlebars runtime
-    is required instead of all of Handlebars.
-  */
-  libTree = inlineTemplatePrecompiler(libTree);
-
-  // Remove templateCompiler from libTree as it is no longer needed.
-  libTree = removeFile(libTree, {
-    srcFile: 'ember-template-compiler.js'
-  });
-
   var libJSHintTree = jshintTree(libTree);
+
+  if (pkg.hasTemplates) {
+    /*
+       Add templateCompiler to libTree.  This is done to ensure that the templates
+       are precompiled with the local version of `ember-handlebars-compiler` (NOT
+       the `npm` version), and includes any changes.  Specifically, so that you
+       can work on the template compiler and still have functional builds.
+    */
+    libTree = mergeTrees([libTree, templateCompilerTree]);
+
+    /*
+      Utilizing the templateCompiler to compile inline handlebars templates to
+      handlebar template functions.  This is done so that only Handlebars runtime
+      is required instead of all of Handlebars.
+    */
+    libTree = inlineTemplatePrecompiler(libTree);
+
+    // Remove templateCompiler from libTree as it is no longer needed.
+    libTree = removeFile(libTree, {
+      srcFile: 'ember-template-compiler.js'
+    });
+  }
 
   var testTree = pickFiles('packages/' + packageName + '/tests', {
     srcDir: '/',
@@ -521,7 +593,8 @@ var vendorTrees          = [];
 var devSourceTrees       = [];
 var prodSourceTrees      = [];
 var testingSourceTrees   = [];
-var testTrees            = [];
+var testTrees            = [emberDevTestHelpers];
+var testHelpers          = [];
 var compiledPackageTrees = [];
 
 for (var packageName in packages) {
@@ -557,25 +630,36 @@ for (var packageName in packages) {
 compiledPackageTrees = mergeTrees(compiledPackageTrees);
 vendorTrees = mergeTrees(vendorTrees);
 devSourceTrees = mergeTrees(devSourceTrees);
+
 testTrees   = mergeTrees(testTrees);
 
 
-function htmlbarsPackage(packageName) {
-  var tree = pickFiles('bower_components/htmlbars/packages/' + packageName + '/lib', {
-    srcDir: '/',
-    destDir: '/' + packageName
-  });
+function htmlbarsPackage(packageName, _options) {
+  var options = _options || {};
+  var fileGlobs = [];
 
-  tree = moveFile(tree, {
-    srcFile: '/' + packageName + '/main.js',
-    destFile: packageName + '.js'
+  if (!options.singleFile === true) {
+    fileGlobs.push(packageName + '/**/*.js');
+  }
+
+  if (!options.ignoreMain === true) {
+    fileGlobs.push(packageName + '.js');
+  }
+
+  var tree = pickFiles('node_modules/htmlbars/dist/es6/', {
+    files: fileGlobs,
+    srcDir: '/',
+    destDir: '/'
   });
 
   tree = transpileES6(tree, {
     moduleName: true
   });
 
-  return useStrictRemover(tree);
+  if (env !== 'development' && !disableES3) {
+    tree = es3recast(tree);
+  }
+  return tree;
 }
 
 /*
@@ -719,6 +803,7 @@ var distTrees = [templateCompilerTree, compiledSource, compiledTests, testingCom
 // This ensures development build speed is not affected by unnecessary
 // minification and defeaturification
 if (env !== 'development') {
+  distTrees.push(s3TestRunner);
   distTrees.push(prodCompiledSource);
   distTrees.push(prodCompiledTests);
 
@@ -730,6 +815,11 @@ if (env !== 'development') {
 
 // merge distTrees and sub out version placeholders for distribution
 distTrees = mergeTrees(distTrees);
+
+if (enableDocs && ["serve", "s"].indexOf(process.argv[2]) !== -1 ) {
+  distTrees = yuidocPlugin.addDocsToTree(distTrees);
+}
+
 distTrees = replace(distTrees, {
   files: [ '**/*.js', '**/*.json' ],
   patterns: [

@@ -49,39 +49,18 @@ import {
   debuggerHelper
 } from "ember-handlebars/helpers/debug";
 import {
-  EachView,
   eachHelper
 } from "ember-handlebars/helpers/each";
 import templateHelper from "ember-handlebars/helpers/template";
 import partialHelper from "ember-handlebars/helpers/partial";
 import yieldHelper from "ember-handlebars/helpers/yield";
 import locHelper from "ember-handlebars/helpers/loc";
+import EachView from "ember-views/views/each";
 
-
-import Checkbox from "ember-handlebars/controls/checkbox";
-import {
-  Select,
-  SelectOption,
-  SelectOptgroup
-} from "ember-handlebars/controls/select";
-import TextArea from "ember-handlebars/controls/text_area";
-import TextField from "ember-handlebars/controls/text_field";
-import TextSupport from "ember-handlebars/controls/text_support";
 import {
   inputHelper,
   textareaHelper
 } from "ember-handlebars/controls";
-
-import ComponentLookup from "ember-handlebars/component_lookup";
-import {
-  _HandlebarsBoundView,
-  SimpleHandlebarsView
-} from "ember-handlebars/views/handlebars_bound_view";
-import _MetamorphView from "ember-handlebars/views/metamorph_view";
-import {
-  _SimpleMetamorphView,
-  _Metamorph
-} from "ember-handlebars/views/metamorph_view";
 
 
 /**
@@ -101,25 +80,11 @@ EmberHandlebars.bind = bind;
 EmberHandlebars.bindClasses = bindClasses;
 EmberHandlebars.EachView = EachView;
 EmberHandlebars.ViewHelper = ViewHelper;
+EmberHandlebars.get = handlebarsGet;
 
 
 // Ember Globals
 Ember.Handlebars = EmberHandlebars;
-EmberHandlebars.get = handlebarsGet;
-Ember.ComponentLookup = ComponentLookup;
-Ember._SimpleHandlebarsView = SimpleHandlebarsView;
-Ember._HandlebarsBoundView = _HandlebarsBoundView;
-Ember._SimpleMetamorphView = _SimpleMetamorphView;
-Ember._MetamorphView = _MetamorphView;
-Ember._Metamorph = _Metamorph;
-Ember.TextSupport = TextSupport;
-Ember.Checkbox = Checkbox;
-Ember.Select = Select;
-Ember.SelectOption = SelectOption;
-Ember.SelectOptgroup = SelectOptgroup;
-Ember.TextArea = TextArea;
-Ember.TextField = TextField;
-Ember.TextSupport = TextSupport;
 
 // register helpers
 EmberHandlebars.registerHelper('helperMissing', helperMissingHelper);

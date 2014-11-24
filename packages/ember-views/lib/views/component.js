@@ -117,7 +117,13 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   },
 
   defaultLayout: function(context, options){
-    Ember.Handlebars.helpers['yield'].call(context, options);
+    if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+      // ES6TODO: must use global here, to prevent circular require issue
+      // remove and replace with standard import once we have lazy binding
+      Ember.HTMLBars.helpers.yield.helperFunction.call(context, [], {}, options, { data: { view: context }});
+    } else {
+      Ember.Handlebars.helpers['yield'].call(context, options);
+    }
   },
 
   /**
@@ -145,7 +151,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     var templateName = get(this, 'templateName');
     var template = this.templateForName(templateName, 'template');
 
-    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
+    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
 
     return template || get(this, 'defaultTemplate');
   }).property('templateName'),
@@ -163,7 +169,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     this._keywords.view.setSource(this);
   },
 
-  _yield: function(context, options) {
+  _yield: function(context, options, morph, blockArguments) {
     var view = options.data.view;
     var parentView = this._parentView;
     var template = get(this, 'template');
@@ -174,8 +180,10 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
       view.appendChild(View, {
         isVirtual: true,
         tagName: '',
-        _contextView: parentView,
         template: template,
+        _blockArguments: blockArguments,
+        _contextView: parentView,
+        _morph: morph,
         context: get(parentView, 'context'),
         controller: get(parentView, 'controller'),
         templateData: { keywords: {} }
@@ -301,6 +309,30 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
       action: actionName,
       actionContext: contexts
     });
+  },
+
+  send: function(actionName) {
+    var args = [].slice.call(arguments, 1);
+    var target;
+    var hasAction = this._actions && this._actions[actionName];
+
+    if (hasAction) {
+      if (this._actions[actionName].apply(this, args) === true) {
+        // handler returned true, so this action will bubble
+      } else {
+        return;
+      }
+    }
+
+    if (target = get(this, 'target')) {
+      Ember.assert("The `target` for " + this + " (" + target +
+                   ") does not have a `send` method", typeof target.send === 'function');
+      target.send.apply(target, arguments);
+    } else {
+      if (!hasAction) {
+        throw new Error(Ember.inspect(this) + ' had no action handler for: ' + actionName);
+      }
+    }
   }
 });
 
