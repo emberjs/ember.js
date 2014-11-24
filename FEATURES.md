@@ -137,3 +137,9 @@ for a detailed explanation.
   Passing just function is still supported, and is equivalent to passing only a getter.
 
   Added in [#9527](https://github.com/emberjs/ember.js/pull/9527).
+
+* `ember-metal-stream`
+
+  Exposes the basic internal stream implementation as `Ember.Stream`.
+
+  Added in [#9693](https://github.com/emberjs/ember.js/pull/9693)
