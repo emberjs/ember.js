@@ -17,5 +17,5 @@ export function templateHelper(params, hash, options, env) {
 
   options.helperName = options.helperName || 'template';
 
-  env.helpers.partial.helperFunction.call(this, params, hash, options, env);
+  return env.helpers.partial.helperFunction.call(this, params, hash, options, env);
 }

@@ -59,11 +59,7 @@ export function unboundHelper(params, hash, options, env) {
     delete env.data.isUnbound;
   }
 
-  if (!options.morph) {
-    return result;
-  }
-
-  options.morph.update(result);
+  return result;
 }
 
 export function preprocessArgumentsForUnbound(view, params, hash, options, env) {

@@ -1,16 +1,12 @@
-import streamifyArgs from "ember-htmlbars/system/streamify-arguments";
-import lookupHelper from "ember-htmlbars/system/lookup-helper";
+import subexpr from "ember-htmlbars/hooks/subexpr";
+import { appendSimpleBoundView } from "ember-views/views/simple_bound_view";
 
 export default function content(morph, path, view, params, hash, options, env) {
-  var helper = lookupHelper(path, view, env);
-  if (!helper) {
-    helper = lookupHelper('bindHelper', view, env);
-    // Modify params to include the first word
-    params.unshift(path);
-    options.paramTypes = ['id'];
+  var result = subexpr(path, view, params, hash, options, env);
+
+  if (result && result.isStream) {
+    appendSimpleBoundView(view, morph, result);
+  } else {
+    morph.update(result);
   }
-
-  streamifyArgs(view, params, hash, options, env, helper);
-  return helper.helperFunction.call(view, params, hash, options, env);
 }
-

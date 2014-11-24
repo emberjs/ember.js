@@ -17,9 +17,7 @@ function HandlebarsCompatibleHelper(fn) {
     var args = options._raw.params;
     args.push(handlebarsOptions);
 
-    var result = fn.apply(this, args);
-
-    options.morph.update(result);
+    return fn.apply(this, args);
   };
 
   this.isHTMLBars = true;

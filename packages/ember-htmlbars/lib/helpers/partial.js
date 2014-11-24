@@ -49,23 +49,15 @@ import { bind } from "./binding";
 */
 
 export function partialHelper(params, hash, options, env) {
-  var parentView = this;
-
   options.helperName = options.helperName || 'partial';
 
-  if (options.paramTypes[0] === "id") {
-    var partialNameStream = params[0];
-    // Helper was passed a property path; we need to
-    // create a binding that will re-render whenever
-    // this property changes.
-    options.render = function(renderView, renderEnv, renderContextualElement) {
-      renderPartial(renderView, partialNameStream.value(), renderView._morph, renderEnv);
-    };
+  var name = params[0];
 
-    return bind.call(parentView, partialNameStream, hash, options, env, true, exists);
+  if (name && name.isStream) {
+    options.render = createPartialTemplate(name);
+    bind.call(this, name, hash, options, env, true, exists);
   } else {
-    // Render the partial right into parent template.
-    renderPartial(parentView, params[0], options.morph, env);
+    return renderPartial(name, this, env, options.morph.contextualElement);
   }
 }
 
@@ -90,8 +82,13 @@ function lookupPartial(view, templateName) {
   return template;
 }
 
-function renderPartial(view, name, morph, env) {
+function renderPartial(name, view, env, contextualElement) {
   var template = lookupPartial(view, name);
-  var fragment = template(view, env, morph.contextualElement); 
-  morph.update(fragment);
+  return template(view, env, contextualElement);
+}
+
+function createPartialTemplate(nameStream) {
+  return function(view, env, contextualElement) {
+    return renderPartial(nameStream.value(), view, env, contextualElement);
+  };
 }

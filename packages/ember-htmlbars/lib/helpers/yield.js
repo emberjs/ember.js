@@ -103,5 +103,5 @@ export function yieldHelper(params, hash, options, env) {
 
   Ember.assert("You called yield in a template that was not a layout", !!view);
 
-  view._yield(null, env, options.morph, params);
+  return view._yield(null, env, options.morph, params);
 }
