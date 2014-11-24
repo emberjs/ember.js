@@ -32,6 +32,11 @@ var nodeHandlers = {
   },
 
   block: function(block) {
+    if (this.tokenizer.state === 'comment') {
+      this.tokenizer.token.addChar('{{' + this.sourceForMustache(block) + '}}');
+      return;
+    }
+
     switchToHandlebars(this);
     this.acceptToken(block);
 
@@ -57,6 +62,11 @@ var nodeHandlers = {
   },
 
   mustache: function(mustache) {
+    if (this.tokenizer.state === 'comment') {
+      this.tokenizer.token.addChar('{{' + this.sourceForMustache(mustache) + '}}');
+      return;
+    }
+
     switchToHandlebars(this);
     this.acceptToken(mustache);
   },

@@ -54,6 +54,10 @@ HydrationOpcodeCompiler.prototype.text = function(/* string, pos, len */) {
   ++this.currentDOMChildIndex;
 };
 
+HydrationOpcodeCompiler.prototype.comment = function(/* string, pos, len */) {
+  ++this.currentDOMChildIndex;
+};
+
 HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, isSingleRoot, mustacheCount, blankChildTextNodes) {
   distributeMorphs(this.morphs, this.opcodes);
   ++this.currentDOMChildIndex;
