@@ -42,7 +42,7 @@
     "git-repo-version": "0.0.1",
     "glob": "~3.2.8",
     "handlebars": "^2.0",
-    "htmlbars": "0.1.10",
+    "htmlbars": "0.1.11",
     "ncp": "~0.5.1",
     "rimraf": "~2.2.8",
     "rsvp": "~3.0.6"
