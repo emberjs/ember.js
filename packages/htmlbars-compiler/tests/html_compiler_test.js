@@ -194,6 +194,22 @@ test("The compiler can handle comments", function() {
   compilesTo("<div>{{! Better not break! }}content</div>", '<div>content</div>', {});
 });
 
+test("The compiler can handle HTML comments", function() {
+  compilesTo('<div><!-- Just passing through --></div>');
+});
+
+test("The compiler can handle HTML comments with mustaches in them", function() {
+  compilesTo('<div><!-- {{foo}} --></div>', '<div><!-- {{foo}} --></div>', { foo: 'bar' });
+});
+
+test("The compiler can handle HTML comments with complex mustaches in them", function() {
+  compilesTo('<div><!-- {{foo bar baz}} --></div>', '<div><!-- {{foo bar baz}} --></div>', { foo: 'bar' });
+});
+
+test("The compiler can handle HTML comments with multi-line mustaches in them", function() {
+  compilesTo('<div><!-- {{#each foo as |bar|}}\n{{bar}}\n\n{{/each}} --></div>');
+});
+
 // TODO: Revisit partial syntax.
 // test("The compiler can handle partials in handlebars partial syntax", function() {
 //   registerPartial('partial_name', "<b>Partial Works!</b>");

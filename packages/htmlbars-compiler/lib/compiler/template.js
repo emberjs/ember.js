@@ -130,6 +130,11 @@ TemplateCompiler.prototype.text = function(string, i, l, r) {
   this.hydrationOpcodeCompiler.text(string, i, l, r);
 };
 
+TemplateCompiler.prototype.comment = function(string, i, l, r) {
+  this.fragmentOpcodeCompiler.comment(string, i, l, r);
+  this.hydrationOpcodeCompiler.comment(string, i, l, r);
+};
+
 TemplateCompiler.prototype.mustache = function (mustache, i, l) {
   this.fragmentOpcodeCompiler.mustache(mustache, i, l);
   this.hydrationOpcodeCompiler.mustache(mustache, i, l);

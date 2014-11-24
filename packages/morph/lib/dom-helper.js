@@ -171,6 +171,10 @@ prototype.createTextNode = function(text){
   return this.document.createTextNode(text);
 };
 
+prototype.createComment = function(text){
+  return this.document.createComment(text);
+};
+
 prototype.repairClonedNode = function(element, blankChildTextNodes, isChecked){
   if (deletesBlankTextNodes && blankChildTextNodes.length > 0) {
     for (var i=0, len=blankChildTextNodes.length;i<len;i++){
