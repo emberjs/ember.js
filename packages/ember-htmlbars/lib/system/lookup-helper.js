@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 import Ember from "ember-metal/core";
 import Cache from "ember-metal/cache";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";

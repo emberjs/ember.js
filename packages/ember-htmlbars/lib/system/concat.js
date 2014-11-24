@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 import Stream from "ember-metal/streams/stream";
 import {readArray} from "ember-metal/streams/read";
 

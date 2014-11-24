@@ -1,4 +1,9 @@
 /**
+@module ember
+@submodule ember-htmlbars
+*/
+
+/**
   Sanitize options so that all helpers have `types`, `hash`, and `hashTypes`.
 
   @private

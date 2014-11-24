@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.assert, Ember.Handlebars, Ember.lookup
 import { IS_BINDING } from "ember-metal/mixin";
 import { appendSimpleBoundView } from "ember-views/views/simple_bound_view";

@@ -1,4 +1,9 @@
 /**
+@module ember
+@submodule ember-htmlbars
+*/
+
+/**
   Lookup both on root and on window. If the path starts with
   a keyword, the corresponding object will be looked up in the
   template's data hash and used to resolve the path.

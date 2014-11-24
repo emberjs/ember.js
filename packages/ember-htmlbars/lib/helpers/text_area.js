@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 import Ember from "ember-metal/core"; // Ember.assert
 import TextArea from "ember-views/views/text_area";
 

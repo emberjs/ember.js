@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-handlebars
+@submodule ember-htmlbars
 */
 
 import Ember from "ember-metal/core"; // Ember.assert

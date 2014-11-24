@@ -2,7 +2,7 @@
 
 /**
 @module ember
-@submodule ember-handlebars
+@submodule ember-htmlbars
 */
 import Logger from "ember-metal/logger";
 

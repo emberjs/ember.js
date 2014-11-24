@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 import merge from "ember-metal/merge";
 import helpers from "ember-htmlbars/helpers";
 import View from "ember-views/views/view";
@@ -7,6 +12,13 @@ import makeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 
 var slice = [].slice;
 
+/**
+  Wraps an Handlebars helper with an HTMLBars helper for backwards compatibility.
+
+  @class HandlebarsCompatibleHelper
+  @constructor
+  @private
+*/
 function HandlebarsCompatibleHelper(fn) {
   this.helperFunction = function helperFunc(params, hash, options, env) {
     var handlebarsOptions = {};

@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 // required so we can extend this object.
 import SafeString from "htmlbars-util/safe-string";
 import EmberStringUtils from "ember-runtime/system/string";

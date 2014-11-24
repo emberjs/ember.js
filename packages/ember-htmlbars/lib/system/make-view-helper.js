@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 import Ember from "ember-metal/core"; // Ember.assert
 import Helper from "ember-htmlbars/system/helper";
 
