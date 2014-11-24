@@ -1607,8 +1607,8 @@ test("should teardown observers from bound properties on rerender", function() {
 });
 
 if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  // need https://github.com/tildeio/htmlbars/pull/150 to handle HTML Comments
-
+// HTMLBars properly handles this scenario
+// https://github.com/tildeio/htmlbars/pull/162
 test("should provide a helpful assertion for bindings within HTML comments", function() {
   view = EmberView.create({
     template: EmberHandlebars.compile('<!-- {{view.someThing}} -->'),
@@ -1620,5 +1620,4 @@ test("should provide a helpful assertion for bindings within HTML comments", fun
     appendView();
   }, 'An error occured while setting up template bindings. Please check "blahzorz" template for invalid markup or bindings within HTML comments.');
 });
-
 }
