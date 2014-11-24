@@ -356,3 +356,33 @@ test("should be able to use unbound helper in #each helper (with objects)", func
   equal(view.$().text(), 'bam1');
   equal(view.$('li').children().length, 0, 'No markers');
 });
+
+test('should work properly with attributes', function() {
+  expect(4);
+
+  view = EmberView.create({
+    template: compile('<ul>{{#each person in view.people}}<li class="{{unbound person.cool}}">{{person.name}}</li>{{/each}}</ul>'),
+    people: A([{
+      name: 'Bob',
+      cool: 'not-cool'
+    }, {
+      name: 'James',
+      cool: 'is-cool'
+    }, {
+      name: 'Richard',
+      cool: 'is-cool'
+    }])
+  });
+
+  appendView(view);
+
+  equal(view.$('li.not-cool').length, 1, 'correct number of not cool people');
+  equal(view.$('li.is-cool').length, 2, 'correct number of cool people');
+
+  run(function() {
+    set(view, 'people.firstObject.cool', 'is-cool');
+  });
+
+  equal(view.$('li.not-cool').length, 1, 'correct number of not cool people');
+  equal(view.$('li.is-cool').length, 2, 'correct number of cool people');
+});

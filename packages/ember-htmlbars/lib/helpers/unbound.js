@@ -59,6 +59,10 @@ export function unboundHelper(params, hash, options, env) {
     delete env.data.isUnbound;
   }
 
+  if (!options.morph) {
+    return result;
+  }
+
   options.morph.update(result);
 }
 
