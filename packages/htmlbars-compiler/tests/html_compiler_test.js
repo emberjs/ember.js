@@ -210,6 +210,10 @@ test("The compiler can handle HTML comments with multi-line mustaches in them", 
   compilesTo('<div><!-- {{#each foo as |bar|}}\n{{bar}}\n\n{{/each}} --></div>');
 });
 
+test('The compiler can handle comments with no parent element', function() {
+  compilesTo('<!-- {{foo}} -->');
+});
+
 // TODO: Revisit partial syntax.
 // test("The compiler can handle partials in handlebars partial syntax", function() {
 //   registerPartial('partial_name', "<b>Partial Works!</b>");

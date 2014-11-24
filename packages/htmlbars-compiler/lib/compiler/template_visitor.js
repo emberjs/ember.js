@@ -201,8 +201,9 @@ TemplateVisitor.prototype.text = function(text) {
 
 TemplateVisitor.prototype.comment = function(text) {
   var frame = this.getCurrentFrame();
+  var isSingleRoot = frame.parentNode.type === 'program' && frame.childCount === 1;
 
-  frame.actions.push(['comment', [text, frame.childIndex, frame.childCount, true]]);
+  frame.actions.push(['comment', [text, frame.childIndex, frame.childCount, isSingleRoot]]);
 };
 
 TemplateVisitor.prototype.mustache = function(mustache) {
