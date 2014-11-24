@@ -67,20 +67,3 @@ test('adds `hash` into options `options` for the wrapped helper', function() {
   compatHelper.preprocessArguments(fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv);
   compatHelper.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
 });
-
-test('calls morph.update with the return value from the helper', function() {
-  expect(1);
-
-  function someHelper(options) {
-    return 'Lucy!';
-  }
-
-  var compatHelper = new HandlebarsCompatibleHelper(someHelper);
-
-  fakeOptions.morph.update = function(value) {
-    equal(value, 'Lucy!');
-  };
-
-  compatHelper.preprocessArguments(fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv);
-  compatHelper.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
-});

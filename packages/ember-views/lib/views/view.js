@@ -802,7 +802,6 @@ var View = CoreView.extend({
 
   _yield: function(context, options, morph) {
     var template = get(this, 'template');
-    var result;
 
     if (template) {
       var useHTMLBars = false;
@@ -811,13 +810,10 @@ var View = CoreView.extend({
       }
 
       if (useHTMLBars) {
-        result = template(this, options, morph.contextualElement);
+        return template(this, options, morph.contextualElement);
       } else {
-        result = template(context, options);
+        return template(context, options);
       }
-    }
-    if (morph) {
-      morph.update(result);
     }
   },
 

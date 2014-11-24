@@ -48,5 +48,5 @@ export function locHelper(params, hash, options, env) {
     return true;
   });
 
-  options.morph.update(loc.apply(this, params));
+  return loc.apply(this, params);
 }
