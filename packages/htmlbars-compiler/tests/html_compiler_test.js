@@ -117,10 +117,27 @@ test("Null quoted attribute value calls toString on the value", function() {
 });
 
 test("Null unquoted attribute value removes that attribute", function() {
+
   var template = compile('<input disabled={{isDisabled}}>');
   var fragment = template({isDisabled: null}, env);
 
   equalTokens(fragment, '<input>');
+});
+
+test("unquoted attribute string is just that", function() {
+
+  var template = compile('<input value=funstuff>');
+  var fragment = template({}, env);
+
+  equalTokens(fragment, '<input value="funstuff">');
+});
+
+test("unquoted attribute expression is string", function() {
+
+  var template = compile('<input value={{funstuff}}>');
+  var fragment = template({funstuff: "oh my"}, env);
+
+  equalTokens(fragment, '<input value="oh my">');
 });
 
 test("Simple elements can have arbitrary attributes", function() {
