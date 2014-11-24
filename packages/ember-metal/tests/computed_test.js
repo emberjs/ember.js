@@ -442,6 +442,13 @@ testBoth('throws assertion if brace expansion notation has spaces', function (ge
   }, /cannot contain spaces/);
 });
 
+test('throws an assertion if computed funtion was not specified', function() {
+  throws(function () {
+    defineProperty(obj, 'roo', computed('bar'));
+  }, /Computed Property `bar` declared without a property function/);
+});
+
+
 // ..........................................................
 // CHAINED DEPENDENT KEYS
 //
