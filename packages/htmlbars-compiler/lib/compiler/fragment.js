@@ -33,6 +33,11 @@ FragmentCompiler.prototype.createText = function(str) {
   this.source.push(this.indent+'  var '+el+' = dom.createTextNode('+string(str)+');\n');
 };
 
+FragmentCompiler.prototype.createComment = function(str) {
+  var el = 'el'+(++this.depth);
+  this.source.push(this.indent+'  var '+el+' = dom.createComment('+string(str)+');\n');
+};
+
 FragmentCompiler.prototype.returnNode = function() {
   var el = 'el'+this.depth;
   this.source.push(this.indent+'  return '+el+';\n');

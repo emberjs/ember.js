@@ -149,3 +149,12 @@ test("component", function() {
     ['endProgram', [0]]
   ]);
 });
+
+test("comment", function() {
+  var input = "<!-- some comment -->";
+  actionsEqual(input, [
+    ['startProgram', [0, []]],
+    ['comment', [0, 1, true]],
+    ['endProgram', [0]]
+  ]);
+});

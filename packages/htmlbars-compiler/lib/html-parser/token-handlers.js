@@ -70,7 +70,9 @@ var tokenHandlers = {
   },
 
   block: function(/*block*/) {
-    if (this.tokenizer.state !== 'data') {
+    if (this.tokenizer.state === 'comment') {
+      return;
+    } else if (this.tokenizer.state !== 'data') {
       throw new Error("A block may only be used inside an HTML element or another block.");
     }
   },
