@@ -15,6 +15,8 @@ export default BoundView.extend({
     var keywordName     = this.templateHash.keywordName;
     var controllerName  = this.templateHash.controller;
 
+    this._blockArguments = [this.lazyValue];
+
     if (controllerName) {
       var previousContext = this.previousContext;
       var controller = this.container.lookupFactory('controller:'+controllerName).create({

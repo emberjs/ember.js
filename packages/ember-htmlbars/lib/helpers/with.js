@@ -67,18 +67,18 @@ export function withHelper(params, hash, options, env) {
 
   Ember.assert("The {{#with}} helper must be called with a block", !!options.render);
 
-  var source, keyword;
-  var preserveContext, context;
+  var source, keyword, preserveContext;
   if (options.paramTypes[0] === 'id') {
-    Ember.deprecate('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
-
+    if (options.blockParams) {
+      preserveContext = true;
+    } else {
+      Ember.deprecate('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+      preserveContext = false;
+    }
     source = params[0];
-    preserveContext = false;
-    context = source.value();
   } else if (options.paramTypes[0] === 'keyword') {
     source = params[0].stream;
     keyword = params[0].to;
-    context = this.get('context');
 
     var localizedOptions = o_create(options);
 
