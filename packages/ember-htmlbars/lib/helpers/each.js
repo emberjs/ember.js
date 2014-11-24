@@ -164,23 +164,27 @@ function eachHelper(params, hash, options, env) {
   Ember.assert("If you pass more than one argument to the each helper," +
                " it must be in the form #each foo in bar", params.length <= 1);
 
-  if (options.paramTypes[0] === 'keyword') {
-    keywordName = path.to;
-
-    helperName += ' ' + keywordName + ' in ' + path.from;
-
-    hash.keyword = keywordName;
-
-    path = path.stream;
+  if (options.blockParams) {
+    hash.keyword = true;
   } else {
-    helperName += ' ' + path;
+    if (options.paramTypes[0] === 'keyword') {
+      keywordName = path.to;
+
+      helperName += ' ' + keywordName + ' in ' + path.from;
+
+      hash.keyword = keywordName;
+
+      path = path.stream;
+    } else {
+      helperName += ' ' + path;
+    }
+
+    if (!path) {
+      path = env.data.view.getStream('');
+    }
   }
 
-  if (!path) {
-    path = env.data.view.getStream('');
-  }
-
-  Ember.deprecate('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.', keywordName);
+  Ember.deprecate('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.', keywordName || options.blockParams);
 
   hash.emptyViewClass = Ember._MetamorphView;
   hash.dataSourceBinding = path;
