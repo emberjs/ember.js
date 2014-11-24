@@ -84,14 +84,17 @@ var tokenHandlers = {
     switch(state) {
       case "beforeAttributeValue":
         this.tokenizer.state = 'attributeValueUnquoted';
+        token.markAttributeQuoted(false);
         token.addToAttributeValue(mustache.sexpr);
+        token.finalizeAttributeValue();
         return;
       case "attributeValueDoubleQuoted":
       case "attributeValueSingleQuoted":
+        token.markAttributeQuoted(true);
         token.addToAttributeValue(mustache.sexpr);
-        token.attributes[token.attributes.length - 1].quoted = true;
         return;
       case "attributeValueUnquoted":
+        token.markAttributeQuoted(false);
         token.addToAttributeValue(mustache.sexpr);
         return;
       case "beforeAttributeName":

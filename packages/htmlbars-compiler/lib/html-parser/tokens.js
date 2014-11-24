@@ -2,9 +2,12 @@ import { Chars, StartTag, EndTag } from "../../simple-html-tokenizer";
 import { AttrNode, TextNode, StringNode } from "../ast";
 
 StartTag.prototype.startAttribute = function(char) {
-  this.finalizeAttributeValue();
-  this.currentAttribute = new AttrNode(char.toLowerCase(), []);
+  this.currentAttribute = new AttrNode(char.toLowerCase(), [], null);
   this.attributes.push(this.currentAttribute);
+};
+
+StartTag.prototype.markAttributeQuoted = function(value) {
+  this.currentAttribute.quoted = value;
 };
 
 StartTag.prototype.addToAttributeName = function(char) {
@@ -26,7 +29,6 @@ StartTag.prototype.addToAttributeValue = function(char) {
 };
 
 StartTag.prototype.finalize = function() {
-  this.finalizeAttributeValue();
   delete this.currentAttribute;
   return this;
 };
@@ -40,16 +42,13 @@ StartTag.prototype.finalizeAttributeValue = function() {
   }
 
   if (attr.value.length === 0) {
-    attr.value = new TextNode("");
-  } else if (attr.value.length === 1) {
-    part = attr.value[0];
-    if (part.type === 'sexpr') {
-      if (!attr.quoted) {
-        attr.value = part;
-      }
+    if (attr.quoted) {
+      attr.value = new TextNode("");
     } else {
-      attr.value = part;
+      attr.value = null;
     }
+  } else if (attr.value.length === 1) {
+    attr.value = attr.value[0];
   } else {
     // Convert TextNode to StringNode
     for (var i = 0; i < attr.value.length; i++) {
