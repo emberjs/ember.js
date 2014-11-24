@@ -199,6 +199,12 @@ TemplateVisitor.prototype.text = function(text) {
   frame.actions.push(['text', [text, frame.childIndex, frame.childCount, isSingleRoot]]);
 };
 
+TemplateVisitor.prototype.comment = function(text) {
+  var frame = this.getCurrentFrame();
+
+  frame.actions.push(['comment', [text, frame.childIndex, frame.childCount, true]]);
+};
+
 TemplateVisitor.prototype.mustache = function(mustache) {
   var frame = this.getCurrentFrame();
   frame.mustacheCount++;
