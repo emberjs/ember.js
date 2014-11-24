@@ -65,13 +65,17 @@ function boundIfHelper(params, hash, options, env) {
 */
 function unboundIfHelper(params, hash, options, env) {
   var template = options.render;
+  var value = params[0];
 
-  if (!shouldDisplayIfHelperContent(params[0].value())) {
+  if (params[0].isStream) {
+    value = params[0].value();
+  }
+
+  if (!shouldDisplayIfHelperContent(value)) {
     template = options.inverse;
   }
 
-  var result = template(options.context, env, options.morph.contextualElement);
-  options.morph.update(result);
+  return template(this, env, options.morph.contextualElement);
 }
 
 /**
@@ -92,7 +96,7 @@ function ifHelper(params, hash, options, env) {
 
   options.inverse = options.inverse || function(){ return ''; };
 
-  if (options.isUnbound) {
+  if (env.data.isUnbound) {
     return env.helpers.unboundIf.helperFunction.call(this, params, hash, options, env);
   } else {
     return env.helpers.boundIf.helperFunction.call(this, params, hash, options, env);
@@ -119,7 +123,7 @@ function unlessHelper(params, hash, options, env) {
 
   options.helperName = options.helperName || helperName;
 
-  if (options.isUnbound) {
+  if (env.data.isUnbound) {
     return env.helpers.unboundIf.helperFunction.call(this, params, hash, options, env);
   } else {
     return env.helpers.boundIf.helperFunction.call(this, params, hash, options, env);
