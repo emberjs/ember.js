@@ -356,7 +356,8 @@ var CollectionView = ContainerView.extend({
 
         view = this.createChildView(itemViewClass, {
           content: item,
-          contentIndex: idx
+          contentIndex: idx,
+          _blockArguments: [item]
         });
 
         addedViews.push(view);
