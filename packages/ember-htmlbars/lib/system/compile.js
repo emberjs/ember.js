@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 import Ember from "ember-metal/core";
 import { compile } from "htmlbars-compiler/compiler";
 import template from "ember-htmlbars/system/template";

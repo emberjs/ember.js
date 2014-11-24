@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 import subexpr from "ember-htmlbars/hooks/subexpr";
 import { appendSimpleBoundView } from "ember-views/views/simple_bound_view";
 

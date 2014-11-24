@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 import { sanitizeOptionsForHelper } from "ember-htmlbars/system/sanitize-for-helper";
 
 export default function streamifyArgs(view, params, hash, options, env, helper) {

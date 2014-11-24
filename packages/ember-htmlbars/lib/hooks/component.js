@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 import Ember from "ember-metal/core";
 import streamifyArgs from "ember-htmlbars/system/streamify-arguments";
 import lookupHelper from "ember-htmlbars/system/lookup-helper";

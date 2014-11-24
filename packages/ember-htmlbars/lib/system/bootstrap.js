@@ -1,5 +1,10 @@
 /*globals Handlebars */
 
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 import Ember from "ember-metal/core";
 import ComponentLookup from "ember-views/component_lookup";
 import jQuery from "ember-views/system/jquery";

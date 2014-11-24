@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 import run from "ember-metal/run_loop";
 import concat from "ember-htmlbars/system/concat";
 

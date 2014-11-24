@@ -1,4 +1,9 @@
 /**
+@module ember
+@submodule ember-htmlbars
+*/
+
+/**
   Augments the detault precompiled output of an HTMLBars template with
   additional information needed by Ember.
 
