@@ -553,7 +553,7 @@ function computed(func) {
   }
 
   if (typeof func !== "function") {
-    throw new EmberError("Computed Property declared without a property function");
+    throw new EmberError("Computed Property `" + func + "` declared without a property function");
   }
 
   var cp = new ComputedProperty(func);
