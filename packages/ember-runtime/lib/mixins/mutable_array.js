@@ -306,7 +306,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   //
 
   /**
-    Remove all occurances of an object in the array.
+    Remove all occurrences of an object in the array.
 
     ```javascript
     var cities = ["Chicago", "Berlin", "Lima", "Chicago"];
