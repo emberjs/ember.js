@@ -108,4 +108,15 @@ SimpleBoundView.prototype = {
   }
 };
 
+export function appendSimpleBoundView(parentView, morph, stream) {
+  var view = new SimpleBoundView(stream, morph.escaped);
+  view._morph = morph;
+
+  stream.subscribe(parentView._wrapAsScheduled(function() {
+    run.scheduleOnce('render', view, 'rerender');
+  }));
+
+  parentView.appendChild(view);
+}
+
 export default SimpleBoundView;
