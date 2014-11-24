@@ -48,7 +48,9 @@ StartTag.prototype.finalizeAttributeValue = function() {
       attr.value = null;
     }
   } else if (attr.value.length === 1) {
-    attr.value = attr.value[0];
+    if (attr.value[0].type === 'text') {
+      attr.value = attr.value[0];
+    }
   } else {
     // Convert TextNode to StringNode
     for (var i = 0; i < attr.value.length; i++) {
