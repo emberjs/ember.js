@@ -1,6 +1,6 @@
 import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.assert, Ember.Handlebars, Ember.lookup
 import { IS_BINDING } from "ember-metal/mixin";
-import simpleBind from "ember-htmlbars/system/simple-bind";
+import { appendSimpleBoundView } from "ember-views/views/simple_bound_view";
 import merge from "ember-metal/merge";
 import Helper from "ember-htmlbars/system/helper";
 
@@ -68,12 +68,8 @@ export default function makeBoundHelper(fn, compatMode) {
       return valueFn();
     } else {
       var lazyValue = new Stream(valueFn);
-      var bindOptions = {
-        escaped: !hash.unescaped,
-        morph: options.morph
-      };
 
-      simpleBind.call(this, [lazyValue], {}, bindOptions);
+      appendSimpleBoundView(this, options.morph, lazyValue);
 
       var param;
 
