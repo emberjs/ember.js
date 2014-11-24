@@ -24,9 +24,9 @@ FragmentOpcodeCompiler.prototype.text = function(text, childIndex, childCount, i
   if (!isSingleRoot) { this.opcode('appendChild'); }
 };
 
-FragmentOpcodeCompiler.prototype.comment = function(comment) {
+FragmentOpcodeCompiler.prototype.comment = function(comment, childIndex, childCount, isSingleRoot) {
   this.opcode('createComment', [comment.chars]);
-  this.opcode('appendChild');
+  if (!isSingleRoot) { this.opcode('appendChild'); }
 };
 
 FragmentOpcodeCompiler.prototype.openElement = function(element) {
