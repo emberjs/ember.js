@@ -25,6 +25,10 @@ function viewClass(options) {
   return EmberView.extend(options);
 }
 
+var appendView = function(view) {
+  run(view, 'appendTo', '#qunit-fixture');
+};
+
 QUnit.module("ember-htmlbars: {{#view}} helper", {
   setup: function() {
     originalLookup = Ember.lookup;
@@ -60,7 +64,7 @@ test("By default view:toplevel is used", function() {
     container: container
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   equal(jQuery('#toplevel-view').text(), 'hello world');
 });
@@ -90,7 +94,7 @@ test("View lookup - App.FuView (DEPRECATED)", function() {
   }).create();
 
   expectDeprecation(function(){
-    run(view, 'appendTo', '#qunit-fixture');
+    appendView(view);
   }, /Global lookup of App.FuView from a Handlebars template is deprecated./);
 
   equal(jQuery('#fu').text(), 'bro');
@@ -117,7 +121,7 @@ test("View lookup - 'fu'", function() {
     container: container
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   equal(jQuery('#fu').text(), 'bro');
 });
@@ -144,7 +148,7 @@ test("View lookup - 'fu' when fu is a property and a view name", function() {
     container: container
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   equal(jQuery('#fu').text(), 'bro');
 });
@@ -171,7 +175,7 @@ test("View lookup - view.computed", function() {
     computed: 'fu'
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   equal(jQuery('#fu').text(), 'bro');
 });
@@ -182,7 +186,7 @@ test("id bindings downgrade to one-time property lookup", function() {
     meshuggah: 'stengah'
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   equal(jQuery('#stengah').text(), 'stengah', "id binding performed property lookup");
   run(view, 'set', 'meshuggah', 'omg');
@@ -195,7 +199,7 @@ test("specifying `id` as a static value works properly", function() {
     meshuggah: 'stengah'
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   equal(view.$('#blah').text(), 'stengah', "id binding performed property lookup");
 });
@@ -219,7 +223,7 @@ test("mixing old and new styles of property binding fires a warning, treats valu
     snork: "nerd"
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   equal(jQuery('#lol').text(), "nerd", "awkward mixed syntax treated like binding");
 
@@ -237,7 +241,7 @@ test("allows you to pass attributes that will be assigned to the class instance,
     container: container
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   ok(jQuery('#foo').hasClass('foo'));
   ok(jQuery('#foo').is('h1'));
@@ -251,7 +255,7 @@ test("Should apply class without condition always", function() {
     template: compile('{{#view id="foo" classBinding=":foo"}} Foo{{/view}}')
   });
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
 });
@@ -264,7 +268,7 @@ test("Should apply classes when bound controller.* property specified", function
     template: compile('{{#view id="foo" class=controller.someProp}} Foo{{/view}}')
   });
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
 });
@@ -277,7 +281,7 @@ test("Should apply classes when bound property specified", function() {
     template: compile('{{#view id="foo" class=someProp}} Foo{{/view}}')
   });
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
 });
@@ -290,7 +294,7 @@ test("Should not apply classes when bound property specified is false", function
     template: compile('{{#view id="foo" class=someProp}} Foo{{/view}}')
   });
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   ok(!jQuery('#foo').hasClass('some-prop'), "does not add class when value is falsey");
 });
@@ -303,7 +307,7 @@ test("Should apply classes of the dasherized property name when bound property s
     template: compile('{{#view id="foo" class=someProp}} Foo{{/view}}')
   });
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   ok(jQuery('#foo').hasClass('some-prop'), "adds dasherized class when value is true");
 });
@@ -318,7 +322,7 @@ test("Should update classes from a bound property", function() {
     template: compile('{{#view id="foo" class=someProp}} Foo{{/view}}')
   });
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   ok(jQuery('#foo').hasClass('some-prop'), "adds dasherized class when value is true");
 
@@ -355,7 +359,7 @@ test("bound properties should be available in the view", function() {
     someProp: 'initial value'
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   equal(view.$('#fu').text(), 'initial value');
 
