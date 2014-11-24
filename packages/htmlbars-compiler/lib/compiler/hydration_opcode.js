@@ -141,12 +141,7 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
     return;
   }
 
-  var params;
-  if (attr.value.type === 'sexpr') {
-    params = [ attr.value ];
-  } else {
-    params = attr.value;
-  }
+  var params = attr.value;
 
   this.opcode('program', null, null);
   processSexpr(this, { params: params });
