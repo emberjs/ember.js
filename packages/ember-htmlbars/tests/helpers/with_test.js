@@ -230,37 +230,6 @@ test("it should support #with this as qux", function() {
   });
 });
 
-QUnit.module("Handlebars {{#with foo}} insideGroup");
-
-test("it should render without fail [DEPRECATED]", function() {
-  var View = EmberView.extend({
-    template: compile("{{#view view.childView}}{{#with person}}{{name}}{{/with}}{{/view}}"),
-    controller: EmberObject.create({ person: { name: "Ivan IV Vasilyevich" } }),
-    childView: EmberView.extend({
-      render: function(){
-        this.set('templateData.insideGroup', true);
-        return this._super.apply(this, arguments);
-      }
-    })
-  });
-
-  var view = View.create();
-  expectDeprecation(function(){
-    appendView(view);
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
-  equal(view.$().text(), "Ivan IV Vasilyevich", "should be properly scoped");
-
-  run(function() {
-    set(view, 'controller.person.name', "Ivan the Terrible");
-  });
-
-  equal(view.$().text(), "Ivan the Terrible", "should update");
-
-  run(function() {
-    view.destroy();
-  });
-});
-
 QUnit.module("Handlebars {{#with foo}} with defined controller");
 
 test("it should wrap context with object controller [DEPRECATED]", function() {
