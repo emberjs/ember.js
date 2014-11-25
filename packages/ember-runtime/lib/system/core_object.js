@@ -21,7 +21,8 @@ import {
 import { create as o_create } from "ember-metal/platform";
 import {
   generateGuid,
-  GUID_KEY,
+  GUID_KEY_PROPERTY,
+  NEXT_SUPER_PROPERTY,
   meta,
   makeArray
 } from "ember-metal/utils";
@@ -54,20 +55,6 @@ var finishPartial = Mixin.finishPartial;
 var reopen = Mixin.prototype.reopen;
 var hasCachedComputedProperties = false;
 
-var undefinedDescriptor = {
-  configurable: true,
-  writable: true,
-  enumerable: false,
-  value: undefined
-};
-
-var nullDescriptor = {
-  configurable: true,
-  writable: true,
-  enumerable: false,
-  value: null
-};
-
 function makeCtor() {
 
   // Note: avoid accessing any properties on the object since it makes the
@@ -81,8 +68,8 @@ function makeCtor() {
     if (!wasApplied) {
       Class.proto(); // prepare prototype...
     }
-    o_defineProperty(this, GUID_KEY, nullDescriptor);
-    o_defineProperty(this, '__nextSuper', undefinedDescriptor);
+    this.__defineNonEnumerable(GUID_KEY_PROPERTY);
+    this.__defineNonEnumerable(NEXT_SUPER_PROPERTY);
     var m = meta(this);
     var proto = m.proto;
     m.proto = this;
@@ -267,6 +254,10 @@ CoreObject.PrototypeMixin = Mixin.create({
     @method init
   */
   init: function() {},
+  __defineNonEnumerable: function(property) {
+    o_defineProperty(this, property.name, property.descriptor);
+    //this[property.name] = property.descriptor.value;
+  },
 
   /**
     Defines the properties that will be concatenated from the superclass
