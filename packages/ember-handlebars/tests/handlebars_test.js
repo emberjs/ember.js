@@ -11,7 +11,6 @@ import { A } from "ember-runtime/system/native_array";
 import { computed } from "ember-metal/computed";
 import ContainerView from "ember-views/views/container_view";
 import { Binding } from "ember-metal/binding";
-import TextField from "ember-views/views/text_field";
 import Container from "ember-runtime/system/container";
 import { ViewHelper as handlebarsViewHelper } from "ember-handlebars/helpers/view";
 import { ViewHelper as htmlbarsViewHelper } from "ember-htmlbars/helpers/view";
@@ -20,42 +19,6 @@ var trim = jQuery.trim;
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-
-var caretPosition = function (element) {
-  var ctrl = element[0];
-  var caretPos = 0;
-
-  // IE Support
-  if (document.selection) {
-    ctrl.focus();
-    var selection = document.selection.createRange();
-
-    selection.moveStart('character', -ctrl.value.length);
-
-    caretPos = selection.text.length;
-  }
-  // Firefox support
-  else if (ctrl.selectionStart || ctrl.selectionStart === '0') {
-    caretPos = ctrl.selectionStart;
-  }
-
-  return caretPos;
-};
-
-var setCaretPosition = function (element, pos) {
-  var ctrl = element[0];
-
-  if (ctrl.setSelectionRange) {
-    ctrl.focus();
-    ctrl.setSelectionRange(pos,pos);
-  } else if (ctrl.createTextRange) {
-    var range = ctrl.createTextRange();
-    range.collapse(true);
-    range.moveEnd('character', pos);
-    range.moveStart('character', pos);
-    range.select();
-  }
-};
 
 var view;
 
@@ -214,29 +177,6 @@ test("Layout views return throw if their layout cannot be found", function() {
   expectAssertion(function() {
     get(view, 'layout');
   }, /cantBeFound/);
-});
-
-test("should not reset cursor position when text field receives keyUp event", function() {
-  view = TextField.create({
-    value: "Broseidon, King of the Brocean"
-  });
-
-  run(function() {
-    view.append();
-  });
-
-  view.$().val('Brosiedoon, King of the Brocean');
-  setCaretPosition(view.$(), 5);
-
-  run(function() {
-    view.trigger('keyUp', {});
-  });
-
-  equal(caretPosition(view.$()), 5, "The keyUp event should not result in the cursor being reset due to the bind-attr observers");
-
-  run(function() {
-    view.destroy();
-  });
 });
 
 test("should allow standard Handlebars template usage", function() {
