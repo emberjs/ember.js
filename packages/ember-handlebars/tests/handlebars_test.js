@@ -13,7 +13,6 @@ import ContainerView from "ember-views/views/container_view";
 import { Binding } from "ember-metal/binding";
 import TextField from "ember-views/views/text_field";
 import Container from "ember-runtime/system/container";
-import { create as o_create } from "ember-metal/platform";
 import { ViewHelper as handlebarsViewHelper } from "ember-handlebars/helpers/view";
 import { ViewHelper as htmlbarsViewHelper } from "ember-htmlbars/helpers/view";
 
@@ -21,8 +20,6 @@ var trim = jQuery.trim;
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-
-var originalLog, logCalls;
 
 var caretPosition = function (element) {
   var ctrl = element[0];
@@ -135,68 +132,6 @@ test("template view should call the function of the associated template with its
   equal("template was called for Tom DAAAALE1. Yea Tom DAAAALE1", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
 
-test("should read from a global-ish simple local path without deprecation", function() {
-  view = EmberView.create({
-    context: { NotGlobal: 'Gwar' },
-    template: EmberHandlebars.compile('{{NotGlobal}}')
-  });
-
-  expectNoDeprecation();
-  appendView();
-
-  equal(view.$().text(), 'Gwar');
-});
-
-test("should read a number value", function() {
-  var context = { aNumber: 1 };
-  view = EmberView.create({
-    context: context,
-    template: EmberHandlebars.compile('{{aNumber}}')
-  });
-
-  appendView();
-  equal(view.$().text(), '1');
-
-  Ember.run(function(){
-    Ember.set(context, 'aNumber', 2);
-  });
-  equal(view.$().text(), '2');
-});
-
-test("should read an escaped number value", function() {
-  var context = { aNumber: 1 };
-  view = EmberView.create({
-    context: context,
-    template: EmberHandlebars.compile('{{{aNumber}}}')
-  });
-
-  appendView();
-  equal(view.$().text(), '1');
-
-  Ember.run(function(){
-    Ember.set(context, 'aNumber', 2);
-  });
-  equal(view.$().text(), '2');
-});
-
-test("should read from an Object.create(null)", function() {
-  // Use ember's polyfill for Object.create
-  var nullObject = o_create(null);
-  nullObject['foo'] = 'bar';
-  view = EmberView.create({
-    context: { nullObject: nullObject },
-    template: EmberHandlebars.compile('{{nullObject.foo}}')
-  });
-
-  appendView();
-  equal(view.$().text(), 'bar');
-
-  Ember.run(function(){
-    Ember.set(nullObject, 'foo', 'baz');
-  });
-  equal(view.$().text(), 'baz');
-});
-
 test("child views can be inserted inside a bind block", function() {
   container.register('template:nester', EmberHandlebars.compile("<h1 id='hello-world'>Hello {{world}}</h1>{{view view.bqView}}"));
   container.register('template:nested', EmberHandlebars.compile("<div id='child-view'>Goodbye {{#with content as thing}}{{thing.blah}} {{view view.otherView}}{{/with}} {{world}}</div>"));
@@ -234,9 +169,6 @@ test("child views can be inserted inside a bind block", function() {
   ok(view.$("blockquote").text().match(/Goodbye.*wot.*cruel.*world\!/), "The child view renders its content once");
   ok(view.$().text().match(/Hello world!.*Goodbye.*wot.*cruel.*world\!/), "parent view should appear before the child view");
 });
-
-if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
-}
 
 test("View should update when a property changes and the bind helper is used", function() {
   container.register('template:foo', EmberHandlebars.compile('<h1 id="first">{{#with view.content as thing}}{{bind "thing.wham"}}{{/with}}</h1>'));
@@ -434,45 +366,9 @@ test("should be able to use standard Handlebars #each helper", function() {
   equal(view.$().html(), "abc");
 });
 
-test("should escape HTML in primitive value contexts when using normal mustaches", function() {
-  view = EmberView.create({
-    context: '<b>Max</b><b>James</b>',
-    template: EmberHandlebars.compile('{{this}}'),
-  });
-
-  appendView();
-
-  equal(view.$('b').length, 0, "does not create an element");
-  equal(view.$().text(), '<b>Max</b><b>James</b>', "inserts entities, not elements");
-
-  run(function() { set(view, 'context', '<i>Max</i><i>James</i>'); });
-
-  equal(view.$().text(), '<i>Max</i><i>James</i>', "updates with entities, not elements");
-  equal(view.$('i').length, 0, "does not create an element when value is updated");
-});
-
-test("should not escape HTML in primitive value contexts when using triple mustaches", function() {
-  view = EmberView.create({
-    context: '<b>Max</b><b>James</b>',
-    template: EmberHandlebars.compile('{{{this}}}'),
-  });
-
-  appendView();
-
-  equal(view.$('b').length, 2, "creates an element");
-
-  run(function() { set(view, 'context', '<i>Max</i><i>James</i>'); });
-
-  equal(view.$('i').length, 2, "creates an element when value is updated");
-});
-
 QUnit.module("Ember.View - handlebars integration", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
-
-    originalLog = Ember.Logger.log;
-    logCalls = [];
-    Ember.Logger.log = function(arg) { logCalls.push(arg); };
   },
 
   teardown: function() {
@@ -483,7 +379,6 @@ QUnit.module("Ember.View - handlebars integration", {
       view = null;
     }
 
-    Ember.Logger.log = originalLog;
     Ember.lookup = originalLookup;
   }
 });
