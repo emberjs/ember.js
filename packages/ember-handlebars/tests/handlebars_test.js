@@ -132,27 +132,6 @@ test("template view should call the function of the associated template with its
   equal("template was called for Tom DAAAALE1. Yea Tom DAAAALE1", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
 
-test("View should update when a property changes and the bind helper is used", function() {
-  container.register('template:foo', EmberHandlebars.compile('<h1 id="first">{{#with view.content as thing}}{{bind "thing.wham"}}{{/with}}</h1>'));
-
-  view = EmberView.create({
-    container: container,
-    templateName: 'foo',
-
-    content: EmberObject.create({
-      wham: 'bam',
-      thankYou: "ma'am"
-    })
-  });
-
-  appendView();
-
-  equal(view.$('#first').text(), "bam", "precond - view renders Handlebars template");
-
-  run(function() { set(get(view, 'content'), 'wham', 'bazam'); });
-  equal(view.$('#first').text(), "bazam", "view updates when a bound property changes");
-});
-
 test("View should not use keyword incorrectly - Issue #1315", function() {
   container.register('template:foo', EmberHandlebars.compile('{{#each value in view.content}}{{value}}-{{#each option in view.options}}{{option.value}}:{{option.label}} {{/each}}{{/each}}'));
 

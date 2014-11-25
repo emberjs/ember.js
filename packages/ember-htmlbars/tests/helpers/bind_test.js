@@ -1,6 +1,7 @@
 import EmberView from "ember-views/views/view";
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
+import _MetamorphView from 'ember-views/views/metamorph_view';
 import EmberHandlebars from "ember-handlebars";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
 import Container from "ember-runtime/system/container";
@@ -10,7 +11,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
 function appendView(view) {
-  run(function() { view.appendTo('#qunit-fixture'); });
+  run(view, 'appendTo', '#qunit-fixture');
 }
 
 var view, container;
@@ -23,11 +24,23 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 }
 
 QUnit.module("ember-htmlbars: {{bind}} helper", {
+  setup: function() {
+    container = new Container();
+    container.optionsForType('template', { instantiate: false });
+    container.register('view:default', _MetamorphView);
+    container.register('view:toplevel', EmberView.extend());
+  },
   teardown: function() {
-    if (view) {
-      run(view, view.destroy);
-      view = null;
-    }
+    run(function() {
+      if (container) {
+        container.destroy();
+      }
+      if (view) {
+        view.destroy();
+      }
+
+      container = view = null;
+    });
   }
 });
 
@@ -270,4 +283,28 @@ test("Template updates correctly if a path is passed to the bind helper and the 
   });
 
   equal(view.$('h1').text(), "$6", "updates when property is set on object controller");
+});
+
+test('View should update when a property changes and the bind helper is used', function() {
+  container.register('template:foo', compile('<h1 id="first">{{#with view.content as thing}}{{bind "thing.wham"}}{{/with}}</h1>'));
+
+  view = EmberView.create({
+    container: container,
+    templateName: 'foo',
+
+    content: EmberObject.create({
+      wham: 'bam',
+      thankYou: "ma'am"
+    })
+  });
+
+  appendView(view);
+
+  equal(view.$('#first').text(), 'bam', 'precond - view renders Handlebars template');
+
+  run(function() {
+    set(get(view, 'content'), 'wham', 'bazam');
+  });
+
+  equal(view.$('#first').text(), 'bazam', 'view updates when a bound property changes');
 });
