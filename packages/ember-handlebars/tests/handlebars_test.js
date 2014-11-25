@@ -216,33 +216,6 @@ test("Layout views return throw if their layout cannot be found", function() {
   }, /cantBeFound/);
 });
 
-// test("should warn if setting a template on a view with a templateName already specified", function() {
-//   view = EmberView.create({
-//     childView: EmberView.extend({
-//       templateName: 'foo'
-//     }),
-
-//     template: EmberHandlebars.compile('{{#view childView}}test{{/view}}')
-//   });
-
-//   expectAssertion(function() {
-//     appendView();
-//   }, "Unable to find view at path 'childView'");
-
-//   run(function() {
-//     view.destroy();
-//   });
-
-//   view = EmberView.create({
-//     childView: EmberView.extend(),
-//     template: EmberHandlebars.compile('{{#view childView templateName="foo"}}test{{/view}}')
-//   });
-
-//   expectAssertion(function() {
-//     appendView();
-//   }, "Unable to find view at path 'childView'");
-// });
-
 test("should not reset cursor position when text field receives keyUp event", function() {
   view = TextField.create({
     value: "Broseidon, King of the Brocean"

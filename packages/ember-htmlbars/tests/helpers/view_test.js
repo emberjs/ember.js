@@ -114,7 +114,7 @@ test("By default, without a container, EmberView is used", function() {
     template: compile('{{view tagName="span"}}')
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   ok(jQuery('#qunit-fixture').html().toUpperCase().match(/<SPAN/), 'contains view with span');
 });
