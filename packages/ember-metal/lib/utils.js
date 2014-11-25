@@ -228,22 +228,17 @@ function Meta(obj) {
   this.cache = {};
   this.cacheMeta = {};
   this.source = obj;
+  this.deps = undefined;
+  this.listeners = undefined;
+  this.mixins = undefined;
+  this.bindings = undefined;
+  this.chains = undefined;
+  this.values = undefined;
+  this.proto = undefined;
 }
 
 Meta.prototype = {
-  descs: null,
-  deps: null,
-  watching: null,
-  listeners: null,
-  cache: null,
-  cacheMeta: null,
-  source: null,
-  mixins: null,
-  bindings: null,
-  chains: null,
-  chainWatchers: null,
-  values: null,
-  proto: null
+  chainWatchers: null
 };
 
 if (!canDefineNonEnumerableProperties) {
