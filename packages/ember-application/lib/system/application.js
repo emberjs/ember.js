@@ -53,6 +53,8 @@ function props(obj) {
   return properties;
 }
 
+var librariesRegistered = false;
+
 /**
   An instance of `Ember.Application` is the starting point for every Ember
   application. It helps to instantiate, initialize and coordinate the many
@@ -273,8 +275,11 @@ var Application = Namespace.extend(DeferredMixin, {
 
     this.scheduleInitialize();
 
-    Ember.libraries.registerCoreLibrary('Handlebars' + (EmberHandlebars.compile ? '' : '-runtime'), EmberHandlebars.VERSION);
-    Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
+    if (!librariesRegistered) {
+      librariesRegistered = true;
+      Ember.libraries.registerCoreLibrary('Handlebars' + (EmberHandlebars.compile ? '' : '-runtime'), EmberHandlebars.VERSION);
+      Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
+    }
 
     if (Ember.LOG_VERSION) {
       // we only need to see this once per Application#init
