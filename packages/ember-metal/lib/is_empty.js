@@ -14,6 +14,7 @@ import isNone from 'ember-metal/is_none';
   Ember.isEmpty(undefined);       // true
   Ember.isEmpty('');              // true
   Ember.isEmpty([]);              // true
+  Ember.isEmpty({});              // false
   Ember.isEmpty('Adam Hawkins');  // false
   Ember.isEmpty([0,1,2]);         // false
   ```
