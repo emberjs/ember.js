@@ -135,24 +135,6 @@ test("template view should call the function of the associated template with its
   equal("template was called for Tom DAAAALE1. Yea Tom DAAAALE1", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
 
-test("should allow values from normal JavaScript hash objects to be used", function() {
-  view = EmberView.create({
-    template: EmberHandlebars.compile('{{#with view.person as person}}{{person.firstName}} {{person.lastName}} (and {{person.pet.name}}){{/with}}'),
-
-    person: {
-      firstName: 'Señor',
-      lastName: 'CFC',
-      pet: {
-        name: 'Fido'
-      }
-    }
-  });
-
-  appendView();
-
-  equal(view.$().text(), "Señor CFC (and Fido)", "prints out values from a hash");
-});
-
 test("should read from a global-ish simple local path without deprecation", function() {
   view = EmberView.create({
     context: { NotGlobal: 'Gwar' },
@@ -318,34 +300,6 @@ test("View should update when a property changes and no bind helper is used", fu
   equal(view.$('#first').text(), "bazam", "view updates when a bound property changes");
 });
 
-test("View should update when the property used with the #with helper changes [DEPRECATED]", function() {
-  container.register('template:foo', EmberHandlebars.compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>'));
-
-  view = EmberView.create({
-    container: container,
-    templateName: 'foo',
-
-    content: EmberObject.create({
-      wham: 'bam',
-      thankYou: "ma'am"
-    })
-  });
-
-  expectDeprecation(function() {
-    appendView();
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
-
-  equal(view.$('#first').text(), "bam", "precond - view renders Handlebars template");
-
-  run(function() {
-    set(view, 'content', EmberObject.create({
-      wham: 'bazam'
-    }));
-  });
-
-  equal(view.$('#first').text(), "bazam", "view updates when a bound property changes");
-});
-
 test("Template views return throw if their template cannot be found", function() {
   view = EmberView.create({
     templateName: 'cantBeFound',
@@ -478,29 +432,6 @@ test("should be able to use standard Handlebars #each helper", function() {
   appendView();
 
   equal(view.$().html(), "abc");
-});
-
-test("should expose a view keyword [DEPRECATED]", function() {
-  var templateString = '{{#with view.differentContent}}{{view.foo}}{{#view baz="bang"}}{{view.baz}}{{/view}}{{/with}}';
-  view = EmberView.create({
-    container: container,
-    differentContent: {
-      view: {
-        foo: "WRONG",
-        baz: "WRONG"
-      }
-    },
-
-    foo: "bar",
-
-    template: EmberHandlebars.compile(templateString)
-  });
-
-  expectDeprecation(function() {
-    appendView();
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
-
-  equal(view.$().text(), "barbang", "renders values from view and child view");
 });
 
 test("should escape HTML in primitive value contexts when using normal mustaches", function() {
@@ -652,29 +583,6 @@ test('should cleanup bound properties on rerender', function() {
   run(view, 'rerender');
 
   equal(view._childViews.length, 1);
-});
-
-test("bindings can be 'this', in which case they *are* the current context [DEPRECATED]", function() {
-  view = EmberView.create({
-    museumOpen: true,
-
-    museumDetails: EmberObject.create({
-      name: "SFMoMA",
-      price: 20,
-      museumView: EmberView.extend({
-        template: EmberHandlebars.compile('Name: {{view.museum.name}} Price: ${{view.museum.price}}')
-      })
-    }),
-
-
-    template: EmberHandlebars.compile('{{#if view.museumOpen}} {{#with view.museumDetails}}{{view museumView museum=this}} {{/with}}{{/if}}')
-  });
-
-  expectDeprecation(function() {
-    appendView();
-  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
-
-  equal(trim(view.$().text()), "Name: SFMoMA Price: $20", "should print baz twice");
 });
 
 // https://github.com/emberjs/ember.js/issues/120

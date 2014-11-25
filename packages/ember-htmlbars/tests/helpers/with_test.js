@@ -101,6 +101,7 @@ QUnit.module("Multiple Handlebars {{with foo as bar}} helpers", {
     run(function() {
       view.destroy();
     });
+
     Ember.lookup = originalLookup;
   }
 });
@@ -523,5 +524,3 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
     equal(view.$().text(), "Limbo-Wrath-Treachery-Wrath-Limbo", "should be properly scoped after updating");
   });
 }
-
-
