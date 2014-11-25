@@ -557,46 +557,6 @@ QUnit.module("Ember.View - handlebars integration", {
   }
 });
 
-test("should be able to log a property", function() {
-  var context = {
-    value: 'one'
-  };
-
-  view = EmberView.create({
-    context: context,
-    template: EmberHandlebars.compile('{{log value}}')
-  });
-
-  appendView();
-
-  equal(view.$().text(), "", "shouldn't render any text");
-  equal(logCalls[0], 'one', "should call log with value");
-});
-
-test("should be able to log a view property", function() {
-  view = EmberView.create({
-    template: EmberHandlebars.compile('{{log view.value}}'),
-    value: 'one'
-  });
-
-  appendView();
-
-  equal(view.$().text(), "", "shouldn't render any text");
-  equal(logCalls[0], 'one', "should call log with value");
-});
-
-test("should be able to log `this`", function() {
-  view = EmberView.create({
-    context: 'one',
-    template: EmberHandlebars.compile('{{log this}}'),
-  });
-
-  appendView();
-
-  equal(view.$().text(), "", "shouldn't render any text");
-  equal(logCalls[0], 'one', "should call log with item one");
-});
-
 var MyApp;
 
 QUnit.module("Templates redrawing and bindings", {
