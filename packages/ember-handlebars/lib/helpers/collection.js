@@ -16,7 +16,6 @@ import { get } from "ember-metal/property_get";
 import SimpleStream from "ember-metal/streams/simple";
 import { handlebarsGetView } from "ember-handlebars/ext";
 import { ViewHelper } from "ember-handlebars/helpers/view";
-import alias from "ember-metal/alias";
 import View from "ember-views/views/view";
 import CollectionView from "ember-views/views/collection_view";
 
@@ -251,9 +250,9 @@ function collectionHelper(path, options) {
   if (emptyViewClass) { hash.emptyView = emptyViewClass; }
 
   if (hash.keyword) {
-    itemHash._context = this;
+    itemHash._contextBinding = '_parentView.context';
   } else {
-    itemHash._context = alias('content');
+    itemHash._contextBinding = 'content';
   }
 
   var viewOptions = ViewHelper.propertiesFromHTMLOptions({ data: data, hash: itemHash }, this);
@@ -274,7 +273,8 @@ function collectionHelper(path, options) {
     viewOptions.classNameBindings = itemClassBindings;
   }
 
-  hash.itemViewClass = itemViewClass.extend(viewOptions);
+  hash.itemViewClass = itemViewClass;
+  hash._itemViewProps = viewOptions;
 
   options.helperName = options.helperName || 'collection';
 
