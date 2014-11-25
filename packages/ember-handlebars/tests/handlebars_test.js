@@ -132,44 +132,6 @@ test("template view should call the function of the associated template with its
   equal("template was called for Tom DAAAALE1. Yea Tom DAAAALE1", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
 
-test("child views can be inserted inside a bind block", function() {
-  container.register('template:nester', EmberHandlebars.compile("<h1 id='hello-world'>Hello {{world}}</h1>{{view view.bqView}}"));
-  container.register('template:nested', EmberHandlebars.compile("<div id='child-view'>Goodbye {{#with content as thing}}{{thing.blah}} {{view view.otherView}}{{/with}} {{world}}</div>"));
-  container.register('template:other', EmberHandlebars.compile("cruel"));
-
-  var context = {
-    world: "world!"
-  };
-
-  var OtherView = EmberView.extend({
-    container: container,
-    templateName: 'other'
-  });
-
-  var BQView = EmberView.extend({
-    container: container,
-    otherView: OtherView,
-    tagName: "blockquote",
-    templateName: 'nested'
-  });
-
-  view = EmberView.create({
-    container: container,
-    bqView: BQView,
-    context: context,
-    templateName: 'nester'
-  });
-
-  set(context, 'content', EmberObject.create({ blah: "wot" }));
-
-  appendView();
-
-  ok(view.$("#hello-world:contains('Hello world!')").length, "The parent view renders its contents");
-
-  ok(view.$("blockquote").text().match(/Goodbye.*wot.*cruel.*world\!/), "The child view renders its content once");
-  ok(view.$().text().match(/Hello world!.*Goodbye.*wot.*cruel.*world\!/), "parent view should appear before the child view");
-});
-
 test("View should update when a property changes and the bind helper is used", function() {
   container.register('template:foo', EmberHandlebars.compile('<h1 id="first">{{#with view.content as thing}}{{bind "thing.wham"}}{{/with}}</h1>'));
 
@@ -252,46 +214,6 @@ test("Layout views return throw if their layout cannot be found", function() {
   expectAssertion(function() {
     get(view, 'layout');
   }, /cantBeFound/);
-});
-
-test("views render their template in the context of the parent view's context", function() {
-  container.register('template:parent', EmberHandlebars.compile('<h1>{{#with content as person}}{{#view}}{{person.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
-
-  var context = {
-    content: {
-      firstName: "Lana",
-      lastName: "del Heeeyyyyyy"
-    }
-  };
-
-  view = EmberView.create({
-    container: container,
-    templateName: 'parent',
-    context: context
-  });
-
-  appendView();
-  equal(view.$('h1').text(), "Lana del Heeeyyyyyy", "renders properties from parent context");
-});
-
-test("views make a view keyword available that allows template to reference view context", function() {
-  container.register('template:parent', EmberHandlebars.compile('<h1>{{#with view.content as person}}{{#view person.subview}}{{view.firstName}} {{person.lastName}}{{/view}}{{/with}}</h1>'));
-
-  view = EmberView.create({
-    container: container,
-    templateName: 'parent',
-
-    content: {
-      subview: EmberView.extend({
-        firstName: "Brodele"
-      }),
-      firstName: "Lana",
-      lastName: "del Heeeyyyyyy"
-    }
-  });
-
-  appendView();
-  equal(view.$('h1').text(), "Brodele del Heeeyyyyyy", "renders properties from parent context");
 });
 
 // test("should warn if setting a template on a view with a templateName already specified", function() {
