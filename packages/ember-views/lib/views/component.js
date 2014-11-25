@@ -185,8 +185,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
         _contextView: parentView,
         _morph: morph,
         context: get(parentView, 'context'),
-        controller: get(parentView, 'controller'),
-        templateData: { keywords: {} }
+        controller: get(parentView, 'controller')
       });
     }
   },

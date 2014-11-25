@@ -162,7 +162,6 @@ test("should provide a controller to the template if a controller is specified o
     template: function(buffer, options) {
       options.data.view.appendChild(EmberView.create({
         controller: controller2,
-        templateData: options.data,
         template: function(context, options) {
           contextForView = context;
           optionsDataKeywordsControllerForChildView = options.data.view._keywords.controller.value();
@@ -188,7 +187,6 @@ test("should provide a controller to the template if a controller is specified o
 
     template: function(buffer, options) {
       options.data.view.appendChild(EmberView.create({
-        templateData: options.data,
         template: function(context, options) {
           contextForControllerlessView = context;
           optionsDataKeywordsControllerForChildView = options.data.view._keywords.controller.value();

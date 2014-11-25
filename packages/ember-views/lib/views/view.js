@@ -1875,8 +1875,6 @@ var View = CoreView.extend({
     attrs._parentView = this;
 
     if (CoreView.detect(view)) {
-      attrs.templateData = attrs.templateData || get(this, 'templateData');
-
       attrs.container = this.container;
       view = view.create(attrs);
 
@@ -1891,18 +1889,12 @@ var View = CoreView.extend({
 
       Ember.assert("Could not find view: '" + fullName + "'", !!ViewKlass);
 
-      attrs.templateData = get(this, 'templateData');
       view = ViewKlass.create(attrs);
     } else {
       Ember.assert('You must pass instance or subclass of View', view.isView);
+
       attrs.container = this.container;
-
-      if (!get(view, 'templateData')) {
-        attrs.templateData = get(this, 'templateData');
-      }
-
       setProperties(view, attrs);
-
     }
 
     return view;

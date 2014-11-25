@@ -62,7 +62,6 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
     lazyValue: lazyValue,
     previousContext: currentContext,
     isEscaped: !options.hash.unescaped,
-    templateData: options.data,
     templateHash: options.hash,
     helperName: options.helperName
   };
