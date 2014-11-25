@@ -12,7 +12,6 @@ import { get } from "ember-metal/property_get";
 import SimpleStream from "ember-metal/streams/simple";
 import { handlebarsGetView } from "ember-handlebars/ext";
 import { ViewHelper } from "ember-handlebars/helpers/view";
-import alias from "ember-metal/alias";
 import View from "ember-views/views/view";
 import CollectionView from "ember-views/views/collection_view";
 
