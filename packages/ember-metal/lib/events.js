@@ -126,7 +126,7 @@ export function listenersDiff(obj, eventName, otherActions) {
   @for Ember
   @param obj
   @param {String} eventName
-  @param {Object|Function} targetOrMethod A target object or a function
+  @param {Object|Function} target A target object or a function
   @param {Function|String} method A function or the name of a function to be called on `target`
   @param {Boolean} once A flag whether a function should only be called once
 */
@@ -162,7 +162,7 @@ export function addListener(obj, eventName, target, method, once) {
   @for Ember
   @param obj
   @param {String} eventName
-  @param {Object|Function} targetOrMethod A target object or a function
+  @param {Object|Function} target A target object or a function
   @param {Function|String} method A function or the name of a function to be called on `target`
 */
 function removeListener(obj, eventName, target, method) {
@@ -214,7 +214,7 @@ function removeListener(obj, eventName, target, method) {
   @private
   @param obj
   @param {String} eventName
-  @param {Object|Function} targetOrMethod A target object or a function
+  @param {Object|Function} target A target object or a function
   @param {Function|String} method A function or the name of a function to be called on `target`
   @param {Function} callback
 */
@@ -245,8 +245,8 @@ export function suspendListener(obj, eventName, target, method, callback) {
 
   @private
   @param obj
-  @param {Array} eventName Array of event names
-  @param {Object|Function} targetOrMethod A target object or a function
+  @param {Array} eventNames Array of event names
+  @param {Object|Function} target A target object or a function
   @param {Function|String} method A function or the name of a function to be called on `target`
   @param {Function} callback
 */

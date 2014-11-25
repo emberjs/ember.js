@@ -49,12 +49,12 @@ export function observersFor(obj, path) {
   @for Ember
   @param obj
   @param {String} path
-  @param {Object|Function} targetOrMethod
+  @param {Object|Function} target
   @param {Function|String} [method]
 */
-export function removeObserver(obj, _path, target, method) {
-  unwatch(obj, _path);
-  removeListener(obj, changeEvent(_path), target, method);
+export function removeObserver(obj, path, target, method) {
+  unwatch(obj, path);
+  removeListener(obj, changeEvent(path), target, method);
 
   return this;
 }
@@ -64,12 +64,12 @@ export function removeObserver(obj, _path, target, method) {
   @for Ember
   @param obj
   @param {String} path
-  @param {Object|Function} targetOrMethod
+  @param {Object|Function} target
   @param {Function|String} [method]
 */
-export function addBeforeObserver(obj, _path, target, method) {
-  addListener(obj, beforeEvent(_path), target, method);
-  watch(obj, _path);
+export function addBeforeObserver(obj, path, target, method) {
+  addListener(obj, beforeEvent(path), target, method);
+  watch(obj, path);
 
   return this;
 }
@@ -105,12 +105,12 @@ export function beforeObserversFor(obj, path) {
   @for Ember
   @param obj
   @param {String} path
-  @param {Object|Function} targetOrMethod
+  @param {Object|Function} target
   @param {Function|String} [method]
 */
-export function removeBeforeObserver(obj, _path, target, method) {
-  unwatch(obj, _path);
-  removeListener(obj, beforeEvent(_path), target, method);
+export function removeBeforeObserver(obj, path, target, method) {
+  unwatch(obj, path);
+  removeListener(obj, beforeEvent(path), target, method);
 
   return this;
 }
