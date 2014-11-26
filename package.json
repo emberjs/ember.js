@@ -19,6 +19,7 @@
     "broccoli-derequire": "0.0.1",
     "broccoli-es3-safe-recast": "0.0.8",
     "broccoli-es6-module-transpiler": "~0.1.0",
+    "broccoli-esnext": "^0.5.0",
     "broccoli-file-creator": "~0.1.0",
     "broccoli-file-mover": "~0.2.0",
     "broccoli-file-remover": "~0.2.0",
