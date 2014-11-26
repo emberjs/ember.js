@@ -26,9 +26,22 @@ test("true property is output", function() {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<input disabled>',
+  equalInnerHTML(view.element, '<input disabled="">',
                  "attribute is output");
   equal(view.element.firstChild.disabled, true,
+        'boolean property is set true');
+});
+
+test("blank string property is output", function() {
+  view = EmberView.create({
+    context: {isDisabled: ''},
+    template: compile("<input disabled={{isDisabled}}>")
+  });
+  appendView(view);
+
+  equalInnerHTML(view.element, '<input>',
+                 "attribute is output");
+  equal(view.element.firstChild.disabled, false,
         'boolean property is set true');
 });
 
@@ -52,7 +65,7 @@ test("string property is truthy", function() {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<input disabled>',
+  equalInnerHTML(view.element, '<input disabled="">',
                  "attribute is output");
   equal(view.element.firstChild.disabled, true,
         'boolean property is set false');
@@ -66,6 +79,19 @@ test("string liternal is truthy", function() {
   appendView(view);
 
   equalInnerHTML(view.element, '<input disabled="false">',
+                 "attribute is output");
+  equal(view.element.firstChild.disabled, true,
+        'boolean property is set true');
+});
+
+test("blank string is truthy", function() {
+  view = EmberView.create({
+    context: {isDisabled: ''},
+    template: compile("<input disabled='{{isDisabled}}'>")
+  });
+  appendView(view);
+
+  equalInnerHTML(view.element, '<input disabled="">',
                  "attribute is output");
   equal(view.element.firstChild.disabled, true,
         'boolean property is set true');

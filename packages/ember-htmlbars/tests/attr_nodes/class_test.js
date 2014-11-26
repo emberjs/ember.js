@@ -32,14 +32,20 @@ test("property can set multiple classes", function() {
   ok(view.$('.blue')[0], 'second class found');
 });
 
-test("attribute cannot set multiple classes with one prop", function() {
+test("property can set remove class", function() {
   view = EmberView.create({
-    context: {classes: 'large blue'},
-    template: compile("<div class='{{classes}}'></div>")
+    context: {class: 'large'},
+    template: compile("<div class={{class}}></div>")
   });
-  expectAssertion(function(){
-    appendView(view);
-  }, /Cannot specify a class with a space/);
+  appendView(view);
+
+  equalInnerHTML(view.element, '<div class="large"></div>',
+                 "attribute is output");
+
+  run(view, view.set, 'context.class', null);
+
+  equalInnerHTML(view.element, '<div></div>',
+                 "attribute is removed");
 });
 
 test("attribute can use multiple props", function() {
@@ -49,11 +55,33 @@ test("attribute can use multiple props", function() {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<div class="large blue round"></div>',
-                 "attribute is output");
   ok(view.$('.large')[0], 'first class found');
   ok(view.$('.blue')[0], 'second class found');
   ok(view.$('.round')[0], 'third class found');
+});
+
+test("attribute can use multiple props with subxpression", function() {
+  view = EmberView.create({
+    context: {
+      size: 'large',
+      hasColor: true,
+      hasShape: false,
+      shape: 'round'
+    },
+    template: compile("<div class='{{if true size}} {{if hasColor 'blue'}} {{if hasShape shape 'no-shape'}}'></div>")
+  });
+  appendView(view);
+
+  ok(view.$('.large')[0], 'first class found');
+  ok(view.$('.blue')[0], 'second class found');
+  ok(view.$('.no-shape')[0], 'third class found');
+
+  run(view, view.set, 'context.hasColor', false);
+  run(view, view.set, 'context.hasShape', true);
+
+  ok(view.$('.large')[0], 'first class found after change');
+  ok(view.$('.blue').length === 0, 'second class not found after change');
+  ok(view.$('.round')[0], 'third class found after change');
 });
 
 }

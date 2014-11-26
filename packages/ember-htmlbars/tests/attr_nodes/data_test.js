@@ -10,7 +10,7 @@ var view, originalSetAttribute, setAttributeCalls;
 var dom = defaultEnv.dom;
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  QUnit.module("ember-htmlbars: attribute", {
+  QUnit.module("ember-htmlbars: data attribute", {
     teardown: function(){
       destroyView(view);
     }
