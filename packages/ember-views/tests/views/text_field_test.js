@@ -11,6 +11,48 @@ function K() { return this; }
 var textField;
 var TestObject;
 
+var view;
+
+var appendView = function(view) {
+  run(view, 'appendTo', '#qunit-fixture');
+};
+
+var caretPosition = function(element) {
+  var ctrl = element[0];
+  var caretPos = 0;
+
+  // IE Support
+  if (document.selection) {
+    ctrl.focus();
+    var selection = document.selection.createRange();
+
+    selection.moveStart('character', -ctrl.value.length);
+
+    caretPos = selection.text.length;
+  }
+  // Firefox support
+  else if (ctrl.selectionStart || ctrl.selectionStart === '0') {
+    caretPos = ctrl.selectionStart;
+  }
+
+  return caretPos;
+};
+
+var setCaretPosition = function(element, pos) {
+  var ctrl = element[0];
+
+  if (ctrl.setSelectionRange) {
+    ctrl.focus();
+    ctrl.setSelectionRange(pos,pos);
+  } else if (ctrl.createTextRange) {
+    var range = ctrl.createTextRange();
+    range.collapse(true);
+    range.moveEnd('character', pos);
+    range.moveStart('character', pos);
+    range.select();
+  }
+};
+
 function set(object, key, value) {
   run(function() { o_set(object, key, value); });
 }
@@ -341,6 +383,10 @@ QUnit.module("Ember.TextField - Action events", {
       if (textField) {
         textField.destroy();
       }
+
+      if (view) {
+        view.destroy();
+      }
     });
   }
 });
@@ -499,4 +545,21 @@ test("when the user releases a key, the `key-up` action is sent to the controlle
     textField.$().val('bar');
     textField.$().trigger(event);
   });
+});
+
+test('should not reset cursor position when text field receives keyUp event', function() {
+  view = TextField.create({
+    value: 'Broseidon, King of the Brocean'
+  });
+
+  appendView(view);
+
+  view.$().val('Brosiedoon, King of the Brocean');
+  setCaretPosition(view.$(), 5);
+
+  run(function() {
+    view.trigger('keyUp', {});
+  });
+
+  equal(caretPosition(view.$()), 5, 'The keyUp event should not result in the cursor being reset due to the bind-attr observers');
 });
