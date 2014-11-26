@@ -16,6 +16,7 @@ var replace = require('broccoli-replace');
 var es3recast = require('broccoli-es3-safe-recast');
 var useStrictRemover = require('broccoli-use-strict-remover');
 var derequire = require('broccoli-derequire');
+var compileEsnext = require('broccoli-esnext');
 
 var getVersion = require('git-repo-version');
 var yuidocPlugin = require('ember-cli-yuidoc');
@@ -456,6 +457,9 @@ function es6Package(packageName) {
     srcFile: packageName + '/main.js',
     destFile: packageName + '.js'
   });
+
+  // Compile from ES6 to ES5
+  libTree = compileEsnext(libTree);
 
   var libJSHintTree = jshintTree(libTree);
 
