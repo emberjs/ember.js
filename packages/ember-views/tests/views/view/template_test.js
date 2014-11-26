@@ -18,6 +18,30 @@ QUnit.module("EmberView - Template Functionality", {
   }
 });
 
+test("Template views return throw if their template cannot be found", function() {
+  view = EmberView.create({
+    templateName: 'cantBeFound',
+    container: { lookup: function() { }}
+  });
+
+  expectAssertion(function() {
+    get(view, 'template');
+  }, /cantBeFound/);
+});
+
+test("should allow standard Handlebars template usage", function() {
+  view = EmberView.create({
+    context: { name: "Erik" },
+    template: Handlebars.compile("Hello, {{name}}")
+  });
+
+  run(function() {
+    view.createElement();
+  });
+
+  equal(view.$().text(), "Hello, Erik");
+});
+
 test("should call the function of the associated template", function() {
   container.register('template:testTemplate', function() {
     return "<h1 id='twas-called'>template was called</h1>";
