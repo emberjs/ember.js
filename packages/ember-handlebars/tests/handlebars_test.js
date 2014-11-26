@@ -179,40 +179,6 @@ test('should cleanup bound properties on rerender', function() {
   equal(view._childViews.length, 1);
 });
 
-// https://github.com/emberjs/ember.js/issues/120
-
-test("should not enter an infinite loop when binding an attribute in Handlebars", function() {
-  var LinkView = EmberView.extend({
-    classNames: ['app-link'],
-    tagName: 'a',
-    attributeBindings: ['href'],
-    href: '#none',
-
-    click: function() {
-      return false;
-    }
-  });
-
-  var parentView = EmberView.create({
-    linkView: LinkView,
-    test: EmberObject.create({ href: 'test' }),
-    template: EmberHandlebars.compile('{{#view view.linkView hrefBinding="view.test.href"}} Test {{/view}}')
-  });
-
-
-  run(function() {
-    parentView.appendTo('#qunit-fixture');
-  });
-
-  // Use match, since old IE appends the whole URL
-  var href = parentView.$('a').attr('href');
-  ok(href.match(/(^|\/)test$/), "Expected href to be 'test' but got '"+href+"'");
-
-  run(function() {
-    parentView.destroy();
-  });
-});
-
 test("should update bound values after view's parent is removed and then re-appended", function() {
   expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
