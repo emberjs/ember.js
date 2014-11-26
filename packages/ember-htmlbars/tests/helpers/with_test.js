@@ -64,6 +64,8 @@ function testWithAs(moduleName, templateString) {
   });
 
   test("updating a property on the context should update the HTML", function() {
+    equal(view.$().text(), "Señor Engineer: Tom Dale", "precond - should be properly scoped after updating");
+
     run(function() {
       set(view, 'context.person.name', "Yehuda Katz");
     });

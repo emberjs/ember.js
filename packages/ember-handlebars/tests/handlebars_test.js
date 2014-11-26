@@ -61,28 +61,6 @@ QUnit.module("View - handlebars integration", {
   }
 });
 
-test("View should update when a property changes and no bind helper is used", function() {
-  container.register('template:foo', EmberHandlebars.compile('<h1 id="first">{{#with view.content as thing}}{{thing.wham}}{{/with}}</h1>'));
-
-  view = EmberView.create({
-    container: container,
-    templateName: 'foo',
-
-    content: EmberObject.create({
-      wham: 'bam',
-      thankYou: "ma'am"
-    })
-  });
-
-  appendView();
-
-  equal(view.$('#first').text(), "bam", "precond - view renders Handlebars template");
-
-  run(function() { set(get(view, 'content'), 'wham', 'bazam'); });
-
-  equal(view.$('#first').text(), "bazam", "view updates when a bound property changes");
-});
-
 test("Template views return throw if their template cannot be found", function() {
   view = EmberView.create({
     templateName: 'cantBeFound',
