@@ -1,9 +1,15 @@
 import run from "ember-metal/run_loop";
 import View from "ember-views/views/view";
 import EmberHandlebars from "ember-htmlbars/compat";
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 import { set as o_set } from "ember-metal/property_set";
 
-var compile = EmberHandlebars.compile;
+var compile;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  compile = htmlbarsCompile;
+} else {
+  compile = EmberHandlebars.compile;
+}
 
 var textArea, controller;
 
