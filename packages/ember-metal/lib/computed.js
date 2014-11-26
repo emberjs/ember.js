@@ -113,8 +113,27 @@ function UNDEFINED() { }
   @constructor
 */
 function ComputedProperty(func, opts) {
-  func.__ember_arity__ = func.length;
-  this.func = func;
+
+  if ('function' === typeof func) {
+    this.func = func;
+  }
+  else {
+    if (Ember.FEATURES.isEnabled('computed-property-syntax-new')) {
+      // If passed an object, {get: function() {...}, set: function() {...}}
+      //  ensure that there's at least a 'get' function on it
+      Ember.assert('Computed Property created w/ options object, missing `get` function',
+        typeof func === 'object' && // check that first argument is an object
+        typeof func.get === 'function' // and that it has a 'get' property that's a fn
+      );
+
+      this.func = func.get; // Getter function
+      if (func.set) { // Optional setter function
+        this.setterFunc = func.set;
+        this.setterFunc.__ember_arity__ = func.set.length;
+      }
+    }
+  }
+  this.func.__ember_arity__ = this.func.length;
 
   this._dependentKeys = undefined;
   this._suspended = undefined;
@@ -411,7 +430,7 @@ ComputedPropertyPrototype.set = function computedPropertySetWithSuspend(obj, key
 
 ComputedPropertyPrototype._set = function computedPropertySet(obj, keyName, value) {
   var cacheable      = this._cacheable;
-  var func           = this.func;
+  var func           = this.setterFunc || this.func;
   var meta           = metaFor(obj, cacheable);
   var cache          = meta.cache;
   var hadCachedValue = false;
@@ -495,10 +514,12 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
 
 /**
   This helper returns a new property descriptor that wraps the passed
-  computed property function. You can use this helper to define properties
-  with mixins or via `Ember.defineProperty()`.
+  computed property function, or an object containing `get` and optionally,
+  `set` function(s). You can use this helper to define properties with mixins
+  or via `Ember.defineProperty()`.
 
-  The function you pass will be used to both get and set property values.
+  If you create a computed property by passing a single function to `Ember.computed`,
+  the function you pass will be used to both get and set property values.
   The function should accept two parameters, key and value. If value is not
   undefined you should set the value first. In either case return the
   current value of the property.
@@ -523,7 +544,35 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   client.get('fullName'); // 'Betty Fuller'
   ```
 
-  _Note: This is the prefered way to define computed properties when writing third-party
+  Alternatively, you can pass in an object with functions `get` and, optionally `set`,
+  to define properties
+
+  ```js
+  var Person = Ember.Object.extend({
+    firstName: 'Betty',
+    lastName: 'Jones',
+
+    fullName: Ember.computed('firstName', 'lastName', {
+      // Get the person's full name
+      get: function () {
+        return this.get('firstName') + ' ' + this.get('lastName');
+      },
+
+      // Set the person's full name, and in doing so
+      // update the firstName and lastName properties
+      set: function (key, val, oldVal) {
+        var nameComponents = val.split(' ');
+        this.setProperties({
+          firstName: nameComponents[0],
+          lastName: nameComponents[1]
+        });
+        return val;
+      }
+    })
+  });
+  ```
+
+  _Note: These are the prefered ways to define computed properties when writing third-party
   libraries that depend on or use Ember, since there is no guarantee that the user
   will have prototype extensions enabled._
 
@@ -552,8 +601,17 @@ function computed(func) {
     func = args.pop();
   }
 
-  if (typeof func !== "function") {
-    throw new EmberError("Computed Property declared without a property function");
+  if (Ember.FEATURES.isEnabled('computed-property-syntax-new')) {
+    // Check for function or object argument
+    if (typeof func !== "function" && typeof func !== "object") {
+      throw new EmberError("Computed Property declared without a property function or options object");
+    }
+  }
+  else {
+    // Check for funciton argument
+    if (typeof func !== "function") {
+      throw new EmberError("Computed Property declared without a property function");
+    }
   }
 
   var cp = new ComputedProperty(func);

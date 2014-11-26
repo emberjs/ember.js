@@ -96,6 +96,78 @@ testBoth('using get() and set()', function(get, set) {
   equal(get(objB, 'foo'), 'computed bar', 'should NOT change B');
 });
 
+if (Ember.FEATURES.isEnabled('computed-property-syntax-new')) {
+  var o, getInvocationCt, setInvocationCt;
+
+  QUnit.module('computed - defining via options object', {
+    setup: function() {
+
+      // Define a type with a CP
+      var TypA = Ember.Object.extend({
+        sum: Ember.computed('a', 'b', {
+          get: function () {
+            getInvocationCt++;
+            return this.get('a') + this.get('b');
+          }
+        }),
+
+        half: Ember.computed('a', 'b', {
+          get: function () {
+            getInvocationCt++;
+            return (this.get('a') + this.get('b')) / 2;
+          },
+
+          set: function (key, val, oldVal) {
+            setInvocationCt++;
+            this.setProperties({
+              a: val/2,
+              b: val/2
+            });
+            return val;
+          }
+        })
+      });
+
+      // track how many times "get" and "set" functions are called
+      getInvocationCt = 0;
+      setInvocationCt = 0;
+      o = TypA.create({a: 6, b: 12});
+    }
+  });
+
+  test('readable - getter invokes "get" function on options object', function () {
+    // Create a new instance of TypeA, after our 'spy' has been attached
+    equal(getInvocationCt, 0, 'get fn is not invoked before property is accessed');
+
+    // Initially retrieve property
+    o.get('sum');
+    equal(getInvocationCt, 1, 'get fn is invoked once to calculate the property');
+  });
+
+  test('readable - setting property overrides the CP', function () {
+    o.set('sum', 57);
+    equal(o.get('sum'), 57, 'Property without setter is overwritten');
+    o.get('sum');
+    equal(getInvocationCt, 0, 'Getter is no longer invoked to read property');
+  });
+
+  test('readable - getter returns expected value', function () {
+    equal(o.get('sum'), 18, 'get returns property value');
+  });
+
+  test('writable - getter returns expected value', function () {
+    equal(o.get('half'), 9, 'get returns property value');
+  });
+
+  test('writable - setting property invokes "set" fn', function () {
+    o.set('half', 11);
+    var propValues = o.getProperties(['a', 'b']);
+
+    deepEqual(propValues, {a: 5.5, b: 5.5}, 'updates dependant properties');
+    equal(setInvocationCt, 1, 'Setting invokes the "set" function once');
+  });
+}
+
 QUnit.module('redefining computed property to normal', {
   setup: function() {
     objA = { __foo: 'FOO' } ;
