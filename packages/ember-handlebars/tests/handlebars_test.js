@@ -98,40 +98,6 @@ QUnit.module("View - handlebars integration", {
   }
 });
 
-test("template view should call the function of the associated template", function() {
-  container.register('template:testTemplate', EmberHandlebars.compile("<h1 id='twas-called'>template was called</h1>"));
-
-  view = EmberView.create({
-    container: container,
-    templateName: 'testTemplate'
-  });
-
-  appendView();
-
-  ok(view.$('#twas-called').length, "the named template was called");
-});
-
-test("template view should call the function of the associated template with itself as the context", function() {
-  container.register('template:testTemplate', EmberHandlebars.compile("<h1 id='twas-called'>template was called for {{view.personName}}. Yea {{view.personName}}</h1>"));
-
-  view = EmberView.createWithMixins({
-    container: container,
-    templateName: 'testTemplate',
-
-    _personName: "Tom DAAAALE",
-    _i: 0,
-
-    personName: computed(function() {
-      this._i++;
-      return this._personName + this._i;
-    })
-  });
-
-  appendView();
-
-  equal("template was called for Tom DAAAALE1. Yea Tom DAAAALE1", view.$('#twas-called').text(), "the named template was called with the view as the data source");
-});
-
 test("View should not use keyword incorrectly - Issue #1315", function() {
   container.register('template:foo', EmberHandlebars.compile('{{#each value in view.content}}{{value}}-{{#each option in view.options}}{{option.value}}:{{option.label}} {{/each}}{{/each}}'));
 
