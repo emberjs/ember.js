@@ -41,10 +41,7 @@ import { templateHelper } from "ember-htmlbars/helpers/template";
 import { inputHelper } from "ember-htmlbars/helpers/input";
 import { textareaHelper } from "ember-htmlbars/helpers/text_area";
 import { collectionHelper } from "ember-htmlbars/helpers/collection";
-import {
-  eachHelper,
-  preprocessArgumentsForEach
-} from "ember-htmlbars/helpers/each";
+import { eachHelper } from "ember-htmlbars/helpers/each";
 import { unboundHelper } from "ember-htmlbars/helpers/unbound";
 
 // importing adds template bootstrapping
@@ -74,7 +71,7 @@ registerHelper('bindAttr', bindAttrHelperDeprecated);
 registerHelper('input', inputHelper);
 registerHelper('textarea', textareaHelper);
 registerHelper('collection', collectionHelper);
-registerHelper('each', eachHelper, preprocessArgumentsForEach);
+registerHelper('each', eachHelper);
 registerHelper('unbound', unboundHelper);
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
