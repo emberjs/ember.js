@@ -255,6 +255,26 @@ test("it does not mark each option tag as selected", function() {
   });
 });
 
+test("View should not use keyword incorrectly - Issue #1315", function() {
+  // destroy existing view
+  run(view, 'destroy');
+
+  view = EmberView.create({
+    container: container,
+    template: templateFor('{{#each value in view.content}}{{value}}-{{#each option in view.options}}{{option.value}}:{{option.label}} {{/each}}{{/each}}'),
+
+    content: A(['X', 'Y']),
+    options: A([
+      { label: 'One', value: 1 },
+      { label: 'Two', value: 2 }
+    ])
+  });
+
+  append(view);
+
+  equal(view.$().text(), 'X-1:One 2:Two Y-1:One 2:Two ');
+});
+
 test("it works inside a ul element", function() {
   var ulView = EmberView.create({
     template: templateFor('<ul>{{#each view.people}}<li>{{name}}</li>{{/each}}</ul>'),

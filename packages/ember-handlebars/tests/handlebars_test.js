@@ -61,25 +61,6 @@ QUnit.module("View - handlebars integration", {
   }
 });
 
-test("View should not use keyword incorrectly - Issue #1315", function() {
-  container.register('template:foo', EmberHandlebars.compile('{{#each value in view.content}}{{value}}-{{#each option in view.options}}{{option.value}}:{{option.label}} {{/each}}{{/each}}'));
-
-  view = EmberView.create({
-    container: container,
-    templateName: 'foo',
-
-    content: A(['X', 'Y']),
-    options: A([
-      { label: 'One', value: 1 },
-      { label: 'Two', value: 2 }
-    ])
-  });
-
-  appendView();
-
-  equal(view.$().text(), 'X-1:One 2:Two Y-1:One 2:Two ');
-});
-
 test("View should update when a property changes and no bind helper is used", function() {
   container.register('template:foo', EmberHandlebars.compile('<h1 id="first">{{#with view.content as thing}}{{thing.wham}}{{/with}}</h1>'));
 
