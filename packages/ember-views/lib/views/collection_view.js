@@ -323,7 +323,9 @@ var CollectionView = ContainerView.extend({
 
     for (idx = start + removedCount - 1; idx >= start; idx--) {
       childView = childViews[idx];
-      childView.destroy();
+      if (childView) {
+        childView.destroy();
+      }
     }
   },
 
@@ -343,11 +345,17 @@ var CollectionView = ContainerView.extend({
   */
   arrayDidChange: function(content, start, removed, added) {
     var addedViews = [];
-    var view, item, idx, len, itemViewClass, emptyView;
+    var view, item, idx, len, itemViewClass, emptyView, viewsLen;
 
+    viewsLen = get(this, 'length');
     len = content ? get(content, 'length') : 0;
 
     if (len) {
+      if (len === viewsLen) {
+        start = 0;
+        added = len;
+        this.replace(0, len, []);
+      }
       itemViewClass = get(this, 'itemViewClass');
       itemViewClass = readViewFactory(itemViewClass, this.container);
 

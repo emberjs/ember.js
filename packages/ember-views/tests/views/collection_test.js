@@ -564,6 +564,56 @@ test("a array_proxy that backs an sorted array_controller that backs a collectio
   });
 });
 
+test("a collection view backed by an array_proxy whose arrangedContent is a computedProperty relying on its own content should make the correct changes to its child views when the array_proxy's content is modified", function() {
+
+  var arrangedArray = ArrayProxy.extend({
+    arrangedContent: Ember.computed('content.[]', function() {
+      return this.get('content');
+    })
+  });
+  var array = Ember.A(['firstItem']);
+  var arrayProxy = arrangedArray.create({
+    content: array
+  });
+
+  var container = CollectionView.create({
+    content: arrayProxy
+  });
+
+  run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  equal(container.get('content.length'), 1, 'CollectionView.content should have 1 entries');
+  equal(container.get('childViews.length'), 1, 'CollectionView.childViews should have 1 entries');
+
+  run(function() {
+    arrayProxy.set('content', Ember.A(['newFirstItem']));
+  });
+
+  equal(container.get('content.length'), 1, 'CollectionView.content should still have 1 entries');
+  equal(container.get('childViews.length'), 1, 'CollectionView.childViews should still have 1 entries');
+  equal(container.get('childViews.firstObject.content'), 'newFirstItem', 'CollectionView.childView.firstObject.content should match the first object in the content array');
+
+  run(function() {
+    arrayProxy.get('content').pushObject('secondItem');
+  });
+
+  equal(container.get('content.length'), 2, 'CollectionView.content should have 2 entries');
+  equal(container.get('childViews.length'), 2, 'CollectionView.childViews should have 2 entries');
+
+  run(function() {
+    arrayProxy.get('content').removeObject('secondItem');
+  });
+
+  equal(container.get('content.length'), 1, 'CollectionView.content should have 1 entries');
+  equal(container.get('childViews.length'), 1, 'CollectionView.childViews should have 1 entries');
+
+  run(function() {
+    container.destroy();
+  });
+});
+
 test("when a collection view is emptied, deeply nested views elements are not removed from the DOM and then destroyed again", function() {
   var assertProperDestruction = Mixin.create({
     destroyElement: function() {
