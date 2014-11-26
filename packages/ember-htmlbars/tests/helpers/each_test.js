@@ -155,6 +155,19 @@ test("it updates the view if an item is added", function() {
   assertHTML(view, "Steve HoltAnnabelleTom Dale");
 });
 
+test("should be able to use standard Handlebars #each helper", function() {
+  run(view, 'destroy');
+
+  view = EmberView.create({
+    context: { items: ['a', 'b', 'c'] },
+    template: Handlebars.compile("{{#each items}}{{this}}{{/each}}")
+  });
+
+  append(view);
+
+  equal(view.$().html(), "abc");
+});
+
 test("it allows you to access the current context using {{this}}", function() {
   run(function() { view.destroy(); }); // destroy existing view
   view = EmberView.create({

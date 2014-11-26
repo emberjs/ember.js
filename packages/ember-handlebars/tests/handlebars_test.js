@@ -17,7 +17,6 @@ import { ViewHelper as htmlbarsViewHelper } from "ember-htmlbars/helpers/view";
 
 var trim = jQuery.trim;
 
-import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
 var view;
@@ -59,50 +58,6 @@ QUnit.module("View - handlebars integration", {
     Ember.lookup = lookup = originalLookup;
     TemplateTests = null;
   }
-});
-
-test("Template views return throw if their template cannot be found", function() {
-  view = EmberView.create({
-    templateName: 'cantBeFound',
-    container: { lookup: function() { }}
-  });
-
-  expectAssertion(function() {
-    get(view, 'template');
-  }, /cantBeFound/);
-});
-
-test("Layout views return throw if their layout cannot be found", function() {
-  view = EmberView.create({
-    layoutName: 'cantBeFound',
-    container: { lookup: function() { }}
-  });
-
-  expectAssertion(function() {
-    get(view, 'layout');
-  }, /cantBeFound/);
-});
-
-test("should allow standard Handlebars template usage", function() {
-  view = EmberView.create({
-    context: { name: "Erik" },
-    template: Handlebars.compile("Hello, {{name}}")
-  });
-
-  appendView();
-
-  equal(view.$().text(), "Hello, Erik");
-});
-
-test("should be able to use standard Handlebars #each helper", function() {
-  view = EmberView.create({
-    context: { items: ['a', 'b', 'c'] },
-    template: Handlebars.compile("{{#each items}}{{this}}{{/each}}")
-  });
-
-  appendView();
-
-  equal(view.$().html(), "abc");
 });
 
 QUnit.module("Ember.View - handlebars integration", {
