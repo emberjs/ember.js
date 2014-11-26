@@ -8,6 +8,7 @@ import { bind } from "ember-htmlbars/helpers/binding";
 
 import { get } from "ember-metal/property_get";
 import { isArray } from "ember-metal/utils";
+import ConditionalStream from "ember-views/streams/conditional_stream";
 
 function shouldDisplayIfHelperContent(result) {
   var truthy = result && get(result, 'isTruthy');
@@ -89,12 +90,20 @@ function unboundIfHelper(params, hash, options, env) {
   @return {String} HTML string
 */
 function ifHelper(params, hash, options, env) {
-  Ember.assert("You must pass exactly one argument to the if helper", params.length === 1);
-  Ember.assert("You must pass a block to the if helper", !!options.render);
-
-  options.helperName = options.helperName || ('if ');
+  Ember.assert("If helper in block form expect exactly one argument", !options.render || params.length === 1);
+  if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
+    if (!options.render) {
+      Ember.assert("If helper in inline form expects between two and three arguments", params.length === 2 || params.length === 3);
+      var condition = params[0];
+      var truthy = params[1];
+      var falsy = params[2];
+      return new ConditionalStream(condition, truthy, falsy);
+    }
+  }
 
   options.inverse = options.inverse || function(){ return ''; };
+
+  options.helperName = options.helperName || ('if ');
 
   if (env.data.isUnbound) {
     return env.helpers.unboundIf.helperFunction.call(this, params, hash, options, env);
