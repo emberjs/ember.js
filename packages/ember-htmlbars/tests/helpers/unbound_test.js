@@ -8,7 +8,7 @@ import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
 import EmberHandlebars from 'ember-handlebars-compiler';
-import { compile as htmlbarsCompile } from 'htmlbars-compiler/compiler';
+import htmlbarsCompile from "ember-htmlbars/system/compile";
 import EmberError from 'ember-metal/error';
 import {
   default as htmlbarsHelpers
