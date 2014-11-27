@@ -39,8 +39,11 @@ import {
   @param {Function} function
   @param {String} dependentKeys*
   @since 1.2.0
+  @deprecated
 */
 export default function makeBoundHelper(fn, compatMode) {
+  Ember.deprecate('`Ember.Handlebars.makeBoundHelper` has been deprecated in favor of `Ember.HTMLBars.makeBoundHelper`.');
+
   var dependentKeys = [];
   for (var i = 1; i < arguments.length; i++) {
     dependentKeys.push(arguments[i]);
