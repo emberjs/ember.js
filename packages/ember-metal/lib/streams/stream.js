@@ -4,20 +4,20 @@ import {
   getTailPath
 } from "ember-metal/path_cache";
 
-var NIL = function NIL(){};
-
 function Stream(fn) {
+  this.init();
   this.valueFn = fn;
-  this.cache = NIL;
-  this.subscribers = undefined;
-  this.children = undefined;
-  this.destroyed = false;
 }
 
 Stream.prototype = {
   isStream: true,
 
-  cache: NIL,
+  init: function() {
+    this.state = 'dirty';
+    this.cache = undefined;
+    this.subscribers = undefined;
+    this.children = undefined;
+  },
 
   get: function(path) {
     var firstKey = getFirstKey(path);
@@ -42,11 +42,20 @@ Stream.prototype = {
   },
 
   value: function() {
-    if (this.cache !== NIL) {
+    if (this.state === 'clean') {
       return this.cache;
-    } else {
+    } else if (this.state === 'dirty') {
+      this.state = 'clean';
       return this.cache = this.valueFn();
     }
+    // TODO: Ensure value is never called on a destroyed stream
+    // so that we can uncomment this assertion.
+    //
+    // Ember.assert("Stream error: value was called in an invalid state: " + this.state);
+  },
+
+  valueFn: function() {
+    throw new Error("Stream error: valueFn not implemented");
   },
 
   setValue: function() {
@@ -58,9 +67,9 @@ Stream.prototype = {
   },
 
   notifyExcept: function(callbackToSkip, contextToSkip) {
-    if (this.cache !== NIL) {
-      this.cache = NIL;
-      this.notifySubscribers(callbackToSkip, contextToSkip);
+    if (this.state === 'clean') {
+      this.state = 'dirty';
+      this._notifySubscribers(callbackToSkip, contextToSkip);
     }
   },
 
@@ -85,7 +94,7 @@ Stream.prototype = {
     }
   },
 
-  notifySubscribers: function(callbackToSkip, contextToSkip) {
+  _notifySubscribers: function(callbackToSkip, contextToSkip) {
     var subscribers = this.subscribers;
 
     if (subscribers !== undefined) {
@@ -107,12 +116,15 @@ Stream.prototype = {
   },
 
   destroy: function() {
-    if (this.destroyed) return;
-    this.destroyed = true;
+    if (this.state !== 'destroyed') {
+      this.state = 'destroyed';
 
-    var children = this.children;
-    for (var key in children) {
-      children[key].destroy();
+      var children = this.children;
+      for (var key in children) {
+        children[key].destroy();
+      }
+
+      return true;      
     }
   },
 

@@ -4,6 +4,7 @@ import { create } from "ember-metal/platform";
 import { read } from "ember-metal/streams/read";
 
 function SimpleStream(source) {
+  this.init();
   this.source = source;
 
   if (source && source.isStream) {
@@ -46,13 +47,16 @@ merge(SimpleStream.prototype, {
     this.notify();
   },
 
-  destroy: function() {
-    if (this.source && this.source.isStream) {
-      this.source.unsubscribe(this._didChange, this);
-    }
+  _super$destroy: Stream.prototype.destroy,
 
-    this.source = undefined;
-    Stream.prototype.destroy.call(this);
+  destroy: function() {
+    if (this._super$destroy()) {
+      if (this.source && this.source.isStream) {
+        this.source.unsubscribe(this._didChange, this);
+      }
+      this.source = undefined;
+      return true;
+    }
   }
 });
 
