@@ -670,6 +670,25 @@ test("factory for non extendables resolves are cached", function() {
 });
 
 if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  test("The `onLookup` hook is called on factories when looked up the first time", function() {
+    expect(2);
+
+    var container = new Container();
+    var Apple = factory();
+
+    Apple.reopenClass({
+      onLookup: function(fullName) {
+        equal(fullName, 'apple:main', 'calls lazy injection method with the lookup full name');
+        equal(this, Apple, 'calls lazy injection method in the factory context');
+      }
+    });
+
+    container.register('apple:main', Apple);
+
+    container.lookupFactory('apple:main');
+    container.lookupFactory('apple:main');
+  });
+
   test("A factory's lazy injections are validated when first instantiated", function() {
     var container = new Container();
     var Apple = factory();

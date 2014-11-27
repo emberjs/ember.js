@@ -20,20 +20,23 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   if (!EmberDev.runningProdBuild) {
     // this check is done via an assertion which is stripped from
     // production builds
-    test("injection type validation function is run once at mixin time", function() {
+    test("injection type validation is run when first looked up", function() {
       expect(1);
 
       createInjectionHelper('foo', function() {
-        ok(true, 'should call validation function');
+        ok(true, 'should call validation method');
       });
 
+      var container = new Container();
       var AnObject = Object.extend({
+        container: container,
         bar: inject.foo(),
         baz: inject.foo()
       });
 
-      // Prototype chains are lazy, make sure it's evaluated
-      AnObject.proto();
+      container.register('foo:main', AnObject);
+
+      container.lookupFactory('foo:main');
     });
   }
 

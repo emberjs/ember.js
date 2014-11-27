@@ -733,6 +733,10 @@ function factoryFor(container, fullName) {
 
   var type = fullName.split(':')[0];
   if (!factory || typeof factory.extend !== 'function' || (!Ember.MODEL_FACTORY_INJECTIONS && type === 'model')) {
+    if (factory && typeof factory.onLookup === 'function') {
+      factory.onLookup(fullName);
+    }
+
     // TODO: think about a 'safe' merge style extension
     // for now just fallback to create time injection
     cache[fullName] = factory;
@@ -745,6 +749,10 @@ function factoryFor(container, fullName) {
 
     var injectedFactory = factory.extend(injections);
     injectedFactory.reopenClass(factoryInjections);
+
+    if (factory && typeof factory.onLookup === 'function') {
+      factory.onLookup(fullName);
+    }
 
     cache[fullName] = injectedFactory;
 
