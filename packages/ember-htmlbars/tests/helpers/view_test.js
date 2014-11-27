@@ -68,7 +68,6 @@ QUnit.module("ember-htmlbars: {{#view}} helper", {
   },
 
   teardown: function() {
-    Ember.lookup = originalLookup;
     run(function() {
       if (container) {
         container.destroy();
@@ -1157,4 +1156,3 @@ test('should bind to the property if no registered helper found for a mustache w
 
   ok(view.$().text() === 'foobarProperty', 'Property was bound to correctly');
 });
-
