@@ -2,7 +2,7 @@ import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
 import { isGlobal } from "ember-metal/path_cache";
 import { fmt } from "ember-runtime/system/string";
-import { read } from "ember-metal/streams/read";
+import { read } from "ember-metal/streams/utils";
 import View from "ember-views/views/view";
 import ControllerMixin from "ember-runtime/mixins/controller";
 

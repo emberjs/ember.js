@@ -1,5 +1,5 @@
-import lookupHelper from 'ember-htmlbars/system/lookup-helper';
-import { read } from 'ember-metal/streams/read';
+import lookupHelper from "ember-htmlbars/system/lookup-helper";
+import { read } from "ember-metal/streams/utils";
 import EmberError from "ember-metal/error";
 import merge from "ember-metal/merge";
 

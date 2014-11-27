@@ -4,7 +4,7 @@
 */
 
 import Stream from "ember-metal/streams/stream";
-import {readArray} from "ember-metal/streams/read";
+import {readArray} from "ember-metal/streams/utils";
 
 export default function concat(params) {
   var stream = new Stream(function() {

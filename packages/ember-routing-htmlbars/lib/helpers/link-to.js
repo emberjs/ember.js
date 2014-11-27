@@ -5,7 +5,7 @@
 
 import Ember from "ember-metal/core"; // assert
 import { LinkView } from "ember-routing-views/views/link";
-import { read } from "ember-metal/streams/read";
+import { read } from "ember-metal/streams/utils";
 import ControllerMixin from "ember-runtime/mixins/controller";
 
 // We need the HTMLBars view helper from ensure ember-htmlbars.

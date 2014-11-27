@@ -14,7 +14,7 @@ import keys from "ember-metal/keys";
 import { isSimpleClick } from "ember-views/system/utils";
 import EmberComponent from "ember-views/views/component";
 import { routeArgs } from "ember-routing/utils";
-import { read } from "ember-metal/streams/read";
+import { read } from "ember-metal/streams/utils";
 
 var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
   var req = 0;
