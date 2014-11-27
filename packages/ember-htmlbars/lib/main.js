@@ -9,6 +9,7 @@ import { DOMHelper } from "morph";
 import template from "ember-htmlbars/system/template";
 import compile from "ember-htmlbars/system/compile";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
+import makeBoundHelper from "ember-htmlbars/system/make_bound_helper";
 
 import {
   registerHelper,
@@ -86,7 +87,8 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     registerHelper: registerHelper,
     template: template,
     compile: compile,
-    makeViewHelper: makeViewHelper
+    makeViewHelper: makeViewHelper,
+    makeBoundHelper: makeBoundHelper
   };
 
 }
