@@ -10,10 +10,7 @@ import EmberObject from "ember-runtime/system/object";
 import { A } from "ember-runtime/system/native_array";
 import { computed } from "ember-metal/computed";
 import ContainerView from "ember-views/views/container_view";
-import { Binding } from "ember-metal/binding";
 import Container from "ember-runtime/system/container";
-import { ViewHelper as handlebarsViewHelper } from "ember-handlebars/helpers/view";
-import { ViewHelper as htmlbarsViewHelper } from "ember-htmlbars/helpers/view";
 
 var trim = jQuery.trim;
 
@@ -190,67 +187,6 @@ test("should update bound values after view's parent is removed and then re-appe
   run(function() {
     parentView.destroy();
   });
-});
-
-test("should call a registered helper for mustache without parameters", function() {
-  EmberHandlebars.registerHelper('foobar', function() {
-    return 'foobar';
-  });
-
-  view = EmberView.create({
-    template: EmberHandlebars.compile("{{foobar}}")
-  });
-
-  appendView();
-
-  ok(view.$().text() === 'foobar', "Regular helper was invoked correctly");
-});
-
-test("should bind to the property if no registered helper found for a mustache without parameters", function() {
-  view = EmberView.createWithMixins({
-    template: EmberHandlebars.compile("{{view.foobarProperty}}"),
-    foobarProperty: computed(function() {
-      return 'foobarProperty';
-    })
-  });
-
-  appendView();
-
-  ok(view.$().text() === 'foobarProperty', "Property was bound to correctly");
-});
-
-test("should accept bindings as a string or an Ember.Binding", function() {
-  var viewClass = EmberView.extend({
-    template: EmberHandlebars.compile("binding: {{view.bindingTest}}, string: {{view.stringTest}}")
-  });
-
-  EmberHandlebars.registerHelper('boogie', function(id, options) {
-    options.hash = options.hash || {};
-    options.hashTypes = options.hashTypes || {};
-
-    options.hash.bindingTestBinding = Binding.oneWay('context.' + id);
-    options.hash.stringTestBinding = id;
-
-    var result;
-    if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-      result = htmlbarsViewHelper.helper(viewClass, options.hash, options, options);
-    } else {
-      result = handlebarsViewHelper.helper(this, viewClass, options);
-    }
-
-    return result;
-  });
-
-  view = EmberView.create({
-    context: EmberObject.create({
-      direction: 'down'
-    }),
-    template: EmberHandlebars.compile("{{boogie direction}}")
-  });
-
-  appendView();
-
-  equal(trim(view.$().text()), "binding: down, string: down");
 });
 
 if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
