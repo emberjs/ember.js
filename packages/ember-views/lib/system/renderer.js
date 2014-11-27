@@ -4,6 +4,7 @@ import { create } from 'ember-metal/platform';
 import renderBuffer from "ember-views/system/render_buffer";
 import run from "ember-metal/run_loop";
 import { set } from "ember-metal/property_set";
+import { get } from "ember-metal/property_get";
 import {
   _instrumentStart,
   subscribers
@@ -34,7 +35,7 @@ EmberRenderer.prototype.createElement =
     // create a new buffer relative to the original using the
     // provided buffer operation (for example, `insertAfter` will
     // insert a new buffer after the "parent buffer").
-    var tagName = view.tagName;
+    var tagName = get(view, 'tagName');
     var classNameBindings = view.classNameBindings;
     var taglessViewWithClassBindings = tagName === '' && classNameBindings.length > 0;
 
