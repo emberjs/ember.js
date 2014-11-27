@@ -169,6 +169,9 @@ var EmberRouter = EmberObject.extend(Evented, {
   _doURLTransition: function(routerJsMethod, url) {
     var transition = this.router[routerJsMethod](url || '/');
     listenForTransitionErrors(transition);
+    if (transition.isAborted && this.location.restorePreviousURL) {
+      this.location.restorePreviousURL();
+    }
     return transition;
   },
 
