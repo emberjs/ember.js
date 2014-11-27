@@ -4,12 +4,15 @@ import EmberView from 'ember-views/views/view';
 import { Binding } from 'ember-metal/binding';
 import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
+import ContainerView from 'ember-views/views/container_view';
 import htmlbarsCompile from 'ember-htmlbars/system/compile';
 import EmberHandlebars from "ember-handlebars";
 import { ViewHelper as handlebarsViewHelper } from 'ember-handlebars/helpers/view';
 import { ViewHelper as htmlbarsViewHelper } from 'ember-htmlbars/helpers/view';
 
-var compile, view;
+import { set } from 'ember-metal/property_set';
+
+var compile, view, MyApp, originalLookup, lookup;
 
 var trim = jQuery.trim;
 
@@ -24,13 +27,24 @@ var appendView = function(view) {
 };
 
 QUnit.module('ember-htmlbars: binding integration', {
+  setup: function() {
+    originalLookup = Ember.lookup;
+    Ember.lookup = lookup = {};
+
+    MyApp = lookup.MyApp = EmberObject.create({});
+  },
+
   teardown: function() {
+    Ember.lookup = originalLookup;
+
     run(function() {
       if (view) {
         view.destroy();
       }
       view = null;
     });
+
+    MyApp = null;
   }
 });
 
@@ -59,6 +73,99 @@ test('should bind to the property if no registered helper found for a mustache w
   appendView(view);
 
   ok(view.$().text() === 'foobarProperty', 'Property was bound to correctly');
+});
+
+test("should be able to update when bound property updates", function() {
+  MyApp.set('controller', EmberObject.create({name: 'first'}));
+
+  var View = EmberView.extend({
+    template: compile('<i>{{view.value.name}}, {{view.computed}}</i>'),
+    valueBinding: 'MyApp.controller',
+    computed: computed(function() {
+      return this.get('value.name') + ' - computed';
+    }).property('value')
+  });
+
+  run(function() {
+    view = View.create();
+  });
+
+  appendView(view);
+
+  run(function() {
+    MyApp.set('controller', EmberObject.create({
+      name: 'second'
+    }));
+  });
+
+  equal(view.get('computed'), "second - computed", "view computed properties correctly update");
+  equal(view.$('i').text(), 'second, second - computed', "view rerenders when bound properties change");
+});
+
+test('should cleanup bound properties on rerender', function() {
+  view = EmberView.create({
+    controller: EmberObject.create({name: 'wycats'}),
+    template: compile('{{name}}')
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'wycats', 'rendered binding');
+
+  run(view, 'rerender');
+
+  equal(view._childViews.length, 1);
+});
+
+test("should update bound values after view's parent is removed and then re-appended", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
+  var controller = EmberObject.create();
+
+  var parentView = ContainerView.create({
+    childViews: ['testView'],
+
+    controller: controller,
+
+    testView: EmberView.create({
+      template: compile("{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}")
+    })
+  });
+
+  controller.setProperties({
+    showStuff: true,
+    boundValue: "foo"
+  });
+
+  appendView(parentView);
+  view = parentView.get('testView');
+
+  equal(trim(view.$().text()), "foo");
+  run(function() {
+    set(controller, 'showStuff', false);
+  });
+  equal(trim(view.$().text()), "Not true.");
+
+  run(function() {
+    set(controller, 'showStuff', true);
+  });
+  equal(trim(view.$().text()), "foo");
+
+  run(function() {
+    parentView.remove();
+    set(controller, 'showStuff', false);
+  });
+  run(function() {
+    set(controller, 'showStuff', true);
+  });
+  appendView(parentView);
+
+  run(function() {
+    set(controller, 'boundValue', "bar");
+  });
+  equal(trim(view.$().text()), "bar");
+
+  run(parentView, 'destroy');
 });
 
 test('should accept bindings as a string or an Ember.Binding', function() {
