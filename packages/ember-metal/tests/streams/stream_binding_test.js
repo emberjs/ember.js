@@ -40,7 +40,7 @@ test('basic', function() {
   binding.destroy(); // destroy should not fail
 });
 
-test('the source stream can send values to a single subscriber)', function() {
+test('the source stream can send values to a single subscriber', function() {
   var binding = new StreamBinding(source);
   var obj = mixin({}, { toBinding: binding });
 

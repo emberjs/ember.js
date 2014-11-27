@@ -3,19 +3,14 @@ import { read } from "ember-metal/streams/read";
 import { create as o_create } from "ember-metal/platform";
 
 function ConditionalStream(test, consequent, alternate) {
-  this._super(conditionalValueFn);
+  this.init();
   this.oldTest = undefined;
   this.test = test;
   this.consequent = consequent;
   this.alternate = alternate;
-
-  if (test && test.isStream) {
-    test.subscribe(this.notify, this);
-  }
 }
 
 ConditionalStream.prototype = o_create(Stream.prototype);
-ConditionalStream.prototype._super = Stream;
 
 ConditionalStream.prototype._unsubscribe = function(value) {
   if (value && value.isStream) {
@@ -29,8 +24,14 @@ ConditionalStream.prototype._subscribe = function(value) {
   }
 };
 
-function conditionalValueFn() {
+ConditionalStream.prototype.valueFn = function() {
   var test = !!read(this.test);
+
+  if (this.oldTest === undefined) {
+    if (this.test && this.test.isStream) {
+      this.test.subscribe(this.notify, this);
+    }
+  }
 
   if (test !== this.oldTest) {
     if (this.oldTest) {
@@ -47,6 +48,6 @@ function conditionalValueFn() {
   }
 
   return test ? read(this.consequent) : read(this.alternate);
-}
+};
 
 export default ConditionalStream;
