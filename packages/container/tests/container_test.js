@@ -688,4 +688,25 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
       container.lookup('apple:main');
     }, /Attempting to inject an unknown injection: `banana:main`/);
   });
+
+  test("Lazy injection validations are cached", function() {
+    expect(1);
+
+    var container = new Container();
+    var Apple = factory();
+    var Orange = factory();
+
+    Apple.reopenClass({
+      lazyInjections: function() {
+        ok(true, 'should call lazy injection method');
+        return [ 'orange:main' ];
+      }
+    });
+
+    container.register('apple:main', Apple);
+    container.register('orange:main', Orange);
+
+    container.lookup('apple:main');
+    container.lookup('apple:main');
+  });
 }
