@@ -19,10 +19,7 @@ import {
 import { bindHelper } from "ember-htmlbars/helpers/binding";
 import { viewHelper } from "ember-htmlbars/helpers/view";
 import { yieldHelper } from "ember-htmlbars/helpers/yield";
-import {
-  withHelper,
-  preprocessArgumentsForWith
-} from "ember-htmlbars/helpers/with";
+import { withHelper } from "ember-htmlbars/helpers/with";
 import { logHelper } from "ember-htmlbars/helpers/log";
 import { debuggerHelper } from "ember-htmlbars/helpers/debugger";
 import {
@@ -56,7 +53,7 @@ registerHelper('bindHelper', bindHelper);
 registerHelper('bind', bindHelper);
 registerHelper('view', viewHelper);
 registerHelper('yield', yieldHelper);
-registerHelper('with', withHelper, preprocessArgumentsForWith);
+registerHelper('with', withHelper);
 registerHelper('if', ifHelper);
 registerHelper('unless', unlessHelper);
 registerHelper('unboundIf', unboundIfHelper);
