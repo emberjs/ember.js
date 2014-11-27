@@ -1,6 +1,6 @@
 import Checkbox from "ember-views/views/checkbox";
 import TextField from "ember-views/views/text_field";
-import { read } from "ember-metal/streams/read";
+import { read } from "ember-metal/streams/utils";
 
 import Ember from "ember-metal/core"; // Ember.assert
 

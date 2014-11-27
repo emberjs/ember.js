@@ -9,7 +9,7 @@ import EmberObject from "ember-runtime/system/object";
 import { get } from "ember-metal/property_get";
 import keys from "ember-metal/keys";
 import { IS_BINDING } from "ember-metal/mixin";
-import { readViewFactory } from "ember-views/streams/read";
+import { readViewFactory } from "ember-views/streams/utils";
 import View from "ember-views/views/view";
 import SimpleStream from "ember-metal/streams/simple";
 

@@ -16,7 +16,7 @@ import {
   observer,
   beforeObserver
 } from "ember-metal/mixin";
-import { readViewFactory } from "ember-views/streams/read";
+import { readViewFactory } from "ember-views/streams/utils";
 import EmberArray from "ember-runtime/mixins/array";
 
 /**

@@ -1,3 +1,19 @@
+export function isStream(object) {
+  return object && object.isStream;
+}
+
+export function subscribe(object, callback, context) {
+  if (object && object.isStream) {
+    object.subscribe(callback, context);
+  }
+}
+
+export function unsubscribe(object, callback, context) {
+  if (object && object.isStream) {
+    object.unsubscribe(callback, context);
+  }
+}
+
 export function read(object) {
   if (object && object.isStream) {
     return object.value();

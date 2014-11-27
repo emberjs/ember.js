@@ -9,7 +9,7 @@ import {
   removeObserver
 } from "ember-metal/observer";
 import Stream from "ember-metal/streams/stream";
-import { read } from "ember-metal/streams/read";
+import { read } from "ember-metal/streams/utils";
 
 function KeyStream(source, key) {
   Ember.assert("KeyStream error: key must be a non-empty string", typeof key === 'string' && key.length > 0);

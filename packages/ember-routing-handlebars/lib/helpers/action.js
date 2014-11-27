@@ -8,7 +8,7 @@ import EmberHandlebars from "ember-handlebars";
 import { forEach } from "ember-metal/array";
 import { uuid } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
-import { readUnwrappedModel } from "ember-views/streams/read";
+import { readUnwrappedModel } from "ember-views/streams/utils";
 import { isSimpleClick } from "ember-views/system/utils";
 import ActionManager from "ember-views/system/action_manager";
 

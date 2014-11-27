@@ -13,7 +13,7 @@ import SimpleStream from "ember-metal/streams/simple";
 import { ViewHelper } from "ember-htmlbars/helpers/view";
 import View from "ember-views/views/view";
 import CollectionView from "ember-views/views/collection_view";
-import { readViewFactory } from "ember-views/streams/read";
+import { readViewFactory } from "ember-views/streams/utils";
 
 /**
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of

@@ -13,7 +13,7 @@ import Stream from "ember-metal/streams/stream";
 import {
   readArray,
   readHash
-} from "ember-metal/streams/read";
+} from "ember-metal/streams/utils";
 
 /**
   A helper function used by `registerBoundHelper`. Takes the
