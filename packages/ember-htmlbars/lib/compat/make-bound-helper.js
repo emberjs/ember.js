@@ -54,7 +54,7 @@ export default function makeBoundHelper(fn, compatMode) {
 
     for (var prop in hash) {
       if (IS_BINDING.test(prop)) {
-        hash[prop.slice(0, -7)] = view.getStream(hash[prop]);
+        hash[prop.slice(0, -7)] = view._getBindingForStream(hash[prop]);
         delete hash[prop];
       }
     }

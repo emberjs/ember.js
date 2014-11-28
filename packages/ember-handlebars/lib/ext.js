@@ -337,7 +337,7 @@ function makeBoundHelper(fn) {
 
     for (var prop in hash) {
       if (IS_BINDING.test(prop)) {
-        hash[prop.slice(0, -7)] = view.getStream(hash[prop]);
+        hash[prop.slice(0, -7)] = view._getBindingForStream(hash[prop]);
         hash[prop] = undefined;
       } else if (hashTypes[prop] === 'ID') {
         hash[prop] = view.getStream(hash[prop]);
