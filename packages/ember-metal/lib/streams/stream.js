@@ -12,6 +12,8 @@ function Stream(fn) {
 Stream.prototype = {
   isStream: true,
 
+  _label: null,
+
   init: function() {
     this.state = 'dirty';
     this.cache = undefined;
