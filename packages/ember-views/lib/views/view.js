@@ -2032,20 +2032,40 @@ var View = CoreView.extend({
   },
 
   getStream: function(path) {
-    return this._getContextStream().get(path);
+    var stream = this._getContextStream().get(path);
+
+    stream._label = path;
+
+    return stream;
   },
 
-  _getBindingForStream: function(path) {
+  _getBindingForStream: function(pathOrStream) {
     if (this._streamBindings === undefined) {
       this._streamBindings = create(null);
       this.one('willDestroyElement', this, this._destroyStreamBindings);
+    }
+
+    var path = pathOrStream;
+    if (pathOrStream.isStream) {
+      path = pathOrStream._label;
+
+      if (!path) {
+        // if no _label is present on the provided stream
+        // it is likely a subexpr and cannot be set (so it
+        // does not need a StreamBinding)
+        return pathOrStream;
+      }
     }
 
     if (this._streamBindings[path] !== undefined) {
       return this._streamBindings[path];
     } else {
       var stream = this._getContextStream().get(path);
-      return this._streamBindings[path] = new StreamBinding(stream);
+      var streamBinding = new StreamBinding(stream);
+
+      streamBinding._label = path;
+
+      return this._streamBindings[path] = streamBinding;
     }
   },
 
