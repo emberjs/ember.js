@@ -84,7 +84,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   Ember.HTMLBars = {
     helpers: helpers,
     helper: helper,
-    registerHelper: registerHelper,
+    _registerHelper: registerHelper,
     template: template,
     compile: compile,
     makeViewHelper: makeViewHelper,
