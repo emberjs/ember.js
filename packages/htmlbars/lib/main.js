@@ -6,8 +6,12 @@
  * @version   VERSION_STRING_PLACEHOLDER
  */
 
-import {compile, compileSpec} from "./htmlbars-compiler/compiler";
+import {
+  compile,
+  compileSpec
+} from "./htmlbars-compiler/compiler";
+import Walker from "./htmlbars-compiler/walker";
 import Morph from "./morph/morph";
 import DOMHelper from "./morph/dom-helper";
 
-export {compile, compileSpec, Morph, DOMHelper};
+export {compile, compileSpec, Morph, DOMHelper, Walker};

@@ -7,6 +7,12 @@ export function preprocess(html, options) {
   var ast = parse(html);
   var combined = new HTMLProcessor(html, options).acceptNode(ast);
 
+  if (options && options.plugins && options.plugins.ast) {
+    for (var i = 0, l = options.plugins.ast.length; i < l; i++) {
+      combined = options.plugins.ast[i](combined);
+    }
+  }
+
   return combined;
 }
 
