@@ -159,13 +159,6 @@ test("SVG element can have capitalized attributes", function() {
   equalTokens(fragment, '<svg viewBox=\"0 0 0 0\"></svg>');
 });
 
-test("checked attribute and checked property are present after clone and hydrate", function() {
-  var template = compile("<input checked=\"checked\">");
-  var fragment = template({}, env);
-  ok(fragment.checked, 'input is checked');
-  equalTokens(fragment, "<input checked='checked'>");
-});
-
 function shouldBeVoid(tagName) {
   var html = "<" + tagName + " data-foo='bar'><p>hello</p>";
   var template = compile(html);
