@@ -1,22 +1,28 @@
-import HandlebarsCompatibleHelper from "ember-htmlbars/compat/helper";
+import {
+  registerHandlebarsCompatibleHelper
+} from "ember-htmlbars/compat/helper";
 
-var fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv;
+import EmberView from "ember-views/views/view";
+import run from "ember-metal/run_loop";
+
+import helpers from "ember-htmlbars/helpers";
+import compile from "ember-htmlbars/system/compile";
+
+function appendView(view) {
+  run(view, 'appendTo', '#qunit-fixture');
+}
+
+var view;
+
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
 QUnit.module('ember-htmlbars: Handlebars compatible helpers', {
-  setup: function() {
-    fakeView = {};
-    fakeParams = [];
-    fakeHash = {};
-    fakeOptions = {
-      morph: {
-        update: function() { }
-      }
-    };
-    fakeEnv = {};
-  },
-
   teardown: function() {
+    if (view) {
+      run(view, 'destroy');
+    }
 
+    delete helpers.test;
   }
 });
 
@@ -28,29 +34,35 @@ test('wraps provided function so that original path params are provided to the h
     equal(param2, 'blazzico');
   }
 
-  var compatHelper = new HandlebarsCompatibleHelper(someHelper);
+  registerHandlebarsCompatibleHelper('test', someHelper);
 
-  fakeParams = [ 'blammo', 'blazzico' ];
-  compatHelper.preprocessArguments(fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv);
+  view = EmberView.create({
+    controller: {
+      value: 'foo'
+    },
+    template: compile('{{test "blammo" "blazzico"}}')
+  });
 
-  compatHelper.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
+  appendView(view);
 });
 
 test('combines `env` and `options` for the wrapped helper', function() {
-  expect(2);
+  expect(1);
 
   function someHelper(options) {
-    equal(options.first, 'Max');
-    equal(options.second, 'James');
+    equal(options.data.view, view);
   }
 
-  var compatHelper = new HandlebarsCompatibleHelper(someHelper);
+  registerHandlebarsCompatibleHelper('test', someHelper);
 
-  fakeOptions.first = 'Max';
-  fakeEnv.second = 'James';
+  view = EmberView.create({
+    controller: {
+      value: 'foo'
+    },
+    template: compile('{{test}}')
+  });
 
-  compatHelper.preprocessArguments(fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv);
-  compatHelper.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
+  appendView(view);
 });
 
 test('adds `hash` into options `options` for the wrapped helper', function() {
@@ -60,10 +72,56 @@ test('adds `hash` into options `options` for the wrapped helper', function() {
     equal(options.hash.bestFriend, 'Jacquie');
   }
 
-  var compatHelper = new HandlebarsCompatibleHelper(someHelper);
+  registerHandlebarsCompatibleHelper('test', someHelper);
 
-  fakeHash.bestFriend = 'Jacquie';
+  view = EmberView.create({
+    controller: {
+      value: 'foo'
+    },
+    template: compile('{{test bestFriend="Jacquie"}}')
+  });
 
-  compatHelper.preprocessArguments(fakeView, fakeParams, fakeHash, fakeOptions, fakeEnv);
-  compatHelper.helperFunction(fakeParams, fakeHash, fakeOptions, fakeEnv);
+  appendView(view);
 });
+
+test('bound `hash` params are provided with their original paths', function() {
+  expect(1);
+
+  function someHelper(options) {
+    equal(options.hash.bestFriend, 'value');
+  }
+
+  registerHandlebarsCompatibleHelper('test', someHelper);
+
+  view = EmberView.create({
+    controller: {
+      value: 'Jacquie'
+    },
+    template: compile('{{test bestFriend=value}}')
+  });
+
+  appendView(view);
+});
+
+test('bound ordered params are provided with their original paths', function() {
+  expect(2);
+
+  function someHelper(param1, param2, options) {
+    equal(param1, 'first');
+    equal(param2, 'second');
+  }
+
+  registerHandlebarsCompatibleHelper('test', someHelper);
+
+  view = EmberView.create({
+    controller: {
+      first: 'blammo',
+      second: 'blazzico'
+    },
+    template: compile('{{test first second}}')
+  });
+
+  appendView(view);
+});
+
+}

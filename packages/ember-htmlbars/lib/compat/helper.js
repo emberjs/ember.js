@@ -21,12 +21,32 @@ var slice = [].slice;
 */
 function HandlebarsCompatibleHelper(fn) {
   this.helperFunction = function helperFunc(params, hash, options, env) {
+    var param;
     var handlebarsOptions = {};
     merge(handlebarsOptions, options);
     merge(handlebarsOptions, env);
-    handlebarsOptions.hash = options._raw.hash;
 
-    var args = options._raw.params;
+    handlebarsOptions.hash = {};
+    for (var prop in hash) {
+      param = hash[prop];
+
+      if (param.isStream) {
+        handlebarsOptions.hash[prop] = param._label;
+      } else {
+        handlebarsOptions.hash[prop] = param;
+      }
+    }
+
+    var args = new Array(params.length);
+    for (var i = 0, l = params.length; i < l; i++) {
+      param = params[i];
+
+      if (param.isStream) {
+        args[i] = param._label;
+      } else {
+        args[i] = param;
+      }
+    }
     args.push(handlebarsOptions);
 
     return fn.apply(this, args);
@@ -36,12 +56,7 @@ function HandlebarsCompatibleHelper(fn) {
 }
 
 HandlebarsCompatibleHelper.prototype = {
-  preprocessArguments: function(view, params, hash, options, env) {
-    options._raw = {
-      params: params.slice(),
-      hash: merge({}, hash)
-    };
-  }
+  preprocessArguments: function() { }
 };
 
 export function registerHandlebarsCompatibleHelper(name, value) {
