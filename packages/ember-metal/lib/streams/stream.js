@@ -12,13 +12,12 @@ function Stream(fn) {
 Stream.prototype = {
   isStream: true,
 
-  _label: null,
-
   init: function() {
     this.state = 'dirty';
     this.cache = undefined;
     this.subscribers = undefined;
     this.children = undefined;
+    this._label = undefined;
   },
 
   get: function(path) {
