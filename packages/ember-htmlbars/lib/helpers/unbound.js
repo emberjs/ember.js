@@ -1,7 +1,6 @@
 import lookupHelper from "ember-htmlbars/system/lookup-helper";
 import { read } from "ember-metal/streams/utils";
 import EmberError from "ember-metal/error";
-import merge from "ember-metal/merge";
 
 /**
 @module ember
@@ -35,11 +34,11 @@ export function unboundHelper(params, hash, options, env) {
   options.helperName = options.helperName || 'unbound';
 
   if (length === 1) {
-    result = params[0].value();
+    result = read(params[0]);
   } else if (length >= 2) {
     env.data.isUnbound = true;
 
-    var helperName = options._raw.params[0];
+    var helperName = params[0]._label;
     var args = [];
 
     for (var i = 1, l = params.length; i < l; i++) {
@@ -60,11 +59,4 @@ export function unboundHelper(params, hash, options, env) {
   }
 
   return result;
-}
-
-export function preprocessArgumentsForUnbound(view, params, hash, options, env) {
-  options._raw = {
-    params: params.slice(),
-    hash:   merge({}, hash)
-  };
 }
