@@ -89,7 +89,6 @@ test('wraps helper from container in a Handlebars compat helper', function() {
   var fakeParams = [];
   var fakeHash = {};
   var fakeOptions = {
-    _raw: { params: []},
     morph: { update: function() { } }
   };
   var fakeEnv = {};

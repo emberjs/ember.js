@@ -6,7 +6,6 @@
 import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.assert, Ember.Handlebars, Ember.lookup
 import { IS_BINDING } from "ember-metal/mixin";
 import { appendSimpleBoundView } from "ember-views/views/simple_bound_view";
-import merge from "ember-metal/merge";
 import Helper from "ember-htmlbars/system/helper";
 
 import Stream from "ember-metal/streams/stream";
@@ -64,10 +63,20 @@ export default function makeBoundHelper(fn, compatMode) {
 
     function valueFn() {
       var args = readArray(params);
+      var properties = new Array(params.length);
+      for (var i = 0, l = params.length; i < l; i++) {
+        param = params[i];
+
+        if (param.isStream) {
+          properties[i] = param._label;
+        } else {
+          properties[i] = param;
+        }
+      }
 
       args.push({
         hash: readHash(hash),
-        data: { properties: options._raw.params }
+        data: { properties: properties }
       });
       return fn.apply(view, args);
     }
@@ -114,12 +123,5 @@ export default function makeBoundHelper(fn, compatMode) {
     }
   }
 
-  function preprocessArguments(view, params, hash, options, env) {
-    options._raw = {
-      params: params.slice(),
-      hash: merge({}, hash)
-    };
-  }
-
-  return new Helper(helperFunc, preprocessArguments);
+  return new Helper(helperFunc);
 }
