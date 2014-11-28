@@ -42,6 +42,13 @@ function appendView(view) {
   });
 }
 
+function expectDeprecationInHTMLBars() {
+  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+    expectDeprecation('`Ember.Handlebars.makeBoundHelper` has been deprecated in favor of `Ember.HTMLBars.makeBoundHelper`.');
+  }
+}
+
+
 var view, lookup, container;
 var originalLookup = Ember.lookup;
 
@@ -94,6 +101,7 @@ test('it should throw the helper missing error if multiple properties are provid
 QUnit.module("ember-htmlbars: {{#unbound boundHelper arg1 arg2... argN}} form: render unbound helper invocations", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
+    expectDeprecationInHTMLBars();
 
     registerBoundHelper('surround', function(prefix, value, suffix) {
       return prefix + '-' + value + '-' + suffix;
@@ -293,6 +301,8 @@ QUnit.module("ember-htmlbars: {{#unbound}} helper -- Container Lookup", {
 });
 
 test("should lookup helpers in the container", function() {
+  expectDeprecationInHTMLBars();
+
   container.register('helper:up-case', makeBoundHelper(function(value) {
     return value.toUpperCase();
   }));
