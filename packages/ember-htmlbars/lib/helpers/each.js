@@ -158,50 +158,31 @@ import EachView from "ember-views/views/each";
 */
 function eachHelper(params, hash, options, env) {
   var helperName = 'each';
-  var keywordName;
-  var path = params[0];
+  var path = params[0] || this.getStream('');
 
-  Ember.assert("If you pass more than one argument to the each helper," +
-               " it must be in the form #each foo in bar", params.length <= 1);
+  Ember.assert(
+    "If you pass more than one argument to the each helper, " +
+    "it must be in the form #each foo in bar",
+    params.length <= 1
+  );
 
   if (options.blockParams) {
     hash.keyword = true;
-  } else {
-    if (options.paramTypes[0] === 'keyword') {
-      keywordName = path.to;
-
-      helperName += ' ' + keywordName + ' in ' + path.from;
-
-      hash.keyword = keywordName;
-
-      path = path.stream;
-    } else {
-      helperName += ' ' + path;
-    }
-
-    if (!path) {
-      path = env.data.view.getStream('');
-    }
   }
 
-  Ember.deprecate('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.', keywordName || options.blockParams);
+  Ember.deprecate(
+    "Using the context switching form of {{each}} is deprecated. " +
+    "Please use the keyword form (`{{#each foo in bar}}`) instead. " +
+    "See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope " +
+    "for more details.",
+    hash.keyword === true || typeof hash.keyword === 'string'
+  );
 
   hash.emptyViewClass = Ember._MetamorphView;
   hash.dataSourceBinding = path;
   options.helperName = options.helperName || helperName;
 
   return env.helpers.collection.helperFunction.call(this, [EachView], hash, options, env);
-}
-
-export function preprocessArgumentsForEach(view, params, hash, options, env) {
-  if (params.length === 3 && params[1] === "in") {
-    params.splice(0, 3, {
-      from: params[2],
-      to: params[0],
-      stream: view.getStream(params[2])
-    });
-    options.paramTypes.splice(0, 3, 'keyword');
-  }
 }
 
 export {

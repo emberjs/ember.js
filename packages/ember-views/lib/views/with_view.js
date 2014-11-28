@@ -40,6 +40,10 @@ export default BoundView.extend({
       }
 
       set(controller, 'model', this.lazyValue.value());
+    } else {
+      if (this.preserveContext) {
+        this._keywords[keywordName] = this.lazyValue;
+      }
     }
   },
 

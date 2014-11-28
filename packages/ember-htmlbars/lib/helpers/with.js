@@ -4,8 +4,6 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert
-
-import { create as o_create } from "ember-metal/platform";
 import isNone from 'ember-metal/is_none';
 import { bind } from "ember-htmlbars/helpers/binding";
 import WithView from "ember-views/views/with_view";
@@ -58,51 +56,32 @@ import WithView from "ember-views/views/with_view";
   @return {String} HTML string
 */
 export function withHelper(params, hash, options, env) {
-
   Ember.assert(
-    '{{#with foo}} must be called with a single argument or the use the '+
-    '{{#with foo as bar}} syntax',
+    "{{#with foo}} must be called with a single argument or the use the " +
+    "{{#with foo as bar}} syntax",
     params.length === 1
   );
 
-  Ember.assert("The {{#with}} helper must be called with a block", !!options.render);
+  Ember.assert(
+    "The {{#with}} helper must be called with a block",
+    !!options.render
+  );
 
-  var source, keyword, preserveContext;
-  if (options.paramTypes[0] === 'id') {
-    if (options.blockParams) {
-      preserveContext = true;
-    } else {
-      Ember.deprecate('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
-      preserveContext = false;
-    }
-    source = params[0];
-  } else if (options.paramTypes[0] === 'keyword') {
-    source = params[0].stream;
-    keyword = params[0].to;
+  var preserveContext;
 
-    var localizedOptions = o_create(options);
-
-    localizedOptions.keywords = {};
-    localizedOptions.keywords[keyword] = source;
-    hash.keywordName = keyword;
-
-    options = localizedOptions;
+  if (hash.keywordName || options.blockParams) {
     preserveContext = true;
+  } else {
+    Ember.deprecate(
+      "Using the context switching form of `{{with}}` is deprecated. " +
+      "Please use the keyword form (`{{with foo as bar}}`) instead. " +
+      "See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope " +
+      "for more details."
+    );
+    preserveContext = false;
   }
 
-  bind.call(this, source, hash, options, env, preserveContext, exists, undefined, undefined, WithView);
-}
-
-export function preprocessArgumentsForWith(view, params, hash, options, env) {
-  if (params.length === 3 && params[1] === "as") {
-    params.splice(0, 3, {
-      from: params[0],
-      to: params[2],
-      stream: view.getStream(params[0])
-    });
-
-    options.paramTypes.splice(0, 3, 'keyword');
-  }
+  bind.call(this, params[0], hash, options, env, preserveContext, exists, undefined, undefined, WithView);
 }
 
 function exists(value) {
