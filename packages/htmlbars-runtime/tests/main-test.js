@@ -1,10 +1,10 @@
-import {hooks} from "../htmlbars-runtime";
+import { hooks } from "../htmlbars-runtime";
 
 QUnit.module("htmlbars-runtime");
 
 function keys(obj) {
   var ownKeys = [];
-  for(var key in obj) {
+  for (var key in obj) {
     if (obj.hasOwnProperty(key)) {
       ownKeys.push(key);
     }
@@ -16,19 +16,14 @@ test("hooks are present", function () {
   var hookNames = [
     "content",
     "component",
-    "componentFallback",
     "element",
     "attribute",
-    "concat",
-    "partial",
     "subexpr",
-    "lookupHelper",
-    "simple",
-    "hydrationHooks",
     "set"
   ];
-  for (var i=0;i<hookNames.length;i++) {
-    ok(hooks[hookNames[i]], "hook "+hookNames[i]+" is present");
+
+  for (var i = 0; i < hookNames.length; i++) {
+    ok(hooks[hookNames[i]], "hook " + hookNames[i] + " is present");
   }
 
   equal(keys(hooks).length, hookNames.length, "Hooks length match");
