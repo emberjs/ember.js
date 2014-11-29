@@ -142,7 +142,8 @@ HydrationOpcodeCompiler.prototype.opcode = function(type) {
 };
 
 HydrationOpcodeCompiler.prototype.attribute = function(attr) {
-  if (attr.value.type === 'text') {
+  var parts = attr.value;
+  if (parts.length === 1 && parts[0].type === 'text') {
     return;
   }
 
