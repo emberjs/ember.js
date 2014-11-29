@@ -1,12 +1,11 @@
-import { get } from "./utils";
 import { concat } from "./helpers";
 
-export function content(morph, helperName, context, params, hash, options, env) {
-  var value, helper = lookupHelper(context, helperName, env);
+export function content(morph, path, context, params, hash, options, env) {
+  var value, helper = lookupHelper(context, path, env);
   if (helper) {
     value = helper.call(context, params, hash, options, env);
   } else {
-    value = get(context, helperName, options);
+    value = get(context, path);
   }
   morph.update(value);
 }
@@ -24,11 +23,7 @@ export function attribute(domElement, attributeName, quoted, context, parts, opt
   if (quoted) {
     attrValue = concat.call(context, parts, null, options);
   } else {
-    if (options.paramTypes[0] === 'id') {
-      attrValue = get(context, parts[0]);
-    } else {
-      attrValue = parts[0];
-    }
+    attrValue = parts[0];
   }
 
   if (attrValue === null) {
@@ -47,6 +42,23 @@ export function subexpr(helperName, context, params, hash, options, env) {
   }
 }
 
+export function get(context, path) {
+  if (path === '') {
+    return context;
+  }
+
+  var keys = path.split('.');
+  var value = context;
+  for (var i = 0; i < keys.length; i++) {
+    if (value) {
+      value = value[keys[i]];
+    } else {
+      break;
+    }
+  }
+  return value;
+}
+
 export function set(context, name, value) {
   context[name] = value;
 }
@@ -63,14 +75,8 @@ export function component(morph, tagName, context, hash, options, env) {
 
 function componentFallback(morph, tagName, context, hash, options, env) {
   var element = env.dom.createElement(tagName);
-  var hashTypes = options.hashTypes;
-
   for (var name in hash) {
-    if (hashTypes[name] === 'id') {
-      element.setAttribute(name, get(context, hash[name], options));
-    } else {
-      element.setAttribute(name, hash[name]);
-    }
+    element.setAttribute(name, hash[name]);
   }
   element.appendChild(options.render(context, env, morph.contextualElement));
   return element;
@@ -86,5 +92,6 @@ export default {
   element: element,
   attribute: attribute,
   subexpr: subexpr,
+  get: get,
   set: set
 };

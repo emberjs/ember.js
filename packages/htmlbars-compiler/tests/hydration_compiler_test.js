@@ -15,9 +15,9 @@ test("simple example", function() {
   deepEqual(opcodes, [
     [ "morph", [ 0, [ 0 ], -1, 0, true ] ],
     [ "morph", [ 1, [ 0 ], 0, -1, true ] ],
-    [ "id", [ [ "foo" ] ] ],
+    [ "string", [ "foo" ] ],
     [ "ambiguous", [ 0 ] ],
-    [ "id", [ [ "baz" ] ] ],
+    [ "string", [ "baz" ] ],
     [ "ambiguous", [ 1 ] ],
   ]);
 });
@@ -27,7 +27,7 @@ test("simple block", function() {
   deepEqual(opcodes, [
     [ "morph", [ 0, [ 0 ], null, null, true ] ],
     [ "program", [ 0, null ] ],
-    [ "id", [ [ "foo" ] ] ],
+    [ "string", [ "foo" ] ],
     [ "stackLiteral", [ 0 ] ],
     [ "helper", [ 0, 0, 0 ] ]
   ]);
@@ -38,7 +38,7 @@ test("simple block with block params", function() {
   deepEqual(opcodes, [
     [ "morph", [ 0, [ 0 ], null, null, true ] ],
     [ "program", [ 0, null ] ],
-    [ "id", [ [ "foo" ] ] ],
+    [ "string", [ "foo" ] ],
     [ "stackLiteral", [ 0 ] ],
     [ "helper", [ 0, 0, 2 ] ]
   ]);
@@ -48,7 +48,7 @@ test("element with a sole mustache child", function() {
   var opcodes = opcodesFor("<div>{{foo}}</div>");
   deepEqual(opcodes, [
     [ "morph", [ 0, [ 0 ], -1, -1, true ] ],
-    [ "id", [ [ "foo" ] ] ],
+    [ "string", [ "foo" ] ],
     [ "ambiguous", [ 0 ] ],
   ]);
 });
@@ -57,7 +57,7 @@ test("element with a mustache between two text nodes", function() {
   var opcodes = opcodesFor("<div> {{foo}} </div>");
   deepEqual(opcodes, [
     [ "morph", [ 0, [ 0 ], 0, 1, true ] ],
-    [ "id", [ [ "foo" ] ] ],
+    [ "string", [ "foo" ] ],
     [ "ambiguous", [ 0 ] ],
   ]);
 });
@@ -67,7 +67,7 @@ test("mustache two elements deep", function() {
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
     [ "morph", [ 0, [ 0, 0 ], -1, -1, true ] ],
-    [ "id", [ [ "foo" ] ] ],
+    [ "string", [ "foo" ] ],
     [ "ambiguous", [ 0 ] ],
     [ "popParent", [] ]
   ]);
@@ -78,12 +78,12 @@ test("two sibling elements with mustaches", function() {
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
     [ "morph", [ 0, [ 0 ], -1, -1, true ] ],
-    [ "id", [ [ "foo" ] ] ],
+    [ "string", [ "foo" ] ],
     [ "ambiguous", [ 0 ] ],
     [ "popParent", [] ],
     [ "consumeParent", [ 1 ] ],
     [ "morph", [ 1, [ 1 ], -1, -1, true ] ],
-    [ "id", [ [ "bar" ] ] ],
+    [ "string", [ "bar" ] ],
     [ "ambiguous", [ 1 ] ],
     [ "popParent", [] ]
   ]);
@@ -95,9 +95,9 @@ test("mustaches at the root", function() {
     [ "morph", [ 0, [ ], 0, 1, true ] ],
     [ "morph", [ 1, [ ], 1, 2, true ] ],
     [ "repairClonedNode", [ [ 0, 2 ] ] ],
-    [ "id", [ [ "foo" ] ] ],
+    [ "string", [ "foo" ] ],
     [ "ambiguous", [ 0 ] ],
-    [ "id", [ [ "bar" ] ] ],
+    [ "string", [ "bar" ] ],
     [ "ambiguous", [ 1 ] ],
   ]);
 });
@@ -110,13 +110,13 @@ test("back to back mustaches should have a text node inserted between them", fun
     [ "morph", [ 2, [0], 1, 2, true ] ],
     [ "morph", [ 3, [0], 2, -1, true] ],
     [ "repairClonedNode", [ [ 0, 1 ], false ] ],
-    [ "id", [ [ "foo" ] ] ],
+    [ "string", [ "foo" ] ],
     [ "ambiguous", [ 0 ] ],
-    [ "id", [ [ "bar" ] ] ],
+    [ "string", [ "bar" ] ],
     [ "ambiguous", [ 1 ] ],
-    [ "id", [ [ "baz" ] ] ],
+    [ "string", [ "baz" ] ],
     [ "ambiguous", [ 2 ] ],
-    [ "id", [ [ "qux" ] ] ],
+    [ "string", [ "qux" ] ],
     [ "ambiguous", [ 3 ] ],
   ]);
 });
@@ -126,7 +126,7 @@ test("helper usage", function() {
   deepEqual(opcodes, [
     [ "morph", [ 0, [0], -1, -1, true ] ],
     [ "program", [null, null] ],
-    [ "id", [ [ "foo" ] ] ],
+    [ "string", [ "foo" ] ],
     [ "stringLiteral", ['bar'] ],
     [ "stackLiteral", [0] ],
     [ "helper", [ 1, 0 ] ],
@@ -137,7 +137,7 @@ test("node mustache", function() {
   var opcodes = opcodesFor("<div {{foo}}></div>");
   deepEqual(opcodes, [
     [ "program", [null, null] ],
-    [ "id", [ [ "foo" ] ] ],
+    [ "string", [ "foo" ] ],
     [ "stackLiteral", [0] ],
     [ "element", [0] ],
     [ "nodeHelper", [ 0, 0 ] ]
@@ -148,7 +148,7 @@ test("node helper", function() {
   var opcodes = opcodesFor("<div {{foo 'bar'}}></div>");
   deepEqual(opcodes, [
     [ "program", [null, null] ],
-    [ "id", [ [ "foo" ] ] ],
+    [ "string", [ "foo" ] ],
     [ "stringLiteral", ['bar'] ],
     [ "stackLiteral", [0] ],
     [ "element", [0] ],
@@ -160,7 +160,7 @@ test("attribute mustache", function() {
   var opcodes = opcodesFor("<div class='before {{foo}} after'></div>");
   deepEqual(opcodes, [
     [ "program", [null, null] ],
-    [ "id", [ null ] ],
+    [ "string", [ "" ] ],
     [ "stringLiteral", ["before "] ],
     [ "id", [ [ "foo" ] ] ],
     [ "stringLiteral", [" after"] ],
@@ -175,11 +175,11 @@ test("attribute helper", function() {
   var opcodes = opcodesFor("<div class='before {{foo 'bar'}} after'></div>");
   deepEqual(opcodes, [
     [ "program", [ null, null ] ],
-    [ "id", [ null ] ],
+    [ "string", [ "" ] ],
     [ "stringLiteral", [ "before " ] ],
     [ "string", [ "sexpr" ] ],
     [ "program", [ null, null ] ],
-    [ "id", [ [ "foo" ] ] ],
+    [ "string", [ "foo" ] ],
     [ "stringLiteral", [ "bar" ] ],
     [ "stackLiteral", [ 0 ] ],
     [ "sexpr", [ 1 ] ],
