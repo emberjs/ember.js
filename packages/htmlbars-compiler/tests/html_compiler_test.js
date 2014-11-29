@@ -966,6 +966,12 @@ test("Block params - Helper should know how many block params it was called with
   compile('{{#with-block-params as |x y z|}}{{/with-block-params}}')({ count: 3 }, env, document.body);
 });
 
+test("A helpful error message is provided for mismatched start/end tags", function() {
+  QUnit.throws(function() {
+    compile("<div>\n<p>\nSomething\n\n</div>");
+  }, /Closing tag `div` \(on line 5\) did not match last open tag `p`\./);
+});
+
 if (document.createElement('div').namespaceURI) {
 
 QUnit.module("HTML-based compiler (output, svg)", {
