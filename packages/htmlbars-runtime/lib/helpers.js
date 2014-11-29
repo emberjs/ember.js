@@ -1,6 +1,6 @@
 import { get } from "./utils";
 
-export function concat(params, hash, options /*, env*/) {
+export function concat(params, hash, options) {
   var value = "";
   for (var i = 0, l = params.length; i < l; i++) {
     if (options.paramTypes[i] === 'id') {

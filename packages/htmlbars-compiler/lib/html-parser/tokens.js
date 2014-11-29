@@ -17,7 +17,7 @@ StartTag.prototype.addToAttributeName = function(char) {
 StartTag.prototype.addToAttributeValue = function(char) {
   var value = this.currentAttribute.value;
 
-  if (char.type === 'sexpr') {
+  if (char.type === 'sexpr' || char.type === 'ID') {
     value.push(char);
   } else {
     if (value.length > 0 && value[value.length - 1].type === 'text') {
@@ -29,38 +29,29 @@ StartTag.prototype.addToAttributeValue = function(char) {
 };
 
 StartTag.prototype.finalize = function() {
-  delete this.currentAttribute;
+  this.finalizeAttributeValue();
   return this;
 };
 
 StartTag.prototype.finalizeAttributeValue = function() {
-  var attr = this.currentAttribute;
-  var part;
-
-  if (!attr) {
+  if (!this.currentAttribute) {
     return;
   }
 
-  if (attr.value.length === 0) {
-    if (attr.quoted) {
-      attr.value = new TextNode("");
-    } else {
-      attr.value = null;
-    }
-  } else if (attr.value.length === 1) {
-    if (attr.value[0].type === 'text') {
-      attr.value = attr.value[0];
-    }
-  } else {
-    // Convert TextNode to StringNode
-    for (var i = 0; i < attr.value.length; i++) {
-      part = attr.value[i];
+  var parts = this.currentAttribute.value;
 
-      if (part.type === 'text') {
-        attr.value[i] = new StringNode(part.chars);
+  if (parts.length === 0) {
+    parts.push(new TextNode(""));
+  } else if (parts.length > 1) {
+    // Convert TextNode to StringNode
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].type === 'text') {
+        parts[i] = new StringNode(parts[i].chars);
       }
     }
   }
+
+  delete this.currentAttribute;
 };
 
 StartTag.prototype.addTagHelper = function(helper) {
