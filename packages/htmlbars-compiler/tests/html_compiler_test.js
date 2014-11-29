@@ -291,7 +291,7 @@ test("The compiler can handle unescaped tr inside fragment table", function() {
 
 test("The compiler can handle simple helpers", function() {
   registerHelper('testing', function(params) {
-    return this[params[0]];
+    return params[0];
   });
 
   compilesTo('<div>{{testing title}}</div>', '<div>hello</div>', { title: 'hello' });
@@ -306,31 +306,11 @@ test("The compiler can handle sexpr helpers", function() {
 });
 
 test("The compiler can handle multiple invocations of sexprs", function() {
-  function evalParam(context, param, type) {
-    if (type === 'id') {
-      return context[param];
-    } else {
-      return param;
-    }
-  }
-
-  registerHelper('testing', function(params, hash, options) {
-    return evalParam(this, params[0], options.paramTypes[0]) +
-           evalParam(this, params[1], options.paramTypes[1]);
+  registerHelper('testing', function(params) {
+    return "" + params[0] + params[1];
   });
 
   compilesTo('<div>{{testing (testing "hello" foo) (testing (testing bar "lol") baz)}}</div>', '<div>helloFOOBARlolBAZ</div>', { foo: "FOO", bar: "BAR", baz: "BAZ" });
-});
-
-test("The compiler tells helpers what kind of expression the path is", function() {
-  registerHelper('testing', function(params, hash, options) {
-    return options.paramTypes[0] + '-' + params[0];
-  });
-
-  compilesTo('<div>{{testing "title"}}</div>', '<div>string-title</div>');
-  compilesTo('<div>{{testing 123}}</div>', '<div>number-123</div>');
-  compilesTo('<div>{{testing true}}</div>', '<div>boolean-true</div>');
-  compilesTo('<div>{{testing false}}</div>', '<div>boolean-false</div>');
 });
 
 test("The compiler passes along the hash arguments", function() {
@@ -339,18 +319,6 @@ test("The compiler passes along the hash arguments", function() {
   });
 
   compilesTo('<div>{{testing first="one" second="two"}}</div>', '<div>one-two</div>');
-});
-
-test("The compiler passes along the paramTypes of the hash arguments", function() {
-  registerHelper('testing', function(params, hash, options) {
-    return options.hashTypes.first + '-' + hash.first;
-  });
-
-  compilesTo('<div>{{testing first="one"}}</div>', '<div>string-one</div>');
-  compilesTo('<div>{{testing first=one}}</div>', '<div>id-one</div>');
-  compilesTo('<div>{{testing first=1}}</div>', '<div>number-1</div>');
-  compilesTo('<div>{{testing first=true}}</div>', '<div>boolean-true</div>');
-  compilesTo('<div>{{testing first=false}}</div>', '<div>boolean-false</div>');
 });
 
 test("Simple data binding using text nodes", function() {
@@ -456,8 +424,8 @@ test("Helpers receive escaping information", function() {
     return params[0];
   });
 
-  compilesTo('<div>{{{testing-unescaped}}}-{{{testing-unescaped a}}}</div>', '<div>-a</div>');
-  compilesTo('<div>{{testing-escaped}}-{{testing-escaped b}}</div>', '<div>-b</div>');
+  compilesTo('<div>{{{testing-unescaped}}}-{{{testing-unescaped "a"}}}</div>', '<div>-a</div>');
+  compilesTo('<div>{{testing-escaped}}-{{testing-escaped "b"}}</div>', '<div>-b</div>');
   compilesTo('<div>{{#testing-escaped}}c{{/testing-escaped}}</div>', '<div>c</div>');
 });
 
@@ -513,7 +481,7 @@ test("It is possible to use RESOLVE_IN_ATTR for data binding", function() {
 
 test("Attributes can be populated with helpers that generate a string", function() {
   registerHelper('testing', function(params) {
-    return this[params[0]];
+    return params[0];
   });
 
   compilesTo('<a href="{{testing url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html'});
@@ -529,7 +497,7 @@ test("A helper can return a stream for the attribute", function() {
 */
 test("Attribute helpers take a hash", function() {
   registerHelper('testing', function(params, hash) {
-    return this[hash.path];
+    return hash.path;
   });
 
   compilesTo('<a href="{{testing path=url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html' });
@@ -554,12 +522,8 @@ test("Attribute helpers can use the hash for data binding", function() {
 });
 */
 test("Attributes containing multiple helpers are treated like a block", function() {
-  registerHelper('testing', function(params, hash, options) {
-    if (options.paramTypes[0] === 'id') {
-      return this[params[0]];
-    } else {
-      return params[0];
-    }
+  registerHelper('testing', function(params) {
+    return params[0];
   });
 
   compilesTo('<a href="http://{{foo}}/{{testing bar}}/{{testing "baz"}}">linky</a>', '<a href="http://foo.com/bar/baz">linky</a>', { foo: 'foo.com', bar: 'bar' });
