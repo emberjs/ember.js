@@ -49,6 +49,32 @@ test('#removeAttribute', function(){
   equalHTML(node, '<div></div>', 'attribute was removed');
 });
 
+test('#addClasses', function(){
+  var node = dom.createElement('div');
+  dom.addClasses(node, ['super-fun']);
+  equal(node.className, 'super-fun');
+  dom.addClasses(node, ['super-fun']);
+  equal(node.className, 'super-fun');
+  dom.addClasses(node, ['super-blast']);
+  equal(node.className, 'super-fun super-blast');
+  dom.addClasses(node, ['bacon', 'ham']);
+  equal(node.className, 'super-fun super-blast bacon ham');
+});
+
+test('#removeClasses', function(){
+  var node = dom.createElement('div');
+  node.setAttribute('class', 'this-class that-class');
+  dom.removeClasses(node, ['this-class']);
+  equal(node.className, 'that-class');
+  dom.removeClasses(node, ['this-class']);
+  equal(node.className, 'that-class');
+  dom.removeClasses(node, ['that-class']);
+  equal(node.className, '');
+  node.setAttribute('class', 'woop moop jeep');
+  dom.removeClasses(node, ['moop', 'jeep']);
+  equal(node.className, 'woop');
+});
+
 test('#createElement of tr with contextual table element', function(){
   var tableElement = document.createElement('table'),
       node = dom.createElement('tr', tableElement);
@@ -368,5 +394,27 @@ test('#parseHTML of stop with linearGradient contextual element', function(){
   equal(nodes[0].tagName, 'stop');
   equal(nodes[0].namespaceURI, svgNamespace);
 });
+
+test('#addClasses on SVG', function(){
+  var node = document.createElementNS(svgNamespace, 'svg');
+  dom.addClasses(node, ['super-fun']);
+  equal(node.getAttribute('class'), 'super-fun');
+  dom.addClasses(node, ['super-fun']);
+  equal(node.getAttribute('class'), 'super-fun');
+  dom.addClasses(node, ['super-blast']);
+  equal(node.getAttribute('class'), 'super-fun super-blast');
+});
+
+test('#removeClasses on SVG', function(){
+  var node = document.createElementNS(svgNamespace, 'svg');
+  node.setAttribute('class', 'this-class that-class');
+  dom.removeClasses(node, ['this-class']);
+  equal(node.getAttribute('class'), 'that-class');
+  dom.removeClasses(node, ['this-class']);
+  equal(node.getAttribute('class'), 'that-class');
+  dom.removeClasses(node, ['that-class']);
+  equal(node.getAttribute('class'), '');
+});
+
 
 }
