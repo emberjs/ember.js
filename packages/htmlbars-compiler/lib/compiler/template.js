@@ -4,7 +4,7 @@ import { HydrationOpcodeCompiler } from './hydration_opcode';
 import { HydrationCompiler } from './hydration';
 import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
-import { string, repeat } from "./quoting";
+import { repeat } from "./quoting";
 
 export function TemplateCompiler(options) {
   this.options = options || {};
@@ -45,14 +45,17 @@ TemplateCompiler.prototype.getChildTemplateVars = function(indent) {
   return vars;
 };
 
-TemplateCompiler.prototype.getContextAssignments = function(indent, blockParams) {
-  var assignments = '';
-  if (blockParams) {
-    for (var i = 0; i < blockParams.length; i++) {
-      assignments += indent + 'hooks.set(context, ' + string(blockParams[i]) +', blockArguments[' + i + ']);\n';
-    }
+TemplateCompiler.prototype.getHydrationHooks = function(indent, hooks) {
+  var hookVars = [];
+  for (var hook in hooks) {
+    hookVars.push(hook + ' = hooks.' + hook);
   }
-  return assignments;
+
+  if (hookVars.length > 0) {
+    return indent + 'var hooks = env.hooks, ' + hookVars.join(', ') + ';\n';
+  } else {
+    return '';
+  }
 };
 
 TemplateCompiler.prototype.endProgram = function(program, programDepth) {
@@ -76,11 +79,10 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     options
   );
 
-  var blockParams = program.blockParams;
-  var hasBlockParams = blockParams && blockParams.length > 0;
+  var blockParams = program.blockParams || [];
 
   var templateSignature = 'context, env, contextualElement';
-  if (hasBlockParams) {
+  if (blockParams.length > 0) {
     templateSignature += ', blockArguments';
   }
 
@@ -90,8 +92,8 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     fragmentProgram +
     indent+'  var cachedFragment;\n' +
     indent+'  return function template(' + templateSignature + ') {\n' +
-    indent+'    var dom = env.dom, hooks = env.hooks;\n' +
-    this.getContextAssignments(indent + '    ', blockParams) +
+    indent+'    var dom = env.dom;\n' +
+    this.getHydrationHooks(indent + '    ', this.hydrationCompiler.hooks) +
     indent+'    dom.detectNamespace(contextualElement);\n' +
     indent+'    if (cachedFragment === undefined) {\n' +
     indent+'      cachedFragment = build(dom);\n' +
