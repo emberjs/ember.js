@@ -37,6 +37,26 @@ test('#setAttribute', function(){
   var node = dom.createElement('div');
   dom.setAttribute(node, 'id', 'super-tag');
   equalHTML(node, '<div id="super-tag"></div>');
+  dom.setAttribute(node, 'id', null);
+  equalHTML(node, '<div id="null"></div>');
+
+  node = dom.createElement('input');
+  dom.setAttribute(node, 'disabled', true);
+  equalHTML(node, '<input disabled="true">');
+  dom.setAttribute(node, 'disabled', false);
+  equalHTML(node, '<input disabled="false">');
+});
+
+test('#setProperty', function(){
+  var node = dom.createElement('div');
+  dom.setProperty(node, 'id', 'super-tag');
+  equalHTML(node, '<div id="super-tag"></div>');
+
+  node = dom.createElement('input');
+  dom.setProperty(node, 'disabled', true);
+  equalHTML(node, '<input disabled="">');
+  dom.setProperty(node, 'disabled', false);
+  equalHTML(node, '<input>');
 });
 
 test('#removeAttribute', function(){
