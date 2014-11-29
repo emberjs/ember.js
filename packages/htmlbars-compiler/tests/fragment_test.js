@@ -28,6 +28,12 @@ function hydratorFor(ast) {
   var opcodes = hydrate.compile(ast);
   var hydrate2 = new HydrationCompiler();
   var program = hydrate2.compile(opcodes, []);
+
+  var hookVars = [];
+  for (var hook in hydrate2.hooks) {
+    hookVars.push(hook + ' = hooks.' + hook);
+  }
+  program =  'var ' + hookVars.join(', ') + ';\n' + program;
   return new Function("fragment", "context", "dom", "hooks", "env", "contextualElement", program);
 }
 

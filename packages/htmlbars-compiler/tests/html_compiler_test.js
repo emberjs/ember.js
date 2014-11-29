@@ -1,7 +1,9 @@
 import { compile } from "../htmlbars-compiler/compiler";
 import { forEach } from "../htmlbars-compiler/utils";
 import { tokenize } from "../simple-html-tokenizer";
-import { hydrationHooks } from "../htmlbars-runtime/hooks";
+import defaultHooks from "../htmlbars-runtime/hooks";
+import defaultHelpers from "../htmlbars-runtime/helpers";
+import { merge } from "../htmlbars-runtime/utils";
 import { DOMHelper } from "../morph";
 import { normalizeInnerHTML } from "../htmlbars-test-helpers";
 
@@ -16,18 +18,6 @@ function registerHelper(name, callback) {
 
 function registerPartial(name, html) {
   partials[name] = compile(html);
-}
-
-function lookupHelper(helperName) {
-  if (helperName === 'attribute') {
-    return this.attribute;
-  } else if (helperName === 'concat') {
-    return this.concat;
-  } else if (helperName === 'partial') {
-    return this.partial;
-  } else {
-    return helpers[helperName];
-  }
 }
 
 function compilesTo(html, expected, context) {
@@ -68,14 +58,14 @@ function equalTokens(fragment, html) {
 
 QUnit.module("HTML-based compiler (output)", {
   setup: function() {
-    helpers = {};
+    hooks = merge({}, defaultHooks);
+    helpers = merge({}, defaultHelpers);
     partials = {};
-    hooks = hydrationHooks({lookupHelper : lookupHelper});
 
     env = {
+      dom: new DOMHelper(),
       hooks: hooks,
       helpers: helpers,
-      dom: new DOMHelper(),
       partials: partials
     };
   }
@@ -253,12 +243,8 @@ test("The compiler can handle top-level unescaped HTML", function() {
 
 test("The compiler can handle top-level unescaped tr", function() {
   var template = compile('{{{html}}}');
-  var fragment = template({
-                   html: '<tr><td>Yo</td></tr>'
-                 }, {
-                   hooks: hooks,
-                   dom: new DOMHelper()
-                 }, document.createElement('table'));
+  var context = { html: '<tr><td>Yo</td></tr>' };
+  var fragment = template(context, env, document.createElement('table'));
 
   equal(
     fragment.childNodes[1].tagName, 'TR',
@@ -267,12 +253,8 @@ test("The compiler can handle top-level unescaped tr", function() {
 
 test("The compiler can handle top-level unescaped td inside tr contextualElement", function() {
   var template = compile('{{{html}}}');
-  var fragment = template({
-                   html: '<td>Yo</td>'
-                 }, {
-                   hooks: hooks,
-                   dom: new DOMHelper()
-                 }, document.createElement('tr'));
+  var context = { html: '<td>Yo</td>' };
+  var fragment = template(context, env, document.createElement('tr'));
 
   equal(
     fragment.childNodes[1].tagName, 'TD',
@@ -280,21 +262,13 @@ test("The compiler can handle top-level unescaped td inside tr contextualElement
 });
 
 test("The compiler can handle unescaped tr in top of content", function() {
-  var helper = function(params, hash, options, env) {
+  registerHelper('test', function(params, hash, options, env) {
     return options.render(this, env, options.morph.contextualElement);
-  };
-  hooks.lookupHelper = function(name){
-    if (name === 'test') {
-      return helper;
-    }
-  };
+  });
+
   var template = compile('{{#test}}{{{html}}}{{/test}}');
-  var fragment = template({
-                   html: '<tr><td>Yo</td></tr>'
-                 }, {
-                   hooks: hooks,
-                   dom: new DOMHelper()
-                 }, document.createElement('table'));
+  var context = { html: '<tr><td>Yo</td></tr>' };
+  var fragment = template(context, env, document.createElement('table'));
 
   equal(
     fragment.childNodes[2].tagName, 'TR',
@@ -302,21 +276,13 @@ test("The compiler can handle unescaped tr in top of content", function() {
 });
 
 test("The compiler can handle unescaped tr inside fragment table", function() {
-  var helper = function(params, hash, options, env) {
+  registerHelper('test', function(params, hash, options, env) {
     return options.render(this, env, options.morph.contextualElement);
-  };
-  hooks.lookupHelper = function(name){
-    if (name === 'test') {
-      return helper;
-    }
-  };
-  var template = compile('<table>{{#test}}{{{html}}}{{/test}}</table>'),
-      fragment = template({
-                   html: '<tr><td>Yo</td></tr>'
-                 }, {
-                   hooks: hooks,
-                   dom: new DOMHelper()
-                 }, document.createElement('div'));
+  });
+
+  var template = compile('<table>{{#test}}{{{html}}}{{/test}}</table>');
+  var context = { html: '<tr><td>Yo</td></tr>' };
+  var fragment = template(context, env, document.createElement('div'));
 
   equal(
     fragment.childNodes[1].tagName, 'TR',
@@ -385,20 +351,6 @@ test("The compiler passes along the paramTypes of the hash arguments", function(
   compilesTo('<div>{{testing first=1}}</div>', '<div>number-1</div>');
   compilesTo('<div>{{testing first=true}}</div>', '<div>boolean-true</div>');
   compilesTo('<div>{{testing first=false}}</div>', '<div>boolean-false</div>');
-});
-
-test("It is possible to override the resolution mechanism", function() {
-  hooks.simple = function(context, name) {
-    if (name === 'zomg') {
-      return context.zomg;
-    } else {
-      return name.replace('.', '-');
-    }
-  };
-
-  compilesTo('<div>{{foo}}</div>', '<div>foo</div>');
-  compilesTo('<div>{{foo.bar}}</div>', '<div>foo-bar</div>');
-  compilesTo('<div>{{zomg}}</div>', '<div>hello</div>', { zomg: 'hello' });
 });
 
 test("Simple data binding using text nodes", function() {
@@ -946,7 +898,6 @@ test("Block params", function() {
     // return "C(" + options.render() + ")";
   });
   var t = '{{#a as |w x|}}{{w}},{{x}} {{#b as |x y|}}{{x}},{{y}}{{/b}} {{w}},{{x}} {{#c as |z|}}{{x}},{{z}}{{/c}}{{/a}}';
-
   compilesTo(t, 'A(W,X1 B(X2,Y) W,X1 C(X1,Z))', {});
 });
 
@@ -976,14 +927,14 @@ if (document.createElement('div').namespaceURI) {
 
 QUnit.module("HTML-based compiler (output, svg)", {
   setup: function() {
-    helpers = {};
+    hooks = merge({}, defaultHooks);
+    helpers = merge({}, defaultHelpers);
     partials = {};
-    hooks = hydrationHooks({lookupHelper : lookupHelper});
 
     env = {
+      dom: new DOMHelper(),
       hooks: hooks,
       helpers: helpers,
-      dom: new DOMHelper(),
       partials: partials
     };
   }
