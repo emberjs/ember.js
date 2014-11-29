@@ -144,7 +144,7 @@ test("elements can have empty attributes", function() {
   var t = '<img id="">';
   astEqual(t, root([
     element("img", [
-      attr("id", text(""), true)
+      attr("id", [ text("") ], true)
     ])
   ]));
 });
@@ -220,7 +220,7 @@ test("Handlebars embedded in an attribute (quoted)", function() {
   var t = 'some <div class="{{foo}}">content</div> done';
   astEqual(t, root([
     text("some "),
-    element("div", [ attr("class", [ sexpr([id('foo')]) ], true) ], [], [
+    element("div", [ attr("class", [ id('foo') ], true) ], [], [
       text("content")
     ]),
     text(" done")
@@ -231,7 +231,7 @@ test("Handlebars embedded in an attribute (unquoted)", function() {
   var t = 'some <div class={{foo}}>content</div> done';
   astEqual(t, root([
     text("some "),
-    element("div", [ attr("class", [ sexpr([id('foo')]) ], false) ], [], [
+    element("div", [ attr("class", [ id('foo') ], false) ], [], [
       text("content")
     ]),
     text(" done")
@@ -259,7 +259,7 @@ test("Handlebars embedded in an attribute with other content surrounding it", fu
     element("a", [
       attr("href", [
         string("http://"),
-        sexpr([id('link')]),
+        id('link'),
         string("/")
       ], true)
     ], [], [
@@ -281,7 +281,7 @@ test("A more complete embedding example", function() {
     text(' '),
     element("div", [
       attr("class", [
-        sexpr([id('foo')]),
+        id('foo'),
         string(' '),
         sexpr([id('bind-class'), id('isEnabled')], hash([['truthy', string('enabled')]]))
       ], true)
@@ -330,7 +330,7 @@ test("Involved block helper", function() {
 test("Node helpers", function() {
   var t = "<p {{action 'boom'}} class='bar'>Some content</p>";
   astEqual(t, root([
-    element('p', [ attr('class', text('bar'), true) ], [mustache([id('action'), string('boom')])], [
+    element('p', [ attr('class', [ text('bar') ], true) ], [mustache([id('action'), string('boom')])], [
       text('Some content')
     ])
   ]));
@@ -458,11 +458,11 @@ test("Components", function() {
   astEqual(t, root([
     text(''),
     component('x-foo', [
-      attr('a', text('b'), false),
-      attr('c', text('d'), true),
-      attr('e', [ sexpr([id('f')]) ], false),
-      attr('id', [ sexpr([id('bar')]) ], true),
-      attr('class', [ string('foo-'), sexpr([id('bar')]) ], true)
+      attr('a', [ text('b') ], false),
+      attr('c', [ text('d') ], true),
+      attr('e', [ id('f') ], false),
+      attr('id', [ id('bar') ], true),
+      attr('class', [ string('foo-'), id('bar') ], true)
     ], program([
       text(''),
       mustache('a'),

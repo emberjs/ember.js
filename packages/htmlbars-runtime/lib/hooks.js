@@ -18,13 +18,17 @@ export function element(domElement, helperName, context, params, hash, options, 
   }
 }
 
-export function attribute(domElement, attributeName, quoted, context, parts, options, env) {
+export function attribute(domElement, attributeName, quoted, context, parts, options) {
   var attrValue;
 
   if (quoted) {
-    attrValue = concat.call(this, parts, null, options, env);
+    attrValue = concat.call(context, parts, null, options);
   } else {
-    attrValue = parts[0];
+    if (options.paramTypes[0] === 'id') {
+      attrValue = get(context, parts[0]);
+    } else {
+      attrValue = parts[0];
+    }
   }
 
   if (attrValue === null) {
