@@ -2273,6 +2273,7 @@ View.views = {};
 // method.
 View.childViewsProperty = childViewsProperty;
 
+// Used by Handlebars helpers, view element attributes
 View.applyAttributeBindings = function(elem, name, value) {
   var type = typeOf(value);
 
