@@ -1,3 +1,7 @@
+export function get(context, name) {
+  return context[name];
+}
+
 export function merge(options, defaults) {
   for (var prop in defaults) {
     if (options.hasOwnProperty(prop)) { continue; }

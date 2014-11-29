@@ -40,6 +40,12 @@ HydrationOpcodeCompiler.prototype.startProgram = function(program, c, blankChild
   this.currentDOMChildIndex = -1;
   this.morphNum = 0;
 
+  var blockParams = program.blockParams || [];
+
+  for (var i = 0; i < blockParams.length; i++) {
+    this.opcode('blockParam', blockParams[i], i);
+  }
+
   if (blankChildTextNodes.length > 0){
     this.opcode( 'repairClonedNode',
                  blankChildTextNodes );
@@ -95,9 +101,8 @@ HydrationOpcodeCompiler.prototype.closeElement = function(element, pos, len, isS
 
 HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLength) {
   var sexpr = block.sexpr;
-  var program = block.program;
-
-  var blockParamsLength = program && program.blockParams ? program.blockParams.length : 0;
+  var program = block.program || {};
+  var blockParams = program.blockParams || [];
 
   var currentDOMChildIndex = this.currentDOMChildIndex;
   var start = (currentDOMChildIndex < 0) ? null : currentDOMChildIndex;
@@ -108,7 +113,7 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLe
 
   this.opcode('program', this.templateId++, block.inverse === null ? null : this.templateId++);
   processSexpr(this, sexpr);
-  this.opcode('helper', sexpr.params.length, morphNum, blockParamsLength);
+  this.opcode('helper', sexpr.params.length, morphNum, blockParams.length);
 };
 
 HydrationOpcodeCompiler.prototype.component = function(component, childIndex, childrenLength) {
