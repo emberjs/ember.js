@@ -111,7 +111,10 @@ var tokenHandlers = {
     var disableComponentGeneration = this.options.disableComponentGeneration === true;
 
     if (element.tag !== tag.tagName) {
-      throw new Error("Closing tag " + tag.tagName + " did not match last open tag " + element.tag);
+      throw new Error(
+        "Closing tag `" + tag.tagName + "` (on line " + tag.lastLine + ") " +
+        "did not match last open tag `" + element.tag + "`."
+      );
     }
 
     if (disableComponentGeneration || element.tag.indexOf("-") === -1) {
