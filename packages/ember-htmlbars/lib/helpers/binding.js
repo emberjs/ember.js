@@ -97,7 +97,7 @@ function bindHelper(params, hash, options, env) {
 
   var property = params[0];
 
-  if (options.paramTypes[0] === 'string') {
+  if (typeof property === 'string') {
     property = this.getStream(property);
   }
 

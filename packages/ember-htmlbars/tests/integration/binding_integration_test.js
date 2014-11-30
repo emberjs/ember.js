@@ -175,8 +175,6 @@ test('should accept bindings as a string or an Ember.Binding', function() {
 
   EmberHandlebars.registerHelper('boogie', function(id, options) {
     options.hash = options.hash || {};
-    options.hashTypes = options.hashTypes || {};
-
     options.hash.bindingTestBinding = Binding.oneWay('context.' + id);
     options.hash.stringTestBinding = id;
 

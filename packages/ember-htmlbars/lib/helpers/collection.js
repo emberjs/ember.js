@@ -168,7 +168,6 @@ export function collectionHelper(params, hash, options, env) {
     collectionClass = CollectionView;
   }
 
-  var hashTypes = options.hashTypes;
   var itemHash = {};
   var match;
 
@@ -192,8 +191,6 @@ export function collectionHelper(params, hash, options, env) {
 
   delete hash.itemViewClass;
   delete hash.itemView;
-  delete hashTypes.itemViewClass;
-  delete hashTypes.itemView;
 
   // Go through options passed to the {{collection}} helper and extract options
   // that configure item views instead of the collection itself.

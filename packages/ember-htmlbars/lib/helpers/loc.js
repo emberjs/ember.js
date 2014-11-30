@@ -1,5 +1,6 @@
 import Ember from 'ember-metal/core';
 import { loc } from 'ember-runtime/system/string';
+import { isStream } from "ember-metal/streams/utils";
 
 /**
 @module ember
@@ -39,14 +40,14 @@ import { loc } from 'ember-runtime/system/string';
   @see {Ember.String#loc}
 */
 export function locHelper(params, hash, options, env) {
-  Ember.assert('You cannot pass bindings to `loc` helper', function ifParamsContainBindings() {
+  Ember.assert('You cannot pass bindings to `loc` helper', (function ifParamsContainBindings() {
     for (var i = 0, l = params.length; i < l; i++) {
-      if (options.paramTypes[i] === 'id') {
+      if (isStream(params[i])) {
         return false;
       }
     }
     return true;
-  });
+  })());
 
   return loc.apply(this, params);
 }

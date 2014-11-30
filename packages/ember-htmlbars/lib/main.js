@@ -4,6 +4,7 @@ import component from "ember-htmlbars/hooks/component";
 import element from "ember-htmlbars/hooks/element";
 import subexpr from "ember-htmlbars/hooks/subexpr";
 import attribute from "ember-htmlbars/hooks/attribute";
+import get from "ember-htmlbars/hooks/get";
 import set from "ember-htmlbars/hooks/set";
 import { DOMHelper } from "morph";
 import template from "ember-htmlbars/system/template";
@@ -88,6 +89,7 @@ export var defaultEnv = {
   dom: new DOMHelper(),
 
   hooks: {
+    get: get,
     set: set,
     content: content,
     element: element,

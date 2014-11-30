@@ -188,7 +188,6 @@ import Ember from "ember-metal/core"; // Ember.assert
 export function inputHelper(params, hash, options, env) {
   Ember.assert('You can only pass attributes to the `input` helper, not arguments', params.length === 0);
 
-  var types = options.hashTypes;
   var onEvent = hash.on;
   var inputType;
 
@@ -196,10 +195,9 @@ export function inputHelper(params, hash, options, env) {
 
   if (inputType === 'checkbox') {
     delete hash.type;
-    delete types.type;
 
     Ember.assert("{{input type='checkbox'}} does not support setting `value=someBooleanValue`;" +
-                 " you must use `checked=someBooleanValue` instead.", options.hashTypes.value !== 'id');
+                 " you must use `checked=someBooleanValue` instead.", !hash.hasOwnProperty('value'));
 
     env.helpers.view.helperFunction.call(this, [Checkbox], hash, options, env);
   } else {

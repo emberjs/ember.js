@@ -14,7 +14,7 @@ import keys from "ember-metal/keys";
 import { isSimpleClick } from "ember-views/system/utils";
 import EmberComponent from "ember-views/views/component";
 import { routeArgs } from "ember-routing/utils";
-import { read } from "ember-metal/streams/utils";
+import { read, subscribe } from "ember-metal/streams/utils";
 
 var numberOfContextsAcceptedByHandler = function(handler, handlerInfos) {
   var req = 0;
@@ -219,14 +219,12 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     var scheduledParamsChanged = this._wrapAsScheduled(this._paramsChanged);
 
     if (this.linkTitle) {
-      this.linkTitle.subscribe(scheduledRerender, this);
+      var linkTitle = this.linkTitle.stream || this.linkTitle;
+      subscribe(linkTitle, scheduledRerender, this);
     }
 
     for (var i = 0; i < params.length; i++) {
-      var param = params[i];
-      if (param && param.isStream) {
-        param.subscribe(scheduledParamsChanged, this);
-      }
+      subscribe(params[i], scheduledParamsChanged, this);
     }
 
     var queryParamsObject = this.queryParamsObject;
@@ -237,10 +235,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
           continue;
         }
 
-        var value = values[k];
-        if (value && value.isStream) {
-          value.subscribe(scheduledParamsChanged, this);
-        }
+        subscribe(values[k], scheduledParamsChanged, this);
       }
     }
   },

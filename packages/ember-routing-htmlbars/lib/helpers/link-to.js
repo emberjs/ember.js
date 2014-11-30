@@ -5,7 +5,7 @@
 
 import Ember from "ember-metal/core"; // assert
 import { LinkView } from "ember-routing-views/views/link";
-import { read } from "ember-metal/streams/utils";
+import { read, isStream } from "ember-metal/streams/utils";
 import ControllerMixin from "ember-runtime/mixins/controller";
 
 // We need the HTMLBars view helper from ensure ember-htmlbars.
@@ -275,8 +275,6 @@ import 'ember-htmlbars';
   @see {Ember.LinkView}
 */
 function linkToHelper(params, hash, options, env) {
-  var hashTypes = options.hashTypes;
-  var paramTypes = options.paramTypes;
   var shouldEscape = !hash.unescaped;
   var queryParamsObject;
 
@@ -290,23 +288,14 @@ function linkToHelper(params, hash, options, env) {
 
   if (hash.disabledWhen) {
     hash.disabled = hash.disabledWhen;
-    hashTypes.disabled = hashTypes.disabledWhen;
-
     delete hash.disabledWhen;
-    delete hashTypes.disabledWhen;
   }
 
   if (!options.render) {
     var linkTitle = params.shift();
-    var linkTitleType = paramTypes.shift();
 
-    if (linkTitleType === 'id') {
-      hash.linkTitle = linkTitle = linkTitle;
-      // making the type `id` (which is what it is) results
-      // in the stream being unwrapped by the binding system
-      // so lets leave it something else, so our LinkView
-      // gets the actual stream
-      options.hashTypes.linkTitle = 'raw';
+    if (isStream(linkTitle)) {
+      hash.linkTitle = { stream: linkTitle };
     }
 
     options.render = function() {
@@ -322,7 +311,7 @@ function linkToHelper(params, hash, options, env) {
   }
 
   for (var i = 0; i < params.length; i++) {
-    if (paramTypes[i] === 'id') {
+    if (isStream(params[i])) {
       var lazyValue = params[i];
 
       if (!lazyValue._isController) {
