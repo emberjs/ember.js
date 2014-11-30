@@ -11,9 +11,9 @@ FragmentCompiler.prototype.compile = function(opcodes, options) {
   this.depth = -1;
   this.indent = (options && options.indent) || "";
 
-  this.source.push(this.indent+'function build(dom) {\n');
+  this.source.push('function build(dom) {\n');
   processOpcodes(this, opcodes);
-  this.source.push(this.indent+'}\n');
+  this.source.push(this.indent+'}');
 
   return this.source.join('');
 };
