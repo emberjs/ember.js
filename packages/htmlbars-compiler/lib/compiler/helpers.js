@@ -30,7 +30,7 @@ export function prepareHelper(stack, size) {
   var options = [];
 
   if (programId !== null) {
-    options.push('render:child' + programId);
+    options.push('template:child' + programId);
   }
 
   if (inverseId !== null) {

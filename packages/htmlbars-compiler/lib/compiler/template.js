@@ -39,7 +39,7 @@ TemplateCompiler.prototype.getChildTemplateVars = function(indent) {
   var vars = '';
   if (this.childTemplates) {
     for (var i = 0; i < this.childTemplates.length; i++) {
-      vars += indent + 'var child' + i + ' = ' + this.childTemplates[i] + '\n';
+      vars += indent + 'var child' + i + ' = ' + this.childTemplates[i] + ';\n';
     }
   }
   return vars;
@@ -64,7 +64,7 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
 
   var indent = repeat("  ", programDepth);
   var options = {
-    indent: indent + "  "
+    indent: indent + "    "
   };
 
   // function build(dom) { return fragment; }
@@ -89,18 +89,21 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
   var template =
     '(function() {\n' +
     this.getChildTemplateVars(indent + '  ') +
-    fragmentProgram +
-    indent+'  var cachedFragment;\n' +
-    indent+'  return function template(' + templateSignature + ') {\n' +
-    indent+'    var dom = env.dom;\n' +
-    this.getHydrationHooks(indent + '    ', this.hydrationCompiler.hooks) +
-    indent+'    dom.detectNamespace(contextualElement);\n' +
-    indent+'    if (cachedFragment === undefined) {\n' +
-    indent+'      cachedFragment = build(dom);\n' +
-    indent+'    }\n' +
-    indent+'    var fragment = dom.cloneNode(cachedFragment, true);\n' +
+    indent+'  return {\n' +
+    indent+'    isHTMLBars: true,\n' +
+    indent+'    cachedFragment: null,\n' +
+    indent+'    build: ' + fragmentProgram + ',\n' +
+    indent+'    render: function render(' + templateSignature + ') {\n' +
+    indent+'      var dom = env.dom;\n' +
+    this.getHydrationHooks(indent + '      ', this.hydrationCompiler.hooks) +
+    indent+'      dom.detectNamespace(contextualElement);\n' +
+    indent+'      if (this.cachedFragment === null) {\n' +
+    indent+'        this.cachedFragment = this.build(dom);\n' +
+    indent+'      }\n' +
+    indent+'      var fragment = dom.cloneNode(this.cachedFragment, true);\n' +
     hydrationProgram +
-    indent+'    return fragment;\n' +
+    indent+'      return fragment;\n' +
+    indent+'    }\n' +
     indent+'  };\n' +
     indent+'}())';
 
