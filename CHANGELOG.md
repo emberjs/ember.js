@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### 1.9.0-beta.4
+
+* Add deprecation for quoteless outlet names (`{{outlet main}}` should be `{{outlet 'main'}}`).
+* [BUGFIX] Update the `Ember.Map#forEach` callback to include the map being iterated over.
+* [BUGFIX] Ensure that tagless container views are rendered properly.
+* [PERF] `Ember.View#_outlets` is no longer observable.
+* [PERF] Avoid extending a view for every `{{each}}`.
+
 ### 1.9.0-beta.3
 
 * Ensure initializers have a `name` property (provides a helpful assertion if missing).
