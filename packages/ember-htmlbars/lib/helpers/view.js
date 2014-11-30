@@ -9,41 +9,41 @@ import EmberObject from "ember-runtime/system/object";
 import { get } from "ember-metal/property_get";
 import keys from "ember-metal/keys";
 import { IS_BINDING } from "ember-metal/mixin";
-import { read } from "ember-metal/streams/utils";
+import { read, isStream } from "ember-metal/streams/utils";
 import { readViewFactory } from "ember-views/streams/utils";
 import View from "ember-views/views/view";
 import SimpleStream from "ember-metal/streams/simple";
 
 function makeBindings(hash, options, view) {
-  var hashTypes = options.hashTypes;
-
   for (var prop in hash) {
-    var hashType = hashTypes[prop];
-    var valueOrStream = hash[prop];
+    var value = hash[prop];
 
-    // classBinding is processed separately
+    // Classes are processed separately
+    if (prop === 'class' && isStream(value)) {
+      hash.classBinding = value._label;
+      delete hash['class'];
+      continue;
+    }
+
     if (prop === 'classBinding') {
       continue;
     }
 
     if (IS_BINDING.test(prop)) {
-      if (hashType === 'id') {
-        // valueOrStream is a stream, streamifyArgs took care of it
+      if (isStream(value)) {
         Ember.warn("You're attempting to render a view by passing " +
                    prop + " " +
                    "to a view helper without a quoted value, " +
                    "but this syntax is ambiguous. You should either surround " +
                    prop + "'s value in quotes or remove `Binding` " +
                    "from " + prop + ".");
-      } else if (typeof valueOrStream === 'string') {
-        hash[prop] = view._getBindingForStream(valueOrStream);
+      } else if (typeof value === 'string') {
+        hash[prop] = view._getBindingForStream(value);
       }
     } else {
-      if (hashType === 'id' && prop !== 'id') {
-        hash[prop + 'Binding'] = valueOrStream;
-
+      if (isStream(value) && prop !== 'id') {
+        hash[prop + 'Binding'] = value;
         delete hash[prop];
-        delete hashTypes[prop];
       }
     }
   }

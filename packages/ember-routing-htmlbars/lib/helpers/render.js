@@ -11,6 +11,7 @@ import {
   default as generateController
 } from "ember-routing/system/generate_controller";
 import { ViewHelper } from "ember-htmlbars/helpers/view";
+import { isStream } from "ember-metal/streams/utils";
 
 /**
   Calling ``{{render}}`` from within a template will insert another
@@ -93,12 +94,12 @@ export function renderHelper(params, hash, options, env) {
 
   Ember.assert(
     "The first argument of {{render}} must be quoted, e.g. {{render \"sidebar\"}}.",
-    options.paramTypes[0] === 'string'
+    typeof name === 'string'
   );
 
   Ember.assert(
     "The second argument of {{render}} must be a path, e.g. {{render \"post\" post}}.",
-    params.length < 2 || options.paramTypes[1] === 'id'
+    params.length < 2 || isStream(params[1])
   );
 
 
