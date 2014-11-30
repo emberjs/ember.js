@@ -29,7 +29,7 @@ test("it works", function testFunction() {
 
   env.helpers['if'] = function(params, hash, options) {
     if (params[0]) {
-      return options.render(context, env, options.morph.contextualElement);
+      return options.template.render(context, env, options.morph.contextualElement);
     }
   };
 
@@ -38,7 +38,7 @@ test("it works", function testFunction() {
     firstName: 'Kris',
     lastName: 'Selden'
   };
-  var frag = template(context, env, document.body);
+  var frag = template.render(context, env, document.body);
   equalHTML(frag, '<div>Hello Kris Selden!</div>');
 });
 

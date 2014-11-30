@@ -78,7 +78,7 @@ function componentFallback(morph, tagName, context, hash, options, env) {
   for (var name in hash) {
     element.setAttribute(name, hash[name]);
   }
-  element.appendChild(options.render(context, env, morph.contextualElement));
+  element.appendChild(options.template.render(context, env, morph.contextualElement));
   return element;
 }
 

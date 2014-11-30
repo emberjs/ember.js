@@ -22,7 +22,7 @@ function registerPartial(name, html) {
 
 function compilesTo(html, expected, context) {
   var template = compile(html);
-  var fragment = template(context, env, document.body);
+  var fragment = template.render(context, env, document.body);
   equalTokens(fragment, expected === undefined ? html : expected);
   return fragment;
 }
@@ -73,35 +73,35 @@ QUnit.module("HTML-based compiler (output)", {
 
 test("Simple content produces a document fragment", function() {
   var template = compile("content");
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
   equalTokens(fragment, "content");
 });
 
 test("Simple elements are created", function() {
   var template = compile("<h1>hello!</h1><div>content</div>");
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
   equalTokens(fragment, "<h1>hello!</h1><div>content</div>");
 });
 
 test("Simple elements can have attributes", function() {
   var template = compile("<div class='foo' id='bar'>content</div>");
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
   equalTokens(fragment, '<div class="foo" id="bar">content</div>');
 });
 
 test("Simple elements can have an empty attribute", function() {
   var template = compile("<div class=''>content</div>");
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
   equalTokens(fragment, '<div class="">content</div>');
 });
 
 test("Null quoted attribute value calls toString on the value", function() {
   var template = compile('<input disabled="{{isDisabled}}">');
-  var fragment = template({isDisabled: null}, env);
+  var fragment = template.render({isDisabled: null}, env);
 
   equalTokens(fragment, '<input disabled="null">');
 });
@@ -109,7 +109,7 @@ test("Null quoted attribute value calls toString on the value", function() {
 test("Null unquoted attribute value removes that attribute", function() {
 
   var template = compile('<input disabled={{isDisabled}}>');
-  var fragment = template({isDisabled: null}, env);
+  var fragment = template.render({isDisabled: null}, env);
 
   equalTokens(fragment, '<input>');
 });
@@ -117,7 +117,7 @@ test("Null unquoted attribute value removes that attribute", function() {
 test("unquoted attribute string is just that", function() {
 
   var template = compile('<input value=funstuff>');
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
   equalTokens(fragment, '<input value="funstuff">');
 });
@@ -125,34 +125,34 @@ test("unquoted attribute string is just that", function() {
 test("unquoted attribute expression is string", function() {
 
   var template = compile('<input value={{funstuff}}>');
-  var fragment = template({funstuff: "oh my"}, env);
+  var fragment = template.render({funstuff: "oh my"}, env);
 
   equalTokens(fragment, '<input value="oh my">');
 });
 
 test("Simple elements can have arbitrary attributes", function() {
   var template = compile("<div data-some-data='foo'>content</div>");
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
   equalTokens(fragment, '<div data-some-data="foo">content</div>');
 });
 
 test("checked attribute and checked property are present after clone and hydrate", function() {
   var template = compile("<input checked=\"checked\">");
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
   ok(fragment.checked, 'input is checked');
   equalTokens(fragment, "<input checked='checked'>");
 });
 
 test("SVG element can have capitalized attributes", function() {
   var template = compile("<svg viewBox=\"0 0 0 0\"></svg>");
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
   equalTokens(fragment, '<svg viewBox=\"0 0 0 0\"></svg>');
 });
 
 function shouldBeVoid(tagName) {
   var html = "<" + tagName + " data-foo='bar'><p>hello</p>";
   var template = compile(html);
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
 
   var div = document.createElement("div");
@@ -177,7 +177,7 @@ test("Void elements are self-closing", function() {
 test("The compiler can handle nesting", function() {
   var html = '<div class="foo"><p><span id="bar" data-foo="bar">hi!</span></p></div> More content';
   var template = compile(html);
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
   equalTokens(fragment, html);
 });
@@ -244,7 +244,7 @@ test("The compiler can handle top-level unescaped HTML", function() {
 test("The compiler can handle top-level unescaped tr", function() {
   var template = compile('{{{html}}}');
   var context = { html: '<tr><td>Yo</td></tr>' };
-  var fragment = template(context, env, document.createElement('table'));
+  var fragment = template.render(context, env, document.createElement('table'));
 
   equal(
     fragment.childNodes[1].tagName, 'TR',
@@ -254,7 +254,7 @@ test("The compiler can handle top-level unescaped tr", function() {
 test("The compiler can handle top-level unescaped td inside tr contextualElement", function() {
   var template = compile('{{{html}}}');
   var context = { html: '<td>Yo</td>' };
-  var fragment = template(context, env, document.createElement('tr'));
+  var fragment = template.render(context, env, document.createElement('tr'));
 
   equal(
     fragment.childNodes[1].tagName, 'TD',
@@ -263,12 +263,12 @@ test("The compiler can handle top-level unescaped td inside tr contextualElement
 
 test("The compiler can handle unescaped tr in top of content", function() {
   registerHelper('test', function(params, hash, options, env) {
-    return options.render(this, env, options.morph.contextualElement);
+    return options.template.render(this, env, options.morph.contextualElement);
   });
 
   var template = compile('{{#test}}{{{html}}}{{/test}}');
   var context = { html: '<tr><td>Yo</td></tr>' };
-  var fragment = template(context, env, document.createElement('table'));
+  var fragment = template.render(context, env, document.createElement('table'));
 
   equal(
     fragment.childNodes[2].tagName, 'TR',
@@ -277,12 +277,12 @@ test("The compiler can handle unescaped tr in top of content", function() {
 
 test("The compiler can handle unescaped tr inside fragment table", function() {
   registerHelper('test', function(params, hash, options, env) {
-    return options.render(this, env, options.morph.contextualElement);
+    return options.template.render(this, env, options.morph.contextualElement);
   });
 
   var template = compile('<table>{{#test}}{{{html}}}{{/test}}</table>');
   var context = { html: '<tr><td>Yo</td></tr>' };
-  var fragment = template(context, env, document.createElement('div'));
+  var fragment = template.render(context, env, document.createElement('div'));
 
   equal(
     fragment.childNodes[1].tagName, 'TR',
@@ -411,9 +411,9 @@ test("Helpers receive escaping information", function() {
   });
 
   registerHelper('testing-escaped', function(params, hash, options, env) {
-    if (options.render) {
+    if (options.template) {
       equal(options.morph.escaped, true);
-      return options.render({}, env, options.morph.contextualElement);
+      return options.template.render({}, env, options.morph.contextualElement);
     } else if (params.length === 0 && emptyHash(hash)) {
       //ambiguous mustache
       equal(options.morph.escaped, true);
@@ -619,7 +619,7 @@ test("Attribute runs can contain helpers", function() {
 test("A simple block helper can return the default document fragment", function() {
 
   hooks.content = function(morph, path, context, params, hash, options, env) {
-    morph.update(options.render(context, env));
+    morph.update(options.template.render(context, env));
   };
 
   compilesTo('{{#testing}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
@@ -627,7 +627,7 @@ test("A simple block helper can return the default document fragment", function(
 
 test("A simple block helper can return text", function() {
   hooks.content = function(morph, path, context, params, hash, options, env) {
-    morph.update(options.render(context, env));
+    morph.update(options.template.render(context, env));
   };
 
   compilesTo('{{#testing}}test{{else}}not shown{{/testing}}', 'test');
@@ -635,7 +635,7 @@ test("A simple block helper can return text", function() {
 
 test("A block helper can have an else block", function() {
   hooks.content = function(morph, path, context, params, hash, options, env) {
-    morph.update(options.inverse(context, env));
+    morph.update(options.inverse.render(context, env));
   };
 
   compilesTo('{{#testing}}Nope{{else}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
@@ -645,7 +645,7 @@ test("A block helper can pass a context to be used in the child", function() {
   var originalContent = hooks.content;
   hooks.content = function(morph, path, context, params, hash, options, env) {
     if (path === 'testing') {
-      morph.update(options.render({ title: 'Rails is omakase' }, env));
+      morph.update(options.template.render({ title: 'Rails is omakase' }, env));
     } else {
       originalContent.apply(this, arguments);
     }
@@ -658,7 +658,7 @@ test("Block helpers receive hash arguments", function() {
   hooks.content = function(morph, path, context, params, hash, options, env) {
     if (hash.truth) {
       options.hooks = this;
-      morph.update(options.render(context, env));
+      morph.update(options.template.render(context, env));
     }
   };
 
@@ -680,7 +680,7 @@ test("Data-bound block helpers", function() {
       var value = context[path];
 
       if (value) {
-        frag = options.render(context);
+        frag = options.template.render(context);
       } else {
         frag = document.createDocumentFragment();
       }
@@ -800,7 +800,7 @@ test("Node helpers can be used for attribute bindings", function() {
 
 test('Components - Called as helpers', function () {
   registerHelper('x-append', function(params, hash, options, env) {
-    var fragment = options.render(this, env, options.morph.contextualElement);
+    var fragment = options.template.render(this, env, options.morph.contextualElement);
     fragment.appendChild(document.createTextNode(hash.text));
     return fragment;
   });
@@ -836,7 +836,7 @@ test('Repaired text nodes are ensured in the right place', function () {
 
 test("Simple elements can have dashed attributes", function() {
   var template = compile("<div aria-label='foo'>content</div>");
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
   equalTokens(fragment, '<div aria-label="foo">content</div>');
 });
@@ -845,21 +845,21 @@ test("Block params", function() {
   registerHelper('a', function(params, hash, options, env) {
     var context = Object.create(this);
     var span = document.createElement('span');
-    span.appendChild(options.render(context, env, document.body, ['W', 'X1']));
+    span.appendChild(options.template.render(context, env, document.body, ['W', 'X1']));
     return 'A(' + span.innerHTML + ')';
   });
   registerHelper('b', function(params, hash, options, env) {
     var context = Object.create(this);
     var span = document.createElement('span');
-    span.appendChild(options.render(context, env, document.body, ['X2', 'Y']));
+    span.appendChild(options.template.render(context, env, document.body, ['X2', 'Y']));
     return 'B(' + span.innerHTML + ')';
   });
   registerHelper('c', function(params, hash, options, env) {
     var context = Object.create(this);
     var span = document.createElement('span');
-    span.appendChild(options.render(context, env, document.body, ['Z']));
+    span.appendChild(options.template.render(context, env, document.body, ['Z']));
     return 'C(' + span.innerHTML + ')';
-    // return "C(" + options.render() + ")";
+    // return "C(" + options.template.render() + ")";
   });
   var t = '{{#a as |w x|}}{{w}},{{x}} {{#b as |x y|}}{{x}},{{y}}{{/b}} {{w}},{{x}} {{#c as |z|}}{{x}},{{z}}{{/c}}{{/a}}';
   compilesTo(t, 'A(W,X1 B(X2,Y) W,X1 C(X1,Z))', {});
@@ -875,10 +875,10 @@ test("Block params - Helper should know how many block params it was called with
     equal(options.blockParams, this.count, 'Helpers should recieve the correct number of block params in options.blockParams.');
   });
 
-  compile('{{#without-block-params}}{{/without-block-params}}')({}, env, document.body);
-  compile('{{#with-block-params as |x|}}{{/with-block-params}}')({ count: 1 }, env, document.body);
-  compile('{{#with-block-params as |x y|}}{{/with-block-params}}')({ count: 2 }, env, document.body);
-  compile('{{#with-block-params as |x y z|}}{{/with-block-params}}')({ count: 3 }, env, document.body);
+  compile('{{#without-block-params}}{{/without-block-params}}').render({}, env, document.body);
+  compile('{{#with-block-params as |x|}}{{/with-block-params}}').render({ count: 1 }, env, document.body);
+  compile('{{#with-block-params as |x y|}}{{/with-block-params}}').render({ count: 2 }, env, document.body);
+  compile('{{#with-block-params as |x y z|}}{{/with-block-params}}').render({ count: 3 }, env, document.body);
 });
 
 test("A helpful error message is provided for mismatched start/end tags", function() {
@@ -907,7 +907,7 @@ QUnit.module("HTML-based compiler (output, svg)", {
 test("The compiler can handle namespaced elements", function() {
   var html = '<svg><path stroke="black" d="M 0 0 L 100 100"></path></svg>';
   var template = compile(html);
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
   equal(fragment.namespaceURI, svgNamespace, "creates the svg element with a namespace");
   equalTokens(fragment, html);
@@ -916,7 +916,7 @@ test("The compiler can handle namespaced elements", function() {
 test("The compiler sets namespaces on nested namespaced elements", function() {
   var html = '<svg><path stroke="black" d="M 0 0 L 100 100"></path></svg>';
   var template = compile(html);
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
   equal( fragment.childNodes[0].namespaceURI, svgNamespace,
          "creates the path element with a namespace" );
@@ -926,7 +926,7 @@ test("The compiler sets namespaces on nested namespaced elements", function() {
 test("The compiler sets a namespace on an HTML integration point", function() {
   var html = '<svg><foreignObject>Hi</foreignObject></svg>';
   var template = compile(html);
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
   equal( fragment.namespaceURI, svgNamespace,
          "creates the path element with a namespace" );
@@ -938,7 +938,7 @@ test("The compiler sets a namespace on an HTML integration point", function() {
 test("The compiler does not set a namespace on an element inside an HTML integration point", function() {
   var html = '<svg><foreignObject><div></div></foreignObject></svg>';
   var template = compile(html);
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
   equal( fragment.childNodes[0].childNodes[0].namespaceURI, xhtmlNamespace,
          "creates the path element with a namespace" );
@@ -948,7 +948,7 @@ test("The compiler does not set a namespace on an element inside an HTML integra
 test("The compiler pops back to the correct namespace", function() {
   var html = '<svg></svg><svg></svg><div></div>';
   var template = compile(html);
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
   equal( fragment.childNodes[0].namespaceURI, svgNamespace,
          "creates the path element with a namespace" );
@@ -962,7 +962,7 @@ test("The compiler pops back to the correct namespace", function() {
 test("The compiler preserves capitalization of tags", function() {
   var html = '<svg><linearGradient id="gradient"></linearGradient></svg>';
   var template = compile(html);
-  var fragment = template({}, env);
+  var fragment = template.render({}, env);
 
   equalTokens(fragment, html);
 });
@@ -970,7 +970,7 @@ test("The compiler preserves capitalization of tags", function() {
 test("svg can live with hydration", function() {
   var template = compile('<svg></svg>{{name}}');
 
-  var fragment = template({ name: 'Milly' }, env, document.body);
+  var fragment = template.render({ name: 'Milly' }, env, document.body);
   equal(
     fragment.childNodes[0].namespaceURI, svgNamespace,
     "svg namespace inside a block is present" );
@@ -979,7 +979,7 @@ test("svg can live with hydration", function() {
 test("svg can take some hydration", function() {
   var template = compile('<div><svg>{{name}}</svg></div>');
 
-  var fragment = template({ name: 'Milly' }, env);
+  var fragment = template.render({ name: 'Milly' }, env);
   equal(
     fragment.childNodes[0].namespaceURI, svgNamespace,
     "svg namespace inside a block is present" );
@@ -989,7 +989,7 @@ test("svg can take some hydration", function() {
 
 test("root svg can take some hydration", function() {
   var template = compile('<svg>{{name}}</svg>');
-  var fragment = template({ name: 'Milly' }, env);
+  var fragment = template.render({ name: 'Milly' }, env);
   equal(
     fragment.namespaceURI, svgNamespace,
     "svg namespace inside a block is present" );
@@ -1001,20 +1001,20 @@ test("Block helper allows interior namespace", function() {
   var isTrue = true;
   hooks.content = function(morph, path, context, params, hash, options, env) {
     if (isTrue) {
-      morph.update(options.render(context, env, morph.contextualElement));
+      morph.update(options.template.render(context, env, morph.contextualElement));
     } else {
-     morph.update(options.inverse(context, env, morph.contextualElement));
+     morph.update(options.inverse.render(context, env, morph.contextualElement));
     }
   };
   var template = compile('{{#testing}}<svg></svg>{{else}}<div><svg></svg></div>{{/testing}}');
 
-  var fragment = template({ isTrue: true }, env, document.body);
+  var fragment = template.render({ isTrue: true }, env, document.body);
   equal(
     fragment.childNodes[1].namespaceURI, svgNamespace,
     "svg namespace inside a block is present" );
 
   isTrue = false;
-  fragment = template({ isTrue: false }, env, document.body);
+  fragment = template.render({ isTrue: false }, env, document.body);
   equal(
     fragment.childNodes[1].namespaceURI, xhtmlNamespace,
     "inverse block path has a normal namespace");
@@ -1025,12 +1025,12 @@ test("Block helper allows interior namespace", function() {
 
 test("Block helper allows namespace to bleed through", function() {
   hooks.content = function(morph, path, context, params, hash, options, env) {
-    morph.update(options.render(context, env, morph.contextualElement));
+    morph.update(options.template.render(context, env, morph.contextualElement));
   };
 
   var template = compile('<div><svg>{{#testing}}<circle />{{/testing}}</svg></div>');
 
-  var fragment = template({ isTrue: true }, env);
+  var fragment = template.render({ isTrue: true }, env);
   equal( fragment.childNodes[0].namespaceURI, svgNamespace,
          "svg tag has an svg namespace" );
   equal( fragment.childNodes[0].childNodes[0].namespaceURI, svgNamespace,
@@ -1039,12 +1039,12 @@ test("Block helper allows namespace to bleed through", function() {
 
 test("Block helper with root svg allows namespace to bleed through", function() {
   hooks.content = function(morph, path, context, params, hash, options, env) {
-    morph.update(options.render(context, env, morph.contextualElement));
+    morph.update(options.template.render(context, env, morph.contextualElement));
   };
 
   var template = compile('<svg>{{#testing}}<circle />{{/testing}}</svg>');
 
-  var fragment = template({ isTrue: true }, env);
+  var fragment = template.render({ isTrue: true }, env);
   equal( fragment.namespaceURI, svgNamespace,
          "svg tag has an svg namespace" );
   equal( fragment.childNodes[0].namespaceURI, svgNamespace,
@@ -1053,12 +1053,12 @@ test("Block helper with root svg allows namespace to bleed through", function() 
 
 test("Block helper with root foreignObject allows namespace to bleed through", function() {
   hooks.content = function(morph, path, context, params, hash, options, env) {
-    morph.update(options.render(context, env, morph.contextualElement));
+    morph.update(options.template.render(context, env, morph.contextualElement));
   };
 
   var template = compile('<foreignObject>{{#testing}}<div></div>{{/testing}}</foreignObject>');
 
-  var fragment = template({ isTrue: true }, env, document.createElementNS(svgNamespace, 'svg'));
+  var fragment = template.render({ isTrue: true }, env, document.createElementNS(svgNamespace, 'svg'));
   equal( fragment.namespaceURI, svgNamespace,
          "foreignObject tag has an svg namespace" );
   equal( fragment.childNodes[0].namespaceURI, xhtmlNamespace,
