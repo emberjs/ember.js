@@ -61,12 +61,10 @@ prototype.blockParam = function(name, index) {
 };
 
 prototype.id = function(parts) {
+  this.hooks.get = true;
+  var path = parts.join('.');
   this.stack.push(string('id'));
-  if (parts) {
-    this.stack.push(string(parts.join('.')));
-  } else {
-    this.stack.push(null);
-  }
+  this.stack.push('get(context, ' + string(path) + ', env)');
 };
 
 prototype.literal = function(literal) {
@@ -115,7 +113,7 @@ prototype.attribute = function(quoted, name, size, elementNum) {
 prototype.sexpr = function(size) {
   this.hooks.subexpr = true;
   var prepared = prepareHelper(this.stack, size);
-  this.stack.push('subexpr(' + prepared.name + ', context, ' + prepared.params + ', ' + prepared.hash + ',' + hash(prepared.options) + ', env)');
+  this.stack.push('subexpr(' + prepared.name + ', context, ' + prepared.params + ', ' + prepared.hash + ', ' + hash(prepared.options) + ', env)');
 };
 
 prototype.string = function(str) {

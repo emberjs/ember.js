@@ -4,6 +4,7 @@ import { FragmentCompiler } from "../htmlbars-compiler/compiler/fragment";
 import { HydrationCompiler } from "../htmlbars-compiler/compiler/hydration";
 import { DOMHelper } from "../morph";
 import { preprocess } from "../htmlbars-compiler/parser";
+import { get } from "../htmlbars-runtime/hooks";
 import { equalHTML } from "../htmlbars-test-helpers";
 
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
@@ -81,10 +82,11 @@ test('hydrates a fragment with morph mustaches', function () {
   var hydrate = hydratorFor(ast);
 
   var contentResolves = [];
-  var context = {};
+  var context = { blah: "BLAH", baz: "BAZ" };
   var env = {
     dom: new DOMHelper(),
     hooks: {
+      get: get,
       content: function(morph, path, context, params, hash, options) {
         contentResolves.push({
           morph: morph,
@@ -107,10 +109,8 @@ test('hydrates a fragment with morph mustaches', function () {
   equal(foo.morph.parent(), fragment);
   equal(foo.context, context);
   equal(foo.path, 'foo');
-  deepEqual(foo.params, ["foo",3,"blah"]);
-  deepEqual(foo.hash, {ack:"syn",bar:"baz"});
-  deepEqual(foo.options.paramTypes, ["string","number","id"]);
-  deepEqual(foo.options.hashTypes, {ack:"string",bar:"id"});
+  deepEqual(foo.params, ["foo",3,"BLAH"]);
+  deepEqual(foo.hash, {ack:"syn",bar:"BAZ"});
 
   var baz = contentResolves[1];
   equal(baz.morph.escaped, true);
@@ -144,6 +144,7 @@ test('test auto insertion of text nodes for needed edges a fragment with morph m
   var env = {
     dom: fakeMorphDOM,
     hooks: {
+      get: get,
       content: function(morph, path, context, params, options) {
         contentResolves.push({
           morph: morph,

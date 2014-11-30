@@ -131,7 +131,7 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
   };
 
   this.opcode('program', this.templateId++, null);
-  this.ID(id);
+  processName(this, id);
   processHash(this, buildHashFromAttributes(component.attributes));
   this.opcode('component', morphNum);
 };
@@ -185,7 +185,7 @@ HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, chil
     processSexpr(this, mustache);
     this.opcode('helper', mustache.params.length, morphNum);
   } else {
-    this.ID(mustache.id);
+    processName(this, mustache.id);
     this.opcode('ambiguous', morphNum);
   }
 };
@@ -225,9 +225,9 @@ function processSexpr(compiler, sexpr) {
 
 function processName(compiler, id) {
   if (id) {
-    compiler.ID(id);
+    compiler.opcode('string', id.string);
   } else {
-    compiler.opcode('id', null);
+    compiler.opcode('string', '');
   }
 }
 
