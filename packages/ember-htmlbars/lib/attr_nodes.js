@@ -8,8 +8,8 @@ import UnquotedAttrNode from "ember-htmlbars/attr_nodes/unquoted";
 import UnquotedNonpropertyAttrNode from "ember-htmlbars/attr_nodes/unquoted_nonproperty";
 import QuotedClassAttrNode from "ember-htmlbars/attr_nodes/quoted_class";
 import { create as o_create } from "ember-metal/platform";
+import { normalizeProperty } from "ember-htmlbars/attr_nodes/utils";
 
-var cannotSetPropertyRegex = /[^a-zA-Z]/;
 var svgNamespaceURI = 'http://www.w3.org/2000/svg';
 
 var unquotedAttrNodeTypes = o_create(null);
@@ -31,10 +31,13 @@ export default function attrNodeTypeFor(attrName, element, quoted) {
     if (!result) {
       if (element.namespaceURI === svgNamespaceURI) {
         result = UnquotedNonpropertyAttrNode;
-      } else if (cannotSetPropertyRegex.test(attrName)) {
-        result = UnquotedNonpropertyAttrNode;
       } else {
-        result = UnquotedAttrNode;
+        var normalized = normalizeProperty(element, attrName);
+        if (normalized) {
+          result = UnquotedAttrNode;
+        } else {
+          result = UnquotedNonpropertyAttrNode;
+        }
       }
       unquotedAttrNodeTypes[attrName] = result;
     }
