@@ -9,7 +9,8 @@ import { appendView, destroyView } from "ember-views/tests/view_helpers";
 var view, originalSetAttribute, setAttributeCalls;
 var dom = defaultEnv.dom;
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+
   QUnit.module("ember-htmlbars: data attribute", {
     teardown: function(){
       destroyView(view);

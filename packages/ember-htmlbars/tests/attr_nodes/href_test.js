@@ -9,7 +9,7 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 QUnit.module("ember-htmlbars: href attribute", {
   teardown: function(){
