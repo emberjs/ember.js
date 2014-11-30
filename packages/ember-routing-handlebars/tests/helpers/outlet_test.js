@@ -136,7 +136,7 @@ test("outlet should support connectOutlet in slots in prerender state", function
 });
 
 test("outlet should support an optional name", function() {
-  var template = "<h1>HI</h1>{{outlet mainView}}";
+  var template = "<h1>HI</h1>{{outlet 'mainView'}}";
   view = EmberView.create({
     template: EmberHandlebars.compile(template)
   });

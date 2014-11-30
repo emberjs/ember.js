@@ -421,7 +421,7 @@ test('defining templateName allows other templates to be rendered', function() {
     "<div class='alert-box'>Invader!</div>"
   );
   Ember.TEMPLATES.the_real_home_template = Ember.Handlebars.compile(
-    "<p>THIS IS THE REAL HOME</p>{{outlet alert}}"
+    "<p>THIS IS THE REAL HOME</p>{{outlet 'alert'}}"
   );
 
   App.HomeController = Ember.Controller.extend();
@@ -2165,7 +2165,7 @@ test("The rootURL is passed properly to the location implementation", function()
 
 
 test("Only use route rendered into main outlet for default into property on child", function() {
-  Ember.TEMPLATES.application = compile("{{outlet menu}}{{outlet}}");
+  Ember.TEMPLATES.application = compile("{{outlet 'menu'}}{{outlet}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
   Ember.TEMPLATES['posts/index'] = compile("postsIndex");
   Ember.TEMPLATES['posts/menu'] = compile("postsMenu");
@@ -2476,7 +2476,7 @@ test("Promises encountered on app load put app into loading state until resolved
 });
 
 test("Route should tear down multiple outlets", function() {
-  Ember.TEMPLATES.application = compile("{{outlet menu}}{{outlet}}{{outlet footer}}");
+  Ember.TEMPLATES.application = compile("{{outlet 'menu'}}{{outlet}}{{outlet 'footer'}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
   Ember.TEMPLATES.users = compile("users");
   Ember.TEMPLATES['posts/index'] = compile("postsIndex");
@@ -2539,7 +2539,7 @@ test("Route should tear down multiple outlets", function() {
 
 
 test("Route supports clearing outlet explicitly", function() {
-  Ember.TEMPLATES.application = compile("{{outlet}}{{outlet modal}}");
+  Ember.TEMPLATES.application = compile("{{outlet}}{{outlet 'modal'}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
   Ember.TEMPLATES.users = compile("users");
   Ember.TEMPLATES['posts/index'] = compile("postsIndex {{outlet}}");
@@ -2622,7 +2622,7 @@ test("Route supports clearing outlet explicitly", function() {
 });
 
 test("Route supports clearing outlet using string parameter", function() {
-  Ember.TEMPLATES.application = compile("{{outlet}}{{outlet modal}}");
+  Ember.TEMPLATES.application = compile("{{outlet}}{{outlet 'modal'}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
   Ember.TEMPLATES.users = compile("users");
   Ember.TEMPLATES['posts/index'] = compile("postsIndex {{outlet}}");
@@ -2680,7 +2680,7 @@ test("Route silently fails when cleaning an outlet from an inactive view", funct
   expect(1); // handleURL
 
   Ember.TEMPLATES.application = compile("{{outlet}}");
-  Ember.TEMPLATES.posts = compile("{{outlet modal}}");
+  Ember.TEMPLATES.posts = compile("{{outlet 'modal'}}");
   Ember.TEMPLATES.modal = compile("A Yo.");
 
   Router.map(function() {
