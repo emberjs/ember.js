@@ -7,7 +7,6 @@ export function prepareHelper(stack, size) {
       hashTypes = [],
       keyName,
       name,
-      type,
       i;
 
   var hashSize = stack.pop();
@@ -24,14 +23,11 @@ export function prepareHelper(stack, size) {
   }
 
   name = stack.pop();
-  type = stack.pop();
 
   var programId = stack.pop();
   var inverseId = stack.pop();
 
   var options = [];
-  options.push('paramTypes:' + array(paramTypes));
-  options.push('hashTypes:' + hash(hashTypes));
 
   if (programId !== null) {
     options.push('render:child' + programId);
