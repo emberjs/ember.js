@@ -9,7 +9,92 @@ import { Mixin } from "ember-metal/mixin";
 import TargetActionSupport from "ember-runtime/mixins/target_action_support";
 
 /**
-  Shared mixin used by `Ember.TextField` and `Ember.TextArea`.
+  `TextSupport` is a shared mixin used by both `Ember.TextField` and
+  `Ember.TextArea`. `TextSupport` adds a number of methods that allow you to
+  specify a controller action to invoke when a certain event is fired on your
+  text field or textarea. The specifed controller action would get the current
+  value of the field passed in as the only argument unless the value of
+  the field is empty. In that case, the instance of the field itself is passed
+  in as the only argument.
+
+  Let's use the pressing of the escape key as an example. If you wanted to
+  invoke a controller action when a user presses the escape key while on your
+  field, you would use the `escape-press` attribute on your field like so:
+
+  ```handlebars
+    {{! application.hbs}}
+
+    {{input escape-press='alertUser'}}
+  ```
+
+  ```javascript
+      App = Ember.Application.create();
+
+      App.ApplicationController = Ember.Controller.extend({
+        actions: {
+          alertUser: function ( currentValue ) {
+            alert( 'escape pressed, current value: ' + currentValue );
+          }
+        }
+      });
+  ```
+
+  The following chart is a visual representation of what takes place when the
+  escape key is pressed in this scenario:
+
+  The Template
+  +---------------------------+
+  |                           |
+  | escape-press='alertUser'  |
+  |                           |          TextSupport Mixin
+  +----+----------------------+          +-------------------------------+
+       |                                 | cancel method                 |
+       |      escape button pressed      |                               |
+       +-------------------------------> | checks for the `escape-press` |
+                                         | attribute and pulls out the   |
+       +-------------------------------+ | `alertUser` value             |
+       |     action name 'alertUser'     +-------------------------------+
+       |     sent to controller
+       v
+  Controller
+  +------------------------------------------ +
+  |                                           |
+  |  actions: {                               |
+  |     alertUser: function( currentValue ){  |
+  |       alert( 'the esc key was pressed!' ) |
+  |     }                                     |
+  |  }                                        |
+  |                                           |
+  +-------------------------------------------+
+
+  Here are the events that we currently support along with the name of the
+  attribute you would need to use on your field. To reiterate, you would use the
+  attribute name like so:
+
+  ```handlebars
+    {{input attribute-name='controllerAction'}}
+  ```
+
+  +--------------------+----------------+
+  |                    |                |
+  | event              | attribute name |
+  +--------------------+----------------+
+  | new line inserted  | insert-newline |
+  |                    |                |
+  | enter key pressed  | insert-newline |
+  |                    |                |
+  | cancel key pressed | escape-press   |
+  |                    |                |
+  | focusin            | focus-in       |
+  |                    |                |
+  | focusout           | focus-out      |
+  |                    |                |
+  | keypress           | key-press      |
+  |                    |                |
+  | keyup              | key-up         |
+  |                    |                |
+  | keydown            | key-down       |
+  +--------------------+----------------+
 
   @class TextSupport
   @namespace Ember
@@ -102,11 +187,19 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     set(this, 'value', this.$().val());
   },
 
-  /**
-    Called when the user inserts a new line.
+  change: function(event) {
+    this._elementValueDidChange(event);
+  },
 
-    Called by the `Ember.TextSupport` mixin on keyUp if keycode matches 13.
-    Uses sendAction to send the `enter` action.
+  /**
+    Allows you to specify a controller action to invoke when either the `enter`
+    key is pressed or, in the case of the field being a textarea, when a newline
+    is inserted. To use this method, give your field an `insert-newline`
+    attribute. The value of that attribute should be the name of the action
+    in your controller that you wish to invoke.
+
+    For an example on how to use the `insert-newline` attribute, please
+    reference the example near the top of this file.
 
     @method insertNewline
     @param {Event} event
@@ -117,10 +210,13 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   },
 
   /**
-    Called when the user hits escape.
+    Allows you to specify a controller action to invoke when the escape button
+    is pressed. To use this method, give your field an `escape-press`
+    attribute. The value of that attribute should be the name of the action
+    in your controller that you wish to invoke.
 
-    Called by the `Ember.TextSupport` mixin on keyUp if keycode matches 27.
-    Uses sendAction to send the `escape-press` action.
+    For an example on how to use the `escape-press` attribute, please reference
+    the example near the top of this file.
 
     @method cancel
     @param {Event} event
@@ -129,14 +225,14 @@ var TextSupport = Mixin.create(TargetActionSupport, {
     sendAction('escape-press', this, event);
   },
 
-  change: function(event) {
-    this._elementValueDidChange(event);
-  },
-
   /**
-    Called when the text area is focused.
+    Allows you to specify a controller action to invoke when a field receives
+    focus. To use this method, give your field a `focus-in` attribute. The value
+    of that attribute should be the name of the action in your controller
+    that you wish to invoke.
 
-    Uses sendAction to send the `focus-in` action.
+    For an example on how to use the `focus-in` attribute, please reference the
+    example near the top of this file.
 
     @method focusIn
     @param {Event} event
@@ -146,9 +242,13 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   },
 
   /**
-    Called when the text area is blurred.
+    Allows you to specify a controller action to invoke when a field loses
+    focus. To use this method, give your field a `focus-out` attribute. The value
+    of that attribute should be the name of the action in your controller
+    that you wish to invoke.
 
-    Uses sendAction to send the `focus-out` action.
+    For an example on how to use the `focus-out` attribute, please reference the
+    example near the top of this file.
 
     @method focusOut
     @param {Event} event
@@ -159,10 +259,13 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   },
 
   /**
-    Called when the user presses a key. Enabled by setting
-    the `onEvent` property to `keyPress`.
+    Allows you to specify a controller action to invoke when a key is pressed.
+    To use this method, give your field a `key-press` attribute. The value of
+    that attribute should be the name of the action in your controller you
+    that wish to invoke.
 
-    Uses sendAction to send the `key-press` action.
+    For an example on how to use the `key-press` attribute, please reference the
+    example near the top of this file.
 
     @method keyPress
     @param {Event} event
@@ -172,10 +275,13 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   },
 
   /**
-    Called when the browser triggers a `keyup` event on the element.
+    Allows you to specify a controller action to invoke when a key-up event is
+    fired. To use this method, give your field a `key-up` attribute. The value
+    of that attribute should be the name of the action in your controller
+    that you wish to invoke.
 
-    Uses sendAction to send the `key-up` action passing the current value
-    and event as parameters.
+    For an example on how to use the `key-up` attribute, please reference the
+    example near the top of this file.
 
     @method keyUp
     @param {Event} event
@@ -187,11 +293,13 @@ var TextSupport = Mixin.create(TargetActionSupport, {
   },
 
   /**
-    Called when the browser triggers a `keydown` event on the element.
+    Allows you to specify a controller action to invoke when a key-down event is
+    fired. To use this method, give your field a `key-down` attribute. The value
+    of that attribute should be the name of the action in your controller that
+    you wish to invoke.
 
-    Uses sendAction to send the `key-down` action passing the current value
-    and event as parameters. Note that generally in key-down the value is unchanged
-    (as the key pressing has not completed yet).
+    For an example on how to use the `key-down` attribute, please reference the
+    example near the top of this file.
 
     @method keyDown
     @param {Event} event
