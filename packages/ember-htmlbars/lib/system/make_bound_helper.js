@@ -61,7 +61,7 @@ export default function makeBoundHelper(fn) {
   function helperFunc(params, hash, options, env) {
     var view = this;
 
-    Ember.assert("makeBoundHelper generated helpers do not support use with blocks", !options.render);
+    Ember.assert("makeBoundHelper generated helpers do not support use with blocks", !options.template);
 
     for (var prop in hash) {
       if (IS_BINDING.test(prop)) {

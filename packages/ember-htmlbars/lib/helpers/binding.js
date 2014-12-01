@@ -44,7 +44,7 @@ function bind(property, hash, options, env, preserveContext, shouldDisplay, valu
     preserveContext: preserveContext,
     shouldDisplayFunc: shouldDisplay,
     valueNormalizerFunc: valueNormalizer,
-    displayTemplate: options.render,
+    displayTemplate: options.template,
     inverseTemplate: options.inverse,
     lazyValue: lazyValue,
     previousContext: get(this, 'context'),
@@ -101,7 +101,7 @@ function bindHelper(params, hash, options, env) {
     property = this.getStream(property);
   }
 
-  if (options.render) {
+  if (options.template) {
     options.helperName = 'bind';
     Ember.deprecate("The block form of bind, {{#bind foo}}{{/bind}}, has been deprecated and will be removed.");
     bind.call(this, property, hash, options, env, false, exists);

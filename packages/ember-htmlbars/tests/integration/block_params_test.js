@@ -13,7 +13,7 @@ function aliasHelper(params, hash, options, env) {
   this.appendChild(View, {
     isVirtual: true,
     _morph: options.morph,
-    template: options.render,
+    template: options.template,
     _blockArguments: params
   });
 }

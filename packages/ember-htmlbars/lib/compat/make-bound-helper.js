@@ -52,7 +52,7 @@ export default function makeBoundHelper(fn, compatMode) {
     var view = this;
     var numParams = params.length;
 
-    Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !options.render);
+    Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !options.template);
 
     for (var prop in hash) {
       if (IS_BINDING.test(prop)) {

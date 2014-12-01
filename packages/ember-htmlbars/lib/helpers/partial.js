@@ -54,7 +54,7 @@ export function partialHelper(params, hash, options, env) {
   var name = params[0];
 
   if (name && name.isStream) {
-    options.render = createPartialTemplate(name);
+    options.template = createPartialTemplate(name);
     bind.call(this, name, hash, options, env, true, exists);
   } else {
     return renderPartial(name, this, env, options.morph.contextualElement);
@@ -84,11 +84,14 @@ function lookupPartial(view, templateName) {
 
 function renderPartial(name, view, env, contextualElement) {
   var template = lookupPartial(view, name);
-  return template(view, env, contextualElement);
+  return template.render(view, env, contextualElement);
 }
 
 function createPartialTemplate(nameStream) {
-  return function(view, env, contextualElement) {
-    return renderPartial(nameStream.value(), view, env, contextualElement);
+  return {
+    isHTMLBars: true,
+    render: function(view, env, contextualElement) {
+      return renderPartial(nameStream.value(), view, env, contextualElement);
+    }
   };
 }

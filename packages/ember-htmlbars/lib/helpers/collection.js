@@ -149,8 +149,8 @@ export function collectionHelper(params, hash, options, env) {
 
   Ember.assert("You cannot pass more than one argument to the collection helper", params.length <= 1);
 
-  var fn        = options.render,
-      data      = env.data,
+  var data      = env.data,
+      template  = options.template,
       inverse   = options.inverse,
       view      = data.view,
       // This should be deterministic, and should probably come from a
@@ -213,9 +213,9 @@ export function collectionHelper(params, hash, options, env) {
     }
   }
 
-  if (fn) {
-    itemHash.template = fn;
-    delete options.render;
+  if (template) {
+    itemHash.template = template;
+    delete options.template;
   }
 
   var emptyViewClass;

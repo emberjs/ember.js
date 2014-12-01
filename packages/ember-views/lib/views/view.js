@@ -806,11 +806,11 @@ var View = CoreView.extend({
     if (template) {
       var useHTMLBars = false;
       if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-        useHTMLBars = template.length >= 3;
+        useHTMLBars = template.isHTMLBars;
       }
 
       if (useHTMLBars) {
-        return template(this, options, morph.contextualElement);
+        return template.render(this, options, morph.contextualElement);
       } else {
         return template(context, options);
       }
@@ -1087,20 +1087,21 @@ var View = CoreView.extend({
       // is the view's controller by default. A hash of data is also passed that provides
       // the template with access to the view and render buffer.
 
-      Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
       // The template should write directly to the render buffer instead
       // of returning a string.
       var options = { data: data };
       var useHTMLBars = false;
 
       if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-        useHTMLBars = template.length >= 3;
+        useHTMLBars = template.isHTMLBars;
       }
 
       if (useHTMLBars) {
+        Ember.assert('template must be an object. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'object');
         var env = Ember.merge(buildHTMLBarsDefaultEnv(), options);
-        output = template(this, env, buffer.innerContextualElement(), this._blockArguments);
+        output = template.render(this, env, buffer.innerContextualElement(), this._blockArguments);
       } else {
+        Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
         output = template(context, options);
       }
 
