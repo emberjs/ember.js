@@ -222,6 +222,32 @@ testBoth('modifying a cacheable property should update cache', function(get, set
   equal(count, 2, 'should not invoke again');
 });
 
+test('calling cacheable() on a computed property raises a deprecation', function(){
+  var cp = new ComputedProperty(function(){});
+  expectDeprecation(function(){
+    cp.cacheable();
+  }, 'ComputedProperty.cacheable() is deprecated. All computed properties are cacheable by default.');
+});
+
+test('passing cacheable in a the options to the CP constructor raises a deprecation', function(){
+  expectDeprecation(function(){
+    new ComputedProperty(function(){}, { cacheable: true });
+  }, "Passing opts.cacheable to the CP constructor is deprecated. Invoke `volatile()` on the CP instead.");
+});
+
+test('calling readOnly() on a computed property with arguments raises a deprecation', function(){
+  var cp = new ComputedProperty(function(){});
+  expectDeprecation(function(){
+    cp.readOnly(true);
+  }, 'Passing arguments to ComputedProperty.readOnly() is deprecated.');
+});
+
+test('passing readOnly in a the options to the CP constructor raises a deprecation', function(){
+  expectDeprecation(function(){
+    new ComputedProperty(function(){}, { readOnly: false });
+  }, "Passing opts.readOnly to the CP constructor is deprecated. All CPs are writable by default. Yo can invoke `readOnly()` on the CP to change this.");
+});
+
 testBoth('inherited property should not pick up cache', function(get, set) {
   var objB = create(obj);
 
