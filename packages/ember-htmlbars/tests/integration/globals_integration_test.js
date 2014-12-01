@@ -1,8 +1,8 @@
-import run from 'ember-metal/run_loop';
 import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
 import EmberHandlebars from 'ember-handlebars-compiler';
 import htmlbarsCompile from 'ember-htmlbars/system/compile';
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var compile, view, originalLookup, lookup;
 
@@ -14,23 +14,15 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
 var originalLookup = Ember.lookup;
 
-function appendView(view) {
-  run(view, 'appendTo', '#qunit-fixture');
-}
-
 QUnit.module('ember-htmlbars: Integration with Globals', {
   setup: function() {
     Ember.lookup = lookup = {};
   },
 
   teardown: function() {
-    run(function() {
-      if (view) {
-        view.destroy();
-      }
+    destroyView(view);
 
-      view = null;
-    });
+    view = null;
 
     Ember.lookup = lookup = originalLookup;
   }

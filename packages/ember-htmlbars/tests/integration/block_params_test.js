@@ -5,12 +5,9 @@ import View from "ember-views/views/view";
 import compile from "ember-htmlbars/system/compile";
 import helpers from "ember-htmlbars/helpers";
 import { registerHelper } from "ember-htmlbars/helpers";
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var container, view;
-
-function appendView(view) {
-  run(function() { view.appendTo('#qunit-fixture'); });
-}
 
 function aliasHelper(params, hash, options, env) {
   this.appendChild(View, {
@@ -37,13 +34,9 @@ QUnit.module("ember-htmlbars: block params", {
   teardown: function() {
     delete helpers.alias;
 
-    run(container, 'destroy');
+    destroyView(container);
 
-    if (view) {
-      run(function() {
-        view.destroy();
-      });
-    }
+    destroyView(view);
   }
 });
 

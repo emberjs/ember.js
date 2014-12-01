@@ -6,6 +6,7 @@ var trim = jQuery.trim;
 import Container from "ember-runtime/system/container";
 import EmberHandlebars from "ember-handlebars-compiler";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var MyApp, lookup, view, container;
 var originalLookup = Ember.lookup;
@@ -25,11 +26,7 @@ QUnit.module("Support for {{partial}} helper", {
     container.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
-    run(function() {
-      if (view) {
-        view.destroy();
-      }
-    });
+    destroyView(view);
     Ember.lookup = originalLookup;
   }
 });
@@ -42,9 +39,7 @@ test("should render other templates registered with the container", function() {
     template: compile('This {{partial "subTemplateFromContainer"}} is pretty great.')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(trim(view.$().text()), "This sub-template is pretty great.");
 });
@@ -57,9 +52,7 @@ test("should render other slash-separated templates registered with the containe
     template: compile('This {{partial "child/subTemplateFromContainer"}} is pretty great.')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(trim(view.$().text()), "This sub-template is pretty great.");
 });
@@ -76,9 +69,7 @@ test("should use the current view's context", function() {
     lastName: 'Selden'
   }));
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(trim(view.$().text()), "Who is Kris Selden?");
 });
@@ -93,9 +84,7 @@ test("Quoteless parameters passed to {{template}} perform a bound property looku
     partialName: 'subTemplate'
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(trim(view.$().text()), "This sub-template is pretty great.");
 

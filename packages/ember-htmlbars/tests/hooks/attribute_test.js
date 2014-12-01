@@ -4,20 +4,15 @@ import EmberObject from "ember-runtime/system/object";
 import compile from "ember-htmlbars/system/compile";
 import { equalInnerHTML } from "htmlbars-test-helpers";
 import { defaultEnv } from "ember-htmlbars";
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var view, originalSetAttribute, setAttributeCalls;
 var dom = defaultEnv.dom;
 
-function appendView(view) {
-  run(function() { view.appendTo('#qunit-fixture'); });
-}
-
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   QUnit.module("ember-htmlbars: attribute", {
     teardown: function(){
-      if (view) {
-        run(view, view.destroy);
-      }
+      destroyView(view);
     }
   });
 
@@ -155,7 +150,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', "precond - attribute is output");
 
     run(function() {
-      run.schedule('render', function() { 
+      run.schedule('render', function() {
         equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', "precond - attribute is not updated sync");
       });
 
@@ -184,9 +179,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     teardown: function() {
       dom.setAttribute = originalSetAttribute;
 
-      if (view) {
-        run(view, view.destroy);
-      }
+      destroyView(view);
     }
   });
 

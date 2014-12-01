@@ -8,6 +8,7 @@ import { A } from "ember-runtime/system/native_array";
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 import EmberHandlebars from "ember-htmlbars/compat";
 
@@ -19,10 +20,6 @@ helper = EmberHandlebars.helper;
 var view;
 
 var originalLookup = Ember.lookup;
-
-function appendView() {
-  run(function() { view.appendTo('#qunit-fixture'); });
-}
 
 function registerRepeatHelper() {
   expectDeprecationInHTMLBars();
@@ -47,11 +44,7 @@ QUnit.module("ember-htmlbars: makeBoundHelper", {
   setup: function() {
   },
   teardown: function() {
-    run(function() {
-      if (view) {
-        view.destroy();
-      }
-    });
+    destroyView(view);
     Ember.lookup = originalLookup;
   }
 });
@@ -83,7 +76,7 @@ test("should update bound helpers when properties change", function() {
     template: compile("{{capitalize name}}")
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), 'BROGRAMMER', "helper output is correct");
 
@@ -110,7 +103,7 @@ test("should allow for computed properties with dependencies", function() {
     template: compile("{{capitalizeName person}}")
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), 'BROGRAMMER', "helper output is correct");
 
@@ -129,7 +122,7 @@ test("bound helpers should support options", function() {
     template: compile("{{repeat text count=3}}")
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), 'ababab', "helper output is correct");
 });
@@ -146,7 +139,7 @@ test("bound helpers should support keywords", function() {
     template: compile("{{capitalize view.text}}")
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), 'AB', "helper output is correct");
 });
@@ -165,7 +158,7 @@ test("bound helpers should support global paths [DEPRECATED]", function() {
   });
 
   expectDeprecation(function() {
-    appendView();
+    appendView(view);
   }, /Global lookup of Text from a Handlebars template is deprecated/);
 
   equal(view.$().text(), 'AB', "helper output is correct");
@@ -183,7 +176,7 @@ test("bound helper should support this keyword", function() {
     template: compile("{{capitalize this}}")
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), 'AB', "helper output is correct");
 });
@@ -196,7 +189,7 @@ test("bound helpers should support bound options", function() {
     template: compile('{{repeat text countBinding="numRepeats"}}')
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), 'ababab', "helper output is correct");
 
@@ -222,7 +215,7 @@ test("bound helpers should support unquoted values as bound options", function()
     template: compile('{{repeat text count=numRepeats}}')
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), 'ababab', "helper output is correct");
 
@@ -253,7 +246,7 @@ test("bound helpers should support multiple bound properties", function() {
     template: compile('{{combine thing1 thing2}}')
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), 'ZOIDBERG', "helper output is correct");
 
@@ -298,7 +291,7 @@ test("bound helpers should expose property names in options.data.properties", fu
     template: compile('{{echo thing1 thing2 thing3.foo}}')
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), 'thing1 thing2 thing3.foo', "helper output is correct");
 });
@@ -315,7 +308,7 @@ test("bound helpers can be invoked with zero args", function() {
     template: compile('{{troll}} and {{troll text="bork"}}')
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), 'TROLOLOL and bork', "helper output is correct");
 });
@@ -329,7 +322,7 @@ test("bound helpers should not be invoked with blocks", function() {
   });
 
   expectAssertion(function() {
-    appendView();
+    appendView(view);
   }, /registerBoundHelper-generated helpers do not support use with Handlebars blocks/i);
 });
 
@@ -384,7 +377,7 @@ test("shouldn't treat raw numbers as bound paths", function() {
     template: compile("{{sum aNumber 1}} {{sum 0 aNumber}} {{sum 5 6}}")
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), '2 1 11', "helper output is correct");
 
@@ -407,7 +400,7 @@ test("shouldn't treat quoted strings as bound paths", function() {
     template: compile("{{combine word 'loo'}} {{combine '' word}} {{combine 'will' \"didi\"}}")
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), 'jerkwaterloo jerkwater willdidi', "helper output is correct");
 
@@ -434,7 +427,7 @@ test("bound helpers can handle nulls in array (with primitives) [DEPRECATED]", f
   });
 
   expectDeprecation(function() {
-    appendView();
+    appendView(view);
   }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), '|NOPE 0|NOPE |NOPE false|NOPE OMG|GMO |NOPE 0|NOPE |NOPE false|NOPE OMG|GMO ', "helper output is correct");
@@ -462,7 +455,7 @@ test("bound helpers can handle nulls in array (with objects)", function() {
   });
 
   expectDeprecation(function() {
-    appendView();
+    appendView(view);
   }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), '|NOPE 5|5 |NOPE 5|5 ', "helper output is correct");
@@ -484,7 +477,7 @@ test("bound helpers can handle `this` keyword when it's a non-object", function(
     template: compile("{{shout this}}")
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), 'alex!', "helper output is correct");
 
@@ -513,7 +506,7 @@ test("should have correct argument types", function() {
     template: compile('{{getType null}}, {{getType undefProp}}, {{getType "string"}}, {{getType 1}}, {{getType}}')
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), 'undefined, undefined, string, number, object', "helper output is correct");
 });

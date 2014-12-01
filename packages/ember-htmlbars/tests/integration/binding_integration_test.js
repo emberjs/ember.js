@@ -9,6 +9,7 @@ import htmlbarsCompile from 'ember-htmlbars/system/compile';
 import EmberHandlebars from "ember-handlebars";
 import { ViewHelper as handlebarsViewHelper } from 'ember-handlebars/helpers/view';
 import { ViewHelper as htmlbarsViewHelper } from 'ember-htmlbars/helpers/view';
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 import { set } from 'ember-metal/property_set';
 
@@ -22,10 +23,6 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   compile = EmberHandlebars.compile;
 }
 
-var appendView = function(view) {
-  run(view, 'appendTo', '#qunit-fixture');
-};
-
 QUnit.module('ember-htmlbars: binding integration', {
   setup: function() {
     originalLookup = Ember.lookup;
@@ -38,9 +35,7 @@ QUnit.module('ember-htmlbars: binding integration', {
     Ember.lookup = originalLookup;
 
     run(function() {
-      if (view) {
-        view.destroy();
-      }
+      destroyView(view);
       view = null;
     });
 
@@ -165,7 +160,7 @@ test("should update bound values after view's parent is removed and then re-appe
   });
   equal(trim(view.$().text()), "bar");
 
-  run(parentView, 'destroy');
+  destroyView(parentView);
 });
 
 test('should accept bindings as a string or an Ember.Binding', function() {

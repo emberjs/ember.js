@@ -1,4 +1,3 @@
-import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
@@ -7,6 +6,7 @@ var trim = jQuery.trim;
 import Container from "ember-runtime/system/container";
 import EmberHandlebars from "ember-handlebars-compiler";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var MyApp, lookup, view, container;
 var originalLookup = Ember.lookup;
@@ -26,11 +26,7 @@ QUnit.module("Support for {{template}} helper", {
     container.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
-    run(function() {
-      if (view) {
-        view.destroy();
-      }
-    });
+    destroyView(view);
     Ember.lookup = originalLookup;
   }
 });
@@ -45,9 +41,7 @@ test("should render other templates via the container (DEPRECATED)", function() 
 
   expectDeprecation(/The `template` helper has been deprecated in favor of the `partial` helper./);
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(trim(view.$().text()), "This sub-template is pretty great.");
 });
@@ -66,9 +60,7 @@ test("should use the current view's context (DEPRECATED)", function() {
 
   expectDeprecation(/The `template` helper has been deprecated in favor of the `partial` helper./);
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(trim(view.$().text()), "Who is Kris Selden?");
 });

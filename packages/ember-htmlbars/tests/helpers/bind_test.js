@@ -9,10 +9,7 @@ import ObjectController from "ember-runtime/controllers/object_controller";
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-
-function appendView(view) {
-  run(view, 'appendTo', '#qunit-fixture');
-}
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var view, container;
 
@@ -105,7 +102,7 @@ QUnit.module("ember-htmlbars: {{bind}} with a container, block forms", {
     container.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
-    Ember.run(function(){
+    run(function(){
       if (container) {
         container.destroy();
       }
@@ -214,9 +211,7 @@ test("Handlebars templates update properties if a content object changes", funct
 
   equal(view.$('#price').text(), "$5", "should update price field when price property is changed");
 
-  run(function() {
-    view.destroy();
-  });
+  destroyView(view);
 });
 
 test("Template updates correctly if a path is passed to the bind helper", function() {

@@ -1,10 +1,10 @@
 import EmberView from "ember-views/views/view";
 import Container from 'container/container';
-import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import EmberHandlebars from 'ember-handlebars-compiler';
 import htmlbarsCompile from "ember-htmlbars/system/compile";
 import ComponentLookup from 'ember-views/component_lookup';
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -26,11 +26,8 @@ QUnit.module('component - invocation', {
   },
 
   teardown: function() {
-    run(container, 'destroy');
-
-    if (view) {
-      run(view, 'destroy');
-    }
+    destroyView(container);
+    destroyView(view);
   }
 });
 
@@ -44,7 +41,7 @@ test('non-block without properties', function() {
     container: container
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   equal(jQuery('#qunit-fixture').text(), 'In layout');
 });
@@ -59,7 +56,7 @@ test('block without properties', function() {
     container: container
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   equal(jQuery('#qunit-fixture').text(), 'In layout - In template');
 });
@@ -74,7 +71,7 @@ test('non-block with properties', function() {
     container: container
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here');
 });
@@ -89,7 +86,7 @@ test('block with properties', function() {
     container: container
   }).create();
 
-  run(view, 'appendTo', '#qunit-fixture');
+  appendView(view);
 
   equal(jQuery('#qunit-fixture').text(), 'In layout - someProp: something here - In template');
 });
