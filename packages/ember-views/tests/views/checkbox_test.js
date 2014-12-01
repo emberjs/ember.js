@@ -139,3 +139,19 @@ QUnit.test('checking the checkbox updates the value', function() {
   equal(!!checkboxComponent.$().prop('checked'), false, 'after clicking a checkbox, the checked property changed');
   equal(get(checkboxComponent, 'checked'), false, 'changing the checkbox causes the view\'s value to get updated');
 });
+
+test("checking the checkbox updates indeterminate", function() {
+  checkboxView = Checkbox.create({ checked: false, indeterminate: true });
+  append();
+
+  equal(get(checkboxView, 'indeterminate'), true, "precond - initially starts with a indeterminate value");
+  equal(!!checkboxView.$().prop('indeterminate'), true, "precond - the initial indeterminate property is true");
+
+  // IE fires 'change' event on blur.
+  checkboxView.$()[0].focus();
+  checkboxView.$()[0].click();
+  checkboxView.$()[0].blur();
+
+  equal(!!checkboxView.$().prop('indeterminate'), false, "after clicking a checkbox, the indeterminate property changed");
+  equal(get(checkboxView, 'indeterminate'), false, "changing the checkbox causes the view's value to get updated");
+});
