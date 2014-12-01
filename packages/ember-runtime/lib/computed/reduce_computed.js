@@ -544,7 +544,7 @@ function ReduceComputedProperty(options) {
   };
 
 
-  this.func = function (propertyName) {
+  this._getter = function (propertyName) {
     Ember.assert('Computed reduce values require at least one dependent key', cp._dependentKeys);
 
     recompute.call(this, propertyName);

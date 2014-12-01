@@ -616,6 +616,56 @@ testBoth('chained dependent keys should evaluate computed properties lazily', fu
   equal(count, 0, 'b should not run');
 });
 
+// ..........................................................
+// improved-cp-syntax
+//
+
+if (Ember.FEATURES.isEnabled("new-computed-syntax")) {
+  QUnit.module('computed - improved cp syntax');
+
+  test('setter and getters are passed using an object', function() {
+    var testObj = Ember.Object.extend({
+      a: '1',
+      b: '2',
+      aInt: computed('a', {
+        get: function(keyName) {
+          equal(keyName, 'aInt', 'getter receives the keyName');
+          return parseInt(this.get('a'));
+        },
+        set: function(keyName, value, oldValue) {
+          equal(keyName, 'aInt', 'setter receives the keyName');
+          equal(value, 123, 'setter receives the new value');
+          equal(oldValue, 1, 'setter receives the old value');
+          this.set('a', ""+value); // side effect
+          return parseInt(this.get('a'));
+        }
+      })
+    }).create();
+
+    ok(testObj.get('aInt') === 1, 'getter works');
+    testObj.set('aInt', 123);
+    ok(testObj.get('a') === '123', 'setter works');
+    ok(testObj.get('aInt') === 123, 'cp has been updated too');
+  });
+
+  test('setter can be omited', function() {
+    var testObj = Ember.Object.extend({
+      a: '1',
+      b: '2',
+      aInt: computed('a', {
+        get: function(keyName) {
+          equal(keyName, 'aInt', 'getter receives the keyName');
+          return parseInt(this.get('a'));
+        }
+      })
+    }).create();
+
+    ok(testObj.get('aInt') === 1, 'getter works');
+    ok(testObj.get('a') === '1');
+    testObj.set('aInt', '123');
+    ok(testObj.get('aInt') === '123', 'cp has been updated too');
+  });
+}
 
 // ..........................................................
 // BUGS

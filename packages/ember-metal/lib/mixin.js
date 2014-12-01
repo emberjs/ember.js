@@ -151,7 +151,14 @@ function giveDescriptorSuper(meta, key, property, values, descs) {
   // to clone the computed property so that other mixins do not receive
   // the wrapped version.
   property = o_create(property);
-  property.func = wrap(property.func, superProperty.func);
+  property._getter = wrap(property._getter, superProperty._getter);
+  if (superProperty._setter) {
+    if (property._setter) {
+      property._setter = wrap(property._setter, superProperty._setter);
+    } else {
+      property._setter = superProperty._setter;
+    }
+  }
 
   return property;
 }
@@ -250,7 +257,7 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
 
     // Wrap descriptor function to implement
     // __nextSuper() if needed
-    if (value.func) {
+    if (value._getter) {
       value = giveDescriptorSuper(meta, key, value, values, descs);
     }
 

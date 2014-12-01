@@ -14,7 +14,7 @@ function ArrayComputedProperty() {
 
   ReduceComputedProperty.apply(this, arguments);
 
-  this.func = (function(reduceFunc) {
+  this._getter = (function(reduceFunc) {
     return function (propertyName) {
       if (!cp._hasInstanceMeta(this, propertyName)) {
         // When we recompute an array computed property, we need already
@@ -29,7 +29,7 @@ function ArrayComputedProperty() {
 
       return reduceFunc.apply(this, arguments);
     };
-  })(this.func);
+  })(this._getter);
 
   return this;
 }
