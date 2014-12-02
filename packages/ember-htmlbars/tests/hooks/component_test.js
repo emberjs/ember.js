@@ -1,8 +1,8 @@
 import ComponentLookup from "ember-views/component_lookup";
 import Container from "container";
 import EmberView from "ember-views/views/view";
-import run from "ember-metal/run_loop";
 import compile from "ember-htmlbars/system/compile";
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var view, container;
 
@@ -13,10 +13,6 @@ function generateContainer() {
   container.register('component-lookup:main', ComponentLookup);
 
   return container;
-}
-
-function appendView(view) {
-  run(function() { view.appendTo('#qunit-fixture'); });
 }
 
 // this is working around a bug in defeatureify that prevents nested flags
@@ -34,9 +30,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
       },
 
       teardown: function(){
-        if (view) {
-          run(view, view.destroy);
-        }
+        destroyView(view);
       }
     });
 

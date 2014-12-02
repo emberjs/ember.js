@@ -7,16 +7,13 @@ import EmberObject from 'ember-runtime/system/object';
 import _MetamorphView from 'ember-views/views/metamorph_view';
 import EmberHandlebars from 'ember-handlebars';
 import htmlbarsCompile from 'ember-htmlbars/system/compile';
+import { appendView } from "ember-views/tests/view_helpers";
 
 import { set } from 'ember-metal/property_set';
 
 var view, container;
 
 var trim = jQuery.trim;
-
-var appendView = function(view) {
-  run(view, 'appendTo', '#qunit-fixture');
-};
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {

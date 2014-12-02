@@ -12,6 +12,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import jQuery from "ember-views/system/jquery";
 import { computed } from "ember-metal/computed";
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var trim = jQuery.trim;
 
@@ -78,9 +79,7 @@ test("Collection views that specify an example view class have their children be
     template: compile('{{#collection view.exampleViewCollection}}OHAI{{/collection}}')
   });
 
-  run(function() {
-    view.append();
-  });
+  appendView(view);
 
   ok(firstGrandchild(view).isCustom, "uses the example view class");
 });
@@ -124,9 +123,7 @@ test("itemViewClass works in the #collection helper with a property", function()
     template: compile('{{#collection view.exampleCollectionView content=view.exampleController itemViewClass=view.possibleItemView}}beta{{/collection}}')
   });
 
-  run(function() {
-    view.append();
-  });
+  appendView(view);
 
   ok(firstGrandchild(view).isAlsoCustom, "uses the example view class specified in the #collection helper");
 });
@@ -145,9 +142,7 @@ test("itemViewClass works in the #collection via container", function() {
     template: compile('{{#collection view.exampleCollectionView content=view.exampleController itemViewClass="example-item"}}beta{{/collection}}')
   });
 
-  run(function() {
-    view.append();
-  });
+  appendView(view);
 
   ok(firstGrandchild(view).isAlsoCustom, "uses the example view class specified in the #collection helper");
 });
@@ -164,9 +159,7 @@ test("passing a block to the collection helper sets it as the template for examp
     template: compile('{{#collection view.collectionTestView}} <label></label> {{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('label').length, 3, 'one label element is created for each content item');
 });
@@ -187,9 +180,7 @@ test("collection helper should try to use container to resolve view", function()
     template: compile('{{#collection "collectionTest"}} <label></label> {{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('label').length, 3, 'one label element is created for each content item');
 });
@@ -203,9 +194,7 @@ test("collection helper should accept relative paths", function() {
     })
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('label').length, 3, 'one label element is created for each content item');
 });
@@ -229,9 +218,7 @@ test("empty views should be removed when content is added to the collection (reg
     template: compile('{{#collection view.listView content=view.listController tagName="table"}} <td>{{view.content.title}}</td> {{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('tr').length, 1, 'Make sure the empty view is there (regression)');
 
@@ -263,9 +250,7 @@ test("should be able to specify which class should be used for the empty view", 
     template: compile('{{collection emptyViewClass="empty-view"}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$().text(), 'This is an empty view', "Empty view should be rendered.");
 
@@ -285,9 +270,7 @@ test("if no content is passed, and no 'else' is specified, nothing is rendered",
     template: compile('{{#collection view.collectionTestView}} <aside></aside> {{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('li').length, 0, 'if no "else" is specified, nothing is rendered');
 });
@@ -303,9 +286,7 @@ test("if no content is passed, and 'else' is specified, the else block is render
     template: compile('{{#collection view.collectionTestView}} <aside></aside> {{ else }} <del></del> {{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('li:has(del)').length, 1, 'the else block is rendered');
 });
@@ -321,9 +302,7 @@ test("a block passed to a collection helper defaults to the content property of 
     template: compile('{{#collection view.collectionTestView}} <label>{{view.content}}</label> {{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('li:nth-child(1) label').length, 1);
   equal(view.$('li:nth-child(1) label').text(), 'foo');
@@ -344,9 +323,7 @@ test("a block passed to a collection helper defaults to the view", function() {
     template: compile('{{#collection view.collectionTestView}} <label>{{view.content}}</label> {{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   // Preconds
   equal(view.$('li:nth-child(1) label').length, 1);
@@ -373,9 +350,7 @@ test("should include an id attribute if id is set in the options hash", function
     template: compile('{{#collection view.collectionTestView id="baz"}}foo{{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('ul#baz').length, 1, "adds an id attribute");
 });
@@ -390,9 +365,7 @@ test("should give its item views the class specified by itemClass", function() {
     template: compile('{{#collection view.itemClassTestCollectionView itemClass="baz"}}foo{{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('ul li.baz').length, 3, "adds class attribute");
 });
@@ -409,9 +382,7 @@ test("should give its item views the classBinding specified by itemClassBinding"
     template: compile('{{#collection view.itemClassBindingTestCollectionView itemClassBinding="view.isBar"}}foo{{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('ul li.is-bar').length, 3, "adds class on initial rendering");
 
@@ -437,9 +408,7 @@ test("should give its item views the property specified by itemPropertyBinding",
     template: compile('{{#collection contentBinding="view.content" tagName="ul" itemViewClass="item-property-binding-test-item-view" itemPropertyBinding="view.baz" preserveContext=false}}{{view.property}}{{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('ul li').length, 3, "adds 3 itemView");
 
@@ -461,9 +430,7 @@ test("should unsubscribe stream bindings", function() {
     template: compile('{{#collection contentBinding="view.content" itemPropertyBinding="view.baz"}}{{view.property}}{{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   var barStreamBinding = view._streamBindings['view.baz'];
 
@@ -489,9 +456,7 @@ test("should work inside a bound {{#if}}", function() {
     shouldDisplay: true
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('ul li').length, 3, "renders collection when conditional is true");
 
@@ -517,7 +482,7 @@ test("should pass content as context when using {{#each}} helper [DEPRECATED]", 
   });
 
   expectDeprecation(function() {
-    run(view, 'appendTo', '#qunit-fixture');
+    appendView(view);
   }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), "Mac OS X 10.7: Lion Mac OS X 10.6: Snow Leopard Mac OS X 10.5: Leopard ", "prints each item in sequence");
@@ -534,9 +499,7 @@ test("should re-render when the content object changes", function() {
     template: compile('{{#collection view.rerenderTestView}}{{view.content}}{{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   run(function() {
     set(firstChild(view), 'content', A(['bing', 'bat', 'bang']));
@@ -548,7 +511,6 @@ test("should re-render when the content object changes", function() {
 
   equal(view.$('li').length, 1, "rerenders with correct number of items");
   equal(trim(view.$('li:eq(0)').text()), "ramalamadingdong");
-
 });
 
 test("select tagName on collection helper automatically sets child tagName to option", function() {
@@ -561,12 +523,9 @@ test("select tagName on collection helper automatically sets child tagName to op
     template: compile('{{#collection view.rerenderTestView tagName="select"}}{{view.content}}{{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('option').length, 1, "renders the correct child tag name");
-
 });
 
 test("tagName works in the #collection helper", function() {
@@ -579,9 +538,7 @@ test("tagName works in the #collection helper", function() {
     template: compile('{{#collection view.rerenderTestView tagName="ol"}}{{view.content}}{{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('ol').length, 1, "renders the correct tag name");
   equal(view.$('li').length, 2, "rerenders with correct number of items");
@@ -612,9 +569,7 @@ test("should render nested collections", function() {
     template: compile('{{#collection "outer-list" class="outer"}}{{content}}{{#collection "inner-list" class="inner"}}{{content}}{{/collection}}{{/collection}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('ul.outer > li').length, 1, "renders the outer list with correct number of items");
   equal(view.$('ul.inner').length, 1, "the inner list exsits");
@@ -655,18 +610,14 @@ test("should render multiple, bound nested collections (#68)", function() {
     });
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('ul.outer > li').length, 2, "renders the outer list with correct number of items");
   equal(view.$('ul.inner').length, 2, "renders the correct number of inner lists");
   equal(view.$('ul.inner:first > li').length, 3, "renders the first inner list with correct number of items");
   equal(view.$('ul.inner:last > li').length, 3, "renders the second list with correct number of items");
 
-  run(function() {
-    view.destroy();
-  });
+  destroyView(view);
 });
 
 test("should allow view objects to be swapped out without throwing an error (#78)", function() {
@@ -692,9 +643,7 @@ test("should allow view objects to be swapped out without throwing an error (#78
     view = ReportingView.create();
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$().text(), "Loading", "renders the loading text when the dataset is not ready");
 
@@ -715,9 +664,7 @@ test("should allow view objects to be swapped out without throwing an error (#78
 
   equal(view.$().text(), "Loading", "renders the loading text when the second dataset is not ready");
 
-  run(function() {
-    view.destroy();
-  });
+  destroyView(view);
 });
 
 test("context should be content", function() {
@@ -743,11 +690,9 @@ test("context should be content", function() {
     template: compile('{{collection contentBinding="items" itemViewClass="an-item"}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$().text(), "Greetings DaveGreetings MaryGreetings Sara");
 
-  run(view, 'destroy');
+  destroyView(view);
 });

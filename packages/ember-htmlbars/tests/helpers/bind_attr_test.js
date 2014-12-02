@@ -11,6 +11,7 @@ import { computed } from "ember-metal/computed";
 import { observersFor } from "ember-metal/observer";
 import Container from "ember-runtime/system/container";
 import { set } from "ember-metal/property_set";
+import { appendView } from "ember-views/tests/view_helpers";
 
 import {
   default as htmlbarsHelpers
@@ -27,10 +28,6 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 }
 
 var view;
-
-var appendView = function() {
-  run(function() { view.appendTo('#qunit-fixture'); });
-};
 
 var originalLookup = Ember.lookup;
 var TemplateTests, container, lookup;
@@ -78,7 +75,7 @@ test("should be able to bind element attributes using {{bind-attr}}", function()
     })
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$('img').attr('src'), "http://www.emberjs.com/assets/images/logo.png", "sets src attribute");
   equal(view.$('img').attr('alt'), "The SproutCore Logo", "sets alt attribute");
@@ -125,7 +122,7 @@ test("should be able to bind to view attributes with {{bind-attr}}", function() 
     template: compile('<img src="test.jpg" {{bind-attr alt=view.value}}>')
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$('img').attr('alt'), "Test", "renders initial value");
 
@@ -144,7 +141,7 @@ test("should be able to bind to globals with {{bind-attr}} (DEPRECATED)", functi
   });
 
   expectDeprecation(function(){
-    appendView();
+    appendView(view);
   }, /Global lookup of TemplateTests.value from a Handlebars template is deprecated/);
 
   equal(view.$('img').attr('alt'), "Test", "renders initial value");
@@ -158,7 +155,7 @@ test("should not allow XSS injection via {{bind-attr}}", function() {
     }
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$('img').attr('onmouseover'), undefined);
   // If the whole string is here, then it means we got properly escaped
@@ -176,7 +173,7 @@ test("should be able to bind use {{bind-attr}} more than once on an element", fu
     })
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$('img').attr('src'), "http://www.emberjs.com/assets/images/logo.png", "sets src attribute");
   equal(view.$('img').attr('alt'), "The SproutCore Logo", "sets alt attribute");
@@ -257,7 +254,7 @@ test("should be able to bind element attributes using {{bind-attr}} inside a blo
     })
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$('img').attr('src'), "http://www.emberjs.com/assets/images/logo.png", "sets src attribute");
   equal(view.$('img').attr('alt'), "The SproutCore Logo", "sets alt attribute");
@@ -277,7 +274,7 @@ test("should be able to bind class attribute with {{bind-attr}}", function() {
     foo: 'bar'
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$('img').attr('class'), 'bar', "renders class");
 
@@ -296,7 +293,7 @@ test("should be able to bind class attribute via a truthy property with {{bind-a
     isNumber: 5
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$('.is-truthy').length, 1, "sets class name");
 
@@ -315,7 +312,7 @@ test("should be able to bind class to view attribute with {{bind-attr}}", functi
     foo: 'bar'
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$('img').attr('class'), 'bar', "renders class");
 
@@ -332,7 +329,7 @@ test("should not allow XSS injection via {{bind-attr}} with class", function() {
     foo: '" onmouseover="alert(\'I am in your classes hacking your app\');'
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$('img').attr('onmouseover'), undefined);
   // If the whole string is here, then it means we got properly escaped
@@ -350,7 +347,7 @@ test("should be able to bind class attribute using ternary operator in {{bind-at
     content: content
   });
 
-  appendView();
+  appendView(view);
 
   ok(view.$('img').hasClass('disabled'), 'disabled class is rendered');
   ok(!view.$('img').hasClass('enabled'), 'enabled class is not rendered');
@@ -377,7 +374,7 @@ test("should be able to add multiple classes using {{bind-attr class}}", functio
     content: content
   });
 
-  appendView();
+  appendView(view);
 
   ok(view.$('div').hasClass('is-awesome-sauce'), "dasherizes first property and sets classname");
   ok(view.$('div').hasClass('is-also-cool'), "dasherizes second property and sets classname");
@@ -407,7 +404,7 @@ test("should be able to bind classes to globals with {{bind-attr class}} (DEPREC
   });
 
   expectDeprecation(function(){
-    appendView();
+    appendView(view);
   }, /Global lookup of TemplateTests.isOpen from a Handlebars template is deprecated/);
 
   ok(view.$('img').hasClass('is-open'), "sets classname to the dasherized value of the global property");
@@ -421,7 +418,7 @@ test("should be able to bind-attr to 'this' in an {{#each}} block [DEPRECATED]",
     images: A(['one.png', 'two.jpg', 'three.gif'])
   });
 
-  appendView();
+  appendView(view);
 
   var images = view.$('img');
   ok(/one\.png$/.test(images[0].src));
@@ -437,7 +434,7 @@ test("should be able to bind classes to 'this' in an {{#each}} block with {{bind
     items: A(['a', 'b', 'c'])
   });
 
-  appendView();
+  appendView(view);
 
   ok(view.$('li').eq(0).hasClass('a'), "sets classname to the value of the first item");
   ok(view.$('li').eq(1).hasClass('b'), "sets classname to the value of the second item");
@@ -450,7 +447,7 @@ test("should be able to bind-attr to var in {{#each var in list}} block", functi
     images: A(['one.png', 'two.jpg', 'three.gif'])
   });
 
-  appendView();
+  appendView(view);
 
   var images = view.$('img');
   ok(/one\.png$/.test(images[0].src));
@@ -474,7 +471,7 @@ test("should teardown observers from bind-attr on rerender", function() {
     foo: 'bar'
   });
 
-  appendView();
+  appendView(view);
 
   equal(observersFor(view, 'foo').length, 1);
 
@@ -492,7 +489,7 @@ test('should allow either quoted or unquoted values', function() {
     template: compile('<img {{bind-attr alt="view.value" src=view.source}}>')
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$('img').attr('alt'), "Test", "renders initial value");
   equal(view.$('img').attr('src'), "test.jpg", "renders initial value");

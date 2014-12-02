@@ -15,6 +15,7 @@ import {
 
 import EmberHandlebars from "ember-handlebars";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
+import { appendView } from "ember-views/tests/view_helpers";
 
 var compile, helper;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -52,9 +53,7 @@ test("a view with a layout set renders its template where the {{yield}} helper a
     template: compile('{{#view view.withLayout title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('div.wrapper div.page-body').length, 1, 'page-body is embedded within wrapping my-page');
 });
@@ -73,9 +72,7 @@ test("block should work properly even when templates are not hard-coded", functi
     templateName: 'nested'
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('div.wrapper div.page-body').length, 1, 'page-body is embedded within wrapping my-page');
 
@@ -100,9 +97,7 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
     template: compile('<div id="container"><div class="title">Counting to 5</div>{{#view view.timesView n=5}}<div class="times-item">Hello</div>{{/view}}</div>')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('div#container div.times-item').length, 5, 'times-item is embedded within wrapping container 5 times, as expected');
 });
@@ -117,9 +112,7 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
     template: compile('<div id="container">{{#view view.nestingView}}<div id="block">Hello</div>{{/view}}</div>')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('div#container div.nesting div#block').length, 1, 'nesting view yields correctly even within a view hierarchy in the nesting view');
 });
@@ -134,9 +127,7 @@ test("block should not be required", function() {
     template: compile('<div id="container">{{view view.yieldingView}}</div>')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('div#container div.yielding').length, 1, 'yielding view is rendered as expected');
 });
@@ -152,9 +143,7 @@ test("yield uses the outer context", function() {
     template: compile('{{#view component}}{{boundText}}{{/view}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "Yield points at the right context");
 });
@@ -174,7 +163,7 @@ test("yield inside a conditional uses the outer context [DEPRECATED]", function(
   });
 
   expectDeprecation(function() {
-    run(view, 'appendTo', '#qunit-fixture');
+    appendView(view);
   }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$('div p:contains(inner) + p:contains(insideWith)').length, 1, "Yield points at the right context");
@@ -191,9 +180,7 @@ test("outer keyword doesn't mask inner component property", function () {
     template: compile('{{#with boundText as item}}{{#view component}}{{item}}{{/view}}{{/with}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "inner component property isn't masked by outer keyword");
 });
@@ -209,9 +196,7 @@ test("inner keyword doesn't mask yield property", function() {
     template: compile('{{#view component}}{{item}}{{/view}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "outer property isn't masked by inner keyword");
 });
@@ -227,9 +212,7 @@ test("can bind a keyword to a component and use it in yield", function() {
     template: compile('{{#with boundText as item}}{{#view component contentBinding="item"}}{{item}}{{/view}}{{/with}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('div p:contains(outer) + p:contains(outer)').length, 1, "component and yield have keyword");
 
@@ -255,7 +238,7 @@ test("yield uses the layout context for non component [DEPRECATED]", function() 
   });
 
   expectDeprecation(function() {
-    run(view, 'appendTo', '#qunit-fixture');
+    appendView(view);
   }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal('outerinner', view.$('p').text(), "Yield points at the right context");
@@ -284,9 +267,7 @@ test("yield view should be a virtual view", function() {
     }
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 });
 
 
@@ -374,9 +355,7 @@ test("yield with nested components (#3220)", function(){
     )
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('div > span').text(), "Hello world");
 });
@@ -392,9 +371,7 @@ test("yield works inside a conditional in a component that has Ember._Metamorph 
     template: compile('{{#view component}}{{item}}{{/view}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$().text(), 'innerouter', "{{yield}} renders yielded content inside metamorph component");
 });
@@ -410,9 +387,7 @@ test("view keyword works inside component yield", function () {
     template: compile('{{#view view.component}}{{view.dummyText}}{{/view}}')
   });
 
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView(view);
 
   equal(view.$('div > p').text(), "hello", "view keyword inside component yield block should refer to the correct view");
 });

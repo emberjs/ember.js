@@ -12,16 +12,13 @@ import { set } from 'ember-metal/property_set';
 import { fmt } from 'ember-runtime/system/string';
 import { typeOf } from 'ember-metal/utils';
 import { forEach } from 'ember-metal/enumerable_utils';
+import { appendView } from "ember-views/tests/view_helpers";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   compile = htmlbarsCompile;
 } else {
   compile = EmberHandlebars.compile;
-}
-
-function appendView(view) {
-  run(function() { view.appendTo('#qunit-fixture'); });
 }
 
 var originalLookup = Ember.lookup;

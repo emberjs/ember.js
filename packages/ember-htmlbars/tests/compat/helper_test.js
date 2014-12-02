@@ -3,14 +3,10 @@ import {
 } from "ember-htmlbars/compat/helper";
 
 import EmberView from "ember-views/views/view";
-import run from "ember-metal/run_loop";
 
 import helpers from "ember-htmlbars/helpers";
 import compile from "ember-htmlbars/system/compile";
-
-function appendView(view) {
-  run(view, 'appendTo', '#qunit-fixture');
-}
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var view;
 
@@ -18,9 +14,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
 QUnit.module('ember-htmlbars: Handlebars compatible helpers', {
   teardown: function() {
-    if (view) {
-      run(view, 'destroy');
-    }
+    destroyView(view);
 
     delete helpers.test;
   }

@@ -1,9 +1,10 @@
 import Ember from "ember-metal/core"; // Ember.lookup
 import EmberLogger from "ember-metal/logger";
-import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars-compiler";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
+
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -17,10 +18,6 @@ var lookup;
 var originalLog, logCalls;
 var view;
 
-function appendView() {
-  run(function() { view.appendTo('#qunit-fixture'); });
-}
-
 QUnit.module("Handlebars {{log}} helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
@@ -31,12 +28,8 @@ QUnit.module("Handlebars {{log}} helper", {
   },
 
   teardown: function() {
-    if (view) {
-      run(function() {
-        view.destroy();
-      });
-      view = null;
-    }
+    destroyView(view);
+    view = null;
 
     EmberLogger.log = originalLog;
     Ember.lookup = originalLookup;
@@ -54,7 +47,7 @@ test("should be able to log multiple properties", function() {
     template: compile('{{log value valueTwo}}')
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), "", "shouldn't render any text");
   equal(logCalls[0], 'one');
@@ -72,7 +65,7 @@ test("should be able to log primitives", function() {
     template: compile('{{log value "foo" 0 valueTwo true}}')
   });
 
-  appendView();
+  appendView(view);
 
   equal(view.$().text(), "", "shouldn't render any text");
   strictEqual(logCalls[0], 'one');

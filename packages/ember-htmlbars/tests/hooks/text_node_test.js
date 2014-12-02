@@ -3,19 +3,14 @@ import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import compile from "ember-htmlbars/system/compile";
 import { equalInnerHTML } from "htmlbars-test-helpers";
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var view;
-
-function appendView(view) {
-  run(function() { view.appendTo('#qunit-fixture'); });
-}
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   QUnit.module("ember-htmlbars: basic/text_node_test", {
     teardown: function(){
-      if (view) {
-        run(view, view.destroy);
-      }
+      destroyView(view);
     }
   });
 

@@ -1,22 +1,14 @@
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import EmberHandlebars from "ember-htmlbars/compat";
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var view;
 var compile = EmberHandlebars.compile;
 
-
-function appendView(view) {
-  run(function() { view.appendTo('#qunit-fixture'); });
-}
-
 QUnit.module("ember-htmlbars: tagless views should be able to add/remove child views", {
   teardown: function() {
-    run(function() {
-      if (view) {
-        view.destroy();
-      }
-    });
+    destroyView(view);
   }
 });
 

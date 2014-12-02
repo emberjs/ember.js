@@ -6,6 +6,7 @@ import htmlbarsCompile from 'ember-htmlbars/system/compile';
 
 import { set } from 'ember-metal/property_set';
 import { create as o_create } from 'ember-metal/platform';
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var compile, view;
 
@@ -17,19 +18,11 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
 QUnit.module('ember-htmlbars: Integration with Globals', {
   teardown: function() {
-    run(function() {
-      if (view) {
-        view.destroy();
-      }
+    destroyView(view);
 
-      view = null;
-    });
+    view = null;
   }
 });
-
-function appendView(view) {
-  run(view, 'appendTo', '#qunit-fixture');
-}
 
 test('should read from a global-ish simple local path without deprecation', function() {
   view = EmberView.create({

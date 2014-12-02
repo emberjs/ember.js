@@ -3,6 +3,7 @@ import View from "ember-views/views/view";
 import EmberHandlebars from "ember-htmlbars/compat";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
 import { set as o_set } from "ember-metal/property_set";
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -17,18 +18,6 @@ function set(object, key, value) {
   run(function() { o_set(object, key, value); });
 }
 
-function append() {
-  run(function() {
-    textArea.appendTo('#qunit-fixture');
-  });
-}
-
-function destroy(object) {
-  run(function() {
-    object.destroy();
-  });
-}
-
 QUnit.module("{{textarea}}", {
   setup: function() {
     controller = {
@@ -40,11 +29,11 @@ QUnit.module("{{textarea}}", {
       template: compile('{{textarea disabled=disabled value=val}}')
     }).create();
 
-    append();
+    appendView(textArea);
   },
 
   teardown: function() {
-    destroy(textArea);
+    destroyView(textArea);
   }
 });
 

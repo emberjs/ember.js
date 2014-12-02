@@ -1,8 +1,8 @@
-import run from 'ember-metal/run_loop';
 import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
 import EmberHandlebars from 'ember-handlebars';
 import htmlbarsCompile from 'ember-htmlbars/system/compile';
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var originalLookup, originalLog, logCalls, lookup, view, compile;
 
@@ -11,10 +11,6 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 } else {
   compile = EmberHandlebars.compile;
 }
-
-var appendView = function(view) {
-  run(view, 'appendTo', '#qunit-fixture');
-};
 
 QUnit.module('ember-htmlbars: {{#log}} helper', {
   setup: function() {
@@ -28,9 +24,7 @@ QUnit.module('ember-htmlbars: {{#log}} helper', {
   },
 
   teardown: function() {
-    run(function() {
-      view.destroy();
-    });
+    destroyView(view);
 
     view = null;
 

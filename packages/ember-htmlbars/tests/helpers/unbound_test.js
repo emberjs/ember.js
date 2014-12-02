@@ -17,6 +17,7 @@ import registerHTMLBarsHelper from "ember-htmlbars/compat/register-bound-helper"
 import htmlbarsMakeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 
 import Container from 'ember-runtime/system/container';
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 import {
   makeBoundHelper as handlebarsMakeBoundHelper
@@ -34,12 +35,6 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   registerBoundHelper = EmberHandlebars.registerBoundHelper;
   helpers = EmberHandlebars.helpers;
   makeBoundHelper = handlebarsMakeBoundHelper;
-}
-
-function appendView(view) {
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
 }
 
 function expectDeprecationInHTMLBars() {
@@ -68,9 +63,7 @@ QUnit.module('ember-htmlbars: {{#unbound}} helper', {
   },
 
   teardown: function() {
-    run(function() {
-      view.destroy();
-    });
+    destroyView(view);
     Ember.lookup = originalLookup;
   }
 });
@@ -131,9 +124,7 @@ QUnit.module("ember-htmlbars: {{#unbound boundHelper arg1 arg2... argN}} form: r
     delete helpers['fauxconcat'];
     delete helpers['concatNames'];
 
-    run(function() {
-      view.destroy();
-    });
+    destroyView(view);
     Ember.lookup = originalLookup;
   }
 });
@@ -293,9 +284,7 @@ QUnit.module("ember-htmlbars: {{#unbound}} helper -- Container Lookup", {
   },
 
   teardown: function() {
-    if (view) {
-      run(view, 'destroy');
-    }
+    destroyView(view);
     Ember.lookup = originalLookup;
   }
 });

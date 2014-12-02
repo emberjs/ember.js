@@ -1,6 +1,7 @@
 import run from "ember-metal/run_loop";
 import { set } from "ember-metal/property_set";
 import View from "ember-views/views/view";
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 import EmberHandlebars from "ember-handlebars";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
@@ -14,12 +15,6 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
 var view;
 var controller;
-
-function appendView(view) {
-  run(function() {
-    view.appendTo('#qunit-fixture');
-  });
-}
 
 QUnit.module("{{input type='text'}}", {
   setup: function() {
@@ -41,9 +36,7 @@ QUnit.module("{{input type='text'}}", {
   },
 
   teardown: function() {
-    if (view) {
-      run(view, view.destroy);
-    }
+    destroyView(view);
   }
 });
 
@@ -110,9 +103,7 @@ QUnit.module("{{input type='text'}} - static values", {
   },
 
   teardown: function() {
-    if (view) {
-      run(view, view.destroy);
-    }
+    destroyView(view);
   }
 });
 
@@ -163,9 +154,7 @@ QUnit.module("{{input type='text'}} - dynamic type", {
   },
 
   teardown: function() {
-    if (view) {
-      run(view, view.destroy);
-    }
+    destroyView(view);
   }
 });
 
@@ -186,9 +175,7 @@ QUnit.module("{{input}} - default type", {
   },
 
   teardown: function() {
-    if (view) {
-      run(view, view.destroy);
-    }
+    destroyView(view);
   }
 });
 
@@ -213,9 +200,7 @@ QUnit.module("{{input type='checkbox'}}", {
   },
 
   teardown: function() {
-    if (view) {
-      run(view, view.destroy);
-    }
+    destroyView(view);
   }
 });
 
@@ -256,9 +241,7 @@ QUnit.module("{{input type='checkbox'}} - prevent value= usage", {
   },
 
   teardown: function() {
-    if (view) {
-      run(view, view.destroy);
-    }
+    destroyView(view);
   }
 });
 
@@ -284,9 +267,7 @@ QUnit.module("{{input type=boundType}}", {
   },
 
   teardown: function() {
-    if (view) {
-      run(view, view.destroy);
-    }
+    destroyView(view);
   }
 });
 
@@ -317,9 +298,7 @@ QUnit.module("{{input type='checkbox'}} - static values", {
   },
 
   teardown: function() {
-    if (view) {
-      run(view, view.destroy);
-    }
+    destroyView(view);
   }
 });
 

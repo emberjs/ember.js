@@ -17,6 +17,7 @@ import htmlbarsTemplate from 'ember-htmlbars/system/template';
 import { observersFor } from "ember-metal/observer";
 import ObjectController from 'ember-runtime/controllers/object_controller';
 
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
@@ -52,9 +53,6 @@ function viewClass(options) {
 }
 
 var firstChild = nthChild;
-var appendView = function(view) {
-  run(view, 'appendTo', '#qunit-fixture');
-};
 
 QUnit.module("ember-htmlbars: {{#view}} helper", {
   setup: function() {
@@ -101,13 +99,13 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
     template: compile('{{#view view.linkView href=view.test.href}} Test {{/view}}')
   });
 
-  run(parentView, 'appendTo', '#qunit-fixture');
+  appendView(parentView);
 
   // Use match, since old IE appends the whole URL
   var href = parentView.$('a').attr('href');
   ok(href.match(/(^|\/)test$/), 'Expected href to be \'test\' but got "'+href+'"');
 
-  run(parentView, 'destroy');
+  destroyView(parentView);
 });
 
 test("By default view:toplevel is used", function() {
@@ -1017,9 +1015,7 @@ test('should expose a controller keyword when present on the view', function() {
 
   equal(view.$().text(), 'BARBLARGH', 'updates the DOM when a bound value is updated');
 
-  run(function() {
-    view.destroy();
-  });
+  destroyView(view);
 
   view = EmberView.create({
     controller: 'aString',

@@ -1,19 +1,15 @@
 /*jshint newcap:false*/
 import Ember from "ember-metal/core";
-import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars";
 import { A } from "ember-runtime/system/native_array";
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 var view;
 
-var appendView = function(view) {
-  run(view, 'appendTo', '#qunit-fixture');
-};
-
 QUnit.module("Templates redrawing and bindings", {
   teardown: function() {
-    run(view, 'destroy');
+    destroyView(view);
   }
 });
 

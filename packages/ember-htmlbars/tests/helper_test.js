@@ -3,6 +3,7 @@ import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import EmberHandlebars from "ember-handlebars-compiler";
 import { set } from "ember-metal/property_set";
+import { appendView, destroyView } from "ember-views/tests/view_helpers";
 
 import {
   default as htmlbarsHelpers,
@@ -21,17 +22,11 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   helpers = EmberHandlebars.helpers;
 }
 
-function appendView(view) {
-  run(view, 'appendTo', '#qunit-fixture');
-}
-
 var view;
 
 QUnit.module("ember-htmlbars: Ember.HTMLBars.helper", {
   teardown: function() {
-    if (view) {
-      run(view, 'destroy');
-    }
+    destroyView(view);
 
     delete helpers.oceanView;
     delete helpers.something;
