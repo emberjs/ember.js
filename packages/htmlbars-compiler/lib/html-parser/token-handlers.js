@@ -1,11 +1,5 @@
-import {
-  ProgramNode,
-  ComponentNode,
-  ElementNode,
-  TextNode,
-  CommentNode,
-  appendChild
-} from "../ast";
+import { buildProgram, buildComponent, buildElement, buildComment, buildText } from "../builders";
+import { appendChild, isHelper } from "../ast";
 import { postprocessProgram } from "./helpers";
 import { forEach } from "../utils";
 
@@ -28,7 +22,7 @@ function applyNamespace(tag, element, currentElement){
   if (tag.tagName === 'svg') {
     element.namespaceURI = svgNamespace;
   } else if (
-    currentElement.type === 'element' &&
+    currentElement.type === 'ElementNode' &&
     currentElement.namespaceURI &&
     !currentElement.isHTMLIntegrationPoint
   ) {
@@ -43,10 +37,10 @@ function applyHTMLIntegrationPoint(tag, element){
 }
 
 function unwrapMustache(mustache) {
-  if (mustache.sexpr.isHelper) {
+  if (isHelper(mustache.sexpr)) {
     return mustache.sexpr;
   } else {
-    return mustache.sexpr.id;
+    return mustache.sexpr.path;
   }
 }
 
@@ -55,19 +49,19 @@ function unwrapMustache(mustache) {
 var tokenHandlers = {
   CommentToken: function(token) {
     var current = this.currentElement();
-    var comment = new CommentNode(token.chars);
+    var comment = buildComment(token.chars);
 
     appendChild(current, comment);
   },
 
   Chars: function(token) {
     var current = this.currentElement();
-    var text = new TextNode(token.chars);
+    var text = buildText(token.chars);
     appendChild(current, text);
   },
 
   StartTag: function(tag) {
-    var element = new ElementNode(tag.tagName, tag.attributes, tag.helpers || [], []);
+    var element = buildElement(tag.tagName, tag.attributes, tag.helpers || [], []);
     applyNamespace(tag, element, this.currentElement());
     applyHTMLIntegrationPoint(tag, element);
     this.elementStack.push(element);
@@ -76,7 +70,7 @@ var tokenHandlers = {
     }
   },
 
-  block: function(/*block*/) {
+  BlockStatement: function(/*block*/) {
     if (this.tokenizer.state === 'comment') {
       return;
     } else if (this.tokenizer.state !== 'data') {
@@ -84,7 +78,7 @@ var tokenHandlers = {
     }
   },
 
-  mustache: function(mustache) {
+  MustacheStatement: function(mustache) {
     var state = this.tokenizer.state;
     var token = this.tokenizer.token;
 
@@ -105,7 +99,7 @@ var tokenHandlers = {
         token.addToAttributeValue(unwrapMustache(mustache));
         return;
       case "beforeAttributeName":
-        token.addTagHelper(mustache);
+        token.addTagHelper(mustache.sexpr);
         return;
       default:
         appendChild(this.currentElement(), mustache);
@@ -127,9 +121,9 @@ var tokenHandlers = {
     if (disableComponentGeneration || element.tag.indexOf("-") === -1) {
       appendChild(parent, element);
     } else {
-      var program = new ProgramNode(element.children, null, { left: false, right: false });
+      var program = buildProgram(element.children);
       postprocessProgram(program);
-      var component = new ComponentNode(element.tag, element.attributes, program);
+      var component = buildComponent(element.tag, element.attributes, program);
       appendChild(parent, component);
     }
 
