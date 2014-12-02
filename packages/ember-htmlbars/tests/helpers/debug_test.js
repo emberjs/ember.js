@@ -4,7 +4,7 @@ import EmberView from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars-compiler";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
 
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -28,7 +28,7 @@ QUnit.module("Handlebars {{log}} helper", {
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
     view = null;
 
     EmberLogger.log = originalLog;
@@ -47,7 +47,7 @@ test("should be able to log multiple properties", function() {
     template: compile('{{log value valueTwo}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "", "shouldn't render any text");
   equal(logCalls[0], 'one');
@@ -65,7 +65,7 @@ test("should be able to log primitives", function() {
     template: compile('{{log value "foo" 0 valueTwo true}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "", "shouldn't render any text");
   strictEqual(logCalls[0], 'one');

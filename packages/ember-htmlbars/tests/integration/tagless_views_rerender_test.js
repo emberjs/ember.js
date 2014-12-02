@@ -1,14 +1,14 @@
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import EmberHandlebars from "ember-htmlbars/compat";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;
 var compile = EmberHandlebars.compile;
 
 QUnit.module("ember-htmlbars: tagless views should be able to add/remove child views", {
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
   }
 });
 
@@ -20,7 +20,7 @@ test("can insert new child views after initial tagless view rendering", function
     template: compile('{{#if view.shouldShow}}{{#each item in view.array}}{{item}}{{/each}}{{/if}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), '');
 
@@ -46,7 +46,7 @@ test("can remove child views after initial tagless view rendering", function() {
     template: compile('{{#if view.shouldShow}}{{#each item in view.array}}{{item}}{{/each}}{{/if}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), '');
 

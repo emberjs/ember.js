@@ -3,7 +3,7 @@ import Container from 'container/container';
 import EmberHandlebars from 'ember-handlebars-compiler';
 import htmlbarsCompile from "ember-htmlbars/system/compile";
 import Component from "ember-views/views/component";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -21,8 +21,8 @@ QUnit.module('ember-htmlbars: Ember.Handlebars.makeViewHelper compat', {
   },
 
   teardown: function() {
-    destroyView(container);
-    destroyView(view);
+    runDestroy(container);
+    runDestroy(view);
   }
 });
 
@@ -40,7 +40,7 @@ test('EmberHandlebars.makeViewHelper', function() {
     container: container
   }).create();
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'woot!');
 });

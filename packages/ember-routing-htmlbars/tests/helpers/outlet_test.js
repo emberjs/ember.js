@@ -28,6 +28,7 @@ import { outletHelper as htmlbarsOutletHelper } from "ember-routing-htmlbars/hel
 import htmlbarsCompile from "ember-htmlbars/system/compile";
 import { registerHelper as htmlbarsRegisterHelper } from "ember-htmlbars/helpers";
 import htmlbarsHelpers from "ember-htmlbars/helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var compile, helpers, registerHelper, outletHelper;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -85,10 +86,6 @@ function resolverFor(namespace) {
   };
 }
 
-var appendView = function(view) {
-  run(function() { view.appendTo('#qunit-fixture'); });
-};
-
 var trim = jQuery.trim;
 
 var view, container, originalOutletHelper;
@@ -108,14 +105,8 @@ QUnit.module("ember-routing-htmlbars: {{outlet}} helper", {
     delete helpers['outlet'];
     helpers['outlet'] = originalOutletHelper;
 
-    run(function () {
-      if (container) {
-        container.destroy();
-      }
-      if (view) {
-        view.destroy();
-      }
-    });
+    runDestroy(container);
+    runDestroy(view);
   }
 });
 
@@ -125,7 +116,7 @@ test("view should support connectOutlet for the main outlet", function() {
     template: compile(template)
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'HI');
 
@@ -149,7 +140,7 @@ test("outlet should support connectOutlet in slots in prerender state", function
     template: compile("<p>BYE</p>")
   }));
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'HIBYE');
 });
@@ -160,7 +151,7 @@ test("outlet should support an optional name", function() {
     template: compile(template)
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'HI');
 
@@ -196,7 +187,7 @@ test("outlet should correctly lookup a view", function() {
     template: compile("<p>BYE</p>")
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'HI');
 
@@ -222,7 +213,7 @@ test("outlet should assert view is specified as a string", function() {
       container : container
     });
 
-    appendView(view);
+    runAppend(view);
 
   });
 
@@ -239,7 +230,7 @@ test("outlet should assert view path is successfully resolved", function() {
       container : container
     });
 
-    appendView(view);
+    runAppend(view);
 
   });
 
@@ -252,7 +243,7 @@ test("outlet should support an optional view class", function() {
     outletView: EmberContainerView.extend()
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'HI');
 
@@ -288,7 +279,7 @@ test("Outlets bind to the current view, not the current concrete view", function
     template: compile(bottomTemplate)
   });
 
-  appendView(view);
+  runAppend(view);
 
   run(function() {
     view.connectOutlet('main', middleView);
@@ -308,7 +299,7 @@ test("view should support disconnectOutlet for the main outlet", function() {
     template: compile(template)
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'HI');
 
@@ -346,7 +337,7 @@ test("Outlets bind to the current template's view, not inner contexts [DEPRECATE
   });
 
   expectDeprecation(function() {
-    appendView(view);
+    runAppend(view);
   }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   run(function() {
@@ -368,7 +359,7 @@ test("should support layouts", function() {
     layout: compile(layout)
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'HI');
 
@@ -386,7 +377,7 @@ test("should not throw deprecations if {{outlet}} is used without a name", funct
   view = EmberView.create({
     template: compile("{{outlet}}")
   });
-  appendView(view);
+  runAppend(view);
 });
 
 test("should not throw deprecations if {{outlet}} is used with a quoted name", function() {
@@ -394,7 +385,7 @@ test("should not throw deprecations if {{outlet}} is used with a quoted name", f
   view = EmberView.create({
     template: compile("{{outlet \"foo\"}}"),
   });
-  appendView(view);
+  runAppend(view);
 });
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -403,7 +394,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
       template: compile("{{outlet foo}}"),
     });
     expectAssertion(function() {
-      appendView(view);
+      runAppend(view);
     }, "Using {{outlet}} with an unquoted name is not supported.");
   });
 } else {
@@ -412,7 +403,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
       template: compile("{{outlet foo}}")
     });
     expectDeprecation(function() {
-      appendView(view);
+      runAppend(view);
     }, 'Using {{outlet}} with an unquoted name is not supported. Please update to quoted usage \'{{outlet "foo"}}\'.');
   });
 }

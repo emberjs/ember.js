@@ -12,7 +12,7 @@ import { set } from 'ember-metal/property_set';
 import { fmt } from 'ember-runtime/system/string';
 import { typeOf } from 'ember-metal/utils';
 import { forEach } from 'ember-metal/enumerable_utils';
-import { appendView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -36,15 +36,9 @@ QUnit.module("ember-htmlbars: {{#if}} and {{#unless}} helpers", {
   },
 
   teardown: function() {
-    run(function() {
-      if (container) {
-        container.destroy();
-      }
-      if (view) {
-        view.destroy();
-      }
-      container = view = null;
-    });
+    runDestroy(container);
+    runDestroy(view);
+    container = view = null;
 
     Ember.lookup = lookup = originalLookup;
     TemplateTests = null;
@@ -59,7 +53,7 @@ test("unless should keep the current context (#784) [DEPRECATED]", function() {
   });
 
   expectDeprecation(function() {
-    appendView(view);
+    runAppend(view);
   }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), 'foo: 42');
@@ -73,7 +67,7 @@ test("The `if` helper tests for `isTruthy` if available", function() {
     template: compile('{{#if view.truthy}}Yep{{/if}}{{#if view.falsy}}Nope{{/if}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'Yep');
 });
@@ -86,7 +80,7 @@ test("The `if` helper does not print the contents for an object proxy without co
     template: compile('{{#if view.truthy}}Yep{{/if}}{{#if view.falsy}}Nope{{/if}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'Yep');
 });
@@ -98,7 +92,7 @@ test("The `if` helper updates if an object proxy gains or loses context", functi
     template: compile('{{#if view.proxy}}Yep{{/if}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), '');
 
@@ -122,7 +116,7 @@ test("The `if` helper updates if an array is empty or not", function() {
     template: compile('{{#if view.array}}Yep{{/if}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), '');
 
@@ -144,7 +138,7 @@ test("The `if` helper updates when the value changes", function() {
     conditional: true,
     template: compile('{{#if view.conditional}}Yep{{/if}}')
   });
-  appendView(view);
+  runAppend(view);
   equal(view.$().text(), 'Yep');
   run(function(){
     view.set('conditional', false);
@@ -157,7 +151,7 @@ test("The `unbound if` helper does not update when the value changes", function(
     conditional: true,
     template: compile('{{#unbound if view.conditional}}Yep{{/unbound}}')
   });
-  appendView(view);
+  runAppend(view);
   equal(view.$().text(), 'Yep');
   run(function(){
     view.set('conditional', false);
@@ -170,7 +164,7 @@ test("The `unless` helper updates when the value changes", function() {
     conditional: false,
     template: compile('{{#unless view.conditional}}Nope{{/unless}}')
   });
-  appendView(view);
+  runAppend(view);
   equal(view.$().text(), 'Nope');
   run(function(){
     view.set('conditional', true);
@@ -183,7 +177,7 @@ test("The `unbound if` helper does not update when the value changes", function(
     conditional: false,
     template: compile('{{#unbound unless view.conditional}}Nope{{/unbound}}')
   });
-  appendView(view);
+  runAppend(view);
   equal(view.$().text(), 'Nope');
   run(function(){
     view.set('conditional', true);
@@ -205,7 +199,7 @@ test("The `if` helper ignores a controller option", function() {
     template: compile('{{#if view.truthy controller="foo"}}Yep{{/if}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(lookupCalled, false, 'controller option should NOT be used');
 });
@@ -228,7 +222,7 @@ test('should not update boundIf if truthiness does not change', function() {
     })
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(renderCount, 1, 'precond - should have rendered once');
   equal(view.$('#first').text(), 'bam', 'renders block when condition is true');
@@ -252,7 +246,7 @@ test('should update the block when object passed to #unless helper changes', fun
     doWellInSchool: 'Eat your vegetables'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('h1').text(), '', 'hides block if true');
 
@@ -279,7 +273,7 @@ test('properties within an if statement should not fail on re-render', function(
     value: null
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), '');
 
@@ -302,7 +296,7 @@ test('views within an if statement should be sane on re-render', function() {
     display: false
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('input').length, 0);
 
@@ -330,7 +324,7 @@ test('should update the block when object passed to #if helper changes', functio
     inception: 'OOOOoooooOOOOOOooooooo'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('h1').text(), 'BOOOOOOOONG doodoodoodoodooodoodoodoo', 'renders block if a string');
 
@@ -363,7 +357,7 @@ test('should update the block when object passed to #if helper changes and an in
     SAD: 'BOONG?'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('h1').text(), 'BOONG?', 'renders alternate if false');
 
@@ -392,7 +386,7 @@ test('views within an if statement should be sane on re-render', function() {
     display: false
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('input').length, 0);
 
@@ -416,7 +410,7 @@ test('the {{this}} helper should not fail on removal', function() {
     show: true
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'abc', 'should start property - precond');
 
@@ -438,7 +432,7 @@ test('should update the block when object passed to #unless helper changes', fun
     doWellInSchool: 'Eat your vegetables'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('h1').text(), '', 'hides block if true');
 
@@ -465,7 +459,7 @@ test('properties within an if statement should not fail on re-render', function(
     value: null
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), '');
 
@@ -488,7 +482,7 @@ test('views within an if statement should be sane on re-render', function() {
     display: false
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('input').length, 0);
 
@@ -516,7 +510,7 @@ test('should update the block when object passed to #if helper changes', functio
     inception: 'OOOOoooooOOOOOOooooooo'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('h1').text(), 'BOOOOOOOONG doodoodoodoodooodoodoodoo', 'renders block if a string');
 
@@ -549,7 +543,7 @@ test('should update the block when object passed to #if helper changes and an in
     SAD: 'BOONG?'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('h1').text(), 'BOONG?', 'renders alternate if false');
 
@@ -578,7 +572,7 @@ test('views within an if statement should be sane on re-render', function() {
     display: false
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('input').length, 0);
 
@@ -602,7 +596,7 @@ test('the {{this}} helper should not fail on removal', function() {
     show: true
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'abc', 'should start property - precond');
 
@@ -630,7 +624,7 @@ test('edge case: child conditional should not render children if parent conditio
     template: compile('{{#if view.cond1}}{{#if view.cond2}}{{#view view.viewClass}}test{{/view}}{{/if}}{{/if}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   ok(!childCreated, 'precondition');
 
@@ -653,7 +647,7 @@ test('edge case: rerender appearance of inner virtual view', function() {
     template: compile('{{#if view.cond2}}test{{/if}}')
   });
 
-  appendView(view);
+  runAppend(view);
   equal(Ember.$('#qunit-fixture').text(), '');
 
   run(function() {
@@ -670,7 +664,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
       template: compile('{{if view.conditional "truthy" "falsy"}}')
     });
 
-    appendView(view);
+    runAppend(view);
 
     equal(view.$().text(), 'truthy');
   });
@@ -681,7 +675,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
       template: compile('{{if view.conditional "truthy" "falsy"}}')
     });
 
-    appendView(view);
+    runAppend(view);
 
     equal(view.$().text(), 'falsy');
   });
@@ -692,7 +686,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
       template: compile('{{if view.conditional "truthy"}}')
     });
 
-    appendView(view);
+    runAppend(view);
 
     equal(view.$().text(), 'truthy');
   });
@@ -703,7 +697,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
       template: compile('{{if view.conditional "truthy"}}')
     });
 
-    appendView(view);
+    runAppend(view);
 
     equal(view.$().text(), '');
   });
@@ -714,7 +708,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
       template: compile('{{if view.conditional "truthy" "falsy"}}')
     });
 
-    appendView(view);
+    runAppend(view);
 
     equal(view.$().text(), 'truthy');
 
@@ -732,7 +726,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
       template: compile('{{if view.conditional view.truthy}}')
     });
 
-    appendView(view);
+    runAppend(view);
 
     equal(view.$().text(), 'ok');
 
@@ -751,7 +745,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
       template: compile('{{if view.conditional view.truthy view.falsy}}')
     });
 
-    appendView(view);
+    runAppend(view);
 
     equal(view.$().text(), 'boom');
 
@@ -769,7 +763,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
     });
 
     expectAssertion(function() {
-      appendView(view);
+      runAppend(view);
     }, 'If helper in inline form expects between two and three arguments');
   });
 
@@ -780,7 +774,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
     });
 
     expectAssertion(function() {
-      appendView(view);
+      runAppend(view);
     }, 'If helper in inline form expects between two and three arguments');
   });
 
@@ -791,7 +785,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
       template: compile('{{if view.conditional (if view.innerConditional "truthy" )}}')
     });
 
-    appendView(view);
+    runAppend(view);
 
     equal(view.$().text(), 'truthy');
   });
@@ -803,7 +797,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
       template: compile('{{if view.conditional (if view.innerConditional "innerTruthy" "innerFalsy")}}')
     });
 
-    appendView(view);
+    runAppend(view);
 
     equal(view.$().text(), 'innerTruthy');
 
@@ -822,7 +816,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
       template: compile('{{if view.conditional (if view.innerConditional view.innerTruthy)}}')
     });
 
-    appendView(view);
+    runAppend(view);
 
     equal(view.$().text(), 'innerTruthy');
 

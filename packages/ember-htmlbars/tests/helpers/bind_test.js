@@ -9,7 +9,7 @@ import ObjectController from "ember-runtime/controllers/object_controller";
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view, container;
 
@@ -28,16 +28,9 @@ QUnit.module("ember-htmlbars: {{bind}} helper", {
     container.register('view:toplevel', EmberView.extend());
   },
   teardown: function() {
-    run(function() {
-      if (container) {
-        container.destroy();
-      }
-      if (view) {
-        view.destroy();
-      }
-
-      container = view = null;
-    });
+    runDestroy(container);
+    runDestroy(view);
+    container = view = null;
   }
 });
 
@@ -49,7 +42,7 @@ test("it should render the current value of a property on the context", function
     })
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "BORK", "initial value is rendered");
 
@@ -68,7 +61,7 @@ test("it should render the current value of a path on the context", function() {
     })
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "BORK", "initial value is rendered");
 
@@ -87,7 +80,7 @@ test("it should render the current value of a string path on the context", funct
     })
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "BORK", "initial value is rendered");
 
@@ -102,14 +95,8 @@ QUnit.module("ember-htmlbars: {{bind}} with a container, block forms", {
     container.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
-    run(function(){
-      if (container) {
-        container.destroy();
-      }
-      if (view) {
-        view.destroy();
-      }
-    });
+    runDestroy(container);
+    runDestroy(view);
     container = view = null;
   }
 });
@@ -133,7 +120,7 @@ test("should not update when a property is removed from the view", function() {
     })
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('#first').text(), "unicorns", "precond - renders the bound value");
 
@@ -180,7 +167,7 @@ test("Handlebars templates update properties if a content object changes", funct
     });
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('h2').text(), "brown coffee", "precond - renders color correctly");
   equal(view.$('#price').text(), '$4', "precond - renders price correctly");
@@ -211,7 +198,7 @@ test("Handlebars templates update properties if a content object changes", funct
 
   equal(view.$('#price').text(), "$5", "should update price field when price property is changed");
 
-  destroyView(view);
+  runDestroy(view);
 });
 
 test("Template updates correctly if a path is passed to the bind helper", function() {
@@ -227,7 +214,7 @@ test("Template updates correctly if a path is passed to the bind helper", functi
     })
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('h1').text(), "$4", "precond - renders price");
 
@@ -263,7 +250,7 @@ test("Template updates correctly if a path is passed to the bind helper and the 
     coffee: controller
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('h1').text(), "$4", "precond - renders price");
 
@@ -293,7 +280,7 @@ test('View should update when a property changes and the bind helper is used', f
     })
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('#first').text(), 'bam', 'precond - view renders Handlebars template');
 

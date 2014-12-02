@@ -5,7 +5,7 @@ import View from "ember-views/views/view";
 import compile from "ember-htmlbars/system/compile";
 import helpers from "ember-htmlbars/helpers";
 import { registerHelper } from "ember-htmlbars/helpers";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var container, view;
 
@@ -34,9 +34,8 @@ QUnit.module("ember-htmlbars: block params", {
   teardown: function() {
     delete helpers.alias;
 
-    destroyView(container);
-
-    destroyView(view);
+    runDestroy(container);
+    runDestroy(view);
   }
 });
 
@@ -46,7 +45,7 @@ test("basic block params usage", function() {
     template: compile('{{#alias view.committer.name as |name|}}name: {{name}}, length: {{name.length}}{{/alias}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "name: rwjblue, length: 7");
 
@@ -83,7 +82,7 @@ test("nested block params shadow correctly", function() {
     )
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn");
 });
@@ -117,7 +116,7 @@ test("components can yield values", function() {
     )
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn");
 });

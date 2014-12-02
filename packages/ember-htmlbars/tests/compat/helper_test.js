@@ -6,7 +6,7 @@ import EmberView from "ember-views/views/view";
 
 import helpers from "ember-htmlbars/helpers";
 import compile from "ember-htmlbars/system/compile";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;
 
@@ -14,7 +14,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
 QUnit.module('ember-htmlbars: Handlebars compatible helpers', {
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
 
     delete helpers.test;
   }
@@ -37,7 +37,7 @@ test('wraps provided function so that original path params are provided to the h
     template: compile('{{test "blammo" "blazzico"}}')
   });
 
-  appendView(view);
+  runAppend(view);
 });
 
 test('combines `env` and `options` for the wrapped helper', function() {
@@ -56,7 +56,7 @@ test('combines `env` and `options` for the wrapped helper', function() {
     template: compile('{{test}}')
   });
 
-  appendView(view);
+  runAppend(view);
 });
 
 test('adds `hash` into options `options` for the wrapped helper', function() {
@@ -75,7 +75,7 @@ test('adds `hash` into options `options` for the wrapped helper', function() {
     template: compile('{{test bestFriend="Jacquie"}}')
   });
 
-  appendView(view);
+  runAppend(view);
 });
 
 test('bound `hash` params are provided with their original paths', function() {
@@ -94,7 +94,7 @@ test('bound `hash` params are provided with their original paths', function() {
     template: compile('{{test bestFriend=value}}')
   });
 
-  appendView(view);
+  runAppend(view);
 });
 
 test('bound ordered params are provided with their original paths', function() {
@@ -115,7 +115,7 @@ test('bound ordered params are provided with their original paths', function() {
     template: compile('{{test first second}}')
   });
 
-  appendView(view);
+  runAppend(view);
 });
 
 }

@@ -10,7 +10,7 @@ import Container from "ember-runtime/system/container";
 // import { A } from "ember-runtime/system/native_array";
 import EmberHandlebars from "ember-handlebars";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -35,11 +35,11 @@ function testWithAs(moduleName, templateString) {
         }
       });
 
-      appendView(view);
+      runAppend(view);
     },
 
     teardown: function() {
-      destroyView(view);
+      runDestroy(view);
       Ember.lookup = originalLookup;
     }
   });
@@ -91,11 +91,11 @@ QUnit.module("Multiple Handlebars {{with foo as bar}} helpers", {
       }
     });
 
-    appendView(view);
+    runAppend(view);
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
 
     Ember.lookup = originalLookup;
   }
@@ -141,14 +141,14 @@ QUnit.module("Handlebars {{#with}} globals helper [DEPRECATED]", {
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
     Ember.lookup = originalLookup;
   }
 });
 
 test("it should support #with Foo.bar as qux [DEPRECATED]", function() {
   expectDeprecation(function() {
-    appendView(view);
+    runAppend(view);
   }, /Global lookup of Foo.bar from a Handlebars template is deprecated/);
 
   equal(view.$().text(), "baz", "should be properly scoped");
@@ -168,7 +168,7 @@ test("it should support #with view as foo", function() {
     name: "Sonics"
   });
 
-  appendView(view);
+  runAppend(view);
   equal(view.$().text(), "Sonics", "should be properly scoped");
 
   run(function() {
@@ -177,7 +177,7 @@ test("it should support #with view as foo", function() {
 
   equal(view.$().text(), "Thunder", "should update");
 
-  destroyView(view);
+  runDestroy(view);
 });
 
 test("it should support #with name as food, then #with foo as bar", function() {
@@ -186,7 +186,7 @@ test("it should support #with name as food, then #with foo as bar", function() {
     context: { name: "caterpillar" }
   });
 
-  appendView(view);
+  runAppend(view);
   equal(view.$().text(), "caterpillar", "should be properly scoped");
 
   run(function() {
@@ -195,7 +195,7 @@ test("it should support #with name as food, then #with foo as bar", function() {
 
   equal(view.$().text(), "butterfly", "should update");
 
-  destroyView(view);
+  runDestroy(view);
 });
 
 QUnit.module("Handlebars {{#with this as foo}}");
@@ -206,7 +206,7 @@ test("it should support #with this as qux", function() {
     controller: EmberObject.create({ name: "Los Pivots" })
   });
 
-  appendView(view);
+  runAppend(view);
   equal(view.$().text(), "Los Pivots", "should be properly scoped");
 
   run(function() {
@@ -215,7 +215,7 @@ test("it should support #with this as qux", function() {
 
   equal(view.$().text(), "l'Pivots", "should update");
 
-  destroyView(view);
+  runDestroy(view);
 });
 
 QUnit.module("Handlebars {{#with foo}} with defined controller");
@@ -245,7 +245,7 @@ test("it should wrap context with object controller [DEPRECATED]", function() {
   container.register('controller:person', Controller);
 
   expectDeprecation(function(){
-    appendView(view);
+    runAppend(view);
   }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), "controller:Steve Holt and Bob Loblaw");
@@ -272,7 +272,7 @@ test("it should wrap context with object controller [DEPRECATED]", function() {
 
   strictEqual(view.get('_childViews')[0].get('controller.target'), parentController, "the target property of the child controllers are set correctly");
 
-  destroyView(view);
+  runDestroy(view);
 });
 
 /* requires each
@@ -300,11 +300,11 @@ test("it should still have access to original parentController within an {{#each
 
   container.register('controller:person', Controller);
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "controller:Steve Holt and Bob Loblawcontroller:Carl Weathers and Bob Loblaw");
 
-  destroyView(view);
+  runDestroy(view);
 });
 */
 
@@ -332,7 +332,7 @@ test("it should wrap keyword with object controller", function() {
 
   container.register('controller:person', PersonController);
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "Bob Loblaw - STEVE HOLT");
 
@@ -356,7 +356,7 @@ test("it should wrap keyword with object controller", function() {
 
   equal(view.$().text(), "Carl Weathers - GOB");
 
-  destroyView(view);
+  runDestroy(view);
 });
 
 test("destroys the controller generated with {{with foo controller='blah'}} [DEPRECATED]", function() {
@@ -386,10 +386,10 @@ test("destroys the controller generated with {{with foo controller='blah'}} [DEP
   container.register('controller:person', Controller);
 
   expectDeprecation(function(){
-    appendView(view);
+    runAppend(view);
   }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
-  destroyView(view);
+  runDestroy(view);
 
   ok(destroyed, 'controller was destroyed properly');
 });
@@ -420,9 +420,9 @@ test("destroys the controller generated with {{with foo as bar controller='blah'
 
   container.register('controller:person', Controller);
 
-  appendView(view);
+  runAppend(view);
 
-  destroyView(view);
+  runDestroy(view);
 
   ok(destroyed, 'controller was destroyed properly');
 });
@@ -439,11 +439,11 @@ QUnit.module("{{#with}} helper binding to view keyword", {
       }
     });
 
-    appendView(view);
+    runAppend(view);
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
     Ember.lookup = originalLookup;
   }
 });
@@ -469,11 +469,11 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-block-params')) {
         }
       });
 
-      appendView(view);
+      runAppend(view);
     },
 
     teardown: function() {
-      destroyView(view);
+      runDestroy(view);
       Ember.lookup = originalLookup;
     }
   });

@@ -6,7 +6,7 @@ var trim = jQuery.trim;
 import Container from "ember-runtime/system/container";
 import EmberHandlebars from "ember-handlebars-compiler";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var MyApp, lookup, view, container;
 var originalLookup = Ember.lookup;
@@ -26,7 +26,7 @@ QUnit.module("Support for {{template}} helper", {
     container.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
     Ember.lookup = originalLookup;
   }
 });
@@ -41,7 +41,7 @@ test("should render other templates via the container (DEPRECATED)", function() 
 
   expectDeprecation(/The `template` helper has been deprecated in favor of the `partial` helper./);
 
-  appendView(view);
+  runAppend(view);
 
   equal(trim(view.$().text()), "This sub-template is pretty great.");
 });
@@ -60,7 +60,7 @@ test("should use the current view's context (DEPRECATED)", function() {
 
   expectDeprecation(/The `template` helper has been deprecated in favor of the `partial` helper./);
 
-  appendView(view);
+  runAppend(view);
 
   equal(trim(view.$().text()), "Who is Kris Selden?");
 });

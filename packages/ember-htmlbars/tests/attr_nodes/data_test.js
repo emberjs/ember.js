@@ -4,7 +4,7 @@ import EmberObject from "ember-runtime/system/object";
 import compile from "ember-htmlbars/system/compile";
 import { equalInnerHTML } from "htmlbars-test-helpers";
 import { defaultEnv } from "ember-htmlbars";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view, originalSetAttribute, setAttributeCalls;
 var dom = defaultEnv.dom;
@@ -13,7 +13,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
   QUnit.module("ember-htmlbars: data attribute", {
     teardown: function(){
-      destroyView(view);
+      runDestroy(view);
     }
   });
 
@@ -22,7 +22,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: {name: 'erik'},
       template: compile("<div data-name={{name}}>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', "attribute is output");
   });
@@ -32,7 +32,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: {firstName: 'max', lastName: 'jackson'},
       template: compile("<div data-name='{{firstName}} {{lastName}}'>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, '<div data-name="max jackson">Hi!</div>', "attribute is output");
   });
@@ -42,7 +42,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: {firstName: 'max', lastName: 'jackson'},
       template: compile("<div data-name='{{firstName}} {{lastName}}'>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, '<div data-name="max jackson">Hi!</div>', "precond - attribute is output");
 
@@ -56,7 +56,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: {firstName: 'max', lastName: 'jackson'},
       template: compile("<div data-name='{{firstName}}'>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, '<div data-name="max">Hi!</div>', "precond - attribute is output");
 
@@ -70,7 +70,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: {firstName: 'max'},
       template: compile("<div data-name={{firstName}}>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, '<div data-name="max">Hi!</div>', "precond - attribute is output");
 
@@ -84,7 +84,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: {firstName: null},
       template: compile("<div data-name={{firstName}}>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, '<div>Hi!</div>', "attribute is not present");
   });
@@ -94,7 +94,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: {firstName: null},
       template: compile("<div data-name={{firstName}}>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, '<div>Hi!</div>', "precond - attribute is not present");
 
@@ -108,7 +108,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: {name: '"" data-foo="blah"'},
       template: compile("<div data-name={{name}}>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, '<div data-name="&quot;&quot; data-foo=&quot;blah&quot;">Hi!</div>', "attribute is output");
   });
@@ -118,7 +118,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: {name: {firstName: 'erik'}},
       template: compile("<div data-name={{name.firstName}}>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', "attribute is output");
   });
@@ -129,7 +129,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: context,
       template: compile("<div data-name={{name}}>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', "precond - attribute is output");
 
@@ -146,7 +146,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: context,
       template: compile("<div data-name={{name}}>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', "precond - attribute is output");
 
@@ -172,15 +172,13 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: context,
       template: compile("<div data-name={{name}}>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', "precond - attribute is output");
 
     run(function() {
       context.set('name', 'mmun');
-      run(function() {
-        view.destroy();
-      });
+      runDestroy(view);
     });
   });
 
@@ -199,7 +197,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
     teardown: function() {
       dom.setAttribute = originalSetAttribute;
 
-      destroyView(view);
+      runDestroy(view);
     }
   });
 
@@ -209,7 +207,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: context,
       template: compile("<div data-name={{name}}>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     run(context, context.set, 'name', 'mmun');
 
@@ -227,7 +225,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
       context: context,
       template: compile("<div data-name={{name}}>Hi!</div>")
     });
-    appendView(view);
+    runAppend(view);
 
     run(function() {
       context.set('name', 'mmun');

@@ -9,7 +9,7 @@ import htmlbarsCompile from 'ember-htmlbars/system/compile';
 import EmberHandlebars from "ember-handlebars";
 import { ViewHelper as handlebarsViewHelper } from 'ember-handlebars/helpers/view';
 import { ViewHelper as htmlbarsViewHelper } from 'ember-htmlbars/helpers/view';
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import { set } from 'ember-metal/property_set';
 
@@ -34,10 +34,8 @@ QUnit.module('ember-htmlbars: binding integration', {
   teardown: function() {
     Ember.lookup = originalLookup;
 
-    run(function() {
-      destroyView(view);
-      view = null;
-    });
+    runDestroy(view);
+    view = null;
 
     MyApp = null;
   }
@@ -52,7 +50,7 @@ test('should call a registered helper for mustache without parameters', function
     template: compile('{{foobar}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   ok(view.$().text() === 'foobar', 'Regular helper was invoked correctly');
 });
@@ -65,7 +63,7 @@ test('should bind to the property if no registered helper found for a mustache w
     })
   });
 
-  appendView(view);
+  runAppend(view);
 
   ok(view.$().text() === 'foobarProperty', 'Property was bound to correctly');
 });
@@ -85,7 +83,7 @@ test("should be able to update when bound property updates", function() {
     view = View.create();
   });
 
-  appendView(view);
+  runAppend(view);
 
   run(function() {
     MyApp.set('controller', EmberObject.create({
@@ -103,7 +101,7 @@ test('should cleanup bound properties on rerender', function() {
     template: compile('{{name}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'wycats', 'rendered binding');
 
@@ -132,7 +130,7 @@ test("should update bound values after view's parent is removed and then re-appe
     boundValue: "foo"
   });
 
-  appendView(parentView);
+  runAppend(parentView);
   view = parentView.get('testView');
 
   equal(trim(view.$().text()), "foo");
@@ -153,14 +151,14 @@ test("should update bound values after view's parent is removed and then re-appe
   run(function() {
     set(controller, 'showStuff', true);
   });
-  appendView(parentView);
+  runAppend(parentView);
 
   run(function() {
     set(controller, 'boundValue', "bar");
   });
   equal(trim(view.$().text()), "bar");
 
-  destroyView(parentView);
+  runDestroy(parentView);
 });
 
 test('should accept bindings as a string or an Ember.Binding', function() {
@@ -190,7 +188,7 @@ test('should accept bindings as a string or an Ember.Binding', function() {
     template: compile('{{boogie direction}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(trim(view.$().text()), 'binding: down, string: down');
 });
