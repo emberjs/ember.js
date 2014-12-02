@@ -159,6 +159,24 @@ test("The `unbound if` helper does not update when the value changes", function(
   equal(view.$().text(), 'Yep');
 });
 
+test("The `unboundIf` helper does not update when the value changes", function() {
+  view = EmberView.create({
+    truthy: true,
+    falsey: false,
+    template: compile('{{#unboundIf view.truthy}}Yep{{/unboundIf}}{{#unboundIf view.falsey}}Nope{{/unboundIf}}')
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'Yep');
+
+  run(view, 'set', 'truthy', false);
+  equal(view.$().text(), 'Yep');
+
+  run(view, 'set', 'falsey', true);
+  equal(view.$().text(), 'Yep');
+});
+
 test("The `unless` helper updates when the value changes", function() {
   view = EmberView.create({
     conditional: false,
