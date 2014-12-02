@@ -32,6 +32,40 @@ export function buildHashFromAttributes(attributes) {
   return buildHash(pairs);
 }
 
+// Checks the component's attributes to see if it uses block params.
+// If it does, registers the block params with the program and
+// removes the corresponding attributes from the element.
+
+export function parseComponentBlockParams(element, program) {
+  var l = element.attributes.length;
+  var attrNames = [];
+
+  for (var i = 0; i < l; i++) {
+    attrNames.push(element.attributes[i].name);
+  }
+
+  var asIndex = attrNames.indexOf('as');
+
+  if (asIndex !== -1 && l > asIndex && attrNames[asIndex + 1].charAt(0) === '|') {
+    // Some basic validation, since we're doing the parsing ourselves
+    var paramsString = attrNames.slice(asIndex).join(' ');
+    if (paramsString.charAt(paramsString.length - 1) !== '|' || paramsString.match(/\|/g).length !== 2) {
+      throw new Error('Invalid block parameters syntax: \'' + paramsString + '\'');
+    }
+
+    var params = [];
+    for (i = asIndex + 1; i < l; i++) {
+      var param = attrNames[i].replace('|', '');
+      if (param !== '') {
+        params.push(param);
+      }
+    }
+
+    element.attributes = element.attributes.slice(0, asIndex);
+    program.blockParams = params;
+  }
+}
+
 // Adds an empty text node at the beginning and end of a program.
 // The empty text nodes *between* nodes are handled elsewhere.
 // Also processes all whitespace stripping directives.
