@@ -26,20 +26,25 @@ export default function(ast) {
       var removedParams = node.sexpr.params.splice(0, 2);
       var keyword = removedParams[0].original;
       var stringNode = {
-        type: 'STRING',
-        string: keyword,
-        stringModeValue: keyword,
+        type: 'StringLiteral',
+        value: keyword,
         original: keyword
       };
 
       if (!node.sexpr.hash) {
         node.sexpr.hash = {
-          type: 'hash',
+          type: 'Hash',
           pairs: []
         };
       }
 
-      node.sexpr.hash.pairs.push(['keyword', stringNode]);
+      var hashPair = {
+        type: 'HashPair',
+        key: 'keyword',
+        value: stringNode
+      };
+
+      node.sexpr.hash.pairs.push(hashPair);
     }
   });
 
@@ -47,9 +52,9 @@ export default function(ast) {
 }
 
 function validate(node) {
-  return (node.type === 'block' || node.type === 'mustache') &&
-    node.sexpr.id.original === 'each' &&
+  return (node.type === 'BlockStatement' || node.type === 'MustacheStatement') &&
+    node.sexpr.path.original === 'each' &&
     node.sexpr.params.length === 3 &&
-    node.sexpr.params[1].type === 'ID' &&
+    node.sexpr.params[1].type === 'PathExpression' &&
     node.sexpr.params[1].original === 'in';
 }
