@@ -8,7 +8,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
   test("HTMLBars is present and can be executed", function() {
     var template = compile("ohai");
-    var output = template({}, defaultEnv, document.body);
+    var output = template.render({}, defaultEnv, document.body);
     equalHTML(output, "ohai");
   });
 }

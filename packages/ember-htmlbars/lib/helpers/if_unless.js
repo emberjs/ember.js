@@ -21,6 +21,12 @@ function shouldDisplayIfHelperContent(result) {
   }
 }
 
+var EMPTY_TEMPLATE = {
+  isHTMLBars: true,
+  render: function() {
+    return '';
+  }
+};
 /**
   Use the `boundIf` helper to create a conditional that re-evaluates
   whenever the truthiness of the bound value changes.
@@ -65,7 +71,7 @@ function boundIfHelper(params, hash, options, env) {
   @since 1.4.0
 */
 function unboundIfHelper(params, hash, options, env) {
-  var template = options.render;
+  var template = options.template;
   var value = params[0];
 
   if (params[0].isStream) {
@@ -76,7 +82,7 @@ function unboundIfHelper(params, hash, options, env) {
     template = options.inverse;
   }
 
-  return template(this, env, options.morph.contextualElement);
+  return template.render(this, env, options.morph.contextualElement);
 }
 
 /**
@@ -90,9 +96,9 @@ function unboundIfHelper(params, hash, options, env) {
   @return {String} HTML string
 */
 function ifHelper(params, hash, options, env) {
-  Ember.assert("If helper in block form expect exactly one argument", !options.render || params.length === 1);
+  Ember.assert("If helper in block form expect exactly one argument", !options.template || params.length === 1);
   if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
-    if (!options.render) {
+    if (!options.template) {
       Ember.assert("If helper in inline form expects between two and three arguments", params.length === 2 || params.length === 3);
       var condition = params[0];
       var truthy = params[1];
@@ -101,7 +107,7 @@ function ifHelper(params, hash, options, env) {
     }
   }
 
-  options.inverse = options.inverse || function(){ return ''; };
+  options.inverse = options.inverse || EMPTY_TEMPLATE;
 
   options.helperName = options.helperName || ('if ');
 
@@ -121,14 +127,14 @@ function ifHelper(params, hash, options, env) {
 */
 function unlessHelper(params, hash, options, env) {
   Ember.assert("You must pass exactly one argument to the unless helper", params.length === 1);
-  Ember.assert("You must pass a block to the unless helper", !!options.render);
+  Ember.assert("You must pass a block to the unless helper", !!options.template);
 
-  var fn = options.render;
-  var inverse = options.inverse || function(){ return ''; };
+  var template = options.template;
+  var inverse = options.inverse || EMPTY_TEMPLATE;
   var helperName = 'unless';
 
-  options.render = inverse;
-  options.inverse = fn;
+  options.template = inverse;
+  options.inverse = template;
 
   options.helperName = options.helperName || helperName;
 

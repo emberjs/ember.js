@@ -34,15 +34,11 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   defaultTemplate = handlebarsTemplate;
 }
 
-var SelectOption = View.extend({
-  instrumentDisplay: 'Ember.SelectOption',
-
-  tagName: 'option',
-  attributeBindings: ['value', 'selected'],
-
-  defaultTemplate: function(context, env, contextualElement) {
-    var options;
-    if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+var selectOptionDefaultTemplate;
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  selectOptionDefaultTemplate = {
+    isHTMLBars: true,
+    render: function(context, env, contextualElement) {
       var lazyValue = context.getStream('view.label');
 
       lazyValue.subscribe(context._wrapAsScheduled(function() {
@@ -50,11 +46,22 @@ var SelectOption = View.extend({
       }));
 
       return lazyValue.value();
-    } else {
-      options = { data: env.data, hash: {} };
-      EmberHandlebars.helpers.bind.call(context, "view.label", options);
     }
-  },
+  };
+} else {
+  selectOptionDefaultTemplate = function(context, env) {
+    var options = { data: env.data, hash: {} };
+    EmberHandlebars.helpers.bind.call(context, "view.label", options);
+  };
+}
+
+var SelectOption = View.extend({
+  instrumentDisplay: 'Ember.SelectOption',
+
+  tagName: 'option',
+  attributeBindings: ['value', 'selected'],
+
+  defaultTemplate: selectOptionDefaultTemplate,
 
   init: function() {
     this.labelPathDidChange();

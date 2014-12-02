@@ -158,7 +158,7 @@ export function renderHelper(params, hash, options, env) {
 
   var templateName = 'template:' + name;
   Ember.assert("You used `{{render '" + name + "'}}`, but '" + name + "' can not be found as either" +
-               " a template or a view.", container.has("view:" + name) || container.has(templateName) || !!options.render);
+               " a template or a view.", container.has("view:" + name) || container.has(templateName) || !!options.template);
   hash.template = container.lookup(templateName);
 
   hash.controller = controller;

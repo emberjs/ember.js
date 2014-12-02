@@ -120,7 +120,7 @@ export var ViewHelper = EmberObject.create({
 
   helper: function(newView, hash, options, env) {
     var data = env.data;
-    var fn   = options.render;
+    var template = options.template;
 
     makeBindings(hash, options, env.data.view);
 
@@ -128,10 +128,12 @@ export var ViewHelper = EmberObject.create({
     var currentView = data.view;
     var newViewProto = newView.proto();
 
-    if (fn) {
-      Ember.assert("You cannot provide a template block if you also specified a templateName",
-                   !get(viewOptions, 'templateName') && !get(newViewProto, 'templateName'));
-      viewOptions.template = fn;
+    if (template) {
+      Ember.assert(
+        "You cannot provide a template block if you also specified a templateName",
+        !get(viewOptions, 'templateName') && !get(newViewProto, 'templateName')
+      );
+      viewOptions.template = template;
     }
 
     // We only want to override the `_context` computed property if there is
@@ -147,7 +149,7 @@ export var ViewHelper = EmberObject.create({
 
   instanceHelper: function(newView, hash, options, env) {
     var data = env.data;
-    var fn   = options.render;
+    var template = options.template;
 
     makeBindings(hash, options, env.data.view);
 
@@ -159,10 +161,12 @@ export var ViewHelper = EmberObject.create({
     var viewOptions = this.propertiesFromHTMLOptions(hash, options, env);
     var currentView = data.view;
 
-    if (fn) {
-      Ember.assert("You cannot provide a template block if you also specified a templateName",
-                   !get(viewOptions, 'templateName') && !get(newView, 'templateName'));
-      viewOptions.template = fn;
+    if (template) {
+      Ember.assert(
+        "You cannot provide a template block if you also specified a templateName",
+        !get(viewOptions, 'templateName') && !get(newView, 'templateName')
+      );
+      viewOptions.template = template;
     }
 
     // We only want to override the `_context` computed property if there is

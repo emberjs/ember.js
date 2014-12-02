@@ -291,21 +291,24 @@ function linkToHelper(params, hash, options, env) {
     delete hash.disabledWhen;
   }
 
-  if (!options.render) {
+  if (!options.template) {
     var linkTitle = params.shift();
 
     if (isStream(linkTitle)) {
       hash.linkTitle = { stream: linkTitle };
     }
 
-    options.render = function() {
-      // HTMLBars TODO: what do we use as a replacement to
-      // `Handlebars.Utils.escapeExpression` ?
-      var value = read(linkTitle);
-      if (value) {
-        return shouldEscape ? Handlebars.Utils.escapeExpression(value) : value;
-      } else {
-        return "";
+    options.template = {
+      isHTMLBars: true,
+      render: function() {
+        // HTMLBars TODO: what do we use as a replacement to
+        // `Handlebars.Utils.escapeExpression` ?
+        var value = read(linkTitle);
+        if (value) {
+          return shouldEscape ? Handlebars.Utils.escapeExpression(value) : value;
+        } else {
+          return "";
+        }
       }
     };
   }
