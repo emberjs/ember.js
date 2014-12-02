@@ -1,4 +1,12 @@
-import { TextNode, StringNode, HashNode, usesMorph } from "../ast";
+import { usesMorph } from "../ast";
+import {
+  buildText,
+  buildString,
+  buildHash,
+  buildPair,
+  buildSexpr,
+  buildPath
+} from "../builders";
 
 // Rewrites an array of AttrNodes into a HashNode.
 // MustacheNodes are replaced with their root SexprNode and
@@ -9,24 +17,19 @@ export function buildHashFromAttributes(attributes) {
 
   for (var i = 0; i < attributes.length; i++) {
     var attr = attributes[i];
-    if (attr.value.type === 'sexpr') {
-      pairs.push([attr.name, attr.value]);
-    } else if (attr.value.type === 'text') {
-      pairs.push([attr.name, new StringNode(attr.value.chars)]);
+    var value;
+    if (attr.value.type === 'SubExpression') {
+      value = attr.value;
+    } else if (attr.value.type === 'TextNode') {
+      value = buildString(attr.value.chars);
     } else {
-      pairs.push([attr.name, {
-        type: 'sexpr',
-        id: {
-          string: 'concat',
-          parts: ['concat']
-        },
-        params: attr.value,
-        hash: null
-      }]);
+      value = buildSexpr(buildPath('concat'), attr.value);
     }
+
+    pairs.push(buildPair(attr.name, value));
   }
 
-  return new HashNode(pairs);
+  return buildHash(pairs);
 }
 
 // Adds an empty text node at the beginning and end of a program.
@@ -34,44 +37,44 @@ export function buildHashFromAttributes(attributes) {
 // Also processes all whitespace stripping directives.
 
 export function postprocessProgram(program) {
-  var statements = program.statements;
+  var body = program.body;
 
-  if (statements.length === 0) {
+  if (body.length === 0) {
     return;
   }
 
-  if (usesMorph(statements[0])) {
-    statements.unshift(new TextNode(''));
+  if (usesMorph(body[0])) {
+    body.unshift(buildText(''));
   }
 
-  if (usesMorph(statements[statements.length-1])) {
-    statements.push(new TextNode(''));
+  if (usesMorph(body[body.length-1])) {
+    body.push(buildText(''));
   }
 
   // Perform any required whitespace stripping
-  var l = statements.length;
+  var l = body.length;
   for (var i = 0; i < l; i++) {
-    var statement = statements[i];
+    var statement = body[i];
 
-    if (statement.type !== 'text') {
+    if (statement.type !== 'TextNode') {
       continue;
     }
 
-    if ((i > 0 && statements[i-1].strip && statements[i-1].strip.right) ||
-      (i === 0 && program.strip.left)) {
-      statement.chars = statement.chars.replace(/^\s+/, '');
-    }
+    // if ((i > 0 && body[i-1].strip && body[i-1].strip.right) ||
+    //   (i === 0 && program.strip.left)) {
+    //   statement.chars = statement.chars.replace(/^\s+/, '');
+    // }
 
-    if ((i < l-1 && statements[i+1].strip && statements[i+1].strip.left) ||
-      (i === l-1 && program.strip.right)) {
-      statement.chars = statement.chars.replace(/\s+$/, '');
-    }
+    // if ((i < l-1 && body[i+1].strip && body[i+1].strip.left) ||
+    //   (i === l-1 && program.strip.right)) {
+    //   statement.chars = statement.chars.replace(/\s+$/, '');
+    // }
 
     // Remove unnecessary text nodes
     if (statement.chars.length === 0) {
-      if ((i > 0 && statements[i-1].type === 'element') ||
-        (i < l-1 && statements[i+1].type === 'element')) {
-        statements.splice(i, 1);
+      if ((i > 0 && body[i-1].type === 'ElementNode') ||
+        (i < l-1 && body[i+1].type === 'ElementNode')) {
+        body.splice(i, 1);
         i--;
         l--;
       }

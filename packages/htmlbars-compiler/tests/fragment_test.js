@@ -77,7 +77,7 @@ test('converts entities to their char/string equivalent', function () {
 });
 
 test('hydrates a fragment with morph mustaches', function () {
-  var ast = preprocess("<div>{{foo \"foo\" 3 blah bar=baz ack=\"syn\"}} bar {{baz}}</div>");
+  var ast = preprocess("<div>{{foo \"foo\" 3 blah true bar=baz ack=\"syn\"}} bar {{baz}}</div>");
   var fragment = fragmentFor(ast).cloneNode(true);
   var hydrate = hydratorFor(ast);
 
@@ -109,7 +109,7 @@ test('hydrates a fragment with morph mustaches', function () {
   equal(foo.morph.parent(), fragment);
   equal(foo.context, context);
   equal(foo.path, 'foo');
-  deepEqual(foo.params, ["foo",3,"BLAH"]);
+  deepEqual(foo.params, ["foo",3,"BLAH", true]);
   deepEqual(foo.hash, {ack:"syn",bar:"BAZ"});
 
   var baz = contentResolves[1];

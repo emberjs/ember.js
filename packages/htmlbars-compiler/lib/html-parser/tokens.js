@@ -1,8 +1,8 @@
 import { Chars, StartTag, EndTag } from "../../simple-html-tokenizer";
-import { AttrNode, TextNode, StringNode } from "../ast";
+import { buildText, buildAttr, buildString } from "../builders";
 
 StartTag.prototype.startAttribute = function(char) {
-  this.currentAttribute = new AttrNode(char.toLowerCase(), [], null);
+  this.currentAttribute = buildAttr(char.toLowerCase(), [], null);
   this.attributes.push(this.currentAttribute);
 };
 
@@ -17,13 +17,13 @@ StartTag.prototype.addToAttributeName = function(char) {
 StartTag.prototype.addToAttributeValue = function(char) {
   var value = this.currentAttribute.value;
 
-  if (char.type === 'sexpr' || char.type === 'ID') {
+  if (char.type === 'SubExpression' || char.type === 'PathExpression') {
     value.push(char);
   } else {
-    if (value.length > 0 && value[value.length - 1].type === 'text') {
+    if (value.length > 0 && value[value.length - 1].type === 'TextNode') {
       value[value.length - 1].chars += char;
     } else {
-      value.push(new TextNode(char));
+      value.push(buildText(char));
     }
   }
 };
@@ -41,12 +41,12 @@ StartTag.prototype.finalizeAttributeValue = function() {
   var parts = this.currentAttribute.value;
 
   if (parts.length === 0) {
-    parts.push(new TextNode(""));
+    parts.push(buildText(''));
   } else if (parts.length > 1) {
     // Convert TextNode to StringNode
     for (var i = 0; i < parts.length; i++) {
-      if (parts[i].type === 'text') {
-        parts[i] = new StringNode(parts[i].chars);
+      if (parts[i].type === 'TextNode') {
+        parts[i] = buildString(parts[i].chars);
       }
     }
   }

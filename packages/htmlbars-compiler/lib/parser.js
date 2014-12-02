@@ -40,11 +40,11 @@ HTMLProcessor.prototype.currentElement = function() {
 };
 
 HTMLProcessor.prototype.sourceForMustache = function(mustache) {
-  var firstLine = mustache.firstLine - 1;
-  var lastLine = mustache.lastLine - 1;
+  var firstLine = mustache.loc.start.line - 1;
+  var lastLine = mustache.loc.end.line - 1;
   var currentLine = firstLine - 1;
-  var firstColumn = mustache.firstColumn + 2;
-  var lastColumn = mustache.lastColumn - 2;
+  var firstColumn = mustache.loc.start.column + 2;
+  var lastColumn = mustache.loc.end.column - 2;
   var string = [];
   var line;
 
