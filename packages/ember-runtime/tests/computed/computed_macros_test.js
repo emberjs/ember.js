@@ -1,6 +1,6 @@
-import {computed} from "ember-metal/computed";
+import { computed } from "ember-metal/computed";
 import EmberObject from "ember-runtime/system/object";
-import {testBoth} from "ember-runtime/tests/props_helper";
+import { testBoth } from "ember-metal/tests/props_helper";
 
 QUnit.module('CP macros');
 

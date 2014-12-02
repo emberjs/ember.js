@@ -1,6 +1,4 @@
-/*globals testBoth */
-
-import testBoth from 'ember-metal/tests/props_helper';
+import { testBoth } from 'ember-metal/tests/props_helper';
 import {
   observer,
   mixin,

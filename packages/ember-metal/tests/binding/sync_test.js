@@ -1,4 +1,4 @@
-import testBoth from 'ember-metal/tests/props_helper';
+import { testBoth } from 'ember-metal/tests/props_helper';
 import run from 'ember-metal/run_loop';
 import {
   addObserver

@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core';
-import testBoth from 'ember-metal/tests/props_helper';
+import { testBoth } from 'ember-metal/tests/props_helper';
 import {
   Binding,
   bind

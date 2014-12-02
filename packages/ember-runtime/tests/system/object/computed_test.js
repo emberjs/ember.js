@@ -1,7 +1,7 @@
-import {computed} from "ember-metal/computed";
-import {get as emberGet} from "ember-metal/property_get";
-import {observer} from "ember-metal/mixin";
-import { testWithDefault } from 'ember-runtime/tests/props_helper';
+import { computed } from "ember-metal/computed";
+import { get as emberGet } from "ember-metal/property_get";
+import { observer } from "ember-metal/mixin";
+import { testWithDefault } from "ember-metal/tests/props_helper";
 import EmberObject from "ember-runtime/system/object";
 
 function K() { return this; }
