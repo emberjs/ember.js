@@ -3,14 +3,14 @@ import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import compile from "ember-htmlbars/system/compile";
 import { equalInnerHTML } from "htmlbars-test-helpers";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   QUnit.module("ember-htmlbars: basic/text_node_test", {
     teardown: function(){
-      destroyView(view);
+      runDestroy(view);
     }
   });
 
@@ -19,7 +19,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
       context: {name: 'erik'},
       template: compile("ohai {{name}}")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, 'ohai erik', "property is output");
   });
@@ -29,7 +29,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
       context: {name: {firstName: 'erik'}},
       template: compile("ohai {{name.firstName}}")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, 'ohai erik', "path is output");
   });
@@ -40,7 +40,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
       context: context,
       template: compile("ohai {{name}}")
     });
-    appendView(view);
+    runAppend(view);
 
     equalInnerHTML(view.element, 'ohai erik', "precond - original property is output");
 

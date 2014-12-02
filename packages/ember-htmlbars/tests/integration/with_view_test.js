@@ -7,7 +7,7 @@ import EmberObject from 'ember-runtime/system/object';
 import _MetamorphView from 'ember-views/views/metamorph_view';
 import EmberHandlebars from 'ember-handlebars';
 import htmlbarsCompile from 'ember-htmlbars/system/compile';
-import { appendView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import { set } from 'ember-metal/property_set';
 
@@ -31,17 +31,9 @@ QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
   },
 
   teardown: function() {
-    run(function() {
-      if (container) {
-        container.destroy();
-      }
-
-      if (view) {
-        view.destroy();
-      }
-
-      container = view = null;
-    });
+    runDestroy(container);
+    runDestroy(view);
+    container = view = null;
   }
 });
 
@@ -59,7 +51,7 @@ test('View should update when the property used with the #with helper changes [D
   });
 
   expectDeprecation(function() {
-    appendView(view);
+    runAppend(view);
   }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$('#first').text(), 'bam', 'precond - view renders Handlebars template');
@@ -90,7 +82,7 @@ test('should expose a view keyword [DEPRECATED]', function() {
   });
 
   expectDeprecation(function() {
-    appendView(view);
+    runAppend(view);
   }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), 'barbang', 'renders values from view and child view');
@@ -113,7 +105,7 @@ test('bindings can be `this`, in which case they *are* the current context [DEPR
   });
 
   expectDeprecation(function() {
-    appendView(view);
+    runAppend(view);
   }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(trim(view.$().text()), 'Name: SFMoMA Price: $20', 'should print baz twice');
@@ -151,7 +143,7 @@ test('child views can be inserted inside a bind block', function() {
     blah: 'wot'
   }));
 
-  appendView(view);
+  runAppend(view);
 
   ok(view.$('#hello-world:contains("Hello world!")').length, 'The parent view renders its contents');
 
@@ -175,7 +167,7 @@ test('views render their template in the context of the parent view\'s context',
     context: context
   });
 
-  appendView(view);
+  runAppend(view);
   equal(view.$('h1').text(), 'Lana del Heeeyyyyyy', 'renders properties from parent context');
 });
 
@@ -195,6 +187,6 @@ test('views make a view keyword available that allows template to reference view
     }
   });
 
-  appendView(view);
+  runAppend(view);
   equal(view.$('h1').text(), 'Brodele del Heeeyyyyyy', 'renders properties from parent context');
 });

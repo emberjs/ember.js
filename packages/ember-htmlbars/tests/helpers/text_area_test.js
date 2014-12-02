@@ -3,7 +3,7 @@ import View from "ember-views/views/view";
 import EmberHandlebars from "ember-htmlbars/compat";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
 import { set as o_set } from "ember-metal/property_set";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -29,11 +29,11 @@ QUnit.module("{{textarea}}", {
       template: compile('{{textarea disabled=disabled value=val}}')
     }).create();
 
-    appendView(textArea);
+    runAppend(textArea);
   },
 
   teardown: function() {
-    destroyView(textArea);
+    runDestroy(textArea);
   }
 });
 

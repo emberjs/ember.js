@@ -3,12 +3,9 @@ import run from "ember-metal/run_loop";
 import Container from "container";
 import makeBoundHelper from "ember-htmlbars/system/make_bound_helper";
 import compile from "ember-htmlbars/system/compile";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view, container;
-
-function appendView(view) {
-  run(view, 'appendTo', '#qunit-fixture');
-}
 
 function registerRepeatHelper() {
   container.register('helper:x-repeat', makeBoundHelper(function(params, hash, options, env) {
@@ -25,11 +22,8 @@ QUnit.module("ember-htmlbars: makeBoundHelper", {
   },
 
   teardown: function() {
-    if (view) {
-      run(view, 'destroy');
-    }
-
-    container.destroy();
+    runDestroy(view);
+    runDestroy(container);
   }
 });
 
@@ -44,7 +38,7 @@ test("should update bound helpers when properties change", function() {
     template: compile("{{x-capitalize name}}")
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'BROGRAMMER', "helper output is correct");
 
@@ -65,7 +59,7 @@ test("should update bound helpers when hash properties change", function() {
     template: compile("{{x-repeat phrase times=repeatCount}}")
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'Yo', "initial helper output is correct");
 
@@ -85,7 +79,7 @@ test("bound helpers should support keywords", function() {
     template: compile("{{x-capitalize view.text}}")
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'AB', "helper output is correct");
 });
@@ -102,7 +96,7 @@ test("bound helpers should support bound options", function() {
     template: compile('{{x-repeat text timesBinding="numRepeats"}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'ababab', "helper output is correct");
 
@@ -133,7 +127,7 @@ test("bound helpers should support multiple bound properties", function() {
     template: compile('{{x-combine thing1 thing2}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'ZOIDBERG', "helper output is correct");
 
@@ -162,7 +156,7 @@ test("bound helpers can be invoked with zero args", function() {
     template: compile('{{x-troll}} and {{x-troll text="bork"}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'TROLOLOL and bork', "helper output is correct");
 });
@@ -176,7 +170,7 @@ test("bound helpers should not be invoked with blocks", function() {
   });
 
   expectAssertion(function() {
-    appendView(view);
+    runAppend(view);
   }, /makeBoundHelper generated helpers do not support use with blocks/i);
 });
 
@@ -191,7 +185,7 @@ test("shouldn't treat raw numbers as bound paths", function() {
     template: compile("{{x-sum aNumber 1}} {{x-sum 0 aNumber}} {{x-sum 5 6}}")
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), '2 1 11', "helper output is correct");
 
@@ -211,7 +205,7 @@ test("should have correct argument types", function() {
     template: compile('{{get-type null}}, {{get-type undefProp}}, {{get-type "string"}}, {{get-type 1}}, {{get-type this}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'undefined, undefined, string, number, object', "helper output is correct");
 });

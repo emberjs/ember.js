@@ -2,7 +2,7 @@ import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
 import EmberHandlebars from 'ember-handlebars';
 import htmlbarsCompile from 'ember-htmlbars/system/compile';
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var originalLookup, originalLog, logCalls, lookup, view, compile;
 
@@ -24,7 +24,7 @@ QUnit.module('ember-htmlbars: {{#log}} helper', {
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
 
     view = null;
 
@@ -43,7 +43,7 @@ test('should be able to log a property', function() {
     template: compile('{{log value}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), '', 'shouldn\'t render any text');
   equal(logCalls[0], 'one', 'should call log with value');
@@ -55,7 +55,7 @@ test('should be able to log a view property', function() {
     value: 'one'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), '', 'shouldn\'t render any text');
   equal(logCalls[0], 'one', 'should call log with value');
@@ -67,7 +67,7 @@ test('should be able to log `this`', function() {
     template: compile('{{log this}}'),
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), '', 'shouldn\'t render any text');
   equal(logCalls[0], 'one', 'should call log with item one');

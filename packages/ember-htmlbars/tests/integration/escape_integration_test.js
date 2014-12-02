@@ -6,7 +6,7 @@ import htmlbarsCompile from 'ember-htmlbars/system/compile';
 
 import { set } from 'ember-metal/property_set';
 import { create as o_create } from 'ember-metal/platform';
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var compile, view;
 
@@ -18,7 +18,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
 QUnit.module('ember-htmlbars: Integration with Globals', {
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
 
     view = null;
   }
@@ -31,7 +31,7 @@ test('should read from a global-ish simple local path without deprecation', func
   });
 
   expectNoDeprecation();
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'Gwar');
 });
@@ -43,11 +43,11 @@ test('should read a number value', function() {
     template: compile('{{aNumber}}')
   });
 
-  appendView(view);
+  runAppend(view);
   equal(view.$().text(), '1');
 
-  Ember.run(function(){
-    Ember.set(context, 'aNumber', 2);
+  run(function(){
+    set(context, 'aNumber', 2);
   });
 
   equal(view.$().text(), '2');
@@ -60,11 +60,11 @@ test('should read an escaped number value', function() {
     template: compile('{{{aNumber}}}')
   });
 
-  appendView(view);
+  runAppend(view);
   equal(view.$().text(), '1');
 
-  Ember.run(function(){
-    Ember.set(context, 'aNumber', 2);
+  run(function(){
+    set(context, 'aNumber', 2);
   });
 
   equal(view.$().text(), '2');
@@ -79,11 +79,11 @@ test('should read from an Object.create(null)', function() {
     template: compile('{{nullObject.foo}}')
   });
 
-  appendView(view);
+  runAppend(view);
   equal(view.$().text(), 'bar');
 
-  Ember.run(function(){
-    Ember.set(nullObject, 'foo', 'baz');
+  run(function(){
+    set(nullObject, 'foo', 'baz');
   });
 
   equal(view.$().text(), 'baz');
@@ -95,7 +95,7 @@ test('should escape HTML in primitive value contexts when using normal mustaches
     template: compile('{{this}}'),
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('b').length, 0, 'does not create an element');
   equal(view.$().text(), '<b>Max</b><b>James</b>', 'inserts entities, not elements');
@@ -114,7 +114,7 @@ test('should not escape HTML in primitive value contexts when using triple musta
     template: compile('{{{this}}}'),
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('b').length, 2, 'creates an element');
 

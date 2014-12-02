@@ -1,7 +1,7 @@
 import run from "ember-metal/run_loop";
 import { set } from "ember-metal/property_set";
 import View from "ember-views/views/view";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import EmberHandlebars from "ember-handlebars";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
@@ -32,11 +32,11 @@ QUnit.module("{{input type='text'}}", {
       template: compile('{{input type="text" disabled=disabled value=val placeholder=place name=name maxlength=max size=size tabindex=tab}}')
     }).create();
 
-    appendView(view);
+    runAppend(view);
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
   }
 });
 
@@ -99,11 +99,11 @@ QUnit.module("{{input type='text'}} - static values", {
       template: compile('{{input type="text" disabled=true value="hello" placeholder="Enter some text" name="some-name" maxlength=30 size=30 tabindex=5}}')
     }).create();
 
-    appendView(view);
+    runAppend(view);
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
   }
 });
 
@@ -150,11 +150,11 @@ QUnit.module("{{input type='text'}} - dynamic type", {
       template: compile('{{input type=someProperty}}')
     }).create();
 
-    appendView(view);
+    runAppend(view);
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
   }
 });
 
@@ -171,11 +171,11 @@ QUnit.module("{{input}} - default type", {
       template: compile('{{input}}')
     }).create();
 
-    appendView(view);
+    runAppend(view);
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
   }
 });
 
@@ -196,11 +196,11 @@ QUnit.module("{{input type='checkbox'}}", {
       template: compile('{{input type="checkbox" disabled=disabled tabindex=tab name=name checked=val}}')
     }).create();
 
-    appendView(view);
+    runAppend(view);
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
   }
 });
 
@@ -241,13 +241,13 @@ QUnit.module("{{input type='checkbox'}} - prevent value= usage", {
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
   }
 });
 
 test("It asserts the presence of checked=", function() {
   expectAssertion(function() {
-    appendView(view);
+    runAppend(view);
   }, /you must use `checked=/);
 });
 
@@ -263,11 +263,11 @@ QUnit.module("{{input type=boundType}}", {
       template: compile('{{input type=inputType checked=isChecked}}')
     }).create();
 
-    appendView(view);
+    runAppend(view);
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
   }
 });
 
@@ -294,11 +294,11 @@ QUnit.module("{{input type='checkbox'}} - static values", {
       template: compile('{{input type="checkbox" disabled=true tabindex=6 name="hello" checked=false}}')
     }).create();
 
-    appendView(view);
+    runAppend(view);
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
   }
 });
 

@@ -3,7 +3,7 @@ import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import EmberHandlebars from "ember-handlebars-compiler";
 import { set } from "ember-metal/property_set";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import {
   default as htmlbarsHelpers,
@@ -26,7 +26,7 @@ var view;
 
 QUnit.module("ember-htmlbars: Ember.HTMLBars.helper", {
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
 
     delete helpers.oceanView;
     delete helpers.something;
@@ -45,7 +45,7 @@ test("should render an instance of the specified view", function() {
     template: compile('{{oceanView tagName="strong"}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   var oceanViews = view.$().find("strong:contains('zomg, nice view')");
 
@@ -66,7 +66,7 @@ test("Should bind to this keyword", function() {
     template: compile('{{oceanView tagName="strong" viewName="ocean" model=this}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   var oceanViews = view.$().find("strong:contains('foo')");
 
@@ -102,7 +102,7 @@ test('should create a bound helper when provided a function', function() {
     template: compile('{{something value}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'foo', 'renders the bound value initially');
 

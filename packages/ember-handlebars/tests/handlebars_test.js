@@ -3,13 +3,13 @@ import Ember from "ember-metal/core";
 import EmberView from "ember-views/views/view";
 import EmberHandlebars from "ember-handlebars";
 import { A } from "ember-runtime/system/native_array";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view;
 
 QUnit.module("Templates redrawing and bindings", {
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
   }
 });
 
@@ -24,7 +24,7 @@ test("should provide a helpful assertion for bindings within HTML comments", fun
   });
 
   expectAssertion(function() {
-    appendView(view);
+    runAppend(view);
   }, 'An error occured while setting up template bindings. Please check "blahzorz" template for invalid markup or bindings within HTML comments.');
 });
 
@@ -39,7 +39,7 @@ test("using Handlebars helper that doesn't exist should result in an error", fun
       template: EmberHandlebars.compile('{{#group}}{{#each name in content}}{{name}}{{/each}}{{/group}}')
     });
 
-    appendView(view);
+    runAppend(view);
   }, "Missing helper: 'group'");
 });
 }

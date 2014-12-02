@@ -2,7 +2,7 @@ import ComponentLookup from "ember-views/component_lookup";
 import Container from "container";
 import EmberView from "ember-views/views/view";
 import compile from "ember-htmlbars/system/compile";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view, container;
 
@@ -30,7 +30,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
       },
 
       teardown: function(){
-        destroyView(view);
+        runDestroy(view);
       }
     });
 
@@ -42,7 +42,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
         template: compile("<foo-bar />")
       });
 
-      appendView(view);
+      runAppend(view);
 
       equal(view.$().text(), 'yippie!', 'component was looked up and rendered');
     });
@@ -54,7 +54,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
       });
 
       expectAssertion(function() {
-        appendView(view);
+        runAppend(view);
       }, 'You specified `foo-bar` in your template, but a component for `foo-bar` could not be found.');
     });
   }

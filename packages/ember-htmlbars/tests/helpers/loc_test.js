@@ -1,7 +1,7 @@
 import EmberView from 'ember-views/views/view';
 import EmberHandlebars from 'ember-handlebars-compiler';
 import htmlbarsCompile from "ember-htmlbars/system/compile";
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var compile;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -34,29 +34,29 @@ QUnit.module('ember-htmlbars: {{#loc}} helper', {
 
 test('let the original value through by default', function() {
   var view = buildView('{{loc "Hiya buddy!"}}');
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'Hiya buddy!');
 
-  destroyView(view);
+  runDestroy(view);
 });
 
 test('localize a simple string', function() {
   var view = buildView('{{loc "_Howdy Friend"}}');
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'Hallo Freund');
 
-  destroyView(view);
+  runDestroy(view);
 });
 
 test('localize takes passed formats into an account', function() {
   var view = buildView('{{loc "%@, %@" "Hello" "Mr. Pitkin"}}');
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'Hello, Mr. Pitkin', 'the value of localizationKey is correct');
 
-  destroyView(view);
+  runDestroy(view);
 });
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -66,10 +66,10 @@ test('localize throws an assertion if the second parameter is a binding', functi
   });
 
   expectAssertion(function() {
-    appendView(view);
+    runAppend(view);
   }, /You cannot pass bindings to `loc` helper/);
 
-  destroyView(view);
+  runDestroy(view);
 });
 
 test('localize a binding throws an assertion', function() {
@@ -78,9 +78,9 @@ test('localize a binding throws an assertion', function() {
   });
 
   expectAssertion(function() {
-    appendView(view);
+    runAppend(view);
   }, /You cannot pass bindings to `loc` helper/);
 
-  destroyView(view);
+  runDestroy(view);
 });
 }

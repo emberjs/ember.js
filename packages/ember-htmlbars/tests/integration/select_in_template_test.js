@@ -10,7 +10,7 @@ import ArrayProxy from "ember-runtime/system/array_proxy";
 import SelectView from "ember-views/views/select";
 import EmberHandlebars from 'ember-handlebars-compiler';
 import { default as htmlbarsCompile } from 'ember-htmlbars/system/compile';
-import { appendView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var dispatcher, view;
 
@@ -28,10 +28,8 @@ QUnit.module("ember-htmlbars: Ember.Select - usage inside templates", {
   },
 
   teardown: function() {
-    run(function() {
-      dispatcher.destroy();
-      if (view) { view.destroy(); }
-    });
+    runDestroy(dispatcher);
+    runDestroy(view);
   }
 });
 
@@ -76,7 +74,7 @@ test("works from a template with bindings", function() {
     )
   });
 
-  appendView(view);
+  runAppend(view);
 
   var select = view.get('select');
   ok(select.$().length, "Select was rendered");
@@ -111,7 +109,7 @@ test("upon content change, the DOM should reflect the selection (#481)", functio
     )
   });
 
-  appendView(view);
+  runAppend(view);
 
   var select = view.get('select');
   var selectEl = select.$()[0];
@@ -146,7 +144,7 @@ test("upon content change with Array-like content, the DOM should reflect the se
     )
   });
 
-  appendView(view);
+  runAppend(view);
 
   var select = view.get('select');
   var selectEl = select.$()[0];
@@ -169,7 +167,7 @@ function testValueBinding(templateString) {
     template: compile(templateString)
   });
 
-  appendView(view);
+  runAppend(view);
 
   var select = view.get('select');
   var selectEl = select.$()[0];

@@ -1,10 +1,9 @@
 import Ember from "ember-metal/core"; // Ember.lookup
 import _MetamorphView from "ember-views/views/metamorph_view";
 import EmberView from "ember-views/views/view";
-import run from "ember-metal/run_loop";
 import handlebarsGet from "ember-htmlbars/compat/handlebars-get";
 import Container from "ember-runtime/system/container";
-import { appendView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import EmberHandlebars from "ember-htmlbars/compat";
 
@@ -24,15 +23,10 @@ QUnit.module("ember-htmlbars: Ember.Handlebars.get", {
   },
 
   teardown: function() {
-    run(function() {
-        if (container) {
-          container.destroy();
-        }
-        if (view) {
-          view.destroy();
-        }
-        container = view = null;
-    });
+    runDestroy(container);
+    runDestroy(view);
+    container = view = null;
+
     Ember.lookup = lookup = originalLookup;
     TemplateTests = null;
   }
@@ -57,7 +51,7 @@ test('it can lookup a path from the current context', function() {
     template: compile('{{handlebars-get "foo"}}')
   });
 
-  appendView(view);
+  runAppend(view);
 });
 
 test('it can lookup a path from the current keywords', function() {
@@ -79,7 +73,7 @@ test('it can lookup a path from the current keywords', function() {
     template: compile('{{#with foo as bar}}{{handlebars-get "bar"}}{{/with}}')
   });
 
-  appendView(view);
+  runAppend(view);
 });
 
 test('it can lookup a path from globals', function() {
@@ -101,7 +95,7 @@ test('it can lookup a path from globals', function() {
     template: compile('{{handlebars-get "Blammo.foo"}}')
   });
 
-  appendView(view);
+  runAppend(view);
 });
 
 test('it raises a deprecation warning on use', function() {
@@ -123,5 +117,5 @@ test('it raises a deprecation warning on use', function() {
     template: compile('{{handlebars-get "foo"}}')
   });
 
-  appendView(view);
+  runAppend(view);
 });

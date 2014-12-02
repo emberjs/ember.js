@@ -17,7 +17,7 @@ import htmlbarsTemplate from 'ember-htmlbars/system/template';
 import { observersFor } from "ember-metal/observer";
 import ObjectController from 'ember-runtime/controllers/object_controller';
 
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
@@ -66,15 +66,9 @@ QUnit.module("ember-htmlbars: {{#view}} helper", {
   },
 
   teardown: function() {
-    run(function() {
-      if (container) {
-        container.destroy();
-      }
-      if (view) {
-        view.destroy();
-      }
-      container = view = null;
-    });
+    runDestroy(container);
+    runDestroy(view);
+    container = view = null;
 
     Ember.lookup = lookup = originalLookup;
   }
@@ -99,13 +93,13 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
     template: compile('{{#view view.linkView href=view.test.href}} Test {{/view}}')
   });
 
-  appendView(parentView);
+  runAppend(parentView);
 
   // Use match, since old IE appends the whole URL
   var href = parentView.$('a').attr('href');
   ok(href.match(/(^|\/)test$/), 'Expected href to be \'test\' but got "'+href+'"');
 
-  destroyView(parentView);
+  runDestroy(parentView);
 });
 
 test("By default view:toplevel is used", function() {
@@ -129,7 +123,7 @@ test("By default view:toplevel is used", function() {
     container: container
   }).create();
 
-  appendView(view);
+  runAppend(view);
 
   equal(jQuery('#toplevel-view').text(), 'hello world');
 });
@@ -139,7 +133,7 @@ test("By default, without a container, EmberView is used", function() {
     template: compile('{{view tagName="span"}}')
   }).create();
 
-  appendView(view);
+  runAppend(view);
 
   ok(jQuery('#qunit-fixture').html().toUpperCase().match(/<SPAN/), 'contains view with span');
 });
@@ -159,7 +153,7 @@ test("View lookup - App.FuView (DEPRECATED)", function() {
   }).create();
 
   expectDeprecation(function(){
-    appendView(view);
+    runAppend(view);
   }, /Global lookup of App.FuView from a Handlebars template is deprecated./);
 
   equal(jQuery('#fu').text(), 'bro');
@@ -186,7 +180,7 @@ test("View lookup - 'fu'", function() {
     container: container
   }).create();
 
-  appendView(view);
+  runAppend(view);
 
   equal(jQuery('#fu').text(), 'bro');
 });
@@ -213,7 +207,7 @@ test("View lookup - 'fu' when fu is a property and a view name", function() {
     container: container
   }).create();
 
-  appendView(view);
+  runAppend(view);
 
   equal(jQuery('#fu').text(), 'bro');
 });
@@ -240,7 +234,7 @@ test("View lookup - view.computed", function() {
     computed: 'fu'
   }).create();
 
-  appendView(view);
+  runAppend(view);
 
   equal(jQuery('#fu').text(), 'bro');
 });
@@ -251,7 +245,7 @@ test("id bindings downgrade to one-time property lookup", function() {
     meshuggah: 'stengah'
   }).create();
 
-  appendView(view);
+  runAppend(view);
 
   equal(jQuery('#stengah').text(), 'stengah', "id binding performed property lookup");
   run(view, 'set', 'meshuggah', 'omg');
@@ -264,7 +258,7 @@ test("specifying `id` as a static value works properly", function() {
     meshuggah: 'stengah'
   }).create();
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('#blah').text(), 'stengah', "id binding performed property lookup");
 });
@@ -288,7 +282,7 @@ test("mixing old and new styles of property binding fires a warning, treats valu
     snork: "nerd"
   }).create();
 
-  appendView(view);
+  runAppend(view);
 
   equal(jQuery('#lol').text(), "nerd", "awkward mixed syntax treated like binding");
 
@@ -306,7 +300,7 @@ test("allows you to pass attributes that will be assigned to the class instance,
     container: container
   }).create();
 
-  appendView(view);
+  runAppend(view);
 
   ok(jQuery('#foo').hasClass('foo'));
   ok(jQuery('#foo').is('h1'));
@@ -320,7 +314,7 @@ test("Should apply class without condition always", function() {
     template: compile('{{#view id="foo" classBinding=":foo"}} Foo{{/view}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
 });
@@ -333,7 +327,7 @@ test("Should apply classes when bound controller.* property specified", function
     template: compile('{{#view id="foo" class=controller.someProp}} Foo{{/view}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
 });
@@ -346,7 +340,7 @@ test("Should apply classes when bound property specified", function() {
     template: compile('{{#view id="foo" class=someProp}} Foo{{/view}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   ok(jQuery('#foo').hasClass('foo'), "Always applies classbinding without condition");
 });
@@ -359,7 +353,7 @@ test("Should not apply classes when bound property specified is false", function
     template: compile('{{#view id="foo" class=someProp}} Foo{{/view}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   ok(!jQuery('#foo').hasClass('some-prop'), "does not add class when value is falsey");
 });
@@ -372,7 +366,7 @@ test("Should apply classes of the dasherized property name when bound property s
     template: compile('{{#view id="foo" class=someProp}} Foo{{/view}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   ok(jQuery('#foo').hasClass('some-prop'), "adds dasherized class when value is true");
 });
@@ -387,7 +381,7 @@ test("Should update classes from a bound property", function() {
     template: compile('{{#view id="foo" class=someProp}} Foo{{/view}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   ok(jQuery('#foo').hasClass('some-prop'), "adds dasherized class when value is true");
 
@@ -424,7 +418,7 @@ test("bound properties should be available in the view", function() {
     someProp: 'initial value'
   }).create();
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('#fu').text(), 'initial value');
 
@@ -441,7 +435,7 @@ test('should escape HTML in normal mustaches', function() {
     output: 'you need to be more <b>bold</b>'
   });
 
-  appendView(view);
+  runAppend(view);
   equal(view.$('b').length, 0, 'does not create an element');
   equal(view.$().text(), 'you need to be more <b>bold</b>', 'inserts entities, not elements');
 
@@ -459,7 +453,7 @@ test('should not escape HTML in triple mustaches', function() {
     output: 'you need to be more <b>bold</b>'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('b').length, 1, 'creates an element');
 
@@ -476,7 +470,7 @@ test('should not escape HTML if string is a Handlebars.SafeString', function() {
     output: new SafeString('you need to be more <b>bold</b>')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('b').length, 1, 'creates an element');
 
@@ -493,7 +487,7 @@ test('should teardown observers from bound properties on rerender', function() {
     foo: 'bar'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(observersFor(view, 'foo').length, 1);
 
@@ -511,7 +505,7 @@ test('should update bound values after the view is removed and then re-appended'
     boundValue: 'foo'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(trim(view.$().text()), 'foo');
   run(function() {
@@ -531,7 +525,7 @@ test('should update bound values after the view is removed and then re-appended'
   run(function() {
     set(view, 'showStuff', true);
   });
-  appendView(view);
+  runAppend(view);
 
   run(function() {
     set(view, 'boundValue', 'bar');
@@ -547,7 +541,7 @@ test('views set the template of their children to a passed block', function() {
     templateName: 'parent'
   });
 
-  appendView(view);
+  runAppend(view);
   ok(view.$('h1:has(span)').length === 1, "renders the passed template inside the parent template");
 });
 
@@ -572,7 +566,7 @@ test('{{view}} should not override class bindings defined on a child view', func
     })
   });
 
-  appendView(view);
+  runAppend(view);
 
   ok(view.$('.visible').length > 0, 'class bindings are not overriden');
 });
@@ -600,7 +594,7 @@ test('child views can be inserted using the {{view}} helper', function() {
 
   set(context, 'cruel', 'cruel');
 
-  appendView(view);
+  runAppend(view);
 
   ok(view.$('#hello-world:contains("Hello world!")').length, 'The parent view renders its contents');
   ok(view.$('#child-view:contains("Goodbye cruel world!")').length === 1, 'The child view renders its content once');
@@ -622,7 +616,7 @@ test('should be able to explicitly set a view\'s context', function() {
     template: compile('{{view view.customContextView}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'test');
 });
@@ -642,7 +636,7 @@ test('Template views add an elementId to child views created using the view help
     templateName: 'parent'
   });
 
-  appendView(view);
+  runAppend(view);
 
   var childView = get(view, 'childViews.firstObject');
   equal(view.$().children().first().children().first().attr('id'), get(childView, 'elementId'));
@@ -655,7 +649,7 @@ test('Child views created using the view helper should have their parent view se
     template: compile(template)
   });
 
-  appendView(view);
+  runAppend(view);
 
   var childView = firstGrandchild(view);
   equal(childView, get(firstChild(childView), 'parentView'), 'parent view is correct');
@@ -668,7 +662,7 @@ test('Child views created using the view helper should have their IDs registered
     template: compile(template)
   });
 
-  appendView(view);
+  runAppend(view);
 
   var childView = firstChild(view);
   var id = childView.$()[0].id;
@@ -687,7 +681,7 @@ test('Child views created using the view helper and that have a viewName should 
     template: compile(template)
   });
 
-  appendView(view);
+  runAppend(view);
 
   var parentView = firstChild(view);
   var childView  = firstGrandchild(view);
@@ -706,7 +700,7 @@ test('{{view}} id attribute should set id on layer', function() {
     templateName: 'foo'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('#bar').length, 1, 'adds id attribute to layer');
   equal(view.$('#bar').text(), 'baz', 'emits content');
@@ -723,7 +717,7 @@ test('{{view}} tag attribute should set tagName of the view', function() {
     templateName: 'foo'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('span').length, 1, 'renders with tag name');
   equal(view.$('span').text(), 'baz', 'emits content');
@@ -740,7 +734,7 @@ test('{{view}} class attribute should set class on layer', function() {
     templateName: 'foo'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('.bar').length, 1, 'adds class attribute to layer');
   equal(view.$('.bar').text(), 'baz', 'emits content');
@@ -751,7 +745,7 @@ test('{{view}} should not allow attributeBindings to be set', function() {
     view = EmberView.create({
       template: compile('{{view attributeBindings="one two"}}')
     });
-    appendView(view);
+    runAppend(view);
   }, /Setting 'attributeBindings' via template helpers is not allowed/);
 });
 
@@ -764,7 +758,7 @@ test('{{view}} should be able to point to a local view', function() {
     })
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'common', 'tries to look up view name locally');
 });
@@ -787,7 +781,7 @@ test('{{view}} should evaluate class bindings set to global paths DEPRECATED', f
   });
 
   expectDeprecation(function() {
-    appendView(view);
+    runAppend(view);
   });
 
   ok(view.$('input').hasClass('unbound'),     'sets unbound classes directly');
@@ -806,9 +800,7 @@ test('{{view}} should evaluate class bindings set to global paths DEPRECATED', f
   ok(!view.$('input').hasClass('enabled'),    'evaluates ternary operator in classBindings');
   ok(view.$('input').hasClass('disabled'),    'evaluates ternary operator in classBindings');
 
-  run(function() {
-    lookup.App.destroy();
-  });
+  runDestroy(lookup.App);
 });
 
 test('{{view}} should evaluate class bindings set in the current context', function() {
@@ -821,7 +813,7 @@ test('{{view}} should evaluate class bindings set in the current context', funct
     template: compile('{{view view.textField class="unbound" classBinding="view.isEditable:editable view.directClass view.isView view.isEnabled:enabled:disabled"}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   ok(view.$('input').hasClass('unbound'),     'sets unbound classes directly');
   ok(view.$('input').hasClass('editable'),    'evaluates classes bound in the current context');
@@ -856,7 +848,7 @@ test('{{view}} should evaluate class bindings set with either classBinding or cl
   });
 
   expectDeprecation(function() {
-    appendView(view);
+    runAppend(view);
   });
 
   ok(view.$('input').hasClass('unbound'),          'sets unbound classes directly');
@@ -876,9 +868,7 @@ test('{{view}} should evaluate class bindings set with either classBinding or cl
   ok(view.$('input').hasClass('disabled'),        'evaluates ternary operator in classBindings');
   ok(view.$('input').hasClass('really-disabled'), 'evaluates ternary operator in classBindings');
 
-  run(function() {
-    lookup.App.destroy();
-  });
+  runDestroy(lookup.App);
 });
 
 test('{{view}} should evaluate other attribute bindings set to global paths', function() {
@@ -894,14 +884,12 @@ test('{{view}} should evaluate other attribute bindings set to global paths', fu
   });
 
   expectDeprecation(function() {
-    appendView(view);
+    runAppend(view);
   }, 'Global lookup of App.name from a Handlebars template is deprecated.');
 
   equal(view.$('input').val(), 'myApp', 'evaluates attributes bound to global paths');
 
-  run(function() {
-    lookup.App.destroy();
-  });
+  runDestroy(lookup.App);
 });
 
 test('{{view}} should evaluate other attributes bindings set in the current context', function() {
@@ -911,7 +899,7 @@ test('{{view}} should evaluate other attributes bindings set in the current cont
     template: compile('{{view view.textField valueBinding="view.name"}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('input').val(), 'myView', 'evaluates attributes bound in the current context');
 });
@@ -928,7 +916,7 @@ test('{{view}} should be able to bind class names to truthy properties', functio
     templateName: 'template'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('.is-truthy').length, 1, 'sets class name');
 
@@ -951,7 +939,7 @@ test('{{view}} should be able to bind class names to truthy or falsy properties'
     templateName: 'template'
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('.is-truthy').length, 1, 'sets class name to truthy value');
   equal(view.$('.is-falsy').length, 0, 'doesn\'t set class name to falsy value');
@@ -984,7 +972,7 @@ test('a view helper\'s bindings are to the parent context', function() {
   });
 
   view = View.create();
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('h1 .mauve').length, 1, 'renders property on helper declaration from parent context');
   equal(view.$('h1 .mauve').text(), 'foo bar', 'renders property bound in template from subview context');
@@ -1002,7 +990,7 @@ test('should expose a controller keyword when present on the view', function() {
     template: compile(templateString)
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'barbang', 'renders values from controller and parent controller');
 
@@ -1015,14 +1003,14 @@ test('should expose a controller keyword when present on the view', function() {
 
   equal(view.$().text(), 'BARBLARGH', 'updates the DOM when a bound value is updated');
 
-  destroyView(view);
+  runDestroy(view);
 
   view = EmberView.create({
     controller: 'aString',
     template: compile('{{controller}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'aString', 'renders the controller itself if no additional path is specified');
 });
@@ -1038,7 +1026,7 @@ test('should expose a controller keyword that can be used in conditionals', func
     template: compile(templateString)
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'bar', 'renders values from controller and parent controller');
 
@@ -1061,7 +1049,7 @@ test('should expose a controller keyword that persists through Ember.ContainerVi
     template: compile(templateString)
   });
 
-  appendView(view);
+  runAppend(view);
 
   var containerView = get(view, 'childViews.firstObject');
   var viewInstanceToBeInserted = EmberView.create({
@@ -1084,7 +1072,7 @@ test('should work with precompiled templates', function() {
     template: compiledTemplate
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'rendered', 'the precompiled template was rendered');
 
@@ -1111,7 +1099,7 @@ test('bindings should be relative to the current context', function() {
     template: compile('{{#if view.museumOpen}} {{view view.museumView nameBinding="view.museumDetails.name" dollarsBinding="view.museumDetails.price"}} {{/if}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(trim(view.$().text()), 'Name: SFMoMA Price: $20', 'should print baz twice');
 });
@@ -1135,7 +1123,7 @@ test('bindings should respect keywords', function() {
     template: compile('{{#if view.museumOpen}}{{view view.museumView nameBinding="controller.museumDetails.name" dollarsBinding="controller.museumDetails.price"}}{{/if}}')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(trim(view.$().text()), 'Name: SFMoMA Price: $20', 'should print baz twice');
 });
@@ -1148,7 +1136,7 @@ test('should bind to the property if no registered helper found for a mustache w
     })
   });
 
-  appendView(view);
+  runAppend(view);
 
   ok(view.$().text() === 'foobarProperty', 'Property was bound to correctly');
 });

@@ -17,7 +17,7 @@ import registerHTMLBarsHelper from "ember-htmlbars/compat/register-bound-helper"
 import htmlbarsMakeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 
 import Container from 'ember-runtime/system/container';
-import { appendView, destroyView } from "ember-views/tests/view_helpers";
+import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import {
   makeBoundHelper as handlebarsMakeBoundHelper
@@ -59,11 +59,11 @@ QUnit.module('ember-htmlbars: {{#unbound}} helper', {
       })
     });
 
-    appendView(view);
+    runAppend(view);
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
     Ember.lookup = originalLookup;
   }
 });
@@ -81,7 +81,7 @@ test('it should not re-render if the property changes', function() {
 
 test('it should throw the helper missing error if multiple properties are provided', function() {
   throws(function() {
-    appendView(EmberView.create({
+    runAppend(EmberView.create({
       template: compile('{{unbound foo bar}}'),
       context: EmberObject.create({
         foo: 'BORK',
@@ -124,7 +124,7 @@ QUnit.module("ember-htmlbars: {{#unbound boundHelper arg1 arg2... argN}} form: r
     delete helpers['fauxconcat'];
     delete helpers['concatNames'];
 
-    destroyView(view);
+    runDestroy(view);
     Ember.lookup = originalLookup;
   }
 });
@@ -148,7 +148,7 @@ test("should be able to render an unbound helper invocation", function() {
         bar: 5
       })
     });
-    appendView(view);
+    runAppend(view);
 
     equal(view.$().text(), "XXXXX XXXXX XX XXXX", "first render is correct");
 
@@ -171,7 +171,7 @@ test("should be able to render an bound helper invocation mixed with static valu
         suffix: "after"
       })
     });
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "before-core-bar before-core-bar bar-core-after bar-core-after", "first render is correct");
   run(function() {
@@ -191,7 +191,7 @@ test("should be able to render unbound forms of multi-arg helpers", function() {
       bing: "c"
     })
   });
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "abc abc", "first render is correct");
 
@@ -212,7 +212,7 @@ test("should be able to render an unbound helper invocation for helpers with dep
       })
     })
   });
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "SHOOBY SHOOBY shoobytaylor shoobytaylor", "first render is correct");
 
@@ -241,7 +241,7 @@ test("should be able to render an unbound helper invocation in #each helper", fu
         }
     ])}
   });
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "SHOOBY SHOOBYCINDY CINDY", "unbound rendered correctly");
 });
@@ -262,7 +262,7 @@ test("should be able to render an unbound helper invocation with bound hash opti
         })
       })
     });
-    appendView(view);
+    runAppend(view);
 
     equal(view.$().text(), "SHOOBY SHOOBY shoobytaylor shoobytaylor", "first render is correct");
 
@@ -284,7 +284,7 @@ QUnit.module("ember-htmlbars: {{#unbound}} helper -- Container Lookup", {
   },
 
   teardown: function() {
-    destroyView(view);
+    runDestroy(view);
     Ember.lookup = originalLookup;
   }
 });
@@ -304,7 +304,7 @@ test("should lookup helpers in the container", function() {
     }
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), "SUCH AWESOME", "proper values were rendered");
 
@@ -327,7 +327,7 @@ test("should be able to output a property without binding", function() {
     template: compile('<div id="first">{{unbound content.anUnboundString}}</div>')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('#first').html(), "No spans here, son.");
 });
@@ -338,7 +338,7 @@ test("should be able to use unbound helper in #each helper", function() {
     template: compile('<ul>{{#each item in view.items}}<li>{{unbound item}}</li>{{/each}}</ul>')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'abc123');
   equal(view.$('li').children().length, 0, 'No markers');
@@ -350,7 +350,7 @@ test("should be able to use unbound helper in #each helper (with objects)", func
     template: compile('<ul>{{#each item in view.items}}<li>{{unbound item.wham}}</li>{{/each}}</ul>')
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$().text(), 'bam1');
   equal(view.$('li').children().length, 0, 'No markers');
@@ -373,7 +373,7 @@ test('should work properly with attributes', function() {
     }])
   });
 
-  appendView(view);
+  runAppend(view);
 
   equal(view.$('li.not-cool').length, 1, 'correct number of not cool people');
   equal(view.$('li.is-cool').length, 2, 'correct number of cool people');
