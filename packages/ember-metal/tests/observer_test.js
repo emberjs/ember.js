@@ -74,8 +74,8 @@ testBoth('observer should continue to fire after dependent properties are access
   var observerCount = 0;
   var obj = {};
 
-  defineProperty(obj, 'prop', Ember.computed(function () { return Math.random(); }));
-  defineProperty(obj, 'anotherProp', Ember.computed('prop', function () { return get(this, 'prop') + Math.random(); }));
+  defineProperty(obj, 'prop', computed(function () { return Math.random(); }));
+  defineProperty(obj, 'anotherProp', computed('prop', function () { return get(this, 'prop') + Math.random(); }));
 
   addObserver(obj, 'prop', function () { observerCount++; });
 

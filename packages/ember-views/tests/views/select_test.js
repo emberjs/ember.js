@@ -1,3 +1,4 @@
+import EmberSelect from "ember-views/views/select";
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
@@ -12,7 +13,7 @@ QUnit.module("Ember.Select", {
   setup: function() {
     dispatcher = EventDispatcher.create();
     dispatcher.setup();
-    select = Ember.Select.create();
+    select = EmberSelect.create();
   },
 
   teardown: function() {
@@ -369,7 +370,7 @@ test("multiple selections can be set indirectly via bindings and in-place when m
     select.destroy(); // Destroy the existing select
 
     run(function() {
-      select = Ember.Select.extend({
+      select = EmberSelect.extend({
         indirectContent: indirectContent,
         contentBinding: 'indirectContent.controller.content',
         selectionBinding: 'indirectContent.controller.selection',
@@ -649,7 +650,7 @@ test("valueBinding handles 0 as initiated value (issue #2763)", function() {
   run(function() {
     select.destroy(); // Destroy the existing select
 
-    select = Ember.Select.extend({
+    select = EmberSelect.extend({
       content: Ember.A([1,0]),
       indirectData: indirectData,
       valueBinding: 'indirectData.value'

@@ -1,3 +1,6 @@
+import run from 'ember-metal/run_loop';
+import get from 'ember-metal/property_get';
+import EmberObject from 'ember-runtime/system/object';
 import Mixin from 'ember-metal/mixin';
 
 QUnit.module('Ember.Mixin#reopen');
@@ -8,14 +11,13 @@ test('using reopen() to add more properties to a simple', function() {
   var obj = {};
   MixinA.apply(obj);
 
-  equal(Ember.get(obj, 'foo'), 'FOO2', 'mixin() should override');
-  equal(Ember.get(obj, 'baz'), 'BAZ', 'preserve MixinA props');
-  equal(Ember.get(obj, 'bar'), 'BAR', 'include MixinB props');
+  equal(get(obj, 'foo'), 'FOO2', 'mixin() should override');
+  equal(get(obj, 'baz'), 'BAZ', 'preserve MixinA props');
+  equal(get(obj, 'bar'), 'BAR', 'include MixinB props');
 });
 
 test('using reopen() and calling _super where there is not a super function does not cause infinite recursion', function(){
-
-  var Taco = Ember.Object.extend({
+  var Taco = EmberObject.extend({
     createBreakfast: function(){
       // There is no original createBreakfast function.
       // Calling the wrapped _super function here
@@ -34,7 +36,7 @@ test('using reopen() and calling _super where there is not a super function does
   var taco = Taco.create();
 
   var result;
-  Ember.run(function(){
+  run(function(){
     try {
       result = taco.createBreakfast();
     } catch (e) {
