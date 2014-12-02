@@ -79,7 +79,7 @@ function unboundIfHelper(params, hash, options, env) {
   }
 
   if (!shouldDisplayIfHelperContent(value)) {
-    template = options.inverse;
+    template = options.inverse || EMPTY_TEMPLATE;
   }
 
   return template.render(this, env, options.morph.contextualElement);
