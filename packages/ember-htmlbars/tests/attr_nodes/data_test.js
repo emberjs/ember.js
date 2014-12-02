@@ -165,6 +165,25 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
     equalInnerHTML(view.element, '<div data-name="mmun">Hi!</div>', "attribute is updated output");
   });
 
+  test("updates fail silently after an element is destroyed", function() {
+
+    var context = EmberObject.create({name: 'erik'});
+    view = EmberView.create({
+      context: context,
+      template: compile("<div data-name={{name}}>Hi!</div>")
+    });
+    appendView(view);
+
+    equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', "precond - attribute is output");
+
+    run(function() {
+      context.set('name', 'mmun');
+      run(function() {
+        view.destroy();
+      });
+    });
+  });
+
   QUnit.module('ember-htmlbars: {{attribute}} helper -- setAttribute', {
     setup: function() {
       originalSetAttribute = dom.setAttribute;
