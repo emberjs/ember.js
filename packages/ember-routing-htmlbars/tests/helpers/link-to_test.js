@@ -39,17 +39,6 @@ test("should be able to be inserted in DOM when the router is not present", func
   equal(view.$().text(), 'Go to Index');
 });
 
-test("should be able to be inserted in DOM when the router is not present", function() {
-  var template = "{{#link-to 'index'}}Go to Index{{/link-to}}";
-  view = EmberView.create({
-    template: compile(template)
-  });
-
-  appendView(view);
-
-  equal(view.$().text(), 'Go to Index');
-});
-
 test("re-renders when title changes", function() {
   var template = "{{link-to title routeName}}";
   view = EmberView.create({
