@@ -62,6 +62,20 @@ QuotedClassAttrNode.prototype.scheduledRenderIfNeeded = function scheduledRender
   }
 };
 
+function pushString(list, string) {
+  var parts = string.split(' ');
+  var length = parts.length;
+  if (length === 1 && parts[0].length > 0) {
+    list.push(parts[0]);
+  } else {
+    for (var i=0;i<length;i++) {
+      if (parts[i].length > 0) {
+        list.push(parts[i]);
+      }
+    }
+  }
+}
+
 QuotedClassAttrNode.prototype.render = function render(){
 
   var removeList = [];
@@ -76,10 +90,10 @@ QuotedClassAttrNode.prototype.render = function render(){
     if (this.classNodes[i].isDirty) {
       this.classNodes[i].isDirty = false;
       if (this.classNodes[i].lastValue) {
-        removeList.push(this.classNodes[i].lastValue);
+        pushString(removeList, this.classNodes[i].lastValue);
       }
       if (this.classNodes[i].currentValue) {
-        addList.push(this.classNodes[i].currentValue);
+        pushString(addList, this.classNodes[i].currentValue);
       }
     }
   }

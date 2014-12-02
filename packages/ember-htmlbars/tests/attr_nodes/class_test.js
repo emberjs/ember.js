@@ -84,4 +84,23 @@ test("attribute can use multiple props with subxpression", function() {
   ok(view.$('.round')[0], 'third class found after change');
 });
 
+test("multiple classed can yield from a single id", function() {
+  view = EmberView.create({
+    context: {
+      size: 'large small'
+    },
+    template: compile("<div class='{{size}}'></div>")
+  });
+  appendView(view);
+
+  ok(view.$('.large')[0], 'first class found');
+  ok(view.$('.small')[0], 'second class found');
+
+  run(view, view.set, 'context.size', 'medium');
+
+  ok(view.$('.large').length === 0, 'old class not found');
+  ok(view.$('.small').length === 0, 'old class not found');
+  ok(view.$('.medium')[0], 'new class found');
+});
+
 }
