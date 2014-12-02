@@ -1,6 +1,6 @@
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
-import { compile } from "htmlbars-compiler/compiler";
+import compile from "ember-htmlbars/system/compile";
 import { equalInnerHTML } from "htmlbars-test-helpers";
 
 var view;
@@ -93,7 +93,7 @@ test("class attribute accepts nested helpers, and updates", function() {
 
 }
 
-test("class attribute can accept multipe classes from a single value, and update", function() {
+test("class attribute can accept multiple classes from a single value, and update", function() {
   view = EmberView.create({
     context: {
       size: 'large small'
@@ -110,6 +110,30 @@ test("class attribute can accept multipe classes from a single value, and update
   ok(view.$('.large').length === 0, 'old class not found');
   ok(view.$('.small').length === 0, 'old class not found');
   ok(view.$('.medium')[0], 'new class found');
+});
+
+test("class attribute can grok concatted classes, and update", function() {
+  view = EmberView.create({
+    context: {
+      size: 'large',
+      prefix: 'pre-pre pre',
+      postfix: 'post'
+    },
+    template: compile("<div class='btn-{{size}} {{prefix}}-{{postfix}}    whoop'></div>")
+  });
+  appendView(view);
+
+  ok(view.$('.btn-large')[0], 'first class found');
+  ok(view.$('.pre-pre')[0], 'second class found');
+  ok(view.$('.pre-post')[0], 'third class found');
+  ok(view.$('.whoop')[0], 'fourth class found');
+
+  run(view, view.set, 'context.prefix', '');
+
+  ok(view.$('.btn-large')[0], 'first class found');
+  ok(view.$('.pre-pre').length === 0, 'second class not found');
+  ok(view.$('.-post')[0], 'third class found');
+  ok(view.$('.whoop')[0], 'fourth class found');
 });
 
 }

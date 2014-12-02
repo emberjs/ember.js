@@ -1,6 +1,6 @@
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
-import { compile } from "htmlbars-compiler/compiler";
+import compile from "ember-htmlbars/system/compile";
 import { equalInnerHTML } from "htmlbars-test-helpers";
 
 var view;
@@ -67,7 +67,7 @@ test("class is output", function() {
   });
   appendView(view);
 
-  equalInnerHTML(view.element, '<svg class="tall blue"></svg>', "attribute is output");
+  equalInnerHTML(view.element, '<svg class="blue tall"></svg>', "attribute is output");
 
   Ember.run(view, view.set, 'context.color', 'red');
 

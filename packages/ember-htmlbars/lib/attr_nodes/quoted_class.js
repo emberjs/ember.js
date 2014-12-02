@@ -25,30 +25,24 @@ ClassNode.prototype.update = function update(){
   }
 };
 
-var characterRegex = /\S+/;
-
 function QuotedClassAttrNode(element, attrName, attrValue, dom) {
   this.element = element;
   this.attrName = attrName;
   this.dom = dom;
   this.isDirty = false;
 
-  // Filter out spaces
-  this.classNodes = []; 
-  this.staticClasses = []; 
+  this.classNodes = [];
+  this.staticClasses = [];
   for (var i=0, l=attrValue.length;i<l;i++) {
-    if (attrValue[i] && attrValue[i].isStream) {
+    if (attrValue[i].isStream) {
       this.classNodes.push(new ClassNode(attrValue[i], this));
-    } else if (attrValue[i]) {
-      var matches = attrValue[i].match(characterRegex);
-      if (matches && matches[0]) {
-        this.staticClasses.push(matches[0]);
-      }
+    } else {
+      this.staticClasses.push(attrValue[i]);
     }
   }
 
   this.renderIfNeeded();
-} 
+}
 
 QuotedClassAttrNode.prototype.renderIfNeeded = function renderIfNeeded(){
   this.isDirty = true;
