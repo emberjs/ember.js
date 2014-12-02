@@ -19,7 +19,7 @@ QUnit.module("ember-htmlbars: boolean attribute", {
   }
 });
 
-test("true property is output", function() {
+test("disabled property can be set true", function() {
   view = EmberView.create({
     context: {isDisabled: true},
     template: compile("<input disabled={{isDisabled}}>")
@@ -32,7 +32,7 @@ test("true property is output", function() {
         'boolean property is set true');
 });
 
-test("blank string property is output", function() {
+test("disabled property can be set false with a blank string", function() {
   view = EmberView.create({
     context: {isDisabled: ''},
     template: compile("<input disabled={{isDisabled}}>")
@@ -45,7 +45,7 @@ test("blank string property is output", function() {
         'boolean property is set true');
 });
 
-test("false property is removed", function() {
+test("disabled property can be set false", function() {
   view = EmberView.create({
     context: {isDisabled: false},
     template: compile("<input disabled={{isDisabled}}>")
@@ -58,7 +58,7 @@ test("false property is removed", function() {
         'boolean property is set false');
 });
 
-test("string property is truthy", function() {
+test("disabled property can be set true with a string", function() {
   view = EmberView.create({
     context: {isDisabled: "oh, no a string"},
     template: compile("<input disabled={{isDisabled}}>")
@@ -71,7 +71,7 @@ test("string property is truthy", function() {
         'boolean property is set false');
 });
 
-test("string liternal is truthy", function() {
+test("disabled attribute turns a value to a string", function() {
   view = EmberView.create({
     context: {isDisabled: false},
     template: compile("<input disabled='{{isDisabled}}'>")
@@ -84,7 +84,7 @@ test("string liternal is truthy", function() {
         'boolean property is set true');
 });
 
-test("blank string is truthy", function() {
+test("disabled attribute preserves a blank string value", function() {
   view = EmberView.create({
     context: {isDisabled: ''},
     template: compile("<input disabled='{{isDisabled}}'>")

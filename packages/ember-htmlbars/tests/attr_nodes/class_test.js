@@ -19,7 +19,7 @@ QUnit.module("ember-htmlbars: class attribute", {
   }
 });
 
-test("property can set multiple classes", function() {
+test("class property can contain multiple classes", function() {
   view = EmberView.create({
     context: {classes: 'large blue'},
     template: compile("<div class={{classes}}></div>")
@@ -32,7 +32,7 @@ test("property can set multiple classes", function() {
   ok(view.$('.blue')[0], 'second class found');
 });
 
-test("property can set remove class", function() {
+test("class property is removed when updated with a null value", function() {
   view = EmberView.create({
     context: {class: 'large'},
     template: compile("<div class={{class}}></div>")
@@ -48,7 +48,7 @@ test("property can set remove class", function() {
                  "attribute is removed");
 });
 
-test("attribute can use multiple props", function() {
+test("class attribute concats bound values", function() {
   view = EmberView.create({
     context: {size: 'large', color: 'blue'},
     template: compile("<div class='{{size}} {{color}} round'></div>")
@@ -60,7 +60,7 @@ test("attribute can use multiple props", function() {
   ok(view.$('.round')[0], 'third class found');
 });
 
-test("attribute can use multiple props with subxpression", function() {
+test("class attribute accepts nested helpers, and updates", function() {
   view = EmberView.create({
     context: {
       size: 'large',
@@ -84,7 +84,7 @@ test("attribute can use multiple props with subxpression", function() {
   ok(view.$('.round')[0], 'third class found after change');
 });
 
-test("multiple classed can yield from a single id", function() {
+test("class attribute can accept multipe classes from a single value, and update", function() {
   view = EmberView.create({
     context: {
       size: 'large small'
