@@ -17,30 +17,30 @@ QUnit.module('AST Walker');
 
 test('walks elements', function() {
   compareWalkedNodes('<div><li></li></div>', [
-    'program',
-    'element',
-    'element'
+    'Program',
+    'ElementNode',
+    'ElementNode'
   ]);
 });
 
 test('walks blocks', function() {
   compareWalkedNodes('{{#foo}}<li></li>{{/foo}}', [
-    'program',
-    'text',
-    'block',
-    'program',
-    'element',
-    'text'
+    'Program',
+    'TextNode',
+    'BlockStatement',
+    'Program',
+    'ElementNode',
+    'TextNode'
   ]);
 });
 
 test('walks components', function() {
   compareWalkedNodes('<my-foo><li></li></my-foo>', [
-    'program',
-    'text',
-    'component',
-    'program',
-    'element',
-    'text'
+    'Program',
+    'TextNode',
+    'ComponentNode',
+    'Program',
+    'ElementNode',
+    'TextNode'
   ]);
 });

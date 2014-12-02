@@ -1,81 +1,18 @@
-import AST from "./handlebars/compiler/ast";
-
-export var MustacheNode = AST.MustacheNode;
-export var SexprNode = AST.SexprNode;
-export var HashNode = AST.HashNode;
-export var IdNode = AST.IdNode;
-export var StringNode = AST.StringNode;
-
-export function ProgramNode(statements, blockParams, strip) {
-  this.type = 'program';
-  this.statements = statements;
-  this.blockParams = blockParams;
-  this.strip = strip;
-}
-
-export function BlockNode(sexpr, program, inverse, strip) {
-  this.type = 'block';
-  this.sexpr = sexpr;
-  this.program = program;
-  this.inverse = inverse;
-  this.strip = strip;
-}
-
-export function ComponentNode(tag, attributes, program) {
-  this.type = 'component';
-  this.tag = tag;
-  this.attributes = attributes;
-  this.program = program;
-}
-
-export function ElementNode(tag, attributes, helpers, children) {
-  this.type = 'element';
-  this.tag = tag;
-  this.attributes = attributes;
-  this.helpers = helpers;
-  this.children = children;
-}
-
-export function PartialNode(name) {
-  this.id = {};
-  this.id.string = this.name = 'partial';
-  this.type = 'mustache';
-  this.params = [name];
-  this.program = null;
-  this.inverse = null;
-  this.hash = undefined;
-  this.escaped = true;
-  this.isHelper = true;
-}
-
-export function AttrNode(name, value, quoted) {
-  this.type = 'attr';
-  this.name = name;
-  this.value = value;
-  this.quoted = quoted;
-}
-
-export function TextNode(chars) {
-  this.type = 'text';
-  this.chars = chars;
-}
-
-export function CommentNode(chars) {
-  this.type = 'comment';
-  this.chars = chars;
-}
+import { buildText } from "./builders";
 
 export function childrenFor(node) {
-  if (node.type === 'program') {
-    return node.statements;
+  if (node.type === 'Program') {
+    return node.body;
   }
-  if (node.type === 'element') {
+  if (node.type === 'ElementNode') {
     return node.children;
   }
 }
 
 export function usesMorph(node) {
-  return node.type === 'mustache' || node.type === 'block' || node.type === 'component';
+  return node.type === 'MustacheStatement' ||
+         node.type === 'BlockStatement' ||
+         node.type === 'ComponentNode';
 }
 
 export function appendChild(parent, node) {
@@ -85,8 +22,13 @@ export function appendChild(parent, node) {
   if (len > 0) {
     last = children[len-1];
     if (usesMorph(last) && usesMorph(node)) {
-      children.push(new TextNode(''));
+      children.push(buildText(''));
     }
   }
   children.push(node);
+}
+
+export function isHelper(sexpr) {
+  return (sexpr.params && sexpr.params.length > 0) ||
+    (sexpr.hash && sexpr.hash.pairs.length > 0);
 }
