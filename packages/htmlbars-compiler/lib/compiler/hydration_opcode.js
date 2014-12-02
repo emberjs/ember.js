@@ -121,6 +121,8 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLe
 
 HydrationOpcodeCompiler.prototype.component = function(component, childIndex, childrenLength) {
   var currentDOMChildIndex = this.currentDOMChildIndex;
+  var program = component.program || {};
+  var blockParams = program.blockParams || [];
 
   var start = (currentDOMChildIndex < 0 ? null : currentDOMChildIndex),
       end = (childIndex === childrenLength - 1 ? null : currentDOMChildIndex + 1);
@@ -136,7 +138,7 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
   this.opcode('program', this.templateId++, null);
   processName(this, id);
   processHash(this, buildHashFromAttributes(component.attributes));
-  this.opcode('component', morphNum);
+  this.opcode('component', morphNum, blockParams.length);
 };
 
 HydrationOpcodeCompiler.prototype.opcode = function(type) {

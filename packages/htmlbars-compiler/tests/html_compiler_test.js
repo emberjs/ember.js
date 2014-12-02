@@ -872,13 +872,71 @@ test("Block params - Helper should know how many block params it was called with
     ok(!('blockParams' in options), 'Helpers should not be passed a blockParams option if not called with block params.');
   });
   registerHelper('with-block-params', function(params, hash, options) {
-    equal(options.blockParams, this.count, 'Helpers should recieve the correct number of block params in options.blockParams.');
+    equal(options.blockParams, this.count, 'Helpers should receive the correct number of block params in options.blockParams.');
   });
 
   compile('{{#without-block-params}}{{/without-block-params}}').render({}, env, document.body);
   compile('{{#with-block-params as |x|}}{{/with-block-params}}').render({ count: 1 }, env, document.body);
   compile('{{#with-block-params as |x y|}}{{/with-block-params}}').render({ count: 2 }, env, document.body);
   compile('{{#with-block-params as |x y z|}}{{/with-block-params}}').render({ count: 3 }, env, document.body);
+});
+
+test('Block params in HTML syntax', function () {
+  registerHelper('x-bar', function(params, hash, options, env) {
+    var context = Object.create(this);
+    var span = document.createElement('span');
+    span.appendChild(options.template.render(context, env, document.body, ['Xerxes', 'York', 'Zed']));
+    return 'BAR(' + span.innerHTML + ')';
+  });
+  compilesTo('<x-bar as |x y zee|>{{zee}},{{y}},{{x}}</x-bar>', 'BAR(Zed,York,Xerxes)', {});
+});
+
+test('Block params in HTML syntax - Works with other attributes', function () {
+  registerHelper('x-bar', function(params, hash) {
+    deepEqual(hash, {firstName: 'Alice', lastName: 'Smith'});
+  });
+  compile('<x-bar firstName="Alice" lastName="Smith" as |x y|></x-bar>').render({}, env, document.body);
+});
+
+test('Block params in HTML syntax - Ignores whitespace', function () {
+  expect(3);
+
+  registerHelper('x-bar', function(params, hash, options) {
+    return options.template.render({}, env, document.body, ['Xerxes', 'York']);
+  });
+  compilesTo('<x-bar as |x y|>{{x}},{{y}}</x-bar>', 'Xerxes,York', {});
+  compilesTo('<x-bar as | x y|>{{x}},{{y}}</x-bar>', 'Xerxes,York', {});
+  compilesTo('<x-bar as | x y |>{{x}},{{y}}</x-bar>', 'Xerxes,York', {});
+});
+
+test('Block params in HTML syntax - Helper should know how many block params it was called with', function () {
+  expect(4);
+
+  registerHelper('without-block-params', function(params, hash, options) {
+    ok(!('blockParams' in options), 'Helpers should not be passed a blockParams option if not called with block params.');
+  });
+  registerHelper('with-block-params', function(params, hash, options) {
+    equal(options.blockParams, this.count, 'Helpers should receive the correct number of block params in options.blockParams.');
+  });
+
+  compile('<without-block-params></without-block-params>').render({}, env, document.body);
+  compile('<with-block-params as |x|></with-block-params>').render({ count: 1 }, env, document.body);
+  compile('<with-block-params as |x y|></with-block-params>').render({ count: 2 }, env, document.body);
+  compile('<with-block-params as |x y z|></with-block-params>').render({ count: 3 }, env, document.body);
+});
+
+test("Block params in HTML syntax - Throws an error on invalid block params syntax", function() {
+  expect(3);
+
+  QUnit.throws(function() {
+    compile('<x-bar as |x y>{{x}},{{y}}</x-bar>');
+  }, /Invalid block parameters syntax: 'as |x y'/);
+  QUnit.throws(function() {
+    compile('<x-bar as |x| y>{{x}},{{y}}</x-bar>');
+  }, /Invalid block parameters syntax: 'as \|x\| y'/);
+  QUnit.throws(function() {
+    compile('<x-bar as |x| y|>{{x}},{{y}}</x-bar>');
+  }, /Invalid block parameters syntax: 'as \|x\| y\|'/);
 });
 
 test("A helpful error message is provided for mismatched start/end tags", function() {
