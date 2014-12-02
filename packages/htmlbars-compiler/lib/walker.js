@@ -24,24 +24,24 @@ Walker.prototype.visit = function(node, callback) {
 };
 
 var visitors = {
-  program: function(walker, node, callback) {
-    for (var i = 0; i < node.statements.length; i++) {
-      walker.visit(node.statements[i], callback);
+  Program: function(walker, node, callback) {
+    for (var i = 0; i < node.body.length; i++) {
+      walker.visit(node.body[i], callback);
     }
   },
 
-  element: function(walker, node, callback) {
+  ElementNode: function(walker, node, callback) {
     for (var i = 0; i < node.children.length; i++) {
       walker.visit(node.children[i], callback);
     }
   },
 
-  block: function(walker, node, callback) {
+  BlockStatement: function(walker, node, callback) {
     walker.visit(node.program, callback);
     walker.visit(node.inverse, callback);
   },
 
-  component: function(walker, node, callback) {
+  ComponentNode: function(walker, node, callback) {
     walker.visit(node.program, callback);
   }
 };

@@ -1,21 +1,22 @@
-import { BlockNode, ProgramNode, PartialNode, appendChild } from "../ast";
+import { buildProgram, buildBlock, buildHash } from "../builders";
+import { appendChild } from "../ast";
 import { postprocessProgram } from "../html-parser/helpers";
 import { Chars } from "../html-parser/tokens";
 import { forEach } from "../utils";
 
 var nodeHandlers = {
 
-  program: function(program) {
-    var statements = [];
-    var node = new ProgramNode(statements, program.blockParams || null, program.strip);
-    var i, l = program.statements.length;
+  Program: function(program) {
+    var body = [];
+    var node = buildProgram(body, program.blockParams);
+    var i, l = program.body.length;
 
     this.elementStack.push(node);
 
     if (l === 0) { return this.elementStack.pop(); }
 
     for (i = 0; i < l; i++) {
-      this.acceptNode(program.statements[i]);
+      this.acceptNode(program.body[i]);
     }
 
     this.acceptToken(this.tokenizer.tokenizeEOF());
@@ -31,7 +32,11 @@ var nodeHandlers = {
     return node;
   },
 
-  block: function(block) {
+  BlockStatement: function(block) {
+    delete block.inverseStrip;
+    delete block.openString;
+    delete block.closeStrip;
+
     if (this.tokenizer.state === 'comment') {
       this.tokenizer.token.addChar('{{' + this.sourceForMustache(block) + '}}');
       return;
@@ -40,46 +45,85 @@ var nodeHandlers = {
     switchToHandlebars(this);
     this.acceptToken(block);
 
-    var sexpr = block.sexpr;
-    var program = this.acceptNode(block.program);
+    var sexpr = this.acceptNode(block.sexpr);
+    var program = block.program ? this.acceptNode(block.program) : null;
     var inverse = block.inverse ? this.acceptNode(block.inverse) : null;
-    var strip = block.strip;
 
-    // Normalize inverse's strip
-    if (inverse && !inverse.strip.left) {
-      inverse.strip.left = false;
-    }
-
-    var node = new BlockNode(sexpr, program, inverse, strip);
+    var node = buildBlock(sexpr, program, inverse);
     var parentProgram = this.currentElement();
     appendChild(parentProgram, node);
   },
 
-  content: function(content) {
-    var tokens = this.tokenizer.tokenizePart(content.string);
+  MustacheStatement: function(mustache) {
+    delete mustache.strip;
 
-    return forEach(tokens, this.acceptToken, this);
-  },
-
-  mustache: function(mustache) {
     if (this.tokenizer.state === 'comment') {
       this.tokenizer.token.addChar('{{' + this.sourceForMustache(mustache) + '}}');
       return;
     }
 
+    this.acceptNode(mustache.sexpr);
     switchToHandlebars(this);
     this.acceptToken(mustache);
+
+    return mustache;
   },
 
-  comment: function(/*comment*/) {
-    return;
+  ContentStatement: function(content) {
+    var tokens = this.tokenizer.tokenizePart(content.value);
+
+    return forEach(tokens, this.acceptToken, this);
   },
 
-  partial: function(partial) {
-    var node = new PartialNode(partial.partialName.name);
-    appendChild(this.currentElement(), node);
-    return;
-  }
+  CommentStatement: function(comment) {
+    return comment;
+  },
+
+  PartialStatement: function(partial) {
+    appendChild(this.currentElement(), partial);
+    return partial;
+  },
+
+  SubExpression: function(sexpr) {
+    delete sexpr.isHelper;
+
+    this.acceptNode(sexpr.path);
+
+    if (sexpr.params) {
+      for (var i = 0; i < sexpr.params.length; i++) {
+        this.acceptNode(sexpr.params[i]);
+      }
+    } else {
+      sexpr.params = [];
+    }
+
+    if (sexpr.hash) {
+      this.acceptNode(sexpr.hash);
+    } else {
+      sexpr.hash = buildHash();
+    }
+
+    return sexpr;
+  },
+
+  PathExpression: function(path) {
+    delete path.data;
+    delete path.depth;
+
+    return path;
+  },
+
+  Hash: function(hash) {
+    for (var i = 0; i < hash.pairs.length; i++) {
+      this.acceptNode(hash.pairs[i].value);
+    }
+
+    return hash;
+  },
+
+  StringLiteral: function() {},
+  BooleanLiteral: function() {},
+  NumberLiteral: function() {}
 };
 
 function switchToHandlebars(processor) {

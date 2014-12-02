@@ -1,6 +1,9 @@
 import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
 import { forEach } from "../utils";
+import { isHelper } from "../ast";
+import { buildString } from "../builders";
+import { buildHashFromAttributes } from "../html-parser/helpers";
 import { buildHashFromAttributes } from "../html-parser/helpers";
 
 function detectIsElementChecked(element){
@@ -143,7 +146,7 @@ HydrationOpcodeCompiler.prototype.opcode = function(type) {
 
 HydrationOpcodeCompiler.prototype.attribute = function(attr) {
   var parts = attr.value;
-  if (parts.length === 1 && parts[0].type === 'text') {
+  if (parts.length === 1 && parts[0].type === 'TextNode') {
     return;
   }
 
@@ -159,8 +162,7 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
   this.opcode('attribute', attr.quoted, attr.name, params.length, this.elementNum);
 };
 
-HydrationOpcodeCompiler.prototype.nodeHelper = function(mustache) {
-  var sexpr = mustache.sexpr;
+HydrationOpcodeCompiler.prototype.nodeHelper = function(sexpr) {
   this.opcode('program', null, null);
   processSexpr(this, sexpr);
   // If we have a helper in a node, and this element has not been cached, cache it
@@ -172,6 +174,7 @@ HydrationOpcodeCompiler.prototype.nodeHelper = function(mustache) {
 };
 
 HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, childrenLength) {
+  var sexpr = mustache.sexpr;
   var currentDOMChildIndex = this.currentDOMChildIndex;
 
   var start = currentDOMChildIndex,
@@ -180,52 +183,52 @@ HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, chil
   var morphNum = this.morphNum++;
   this.morphs.push([morphNum, this.paths.slice(), start, end, mustache.escaped]);
 
-  if (mustache.isHelper) {
+  if (isHelper(sexpr)) {
     this.opcode('program', null, null);
-    processSexpr(this, mustache);
-    this.opcode('helper', mustache.params.length, morphNum);
+    processSexpr(this, sexpr);
+    this.opcode('helper', sexpr.params.length, morphNum);
   } else {
-    processName(this, mustache.id);
+    processName(this, sexpr.path);
     this.opcode('ambiguous', morphNum);
   }
 };
 
-HydrationOpcodeCompiler.prototype.sexpr = function(sexpr) {
+HydrationOpcodeCompiler.prototype.SubExpression = function(sexpr) {
   this.string('sexpr');
   this.opcode('program', null, null);
   processSexpr(this, sexpr);
   this.opcode('sexpr', sexpr.params.length);
 };
 
+HydrationOpcodeCompiler.prototype.PathExpression = function(path) {
+  this.opcode('id', path.parts);
+};
+
+HydrationOpcodeCompiler.prototype.StringLiteral = function(node) {
+  this.opcode('stringLiteral', node.value);
+};
+
+HydrationOpcodeCompiler.prototype.BooleanLiteral = function(node) {
+  this.opcode('literal', node.value);
+};
+
+HydrationOpcodeCompiler.prototype.NumberLiteral = function(node) {
+  this.opcode('literal', node.value);
+};
+
 HydrationOpcodeCompiler.prototype.string = function(str) {
   this.opcode('string', str);
 };
 
-HydrationOpcodeCompiler.prototype.ID = function(id) {
-  this.opcode('id', id.parts);
-};
-
-HydrationOpcodeCompiler.prototype.STRING = function(string) {
-  this.opcode('stringLiteral', string.stringModeValue);
-};
-
-HydrationOpcodeCompiler.prototype.BOOLEAN = function(boolean) {
-  this.opcode('literal', boolean.stringModeValue);
-};
-
-HydrationOpcodeCompiler.prototype.NUMBER = function(integer) {
-  this.opcode('literal', integer.stringModeValue);
-};
-
 function processSexpr(compiler, sexpr) {
-  processName(compiler, sexpr.id);
+  processName(compiler, sexpr.path);
   processParams(compiler, sexpr.params);
   processHash(compiler, sexpr.hash);
 }
 
-function processName(compiler, id) {
-  if (id) {
-    compiler.opcode('string', id.string);
+function processName(compiler, path) {
+  if (path) {
+    compiler.opcode('string', path.parts.join('.'));
   } else {
     compiler.opcode('string', '');
   }
@@ -233,12 +236,12 @@ function processName(compiler, id) {
 
 function processParams(compiler, params) {
   forEach(params, function(param) {
-    if (param.type === 'text') {
-      compiler.STRING({ stringModeValue: param.chars });
+    if (param.type === 'TextNode') {
+      compiler.StringLiteral(buildString(param.chars));
     } else if (param.type) {
       compiler[param.type](param);
     } else {
-      compiler.STRING({ stringModeValue: param });
+      compiler.StringLiteral(buildString(param));
     }
   });
 }
@@ -246,9 +249,10 @@ function processParams(compiler, params) {
 function processHash(compiler, hash) {
   if (hash) {
     forEach(hash.pairs, function(pair) {
-      var name = pair[0], param = pair[1];
-      compiler[param.type](param);
-      compiler.opcode('stackLiteral', name);
+      var key = pair.key;
+      var value = pair.value;
+      compiler[value.type](value);
+      compiler.opcode('stackLiteral', key);
     });
     compiler.opcode('stackLiteral', hash.pairs.length);
   } else {

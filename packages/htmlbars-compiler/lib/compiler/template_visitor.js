@@ -83,21 +83,21 @@ TemplateVisitor.prototype.visit = function(node) {
   this[node.type](node);
 };
 
-TemplateVisitor.prototype.program = function(program) {
+TemplateVisitor.prototype.Program = function(program) {
   this.programDepth++;
 
   var parentFrame = this.getCurrentFrame();
   var programFrame = this.pushFrame();
 
   programFrame.parentNode = program;
-  programFrame.children = program.statements;
-  programFrame.childCount = program.statements.length;
+  programFrame.children = program.body;
+  programFrame.childCount = program.body.length;
   programFrame.blankChildTextNodes = [];
   programFrame.actions.push(['endProgram', [program, this.programDepth]]);
 
-  for (var i = program.statements.length - 1; i >= 0; i--) {
+  for (var i = program.body.length - 1; i >= 0; i--) {
     programFrame.childIndex = i;
-    this.visit(program.statements[i]);
+    this.visit(program.body[i]);
   }
 
   programFrame.actions.push(['startProgram', [
@@ -113,7 +113,7 @@ TemplateVisitor.prototype.program = function(program) {
   push.apply(this.actions, programFrame.actions.reverse());
 };
 
-TemplateVisitor.prototype.element = function(element) {
+TemplateVisitor.prototype.ElementNode = function(element) {
   var parentFrame = this.getCurrentFrame();
   var elementFrame = this.pushFrame();
   var parentNode = parentFrame.parentNode;
@@ -128,7 +128,7 @@ TemplateVisitor.prototype.element = function(element) {
     element,
     parentFrame.childIndex,
     parentFrame.childCount,
-    parentNode.type === 'program' && parentFrame.childCount === 1
+    parentNode.type === 'Program' && parentFrame.childCount === 1
   ];
 
   var lastNode = parentFrame.childIndex === parentFrame.childCount-1,
@@ -166,47 +166,55 @@ TemplateVisitor.prototype.element = function(element) {
   push.apply(parentFrame.actions, elementFrame.actions);
 };
 
-TemplateVisitor.prototype.attr = function(attr) {
-  if (attr.value.type === 'mustache') {
+TemplateVisitor.prototype.AttrNode = function(attr) {
+  if (attr.value.type === 'MustacheStatement') {
     this.getCurrentFrame().mustacheCount++;
   }
 };
 
-TemplateVisitor.prototype.block = function(node) {
+TemplateVisitor.prototype.TextNode = function(text) {
   var frame = this.getCurrentFrame();
-
-  frame.mustacheCount++;
-  frame.actions.push([node.type, [node, frame.childIndex, frame.childCount]]);
-
-  if (node.inverse) { this.visit(node.inverse); }
-  if (node.program) { this.visit(node.program); }
-};
-
-TemplateVisitor.prototype.partial = function(node) {
-  var frame = this.getCurrentFrame();
-  frame.mustacheCount++;
-  frame.actions.push(['mustache', [node, frame.childIndex, frame.childCount]]);
-};
-
-TemplateVisitor.prototype.component = TemplateVisitor.prototype.block;
-
-TemplateVisitor.prototype.text = function(text) {
-  var frame = this.getCurrentFrame();
-  var isSingleRoot = frame.parentNode.type === 'program' && frame.childCount === 1;
+  var isSingleRoot = frame.parentNode.type === 'Program' && frame.childCount === 1;
   if (text.chars === '') {
     frame.blankChildTextNodes.push(domIndexOf(frame.children, text));
   }
   frame.actions.push(['text', [text, frame.childIndex, frame.childCount, isSingleRoot]]);
 };
 
-TemplateVisitor.prototype.comment = function(text) {
+TemplateVisitor.prototype.BlockStatement = function(node) {
   var frame = this.getCurrentFrame();
-  var isSingleRoot = frame.parentNode.type === 'program' && frame.childCount === 1;
+
+  frame.mustacheCount++;
+  frame.actions.push(['block', [node, frame.childIndex, frame.childCount]]);
+
+  if (node.inverse) { this.visit(node.inverse); }
+  if (node.program) { this.visit(node.program); }
+};
+
+TemplateVisitor.prototype.ComponentNode = function(node) {
+  var frame = this.getCurrentFrame();
+
+  frame.mustacheCount++;
+  frame.actions.push(['component', [node, frame.childIndex, frame.childCount]]);
+
+  if (node.program) { this.visit(node.program); }
+};
+
+
+TemplateVisitor.prototype.PartialStatement = function(node) {
+  var frame = this.getCurrentFrame();
+  frame.mustacheCount++;
+  frame.actions.push(['mustache', [node, frame.childIndex, frame.childCount]]);
+};
+
+TemplateVisitor.prototype.CommentStatement = function(text) {
+  var frame = this.getCurrentFrame();
+  var isSingleRoot = frame.parentNode.type === 'Program' && frame.childCount === 1;
 
   frame.actions.push(['comment', [text, frame.childIndex, frame.childCount, isSingleRoot]]);
 };
 
-TemplateVisitor.prototype.mustache = function(mustache) {
+TemplateVisitor.prototype.MustacheStatement = function(mustache) {
   var frame = this.getCurrentFrame();
   frame.mustacheCount++;
   frame.actions.push(['mustache', [mustache, frame.childIndex, frame.childCount]]);
@@ -239,7 +247,7 @@ function domIndexOf(nodes, domNode) {
   for (var i = 0; i < nodes.length; i++) {
     var node = nodes[i];
 
-    if (node.type !== 'text' && node.type !== 'element') {
+    if (node.type !== 'TextNode' && node.type !== 'ElementNode') {
       continue;
     } else {
       index++;
