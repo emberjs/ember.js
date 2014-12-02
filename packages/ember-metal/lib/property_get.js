@@ -97,13 +97,6 @@ var get = function get(obj, keyName) {
   }
 };
 
-// Currently used only by Ember Data tests
-if (Ember.config.overrideAccessors) {
-  Ember.get = get;
-  Ember.config.overrideAccessors();
-  get = Ember.get;
-}
-
 /**
   Normalizes a target/path pair to reflect that actual target/path that should
   be observed, etc. This takes into account passing in global property

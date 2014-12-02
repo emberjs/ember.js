@@ -458,10 +458,6 @@ function makeToString(ret) {
   return function() { return ret; };
 }
 
-if (Ember.config.overridePrototypeMixin) {
-  Ember.config.overridePrototypeMixin(CoreObject.PrototypeMixin);
-}
-
 CoreObject.__super__ = null;
 
 var ClassMixinProps = {
@@ -879,10 +875,6 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 var ClassMixin = Mixin.create(ClassMixinProps);
 
 ClassMixin.ownerConstructor = CoreObject;
-
-if (Ember.config.overrideClassMixin) {
-  Ember.config.overrideClassMixin(ClassMixin);
-}
 
 CoreObject.ClassMixin = ClassMixin;
 
