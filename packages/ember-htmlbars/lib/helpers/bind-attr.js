@@ -6,12 +6,12 @@
 import Ember from "ember-metal/core"; // Ember.assert
 
 import { fmt } from "ember-runtime/system/string";
-import { typeOf } from "ember-metal/utils";
-import { forEach } from "ember-metal/array";
+import QuotedClassAttrNode from "ember-htmlbars/attr_nodes/quoted_class";
+import LegacyBindAttrNode from "ember-htmlbars/attr_nodes/legacy_bind";
 import View from "ember-views/views/view";
+import Stream from "ember-metal/streams/stream";
 import keys from "ember-metal/keys";
 import helpers from "ember-htmlbars/helpers";
-import jQuery from "ember-views/system/jquery";
 
 /**
   `bind-attr` allows you to create a binding between DOM element attributes and
@@ -137,7 +137,7 @@ import jQuery from "ember-views/system/jquery";
   @return {String} HTML string
 */
 function bindAttrHelper(params, hash, options, env) {
-  var element  = jQuery(options.element);
+  var element = options.element;
 
   Ember.assert("You must specify at least one hash argument to bind-attr", !!keys(hash).length);
 
@@ -146,55 +146,29 @@ function bindAttrHelper(params, hash, options, env) {
   // Handle classes differently, as we can bind multiple classes
   var classBindings = hash['class'];
   if (classBindings != null) {
-
-    var classResults = bindClasses(element, classBindings, view, options);
-
-    View.applyAttributeBindings(element, 'class', classResults.join(' '));
-
+    var attrValue = streamifyClassBindings(view, classBindings);
+    new QuotedClassAttrNode(element, 'class', attrValue, env.dom);
     delete hash['class'];
   }
 
   var attrKeys = keys(hash);
 
-  // For each attribute passed, create an observer and emit the
-  // current value of the property as an attribute.
-  forEach.call(attrKeys, function(attr) {
-    var path = hash[attr];
-
-    var lazyValue;
-
+  var attr, path, lazyValue;
+  for (var i=0, l=attrKeys.length;i<l;i++) {
+    attr = attrKeys[i];
+    path = hash[attr];
     if (path.isStream) {
       lazyValue = path;
     } else {
-      Ember.assert(fmt("You must provide an expression as the value of bound attribute." +
-                       " You specified: %@=%@", [attr, path]), typeof path === 'string' || path.isStream);
-
+      Ember.assert(
+        fmt("You must provide an expression as the value of bound attribute." +
+            " You specified: %@=%@", [attr, path]),
+        typeof path === 'string'
+      );
       lazyValue = view.getStream(path);
     }
-
-    var value = lazyValue.value();
-    var type = typeOf(value);
-
-    Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), 
-                 value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
-
-
-    lazyValue.subscribe(view._wrapAsScheduled(function applyAttributeBindings() {
-      var result = lazyValue.value();
-
-      Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]),
-                   result === null || result === undefined || typeof result === 'number' ||
-                     typeof result === 'string' || typeof result === 'boolean');
-
-      View.applyAttributeBindings(element, attr, result);
-    }));
-
-    if (value && type === 'boolean') {
-      value = attr;
-    }
-
-    View.applyAttributeBindings(element, attr, value);
-  }, this);
+    new LegacyBindAttrNode(element, attr, lazyValue, env.dom);
+  }
 }
 
 /**
@@ -234,65 +208,31 @@ function bindAttrHelperDeprecated() {
     element to update
   @return {Array} An array of class names to add
 */
-function bindClasses(element, classBindings, view, options) {
-  var ret = [];
-  var newClass, value;
+function streamifyClassBindings(view, classBindingsString) {
+  var classBindings = classBindingsString.split(' ');
+  var streamified = [];
 
-  // For each property passed, loop through and setup
-  // an observer.
-  forEach.call(classBindings.split(' '), function(binding) {
+  var parsedPath;
+  for (var i=0, l=classBindings.length;i<l;i++) {
+    parsedPath = View._parsePropertyPath(classBindings[i]);
 
-    // Variable in which the old class value is saved. The observer function
-    // closes over this variable, so it knows which string to remove when
-    // the property changes.
-    var oldClass;
-    var parsedPath = View._parsePropertyPath(binding);
-    var path = parsedPath.path;
-    var initialValue;
-
-    if (path === '') {
-      initialValue = true;
+    if (parsedPath.path === '') {
+      streamified.push(classStringForParsedPath(parsedPath, true));
     } else {
-      var lazyValue = view.getStream(path);
-      initialValue = lazyValue.value();
-
-      // Set up an observer on the context. If the property changes, toggle the
-      // class name.
-      lazyValue.subscribe(view._wrapAsScheduled(function applyClassNameBindings() {
-        // Get the current value of the property
-        var value = lazyValue.value();
-        newClass = classStringForParsedPath(parsedPath, value);
-
-        // If we had previously added a class to the element, remove it.
-        if (oldClass) {
-          element.removeClass(oldClass);
-        }
-
-        // If necessary, add a new class. Make sure we keep track of it so
-        // it can be removed in the future.
-        if (newClass) {
-          element.addClass(newClass);
-          oldClass = newClass;
-        } else {
-          oldClass = null;
-        }
-      }));
+      (function(){
+        var lazyValue = view.getStream(parsedPath.path);
+        var _parsedPath = parsedPath;
+        var classNameBound = new Stream(function(){
+          var value = lazyValue.value();
+          return classStringForParsedPath(_parsedPath, value);
+        });
+        lazyValue.subscribe(classNameBound.notify, classNameBound);
+        streamified.push(classNameBound);
+      })(); // jshint ignore:line
     }
-
-    // We've already setup the observer; now we just need to figure out the
-    // correct behavior right now on the first pass through.
-    value = classStringForParsedPath(parsedPath, initialValue);
-
-    if (value) {
-      ret.push(value);
-
-      // Make sure we save the current value so that it can be removed if the
-      // observer fires.
-      oldClass = value;
-    }
-  });
-
-  return ret;
+  }
+  
+  return streamified;
 }
 
 function classStringForParsedPath(parsedPath, value) {
@@ -303,6 +243,5 @@ export default bindAttrHelper;
 
 export {
   bindAttrHelper,
-  bindAttrHelperDeprecated,
-  bindClasses
+  bindAttrHelperDeprecated
 };

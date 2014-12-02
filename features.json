@@ -19,7 +19,8 @@
     "ember-htmlbars": null,
     "ember-htmlbars-block-params": null,
     "ember-htmlbars-component-generation": null,
-    "ember-htmlbars-inline-if-helper": null
+    "ember-htmlbars-inline-if-helper": null,
+    "ember-htmlbars-attribute-syntax": null
   },
   "debugStatements": [
     "Ember.warn",

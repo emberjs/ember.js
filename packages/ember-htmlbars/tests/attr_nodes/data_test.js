@@ -9,8 +9,9 @@ import { appendView, destroyView } from "ember-views/tests/view_helpers";
 var view, originalSetAttribute, setAttributeCalls;
 var dom = defaultEnv.dom;
 
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  QUnit.module("ember-htmlbars: attribute", {
+if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+
+  QUnit.module("ember-htmlbars: data attribute", {
     teardown: function(){
       destroyView(view);
     }
@@ -162,6 +163,25 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
     });
 
     equalInnerHTML(view.element, '<div data-name="mmun">Hi!</div>', "attribute is updated output");
+  });
+
+  test("updates fail silently after an element is destroyed", function() {
+
+    var context = EmberObject.create({name: 'erik'});
+    view = EmberView.create({
+      context: context,
+      template: compile("<div data-name={{name}}>Hi!</div>")
+    });
+    appendView(view);
+
+    equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', "precond - attribute is output");
+
+    run(function() {
+      context.set('name', 'mmun');
+      run(function() {
+        view.destroy();
+      });
+    });
   });
 
   QUnit.module('ember-htmlbars: {{attribute}} helper -- setAttribute', {

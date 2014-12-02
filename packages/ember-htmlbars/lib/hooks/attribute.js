@@ -3,44 +3,25 @@
 @submodule ember-htmlbars
 */
 
-import run from "ember-metal/run_loop";
-import concat from "ember-htmlbars/system/concat";
+import attrNodeTypeFor from "ember-htmlbars/attr_nodes";
+import EmberError from "ember-metal/error";
 
-export default function attribute(element, attributeName, quoted, view, parts, options, env) {
-  var dom = env.dom;
-  var isDirty, lastRenderedValue, attrValueStream;
+export default function attribute(element, attrName, quoted, view, attrValue, options, env) {
+  var isAllowed = true;
 
-  if (quoted) {
-    attrValueStream = concat(parts);
-  } else {
-    attrValueStream = parts[0];
+  if (!Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
+    for (var i=0, l=attrValue.length; i<l; i++) {
+      if (attrValue[i].isStream) {
+        isAllowed = false;
+        break;
+      }
+    }
   }
 
-  attrValueStream.subscribe(function() {
-    isDirty = true;
-
-    run.schedule('render', this, function() {
-      var value = attrValueStream.value();
-
-      if (isDirty) {
-        isDirty = false;
-
-        if (value !== lastRenderedValue) {
-          lastRenderedValue = value;
-
-          if (lastRenderedValue === null) {
-            dom.removeAttribute(element, attributeName);
-          } else {
-            dom.setAttribute(element, attributeName, lastRenderedValue);
-          }
-        }
-      }
-    });
-  });
-
-  lastRenderedValue = attrValueStream.value();
-
-  if (lastRenderedValue !== null) {
-    dom.setAttribute(element, attributeName, lastRenderedValue);
+  if (isAllowed) {
+    var AttrNode = attrNodeTypeFor(attrName, element, quoted);
+    new AttrNode(element, attrName, attrValue, env.dom);
+  } else {
+    throw new EmberError('Bound attributes are not yet supported in Ember.js');
   }
 }

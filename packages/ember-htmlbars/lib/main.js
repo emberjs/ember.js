@@ -17,6 +17,7 @@ import {
   helper,
   default as helpers
 } from "ember-htmlbars/helpers";
+import concat from "ember-htmlbars/system/concat";
 import { bindHelper } from "ember-htmlbars/helpers/binding";
 import { viewHelper } from "ember-htmlbars/helpers/view";
 import { yieldHelper } from "ember-htmlbars/helpers/yield";
@@ -71,6 +72,7 @@ registerHelper('textarea', textareaHelper);
 registerHelper('collection', collectionHelper);
 registerHelper('each', eachHelper);
 registerHelper('unbound', unboundHelper);
+registerHelper('concat', concat);
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   Ember.HTMLBars = {
