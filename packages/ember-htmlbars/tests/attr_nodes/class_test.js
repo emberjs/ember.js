@@ -9,6 +9,11 @@ function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });
 }
 
+var isInlineIfEnabled = false;
+if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
+  isInlineIfEnabled = true;
+}
+
 if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 QUnit.module("ember-htmlbars: class attribute", {
@@ -60,6 +65,8 @@ test("class attribute concats bound values", function() {
   ok(view.$('.round')[0], 'third class found');
 });
 
+if (isInlineIfEnabled) {
+
 test("class attribute accepts nested helpers, and updates", function() {
   view = EmberView.create({
     context: {
@@ -83,6 +90,8 @@ test("class attribute accepts nested helpers, and updates", function() {
   ok(view.$('.blue').length === 0, 'second class not found after change');
   ok(view.$('.round')[0], 'third class found after change');
 });
+
+}
 
 test("class attribute can accept multipe classes from a single value, and update", function() {
   view = EmberView.create({
