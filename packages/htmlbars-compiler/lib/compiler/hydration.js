@@ -90,9 +90,12 @@ prototype.helper = function(size, morphNum, blockParamsLength) {
   this.pushMustacheInContent(prepared.name, prepared.params, prepared.hash, prepared.options, morphNum);
 };
 
-prototype.component = function(morphNum) {
+prototype.component = function(morphNum, blockParamsLength) {
   var prepared = prepareHelper(this.stack, 0);
   prepared.options.push('morph:morph'+morphNum);
+  if (blockParamsLength) {
+    prepared.options.push('blockParams:'+blockParamsLength);
+  }
   this.pushComponent(prepared.name, prepared.hash, prepared.options, morphNum);
 };
 

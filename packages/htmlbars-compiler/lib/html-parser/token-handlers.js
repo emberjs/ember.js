@@ -1,6 +1,6 @@
 import { buildProgram, buildComponent, buildElement, buildComment, buildText } from "../builders";
 import { appendChild, isHelper } from "../ast";
-import { postprocessProgram } from "./helpers";
+import { parseComponentBlockParams, postprocessProgram } from "./helpers";
 import { forEach } from "../utils";
 
 // The HTML elements in this list are speced by
@@ -122,6 +122,7 @@ var tokenHandlers = {
       appendChild(parent, element);
     } else {
       var program = buildProgram(element.children);
+      parseComponentBlockParams(element, program);
       postprocessProgram(program);
       var component = buildComponent(element.tag, element.attributes, program);
       appendChild(parent, component);
