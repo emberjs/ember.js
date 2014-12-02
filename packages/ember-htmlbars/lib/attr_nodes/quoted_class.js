@@ -11,10 +11,7 @@ function ClassNode(stream, renderable) {
   this.lastValue = null;
   this.currentValue = null;
   this.isDirty = false;
-  var node = this;
-  stream.subscribe(function(){
-    node.update();
-  });
+  stream.subscribe(this.update, this);
   this.update();
 }
 
@@ -55,12 +52,14 @@ function QuotedClassAttrNode(element, attrName, attrValue, dom) {
 
 QuotedClassAttrNode.prototype.renderIfNeeded = function renderIfNeeded(){
   this.isDirty = true;
-  run.schedule('render', this, function() {
-    if (this.isDirty) {
-      this.isDirty = false;
-      this.render();
-    }
-  });
+  run.schedule('render', this, this.scheduledRenderIfNeeded);
+};
+
+QuotedClassAttrNode.prototype.scheduledRenderIfNeeded = function scheduledRenderIfNeeded(){
+  if (this.isDirty) {
+    this.isDirty = false;
+    this.render();
+  }
 };
 
 QuotedClassAttrNode.prototype.render = function render(){

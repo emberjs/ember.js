@@ -226,9 +226,7 @@ function streamifyClassBindings(view, classBindingsString) {
           var value = lazyValue.value();
           return classStringForParsedPath(_parsedPath, value);
         });
-        lazyValue.subscribe(function(){
-          classNameBound.notify();
-        });
+        lazyValue.subscribe(classNameBound.notify, classNameBound);
         streamified.push(classNameBound);
       })(); // jshint ignore:line
     }

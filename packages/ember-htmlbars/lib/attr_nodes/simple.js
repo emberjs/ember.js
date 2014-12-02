@@ -19,10 +19,7 @@ SimpleAttrNode.prototype.init = function init(element, attrName, simpleAttrValue
   this.currentValue = null;
 
   if (this.attrValue.isStream) {
-    var attrNode = this;
-    this.attrValue.subscribe(function(){
-      attrNode.renderIfNeeded();
-    });
+    this.attrValue.subscribe(this.renderIfNeeded, this);
     this.renderIfNeeded();
   } else {
     this.currentValue = simpleAttrValue;
@@ -32,17 +29,19 @@ SimpleAttrNode.prototype.init = function init(element, attrName, simpleAttrValue
 
 SimpleAttrNode.prototype.renderIfNeeded = function renderIfNeeded(){
   this.isDirty = true;
-  run.schedule('render', this, function() {
-    if (this.isDirty) {
-      this.isDirty = false;
-      var value = this.attrValue.value();
-      if (value !== this.currentValue) {
-        this.lastValue = this.currentValue;
-        this.currentValue = value;
-        this.render();
-      }
+  run.schedule('render', this, this.scheduledRenderIfNeeded);
+};
+
+SimpleAttrNode.prototype.scheduledRenderIfNeeded = function scheduledRenderIfNeeded(){
+  if (this.isDirty) {
+    this.isDirty = false;
+    var value = this.attrValue.value();
+    if (value !== this.currentValue) {
+      this.lastValue = this.currentValue;
+      this.currentValue = value;
+      this.render();
     }
-  });
+  }
 };
 
 SimpleAttrNode.prototype.render = function render(){
