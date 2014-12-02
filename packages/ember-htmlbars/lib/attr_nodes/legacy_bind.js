@@ -11,18 +11,18 @@ import { create as o_create } from "ember-metal/platform";
 
 function LegacyBindAttrNode(element, attrName, attrValue, dom) {
   this.init(element, attrName, attrValue, dom);
-} 
+}
 
 LegacyBindAttrNode.prototype = o_create(SimpleAttrNode.prototype);
 
 LegacyBindAttrNode.prototype.super$init = SimpleAttrNode.prototype.init;
 
-LegacyBindAttrNode.prototype.render = function init() {
+LegacyBindAttrNode.prototype.render = function render() {
   var name = this.attrName;
   var value = this.currentValue;
   var type = typeOf(value);
 
-  Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), 
+  Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]),
                value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
 
   // if this changes, also change the logic in ember-handlebars/lib/helpers/binding.js

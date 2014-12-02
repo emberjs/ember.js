@@ -4,6 +4,7 @@
 */
 
 import attrNodeTypeFor from "ember-htmlbars/attr_nodes";
+import EmberError from "ember-metal/error";
 
 export default function attribute(element, attrName, quoted, view, attrValue, options, env) {
   var isAllowed = true;
@@ -21,6 +22,6 @@ export default function attribute(element, attrName, quoted, view, attrValue, op
     var AttrNode = attrNodeTypeFor(attrName, element, quoted);
     new AttrNode(element, attrName, attrValue, env.dom);
   } else {
-    throw new Error('Bound attributes are not yet supported in Ember.js');
+    throw new EmberError('Bound attributes are not yet supported in Ember.js');
   }
 }

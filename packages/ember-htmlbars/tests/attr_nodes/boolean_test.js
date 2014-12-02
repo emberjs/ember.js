@@ -42,7 +42,7 @@ test("disabled property can be set false with a blank string", function() {
   equalInnerHTML(view.element, '<input>',
                  "attribute is output");
   equal(view.element.firstChild.disabled, false,
-        'boolean property is set true');
+        'boolean property is set false');
 });
 
 test("disabled property can be set false", function() {
@@ -68,7 +68,7 @@ test("disabled property can be set true with a string", function() {
   equalInnerHTML(view.element, '<input disabled="">',
                  "attribute is output");
   equal(view.element.firstChild.disabled, true,
-        'boolean property is set false');
+        'boolean property is set true');
 });
 
 test("disabled attribute turns a value to a string", function() {

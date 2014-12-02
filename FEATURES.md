@@ -99,5 +99,5 @@ for a detailed explanation.
   Adds the `class="{{color}}"` syntax to Ember HTMLBars templates.
   Works with arbitrary attributes and properties.
 
-  Added in [#9721](https://github.com/emberjs/ember.js/pull/9721;w).
+  Added in [#9721](https://github.com/emberjs/ember.js/pull/9721).
 
