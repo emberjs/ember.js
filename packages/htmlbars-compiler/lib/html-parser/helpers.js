@@ -8,6 +8,11 @@ import {
   buildPath
 } from "../builders";
 
+// Regex to validate the identifier for block parameters. 
+// Based on the ID validation regex in Handlebars.
+var ID_INVERSE_PATTERN = /[!"#%-,\.\/;->@\[-\^`\{-~]/;
+
+
 // Rewrites an array of AttrNodes into a HashNode.
 // MustacheNodes are replaced with their root SexprNode and
 // TextNodes are replaced with StringNodes
@@ -57,9 +62,7 @@ export function parseComponentBlockParams(element, program) {
     for (i = asIndex + 1; i < l; i++) {
       var param = attrNames[i].replace(/\|/g, '');
       if (param !== '') {
-        // Regex to validate the identifier for parameters.  Based on the ID validation regex in Handlebars.
-        var ID_PATTERN = /[!"#%-,\.\/;->@\[-\^`\{-~]/;
-        if (ID_PATTERN.test(param)) {
+        if (ID_INVERSE_PATTERN.test(param)) {
           throw new Error('Invalid identifier for block parameters: \'' + param + '\' in \'' + paramsString + '\'');
         }
         params.push(param);
