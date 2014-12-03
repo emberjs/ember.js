@@ -50,86 +50,89 @@ prototype.compile = function(opcodes, options) {
   return this.source.join('');
 };
 
-prototype.program = function(programId, inverseId) {
-  this.stack.push(inverseId);
-  this.stack.push(programId);
+prototype.pushRaw = function(value) {
+  this.stack.push(value);
 };
 
-prototype.blockParam = function(name, index) {
-  this.hooks.set = true;
-  this.source.push(this.indent + '  set(context, ' + string(name) +', blockArguments[' + index + ']);\n');
+prototype.pushLiteral = function(value) {
+  if (typeof value === 'string') {
+    this.stack.push(string(value));
+  } else {
+    this.stack.push(value.toString());
+  }
 };
 
-prototype.id = function(parts) {
+prototype.pushGetHook = function(path) {
   this.hooks.get = true;
-  var path = parts.join('.');
-  this.stack.push(string('id'));
   this.stack.push('get(context, ' + string(path) + ', env)');
 };
 
-prototype.literal = function(literal) {
-  this.stack.push(string(typeof literal));
-  this.stack.push(literal);
-};
-
-prototype.stringLiteral = function(str) {
-  this.stack.push(string('string'));
-  this.stack.push(string(str));
-};
-
-prototype.stackLiteral = function(literal) {
-  this.stack.push(literal);
-};
-
-prototype.helper = function(size, morphNum, blockParamsLength) {
-  var prepared = prepareHelper(this.stack, size);
-  prepared.options.push('morph:morph'+morphNum);
-  if (blockParamsLength) {
-    prepared.options.push('blockParams:'+blockParamsLength);
-  }
-  this.pushMustacheInContent(prepared.name, prepared.params, prepared.hash, prepared.options, morphNum);
-};
-
-prototype.component = function(morphNum, blockParamsLength) {
-  var prepared = prepareHelper(this.stack, 0);
-  prepared.options.push('morph:morph'+morphNum);
-  if (blockParamsLength) {
-    prepared.options.push('blockParams:'+blockParamsLength);
-  }
-  this.pushComponent(prepared.name, prepared.hash, prepared.options, morphNum);
-};
-
-prototype.ambiguous = function(morphNum) {
-  var name = this.stack.pop();
-  this.stack.pop();
-  var options = [];
-  options.push('morph:morph'+morphNum);
-  this.pushMustacheInContent(name, '[]', '{}', options, morphNum);
-};
-
-prototype.attribute = function(quoted, name, size, elementNum) {
-  var prepared = prepareHelper(this.stack, size);
-  this.hooks.attribute = true;
-  this.source.push(this.indent + '  attribute(element' + elementNum + ', ' + string(name) + ', ' + quoted + ', context, ' + prepared.params + ', ' + hash(prepared.options) + ', env);\n');
-};
-
-prototype.sexpr = function(size) {
+prototype.pushSexprHook = function(size) {
   this.hooks.subexpr = true;
   var prepared = prepareHelper(this.stack, size);
   this.stack.push('subexpr(' + prepared.name + ', context, ' + prepared.params + ', ' + prepared.hash + ', ' + hash(prepared.options) + ', env)');
 };
 
-prototype.string = function(str) {
-  this.stack.push(string(str));
+prototype.printSetHook = function(name, index) {
+  this.hooks.set = true;
+  this.source.push(this.indent + '  set(context, ' + string(name) +', blockArguments[' + index + ']);\n');
 };
 
-prototype.nodeHelper = function(size, elementNum) {
+prototype.pushProgramIds = function(programId, inverseId) {
+  this.stack.push(inverseId);
+  this.stack.push(programId);
+};
+
+prototype.printHelperInContent = function(size, morphNum, blockParamsLength) {
+  var prepared = prepareHelper(this.stack, size);
+  prepared.options.push('morph:morph'+morphNum);
+  if (blockParamsLength) {
+    prepared.options.push('blockParams:'+blockParamsLength);
+  }
+  this.printContentHook(prepared.name, prepared.params, prepared.hash, prepared.options, morphNum);
+};
+
+prototype.printAmbiguousMustacheInBody = function(morphNum) {
+  var name = this.stack.pop();
+  this.stack.pop();
+  var options = [];
+  options.push('morph:morph'+morphNum);
+  this.printContentHook(name, '[]', '{}', options, morphNum);
+};
+
+prototype.printContentHook = function(name, args, hashArgs, pairs, morphNum) {
+  this.hooks.content = true;
+  this.source.push(this.indent+'  content(morph' + morphNum + ', ' + name + ', context, ' + args + ', ' + hashArgs + ', ' + hash(pairs) + ', env);\n');
+};
+
+prototype.printComponentHook = function(morphNum, blockParamsLength) {
+  this.hooks.component = true;
+  var prepared = prepareHelper(this.stack, 0);
+  prepared.options.push('morph:morph'+morphNum);
+  if (blockParamsLength) {
+    prepared.options.push('blockParams:'+blockParamsLength);
+  }
+
+  var args = ['morph' + morphNum, prepared.name, 'context', prepared.hash, hash(prepared.options), 'env'];
+  this.source.push(this.indent+'  component(' + args.join(', ') + ');\n');
+};
+
+prototype.printAttributeHook = function(quoted, name, size, elementNum) {
+  var prepared = prepareHelper(this.stack, size);
+  this.hooks.attribute = true;
+  this.source.push(this.indent + '  attribute(element' + elementNum + ', ' + string(name) + ', ' + quoted + ', context, ' + prepared.params + ', ' + hash(prepared.options) + ', env);\n');
+};
+
+prototype.printElementHook = function(size, elementNum) {
+  this.hooks.element = true;
   var prepared = prepareHelper(this.stack, size);
   prepared.options.push('element:element'+elementNum);
-  this.pushMustacheInNode(prepared.name, prepared.params, prepared.hash, prepared.options, elementNum);
+
+  var args = ['element' + elementNum, prepared.name, 'context', prepared.params, prepared.hash, hash(prepared.options), 'env'];
+  this.source.push(this.indent+'  element(' + args.join(', ') + ');\n');
 };
 
-prototype.morph = function(num, parentPath, startIndex, endIndex, escaped) {
+prototype.printMorphCreation = function(num, parentPath, startIndex, endIndex, escaped) {
   var isRoot = parentPath.length === 0;
   var parent = this.getParent();
 
@@ -140,18 +143,6 @@ prototype.morph = function(num, parentPath, startIndex, endIndex, escaped) {
     (isRoot ? ",contextualElement)" : ")");
 
   this.morphs.push(['morph' + num, morph]);
-};
-
-// Adds our element to cached declaration
-prototype.element = function(elementNum){
-  var elementNodesName = "element" + elementNum;
-  this.fragmentProcessing.push('var '+elementNodesName+' = '+this.getParent()+';');
-  this.parents[this.parents.length-1] = elementNodesName;
-};
-
-prototype.pushComponent = function(name, hashArgs, pairs, morphNum) {
-  this.hooks.component = true;
-  this.source.push(this.indent+'  component(morph' + morphNum + ', ' + name + ', context, ' + hashArgs + ', ' + hash(pairs) + ', env);\n');
 };
 
 prototype.repairClonedNode = function(blankChildTextNodes, isElementChecked) {
@@ -165,14 +156,10 @@ prototype.repairClonedNode = function(blankChildTextNodes, isElementChecked) {
   );
 };
 
-prototype.pushMustacheInContent = function(name, args, hashArgs, pairs, morphNum) {
-  this.hooks.content = true;
-  this.source.push(this.indent+'  content(morph' + morphNum + ', ' + name + ', context, ' + args + ', ' + hashArgs + ', ' + hash(pairs) + ', env);\n');
-};
-
-prototype.pushMustacheInNode = function(name, args, hashArgs, optionPairs, elementNum) {
-  this.hooks.element = true;
-  this.source.push(this.indent+'  element(element' + elementNum + ', ' + name + ', context, ' + args + ', ' + hashArgs + ', ' + hash(optionPairs) + ', env);\n');
+prototype.shareElement = function(elementNum){
+  var elementNodesName = "element" + elementNum;
+  this.fragmentProcessing.push('var '+elementNodesName+' = '+this.getParent()+';');
+  this.parents[this.parents.length-1] = elementNodesName;
 };
 
 prototype.shareParent = function(i) {

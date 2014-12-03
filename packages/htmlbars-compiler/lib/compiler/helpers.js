@@ -2,9 +2,7 @@ import { array, hash } from "./quoting";
 
 export function prepareHelper(stack, size) {
   var params = [],
-      paramTypes = [],
       hashPairs = [],
-      hashTypes = [],
       keyName,
       name,
       i;
@@ -14,12 +12,10 @@ export function prepareHelper(stack, size) {
   for (i=0; i<hashSize; i++) {
     keyName = stack.pop();
     hashPairs.unshift('"' + keyName + '":' + stack.pop());
-    hashTypes.unshift('"' + keyName + '":' + stack.pop());
   }
 
   for (i=0; i<size; i++) {
     params.unshift(stack.pop());
-    paramTypes.unshift(stack.pop());
   }
 
   name = stack.pop();
