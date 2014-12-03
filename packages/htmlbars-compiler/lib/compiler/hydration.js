@@ -1,6 +1,5 @@
 import { processOpcodes } from "./utils";
-import { prepareHelper } from "./helpers";
-import { string, hash, array } from "./quoting";
+import { string, hash as quoteHash, array } from "./quoting";
 
 function HydrationCompiler() {
   this.stack = [];
@@ -50,6 +49,26 @@ prototype.compile = function(opcodes, options) {
   return this.source.join('');
 };
 
+prototype.prepareArray = function(length) {
+  var values = [];
+
+  for (var i = 0; i < length; i++) {
+    values.push(this.stack.pop());
+  }
+
+  this.stack.push('[' + values.join(', ') + ']');
+};
+
+prototype.prepareObject = function(size) {
+  var pairs = [];
+
+  for (var i = 0; i < size; i++) {
+    pairs.push(this.stack.pop() + ': ' + this.stack.pop());
+  }
+
+  this.stack.push('{' + pairs.join(', ') + '}');
+};
+
 prototype.pushRaw = function(value) {
   this.stack.push(value);
 };
@@ -67,10 +86,14 @@ prototype.pushGetHook = function(path) {
   this.stack.push('get(context, ' + string(path) + ', env)');
 };
 
-prototype.pushSexprHook = function(size) {
+prototype.pushSexprHook = function() {
   this.hooks.subexpr = true;
-  var prepared = prepareHelper(this.stack, size);
-  this.stack.push('subexpr(' + prepared.name + ', context, ' + prepared.params + ', ' + prepared.hash + ', ' + hash(prepared.options) + ', env)');
+
+  var path = this.stack.pop();
+  var params = this.stack.pop();
+  var hash = this.stack.pop();
+  
+  this.stack.push('subexpr(' + path + ', context, ' + params + ', ' + hash + ', {}, env)');
 };
 
 prototype.printSetHook = function(name, index) {
@@ -78,61 +101,102 @@ prototype.printSetHook = function(name, index) {
   this.source.push(this.indent + '  set(context, ' + string(name) +', blockArguments[' + index + ']);\n');
 };
 
-prototype.pushProgramIds = function(programId, inverseId) {
-  this.stack.push(inverseId);
-  this.stack.push(programId);
-};
+prototype.printContentHookForBlockHelper = function(morphNum, templateId, inverseId, blockParamsLength) {
+  var path = this.stack.pop();
+  var params = this.stack.pop();
+  var hash = this.stack.pop();
 
-prototype.printHelperInContent = function(size, morphNum, blockParamsLength) {
-  var prepared = prepareHelper(this.stack, size);
-  prepared.options.push('morph:morph'+morphNum);
-  if (blockParamsLength) {
-    prepared.options.push('blockParams:'+blockParamsLength);
-  }
-  this.printContentHook(prepared.name, prepared.params, prepared.hash, prepared.options, morphNum);
-};
-
-prototype.printAmbiguousMustacheInBody = function(morphNum) {
-  var name = this.stack.pop();
-  this.stack.pop();
   var options = [];
-  options.push('morph:morph'+morphNum);
-  this.printContentHook(name, '[]', '{}', options, morphNum);
-};
 
-prototype.printContentHook = function(name, args, hashArgs, pairs, morphNum) {
-  this.hooks.content = true;
-  this.source.push(this.indent+'  content(morph' + morphNum + ', ' + name + ', context, ' + args + ', ' + hashArgs + ', ' + hash(pairs) + ', env);\n');
-};
+  options.push('morph: morph' + morphNum);
 
-prototype.printComponentHook = function(morphNum, blockParamsLength) {
-  this.hooks.component = true;
-  var prepared = prepareHelper(this.stack, 0);
-  prepared.options.push('morph:morph'+morphNum);
-  if (blockParamsLength) {
-    prepared.options.push('blockParams:'+blockParamsLength);
+  if (templateId !== null) {
+    options.push('template: child' + templateId);
   }
 
-  var args = ['morph' + morphNum, prepared.name, 'context', prepared.hash, hash(prepared.options), 'env'];
+  if (inverseId !== null) {
+    options.push('inverse: child' + inverseId);
+  }
+
+  if (blockParamsLength) {
+    options.push('blockParams: ' + blockParamsLength);
+  }
+
+  this.printContentHook(morphNum, path, params, hash, options);
+};
+
+prototype.printContentHookForInlineHelper = function(morphNum) {
+  var path = this.stack.pop();
+  var params = this.stack.pop();
+  var hash = this.stack.pop();
+
+  var options = [];
+  options.push('morph: morph' + morphNum);
+
+  this.printContentHook(morphNum, path, params, hash, options);
+};
+
+prototype.printContentHookForAmbiguous = function(morphNum) {
+  var path = this.stack.pop();
+
+  var options = [];
+  options.push('morph: morph' + morphNum);
+
+  this.printContentHook(morphNum, path, '[]', '{}', options);
+};
+
+prototype.printContentHook = function(morphNum, path, params, hash, pairs) {
+  this.hooks.content = true;
+
+  var args = ['morph' + morphNum, path, 'context', params, hash, quoteHash(pairs), 'env'];
+  this.source.push(this.indent+'  content(' + args.join(', ') + ');\n');
+};
+
+prototype.printComponentHook = function(morphNum, templateId, blockParamsLength) {
+  this.hooks.component = true;
+  
+  var path = this.stack.pop();
+  var hash = this.stack.pop();
+
+  var options = [];
+
+  options.push('morph: morph' + morphNum);
+
+  if (templateId !== null) {
+    options.push('template: child' + templateId);
+  }
+
+  if (blockParamsLength) {
+    options.push('blockParams: ' + blockParamsLength);
+  }
+
+  var args = ['morph' + morphNum, path, 'context', hash, quoteHash(options), 'env'];
   this.source.push(this.indent+'  component(' + args.join(', ') + ');\n');
 };
 
-prototype.printAttributeHook = function(quoted, name, size, elementNum) {
-  var prepared = prepareHelper(this.stack, size);
+prototype.printAttributeHook = function(elementNum, quoted) {
+  var name = this.stack.pop();
+  var value = this.stack.pop();
+
   this.hooks.attribute = true;
-  this.source.push(this.indent + '  attribute(element' + elementNum + ', ' + string(name) + ', ' + quoted + ', context, ' + prepared.params + ', ' + hash(prepared.options) + ', env);\n');
+  this.source.push(this.indent + '  attribute(element' + elementNum + ', ' + name + ', ' + quoted + ', context, ' + value + ', {}, env);\n');
 };
 
-prototype.printElementHook = function(size, elementNum) {
+prototype.printElementHook = function(elementNum) {
   this.hooks.element = true;
-  var prepared = prepareHelper(this.stack, size);
-  prepared.options.push('element:element'+elementNum);
 
-  var args = ['element' + elementNum, prepared.name, 'context', prepared.params, prepared.hash, hash(prepared.options), 'env'];
+  var path = this.stack.pop();
+  var params = this.stack.pop();
+  var hash = this.stack.pop();
+
+  var options = [];
+  options.push('element: element' + elementNum);
+
+  var args = ['element' + elementNum, path, 'context', params, hash, quoteHash(options), 'env'];
   this.source.push(this.indent+'  element(' + args.join(', ') + ');\n');
 };
 
-prototype.printMorphCreation = function(num, parentPath, startIndex, endIndex, escaped) {
+prototype.printMorphCreation = function(morphNum, parentPath, startIndex, endIndex, escaped) {
   var isRoot = parentPath.length === 0;
   var parent = this.getParent();
 
@@ -142,7 +206,7 @@ prototype.printMorphCreation = function(num, parentPath, startIndex, endIndex, e
     ","+(endIndex === null ? "-1" : endIndex)+
     (isRoot ? ",contextualElement)" : ")");
 
-  this.morphs.push(['morph' + num, morph]);
+  this.morphs.push(['morph' + morphNum, morph]);
 };
 
 prototype.repairClonedNode = function(blankChildTextNodes, isElementChecked) {
@@ -160,12 +224,6 @@ prototype.shareElement = function(elementNum){
   var elementNodesName = "element" + elementNum;
   this.fragmentProcessing.push('var '+elementNodesName+' = '+this.getParent()+';');
   this.parents[this.parents.length-1] = elementNodesName;
-};
-
-prototype.shareParent = function(i) {
-  var parentNodesName = "parent" + this.parentCount++;
-  this.fragmentProcessing.push('var '+parentNodesName+' = '+this.getParent()+'.childNodes['+i+']');
-  this.parents.push(parentNodesName);
 };
 
 prototype.consumeParent = function(i) {

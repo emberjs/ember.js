@@ -22,11 +22,11 @@ export function buildHashFromAttributes(attributes) {
 
   for (var i = 0; i < attributes.length; i++) {
     var attr = attributes[i];
+    var parts = attr.value;
     var value;
-    if (attr.value.type === 'SubExpression') {
-      value = attr.value;
-    } else if (attr.value.type === 'TextNode') {
-      value = buildString(attr.value.chars);
+
+    if (parts.length === 1 && parts[0].type === 'TextNode') {
+      value = buildString(parts[0].chars);
     } else {
       value = buildSexpr(buildPath('concat'), attr.value);
     }
