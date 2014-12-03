@@ -4,8 +4,7 @@ import {
 } from "ember-metal/utils";
 import {
   sendEvent,
-  listenersUnion,
-  listenersDiff
+  accumulateListeners
 } from "ember-metal/events";
 import ObserverSet from "ember-metal/observer_set";
 
@@ -263,20 +262,20 @@ function endPropertyChanges() {
   @param {Function} callback
   @param [binding]
 */
-function changeProperties(cb, binding) {
+function changeProperties(callback, binding) {
   beginPropertyChanges();
-  tryFinally(cb, endPropertyChanges, binding);
+  tryFinally(callback, endPropertyChanges, binding);
 }
 
 function notifyBeforeObservers(obj, keyName) {
   if (obj.isDestroying) { return; }
 
   var eventName = keyName + ':before';
-  var listeners, diff;
+  var listeners, added;
   if (deferred) {
     listeners = beforeObserverSet.add(obj, keyName, eventName);
-    diff = listenersDiff(obj, eventName, listeners);
-    sendEvent(obj, eventName, [obj, keyName], diff);
+    added = accumulateListeners(obj, eventName, listeners);
+    sendEvent(obj, eventName, [obj, keyName], added);
   } else {
     sendEvent(obj, eventName, [obj, keyName]);
   }
@@ -289,7 +288,7 @@ function notifyObservers(obj, keyName) {
   var listeners;
   if (deferred) {
     listeners = observerSet.add(obj, keyName, eventName);
-    listenersUnion(obj, eventName, listeners);
+    accumulateListeners(obj, eventName, listeners);
   } else {
     sendEvent(obj, eventName, [obj, keyName]);
   }
