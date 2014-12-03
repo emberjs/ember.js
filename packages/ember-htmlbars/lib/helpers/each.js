@@ -179,7 +179,7 @@ function eachHelper(params, hash, options, env) {
   );
 
   hash.emptyViewClass = Ember._MetamorphView;
-  hash.dataSourceBinding = path;
+  hash.dataSource = path;
   options.helperName = options.helperName || helperName;
 
   return env.helpers.collection.helperFunction.call(this, [EachView], hash, options, env);
