@@ -50,7 +50,7 @@ export default function(ast) {
       var values = attribute.value;
 
       var eachIndex = 0;
-      var eachValue, currentValue, parts;
+      var eachValue, currentValue, parts, containsNonStringLiterals;
       var i, l;
       while (eachValue = values[eachIndex]) {
         if (eachValue.type === 'StringLiteral') {
@@ -69,6 +69,7 @@ export default function(ast) {
             }
           }
         } else {
+          containsNonStringLiterals = true;
           if (!currentValue) {
             currentValue = buildConcatASTNode();
             quotedValues.push(currentValue);
@@ -77,7 +78,10 @@ export default function(ast) {
         }
         eachIndex++;
       }
-      attribute.value = quotedValues;
+
+      if (containsNonStringLiterals) {
+        attribute.value = quotedValues;
+      }
     }
   });
 
