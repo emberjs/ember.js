@@ -8,8 +8,8 @@ import {
   endPropertyChanges
 } from "ember-metal/property_events";
 import objectKeys from "ember-metal/keys";
-import { testBoth } from 'ember-runtime/tests/props_helper';
-import EmberObject from 'ember-runtime/system/object';
+import { testBoth } from "ember-metal/tests/props_helper";
+import EmberObject from "ember-runtime/system/object";
 
 QUnit.module('ember-runtime/system/object/destroy_test');
 

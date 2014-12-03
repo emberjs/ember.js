@@ -1,7 +1,7 @@
-import {addObserver, removeObserver} from "ember-metal/observer";
-import {computed} from "ember-metal/computed";
-import {isWatching} from "ember-metal/watching";
-import {testBoth} from 'ember-runtime/tests/props_helper';
+import { addObserver, removeObserver } from "ember-metal/observer";
+import { computed } from "ember-metal/computed";
+import { isWatching } from "ember-metal/watching";
+import { testBoth } from "ember-metal/tests/props_helper";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 
 QUnit.module("ObjectProxy");
