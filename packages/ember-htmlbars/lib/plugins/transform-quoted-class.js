@@ -53,6 +53,10 @@ export default function(ast) {
       var eachValue, currentValue, parts, containsNonStringLiterals;
       var i, l;
       while (eachValue = values[eachIndex]) {
+        if (eachValue.type === 'TextNode') {
+          return; // TextNode means no dynamic parts
+        }
+
         if (eachValue.type === 'StringLiteral') {
           parts = eachValue.value.split(' ');
           for (i=0,l=parts.length;i<l;i++) {
