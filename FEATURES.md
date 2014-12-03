@@ -101,3 +101,13 @@ for a detailed explanation.
 
   Added in [#9721](https://github.com/emberjs/ember.js/pull/9721).
 
+* `ember-metal-injected-properties`
+
+  Enables the injection of properties onto objects coming from a container,
+  and adds the `Ember.Service` class.  Use the `Ember.inject.service` method to
+  inject services onto any object, or `Ember.inject.controller` to inject
+  controllers onto any other controller. The first argument to `Ember.inject`
+  methods is optional, and if left blank the key of the property will be used
+  to perform the lookup instead.  Replaces the need for `needs` in controllers.
+
+  Added in [#5162](https://github.com/emberjs/ember.js/pull/5162).
