@@ -72,6 +72,28 @@ test("The `if` helper tests for `isTruthy` if available", function() {
   equal(view.$().text(), 'Yep');
 });
 
+test("The `if` helper does not error on undefined", function() {
+  view = EmberView.create({
+    undefinedValue: undefined,
+    template: compile('{{#if view.undefinedValue}}Yep{{/if}}{{#unbound if view.undefinedValue}}Yep{{/unbound}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), '');
+});
+
+test("The `unless` helper does not error on undefined", function() {
+  view = EmberView.create({
+    undefinedValue: undefined,
+    template: compile('{{#unless view.undefinedValue}}Yep{{/unless}}{{#unbound unless view.undefinedValue}}Yep{{/unbound}}')
+  });
+
+  runAppend(view);
+
+  equal(view.$().text(), 'YepYep');
+});
+
 test("The `if` helper does not print the contents for an object proxy without content", function() {
   view = EmberView.create({
     truthy: ObjectProxy.create({ content: {} }),

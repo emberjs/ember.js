@@ -9,6 +9,7 @@ import { bind } from "ember-htmlbars/helpers/binding";
 import { get } from "ember-metal/property_get";
 import { isArray } from "ember-metal/utils";
 import ConditionalStream from "ember-views/streams/conditional_stream";
+import { isStream } from "ember-metal/streams/utils";
 
 function shouldDisplayIfHelperContent(result) {
   var truthy = result && get(result, 'isTruthy');
@@ -74,7 +75,7 @@ function unboundIfHelper(params, hash, options, env) {
   var template = options.template;
   var value = params[0];
 
-  if (params[0].isStream) {
+  if (isStream(params[0])) {
     value = params[0].value();
   }
 
