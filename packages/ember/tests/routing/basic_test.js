@@ -3329,3 +3329,76 @@ test("Route#resetController gets fired when changing models and exiting routes",
   Ember.run(router, 'transitionTo', 'out');
   deepEqual(calls, [['reset', 'c'], ['reset', 'a'], ['setup', 'out']]);
 });
+
+test("Exception during initialization of non-initial route is not swallowed", function() {
+  Router.map(function() {
+    this.route('boom');
+  });
+  App.BoomRoute = Ember.Route.extend({
+    init: function() {
+      throw new Error("boom!");
+    }
+  });
+  bootApplication();
+  throws(function(){
+    Ember.run(router, 'transitionTo', 'boom');
+  }, /\bboom\b/);
+});
+
+
+test("Exception during load of non-initial route is not swallowed", function() {
+  Router.map(function() {
+    this.route('boom');
+  });
+  var lookup = container.lookup;
+  container.lookup = function() {
+    if (arguments[0] === 'route:boom') {
+      throw new Error("boom!");
+    }
+    return lookup.apply(this, arguments);
+  };
+  App.BoomRoute = Ember.Route.extend({
+    init: function() {
+      throw new Error("boom!");
+    }
+  });
+  bootApplication();
+  throws(function(){
+    Ember.run(router, 'transitionTo', 'boom');
+  });
+});
+
+test("Exception during initialization of initial route is not swallowed", function() {
+  Router.map(function() {
+    this.route('boom', {path: '/'});
+  });
+  App.BoomRoute = Ember.Route.extend({
+    init: function() {
+      throw new Error("boom!");
+    }
+  });
+  throws(function(){
+    bootApplication();
+  }, /\bboom\b/);
+});
+
+test("Exception during load of initial route is not swallowed", function() {
+  Router.map(function() {
+    this.route('boom', {path: '/'});
+  });
+  var lookup = container.lookup;
+  container.lookup = function() {
+    if (arguments[0] === 'route:boom') {
+      throw new Error("boom!");
+    }
+    return lookup.apply(this, arguments);
+  };
+  App.BoomRoute = Ember.Route.extend({
+    init: function() {
+      throw new Error("boom!");
+    }
+  });
+  throws(function(){
+    bootApplication();
+  }, /\bboom\b/);
+});

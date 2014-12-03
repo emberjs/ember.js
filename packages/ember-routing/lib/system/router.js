@@ -105,6 +105,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     var container = this.container;
     var self = this;
     var initialURL = get(this, 'initialURL');
+    var initialTransition;
 
     // Allow the Location class to cancel the router setup while it refreshes
     // the page
@@ -124,8 +125,10 @@ var EmberRouter = EmberObject.extend(Evented, {
     if (typeof initialURL === "undefined") {
       initialURL = location.getURL();
     }
-
-    this.handleURL(initialURL);
+    initialTransition = this.handleURL(initialURL);
+    if (initialTransition && initialTransition.error) {
+      throw initialTransition.error;
+    }
   },
 
   /**
