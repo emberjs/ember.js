@@ -93,3 +93,13 @@ test('Ember.assert does not throw if second argument is truthy', function() {
 
   ok(true, 'assertions were not thrown');
 });
+
+test('Ember.assert does not throw if second argument is an object', function() {
+  expect(1);
+  var Igor = Ember.Object.extend();
+
+  Ember.assert('is truthy', Igor);
+  Ember.assert('is truthy', Igor.create());
+
+  ok(true, 'assertions were not thrown');
+});
