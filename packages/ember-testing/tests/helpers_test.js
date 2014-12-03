@@ -56,6 +56,11 @@ function assertHelpers(application, helperContainer, expected) {
   checkHelperPresent('fillIn', expected);
   checkHelperPresent('wait', expected);
   checkHelperPresent('triggerEvent', expected);
+
+  if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
+    checkHelperPresent('check', expected);
+    checkHelperPresent('uncheck', expected);
+  }
 }
 
 function assertNoHelpers(application, helperContainer) {
@@ -541,6 +546,94 @@ test("`fillIn` focuses on the element", function() {
     equal(find('#first').val(), 'current value');
   });
 });
+
+if (Ember.FEATURES.isEnabled('ember-testing-checkbox-helpers')) {
+  test("`check` ensures checkboxes are `checked` state for checkboxes", function() {
+    expect(2);
+    var check, find, visit, andThen;
+
+    App.IndexView = EmberView.extend({
+      template: compile('<input type="checkbox" id="unchecked"><input type="checkbox" id="checked" checked>')
+    });
+
+    run(App, App.advanceReadiness);
+
+    check = App.testHelpers.check;
+    find = App.testHelpers.find;
+    visit = App.testHelpers.visit;
+    andThen = App.testHelpers.andThen;
+
+    visit('/');
+    check('#unchecked');
+    check('#checked');
+    andThen(function() {
+      equal(find('#unchecked').is(":checked"), true, "can check an unchecked checkbox");
+      equal(find('#checked').is(":checked"), true, "can check a checked checkbox");
+    });
+  });
+
+  test("`uncheck` ensures checkboxes are not `checked`", function() {
+    expect(2);
+    var uncheck, find, visit, andThen;
+
+    App.IndexView = EmberView.extend({
+      template: compile('<input type="checkbox" id="unchecked"><input type="checkbox" id="checked" checked>')
+    });
+
+    run(App, App.advanceReadiness);
+
+    uncheck = App.testHelpers.uncheck;
+    find = App.testHelpers.find;
+    visit = App.testHelpers.visit;
+    andThen = App.testHelpers.andThen;
+
+    visit('/');
+    uncheck('#unchecked');
+    uncheck('#checked');
+    andThen(function() {
+      equal(find('#unchecked').is(":checked"), false, "can uncheck an unchecked checkbox");
+      equal(find('#checked').is(":checked"), false, "can uncheck a checked checkbox");
+    });
+  });
+
+  test("`check` asserts the selected inputs are checkboxes", function() {
+    var check, visit;
+
+    App.IndexView = EmberView.extend({
+      template: compile('<input type="text" id="text">')
+    });
+
+    run(App, App.advanceReadiness);
+
+    check = App.testHelpers.check;
+    visit = App.testHelpers.visit;
+
+    visit('/').then(function() {
+      expectAssertion(function() {
+        check('#text');
+      }, /must be a checkbox/);
+    });
+  });
+
+  test("`uncheck` asserts the selected inputs are checkboxes", function() {
+    var visit, uncheck;
+
+    App.IndexView = EmberView.extend({
+      template: compile('<input type="text" id="text">')
+    });
+
+    run(App, App.advanceReadiness);
+
+    visit = App.testHelpers.visit;
+    uncheck = App.testHelpers.uncheck;
+
+    visit('/').then(function() {
+      expectAssertion(function() {
+        uncheck('#text');
+      }, /must be a checkbox/);
+    });
+  });
+}
 
 test("`triggerEvent accepts an optional options hash and context", function() {
   expect(3);

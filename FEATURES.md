@@ -5,6 +5,34 @@ for a detailed explanation.
 
 ## Feature Flags
 
+* `ember-testing-checkbox-helpers`
+
+  Add `check` and `uncheck` test helpers.
+
+  `check`:
+
+  Checks a checkbox. Ensures the presence of the `checked` attribute
+
+  Example:
+
+  ```javascript
+  check('#remember-me').then(function() {
+    // assert something
+  });
+  ```
+
+  `uncheck`:
+
+  Unchecks a checkbox. Ensures the absence of the `checked` attribute
+
+  Example:
+
+  ```javascript
+  uncheck('#remember-me').then(function() {
+    // assert something
+  });
+  ```
+
 * `ember-routing-named-substates`
 
   Add named substates; e.g. when resolving a `loading` or `error`
