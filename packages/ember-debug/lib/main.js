@@ -37,7 +37,7 @@ Ember Debug
 Ember.assert = function(desc, test) {
   var throwAssertion;
 
-  if (typeof test === 'function') {
+  if (Ember.typeOf(test) === 'function') {
     throwAssertion = !test();
   } else {
     throwAssertion = !test;
