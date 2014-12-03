@@ -2,8 +2,6 @@ import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
 import { forEach } from "../utils";
 import { isHelper } from "../ast";
-import { buildString } from "../builders";
-import { buildHashFromAttributes } from "../html-parser/helpers";
 import { buildHashFromAttributes } from "../html-parser/helpers";
 
 function detectIsElementChecked(element){
@@ -113,9 +111,11 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLe
   var morphNum = this.morphNum++;
   this.morphs.push([morphNum, this.paths.slice(), start, end, true]);
 
-  this.opcode('pushProgramIds', this.templateId++, block.inverse === null ? null : this.templateId++);
-  processSexpr(this, sexpr);
-  this.opcode('printHelperInContent', sexpr.params.length, morphNum, blockParams.length);
+  var templateId = this.templateId++;
+  var inverseId = block.inverse === null ? null : this.templateId++;
+
+  prepareSexpr(this, sexpr);
+  this.opcode('printContentHookForBlockHelper', morphNum, templateId, inverseId, blockParams.length);
 };
 
 HydrationOpcodeCompiler.prototype.component = function(component, childIndex, childrenLength) {
@@ -129,15 +129,9 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
   var morphNum = this.morphNum++;
   this.morphs.push([morphNum, this.paths.slice(), start, end]);
 
-  var id = {
-    string: component.tag,
-    parts: component.tag.split('.')
-  };
-
-  this.opcode('pushProgramIds', this.templateId++, null);
-  processName(this, id);
-  processHash(this, buildHashFromAttributes(component.attributes));
-  this.opcode('printComponentHook', morphNum, blockParams.length);
+  prepareHash(this, buildHashFromAttributes(component.attributes));
+  this.opcode('pushLiteral', component.tag);
+  this.opcode('printComponentHook', morphNum, this.templateId++, blockParams.length);
 };
 
 HydrationOpcodeCompiler.prototype.opcode = function(type) {
@@ -151,27 +145,27 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
     return;
   }
 
-  var params = attr.value;
-
-  this.opcode('pushProgramIds', null, null);
-  processSexpr(this, { params: params });
+  prepareParams(this, attr.value);
+  this.opcode('pushLiteral', attr.name);
 
   if (this.element !== null) {
     this.opcode('shareElement', ++this.elementNum);
     this.element = null;
   }
-  this.opcode('printAttributeHook', attr.quoted, attr.name, params.length, this.elementNum);
+
+  this.opcode('printAttributeHook', this.elementNum, attr.quoted);
 };
 
 HydrationOpcodeCompiler.prototype.elementHelper = function(sexpr) {
-  this.opcode('pushProgramIds', null, null);
-  processSexpr(this, sexpr);
+  prepareSexpr(this, sexpr);
+
   // If we have a helper in a node, and this element has not been cached, cache it
-  if(this.element !== null){
+  if (this.element !== null) {
     this.opcode('shareElement', ++this.elementNum);
     this.element = null; // Reset element so we don't cache it more than once
   }
-  this.opcode('printElementHook', sexpr.params.length, this.elementNum);
+
+  this.opcode('printElementHook', this.elementNum);
 };
 
 HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, childrenLength) {
@@ -185,19 +179,17 @@ HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, chil
   this.morphs.push([morphNum, this.paths.slice(), start, end, mustache.escaped]);
 
   if (isHelper(sexpr)) {
-    this.opcode('pushProgramIds', null, null);
-    processSexpr(this, sexpr);
-    this.opcode('printHelperInContent', sexpr.params.length, morphNum);
+    prepareSexpr(this, sexpr);
+    this.opcode('printContentHookForInlineHelper', morphNum);
   } else {
-    processName(this, sexpr.path);
-    this.opcode('printAmbiguousMustacheInBody', morphNum);
+    preparePath(this, sexpr.path);
+    this.opcode('printContentHookForAmbiguous', morphNum);
   }
 };
 
 HydrationOpcodeCompiler.prototype.SubExpression = function(sexpr) {
-  this.opcode('pushProgramIds', null, null);
-  processSexpr(this, sexpr);
-  this.opcode('pushSexprHook', sexpr.params.length);
+  prepareSexpr(this, sexpr);
+  this.opcode('pushSexprHook');
 };
 
 HydrationOpcodeCompiler.prototype.PathExpression = function(path) {
@@ -216,44 +208,37 @@ HydrationOpcodeCompiler.prototype.NumberLiteral = function(node) {
   this.opcode('pushLiteral', node.value);
 };
 
-function processSexpr(compiler, sexpr) {
-  processName(compiler, sexpr.path);
-  processParams(compiler, sexpr.params);
-  processHash(compiler, sexpr.hash);
+function preparePath(compiler, path) {
+  compiler.opcode('pushLiteral', path.original);
 }
 
-function processName(compiler, path) {
-  if (path) {
-    compiler.opcode('pushLiteral', path.parts.join('.'));
-  } else {
-    compiler.opcode('pushLiteral', '');
+function prepareParams(compiler, params) {
+  for (var i = params.length - 1; i >= 0; i--) {
+    var param = params[i];
+    compiler[param.type](param);
   }
+
+  compiler.opcode('prepareArray', params.length);
 }
 
-function processParams(compiler, params) {
-  forEach(params, function(param) {
-    if (param.type === 'TextNode') {
-      compiler.StringLiteral(buildString(param.chars));
-    } else if (param.type) {
-      compiler[param.type](param);
-    } else {
-      compiler.StringLiteral(buildString(param));
-    }
-  });
-}
+function prepareHash(compiler, hash) {
+  var pairs = hash.pairs;
 
-function processHash(compiler, hash) {
-  if (hash) {
-    forEach(hash.pairs, function(pair) {
-      var key = pair.key;
-      var value = pair.value;
-      compiler[value.type](value);
-      compiler.opcode('pushRaw', key);
-    });
-    compiler.opcode('pushRaw', hash.pairs.length);
-  } else {
-    compiler.opcode('pushRaw', 0);
+  for (var i = pairs.length - 1; i >= 0; i--) {
+    var key = pairs[i].key;
+    var value = pairs[i].value;
+
+    compiler[value.type](value);
+    compiler.opcode('pushLiteral', key);
   }
+
+  compiler.opcode('prepareObject', pairs.length);
+}
+
+function prepareSexpr(compiler, sexpr) {
+  prepareHash(compiler, sexpr.hash);
+  prepareParams(compiler, sexpr.params);
+  preparePath(compiler, sexpr.path);
 }
 
 function distributeMorphs(morphs, opcodes) {
