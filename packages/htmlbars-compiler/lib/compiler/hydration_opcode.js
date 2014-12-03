@@ -2,7 +2,7 @@ import TemplateVisitor from "./template_visitor";
 import { processOpcodes } from "./utils";
 import { forEach } from "../utils";
 import { isHelper } from "../ast";
-import { buildHashFromAttributes } from "../html-parser/helpers";
+import { unwrapMustache } from "../html-parser/tokens";
 
 function detectIsElementChecked(element){
   for (var i=0, len=element.attributes.length;i<len;i++) {
@@ -31,6 +31,15 @@ HydrationOpcodeCompiler.prototype.compile = function(ast) {
   processOpcodes(this, templateVisitor.actions);
 
   return this.opcodes;
+};
+
+HydrationOpcodeCompiler.prototype.accept = function(node) {
+  this[node.type](node);
+};
+
+HydrationOpcodeCompiler.prototype.opcode = function(type) {
+  var params = [].slice.call(arguments, 1);
+  this.opcodes.push([type, params]);
 };
 
 HydrationOpcodeCompiler.prototype.startProgram = function(program, c, blankChildTextNodes) {
@@ -129,23 +138,45 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
   var morphNum = this.morphNum++;
   this.morphs.push([morphNum, this.paths.slice(), start, end]);
 
-  prepareHash(this, buildHashFromAttributes(component.attributes));
+  var attrs = component.attributes;
+  for (var i = attrs.length - 1; i >= 0; i--) {
+    var name = attrs[i].name;
+    var value = attrs[i].value;
+
+    // TODO: Introduce context specific AST nodes to avoid switching here.
+    if (value.type === 'TextNode') {
+      this.opcode('pushLiteral', value.chars);
+    } else if (value.type === 'MustacheStatement') {
+      this.accept(unwrapMustache(value));
+    } else if (value.type === 'ConcatStatement') {
+      prepareParams(this, value.parts);
+      this.opcode('pushConcatHook');
+    }
+
+    this.opcode('pushLiteral', name);
+  }
+
+  this.opcode('prepareObject', attrs.length);
   this.opcode('pushLiteral', component.tag);
   this.opcode('printComponentHook', morphNum, this.templateId++, blockParams.length);
 };
 
-HydrationOpcodeCompiler.prototype.opcode = function(type) {
-  var params = [].slice.call(arguments, 1);
-  this.opcodes.push([type, params]);
-};
-
 HydrationOpcodeCompiler.prototype.attribute = function(attr) {
-  var parts = attr.value;
-  if (parts.length === 1 && parts[0].type === 'TextNode') {
+  var value = attr.value;
+  var quoted;
+  
+  // TODO: Introduce context specific AST nodes to avoid switching here.
+  if (value.type === 'TextNode') {
     return;
+  } else if (value.type === 'MustacheStatement') {
+    quoted = false;
+    this.accept(unwrapMustache(value));
+  } else if (value.type === 'ConcatStatement') {
+    quoted = true;
+    prepareParams(this, value.parts);
+    this.opcode('pushConcatHook');
   }
 
-  prepareParams(this, attr.value);
   this.opcode('pushLiteral', attr.name);
 
   if (this.element !== null) {
@@ -153,7 +184,7 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
     this.element = null;
   }
 
-  this.opcode('printAttributeHook', this.elementNum, attr.quoted);
+  this.opcode('printAttributeHook', this.elementNum, value.type === 'ConcatStatement');
 };
 
 HydrationOpcodeCompiler.prototype.elementHelper = function(sexpr) {

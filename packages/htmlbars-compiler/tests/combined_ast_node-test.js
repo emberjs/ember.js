@@ -88,7 +88,7 @@ test("elements can have empty attributes", function() {
   var t = '<img id="">';
   astEqual(t, b.program([
     b.element("img", [
-      b.attr("id", [ b.text("") ], true)
+      b.attr("id", b.text(""))
     ])
   ]));
 });
@@ -164,7 +164,7 @@ test("Handlebars embedded in an attribute (quoted)", function() {
   var t = 'some <div class="{{foo}}">content</div> done';
   astEqual(t, b.program([
     b.text("some "),
-    b.element("div", [ b.attr("class", [ b.path('foo') ], true) ], [], [
+    b.element("div", [ b.attr("class", b.concat([ b.path('foo') ])) ], [], [
       b.text("content")
     ]),
     b.text(" done")
@@ -175,7 +175,7 @@ test("Handlebars embedded in an attribute (unquoted)", function() {
   var t = 'some <div class={{foo}}>content</div> done';
   astEqual(t, b.program([
     b.text("some "),
-    b.element("div", [ b.attr("class", [ b.path('foo') ], false) ], [], [
+    b.element("div", [ b.attr("class", b.mustache(b.sexpr(b.path('foo')))) ], [], [
       b.text("content")
     ]),
     b.text(" done")
@@ -187,7 +187,7 @@ test("Handlebars embedded in an attribute (sexprs)", function() {
   astEqual(t, b.program([
     b.text("some "),
     b.element("div", [
-      b.attr("class", [ b.sexpr(b.path('foo'), [ b.sexpr(b.path('foo'), [ b.string('abc') ]) ]) ], true)
+      b.attr("class", b.concat([ b.sexpr(b.path('foo'), [ b.sexpr(b.path('foo'), [ b.string('abc') ]) ]) ]))
     ], [], [
       b.text("content")
     ]),
@@ -201,11 +201,11 @@ test("Handlebars embedded in an attribute with other content surrounding it", fu
   astEqual(t, b.program([
     b.text("some "),
     b.element("a", [
-      b.attr("href", [
+      b.attr("href", b.concat([
         b.string("http://"),
         b.path('link'),
         b.string("/")
-      ], true)
+      ]))
     ], [], [
       b.text("content")
     ]),
@@ -224,11 +224,11 @@ test("A more complete embedding example", function() {
     b.mustache(b.sexpr(b.path('some'), [b.string('content')])),
     b.text(' '),
     b.element("div", [
-      b.attr("class", [
+      b.attr("class", b.concat([
         b.path('foo'),
         b.string(' '),
         b.sexpr(b.path('bind-class'), [b.path('isEnabled')], b.hash([b.pair('truthy', b.string('enabled'))]))
-      ], true)
+      ]))
     ], [], [
       b.mustache(b.sexpr(b.path('content')))
     ]),
@@ -274,7 +274,7 @@ test("Involved block helper", function() {
 test("Node helpers", function() {
   var t = "<p {{action 'boom'}} class='bar'>Some content</p>";
   astEqual(t, b.program([
-    b.element('p', [ b.attr('class', [ b.text('bar') ], true) ], [b.sexpr(b.path('action'), [b.string('boom')])], [
+    b.element('p', [ b.attr('class', b.text('bar')) ], [b.sexpr(b.path('action'), [b.string('boom')])], [
       b.text('Some content')
     ])
   ]));
@@ -402,11 +402,11 @@ test("Components", function() {
   astEqual(t, b.program([
     b.text(''),
     b.component('x-foo', [
-      b.attr('a', [ b.text('b') ], false),
-      b.attr('c', [ b.text('d') ], true),
-      b.attr('e', [ b.path('f') ], false),
-      b.attr('id', [ b.path('bar') ], true),
-      b.attr('class', [ b.string('foo-'), b.path('bar') ], true)
+      b.attr('a', b.text('b')),
+      b.attr('c', b.text('d')),
+      b.attr('e', b.mustache(b.sexpr(b.path('f')))),
+      b.attr('id', b.concat([ b.path('bar') ])),
+      b.attr('class', b.concat([ b.string('foo-'), b.path('bar') ]))
     ], b.program([
       b.text(''),
       b.mustache(b.sexpr(b.path('a'))),
