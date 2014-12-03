@@ -16,9 +16,9 @@ test("simple example", function() {
     [ "printMorphCreation", [ 0, [ 0 ], -1, 0, true ] ],
     [ "printMorphCreation", [ 1, [ 0 ], 0, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printAmbiguousMustacheInBody", [ 0 ] ],
+    [ "printContentHookForAmbiguous", [ 0 ] ],
     [ "pushLiteral", [ "baz" ] ],
-    [ "printAmbiguousMustacheInBody", [ 1 ] ],
+    [ "printContentHookForAmbiguous", [ 1 ] ],
   ]);
 });
 
@@ -26,10 +26,10 @@ test("simple block", function() {
   var opcodes = opcodesFor("<div>{{#foo}}{{/foo}}</div>");
   deepEqual(opcodes, [
     [ "printMorphCreation", [ 0, [ 0 ], null, null, true ] ],
-    [ "pushProgramIds", [ 0, null ] ],
+    [ "prepareObject", [ 0 ] ],
+    [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "pushRaw", [ 0 ] ],
-    [ "printHelperInContent", [ 0, 0, 0 ] ]
+    [ "printContentHookForBlockHelper", [ 0, 0, null, 0 ] ]
   ]);
 });
 
@@ -37,10 +37,10 @@ test("simple block with block params", function() {
   var opcodes = opcodesFor("<div>{{#foo as |bar baz|}}{{/foo}}</div>");
   deepEqual(opcodes, [
     [ "printMorphCreation", [ 0, [ 0 ], null, null, true ] ],
-    [ "pushProgramIds", [ 0, null ] ],
+    [ "prepareObject", [ 0 ] ],
+    [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "pushRaw", [ 0 ] ],
-    [ "printHelperInContent", [ 0, 0, 2 ] ]
+    [ "printContentHookForBlockHelper", [ 0, 0, null, 2 ] ]
   ]);
 });
 
@@ -49,7 +49,7 @@ test("element with a sole mustache child", function() {
   deepEqual(opcodes, [
     [ "printMorphCreation", [ 0, [ 0 ], -1, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printAmbiguousMustacheInBody", [ 0 ] ],
+    [ "printContentHookForAmbiguous", [ 0 ] ],
   ]);
 });
 
@@ -58,7 +58,7 @@ test("element with a mustache between two text nodes", function() {
   deepEqual(opcodes, [
     [ "printMorphCreation", [ 0, [ 0 ], 0, 1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printAmbiguousMustacheInBody", [ 0 ] ],
+    [ "printContentHookForAmbiguous", [ 0 ] ],
   ]);
 });
 
@@ -68,7 +68,7 @@ test("mustache two elements deep", function() {
     [ "consumeParent", [ 0 ] ],
     [ "printMorphCreation", [ 0, [ 0, 0 ], -1, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printAmbiguousMustacheInBody", [ 0 ] ],
+    [ "printContentHookForAmbiguous", [ 0 ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -79,12 +79,12 @@ test("two sibling elements with mustaches", function() {
     [ "consumeParent", [ 0 ] ],
     [ "printMorphCreation", [ 0, [ 0 ], -1, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printAmbiguousMustacheInBody", [ 0 ] ],
+    [ "printContentHookForAmbiguous", [ 0 ] ],
     [ "popParent", [] ],
     [ "consumeParent", [ 1 ] ],
     [ "printMorphCreation", [ 1, [ 1 ], -1, -1, true ] ],
     [ "pushLiteral", [ "bar" ] ],
-    [ "printAmbiguousMustacheInBody", [ 1 ] ],
+    [ "printContentHookForAmbiguous", [ 1 ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -96,9 +96,9 @@ test("mustaches at the root", function() {
     [ "printMorphCreation", [ 1, [ ], 1, 2, true ] ],
     [ "repairClonedNode", [ [ 0, 2 ] ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printAmbiguousMustacheInBody", [ 0 ] ],
+    [ "printContentHookForAmbiguous", [ 0 ] ],
     [ "pushLiteral", [ "bar" ] ],
-    [ "printAmbiguousMustacheInBody", [ 1 ] ],
+    [ "printContentHookForAmbiguous", [ 1 ] ],
   ]);
 });
 
@@ -111,13 +111,13 @@ test("back to back mustaches should have a text node inserted between them", fun
     [ "printMorphCreation", [ 3, [0], 2, -1, true] ],
     [ "repairClonedNode", [ [ 0, 1 ], false ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printAmbiguousMustacheInBody", [ 0 ] ],
+    [ "printContentHookForAmbiguous", [ 0 ] ],
     [ "pushLiteral", [ "bar" ] ],
-    [ "printAmbiguousMustacheInBody", [ 1 ] ],
+    [ "printContentHookForAmbiguous", [ 1 ] ],
     [ "pushLiteral", [ "baz" ] ],
-    [ "printAmbiguousMustacheInBody", [ 2 ] ],
+    [ "printContentHookForAmbiguous", [ 2 ] ],
     [ "pushLiteral", [ "qux" ] ],
-    [ "printAmbiguousMustacheInBody", [ 3 ] ],
+    [ "printContentHookForAmbiguous", [ 3 ] ],
   ]);
 });
 
@@ -125,51 +125,50 @@ test("helper usage", function() {
   var opcodes = opcodesFor("<div>{{foo 'bar' baz.bat true 3.14}}</div>");
   deepEqual(opcodes, [
     [ "printMorphCreation", [ 0, [0], -1, -1, true ] ],
-    [ "pushProgramIds", [null, null] ],
+    [ "prepareObject", [ 0 ] ],
+    [ "pushLiteral", [ 3.14 ] ],
+    [ "pushLiteral", [ true ] ],
+    [ "pushGetHook", [ "baz.bat" ] ],
+    [ "pushLiteral", [ "bar" ] ],
+    [ "prepareArray", [ 4 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "pushLiteral", ["bar"] ],
-    [ "pushGetHook", ["baz.bat"] ],
-    [ "pushLiteral", [true] ],
-    [ "pushLiteral", [3.14] ],
-    [ "pushRaw", [0] ],
-    [ "printHelperInContent", [ 4, 0 ] ],
+    [ "printContentHookForInlineHelper", [ 0 ] ]
   ]);
 });
 
 test("node mustache", function() {
   var opcodes = opcodesFor("<div {{foo}}></div>");
   deepEqual(opcodes, [
-    [ "pushProgramIds", [null, null] ],
+    [ "prepareObject", [ 0 ] ],
+    [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "pushRaw", [0] ],
-    [ "shareElement", [0] ],
-    [ "printElementHook", [ 0, 0 ] ]
+    [ "shareElement", [ 0 ] ],
+    [ "printElementHook", [ 0 ] ]
   ]);
 });
 
 test("node helper", function() {
   var opcodes = opcodesFor("<div {{foo 'bar'}}></div>");
   deepEqual(opcodes, [
-    [ "pushProgramIds", [null, null] ],
+    [ "prepareObject", [ 0 ] ],
+    [ "pushLiteral", [ "bar" ] ],
+    [ "prepareArray", [ 1 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "pushLiteral", ['bar'] ],
-    [ "pushRaw", [0] ],
-    [ "shareElement", [0] ],
-    [ "printElementHook", [ 1, 0 ] ]
+    [ "shareElement", [ 0 ] ],
+    [ "printElementHook", [ 0 ] ]
   ]);
 });
 
 test("attribute mustache", function() {
   var opcodes = opcodesFor("<div class='before {{foo}} after'></div>");
   deepEqual(opcodes, [
-    [ "pushProgramIds", [null, null] ],
-    [ "pushLiteral", [ "" ] ],
-    [ "pushLiteral", ["before "] ],
-    [ "pushGetHook", ["foo"] ],
-    [ "pushLiteral", [" after"] ],
-    [ "pushRaw", [0] ],
-    [ "shareElement", [0] ],
-    [ "printAttributeHook", [ true, "class", 3, 0 ] ]
+    [ "pushLiteral", [ " after" ] ],
+    [ "pushGetHook", [ "foo" ] ],
+    [ "pushLiteral", [ "before " ] ],
+    [ "prepareArray", [ 3 ] ],
+    [ "pushLiteral", [ "class" ] ],
+    [ "shareElement", [ 0 ] ],
+    [ "printAttributeHook", [ 0, true ] ]
   ]);
 });
 
@@ -177,17 +176,16 @@ test("attribute mustache", function() {
 test("attribute helper", function() {
   var opcodes = opcodesFor("<div class='before {{foo 'bar'}} after'></div>");
   deepEqual(opcodes, [
-    [ "pushProgramIds", [ null, null ] ],
-    [ "pushLiteral", [ "" ] ],
-    [ "pushLiteral", [ "before " ] ],
-    [ "pushProgramIds", [ null, null ] ],
-    [ "pushLiteral", [ "foo" ] ],
-    [ "pushLiteral", [ "bar" ] ],
-    [ "pushRaw", [ 0 ] ],
-    [ "pushSexprHook", [ 1 ] ],
     [ "pushLiteral", [ " after" ] ],
-    [ "pushRaw", [ 0 ] ],
-    [ "shareElement", [0] ],
-    [ "printAttributeHook", [ true, "class", 3, 0] ]
+    [ "prepareObject", [ 0 ] ],
+    [ "pushLiteral", [ "bar" ] ],
+    [ "prepareArray", [ 1 ] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "pushSexprHook", [ ] ],
+    [ "pushLiteral", [ "before " ] ],
+    [ "prepareArray", [ 3 ] ],
+    [ "pushLiteral", [ "class" ] ],
+    [ "shareElement", [ 0 ] ],
+    [ "printAttributeHook", [ 0, true ] ]
   ]);
 });
