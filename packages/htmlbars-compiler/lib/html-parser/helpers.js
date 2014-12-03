@@ -55,10 +55,19 @@ export function parseComponentBlockParams(element, program) {
 
     var params = [];
     for (i = asIndex + 1; i < l; i++) {
-      var param = attrNames[i].replace('|', '');
+      var param = attrNames[i].replace(/\|/g, '');
       if (param !== '') {
+        // Regex to validate the identifier for parameters.  Based on the ID validation regex in Handlebars.
+        var ID_PATTERN = /[!"#%-,\.\/;->@\[-\^`\{-~]/;
+        if (ID_PATTERN.test(param)) {
+          throw new Error('Invalid identifier for block parameters: \'' + param + '\' in \'' + paramsString + '\'');
+        }
         params.push(param);
       }
+    }
+
+    if (params.length === 0) {
+      throw new Error('Cannot use zero block parameters: \'' + paramsString + '\'');
     }
 
     element.attributes = element.attributes.slice(0, asIndex);
