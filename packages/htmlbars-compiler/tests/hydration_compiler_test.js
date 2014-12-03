@@ -13,52 +13,52 @@ QUnit.module("HydrationOpcodeCompiler opcode generation");
 test("simple example", function() {
   var opcodes = opcodesFor("<div>{{foo}} bar {{baz}}</div>");
   deepEqual(opcodes, [
-    [ "morph", [ 0, [ 0 ], -1, 0, true ] ],
-    [ "morph", [ 1, [ 0 ], 0, -1, true ] ],
-    [ "string", [ "foo" ] ],
-    [ "ambiguous", [ 0 ] ],
-    [ "string", [ "baz" ] ],
-    [ "ambiguous", [ 1 ] ],
+    [ "printMorphCreation", [ 0, [ 0 ], -1, 0, true ] ],
+    [ "printMorphCreation", [ 1, [ 0 ], 0, -1, true ] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "printAmbiguousMustacheInBody", [ 0 ] ],
+    [ "pushLiteral", [ "baz" ] ],
+    [ "printAmbiguousMustacheInBody", [ 1 ] ],
   ]);
 });
 
 test("simple block", function() {
   var opcodes = opcodesFor("<div>{{#foo}}{{/foo}}</div>");
   deepEqual(opcodes, [
-    [ "morph", [ 0, [ 0 ], null, null, true ] ],
-    [ "program", [ 0, null ] ],
-    [ "string", [ "foo" ] ],
-    [ "stackLiteral", [ 0 ] ],
-    [ "helper", [ 0, 0, 0 ] ]
+    [ "printMorphCreation", [ 0, [ 0 ], null, null, true ] ],
+    [ "pushProgramIds", [ 0, null ] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "pushRaw", [ 0 ] ],
+    [ "printHelperInContent", [ 0, 0, 0 ] ]
   ]);
 });
 
 test("simple block with block params", function() {
   var opcodes = opcodesFor("<div>{{#foo as |bar baz|}}{{/foo}}</div>");
   deepEqual(opcodes, [
-    [ "morph", [ 0, [ 0 ], null, null, true ] ],
-    [ "program", [ 0, null ] ],
-    [ "string", [ "foo" ] ],
-    [ "stackLiteral", [ 0 ] ],
-    [ "helper", [ 0, 0, 2 ] ]
+    [ "printMorphCreation", [ 0, [ 0 ], null, null, true ] ],
+    [ "pushProgramIds", [ 0, null ] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "pushRaw", [ 0 ] ],
+    [ "printHelperInContent", [ 0, 0, 2 ] ]
   ]);
 });
 
 test("element with a sole mustache child", function() {
   var opcodes = opcodesFor("<div>{{foo}}</div>");
   deepEqual(opcodes, [
-    [ "morph", [ 0, [ 0 ], -1, -1, true ] ],
-    [ "string", [ "foo" ] ],
-    [ "ambiguous", [ 0 ] ],
+    [ "printMorphCreation", [ 0, [ 0 ], -1, -1, true ] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "printAmbiguousMustacheInBody", [ 0 ] ],
   ]);
 });
 
 test("element with a mustache between two text nodes", function() {
   var opcodes = opcodesFor("<div> {{foo}} </div>");
   deepEqual(opcodes, [
-    [ "morph", [ 0, [ 0 ], 0, 1, true ] ],
-    [ "string", [ "foo" ] ],
-    [ "ambiguous", [ 0 ] ],
+    [ "printMorphCreation", [ 0, [ 0 ], 0, 1, true ] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "printAmbiguousMustacheInBody", [ 0 ] ],
   ]);
 });
 
@@ -66,9 +66,9 @@ test("mustache two elements deep", function() {
   var opcodes = opcodesFor("<div><div>{{foo}}</div></div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "morph", [ 0, [ 0, 0 ], -1, -1, true ] ],
-    [ "string", [ "foo" ] ],
-    [ "ambiguous", [ 0 ] ],
+    [ "printMorphCreation", [ 0, [ 0, 0 ], -1, -1, true ] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "printAmbiguousMustacheInBody", [ 0 ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -77,14 +77,14 @@ test("two sibling elements with mustaches", function() {
   var opcodes = opcodesFor("<div>{{foo}}</div><div>{{bar}}</div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "morph", [ 0, [ 0 ], -1, -1, true ] ],
-    [ "string", [ "foo" ] ],
-    [ "ambiguous", [ 0 ] ],
+    [ "printMorphCreation", [ 0, [ 0 ], -1, -1, true ] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "printAmbiguousMustacheInBody", [ 0 ] ],
     [ "popParent", [] ],
     [ "consumeParent", [ 1 ] ],
-    [ "morph", [ 1, [ 1 ], -1, -1, true ] ],
-    [ "string", [ "bar" ] ],
-    [ "ambiguous", [ 1 ] ],
+    [ "printMorphCreation", [ 1, [ 1 ], -1, -1, true ] ],
+    [ "pushLiteral", [ "bar" ] ],
+    [ "printAmbiguousMustacheInBody", [ 1 ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -92,81 +92,84 @@ test("two sibling elements with mustaches", function() {
 test("mustaches at the root", function() {
   var opcodes = opcodesFor("{{foo}} {{bar}}");
   deepEqual(opcodes, [
-    [ "morph", [ 0, [ ], 0, 1, true ] ],
-    [ "morph", [ 1, [ ], 1, 2, true ] ],
+    [ "printMorphCreation", [ 0, [ ], 0, 1, true ] ],
+    [ "printMorphCreation", [ 1, [ ], 1, 2, true ] ],
     [ "repairClonedNode", [ [ 0, 2 ] ] ],
-    [ "string", [ "foo" ] ],
-    [ "ambiguous", [ 0 ] ],
-    [ "string", [ "bar" ] ],
-    [ "ambiguous", [ 1 ] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "printAmbiguousMustacheInBody", [ 0 ] ],
+    [ "pushLiteral", [ "bar" ] ],
+    [ "printAmbiguousMustacheInBody", [ 1 ] ],
   ]);
 });
 
 test("back to back mustaches should have a text node inserted between them", function() {
   var opcodes = opcodesFor("<div>{{foo}}{{bar}}{{baz}}wat{{qux}}</div>");
   deepEqual(opcodes, [
-    [ "morph", [ 0, [0], -1, 0, true ] ],
-    [ "morph", [ 1, [0], 0, 1, true ] ],
-    [ "morph", [ 2, [0], 1, 2, true ] ],
-    [ "morph", [ 3, [0], 2, -1, true] ],
+    [ "printMorphCreation", [ 0, [0], -1, 0, true ] ],
+    [ "printMorphCreation", [ 1, [0], 0, 1, true ] ],
+    [ "printMorphCreation", [ 2, [0], 1, 2, true ] ],
+    [ "printMorphCreation", [ 3, [0], 2, -1, true] ],
     [ "repairClonedNode", [ [ 0, 1 ], false ] ],
-    [ "string", [ "foo" ] ],
-    [ "ambiguous", [ 0 ] ],
-    [ "string", [ "bar" ] ],
-    [ "ambiguous", [ 1 ] ],
-    [ "string", [ "baz" ] ],
-    [ "ambiguous", [ 2 ] ],
-    [ "string", [ "qux" ] ],
-    [ "ambiguous", [ 3 ] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "printAmbiguousMustacheInBody", [ 0 ] ],
+    [ "pushLiteral", [ "bar" ] ],
+    [ "printAmbiguousMustacheInBody", [ 1 ] ],
+    [ "pushLiteral", [ "baz" ] ],
+    [ "printAmbiguousMustacheInBody", [ 2 ] ],
+    [ "pushLiteral", [ "qux" ] ],
+    [ "printAmbiguousMustacheInBody", [ 3 ] ],
   ]);
 });
 
 test("helper usage", function() {
-  var opcodes = opcodesFor("<div>{{foo 'bar'}}</div>");
+  var opcodes = opcodesFor("<div>{{foo 'bar' baz.bat true 3.14}}</div>");
   deepEqual(opcodes, [
-    [ "morph", [ 0, [0], -1, -1, true ] ],
-    [ "program", [null, null] ],
-    [ "string", [ "foo" ] ],
-    [ "stringLiteral", ['bar'] ],
-    [ "stackLiteral", [0] ],
-    [ "helper", [ 1, 0 ] ],
+    [ "printMorphCreation", [ 0, [0], -1, -1, true ] ],
+    [ "pushProgramIds", [null, null] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "pushLiteral", ["bar"] ],
+    [ "pushGetHook", ["baz.bat"] ],
+    [ "pushLiteral", [true] ],
+    [ "pushLiteral", [3.14] ],
+    [ "pushRaw", [0] ],
+    [ "printHelperInContent", [ 4, 0 ] ],
   ]);
 });
 
 test("node mustache", function() {
   var opcodes = opcodesFor("<div {{foo}}></div>");
   deepEqual(opcodes, [
-    [ "program", [null, null] ],
-    [ "string", [ "foo" ] ],
-    [ "stackLiteral", [0] ],
-    [ "element", [0] ],
-    [ "nodeHelper", [ 0, 0 ] ]
+    [ "pushProgramIds", [null, null] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "pushRaw", [0] ],
+    [ "shareElement", [0] ],
+    [ "printElementHook", [ 0, 0 ] ]
   ]);
 });
 
 test("node helper", function() {
   var opcodes = opcodesFor("<div {{foo 'bar'}}></div>");
   deepEqual(opcodes, [
-    [ "program", [null, null] ],
-    [ "string", [ "foo" ] ],
-    [ "stringLiteral", ['bar'] ],
-    [ "stackLiteral", [0] ],
-    [ "element", [0] ],
-    [ "nodeHelper", [ 1, 0 ] ]
+    [ "pushProgramIds", [null, null] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "pushLiteral", ['bar'] ],
+    [ "pushRaw", [0] ],
+    [ "shareElement", [0] ],
+    [ "printElementHook", [ 1, 0 ] ]
   ]);
 });
 
 test("attribute mustache", function() {
   var opcodes = opcodesFor("<div class='before {{foo}} after'></div>");
   deepEqual(opcodes, [
-    [ "program", [null, null] ],
-    [ "string", [ "" ] ],
-    [ "stringLiteral", ["before "] ],
-    [ "id", [ [ "foo" ] ] ],
-    [ "stringLiteral", [" after"] ],
-    [ "stackLiteral", [0] ],
-    [ "element", [0] ],
-    [ "attribute", [ true, "class", 3, 0 ] ]
+    [ "pushProgramIds", [null, null] ],
+    [ "pushLiteral", [ "" ] ],
+    [ "pushLiteral", ["before "] ],
+    [ "pushGetHook", ["foo"] ],
+    [ "pushLiteral", [" after"] ],
+    [ "pushRaw", [0] ],
+    [ "shareElement", [0] ],
+    [ "printAttributeHook", [ true, "class", 3, 0 ] ]
   ]);
 });
 
@@ -174,18 +177,17 @@ test("attribute mustache", function() {
 test("attribute helper", function() {
   var opcodes = opcodesFor("<div class='before {{foo 'bar'}} after'></div>");
   deepEqual(opcodes, [
-    [ "program", [ null, null ] ],
-    [ "string", [ "" ] ],
-    [ "stringLiteral", [ "before " ] ],
-    [ "string", [ "sexpr" ] ],
-    [ "program", [ null, null ] ],
-    [ "string", [ "foo" ] ],
-    [ "stringLiteral", [ "bar" ] ],
-    [ "stackLiteral", [ 0 ] ],
-    [ "sexpr", [ 1 ] ],
-    [ "stringLiteral", [ " after" ] ],
-    [ "stackLiteral", [ 0 ] ],
-    [ "element", [0] ],
-    [ "attribute", [ true, "class", 3, 0] ]
+    [ "pushProgramIds", [ null, null ] ],
+    [ "pushLiteral", [ "" ] ],
+    [ "pushLiteral", [ "before " ] ],
+    [ "pushProgramIds", [ null, null ] ],
+    [ "pushLiteral", [ "foo" ] ],
+    [ "pushLiteral", [ "bar" ] ],
+    [ "pushRaw", [ 0 ] ],
+    [ "pushSexprHook", [ 1 ] ],
+    [ "pushLiteral", [ " after" ] ],
+    [ "pushRaw", [ 0 ] ],
+    [ "shareElement", [0] ],
+    [ "printAttributeHook", [ true, "class", 3, 0] ]
   ]);
 });
