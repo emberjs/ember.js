@@ -21,7 +21,7 @@ export function quotedArray(list) {
 }
 
 export function hash(pairs) {
-  return "{" + pairs.join(",") + "}";
+  return "{" + pairs.join(", ") + "}";
 }
 
 export function repeat(chars, times) {

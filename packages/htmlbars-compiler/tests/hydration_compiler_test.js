@@ -166,6 +166,7 @@ test("attribute mustache", function() {
     [ "pushGetHook", [ "foo" ] ],
     [ "pushLiteral", [ "before " ] ],
     [ "prepareArray", [ 3 ] ],
+    [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
     [ "printAttributeHook", [ 0, true ] ]
@@ -184,6 +185,7 @@ test("attribute helper", function() {
     [ "pushSexprHook", [ ] ],
     [ "pushLiteral", [ "before " ] ],
     [ "prepareArray", [ 3 ] ],
+    [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
     [ "printAttributeHook", [ 0, true ] ]

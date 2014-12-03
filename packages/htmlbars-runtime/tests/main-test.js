@@ -19,6 +19,7 @@ test("hooks are present", function () {
     "element",
     "attribute",
     "subexpr",
+    "concat",
     "get",
     "set"
   ];
