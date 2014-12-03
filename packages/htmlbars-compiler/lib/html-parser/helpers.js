@@ -49,7 +49,6 @@ export function parseComponentBlockParams(element, program) {
 
 // Adds an empty text node at the beginning and end of a program.
 // The empty text nodes *between* nodes are handled elsewhere.
-// Also processes all whitespace stripping directives.
 
 export function postprocessProgram(program) {
   var body = program.body;
@@ -64,35 +63,5 @@ export function postprocessProgram(program) {
 
   if (usesMorph(body[body.length-1])) {
     body.push(buildText(''));
-  }
-
-  // Perform any required whitespace stripping
-  var l = body.length;
-  for (var i = 0; i < l; i++) {
-    var statement = body[i];
-
-    if (statement.type !== 'TextNode') {
-      continue;
-    }
-
-    // if ((i > 0 && body[i-1].strip && body[i-1].strip.right) ||
-    //   (i === 0 && program.strip.left)) {
-    //   statement.chars = statement.chars.replace(/^\s+/, '');
-    // }
-
-    // if ((i < l-1 && body[i+1].strip && body[i+1].strip.left) ||
-    //   (i === l-1 && program.strip.right)) {
-    //   statement.chars = statement.chars.replace(/\s+$/, '');
-    // }
-
-    // Remove unnecessary text nodes
-    if (statement.chars.length === 0) {
-      if ((i > 0 && body[i-1].type === 'ElementNode') ||
-        (i < l-1 && body[i+1].type === 'ElementNode')) {
-        body.splice(i, 1);
-        i--;
-        l--;
-      }
-    }
   }
 }
