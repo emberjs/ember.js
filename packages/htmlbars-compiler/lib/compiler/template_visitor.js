@@ -167,7 +167,7 @@ TemplateVisitor.prototype.ElementNode = function(element) {
 };
 
 TemplateVisitor.prototype.AttrNode = function(attr) {
-  if (attr.value.type === 'MustacheStatement') {
+  if (attr.value.type !== 'TextNode') {
     this.getCurrentFrame().mustacheCount++;
   }
 };

@@ -1,8 +1,9 @@
 import { Chars, StartTag, EndTag } from "../../simple-html-tokenizer";
-import { buildText, buildAttr, buildString } from "../builders";
+import { isHelper } from "../ast";
+import builders from "../builders";
 
 StartTag.prototype.startAttribute = function(char) {
-  this.currentAttribute = buildAttr(char.toLowerCase(), [], null);
+  this.currentAttribute = builders.attr(char.toLowerCase(), [], null);
   this.attributes.push(this.currentAttribute);
 };
 
@@ -17,13 +18,17 @@ StartTag.prototype.addToAttributeName = function(char) {
 StartTag.prototype.addToAttributeValue = function(char) {
   var value = this.currentAttribute.value;
 
-  if (char.type === 'SubExpression' || char.type === 'PathExpression') {
-    value.push(char);
+  if (typeof char === 'object') {
+    if (char.type === 'MustacheStatement') {
+      value.push(char);
+    } else {
+      throw new Error("Unsupported node in attribute value: " + char.type);
+    }
   } else {
     if (value.length > 0 && value[value.length - 1].type === 'TextNode') {
       value[value.length - 1].chars += char;
     } else {
-      value.push(buildText(char));
+      value.push(builders.text(char));
     }
   }
 };
@@ -34,29 +39,46 @@ StartTag.prototype.finalize = function() {
 };
 
 StartTag.prototype.finalizeAttributeValue = function() {
-  if (!this.currentAttribute) {
-    return;
+  if (this.currentAttribute) {
+    this.currentAttribute.value = prepareAttributeValue(this.currentAttribute);
+    delete this.currentAttribute.quoted;
+    delete this.currentAttribute;
   }
-
-  var parts = this.currentAttribute.value;
-
-  if (parts.length === 0) {
-    parts.push(buildText(''));
-  } else if (parts.length > 1) {
-    // Convert TextNode to StringNode
-    for (var i = 0; i < parts.length; i++) {
-      if (parts[i].type === 'TextNode') {
-        parts[i] = buildString(parts[i].chars);
-      }
-    }
-  }
-
-  delete this.currentAttribute;
 };
 
 StartTag.prototype.addTagHelper = function(helper) {
   var helpers = this.helpers = this.helpers || [];
   helpers.push(helper);
 };
+
+function prepareAttributeValue(attr) {
+  var parts = attr.value;
+  if (parts.length === 0) {
+    return builders.text('');
+  } else if (parts.length === 1 && parts[0].type === "TextNode") {
+    return parts[0];
+  } else if (!attr.quoted) {
+    return parts[0];
+  } else {
+    return builders.concat(parts.map(prepareConcatPart));
+  }
+}
+
+function prepareConcatPart(node) {
+  switch (node.type) {
+    case 'TextNode': return builders.string(node.chars);
+    case 'MustacheStatement': return unwrapMustache(node);
+    default:
+      throw new Error("Unsupported node in quoted attribute value: " + node.type);
+  }
+}
+
+export function unwrapMustache(mustache) {
+  if (isHelper(mustache.sexpr)) {
+    return mustache.sexpr;
+  } else {
+    return mustache.sexpr.path;
+  }
+}
 
 export { Chars, StartTag, EndTag };

@@ -21,7 +21,7 @@ export function buildPartial(sexpr, indent) {
   return {
     type: "PartialStatement",
     sexpr: sexpr,
-    indent: indent || ""
+    indent: indent
   };
 }
 
@@ -29,6 +29,14 @@ export function buildComment(value) {
   return {
     type: "CommentStatement",
     value: value,
+  };
+}
+
+
+export function buildConcat(parts) {
+  return {
+    type: "ConcatStatement",
+    parts: parts || []
   };
 }
 
@@ -53,12 +61,11 @@ export function buildComponent(tag, attributes, program) {
   };
 }
 
-export function buildAttr(name, value, quoted) {
+export function buildAttr(name, value) {
   return {
     type: "AttrNode",
     name: name,
-    value: value,
-    quoted: quoted
+    value: value
   };
 }
 
@@ -151,6 +158,7 @@ export default {
   string: buildString,
   boolean: buildBoolean,
   number: buildNumber,
+  concat: buildConcat,
   hash: buildHash,
   pair: buildPair,
   program: buildProgram

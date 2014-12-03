@@ -1,5 +1,5 @@
 import { buildProgram, buildComponent, buildElement, buildComment, buildText } from "../builders";
-import { appendChild, isHelper } from "../ast";
+import { appendChild } from "../ast";
 import { parseComponentBlockParams, postprocessProgram } from "./helpers";
 import { forEach } from "../utils";
 
@@ -36,21 +36,12 @@ function applyHTMLIntegrationPoint(tag, element){
   }
 }
 
-function unwrapMustache(mustache) {
-  if (isHelper(mustache.sexpr)) {
-    return mustache.sexpr;
-  } else {
-    return mustache.sexpr.path;
-  }
-}
-
 // Except for `mustache`, all tokens are only allowed outside of
 // a start or end tag.
 var tokenHandlers = {
   CommentToken: function(token) {
     var current = this.currentElement();
     var comment = buildComment(token.chars);
-
     appendChild(current, comment);
   },
 
@@ -86,17 +77,17 @@ var tokenHandlers = {
       case "beforeAttributeValue":
         this.tokenizer.state = 'attributeValueUnquoted';
         token.markAttributeQuoted(false);
-        token.addToAttributeValue(unwrapMustache(mustache));
+        token.addToAttributeValue(mustache);
         token.finalizeAttributeValue();
         return;
       case "attributeValueDoubleQuoted":
       case "attributeValueSingleQuoted":
         token.markAttributeQuoted(true);
-        token.addToAttributeValue(unwrapMustache(mustache));
+        token.addToAttributeValue(mustache);
         return;
       case "attributeValueUnquoted":
         token.markAttributeQuoted(false);
-        token.addToAttributeValue(unwrapMustache(mustache));
+        token.addToAttributeValue(mustache);
         return;
       case "beforeAttributeName":
         token.addTagHelper(mustache.sexpr);
