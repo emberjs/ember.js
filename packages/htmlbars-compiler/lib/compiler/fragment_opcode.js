@@ -56,9 +56,8 @@ FragmentOpcodeCompiler.prototype.component = function () {};
 FragmentOpcodeCompiler.prototype.block = function () {};
 
 FragmentOpcodeCompiler.prototype.attribute = function(attr) {
-  var parts = attr.value;
-  if (parts.length === 1 && parts[0].type === 'TextNode') {
-    this.opcode('setAttribute', [attr.name, parts[0].chars]);
+  if (attr.value.type === 'TextNode') {
+    this.opcode('setAttribute', [attr.name, attr.value.chars]);
   }
 };
 

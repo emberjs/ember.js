@@ -88,12 +88,16 @@ prototype.pushGetHook = function(path) {
 
 prototype.pushSexprHook = function() {
   this.hooks.subexpr = true;
-
   var path = this.stack.pop();
   var params = this.stack.pop();
   var hash = this.stack.pop();
-  
   this.stack.push('subexpr(' + path + ', context, ' + params + ', ' + hash + ', {}, env)');
+};
+
+prototype.pushConcatHook = function() {
+  this.hooks.concat = true;
+  var parts = this.stack.pop();
+  this.stack.push('concat(' + parts + ', env)');
 };
 
 prototype.printSetHook = function(name, index) {
@@ -175,10 +179,11 @@ prototype.printComponentHook = function(morphNum, templateId, blockParamsLength)
 };
 
 prototype.printAttributeHook = function(elementNum, quoted) {
+  this.hooks.attribute = true;
+
   var name = this.stack.pop();
   var value = this.stack.pop();
 
-  this.hooks.attribute = true;
   this.source.push(this.indent + '  attribute(element' + elementNum + ', ' + name + ', ' + quoted + ', context, ' + value + ', {}, env);\n');
 };
 

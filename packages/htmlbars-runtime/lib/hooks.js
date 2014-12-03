@@ -1,5 +1,3 @@
-import { concat } from "./helpers";
-
 export function content(morph, path, context, params, hash, options, env) {
   var value, helper = lookupHelper(context, path, env);
   if (helper) {
@@ -17,19 +15,11 @@ export function element(domElement, helperName, context, params, hash, options, 
   }
 }
 
-export function attribute(domElement, attributeName, quoted, context, parts, options) {
-  var attrValue;
-
-  if (quoted) {
-    attrValue = concat.call(context, parts, null, options);
+export function attribute(domElement, name, quoted, context, value) {
+  if (value === null) {
+    domElement.removeAttribute(name);
   } else {
-    attrValue = parts[0];
-  }
-
-  if (attrValue === null) {
-    domElement.removeAttribute(attributeName);
-  } else {
-    domElement.setAttribute(attributeName, attrValue);
+    domElement.setAttribute(name, value);
   }
 }
 
@@ -73,6 +63,14 @@ export function component(morph, tagName, context, hash, options, env) {
   morph.update(value);
 }
 
+export function concat(params) {
+  var value = "";
+  for (var i = 0, l = params.length; i < l; i++) {
+    value += params[i];
+  }
+  return value;
+}
+
 function componentFallback(morph, tagName, context, hash, options, env) {
   var element = env.dom.createElement(tagName);
   for (var name in hash) {
@@ -92,6 +90,7 @@ export default {
   element: element,
   attribute: attribute,
   subexpr: subexpr,
+  concat: concat,
   get: get,
   set: set
 };

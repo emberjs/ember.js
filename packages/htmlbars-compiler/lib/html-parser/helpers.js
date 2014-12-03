@@ -1,41 +1,10 @@
 import { usesMorph } from "../ast";
-import {
-  buildText,
-  buildString,
-  buildHash,
-  buildPair,
-  buildSexpr,
-  buildPath
-} from "../builders";
+import { buildText } from "../builders";
 
 // Regex to validate the identifier for block parameters. 
 // Based on the ID validation regex in Handlebars.
+
 var ID_INVERSE_PATTERN = /[!"#%-,\.\/;->@\[-\^`\{-~]/;
-
-
-// Rewrites an array of AttrNodes into a HashNode.
-// MustacheNodes are replaced with their root SexprNode and
-// TextNodes are replaced with StringNodes
-
-export function buildHashFromAttributes(attributes) {
-  var pairs = [];
-
-  for (var i = 0; i < attributes.length; i++) {
-    var attr = attributes[i];
-    var parts = attr.value;
-    var value;
-
-    if (parts.length === 1 && parts[0].type === 'TextNode') {
-      value = buildString(parts[0].chars);
-    } else {
-      value = buildSexpr(buildPath('concat'), attr.value);
-    }
-
-    pairs.push(buildPair(attr.name, value));
-  }
-
-  return buildHash(pairs);
-}
 
 // Checks the component's attributes to see if it uses block params.
 // If it does, registers the block params with the program and
