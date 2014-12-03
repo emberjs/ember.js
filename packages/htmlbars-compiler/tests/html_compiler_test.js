@@ -891,6 +891,25 @@ test('Block params in HTML syntax', function () {
   compilesTo('<x-bar as |x y zee|>{{zee}},{{y}},{{x}}</x-bar>', 'BAR(Zed,York,Xerxes)', {});
 });
 
+test('Block params in HTML syntax - Throws exception if given zero parameters', function () {
+  expect(2);
+
+  QUnit.throws(function() {
+    compile('<x-bar as ||>foo</x-bar>');
+  }, /Cannot use zero block parameters: 'as \|\|'/);
+  QUnit.throws(function() {
+    compile('<x-bar as | |>foo</x-bar>');
+  }, /Cannot use zero block parameters: 'as \| \|'/);
+});
+
+
+test('Block params in HTML syntax - Works with a single parameter', function () {
+  registerHelper('x-bar', function(params, hash, options, env) {
+    return options.template.render({}, env, document.body, ['Xerxes']);
+  });
+  compilesTo('<x-bar as |x|>{{x}}</x-bar>', 'Xerxes', {});
+});
+
 test('Block params in HTML syntax - Works with other attributes', function () {
   registerHelper('x-bar', function(params, hash) {
     deepEqual(hash, {firstName: 'Alice', lastName: 'Smith'});
@@ -937,6 +956,20 @@ test("Block params in HTML syntax - Throws an error on invalid block params synt
   QUnit.throws(function() {
     compile('<x-bar as |x| y|>{{x}},{{y}}</x-bar>');
   }, /Invalid block parameters syntax: 'as \|x\| y\|'/);
+});
+
+test("Block params in HTML syntax - Throws an error on invalid identifiers for params", function() {
+  expect(3);
+
+  QUnit.throws(function() {
+    compile('<x-bar as |x foo.bar|></x-bar>');
+  }, /Invalid identifier for block parameters: 'foo\.bar' in 'as \|x foo\.bar|'/);
+  QUnit.throws(function() {
+    compile('<x-bar as |x "foo"|></x-bar>');
+  }, /Invalid identifier for block parameters: '"foo"' in 'as \|x "foo"|'/);
+  QUnit.throws(function() {
+    compile('<x-bar as |foo[bar]|></x-bar>');
+  }, /Invalid identifier for block parameters: 'foo\[bar\]' in 'as \|foo\[bar\]\|'/);
 });
 
 test("A helpful error message is provided for mismatched start/end tags", function() {
