@@ -73,13 +73,13 @@ test('[obj, falseValue.notDefined] -> (null)', function() {
 
 test('[null, length] returning data is deprecated', function() {
   expectDeprecation(function(){
-    equal(5, Ember.get(null, 'localPathGlobal'));
+    equal(5, get(null, 'localPathGlobal'));
   }, "Ember.get fetched 'localPathGlobal' from the global context. This behavior will change in the future (issue #3852)");
 });
 
 test('[length] returning data is deprecated', function() {
   expectDeprecation(function(){
-    equal(5, Ember.get('localPathGlobal'));
+    equal(5, get('localPathGlobal'));
   }, "Ember.get fetched 'localPathGlobal' from the global context. This behavior will change in the future (issue #3852)");
 });
 

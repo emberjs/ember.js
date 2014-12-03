@@ -555,7 +555,7 @@ test("pendingAjaxRequests is ignores ajaxComplete events from past setupForTesti
   jQuery(document).trigger('ajaxSend', xhr);
   equal(Test.pendingAjaxRequests, 1, 'Ember.Test.pendingAjaxRequests was incremented');
 
-  Ember.run(function(){
+  run(function(){
     setupForTesting();
   });
   equal(Test.pendingAjaxRequests, 0, 'Ember.Test.pendingAjaxRequests was reset');
@@ -569,7 +569,7 @@ test("pendingAjaxRequests is ignores ajaxComplete events from past setupForTesti
 
 test("pendingAjaxRequests is reset by setupForTesting", function() {
   Test.pendingAjaxRequests = 1;
-  Ember.run(function(){
+  run(function(){
     setupForTesting();
   });
   equal(Test.pendingAjaxRequests, 0, 'pendingAjaxRequests is reset');
