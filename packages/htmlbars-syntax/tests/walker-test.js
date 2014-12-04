@@ -1,5 +1,5 @@
-import { preprocess } from '../htmlbars-compiler/parser';
-import Walker from '../htmlbars-compiler/walker';
+import { preprocess } from '../htmlbars-syntax/parser';
+import Walker from '../htmlbars-syntax/walker';
 
 function compareWalkedNodes(html, expected) {
   var ast = preprocess(html);

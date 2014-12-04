@@ -1,5 +1,5 @@
-import { preprocess } from "../htmlbars-compiler/parser";
-import TemplateVisitor from "../htmlbars-compiler/compiler/template_visitor";
+import { preprocess } from "../htmlbars-syntax/parser";
+import TemplateVisitor from "../htmlbars-compiler/template-visitor";
 
 function actionsEqual(input, expectedActions) {
   var ast = preprocess(input);

@@ -136,7 +136,7 @@ for (var packageName in packages.dependencies) {
   // jsHint tests
   var jsHintLibTree = new Funnel(libTree, {
     include: [new RegExp(packageName), new RegExp(packageName + '.+\.js$')],
-    exclude: [/htmlbars-compiler\/handlebars/],
+    exclude: [/htmlbars-syntax\/handlebars/],
     destDir: packageName+'-tests/'
   });
   jsHintLibTree = removeFile(jsHintLibTree, {

@@ -1,6 +1,6 @@
 /*jshint evil:true*/
-import { preprocess } from "./parser";
-import { TemplateCompiler } from "./compiler/template";
+import { preprocess } from "../htmlbars-syntax/parser";
+import TemplateCompiler from "./template-compiler";
 
 /*
  * Compile a string into a template rendering function

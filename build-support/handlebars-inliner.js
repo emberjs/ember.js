@@ -17,5 +17,5 @@ var root = path.join(__dirname, '..', 'node_modules', 'handlebars', 'lib');
 
 module.exports = new Funnel(root, {
   files: files,
-  destDir: '/htmlbars-compiler'
+  destDir: '/htmlbars-syntax'
 });

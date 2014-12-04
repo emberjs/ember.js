@@ -1,9 +1,9 @@
-import { TemplateCompiler } from "../htmlbars-compiler/compiler/template";
-import { preprocess } from "../htmlbars-compiler/parser";
+import TemplateCompiler from "../htmlbars-compiler/template-compiler";
+import { preprocess } from "../htmlbars-syntax/parser";
 import { equalHTML } from "../htmlbars-test-helpers";
 import defaultHooks from "../htmlbars-runtime/hooks";
 import defaultHelpers from "../htmlbars-runtime/helpers";
-import { merge } from "../htmlbars-runtime/utils";
+import { merge } from "../htmlbars-util/object-utils";
 import { DOMHelper } from "../morph";
 
 QUnit.module("TemplateCompiler");

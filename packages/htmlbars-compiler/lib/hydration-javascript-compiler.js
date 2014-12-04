@@ -1,7 +1,7 @@
 import { processOpcodes } from "./utils";
-import { string, hash as quoteHash, array } from "./quoting";
+import { string, hash as quoteHash, array } from "../htmlbars-util/quoting";
 
-function HydrationCompiler() {
+function HydrationJavaScriptCompiler() {
   this.stack = [];
   this.source = [];
   this.mustaches = [];
@@ -12,7 +12,9 @@ function HydrationCompiler() {
   this.hooks = undefined;
 }
 
-var prototype = HydrationCompiler.prototype;
+export default HydrationJavaScriptCompiler;
+
+var prototype = HydrationJavaScriptCompiler.prototype;
 
 prototype.compile = function(opcodes, options) {
   this.stack.length = 0;
@@ -242,5 +244,3 @@ prototype.popParent = function() {
 prototype.getParent = function() {
   return this.parents[this.parents.length-1];
 };
-
-export { HydrationCompiler };
