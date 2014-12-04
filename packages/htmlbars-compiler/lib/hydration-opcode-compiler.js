@@ -91,7 +91,7 @@ HydrationOpcodeCompiler.prototype.openElement = function(element, pos, len, isSi
   if (!isSingleRoot) {
     this.opcode('consumeParent', this.currentDOMChildIndex);
 
-    // If our parent referance will be used more than once, cache its referance.
+    // If our parent reference will be used more than once, cache its reference.
     if (mustacheCount > 1) {
       this.opcode('shareElement', ++this.elementNum);
       this.element = null; // Set element to null so we don't cache it twice
