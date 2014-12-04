@@ -297,7 +297,7 @@ function distributeMorphs(morphs, opcodes) {
 
   var spliceArgs = [o + 1, 0];
   for (var i = 0; i < morphs.length; ++i) {
-    spliceArgs.push(['printMorphCreation', morphs[i].slice()]);
+    spliceArgs.push(['createMorph', morphs[i].slice()]);
   }
   opcodes.splice.apply(opcodes, spliceArgs);
   morphs.length = 0;
