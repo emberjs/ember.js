@@ -316,6 +316,14 @@ test("htmlSafe should return an instance of Handlebars.SafeString", function() {
   ok(safeString instanceof Handlebars.SafeString, "should return SafeString");
 });
 
+test("htmlSafe should return an empty string for null", function() {
+  equal(htmlSafe(null).toString(), "", "should return an empty string");
+});
+
+test("htmlSafe should return an empty string for undefined", function() {
+  equal(htmlSafe().toString(), "", "should return an empty string");
+});
+
 test("should escape HTML in normal mustaches", function() {
   view = EmberView.create({
     template: EmberHandlebars.compile('{{view.output}}'),
