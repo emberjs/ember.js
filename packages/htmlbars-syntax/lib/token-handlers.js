@@ -56,6 +56,11 @@ var tokenHandlers = {
 
   StartTag: function(tag) {
     var element = buildElement(tag.tagName, tag.attributes, tag.helpers || [], []);
+    element.loc = {
+      start: { line: tag.firstLine, column: tag.firstColumn},
+      end: { line: null, column: null}
+    };
+
     applyNamespace(tag, element, this.currentElement());
     applyHTMLIntegrationPoint(tag, element);
     this.elementStack.push(element);
@@ -108,7 +113,7 @@ var tokenHandlers = {
     if (element.tag !== tag.tagName) {
       throw new Error(
         "Closing tag `" + tag.tagName + "` (on line " + tag.lastLine + ") " +
-        "did not match last open tag `" + element.tag + "`."
+        "did not match last open tag `" + element.tag + "` (on line " + element.loc.start.line + ")."
       );
     }
 

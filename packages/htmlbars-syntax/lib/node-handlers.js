@@ -72,6 +72,13 @@ var nodeHandlers = {
   },
 
   ContentStatement: function(content) {
+    var changeLines = 0;
+    if (content.rightStripped) {
+      changeLines = leadingNewlineDifference(content.original, content.value);
+    }
+
+    this.tokenizer.line = this.tokenizer.line + changeLines;
+
     var tokens = this.tokenizer.tokenizePart(content.value);
 
     return forEach(tokens, this.acceptToken, this);
@@ -136,6 +143,21 @@ function switchToHandlebars(processor) {
     processor.acceptToken(token);
     processor.tokenizer.token = null;
   }
+}
+
+function leadingNewlineDifference(original, value) {
+  if (value === '') {
+    // if it is empty, just return the count of newlines
+    // in original
+    return original.split("\n").length - 1;
+  }
+
+  // otherwise, return the number of newlines prior to
+  // `value`
+  var difference = original.split(value)[0];
+  var lines = difference.split(/\n/);
+
+  return lines.length - 1;
 }
 
 export default nodeHandlers;
