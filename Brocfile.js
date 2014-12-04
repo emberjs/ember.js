@@ -1,4 +1,5 @@
 /* jshint node: true */
+/* jshint -W100 */
 
 var fs  = require('fs');
 var util = require('util');
@@ -594,7 +595,6 @@ var devSourceTrees       = [];
 var prodSourceTrees      = [];
 var testingSourceTrees   = [];
 var testTrees            = [emberDevTestHelpers];
-var testHelpers          = [];
 var compiledPackageTrees = [];
 
 for (var packageName in packages) {
@@ -603,9 +603,11 @@ for (var packageName in packages) {
   var packagesTrees = currentPackage['trees'];
 
   if (currentPackage['vendorRequirements']) {
+    /* jshint -W083 */
     currentPackage['vendorRequirements'].forEach(function(dependency) {
       vendorTrees.push(vendoredPackages[dependency]);
     });
+    /* jshint +W083 */
   }
 
   if (packagesTrees.lib) {
@@ -638,11 +640,11 @@ function htmlbarsPackage(packageName, _options) {
   var options = _options || {};
   var fileGlobs = [];
 
-  if (!options.singleFile === true) {
+  if (!options.singleFile) {
     fileGlobs.push(packageName + '/**/*.js');
   }
 
-  if (!options.ignoreMain === true) {
+  if (!options.ignoreMain) {
     fileGlobs.push(packageName + '.js');
   }
 
