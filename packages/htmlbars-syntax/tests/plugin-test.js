@@ -1,4 +1,4 @@
-import { preprocess } from "../htmlbars-compiler/parser";
+import { preprocess } from "../htmlbars-syntax/parser";
 
 QUnit.module('Compiler plugins: AST');
 

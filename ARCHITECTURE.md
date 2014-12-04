@@ -148,7 +148,7 @@ build up this fragment (i.e. the `createDocumentFragment`, `createElement`,
 `createTextNode`, etc., code from above). HTMLbars accomplishes this in
 two passes (on the compile side): 
 
-1. In [fragment_opcode.js](packages/htmlbars-compiler/lib/compiler/fragment_opcode.js),
+1. In [fragment-opcode-compiler.js](packages/htmlbars-compiler/lib/compiler/fragment-opcode-compiler.js),
    the HTMLbars AST is recursively walked and a flattened 
    array of opcodes (used in step 2) is generated. 
    The intent of this phase is to flatten the recursive structure of the 

@@ -1,8 +1,10 @@
-import { buildProgram, buildBlock, buildHash } from "../builders";
-import { appendChild } from "../ast";
-import { postprocessProgram } from "../html-parser/helpers";
-import { Chars } from "../html-parser/tokens";
-import { forEach } from "../utils";
+import { buildProgram, buildBlock, buildHash } from "./builders";
+import { Chars } from "./tokens";
+import { forEach } from "../htmlbars-util/array-utils";
+import {
+  appendChild,
+  postprocessProgram
+} from "./utils";
 
 var nodeHandlers = {
 

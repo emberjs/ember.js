@@ -1,6 +1,6 @@
-import { Chars, StartTag, EndTag } from "../../simple-html-tokenizer";
-import { isHelper } from "../ast";
-import builders from "../builders";
+import { Chars, StartTag, EndTag } from "../simple-html-tokenizer";
+import { isHelper } from "./utils";
+import builders from "./builders";
 
 StartTag.prototype.startAttribute = function(char) {
   this.currentAttribute = builders.attr(char.toLowerCase(), [], null);
