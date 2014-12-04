@@ -16,10 +16,6 @@ function array(a) {
 
 export { array };
 
-export function quotedArray(list) {
-  return array(list.map(string).join(", "));
-}
-
 export function hash(pairs) {
   return "{" + pairs.join(", ") + "}";
 }

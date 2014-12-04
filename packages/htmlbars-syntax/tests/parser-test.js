@@ -1,6 +1,6 @@
-import { preprocess } from "../htmlbars-compiler/parser";
+import { preprocess } from "../htmlbars-syntax/parser";
 
-import b from "../htmlbars-compiler/builders";
+import b from "../htmlbars-syntax/builders";
 
 var svgNamespace = "http://www.w3.org/2000/svg";
 

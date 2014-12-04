@@ -32,20 +32,24 @@ module.exports = {
   dependencies: {
     "htmlbars": {
       node: true,
-      lib: ["handlebars-inliner", "htmlbars-util", "morph", "simple-html-tokenizer", "htmlbars-compiler", "htmlbars-runtime"]
+      lib: ["handlebars-inliner", "htmlbars-util", "simple-html-tokenizer", "htmlbars-syntax", "htmlbars-compiler", "htmlbars-runtime", "morph"]
+    },
+    "htmlbars-syntax": {
+      node: true,
+      lib: ["handlebars-inliner", "htmlbars-util", "simple-html-tokenizer"]
     },
     "htmlbars-compiler": {
       node: true,
-      lib: ["handlebars-inliner", "htmlbars-util", "simple-html-tokenizer", "morph"],
-      test: ["htmlbars-runtime", "htmlbars-test-helpers"]
+      lib: ["handlebars-inliner", "htmlbars-util", "simple-html-tokenizer", "htmlbars-syntax"],
+      test: ["htmlbars-runtime", "morph", "htmlbars-test-helpers"]
     },
-    "htmlbars-util": { },
     "htmlbars-runtime": {
       lib: ["htmlbars-util", "morph"]
     },
     "morph": {
       test: ["htmlbars-util", "htmlbars-test-helpers"]
     },
+    "htmlbars-util": { },
     "htmlbars-test-helpers": { }
   }
 };

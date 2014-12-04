@@ -1,8 +1,15 @@
-import TemplateVisitor from "./template_visitor";
+import TemplateVisitor from "./template-visitor";
 import { processOpcodes } from "./utils";
-import { forEach } from "../utils";
-import { isHelper } from "../ast";
-import { unwrapMustache } from "../html-parser/tokens";
+import { forEach } from "../htmlbars-util/array-utils";
+import { isHelper } from "../../htmlbars-syntax/utils";
+
+function unwrapMustache(mustache) {
+  if (isHelper(mustache.sexpr)) {
+    return mustache.sexpr;
+  } else {
+    return mustache.sexpr.path;
+  }
+}
 
 function detectIsElementChecked(element){
   for (var i=0, len=element.attributes.length;i<len;i++) {
@@ -23,6 +30,8 @@ function HydrationOpcodeCompiler() {
   this.element = null;
   this.elementNum = -1;
 }
+
+export default HydrationOpcodeCompiler;
 
 HydrationOpcodeCompiler.prototype.compile = function(ast) {
   var templateVisitor = new TemplateVisitor();
@@ -293,5 +302,3 @@ function distributeMorphs(morphs, opcodes) {
   opcodes.splice.apply(opcodes, spliceArgs);
   morphs.length = 0;
 }
-
-export { HydrationOpcodeCompiler };

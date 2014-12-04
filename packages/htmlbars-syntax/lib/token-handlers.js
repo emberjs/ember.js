@@ -1,7 +1,10 @@
-import { buildProgram, buildComponent, buildElement, buildComment, buildText } from "../builders";
-import { appendChild } from "../ast";
-import { parseComponentBlockParams, postprocessProgram } from "./helpers";
-import { forEach } from "../utils";
+import { forEach } from "../htmlbars-util/array-utils";
+import { buildProgram, buildComponent, buildElement, buildComment, buildText } from "./builders";
+import {
+  appendChild,
+  parseComponentBlockParams,
+  postprocessProgram
+} from "./utils";
 
 // The HTML elements in this list are speced by
 // http://www.w3.org/TR/html-markup/syntax.html#syntax-elements,

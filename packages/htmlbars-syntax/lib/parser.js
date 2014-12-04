@@ -1,7 +1,7 @@
 import { parse } from "./handlebars/compiler/base";
 import { Tokenizer } from "../simple-html-tokenizer";
-import nodeHandlers from "./html-parser/node-handlers";
-import tokenHandlers from "./html-parser/token-handlers";
+import nodeHandlers from "./node-handlers";
+import tokenHandlers from "./token-handlers";
 
 export function preprocess(html, options) {
   var ast = parse(html);

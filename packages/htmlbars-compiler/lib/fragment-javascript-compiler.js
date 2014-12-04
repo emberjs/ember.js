@@ -1,12 +1,14 @@
 import { processOpcodes } from "./utils";
-import { string } from "./quoting";
+import { string } from "../htmlbars-util/quoting";
 
-export function FragmentCompiler() {
+function FragmentJavaScriptCompiler() {
   this.source = [];
   this.depth = -1;
 }
 
-FragmentCompiler.prototype.compile = function(opcodes, options) {
+export default FragmentJavaScriptCompiler;
+
+FragmentJavaScriptCompiler.prototype.compile = function(opcodes, options) {
   this.source.length = 0;
   this.depth = -1;
   this.indent = (options && options.indent) || "";
@@ -18,42 +20,42 @@ FragmentCompiler.prototype.compile = function(opcodes, options) {
   return this.source.join('');
 };
 
-FragmentCompiler.prototype.createFragment = function() {
+FragmentJavaScriptCompiler.prototype.createFragment = function() {
   var el = 'el'+(++this.depth);
   this.source.push(this.indent+'  var '+el+' = dom.createDocumentFragment();\n');
 };
 
-FragmentCompiler.prototype.createElement = function(tagName) {
+FragmentJavaScriptCompiler.prototype.createElement = function(tagName) {
   var el = 'el'+(++this.depth);
   this.source.push(this.indent+'  var '+el+' = dom.createElement('+string(tagName)+');\n');
 };
 
-FragmentCompiler.prototype.createText = function(str) {
+FragmentJavaScriptCompiler.prototype.createText = function(str) {
   var el = 'el'+(++this.depth);
   this.source.push(this.indent+'  var '+el+' = dom.createTextNode('+string(str)+');\n');
 };
 
-FragmentCompiler.prototype.createComment = function(str) {
+FragmentJavaScriptCompiler.prototype.createComment = function(str) {
   var el = 'el'+(++this.depth);
   this.source.push(this.indent+'  var '+el+' = dom.createComment('+string(str)+');\n');
 };
 
-FragmentCompiler.prototype.returnNode = function() {
+FragmentJavaScriptCompiler.prototype.returnNode = function() {
   var el = 'el'+this.depth;
   this.source.push(this.indent+'  return '+el+';\n');
 };
 
-FragmentCompiler.prototype.setAttribute = function(name, value) {
+FragmentJavaScriptCompiler.prototype.setAttribute = function(name, value) {
   var el = 'el'+this.depth;
   this.source.push(this.indent+'  dom.setAttribute('+el+','+string(name)+','+string(value)+');\n');
 };
 
-FragmentCompiler.prototype.appendChild = function() {
+FragmentJavaScriptCompiler.prototype.appendChild = function() {
   var child = 'el'+(this.depth--);
   var el = 'el'+this.depth;
   this.source.push(this.indent+'  dom.appendChild('+el+', '+child+');\n');
 };
 
-FragmentCompiler.prototype.setNamespace = function(namespace) {
+FragmentJavaScriptCompiler.prototype.setNamespace = function(namespace) {
   this.source.push(this.indent+'  dom.setNamespace('+(namespace ? string(namespace) : 'null')+');\n');
 };

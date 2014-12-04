@@ -1,20 +1,22 @@
-import { FragmentOpcodeCompiler } from './fragment_opcode';
-import { FragmentCompiler } from './fragment';
-import { HydrationOpcodeCompiler } from './hydration_opcode';
-import { HydrationCompiler } from './hydration';
-import TemplateVisitor from "./template_visitor";
+import FragmentOpcodeCompiler from './fragment-opcode-compiler';
+import FragmentJavaScriptCompiler from './fragment-javascript-compiler';
+import HydrationOpcodeCompiler from './hydration-opcode-compiler';
+import HydrationJavaScriptCompiler from './hydration-javascript-compiler';
+import TemplateVisitor from "./template-visitor";
 import { processOpcodes } from "./utils";
-import { repeat } from "./quoting";
+import { repeat } from "../htmlbars-util/quoting";
 
-export function TemplateCompiler(options) {
+function TemplateCompiler(options) {
   this.options = options || {};
   this.fragmentOpcodeCompiler = new FragmentOpcodeCompiler();
-  this.fragmentCompiler = new FragmentCompiler();
+  this.fragmentCompiler = new FragmentJavaScriptCompiler();
   this.hydrationOpcodeCompiler = new HydrationOpcodeCompiler();
-  this.hydrationCompiler = new HydrationCompiler();
+  this.hydrationCompiler = new HydrationJavaScriptCompiler();
   this.templates = [];
   this.childTemplates = [];
 }
+
+export default TemplateCompiler;
 
 TemplateCompiler.prototype.compile = function(ast) {
   var templateVisitor = new TemplateVisitor();

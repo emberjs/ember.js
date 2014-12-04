@@ -1,10 +1,12 @@
-import TemplateVisitor from "./template_visitor";
+import TemplateVisitor from "./template-visitor";
 import { processOpcodes } from "./utils";
-import { forEach } from "../utils";
+import { forEach } from "../htmlbars-util/array-utils";
 
 function FragmentOpcodeCompiler() {
   this.opcodes = [];
 }
+
+export default FragmentOpcodeCompiler;
 
 FragmentOpcodeCompiler.prototype.compile = function(ast) {
   var templateVisitor = new TemplateVisitor();
@@ -64,5 +66,3 @@ FragmentOpcodeCompiler.prototype.attribute = function(attr) {
 FragmentOpcodeCompiler.prototype.setNamespace = function(namespace) {
   this.opcode('setNamespace', [namespace]);
 };
-
-export { FragmentOpcodeCompiler };
