@@ -10,7 +10,7 @@ import {
   compile,
   compileSpec
 } from "./htmlbars-compiler/compiler";
-import Walker from "./htmlbars-compiler/walker";
+import Walker from "./htmlbars-syntax/walker";
 import Morph from "./morph/morph";
 import DOMHelper from "./morph/dom-helper";
 

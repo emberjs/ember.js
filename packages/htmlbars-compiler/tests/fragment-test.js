@@ -1,9 +1,9 @@
-import { FragmentOpcodeCompiler } from "../htmlbars-compiler/compiler/fragment_opcode";
-import { HydrationOpcodeCompiler } from "../htmlbars-compiler/compiler/hydration_opcode";
-import { FragmentCompiler } from "../htmlbars-compiler/compiler/fragment";
-import { HydrationCompiler } from "../htmlbars-compiler/compiler/hydration";
+import FragmentOpcodeCompiler from "../htmlbars-compiler/fragment-opcode-compiler";
+import FragmentJavaScriptCompiler from "../htmlbars-compiler/fragment-javascript-compiler";
+import HydrationOpcodeCompiler from "../htmlbars-compiler/hydration-opcode-compiler";
+import HydrationJavaScriptCompiler from "../htmlbars-compiler/hydration-javascript-compiler";
 import { DOMHelper } from "../morph";
-import { preprocess } from "../htmlbars-compiler/parser";
+import { preprocess } from "../htmlbars-syntax/parser";
 import { get } from "../htmlbars-runtime/hooks";
 import { equalHTML } from "../htmlbars-test-helpers";
 
@@ -13,7 +13,7 @@ var xhtmlNamespace = "http://www.w3.org/1999/xhtml",
 function fragmentFor(ast) {
   /* jshint evil: true */
   var fragmentOpcodeCompiler = new FragmentOpcodeCompiler(),
-      fragmentCompiler = new FragmentCompiler();
+      fragmentCompiler = new FragmentJavaScriptCompiler();
 
   var opcodes = fragmentOpcodeCompiler.compile(ast);
   var program = fragmentCompiler.compile(opcodes);
@@ -27,7 +27,7 @@ function hydratorFor(ast) {
   /* jshint evil: true */
   var hydrate = new HydrationOpcodeCompiler();
   var opcodes = hydrate.compile(ast);
-  var hydrate2 = new HydrationCompiler();
+  var hydrate2 = new HydrationJavaScriptCompiler();
   var program = hydrate2.compile(opcodes, []);
 
   var hookVars = [];

@@ -1,12 +1,11 @@
-export function forEach(array, callback, binding) {
-  var i, l;
-  if (binding === undefined) {
-    for (i=0, l=array.length; i<l; i++) {
-      callback(array[i], i);
-    }
-  } else {
-    for (i=0, l=array.length; i<l; i++) {
-      callback.call(binding, array[i], i);
+export function processOpcodes(compiler, opcodes) {
+  for (var i=0, l=opcodes.length; i<l; i++) {
+    var method = opcodes[i][0];
+    var params = opcodes[i][1];
+    if (params) {
+      compiler[method].apply(compiler, params);
+    } else {
+      compiler[method].call(compiler);
     }
   }
 }

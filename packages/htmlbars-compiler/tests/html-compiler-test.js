@@ -1,9 +1,9 @@
 import { compile } from "../htmlbars-compiler/compiler";
-import { forEach } from "../htmlbars-compiler/utils";
+import { forEach } from "../htmlbars-util/array-utils";
 import { tokenize } from "../simple-html-tokenizer";
 import defaultHooks from "../htmlbars-runtime/hooks";
 import defaultHelpers from "../htmlbars-runtime/helpers";
-import { merge } from "../htmlbars-runtime/utils";
+import { merge } from "../htmlbars-util/object-utils";
 import { DOMHelper } from "../morph";
 import { normalizeInnerHTML } from "../htmlbars-test-helpers";
 

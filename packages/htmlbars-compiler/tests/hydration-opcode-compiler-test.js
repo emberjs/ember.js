@@ -1,5 +1,5 @@
-import { HydrationOpcodeCompiler } from "../htmlbars-compiler/compiler/hydration_opcode";
-import { preprocess } from "../htmlbars-compiler/parser";
+import HydrationOpcodeCompiler from "../htmlbars-compiler/hydration-opcode-compiler";
+import { preprocess } from "../htmlbars-syntax/parser";
 
 function opcodesFor(html, options) {
   var ast = preprocess(html, options),
