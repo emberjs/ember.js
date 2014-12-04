@@ -13,8 +13,8 @@ QUnit.module("HydrationOpcodeCompiler opcode generation");
 test("simple example", function() {
   var opcodes = opcodesFor("<div>{{foo}} bar {{baz}}</div>");
   deepEqual(opcodes, [
-    [ "printMorphCreation", [ 0, [ 0 ], -1, 0, true ] ],
-    [ "printMorphCreation", [ 1, [ 0 ], 0, -1, true ] ],
+    [ "createMorph", [ 0, [ 0 ], -1, 0, true ] ],
+    [ "createMorph", [ 1, [ 0 ], 0, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHookForAmbiguous", [ 0 ] ],
     [ "pushLiteral", [ "baz" ] ],
@@ -25,7 +25,7 @@ test("simple example", function() {
 test("simple block", function() {
   var opcodes = opcodesFor("<div>{{#foo}}{{/foo}}</div>");
   deepEqual(opcodes, [
-    [ "printMorphCreation", [ 0, [ 0 ], null, null, true ] ],
+    [ "createMorph", [ 0, [ 0 ], null, null, true ] ],
     [ "prepareObject", [ 0 ] ],
     [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
@@ -36,7 +36,7 @@ test("simple block", function() {
 test("simple block with block params", function() {
   var opcodes = opcodesFor("<div>{{#foo as |bar baz|}}{{/foo}}</div>");
   deepEqual(opcodes, [
-    [ "printMorphCreation", [ 0, [ 0 ], null, null, true ] ],
+    [ "createMorph", [ 0, [ 0 ], null, null, true ] ],
     [ "prepareObject", [ 0 ] ],
     [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
@@ -47,7 +47,7 @@ test("simple block with block params", function() {
 test("element with a sole mustache child", function() {
   var opcodes = opcodesFor("<div>{{foo}}</div>");
   deepEqual(opcodes, [
-    [ "printMorphCreation", [ 0, [ 0 ], -1, -1, true ] ],
+    [ "createMorph", [ 0, [ 0 ], -1, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHookForAmbiguous", [ 0 ] ],
   ]);
@@ -56,7 +56,7 @@ test("element with a sole mustache child", function() {
 test("element with a mustache between two text nodes", function() {
   var opcodes = opcodesFor("<div> {{foo}} </div>");
   deepEqual(opcodes, [
-    [ "printMorphCreation", [ 0, [ 0 ], 0, 1, true ] ],
+    [ "createMorph", [ 0, [ 0 ], 0, 1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHookForAmbiguous", [ 0 ] ],
   ]);
@@ -66,7 +66,7 @@ test("mustache two elements deep", function() {
   var opcodes = opcodesFor("<div><div>{{foo}}</div></div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "printMorphCreation", [ 0, [ 0, 0 ], -1, -1, true ] ],
+    [ "createMorph", [ 0, [ 0, 0 ], -1, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHookForAmbiguous", [ 0 ] ],
     [ "popParent", [] ]
@@ -77,12 +77,12 @@ test("two sibling elements with mustaches", function() {
   var opcodes = opcodesFor("<div>{{foo}}</div><div>{{bar}}</div>");
   deepEqual(opcodes, [
     [ "consumeParent", [ 0 ] ],
-    [ "printMorphCreation", [ 0, [ 0 ], -1, -1, true ] ],
+    [ "createMorph", [ 0, [ 0 ], -1, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHookForAmbiguous", [ 0 ] ],
     [ "popParent", [] ],
     [ "consumeParent", [ 1 ] ],
-    [ "printMorphCreation", [ 1, [ 1 ], -1, -1, true ] ],
+    [ "createMorph", [ 1, [ 1 ], -1, -1, true ] ],
     [ "pushLiteral", [ "bar" ] ],
     [ "printContentHookForAmbiguous", [ 1 ] ],
     [ "popParent", [] ]
@@ -92,8 +92,8 @@ test("two sibling elements with mustaches", function() {
 test("mustaches at the root", function() {
   var opcodes = opcodesFor("{{foo}} {{bar}}");
   deepEqual(opcodes, [
-    [ "printMorphCreation", [ 0, [ ], 0, 1, true ] ],
-    [ "printMorphCreation", [ 1, [ ], 1, 2, true ] ],
+    [ "createMorph", [ 0, [ ], 0, 1, true ] ],
+    [ "createMorph", [ 1, [ ], 1, 2, true ] ],
     [ "repairClonedNode", [ [ 0, 2 ] ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHookForAmbiguous", [ 0 ] ],
@@ -105,10 +105,10 @@ test("mustaches at the root", function() {
 test("back to back mustaches should have a text node inserted between them", function() {
   var opcodes = opcodesFor("<div>{{foo}}{{bar}}{{baz}}wat{{qux}}</div>");
   deepEqual(opcodes, [
-    [ "printMorphCreation", [ 0, [0], -1, 0, true ] ],
-    [ "printMorphCreation", [ 1, [0], 0, 1, true ] ],
-    [ "printMorphCreation", [ 2, [0], 1, 2, true ] ],
-    [ "printMorphCreation", [ 3, [0], 2, -1, true] ],
+    [ "createMorph", [ 0, [0], -1, 0, true ] ],
+    [ "createMorph", [ 1, [0], 0, 1, true ] ],
+    [ "createMorph", [ 2, [0], 1, 2, true ] ],
+    [ "createMorph", [ 3, [0], 2, -1, true] ],
     [ "repairClonedNode", [ [ 0, 1 ], false ] ],
     [ "pushLiteral", [ "foo" ] ],
     [ "printContentHookForAmbiguous", [ 0 ] ],
@@ -124,7 +124,7 @@ test("back to back mustaches should have a text node inserted between them", fun
 test("helper usage", function() {
   var opcodes = opcodesFor("<div>{{foo 'bar' baz.bat true 3.14}}</div>");
   deepEqual(opcodes, [
-    [ "printMorphCreation", [ 0, [0], -1, -1, true ] ],
+    [ "createMorph", [ 0, [0], -1, -1, true ] ],
     [ "prepareObject", [ 0 ] ],
     [ "pushLiteral", [ 3.14 ] ],
     [ "pushLiteral", [ true ] ],

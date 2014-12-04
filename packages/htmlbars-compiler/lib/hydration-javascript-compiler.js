@@ -203,7 +203,7 @@ prototype.printElementHook = function(elementNum) {
   this.source.push(this.indent+'  element(' + args.join(', ') + ');\n');
 };
 
-prototype.printMorphCreation = function(morphNum, parentPath, startIndex, endIndex, escaped) {
+prototype.createMorph = function(morphNum, parentPath, startIndex, endIndex, escaped) {
   var isRoot = parentPath.length === 0;
   var parent = this.getParent();
 
