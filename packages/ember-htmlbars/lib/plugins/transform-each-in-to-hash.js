@@ -1,4 +1,4 @@
-import Walker from "htmlbars-compiler/walker";
+import Walker from "htmlbars-syntax/walker";
 
 /**
   An HTMLBars AST transformation that replaces all instances of

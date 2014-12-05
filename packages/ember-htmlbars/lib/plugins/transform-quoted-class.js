@@ -1,4 +1,4 @@
-import Walker from "htmlbars-compiler/walker";
+import Walker from "htmlbars-syntax/walker";
 
 function buildConcatASTNode(){
   return {
