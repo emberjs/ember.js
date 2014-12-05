@@ -42,7 +42,7 @@ function makeBindings(hash, options, view) {
       }
     } else {
       if (isStream(value) && prop !== 'id') {
-        hash[prop + 'Binding'] = value;
+        hash[prop + 'Binding'] = view._getBindingForStream(value);
         delete hash[prop];
       }
     }
