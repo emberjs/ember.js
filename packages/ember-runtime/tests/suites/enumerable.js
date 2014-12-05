@@ -4,6 +4,7 @@ import {required} from "ember-metal/mixin";
 import {guidFor, generateGuid} from "ember-metal/utils";
 import {computed} from "ember-metal/computed";
 import {get} from "ember-metal/property_get";
+import { addBeforeObserver } from 'ember-metal/observer';
 
 var ObserverClass = EmberObject.extend({
 
@@ -52,12 +53,9 @@ var ObserverClass = EmberObject.extend({
 
 
   observeBefore: function(obj) {
-    if (obj.addBeforeObserver) {
-      var keys = Array.prototype.slice.call(arguments, 1);
-      var loc  = keys.length;
-
-      while(--loc>=0) obj.addBeforeObserver(keys[loc], this, 'propertyWillChange');
-    }
+    var keys = Array.prototype.slice.call(arguments, 1);
+    var loc  = keys.length;
+    while(--loc>=0) addBeforeObserver(obj, keys[loc], this, 'propertyWillChange');
     return this;
   },
 
