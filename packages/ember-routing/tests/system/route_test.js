@@ -146,6 +146,31 @@ test("modelFor doesn't require the router", function() {
   equal(route.modelFor('foo'), foo);
 });
 
+
+test(".send just calls an action if the router is absent", function() {
+  expect(7);
+  var route = Ember.Route.createWithMixins({
+    actions: {
+      returnsTrue: function(foo, bar) {
+        equal(foo, 1);
+        equal(bar, 2);
+        equal(this, route);
+        return true;
+      },
+
+      returnsFalse: function() {
+        ok(true, "returnsFalse was called");
+        return false;
+      }
+    }
+  });
+
+  equal(true, route.send('returnsTrue', 1, 2));
+  equal(false, route.send('returnsFalse'));
+  equal(undefined, route.send('nonexistent', 1, 2, 3));
+});
+
+
 QUnit.module("Ember.Route serialize", {
   setup: createRoute,
   teardown: cleanupRoute
