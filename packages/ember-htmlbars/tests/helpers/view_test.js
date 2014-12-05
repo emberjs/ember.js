@@ -289,6 +289,88 @@ test("mixing old and new styles of property binding fires a warning, treats valu
   Ember.warn = oldWarn;
 });
 
+test('"Binding"-suffixed bindings are runloop-synchronized', function() {
+  expect(5);
+
+  var subview;
+
+  var Subview = EmberView.extend({
+    init: function() {
+      subview = this;
+      return this._super();
+    },
+    template: compile('<div class="color">{{view.color}}</div>')
+  });
+
+  var View = EmberView.extend({
+    color: "mauve",
+    Subview: Subview,
+    template: compile('<h1>{{view view.Subview colorBinding="view.color"}}</h1>')
+  });
+
+  view = View.create();
+  runAppend(view);
+
+  equal(view.$('h1 .color').text(), 'mauve', 'renders bound value');
+
+  run(function() {
+    run.schedule('sync', function() {
+      equal(get(subview, 'color'), 'mauve', 'bound property is correctly scheduled into the sync queue');
+    });
+
+    view.set('color', 'persian rose');
+
+    run.schedule('sync', function() {
+      equal(get(subview, 'color'), 'persian rose', 'bound property is correctly scheduled into the sync queue');
+    });
+
+    equal(get(subview, 'color'), 'mauve', 'bound property does not update immediately');
+  });
+
+  equal(get(subview, 'color'), 'persian rose', 'bound property is updated after runloop flush');
+});
+
+test('Non-"Binding"-suffixed bindings are runloop-synchronized', function() {
+  expect(5);
+
+  var subview;
+
+  var Subview = EmberView.extend({
+    init: function() {
+      subview = this;
+      return this._super();
+    },
+    template: compile('<div class="color">{{view.color}}</div>')
+  });
+
+  var View = EmberView.extend({
+    color: "mauve",
+    Subview: Subview,
+    template: compile('<h1>{{view view.Subview color=view.color}}</h1>')
+  });
+
+  view = View.create();
+  runAppend(view);
+
+  equal(view.$('h1 .color').text(), 'mauve', 'renders bound value');
+
+  run(function() {
+    run.schedule('sync', function() {
+      equal(get(subview, 'color'), 'mauve', 'bound property is correctly scheduled into the sync queue');
+    });
+
+    view.set('color', 'persian rose');
+
+    run.schedule('sync', function() {
+      equal(get(subview, 'color'), 'persian rose', 'bound property is correctly scheduled into the sync queue');
+    });
+
+    equal(get(subview, 'color'), 'mauve', 'bound property does not update immediately');
+  });
+
+  equal(get(subview, 'color'), 'persian rose', 'bound property is updated after runloop flush');
+});
+
 test("allows you to pass attributes that will be assigned to the class instance, like class=\"foo\"", function() {
   expect(4);
 
