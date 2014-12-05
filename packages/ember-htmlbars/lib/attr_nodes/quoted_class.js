@@ -4,26 +4,36 @@
 */
 
 import run from "ember-metal/run_loop";
+import { read, subscribe } from "ember-metal/streams/utils";
 
-function ClassNode(stream, renderable) {
-  this.stream = stream;
-  this.renderable = renderable;
-  this.lastValue = null;
-  this.currentValue = null;
-  this.isDirty = false;
-  stream.subscribe(this.update, this);
-  this.update();
+var SPACES = /\s+/;
+var ADD_LIST = [];
+var REMOVE_LIST = [];
+
+// Dedupes and removes empty strings. It expects the array
+// to be sorted.
+// TODO: This could be done in-place instead of splicing.
+function normalizeClasses(array) {
+  var i = 0;
+  while (i < array.length - 1) {
+    if (array[i] === array[i+1]) {
+      array.splice(i, 1);
+    } else {
+      i++;
+    }
+  }
+  if (array[0] === '') {
+    array.shift();
+  }
 }
 
-ClassNode.prototype.update = function update(){
-  var value = this.stream.value();
-  if (value !== this.currentValue) {
-    this.isDirty = true;
-    this.lastValue = this.currentValue;
-    this.currentValue = value;
-    this.renderable.renderIfNeeded();
+function buildClasses(value) {
+  if (typeof value === 'string') {
+    return value.split(SPACES);
+  } else {
+    return [];
   }
-};
+}
 
 function QuotedClassAttrNode(element, attrName, attrValue, dom) {
   this.element = element;
@@ -31,16 +41,10 @@ function QuotedClassAttrNode(element, attrName, attrValue, dom) {
   this.dom = dom;
   this.isDirty = false;
 
-  this.classNodes = [];
-  this.staticClasses = [];
-  for (var i=0, l=attrValue.length;i<l;i++) {
-    if (attrValue[i].isStream) {
-      this.classNodes.push(new ClassNode(attrValue[i], this));
-    } else {
-      this.staticClasses.push(attrValue[i]);
-    }
-  }
+  this.classes = attrValue;
+  this.oldClasses = [];
 
+  subscribe(attrValue, this.renderIfNeeded, this);
   this.renderIfNeeded();
 }
 
@@ -56,45 +60,48 @@ QuotedClassAttrNode.prototype.scheduledRenderIfNeeded = function scheduledRender
   }
 };
 
-function pushString(list, string) {
-  var parts = string.split(' ');
-  var length = parts.length;
-  if (length === 1 && parts[0].length > 0) {
-    list.push(parts[0]);
-  } else {
-    for (var i=0;i<length;i++) {
-      if (parts[i].length > 0) {
-        list.push(parts[i]);
-      }
-    }
-  }
-}
-
 QuotedClassAttrNode.prototype.render = function render(){
+  ADD_LIST.length = 0;
+  REMOVE_LIST.length = 0;
 
-  var removeList = [];
-  var addList = [];
+  var oldClasses = this.oldClasses;
+  var newClasses = buildClasses(read(this.classes));
+  newClasses.sort();
+  normalizeClasses(newClasses);
 
-  if (this.staticClasses) {
-    addList = this.staticClasses;
-    this.staticClasses = null;
-  }
+  var oldIndex = 0;
+  var oldLength = oldClasses.length;
+  var newIndex = 0;
+  var newLength = newClasses.length;
 
-  for (var i=0, l=this.classNodes.length;i<l;i++) {
-    if (this.classNodes[i].isDirty) {
-      this.classNodes[i].isDirty = false;
-      if (this.classNodes[i].lastValue) {
-        pushString(removeList, this.classNodes[i].lastValue);
-      }
-      if (this.classNodes[i].currentValue) {
-        pushString(addList, this.classNodes[i].currentValue);
+  while (oldIndex < oldLength || newIndex < newLength) {
+    var oldClass = oldClasses[oldIndex];
+    var newClass = newClasses[newIndex];
+
+    if (oldIndex === oldLength) {
+      ADD_LIST.push(newClass);
+      newIndex++;
+    } else if (newIndex === newLength) {
+      REMOVE_LIST.push(oldClass);
+      oldIndex++;
+    } else {
+      if (oldClass === newClass) {
+        oldIndex++;
+        newIndex++;
+      } else if (oldClass < newClass) {
+        REMOVE_LIST.push(oldClass);
+        oldIndex++;
+      } else {
+        ADD_LIST.push(newClass);
+        newIndex++;
       }
     }
   }
 
-  this.dom.removeClasses(this.element, removeList);
-  this.dom.addClasses(this.element, addList);
+  this.oldClasses = newClasses;
 
+  this.dom.addClasses(this.element, ADD_LIST);
+  this.dom.removeClasses(this.element, REMOVE_LIST);
 };
 
 export default QuotedClassAttrNode;

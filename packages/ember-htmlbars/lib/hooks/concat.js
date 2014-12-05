@@ -4,23 +4,38 @@
 */
 
 import Stream from "ember-metal/streams/stream";
-import {readArray} from "ember-metal/streams/utils";
+import {
+  isStream,
+  readArray,
+  subscribe
+} from "ember-metal/streams/utils";
 
 // TODO: Create subclass ConcatStream < Stream. Defer
 // subscribing to streams until the value() is called.
 export default function concat(params) {
-  var stream = new Stream(function() {
-    return readArray(params).join('');
-  });
+  var i;
+  var isStatic = true;
 
-  for (var i = 0, l = params.length; i < l; i++) {
-    var param = params[i];
-
-    if (param && param.isStream) {
-      param.subscribe(stream.notify, stream);
+  for (i = 0; i < params.length; i++) {
+    if (isStream(params[i])) {
+      isStatic = false;
+      break;
     }
   }
 
-  return stream;
+  if (isStatic) {
+    return params.join('');
+  } else {
+    var stream = new Stream(function() {
+      return readArray(params).join('');
+    });
+
+    for (i = 0; i < params.length; i++) {
+      subscribe(params[i], stream.notify, stream);
+    }
+
+    return stream;
+  }
+
 }
 

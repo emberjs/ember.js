@@ -12,6 +12,7 @@ import View from "ember-views/views/view";
 import Stream from "ember-metal/streams/stream";
 import keys from "ember-metal/keys";
 import helpers from "ember-htmlbars/helpers";
+import concat from "ember-htmlbars/hooks/concat";
 
 /**
   `bind-attr` allows you to create a binding between DOM element attributes and
@@ -217,22 +218,22 @@ function streamifyClassBindings(view, classBindingsString) {
     parsedPath = View._parsePropertyPath(classBindings[i]);
 
     if (parsedPath.path === '') {
-      streamified.push(classStringForParsedPath(parsedPath, true));
+      streamified.push(classStringForParsedPath(parsedPath, true) + " ");
     } else {
       (function(){
         var lazyValue = view.getStream(parsedPath.path);
         var _parsedPath = parsedPath;
         var classNameBound = new Stream(function(){
           var value = lazyValue.value();
-          return classStringForParsedPath(_parsedPath, value);
+          return classStringForParsedPath(_parsedPath, value) + " ";
         });
         lazyValue.subscribe(classNameBound.notify, classNameBound);
         streamified.push(classNameBound);
       })(); // jshint ignore:line
     }
   }
-  
-  return streamified;
+
+  return concat(streamified);
 }
 
 function classStringForParsedPath(parsedPath, value) {
