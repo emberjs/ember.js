@@ -51,6 +51,9 @@ import "ember-htmlbars/system/bootstrap";
 // Ember.Handlebars global if htmlbars is enabled
 import "ember-htmlbars/compat";
 
+// add Ember.View.prototype.helpers
+import "ember-htmlbars/ext/view";
+
 registerHelper('bindHelper', bindHelper);
 registerHelper('bind', bindHelper);
 registerHelper('view', viewHelper);
