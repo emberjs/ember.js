@@ -56,19 +56,21 @@ function equalTokens(fragment, html) {
   deepEqual(fragTokens, htmlTokens);
 }
 
-QUnit.module("HTML-based compiler (output)", {
-  setup: function() {
-    hooks = merge({}, defaultHooks);
-    helpers = merge({}, defaultHelpers);
-    partials = {};
+function commonSetup() {
+  hooks = merge({}, defaultHooks);
+  helpers = merge({}, defaultHelpers);
+  partials = {};
 
-    env = {
-      dom: new DOMHelper(),
-      hooks: hooks,
-      helpers: helpers,
-      partials: partials
-    };
-  }
+  env = {
+    dom: new DOMHelper(),
+    hooks: hooks,
+    helpers: helpers,
+    partials: partials
+  };
+}
+
+QUnit.module("HTML-based compiler (output)", {
+  setup: commonSetup
 });
 
 test("Simple content produces a document fragment", function() {
@@ -972,27 +974,50 @@ test("Block params in HTML syntax - Throws an error on invalid identifiers for p
   }, /Invalid identifier for block parameters: 'foo\[bar\]' in 'as \|foo\[bar\]\|'/);
 });
 
+QUnit.module("HTML-based compiler (invalid HTML errors)", {
+  setup: commonSetup
+});
+
 test("A helpful error message is provided for mismatched start/end tags", function() {
   QUnit.throws(function() {
     compile("<div>\n<p>\nSomething\n\n</div>");
-  }, /Closing tag `div` \(on line 5\) did not match last open tag `p`\./);
+  }, /Closing tag `div` \(on line 5\) did not match last open tag `p` \(on line 2\)\./);
+});
+
+test("error line numbers include comment lines", function() {
+  QUnit.throws(function() {
+    compile("<div>\n<p>\n{{! some comment}}\n\n</div>");
+  }, /Closing tag `div` \(on line 5\) did not match last open tag `p` \(on line 2\)\./);
+});
+
+test("error line numbers include mustache only lines", function() {
+  QUnit.throws(function() {
+    compile("<div>\n<p>\n{{someProp}}\n\n</div>");
+  }, /Closing tag `div` \(on line 5\) did not match last open tag `p` \(on line 2\)\./);
+});
+
+test("error line numbers include block lines", function() {
+  QUnit.throws(function() {
+    compile("<div>\n<p>\n{{#some-comment}}\n{{/some-comment}}\n</div>");
+  }, /Closing tag `div` \(on line 5\) did not match last open tag `p` \(on line 2\)\./);
+});
+
+test("error line numbers include whitespace control mustaches", function() {
+  QUnit.throws(function() {
+    compile("<div>\n<p>\n{{someProp~}}\n\n</div>{{some-comment}}");
+  }, /Closing tag `div` \(on line 5\) did not match last open tag `p` \(on line 2\)\./);
+});
+
+test("error line numbers include multiple mustache lines", function() {
+  QUnit.throws(function() {
+    compile("<div>\n<p>\n{{some-comment}}</div>{{some-comment}}");
+  }, /Closing tag `div` \(on line 3\) did not match last open tag `p` \(on line 2\)\./);
 });
 
 if (document.createElement('div').namespaceURI) {
 
 QUnit.module("HTML-based compiler (output, svg)", {
-  setup: function() {
-    hooks = merge({}, defaultHooks);
-    helpers = merge({}, defaultHelpers);
-    partials = {};
-
-    env = {
-      dom: new DOMHelper(),
-      hooks: hooks,
-      helpers: helpers,
-      partials: partials
-    };
-  }
+  setup: commonSetup
 });
 
 test("The compiler can handle namespaced elements", function() {
