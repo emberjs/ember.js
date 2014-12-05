@@ -38,9 +38,8 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 }
 
 function expectDeprecationInHTMLBars() {
-  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-    expectDeprecation('`Ember.Handlebars.makeBoundHelper` has been deprecated in favor of `Ember.HTMLBars.makeBoundHelper`.');
-  }
+  // leave this as an empty function until we are ready to use it
+  // to enforce deprecation notice for old Handlebars versions
 }
 
 
