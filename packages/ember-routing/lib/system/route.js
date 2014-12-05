@@ -26,6 +26,8 @@ import ActionHandler from "ember-runtime/mixins/action_handler";
 import generateController from "ember-routing/system/generate_controller";
 import { stashParamNames } from "ember-routing/utils";
 
+var slice = Array.prototype.slice;
+
 /**
 @module ember
 @submodule ember-routing
@@ -988,7 +990,16 @@ var Route = EmberObject.extend(ActionHandler, {
     @param {...*} args
   */
   send: function() {
-    return this.router.send.apply(this.router, arguments);
+    if (this.router || !Ember.testing) {
+      this.router.send.apply(this.router, arguments);
+    } else {
+      var name = arguments[0];
+      var args = slice.call(arguments, 1);
+      var action = this._actions[name];
+      if (action) {
+        return this._actions[name].apply(this, args);
+      }
+    }
   },
 
   /**
