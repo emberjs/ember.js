@@ -52,6 +52,7 @@ import {
     Assuming that `repeatCount` resolved to 2, the bound helper would receive `["foo"]` as its first argument,
     and { count: 2 } as its second.
 
+  @private
   @method makeBoundHelper
   @for Ember.HTMLBars
   @param {Function} function

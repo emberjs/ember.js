@@ -67,8 +67,6 @@ export function handlebarsHelper(name, value) {
   Ember.assert("You tried to register a component named '" + name +
                "', but component names must include a '-'", !Component.detect(value) || name.match(/-/));
 
-  Ember.deprecate('Usage of `Ember.Handlebars.helper` is deprecated. Please use `Ember.HTMLBars.helper`.');
-
   if (View.detect(value)) {
     helpers[name] = makeViewHelper(value);
   } else {

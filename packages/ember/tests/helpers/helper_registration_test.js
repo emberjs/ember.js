@@ -66,10 +66,6 @@ test("Unbound dashed helpers registered on the container can be late-invoked", f
 
   // need to make `makeBoundHelper` for HTMLBars
 test("Bound helpers registered on the container can be late-invoked", function() {
-  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-    expectDeprecation('`Ember.Handlebars.makeBoundHelper` has been deprecated in favor of `Ember.HTMLBars.makeBoundHelper`.');
-  }
-
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-reverse}} {{x-reverse foo}}</div>");
 
   boot(function() {

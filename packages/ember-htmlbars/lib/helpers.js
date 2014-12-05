@@ -3,6 +3,10 @@
 @submodule ember-htmlbars
 */
 
+/**
+ @private
+ @property helpers
+*/
 var helpers = { };
 
 /**
@@ -63,6 +67,7 @@ import makeBoundHelper from "ember-htmlbars/system/make_bound_helper";
   Options in the helper will be passed to the view in exactly the same
   manner as with the `view` helper.
 
+  @private
   @method helper
   @for Ember.HTMLBars
   @param {String} name

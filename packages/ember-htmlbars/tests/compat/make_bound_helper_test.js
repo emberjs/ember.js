@@ -35,9 +35,8 @@ function registerRepeatHelper() {
 }
 
 function expectDeprecationInHTMLBars() {
-  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-    expectDeprecation('`Ember.Handlebars.makeBoundHelper` has been deprecated in favor of `Ember.HTMLBars.makeBoundHelper`.');
-  }
+  // leave this empty function as a place holder to
+  // enable a deprecation notice
 }
 
 QUnit.module("ember-htmlbars: makeBoundHelper", {
