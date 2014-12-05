@@ -1,4 +1,5 @@
-import Walker from "htmlbars-compiler/walker";
+import Walker from "htmlbars-syntax/walker";
+import b from "htmlbars-syntax/builders";
 
 /**
   An HTMLBars AST transformation that replaces all instances of
@@ -25,26 +26,16 @@ export default function(ast) {
     if (validate(node)) {
       var removedParams = node.sexpr.params.splice(1, 2);
       var keyword = removedParams[1].original;
-      var stringNode = {
-        type: 'StringLiteral',
-        value: keyword,
-        original: keyword
-      };
 
+      // TODO: This may not be necessary.
       if (!node.sexpr.hash) {
-        node.sexpr.hash = {
-          type: 'Hash',
-          pairs: []
-        };
+        node.sexpr.hash = b.hash();
       }
 
-      var hashPair = {
-        type: 'HashPair',
-        key: 'keywordName',
-        value: stringNode
-      };
-
-      node.sexpr.hash.pairs.push(hashPair);
+      node.sexpr.hash.pairs.push(b.pair(
+        'keywordName',
+        b.string(keyword)
+      ));
     }
   });
 

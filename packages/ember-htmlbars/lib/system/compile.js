@@ -8,7 +8,6 @@ import { compile } from "htmlbars-compiler/compiler";
 import template from "ember-htmlbars/system/template";
 
 import transformEachInToHash from "ember-htmlbars/plugins/transform-each-in-to-hash";
-import transformQuotedClass from "ember-htmlbars/plugins/transform-quoted-class";
 import transformWithAsToHash from "ember-htmlbars/plugins/transform-with-as-to-hash";
 
 var disableComponentGeneration = true;
@@ -32,8 +31,7 @@ export default function(templateString) {
     plugins: {
       ast: [
         transformEachInToHash,
-        transformWithAsToHash,
-        transformQuotedClass
+        transformWithAsToHash
       ]
     }
   });

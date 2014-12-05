@@ -355,6 +355,7 @@ var vendoredPackages = {
   'dag-map':               vendoredEs6Package('dag-map'),
   'morph':                 htmlbarsPackage('morph'),
   'htmlbars-compiler':     htmlbarsPackage('htmlbars-compiler'),
+  'htmlbars-syntax':       htmlbarsPackage('htmlbars-syntax'),
   'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer'),
   'htmlbars-test-helpers': htmlbarsPackage('htmlbars-test-helpers', { singleFile: true } ),
   'htmlbars-util':         htmlbarsPackage('htmlbars-util'),

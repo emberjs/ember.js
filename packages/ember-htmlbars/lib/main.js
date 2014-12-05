@@ -4,6 +4,7 @@ import component from "ember-htmlbars/hooks/component";
 import element from "ember-htmlbars/hooks/element";
 import subexpr from "ember-htmlbars/hooks/subexpr";
 import attribute from "ember-htmlbars/hooks/attribute";
+import concat from "ember-htmlbars/hooks/concat";
 import get from "ember-htmlbars/hooks/get";
 import set from "ember-htmlbars/hooks/set";
 import { DOMHelper } from "morph";
@@ -17,7 +18,6 @@ import {
   helper,
   default as helpers
 } from "ember-htmlbars/helpers";
-import concat from "ember-htmlbars/system/concat";
 import { bindHelper } from "ember-htmlbars/helpers/binding";
 import { viewHelper } from "ember-htmlbars/helpers/view";
 import { yieldHelper } from "ember-htmlbars/helpers/yield";
@@ -97,7 +97,8 @@ export var defaultEnv = {
     element: element,
     subexpr: subexpr,
     component: component,
-    attribute: attribute
+    attribute: attribute,
+    concat: concat
   },
 
   helpers: helpers
