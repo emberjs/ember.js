@@ -16,8 +16,8 @@
     "mandatory-setter": "development-only",
     "ember-routing-fire-activate-deactivate-events": true,
     "ember-testing-pause-test": true,
-    "ember-htmlbars": null,
-    "ember-htmlbars-block-params": null,
+    "ember-htmlbars": true,
+    "ember-htmlbars-block-params": true,
     "ember-htmlbars-component-generation": null,
     "ember-htmlbars-inline-if-helper": null,
     "ember-htmlbars-attribute-syntax": null
