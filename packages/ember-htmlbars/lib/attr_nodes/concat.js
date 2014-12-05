@@ -16,8 +16,7 @@ ConcatAttrNode.prototype = o_create(SimpleAttrNode.prototype);
 ConcatAttrNode.prototype.super$init = SimpleAttrNode.prototype.init;
 
 ConcatAttrNode.prototype.init = function init(element, attrName, attrValue, dom) {
-  var simpleAttrValue = concat(attrValue);
-  this.super$init(element, attrName, simpleAttrValue, dom);
+  this.super$init(element, attrName, attrValue, dom);
 };
 
 export default ConcatAttrNode;

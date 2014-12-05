@@ -97,7 +97,8 @@ export var defaultEnv = {
     element: element,
     subexpr: subexpr,
     component: component,
-    attribute: attribute
+    attribute: attribute,
+    concat: concat
   },
 
   helpers: helpers

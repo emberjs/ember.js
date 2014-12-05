@@ -7,9 +7,7 @@ import SimpleAttrNode from "./simple";
 import { create as o_create } from "ember-metal/platform";
 
 function UnquotedNonpropertyAttrNode(element, attrName, attrValue, dom) {
-  Ember.assert('Cannot call an unquoted attribute with many streams', attrValue.length === 1);
-  var simpleAttrValue = attrValue[0];
-  this.init(element, attrName, simpleAttrValue, dom);
+  this.init(element, attrName, attrValue, dom);
 } 
 
 UnquotedNonpropertyAttrNode.prototype = o_create(SimpleAttrNode.prototype);
