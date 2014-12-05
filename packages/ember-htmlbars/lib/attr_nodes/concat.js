@@ -4,7 +4,6 @@
 */
 
 import SimpleAttrNode from "./simple";
-import concat from "ember-htmlbars/system/concat";
 import { create as o_create } from "ember-metal/platform";
 
 function ConcatAttrNode(element, attrName, attrValue, dom) {

@@ -6,6 +6,8 @@
 import Stream from "ember-metal/streams/stream";
 import {readArray} from "ember-metal/streams/utils";
 
+// TODO: Create subclass ConcatStream < Stream. Defer
+// subscribing to streams until the value() is called.
 export default function concat(params) {
   var stream = new Stream(function() {
     return readArray(params).join('');
