@@ -1,7 +1,7 @@
 import TemplateVisitor from "./template-visitor";
 import { processOpcodes } from "./utils";
 import { forEach } from "../htmlbars-util/array-utils";
-import { isHelper } from "../../htmlbars-syntax/utils";
+import { isHelper } from "../htmlbars-syntax/utils";
 
 function unwrapMustache(mustache) {
   if (isHelper(mustache.sexpr)) {
