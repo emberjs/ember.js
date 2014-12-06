@@ -367,14 +367,10 @@ var Application = Namespace.extend(DeferredMixin, {
     @method scheduleInitialize
   */
   scheduleInitialize: function() {
-    var self = this;
-
     if (!this.$ || this.$.isReady) {
-      run.schedule('actions', self, '_initialize');
+      run.schedule('actions', this, '_initialize');
     } else {
-      this.$().ready(function runInitialize() {
-        run(self, '_initialize');
-      });
+      this.$().ready(Ember.run.bind(this, '_initialize'));
     }
   },
 
@@ -666,9 +662,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
       this.buildContainer();
 
-      run.schedule('actions', this, function() {
-        this._initialize();
-      });
+      run.schedule('actions', this, '_initialize');
     }
 
     run.join(this, handleReset);
