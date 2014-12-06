@@ -259,11 +259,11 @@ var Application = Namespace.extend(DeferredMixin, {
   */
   customEvents: null,
 
-  // Start off the number of deferrals at 1. This will be
-  // decremented by the Application's own `initialize` method.
-  _readinessDeferrals: 1,
-
   init: function() {
+    // Start off the number of deferrals at 1. This will be
+    // decremented by the Application's own `initialize` method.
+    this._readinessDeferrals = 1;
+
     if (!this.$) {
       this.$ = jQuery;
     }
