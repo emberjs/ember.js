@@ -270,28 +270,6 @@ s3TestRunner = replace(s3TestRunner, {
   ]
 });
 
-testConfig = replace(testConfig, {
-  files: [ 'tests/index.html' ],
-  patterns: [
-    { match: /\{\{DEV_FEATURES\}\}/g,
-      replacement: function() {
-        var features = defeatureifyConfig().enabled;
-
-        return JSON.stringify(features);
-      }
-    },
-    { match: /\{\{PROD_FEATURES\}\}/g,
-      replacement: function() {
-        var features = defeatureifyConfig({
-          environment: 'production'
-        }).enabled;
-
-        return JSON.stringify(features);
-      }
-    },
-  ]
-});
-
 // List of bower component trees that require no special handling.  These will
 // be included in the distTrees for use within testsConfig/index.html
 var bowerFiles = [
