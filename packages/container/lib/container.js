@@ -733,8 +733,8 @@ function factoryFor(container, fullName) {
 
   var type = fullName.split(':')[0];
   if (!factory || typeof factory.extend !== 'function' || (!Ember.MODEL_FACTORY_INJECTIONS && type === 'model')) {
-    if (factory && typeof factory.onLookup === 'function') {
-      factory.onLookup(fullName);
+    if (factory && typeof factory._onLookup === 'function') {
+      factory._onLookup(fullName);
     }
 
     // TODO: think about a 'safe' merge style extension
@@ -750,8 +750,8 @@ function factoryFor(container, fullName) {
     var injectedFactory = factory.extend(injections);
     injectedFactory.reopenClass(factoryInjections);
 
-    if (factory && typeof factory.onLookup === 'function') {
-      factory.onLookup(fullName);
+    if (factory && typeof factory._onLookup === 'function') {
+      factory._onLookup(fullName);
     }
 
     cache[fullName] = injectedFactory;
@@ -821,8 +821,8 @@ function instantiate(container, fullName) {
       validationCache = container.validationCache;
 
       // Ensure that all lazy injections are valid at instantiation time
-      if (!validationCache[fullName] && typeof factory.lazyInjections === 'function') {
-        lazyInjections = factory.lazyInjections();
+      if (!validationCache[fullName] && typeof factory._lazyInjections === 'function') {
+        lazyInjections = factory._lazyInjections();
 
         validateInjections(container, normalizeInjectionsHash(lazyInjections));
       }
