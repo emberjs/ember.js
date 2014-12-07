@@ -6,7 +6,7 @@ var replace = require('broccoli-string-replace');
 var removeFile = require('broccoli-file-remover');
 var transpileES6 = require('broccoli-es6-module-transpiler');
 var jsHint = require('broccoli-jshint');
-var handlebarsInlineTree = require('./build-support/handlebars-inliner');
+var handlebarsInlinedTrees = require('./build-support/handlebars-inliner');
 var getVersion = require('git-repo-version');
 
 var packages = require('./packages');
@@ -21,7 +21,8 @@ var demos = new Funnel('demos', {
 var ES6Tokenizer = new Funnel(bower+'/simple-html-tokenizer/lib/');
 dependableTrees['simple-html-tokenizer'] = ES6Tokenizer;
 
-dependableTrees['handlebars-inliner'] = handlebarsInlineTree;
+dependableTrees['syntax-handlebars-inliner'] = handlebarsInlinedTrees.syntax;
+dependableTrees['util-handlebars-inliner'] = handlebarsInlinedTrees.util;
 
 function getDependencyTree(depName) {
   var dep = dependableTrees[depName];
@@ -136,7 +137,7 @@ for (var packageName in packages.dependencies) {
   // jsHint tests
   var jsHintLibTree = new Funnel(libTree, {
     include: [new RegExp(packageName), new RegExp(packageName + '.+\.js$')],
-    exclude: [/htmlbars-syntax\/handlebars/],
+    exclude: [/htmlbars-(syntax|util)\/handlebars/],
     destDir: packageName+'-tests/'
   });
   jsHintLibTree = removeFile(jsHintLibTree, {
