@@ -131,7 +131,7 @@ test('rejections like jqXHR which have errorThrown property work', function() {
       equal(error.__reason_with_error_thrown__, jqXHR, 'also retains a helpful reference to the rejection reason');
     };
 
-    var actualError = new Error("OMG what really happend");
+    var actualError = new Error("OMG what really happened");
     var jqXHR = {
       errorThrown: actualError
     };

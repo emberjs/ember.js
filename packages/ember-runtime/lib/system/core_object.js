@@ -181,7 +181,7 @@ function makeCtor() {
       this.init(arguments[0]);
     } else {
       // v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
-      // we may want to keep this arround till this ages out on mobile
+      // we may want to keep this around till this ages out on mobile
       var args = new Array(length);
       for (var x = 0; x < length; x++) {
         args[x] = arguments[x];

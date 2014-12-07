@@ -100,7 +100,7 @@ var get = function get(obj, keyName) {
 /**
   Normalizes a target/path pair to reflect that actual target/path that should
   be observed, etc. This takes into account passing in global property
-  paths (i.e. a path beginning with a captial letter not defined on the
+  paths (i.e. a path beginning with a capital letter not defined on the
   target).
 
   @private

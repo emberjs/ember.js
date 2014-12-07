@@ -76,13 +76,13 @@ var stringCache  = {};
   algorithims typically cost in proportion to the length of the string.
   Luckily, this is where the Symbols (interned strings) shine. As Symbols are
   unique by their string content, equality checks can be done by pointer
-  comparision.
+  comparison.
 
   How do I know if my string is a rope or symbol?
 
   Typically (warning general sweeping statement, but truthy in runtimes at
   present) static strings created as part of the JS source are interned.
-  Strings often used for comparisions can be interned at runtime if some
+  Strings often used for comparisons can be interned at runtime if some
   criteria are met.  One of these criteria can be the size of the entire rope.
   For example, in chrome 38 a rope longer then 12 characters will not
   intern, nor will segments of that rope.

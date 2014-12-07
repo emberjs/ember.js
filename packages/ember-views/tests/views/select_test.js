@@ -573,7 +573,7 @@ test("Ember.SelectedOption knows when it is selected when multiple=true", functi
   deepEqual(selectedOptions(), [false, true, true, false], "After changing it, selection should be correct");
 });
 
-test("Ember.SelectedOption knows when it is selected when multiple=true and options are primatives", function() {
+test("Ember.SelectedOption knows when it is selected when multiple=true and options are primitives", function() {
   run(function() {
     select.set('content', Ember.A([1, 2, 3, 4]));
     select.set('multiple', true);

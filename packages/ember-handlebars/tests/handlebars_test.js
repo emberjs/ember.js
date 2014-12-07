@@ -25,7 +25,7 @@ test("should provide a helpful assertion for bindings within HTML comments", fun
 
   expectAssertion(function() {
     runAppend(view);
-  }, 'An error occured while setting up template bindings. Please check "blahzorz" template for invalid markup or bindings within HTML comments.');
+  }, 'An error occurred while setting up template bindings. Please check "blahzorz" template for invalid markup or bindings within HTML comments.');
 });
 
 // HTMLBars does not throw an error when a missing helper is found
