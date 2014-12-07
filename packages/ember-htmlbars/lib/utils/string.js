@@ -4,7 +4,10 @@
 */
 
 // required so we can extend this object.
-import SafeString from "htmlbars-util/safe-string";
+import {
+  SafeString,
+  escapeExpression
+} from "htmlbars-util";
 import EmberStringUtils from "ember-runtime/system/string";
 
 /**
@@ -53,4 +56,8 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
   };
 }
 
-export { SafeString, htmlSafe };
+export {
+  SafeString,
+  htmlSafe,
+  escapeExpression
+};

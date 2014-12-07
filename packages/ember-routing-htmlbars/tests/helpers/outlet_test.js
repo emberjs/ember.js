@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core'; // TEMPLATES
-import EmberHandlebars from "ember-handlebars";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
@@ -22,28 +21,12 @@ import EmberView from "ember-routing/ext/view";
 import EmberContainerView from "ember-views/views/container_view";
 import jQuery from "ember-views/system/jquery";
 
-import { outletHelper as handlebarsOutletHelper } from "ember-routing-handlebars/helpers/outlet";
-import { outletHelper as htmlbarsOutletHelper } from "ember-routing-htmlbars/helpers/outlet";
+import { outletHelper } from "ember-routing-htmlbars/helpers/outlet";
 
-import htmlbarsCompile from "ember-htmlbars/system/compile";
-import { registerHelper as htmlbarsRegisterHelper } from "ember-htmlbars/helpers";
-import htmlbarsHelpers from "ember-htmlbars/helpers";
+import compile from "ember-htmlbars/system/compile";
+import { registerHelper } from "ember-htmlbars/helpers";
+import helpers from "ember-htmlbars/helpers";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-
-var compile, helpers, registerHelper, outletHelper;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  outletHelper = htmlbarsOutletHelper;
-  compile = htmlbarsCompile;
-  helpers = htmlbarsHelpers;
-  registerHelper = htmlbarsRegisterHelper;
-} else {
-  outletHelper = handlebarsOutletHelper;
-  compile = EmberHandlebars.compile;
-  helpers = EmberHandlebars.helpers;
-  registerHelper = function(name, fn) {
-    EmberHandlebars.registerHelper(name, fn);
-  };
-}
 
 var buildContainer = function(namespace) {
   var container = new Container();

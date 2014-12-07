@@ -43,7 +43,6 @@ if (process.env.DEFEATUREIFY === 'true') {
   disableDefeatureify = env === 'development';
 }
 
-var generateTemplateCompiler = require('./lib/broccoli-ember-template-compiler-generator');
 var inlineTemplatePrecompiler = require('./lib/broccoli-ember-inline-template-precompiler');
 
 /*
@@ -265,7 +264,6 @@ s3TestRunner = replace(s3TestRunner, {
     { match: new RegExp('../ember', 'g'), replacement: './ember' },
     { match: new RegExp('../qunit/qunit.css', 'g'), replacement: 'http://code.jquery.com/qunit/qunit-1.15.0.css' },
     { match: new RegExp('../qunit/qunit.js', 'g'), replacement: 'http://code.jquery.com/qunit/qunit-1.15.0.js' },
-    { match: new RegExp('../handlebars/handlebars.js', 'g'), replacement: 'http://builds.handlebarsjs.com.s3.amazonaws.com/handlebars-v2.0.0.js' },
     { match: new RegExp('../jquery/jquery.js', 'g'), replacement: 'http://code.jquery.com/jquery-1.11.1.js'}
   ]
 });
@@ -309,12 +307,6 @@ var bowerFiles = [
     files: ['jquery.js'],
     srcDir: '/',
     destDir: '/jquery'
-  }),
-
-  pickFiles('bower_components/handlebars', {
-    files: ['handlebars.js'],
-    srcDir: '/',
-    destDir: '/handlebars'
   })
 ];
 
@@ -341,11 +333,6 @@ var iifeStop  = writeFile('iife-stop', '})();');
       'ember-metal': {trees: null,  vendorRequirements: ['backburner']}
     ```
  */
-var handlebarsConfig = {
-  libPath: 'node_modules/handlebars/dist',
-  mainFile: 'handlebars.amd.js'
-};
-
 var vendoredPackages = {
   'loader':                vendoredPackage('loader'),
   'rsvp':                  vendoredEs6Package('rsvp'),
@@ -359,15 +346,7 @@ var vendoredPackages = {
   'simple-html-tokenizer': htmlbarsPackage('simple-html-tokenizer'),
   'htmlbars-test-helpers': htmlbarsPackage('htmlbars-test-helpers', { singleFile: true } ),
   'htmlbars-util':         htmlbarsPackage('htmlbars-util'),
-  'handlebars':            vendoredPackage('handlebars', handlebarsConfig)
 };
-
-var emberHandlebarsCompiler = pickFiles('packages/ember-handlebars-compiler/lib', {
-  files: ['main.js'],
-  srcDir: '/',
-  destDir: '/'
-});
-var templateCompilerTree = generateTemplateCompiler(emberHandlebarsCompiler, { srcFile: 'main.js'});
 
 var packages = require('./lib/packages');
 
@@ -462,24 +441,11 @@ function es6Package(packageName) {
 
   if (pkg.hasTemplates) {
     /*
-       Add templateCompiler to libTree.  This is done to ensure that the templates
-       are precompiled with the local version of `ember-handlebars-compiler` (NOT
-       the `npm` version), and includes any changes.  Specifically, so that you
-       can work on the template compiler and still have functional builds.
-    */
-    libTree = mergeTrees([libTree, templateCompilerTree]);
-
-    /*
-      Utilizing the templateCompiler to compile inline handlebars templates to
-      handlebar template functions.  This is done so that only Handlebars runtime
-      is required instead of all of Handlebars.
+      Utilizing the templateCompiler to compile inline templates to
+      template functions.  This is done so that HTMLBars compiler is
+      not required for running Ember.
     */
     libTree = inlineTemplatePrecompiler(libTree);
-
-    // Remove templateCompiler from libTree as it is no longer needed.
-    libTree = removeFile(libTree, {
-      srcFile: 'ember-template-compiler.js'
-    });
   }
 
   var testTree = pickFiles('packages/' + packageName + '/tests', {
@@ -798,7 +764,7 @@ var prodCompiledTests = concatES6(testTrees, {
   }
 });
 
-var distTrees = [templateCompilerTree, compiledSource, compiledTests, testingCompiledSource, testConfig, bowerFiles];
+var distTrees = [compiledSource, compiledTests, testingCompiledSource, testConfig, bowerFiles];
 
 // If you are not running in dev add Production and Minify build to distTrees.
 // This ensures development build speed is not affected by unnecessary

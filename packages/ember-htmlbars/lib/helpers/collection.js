@@ -4,8 +4,6 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
-import EmberHandlebars from "ember-handlebars-compiler";
-
 import { IS_BINDING } from "ember-metal/mixin";
 import { fmt } from "ember-runtime/system/string";
 import { get } from "ember-metal/property_get";
@@ -219,7 +217,7 @@ export function collectionHelper(params, hash, options, env) {
   }
 
   var emptyViewClass;
-  if (inverse && inverse !== EmberHandlebars.VM.noop) {
+  if (inverse) {
     emptyViewClass = get(collectionPrototype, 'emptyViewClass');
     emptyViewClass = emptyViewClass.extend({
           template: inverse,

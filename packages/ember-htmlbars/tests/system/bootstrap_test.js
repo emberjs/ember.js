@@ -2,6 +2,7 @@ import jQuery from "ember-views/system/jquery";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 import { runDestroy } from "ember-runtime/tests/utils";
+import bootstrap from "ember-htmlbars/system/bootstrap";
 
 var trim = jQuery.trim;
 
@@ -22,7 +23,7 @@ QUnit.module("ember-htmlbars: bootstrap", {
 
 function checkTemplate(templateName) {
   run(function() {
-    Ember.Handlebars.bootstrap(jQuery('#qunit-fixture'));
+    bootstrap(jQuery('#qunit-fixture'));
   });
   var template = Ember.TEMPLATES[templateName];
   ok(template, 'template is available on Ember.TEMPLATES');
@@ -59,24 +60,26 @@ test('template without data-template-name or id should default to application', 
   checkTemplate('application');
 });
 
-test('template with type text/x-raw-handlebars should be parsed', function() {
-  jQuery('#qunit-fixture').html('<script type="text/x-raw-handlebars" data-template-name="funkyTemplate">{{name}}</script>');
+if (typeof Handlebars === 'object') {
+  test('template with type text/x-raw-handlebars should be parsed', function() {
+    jQuery('#qunit-fixture').html('<script type="text/x-raw-handlebars" data-template-name="funkyTemplate">{{name}}</script>');
 
-  run(function() {
-    Ember.Handlebars.bootstrap(jQuery('#qunit-fixture'));
+    run(function() {
+      bootstrap(jQuery('#qunit-fixture'));
+    });
+
+    ok(Ember.TEMPLATES['funkyTemplate'], 'template with name funkyTemplate available');
+
+    // This won't even work with Ember templates
+    equal(trim(Ember.TEMPLATES['funkyTemplate']({ name: 'Tobias' })), "Tobias");
   });
-
-  ok(Ember.TEMPLATES['funkyTemplate'], 'template with name funkyTemplate available');
-
-  // This won't even work with Ember templates
-  equal(trim(Ember.TEMPLATES['funkyTemplate']({ name: 'Tobias' })), "Tobias");
-});
+}
 
 test('duplicated default application templates should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars">second</script>');
 
   throws(function () {
-    Ember.Handlebars.bootstrap(jQuery('#qunit-fixture'));
+    bootstrap(jQuery('#qunit-fixture'));
   },
   /Template named "[^"]+" already exists\./,
   "duplicate templates should not be allowed");
@@ -86,7 +89,7 @@ test('default application template and id application template present should th
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" id="application">second</script>');
 
   throws(function () {
-    Ember.Handlebars.bootstrap(jQuery('#qunit-fixture'));
+    bootstrap(jQuery('#qunit-fixture'));
   },
   /Template named "[^"]+" already exists\./,
   "duplicate templates should not be allowed");
@@ -96,7 +99,7 @@ test('default application template and data-template-name application template p
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars">first</script><script type="text/x-handlebars" data-template-name="application">second</script>');
 
   throws(function () {
-    Ember.Handlebars.bootstrap(jQuery('#qunit-fixture'));
+    bootstrap(jQuery('#qunit-fixture'));
   },
   /Template named "[^"]+" already exists\./,
   "duplicate templates should not be allowed");
@@ -106,7 +109,7 @@ test('duplicated template id should throw exception', function() {
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" id="funkyTemplate">first</script><script type="text/x-handlebars" id="funkyTemplate">second</script>');
 
   throws(function () {
-    Ember.Handlebars.bootstrap(jQuery('#qunit-fixture'));
+    bootstrap(jQuery('#qunit-fixture'));
   },
   /Template named "[^"]+" already exists\./,
   "duplicate templates should not be allowed");
@@ -116,7 +119,7 @@ test('duplicated template data-template-name should throw exception', function()
   jQuery('#qunit-fixture').html('<script type="text/x-handlebars" data-template-name="funkyTemplate">first</script><script type="text/x-handlebars" data-template-name="funkyTemplate">second</script>');
 
   throws(function () {
-    Ember.Handlebars.bootstrap(jQuery('#qunit-fixture'));
+    bootstrap(jQuery('#qunit-fixture'));
   },
   /Template named "[^"]+" already exists\./,
   "duplicate templates should not be allowed");

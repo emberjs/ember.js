@@ -2,8 +2,7 @@ import EmberView from "ember-views/views/view";
 import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
 import _MetamorphView from 'ember-views/views/metamorph_view';
-import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import compile from "ember-htmlbars/system/compile";
 import Container from "ember-runtime/system/container";
 import ObjectController from "ember-runtime/controllers/object_controller";
 
@@ -12,13 +11,6 @@ import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var view, container;
-
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
 
 QUnit.module("ember-htmlbars: {{bind}} helper", {
   setup: function() {

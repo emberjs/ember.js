@@ -1,4 +1,5 @@
-import EmberHandlebars from "ember-handlebars-compiler";
+import EmberHandlebars from "ember-htmlbars/compat";
+
 var precompile = EmberHandlebars.precompile;
 var parse = EmberHandlebars.parse;
 var template = 'Hello World';

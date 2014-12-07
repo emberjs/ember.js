@@ -7,17 +7,8 @@ import { set } from "ember-metal/property_set";
 import { get } from "ember-metal/property_get";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import Container from "ember-runtime/system/container";
-// import { A } from "ember-runtime/system/native_array";
-import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import compile from "ember-htmlbars/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
 
 var view, lookup;
 var originalLookup = Ember.lookup;

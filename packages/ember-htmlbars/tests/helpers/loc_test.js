@@ -1,14 +1,6 @@
 import EmberView from 'ember-views/views/view';
-import EmberHandlebars from 'ember-handlebars-compiler';
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import compile from "ember-htmlbars/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
 
 function buildView(template, context) {
   return EmberView.create({

@@ -1,9 +1,7 @@
 /**
 @module ember
-@submodule ember-handlebars
+@submodule ember-views
 */
-
-import EmberHandlebars from "ember-handlebars-compiler";
 
 import {
   forEach,
@@ -24,36 +22,22 @@ import { observer } from "ember-metal/mixin";
 import { defineProperty } from "ember-metal/properties";
 import run from "ember-metal/run_loop";
 
-import handlebarsTemplate from "ember-handlebars/templates/select";
 import htmlbarsTemplate from "ember-htmlbars/templates/select";
 
-var defaultTemplate;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  defaultTemplate = htmlbarsTemplate;
-} else {
-  defaultTemplate = handlebarsTemplate;
-}
+var defaultTemplate = htmlbarsTemplate;
 
-var selectOptionDefaultTemplate;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  selectOptionDefaultTemplate = {
-    isHTMLBars: true,
-    render: function(context, env, contextualElement) {
-      var lazyValue = context.getStream('view.label');
+var selectOptionDefaultTemplate = {
+  isHTMLBars: true,
+  render: function(context, env, contextualElement) {
+    var lazyValue = context.getStream('view.label');
 
-      lazyValue.subscribe(context._wrapAsScheduled(function() {
-        run.scheduleOnce('render', context, 'rerender');
-      }));
+    lazyValue.subscribe(context._wrapAsScheduled(function() {
+      run.scheduleOnce('render', context, 'rerender');
+    }));
 
-      return lazyValue.value();
-    }
-  };
-} else {
-  selectOptionDefaultTemplate = function(context, env) {
-    var options = { data: env.data, hash: {} };
-    EmberHandlebars.helpers.bind.call(context, "view.label", options);
-  };
-}
+    return lazyValue.value();
+  }
+};
 
 var SelectOption = View.extend({
   instrumentDisplay: 'Ember.SelectOption',

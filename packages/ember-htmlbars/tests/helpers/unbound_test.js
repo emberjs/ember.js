@@ -7,35 +7,14 @@ import Ember from 'ember-metal/core';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
-import EmberHandlebars from 'ember-handlebars-compiler';
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import compile from "ember-htmlbars/system/compile";
 import EmberError from 'ember-metal/error';
-import {
-  default as htmlbarsHelpers
-} from "ember-htmlbars/helpers";
-import registerHTMLBarsHelper from "ember-htmlbars/compat/register-bound-helper";
-import htmlbarsMakeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
+import helpers from "ember-htmlbars/helpers";
+import registerBoundHelper from "ember-htmlbars/compat/register-bound-helper";
+import makeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 
 import Container from 'ember-runtime/system/container';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-
-import {
-  makeBoundHelper as handlebarsMakeBoundHelper
-} from 'ember-handlebars/ext';
-import htmlbarsMakeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
-
-var compile, helpers, registerBoundHelper, makeBoundHelper;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-  registerBoundHelper = registerHTMLBarsHelper;
-  makeBoundHelper = htmlbarsMakeBoundHelper;
-  helpers = htmlbarsHelpers;
-} else {
-  compile = EmberHandlebars.compile;
-  registerBoundHelper = EmberHandlebars.registerBoundHelper;
-  helpers = EmberHandlebars.helpers;
-  makeBoundHelper = handlebarsMakeBoundHelper;
-}
 
 function expectDeprecationInHTMLBars() {
   // leave this as an empty function until we are ready to use it

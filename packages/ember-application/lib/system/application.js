@@ -41,7 +41,6 @@ import ContainerDebugAdapter from "ember-extension-support/container_debug_adapt
 import {
   K
 } from 'ember-metal/core';
-import EmberHandlebars from "ember-handlebars-compiler";
 
 function props(obj) {
   var properties = [];
@@ -277,7 +276,6 @@ var Application = Namespace.extend(DeferredMixin, {
 
     if (!librariesRegistered) {
       librariesRegistered = true;
-      Ember.libraries.registerCoreLibrary('Handlebars' + (EmberHandlebars.compile ? '' : '-runtime'), EmberHandlebars.VERSION);
       Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
     }
 

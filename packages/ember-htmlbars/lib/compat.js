@@ -1,4 +1,4 @@
-import EmberHandlebars from "ember-handlebars";
+import Ember from "ember-metal/core";
 import helpers from "ember-htmlbars/helpers";
 import template from "ember-htmlbars/system/template";
 import compile from "ember-htmlbars/system/compile";
@@ -12,7 +12,9 @@ import compatRegisterBoundHelper from "ember-htmlbars/compat/register-bound-help
 import compatPrecompile from "ember-htmlbars/compat/precompile";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 
+var EmberHandlebars;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  EmberHandlebars = Ember.Handlebars = { };
   EmberHandlebars.helpers = helpers;
   EmberHandlebars.helper = compatHandlebarsHelper;
   EmberHandlebars.registerHelper = compatRegisterHelper;

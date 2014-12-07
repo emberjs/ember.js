@@ -1,10 +1,7 @@
 import "ember";
 
-import EmberHandlebars from "ember-handlebars";
-
-var compile, helpers;
-compile = EmberHandlebars.compile;
-helpers = EmberHandlebars.helpers;
+import compile from "ember-htmlbars/system/compile";
+import helpers from "ember-htmlbars/helpers";
 
 var App, container;
 var originalHelpers;

@@ -1,26 +1,16 @@
 import run from 'ember-metal/run_loop';
-import Ember from 'ember-metal/core';
 import jQuery from 'ember-views/system/jquery';
 import EmberView from 'ember-views/views/view';
 import Container from 'ember-runtime/system/container';
 import EmberObject from 'ember-runtime/system/object';
 import _MetamorphView from 'ember-views/views/metamorph_view';
-import EmberHandlebars from 'ember-handlebars';
-import htmlbarsCompile from 'ember-htmlbars/system/compile';
+import compile from 'ember-htmlbars/system/compile';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import { set } from 'ember-metal/property_set';
 
 var view, container;
-
 var trim = jQuery.trim;
-
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
 
 QUnit.module('ember-htmlbars: {{#with}} and {{#view}} integration', {
   setup: function() {
@@ -101,7 +91,7 @@ test('bindings can be `this`, in which case they *are* the current context [DEPR
     }),
 
 
-    template: EmberHandlebars.compile('{{#if view.museumOpen}} {{#with view.museumDetails}}{{view museumView museum=this}} {{/with}}{{/if}}')
+    template: compile('{{#if view.museumOpen}} {{#with view.museumDetails}}{{view museumView museum=this}} {{/with}}{{/if}}')
   });
 
   expectDeprecation(function() {

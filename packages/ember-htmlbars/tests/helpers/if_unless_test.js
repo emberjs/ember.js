@@ -5,21 +5,13 @@ import EmberView from "ember-views/views/view";
 import ObjectProxy from "ember-runtime/system/object_proxy";
 import EmberObject from "ember-runtime/system/object";
 import _MetamorphView from 'ember-views/views/metamorph_view';
-import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import compile from "ember-htmlbars/system/compile";
 
 import { set } from 'ember-metal/property_set';
 import { fmt } from 'ember-runtime/system/string';
 import { typeOf } from 'ember-metal/utils';
 import { forEach } from 'ember-metal/enumerable_utils';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
 
 var originalLookup = Ember.lookup;
 

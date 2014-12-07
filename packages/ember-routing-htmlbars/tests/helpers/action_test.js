@@ -10,48 +10,25 @@ import { default as EmberController } from "ember-runtime/controllers/controller
 import EmberObjectController from "ember-runtime/controllers/object_controller";
 import EmberArrayController from "ember-runtime/controllers/array_controller";
 
-import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import compile from "ember-htmlbars/system/compile";
 import EmberView from "ember-views/views/view";
 import EmberComponent from "ember-views/views/component";
 import jQuery from "ember-views/system/jquery";
 
 import {
-  registerHelper as htmlbarsRegisterHelper,
-  default as htmlbarsHelpers
+  registerHelper,
+  default as helpers
 } from "ember-htmlbars/helpers";
 
 import {
-  ActionHelper as HandlebarsActionHelper,
-  actionHelper as handlebarsActionHelper
-} from "ember-routing-handlebars/helpers/action";
-
-import {
-  ActionHelper as HTMLBarsActionHelper,
-  actionHelper as htmlbarsActionHelper
+  ActionHelper,
+  actionHelper
 } from "ember-routing-htmlbars/helpers/action";
 
 import {
   runAppend,
   runDestroy
 } from "ember-runtime/tests/utils";
-
-var compile, helpers, registerHelper, ActionHelper, actionHelper;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  helpers = htmlbarsHelpers;
-  compile = htmlbarsCompile;
-  registerHelper = htmlbarsRegisterHelper;
-  actionHelper = htmlbarsActionHelper;
-  ActionHelper = HTMLBarsActionHelper;
-} else {
-  helpers = EmberHandlebars.helpers;
-  compile = EmberHandlebars.compile;
-  registerHelper = function(name, fn) {
-    return EmberHandlebars.registerHelper(name, fn);
-  };
-  actionHelper = handlebarsActionHelper;
-  ActionHelper = HandlebarsActionHelper;
-}
 
 var dispatcher, view, originalActionHelper;
 var originalRegisterAction = ActionHelper.registerAction;

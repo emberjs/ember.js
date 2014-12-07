@@ -6,8 +6,6 @@ import EmberView from "ember-views/views/view";
 import _MetamorphView from "ember-views/views/metamorph_view";
 import { computed } from "ember-metal/computed";
 import ArrayController from "ember-runtime/controllers/array_controller";
-import EmberHandlebars from "ember-handlebars-compiler";
-// import {expectAssertion} from "ember-metal/tests/debug_helpers";
 import { A } from "ember-runtime/system/native_array";
 import { default as EmberController } from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
@@ -17,13 +15,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-import htmlbarsCompile from "ember-htmlbars/system/compile";
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
+import compile from "ember-htmlbars/system/compile";
 
 var people, view, container;
 var template, templateMyView, MyView;
@@ -144,18 +136,20 @@ test("it updates the view if an item is added", function() {
   assertHTML(view, "Steve HoltAnnabelleTom Dale");
 });
 
-test("should be able to use standard Handlebars #each helper", function() {
-  runDestroy(view);
+if (typeof Handlebars === "object") {
+  test("should be able to use standard Handlebars #each helper", function() {
+    runDestroy(view);
 
-  view = EmberView.create({
-    context: { items: ['a', 'b', 'c'] },
-    template: Handlebars.compile("{{#each items}}{{this}}{{/each}}")
+    view = EmberView.create({
+      context: { items: ['a', 'b', 'c'] },
+      template: Handlebars.compile("{{#each items}}{{this}}{{/each}}")
+    });
+
+    runAppend(view);
+
+    equal(view.$().html(), "abc");
   });
-
-  runAppend(view);
-
-  equal(view.$().html(), "abc");
-});
+}
 
 test("it allows you to access the current context using {{this}}", function() {
   runDestroy(view);

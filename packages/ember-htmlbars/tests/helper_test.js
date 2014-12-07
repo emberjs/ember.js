@@ -1,26 +1,14 @@
 import EmberView from "ember-views/views/view";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
-import EmberHandlebars from "ember-handlebars-compiler";
 import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import {
-  default as htmlbarsHelpers,
-  helper as htmlbarsHelper
+  default as helpers,
+  helper
 } from "ember-htmlbars/helpers";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
-
-var compile, helper, helpers;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-  helpers = htmlbarsHelpers;
-  helper = htmlbarsHelper;
-} else {
-  compile = EmberHandlebars.compile;
-  helper = EmberHandlebars.helper;
-  helpers = EmberHandlebars.helpers;
-}
+import compile from "ember-htmlbars/system/compile";
 
 var view;
 

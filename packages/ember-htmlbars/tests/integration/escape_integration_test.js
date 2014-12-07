@@ -1,20 +1,12 @@
 import run from 'ember-metal/run_loop';
-import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
-import EmberHandlebars from 'ember-handlebars-compiler';
-import htmlbarsCompile from 'ember-htmlbars/system/compile';
+import compile from 'ember-htmlbars/system/compile';
 
 import { set } from 'ember-metal/property_set';
 import { create as o_create } from 'ember-metal/platform';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var compile, view;
-
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
 
 QUnit.module('ember-htmlbars: Integration with Globals', {
   teardown: function() {

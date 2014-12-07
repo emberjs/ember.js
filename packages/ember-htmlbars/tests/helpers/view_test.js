@@ -9,11 +9,10 @@ import Namespace from 'ember-runtime/system/namespace';
 import EmberObject from 'ember-runtime/system/object';
 import ContainerView from 'ember-views/views/container_view';
 import _MetamorphView from 'ember-views/views/metamorph_view';
-import HTMLBarsSafeString from 'htmlbars-util/safe-string';
-import htmlbarsPrecompile from 'ember-htmlbars/compat/precompile';
-import EmberHandlebars from "ember-handlebars";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
-import htmlbarsTemplate from 'ember-htmlbars/system/template';
+import SafeString from 'htmlbars-util/safe-string';
+import precompile from 'ember-htmlbars/compat/precompile';
+import compile from "ember-htmlbars/system/compile";
+import template from 'ember-htmlbars/system/template';
 import { observersFor } from "ember-metal/observer";
 import ObjectController from 'ember-runtime/controllers/object_controller';
 
@@ -21,19 +20,6 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 import { set } from 'ember-metal/property_set';
 import { get } from 'ember-metal/property_get';
 import { computed } from 'ember-metal/computed';
-
-var compile, SafeString, precompile, template;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-  template = htmlbarsTemplate;
-  precompile = htmlbarsPrecompile;
-  SafeString = HTMLBarsSafeString;
-} else {
-  compile = EmberHandlebars.compile;
-  template = EmberHandlebars.template;
-  precompile = EmberHandlebars.precompile;
-  SafeString = EmberHandlebars.SafeString;
-}
 
 var view, originalLookup, container, lookup;
 
@@ -1135,7 +1121,7 @@ test('should expose a controller keyword that persists through Ember.ContainerVi
 
   var containerView = get(view, 'childViews.firstObject');
   var viewInstanceToBeInserted = EmberView.create({
-    template: EmberHandlebars.compile('{{controller.foo}}')
+    template: compile('{{controller.foo}}')
   });
 
   run(function() {
@@ -1212,7 +1198,7 @@ test('bindings should respect keywords', function() {
 
 test('should bind to the property if no registered helper found for a mustache without parameters', function() {
   view = EmberView.createWithMixins({
-    template: EmberHandlebars.compile('{{view.foobarProperty}}'),
+    template: compile('{{view.foobarProperty}}'),
     foobarProperty: computed(function() {
       return 'foobarProperty';
     })

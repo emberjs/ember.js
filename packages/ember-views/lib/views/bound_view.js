@@ -3,15 +3,12 @@
 @submodule ember-views
 */
 
-import Ember from "ember-metal/core"; // Ember.FEATURES
-import EmberHandlebars from "ember-handlebars-compiler"; // EmberHandlebars.SafeString;
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import merge from "ember-metal/merge";
-import handlebarsHtmlSafe from "ember-handlebars/string";
 import {
-  SafeString as htmlbarsSafeString,
-  htmlSafe as htmlbarsHtmlSafe
+  escapeExpression,
+  SafeString
 } from "ember-htmlbars/utils/string";
 import {
   cloneStates,
@@ -20,15 +17,6 @@ import {
 import _MetamorphView from "ember-views/views/metamorph_view";
 
 function K() { return this; }
-
-var SafeString, htmlSafe;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  SafeString = htmlbarsSafeString;
-  htmlSafe = htmlbarsHtmlSafe;
-} else {
-  SafeString = EmberHandlebars.SafeString;
-  htmlSafe = handlebarsHtmlSafe;
-}
 
 var states = cloneStates(viewStates);
 
@@ -186,7 +174,7 @@ var BoundView = _MetamorphView.extend({
             result = String(result);
           }
 
-          if (escape) { result = Handlebars.Utils.escapeExpression(result); }
+          if (escape) { result = escapeExpression(result); }
           buffer.push(result);
           return;
         }

@@ -1,17 +1,9 @@
 import Ember from "ember-metal/core"; // Ember.lookup
 import EmberLogger from "ember-metal/logger";
 import EmberView from "ember-views/views/view";
-import EmberHandlebars from "ember-handlebars-compiler";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import compile from "ember-htmlbars/system/compile";
 
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
 
 var originalLookup = Ember.lookup;
 var lookup;
