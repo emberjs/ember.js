@@ -60,6 +60,6 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
       bar: new InjectedProperty('quux')
     });
 
-    deepEqual(AnObject.lazyInjections(), { 'foo': 'foo:bar', 'bar': 'quux:bar' }, "should return injected container keys");
+    deepEqual(AnObject._lazyInjections(), { 'foo': 'foo:bar', 'bar': 'quux:bar' }, "should return injected container keys");
   });
 }

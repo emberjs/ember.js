@@ -858,9 +858,9 @@ function addOnLookupHandler() {
       Provides lookup-time type validation for injected properties.
 
       @private
-      @method onLookup
+      @method _onLookup
       */
-    ClassMixinProps.onLookup = injectedPropertyAssertion;
+    ClassMixinProps._onLookup = injectedPropertyAssertion;
   });
 }
 
@@ -871,10 +871,10 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
     Returns a hash of property names and container names that injected
     properties will lookup on the container lazily.
 
-    @method lazyInjections
+    @method _lazyInjections
     @return {Object} Hash of all lazy injected property keys to container names
   */
-  ClassMixinProps.lazyInjections = function() {
+  ClassMixinProps._lazyInjections = function() {
     var injections = {};
     var proto = this.proto();
     var descs = meta(proto).descs;
