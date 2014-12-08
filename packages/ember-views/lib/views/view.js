@@ -608,7 +608,7 @@ var EMPTY_ARRAY = [];
       mouseEnter: function(event, view) {
         // view might be instance of either
         // OuterView or InnerView depending on
-        // where on the page the user interaction occured
+        // where on the page the user interaction occurred
       }
     })
   });

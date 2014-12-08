@@ -25,7 +25,7 @@ import { create } from "ember-metal/platform";
 // we test the string and context to see if the browser is about to
 // perform this cleanup, but with a special allowance for disregarding
 // <script tags. This disregarding of <script being the first child item
-// may bend the offical spec a bit, and is only needed for Handlebars
+// may bend the official spec a bit, and is only needed for Handlebars
 // templates.
 //
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#optional-tags
@@ -277,7 +277,7 @@ _RenderBuffer.prototype = {
       var childView = childViews[i];
       var ref = el.querySelector('#morph-'+i);
 
-      Ember.assert('An error occured while setting up template bindings. Please check ' +
+      Ember.assert('An error occurred while setting up template bindings. Please check ' +
                    (childView && childView._parentView && childView._parentView._debugTemplateName ?
                         '"' + childView._parentView._debugTemplateName + '" template ' :
                         ''

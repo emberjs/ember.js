@@ -74,7 +74,7 @@ testBoth('observer on instance', function(get, set) {
 
 });
 
-testBoth('observer on instance overridding class', function(get, set) {
+testBoth('observer on instance overriding class', function(get, set) {
 
   var MyClass = EmberObject.extend({
 

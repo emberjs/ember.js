@@ -252,7 +252,7 @@ test("if `lookupItemController` returns a string, it must be resolvable by the c
   arrayController = ArrayController.create({
     container: container,
     lookupItemController: function(object) {
-      return "NonExistant";
+      return "NonExistent";
     },
     model: lannisters
   });
@@ -260,7 +260,7 @@ test("if `lookupItemController` returns a string, it must be resolvable by the c
   throws(function() {
       arrayController.objectAtContent(1);
     },
-    /NonExistant/,
+    /NonExistent/,
     "`lookupItemController` must return either null or a valid controller name");
 });
 

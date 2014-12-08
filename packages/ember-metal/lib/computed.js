@@ -529,7 +529,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   client.get('fullName'); // 'Betty Fuller'
   ```
 
-  _Note: This is the prefered way to define computed properties when writing third-party
+  _Note: This is the preferred way to define computed properties when writing third-party
   libraries that depend on or use Ember, since there is no guarantee that the user
   will have prototype extensions enabled._
 

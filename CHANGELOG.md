@@ -711,7 +711,7 @@
 * Added the ability to chain test helpers
 * BREAKING: Move setting controller's `model` into setupController
 * Updated ember-latest jsbin starting point URL
-* Documentation for ComputedProperty cachable
+* Documentation for ComputedProperty cacheable
 * Mask deprecation warning in metaPath testing
 * mask deprecation warnings (when knowingly triggering them)
 * Deprecate Ember.metaPath
@@ -833,7 +833,7 @@
 * don't rely on EXTEND_PROTOTYPES == true
 * Fixes Ember.EnumerableUtils without extend prototypes
 * Do not flag .generateController for documentation.
-* Do not build the docs for `.cachable`. Fixes #2329.
+* Do not build the docs for `.cacheable`. Fixes #2329.
 * cleanup MutableEnumerable documentation
 * Add Ember.Application#removeTestHelpers
 * Fix a couple issues
@@ -1234,7 +1234,7 @@
 * Don't update the route if we're routing
 * Don't special-case the top-level '/'
 * Make routing unwind properly
-* Replace occurances of goToState with transitionTo.
+* Replace occurrences of goToState with transitionTo.
 * No longer support RunLoop instantiation without `new`.
 * Improve naming and code style
 * Guard mergeMixins parameters more generally

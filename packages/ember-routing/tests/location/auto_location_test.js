@@ -167,7 +167,7 @@ test("AutoLocation.create() should consider an index path (i.e. '/\') without an
   equal(location instanceof FakeHashLocation, true);
 });
 
-test("AutoLocation._getSupportsHistory() should use `history.pushState` existance as proof of support", function() {
+test("AutoLocation._getSupportsHistory() should use `history.pushState` existence as proof of support", function() {
   expect(3);
 
   AutoTestLocation._history.pushState = function () {};
@@ -273,7 +273,7 @@ test("AutoLocation._getSupportsHistory() should handle false positive for Androi
   equal(AutoTestLocation._getSupportsHistory(), false);
 });
 
-test("AutoLocation._getSupportsHashChange() should use `onhashchange` event existance as proof of support", function() {
+test("AutoLocation._getSupportsHashChange() should use `onhashchange` event existence as proof of support", function() {
   expect(2);
 
   AutoTestLocation._window.onhashchange = null;

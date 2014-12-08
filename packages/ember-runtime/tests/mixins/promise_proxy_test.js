@@ -145,7 +145,7 @@ test("rejection", function(){
   equal(get(proxy, 'isFulfilled'), false,  'expects the proxy to indicate that it is not fulfilled');
 });
 
-test("unhandled rejects still propogate to RSVP.on('error', ...) ", function(){
+test("unhandled rejects still propagate to RSVP.on('error', ...) ", function(){
   expect(1);
 
   RSVP.on('error', onerror);
@@ -191,7 +191,7 @@ test("should work with promise inheritance", function(){
     promise: new PromiseSubclass(function(){ })
   });
 
-  ok(proxy.then() instanceof PromiseSubclass, 'promise proxy respected inheritence');
+  ok(proxy.then() instanceof PromiseSubclass, 'promise proxy respected inheritance');
 });
 
 test("should reset isFulfilled and isRejected when promise is reset", function() {

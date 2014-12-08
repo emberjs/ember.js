@@ -600,7 +600,7 @@ computed.reads = computed.oneWay;
 /**
   Where `computed.oneWay` provides oneWay bindings, `computed.readOnly` provides
   a readOnly one way binding. Very often when using `computed.oneWay` one does
-  not also want changes to propogate back up, as they will replace the value.
+  not also want changes to propagate back up, as they will replace the value.
 
   This prevents the reverse flow, and also throws an exception when it occurs.
 
