@@ -132,6 +132,27 @@ test("unquoted attribute expression is string", function() {
   equalTokens(fragment, '<input value="oh my">');
 });
 
+test("unquoted attribute expression works when followed by another attribute", function() {
+
+  var template = compile('<input value={{funstuff}} name="Alice">');
+  var fragment = template.render({funstuff: "oh my"}, env);
+
+  equalTokens(fragment, '<input value="oh my" name="Alice">');
+});
+
+test("Unquoted attribute value with multiple nodes throws an exception", function () {
+  expect(4);
+
+  QUnit.throws(function() { compile('<img class=foo{{bar}}>'); }, expectedError(1));
+  QUnit.throws(function() { compile('<img class={{foo}}{{bar}}>'); }, expectedError(1));
+  QUnit.throws(function() { compile('<img \nclass={{foo}}bar>'); }, expectedError(2));
+  QUnit.throws(function() { compile('<div \nclass\n=\n{{foo}}&amp;bar ></div>'); }, expectedError(4));
+
+  function expectedError(line) {
+    return new Error("Unquoted attribute value must be a single string or mustache (line " + line + ")");
+  }
+});
+
 test("Simple elements can have arbitrary attributes", function() {
   var template = compile("<div data-some-data='foo'>content</div>");
   var fragment = template.render({}, env);

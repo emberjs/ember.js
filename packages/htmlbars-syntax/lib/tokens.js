@@ -18,6 +18,14 @@ StartTag.prototype.addToAttributeName = function(char) {
 StartTag.prototype.addToAttributeValue = function(char) {
   var value = this.currentAttribute.value;
 
+  if (!this.currentAttribute.quoted && value.length > 0 &&
+      (char.type === 'MustacheStatement' || value[0].type === 'MustacheStatement')) {
+    // Get the line number from a mustache, whether it's the one to add or the one already added
+    var mustache = char.type === 'MustacheStatement' ? char : value[0],
+        line = mustache.loc.start.line;
+    throw new Error("Unquoted attribute value must be a single string or mustache (line " + line + ")");
+  }
+
   if (typeof char === 'object') {
     if (char.type === 'MustacheStatement') {
       value.push(char);
