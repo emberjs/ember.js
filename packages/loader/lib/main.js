@@ -21,7 +21,7 @@ var define, requireModule, require, requirejs, Ember;
       seen[name] = {};
 
       if (!registry[name]) {
-        throw new Error("Could not find module " + name);
+        throw new Error('Could not find module ' + name);
       }
 
       var mod = registry[name];
@@ -45,9 +45,11 @@ var define, requireModule, require, requirejs, Ember;
     };
 
     function resolve(child, name) {
-      if (child.charAt(0) !== '.') { return child; }
-      var parts = child.split("/");
-      var parentBase = name.split("/").slice(0, -1);
+      if (child.charAt(0) !== '.') {
+        return child;
+      }
+      var parts = child.split('/');
+      var parentBase = name.split('/').slice(0, -1);
 
       for (var i=0, l=parts.length; i<l; i++) {
         var part = parts[i];
@@ -57,12 +59,16 @@ var define, requireModule, require, requirejs, Ember;
         else { parentBase.push(part); }
       }
 
-      return parentBase.join("/");
+      return parentBase.join('/');
     }
 
     requirejs._eak_seen = registry;
 
-    Ember.__loader = {define: define, require: require, registry: registry};
+    Ember.__loader = {
+      define: define,
+      require: require,
+      registry: registry
+    };
   } else {
     define = Ember.__loader.define;
     requirejs = require = requireModule = Ember.__loader.require;
