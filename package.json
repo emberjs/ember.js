@@ -13,7 +13,6 @@
   "devDependencies": {
     "aws-sdk": "~2.0.0-rc8",
     "bower": "~1.3.2",
-    "broccoli": "0.12.0",
     "broccoli-concat": "0.0.6",
     "broccoli-defeatureify": "~0.3.0",
     "broccoli-derequire": "0.0.1",
