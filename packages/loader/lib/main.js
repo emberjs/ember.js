@@ -24,8 +24,9 @@ var define, requireModule, require, requirejs, Ember;
       var callback = mod.callback;
       var reified = [];
       var exports;
+      var length = deps.length;
 
-      for (var i=0, l=deps.length; i<l; i++) {
+      for (var i=0; i<length; i++) {
         if (deps[i] === 'exports') {
           reified.push(exports = {});
         } else {
@@ -33,7 +34,8 @@ var define, requireModule, require, requirejs, Ember;
         }
       }
 
-      var value = callback.apply(this, reified);
+      var value = length === 0 ? callback.call(this) : callback.apply(this, reified);
+
       return seen[name] = exports || value;
     };
 
