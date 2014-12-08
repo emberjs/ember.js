@@ -3,6 +3,7 @@ var define, requireModule, require, requirejs, Ember;
 (function() {
   Ember = this.Ember = this.Ember || {};
   if (typeof Ember === 'undefined') { Ember = {}; };
+  function UNDEFINED() { }
 
   if (typeof Ember.__loader === 'undefined') {
     var registry = {}, seen = {};
@@ -12,7 +13,11 @@ var define, requireModule, require, requirejs, Ember;
     };
 
     requirejs = require = requireModule = function(name) {
-      if (seen.hasOwnProperty(name)) { return seen[name]; }
+      var s = seen[name];
+
+      if (s !== undefined) { return seen[name]; }
+      if (s === UNDEFINED) { return undefined;  }
+
       seen[name] = {};
 
       if (!registry[name]) {
@@ -36,7 +41,7 @@ var define, requireModule, require, requirejs, Ember;
 
       var value = length === 0 ? callback.call(this) : callback.apply(this, reified);
 
-      return seen[name] = exports || value;
+      return seen[name] = exports || (value === undefined ? UNDEFINED : value);
     };
 
     function resolve(child, name) {
