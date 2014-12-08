@@ -78,7 +78,8 @@ function registerComponentLookup(container) {
 */
 
 onLoad('Ember.Application', function(Application) {
-  if (!Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  } else {
 
   Application.initializer({
     name: 'domTemplates',
