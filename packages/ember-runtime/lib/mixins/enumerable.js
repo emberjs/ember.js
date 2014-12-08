@@ -1160,7 +1160,7 @@ export default Mixin.create({
   sortBy: function() {
     var sortKeys = arguments;
 
-    return this.toArray().sort(function(a, b){
+    return this.toArray().sort(function(a, b) {
       for(var i = 0; i < sortKeys.length; i++) {
         var key = sortKeys[i];
         var propA = get(a, key);
