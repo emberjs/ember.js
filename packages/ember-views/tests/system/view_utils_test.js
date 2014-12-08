@@ -1,6 +1,27 @@
 import run from "ember-metal/run_loop";
 import View from "ember-views/views/view";
 
+var hasGetClientRects, hasGetBoundingClientRect;
+var ClientRectListCtor, ClientRectCtor;
+
+(function() {
+  if (document.createRange) {
+    var range = document.createRange();
+
+    if (range.getClientRects) {
+      var clientRectsList = range.getClientRects();
+      hasGetClientRects = true;
+      ClientRectListCtor = clientRectsList && clientRectsList.constructor;
+    }
+
+    if (range.getBoundingClientRect) {
+      var clientRect = range.getBoundingClientRect();
+      hasGetBoundingClientRect = true;
+      ClientRectCtor = clientRect && clientRect.constructor;
+    }
+  }
+})();
+
 var view;
 
 QUnit.module("ViewUtils", {
@@ -11,9 +32,10 @@ QUnit.module("ViewUtils", {
   }
 });
 
+
 test("getViewClientRects", function() {
-  if (!(window.Range && window.Range.prototype.getClientRects)) {
-    ok(true, "The test environment does not support the DOM API required for getViewClientRects.");
+  if (!hasGetClientRects || !ClientRectListCtor) {
+    ok(true, "The test environment does not support the DOM API required to run this test.");
     return;
   }
 
@@ -25,12 +47,12 @@ test("getViewClientRects", function() {
 
   run(function() { view.appendTo('#qunit-fixture'); });
 
-  ok(Ember.ViewUtils.getViewClientRects(view) instanceof window.ClientRectList);
+  ok(Ember.ViewUtils.getViewClientRects(view) instanceof ClientRectListCtor);
 });
 
 test("getViewBoundingClientRect", function() {
-  if (!(window.Range && window.Range.prototype.getBoundingClientRect)) {
-    ok(true, "The test environment does not support the DOM API required for getViewBoundingClientRect.");
+  if (!hasGetBoundingClientRect || !ClientRectCtor) {
+    ok(true, "The test environment does not support the DOM API required to run this test.");
     return;
   }
 
@@ -42,5 +64,5 @@ test("getViewBoundingClientRect", function() {
 
   run(function() { view.appendTo('#qunit-fixture'); });
 
-  ok(Ember.ViewUtils.getViewBoundingClientRect(view) instanceof window.ClientRect);
+  ok(Ember.ViewUtils.getViewBoundingClientRect(view) instanceof ClientRectCtor);
 });
