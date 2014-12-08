@@ -1,7 +1,7 @@
 {
   "framework": "qunit",
   "test_page": "dist/test/index.html",
-  "before_tests": "node bin/build.js",
+  "before_tests": "ember build",
   "watch_files": [
     "packages/**/*.js",
     "test/**/*.js"
