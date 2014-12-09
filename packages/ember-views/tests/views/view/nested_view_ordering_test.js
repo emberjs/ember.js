@@ -2,7 +2,7 @@ import Container from "container";
 import run from "ember-metal/run_loop";
 
 import EmberView from "ember-views/views/view";
-import EmberHandlebars from "ember-handlebars-compiler";
+import compile from "ember-htmlbars/system/compile";
 
 var container, view;
 
@@ -25,7 +25,7 @@ test("should call didInsertElement on child views before parent", function() {
       insertedLast = "outer";
     },
     container: container,
-    template: EmberHandlebars.compile("{{view \"inner\"}}")
+    template: compile("{{view \"inner\"}}")
   });
 
   container.register("view:inner", EmberView.extend({

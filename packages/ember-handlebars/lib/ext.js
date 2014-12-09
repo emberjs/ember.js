@@ -1,5 +1,4 @@
 import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.assert, Ember.Handlebars, Ember.lookup
-// var emberAssert = Ember.assert;
 
 import { fmt } from "ember-runtime/system/string";
 
@@ -15,33 +14,16 @@ import {
 } from "ember-metal/path_cache";
 
 // late bound via requireModule because of circular dependencies.
-var resolveHelper, SimpleHandlebarsView;
+var resolveHelper, SimpleBoundView;
 
 import Stream from "ember-metal/streams/stream";
 import {
   readArray,
   readHash
-} from "ember-metal/streams/read";
+} from "ember-metal/streams/utils";
+import handlebarsGet from "ember-htmlbars/compat/handlebars-get";
 
 var slice = [].slice;
-
-/**
-  Lookup both on root and on window. If the path starts with
-  a keyword, the corresponding object will be looked up in the
-  template's data hash and used to resolve the path.
-
-  @method get
-  @for Ember.Handlebars
-  @param {Object} root The object to look up the property on
-  @param {String} path The path to be lookedup
-  @param {Object} options The template's option hash
-  @deprecated
-*/
-function handlebarsGet(root, path, options) {
-  Ember.deprecate('Usage of Ember.Handlebars.get is deprecated, use a Component or Ember.Handlebars.makeBoundHelper instead.');
-
-  return options.data.view.getStream(path).value();
-}
 
 /**
   handlebarsGetView resolves a view based on strings passed into a template.
@@ -320,8 +302,8 @@ export function registerBoundHelper(name, fn) {
   @since 1.2.0
 */
 function makeBoundHelper(fn) {
-  if (!SimpleHandlebarsView) {
-    SimpleHandlebarsView = requireModule('ember-handlebars/views/handlebars_bound_view')['SimpleHandlebarsView'];
+  if (!SimpleBoundView) {
+    SimpleBoundView = requireModule('ember-views/views/simple_bound_view')['default'];
   } // ES6TODO: stupid circular dep
 
   var dependentKeys = [];
@@ -375,7 +357,7 @@ function makeBoundHelper(fn) {
       return valueFn();
     } else {
       var lazyValue = new Stream(valueFn);
-      var bindView = new SimpleHandlebarsView(lazyValue, !options.hash.unescaped);
+      var bindView = new SimpleBoundView(lazyValue, !options.hash.unescaped);
       view.appendChild(bindView);
 
       var scheduledRerender = view._wrapAsScheduled(bindView.rerender);

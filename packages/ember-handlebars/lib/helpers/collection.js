@@ -4,10 +4,6 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
-
-// var emberAssert = Ember.assert;
-    // emberDeprecate = Ember.deprecate;
-
 import EmberHandlebars from "ember-handlebars-compiler";
 
 import { IS_BINDING } from "ember-metal/mixin";

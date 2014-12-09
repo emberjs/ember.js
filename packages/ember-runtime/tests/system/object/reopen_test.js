@@ -30,8 +30,7 @@ test('reopened properties inherited by subclasses', function() {
   equal(get(new SubSub(), 'bar'), 'BAR', 'Adds property');
 });
 
-// We plan to allow this in the future
-test('does not allow reopening already instantiated classes', function() {
+test('allows reopening already instantiated classes', function() {
   var Subclass = EmberObject.extend();
 
   Subclass.create();

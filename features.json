@@ -15,19 +15,19 @@
     "ember-metal-injected-properties": false,
     "mandatory-setter": "development-only",
     "ember-routing-fire-activate-deactivate-events": true,
-    "ember-testing-pause-test": true
+    "ember-testing-pause-test": true,
+    "ember-htmlbars": true,
+    "ember-htmlbars-block-params": true,
+    "ember-htmlbars-component-generation": null,
+    "ember-htmlbars-inline-if-helper": null,
+    "ember-htmlbars-attribute-syntax": null
   },
   "debugStatements": [
     "Ember.warn",
-    "emberWarn",
     "Ember.assert",
-    "emberAssert",
     "Ember.deprecate",
-    "emberDeprecate",
     "Ember.debug",
-    "emberDebug",
     "Ember.Logger.info",
-    "Ember.runInDebug",
-    "runInDebug"
+    "Ember.runInDebug"
   ]
 }

@@ -9,12 +9,13 @@ import {
   removeObserver
 } from "ember-metal/observer";
 import Stream from "ember-metal/streams/stream";
-import { read } from "ember-metal/streams/read";
+import { read } from "ember-metal/streams/utils";
 
 function KeyStream(source, key) {
   Ember.assert("KeyStream error: key must be a non-empty string", typeof key === 'string' && key.length > 0);
   Ember.assert("KeyStream error: key must not have a '.'", key.indexOf('.') === -1);
 
+  this.init();
   this.source = source;
   this.obj = undefined;
   this.key = key;
@@ -77,19 +78,22 @@ merge(KeyStream.prototype, {
     this.notify();
   },
 
+  _super$destroy: Stream.prototype.destroy,
+
   destroy: function() {
-    if (this.source && this.source.isStream) {
-      this.source.unsubscribe(this._didChange, this);
+    if (this._super$destroy()) {
+      if (this.source && this.source.isStream) {
+        this.source.unsubscribe(this._didChange, this);
+      }
+
+      if (this.obj && typeof this.obj === 'object') {
+        removeObserver(this.obj, this.key, this, this._didChange);
+      }
+
+      this.source = undefined;
+      this.obj = undefined;
+      return true;
     }
-
-    if (this.obj && typeof this.obj === 'object') {
-      removeObserver(this.obj, this.key, this, this._didChange);
-    }
-
-    this.source = undefined;
-    this.obj = undefined;
-
-    Stream.prototype.destroy.call(this);
   }
 });
 

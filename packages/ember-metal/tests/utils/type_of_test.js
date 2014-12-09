@@ -27,7 +27,7 @@ test("Ember.typeOf", function() {
     var klass       = Ember.Object.extend();
     var instance    = Ember.Object.create();
 
-    equal( Ember.typeOf(klass),     'class',      "class");
-    equal( Ember.typeOf(instance),  'instance',   "instance");
+    equal( typeOf(klass),     'class',      "class");
+    equal( typeOf(instance),  'instance',   "instance");
   }
 });

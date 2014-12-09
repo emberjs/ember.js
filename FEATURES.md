@@ -81,3 +81,33 @@ for a detailed explanation.
   Helper to pause a test, for use in debugging and TDD.
 
   Added in [#9383](https://github.com/emberjs/ember.js/pull/9383)
+
+* `ember-htmlbars-component-generation`
+
+  Enables HTMLBars compiler to interpret `<x-foo></x-foo>` as a component
+  invocation (instead of a standard HTML5 style element).
+
+* `ember-htmlbars-inline-if-helper`
+
+  Enables the use of the if helper in inline form. The truthy 
+  and falsy values are passed as params, instead of using the block form.
+
+  Added in [#9718](https://github.com/emberjs/ember.js/pull/9718).
+
+* `ember-htmlbars-attribute-syntax`
+
+  Adds the `class="{{color}}"` syntax to Ember HTMLBars templates.
+  Works with arbitrary attributes and properties.
+
+  Added in [#9721](https://github.com/emberjs/ember.js/pull/9721).
+
+* `ember-metal-injected-properties`
+
+  Enables the injection of properties onto objects coming from a container,
+  and adds the `Ember.Service` class.  Use the `Ember.inject.service` method to
+  inject services onto any object, or `Ember.inject.controller` to inject
+  controllers onto any other controller. The first argument to `Ember.inject`
+  methods is optional, and if left blank the key of the property will be used
+  to perform the lookup instead.  Replaces the need for `needs` in controllers.
+
+  Added in [#5162](https://github.com/emberjs/ember.js/pull/5162).

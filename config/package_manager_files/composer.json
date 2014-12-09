@@ -10,9 +10,11 @@
   "extra": {
     "component": {
       "scripts": [
-        "ember.js"
+        "ember.debug.js"
       ],
       "files": [
+        "ember.debug.js",
+        "ember.prod.js",
         "ember.min.js"
       ],
       "shim": {

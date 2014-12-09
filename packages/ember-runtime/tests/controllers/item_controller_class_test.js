@@ -252,7 +252,7 @@ test("if `lookupItemController` returns a string, it must be resolvable by the c
   arrayController = ArrayController.create({
     container: container,
     lookupItemController: function(object) {
-      return "NonExistant";
+      return "NonExistent";
     },
     model: lannisters
   });
@@ -260,7 +260,7 @@ test("if `lookupItemController` returns a string, it must be resolvable by the c
   throws(function() {
       arrayController.objectAtContent(1);
     },
-    /NonExistant/,
+    /NonExistent/,
     "`lookupItemController` must return either null or a valid controller name");
 });
 
@@ -300,7 +300,7 @@ test("array observers can invoke `objectAt` without overwriting existing item co
   var arrayObserverCalled = false;
 
   arrayController.reopen({
-    lannistersWillChange: Ember.K,
+    lannistersWillChange: function() { return this; },
     lannistersDidChange: function(_, idx, removedAmt, addedAmt) {
       arrayObserverCalled = true;
       equal(this.objectAt(idx).get('name'), "Tyrion", "Array observers get the right object via `objectAt`");

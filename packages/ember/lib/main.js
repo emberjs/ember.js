@@ -3,12 +3,12 @@
 // this is so that the global exports occur properly
 import "ember-metal";
 import "ember-runtime";
-import "ember-handlebars";
 import "ember-views";
 import "ember-routing";
-import "ember-routing-handlebars";
 import "ember-application";
 import "ember-extension-support";
+import "ember-htmlbars";
+import "ember-routing-htmlbars";
 
 // do this to ensure that Ember.Test is defined properly on the global
 // if it is present.

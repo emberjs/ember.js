@@ -3,9 +3,12 @@ import { computed } from "ember-metal/computed";
 import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 import { capitalize } from "ember-runtime/system/string";
 
+import EmberHandlebars from "ember-htmlbars/compat";
+
+var compile = EmberHandlebars.compile;
+
 var Router, App, router, container;
 var get = Ember.get;
-var compile = Ember.Handlebars.compile;
 
 function withoutMeta(object) {
   if (canDefineNonEnumerableProperties) {
@@ -671,8 +674,8 @@ test("An explicit replace:false on a changed QP always wins and causes a pushSta
 });
 
 test("can opt into full transition by setting refreshModel in route queryParams when transitioning from child to parent", function() {
-  Ember.TEMPLATES.parent = Ember.Handlebars.compile('{{outlet}}');
-  Ember.TEMPLATES['parent/child'] = Ember.Handlebars.compile("{{link-to 'Parent' 'parent' (query-params foo='change') id='parent-link'}}");
+  Ember.TEMPLATES.parent = compile('{{outlet}}');
+  Ember.TEMPLATES['parent/child'] = compile("{{link-to 'Parent' 'parent' (query-params foo='change') id='parent-link'}}");
 
   App.Router.map(function() {
     this.resource('parent', function() {
@@ -1109,7 +1112,7 @@ test("A child of a resource route still defaults to parent route's model even if
 
 test("opting into replace does not affect transitions between routes", function() {
   expect(5);
-  Ember.TEMPLATES.application = Ember.Handlebars.compile(
+  Ember.TEMPLATES.application = compile(
     "{{link-to 'Foo' 'foo' id='foo-link'}}" +
     "{{link-to 'Bar' 'bar' id='bar-no-qp-link'}}" +
     "{{link-to 'Bar' 'bar' (query-params raytiley='isanerd') id='bar-link'}}" +

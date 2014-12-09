@@ -1,4 +1,4 @@
-import Ember from "ember-metal/core"; // Ember.assert, Ember.K
+import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
 
 import merge from "ember-metal/merge";
 import MutableArray from "ember-runtime/mixins/mutable_array";
@@ -24,6 +24,8 @@ import {
   beforeObserver
 } from "ember-metal/mixin";
 import { A as emberA } from "ember-runtime/system/native_array";
+
+function K() { return this; }
 
 /**
 @module ember
@@ -326,22 +328,18 @@ var ContainerView = View.extend(MutableArray, {
   childViewsDidChange: function(views, start, removed, added) {
     if (added > 0) {
       var changedViews = views.slice(start, start+added);
-      this.initializeViews(changedViews, this, get(this, 'templateData'));
+      this.initializeViews(changedViews, this);
       this.currentState.childViewsDidChange(this, views, start, added);
     }
     this.propertyDidChange('childViews');
   },
 
-  initializeViews: function(views, parentView, templateData) {
+  initializeViews: function(views, parentView) {
     forEach(views, function(view) {
       set(view, '_parentView', parentView);
 
       if (!view.container && parentView) {
         set(view, 'container', parentView.container);
-      }
-
-      if (!get(view, 'templateData')) {
-        set(view, 'templateData', templateData);
       }
     });
   },
@@ -369,9 +367,9 @@ var ContainerView = View.extend(MutableArray, {
 });
 
 merge(states._default, {
-  childViewsWillChange: Ember.K,
-  childViewsDidChange: Ember.K,
-  ensureChildrenAreInDOM: Ember.K
+  childViewsWillChange: K,
+  childViewsDidChange: K,
+  ensureChildrenAreInDOM: K
 });
 
 merge(states.inBuffer, {

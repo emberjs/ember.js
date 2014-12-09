@@ -60,6 +60,15 @@ it would silently continue.  Now, an assertion would be triggered.
 * [BUGFIX] Add support for null prototype object to mandatory setter code. Prevents errors when operating on Ember Data `meta` objects.
 * [BUGFIX] Fix an issue with select/each that causes the last item rendered to be selected.
 
+### Ember 1.8.1 (November, 4, 2014)
+
+* [BUGFIX] Make sure that `{{view}}` can accept a Ember.View instance.
+* [BUGFIX] Throw an assertion if `classNameBindings` are specified on a tag-less view.
+* [BUGFIX] Setting an `attributeBinding` for `class` attribute triggers assertion.
+* [BUGFIX] Fix `htmlSafe` to allow non-strings in unescaped code.
+* [BUGFIX] Add support for null prototype object to mandatory setter code. Prevents errors when operating on Ember Data `meta` objects.
+* [BUGFIX] Fix an issue with select/each that causes the last item rendered to be selected.
+
 ### Ember 1.8.0 (October, 28, 2014)
 
 * [BUGFIX] Ensure published builds do not use `define` or `require` internally.
@@ -763,7 +772,7 @@ it would silently continue.  Now, an assertion would be triggered.
 * Added the ability to chain test helpers
 * BREAKING: Move setting controller's `model` into setupController
 * Updated ember-latest jsbin starting point URL
-* Documentation for ComputedProperty cachable
+* Documentation for ComputedProperty cacheable
 * Mask deprecation warning in metaPath testing
 * mask deprecation warnings (when knowingly triggering them)
 * Deprecate Ember.metaPath
@@ -885,7 +894,7 @@ it would silently continue.  Now, an assertion would be triggered.
 * don't rely on EXTEND_PROTOTYPES == true
 * Fixes Ember.EnumerableUtils without extend prototypes
 * Do not flag .generateController for documentation.
-* Do not build the docs for `.cachable`. Fixes #2329.
+* Do not build the docs for `.cacheable`. Fixes #2329.
 * cleanup MutableEnumerable documentation
 * Add Ember.Application#removeTestHelpers
 * Fix a couple issues
@@ -1286,7 +1295,7 @@ it would silently continue.  Now, an assertion would be triggered.
 * Don't update the route if we're routing
 * Don't special-case the top-level '/'
 * Make routing unwind properly
-* Replace occurances of goToState with transitionTo.
+* Replace occurrences of goToState with transitionTo.
 * No longer support RunLoop instantiation without `new`.
 * Improve naming and code style
 * Guard mergeMixins parameters more generally

@@ -49,16 +49,16 @@ function registerComputedWithProperties(name, macro) {
 
   ```javascript
   var ToDoList = Ember.Object.extend({
-    done: Ember.computed.empty('todos')
+    isDone: Ember.computed.empty('todos')
   });
 
   var todoList = ToDoList.create({
     todos: ['Unit Test', 'Documentation', 'Release']
   });
 
-  todoList.get('done'); // false
+  todoList.get('isDone'); // false
   todoList.get('todos').clear();
-  todoList.get('done'); // true
+  todoList.get('isDone'); // true
   ```
 
   @since 1.6.0
@@ -600,7 +600,7 @@ computed.reads = computed.oneWay;
 /**
   Where `computed.oneWay` provides oneWay bindings, `computed.readOnly` provides
   a readOnly one way binding. Very often when using `computed.oneWay` one does
-  not also want changes to propogate back up, as they will replace the value.
+  not also want changes to propagate back up, as they will replace the value.
 
   This prevents the reverse flow, and also throws an exception when it occurs.
 

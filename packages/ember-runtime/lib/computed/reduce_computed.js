@@ -476,13 +476,13 @@ function ReduceComputedProperty(options) {
 
   this.options = options;
   this._dependentKeys = null;
+  this._cacheable = true;
   // A map of dependentKey -> [itemProperty, ...] that tracks what properties of
   // items in the array we must track to update this property.
   this._itemPropertyKeys = {};
   this._previousItemPropertyKeys = {};
 
   this.readOnly();
-  this.cacheable();
 
   this.recomputeOnce = function(propertyName) {
     // What we really want to do is coalesce by <cp, propertyName>.

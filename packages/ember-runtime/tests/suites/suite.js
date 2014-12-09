@@ -15,7 +15,7 @@ import { forEach } from "ember-metal/enumerable_utils";
   own code to verify compliance.
 
   To define a suite, you need to define the tests themselves as well as a
-  callback API implementors can use to tie your tests to thier specific class.
+  callback API implementors can use to tie your tests to their specific class.
 
   ## Defining a Callback API
 

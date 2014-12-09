@@ -16,7 +16,7 @@ import {
   observer,
   beforeObserver
 } from "ember-metal/mixin";
-import { readViewFactory } from "ember-views/streams/read";
+import { readViewFactory } from "ember-views/streams/utils";
 import EmberArray from "ember-runtime/mixins/array";
 
 /**
@@ -304,7 +304,7 @@ var CollectionView = ContainerView.extend({
 
     @method arrayWillChange
     @param {Array} content the managed collection of objects
-    @param {Number} start the index at which the changes will occurr
+    @param {Number} start the index at which the changes will occur
     @param {Number} removed number of object to be removed from content
   */
   arrayWillChange: function(content, start, removedCount) {
@@ -357,6 +357,7 @@ var CollectionView = ContainerView.extend({
         item = content.objectAt(idx);
 
         itemViewProps.content = item;
+        itemViewProps._blockArguments = [item];
         itemViewProps.contentIndex = idx;
 
         view = this.createChildView(itemViewClass, itemViewProps);

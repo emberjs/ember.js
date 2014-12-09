@@ -8,9 +8,9 @@ import Router from "ember-routing/system/router";
 import View from "ember-views/views/view";
 import Controller from "ember-runtime/controllers/controller";
 import NoneLocation from "ember-routing/location/none_location";
-import EmberHandlebars from "ember-handlebars";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
+import compile from "ember-htmlbars/system/compile";
 
 var trim = jQuery.trim;
 
@@ -117,10 +117,10 @@ test('initialized application go to initial route', function() {
     });
 
     app.register('template:application',
-      EmberHandlebars.compile("{{outlet}}")
+      compile("{{outlet}}")
     );
 
-    Ember.TEMPLATES.index = EmberHandlebars.compile(
+    Ember.TEMPLATES.index = compile(
       "<h1>Hi from index</h1>"
     );
   });
@@ -226,10 +226,9 @@ test('enable log of libraries with an ENV var', function() {
     });
   });
 
-  equal(messages[1], "Ember      : " + Ember.VERSION);
-  equal(messages[2], "Handlebars : " + EmberHandlebars.VERSION);
-  equal(messages[3], "jQuery     : " + jQuery().jquery);
-  equal(messages[4], "my-lib     : " + "2.0.0a");
+  equal(messages[1], "Ember  : " + Ember.VERSION);
+  equal(messages[2], "jQuery : " + jQuery().jquery);
+  equal(messages[3], "my-lib : " + "2.0.0a");
 
   Ember.libraries.deRegister("my-lib");
   Ember.LOG_VERSION = false;
@@ -290,7 +289,7 @@ test("throws helpful error if `app.then` is used", function() {
   });
 
   expectDeprecation(function() {
-    run(app, 'then', Ember.K);
+    run(app, 'then', function() { return this; });
   }, /Do not use `.then` on an instance of Ember.Application.  Please use the `.ready` hook instead./);
 });
 

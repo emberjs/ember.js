@@ -1,5 +1,5 @@
 // Ember.assert, Ember.deprecate, Ember.warn, Ember.TEMPLATES,
-// Ember.K, jQuery, Ember.lookup,
+// jQuery, Ember.lookup,
 // Ember.ContainerView circular dependency
 // Ember.ENV
 import Ember from 'ember-metal/core';
@@ -52,6 +52,16 @@ import "ember-views/system/ext";  // for the side effect of extending Ember.run.
 
 import CoreView from "ember-views/views/core_view";
 
+function K() { return this; }
+
+// Circular dep
+var _htmlbarsDefaultEnv;
+function buildHTMLBarsDefaultEnv(){
+  if (!_htmlbarsDefaultEnv) {
+    _htmlbarsDefaultEnv = require('ember-htmlbars').defaultEnv;
+  }
+  return create(_htmlbarsDefaultEnv);
+}
 
 /**
 @module ember
@@ -598,7 +608,7 @@ var EMPTY_ARRAY = [];
       mouseEnter: function(event, view) {
         // view might be instance of either
         // OuterView or InnerView depending on
-        // where on the page the user interaction occured
+        // where on the page the user interaction occurred
       }
     })
   });
@@ -750,7 +760,7 @@ var View = CoreView.extend({
     var templateName = get(this, 'templateName');
     var template = this.templateForName(templateName, 'template');
 
-    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || template);
+    Ember.assert("You specified the templateName " + templateName + " for " + this + ", but it did not exist.", !templateName || !!template);
 
     return template || get(this, 'defaultTemplate');
   }),
@@ -785,15 +795,29 @@ var View = CoreView.extend({
     var layoutName = get(this, 'layoutName');
     var layout = this.templateForName(layoutName, 'layout');
 
-    Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || layout);
+    Ember.assert("You specified the layoutName " + layoutName + " for " + this + ", but it did not exist.", !layoutName || !!layout);
 
     return layout || get(this, 'defaultLayout');
   }).property('layoutName'),
 
-  _yield: function(context, options) {
+  _yield: function(context, options, morph) {
     var template = get(this, 'template');
-    if (template) { template(context, options); }
+
+    if (template) {
+      var useHTMLBars = false;
+      if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+        useHTMLBars = template.isHTMLBars;
+      }
+
+      if (useHTMLBars) {
+        return template.render(this, options, morph.contextualElement);
+      } else {
+        return template(context, options);
+      }
+    }
   },
+
+  _blockArguments: EMPTY_ARRAY,
 
   templateForName: function(name, type) {
     if (!name) { return; }
@@ -1063,10 +1087,23 @@ var View = CoreView.extend({
       // is the view's controller by default. A hash of data is also passed that provides
       // the template with access to the view and render buffer.
 
-      Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
       // The template should write directly to the render buffer instead
       // of returning a string.
-      output = template(context, { data: data });
+      var options = { data: data };
+      var useHTMLBars = false;
+
+      if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+        useHTMLBars = template.isHTMLBars;
+      }
+
+      if (useHTMLBars) {
+        Ember.assert('template must be an object. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'object');
+        var env = Ember.merge(buildHTMLBarsDefaultEnv(), options);
+        output = template.render(this, env, buffer.innerContextualElement(), this._blockArguments);
+      } else {
+        Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
+        output = template(context, options);
+      }
 
       // If the template returned a string instead of writing to the buffer,
       // push the string onto the buffer.
@@ -1463,7 +1500,7 @@ var View = CoreView.extend({
 
     @event willInsertElement
   */
-  willInsertElement: Ember.K,
+  willInsertElement: K,
 
   /**
     Called when the element of the view has been inserted into the DOM
@@ -1475,7 +1512,7 @@ var View = CoreView.extend({
 
     @event didInsertElement
   */
-  didInsertElement: Ember.K,
+  didInsertElement: K,
 
   /**
     Called when the view is about to rerender, but before anything has
@@ -1484,7 +1521,7 @@ var View = CoreView.extend({
 
     @event willClearRender
   */
-  willClearRender: Ember.K,
+  willClearRender: K,
 
   /**
     Destroys any existing element along with the element for any child views
@@ -1518,14 +1555,14 @@ var View = CoreView.extend({
 
     @event willDestroyElement
   */
-  willDestroyElement: Ember.K,
+  willDestroyElement: K,
 
   /**
     Called when the parentView property has changed.
 
     @event parentViewDidChange
   */
-  parentViewDidChange: Ember.K,
+  parentViewDidChange: K,
 
   instrumentName: 'view',
 
@@ -1839,8 +1876,6 @@ var View = CoreView.extend({
     attrs._parentView = this;
 
     if (CoreView.detect(view)) {
-      attrs.templateData = attrs.templateData || get(this, 'templateData');
-
       attrs.container = this.container;
       view = view.create(attrs);
 
@@ -1855,25 +1890,19 @@ var View = CoreView.extend({
 
       Ember.assert("Could not find view: '" + fullName + "'", !!ViewKlass);
 
-      attrs.templateData = get(this, 'templateData');
       view = ViewKlass.create(attrs);
     } else {
       Ember.assert('You must pass instance or subclass of View', view.isView);
+
       attrs.container = this.container;
-
-      if (!get(view, 'templateData')) {
-        attrs.templateData = get(this, 'templateData');
-      }
-
       setProperties(view, attrs);
-
     }
 
     return view;
   },
 
-  becameVisible: Ember.K,
-  becameHidden: Ember.K,
+  becameVisible: K,
+  becameHidden: K,
 
   /**
     When the view's `isVisible` property changes, toggle the visibility
@@ -2004,20 +2033,40 @@ var View = CoreView.extend({
   },
 
   getStream: function(path) {
-    return this._getContextStream().get(path);
+    var stream = this._getContextStream().get(path);
+
+    stream._label = path;
+
+    return stream;
   },
 
-  _getBindingForStream: function(path) {
+  _getBindingForStream: function(pathOrStream) {
     if (this._streamBindings === undefined) {
       this._streamBindings = create(null);
       this.one('willDestroyElement', this, this._destroyStreamBindings);
+    }
+
+    var path = pathOrStream;
+    if (pathOrStream.isStream) {
+      path = pathOrStream._label;
+
+      if (!path) {
+        // if no _label is present on the provided stream
+        // it is likely a subexpr and cannot be set (so it
+        // does not need a StreamBinding)
+        return pathOrStream;
+      }
     }
 
     if (this._streamBindings[path] !== undefined) {
       return this._streamBindings[path];
     } else {
       var stream = this._getContextStream().get(path);
-      return this._streamBindings[path] = new StreamBinding(stream);
+      var streamBinding = new StreamBinding(stream);
+
+      streamBinding._label = path;
+
+      return this._streamBindings[path] = streamBinding;
     }
   },
 
@@ -2224,6 +2273,7 @@ View.views = {};
 // method.
 View.childViewsProperty = childViewsProperty;
 
+// Used by Handlebars helpers, view element attributes
 View.applyAttributeBindings = function(elem, name, value) {
   var type = typeOf(value);
 

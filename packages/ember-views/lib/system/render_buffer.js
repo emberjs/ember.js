@@ -25,7 +25,7 @@ import { create } from "ember-metal/platform";
 // we test the string and context to see if the browser is about to
 // perform this cleanup, but with a special allowance for disregarding
 // <script tags. This disregarding of <script being the first child item
-// may bend the offical spec a bit, and is only needed for Handlebars
+// may bend the official spec a bit, and is only needed for Handlebars
 // templates.
 //
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#optional-tags
@@ -277,7 +277,7 @@ _RenderBuffer.prototype = {
       var childView = childViews[i];
       var ref = el.querySelector('#morph-'+i);
 
-      Ember.assert('An error occured while setting up template bindings. Please check ' +
+      Ember.assert('An error occurred while setting up template bindings. Please check ' +
                    (childView && childView._parentView && childView._parentView._debugTemplateName ?
                         '"' + childView._parentView._debugTemplateName + '" template ' :
                         ''
@@ -303,10 +303,16 @@ _RenderBuffer.prototype = {
     @chainable
   */
   push: function(content) {
-    if (this.buffer === null) {
-      this.buffer = '';
+    if (content.nodeType) {
+      Ember.assert("A fragment cannot be pushed into a buffer that contains content", !this.buffer);
+      this.buffer = content;
+    } else {
+      if (this.buffer === null) {
+        this.buffer = '';
+      }
+      Ember.assert("A string cannot be pushed into the buffer after a fragment", !this.buffer.nodeType);
+      this.buffer += content;
     }
-    this.buffer += content;
     return this;
   },
 
@@ -508,7 +514,7 @@ _RenderBuffer.prototype = {
   element: function() {
     var content = this.innerContent();
     // No content means a text node buffer, with the content
-    // in _element. HandlebarsBoundView is an example.
+    // in _element. Ember._BoundView is an example.
     if (content === null)  {
       return this._element;
     }
@@ -520,9 +526,14 @@ _RenderBuffer.prototype = {
       this._element = document.createDocumentFragment();
     }
 
-    var nodes = this.dom.parseHTML(content, contextualElement);
-    while (nodes[0]) {
-      this._element.appendChild(nodes[0]);
+    if (content.nodeType) {
+      this._element.appendChild(content);
+    } else {
+      var nodes;
+      nodes = this.dom.parseHTML(content, contextualElement);
+      while (nodes[0]) {
+        this._element.appendChild(nodes[0]);
+      }
     }
     this.hydrateMorphs(contextualElement);
 

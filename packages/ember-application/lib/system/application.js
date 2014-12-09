@@ -20,7 +20,7 @@ import Controller from "ember-runtime/controllers/controller";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
-import SelectView from "ember-handlebars/controls/select";
+import SelectView from "ember-views/views/select";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import jQuery from "ember-views/system/jquery";
 import Route from "ember-routing/system/route";
@@ -41,7 +41,6 @@ import ContainerDebugAdapter from "ember-extension-support/container_debug_adapt
 import {
   K
 } from 'ember-metal/core';
-import EmberHandlebars from "ember-handlebars-compiler";
 
 function props(obj) {
   var properties = [];
@@ -52,6 +51,8 @@ function props(obj) {
 
   return properties;
 }
+
+var librariesRegistered = false;
 
 /**
   An instance of `Ember.Application` is the starting point for every Ember
@@ -257,11 +258,11 @@ var Application = Namespace.extend(DeferredMixin, {
   */
   customEvents: null,
 
-  // Start off the number of deferrals at 1. This will be
-  // decremented by the Application's own `initialize` method.
-  _readinessDeferrals: 1,
-
   init: function() {
+    // Start off the number of deferrals at 1. This will be
+    // decremented by the Application's own `initialize` method.
+    this._readinessDeferrals = 1;
+
     if (!this.$) {
       this.$ = jQuery;
     }
@@ -273,23 +274,28 @@ var Application = Namespace.extend(DeferredMixin, {
 
     this.scheduleInitialize();
 
-    Ember.libraries.registerCoreLibrary('Handlebars' + (EmberHandlebars.compile ? '' : '-runtime'), EmberHandlebars.VERSION);
-    Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
+    if (!librariesRegistered) {
+      librariesRegistered = true;
+      Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
+    }
 
-    if ( Ember.LOG_VERSION ) {
-      Ember.LOG_VERSION = false; // we only need to see this once per Application#init
+    if (Ember.LOG_VERSION) {
+      // we only need to see this once per Application#init
+      Ember.LOG_VERSION = false;
+      var libs = Ember.libraries._registry;
 
-      var nameLengths = EnumerableUtils.map(Ember.libraries, function(item) {
-        return get(item, "name.length");
+      var nameLengths = EnumerableUtils.map(libs, function(item) {
+        return get(item, 'name.length');
       });
 
       var maxNameLength = Math.max.apply(this, nameLengths);
 
       Ember.debug('-------------------------------');
-      Ember.libraries.each(function(name, version) {
-        var spaces = new Array(maxNameLength - name.length + 1).join(" ");
-        Ember.debug([name, spaces, ' : ', version].join(""));
-      });
+      for (var i = 0, l = libs.length; i < l; i++) {
+        var lib = libs[i];
+        var spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
+        Ember.debug([lib.name, spaces, ' : ', lib.version].join(''));
+      }
       Ember.debug('-------------------------------');
     }
   },
@@ -359,14 +365,10 @@ var Application = Namespace.extend(DeferredMixin, {
     @method scheduleInitialize
   */
   scheduleInitialize: function() {
-    var self = this;
-
     if (!this.$ || this.$.isReady) {
-      run.schedule('actions', self, '_initialize');
+      run.schedule('actions', this, '_initialize');
     } else {
-      this.$().ready(function runInitialize() {
-        run(self, '_initialize');
-      });
+      this.$().ready(Ember.run.bind(this, '_initialize'));
     }
   },
 
@@ -658,9 +660,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
       this.buildContainer();
 
-      run.schedule('actions', this, function() {
-        this._initialize();
-      });
+      run.schedule('actions', this, '_initialize');
     }
 
     run.join(this, handleReset);
@@ -685,7 +685,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     graph.topsort(function (vertex) {
       var initializer = vertex.value;
-      Ember.assert("No application initializer named '" + vertex.name + "'", initializer);
+      Ember.assert("No application initializer named '" + vertex.name + "'", !!initializer);
       initializer(container, namespace);
     });
   },
@@ -1036,9 +1036,7 @@ Application.reopenClass({
   @return {*} the resolved value for a given lookup
 */
 function resolverFor(namespace) {
-  if (namespace.get('resolver')) {
-    Ember.deprecate('Application.resolver is deprecated in favor of Application.Resolver', false);
-  }
+  Ember.deprecate('Application.resolver is deprecated in favor of Application.Resolver', !namespace.get('resolver'));
 
   var ResolverClass = namespace.get('resolver') || namespace.get('Resolver') || DefaultResolver;
   var resolver = ResolverClass.create({

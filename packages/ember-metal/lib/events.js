@@ -81,11 +81,14 @@ function actionsFor(obj, eventName) {
   return actions;
 }
 
-export function listenersUnion(obj, eventName, otherActions) {
+export function accumulateListeners(obj, eventName, otherActions) {
   var meta = obj['__ember_meta__'];
   var actions = meta && meta.listeners && meta.listeners[eventName];
 
   if (!actions) { return; }
+
+  var newActions = [];
+
   for (var i = actions.length - 3; i >= 0; i -= 3) {
     var target = actions[i];
     var method = actions[i+1];
@@ -94,29 +97,11 @@ export function listenersUnion(obj, eventName, otherActions) {
 
     if (actionIndex === -1) {
       otherActions.push(target, method, flags);
+      newActions.push(target, method, flags);
     }
   }
-}
 
-export function listenersDiff(obj, eventName, otherActions) {
-  var meta = obj['__ember_meta__'];
-  var actions = meta && meta.listeners && meta.listeners[eventName];
-  var diffActions = [];
-
-  if (!actions) { return; }
-  for (var i = actions.length - 3; i >= 0; i -= 3) {
-    var target = actions[i];
-    var method = actions[i+1];
-    var flags = actions[i+2];
-    var actionIndex = indexOf(otherActions, target, method);
-
-    if (actionIndex !== -1) { continue; }
-
-    otherActions.push(target, method, flags);
-    diffActions.push(target, method, flags);
-  }
-
-  return diffActions;
+  return newActions;
 }
 
 /**

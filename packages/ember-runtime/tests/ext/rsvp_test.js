@@ -117,3 +117,28 @@ test('TransitionAborted errors are not re-thrown', function() {
 
   ok(true, 'did not throw an error when dealing with TransitionAborted');
 });
+
+test('rejections like jqXHR which have errorThrown property work', function() {
+  expect(2);
+
+  var wasEmberTesting = Ember.testing;
+  var wasOnError      = Ember.onerror;
+
+  try {
+    Ember.testing = false;
+    Ember.onerror = function(error) {
+      equal(error, actualError, 'expected the real error on the jqXHR');
+      equal(error.__reason_with_error_thrown__, jqXHR, 'also retains a helpful reference to the rejection reason');
+    };
+
+    var actualError = new Error("OMG what really happened");
+    var jqXHR = {
+      errorThrown: actualError
+    };
+
+    run(RSVP, 'reject', jqXHR);
+  } finally {
+    Ember.onerror = wasOnError;
+    Ember.testing = wasEmberTesting ;
+  }
+});

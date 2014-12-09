@@ -76,13 +76,13 @@ var stringCache  = {};
   algorithims typically cost in proportion to the length of the string.
   Luckily, this is where the Symbols (interned strings) shine. As Symbols are
   unique by their string content, equality checks can be done by pointer
-  comparision.
+  comparison.
 
   How do I know if my string is a rope or symbol?
 
   Typically (warning general sweeping statement, but truthy in runtimes at
   present) static strings created as part of the JS source are interned.
-  Strings often used for comparisions can be interned at runtime if some
+  Strings often used for comparisons can be interned at runtime if some
   criteria are met.  One of these criteria can be the size of the entire rope.
   For example, in chrome 38 a rope longer then 12 characters will not
   intern, nor will segments of that rope.
@@ -401,17 +401,35 @@ export function metaPath(obj, path, writable) {
   @param {Function} superFunc The super function.
   @return {Function} wrapped function.
 */
+
 export function wrap(func, superFunc) {
   function superWrapper() {
     var ret;
     var sup  = this && this.__nextSuper;
-    var args = new Array(arguments.length);
-    for (var i = 0, l = args.length; i < l; i++) {
-      args[i] = arguments[i];
+    var length = arguments.length;
+
+    if (this) {
+      this.__nextSuper = superFunc;
     }
-    if(this) { this.__nextSuper = superFunc; }
-    ret = apply(this, func, args);
-    if(this) { this.__nextSuper = sup; }
+
+    if (length === 0) {
+      ret = func.call(this);
+    } else if (length === 1) {
+      ret = func.call(this, arguments[0]);
+    } else if (length === 2) {
+      ret = func.call(this, arguments[0], arguments[1]);
+    } else {
+      var args = new Array(length);
+      for (var i = 0; i < length; i++) {
+        args[i] = arguments[i];
+      }
+      ret = apply(this, func, args);
+    }
+
+    if (this) {
+      this.__nextSuper = sup;
+    }
+
     return ret;
   }
 
@@ -501,7 +519,7 @@ export function makeArray(obj) {
   Checks to see if the `methodName` exists on the `obj`.
 
   ```javascript
-  var foo = { bar: Ember.K, baz: null };
+  var foo = { bar: function() { return 'bar'; }, baz: null };
 
   Ember.canInvoke(foo, 'bar'); // true
   Ember.canInvoke(foo, 'baz'); // false

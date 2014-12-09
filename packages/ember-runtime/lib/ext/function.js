@@ -138,11 +138,15 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     @for Function
   */
   FunctionPrototype.observesImmediately = function () {
-    for (var i = 0, l = arguments.length; i < l; i++) {
-      var arg = arguments[i];
-      Ember.assert('Immediate observers must observe internal properties only, ' +
-        'not properties on other objects.', arg.indexOf('.') === -1);
-    }
+    Ember.assert('Immediate observers must observe internal properties only, ' +
+                 'not properties on other objects.', function checkIsInternalProperty() {
+      for(var i = 0, l = arguments.length; i < l; i++) {
+        if(arguments[i].indexOf('.') !== -1) {
+          return false;
+        }
+      }
+      return true;
+    });
 
     // observes handles property expansion
     return this.observes.apply(this, arguments);

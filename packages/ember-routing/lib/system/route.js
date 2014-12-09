@@ -1,4 +1,4 @@
-import Ember from "ember-metal/core"; // FEATURES, K, A, deprecate, assert, Logger
+import Ember from "ember-metal/core"; // FEATURES, A, deprecate, assert, Logger
 import EmberError from "ember-metal/error";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -27,6 +27,8 @@ import generateController from "ember-routing/system/generate_controller";
 import { stashParamNames } from "ember-routing/utils";
 
 var slice = Array.prototype.slice;
+
+function K() { return this; }
 
 /**
 @module ember
@@ -343,7 +345,7 @@ var Route = EmberObject.extend(ActionHandler, {
     @param {Object} transition
     @since 1.7.0
   */
-  resetController: Ember.K,
+  resetController: K,
 
   /**
     @private
@@ -739,7 +741,7 @@ var Route = EmberObject.extend(ActionHandler, {
 
     @method deactivate
   */
-  deactivate: Ember.K,
+  deactivate: K,
 
   /**
     This hook is executed when the router enters the route. It is not executed
@@ -747,7 +749,7 @@ var Route = EmberObject.extend(ActionHandler, {
 
     @method activate
   */
-  activate: Ember.K,
+  activate: K,
 
   /**
     Transition the application into another route. The route may
@@ -1124,7 +1126,7 @@ var Route = EmberObject.extend(ActionHandler, {
       resolves. Otherwise, non-promise return values are not
       utilized in any way.
   */
-  beforeModel: Ember.K,
+  beforeModel: K,
 
   /**
     This hook is called after this route's model has resolved.
@@ -1158,7 +1160,7 @@ var Route = EmberObject.extend(ActionHandler, {
       resolves. Otherwise, non-promise return values are not
       utilized in any way.
    */
-  afterModel: Ember.K,
+  afterModel: K,
 
   /**
     A hook you can implement to optionally redirect to another route.
@@ -1184,7 +1186,7 @@ var Route = EmberObject.extend(ActionHandler, {
     @param {Object} model the model for this route
     @param {Transition} transition the transition object associated with the current transition
   */
-  redirect: Ember.K,
+  redirect: K,
 
   /**
     Called when the context is changed by router.js.
@@ -1341,7 +1343,7 @@ var Route = EmberObject.extend(ActionHandler, {
         Ember.assert("You used the dynamic segment " + name + "_id in your route " +
                      routeName + ", but " + namespace + "." + classify(name) +
                      " did not exist and you did not override your route's `model` " +
-                     "hook.", modelClass);
+                     "hook.", !!modelClass);
 
         if (!modelClass) { return; }
 

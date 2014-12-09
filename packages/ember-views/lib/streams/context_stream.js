@@ -8,6 +8,8 @@ import SimpleStream from "ember-metal/streams/simple";
 
 function ContextStream(view) {
   Ember.assert("ContextStream error: the argument is not a view", view && view.isView);
+
+  this.init();
   this.view = view;
 }
 

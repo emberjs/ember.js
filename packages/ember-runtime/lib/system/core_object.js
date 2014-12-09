@@ -9,7 +9,7 @@
 */
 
 import Ember from "ember-metal/core";
-// Ember.assert, Ember.K, Ember.config
+// Ember.assert, Ember.config
 
 // NOTE: this object should never be included directly. Instead use `Ember.Object`.
 // We only define this separately so that `Ember.Set` can depend on it.
@@ -134,7 +134,7 @@ function makeCtor() {
                        "time, when Ember.ActionHandler is used (i.e. views, " +
                        "controllers & routes).", !((keyName === 'actions') && ActionHandler.detect(this)));
 
-          if (concatenatedProperties && 
+          if (concatenatedProperties &&
               concatenatedProperties.length > 0 &&
               indexOf(concatenatedProperties, keyName) >= 0) {
             var baseValue = this[keyName];
@@ -170,16 +170,28 @@ function makeCtor() {
         }
       }
     }
+
     finishPartial(this, m);
+
     var length = arguments.length;
-    var args = new Array(length);
-    for (var x = 0; x < length; x++) {
-      args[x] = arguments[x];
+
+    if (length === 0) {
+      this.init();
+    } else if (length === 1) {
+      this.init(arguments[0]);
+    } else {
+      // v8 bug potentially incorrectly deopts this function: https://code.google.com/p/v8/issues/detail?id=3709
+      // we may want to keep this around till this ages out on mobile
+      var args = new Array(length);
+      for (var x = 0; x < length; x++) {
+        args[x] = arguments[x];
+      }
+      this.init.apply(this, args);
     }
-    apply(this, this.init, args);
+
     m.proto = proto;
     finishChains(this);
-    sendEvent(this, "init");
+    sendEvent(this, 'init');
   };
 
   Class.toString = Mixin.prototype.toString;
@@ -444,10 +456,6 @@ CoreObject.PrototypeMixin.ownerConstructor = CoreObject;
 
 function makeToString(ret) {
   return function() { return ret; };
-}
-
-if (Ember.config.overridePrototypeMixin) {
-  Ember.config.overridePrototypeMixin(CoreObject.PrototypeMixin);
 }
 
 CoreObject.__super__ = null;
@@ -867,10 +875,6 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
 var ClassMixin = Mixin.create(ClassMixinProps);
 
 ClassMixin.ownerConstructor = CoreObject;
-
-if (Ember.config.overrideClassMixin) {
-  Ember.config.overrideClassMixin(ClassMixin);
-}
 
 CoreObject.ClassMixin = ClassMixin;
 

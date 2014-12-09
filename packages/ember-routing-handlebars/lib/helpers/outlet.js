@@ -1,21 +1,13 @@
-import Ember from "ember-metal/core"; // assert
-import { set } from "ember-metal/property_set";
-import ContainerView from "ember-views/views/container_view";
-import { _Metamorph } from "ember-handlebars/views/metamorph_view";
-import { viewHelper } from "ember-handlebars/helpers/view";
-
 /**
 @module ember
-@submodule ember-routing
+@submodule ember-routing-handlebars
 */
 
-  /**
-  @module ember
-  @submodule ember-routing
-  */
+import Ember from "ember-metal/core"; // assert
+import { set } from "ember-metal/property_set";
+import { viewHelper } from "ember-handlebars/helpers/view";
+import { OutletView } from "ember-routing-views/views/outlet";
 
-var OutletView = ContainerView.extend(_Metamorph);
-export { OutletView };
 /**
   The `outlet` helper is a placeholder that the router will fill in with
   the appropriate template based on the current state of the application.

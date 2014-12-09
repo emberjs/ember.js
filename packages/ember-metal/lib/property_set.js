@@ -104,14 +104,6 @@ var set = function set(obj, keyName, value, tolerant) {
   return value;
 };
 
-// Currently used only by Ember Data tests
-// ES6TODO: Verify still true
-if (Ember.config.overrideAccessors) {
-  Ember.set = set;
-  Ember.config.overrideAccessors();
-  set = Ember.set;
-}
-
 function setPath(root, path, value, tolerant) {
   var keyName;
 

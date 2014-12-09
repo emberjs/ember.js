@@ -1,17 +1,16 @@
+/**
+@module ember
+@submodule ember-routing-handlebars
+*/
+
 import Ember from "ember-metal/core"; // Handlebars, uuid, FEATURES, assert, deprecate
+import EmberHandlebars from "ember-handlebars";
 import { forEach } from "ember-metal/array";
 import { uuid } from "ember-metal/utils";
 import run from "ember-metal/run_loop";
-
-import { readUnwrappedModel } from "ember-views/streams/read";
+import { readUnwrappedModel } from "ember-views/streams/utils";
 import { isSimpleClick } from "ember-views/system/utils";
 import ActionManager from "ember-views/system/action_manager";
-import EmberHandlebars from "ember-handlebars";
-
-/**
-@module ember
-@submodule ember-routing
-*/
 
 function actionArgs(parameters, actionName) {
   var ret, i;
@@ -109,15 +108,11 @@ ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys)
       if (actionNameOrStream.isStream) {
         actionName = actionNameOrStream.value();
 
-        if (typeof actionName === 'undefined' || typeof actionName === 'function') {
-          actionName = actionNameOrStream._originalPath;
-          Ember.deprecate("You specified a quoteless path to the {{action}} helper '" +
-                          actionName + "' which did not resolve to an actionName." +
-                          " Perhaps you meant to use a quoted actionName? (e.g. {{action '" + actionName + "'}}).");
-        }
-      }
-
-      if (!actionName) {
+        Ember.assert("You specified a quoteless path to the {{action}} helper " +
+                     "which did not resolve to an action name (a string). " +
+                     "Perhaps you meant to use a quoted actionName? (e.g. {{action 'save'}}).",
+                     typeof actionName === 'string');
+      } else {
         actionName = actionNameOrStream;
       }
 

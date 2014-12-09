@@ -1,5 +1,5 @@
 import Ember from 'ember-metal/core';
-import testBoth from 'ember-metal/tests/props_helper';
+import { testBoth } from 'ember-metal/tests/props_helper';
 import {
   addObserver,
   removeObserver,
@@ -74,8 +74,8 @@ testBoth('observer should continue to fire after dependent properties are access
   var observerCount = 0;
   var obj = {};
 
-  defineProperty(obj, 'prop', Ember.computed(function () { return Math.random(); }));
-  defineProperty(obj, 'anotherProp', Ember.computed('prop', function () { return get(this, 'prop') + Math.random(); }));
+  defineProperty(obj, 'prop', computed(function () { return Math.random(); }));
+  defineProperty(obj, 'anotherProp', computed('prop', function () { return get(this, 'prop') + Math.random(); }));
 
   addObserver(obj, 'prop', function () { observerCount++; });
 
@@ -1155,7 +1155,7 @@ testBoth('immediate observers watching multiple properties via brace expansion f
 
 testBoth("immediate observers are for internal properties only", function(get, set) {
   expectAssertion(function() {
-    immediateObserver('foo.bar', Ember.K);
+    immediateObserver('foo.bar', function() { return this; });
   }, 'Immediate observers must observe internal properties only, not properties on other objects.');
 });
 
