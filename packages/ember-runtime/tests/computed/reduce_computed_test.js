@@ -205,8 +205,6 @@ test("multiple dependent keys can be specified via brace expansion", function() 
 });
 
   test("multiple item property keys can be specified via brace expansion", function() {
-    var addedCalls = 0;
-    var removedCalls = 0;
     var expected = Ember.A();
     var item = { propA: 'A', propB: 'B', propC: 'C' };
     var obj = EmberObject.createWithMixins({
@@ -278,7 +276,7 @@ test("doubly nested item property keys (@each.foo.@each) are not supported", fun
 });
 
 test("after the first retrieval, array computed properties observe dependent arrays", function() {
-  var numbers = get(obj, 'numbers');
+  get(obj, 'numbers');
   var evenNumbers = get(obj, 'evenNumbers');
 
   deepEqual(evenNumbers, [2, 4, 6], 'precond -- starts off with correct values');
@@ -292,7 +290,7 @@ test("after the first retrieval, array computed properties observe dependent arr
 
 test("array observers are torn down when dependent arrays change", function() {
   var numbers = get(obj, 'numbers');
-  var evenNumbers = get(obj, 'evenNumbers');
+  get(obj, 'evenNumbers');
 
   equal(addCalls, 6, 'precond - add has been called for each item in the array');
   equal(removeCalls, 0, 'precond - removed has not been called');
@@ -492,7 +490,6 @@ test("removedItem is not erroneously called for dependent arrays during a recomp
     return array;
   }
 
-  var dependentArray = Ember.A();
   var options = {
         addedItem: addedItem,
         removedItem: removedItem
@@ -540,7 +537,7 @@ QUnit.module('arrayComputed - recomputation DKs', {
 
 test("recomputations from `arrayComputed` observers add back dependent keys", function() {
   var meta = metaFor(obj);
-  var people = get(obj, 'people');
+  get(obj, 'people');
   var titles;
 
   equal(meta.deps, undefined, "precond - nobody depends on people'");
@@ -718,7 +715,6 @@ test("changeMeta includes item and index", function() {
 });
 
 test("changeMeta includes changedCount and arrayChanged", function() {
-  var callbackLetters = [];
   var obj = EmberObject.createWithMixins({
     letters: Ember.A(['a', 'b']),
     lettersArrayComputed: arrayComputed('letters', {

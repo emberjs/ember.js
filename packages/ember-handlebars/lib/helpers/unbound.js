@@ -1,17 +1,11 @@
-/*globals Handlebars */
-
 /**
 @module ember
 @submodule ember-handlebars
 */
 
 import EmberHandlebars from "ember-handlebars-compiler";
-var helpers = EmberHandlebars.helpers;
 
 import { resolveHelper } from "ember-handlebars/helpers/binding";
-import { handlebarsGet } from "ember-handlebars/ext";
-
-var slice = [].slice;
 
 /**
   `unbound` allows you to output a property without binding. *Important:* The
@@ -33,21 +27,31 @@ var slice = [].slice;
   @param {String} property
   @return {String} HTML string
 */
-export default function unboundHelper(property, fn) {
-  var options = arguments[arguments.length - 1];
-  var container = options.data.view.container;
-  var helper, context, out, ctx;
+export default function unboundHelper(property) {
+  var argsLength = arguments.length;
+  var options = arguments[argsLength - 1];
+  var view = options.data.view;
+  var container = view.container;
 
-  ctx = this;
-  if (arguments.length > 2) {
-    // Unbound helper call.
+  if (argsLength <= 2) {
+    return view.getStream(property).value();
+  } else {
     options.data.isUnbound = true;
-    helper = resolveHelper(container, property) || helpers.helperMissing;
-    out = helper.apply(ctx, slice.call(arguments, 1));
-    delete options.data.isUnbound;
-    return out;
-  }
+    options.types.shift();
 
-  context = (fn.contexts && fn.contexts.length) ? fn.contexts[0] : ctx;
-  return handlebarsGet(context, property, fn);
+    var args = new Array(argsLength - 1);
+    for (var i = 1; i < argsLength; i++) {
+      args[i - 1] = arguments[i];
+    }
+
+    var helper = resolveHelper(container, property) || EmberHandlebars.helpers.helperMissing;
+
+    // Attempt to exec the first field as a helper
+    options.name = arguments[0];
+
+    var result = helper.apply(this, args);
+
+    delete options.data.isUnbound;
+    return result;
+  }
 }

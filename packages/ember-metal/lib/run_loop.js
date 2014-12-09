@@ -32,7 +32,6 @@ var backburner = new Backburner(['sync', 'actions', 'destroy'], {
   onErrorMethod: 'onerror'
 });
 var slice = [].slice;
-var concat = [].concat;
 
 // ..........................................................
 // run - this is ideally the only public API the dev sees
@@ -107,45 +106,45 @@ function run() {
   @return {Object} Return value from invoking the passed function. Please note,
   when called within an existing loop, no return value is possible.
 */
-run.join = function(target, method /* args */) {
-  if (!run.currentRunLoop) {
-    return Ember.run.apply(Ember, arguments);
-  }
-
-  var args = slice.call(arguments);
-  args.unshift('actions');
-  run.schedule.apply(run, args);
+run.join = function() {
+  return backburner.join.apply(backburner, arguments);
 };
 
 /**
-  Provides a useful utility for when integrating with non-Ember libraries
-  that provide asynchronous callbacks.
+  Allows you to specify which context to call the specified function in while
+  adding the execution of that function to the Ember run loop. This ability
+  makes this method a great way to asynchronusly integrate third-party libraries
+  into your Ember application.
 
-  Ember utilizes a run-loop to batch and coalesce changes. This works by
-  marking the start and end of Ember-related Javascript execution.
+  `run.bind` takes two main arguments, the desired context and the function to
+  invoke in that context. Any additional arguments will be supplied as arguments
+  to the function that is passed in.
 
-  When using events such as a View's click handler, Ember wraps the event
-  handler in a run-loop, but when integrating with non-Ember libraries this
-  can be tedious.
-
-  For example, the following is rather verbose but is the correct way to combine
-  third-party events and Ember code.
+  Let's use the creation of a TinyMCE component as an example. Currently,
+  TinyMCE provides a setup configuration option we can use to do some processing
+  after the TinyMCE instance is initialized but before it is actually rendered.
+  We can use that setup option to do some additional setup for our component.
+  The component itself could look something like the following:
 
   ```javascript
-  var that = this;
-  jQuery(window).on('resize', function(){
-    run(function(){
-      that.handleResize();
-    });
+  App.RichTextEditorComponent = Ember.Component.extend({
+    initializeTinyMCE: function(){
+      tinymce.init({
+        selector: '#' + this.$().prop('id'),
+        setup: Ember.run.bind(this, this.setupEditor)
+      });
+    }.on('didInsertElement'),
+
+    setupEditor: function(editor) {
+      this.set('editor', editor);
+      editor.on('change', function(){ console.log('content changed!')} );
+    }
   });
   ```
 
-  To reduce the boilerplate, the following can be used to construct a
-  run-loop-wrapped callback handler.
-
-  ```javascript
-  jQuery(window).on('resize', run.bind(this, this.handleResize));
-  ```
+  In this example, we use Ember.run.bind to bind the setupEditor message to the
+  context of the App.RichTextEditorComponent and to have the invocation of that
+  method be safely handled and excuted by the Ember run loop.
 
   @method bind
   @namespace Ember
@@ -158,7 +157,7 @@ run.join = function(target, method /* args */) {
   when called within an existing loop, no return value is possible.
   @since 1.4.0
 */
-run.bind = function(target, method /* args*/) {
+run.bind = function(target, method /* args */) {
   var args = slice.call(arguments);
   return function() {
     return run.join.apply(run, args.concat(slice.call(arguments)));
@@ -331,10 +330,14 @@ run.later = function(/*target, method*/) {
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} Timer information for use in cancelling, see `run.cancel`.
 */
-run.once = function(target, method) {
+run.once = function(/*target, method */) {
   checkAutoRun();
-  var args = slice.call(arguments);
-  args.unshift('actions');
+  var length = arguments.length;
+  var args = new Array(length);
+  args[0] = 'actions';
+  for (var i = 0; i < length; i++) {
+    args[i + 1] = arguments[i];
+  }
   return apply(backburner, backburner.scheduleOnce, args);
 };
 
@@ -608,7 +611,8 @@ run.throttle = function() {
 // Make sure it's not an autorun during testing
 function checkAutoRun() {
   if (!run.currentRunLoop) {
-    Ember.assert("You have turned on testing mode, which disabled the run-loop's autorun. You will need to wrap any code with asynchronous side-effects in an run", !Ember.testing);
+    Ember.assert("You have turned on testing mode, which disabled the run-loop's autorun." +
+                 " You will need to wrap any code with asynchronous side-effects in an run", !Ember.testing);
   }
 }
 

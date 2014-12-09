@@ -58,5 +58,6 @@
     "strict": false,
     "white": false,
     "eqnull": true,
-    "trailing": true
+    "trailing": true,
+    "unused": "vars"
 }

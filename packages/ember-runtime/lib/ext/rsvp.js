@@ -4,7 +4,12 @@ import Ember from 'ember-metal/core';
 import Logger from 'ember-metal/logger';
 import run from "ember-metal/run_loop";
 
-var RSVP = requireModule('rsvp');
+// this is technically incorrect (per @wycats)
+// it should be `import * as RSVP from 'rsvp';` but
+// Esprima does not support this syntax yet (and neither does
+// es6-module-transpiler 0.4.0 - 0.6.2).
+module RSVP from 'rsvp';
+
 var testModuleName = 'ember-testing/test';
 var Test;
 
@@ -37,7 +42,7 @@ RSVP.Promise.prototype.fail = function(callback, label){
 };
 
 RSVP.onerrorDefault = function (error) {
-  if (error instanceof Error) {
+  if (error && error.name !== 'TransitionAborted') {
     if (Ember.testing) {
       // ES6TODO: remove when possible
       if (!Test && Ember.__loader.registry[testModuleName]) {
@@ -46,6 +51,7 @@ RSVP.onerrorDefault = function (error) {
 
       if (Test && Test.adapter) {
         Test.adapter.exception(error);
+        Logger.error(error.stack);
       } else {
         throw error;
       }

@@ -1,10 +1,6 @@
 import run from "ember-metal/run_loop";
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
-import { forEach } from "ember-metal/array";
 import EmberObject from "ember-runtime/system/object";
 import Application from "ember-application/system/application";
-import Container from "ember-runtime/system/container";
 
 var EmberApplication = Application;
 

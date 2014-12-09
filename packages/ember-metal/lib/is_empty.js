@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core'; // deprecateFunc
 import { get } from 'ember-metal/property_get';
 import isNone from 'ember-metal/is_none';
 
@@ -15,6 +14,7 @@ import isNone from 'ember-metal/is_none';
   Ember.isEmpty(undefined);       // true
   Ember.isEmpty('');              // true
   Ember.isEmpty([]);              // true
+  Ember.isEmpty({});              // false
   Ember.isEmpty('Adam Hawkins');  // false
   Ember.isEmpty([0,1,2]);         // false
   ```
@@ -57,10 +57,4 @@ function isEmpty(obj) {
   return false;
 }
 
-export var empty = Ember.deprecateFunc("Ember.empty is deprecated. Please use Ember.isEmpty instead.", isEmpty);
-
 export default isEmpty;
-export {
-  isEmpty,
-  empty
-};

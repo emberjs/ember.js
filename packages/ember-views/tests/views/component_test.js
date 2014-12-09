@@ -1,6 +1,10 @@
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
+import Service from "ember-runtime/system/service";
+import Container from "ember-runtime/system/container";
+import inject from "ember-runtime/inject";
+import { get } from "ember-metal/property_get";
 
 import EmberView from "ember-views/views/view";
 import Component from "ember-views/views/component";
@@ -69,6 +73,9 @@ test("Specifying both templateName and layoutName to a component is NOT deprecat
     templateName: 'blah-blah',
     layoutName: 'hum-drum'
   }).create();
+
+  equal(get(component, 'templateName'), 'blah-blah');
+  equal(get(component, 'layoutName'), 'hum-drum');
 });
 
 test("Specifying a templateName on a component with a layoutName specified in a superclass is NOT deprecated", function(){
@@ -76,9 +83,13 @@ test("Specifying a templateName on a component with a layoutName specified in a 
   var Parent = Component.extend({
     layoutName: 'hum-drum'
   });
+
   component = Parent.extend({
     templateName: 'blah-blah'
   }).create();
+
+  equal(get(component, 'templateName'), 'blah-blah');
+  equal(get(component, 'layoutName'), 'hum-drum');
 });
 
 QUnit.module("Ember.Component - Actions", {
@@ -177,4 +188,61 @@ test("Calling sendAction on a component with multiple parameters", function() {
   component.sendAction('playing', firstContext, secondContext);
 
   deepEqual(actionArguments, [firstContext, secondContext], "arguments were sent to the action");
+});
+
+if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  QUnit.module('Ember.Component - injected properties');
+
+  test("services can be injected into components", function() {
+    var container = new Container();
+
+    container.register('component:application', Component.extend({
+      profilerService: inject.service('profiler')
+    }));
+
+    container.register('service:profiler', Service.extend());
+
+    var appComponent = container.lookup('component:application'),
+    profilerService = container.lookup('service:profiler');
+
+    equal(profilerService, appComponent.get('profilerService'), "service.profiler is injected");
+  });
+}
+
+
+QUnit.module('Ember.Component - subscribed and sent actions trigger errors');
+
+test('something', function() {
+  expect(2);
+
+  var appComponent = Component.extend({
+    actions: {
+      foo: function(message) {
+        equal('bar', message);
+      }
+    }
+  }).create();
+
+  appComponent.send('foo', 'bar');
+ 
+  throws(function() {
+    appComponent.send('baz', 'bar');
+  }, /had no action handler for: baz/, 'asdf');
+});
+
+test('component with target', function() {
+  expect(2);
+
+  var target = {
+    send: function(message, payload) {
+      equal('foo', message);
+      equal('baz', payload);
+    }
+  };
+
+  var appComponent = Component.create({
+    target: target
+  });
+
+  appComponent.send('foo', 'baz');
 });

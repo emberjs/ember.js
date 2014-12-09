@@ -1,4 +1,4 @@
-# Ember.js [![Build Status](https://secure.travis-ci.org/emberjs/ember.js.png?branch=master)](http://travis-ci.org/emberjs/ember.js) [![Code Climate](https://codeclimate.com/github/emberjs/ember.js.png)](https://codeclimate.com/github/emberjs/ember.js)
+# Ember.js [![Build Status](https://secure.travis-ci.org/emberjs/ember.js.svg?branch=master)](http://travis-ci.org/emberjs/ember.js) [![Code Climate](https://codeclimate.com/github/emberjs/ember.js.svg)](https://codeclimate.com/github/emberjs/ember.js)
 
 Ember.js is a JavaScript framework that does all of the heavy lifting
 that you'd normally have to do by hand. There are tasks that are common
@@ -28,9 +28,9 @@ See [CONTRIBUTING.md](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTI
 
 2. To start the development server, run `npm start`.
 
-3. Then visit <http://localhost:4200/tests/index.html>. This will run all tests.
+3. Then visit <http://localhost:4200/>. This will run all tests.
 
-4. To test a specific package visit `http://localhost:4200/tests/index.html?package=PACKAGE_NAME` Replace
+4. To test a specific package visit `http://localhost:4200/tests/index.html?package=PACKAGE_NAME`. Replace
 `PACKAGE_NAME` with the name of the package you want to test. For
 example:
 

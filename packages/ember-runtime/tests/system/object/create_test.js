@@ -86,7 +86,7 @@ test("calls setUnknownProperty if defined", function() {
     }
   });
 
-  var o = MyClass.create({foo: 'bar'});
+  MyClass.create({foo: 'bar'});
   ok(setUnknownPropertyCalled, 'setUnknownProperty was called');
 });
 
@@ -116,7 +116,7 @@ test("throws if you try to 'mixin' a definition", function() {
   });
 
   expectAssertion(function() {
-    var o = EmberObject.create(myMixin);
+    EmberObject.create(myMixin);
   }, "Ember.Object.create no longer supports mixing in other definitions, use createWithMixins instead.");
 });
 
@@ -140,7 +140,7 @@ test("throws if you try to pass anything a string as a parameter", function(){
   var expected = "EmberObject.create only accepts an objects.";
 
   throws(function() {
-    var o = EmberObject.create("some-string");
+    EmberObject.create("some-string");
   }, expected);
 });
 
@@ -202,7 +202,7 @@ test("Configures _super() on methods with override", function() {
 
 test("Calls init if defined", function() {
   var completed = false;
-  var obj = EmberObject.createWithMixins({
+  EmberObject.createWithMixins({
     init: function() {
       this._super();
       completed = true;
@@ -228,7 +228,7 @@ test("Calls all mixin inits if defined", function() {
 
 test("Triggers init", function() {
   var completed = false;
-  var obj = EmberObject.createWithMixins({
+  EmberObject.createWithMixins({
     markAsCompleted: on("init", function(){
       completed = true;
     })
@@ -337,4 +337,16 @@ test("created objects should not share a guid with their superclass", function()
   var objB = EmberObject.createWithMixins();
 
   ok(guidFor(objA) !== guidFor(objB), "two instances do not share a guid");
+});
+
+test("ensure internal properties do not leak", function(){
+  var obj = EmberObject.create({
+    firstName: 'Joe',
+    lastName:  'Black'
+  });
+
+  var expectedProperties = ['firstName', 'lastName'];
+  var actualProperties   = keys(obj);
+
+  deepEqual(actualProperties, expectedProperties, 'internal properties do not leak');
 });

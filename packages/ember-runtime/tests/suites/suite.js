@@ -1,8 +1,7 @@
 import EmberObject from "ember-runtime/system/object";
 import { required } from "ember-metal/mixin";
 import {
-  guidFor,
-  generateGuid
+  guidFor
 } from "ember-metal/utils";
 import { get } from "ember-metal/property_get";
 import { forEach } from "ember-metal/enumerable_utils";

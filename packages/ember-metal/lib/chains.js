@@ -1,10 +1,9 @@
 import Ember from "ember-metal/core"; // warn, assert, etc;
 import {get, normalizeTuple} from "ember-metal/property_get";
-import {meta} from "ember-metal/utils";
+import {meta as metaFor} from "ember-metal/utils";
 import {forEach} from "ember-metal/array";
 import {watchKey, unwatchKey} from "ember-metal/watch_key";
 
-var metaFor = meta;
 var warn = Ember.warn;
 var FIRST_KEY = /^([^\.]+)/;
 
@@ -23,9 +22,12 @@ export function flushPendingChains() {
   var queue = pendingQueue;
   pendingQueue = [];
 
-  forEach.call(queue, function(q) { q[0].add(q[1]); });
+  forEach.call(queue, function(q) {
+    q[0].add(q[1]);
+  });
 
-  warn('Watching an undefined global, Ember expects watched globals to be setup by the time the run loop is flushed, check for typos', pendingQueue.length === 0);
+  warn('Watching an undefined global, Ember expects watched globals to be' +
+       ' setup by the time the run loop is flushed, check for typos', pendingQueue.length === 0);
 }
 
 function addChainWatcher(obj, keyName, node) {
@@ -38,7 +40,9 @@ function addChainWatcher(obj, keyName, node) {
     nodes = m.chainWatchers = {};
   }
 
-  if (!nodes[keyName]) { nodes[keyName] = []; }
+  if (!nodes[keyName]) {
+    nodes[keyName] = [];
+  }
   nodes[keyName].push(node);
   watchKey(obj, keyName, m);
 }
@@ -82,7 +86,9 @@ function ChainNode(parent, key, value) {
   this._paths = {};
   if (this._watching) {
     this._object = parent.value();
-    if (this._object) { addChainWatcher(this._object, this._key, this); }
+    if (this._object) {
+      addChainWatcher(this._object, this._key, this);
+    }
   }
 
   // Special-case: the EachProxy relies on immediate evaluation to
@@ -102,9 +108,13 @@ function lazyGet(obj, key) {
 
   var meta = obj['__ember_meta__'];
   // check if object meant only to be a prototype
-  if (meta && meta.proto === obj) return undefined;
+  if (meta && meta.proto === obj) {
+    return undefined;
+  }
 
-  if (key === "@each") return get(obj, key);
+  if (key === "@each") {
+    return get(obj, key);
+  }
 
   // if a CP only return cached value
   var desc = meta && meta.descs[key];
@@ -130,7 +140,9 @@ ChainNodePrototype.value = function() {
 ChainNodePrototype.destroy = function() {
   if (this._watching) {
     var obj = this._object;
-    if (obj) { removeChainWatcher(obj, this._key, this); }
+    if (obj) {
+      removeChainWatcher(obj, this._key, this);
+    }
     this._watching = false; // so future calls do nothing
   }
 };
@@ -142,7 +154,10 @@ ChainNodePrototype.copy = function(obj) {
   var path;
 
   for (path in paths) {
-    if (paths[path] <= 0) { continue; } // this check will also catch non-number vals.
+    // this check will also catch non-number vals.
+    if (paths[path] <= 0) {
+      continue;
+    }
     ret.add(path);
   }
   return ret;
@@ -189,7 +204,9 @@ ChainNodePrototype.remove = function(path) {
   var obj, tuple, key, src, paths;
 
   paths = this._paths;
-  if (paths[path] > 0) { paths[path]--; }
+  if (paths[path] > 0) {
+    paths[path]--;
+  }
 
   obj = this.value();
   tuple = normalizeTuple(obj, path);
@@ -212,10 +229,14 @@ ChainNodePrototype.count = 0;
 ChainNodePrototype.chain = function(key, path, src) {
   var chains = this._chains;
   var node;
-  if (!chains) { chains = this._chains = {}; }
+  if (!chains) {
+    chains = this._chains = {};
+  }
 
   node = chains[key];
-  if (!node) { node = chains[key] = new ChainNode(this, key, src); }
+  if (!node) {
+    node = chains[key] = new ChainNode(this, key, src);
+  }
   node.count++; // count chains...
 
   // chain rest of path if there is one
@@ -231,10 +252,10 @@ ChainNodePrototype.unchain = function(key, path) {
   var node = chains[key];
 
   // unchain rest of path first...
-  if (path && path.length>1) {
-    key  = firstKey(path);
-    path = path.slice(key.length+1);
-    node.unchain(key, path);
+  if (path && path.length > 1) {
+    var nextKey  = firstKey(path);
+    var nextPath = path.slice(nextKey.length + 1);
+    node.unchain(nextKey, nextPath);
   }
 
   // delete node if needed.
@@ -250,16 +271,22 @@ ChainNodePrototype.willChange = function(events) {
   var chains = this._chains;
   if (chains) {
     for(var key in chains) {
-      if (!chains.hasOwnProperty(key)) { continue; }
+      if (!chains.hasOwnProperty(key)) {
+        continue;
+      }
       chains[key].willChange(events);
     }
   }
 
-  if (this._parent) { this._parent.chainWillChange(this, this._key, 1, events); }
+  if (this._parent) {
+    this._parent.chainWillChange(this, this._key, 1, events);
+  }
 };
 
 ChainNodePrototype.chainWillChange = function(chain, path, depth, events) {
-  if (this._key) { path = this._key + '.' + path; }
+  if (this._key) {
+    path = this._key + '.' + path;
+  }
 
   if (this._parent) {
     this._parent.chainWillChange(this, path, depth+1, events);
@@ -275,7 +302,10 @@ ChainNodePrototype.chainWillChange = function(chain, path, depth, events) {
 };
 
 ChainNodePrototype.chainDidChange = function(chain, path, depth, events) {
-  if (this._key) { path = this._key + '.' + path; }
+  if (this._key) {
+    path = this._key + '.' + path;
+  }
+
   if (this._parent) {
     this._parent.chainDidChange(this, path, depth+1, events);
   } else {
@@ -302,8 +332,9 @@ ChainNodePrototype.didChange = function(events) {
 
     // Special-case: the EachProxy relies on immediate evaluation to
     // establish its observers.
-    if (this._parent && this._parent._key === '@each')
+    if (this._parent && this._parent._key === '@each') {
       this.value();
+    }
   }
 
   // then notify chains...
@@ -316,22 +347,30 @@ ChainNodePrototype.didChange = function(events) {
   }
 
   // if no events are passed in then we only care about the above wiring update
-  if (events === null) { return; }
+  if (events === null) {
+    return;
+  }
 
   // and finally tell parent about my path changing...
-  if (this._parent) { this._parent.chainDidChange(this, this._key, 1, events); }
+  if (this._parent) {
+    this._parent.chainDidChange(this, this._key, 1, events);
+  }
 };
 
 export function finishChains(obj) {
   // We only create meta if we really have to
-  var m = obj['__ember_meta__'],
-    chains, chainWatchers, chainNodes;
+  var m = obj['__ember_meta__'];
+  var chains, chainWatchers, chainNodes;
+
   if (m) {
     // finish any current chains node watchers that reference obj
     chainWatchers = m.chainWatchers;
     if (chainWatchers) {
       for(var key in chainWatchers) {
-        if (!chainWatchers.hasOwnProperty(key)) { continue; }
+        if (!chainWatchers.hasOwnProperty(key)) {
+          continue;
+        }
+
         chainNodes = chainWatchers[key];
         if (chainNodes) {
           for (var i=0,l=chainNodes.length;i<l;i++) {

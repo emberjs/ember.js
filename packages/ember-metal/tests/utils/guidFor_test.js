@@ -1,8 +1,6 @@
 import {
-  guidFor,
-  generateGuid
+  guidFor
 } from "ember-metal/utils";
-import { rewatch } from "ember-metal/watching";
 
 QUnit.module("guidFor");
 
@@ -26,22 +24,6 @@ test("Object", function() {
   sameGuid( a, a, "same object always yields same guid" );
   diffGuid( a, b, "different objects yield different guids" );
   nanGuid( a );
-});
-
-test("Object with prototype", function() {
-  var Class = function() { };
-
-  guidFor(Class.prototype);
-
-  var a = new Class();
-  var b = new Class();
-
-  sameGuid( a, b , "without calling rewatch, objects copy the guid from their prototype");
-
-  rewatch(a);
-  rewatch(b);
-
-  diffGuid( a, b, "after calling rewatch, objects don't share guids" );
 });
 
 test("strings", function() {

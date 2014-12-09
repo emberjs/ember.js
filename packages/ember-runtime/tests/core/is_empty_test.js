@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core";
-import {isEmpty} from 'ember-metal/is_empty';
+import isEmpty from 'ember-metal/is_empty';
 import ArrayProxy from "ember-runtime/system/array_proxy";
 
 QUnit.module("Ember.isEmpty");

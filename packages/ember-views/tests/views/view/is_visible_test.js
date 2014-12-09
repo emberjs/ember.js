@@ -1,7 +1,6 @@
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
-import EmberObject from "ember-runtime/system/object";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 
@@ -9,33 +8,6 @@ var View, view, parentBecameVisible, childBecameVisible, grandchildBecameVisible
 var parentBecameHidden, childBecameHidden, grandchildBecameHidden;
 
 QUnit.module("EmberView#isVisible", {
-  setup: function() {
-    parentBecameVisible=0;
-    childBecameVisible=0;
-    grandchildBecameVisible=0;
-    parentBecameHidden=0;
-    childBecameHidden=0;
-    grandchildBecameHidden=0;
-
-    View = ContainerView.extend({
-      childViews: ['child'],
-      becameVisible: function() { parentBecameVisible++; },
-      becameHidden: function() { parentBecameHidden++; },
-
-      child: ContainerView.extend({
-        childViews: ['grandchild'],
-        becameVisible: function() { childBecameVisible++; },
-        becameHidden: function() { childBecameHidden++; },
-
-        grandchild: EmberView.extend({
-          template: function() { return "seems weird bro"; },
-          becameVisible: function() { grandchildBecameVisible++; },
-          becameHidden: function() { grandchildBecameHidden++; }
-        })
-      })
-    });
-  },
-
   teardown: function() {
     if (view) {
       run(function() { view.destroy(); });
@@ -98,6 +70,43 @@ test("should hide element if isVisible is false before element is created", func
   });
 });
 
+QUnit.module("EmberView#isVisible with Container", {
+  setup: function() {
+    expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
+    parentBecameVisible=0;
+    childBecameVisible=0;
+    grandchildBecameVisible=0;
+    parentBecameHidden=0;
+    childBecameHidden=0;
+    grandchildBecameHidden=0;
+
+    View = ContainerView.extend({
+      childViews: ['child'],
+      becameVisible: function() { parentBecameVisible++; },
+      becameHidden: function() { parentBecameHidden++; },
+
+      child: ContainerView.extend({
+        childViews: ['grandchild'],
+        becameVisible: function() { childBecameVisible++; },
+        becameHidden: function() { childBecameHidden++; },
+
+        grandchild: EmberView.extend({
+          template: function() { return "seems weird bro"; },
+          becameVisible: function() { grandchildBecameVisible++; },
+          becameHidden: function() { grandchildBecameHidden++; }
+        })
+      })
+    });
+  },
+
+  teardown: function() {
+    if (view) {
+      run(function() { view.destroy(); });
+    }
+  }
+});
+
 test("view should be notified after isVisible is set to false and the element has been hidden", function() {
   run(function() {
     view = View.create({ isVisible: false });
@@ -119,7 +128,6 @@ test("view should be notified after isVisible is set to false and the element ha
 test("view should be notified after isVisible is set to false and the element has been hidden", function() {
   view = View.create({ isVisible: true });
   var childView = view.get('childViews').objectAt(0);
-  var grandchildView = childView.get('childViews').objectAt(0);
 
   run(function() {
     view.append();
@@ -139,8 +147,6 @@ test("view should be notified after isVisible is set to false and the element ha
 
 test("view should be notified after isVisible is set to true and the element has been shown", function() {
   view = View.create({ isVisible: false });
-  var childView = view.get('childViews').objectAt(0);
-  var grandchildView = childView.get('childViews').objectAt(0);
 
   run(function() {
     view.append();
@@ -162,7 +168,6 @@ test("view should be notified after isVisible is set to true and the element has
 test("if a view descends from a hidden view, making isVisible true should not trigger becameVisible", function() {
   view = View.create({ isVisible: true });
   var childView = view.get('childViews').objectAt(0);
-  var grandchildView = childView.get('childViews').objectAt(0);
 
   run(function() {
     view.append();
@@ -192,7 +197,6 @@ test("if a view descends from a hidden view, making isVisible true should not tr
 test("if a child view becomes visible while its parent is hidden, if its parent later becomes visible, it receives a becameVisible callback", function() {
   view = View.create({ isVisible: false });
   var childView = view.get('childViews').objectAt(0);
-  var grandchildView = childView.get('childViews').objectAt(0);
 
   run(function() {
     view.append();

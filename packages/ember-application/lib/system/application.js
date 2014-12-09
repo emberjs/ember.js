@@ -2,26 +2,26 @@
 @module ember
 @submodule ember-application
 */
+import DAG from 'dag-map';
+import Container from 'container/container';
+
 
 import Ember from "ember-metal"; // Ember.FEATURES, Ember.deprecate, Ember.assert, Ember.libraries, LOG_VERSION, Namespace, BOOTED
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { runLoadHooks } from "ember-runtime/system/lazy_load";
-import DAG from "ember-application/system/dag";
 import Namespace from "ember-runtime/system/namespace";
 import DeferredMixin from "ember-runtime/mixins/deferred";
 import DefaultResolver from "ember-application/system/resolver";
 import { create } from "ember-metal/platform";
 import run from "ember-metal/run_loop";
 import { canInvoke } from "ember-metal/utils";
-import Container from 'container/container';
 import Controller from "ember-runtime/controllers/controller";
 import EnumerableUtils from "ember-metal/enumerable_utils";
 import ObjectController from "ember-runtime/controllers/object_controller";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import SelectView from "ember-handlebars/controls/select";
 import EventDispatcher from "ember-views/system/event_dispatcher";
-//import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
 import jQuery from "ember-views/system/jquery";
 import Route from "ember-routing/system/route";
 import Router from "ember-routing/system/router";
@@ -31,12 +31,18 @@ import AutoLocation from "ember-routing/location/auto_location";
 import NoneLocation from "ember-routing/location/none_location";
 import BucketCache from "ember-routing/system/cache";
 
+// this is technically incorrect (per @wycats)
+// it should work properly with:
+// `import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';` but
+// es6-module-transpiler 0.4.0 eagerly grabs the module (which is undefined)
+
+import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
+
 import {
   K
 } from 'ember-metal/core';
 import EmberHandlebars from "ember-handlebars-compiler";
 
-var ContainerDebugAdapter;
 function props(obj) {
   var properties = [];
 
@@ -108,10 +114,10 @@ function props(obj) {
   names by setting the application's `customEvents` property:
 
   ```javascript
-  App = Ember.Application.create({
+  var App = Ember.Application.create({
     customEvents: {
       // add support for the paste event
-      paste: "paste"
+      paste: 'paste'
     }
   });
   ```
@@ -125,7 +131,7 @@ function props(obj) {
   should be delegated, set your application's `rootElement` property:
 
   ```javascript
-  window.App = Ember.Application.create({
+  var App = Ember.Application.create({
     rootElement: '#ember-app'
   });
   ```
@@ -168,7 +174,7 @@ function props(obj) {
   the `LOG_TRANSITIONS_INTERNAL` flag:
 
   ```javascript
-  window.App = Ember.Application.create({
+  var App = Ember.Application.create({
     LOG_TRANSITIONS: true, // basic logging of successful transitions
     LOG_TRANSITIONS_INTERNAL: true // detailed logging of all routing steps
   });
@@ -237,10 +243,10 @@ var Application = Namespace.extend(DeferredMixin, {
     corresponding view method name as the value. For example:
 
     ```javascript
-    App = Ember.Application.create({
+    var App = Ember.Application.create({
       customEvents: {
         // add support for the paste event
-        paste: "paste"
+        paste: 'paste'
       }
     });
     ```
@@ -256,7 +262,9 @@ var Application = Namespace.extend(DeferredMixin, {
   _readinessDeferrals: 1,
 
   init: function() {
-    if (!this.$) { this.$ = jQuery; }
+    if (!this.$) {
+      this.$ = jQuery;
+    }
     this.__container__ = this.buildContainer();
 
     this.Router = this.defaultRouter();
@@ -368,10 +376,11 @@ var Application = Namespace.extend(DeferredMixin, {
     Example:
 
     ```javascript
-    App = Ember.Application.create();
+    var App = Ember.Application.create();
+    
     App.deferReadiness();
-
-    jQuery.getJSON("/auth-token", function(token) {
+    // Ember.$ is a reference to the jQuery object/function
+    Ember.$.getJSON('/auth-token', function(token) {
       App.token = token;
       App.advanceReadiness();
     });
@@ -417,7 +426,8 @@ var Application = Namespace.extend(DeferredMixin, {
 
     ```javascript
     var App = Ember.Application.create();
-    App.Orange  = Ember.Object.extend();
+    
+    App.Orange = Ember.Object.extend();
     App.register('fruit:favorite', App.Orange);
     ```
 
@@ -428,8 +438,8 @@ var Application = Namespace.extend(DeferredMixin, {
     An example of registering a controller with a non-standard name:
 
     ```javascript
-    var App = Ember.Application.create(),
-        Session  = Ember.Controller.extend();
+    var App = Ember.Application.create();
+    var Session = Ember.Controller.extend();
 
     App.register('controller:session', Session);
 
@@ -454,10 +464,10 @@ var Application = Namespace.extend(DeferredMixin, {
     App.Email   = Ember.Object.extend();
     App.session = Ember.Object.create();
 
-    App.register('model:user', App.Person, {singleton: false });
+    App.register('model:user', App.Person, { singleton: false });
     App.register('fruit:favorite', App.Orange);
-    App.register('communication:main', App.Email, {singleton: false});
-    App.register('session', App.session, {instantiate: false});
+    App.register('communication:main', App.Email, { singleton: false });
+    App.register('session', App.session, { instantiate: false });
     ```
 
     @method register
@@ -481,8 +491,8 @@ var Application = Namespace.extend(DeferredMixin, {
     An example of providing a session object to all controllers:
 
     ```javascript
-    var App = Ember.Application.create(),
-        Session = Ember.Object.extend({ isAuthenticated: false });
+    var App = Ember.Application.create();
+    var Session = Ember.Object.extend({ isAuthenticated: false });
 
     // A factory must be registered before it can be injected
     App.register('session:main', Session);
@@ -509,7 +519,7 @@ var Application = Namespace.extend(DeferredMixin, {
     directly (via `create` or `new`) bypasses the dependency injection
     system.
 
-    Ember-Data instantiates its models in a unique manner, and consequently
+    **Note:** Ember-Data instantiates its models in a unique manner, and consequently
     injections onto models (or all models) will not work as expected. Injections
     on models can be enabled by setting `Ember.MODEL_FACTORY_INJECTIONS`
     to `true`.
@@ -581,24 +591,23 @@ var Application = Namespace.extend(DeferredMixin, {
     Typical Example:
 
     ```javascript
-
     var App;
 
     run(function() {
       App = Ember.Application.create();
     });
 
-    module("acceptance test", {
+    module('acceptance test', {
       setup: function() {
         App.reset();
       }
     });
 
-    test("first test", function() {
+    test('first test', function() {
       // App is freshly reset
     });
 
-    test("first test", function() {
+    test('second test', function() {
       // App is again freshly reset
     });
     ```
@@ -610,14 +619,13 @@ var Application = Namespace.extend(DeferredMixin, {
     to the app becoming ready.
 
     ```javascript
-
     var App;
 
     run(function() {
       App = Ember.Application.create();
     });
 
-    module("acceptance test", {
+    module('acceptance test', {
       setup: function() {
         run(function() {
           App.reset();
@@ -626,12 +634,13 @@ var Application = Namespace.extend(DeferredMixin, {
       }
     });
 
-    test("first test", function() {
+    test('first test', function() {
       ok(true, 'something before app is initialized');
 
       run(function() {
         App.advanceReadiness();
       });
+      
       ok(true, 'something after app is initialized');
     });
     ```
@@ -667,7 +676,7 @@ var Application = Namespace.extend(DeferredMixin, {
     var container = this.__container__;
     var graph = new DAG();
     var namespace = this;
-    var name, initializer;
+    var initializer;
 
     for (var i = 0; i < initializers.length; i++) {
       initializer = initializersByName[initializers[i]];
@@ -800,8 +809,9 @@ Application.reopenClass({
     ```javascript
     Ember.Application.initializer({
       name: 'namedInitializer',
+      
       initialize: function(container, application) {
-        Ember.debug("Running namedInitializer!");
+        Ember.debug('Running namedInitializer!');
       }
     });
     ```
@@ -815,8 +825,9 @@ Application.reopenClass({
     ```javascript
     Ember.Application.initializer({
       name: 'first',
+      
       initialize: function(container, application) {
-        Ember.debug("First initializer!");
+        Ember.debug('First initializer!');
       }
     });
 
@@ -832,7 +843,7 @@ Application.reopenClass({
       after: 'first',
 
       initialize: function(container, application) {
-        Ember.debug("Second initializer!");
+        Ember.debug('Second initializer!');
       }
     });
 
@@ -849,7 +860,7 @@ Application.reopenClass({
       before: 'first',
 
       initialize: function(container, application) {
-        Ember.debug("Pre initializer!");
+        Ember.debug('Pre initializer!');
       }
     });
 
@@ -867,7 +878,7 @@ Application.reopenClass({
       after: ['first', 'second'],
 
       initialize: function(container, application) {
-        Ember.debug("Post initializer!");
+        Ember.debug('Post initializer!');
       }
     });
 
@@ -884,10 +895,11 @@ Application.reopenClass({
 
     ```javascript
     Ember.Application.initializer({
-      name: "preload-data",
+      name: 'preload-data',
 
       initialize: function(container, application) {
         var store = container.lookup('store:main');
+        
         store.pushPayload(preloadedData);
       }
     });
@@ -921,6 +933,7 @@ Application.reopenClass({
 
     Ember.assert("The initializer '" + initializer.name + "' has already been registered", !this.initializers[initializer.name]);
     Ember.assert("An initializer cannot be registered without an initialize function", canInvoke(initializer, 'initialize'));
+    Ember.assert("An initializer cannot be registered without a name property", initializer.name !== undefined);
 
     this.initializers[initializer.name] = initializer;
   },
@@ -1000,8 +1013,6 @@ Application.reopenClass({
     container.injection('data-adapter:main', 'containerDebugAdapter', 'container-debug-adapter:main');
     // Custom resolver authors may want to register their own ContainerDebugAdapter with this key
 
-    // ES6TODO: resolve this via import once ember-application package is ES6'ed
-    if (!ContainerDebugAdapter) { ContainerDebugAdapter = requireModule('ember-extension-support/container_debug_adapter')['default']; }
     container.register('container-debug-adapter:main', ContainerDebugAdapter);
 
     return container;

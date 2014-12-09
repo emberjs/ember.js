@@ -32,14 +32,13 @@ if (!Handlebars && typeof require === 'function') {
   Handlebars = require('handlebars');
 }
 
-Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1. Include " +
+Ember.assert("Ember Handlebars requires Handlebars version 2.0. Include " +
              "a SCRIPT tag in the HTML HEAD linking to the Handlebars file " +
              "before you link to Ember.", Handlebars);
 
-Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1, " +
-             "COMPILER_REVISION expected: 4, got: " +  Handlebars.COMPILER_REVISION +
-             " - Please note: Builds of master may have other COMPILER_REVISION values.",
-             Handlebars.COMPILER_REVISION === 4);
+Ember.assert("Ember Handlebars requires Handlebars version 2.0. " +
+             "Please see more details at http://emberjs.com/blog/2014/10/16/handlebars-update.html.",
+             Handlebars.COMPILER_REVISION === 6);
 
 /**
   Prepares the Handlebars templating library for use inside Ember's view
@@ -55,7 +54,7 @@ Ember.assert("Ember Handlebars requires Handlebars version 1.0 or 1.1, " +
   @class Handlebars
   @namespace Ember
 */
-var EmberHandlebars = Ember.Handlebars = objectCreate(Handlebars);
+var EmberHandlebars = Ember.Handlebars = Handlebars.create();
 
 /**
   Register a bound helper or custom view helper.
@@ -114,7 +113,8 @@ EmberHandlebars.helper = function(name, value) {
   if (!View) { View = requireModule('ember-views/views/view')['default']; } // ES6TODO: stupid circular dep
   if (!Component) { Component = requireModule('ember-views/views/component')['default']; } // ES6TODO: stupid circular dep
 
-  Ember.assert("You tried to register a component named '" + name + "', but component names must include a '-'", !Component.detect(value) || name.match(/-/));
+  Ember.assert("You tried to register a component named '" + name +
+               "', but component names must include a '-'", !Component.detect(value) || name.match(/-/));
 
   if (View.detect(value)) {
     EmberHandlebars.registerHelper(name, EmberHandlebars.makeViewHelper(value));
@@ -137,7 +137,8 @@ EmberHandlebars.helper = function(name, value) {
 */
 EmberHandlebars.makeViewHelper = function(ViewClass) {
   return function(options) {
-    Ember.assert("You can only pass attributes (such as name=value) not bare values to a helper for a View found in '" + ViewClass.toString() + "'", arguments.length < 2);
+    Ember.assert("You can only pass attributes (such as name=value) not bare " +
+                 "values to a helper for a View found in '" + ViewClass.toString() + "'", arguments.length < 2);
     return EmberHandlebars.helpers.view.call(this, ViewClass, options);
   };
 };
@@ -197,44 +198,6 @@ EmberHandlebars.JavaScriptCompiler.prototype.initializeBuffer = function() {
 */
 EmberHandlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) {
   return "data.buffer.push("+string+");";
-};
-
-// Hacks ahead:
-// Handlebars presently has a bug where the `blockHelperMissing` hook
-// doesn't get passed the name of the missing helper name, but rather
-// gets passed the value of that missing helper evaluated on the current
-// context, which is most likely `undefined` and totally useless.
-//
-// So we alter the compiled template function to pass the name of the helper
-// instead, as expected.
-//
-// This can go away once the following is closed:
-// https://github.com/wycats/handlebars.js/issues/634
-
-var DOT_LOOKUP_REGEX = /helpers\.(.*?)\)/;
-var BRACKET_STRING_LOOKUP_REGEX = /helpers\['(.*?)'/;
-var INVOCATION_SPLITTING_REGEX = /(.*blockHelperMissing\.call\(.*)(stack[0-9]+)(,.*)/;
-
-EmberHandlebars.JavaScriptCompiler.stringifyLastBlockHelperMissingInvocation = function(source) {
-  var helperInvocation = source[source.length - 1];
-  var helperName = (DOT_LOOKUP_REGEX.exec(helperInvocation) || BRACKET_STRING_LOOKUP_REGEX.exec(helperInvocation))[1];
-  var matches = INVOCATION_SPLITTING_REGEX.exec(helperInvocation);
-
-  source[source.length - 1] = matches[1] + "'" + helperName + "'" + matches[3];
-};
-
-var stringifyBlockHelperMissing = EmberHandlebars.JavaScriptCompiler.stringifyLastBlockHelperMissingInvocation;
-
-var originalBlockValue = EmberHandlebars.JavaScriptCompiler.prototype.blockValue;
-EmberHandlebars.JavaScriptCompiler.prototype.blockValue = function() {
-  originalBlockValue.apply(this, arguments);
-  stringifyBlockHelperMissing(this.source);
-};
-
-var originalAmbiguousBlockValue = EmberHandlebars.JavaScriptCompiler.prototype.ambiguousBlockValue;
-EmberHandlebars.JavaScriptCompiler.prototype.ambiguousBlockValue = function() {
-  originalAmbiguousBlockValue.apply(this, arguments);
-  stringifyBlockHelperMissing(this.source);
 };
 
 /**

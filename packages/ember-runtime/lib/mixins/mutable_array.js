@@ -19,7 +19,6 @@ var EMPTY = [];
 //
 
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import { isArray } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
 import {
@@ -307,7 +306,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   //
 
   /**
-    Remove all occurances of an object in the array.
+    Remove all occurrences of an object in the array.
 
     ```javascript
     var cities = ["Chicago", "Berlin", "Lima", "Chicago"];

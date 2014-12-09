@@ -1,5 +1,56 @@
 # Ember Changelog
 
+### 1.9.0-beta.4
+
+* Add deprecation for quoteless outlet names (`{{outlet main}}` should be `{{outlet 'main'}}`).
+* [BUGFIX] Update the `Ember.Map#forEach` callback to include the map being iterated over.
+* [BUGFIX] Ensure that tagless container views are rendered properly.
+* [PERF] `Ember.View#_outlets` is no longer observable.
+* [PERF] Avoid extending a view for every `{{each}}`.
+
+### 1.9.0-beta.3
+
+* Ensure initializers have a `name` property (provides a helpful assertion if missing).
+* [BUILD TOOLING] Enable easier cross-browser testing by publishing builds and tests to S3.
+* Enable `Ember.run.join` to return a value even if within an existing run loop.
+* Update `Ember.EventDispatcher` to use `Ember.run.join`. This is required so that synchronous
+  events (like focus) do not spawn a nested run loop.
+* Deprecate context switching for of {{each}}.
+* Deprecate context switching form of {{with}}.
+* Add improved error message when a component lookup fails.
+* Ensure that component actions that are subscribed to, trigger an assertion when unhandled. Consider the following example:
+
+```handlebars
+{{!component-a.hbs}}
+
+{{some-other-component action="saveMe"}}
+```
+
+Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Previously, if `component-a` did not handle the action
+it would silently continue.  Now, an assertion would be triggered.
+
+* [PERF] Speedup Mixin creation.
+
+
+### 1.9.0-beta.1
+
+* [BREAKING] Require Handlebars 2.0. See [blog post](http://emberjs.com/blog/2014/10/16/handlebars-update.html) for details.
+* Allow all rejection types in promises to be handled.
+* Mandatory setter checks for configurable, and does not clobber non-configurable properties.
+* Remove long deprecated `Ember.empty` and `Ember.none`.
+* Refactor `Ember.platform`.
+* `Ember.HashLocation` no longer assumes any hash is a route, uses forward slash prefix convention `#/foo`.
+* Log unhandled promise rejections in testing.
+* Deprecate `Ember.Handlebars.get`.
+* Warn if FEATURES flagging is used in non-canary, debug builds.
+* Streamify template bindings.
+* Make Ember.Namespace#toString ember-cli aware.
+* Prevent extra `method.toString` checks when setting `_super`.
+* [PERF] Speedup watchKey by preventing for in related deopt.
+* [FEATURE] ember-routing-fire-activate-deactivate-events.
+* [FEATURE] ember-testing-pause-test.
+
+
 ### Ember 1.8.1 (November, 4, 2014)
 
 * [BUGFIX] Make sure that `{{view}}` can accept a Ember.View instance.

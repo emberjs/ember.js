@@ -1,5 +1,6 @@
 {
   "features": {
+    "features-stripped-test": false,
     "ember-routing-named-substates": false,
     "ember-routing-add-model-option": true,
     "ember-routing-linkto-target-attribute": true,
@@ -11,7 +12,10 @@
     "property-brace-expansion-improvement": true,
     "ember-routing-handlebars-action-with-key-code": false,
     "ember-runtime-item-controller-inline-class": false,
-    "mandatory-setter": "development-only"
+    "ember-metal-injected-properties": false,
+    "mandatory-setter": "development-only",
+    "ember-routing-fire-activate-deactivate-events": true,
+    "ember-testing-pause-test": true
   },
   "debugStatements": [
     "Ember.warn",

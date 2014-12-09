@@ -1,6 +1,4 @@
-import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
 import jQuery from "ember-views/system/jquery";
@@ -152,6 +150,8 @@ test("destroy more forcibly removes the view", function() {
 
 QUnit.module("EmberView - append() and appendTo() in a view hierarchy", {
   setup: function() {
+    expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
     View = ContainerView.extend({
       childViews: ['child'],
       child: EmberView.extend({
@@ -199,6 +199,8 @@ test("should be added to the document body when calling append()", function() {
 
 QUnit.module("EmberView - removing views in a view hierarchy", {
   setup: function() {
+    expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
     willDestroyCalled = 0;
 
     view = ContainerView.create({

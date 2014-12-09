@@ -3,8 +3,6 @@ import {
   reset as instrumentationReset
 } from "ember-metal/instrumentation";
 import run from "ember-metal/run_loop";
-import { guidFor } from "ember-metal/utils";
-import { computed } from "ember-metal/computed";
 import EmberView from "ember-views/views/view";
 
 var view, beforeCalls, afterCalls;

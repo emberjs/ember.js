@@ -1,4 +1,3 @@
-/*globals Handlebars, Metamorph:true */
 /*jshint newcap:false*/
 
 
@@ -8,7 +7,6 @@
 */
 
 import EmberHandlebars from "ember-handlebars-compiler"; // EmberHandlebars.SafeString;
-var SafeString = EmberHandlebars.SafeString;
 
 import Ember from "ember-metal/core"; // Ember.K
 var K = Ember.K;
@@ -18,23 +16,18 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
-import View from "ember-views/views/view";
 import htmlSafe from "ember-handlebars/string";
 import {
   cloneStates,
-  states
+  states as viewStates
 } from "ember-views/views/states";
-var viewStates = states;
 
 import _MetamorphView from "ember-handlebars/views/metamorph_view";
-import { handlebarsGet } from "ember-handlebars/ext";
 import { uuid } from "ember-metal/utils";
 
-function SimpleHandlebarsView(path, pathRoot, isEscaped, templateData) {
-  this.path = path;
-  this.pathRoot = pathRoot;
+function SimpleHandlebarsView(lazyValue, isEscaped) {
+  this.lazyValue = lazyValue;
   this.isEscaped = isEscaped;
-  this.templateData = templateData;
   this[Ember.GUID_KEY] = uuid();
   this._lastNormalizedValue = undefined;
   this.state = 'preRender';
@@ -65,23 +58,11 @@ SimpleHandlebarsView.prototype = {
   propertyDidChange: K,
 
   normalizedValue: function() {
-    var path = this.path;
-    var pathRoot = this.pathRoot;
-    var escape = this.isEscaped;
-    var result, templateData;
+    var result = this.lazyValue.value();
 
-    // Use the pathRoot as the result if no path is provided. This
-    // happens if the path is `this`, which gets normalized into
-    // a `pathRoot` of the current Handlebars context and a path
-    // of `''`.
-    if (path === '') {
-      result = pathRoot;
-    } else {
-      templateData = this.templateData;
-      result = handlebarsGet(pathRoot, path, { data: templateData });
-    }
-
-    if (!escape && !(result instanceof SafeString)) {
+    if (result === null || result === undefined) {
+      result = "";
+    } else if (!this.isEscaped && !(result instanceof EmberHandlebars.SafeString)) {
       result = htmlSafe(result);
     }
 
@@ -112,7 +93,7 @@ SimpleHandlebarsView.prototype = {
   update: function () {
     this.updateId = null;
     var value = this.normalizedValue();
-    // doesn't diff SafeString instances
+    // doesn't diff EmberHandlebars.SafeString instances
     if (value !== this._lastNormalizedValue) {
       this._lastNormalizedValue = value;
       this._morph.update(value);
@@ -124,7 +105,7 @@ SimpleHandlebarsView.prototype = {
   }
 };
 
-states = cloneStates(viewStates);
+var states = cloneStates(viewStates);
 
 merge(states._default, {
   rerenderIfNeeded: K
@@ -212,49 +193,12 @@ var _HandlebarsBoundView = _MetamorphView.extend({
   */
   inverseTemplate: null,
 
-
-  /**
-    The path to look up on `pathRoot` that is passed to
-    `shouldDisplayFunc` to determine which template to render.
-
-    In addition, if `preserveContext` is `false,` the object at this path will
-    be passed to the template when rendering.
-
-    @property path
-    @type String
-    @default null
-  */
-  path: null,
-
-  /**
-    The object from which the `path` will be looked up. Sometimes this is the
-    same as the `previousContext`, but in cases where this view has been
-    generated for paths that start with a keyword such as `view` or
-    `controller`, the path root will be that resolved object.
-
-    @property pathRoot
-    @type Object
-  */
-  pathRoot: null,
+  lazyValue: null,
 
   normalizedValue: function() {
-    var path = get(this, 'path');
-    var pathRoot  = get(this, 'pathRoot');
+    var value = this.lazyValue.value();
     var valueNormalizer = get(this, 'valueNormalizerFunc');
-    var result, templateData;
-
-    // Use the pathRoot as the result if no path is provided. This
-    // happens if the path is `this`, which gets normalized into
-    // a `pathRoot` of the current Handlebars context and a path
-    // of `''`.
-    if (path === '') {
-      result = pathRoot;
-    } else {
-      templateData = get(this, 'templateData');
-      result = handlebarsGet(pathRoot, path, { data: templateData });
-    }
-
-    return valueNormalizer ? valueNormalizer(result) : result;
+    return valueNormalizer ? valueNormalizer(value) : value;
   },
 
   rerenderIfNeeded: function() {
@@ -313,7 +257,7 @@ var _HandlebarsBoundView = _MetamorphView.extend({
         // expression to the render context and return.
           if (result === null || result === undefined) {
             result = "";
-          } else if (!(result instanceof SafeString)) {
+          } else if (!(result instanceof EmberHandlebars.SafeString)) {
             result = String(result);
           }
 

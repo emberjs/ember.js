@@ -8,7 +8,7 @@
 */
 import Ember from "ember-metal/core";
 import {
-  meta,
+  meta as metaFor,
   tryFinally,
   apply,
   applyStr
@@ -16,7 +16,6 @@ import {
 import { create } from "ember-metal/platform";
 
 var a_slice = [].slice;
-var metaFor = meta;
 
 /* listener flags */
 var ONCE = 1;
@@ -57,21 +56,26 @@ function indexOf(array, target, method) {
 function actionsFor(obj, eventName) {
   var meta = metaFor(obj, true);
   var actions;
+  var listeners = meta.listeners;
 
-  if (!meta.listeners) { meta.listeners = {}; }
-
-  if (!meta.hasOwnProperty('listeners')) {
+  if (!listeners) {
+    listeners = meta.listeners = create(null);
+    listeners.__source__ = obj;
+  } else if (listeners.__source__ !== obj) {
     // setup inherited copy of the listeners object
-    meta.listeners = create(meta.listeners);
+    listeners = meta.listeners = create(listeners);
+    listeners.__source__ = obj;
   }
 
-  actions = meta.listeners[eventName];
+  actions = listeners[eventName];
 
   // if there are actions, but the eventName doesn't exist in our listeners, then copy them from the prototype
-  if (actions && !meta.listeners.hasOwnProperty(eventName)) {
-    actions = meta.listeners[eventName] = meta.listeners[eventName].slice();
+  if (actions && actions.__source__ !== obj) {
+    actions = listeners[eventName] = listeners[eventName].slice();
+    actions.__source__ = obj;
   } else if (!actions) {
-    actions = meta.listeners[eventName] = [];
+    actions = listeners[eventName] = [];
+    actions.__source__ = obj;
   }
 
   return actions;
@@ -122,7 +126,7 @@ export function listenersDiff(obj, eventName, otherActions) {
   @for Ember
   @param obj
   @param {String} eventName
-  @param {Object|Function} targetOrMethod A target object or a function
+  @param {Object|Function} target A target object or a function
   @param {Function|String} method A function or the name of a function to be called on `target`
   @param {Boolean} once A flag whether a function should only be called once
 */
@@ -158,7 +162,7 @@ export function addListener(obj, eventName, target, method, once) {
   @for Ember
   @param obj
   @param {String} eventName
-  @param {Object|Function} targetOrMethod A target object or a function
+  @param {Object|Function} target A target object or a function
   @param {Function|String} method A function or the name of a function to be called on `target`
 */
 function removeListener(obj, eventName, target, method) {
@@ -210,7 +214,7 @@ function removeListener(obj, eventName, target, method) {
   @private
   @param obj
   @param {String} eventName
-  @param {Object|Function} targetOrMethod A target object or a function
+  @param {Object|Function} target A target object or a function
   @param {Function|String} method A function or the name of a function to be called on `target`
   @param {Function} callback
 */
@@ -241,8 +245,8 @@ export function suspendListener(obj, eventName, target, method, callback) {
 
   @private
   @param obj
-  @param {Array} eventName Array of event names
-  @param {Object|Function} targetOrMethod A target object or a function
+  @param {Array} eventNames Array of event names
+  @param {Object|Function} target A target object or a function
   @param {Function|String} method A function or the name of a function to be called on `target`
   @param {Function} callback
 */
@@ -292,8 +296,11 @@ export function watchedEvents(obj) {
   var listeners = obj['__ember_meta__'].listeners, ret = [];
 
   if (listeners) {
-    for(var eventName in listeners) {
-      if (listeners[eventName]) { ret.push(eventName); }
+    for (var eventName in listeners) {
+      if (eventName !== '__source__' &&
+          listeners[eventName]) {
+        ret.push(eventName);
+      }
     }
   }
   return ret;

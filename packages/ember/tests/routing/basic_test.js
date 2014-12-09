@@ -4,7 +4,7 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import ActionManager from "ember-views/system/action_manager";
 
-var Router, App, AppView, templates, router, container, originalLoggerError;
+var Router, App, router, container, originalLoggerError;
 var compile = Ember.Handlebars.compile;
 
 function bootApplication() {
@@ -421,7 +421,7 @@ test('defining templateName allows other templates to be rendered', function() {
     "<div class='alert-box'>Invader!</div>"
   );
   Ember.TEMPLATES.the_real_home_template = Ember.Handlebars.compile(
-    "<p>THIS IS THE REAL HOME</p>{{outlet alert}}"
+    "<p>THIS IS THE REAL HOME</p>{{outlet 'alert'}}"
   );
 
   App.HomeController = Ember.Controller.extend();
@@ -647,7 +647,7 @@ test("The Homepage with a computed context that does not get overridden", functi
   });
 
   Ember.TEMPLATES.home = Ember.Handlebars.compile(
-    "<ul>{{#each}}<li>{{this}}</li>{{/each}}</ul>"
+    "<ul>{{#each passage in model}}<li>{{passage}}</li>{{/each}}</ul>"
   );
 
   bootApplication();
@@ -970,7 +970,9 @@ test("ApplicationRoute's default error handler can be overridden", function() {
 });
 
 test("ApplicationRoute's default error handler can be overridden (with DEPRECATED `events`)", function() {
-  testOverridableErrorHandler('events');
+  ignoreDeprecation(function() {
+    testOverridableErrorHandler('events');
+  });
 });
 
 asyncTest("Moving from one page to another triggers the correct callbacks", function() {
@@ -1035,7 +1037,7 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
     })
   });
 
-  var menuItem, resolve;
+  var menuItem;
 
   App.MenuItem = Ember.Object.extend();
   App.MenuItem.reopenClass({
@@ -1568,7 +1570,7 @@ test("Route inherits model from parent route", function() {
   });
 
   var post1 = {}, post2 = {}, post3 = {}, currentPost;
-  var share1 = {}, share2 = {}, share3 = {}, currentShare;
+  var share1 = {}, share2 = {}, share3 = {};
 
   var posts = {
     1: post1,
@@ -2098,7 +2100,8 @@ test("Router accounts for rootURL on page load when using history location", fun
 
       setHistory(this, path);
       this.set('location', {
-        pathname: path
+        pathname: path,
+        href: 'http://localhost/' + path
       });
     },
 
@@ -2162,7 +2165,7 @@ test("The rootURL is passed properly to the location implementation", function()
 
 
 test("Only use route rendered into main outlet for default into property on child", function() {
-  Ember.TEMPLATES.application = compile("{{outlet menu}}{{outlet}}");
+  Ember.TEMPLATES.application = compile("{{outlet 'menu'}}{{outlet}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
   Ember.TEMPLATES['posts/index'] = compile("postsIndex");
   Ember.TEMPLATES['posts/menu'] = compile("postsMenu");
@@ -2473,7 +2476,7 @@ test("Promises encountered on app load put app into loading state until resolved
 });
 
 test("Route should tear down multiple outlets", function() {
-  Ember.TEMPLATES.application = compile("{{outlet menu}}{{outlet}}{{outlet footer}}");
+  Ember.TEMPLATES.application = compile("{{outlet 'menu'}}{{outlet}}{{outlet 'footer'}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
   Ember.TEMPLATES.users = compile("users");
   Ember.TEMPLATES['posts/index'] = compile("postsIndex");
@@ -2536,7 +2539,7 @@ test("Route should tear down multiple outlets", function() {
 
 
 test("Route supports clearing outlet explicitly", function() {
-  Ember.TEMPLATES.application = compile("{{outlet}}{{outlet modal}}");
+  Ember.TEMPLATES.application = compile("{{outlet}}{{outlet 'modal'}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
   Ember.TEMPLATES.users = compile("users");
   Ember.TEMPLATES['posts/index'] = compile("postsIndex {{outlet}}");
@@ -2619,7 +2622,7 @@ test("Route supports clearing outlet explicitly", function() {
 });
 
 test("Route supports clearing outlet using string parameter", function() {
-  Ember.TEMPLATES.application = compile("{{outlet}}{{outlet modal}}");
+  Ember.TEMPLATES.application = compile("{{outlet}}{{outlet 'modal'}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
   Ember.TEMPLATES.users = compile("users");
   Ember.TEMPLATES['posts/index'] = compile("postsIndex {{outlet}}");
@@ -2677,7 +2680,7 @@ test("Route silently fails when cleaning an outlet from an inactive view", funct
   expect(1); // handleURL
 
   Ember.TEMPLATES.application = compile("{{outlet}}");
-  Ember.TEMPLATES.posts = compile("{{outlet modal}}");
+  Ember.TEMPLATES.posts = compile("{{outlet 'modal'}}");
   Ember.TEMPLATES.modal = compile("A Yo.");
 
   Router.map(function() {
@@ -2814,6 +2817,66 @@ test("`didTransition` can be reopened", function() {
 
   bootApplication();
 });
+
+if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
+  test("`activate` event fires on the route", function() {
+    expect(2);
+
+    var eventFired = 0;
+
+    Router.map(function(){
+      this.route("nork");
+    });
+
+    App.NorkRoute = Ember.Route.extend({
+      init: function() {
+        this._super();
+
+        this.on("activate", function() {
+          equal(++eventFired, 1, "activate event is fired once");
+        });
+      },
+
+      activate: function() {
+        ok(true, "activate hook is called");
+      }
+    });
+
+    bootApplication();
+
+    Ember.run(router, 'transitionTo', 'nork');
+  });
+
+  test("`deactivate` event fires on the route", function() {
+    expect(2);
+
+    var eventFired = 0;
+
+    Router.map(function(){
+      this.route("nork");
+      this.route("dork");
+    });
+
+    App.NorkRoute = Ember.Route.extend({
+      init: function() {
+        this._super();
+
+        this.on("deactivate", function() {
+          equal(++eventFired, 1, "deactivate event is fired once");
+        });
+      },
+
+      deactivate: function() {
+        ok(true, "deactivate hook is called");
+      }
+    });
+
+    bootApplication();
+
+    Ember.run(router, 'transitionTo', 'nork');
+    Ember.run(router, 'transitionTo', 'dork');
+  });
+}
 
 test("Actions can be handled by inherited action handlers", function() {
 
@@ -3265,4 +3328,77 @@ test("Route#resetController gets fired when changing models and exiting routes",
 
   Ember.run(router, 'transitionTo', 'out');
   deepEqual(calls, [['reset', 'c'], ['reset', 'a'], ['setup', 'out']]);
+});
+
+test("Exception during initialization of non-initial route is not swallowed", function() {
+  Router.map(function() {
+    this.route('boom');
+  });
+  App.BoomRoute = Ember.Route.extend({
+    init: function() {
+      throw new Error("boom!");
+    }
+  });
+  bootApplication();
+  throws(function(){
+    Ember.run(router, 'transitionTo', 'boom');
+  }, /\bboom\b/);
+});
+
+
+test("Exception during load of non-initial route is not swallowed", function() {
+  Router.map(function() {
+    this.route('boom');
+  });
+  var lookup = container.lookup;
+  container.lookup = function() {
+    if (arguments[0] === 'route:boom') {
+      throw new Error("boom!");
+    }
+    return lookup.apply(this, arguments);
+  };
+  App.BoomRoute = Ember.Route.extend({
+    init: function() {
+      throw new Error("boom!");
+    }
+  });
+  bootApplication();
+  throws(function(){
+    Ember.run(router, 'transitionTo', 'boom');
+  });
+});
+
+test("Exception during initialization of initial route is not swallowed", function() {
+  Router.map(function() {
+    this.route('boom', {path: '/'});
+  });
+  App.BoomRoute = Ember.Route.extend({
+    init: function() {
+      throw new Error("boom!");
+    }
+  });
+  throws(function(){
+    bootApplication();
+  }, /\bboom\b/);
+});
+
+test("Exception during load of initial route is not swallowed", function() {
+  Router.map(function() {
+    this.route('boom', {path: '/'});
+  });
+  var lookup = container.lookup;
+  container.lookup = function() {
+    if (arguments[0] === 'route:boom') {
+      throw new Error("boom!");
+    }
+    return lookup.apply(this, arguments);
+  };
+  App.BoomRoute = Ember.Route.extend({
+    init: function() {
+      throw new Error("boom!");
+    }
+  });
+  throws(function(){
+    bootApplication();
+  }, /\bboom\b/);
 });

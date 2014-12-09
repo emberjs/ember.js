@@ -108,3 +108,12 @@ test("given `Ember.testing = true`, correctly informs the test suite about async
     equal(asyncEnded, 2);
   });
 });
+
+test('TransitionAborted errors are not re-thrown', function() {
+  expect(1);
+  var fakeTransitionAbort = { name: 'TransitionAborted' };
+
+  run(RSVP, 'reject', fakeTransitionAbort);
+
+  ok(true, 'did not throw an error when dealing with TransitionAborted');
+});

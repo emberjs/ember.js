@@ -61,7 +61,7 @@ test("Resetting the application allows controller properties to be set when a ro
     }
   });
 
-  var router = container.lookup('router:main');
+  container.lookup('router:main');
 
   Ember.run(App, 'advanceReadiness');
 
@@ -98,7 +98,7 @@ test("Destroying the application resets the router before the container is destr
     }
   });
 
-  var router = container.lookup('router:main');
+  container.lookup('router:main');
 
   Ember.run(App, 'advanceReadiness');
 

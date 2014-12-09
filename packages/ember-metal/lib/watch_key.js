@@ -1,13 +1,16 @@
 import Ember from "ember-metal/core";
 import {
-  meta,
+  meta as metaFor,
   typeOf
 } from "ember-metal/utils";
-import { defineProperty as o_defineProperty, hasPropertyAccessors } from "ember-metal/platform";
-import { MANDATORY_SETTER_FUNCTION, DEFAULT_GETTER_FUNCTION } from "ember-metal/properties";
-
-var metaFor = meta; // utils.js
-
+import {
+  defineProperty as o_defineProperty,
+  hasPropertyAccessors
+} from "ember-metal/platform";
+import {
+  MANDATORY_SETTER_FUNCTION,
+  DEFAULT_GETTER_FUNCTION
+} from "ember-metal/properties";
 
 export function watchKey(obj, keyName, meta) {
   // can't watch length on Array - it is special...
@@ -39,8 +42,11 @@ export function watchKey(obj, keyName, meta) {
 
 if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   var handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
+    var descriptor = Object.getOwnPropertyDescriptor && Object.getOwnPropertyDescriptor(obj, keyName);
+    var configurable = descriptor ? descriptor.configurable : true;
+
     // this x in Y deopts, so keeping it in this function is better;
-    if (keyName in obj) {
+    if (configurable && keyName in obj) {
       m.values[keyName] = obj[keyName];
       o_defineProperty(obj, keyName, {
         configurable: true,
@@ -53,7 +59,8 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
 }
 
 export function unwatchKey(obj, keyName, meta) {
-  var m = meta || metaFor(obj), watching = m.watching;
+  var m = meta || metaFor(obj);
+  var watching = m.watching;
 
   if (watching[keyName] === 1) {
     watching[keyName] = 0;

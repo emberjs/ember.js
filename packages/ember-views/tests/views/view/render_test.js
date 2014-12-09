@@ -1,6 +1,5 @@
 import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
-import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
@@ -19,10 +18,10 @@ QUnit.module("EmberView#render", {
 });
 
 test("default implementation does not render child views", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   var rendered = 0;
-  var updated = 0;
   var parentRendered = 0;
-  var parentUpdated = 0 ;
 
   view = ContainerView.createWithMixins({
     childViews: ["child"],
@@ -50,9 +49,10 @@ test("default implementation does not render child views", function() {
 });
 
 test("should invoke renderChildViews if layer is destroyed then re-rendered", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   var rendered = 0;
   var parentRendered = 0;
-  var parentUpdated = 0 ;
 
   view = ContainerView.createWithMixins({
     childViews: ["child"],
@@ -92,9 +92,7 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
 });
 
 test("should render child views with a different tagName", function() {
-  var rendered = 0;
-  var parentRendered = 0;
-  var parentUpdated = 0 ;
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.create({
     childViews: ["child"],
@@ -122,6 +120,7 @@ test("should add ember-view to views", function() {
 });
 
 test("should allow hX tags as tagName", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
 
   view = ContainerView.create({
     childViews: ["child"],
@@ -174,6 +173,8 @@ test("should re-render if the context is changed", function() {
 });
 
 test("renders contained view with omitted start tag and parent view context", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   view = ContainerView.createWithMixins({
     tagName: 'table',
     childViews: ["row"],

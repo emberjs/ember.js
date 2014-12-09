@@ -34,7 +34,8 @@ if (!keys || !canDefineNonEnumerableProperties) {
         throw new TypeError('Object.keys called on non-object');
       }
 
-      var result = [], prop, i;
+      var result = [];
+      var prop, i;
 
       for (prop in obj) {
         if (prop !== '_super' &&

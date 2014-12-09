@@ -1,4 +1,4 @@
-import Ember from 'ember-metal/core'; // A, FEATURES, assert, TESTING_DEPRECATION
+import Ember from 'ember-metal/core'; // A, FEATURES, assert
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EventDispatcher from "ember-views/system/event_dispatcher";
@@ -15,7 +15,6 @@ import EmberView from "ember-views/views/view";
 import EmberComponent from "ember-views/views/component";
 import jQuery from "ember-views/system/jquery";
 
-import "ember-routing-handlebars/helpers/shared";
 import {
   ActionHelper,
   actionHelper
@@ -99,7 +98,7 @@ test("should by default target the view's controller", function() {
   var controller = {};
 
   ActionHelper.registerAction = function(actionName, options) {
-    registeredTarget = options.target;
+    registeredTarget = options.target.value();
   };
 
   view = EmberView.create({
@@ -109,20 +108,19 @@ test("should by default target the view's controller", function() {
 
   appendView();
 
-  equal(registeredTarget.root, controller, "The controller was registered as the target");
+  equal(registeredTarget, controller, "The controller was registered as the target");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
 
 test("Inside a yield, the target points at the original target", function() {
-  var controller = {};
   var watted = false;
 
   var component = EmberComponent.extend({
     boundText: "inner",
     truthy: true,
     obj: {},
-    layout: EmberHandlebars.compile("<div>{{boundText}}</div><div>{{#if truthy}}{{#with obj}}{{yield}}{{/with}}{{/if}}</div>")
+    layout: EmberHandlebars.compile("<div>{{boundText}}</div><div>{{#if truthy}}{{yield}}{{/if}}</div>")
   });
 
   view = EmberView.create({
@@ -132,13 +130,9 @@ test("Inside a yield, the target points at the original target", function() {
       wat: function() {
         watted = true;
       },
-      obj: {
-        component: component,
-        truthy: true,
-        boundText: 'insideWith'
-      }
+      component: component
     },
-    template: EmberHandlebars.compile('{{#with obj}}{{#if truthy}}{{#view component}}{{#if truthy}}<div {{action "wat"}} class="wat">{{boundText}}</div>{{/if}}{{/view}}{{/if}}{{/with}}')
+    template: EmberHandlebars.compile('{{#if truthy}}{{#view component}}{{#if truthy}}<div {{action "wat"}} class="wat">{{boundText}}</div>{{/if}}{{/view}}{{/if}}')
   });
 
   appendView();
@@ -150,11 +144,11 @@ test("Inside a yield, the target points at the original target", function() {
   equal(watted, true, "The action was called on the right context");
 });
 
-test("should target the current controller inside an {{each}} loop", function() {
+test("should target the current controller inside an {{each}} loop [DEPRECATED]", function() {
   var registeredTarget;
 
   ActionHelper.registerAction = function(actionName, options) {
-    registeredTarget = options.target;
+    registeredTarget = options.target.value();
   };
 
   var itemController = EmberObjectController.create();
@@ -175,18 +169,20 @@ test("should target the current controller inside an {{each}} loop", function() 
     template: EmberHandlebars.compile('{{#each controller}}{{action "editTodo"}}{{/each}}')
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
-  equal(registeredTarget.root, itemController, "the item controller is the target of action");
+  equal(registeredTarget, itemController, "the item controller is the target of action");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
 
-test("should target the with-controller inside an {{#with controller='person'}}", function() {
+test("should target the with-controller inside an {{#with controller='person'}} [DEPRECATED]", function() {
   var registeredTarget;
 
   ActionHelper.registerAction = function(actionName, options) {
-    registeredTarget = options.target;
+    registeredTarget = options.target.value();
   };
 
   var PersonController = EmberObjectController.extend();
@@ -204,14 +200,19 @@ test("should target the with-controller inside an {{#with controller='person'}}"
 
   container.register('controller:person', PersonController);
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
-  ok(registeredTarget.root instanceof PersonController, "the with-controller is the target of action");
+  ok(registeredTarget instanceof PersonController, "the with-controller is the target of action");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
 
-test("should target the with-controller inside an {{each}} in a {{#with controller='person'}}", function() {
+test("should target the with-controller inside an {{each}} in a {{#with controller='person'}} [DEPRECATED]", function() {
+  expectDeprecation('Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+  expectDeprecation('Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
+
   var eventsCalled = [];
 
   var PeopleController = EmberArrayController.extend({
@@ -249,7 +250,7 @@ test("should allow a target to be specified", function() {
   var registeredTarget;
 
   ActionHelper.registerAction = function(actionName, options) {
-    registeredTarget = options.target;
+    registeredTarget = options.target.value();
   };
 
   var anotherTarget = EmberView.create();
@@ -262,8 +263,7 @@ test("should allow a target to be specified", function() {
 
   appendView();
 
-  equal(registeredTarget.options.data.keywords.view, view, "The specified target was registered");
-  equal(registeredTarget.target, 'view.anotherTarget', "The specified target was registered");
+  equal(registeredTarget, anotherTarget, "The specified target was registered");
 
   ActionHelper.registerAction = originalRegisterAction;
 
@@ -303,7 +303,9 @@ test("should lazily evaluate the target", function() {
 
   equal(firstEdit, 1);
 
-  set(controller, 'theTarget', second);
+  run(function() {
+    set(controller, 'theTarget', second);
+  });
 
   run(function() {
     jQuery('a').trigger('click');
@@ -468,7 +470,7 @@ test("should work properly in an #each block", function() {
   view = EmberView.create({
     controller: controller,
     items: Ember.A([1, 2, 3, 4]),
-    template: EmberHandlebars.compile('{{#each view.items}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
+    template: EmberHandlebars.compile('{{#each item in view.items}}<a href="#" {{action "edit"}}>click me</a>{{/each}}')
   });
 
   appendView();
@@ -478,7 +480,27 @@ test("should work properly in an #each block", function() {
   ok(eventHandlerWasCalled, "The event handler was called");
 });
 
-test("should work properly in a #with block", function() {
+test("should work properly in a {{#with foo as bar}} block", function() {
+  var eventHandlerWasCalled = false;
+
+  var controller = EmberController.extend({
+    actions: { edit: function() { eventHandlerWasCalled = true; } }
+  }).create();
+
+  view = EmberView.create({
+    controller: controller,
+    something: {ohai: 'there'},
+    template: EmberHandlebars.compile('{{#with view.something as somethingElse}}<a href="#" {{action "edit"}}>click me</a>{{/with}}')
+  });
+
+  appendView();
+
+  view.$('a').trigger('click');
+
+  ok(eventHandlerWasCalled, "The event handler was called");
+});
+
+test("should work properly in a #with block [DEPRECATED]", function() {
   var eventHandlerWasCalled = false;
 
   var controller = EmberController.extend({
@@ -491,7 +513,9 @@ test("should work properly in a #with block", function() {
     template: EmberHandlebars.compile('{{#with view.something}}<a href="#" {{action "edit"}}>click me</a>{{/with}}')
   });
 
-  appendView();
+  expectDeprecation(function() {
+    appendView();
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   view.$('a').trigger('click');
 
@@ -528,7 +552,7 @@ test("should unregister event handlers on inside virtual views", function() {
     }
   ]);
   view = EmberView.create({
-    template: EmberHandlebars.compile('{{#each view.things}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
+    template: EmberHandlebars.compile('{{#each thing in view.things}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
     things: things
   });
 
@@ -607,7 +631,6 @@ test("should not bubble an event from action helper to original parent event if 
 
 test("should allow 'send' as action name (#594)", function() {
   var eventHandlerWasCalled = false;
-  var eventObjectSent;
 
   var controller = EmberController.extend({
     send: function() { eventHandlerWasCalled = true; }
@@ -642,8 +665,8 @@ test("should send the view, event and current Handlebars context to the action",
   var aContext = { aTarget: aTarget };
 
   view = EmberView.create({
-    aContext: aContext,
-    template: EmberHandlebars.compile('{{#with view.aContext}}<a id="edit" href="#" {{action "edit" this target="aTarget"}}>edit</a>{{/with}}')
+    context: aContext,
+    template: EmberHandlebars.compile('<a id="edit" href="#" {{action "edit" this target="aTarget"}}>edit</a>')
   });
 
   appendView();
@@ -691,6 +714,30 @@ test("should unwrap controllers passed as a context", function() {
   view.$('button').trigger('click');
 
   equal(passedContext, model, "the action was passed the unwrapped model");
+});
+
+test("should not unwrap controllers passed as `controller`", function() {
+  var passedContext;
+  var model = EmberObject.create();
+  var controller = EmberObjectController.extend({
+    model: model,
+    actions: {
+      edit: function(context) {
+        passedContext = context;
+      }
+    }
+  }).create();
+
+  view = EmberView.create({
+    controller: controller,
+    template: EmberHandlebars.compile('<button {{action "edit" controller}}>edit</button>')
+  });
+
+  appendView();
+
+  view.$('button').trigger('click');
+
+  equal(passedContext, controller, "the action was passed the controller");
 });
 
 test("should allow multiple contexts to be specified", function() {
@@ -743,13 +790,6 @@ test("should allow multiple contexts to be specified mixed with string args", fu
 
   deepEqual(passedParams, ["herp", model], "the action was called with the passed contexts");
 });
-
-var namespace = {
-  "Component": {
-    toString: function() { return "Component"; },
-    find: function() { return { id: 1 }; }
-  }
-};
 
 var compile = function(string) {
   return EmberHandlebars.compile(string);
@@ -931,7 +971,9 @@ test("a quoteless parameter should allow dynamic lookup of the actionName", func
   });
 
   var testBoundAction = function(propertyValue){
-    controller.set('hookMeUp', propertyValue);
+    run(function() {
+      controller.set('hookMeUp', propertyValue);
+    });
 
     run(function(){
       view.$("#woot-bound-param").click();
@@ -947,8 +989,8 @@ test("a quoteless parameter should allow dynamic lookup of the actionName", func
   deepEqual(actionOrder, ['whompWhomp', 'sloopyDookie', 'biggityBoom'], 'action name was looked up properly');
 });
 
-test("a quoteless parameter should lookup actionName in context", function(){
-  expect(4);
+test("a quoteless parameter should lookup actionName in context [DEPRECATED]", function(){
+  expect(5);
   var lastAction;
   var actionOrder = [];
 
@@ -976,10 +1018,12 @@ test("a quoteless parameter should lookup actionName in context", function(){
     }
   }).create();
 
-  run(function() {
-    view.set('controller', controller);
-    view.appendTo('#qunit-fixture');
-  });
+  expectDeprecation(function() {
+    run(function() {
+      view.set('controller', controller);
+      view.appendTo('#qunit-fixture');
+    });
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   var testBoundAction = function(propertyValue){
     run(function(){

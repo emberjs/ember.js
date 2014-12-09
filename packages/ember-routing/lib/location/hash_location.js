@@ -2,7 +2,7 @@ import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
-import {guidFor} from "ember-metal/utils";
+import { guidFor } from "ember-metal/utils";
 
 import EmberObject from "ember-runtime/system/object";
 import EmberLocation from "ember-routing/location/api";
@@ -39,15 +39,33 @@ export default EmberObject.extend({
   getHash: EmberLocation._getHash,
 
   /**
-    Returns the current `location.hash`, minus the '#' at the front.
+    Returns the normalized URL, constructed from `location.hash`.
+
+    e.g. `#/foo` => `/foo` as well as `#/foo#bar` => `/foo#bar`.
+
+    By convention, hashed paths must begin with a forward slash, otherwise they
+    are not treated as a path so we can distinguish intent.
 
     @private
     @method getURL
   */
   getURL: function() {
-    var path = this.getHash().substr(1);
-    Ember.deprecate('location.hash value is ambiguous. Support for this will be removed soon. When using location: "hash|auto" your hash paths MUST begin with a forward slash. e.g. #/' + path + ' NOT #' + path + '. See http://emberjs.com/guides/deprecations/#toc_location-hash-paths-must-now-include-a-forward-slash-e-g-foo-not-foo', path.length === 0 || path.charAt(0) === '/');
-    return path;
+    var originalPath = this.getHash().substr(1);
+    var outPath = originalPath;
+    
+    if (outPath.charAt(0) !== '/') {
+      outPath = '/';
+
+      // Only add the # if the path isn't empty.
+      // We do NOT want `/#` since the ampersand
+      // is only included (conventionally) when
+      // the location.hash has a value
+      if (originalPath) {
+        outPath += '#' + originalPath;
+      }
+    }
+
+    return outPath;
   },
 
   /**

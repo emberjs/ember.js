@@ -1,7 +1,7 @@
 import "ember";
 
-var Router, App, AppView, templates, router, eventDispatcher, container;
-var get = Ember.get, set = Ember.set, map = Ember.ArrayPolyfills.map;
+var Router, App, AppView, router, container;
+var set = Ember.set;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -447,7 +447,7 @@ test("The {{link-to}} helper moves into the named route with context", function(
     this.resource("item", { path: "/item/:id" });
   });
 
-  Ember.TEMPLATES.about = Ember.Handlebars.compile("<h3>List</h3><ul>{{#each controller}}<li>{{#link-to 'item' this}}{{name}}{{/link-to}}</li>{{/each}}</ul>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
+  Ember.TEMPLATES.about = Ember.Handlebars.compile("<h3>List</h3><ul>{{#each person in controller}}<li>{{#link-to 'item' person}}{{person.name}}{{/link-to}}</li>{{/each}}</ul>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
 
   App.AboutRoute = Ember.Route.extend({
     model: function() {
@@ -552,7 +552,7 @@ if(Ember.FEATURES.isEnabled('ember-routing-linkto-target-attribute')) {
   });
 
   test("The {{link-to}} helper should not transition if target is not equal to _self or empty", function() {
-    Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#linkTo 'about' id='about-link' replace=true target='_blank'}}About{{/linkTo}}");
+    Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#link-to 'about' id='about-link' replace=true target='_blank'}}About{{/link-to}}");
 
     Router.map(function() {
       this.route("about");
@@ -859,25 +859,20 @@ test("The {{link-to}} helper's bound parameter functionality works as expected i
   equal(normalizeUrl($link.attr('href')), '/posts/1', 'self link renders post 1');
 
   Ember.run(postController, 'set', 'model', secondPost);
-  var linkView = Ember.View.views['self-link'];
 
   equal(normalizeUrl($link.attr('href')), '/posts/2', 'self link updated to post 2');
 });
 
 test("{{linkTo}} is aliased", function() {
-  var originalWarn = Ember.warn;
-
-  Ember.warn = function(msg) {
-    equal(msg, "The 'linkTo' view helper is deprecated in favor of 'link-to'", 'Warning called');
-  };
-
   Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo 'about' id='about-link' replace=true}}About{{/linkTo}}");
 
   Router.map(function() {
     this.route("about");
   });
 
-  bootApplication();
+  expectDeprecation(function() {
+    bootApplication();
+  }, "The 'linkTo' view helper is deprecated in favor of 'link-to'");
 
   Ember.run(function() {
     router.handleURL("/");
@@ -888,8 +883,6 @@ test("{{linkTo}} is aliased", function() {
   });
 
   equal(container.lookup('controller:application').get('currentRouteName'), 'about', 'linkTo worked properly');
-
-  Ember.warn = originalWarn;
 });
 
 test("The {{link-to}} helper is active when a resource is active", function() {
@@ -934,7 +927,9 @@ test("The {{link-to}} helper works in an #each'd array of string route names", f
     index: compile('{{#each routeName in routeNames}}{{#link-to routeName}}{{routeName}}{{/link-to}}{{/each}}{{#each routeNames}}{{#link-to this}}{{this}}{{/link-to}}{{/each}}{{#link-to route1}}a{{/link-to}}{{#link-to route2}}b{{/link-to}}')
   };
 
-  bootApplication();
+  expectDeprecation(function() {
+    bootApplication();
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   function linksEqual($links, expected) {
     equal($links.length, expected.length, "Has correct number of links");
@@ -1049,7 +1044,7 @@ test("The non-block form {{link-to}} helper moves into the named route with cont
     }
   });
 
-  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3><ul>{{#each controller}}<li>{{link-to name 'item' this}}</li>{{/each}}</ul>");
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3><ul>{{#each person in controller}}<li>{{link-to person.name 'item' person}}</li>{{/each}}</ul>");
   Ember.TEMPLATES.item = Ember.Handlebars.compile("<h3>Item</h3><p>{{name}}</p>{{#link-to 'index' id='home-link'}}Home{{/link-to}}");
 
   bootApplication();

@@ -6,7 +6,6 @@ Ember Routing
 @requires ember-views
 */
 
-import EmberHandlebars from "ember-handlebars";
 import Ember from "ember-metal/core";
 
 // ES6TODO: Cleanup modules with side-effects below

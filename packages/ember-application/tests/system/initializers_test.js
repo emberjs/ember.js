@@ -3,7 +3,7 @@ import Application from "ember-application/system/application";
 import { indexOf } from "ember-metal/array";
 import jQuery from "ember-views/system/jquery";
 
-var oldInitializers, app;
+var app;
 
 QUnit.module("Ember.Application initializers", {
   setup: function() {
@@ -14,6 +14,23 @@ QUnit.module("Ember.Application initializers", {
       run(function() { app.destroy(); });
     }
   }
+});
+
+test("initializers require proper 'name' and 'initialize' properties", function() {
+  var MyApplication = Application.extend();
+
+  expectAssertion(function() {
+    run(function() {
+      MyApplication.initializer({name:'initializer'});
+    });
+  });
+
+  expectAssertion(function() {
+    run(function() {
+      MyApplication.initializer({initialize:Ember.K});
+    });
+  });
+
 });
 
 test("initializers can be registered in a specified order", function() {
@@ -152,7 +169,7 @@ test("initializers set on Application subclasses should not be shared between ap
   });
   jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
   run(function() {
-    var firstApp = FirstApp.create({
+    FirstApp.create({
       router: false,
       rootElement: '#qunit-fixture #first'
     });
@@ -160,7 +177,7 @@ test("initializers set on Application subclasses should not be shared between ap
   equal(firstInitializerRunCount, 1, 'first initializer only was run');
   equal(secondInitializerRunCount, 0, 'first initializer only was run');
   run(function() {
-    var secondApp = SecondApp.create({
+    SecondApp.create({
       router: false,
       rootElement: '#qunit-fixture #second'
     });
@@ -190,7 +207,7 @@ test("initializers are concatenated", function(){
 
   jQuery('#qunit-fixture').html('<div id="first"></div><div id="second"></div>');
   run(function() {
-    var firstApp = FirstApp.create({
+    FirstApp.create({
       router: false,
       rootElement: '#qunit-fixture #first'
     });
@@ -199,7 +216,7 @@ test("initializers are concatenated", function(){
   equal(secondInitializerRunCount, 0, 'first initializer only was run when base class created');
   firstInitializerRunCount = 0;
   run(function() {
-    var secondApp = SecondApp.create({
+    SecondApp.create({
       router: false,
       rootElement: '#qunit-fixture #second'
     });

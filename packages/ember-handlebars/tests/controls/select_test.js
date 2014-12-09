@@ -300,7 +300,6 @@ test("multiple selections can be set by changing in place the selection array wh
 test("multiple selections can be set indirectly via bindings and in-place when multiple=true (issue #1058)", function() {
   var indirectContent = EmberObject.create();
 
-  var yehuda = { id: 1, firstName: 'Yehuda' };
   var tom = { id: 2, firstName: 'Tom' };
   var david = { id: 3, firstName: 'David' };
   var brennain = { id: 4, firstName: 'Brennain' };

@@ -1,5 +1,3 @@
-/*globals Global:true */
-
 import Ember from 'ember-metal/core';
 import testBoth from 'ember-metal/tests/props_helper';
 import {
@@ -33,8 +31,6 @@ import {
   endPropertyChanges,
   changeProperties
 } from "ember-metal/property_events";
-import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 
 // ..........................................................
 // ADD OBSERVER

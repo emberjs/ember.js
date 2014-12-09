@@ -5,7 +5,6 @@
 
 import Ember from 'ember-metal/core'; // Ember.assert
 import { get } from 'ember-metal/property_get';
-import { set } from 'ember-metal/property_set';
 import {
   isArray,
   guidFor
@@ -487,7 +486,6 @@ export function intersect() {
     removedItem: function(array, item, changeMeta, instanceMeta) {
       var itemGuid = guidFor(item);
       var dependentGuid = guidFor(changeMeta.arrayChanged);
-      var numberOfDependentArrays = changeMeta.property._dependentKeys.length;
       var numberOfArraysItemAppearsIn;
       var itemCounts = instanceMeta.itemCounts;
 

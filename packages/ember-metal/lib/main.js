@@ -8,29 +8,34 @@ Ember Metal
 // BEGIN IMPORTS
 import Ember from "ember-metal/core";
 import merge from "ember-metal/merge";
-import {instrument, subscribe, unsubscribe, reset} from "ember-metal/instrumentation";
 import {
-  generateGuid,
-  GUID_KEY,
-  guidFor,
-  META_DESC,
+  instrument,
+  reset,
+  subscribe,
+  unsubscribe
+} from "ember-metal/instrumentation";
+import {
   EMPTY_META,
-  meta,
-  getMeta,
-  setMeta,
-  metaPath,
-  inspect,
-  typeOf,
-  tryCatchFinally,
-  isArray,
-  makeArray,
-  canInvoke,
-  tryInvoke,
-  tryFinally,
-  wrap,
+  GUID_KEY,
+  META_DESC,
   apply,
   applyStr,
-  uuid
+  canInvoke,
+  generateGuid,
+  getMeta,
+  guidFor,
+  inspect,
+  isArray,
+  makeArray,
+  meta,
+  metaPath,
+  setMeta,
+  tryCatchFinally,
+  tryFinally,
+  tryInvoke,
+  typeOf,
+  uuid,
+  wrap
 } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
 import EnumerableUtils from "ember-metal/enumerable_utils";
@@ -47,31 +52,36 @@ import {
 } from "ember-metal/array";
 import Logger from "ember-metal/logger";
 
-import {get, getWithDefault, normalizeTuple, _getPath} from "ember-metal/property_get";
+import {
+  _getPath,
+  get,
+  getWithDefault,
+  normalizeTuple
+} from "ember-metal/property_get";
 
 import {
-  on,
   addListener,
+  hasListeners,
+  listenersDiff,
+  listenersFor,
+  listenersUnion,
+  on,
   removeListener,
+  sendEvent,
   suspendListener,
   suspendListeners,
-  sendEvent,
-  hasListeners,
-  watchedEvents,
-  listenersFor,
-  listenersDiff,
-  listenersUnion
+  watchedEvents
 } from "ember-metal/events";
 
 import ObserverSet from "ember-metal/observer_set";
 
 import {
-  propertyWillChange,
-  propertyDidChange,
-  overrideChains,
   beginPropertyChanges,
+  changeProperties,
   endPropertyChanges,
-  changeProperties
+  overrideChains,
+  propertyDidChange,
+  propertyWillChange
 } from "ember-metal/property_events";
 
 import {
@@ -84,9 +94,9 @@ import {
 } from "ember-metal/property_set";
 
 import {
-  OrderedSet,
   Map,
-  MapWithDefault
+  MapWithDefault,
+  OrderedSet
 } from "ember-metal/map";
 import getProperties from "ember-metal/get_properties";
 import setProperties from "ember-metal/set_properties";
@@ -95,21 +105,22 @@ import {
   unwatchKey
 } from "ember-metal/watch_key";
 import {
-  flushPendingChains,
-  removeChainWatcher,
   ChainNode,
-  finishChains
+  finishChains,
+  flushPendingChains,
+  removeChainWatcher
 } from "ember-metal/chains";
 import {
   watchPath,
   unwatchPath
 } from "ember-metal/watch_path";
 import {
-  watch,
+  destroy,
   isWatching,
-  unwatch,
   rewatch,
-  destroy } from "ember-metal/watching";
+  unwatch,
+  watch
+} from "ember-metal/watching";
 import expandProperties from "ember-metal/expand_properties";
 import {
   ComputedProperty,
@@ -121,43 +132,37 @@ import {
 import "ember-metal/computed_macros";
 
 import {
-  addObserver,
-  observersFor,
-  removeObserver,
-  addBeforeObserver,
   _suspendBeforeObserver,
-  _suspendObserver,
   _suspendBeforeObservers,
+  _suspendObserver,
   _suspendObservers,
+  addBeforeObserver,
+  addObserver,
   beforeObserversFor,
-  removeBeforeObserver
+  observersFor,
+  removeBeforeObserver,
+  removeObserver
 } from "ember-metal/observer";
 import {
   IS_BINDING,
-  mixin,
   Mixin,
-  required,
   aliasMethod,
-  observer,
+  beforeObserver,
   immediateObserver,
-  beforeObserver
+  mixin,
+  observer,
+  required
 } from "ember-metal/mixin";
 import {
   Binding,
-  isGlobalPath,
   bind,
+  isGlobalPath,
   oneWay
 } from "ember-metal/binding";
 import run from "ember-metal/run_loop";
 import libraries from "ember-metal/libraries";
-import {
-  isNone,
-  none
-} from 'ember-metal/is_none';
-import {
-  isEmpty,
-  empty
-} from 'ember-metal/is_empty';
+import isNone from 'ember-metal/is_none';
+import isEmpty from 'ember-metal/is_empty';
 import isBlank from 'ember-metal/is_blank';
 import isPresent from 'ember-metal/is_present';
 import keys from 'ember-metal/keys';
@@ -310,11 +315,7 @@ Ember.libraries = libraries;
 Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
 
 Ember.isNone = isNone;
-Ember.none = none;
-
 Ember.isEmpty = isEmpty;
-Ember.empty = empty;
-
 Ember.isBlank = isBlank;
 
 if (Ember.FEATURES.isEnabled('ember-metal-is-present')) {

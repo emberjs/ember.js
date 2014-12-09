@@ -7,15 +7,13 @@
 // HELPERS
 //
 import Ember from 'ember-metal/core'; // ES6TODO: Ember.A
+
 import { get } from 'ember-metal/property_get';
 import {
   computed,
   cacheFor
 } from 'ember-metal/computed';
-import {
-  isNone,
-  none
-} from 'ember-metal/is_none';
+import isNone from 'ember-metal/is_none';
 import Enumerable from 'ember-runtime/mixins/enumerable';
 import { map } from 'ember-metal/enumerable_utils';
 import {

@@ -1,14 +1,16 @@
+import Stream from "ember-metal/streams/stream";
 import { SimpleHandlebarsView } from 'ember-handlebars/views/handlebars_bound_view';
 
 QUnit.module('SimpleHandlebarsView');
 
 test('does not render if update is triggured by normalizedValue is the same as the previous normalizedValue', function(){
   var value = null;
-  var path = 'foo';
-  var pathRoot = { 'foo': 'bar' };
+  var obj = { 'foo': 'bar' };
+  var lazyValue = new Stream(function() {
+    return obj.foo;
+  });
   var isEscaped = true;
-  var templateData;
-  var view = new SimpleHandlebarsView(path, pathRoot, isEscaped, templateData);
+  var view = new SimpleHandlebarsView(lazyValue, isEscaped);
   view._morph = {
     update: function(newValue) {
       value = newValue;
@@ -26,7 +28,8 @@ test('does not render if update is triggured by normalizedValue is the same as t
 
   equal(value, null, 'expected no call to morph.update');
 
-  pathRoot.foo = 'baz'; // change property
+  obj.foo = 'baz'; // change property
+  lazyValue.notify();
 
   view.update();
 

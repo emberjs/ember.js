@@ -25,30 +25,22 @@ DSL.prototype = {
     var type = options.resetNamespace === true ? 'resource' : 'route';
     Ember.assert("'basic' cannot be used as a " + type + " name.", name !== 'basic');
 
-
-    if (typeof options.path !== 'string') {
-      options.path = "/" + name;
-    }
-
-    if (canNest(this) && options.resetNamespace !== true) {
-      name = this.parent + "." + name;
+    if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
+      createRoute(this, name + '_loading', {resetNamespace: options.resetNamespace});
+      createRoute(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error"});
     }
 
     if (callback) {
-      var dsl = new DSL(name);
-      route(dsl, 'loading');
-      route(dsl, 'error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
+      var fullName = getFullName(this, name, options.resetNamespace);
+      var dsl = new DSL(fullName);
+      createRoute(dsl, 'loading');
+      createRoute(dsl, 'error', { path: "/_unused_dummy_error_path_route_" + name + "/:error" });
 
-      if (callback) { callback.call(dsl); }
+      callback.call(dsl);
 
-      this.push(options.path, name, dsl.generate());
+      createRoute(this, name, options, dsl.generate());
     } else {
-      this.push(options.path, name, null);
-    }
-
-    if (Ember.FEATURES.isEnabled("ember-routing-named-substates")) {
-      route(this, name + '_loading', {resetNamespace: options.resetNamespace});
-      route(this, name + '_error', { path: "/_unused_dummy_error_path_route_" + name + "/:error"});
+      createRoute(this, name, options);
     }
   },
 
@@ -77,13 +69,13 @@ DSL.prototype = {
     var dslMatches = this.matches;
 
     if (!this.explicitIndex) {
-      route(this, "index", { path: "/" });
+      this.route("index", { path: "/" });
     }
 
     return function(match) {
       for (var i=0, l=dslMatches.length; i<l; i++) {
         var dslMatch = dslMatches[i];
-        var matchObj = match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
+        match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
       }
     };
   }
@@ -93,20 +85,24 @@ function canNest(dsl) {
   return dsl.parent && dsl.parent !== 'application';
 }
 
-function route(dsl, name, options) {
-  Ember.assert("You must use `this.resource` to nest", typeof options !== 'function');
+function getFullName(dsl, name, resetNamespace) {
+  if (canNest(dsl) && resetNamespace !== true) {
+    return dsl.parent + "." + name;
+  } else {
+    return name;
+  }
+}
 
+function createRoute(dsl, name, options, callback) {
   options = options || {};
+
+  var fullName = getFullName(dsl, name, options.resetNamespace);
 
   if (typeof options.path !== 'string') {
     options.path = "/" + name;
   }
 
-  if (canNest(dsl) && options.resetNamespace !== true) {
-    name = dsl.parent + "." + name;
-  }
-
-  dsl.push(options.path, name, null);
+  dsl.push(options.path, fullName, callback);
 }
 
 DSL.map = function(callback) {

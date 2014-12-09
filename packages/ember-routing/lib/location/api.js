@@ -1,6 +1,4 @@
 import Ember from "ember-metal/core"; // deprecate, assert
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 
 /**
 @module ember
@@ -173,7 +171,8 @@ export default {
    container directly.
   */
   registerImplementation: function(name, implementation) {
-    Ember.deprecate('Using the Ember.Location.registerImplementation is no longer supported. Register your custom location implementation with the container instead.', false);
+    Ember.deprecate('Using the Ember.Location.registerImplementation is no longer supported.' +
+                    ' Register your custom location implementation with the container instead.', false);
 
     this.implementations[name] = implementation;
   },

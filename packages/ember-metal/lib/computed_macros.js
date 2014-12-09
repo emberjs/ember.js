@@ -3,8 +3,8 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { computed } from "ember-metal/computed";
 import isEmpty from 'ember-metal/is_empty';
-import { isNone } from 'ember-metal/is_none';
-import { alias } from 'ember-metal/alias';
+import isNone from 'ember-metal/is_none';
+import alias from 'ember-metal/alias';
 
 /**
 @module ember-metal
@@ -508,7 +508,7 @@ registerComputedWithProperties('any', function(properties) {
   values of all passed in properties to an array.
 */
 registerComputedWithProperties('collect', function(properties) {
-  var res = [];
+  var res = Ember.A();
   for (var key in properties) {
     if (properties.hasOwnProperty(key)) {
       if (isNone(properties[key])) {

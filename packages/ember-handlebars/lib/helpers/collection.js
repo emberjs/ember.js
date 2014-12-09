@@ -4,22 +4,21 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
-import { inspect } from "ember-metal/utils";
 
 // var emberAssert = Ember.assert;
     // emberDeprecate = Ember.deprecate;
 
 import EmberHandlebars from "ember-handlebars-compiler";
-var helpers = EmberHandlebars.helpers;
 
+import { IS_BINDING } from "ember-metal/mixin";
 import { fmt } from "ember-runtime/system/string";
 import { get } from "ember-metal/property_get";
-import { handlebarsGet, handlebarsGetView } from "ember-handlebars/ext";
+import SimpleStream from "ember-metal/streams/simple";
+import { handlebarsGetView } from "ember-handlebars/ext";
 import { ViewHelper } from "ember-handlebars/helpers/view";
-import { computed } from "ember-metal/computed";
+import View from "ember-views/views/view";
 import CollectionView from "ember-views/views/collection_view";
 
-var alias = computed.alias;
 /**
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
   `Ember.CollectionView` to a template. See [Ember.CollectionView](/api/classes/Ember.CollectionView.html)
@@ -147,7 +146,8 @@ var alias = computed.alias;
   @deprecated Use `{{each}}` helper instead.
 */
 function collectionHelper(path, options) {
-  Ember.deprecate("Using the {{collection}} helper without specifying a class has been deprecated as the {{each}} helper now supports the same functionality.", path !== 'collection');
+  Ember.deprecate("Using the {{collection}} helper without specifying a class has been" +
+                  " deprecated as the {{each}} helper now supports the same functionality.", path !== 'collection');
 
   // If no path is provided, treat path param as options.
   if (path && path.data && path.data.isRenderData) {
@@ -170,7 +170,7 @@ function collectionHelper(path, options) {
   // Otherwise, just default to the standard class.
   var collectionClass;
   if (path) {
-    collectionClass = handlebarsGetView(this, path, container, options);
+    collectionClass = handlebarsGetView(this, path, container, options.data);
     Ember.assert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
   }
   else {
@@ -178,6 +178,7 @@ function collectionHelper(path, options) {
   }
 
   var hash = options.hash;
+  var hashTypes = options.hashTypes;
   var itemHash = {};
   var match;
 
@@ -186,29 +187,46 @@ function collectionHelper(path, options) {
   var itemViewClass;
 
   if (hash.itemView) {
-    itemViewClass = handlebarsGetView(this, hash.itemView, container, options);
+    itemViewClass = hash.itemView;
   } else if (hash.itemViewClass) {
-    itemViewClass = handlebarsGetView(collectionPrototype, hash.itemViewClass, container, options);
+    if (hashTypes.itemViewClass === 'ID') {
+      var itemViewClassStream = view.getStream(hash.itemViewClass);
+      Ember.deprecate('Resolved the view "'+hash.itemViewClass+'" on the global context. Pass a view name to be looked up on the container instead, such as {{view "select"}}. http://emberjs.com/guides/deprecations#toc_global-lookup-of-views', !itemViewClassStream.isGlobal());
+      itemViewClass = itemViewClassStream.value();
+    } else {
+      itemViewClass = hash.itemViewClass;
+    }
   } else {
-    itemViewClass = handlebarsGetView(collectionPrototype, collectionPrototype.itemViewClass, container, options);
+    itemViewClass = collectionPrototype.itemViewClass;
+  }
+
+  if (typeof itemViewClass === 'string') {
+    itemViewClass = container.lookupFactory('view:'+itemViewClass);
   }
 
   Ember.assert(fmt("%@ #collection: Could not find itemViewClass %@", [data.view, itemViewClass]), !!itemViewClass);
 
   delete hash.itemViewClass;
   delete hash.itemView;
+  delete hashTypes.itemViewClass;
+  delete hashTypes.itemView;
 
   // Go through options passed to the {{collection}} helper and extract options
   // that configure item views instead of the collection itself.
   for (var prop in hash) {
+    if (prop === 'itemController' || prop === 'itemClassBinding') {
+      continue;
+    }
     if (hash.hasOwnProperty(prop)) {
       match = prop.match(/^item(.)(.*)$/);
+      if (match) {
+        var childProp = match[1].toLowerCase() + match[2];
 
-      if (match && prop !== 'itemController') {
-        // Convert itemShouldFoo -> shouldFoo
-        itemHash[match[1].toLowerCase() + match[2]] = hash[prop];
-        // Delete from hash as this will end up getting passed to the
-        // {{view}} helper method.
+        if (hashTypes[prop] === 'ID' || IS_BINDING.test(prop)) {
+          itemHash[childProp] = view._getBindingForStream(hash[prop]);
+        } else {
+          itemHash[childProp] = hash[prop];
+        }
         delete hash[prop];
       }
     }
@@ -227,22 +245,40 @@ function collectionHelper(path, options) {
           tagName: itemHash.tagName
     });
   } else if (hash.emptyViewClass) {
-    emptyViewClass = handlebarsGetView(this, hash.emptyViewClass, container, options);
+    emptyViewClass = handlebarsGetView(this, hash.emptyViewClass, container, options.data);
   }
   if (emptyViewClass) { hash.emptyView = emptyViewClass; }
 
   if (hash.keyword) {
-    itemHash._context = this;
+    itemHash._contextBinding = '_parentView.context';
   } else {
-    itemHash._context = alias('content');
+    itemHash._contextBinding = 'content';
   }
 
   var viewOptions = ViewHelper.propertiesFromHTMLOptions({ data: data, hash: itemHash }, this);
-  hash.itemViewClass = itemViewClass.extend(viewOptions);
+
+  if (hash.itemClassBinding) {
+    var itemClassBindings = hash.itemClassBinding.split(' ');
+
+    for (var i = 0; i < itemClassBindings.length; i++) {
+      var parsedPath = View._parsePropertyPath(itemClassBindings[i]);
+      if (parsedPath.path === '') {
+        parsedPath.stream = new SimpleStream(true);
+      } else {
+        parsedPath.stream = view.getStream(parsedPath.path);
+      }
+      itemClassBindings[i] = parsedPath;
+    }
+
+    viewOptions.classNameBindings = itemClassBindings;
+  }
+
+  hash.itemViewClass = itemViewClass;
+  hash._itemViewProps = viewOptions;
 
   options.helperName = options.helperName || 'collection';
 
-  return helpers.view.call(this, collectionClass, options);
+  return EmberHandlebars.helpers.view.call(this, collectionClass, options);
 }
 
 export default collectionHelper;

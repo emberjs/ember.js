@@ -17,10 +17,6 @@ var trim = jQuery.trim;
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 
-function firstGrandchild(view) {
-  return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
-}
-
 function nthChild(view, nth) {
   return get(view, 'childViews').objectAt(nth || 0);
 }
@@ -104,12 +100,6 @@ test("collection helper should accept relative paths", function() {
 });
 
 test("empty views should be removed when content is added to the collection (regression, ht: msofaer)", function() {
-  var App;
-
-  run(function() {
-    lookup.App = App = Namespace.create();
-  });
-
   var EmptyView = EmberView.extend({
     template : EmberHandlebars.compile("<td>No Rows Yet</td>")
   });
@@ -118,13 +108,14 @@ test("empty views should be removed when content is added to the collection (reg
     emptyView: EmptyView
   });
 
-  App.listController = ArrayProxy.create({
+  var listController = ArrayProxy.create({
     content : A()
   });
 
   view = EmberView.create({
     listView: ListView,
-    template: EmberHandlebars.compile('{{#collection view.listView contentBinding="App.listController" tagName="table"}} <td>{{view.content.title}}</td> {{/collection}}')
+    listController: listController,
+    template: EmberHandlebars.compile('{{#collection view.listView content=view.listController tagName="table"}} <td>{{view.content.title}}</td> {{/collection}}')
   });
 
   run(function() {
@@ -134,13 +125,11 @@ test("empty views should be removed when content is added to the collection (reg
   equal(view.$('tr').length, 1, 'Make sure the empty view is there (regression)');
 
   run(function() {
-    App.listController.pushObject({title : "Go Away, Placeholder Row!"});
+    listController.pushObject({title : "Go Away, Placeholder Row!"});
   });
 
   equal(view.$('tr').length, 1, 'has one row');
   equal(view.$('tr:nth-child(1) td').text(), 'Go Away, Placeholder Row!', 'The content is the updated data.');
-
-  run(function() { App.destroy(); });
 });
 
 test("should be able to specify which class should be used for the empty view", function() {
@@ -354,6 +343,28 @@ test("should give its item views the property specified by itemPropertyBinding",
   equal(view.$('ul li:first').text(), "yobaz", "change property of sub view");
 });
 
+test("should unsubscribe stream bindings", function() {
+  view = EmberView.create({
+    baz: "baz",
+    content: A([EmberObject.create(), EmberObject.create(), EmberObject.create()]),
+    template: EmberHandlebars.compile('{{#collection contentBinding="view.content" itemPropertyBinding="view.baz"}}{{view.property}}{{/collection}}')
+  });
+
+  run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  var barStreamBinding = view._streamBindings['view.baz'];
+
+  equal(barStreamBinding.subscribers.length, 3*2, "adds 3 subscribers");
+
+  run(function() {
+    view.get('content').popObject();
+  });
+
+  equal(barStreamBinding.subscribers.length, 2*2, "removes 1 subscriber");
+});
+
 test("should work inside a bound {{#if}}", function() {
   var testData = A([EmberObject.create({ isBaz: false }), EmberObject.create({ isBaz: true }), EmberObject.create({ isBaz: true })]);
   var IfTestCollectionView = CollectionView.extend({
@@ -380,7 +391,7 @@ test("should work inside a bound {{#if}}", function() {
   equal(view.$('ul li').length, 3, "collection renders when conditional changes to true");
 });
 
-test("should pass content as context when using {{#each}} helper", function() {
+test("should pass content as context when using {{#each}} helper [DEPRECATED]", function() {
   view = EmberView.create({
     template: EmberHandlebars.compile('{{#each view.releases}}Mac OS X {{version}}: {{name}} {{/each}}'),
 
@@ -394,7 +405,9 @@ test("should pass content as context when using {{#each}} helper", function() {
               ])
   });
 
-  run(function() { view.appendTo('#qunit-fixture'); });
+  expectDeprecation(function() {
+    run(view, 'appendTo', '#qunit-fixture');
+  }, 'Using the context switching form of {{each}} is deprecated. Please use the keyword form (`{{#each foo in bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   equal(view.$().text(), "Mac OS X 10.7: Lion Mac OS X 10.6: Snow Leopard Mac OS X 10.5: Leopard ", "prints each item in sequence");
 });
@@ -597,15 +610,11 @@ test("should allow view objects to be swapped out without throwing an error (#78
 });
 
 test("context should be content", function() {
-  var App, view;
-
-  run(function() {
-    lookup.App = App = Namespace.create();
-  });
+  var view;
 
   var container = new Container();
 
-  App.items = A([
+  var items = A([
     EmberObject.create({name: 'Dave'}),
     EmberObject.create({name: 'Mary'}),
     EmberObject.create({name: 'Sara'})
@@ -615,14 +624,12 @@ test("context should be content", function() {
     template: EmberHandlebars.compile("Greetings {{name}}")
   }));
 
-  App.AView = EmberView.extend({
-    template: EmberHandlebars.compile('{{collection contentBinding="App.items" itemViewClass="an-item"}}')
-  });
-
-  run(function() {
-    view = App.AView.create({
-      container: container
-    });
+  view = EmberView.create({
+    container: container,
+    controller: {
+      items: items
+    },
+    template: EmberHandlebars.compile('{{collection contentBinding="items" itemViewClass="an-item"}}')
   });
 
   run(function() {
@@ -631,8 +638,5 @@ test("context should be content", function() {
 
   equal(view.$().text(), "Greetings DaveGreetings MaryGreetings Sara");
 
-  run(function() {
-    view.destroy();
-    App.destroy();
-  });
+  run(view, 'destroy');
 });

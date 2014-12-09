@@ -6,7 +6,7 @@ import Ember from "ember-metal/core"; // Ember.assert
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { isNone } from 'ember-metal/is_none';
+import isNone from 'ember-metal/is_none';
 import run from "ember-metal/run_loop";
 import { typeOf } from "ember-metal/utils";
 import { fmt } from "ember-runtime/system/string";
@@ -231,7 +231,7 @@ export default EmberObject.extend({
   },
 
   _bubbleEvent: function(view, evt, eventName) {
-    return run(view, view.handleEvent, eventName, evt);
+    return run.join(view, view.handleEvent, eventName, evt);
   },
 
   destroy: function() {

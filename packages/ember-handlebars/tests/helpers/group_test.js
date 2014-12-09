@@ -8,7 +8,6 @@ import EmberHandlebars from "ember-handlebars-compiler";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import { A } from "ember-runtime/system/native_array";
 import Container from "ember-runtime/system/container";
-import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import Component from "ember-views/views/component";
 
@@ -130,7 +129,7 @@ test("should work with the #if helper", function() {
 test("#each with no content", function() {
   expect(0);
   createGroupedView(
-    "{{#each missing}}{{this}}{{/each}}"
+    "{{#each item in missing}}{{item}}{{/each}}"
   );
   appendView();
 });
@@ -139,7 +138,7 @@ test("#each's content can be changed right before a destroy", function() {
   expect(0);
 
   createGroupedView(
-    "{{#each numbers}}{{this}}{{/each}}",
+    "{{#each number in numbers}}{{number}}{{/each}}",
     {numbers: A([1,2,3])}
   );
   appendView();
@@ -152,7 +151,7 @@ test("#each's content can be changed right before a destroy", function() {
 
 test("#each can be nested", function() {
   createGroupedView(
-    "{{#each numbers}}{{this}}{{/each}}",
+    "{{#each number in numbers}}{{number}}{{/each}}",
     {numbers: A([1, 2, 3])}
   );
   appendView();
@@ -173,7 +172,7 @@ test("#each can be nested", function() {
 
 test("#each can be used with an ArrayProxy", function() {
   createGroupedView(
-    "{{#each numbers}}{{this}}{{/each}}",
+    "{{#each number in numbers}}{{number}}{{/each}}",
     {numbers: ArrayProxy.create({content: A([1, 2, 3])})}
   );
   appendView();
@@ -209,7 +208,7 @@ test("should allow `#each item in array` format", function() {
 test("an #each can be nested with a view inside", function() {
   var yehuda = {name: 'Yehuda'};
   createGroupedView(
-    '{{#each people}}{{#view}}{{name}}{{/view}}{{/each}}',
+    '{{#each person in people}}{{#view}}{{person.name}}{{/view}}{{/each}}',
     {people: A([yehuda, {name: 'Tom'}])}
   );
   appendView();
@@ -226,7 +225,7 @@ test("an #each can be nested with a component inside", function() {
   var yehuda = {name: 'Yehuda'};
   container.register('view:test', Component.extend());
   createGroupedView(
-    '{{#each people}}{{#view "test"}}{{name}}{{/view}}{{/each}}',
+    '{{#each person in people}}{{#view "test"}}{{person.name}}{{/view}}{{/each}}',
     {people: A([yehuda, {name: 'Tom'}])}
   );
 
@@ -242,7 +241,7 @@ test("an #each can be nested with a component inside", function() {
 
 test("#each with groupedRows=true behaves like a normal bound #each", function() {
   createGroupedView(
-    '{{#each numbers groupedRows=true}}{{this}}{{/each}}',
+    '{{#each number in numbers groupedRows=true}}{{number}}{{/each}}',
     {numbers: A([1, 2, 3])}
   );
   appendView();
@@ -258,7 +257,7 @@ test("#each with groupedRows=true behaves like a normal bound #each", function()
 test("#each with itemViewClass behaves like a normal bound #each", function() {
   container.register('view:nothing-special-view', Ember.View);
   createGroupedView(
-    '{{#each people itemViewClass="nothing-special-view"}}{{name}}{{/each}}',
+    '{{#each person in people itemViewClass="nothing-special-view"}}{{person.name}}{{/each}}',
     {people: A([{name: 'Erik'}, {name: 'Peter'}])}
   );
   appendView();

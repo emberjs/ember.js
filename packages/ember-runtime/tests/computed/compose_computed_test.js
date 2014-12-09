@@ -1,5 +1,4 @@
 import Ember from 'ember-metal/core';
-import {metaFor} from 'ember-metal/utils';
 import {addObserver} from 'ember-metal/observer';
 import {computed} from 'ember-metal/computed';
 import {mapBy, union, sort} from 'ember-runtime/computed/reduce_computed_macros';
@@ -216,7 +215,6 @@ if (Ember.FEATURES.isEnabled('composable-computed-properties')) {
 
   testBoth('composable computed properties work with macros that have non-cp args', function (get, set) {
     var equals = computed.equal;
-    var not = computed.not;
     var or = computed.or;
 
     obj = EmberObject.extend({

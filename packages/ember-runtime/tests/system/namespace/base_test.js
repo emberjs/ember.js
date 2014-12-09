@@ -2,7 +2,6 @@ import Ember from "ember-metal/core";
 import run from "ember-metal/run_loop";
 import {get} from "ember-metal/property_get";
 import EmberObject from "ember-runtime/system/object";
-import EmberArray from "ember-runtime/mixins/array";
 import Namespace from "ember-runtime/system/namespace";
 
 var originalLookup, lookup;

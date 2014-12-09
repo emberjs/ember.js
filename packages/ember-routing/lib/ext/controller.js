@@ -5,7 +5,6 @@ import { computed } from "ember-metal/computed";
 import { typeOf } from "ember-metal/utils";
 import { meta } from "ember-metal/utils";
 import merge from "ember-metal/merge";
-import { map } from "ember-metal/enumerable_utils";
 
 import ControllerMixin from "ember-runtime/mixins/controller";
 
@@ -23,6 +22,11 @@ ControllerMixin.reopen({
   },
 
   /**
+    Defines which query parameters the controller accepts.
+    If you give the names ['category','page'] it will bind
+    the values of these query parameters to the variables
+    `this.category` and `this.page`
+
     @property queryParams
     @public
   */

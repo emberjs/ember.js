@@ -1,10 +1,11 @@
-import Ember from 'ember-metal/core'; // assert
 import run from "ember-metal/run_loop";
 import Container from 'container/container';
+import Service from "ember-runtime/system/service";
 import EmberObject from "ember-runtime/system/object";
 import EmberRoute from "ember-routing/system/route";
+import inject from "ember-runtime/inject";
 
-var route, routeOne, routeTwo, router, container, lookupHash;
+var route, routeOne, routeTwo, container, lookupHash;
 
 function createRoute(){
   route = EmberRoute.create();
@@ -116,7 +117,6 @@ test("'store' does not need to be injected", function() {
   expect(1);
 
   run(route, 'destroy');
-  var originalAssert = Ember.assert;
 
   var container = new Container();
   container.register('route:index',  EmberRoute);
@@ -145,6 +145,31 @@ test("modelFor doesn't require the router", function() {
 
   equal(route.modelFor('foo'), foo);
 });
+
+
+test(".send just calls an action if the router is absent", function() {
+  expect(7);
+  var route = Ember.Route.createWithMixins({
+    actions: {
+      returnsTrue: function(foo, bar) {
+        equal(foo, 1);
+        equal(bar, 2);
+        equal(this, route);
+        return true;
+      },
+
+      returnsFalse: function() {
+        ok(true, "returnsFalse was called");
+        return false;
+      }
+    }
+  });
+
+  equal(true, route.send('returnsTrue', 1, 2));
+  equal(false, route.send('returnsFalse'));
+  equal(undefined, route.send('nonexistent', 1, 2, 3));
+});
+
 
 QUnit.module("Ember.Route serialize", {
   setup: createRoute,
@@ -201,3 +226,21 @@ test("controllerFor uses route's controllerName if specified", function() {
   equal(routeTwo.controllerFor('one'), testController);
 });
 
+if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  QUnit.module('Route injected properties');
+
+  test("services can be injected into routes", function() {
+    var container = new Container();
+
+    container.register('route:application', EmberRoute.extend({
+      authService: inject.service('auth')
+    }));
+
+    container.register('service:auth', Service.extend());
+
+    var appRoute = container.lookup('route:application'),
+      authService = container.lookup('service:auth');
+
+    equal(authService, appRoute.get('authService'), "service.auth is injected");
+  });
+}

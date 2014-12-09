@@ -17,7 +17,7 @@ import EmberRouter from "ember-routing/system/router";
 import HashLocation from "ember-routing/location/hash_location";
 
 import EmberHandlebars from "ember-handlebars";
-import {_MetamorphView} from "ember-handlebars/views/metamorph_view";
+import _MetamorphView from "ember-handlebars/views/metamorph_view";
 import EmberView from "ember-routing/ext/view";
 import EmberContainerView from "ember-views/views/container_view";
 import jQuery from "ember-views/system/jquery";
@@ -136,7 +136,7 @@ test("outlet should support connectOutlet in slots in prerender state", function
 });
 
 test("outlet should support an optional name", function() {
-  var template = "<h1>HI</h1>{{outlet mainView}}";
+  var template = "<h1>HI</h1>{{outlet 'mainView'}}";
   view = EmberView.create({
     template: EmberHandlebars.compile(template)
   });
@@ -310,7 +310,7 @@ test("view should support disconnectOutlet for the main outlet", function() {
   equal(trim(view.$().text()), 'HI');
 });
 
-test("Outlets bind to the current template's view, not inner contexts", function() {
+test("Outlets bind to the current template's view, not inner contexts [DEPRECATED]", function() {
   var parentTemplate = "<h1>HI</h1>{{#if view.alwaysTrue}}{{#with this}}{{outlet}}{{/with}}{{/if}}";
   var bottomTemplate = "<h3>BOTTOM</h3>";
 
@@ -323,7 +323,9 @@ test("Outlets bind to the current template's view, not inner contexts", function
     template: compile(bottomTemplate)
   });
 
-  appendView(view);
+  expectDeprecation(function() {
+    appendView(view);
+  }, 'Using the context switching form of `{{with}}` is deprecated. Please use the keyword form (`{{with foo as bar}}`) instead. See http://emberjs.com/guides/deprecations/#toc_more-consistent-handlebars-scope for more details.');
 
   run(function() {
     view.connectOutlet('main', bottomView);
@@ -354,3 +356,39 @@ test("should support layouts", function() {
   // Replace whitespace for older IE
   equal(trim(view.$().text()), 'HIBYE');
 });
+
+test("should not throw deprecations if {{outlet}} is used without a name", function() {
+  expectNoDeprecation();
+  view = EmberView.create({
+    template: compile("{{outlet}}")
+  });
+  appendView(view);
+});
+
+test("should not throw deprecations if {{outlet}} is used with a quoted name", function() {
+  expectNoDeprecation();
+  view = EmberView.create({
+    template: compile("{{outlet \"foo\"}}"),
+  });
+  appendView(view);
+});
+
+if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
+  test("should throw an assertion if {{outlet}} used with unquoted name", function() {
+    view = EmberView.create({
+      template: compile("{{outlet foo}}"),
+    });
+    expectAssertion(function() {
+      appendView(view);
+    }, "Using {{outlet}} with an unquoted name is not supported.");
+  });
+} else {
+  test("should throw a deprecation if {{outlet}} is used with an unquoted name", function() {
+    view = EmberView.create({
+      template: compile("{{outlet foo}}")
+    });
+    expectDeprecation(function() {
+      appendView(view);
+    }, 'Using {{outlet}} with an unquoted name is not supported. Please update to quoted usage \'{{outlet "foo"}}\'.');
+  });
+}

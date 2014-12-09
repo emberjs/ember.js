@@ -318,8 +318,7 @@ export default EmberObject.extend({
   */
   wrapModelType: function(type, name) {
     var records = this.getRecords(type);
-    var self = this;
-    var release, typeToSend;
+    var typeToSend;
 
     typeToSend = {
       name: name || type.toString(),
@@ -420,8 +419,6 @@ export default EmberObject.extend({
   */
   wrapRecord: function(record) {
     var recordToSend = { object: record };
-    var columnValues = {};
-    var self = this;
 
     recordToSend.columnValues = this.getRecordColumnValues(record);
     recordToSend.searchKeywords = this.getRecordKeywords(record);

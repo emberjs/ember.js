@@ -1,12 +1,10 @@
 import Ember from "ember-metal/core";
-import EnumerableUtils from 'ember-metal/enumerable_utils';
 import EmberObject from 'ember-runtime/system/object';
 import setProperties from "ember-metal/set_properties";
 import ObjectProxy from 'ember-runtime/system/object_proxy';
 import { get } from 'ember-metal/property_get';
 import { set } from 'ember-metal/property_set';
 import run from 'ember-metal/run_loop';
-import { computed } from 'ember-metal/computed';
 import { addObserver } from "ember-metal/observer";
 import {
   beginPropertyChanges,
@@ -22,15 +20,12 @@ import {
   sort as computedSort,
   setDiff as computedSetDiff,
   mapBy as computedMapBy,
-  mapProperty,
   filter as computedFilter,
   filterBy as computedFilterBy,
   uniq as computedUniq,
   union as computedUnion,
   intersect as computedIntersect
 } from 'ember-runtime/computed/reduce_computed_macros';
-
-import NativeArray from "ember-runtime/system/native_array";
 
 var obj, sorted, sortProps, items, userFnCalls, todos, filtered, union;
 
@@ -82,7 +77,7 @@ test("it maps simple properties", function() {
 
 test("it caches properly", function() {
   var array = get(obj, 'array');
-  var mapped = get(obj, 'mapped');
+  get(obj, 'mapped');
 
   equal(userFnCalls, 4, "precond - mapper called expected number of times");
 
@@ -198,7 +193,7 @@ QUnit.module('computedMapBy', {
 });
 
 test("it maps properties", function() {
-  var mapped = get(obj, 'mapped');
+  get(obj, 'mapped');
 
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 1]);
 
@@ -216,7 +211,7 @@ test("it maps properties", function() {
 });
 
 test("it is observerable", function() {
-  var mapped = get(obj, 'mapped');
+  get(obj, 'mapped');
   var calls = 0;
 
   deepEqual(get(obj, 'mapped'), [1, 3, 2, 1]);
@@ -275,7 +270,7 @@ test("it passes the index to the callback", function() {
 
 test("it caches properly", function() {
   var array = get(obj, 'array');
-  var filtered = get(obj, 'filtered');
+  get(obj, 'filtered');
 
   equal(userFnCalls, 8, "precond - filter called expected number of times");
 
@@ -348,7 +343,7 @@ test("the dependent array can be `clear`ed directly (#3272)", function() {
 });
 
 test("it updates as the array is replaced", function() {
-  var array = get(obj, 'array');
+  get(obj, 'array');
   var filtered = get(obj, 'filtered');
 
   deepEqual(filtered, [2,4,6,8], "precond - filtered array is initially correct");
@@ -484,7 +479,7 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
   test("does not include duplicates", function() {
     var array = get(obj, 'array');
     var array2 = get(obj, 'array2');
-    var array3 = get(obj, 'array3');
+    get(obj, 'array3');
     var union = get(obj, 'union');
 
     deepEqual(union, [1,2,3,4,5,6,7,8,9,10], alias + " does not include duplicates");
@@ -516,8 +511,8 @@ forEach.call([['uniq', computedUniq], ['union', computedUnion]], function (tuple
 
   test("has set-union semantics", function() {
     var array = get(obj, 'array');
-    var array2 = get(obj, 'array2');
-    var array3 = get(obj, 'array3');
+    get(obj, 'array2');
+    get(obj, 'array3');
     var union = get(obj, 'union');
 
     deepEqual(union, [1,2,3,4,5,6,7,8,9,10], alias + " is initially correct");
@@ -571,7 +566,7 @@ QUnit.module('computed.intersect', {
 });
 
 test("it has set-intersection semantics", function() {
-  var array = get(obj, 'array');
+  get(obj, 'array');
   var array2 = get(obj, 'array2');
   var array3 = get(obj, 'array3');
   var intersection = get(obj, 'intersection');
@@ -1040,10 +1035,6 @@ function sortByFnameAsc(a, b) {
   return fna > fnb ? 1 : -1;
 }
 
-function sortByFnameDesc(a, b) {
-  return -sortByFnameAsc(a,b);
-}
-
 QUnit.module('computedSort - sort function', {
   setup: function() {
     run(function() {
@@ -1474,7 +1465,7 @@ QUnit.module('Chaining array and reduced CPs', {
 });
 
 test("it computes interdependent array computed properties", function() {
-  var mapped = get(obj, 'mapped');
+  get(obj, 'mapped');
 
   equal(get(obj, 'max'), 3, 'sanity - it properly computes the maximum value');
   equal(userFnCalls, 0, 'observer is not called on initialisation');

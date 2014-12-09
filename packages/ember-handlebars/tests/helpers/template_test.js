@@ -7,7 +7,7 @@ var trim = jQuery.trim;
 import Container from "ember-runtime/system/container";
 import EmberHandlebars from "ember-handlebars-compiler";
 
-var MyApp, lookup, TemplateTests, view, container;
+var MyApp, lookup, view, container;
 var originalLookup = Ember.lookup;
 
 QUnit.module("Support for {{template}} helper", {

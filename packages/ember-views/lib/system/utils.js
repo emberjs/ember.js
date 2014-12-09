@@ -9,3 +9,47 @@ export function isSimpleClick(event) {
 
   return !modifier && !secondaryClick;
 }
+
+/**
+  @private
+  @method getViewRange
+  @param {Ember.View} view
+*/
+function getViewRange(view) {
+  var range = document.createRange();
+  range.setStartAfter(view._morph.start);
+  range.setEndBefore(view._morph.end);
+  return range;
+}
+
+/**
+  `getViewClientRects` provides information about the position of the border
+  box edges of a view relative to the viewport.
+
+  It is only intended to be used by development tools like the Ember Inpsector
+  and may not work on older browsers.
+
+  @private
+  @method getViewClientRects
+  @param {Ember.View} view
+*/
+export function getViewClientRects(view) {
+  var range = getViewRange(view);
+  return range.getClientRects();
+}
+
+/**
+  `getViewBoundingClientRect` provides information about the position of the
+  bounding border box edges of a view relative to the viewport.
+
+  It is only intended to be used by development tools like the Ember Inpsector
+  and may not work on older browsers.
+
+  @private
+  @method getViewBoundingClientRect
+  @param {Ember.View} view
+*/
+export function getViewBoundingClientRect(view) {
+  var range = getViewRange(view);
+  return range.getBoundingClientRect();
+}

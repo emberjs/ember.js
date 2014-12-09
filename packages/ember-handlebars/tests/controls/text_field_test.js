@@ -632,3 +632,52 @@ test("when the user hits escape, the `escape-press` action is sent to the contro
 
 });
 
+test("when the user presses a key, the `key-down` action is sent to the controller", function() {
+  expect(3);
+  var event;
+
+  textField = TextField.create({
+    'key-down': 'doSomething',
+    targetObject: StubController.create({
+      send: function(actionName, value, evt) {
+        equal(actionName, 'doSomething', "text field sent correct action name");
+        equal(value, '', 'value was blank in key-down');
+        equal(evt, event, 'event was received as param');
+      }
+    })
+  });
+
+  append();
+
+  run(function() {
+    event = jQuery.Event("keydown");
+    event.keyCode = event.which = 65;
+    textField.$().val('foo');
+    textField.$().trigger(event);
+  });
+});
+
+test("when the user releases a key, the `key-up` action is sent to the controller", function() {
+  expect(3);
+  var event;
+
+  textField = TextField.create({
+    'key-up': 'doSomething',
+    targetObject: StubController.create({
+      send: function(actionName, value, evt) {
+        equal(actionName, 'doSomething', "text field sent correct action name");
+        equal(value, 'bar', 'value was received');
+        equal(evt, event, 'event was received as param');
+      }
+    })
+  });
+
+  append();
+
+  run(function() {
+    event = jQuery.Event("keyup");
+    event.keyCode = event.which = 65;
+    textField.$().val('bar');
+    textField.$().trigger(event);
+  });
+});

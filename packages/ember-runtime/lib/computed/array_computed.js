@@ -1,6 +1,5 @@
 import Ember from 'ember-metal/core';
 import {
-  reduceComputed,
   ReduceComputedProperty
 } from 'ember-runtime/computed/reduce_computed';
 import { forEach } from 'ember-metal/enumerable_utils';

@@ -8,12 +8,6 @@ Ember Routing Handlebars
 
 import Ember from "ember-metal/core";
 import EmberHandlebars from "ember-handlebars";
-import Router from "ember-routing/system/router";
-
-import {
-  resolvePaths,
-  resolveParams
-} from "ember-routing-handlebars/helpers/shared";
 
 import {
   deprecatedLinkToHelper,
@@ -33,9 +27,6 @@ import {
   ActionHelper,
   actionHelper
 } from "ember-routing-handlebars/helpers/action";
-
-Router.resolveParams = resolveParams;
-Router.resolvePaths = resolvePaths;
 
 Ember.LinkView = LinkView;
 EmberHandlebars.ActionHelper = ActionHelper;

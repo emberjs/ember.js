@@ -1,4 +1,4 @@
-import {Suite, SuiteModuleBuilder} from 'ember-runtime/tests/suites/suite';
+import { Suite } from 'ember-runtime/tests/suites/suite';
 import EmberObject from "ember-runtime/system/object";
 import {required} from "ember-metal/mixin";
 import {guidFor, generateGuid} from "ember-metal/utils";

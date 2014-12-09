@@ -1,8 +1,7 @@
 import Ember from "ember-metal/core"; // Ember.assert
 // var emberAssert = Ember.assert;
 
-import { isNone } from 'ember-metal/is_none';
-import { handlebarsGet } from "ember-handlebars/ext";
+import isNone from 'ember-metal/is_none';
 import { bind } from "ember-handlebars/helpers/binding";
 
 /**
@@ -44,16 +43,6 @@ import { bind } from "ember-handlebars/helpers/binding";
   changes, the partial will be re-rendered using the new template
   name.
 
-  ## Setting the partial's context with `with`
-
-  The `partial` helper can be used in conjunction with the `with`
-  helper to set a context that will be used by the partial:
-
-  ```handlebars
-  {{#with currentUser}}
-    {{partial "user_info"}}
-  {{/with}}
-  ```
 
   @method partial
   @for Ember.Handlebars.helpers
@@ -61,18 +50,19 @@ import { bind } from "ember-handlebars/helpers/binding";
 */
 
 export default function partialHelper(name, options) {
+  var view = options.data.view;
 
   var context = (options.contexts && options.contexts.length) ? options.contexts[0] : this;
 
   options.helperName = options.helperName || 'partial';
 
   if (options.types[0] === "ID") {
+    var partialNameStream = view.getStream(name);
     // Helper was passed a property path; we need to
     // create a binding that will re-render whenever
     // this property changes.
     options.fn = function(context, fnOptions) {
-      var partialName = handlebarsGet(context, name, fnOptions);
-      renderPartial(context, partialName, fnOptions);
+      renderPartial(context, partialNameStream.value(), fnOptions);
     };
 
     return bind.call(context, name, options, true, exists);
@@ -101,5 +91,7 @@ function renderPartial(context, name, options) {
 
   template = template || deprecatedTemplate;
 
-  template(context, { data: options.data });
+  template(context, {
+    data: options.data
+  });
 }

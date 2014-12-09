@@ -6,14 +6,14 @@ var result;
 
 QUnit.module("Ember.Handlebars.precompileType");
 
-test("precompile creates a function when asObject isn't defined", function(){
+test("precompile creates an object when asObject isn't defined", function(){
   result = precompile(template);
-  equal(typeof(result), "function");
+  equal(typeof(result), "object");
 });
 
-test("precompile creates a function when asObject is true", function(){
+test("precompile creates an object when asObject is true", function(){
   result = precompile(template, true);
-  equal(typeof(result), "function");
+  equal(typeof(result), "object");
 });
 
 test("precompile creates a string when asObject is false", function(){
@@ -21,3 +21,8 @@ test("precompile creates a string when asObject is false", function(){
   equal(typeof(result), "string");
 });
 
+test("precompile creates an object when passed an AST", function(){
+  var ast = parse(template);
+  result = precompile(ast);
+  equal(typeof(result), "object");
+});

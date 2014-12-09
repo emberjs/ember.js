@@ -1,5 +1,3 @@
-/*globals raises */
-
 QUnit.module('Ember.Mixin.apply');
 
 function K() {}

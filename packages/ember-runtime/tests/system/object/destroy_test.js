@@ -1,4 +1,3 @@
-import Ember from "ember-metal/core";
 import run from "ember-metal/run_loop";
 import { hasPropertyAccessors } from "ember-metal/platform";
 import { observer } from "ember-metal/mixin";
@@ -134,7 +133,7 @@ test("destroyed objects should not see each others changes during teardown but a
 
   objs.c = new C();
 
-  var longLivedObject = new LongLivedObject();
+  new LongLivedObject();
 
   run(function () {
     var keys = objectKeys(objs);

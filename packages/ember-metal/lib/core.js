@@ -1,4 +1,4 @@
-/*globals Ember:true,Em:true,ENV,EmberENV,MetamorphENV:true */
+/*globals Ember:true,ENV,EmberENV,MetamorphENV:true */
 
 /**
 @module ember
@@ -32,9 +32,9 @@ if ('undefined' === typeof Ember) {
 }
 
 // Default imports, exports and lookup to the global object;
-var imports = Ember.imports = Ember.imports || this;
-var exports = Ember.exports = Ember.exports || this;
-var lookup  = Ember.lookup  = Ember.lookup  || this;
+Ember.imports = Ember.imports || this;
+Ember.lookup  = Ember.lookup  || this;
+var exports   = Ember.exports = Ember.exports || this;
 
 // aliases needed to keep minifiers from removing the global context
 exports.Em = exports.Ember = Ember;
@@ -167,7 +167,7 @@ if (typeof Ember.EXTEND_PROTOTYPES === 'undefined') {
 Ember.LOG_STACKTRACE_ON_DEPRECATION = (Ember.ENV.LOG_STACKTRACE_ON_DEPRECATION !== false);
 
 /**
-  Determines whether Ember should add ECMAScript 5 shims to older browsers.
+  Determines whether Ember should add ECMAScript 5 Array shims to older browsers.
 
   @property SHIM_ES5
   @type Boolean
@@ -191,10 +191,10 @@ Ember.LOG_VERSION = (Ember.ENV.LOG_VERSION === false) ? false : true;
   @private
   @return {Object}
 */
-var K = function() { return this; };
-export var K = K;
+function K() { return this; }
+export { K };
 Ember.K = K;
-//TODO: ES6 GLOBL TODO
+//TODO: ES6 GLOBAL TODO
 
 // Stub out the methods defined by the ember-debug package in case it's not loaded
 

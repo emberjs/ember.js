@@ -8,7 +8,7 @@ import {
   defineProperty as o_defineProperty,
   canDefineNonEnumerableProperties,
   hasPropertyAccessors,
-  create
+  create as o_create
 } from "ember-metal/platform";
 
 import {
@@ -51,7 +51,6 @@ export function uuid() {
 */
 var GUID_PREFIX = 'ember';
 
-var o_create = create;
 // Used for guid generation...
 var numberCache  = [];
 var stringCache  = {};
@@ -229,22 +228,17 @@ function Meta(obj) {
   this.cache = {};
   this.cacheMeta = {};
   this.source = obj;
+  this.deps = undefined;
+  this.listeners = undefined;
+  this.mixins = undefined;
+  this.bindings = undefined;
+  this.chains = undefined;
+  this.values = undefined;
+  this.proto = undefined;
 }
 
 Meta.prototype = {
-  descs: null,
-  deps: null,
-  watching: null,
-  listeners: null,
-  cache: null,
-  cacheMeta: null,
-  source: null,
-  mixins: null,
-  bindings: null,
-  chains: null,
-  chainWatchers: null,
-  values: null,
-  proto: null
+  chainWatchers: null
 };
 
 if (!canDefineNonEnumerableProperties) {
@@ -287,7 +281,6 @@ if (Ember.FEATURES.isEnabled('mandatory-setter')) {
   @return {Object} the meta hash for an object
 */
 function meta(obj, writable) {
-
   var ret = obj['__ember_meta__'];
   if (writable===false) return ret || EMPTY_META;
 
@@ -479,8 +472,8 @@ function isArray(obj) {
 
 /**
   Forces the passed object to be part of an array. If the object is already
-  an array or array-like, returns the object. Otherwise adds the object to
-  an array. If obj is `null` or `undefined`, returns an empty array.
+  an array or array-like, it will return the object. Otherwise, it will add the object to
+  an array. If obj is `null` or `undefined`, it will return an empty array.
 
   ```javascript
   Ember.makeArray();            // []

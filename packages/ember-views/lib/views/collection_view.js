@@ -5,9 +5,7 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.assert
-import { create } from "ember-metal/platform";
 import { isGlobalPath } from "ember-metal/binding";
-import merge from "ember-metal/merge";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { fmt } from "ember-runtime/system/string";
@@ -18,9 +16,7 @@ import {
   observer,
   beforeObserver
 } from "ember-metal/mixin";
-import {
-  handlebarsGetView
-} from "ember-handlebars/ext";
+import { readViewFactory } from "ember-views/streams/read";
 import EmberArray from "ember-runtime/mixins/array";
 
 /**
@@ -347,21 +343,23 @@ var CollectionView = ContainerView.extend({
   */
   arrayDidChange: function(content, start, removed, added) {
     var addedViews = [];
-    var view, item, idx, len, itemViewClass, emptyView;
+    var view, item, idx, len, itemViewClass, emptyView, itemViewProps;
 
     len = content ? get(content, 'length') : 0;
 
     if (len) {
+      itemViewProps = this._itemViewProps || {};
       itemViewClass = get(this, 'itemViewClass');
-      itemViewClass = handlebarsGetView(content, itemViewClass, this.container);
+
+      itemViewClass = readViewFactory(itemViewClass, this.container);
 
       for (idx = start; idx < start+added; idx++) {
         item = content.objectAt(idx);
 
-        view = this.createChildView(itemViewClass, {
-          content: item,
-          contentIndex: idx
-        });
+        itemViewProps.content = item;
+        itemViewProps.contentIndex = idx;
+
+        view = this.createChildView(itemViewClass, itemViewProps);
 
         addedViews.push(view);
       }
@@ -375,6 +373,7 @@ var CollectionView = ContainerView.extend({
       }
 
       emptyView = this.createChildView(emptyView);
+
       addedViews.push(emptyView);
       set(this, 'emptyView', emptyView);
 

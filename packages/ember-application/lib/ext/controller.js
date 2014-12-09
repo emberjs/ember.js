@@ -5,7 +5,6 @@
 
 import Ember from "ember-metal/core"; // Ember.assert
 import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import EmberError from "ember-metal/error";
 import { inspect } from "ember-metal/utils";
 import { computed } from "ember-metal/computed";
@@ -20,7 +19,8 @@ function verifyNeedsDependencies(controller, container, needs) {
   for (i=0, l=needs.length; i<l; i++) {
     dependency = needs[i];
 
-    Ember.assert(inspect(controller) + "#needs must not specify dependencies with periods in their names (" + dependency + ")", dependency.indexOf('.') === -1);
+    Ember.assert(inspect(controller) + "#needs must not specify dependencies with periods in their names (" +
+                 dependency + ")", dependency.indexOf('.') === -1);
 
     if (dependency.indexOf(':') === -1) {
       dependency = "controller:" + dependency;
@@ -32,7 +32,8 @@ function verifyNeedsDependencies(controller, container, needs) {
     }
   }
   if (missing.length) {
-    throw new EmberError(inspect(controller) + " needs [ " + missing.join(', ') + " ] but " + (missing.length > 1 ? 'they' : 'it') + " could not be found");
+    throw new EmberError(inspect(controller) + " needs [ " + missing.join(', ') +
+                         " ] but " + (missing.length > 1 ? 'they' : 'it') + " could not be found");
   }
 }
 
@@ -53,7 +54,12 @@ var defaultControllersComputedProperty = computed(function() {
         }
       }
 
-      var errorMessage = inspect(controller) + '#needs does not include `' + controllerName + '`. To access the ' + controllerName + ' controller from ' + inspect(controller) + ', ' + inspect(controller) + ' should have a `needs` property that is an array of the controllers it has access to.';
+      var errorMessage = inspect(controller) + '#needs does not include `' +
+                         controllerName + '`. To access the ' +
+                         controllerName + ' controller from ' +
+                         inspect(controller) + ', ' +
+                         inspect(controller) +
+                         ' should have a `needs` property that is an array of the controllers it has access to.';
       throw new ReferenceError(errorMessage);
     },
     setUnknownProperty: function (key, value) {

@@ -1,5 +1,4 @@
 import {
-  OrderedSet,
   Map,
   MapWithDefault
 } from "ember-metal/map";
@@ -317,12 +316,13 @@ function testMap(nameAndFunc) {
       { value: 3, key: "c", context: unboundThis },
     ];
 
-    map.forEach(function(value, key) {
+    map.forEach(function(value, key, theMap) {
       var expectation = expectations[iteration];
 
       equal(value, expectation.value, 'value should be correct');
       equal(key, expectation.key, 'key should be correct');
       equal(this, expectation.context, 'context should be as if it was unbound');
+      equal(map, theMap, 'map being iterated over should be passed in');
 
       iteration++;
     });
@@ -344,12 +344,13 @@ function testMap(nameAndFunc) {
       { value: 3, key: "c", context: context },
     ];
 
-    map.forEach(function(value, key) {
+    map.forEach(function(value, key, theMap) {
       var expectation = expectations[iteration];
 
       equal(value, expectation.value, 'value should be correct');
       equal(key, expectation.key, 'key should be correct');
       equal(this, expectation.context, 'context should be as if it was unbound');
+      equal(map, theMap, 'map being iterated over should be passed in');
 
       iteration++;
 
@@ -370,7 +371,7 @@ function testMap(nameAndFunc) {
       { value: 2, key: "b", context: unboundThis }
     ];
 
-    map.forEach(function(value, key) {
+    map.forEach(function(value, key, theMap) {
       if (iteration === 0) {
         map.delete("c");
       }
@@ -380,6 +381,7 @@ function testMap(nameAndFunc) {
       equal(value, expectation.value, 'value should be correct');
       equal(key, expectation.key, 'key should be correct');
       equal(this, expectation.context, 'context should be as if it was unbound');
+      equal(map, theMap, 'map being iterated over should be passed in');
 
       iteration++;
     });
@@ -401,7 +403,7 @@ function testMap(nameAndFunc) {
       { value: 4, key: "d", context: unboundThis },
     ];
 
-    map.forEach(function(value, key) {
+    map.forEach(function(value, key, theMap) {
       if (iteration === 0) {
         map.set('d', 4);
       }
@@ -411,6 +413,7 @@ function testMap(nameAndFunc) {
       equal(value, expectation.value, 'value should be correct');
       equal(key, expectation.key, 'key should be correct');
       equal(this, expectation.context, 'context should be as if it was unbound');
+      equal(map, theMap, 'map being iterated over should be passed in');
 
       iteration++;
     });

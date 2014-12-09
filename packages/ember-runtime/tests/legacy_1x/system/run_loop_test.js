@@ -1,6 +1,3 @@
-import Ember from "ember-metal/core";
-import {get} from 'ember-metal/property_get';
-import {set} from 'ember-metal/property_set';
 import {observer as emberObserver} from 'ember-metal/mixin';
 import run from "ember-metal/run_loop";
 import {Binding} from "ember-metal/binding";
@@ -21,7 +18,7 @@ import EmberObject from 'ember-runtime/system/object';
     broken anyway.  I don't think it ever even worked.
 */
 
-var MyApp, binding1, binding2, previousPreventRunloop;
+var MyApp, binding1, binding2;
 
 QUnit.module("System:run_loop() - chained binding", {
   setup: function() {

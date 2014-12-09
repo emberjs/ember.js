@@ -1,4 +1,4 @@
-import {ArrayTests, ObserverClass} from 'ember-runtime/tests/suites/array';
+import { ArrayTests } from 'ember-runtime/tests/suites/array';
 
 import insertAtTests from 'ember-runtime/tests/suites/mutable_array/insertAt';
 import popObjectTests from 'ember-runtime/tests/suites/mutable_array/popObject';

@@ -1,5 +1,5 @@
 import Ember from "ember-metal/core";
-import {isNone, none} from 'ember-metal/is_none';
+import isNone from 'ember-metal/is_none';
 import Set from "ember-runtime/system/set";
 import EmberObject from 'ember-runtime/system/object';
 import EmberArray from "ember-runtime/mixins/array";

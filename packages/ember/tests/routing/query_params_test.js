@@ -1,15 +1,10 @@
 import "ember";
-import {
-  forEach,
-  map
-}  from "ember-metal/enumerable_utils";
 import { computed } from "ember-metal/computed";
 import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 import { capitalize } from "ember-runtime/system/string";
 
-var Router, App, AppView, templates, router, container;
+var Router, App, router, container;
 var get = Ember.get;
-var set = Ember.set;
 var compile = Ember.Handlebars.compile;
 
 function withoutMeta(object) {
@@ -34,26 +29,6 @@ function handleURL(path) {
     }, function(reason) {
       ok(false, 'failed to visit:`' + path + '` reason: `' + QUnit.jsDump.parse(reason));
       throw reason;
-    });
-  });
-}
-
-function handleURLAborts(path) {
-  Ember.run(function() {
-    router.handleURL(path).then(function(value) {
-      ok(false, 'url: `' + path + '` was NOT to be handled');
-    }, function(reason) {
-      ok(reason && reason.message === "TransitionAborted",  'url: `' + path + '` was to be aborted');
-    });
-  });
-}
-
-function handleURLRejectsWith(path, expectedReason) {
-  Ember.run(function() {
-    router.handleURL(path).then(function(value) {
-      ok(false, 'expected handleURLing: `' + path + '` to fail');
-    }, function(reason) {
-      equal(expectedReason, reason);
     });
   });
 }
@@ -638,6 +613,31 @@ test("can opt into a replace query by specifying replace:true in the Router conf
   setAndFlush(appController, 'alex', 'wallace');
 });
 
+test("Route query params config can be configured using property name instead of URL key", function() {
+  expect(2);
+  App.ApplicationController = Ember.Controller.extend({
+    queryParams: [
+      {commitBy: "commit_by"}
+    ]
+  });
+
+  App.ApplicationRoute = Ember.Route.extend({
+    queryParams: {
+      commitBy: {
+        replace: true
+      }
+    }
+  });
+
+  bootApplication();
+
+  equal(router.get('location.path'), "");
+
+  var appController = container.lookup('controller:application');
+  expectedReplaceURL = "/?commit_by=igor_seb";
+  setAndFlush(appController, 'commitBy', 'igor_seb');
+});
+
 test("An explicit replace:false on a changed QP always wins and causes a pushState", function() {
   expect(3);
   App.ApplicationController = Ember.Controller.extend({
@@ -702,7 +702,7 @@ test("can opt into full transition by setting refreshModel in route queryParams 
 
   equal(parentModelCount, 1);
 
-  var parentController = container.lookup('controller:parent');
+  container.lookup('controller:parent');
 
   Ember.run(Ember.$('#parent-link'), 'click');
 

@@ -2,11 +2,10 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
-import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
 
-var parentView, child, parentDom, childDom, view;
+var parentView, view;
 
 QUnit.module("Ember.View#element", {
   teardown: function() {
@@ -24,6 +23,8 @@ test("returns null if the view has no element and no parent view", function() {
 });
 
 test("returns null if the view has no element and parent view has no element", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   parentView = ContainerView.create({
     childViews: [ EmberView.extend() ]
   });

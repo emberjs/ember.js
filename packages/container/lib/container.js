@@ -104,20 +104,6 @@ Container.prototype = {
   },
 
   /**
-    Sets a key-value pair on the current container. If a parent container,
-    has the same key, once set on a child, the parent and child will diverge
-    as expected.
-
-    @method set
-    @param {Object} object
-    @param {String} key
-    @param {any} value
-  */
-  set: function(object, key, value) {
-    object[key] = value;
-  },
-
-  /**
     Registers a factory for later injection.
 
     Example:
@@ -372,11 +358,13 @@ Container.prototype = {
 
   /**
     @method options
-    @param {String} type
+    @param {String} fullName
     @param {Object} options
   */
-  options: function(type, options) {
-    this.optionsForType(type, options);
+  options: function(fullName, options) {
+    options = options || {};
+    var normalizedName = this.normalize(fullName);
+    this._options[normalizedName] = options;
   },
 
   /**
@@ -421,7 +409,10 @@ Container.prototype = {
 
     var fullNameType = fullName.split(':')[0];
     if (fullNameType === type) {
-      throw new Error('Cannot inject a `' + fullName + '` on other ' + type + '(s). Register the `' + fullName + '` as a different type and perform the typeInjection.');
+      throw new Error('Cannot inject a `' + fullName +
+                      '` on other ' + type +
+                      '(s). Register the `' + fullName +
+                      '` as a different type and perform the typeInjection.');
     }
 
     addTypeInjection(this.typeInjections, type, property, fullName);
@@ -485,9 +476,13 @@ Container.prototype = {
     var normalizedName = this.normalize(fullName);
 
     if (this.cache[normalizedName]) {
-      throw new Error("Attempted to register an injection for a type that has already been looked up. ('" + normalizedName + "', '" + property + "', '" + injectionName + "')");
+      throw new Error("Attempted to register an injection for a type that has already been looked up. ('" +
+                      normalizedName + "', '" +
+                      property + "', '" +
+                      injectionName + "')");
     }
-    addInjection(this.injections, normalizedName, property, normalizedInjectionName);
+
+    addInjection(initRules(this.injections, normalizedName), property, normalizedInjectionName);
   },
 
 
@@ -594,7 +589,7 @@ Container.prototype = {
         'been looked up. (\'' + normalizedName + '\', \'' + property + '\', \'' + injectionName + '\')');
     }
 
-    addInjection(this.factoryInjections, normalizedName, property, normalizedInjectionName);
+    addInjection(initRules(this.factoryInjections, normalizedName), property, normalizedInjectionName);
   },
 
   /**
@@ -645,7 +640,7 @@ function has(container, fullName){
     return true;
   }
 
-  return !!container.resolve(fullName);
+  return container.resolve(fullName) !== undefined;
 }
 
 function lookup(container, fullName, options) {
@@ -681,20 +676,30 @@ function buildInjections(container, injections) {
 
   if (!injections) { return hash; }
 
-  var injection, injectable;
+  validateInjections(container, injections);
+
+  var injection;
 
   for (var i = 0, length = injections.length; i < length; i++) {
     injection = injections[i];
-    injectable = lookup(container, injection.fullName);
-
-    if (injectable !== undefined) {
-      hash[injection.property] = injectable;
-    } else {
-      throw new Error('Attempting to inject an unknown injection: `' + injection.fullName + '`');
-    }
+    hash[injection.property] = lookup(container, injection.fullName);
   }
 
   return hash;
+}
+
+function validateInjections(container, injections) {
+  if (!injections) { return; }
+
+  var fullName;
+
+  for (var i = 0, length = injections.length; i < length; i++) {
+    fullName = injections[i].fullName;
+
+    if (!container.has(fullName)) {
+      throw new Error('Attempting to inject an unknown injection: `' + fullName + '`');
+    }
+  }
 }
 
 function option(container, fullName, optionName) {
@@ -770,8 +775,23 @@ function factoryInjectionsFor(container, fullName) {
   return factoryInjections;
 }
 
+function normalizeInjectionsHash(hash) {
+  var injections = [];
+
+  for (var key in hash) {
+    if (hash.hasOwnProperty(key)) {
+      Ember.assert("Expected a proper full name, given '" + hash[key] + "'", validateFullName(hash[key]));
+
+      addInjection(injections, key, hash[key]);
+    }
+  }
+
+  return injections;
+}
+
 function instantiate(container, fullName) {
   var factory = factoryFor(container, fullName);
+  var lazyInjections;
 
   if (option(container, fullName, 'instantiate') === false) {
     return factory;
@@ -781,6 +801,15 @@ function instantiate(container, fullName) {
     if (typeof factory.create !== 'function') {
       throw new Error('Failed to create an instance of \'' + fullName + '\'. ' +
         'Most likely an improperly defined class or an invalid module export.');
+    }
+
+    if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+      // Ensure that all lazy injections are valid at instantiation time
+      if (typeof factory.lazyInjections === 'function') {
+        lazyInjections = factory.lazyInjections();
+
+        validateInjections(container, normalizeInjectionsHash(lazyInjections));
+      }
     }
 
     if (typeof factory.extend === 'function') {
@@ -840,8 +869,11 @@ function validateFullName(fullName) {
   return true;
 }
 
-function addInjection(rules, factoryName, property, injectionName) {
-  var injections = rules[factoryName] = rules[factoryName] || [];
+function initRules(rules, factoryName) {
+  return rules[factoryName] || (rules[factoryName] = []);
+}
+
+function addInjection(injections, property, injectionName) {
   injections.push({
     property: property,
     fullName: injectionName

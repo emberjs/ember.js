@@ -4,7 +4,7 @@
 */
 
 import jQuery from "ember-views/system/jquery";
-import {DOMHelper} from "morph";
+import { DOMHelper } from "morph";
 import Ember from "ember-metal/core";
 import { create } from "ember-metal/platform";
 
@@ -65,10 +65,6 @@ ClassSet.prototype = {
     this.seen[string] = true;
 
     this.list.push(string);
-  },
-
-  toDOM: function() {
-    return this.list.join(" ");
   }
 };
 

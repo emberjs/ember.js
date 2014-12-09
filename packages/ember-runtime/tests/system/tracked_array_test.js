@@ -1,4 +1,3 @@
-import { forEach } from 'ember-metal/enumerable_utils';
 import TrackedArray from "ember-runtime/system/tracked_array";
 
 var trackedArray;

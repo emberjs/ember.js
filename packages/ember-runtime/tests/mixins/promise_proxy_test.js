@@ -20,11 +20,6 @@ QUnit.module("Ember.PromiseProxy - ObjectProxy", {
 });
 
 test("no promise, invoking then should raise", function(){
-  var value = {
-    firstName: 'stef',
-    lastName: 'penner'
-  };
-
   var proxy = ObjectPromiseProxy.create();
 
   raises(function(){
@@ -164,7 +159,7 @@ test("unhandled rejects still propogate to RSVP.on('error', ...) ", function(){
     promise: deferred.promise
   });
 
-  var promise = proxy.get('promise');
+  proxy.get('promise');
 
   function onerror(reason) {
     equal(reason, expectedReason, 'expected reason');
@@ -250,6 +245,7 @@ test("should have content when isFulfilled is set", function() {
 });
 
 test("should have reason when isRejected is set", function() {
+  var error = new Error('Y U REJECT?!?');
   var deferred = EmberRSVP.defer();
 
   var proxy = ObjectPromiseProxy.create({
@@ -257,8 +253,12 @@ test("should have reason when isRejected is set", function() {
   });
 
   proxy.addObserver('isRejected', function() {
-    equal(get(proxy, 'reason'), true);
+    equal(get(proxy, 'reason'), error);
   });
 
-  run(deferred, 'reject', true);
+  try {
+    run(deferred, 'reject', error);
+  } catch(e) {
+    equal(e, error);
+  }
 });

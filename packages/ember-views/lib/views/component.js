@@ -6,7 +6,7 @@ import View from "ember-views/views/view";
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
-import { isNone } from 'ember-metal/is_none';
+import isNone from 'ember-metal/is_none';
 
 import { computed } from "ember-metal/computed";
 
@@ -112,7 +112,6 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
 
   init: function() {
     this._super();
-    set(this, 'origContext', get(this, 'context'));
     set(this, 'context', this);
     set(this, 'controller', this);
   },
@@ -160,12 +159,8 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
   */
   templateName: null,
 
-  // during render, isolate keywords
-  cloneKeywords: function() {
-    return {
-      view: this,
-      controller: this
-    };
+  _setupKeywords: function() {
+    this._keywords.view.setSource(this);
   },
 
   _yield: function(context, options) {
@@ -181,9 +176,9 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
         tagName: '',
         _contextView: parentView,
         template: template,
-        context: options.data.insideGroup ? get(this, 'origContext') : get(parentView, 'context'),
+        context: get(parentView, 'context'),
         controller: get(parentView, 'controller'),
-        templateData: { keywords: parentView.cloneKeywords(), insideGroup: options.data.insideGroup }
+        templateData: { keywords: {} }
       });
     }
   },
@@ -306,6 +301,30 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
       action: actionName,
       actionContext: contexts
     });
+  },
+
+  send: function(actionName) {
+    var args = [].slice.call(arguments, 1);
+    var target;
+    var hasAction = this._actions && this._actions[actionName];
+
+    if (hasAction) {
+      if (this._actions[actionName].apply(this, args) === true) {
+        // handler returned true, so this action will bubble
+      } else {
+        return;
+      }
+    }
+
+    if (target = get(this, 'target')) {
+      Ember.assert("The `target` for " + this + " (" + target +
+                   ") does not have a `send` method", typeof target.send === 'function');
+      target.send.apply(target, arguments);
+    } else {
+      if (!hasAction) {
+        throw new Error(Ember.inspect(this) + ' had no action handler for: ' + actionName);
+      }
+    }
   }
 });
 

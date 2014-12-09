@@ -6,7 +6,6 @@ import { defineProperty } from "ember-metal/properties";
 import { computed } from "ember-metal/computed";
 import merge from "ember-metal/merge";
 import run from "ember-metal/run_loop";
-import { forEach } from "ember-metal/enumerable_utils";
 
 import { fmt } from "ember-runtime/system/string";
 import EmberObject from "ember-runtime/system/object";
@@ -19,7 +18,7 @@ import {
   routeArgs,
   getActiveTargetName,
   stashParamNames
-} from "ember-routing-handlebars/helpers/shared";
+} from "ember-routing/utils";
 import { create } from "ember-metal/platform";
 
 /**
@@ -27,13 +26,8 @@ import { create } from "ember-metal/platform";
 @submodule ember-routing
 */
 
-// // side effect of loading some Ember globals, for now
-// requireModule("ember-handlebars");
-// requireModule("ember-runtime");
-// requireModule("ember-views");
-
-var Router = requireModule("router")['default'];
-var Transition = requireModule("router/transition").Transition;
+import Router from 'router';
+import 'router/transition';
 
 var slice = [].slice;
 
@@ -111,6 +105,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     var container = this.container;
     var self = this;
     var initialURL = get(this, 'initialURL');
+    var initialTransition;
 
     // Allow the Location class to cancel the router setup while it refreshes
     // the page
@@ -130,8 +125,10 @@ var EmberRouter = EmberObject.extend(Evented, {
     if (typeof initialURL === "undefined") {
       initialURL = location.getURL();
     }
-
-    this.handleURL(initialURL);
+    initialTransition = this.handleURL(initialURL);
+    if (initialTransition && initialTransition.error) {
+      throw initialTransition.error;
+    }
   },
 
   /**
@@ -161,6 +158,9 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   handleURL: function(url) {
+    // Until we have an ember-idiomatic way of accessing #hashes, we need to
+    // remove it because router.js doesn't know how to handle it.
+    url = url.split(/#(.+)?/)[0];
     return this._doURLTransition('handleURL', url);
   },
 
@@ -289,7 +289,9 @@ var EmberRouter = EmberObject.extend(Evented, {
     var rootURL = get(this, 'rootURL');
 
     if (rootURL && this.container && !this.container.has('-location-setting:root-url')) {
-      this.container.register('-location-setting:root-url', rootURL, { instantiate: false });
+      this.container.register('-location-setting:root-url', rootURL, {
+        instantiate: false
+      });
     }
 
     if ('string' === typeof location && this.container) {
@@ -299,7 +301,9 @@ var EmberRouter = EmberObject.extend(Evented, {
         location = set(this, 'location', resolvedLocation);
       } else {
         // Allow for deprecated registration of custom location API's
-        var options = {implementation: location};
+        var options = {
+          implementation: location
+        };
 
         location = set(this, 'location', EmberLocation.create(options));
       }
@@ -319,7 +323,8 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   _getHandlerFunction: function() {
-    var seen = {}, container = this.container;
+    var seen = create(null);
+    var container = this.container;
     var DefaultRoute = container.lookupFactory('route:basic');
     var self = this;
 
@@ -327,7 +332,9 @@ var EmberRouter = EmberObject.extend(Evented, {
       var routeName = 'route:' + name;
       var handler = container.lookup(routeName);
 
-      if (seen[name]) { return handler; }
+      if (seen[name]) {
+        return handler;
+      }
 
       seen[name] = true;
 
@@ -449,7 +456,8 @@ var EmberRouter = EmberObject.extend(Evented, {
       return this._qpCache[leafRouteName];
     }
 
-    var map = {}, qps = [], qpCache = this._qpCache[leafRouteName] = {
+    var map = {}, qps = [];
+    this._qpCache[leafRouteName] = {
       map: map,
       qps: qps
     };
@@ -863,7 +871,6 @@ function resemblesURL(str) {
 
 function forEachQueryParam(router, targetRouteName, queryParams, callback) {
   var qpCache = router._queryParamsFor(targetRouteName);
-  var qps = qpCache.qps;
 
   for (var key in queryParams) {
     if (!queryParams.hasOwnProperty(key)) { continue; }

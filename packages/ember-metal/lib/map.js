@@ -379,7 +379,8 @@ Map.prototype = {
 
   /**
     Iterate over all the keys and values. Calls the function once
-    for each key, passing in the key and value, in that order.
+    for each key, passing in value, key, and the map being iterated over,
+    in that order.
 
     The keys are guaranteed to be iterated over in insertion order.
 
@@ -402,11 +403,11 @@ Map.prototype = {
     if (length === 2) {
       thisArg = arguments[1];
       cb = function(key) {
-        callback.call(thisArg, map.get(key), key);
+        callback.call(thisArg, map.get(key), key, map);
       };
     } else {
       cb = function(key) {
-        callback(map.get(key), key);
+        callback(map.get(key), key, map);
       };
     }
 

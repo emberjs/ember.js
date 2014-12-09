@@ -52,6 +52,8 @@ test("should be able to insert views after the DOM representation is created", f
 });
 
 test("should be able to observe properties that contain child views", function() {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   run(function() {
     var Container = ContainerView.extend({
       childViews: ['displayView'],
@@ -280,11 +282,9 @@ test("if a ContainerView starts with a currentView, it is rendered as a child vi
     controller: controller
   });
   var context = null;
-  var templateData = null;
   var mainView = View.create({
     template: function(ctx, opts) {
       context = ctx;
-      templateData = opts.data;
       return "This is the main view.";
     }
   });
@@ -300,17 +300,15 @@ test("if a ContainerView starts with a currentView, it is rendered as a child vi
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
   equal(context, container.get('context'), 'context preserved');
-  equal(templateData.keywords.controller, controller, 'templateData is setup');
-  equal(templateData.keywords.view, mainView, 'templateData is setup');
+  equal(mainView._keywords.controller.value(), controller, 'controller keyword is setup');
+  equal(mainView._keywords.view.value(), mainView, 'view keyword is setup');
 });
 
 test("if a ContainerView is created with a currentView, it is rendered as a child view", function() {
   var context = null;
-  var templateData = null;
   var mainView = View.create({
     template: function(ctx, opts) {
       context = ctx;
-      templateData = opts.data;
       return "This is the main view.";
     }
   });
@@ -331,17 +329,15 @@ test("if a ContainerView is created with a currentView, it is rendered as a chil
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
   equal(context, container.get('context'), 'context preserved');
-  equal(templateData.keywords.controller, controller, 'templateData is setup');
-  equal(templateData.keywords.view, mainView, 'templateData is setup');
+  equal(mainView._keywords.controller.value(), controller, 'controller keyword is setup');
+  equal(mainView._keywords.view.value(), mainView, 'view keyword is setup');
 });
 
 test("if a ContainerView starts with no currentView and then one is set, the ContainerView is updated", function() {
   var context = null;
-  var templateData = null;
   var mainView = View.create({
     template: function(ctx, opts) {
       context = ctx;
-      templateData = opts.data;
       return "This is the main view.";
     }
   });
@@ -368,17 +364,15 @@ test("if a ContainerView starts with no currentView and then one is set, the Con
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
   equal(context, container.get('context'), 'context preserved');
-  equal(templateData.keywords.controller, controller, 'templateData is setup');
-  equal(templateData.keywords.view, mainView, 'templateData is setup');
+  equal(mainView._keywords.controller.value(), controller, 'controller keyword is setup');
+  equal(mainView._keywords.view.value(), mainView, 'view keyword is setup');
 });
 
 test("if a ContainerView starts with a currentView and then is set to null, the ContainerView is updated", function() {
   var context = null;
-  var templateData = null;
   var mainView = View.create({
     template: function(ctx, opts) {
       context = ctx;
-      templateData = opts.data;
       return "This is the main view.";
     }
   });
@@ -400,8 +394,8 @@ test("if a ContainerView starts with a currentView and then is set to null, the 
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
   equal(context, container.get('context'), 'context preserved');
-  equal(templateData.keywords.controller, controller, 'templateData is setup');
-  equal(templateData.keywords.view, mainView, 'templateData is setup');
+  equal(mainView._keywords.controller.value(), controller, 'controller keyword is setup');
+  equal(mainView._keywords.view.value(), mainView, 'view keyword is setup');
 
   run(function() {
     set(container, 'currentView', null);
@@ -413,11 +407,9 @@ test("if a ContainerView starts with a currentView and then is set to null, the 
 
 test("if a ContainerView starts with a currentView and then is set to null, the ContainerView is updated and the previous currentView is destroyed", function() {
   var context = null;
-  var templateData = null;
   var mainView = View.create({
     template: function(ctx, opts) {
       context = ctx;
-      templateData = opts.data;
       return "This is the main view.";
     }
   });
@@ -439,8 +431,8 @@ test("if a ContainerView starts with a currentView and then is set to null, the 
   equal(container.objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
   equal(context, container.get('context'), 'context preserved');
-  equal(templateData.keywords.controller, controller, 'templateData is setup');
-  equal(templateData.keywords.view, mainView, 'templateData is setup');
+  equal(mainView._keywords.controller.value(), controller, 'controller keyword is setup');
+  equal(mainView._keywords.view.value(), mainView, 'view keyword is setup');
 
   run(function() {
     set(container, 'currentView', null);
@@ -673,6 +665,8 @@ test("should be able to modify childViews then rerender again the ContainerView 
 });
 
 test("should invalidate `element` on itself and childViews when being rendered by ensureChildrenAreInDOM", function () {
+  expectDeprecation("Setting `childViews` on a Container is deprecated.");
+
   var root = ContainerView.create();
 
   view = View.create({ template: function() {} });

@@ -1,11 +1,7 @@
-import Ember from 'ember-metal/core'; // TEMPLATES
-import { get } from "ember-metal/property_get";
-import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
 import EmberHandlebars from "ember-handlebars";
 import EmberView from "ember-views/views/view";
-import jQuery from "ember-views/system/jquery";
 
 var view;
 

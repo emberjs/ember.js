@@ -75,25 +75,29 @@ function generateEachPackageTests() {
     if (packages[packageName].skipTests) { return; }
 
     testFunctions.push(function() {
-      return run('package=' + packageName);
+      return run('package=' + packageName + '&raiseonunhandleddeprecation=true');
     });
     testFunctions.push(function() {
-      return run('package=' + packageName + '&enableoptionalfeatures=true');
+      return run('package=' + packageName + '&enableoptionalfeatures=true&raiseonunhandleddeprecation=true');
     });
   });
 }
 
 function generateBuiltTests() {
   // container isn't publicly available
-  // ember-testing is stripped from prod/min
+  // ember-testing/ember-debug are stripped from prod/min
+  var common = 'skipPackage=container,ember-testing,ember-debug';
   testFunctions.push(function() {
-    return run('skipPackage=container,ember-testing&nojshint=true');
+    return run(common + '&nojshint=true');
   });
   testFunctions.push(function() {
-    return run('skipPackage=container,ember-testing&dist=min&prod=true');
+    return run(common + '&dist=min&prod=true');
   });
   testFunctions.push(function() {
-    return run('skipPackage=container,ember-testing&dist=prod&prod=true');
+    return run(common + '&dist=prod&prod=true');
+  });
+  testFunctions.push(function() {
+    return run(common + '&enableoptionalfeatures=true&dist=prod&prod=true');
   });
 }
 

@@ -36,7 +36,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
   var level = 0;
 
   var view = _view;
-  var children, i, l, child;
+  var children, i, child;
   while (length) {
     elements[level] = element;
     if (!view._morph) {
@@ -110,7 +110,7 @@ function Renderer_renderTree(_view, _parentView, _insertAt) {
 
   this.insertElement(view, _parentView, element, insertAt);
 
-  for (i=total-1;i>=0;i--) {
+  for (i=total-1; i>=0; i--) {
     if (willInsert) {
       views[i]._elementInserted = true;
       this.didInsertElement(views[i]);
@@ -137,7 +137,7 @@ Renderer.prototype.scheduleInsert =
     Ember.assert("You cannot insert a View without a morph", morph);
     view._morph = morph;
     var viewId = this.uuid(view);
-    this._inserts[viewId] = this.scheduleRender(this, function() {
+    this._inserts[viewId] = this.scheduleRender(this, function scheduledRenderTree() {
       this._inserts[viewId] = null;
       this.renderTree(view);
     });
@@ -170,8 +170,7 @@ function Renderer_remove(_view, shouldDestroy, reset) {
   var removeQueue = [];
   var destroyQueue = [];
   var morph = _view._morph;
-  var  idx, len, view, staticChildren, queue,
-    childViews, i, l, parentView;
+  var idx, len, view, queue, childViews, i, l;
 
   removeQueue.push(_view);
 
