@@ -1,20 +1,13 @@
 import EmberView from "ember-views/views/view";
 import Container from 'container/container';
-import EmberHandlebars from 'ember-handlebars-compiler';
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import compile from "ember-htmlbars/system/compile";
+import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 import Component from "ember-views/views/component";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
-
 var container, view;
 
-QUnit.module('ember-htmlbars: Ember.Handlebars.makeViewHelper compat', {
+QUnit.module('ember-htmlbars: makeViewHelper compat', {
   setup: function() {
     container = new Container();
     container.optionsForType('helper', { instantiate: false });
@@ -26,13 +19,13 @@ QUnit.module('ember-htmlbars: Ember.Handlebars.makeViewHelper compat', {
   }
 });
 
-test('EmberHandlebars.makeViewHelper', function() {
+test('makeViewHelper', function() {
   expect(1);
 
   var ViewHelperComponent = Component.extend({
     layout: compile('woot!')
   });
-  var helper = EmberHandlebars.makeViewHelper(ViewHelperComponent);
+  var helper = makeViewHelper(ViewHelperComponent);
   container.register('helper:view-helper', helper);
 
   view = EmberView.extend({

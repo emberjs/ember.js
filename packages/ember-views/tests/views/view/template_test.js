@@ -29,18 +29,20 @@ test("Template views return throw if their template cannot be found", function()
   }, /cantBeFound/);
 });
 
-test("should allow standard Handlebars template usage", function() {
-  view = EmberView.create({
-    context: { name: "Erik" },
-    template: Handlebars.compile("Hello, {{name}}")
-  });
+if (typeof Handlebars === "object") {
+  test("should allow standard Handlebars template usage", function() {
+    view = EmberView.create({
+      context: { name: "Erik" },
+      template: Handlebars.compile("Hello, {{name}}")
+    });
 
-  run(function() {
-    view.createElement();
-  });
+    run(function() {
+      view.createElement();
+    });
 
-  equal(view.$().text(), "Hello, Erik");
-});
+    equal(view.$().text(), "Hello, Erik");
+  });
+}
 
 test("should call the function of the associated template", function() {
   container.register('template:testTemplate', function() {

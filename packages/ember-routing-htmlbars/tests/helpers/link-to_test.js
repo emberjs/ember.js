@@ -1,18 +1,10 @@
 import "ember-routing-htmlbars";
 import run from "ember-metal/run_loop";
-import EmberHandlebars from "ember-handlebars";
 import EmberView from "ember-views/views/view";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import compile from "ember-htmlbars/system/compile";
 import { set } from "ember-metal/property_set";
 import Controller from "ember-runtime/controllers/controller";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
 
 var view;
 

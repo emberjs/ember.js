@@ -3,15 +3,11 @@ import run from "ember-metal/run_loop";
 import Logger from "ember-metal/logger";
 import Controller from "ember-runtime/controllers/controller";
 import EmberObject from "ember-runtime/system/object";
-import EmberHandlebars from "ember-handlebars";
 import Namespace from "ember-runtime/system/namespace";
 import Application from "ember-application/system/application";
-
-var compile, registerHelper;
-compile = EmberHandlebars.compile;
-registerHelper = function(name, fn) {
-  EmberHandlebars.registerHelper(name, fn);
-};
+import {
+  registerHelper
+} from "ember-htmlbars/helpers";
 
 var locator, application, originalLookup, originalLoggerInfo;
 

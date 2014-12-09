@@ -8,18 +8,10 @@ import Namespace from "ember-runtime/system/namespace";
 import ArrayController from "ember-runtime/controllers/array_controller";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import SelectView from "ember-views/views/select";
-import EmberHandlebars from 'ember-handlebars-compiler';
-import { default as htmlbarsCompile } from 'ember-htmlbars/system/compile';
+import compile from 'ember-htmlbars/system/compile';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var dispatcher, view;
-
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
 
 QUnit.module("ember-htmlbars: Ember.Select - usage inside templates", {
   setup: function() {

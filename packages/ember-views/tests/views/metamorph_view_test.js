@@ -4,10 +4,8 @@ import EmberView from "ember-views/views/view";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { observer } from "ember-metal/mixin";
-import EmberHandlebars from "ember-handlebars-compiler";
-
+import compile from "ember-htmlbars/system/compile";
 import _MetamorphView from "ember-views/views/metamorph_view";
-var compile = EmberHandlebars.compile;
 
 var view, childView, metamorphView;
 

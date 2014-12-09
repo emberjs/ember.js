@@ -8,16 +8,13 @@ import Router from "ember-routing/system/router";
 import View from "ember-views/views/view";
 import Controller from "ember-runtime/controllers/controller";
 import NoneLocation from "ember-routing/location/none_location";
-import EmberHandlebars from "ember-handlebars";
 import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
+import compile from "ember-htmlbars/system/compile";
 
 var trim = jQuery.trim;
 
 var app, application, originalLookup, originalDebug;
-
-var compile = EmberHandlebars.compile;
-
 
 QUnit.module("Ember.Application", {
   setup: function() {
@@ -229,10 +226,9 @@ test('enable log of libraries with an ENV var', function() {
     });
   });
 
-  equal(messages[1], "Ember      : " + Ember.VERSION);
-  equal(messages[2], "Handlebars : " + EmberHandlebars.VERSION);
-  equal(messages[3], "jQuery     : " + jQuery().jquery);
-  equal(messages[4], "my-lib     : " + "2.0.0a");
+  equal(messages[1], "Ember  : " + Ember.VERSION);
+  equal(messages[2], "jQuery : " + jQuery().jquery);
+  equal(messages[3], "my-lib : " + "2.0.0a");
 
   Ember.libraries.deRegister("my-lib");
   Ember.LOG_VERSION = false;

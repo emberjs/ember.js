@@ -3,11 +3,8 @@
 @submodule ember-views
 */
 
-import Ember from "ember-metal/core"; // Ember.FEATURES
-import EmberHandlebars from "ember-handlebars-compiler"; // EmberHandlebars.SafeString;
 import EmberError from "ember-metal/error";
 import run from "ember-metal/run_loop";
-import handlebarsHtmlSafe from "ember-handlebars/string";
 import {
   SafeString as htmlbarsSafeString,
   htmlSafe as htmlbarsHtmlSafe
@@ -19,14 +16,8 @@ import {
 
 function K() { return this; }
 
-var SafeString, htmlSafe;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  SafeString = htmlbarsSafeString;
-  htmlSafe = htmlbarsHtmlSafe;
-} else {
-  SafeString = EmberHandlebars.SafeString;
-  htmlSafe = handlebarsHtmlSafe;
-}
+var SafeString = htmlbarsSafeString;
+var htmlSafe = htmlbarsHtmlSafe;
 
 function SimpleBoundView(lazyValue, isEscaped) {
   this.lazyValue = lazyValue;

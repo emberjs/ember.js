@@ -4,7 +4,6 @@ import run from "ember-metal/run_loop";
 import Namespace from "ember-runtime/system/namespace";
 import EmberView from "ember-views/views/view";
 import _MetamorphView from "ember-views/views/metamorph_view";
-import EmberHandlebars from "ember-handlebars";
 import EmberObject from "ember-runtime/system/object";
 import { A } from "ember-runtime/system/native_array";
 import { computed } from "ember-metal/computed";
@@ -13,19 +12,8 @@ import Container from "ember-runtime/system/container";
 import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-import {
-  default as htmlbarsHelpers
-} from "ember-htmlbars/helpers";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
-
-var compile, helpers;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-  helpers = htmlbarsHelpers;
-} else {
-  compile = EmberHandlebars.compile;
-  helpers = EmberHandlebars.helpers;
-}
+import helpers from "ember-htmlbars/helpers";
+import compile from "ember-htmlbars/system/compile";
 
 var view;
 

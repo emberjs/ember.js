@@ -5,23 +5,16 @@ import { Binding } from 'ember-metal/binding';
 import EmberObject from 'ember-runtime/system/object';
 import { computed } from 'ember-metal/computed';
 import ContainerView from 'ember-views/views/container_view';
-import htmlbarsCompile from 'ember-htmlbars/system/compile';
-import EmberHandlebars from "ember-handlebars";
-import { ViewHelper as handlebarsViewHelper } from 'ember-handlebars/helpers/view';
-import { ViewHelper as htmlbarsViewHelper } from 'ember-htmlbars/helpers/view';
+import compile from 'ember-htmlbars/system/compile';
+import { ViewHelper } from 'ember-htmlbars/helpers/view';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { registerHelper } from "ember-htmlbars/helpers";
 
 import { set } from 'ember-metal/property_set';
 
 var compile, view, MyApp, originalLookup, lookup;
 
 var trim = jQuery.trim;
-
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
 
 QUnit.module('ember-htmlbars: binding integration', {
   setup: function() {
@@ -42,7 +35,7 @@ QUnit.module('ember-htmlbars: binding integration', {
 });
 
 test('should call a registered helper for mustache without parameters', function() {
-  EmberHandlebars.registerHelper('foobar', function() {
+  registerHelper('foobar', function() {
     return 'foobar';
   });
 
@@ -166,17 +159,12 @@ test('should accept bindings as a string or an Ember.Binding', function() {
     template: compile('binding: {{view.bindingTest}}, string: {{view.stringTest}}')
   });
 
-  EmberHandlebars.registerHelper('boogie', function(id, options) {
-    options.hash = options.hash || {};
-    options.hash.bindingTestBinding = Binding.oneWay('context.' + id);
-    options.hash.stringTestBinding = id;
+  registerHelper('boogie', function(params, hash, options, env) {
+    var id = params[0];
+    hash.bindingTestBinding = Binding.oneWay('context.' + id._label);
+    hash.stringTestBinding = id;
 
-    var result;
-    if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-      result = htmlbarsViewHelper.helper(viewClass, options.hash, options, options);
-    } else {
-      result = handlebarsViewHelper.helper(this, viewClass, options);
-    }
+    var result = ViewHelper.helper(viewClass, hash, options, env);
 
     return result;
   });

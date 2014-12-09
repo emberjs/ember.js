@@ -2,7 +2,6 @@
 import CollectionView from "ember-views/views/collection_view";
 import EmberObject from "ember-runtime/system/object";
 import EmberView from "ember-views/views/view";
-import EmberHandlebars from "ember-handlebars";
 import ArrayProxy from "ember-runtime/system/array_proxy";
 import Namespace from "ember-runtime/system/namespace";
 import Container from "ember-runtime/system/container";
@@ -13,16 +12,10 @@ import { set } from "ember-metal/property_set";
 import jQuery from "ember-views/system/jquery";
 import { computed } from "ember-metal/computed";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import compile from "ember-htmlbars/system/compile";
 
 var trim = jQuery.trim;
 
-import htmlbarsCompile from "ember-htmlbars/system/compile";
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
 
 var view;
 

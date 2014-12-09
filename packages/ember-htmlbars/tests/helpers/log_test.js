@@ -1,16 +1,9 @@
 import Ember from 'ember-metal/core';
 import EmberView from 'ember-views/views/view';
-import EmberHandlebars from 'ember-handlebars';
-import htmlbarsCompile from 'ember-htmlbars/system/compile';
+import compile from 'ember-htmlbars/system/compile';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 var originalLookup, originalLog, logCalls, lookup, view, compile;
-
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
 
 QUnit.module('ember-htmlbars: {{#log}} helper', {
   setup: function() {

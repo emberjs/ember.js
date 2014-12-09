@@ -1,6 +1,6 @@
 import "ember";
 
-import EmberHandlebars from "ember-handlebars";
+import EmberHandlebars from "ember-htmlbars/compat";
 
 var compile, helpers, makeBoundHelper;
 compile = EmberHandlebars.compile;

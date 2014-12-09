@@ -19,43 +19,18 @@ import EmberArrayController from "ember-runtime/controllers/array_controller";
 import EmberRouter from "ember-routing/system/router";
 import HashLocation from "ember-routing/location/hash_location";
 
-import EmberHandlebars from "ember-handlebars";
-import { registerHelper as htmlbarsRegisterHelper } from "ember-htmlbars/helpers";
-import htmlbarsHelpers from "ember-htmlbars/helpers";
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import { registerHelper } from "ember-htmlbars/helpers";
+import helpers from "ember-htmlbars/helpers";
+import compile from "ember-htmlbars/system/compile";
 
 import EmberView from "ember-routing/ext/view";
 import _MetamorphView from "ember-views/views/metamorph_view";
 import jQuery from "ember-views/system/jquery";
 import ActionManager from "ember-views/system/action_manager";
 
-import { renderHelper as handlebarsRenderHelper } from "ember-routing-handlebars/helpers/render";
-import { actionHelper as handlebarsActionHelper } from "ember-routing-handlebars/helpers/action";
-import { outletHelper as handlebarsOutletHelper } from "ember-routing-handlebars/helpers/outlet";
-
-import { renderHelper as htmlbarsRenderHelper } from "ember-routing-htmlbars/helpers/render";
-import { actionHelper as htmlbarsActionHelper } from "ember-routing-htmlbars/helpers/action";
-import { outletHelper as htmlbarsOutletHelper } from "ember-routing-htmlbars/helpers/outlet";
-
-var compile, helpers, registerHelper;
-var renderHelper, actionHelper, outletHelper;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  renderHelper = htmlbarsRenderHelper;
-  actionHelper = htmlbarsActionHelper;
-  outletHelper = htmlbarsOutletHelper;
-  compile = htmlbarsCompile;
-  helpers = htmlbarsHelpers;
-  registerHelper = htmlbarsRegisterHelper;
-} else {
-  renderHelper = handlebarsRenderHelper;
-  actionHelper = handlebarsActionHelper;
-  outletHelper = handlebarsOutletHelper;
-  compile = EmberHandlebars.compile;
-  helpers = EmberHandlebars.helpers;
-  registerHelper = function(name, fn) {
-    EmberHandlebars.registerHelper(name, fn);
-  };
-}
+import { renderHelper } from "ember-routing-htmlbars/helpers/render";
+import { actionHelper } from "ember-routing-htmlbars/helpers/action";
+import { outletHelper } from "ember-routing-htmlbars/helpers/outlet";
 
 function appendView(view) {
   run(function() { view.appendTo('#qunit-fixture'); });

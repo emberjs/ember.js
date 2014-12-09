@@ -3,10 +3,8 @@
 // this is so that the global exports occur properly
 import "ember-metal";
 import "ember-runtime";
-import "ember-handlebars";
 import "ember-views";
 import "ember-routing";
-import "ember-routing-handlebars";
 import "ember-application";
 import "ember-extension-support";
 import "ember-htmlbars";

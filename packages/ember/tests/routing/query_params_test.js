@@ -3,7 +3,7 @@ import { computed } from "ember-metal/computed";
 import { canDefineNonEnumerableProperties } from 'ember-metal/platform';
 import { capitalize } from "ember-runtime/system/string";
 
-import EmberHandlebars from "ember-handlebars";
+import EmberHandlebars from "ember-htmlbars/compat";
 
 var compile = EmberHandlebars.compile;
 

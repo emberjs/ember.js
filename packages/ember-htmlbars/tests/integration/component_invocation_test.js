@@ -1,17 +1,9 @@
 import EmberView from "ember-views/views/view";
 import Container from 'container/container';
 import jQuery from "ember-views/system/jquery";
-import EmberHandlebars from 'ember-handlebars-compiler';
-import htmlbarsCompile from "ember-htmlbars/system/compile";
+import compile from "ember-htmlbars/system/compile";
 import ComponentLookup from 'ember-views/component_lookup';
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
-
-var compile;
-if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  compile = htmlbarsCompile;
-} else {
-  compile = EmberHandlebars.compile;
-}
 
 var container, view;
 

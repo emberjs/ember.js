@@ -12,11 +12,9 @@ import setupForTesting from "ember-testing/setup_for_testing";
 import EmberRouter from "ember-routing/system/router";
 import EmberRoute from "ember-routing/system/route";
 import EmberApplication from "ember-application/system/application";
-import EmberHandlebars from "ember-handlebars";
+import compile from "ember-htmlbars/system/compile";
 
 var App, originalAdapter = Test.adapter;
-
-var compile = EmberHandlebars.compile;
 
 function cleanup(){
   // Teardown setupForTesting
