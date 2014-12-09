@@ -675,9 +675,19 @@ var compiledSource = concatES6(devSourceTrees, {
   bootstrapModule: 'ember',
   vendorTrees: vendorTrees,
   inputFiles: ['**/*.js'],
-  destFile: '/ember.js'
+  destFile: '/ember.debug.js'
 });
 
+var deprecatedDebugFile = replace(compiledSource, {
+  files: [ 'ember.debug.js' ],
+  patterns: [
+    { match: /var runningNonEmberDebugJS = false;/, replacement: 'var runningNonEmberDebugJS = true;'}
+  ]
+});
+deprecatedDebugFile = concat(deprecatedDebugFile, {
+  inputFiles: [ 'ember.debug.js' ],
+  outputFile: '/ember.js'
+});
 
 /*
   Resolves dependencies for ember-runtime and compiles / concats them to /ember-runtime.js
@@ -782,6 +792,7 @@ var distTrees = [templateCompilerTree, compiledSource, compiledTests, testingCom
 // This ensures development build speed is not affected by unnecessary
 // minification and defeaturification
 if (env !== 'development') {
+  distTrees.push(deprecatedDebugFile);
   distTrees.push(s3TestRunner);
   distTrees.push(prodCompiledSource);
   distTrees.push(prodCompiledTests);

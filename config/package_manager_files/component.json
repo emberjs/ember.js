@@ -2,9 +2,9 @@
   "name": "ember",
   "repo": "components/ember",
   "version": "VERSION_STRING_PLACEHOLDER",
-  "main": "ember.js",
+  "main": "ember.debug.js",
   "scripts": [
-    "ember.js"
+    "ember.debug.js"
   ],
   "dependencies": {
     "components/jquery": ">= 1.7.0 <= 2.1.0",

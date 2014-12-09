@@ -5,7 +5,7 @@
   "keywords": [
     "ember"
   ],
-  "main": "./ember.js",
+  "main": "./ember.debug.js",
   "dependencies": {
     "jquery": ">=1.7.0 <= 2.1.0",
     "handlebars": ">= 2.0.0 < 3.0.0"
