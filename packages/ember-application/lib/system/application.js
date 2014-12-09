@@ -376,7 +376,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     ```javascript
     var App = Ember.Application.create();
-    
+
     App.deferReadiness();
     // Ember.$ is a reference to the jQuery object/function
     Ember.$.getJSON('/auth-token', function(token) {
@@ -425,7 +425,7 @@ var Application = Namespace.extend(DeferredMixin, {
 
     ```javascript
     var App = Ember.Application.create();
-    
+
     App.Orange = Ember.Object.extend();
     App.register('fruit:favorite', App.Orange);
     ```
@@ -639,7 +639,7 @@ var Application = Namespace.extend(DeferredMixin, {
       run(function() {
         App.advanceReadiness();
       });
-      
+
       ok(true, 'something after app is initialized');
     });
     ```
@@ -809,7 +809,7 @@ Application.reopenClass({
     ```javascript
     Ember.Application.initializer({
       name: 'namedInitializer',
-      
+
       initialize: function(container, application) {
         Ember.debug('Running namedInitializer!');
       }
@@ -825,7 +825,7 @@ Application.reopenClass({
     ```javascript
     Ember.Application.initializer({
       name: 'first',
-      
+
       initialize: function(container, application) {
         Ember.debug('First initializer!');
       }
@@ -899,7 +899,7 @@ Application.reopenClass({
 
       initialize: function(container, application) {
         var store = container.lookup('store:main');
-        
+
         store.pushPayload(preloadedData);
       }
     });
