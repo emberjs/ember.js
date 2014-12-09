@@ -3,7 +3,6 @@ fileMap = function(revision,tag,date) {
     "ember.js":                   fileObject("ember",                   ".js",   "text/javascript",  revision, tag, date),
     "ember.debug.js":             fileObject("ember.debug",             ".js",   "text/javascript",  revision, tag, date),
     "ember-tests.js":             fileObject("ember-tests",             ".js",   "text/javascript",  revision, tag, date),
-    "ember-template-compiler.js": fileObject("ember-template-compiler", ".js",   "text/javascript",  revision, tag, date),
     "ember-runtime.js":           fileObject("ember-runtime",           ".js",   "text/javascript",  revision, tag, date),
     "ember.min.js":               fileObject("ember.min",               ".js",   "text/javascript",  revision, tag, date),
     "ember.prod.js":              fileObject("ember.prod",              ".js",   "text/javascript",  revision, tag, date),
