@@ -19,7 +19,7 @@ var EMPTY = [];
 //
 
 import { get } from "ember-metal/property_get";
-import { isArray } from "ember-metal/utils";
+import { isArray, typeOf } from "ember-metal/utils";
 import EmberError from "ember-metal/error";
 import {
   Mixin,
@@ -163,7 +163,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
   },
 
   /**
-    Add the objects in the passed numerable to the end of the array. Defers
+    Add the objects in the passed array to the end of the array. Defers
     notifying observers of the change until all objects are added.
 
     ```javascript
@@ -172,13 +172,14 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     ```
 
     @method pushObjects
-    @param {Ember.Enumerable} objects the objects to add
+    @param {Array} objects the objects to add
     @return {Ember.Array} receiver
   */
   pushObjects: function(objects) {
     if (!(Enumerable.detect(objects) || isArray(objects))) {
       throw new TypeError("Must pass Ember.Enumerable to Ember.MutableArray#pushObjects");
     }
+    Ember.deprecate("Passing an array-like object that is not a native Array to pushObjects() is deprecated. Please convert to a native Array, e.g. by calling .toArray().", typeOf(objects) === 'array');
     this.replace(get(this, 'length'), 0, objects);
     return this;
   },
@@ -255,7 +256,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     ```
 
     @method unshiftObjects
-    @param {Ember.Enumerable} objects the objects to add
+    @param {Array} objects the objects to add
     @return {Ember.Array} receiver
   */
   unshiftObjects: function(objects) {
@@ -289,7 +290,7 @@ export default Mixin.create(EmberArray, MutableEnumerable, {
     ```
 
     @method setObjects
-    @param {Ember.Array} objects array whose content will be used for replacing
+    @param {Array} objects array whose content will be used for replacing
         the content of the receiver
     @return {Ember.Array} receiver with the new content
    */
