@@ -12,7 +12,7 @@
     "property-brace-expansion-improvement": true,
     "ember-routing-handlebars-action-with-key-code": false,
     "ember-runtime-item-controller-inline-class": false,
-    "ember-metal-injected-properties": false,
+    "ember-metal-injected-properties": true,
     "mandatory-setter": "development-only",
     "ember-routing-fire-activate-deactivate-events": true,
     "ember-testing-pause-test": true,
