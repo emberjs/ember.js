@@ -18,9 +18,9 @@
     "ember-testing-pause-test": true,
     "ember-htmlbars": true,
     "ember-htmlbars-block-params": true,
-    "ember-htmlbars-component-generation": null,
-    "ember-htmlbars-inline-if-helper": null,
-    "ember-htmlbars-attribute-syntax": null
+    "ember-htmlbars-component-generation": false,
+    "ember-htmlbars-inline-if-helper": false,
+    "ember-htmlbars-attribute-syntax": false
   },
   "debugStatements": [
     "Ember.warn",
