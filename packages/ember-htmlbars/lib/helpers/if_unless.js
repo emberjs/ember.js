@@ -86,6 +86,10 @@ function unboundIfHelper(params, hash, options, env) {
   return template.render(this, env, options.morph.contextualElement);
 }
 
+function _inlineIfAssertion(params) {
+  Ember.assert("If helper in inline form expects between two and three arguments", params.length === 2 || params.length === 3);
+}
+
 /**
   See [boundIf](/api/classes/Ember.Handlebars.helpers.html#method_boundIf)
   and [unboundIf](/api/classes/Ember.Handlebars.helpers.html#method_unboundIf)
@@ -100,7 +104,7 @@ function ifHelper(params, hash, options, env) {
   Ember.assert("If helper in block form expect exactly one argument", !options.template || params.length === 1);
   if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
     if (!options.template) {
-      Ember.assert("If helper in inline form expects between two and three arguments", params.length === 2 || params.length === 3);
+      _inlineIfAssertion(params);
       var condition = params[0];
       var truthy = params[1];
       var falsy = params[2];
