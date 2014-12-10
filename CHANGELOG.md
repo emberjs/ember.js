@@ -1,15 +1,12 @@
 # Ember Changelog
 
-### 1.9.0-beta.4
+### 1.9.0 (December 8, 2014)
 
 * Add deprecation for quoteless outlet names (`{{outlet main}}` should be `{{outlet 'main'}}`).
 * [BUGFIX] Update the `Ember.Map#forEach` callback to include the map being iterated over.
 * [BUGFIX] Ensure that tagless container views are rendered properly.
 * [PERF] `Ember.View#_outlets` is no longer observable.
 * [PERF] Avoid extending a view for every `{{each}}`.
-
-### 1.9.0-beta.3
-
 * Ensure initializers have a `name` property (provides a helpful assertion if missing).
 * [BUILD TOOLING] Enable easier cross-browser testing by publishing builds and tests to S3.
 * Enable `Ember.run.join` to return a value even if within an existing run loop.
@@ -30,10 +27,6 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 it would silently continue.  Now, an assertion would be triggered.
 
 * [PERF] Speedup Mixin creation.
-
-
-### 1.9.0-beta.1
-
 * [BREAKING] Require Handlebars 2.0. See [blog post](http://emberjs.com/blog/2014/10/16/handlebars-update.html) for details.
 * Allow all rejection types in promises to be handled.
 * Mandatory setter checks for configurable, and does not clobber non-configurable properties.
@@ -49,7 +42,6 @@ it would silently continue.  Now, an assertion would be triggered.
 * [PERF] Speedup watchKey by preventing for in related deopt.
 * [FEATURE] ember-routing-fire-activate-deactivate-events.
 * [FEATURE] ember-testing-pause-test.
-
 
 ### Ember 1.8.1 (November, 4, 2014)
 
