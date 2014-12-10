@@ -8,7 +8,6 @@ import run from "ember-metal/run_loop";
 import { get } from "ember-metal/property_get";
 import SimpleStream from "ember-metal/streams/simple";
 import BoundView from "ember-views/views/bound_view";
-import { appendSimpleBoundView } from "ember-views/views/simple_bound_view";
 
 function exists(value) {
   return !isNone(value);
@@ -106,7 +105,7 @@ function bindHelper(params, hash, options, env) {
     Ember.deprecate("The block form of bind, {{#bind foo}}{{/bind}}, has been deprecated and will be removed.");
     bind.call(this, property, hash, options, env, false, exists);
   } else {
-    appendSimpleBoundView(this, options.morph, property);
+    return property;
   }
 }
 
