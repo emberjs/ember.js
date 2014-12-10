@@ -4,6 +4,9 @@ import Container from "container";
 import makeBoundHelper from "ember-htmlbars/system/make_bound_helper";
 import compile from "ember-htmlbars/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import {
+  dasherize
+} from 'ember-runtime/system/string';
 
 var view, container;
 
@@ -25,6 +28,26 @@ QUnit.module("ember-htmlbars: makeBoundHelper", {
     runDestroy(view);
     runDestroy(container);
   }
+});
+
+test("should update bound helpers in a subexpression when properties change", function() {
+  container.register('helper:x-dasherize', makeBoundHelper(function(params, hash, options, env) {
+    return dasherize(params[0]);
+  }));
+
+  view = EmberView.create({
+    container: container,
+    controller: {prop: "isThing"},
+    template: compile("<div {{bind-attr data-foo=(x-dasherize prop)}}>{{prop}}</div>")
+  });
+
+  runAppend(view);
+
+  equal(view.$('div[data-foo="is-thing"]').text(), 'isThing', "helper output is correct");
+
+  run(view, 'set', 'controller.prop', 'notThing');
+
+  equal(view.$('div[data-foo="not-thing"]').text(), 'notThing', "helper output is correct");
 });
 
 test("should update bound helpers when properties change", function() {
