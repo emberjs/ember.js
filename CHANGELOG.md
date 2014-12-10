@@ -1,5 +1,18 @@
 # Ember Changelog
 
+### 1.10.0-beta.1 (December 10, 2014)
+
+* Move debugging file output from `ember.js` to `ember.debug.js`.
+* Remove `templateData` property from views.
+* Restructure `Ember.libraries` to be more idiomatic.
+* Prevent creating an extra view for each select option.
+* Deprecate the block form of the bind helper.
+* Cleanup `Ember.CoreObject` init argument passing.
+* Allow all rejection types to be handled by default RSVP error handler.
+* Deprecate setting ContainerView#childViews.
+* [FEATURE] ember-htmlbars - Enable the HTMLBars rendering engine.
+* [FEATURE] ember-htmlbars-block-params - Enable block params feature for HTMLBars.
+
 ### 1.9.0 (December 8, 2014)
 
 * Add deprecation for quoteless outlet names (`{{outlet main}}` should be `{{outlet 'main'}}`).
