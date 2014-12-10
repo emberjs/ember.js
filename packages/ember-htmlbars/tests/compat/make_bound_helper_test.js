@@ -9,6 +9,9 @@ import { A } from "ember-runtime/system/native_array";
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import {
+  dasherize
+} from 'ember-runtime/system/string';
 
 import EmberHandlebars from "ember-htmlbars/compat";
 
@@ -84,6 +87,27 @@ test("should update bound helpers when properties change", function() {
   });
 
   equal(view.$().text(), 'WES', "helper output updated");
+});
+
+test("should update bound helpers in a subexpression when properties change", function() {
+  expectDeprecationInHTMLBars();
+
+  helper('dasherize', function(value) {
+    return dasherize(value);
+  });
+
+  view = EmberView.create({
+    controller: {prop: "isThing"},
+    template: compile("<div {{bind-attr data-foo=(dasherize prop)}}>{{prop}}</div>")
+  });
+
+  runAppend(view);
+
+  equal(view.$('div[data-foo="is-thing"]').text(), 'isThing', "helper output is correct");
+
+  run(view, 'set', 'controller.prop', 'notThing');
+
+  equal(view.$('div[data-foo="not-thing"]').text(), 'notThing', "helper output is correct");
 });
 
 test("should allow for computed properties with dependencies", function() {
