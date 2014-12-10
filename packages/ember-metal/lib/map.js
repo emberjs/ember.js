@@ -108,12 +108,10 @@ OrderedSet.prototype = {
     var presenceSet = this.presenceSet;
     var list = this.list;
 
-    if (presenceSet[guid] === true) {
-      return;
+    if (presenceSet[guid] !== true) {
+      presenceSet[guid] = true;
+      this.size = list.push(obj);
     }
-
-    presenceSet[guid] = true;
-    this.size = list.push(obj);
 
     return this;
   },

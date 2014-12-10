@@ -1,6 +1,7 @@
 import {
   Map,
-  MapWithDefault
+  MapWithDefault,
+  OrderedSet
 } from "ember-metal/map";
 
 import {
@@ -119,7 +120,7 @@ function testMap(nameAndFunc) {
   });
 
   test("forEach throws without a callback as the first argument", function() {
-    
+
     equal(map.forEach.length, 1, 'expected arity for map.forEach is 1');
   });
 
@@ -563,4 +564,20 @@ test("Copying a MapWithDefault copies the default value", function() {
   };
 
   deepEqual(map2.get('drugs'), ['tom is on', 'drugs']);
+});
+
+QUnit.module("OrderedSet", {
+  setup: function() {
+    object = {};
+    number = 42;
+    string = "foo";
+
+    map = OrderedSet.create();
+  }
+});
+
+test("add returns the set", function() {
+  var obj = {};
+  equal(map.add(obj), map);
+  equal(map.add(obj), map, 'when it is already in the set');
 });
