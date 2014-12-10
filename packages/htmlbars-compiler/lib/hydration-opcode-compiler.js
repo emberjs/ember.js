@@ -145,7 +145,7 @@ HydrationOpcodeCompiler.prototype.component = function(component, childIndex, ch
       end = (childIndex === childrenLength - 1 ? null : currentDOMChildIndex + 1);
 
   var morphNum = this.morphNum++;
-  this.morphs.push([morphNum, this.paths.slice(), start, end]);
+  this.morphs.push([morphNum, this.paths.slice(), start, end, true]);
 
   var attrs = component.attributes;
   for (var i = attrs.length - 1; i >= 0; i--) {
