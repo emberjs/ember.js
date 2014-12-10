@@ -209,6 +209,10 @@ test("The compiler can handle quotes", function() {
   compilesTo('<div>"This is a title," we\'re on a boat</div>');
 });
 
+test("The compiler can handle backslashes", function() {
+  compilesTo('<div>This is a backslash: \\</div>');
+});
+
 test("The compiler can handle newlines", function() {
   compilesTo("<div>common\n\nbro</div>");
 });

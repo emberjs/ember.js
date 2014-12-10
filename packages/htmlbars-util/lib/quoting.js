@@ -1,5 +1,8 @@
 function escapeString(str) {
-  return str.replace(/"/g, '\\"').replace(/\n/g, "\\n");
+  str = str.replace(/\\/g, "\\\\");
+  str = str.replace(/"/g, '\\"');
+  str = str.replace(/\n/g, "\\n");
+  return str;
 }
 
 export { escapeString };
