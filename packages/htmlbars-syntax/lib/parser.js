@@ -1,5 +1,7 @@
 import { parse } from "./handlebars/compiler/base";
 import { Tokenizer } from "../simple-html-tokenizer";
+import EntityParser from "../simple-html-tokenizer/entity-parser";
+import fullCharRefs from "../simple-html-tokenizer/char-refs/full";
 import nodeHandlers from "./node-handlers";
 import tokenHandlers from "./token-handlers";
 
@@ -19,7 +21,7 @@ export function preprocess(html, options) {
 function HTMLProcessor(source, options) {
   this.options = options || {};
   this.elementStack = [];
-  this.tokenizer = new Tokenizer('');
+  this.tokenizer = new Tokenizer('', new EntityParser(fullCharRefs));
   this.nodeHandlers = nodeHandlers;
   this.tokenHandlers = tokenHandlers;
   this.source = source.split(/(?:\r\n?|\n)/g);
