@@ -47,6 +47,7 @@ import {
   K
 } from 'ember-metal/core';
 import { hasPropertyAccessors } from "ember-metal/platform";
+import { validatePropertyInjections } from "ember-runtime/inject";
 
 var schedule = run.schedule;
 var applyMixin = Mixin._apply;
@@ -847,15 +848,33 @@ var ClassMixinProps = {
   }
 };
 
+function injectedPropertyAssertion() {
+  Ember.assert("Injected properties are invalid", validatePropertyInjections(this));
+}
+
+function addOnLookupHandler() {
+  Ember.runInDebug(function() {
+    /**
+      Provides lookup-time type validation for injected properties.
+
+      @private
+      @method _onLookup
+      */
+    ClassMixinProps._onLookup = injectedPropertyAssertion;
+  });
+}
+
 if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+  addOnLookupHandler();
+
   /**
     Returns a hash of property names and container names that injected
     properties will lookup on the container lazily.
 
-    @method lazyInjections
+    @method _lazyInjections
     @return {Object} Hash of all lazy injected property keys to container names
   */
-  ClassMixinProps.lazyInjections = function() {
+  ClassMixinProps._lazyInjections = function() {
     var injections = {};
     var proto = this.proto();
     var descs = meta(proto).descs;

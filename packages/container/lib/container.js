@@ -18,6 +18,9 @@ function Container(parent) {
   this.typeInjections = dictionary(parent ? parent.typeInjections : null);
   this.injections     = dictionary(null);
   this.normalizeCache = dictionary(null);
+  if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+    this.validationCache = dictionary(parent ? parent.validationCache : null);
+  }
 
   this.factoryTypeInjections = dictionary(parent ? parent.factoryTypeInjections : null);
   this.factoryInjections     = dictionary(null);
@@ -164,6 +167,9 @@ Container.prototype = {
     delete this.factoryCache[normalizedName];
     delete this.resolveCache[normalizedName];
     delete this._options[normalizedName];
+    if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+      delete this.validationCache[normalizedName];
+    }
   },
 
   /**
@@ -727,6 +733,10 @@ function factoryFor(container, fullName) {
 
   var type = fullName.split(':')[0];
   if (!factory || typeof factory.extend !== 'function' || (!Ember.MODEL_FACTORY_INJECTIONS && type === 'model')) {
+    if (factory && typeof factory._onLookup === 'function') {
+      factory._onLookup(fullName);
+    }
+
     // TODO: think about a 'safe' merge style extension
     // for now just fallback to create time injection
     cache[fullName] = factory;
@@ -739,6 +749,10 @@ function factoryFor(container, fullName) {
 
     var injectedFactory = factory.extend(injections);
     injectedFactory.reopenClass(factoryInjections);
+
+    if (factory && typeof factory._onLookup === 'function') {
+      factory._onLookup(fullName);
+    }
 
     cache[fullName] = injectedFactory;
 
@@ -791,7 +805,7 @@ function normalizeInjectionsHash(hash) {
 
 function instantiate(container, fullName) {
   var factory = factoryFor(container, fullName);
-  var lazyInjections;
+  var lazyInjections, validationCache;
 
   if (option(container, fullName, 'instantiate') === false) {
     return factory;
@@ -804,12 +818,16 @@ function instantiate(container, fullName) {
     }
 
     if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
+      validationCache = container.validationCache;
+
       // Ensure that all lazy injections are valid at instantiation time
-      if (typeof factory.lazyInjections === 'function') {
-        lazyInjections = factory.lazyInjections();
+      if (!validationCache[fullName] && typeof factory._lazyInjections === 'function') {
+        lazyInjections = factory._lazyInjections();
 
         validateInjections(container, normalizeInjectionsHash(lazyInjections));
       }
+
+      validationCache[fullName] = true;
     }
 
     if (typeof factory.extend === 'function') {
