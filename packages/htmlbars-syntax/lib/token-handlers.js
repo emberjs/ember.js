@@ -42,7 +42,7 @@ function applyHTMLIntegrationPoint(tag, element){
 // Except for `mustache`, all tokens are only allowed outside of
 // a start or end tag.
 var tokenHandlers = {
-  CommentToken: function(token) {
+  Comment: function(token) {
     var current = this.currentElement();
     var comment = buildComment(token.chars);
     appendChild(current, comment);
