@@ -1458,6 +1458,22 @@ var View = CoreView.extend({
     if (!this.removedFromDOM) { this.destroyElement(); }
   },
 
+  /**
+    The HTML `id` of the view's element in the DOM. You can provide this
+    value yourself but it must be unique (just as in HTML):
+
+    ```handlebars
+      {{my-component elementId="a-really-cool-id"}}
+    ```
+
+    If not manually set a default value will be provided by the framework.
+
+    Once rendered an element's `elementId` is considered immutable and you
+    should never change it.
+
+    @property elementId
+    @type String
+  */
   elementId: null,
 
   /**
