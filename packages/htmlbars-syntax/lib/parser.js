@@ -6,7 +6,7 @@ import nodeHandlers from "./node-handlers";
 import tokenHandlers from "./token-handlers";
 
 export function preprocess(html, options) {
-  var ast = parse(html);
+  var ast = (typeof html === 'object') ? html : parse(html);
   var combined = new HTMLProcessor(html, options).acceptNode(ast);
 
   if (options && options.plugins && options.plugins.ast) {
@@ -24,7 +24,10 @@ function HTMLProcessor(source, options) {
   this.tokenizer = new Tokenizer('', new EntityParser(fullCharRefs));
   this.nodeHandlers = nodeHandlers;
   this.tokenHandlers = tokenHandlers;
-  this.source = source.split(/(?:\r\n?|\n)/g);
+
+  if (typeof source === 'string') {
+    this.source = source.split(/(?:\r\n?|\n)/g);
+  }
 }
 
 HTMLProcessor.prototype.acceptNode = function(node) {
@@ -49,6 +52,10 @@ HTMLProcessor.prototype.sourceForMustache = function(mustache) {
   var lastColumn = mustache.loc.end.column - 2;
   var string = [];
   var line;
+
+  if (!this.source) {
+    return '{{' + mustache.path.id.original + '}}';
+  }
 
   while (currentLine < lastLine) {
     currentLine++;

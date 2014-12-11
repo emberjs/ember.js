@@ -1,3 +1,4 @@
+import { parse } from "../htmlbars-syntax/handlebars/compiler/base";
 import { preprocess } from "../htmlbars-syntax/parser";
 
 import b from "../htmlbars-syntax/builders";
@@ -74,6 +75,27 @@ test("a simple piece of content", function() {
   var t = 'some content';
   astEqual(t, b.program([
     b.text('some content')
+  ]));
+});
+
+test("allow simple AST to be passed", function() {
+  var ast = preprocess(parse("simple"));
+
+  astEqual(ast, b.program([
+    b.text("simple")
+  ]));
+});
+
+test("allow an AST with mustaches to be passed", function() {
+  var ast = preprocess(parse("<h1>some</h1> ast {{foo}}"));
+
+  astEqual(ast, b.program([
+    b.element("h1", [], [], [
+      b.text("some")
+    ]),
+    b.text(" ast "),
+    b.mustache(b.sexpr(b.path('foo'))),
+    b.text('')
   ]));
 });
 
