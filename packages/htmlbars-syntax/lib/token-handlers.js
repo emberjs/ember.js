@@ -82,19 +82,39 @@ var tokenHandlers = {
     var token = this.tokenizer.token;
 
     switch(state) {
+      // Tag helpers
+      case "tagName":
+        token.addTagHelper(mustache.sexpr);
+        this.tokenizer.state = "beforeAttributeName";
+        return;
+      case "beforeAttributeName":
+        token.addTagHelper(mustache.sexpr);
+        return;
+      case "attributeName":
+      case "afterAttributeName":
+        this.tokenizer.finalizeAttributeValue();
+        token.addTagHelper(mustache.sexpr);
+        this.tokenizer.state = "beforeAttributeName";
+        return;
+      case "afterAttributeValueQuoted":
+        token.addTagHelper(mustache.sexpr);
+        this.tokenizer.state = "beforeAttributeName";
+        return;
+
+      // Attribute values
       case "beforeAttributeValue":
-        this.tokenizer.state = 'attributeValueUnquoted';
         token.markAttributeQuoted(false);
         token.addToAttributeValue(mustache);
+        this.tokenizer.state = 'attributeValueUnquoted';
         return;
       case "attributeValueDoubleQuoted":
       case "attributeValueSingleQuoted":
       case "attributeValueUnquoted":
         token.addToAttributeValue(mustache);
         return;
-      case "beforeAttributeName":
-        token.addTagHelper(mustache.sexpr);
-        return;
+
+      // TODO: Only append child when the tokenizer state makes
+      // sense to do so, otherwise throw an error.
       default:
         appendChild(this.currentElement(), mustache);
     }
