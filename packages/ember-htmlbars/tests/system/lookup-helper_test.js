@@ -3,7 +3,7 @@ import ComponentLookup from "ember-views/component_lookup";
 import Container from "container";
 import Component from "ember-views/views/component";
 
-function generateEnv(helpers) {
+function generateView(helpers) {
   return {
     helpers: (helpers ? helpers : {})
   };
@@ -20,28 +20,27 @@ function generateContainer() {
 
 QUnit.module('ember-htmlbars: lookupHelper hook');
 
-test('looks for helpers in the provided `env.helpers`', function() {
-  var env = generateEnv({
+test('looks for helpers in the provided `view.helpers`', function() {
+  var view = generateView({
     'flubarb': function() { }
   });
 
-  var actual = lookupHelper('flubarb', null, env);
+  var actual = lookupHelper('flubarb', view);
 
-  equal(actual, env.helpers.flubarb, 'helpers are looked up on env');
+  equal(actual, view.helpers.flubarb, 'helpers are looked up on env');
 });
 
-test('returns undefined if no container exists (and helper is not found in env)', function() {
-  var env = generateEnv();
-  var view = {};
+test('returns undefined if no container exists (and helper is not found in view)', function() {
+  var view = generateView();
 
-  var actual = lookupHelper('flubarb', view, env);
+  var actual = lookupHelper('flubarb', view);
 
   equal(actual, undefined, 'does not blow up if view does not have a container');
 });
 
-test('does not lookup in the container if the name does not contain a dash (and helper is not found in env)', function() {
-  var env = generateEnv();
+test('does not lookup in the container if the name does not contain a dash (and helper is not found in view)', function() {
   var view = {
+    helpers: {},
     container: {
       lookup: function() {
         ok(false, 'should not lookup in the container');
@@ -49,31 +48,31 @@ test('does not lookup in the container if the name does not contain a dash (and 
     }
   };
 
-  var actual = lookupHelper('flubarb', view, env);
+  var actual = lookupHelper('flubarb', view);
 
   equal(actual, undefined, 'does not blow up if view does not have a container');
 });
 
-test('does a lookup in the container if the name contains a dash (and helper is not found in env)', function() {
-  var env = generateEnv();
+test('does a lookup in the container if the name contains a dash (and helper is not found in view)', function() {
   var view = {
-    container: generateContainer()
+    container: generateContainer(),
+    helpers: {}
   };
 
   function someName() {}
   someName.isHTMLBars = true;
   view.container.register('helper:some-name', someName);
 
-  var actual = lookupHelper('some-name', view, env);
+  var actual = lookupHelper('some-name', view);
 
   equal(actual, someName, 'does not wrap provided function if `isHTMLBars` is truthy');
 });
 
 test('wraps helper from container in a Handlebars compat helper', function() {
   expect(2);
-  var env = generateEnv();
   var view = {
-    container: generateContainer()
+    container: generateContainer(),
+    helpers: {}
   };
   var called;
 
@@ -82,7 +81,7 @@ test('wraps helper from container in a Handlebars compat helper', function() {
   }
   view.container.register('helper:some-name', someName);
 
-  var actual = lookupHelper('some-name', view, env);
+  var actual = lookupHelper('some-name', view);
 
   ok(actual.isHTMLBars, 'wraps provided helper in an HTMLBars compatible helper');
 
@@ -98,27 +97,37 @@ test('wraps helper from container in a Handlebars compat helper', function() {
 });
 
 test('asserts if component-lookup:main cannot be found', function() {
-  var env = generateEnv();
   var view = {
-    container: generateContainer()
+    container: generateContainer(),
+    helpers: { }
   };
 
   view.container.unregister('component-lookup:main');
 
   expectAssertion(function() {
-    lookupHelper('some-name', view, env);
+    lookupHelper('some-name', view);
   }, 'Could not find \'component-lookup:main\' on the provided container, which is necessary for performing component lookups');
 });
 
 test('registers a helper in the container if component is found', function() {
-  var env = generateEnv();
   var view = {
-    container: generateContainer()
+    container: generateContainer(),
+    helpers: {}
   };
 
   view.container.register('component:some-name', Component);
 
-  lookupHelper('some-name', view, env);
+  lookupHelper('some-name', view);
 
   ok(view.container.lookup('helper:some-name'), 'new helper was registered');
+});
+
+test('does not error if view.helpers is not present', function() {
+  var view = {
+    container: generateContainer()
+  };
+
+  var actual = lookupHelper('some-name', view);
+
+  equal(actual, undefined, 'no helper was found');
 });
