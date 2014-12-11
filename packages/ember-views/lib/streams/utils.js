@@ -22,7 +22,7 @@ export function readViewFactory(object, container) {
     viewClass = value;
   }
 
-  Ember.assert(fmt(value+" must be a subclass of Ember.View, not %@", [viewClass]), View.detect(viewClass));
+  Ember.assert(fmt(value+" must be a subclass or an instance of Ember.View, not %@", [viewClass]), View.detect(viewClass) || View.detectInstance(viewClass));
 
   return viewClass;
 }
