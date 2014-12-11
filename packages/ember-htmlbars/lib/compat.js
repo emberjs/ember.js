@@ -11,6 +11,10 @@ import compatMakeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
 import compatRegisterBoundHelper from "ember-htmlbars/compat/register-bound-helper";
 import compatPrecompile from "ember-htmlbars/compat/precompile";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
+import {
+  SafeString,
+  escapeExpression
+} from "ember-htmlbars/utils/string";
 
 var EmberHandlebars;
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
@@ -25,6 +29,11 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   EmberHandlebars.compile = compile;
   EmberHandlebars.template = template;
   EmberHandlebars.makeViewHelper = makeViewHelper;
+
+  EmberHandlebars.Utils =  {
+    SafeString: SafeString,
+    escapeExpression: escapeExpression
+  };
 }
 
 export default EmberHandlebars;
