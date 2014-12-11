@@ -9,6 +9,7 @@ import { set } from "ember-metal/property_set";
 import isNone from 'ember-metal/is_none';
 
 import { computed } from "ember-metal/computed";
+import defaultComponentLayout from "ember-htmlbars/templates/component";
 
 var a_slice = Array.prototype.slice;
 
@@ -116,15 +117,7 @@ var Component = View.extend(TargetActionSupport, ComponentTemplateDeprecation, {
     set(this, 'controller', this);
   },
 
-  defaultLayout: function(context, options){
-    if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-      // ES6TODO: must use global here, to prevent circular require issue
-      // remove and replace with standard import once we have lazy binding
-      Ember.HTMLBars.helpers.yield.helperFunction.call(context, [], {}, options, { data: { view: context }});
-    } else {
-      Ember.Handlebars.helpers['yield'].call(context, options);
-    }
-  },
+  defaultLayout: defaultComponentLayout,
 
   /**
   A components template property is set by passing a block
