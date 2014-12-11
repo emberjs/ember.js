@@ -4,7 +4,6 @@
 */
 
 import Ember from "ember-metal/core"; // Ember.FEATURES, Ember.assert, Ember.Handlebars, Ember.lookup
-import { IS_BINDING } from "ember-metal/mixin";
 import Helper from "ember-htmlbars/system/helper";
 
 import Stream from "ember-metal/streams/stream";
@@ -63,14 +62,6 @@ export default function makeBoundHelper(fn) {
 
     Ember.assert("makeBoundHelper generated helpers do not support use with blocks", !options.template);
 
-    for (var prop in hash) {
-      if (IS_BINDING.test(prop)) {
-        hash[prop.slice(0, -7)] = view._getBindingForStream(hash[prop]);
-
-        delete hash[prop];
-      }
-    }
-
     function valueFn() {
       return fn.call(view, readArray(params), readHash(hash), options, env);
     }
@@ -86,7 +77,7 @@ export default function makeBoundHelper(fn) {
         subscribe(param, lazyValue.notify, lazyValue);
       }
 
-      for (prop in hash) {
+      for (var prop in hash) {
         param = hash[prop];
         subscribe(param, lazyValue.notify, lazyValue);
       }
