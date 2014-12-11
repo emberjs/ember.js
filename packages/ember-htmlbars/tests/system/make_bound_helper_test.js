@@ -107,8 +107,10 @@ test("bound helpers should support keywords", function() {
   equal(view.$().text(), 'AB', "helper output is correct");
 });
 
-test("bound helpers should support bound options", function() {
-  registerRepeatHelper();
+test("bound helpers should not process `fooBinding` style hash properties", function() {
+  container.register('helper:x-repeat', makeBoundHelper(function(params, hash, options, env) {
+    equal(hash.timesBinding, "numRepeats");
+  }));
 
   view = EmberView.create({
     container: container,
@@ -120,19 +122,6 @@ test("bound helpers should support bound options", function() {
   });
 
   runAppend(view);
-
-  equal(view.$().text(), 'ababab', "helper output is correct");
-
-  run(view, 'set', 'controller.numRepeats', 4);
-
-  equal(view.$().text(), 'abababab', "helper correctly re-rendered after bound option was changed");
-
-  run(function() {
-    view.set('controller.numRepeats', 2);
-    view.set('controller.text', "YES");
-  });
-
-  equal(view.$().text(), 'YESYES', "helper correctly re-rendered after both bound option and property changed");
 });
 
 test("bound helpers should support multiple bound properties", function() {
