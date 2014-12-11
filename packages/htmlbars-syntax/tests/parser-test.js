@@ -302,6 +302,48 @@ test("Node helpers", function() {
   ]));
 });
 
+test("Tokenizer: MustacheStatement encountered in tagName state", function() {
+  var t = "<input{{bar}}>";
+  astEqual(t, b.program([
+    b.element('input', [], [ b.sexpr(b.path('bar')) ])
+  ]));
+});
+
+test("Tokenizer: MustacheStatement encountered in beforeAttributeName state", function() {
+  var t = "<input {{bar}}>";
+  astEqual(t, b.program([
+    b.element('input', [], [ b.sexpr(b.path('bar')) ])
+  ]));
+});
+
+test("Tokenizer: MustacheStatement encountered in attributeName state", function() {
+  var t = "<input foo{{bar}}>";
+  astEqual(t, b.program([
+    b.element('input', [ b.attr('foo', b.text('')) ], [ b.sexpr(b.path('bar')) ])
+  ]));
+});
+
+test("Tokenizer: MustacheStatement encountered in afterAttributeName state", function() {
+  var t = "<input foo {{bar}}>";
+  astEqual(t, b.program([
+    b.element('input', [ b.attr('foo', b.text('')) ], [ b.sexpr(b.path('bar')) ])
+  ]));
+});
+
+test("Tokenizer: MustacheStatement encountered in afterAttributeValue state", function() {
+  var t = "<input foo=1 {{bar}}>";
+  astEqual(t, b.program([
+    b.element('input', [ b.attr('foo', b.text('1')) ], [ b.sexpr(b.path('bar')) ])
+  ]));
+});
+
+test("Tokenizer: MustacheStatement encountered in afterAttributeValueQuoted state", function() {
+  var t = "<input foo='1'{{bar}}>";
+  astEqual(t, b.program([
+    b.element('input', [ b.attr('foo', b.text('1')) ], [ b.sexpr(b.path('bar')) ])
+  ]));
+});
+
 test('Auto insertion of text nodes between blocks and mustaches', function () {
   var t = "{{one}}{{two}}{{#three}}{{/three}}{{#four}}{{/four}}{{five}}";
   astEqual(t, b.program([
