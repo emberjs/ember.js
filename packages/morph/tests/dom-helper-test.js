@@ -47,6 +47,17 @@ test('#setAttribute', function(){
   equalHTML(node, '<input disabled="false">');
 });
 
+test('#getElementById', function() {
+  var parentNode = dom.createElement('div'),
+      childNode = dom.createElement('div');
+  dom.setAttribute(parentNode, 'id', 'parent');
+  dom.setAttribute(childNode, 'id', 'child');
+  dom.appendChild(parentNode, childNode);
+  dom.document.body.appendChild(parentNode);
+  equalHTML(dom.getElementById('child'), '<div id="child"></div>');
+  dom.document.body.removeChild(parentNode);
+});
+
 test('#setProperty', function(){
   var node = dom.createElement('div');
   dom.setProperty(node, 'id', 'super-tag');
