@@ -13,13 +13,13 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
     ok(new InjectedProperty() instanceof Descriptor);
   });
 
-  test('setting the injected property should error', function() {
+  test('injected properties should be overridable', function() {
     var obj = {};
     defineProperty(obj, 'foo', new InjectedProperty());
 
-    throws(function() {
-      set(obj, 'foo', 'bar');
-    }, /Cannot set injected property 'foo' on object/);
+    set(obj, 'foo', 'bar');
+
+    equal(get(obj, 'foo'), 'bar', 'should return the overriden value');
   });
 
   test("getting on an object without a container should fail assertion", function() {
