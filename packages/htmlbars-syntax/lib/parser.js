@@ -5,13 +5,23 @@ import fullCharRefs from "../simple-html-tokenizer/char-refs/full";
 import nodeHandlers from "./node-handlers";
 import tokenHandlers from "./token-handlers";
 
+// this should be:
+// `import * from "../htmlbars-syntax";
+//
+// But this version of the transpiler does not support it properly
+module syntax from "../htmlbars-syntax";
+
 export function preprocess(html, options) {
   var ast = (typeof html === 'object') ? html : parse(html);
   var combined = new HTMLProcessor(html, options).acceptNode(ast);
 
   if (options && options.plugins && options.plugins.ast) {
     for (var i = 0, l = options.plugins.ast.length; i < l; i++) {
-      combined = options.plugins.ast[i](combined);
+      var plugin = new options.plugins.ast[i]();
+
+      plugin.syntax = syntax;
+
+      combined = plugin.transform(combined);
     }
   }
 
