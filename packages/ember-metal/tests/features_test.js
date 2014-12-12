@@ -1,19 +1,21 @@
 import Ember from 'ember-metal/core';
 
 var isEnabled = Ember.FEATURES.isEnabled;
-var origFeatures, origEnableAll, origEnableOptional;
+var origFeatures, origEnableAll, origEnableOptional, origMandatorySetter;
 
 QUnit.module("Ember.FEATURES.isEnabled", {
   setup: function(){
-    origFeatures       = Ember.FEATURES;
-    origEnableAll      = Ember.ENV.ENABLE_ALL_FEATURES;
-    origEnableOptional = Ember.ENV.ENABLE_OPTIONAL_FEATURES;
+    origFeatures        = Ember.FEATURES;
+    origEnableAll       = Ember.ENV.ENABLE_ALL_FEATURES;
+    origEnableOptional  = Ember.ENV.ENABLE_OPTIONAL_FEATURES;
+    origMandatorySetter = Ember.FEATURES['mandatory-setter'];
   },
 
   teardown: function(){
     Ember.FEATURES                     = origFeatures;
     Ember.ENV.ENABLE_ALL_FEATURES      = origEnableAll;
     Ember.ENV.ENABLE_OPTIONAL_FEATURES = origEnableOptional;
+    Ember.FEATURES['mandatory-setter'] = origMandatorySetter;
   }
 });
 
@@ -51,4 +53,11 @@ test("isEnabled without ENV options", function(){
   equal(isEnabled('barney'), true,  "returns flag value if true");
   equal(isEnabled('wilma'),  false, "returns false if flag is not set");
   equal(isEnabled('betty'),  undefined, "returns flag value if undefined");
+});
+
+test("isEnabled with mandatory-setter feature", function() {
+  Ember.FEATURES['mandatory-setter'] = undefined;
+  equal(isEnabled('mandatory-setter'), true,  "returns true by default");
+  Ember.FEATURES['mandatory-setter'] = false;
+  equal(isEnabled('mandatory-setter'), false, "returns false if explicit");
 });
