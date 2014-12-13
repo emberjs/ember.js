@@ -8,7 +8,7 @@ import { create as o_create } from "ember-metal/platform";
 
 function UnquotedNonpropertyAttrNode(element, attrName, attrValue, dom) {
   this.init(element, attrName, attrValue, dom);
-} 
+}
 
 UnquotedNonpropertyAttrNode.prototype = o_create(SimpleAttrNode.prototype);
 

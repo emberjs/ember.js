@@ -7,32 +7,32 @@ import run from "ember-metal/run_loop";
 
 function SimpleAttrNode() {
   // abstract class
-} 
+}
 
 SimpleAttrNode.prototype.init = function init(element, attrName, simpleAttrValue, dom){
   this.element = element;
   this.attrName = attrName;
   this.attrValue = simpleAttrValue;
   this.dom = dom;
-  this.isDirty = false;
+  this.isDirty = true;
   this.lastValue = null;
   this.currentValue = null;
 
   if (this.attrValue.isStream) {
-    this.attrValue.subscribe(this.renderIfNeeded, this);
-    this.renderIfNeeded();
+    this.attrValue.subscribe(this.markDirty, this);
+    this.renderIfDirty();
   } else {
     this.currentValue = simpleAttrValue;
     this.render();
   }
 };
 
-SimpleAttrNode.prototype.renderIfNeeded = function renderIfNeeded(){
+SimpleAttrNode.prototype.markDirty = function markDirty(){
   this.isDirty = true;
-  run.schedule('render', this, this.scheduledRenderIfNeeded);
+  run.schedule('render', this, this.renderIfDirty);
 };
 
-SimpleAttrNode.prototype.scheduledRenderIfNeeded = function scheduledRenderIfNeeded(){
+SimpleAttrNode.prototype.renderIfDirty = function renderIfDirty(){
   if (this.isDirty) {
     this.isDirty = false;
     var value = this.attrValue.value();

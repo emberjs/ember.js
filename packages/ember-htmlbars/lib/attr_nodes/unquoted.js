@@ -10,7 +10,7 @@ import { normalizeProperty } from "ember-htmlbars/attr_nodes/utils";
 function UnquotedAttrNode(element, attrName, attrValue, dom) {
   var normalizedAttrName = normalizeProperty(element, attrName) || attrName;
   this.init(element, normalizedAttrName, attrValue, dom);
-} 
+}
 
 UnquotedAttrNode.prototype = o_create(SimpleAttrNode.prototype);
 
