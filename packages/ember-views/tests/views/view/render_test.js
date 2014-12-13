@@ -3,6 +3,7 @@ import run from "ember-metal/run_loop";
 import jQuery from "ember-views/system/jquery";
 import EmberView from "ember-views/views/view";
 import ContainerView from "ember-views/views/container_view";
+import { computed } from "ember-metal/computed";
 
 import compile from "ember-htmlbars/system/compile";
 
@@ -119,6 +120,28 @@ test("should add ember-view to views", function() {
   });
 
   ok(view.$().hasClass('ember-view'), "the view has ember-view");
+});
+
+test("should allow tagName to be a computed property [DEPRECATED]", function() {
+  view = EmberView.extend({
+    tagName: computed(function() {
+      return 'span';
+    })
+  }).create();
+
+  expectDeprecation(function(){
+    run(function() {
+      view.createElement();
+    });
+  }, /using a computed property to define tagName will not be permitted/);
+
+  equal(view.element.tagName, 'SPAN', "the view has was created with the correct element");
+
+  run(function() {
+    view.set('tagName', 'div');
+  });
+
+  equal(view.element.tagName, 'SPAN', "the tagName cannot be changed after initial render");
 });
 
 test("should allow hX tags as tagName", function() {
