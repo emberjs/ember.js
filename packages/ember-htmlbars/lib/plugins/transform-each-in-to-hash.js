@@ -1,5 +1,8 @@
-import Walker from "htmlbars-syntax/walker";
-import b from "htmlbars-syntax/builders";
+/**
+@module ember
+@submodule ember-htmlbars
+*/
+
 
 /**
   An HTMLBars AST transformation that replaces all instances of
@@ -16,14 +19,26 @@ import b from "htmlbars-syntax/builders";
   {{/each}}
   ```
 
+  @class TransformEachInToHash
   @private
+*/
+function TransformEachInToHash() {
+  // set later within HTMLBars to the syntax package
+  this.syntax = null;
+}
+
+/**
+  @private
+  @method transform
   @param {AST} The AST to be transformed.
 */
-export default function(ast) {
-  var walker = new Walker();
+TransformEachInToHash.prototype.transform = function TransformEachInToHash_transform(ast) {
+  var pluginContext = this;
+  var walker = new pluginContext.syntax.Walker();
+  var b = pluginContext.syntax.builders;
 
   walker.visit(ast, function(node) {
-    if (validate(node)) {
+    if (pluginContext.validate(node)) {
       var removedParams = node.sexpr.params.splice(0, 2);
       var keyword = removedParams[0].original;
 
@@ -40,12 +55,14 @@ export default function(ast) {
   });
 
   return ast;
-}
+};
 
-function validate(node) {
+TransformEachInToHash.prototype.validate = function TransformEachInToHash_validate(node) {
   return (node.type === 'BlockStatement' || node.type === 'MustacheStatement') &&
     node.sexpr.path.original === 'each' &&
     node.sexpr.params.length === 3 &&
     node.sexpr.params[1].type === 'PathExpression' &&
     node.sexpr.params[1].original === 'in';
-}
+};
+
+export default TransformEachInToHash;
