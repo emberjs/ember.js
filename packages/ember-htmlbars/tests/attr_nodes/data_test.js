@@ -27,6 +27,21 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
     equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', "attribute is output");
   });
 
+  test("property set before didInsertElement", function() {
+    var matchingElement;
+    view = EmberView.create({
+      didInsertElement: function(){
+        matchingElement = this.$('div[data-name=erik]');
+      },
+      context: {name: 'erik'},
+      template: compile("<div data-name={{name}}>Hi!</div>")
+    });
+    runAppend(view);
+
+    equalInnerHTML(view.element, '<div data-name="erik">Hi!</div>', "attribute is output");
+    equal(matchingElement.length, 1, 'element is in the DOM when didInsertElement');
+  });
+
   test("quoted attributes are concatenated", function() {
     view = EmberView.create({
       context: {firstName: 'max', lastName: 'jackson'},

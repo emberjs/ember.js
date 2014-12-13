@@ -24,6 +24,21 @@ QUnit.module("ember-htmlbars: class attribute", {
   }
 });
 
+test("class renders before didInsertElement", function() {
+  var matchingElement;
+  view = EmberView.create({
+    didInsertElement: function(){
+      matchingElement = this.$('div.blue');
+    },
+    context: {color: 'blue'},
+    template: compile("<div class={{color}}>Hi!</div>")
+  });
+  appendView(view);
+
+  equalInnerHTML(view.element, '<div class="blue">Hi!</div>', "attribute is output");
+  equal(matchingElement.length, 1, 'element is in the DOM when didInsertElement');
+});
+
 test("class property can contain multiple classes", function() {
   view = EmberView.create({
     context: {classes: 'large blue'},
