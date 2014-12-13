@@ -69,7 +69,6 @@ RSVP.onerrorDefault = function (e) {
       Ember.onerror(error);
     } else {
       Logger.error(error.stack);
-      Ember.assert(error, false);
     }
   }
 };
