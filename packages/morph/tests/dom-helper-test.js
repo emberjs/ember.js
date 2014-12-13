@@ -58,6 +58,20 @@ test('#getElementById', function() {
   dom.document.body.removeChild(parentNode);
 });
 
+test('#getElementById with different root node', function() {
+  var doc = document.implementation.createDocument(xhtmlNamespace, 'html', null),
+      body = document.createElementNS(xhtmlNamespace, 'body'),
+      parentNode = dom.createElement('div'),
+      childNode = dom.createElement('div');
+      
+  doc.documentElement.appendChild(body);
+  dom.setAttribute(parentNode, 'id', 'parent');
+  dom.setAttribute(childNode, 'id', 'child');
+  dom.appendChild(parentNode, childNode);
+  dom.appendChild(body, parentNode);
+  equalHTML(dom.getElementById('child', doc), '<div id="child"></div>');
+});
+
 test('#setProperty', function(){
   var node = dom.createElement('div');
   dom.setProperty(node, 'id', 'super-tag');
