@@ -1020,7 +1020,7 @@ var Route = EmberObject.extend(ActionHandler, {
 
     // Assign the route's controller so that it can more easily be
     // referenced in action handlers
-    this.controller = controller;
+    set(this, 'controller', controller);
 
     if (this.setupControllers) {
       Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
