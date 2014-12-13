@@ -64,6 +64,12 @@ function runNodeTests(testDir) {
   }
 
   return new RSVP.Promise(function(resolve, reject){
+    if (testPaths.length === 0) {
+      resolve();
+      return;
+    }
+
+    console.log('----');
     console.log("Running: Node test runner against "+testPaths.join(", "));
     testrunner.run({
       code: "test/node-context.js",
@@ -98,7 +104,6 @@ Object.keys(packages.dependencies).forEach(function(packageName){
   if (packages.dependencies[packageName].node) {
     var testDir = 'dist/cjs/'+packageName+'-tests/';
     testRuns = testRuns.then(function(){
-      console.log('----');
       return runNodeTests(testDir);
     });
   }
