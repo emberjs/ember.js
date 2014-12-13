@@ -47,6 +47,7 @@ module.exports = {
       lib: ["htmlbars-util", "morph"]
     },
     "morph": {
+      node: true,
       test: ["util-handlebars-inliner", "htmlbars-util", "htmlbars-test-helpers"]
     },
     "htmlbars-util": {
