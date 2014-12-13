@@ -67,15 +67,15 @@ var SafeString = EmberHandlebars.SafeString;
   example, the following view and template:
 
   ```javascript
-    AView = View.extend({
-      someProperty: function() {
-        return "aValue";
-      }.property()
-    })
+  var MyView = Ember.View.extend({
+    someProperty: function() {
+      return 'aValue';
+    }.property()
+  });
   ```
 
   ```handlebars
-  <img {{bind-attr class="view.someProperty}}>
+  <img {{bind-attr class="view.someProperty"}}>
   ```
 
   Result in the following rendered output:
@@ -91,9 +91,9 @@ var SafeString = EmberHandlebars.SafeString;
   `somePropertyName:class-name-if-true`.
 
   ```javascript
-  AView = View.extend({
+  var MyView = Ember.View.extend({
     someBool: true
-  })
+  });
   ```
 
   ```handlebars
