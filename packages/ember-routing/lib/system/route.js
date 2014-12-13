@@ -1742,9 +1742,9 @@ var Route = EmberObject.extend(ActionHandler, {
                     referenced by name. Defaults to the parent template
     @param {String} [options.outlet] the outlet inside `options.template` to render into.
                     Defaults to 'main'
-    @param {String} [options.controller] the controller to use for this template,
-                    referenced by name. Defaults to the Route's paired controller
-    @param {String} [options.model] the model object to set on `options.controller`
+    @param {String|Object} [options.controller] the controller to use for this template,
+                    referenced by name or as a controller instance. Defaults to the Route's paired controller
+    @param {Object} [options.model] the model object to set on `options.controller`.
                     Defaults to the return value of the Route's model hook
   */
   render: function(name, options) {
