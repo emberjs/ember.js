@@ -1,5 +1,7 @@
-import Walker from "htmlbars-syntax/walker";
-import b from "htmlbars-syntax/builders";
+/**
+@module ember
+@submodule ember-htmlbars
+*/
 
 /**
   An HTMLBars AST transformation that replaces all instances of
@@ -17,13 +19,25 @@ import b from "htmlbars-syntax/builders";
   ```
 
   @private
+  @class TransformWithAsToHash
+*/
+function TransformWithAsToHash() {
+  // set later within HTMLBars to the syntax package
+  this.syntax = null;
+}
+
+/**
+  @private
+  @method transform
   @param {AST} The AST to be transformed.
 */
-export default function(ast) {
-  var walker = new Walker();
+TransformWithAsToHash.prototype.transform = function TransformWithAsToHash_transform(ast) {
+  var pluginContext = this;
+  var walker = new pluginContext.syntax.Walker();
+  var b = pluginContext.syntax.builders;
 
   walker.visit(ast, function(node) {
-    if (validate(node)) {
+    if (pluginContext.validate(node)) {
       var removedParams = node.sexpr.params.splice(1, 2);
       var keyword = removedParams[1].original;
 
@@ -40,12 +54,14 @@ export default function(ast) {
   });
 
   return ast;
-}
+};
 
-function validate(node) {
+TransformWithAsToHash.prototype.validate = function TransformWithAsToHash_validate(node) {
   return node.type === 'BlockStatement' &&
     node.sexpr.path.original === 'with' &&
     node.sexpr.params.length === 3 &&
     node.sexpr.params[1].type === 'PathExpression' &&
     node.sexpr.params[1].original === 'as';
-}
+};
+
+export default TransformWithAsToHash;
