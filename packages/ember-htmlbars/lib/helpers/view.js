@@ -121,12 +121,18 @@ export var ViewHelper = EmberObject.create({
   helper: function(newView, hash, options, env) {
     var data = env.data;
     var template = options.template;
+    var newViewProto;
 
     makeBindings(hash, options, env.data.view);
 
     var viewOptions = this.propertiesFromHTMLOptions(hash, options, env);
     var currentView = data.view;
-    var newViewProto = newView.proto();
+
+    if (View.detectInstance(newView)) {
+      newViewProto = newView;
+    } else {
+      newViewProto = newView.proto();
+    }
 
     if (template) {
       Ember.assert(
