@@ -115,8 +115,9 @@ function DOMHelper(_document){
 var prototype = DOMHelper.prototype;
 prototype.constructor = DOMHelper;
 
-prototype.getElementById = function(id) {
-  return this.document.getElementById(id);
+prototype.getElementById = function(id, rootNode) {
+  rootNode = rootNode || this.document;
+  return rootNode.getElementById(id);
 };
 
 prototype.insertBefore = function(element, childElement, referenceChild) {
