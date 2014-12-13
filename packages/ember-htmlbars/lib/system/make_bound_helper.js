@@ -10,7 +10,9 @@ import Stream from "ember-metal/streams/stream";
 import {
   readArray,
   readHash,
-  subscribe
+  subscribe,
+  scanHash,
+  scanArray
 } from "ember-metal/streams/utils";
 
 /**
@@ -21,9 +23,9 @@ import {
 
   * `params` - An array of resolved ordered parameters.
   * `hash` - An object containing the hash parameters.
- 
+
   For example:
-  
+
   * With an unqouted ordered parameter:
 
     ```javascript
@@ -34,7 +36,7 @@ import {
     an empty hash as its second.
 
   * With a quoted ordered parameter:
- 
+
     ```javascript
     {{x-capitalize "foo"}}
     ```
@@ -42,7 +44,7 @@ import {
     The bound helper would receive `["foo"]` as its first argument, and an empty hash as its second.
 
   * With an unquoted hash parameter:
- 
+
     ```javascript
     {{x-repeat "foo" count=repeatCount}}
     ```
@@ -59,6 +61,8 @@ import {
 export default function makeBoundHelper(fn) {
   function helperFunc(params, hash, options, env) {
     var view = this;
+    var numParams = params.length;
+    var param, prop;
 
     Ember.assert("makeBoundHelper generated helpers do not support use with blocks", !options.template);
 
@@ -66,18 +70,21 @@ export default function makeBoundHelper(fn) {
       return fn.call(view, readArray(params), readHash(hash), options, env);
     }
 
-    if (env.data.isUnbound) {
+    // If none of the hash parameters are bound, act as an unbound helper.
+    // This prevents views from being unnecessarily created
+    var hasStream = scanArray(params) || scanHash(hash);
+
+    if (env.data.isUnbound || !hasStream) {
       return valueFn();
     } else {
       var lazyValue = new Stream(valueFn);
 
-      var param;
-      for (var i = 0, l = params.length; i < l; i++) {
+      for (var i = 0; i < numParams; i++) {
         param = params[i];
         subscribe(param, lazyValue.notify, lazyValue);
       }
 
-      for (var prop in hash) {
+      for (prop in hash) {
         param = hash[prop];
         subscribe(param, lazyValue.notify, lazyValue);
       }
