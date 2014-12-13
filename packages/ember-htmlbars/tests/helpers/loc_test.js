@@ -1,6 +1,7 @@
 import EmberView from 'ember-views/views/view';
 import compile from "ember-htmlbars/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import run from "ember-metal/run_loop";
 
 function buildView(template, context) {
   return EmberView.create({
@@ -52,26 +53,69 @@ test('localize takes passed formats into an account', function() {
 });
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-test('localize throws an assertion if the second parameter is a binding', function() {
-  var view = buildView('{{loc "Hello %@" name}}', {
-    name: 'Bob Foster'
+test('localize can update if the second parameter is a binding', function() {
+  var view = buildView('{{loc "Hello %@" name}}');
+
+  runAppend(view);
+
+  run(function(){
+    view.set('context.name', 'Mixonic Jazz Hands');
   });
 
-  expectAssertion(function() {
-    runAppend(view);
-  }, /You cannot pass bindings to `loc` helper/);
+  equal(view.$().text(), 'Hello Mixonic Jazz Hands');
 
   runDestroy(view);
 });
 
-test('localize a binding throws an assertion', function() {
+test('localize can take a bound localizationKey', function() {
   var view = buildView('{{loc localizationKey}}', {
     localizationKey: 'villain'
   });
+  runAppend(view);
 
-  expectAssertion(function() {
-    runAppend(view);
-  }, /You cannot pass bindings to `loc` helper/);
+  equal(view.$().text(), 'villain');
+
+  run(function(){
+    view.set('context.localizationKey', 'person');
+  });
+
+  equal(view.$().text(), 'person');
+
+  runDestroy(view);
+});
+
+test('localize can mix/match primitive and bound values', function() {
+  var view = buildView('{{loc localizationKey "is super!"}}', {
+    localizationKey: 'villain %@'
+  });
+  runAppend(view);
+
+  equal(view.$().text(), 'villain is super!');
+
+  run(function(){
+    view.set('context.localizationKey', 'person %@');
+  });
+
+  equal(view.$().text(), 'person is super!');
+
+  runDestroy(view);
+});
+
+test('localize can accept x bound arguments after the localizationKey', function(){
+  var view = buildView('{{loc "do great %@ %@" firstThing secondThing}}', {
+    firstThing: 'not',
+    secondThing: 'bad'
+  });
+  runAppend(view);
+
+  equal(view.$().text(), 'do great not bad');
+
+  run(function(){
+    view.set('context.firstThing', 'things');
+    view.set('context.secondThing', 'every day');
+  });
+
+  equal(view.$().text(), 'do great things every day');
 
   runDestroy(view);
 });

@@ -16,7 +16,8 @@ import makeBoundHelper from "ember-htmlbars/system/make_bound_helper";
 import {
   registerHelper,
   helper,
-  default as helpers
+  default as helpers,
+  registerBoundHelper
 } from "ember-htmlbars/helpers";
 import { bindHelper } from "ember-htmlbars/helpers/binding";
 import { viewHelper } from "ember-htmlbars/helpers/view";
@@ -62,7 +63,7 @@ registerHelper('unboundIf', unboundIfHelper);
 registerHelper('boundIf', boundIfHelper);
 registerHelper('log', logHelper);
 registerHelper('debugger', debuggerHelper);
-registerHelper('loc', locHelper);
+registerBoundHelper('loc', locHelper);
 registerHelper('partial', partialHelper);
 registerHelper('template', templateHelper);
 registerHelper('bind-attr', bindAttrHelper);
