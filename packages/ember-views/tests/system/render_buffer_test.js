@@ -50,7 +50,6 @@ test("RenderBuffers push fragments", function() {
 
   var el = buffer.element();
   equal(el.tagName.toLowerCase(), 'div');
-  console.log('el.', el.childNodes);
   equal(el.childNodes[0].tagName, 'SPAN', "Fragment is pushed into the buffer");
 });
 

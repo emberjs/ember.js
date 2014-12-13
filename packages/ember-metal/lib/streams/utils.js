@@ -1,3 +1,5 @@
+import Stream from "./stream";
+
 export function isStream(object) {
   return object && object.isStream;
 }
@@ -74,4 +76,34 @@ export function scanHash(hash) {
   }
 
   return containsStream;
+}
+
+// TODO: Create subclass ConcatStream < Stream. Defer
+// subscribing to streams until the value() is called.
+export function concat(array, key) {
+  var hasStream = scanArray(array);
+  if (hasStream) {
+    var i, l;
+    var stream = new Stream(function() {
+      return readArray(array).join(key);
+    });
+
+    for (i = 0, l=array.length; i < l; i++) {
+      subscribe(array[i], stream.notify, stream);
+    }
+
+    return stream;
+  } else {
+    return array.join(key);
+  }
+}
+
+export function chainStream(value, fn) {
+  if (isStream(value)) {
+    var stream = new Stream(fn);
+    subscribe(value, stream.notify, stream);
+    return stream;
+  } else {
+    return fn();
+  }
 }

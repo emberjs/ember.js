@@ -11,6 +11,7 @@ import { observersFor } from "ember-metal/observer";
 import Container from "ember-runtime/system/container";
 import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
+import { equalInnerHTML } from "htmlbars-test-helpers";
 
 import helpers from "ember-htmlbars/helpers";
 import compile from "ember-htmlbars/system/compile";
@@ -259,6 +260,25 @@ test("should be able to bind class attribute with {{bind-attr}}", function() {
 
   runAppend(view);
 
+  equalInnerHTML(view.element, '<img class="bar">', 'renders class');
+
+  run(function() {
+    set(view, 'foo', 'baz');
+  });
+
+  equalInnerHTML(view.element, '<img class="baz">', 'updates rendered class');
+});
+
+test("should be able to bind unquoted class attribute with {{bind-attr}}", function() {
+  var template = compile('<img {{bind-attr class=view.foo}}>');
+
+  view = EmberView.create({
+    template: template,
+    foo: 'bar'
+  });
+
+  runAppend(view);
+
   equal(view.$('img').attr('class'), 'bar', "renders class");
 
   run(function() {
@@ -278,13 +298,13 @@ test("should be able to bind class attribute via a truthy property with {{bind-a
 
   runAppend(view);
 
-  equal(view.$('.is-truthy').length, 1, "sets class name");
+  equalInnerHTML(view.element, '<img class="is-truthy">', 'renders class');
 
   run(function() {
     set(view, 'isNumber', 0);
   });
 
-  equal(view.$('.is-truthy').length, 0, "removes class name if bound property is set to something non-truthy");
+  equalInnerHTML(view.element.firstChild.className, undefined, 'removes class');
 });
 
 test("should be able to bind class to view attribute with {{bind-attr}}", function() {

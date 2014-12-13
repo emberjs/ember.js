@@ -125,7 +125,7 @@ Stream.prototype = {
         children[key].destroy();
       }
 
-      return true;      
+      return true;
     }
   },
 
