@@ -486,3 +486,16 @@ test('should allow either quoted or unquoted values', function() {
   equal(view.$('img').attr('alt'), "Updated", "updates value");
   equal(view.$('img').attr('src'), "test2.jpg", "updates value");
 });
+
+test("property before didInsertElement", function() {
+  var matchingElement;
+  view = EmberView.create({
+    name: 'bob',
+    template: compile('<div {{bind-attr alt=view.name}}></div>'),
+    didInsertElement: function(){
+      matchingElement = this.$('div[alt=bob]');
+    }
+  });
+  runAppend(view);
+  equal(matchingElement.length, 1, 'element is in the DOM when didInsertElement');
+});

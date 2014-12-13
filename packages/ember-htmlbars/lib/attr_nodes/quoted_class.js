@@ -39,21 +39,21 @@ function QuotedClassAttrNode(element, attrName, attrValue, dom) {
   this.element = element;
   this.attrName = attrName;
   this.dom = dom;
-  this.isDirty = false;
+  this.isDirty = true;
 
   this.classes = attrValue;
   this.oldClasses = [];
 
-  subscribe(attrValue, this.renderIfNeeded, this);
-  this.renderIfNeeded();
+  subscribe(attrValue, this.markDirty, this);
+  this.renderIfDirty();
 }
 
-QuotedClassAttrNode.prototype.renderIfNeeded = function renderIfNeeded(){
+QuotedClassAttrNode.prototype.markDirty = function markDirty(){
   this.isDirty = true;
-  run.schedule('render', this, this.scheduledRenderIfNeeded);
+  run.schedule('render', this, this.renderIfDirty);
 };
 
-QuotedClassAttrNode.prototype.scheduledRenderIfNeeded = function scheduledRenderIfNeeded(){
+QuotedClassAttrNode.prototype.renderIfDirty = function renderIfDirty(){
   if (this.isDirty) {
     this.isDirty = false;
     this.render();
