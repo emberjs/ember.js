@@ -14,7 +14,8 @@ var view, container;
 
 function registerRepeatHelper() {
   container.register('helper:x-repeat', makeBoundHelper(function(params, hash, options, env) {
-    return new Array(hash.times + 1).join( params[0] );
+    var times = hash.times || 1;
+    return new Array(times + 1).join( params[0] );
   }));
 }
 
@@ -235,8 +236,9 @@ test("when no parameters are bound, no new views are created", function(){
 
   try {
     view = EmberView.create({
-      template: compile('{{repeat "a"}}'),
-      controller: EmberObject.create()
+      template: compile('{{x-repeat "a"}}'),
+      controller: EmberObject.create(),
+      container: container
     });
     runAppend(view);
   } finally {
@@ -259,8 +261,9 @@ test('when no hash parameters are bound, no new views are created', function(){
 
   try {
     view = EmberView.create({
-      template: compile('{{repeat "a" count=3}}'),
-      controller: EmberObject.create()
+      template: compile('{{x-repeat "a" times=3}}'),
+      controller: EmberObject.create(),
+      container: container
     });
     runAppend(view);
   } finally {

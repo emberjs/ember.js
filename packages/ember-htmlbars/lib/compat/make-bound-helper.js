@@ -10,6 +10,8 @@ import Helper from "ember-htmlbars/system/helper";
 import Stream from "ember-metal/streams/stream";
 import {
   readArray,
+  scanArray,
+  scanHash,
   readHash
 } from "ember-metal/streams/utils";
 
@@ -48,6 +50,7 @@ export default function makeBoundHelper(fn, compatMode) {
   function helperFunc(params, hash, options, env) {
     var view = this;
     var numParams = params.length;
+    var param;
 
     Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !options.template);
 
@@ -78,12 +81,14 @@ export default function makeBoundHelper(fn, compatMode) {
       return fn.apply(view, args);
     }
 
-    if (env.data.isUnbound) {
+    // If none of the hash parameters are bound, act as an unbound helper.
+    // This prevents views from being unnecessarily created
+    var hasStream = scanArray(params) || scanHash(hash);
+
+    if (env.data.isUnbound || !hasStream){
       return valueFn();
     } else {
       var lazyValue = new Stream(valueFn);
-
-      var param;
 
       for (i = 0; i < numParams; i++) {
         param = params[i];
