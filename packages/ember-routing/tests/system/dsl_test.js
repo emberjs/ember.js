@@ -1,4 +1,5 @@
 import EmberRouter from "ember-routing/system/router";
+import { forEach } from "ember-metal/enumerable_utils";
 
 var Router;
 
@@ -12,19 +13,25 @@ QUnit.module("Ember Router DSL", {
 });
 
 test("should fail when using a reserved route name", function() {
-  expect(2);
+  var reservedNames = ['array', 'basic', 'object'];
 
-  expectAssertion(function() {
-    Router.map(function() {
-      this.route('basic');
-    });
-  }, "'basic' cannot be used as a route name.");
+  expect(reservedNames.length * 2);
 
-  expectAssertion(function() {
-    Router.map(function() {
-      this.resource('basic');
-    });
-  }, "'basic' cannot be used as a resource name.");
+  forEach(reservedNames, function(reservedName) {
+
+    expectAssertion(function() {
+      Router.map(function() {
+        this.route(reservedName);
+      });
+    }, "'" + reservedName + "' cannot be used as a route name.");
+
+    expectAssertion(function() {
+      Router.map(function() {
+        this.resource(reservedName);
+      });
+    }, "'" + reservedName + "' cannot be used as a resource name.");
+
+  });
 });
 
 test("should reset namespace if nested with resource", function(){
