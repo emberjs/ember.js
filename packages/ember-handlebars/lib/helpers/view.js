@@ -133,13 +133,19 @@ export var ViewHelper = EmberObject.create({
   helper: function(thisContext, newView, options) {
     var data = options.data;
     var fn   = options.fn;
+    var newViewProto;
 
     makeBindings(options);
 
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;
     viewOptions.templateData = data;
-    var newViewProto = newView.proto();
+
+    if (View.detectInstance(newView)) {
+      newViewProto = newView;
+    } else {
+      newViewProto = newView.proto();
+    }
 
     if (fn) {
       Ember.assert("You cannot provide a template block if you also specified a templateName",

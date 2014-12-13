@@ -105,8 +105,8 @@ function handlebarsGetView(context, path, container, data) {
   }
 
   Ember.assert(
-    fmt(path+" must be a subclass of Ember.View, not %@", [viewClass]),
-    View.detect(viewClass)
+    fmt(path+" must be a subclass or an instance of Ember.View, not %@", [viewClass]),
+    View.detect(viewClass) || View.detectInstance(viewClass)
   );
 
   return viewClass;
