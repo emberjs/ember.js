@@ -117,6 +117,7 @@ function ifHelper(params, hash, options, env) {
   options.helperName = options.helperName || ('if ');
 
   if (env.data.isUnbound) {
+    env.data.isUnbound = false;
     return env.helpers.unboundIf.helperFunction.call(this, params, hash, options, env);
   } else {
     return env.helpers.boundIf.helperFunction.call(this, params, hash, options, env);
@@ -144,6 +145,7 @@ function unlessHelper(params, hash, options, env) {
   options.helperName = options.helperName || helperName;
 
   if (env.data.isUnbound) {
+    env.data.isUnbound = false;
     return env.helpers.unboundIf.helperFunction.call(this, params, hash, options, env);
   } else {
     return env.helpers.boundIf.helperFunction.call(this, params, hash, options, env);
