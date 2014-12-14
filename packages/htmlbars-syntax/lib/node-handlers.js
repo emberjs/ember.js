@@ -1,5 +1,4 @@
 import { buildProgram, buildBlock, buildHash } from "./builders";
-import { Chars } from "./tokens";
 import { forEach } from "../htmlbars-util/array-utils";
 import {
   appendChild,
@@ -40,7 +39,7 @@ var nodeHandlers = {
     delete block.closeStrip;
 
     if (this.tokenizer.state === 'comment') {
-      this.tokenizer.token.addChar('{{' + this.sourceForMustache(block) + '}}');
+      this.tokenizer.addChar('{{' + this.sourceForMustache(block) + '}}');
       return;
     }
 
@@ -60,7 +59,7 @@ var nodeHandlers = {
     delete mustache.strip;
 
     if (this.tokenizer.state === 'comment') {
-      this.tokenizer.token.addChar('{{' + this.sourceForMustache(mustache) + '}}');
+      this.tokenizer.addChar('{{' + this.sourceForMustache(mustache) + '}}');
       return;
     }
 
@@ -138,8 +137,7 @@ var nodeHandlers = {
 function switchToHandlebars(processor) {
   var token = processor.tokenizer.token;
 
-  // TODO: Monkey patch Chars.addChar like attributes
-  if (token instanceof Chars) {
+  if (token && token.type === 'Chars') {
     processor.acceptToken(token);
     processor.tokenizer.token = null;
   }
