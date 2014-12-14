@@ -880,17 +880,14 @@ test("Block params", function() {
 test("Block params - Helper should know how many block params it was called with", function() {
   expect(4);
 
-  registerHelper('without-block-params', function(params, hash, options) {
-    ok(!('blockParams' in options), 'Helpers should not be passed a blockParams option if not called with block params.');
-  });
-  registerHelper('with-block-params', function(params, hash, options) {
-    equal(options.blockParams, this.count, 'Helpers should receive the correct number of block params in options.blockParams.');
+  registerHelper('count-block-params', function(params, hash, options) {
+    equal(options.template.blockParams, this.count, 'Helpers should receive the correct number of block params in options.template.blockParams.');
   });
 
-  compile('{{#without-block-params}}{{/without-block-params}}').render({}, env, document.body);
-  compile('{{#with-block-params as |x|}}{{/with-block-params}}').render({ count: 1 }, env, document.body);
-  compile('{{#with-block-params as |x y|}}{{/with-block-params}}').render({ count: 2 }, env, document.body);
-  compile('{{#with-block-params as |x y z|}}{{/with-block-params}}').render({ count: 3 }, env, document.body);
+  compile('{{#count-block-params}}{{/count-block-params}}').render({ count: 0 }, env, document.body);
+  compile('{{#count-block-params as |x|}}{{/count-block-params}}').render({ count: 1 }, env, document.body);
+  compile('{{#count-block-params as |x y|}}{{/count-block-params}}').render({ count: 2 }, env, document.body);
+  compile('{{#count-block-params as |x y z|}}{{/count-block-params}}').render({ count: 3 }, env, document.body);
 });
 
 test('Block params in HTML syntax', function () {
@@ -943,17 +940,14 @@ test('Block params in HTML syntax - Ignores whitespace', function () {
 test('Block params in HTML syntax - Helper should know how many block params it was called with', function () {
   expect(4);
 
-  registerHelper('without-block-params', function(params, hash, options) {
-    ok(!('blockParams' in options), 'Helpers should not be passed a blockParams option if not called with block params.');
-  });
-  registerHelper('with-block-params', function(params, hash, options) {
-    equal(options.blockParams, this.count, 'Helpers should receive the correct number of block params in options.blockParams.');
+  registerHelper('count-block-params', function(params, hash, options) {
+    equal(options.template.blockParams, this.count, 'Helpers should receive the correct number of block params in options.template.blockParams.');
   });
 
-  compile('<without-block-params></without-block-params>').render({}, env, document.body);
-  compile('<with-block-params as |x|></with-block-params>').render({ count: 1 }, env, document.body);
-  compile('<with-block-params as |x y|></with-block-params>').render({ count: 2 }, env, document.body);
-  compile('<with-block-params as |x y z|></with-block-params>').render({ count: 3 }, env, document.body);
+  compile('<count-block-params></count-block-params>').render({ count: 0 }, env, document.body);
+  compile('<count-block-params as |x|></count-block-params>').render({ count: 1 }, env, document.body);
+  compile('<count-block-params as |x y|></count-block-params>').render({ count: 2 }, env, document.body);
+  compile('<count-block-params as |x y z|></count-block-params>').render({ count: 3 }, env, document.body);
 });
 
 test("Block params in HTML syntax - Throws an error on invalid block params syntax", function() {
