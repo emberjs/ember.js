@@ -49,7 +49,7 @@ var slice = [].slice;
 
   ```javascript
   run(function() {
-    // code to be execute within a RunLoop
+    // code to be executed within a RunLoop
   });
   ```
 
@@ -175,7 +175,7 @@ run.queues = backburner.queueNames;
 
   ```javascript
   run.begin();
-  // code to be execute within a RunLoop
+  // code to be executed within a RunLoop
   run.end();
   ```
 
@@ -193,7 +193,7 @@ run.begin = function() {
 
   ```javascript
   run.begin();
-  // code to be execute within a RunLoop
+  // code to be executed within a RunLoop
   run.end();
   ```
 
