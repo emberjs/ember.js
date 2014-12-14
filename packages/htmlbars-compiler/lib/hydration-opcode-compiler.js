@@ -119,8 +119,6 @@ HydrationOpcodeCompiler.prototype.closeElement = function(element, pos, len, isS
 
 HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLength) {
   var sexpr = block.sexpr;
-  var program = block.program || {};
-  var blockParams = program.blockParams || [];
 
   var currentDOMChildIndex = this.currentDOMChildIndex;
   var start = (currentDOMChildIndex < 0) ? null : currentDOMChildIndex;
@@ -133,7 +131,7 @@ HydrationOpcodeCompiler.prototype.block = function(block, childIndex, childrenLe
   var inverseId = block.inverse === null ? null : this.templateId++;
 
   prepareSexpr(this, sexpr);
-  this.opcode('printContentHookForBlockHelper', morphNum, templateId, inverseId, blockParams.length);
+  this.opcode('printBlockHook', morphNum, templateId, inverseId);
 };
 
 HydrationOpcodeCompiler.prototype.component = function(component, childIndex, childrenLength) {
