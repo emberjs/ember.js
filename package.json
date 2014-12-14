@@ -40,6 +40,8 @@
     "git-repo-version": "0.0.2",
     "handlebars": "mmun/handlebars.js#new-ast-3238645f",
     "qunit": "^0.7.2",
-    "rsvp": "~3.0.6"
+    "rsvp": "~3.0.6",
+    "saucie": "johanneswuerbach/sauce-js-tests-integration#test-details",
+    "testem": "0.6.22"
   }
 }

@@ -8,14 +8,8 @@ var packages = require('../packages');
 var testrunner = require("qunit");
 testrunner.setup({log:{errors:true}});
 
-var runnerPath = 'bower_components/qunit-phantom-runner/runner.js';
-var qunitIndexPath = './dist/test/index.html';
-
-function runBrowserTests(queryString) {
+function runBrowserTests(command, args) {
   return new RSVP.Promise(function(resolve, reject) {
-    var command = 'phantomjs';
-    var args = [runnerPath, qunitIndexPath + (queryString || "")];
-
     console.log('Running: ' + command + ' ' + args.join(' '));
 
     var child = spawn(command, args);
@@ -92,22 +86,32 @@ function runNodeTests(testDir) {
   });
 }
 
-// Run the tests for each package in sequence.
+// Run tests
 
 var testRuns = RSVP.resolve();
 
-Object.keys(packages.dependencies).forEach(function(packageName){
-  testRuns = testRuns.then(function(){
-    console.log('----');
-    return runBrowserTests("?packages=" + packageName);
+if (process.env.CI && process.env.TEST_BROWSERS) {
+  testRuns = testRuns.then(function() {
+    return runBrowserTests('./node_modules/.bin/testem', ['ci', '--port', '8080', '-l', process.env.TEST_BROWSERS]);
   });
-  if (packages.dependencies[packageName].node) {
-    var testDir = 'dist/cjs/'+packageName+'-tests/';
-    testRuns = testRuns.then(function(){
-      return runNodeTests(testDir);
-    });
-  }
-});
+}
+
+if (!process.env.CI) {
+  testRuns = testRuns.then(function() {
+    return runBrowserTests('./node_modules/.bin/testem', ['ci', '-l', 'PhantomJS']);
+  });
+}
+
+if (!process.env.CI || (process.env.CI && process.env.TEST_NODE)) {
+  Object.keys(packages.dependencies).forEach(function(packageName){
+    if (packages.dependencies[packageName].node) {
+      var testDir = 'dist/cjs/'+packageName+'-tests/';
+      testRuns = testRuns.then(function(){
+        return runNodeTests(testDir);
+      });
+    }
+  });
+}
 
 testRuns
   .then(function() {
