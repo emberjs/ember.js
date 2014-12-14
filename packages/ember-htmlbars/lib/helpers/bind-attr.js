@@ -6,7 +6,7 @@
 import Ember from "ember-metal/core"; // Ember.assert
 
 import { fmt } from "ember-runtime/system/string";
-import QuotedClassAttrNode from "ember-htmlbars/attr_nodes/quoted_class";
+import QuotedAttrNode from "ember-htmlbars/attr_nodes/quoted";
 import LegacyBindAttrNode from "ember-htmlbars/attr_nodes/legacy_bind";
 import View from "ember-views/views/view";
 import keys from "ember-metal/keys";
@@ -152,10 +152,10 @@ function bindAttrHelper(params, hash, options, env) {
   var classNameBindings = hash['class'];
   if (classNameBindings !== null && classNameBindings !== undefined) {
     if (isStream(classNameBindings)) {
-      new QuotedClassAttrNode(element, 'class', classNameBindings, env.dom);
+      new QuotedAttrNode(element, 'class', classNameBindings, env.dom);
     } else {
       var classNameBindingsStream = applyClassNameBindings(classNameBindings, view);
-      new QuotedClassAttrNode(element, 'class', classNameBindingsStream, env.dom);
+      new QuotedAttrNode(element, 'class', classNameBindingsStream, env.dom);
     }
     delete hash['class'];
   }
