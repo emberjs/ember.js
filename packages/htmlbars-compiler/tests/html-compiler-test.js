@@ -351,7 +351,7 @@ test("The compiler passes along the hash arguments", function() {
 test("Simple data binding using text nodes", function() {
   var callback;
 
-  hooks.content = function(morph, path, context) {
+  hooks.content = function(morph, context, path) {
     callback = function() {
       morph.update(context[path]);
     };
@@ -375,7 +375,7 @@ test("Simple data binding using text nodes", function() {
 test("Simple data binding on fragments", function() {
   var callback;
 
-  hooks.content = function(morph, path, context) {
+  hooks.content = function(morph, context, path) {
     morph.escaped = false;
     callback = function() {
       morph.update(context[path]);
@@ -400,7 +400,7 @@ test("Simple data binding on fragments", function() {
 test("morph receives escaping information", function() {
   expect(3);
 
-  hooks.content = function(morph, path) {
+  hooks.content = function(morph, context, path) {
     if (path === 'escaped') {
       equal(morph.escaped, true);
     } else if (path === 'unescaped') {
