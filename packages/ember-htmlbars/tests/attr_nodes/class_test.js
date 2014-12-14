@@ -75,9 +75,7 @@ test("class attribute concats bound values", function() {
   });
   appendView(view);
 
-  ok(view.$('.large')[0], 'first class found');
-  ok(view.$('.blue')[0], 'second class found');
-  ok(view.$('.round')[0], 'third class found');
+  ok(view.element.firstChild.className, 'large blue round', 'classes are set');
 });
 
 if (isInlineIfEnabled) {
@@ -94,16 +92,12 @@ test("class attribute accepts nested helpers, and updates", function() {
   });
   appendView(view);
 
-  ok(view.$('.large')[0], 'first class found');
-  ok(view.$('.blue')[0], 'second class found');
-  ok(view.$('.no-shape')[0], 'third class found');
+  ok(view.element.firstChild.className, 'large blue no-shape', 'classes are set');
 
   run(view, view.set, 'context.hasColor', false);
   run(view, view.set, 'context.hasShape', true);
 
-  ok(view.$('.large')[0], 'first class found after change');
-  ok(view.$('.blue').length === 0, 'second class not found after change');
-  ok(view.$('.round')[0], 'third class found after change');
+  ok(view.element.firstChild.className, 'large round', 'classes are updated');
 });
 
 }
@@ -117,14 +111,11 @@ test("class attribute can accept multiple classes from a single value, and updat
   });
   appendView(view);
 
-  ok(view.$('.large')[0], 'first class found');
-  ok(view.$('.small')[0], 'second class found');
+  ok(view.element.firstChild.className, 'large small', 'classes are set');
 
   run(view, view.set, 'context.size', 'medium');
 
-  ok(view.$('.large').length === 0, 'old class not found');
-  ok(view.$('.small').length === 0, 'old class not found');
-  ok(view.$('.medium')[0], 'new class found');
+  ok(view.element.firstChild.className, 'medium', 'classes are updated');
 });
 
 test("class attribute can grok concatted classes, and update", function() {
@@ -138,17 +129,27 @@ test("class attribute can grok concatted classes, and update", function() {
   });
   appendView(view);
 
-  ok(view.$('.btn-large')[0], 'first class found');
-  ok(view.$('.pre-pre')[0], 'second class found');
-  ok(view.$('.pre-post')[0], 'third class found');
-  ok(view.$('.whoop')[0], 'fourth class found');
+  ok(view.element.firstChild.className, 'btn-large pre-pre pre-post whoop', 'classes are set');
 
   run(view, view.set, 'context.prefix', '');
 
-  ok(view.$('.btn-large')[0], 'first class found');
-  ok(view.$('.pre-pre').length === 0, 'second class not found');
-  ok(view.$('.-post')[0], 'third class found');
-  ok(view.$('.whoop')[0], 'fourth class found');
+  ok(view.element.firstChild.className, 'btn-large -post whoop', 'classes are updated');
+});
+
+test("class attribute stays in order", function() {
+  view = EmberView.create({
+    context: {
+      showA: 'a',
+      showB: 'b',
+    },
+    template: compile("<div class='r {{showB}} {{showA}} c'></div>")
+  });
+  appendView(view);
+
+  run(view, view.set, 'context.showB', false);
+  run(view, view.set, 'context.showB', true);
+
+  ok(view.element.firstChild.className, 'r b a c', 'classes are in the right order');
 });
 
 }

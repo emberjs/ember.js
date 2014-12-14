@@ -71,7 +71,7 @@ test("class is output", function() {
 
   Ember.run(view, view.set, 'context.color', 'red');
 
-  equalInnerHTML(view.element, '<svg class="tall red"></svg>', "attribute is output");
+  equalInnerHTML(view.element, '<svg class="red tall"></svg>', "attribute is output");
 });
 
 }
