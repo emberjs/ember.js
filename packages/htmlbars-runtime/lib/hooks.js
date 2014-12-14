@@ -76,12 +76,19 @@ export function set(context, name, value) {
   context[name] = value;
 }
 
-export function component(morph, tagName, context, hash, options, env) {
-  var value, helper = lookupHelper(context, tagName, env);
+export function component(morph, context, tagName, attrs, template, env) {
+  var helper = lookupHelper(context, tagName, env);
+
+  var value;
   if (helper) {
-    value = helper.call(context, null, hash, options, env);
+    var options = {
+      morph: morph,
+      template: template
+    };
+
+    value = helper.call(context, [], attrs, options, env);
   } else {
-    value = componentFallback(morph, tagName, context, hash, options, env);
+    value = componentFallback(morph, context, tagName, attrs, template, env);
   }
   morph.update(value);
 }
@@ -94,12 +101,12 @@ export function concat(params) {
   return value;
 }
 
-function componentFallback(morph, tagName, context, hash, options, env) {
+function componentFallback(morph, context, tagName, attrs, template, env) {
   var element = env.dom.createElement(tagName);
-  for (var name in hash) {
-    element.setAttribute(name, hash[name]);
+  for (var name in attrs) {
+    element.setAttribute(name, attrs[name]);
   }
-  element.appendChild(options.template.render(context, env, morph.contextualElement));
+  element.appendChild(template.render(context, env, morph.contextualElement));
   return element;
 }
 
