@@ -146,21 +146,14 @@ prototype.printContentHook = function(morphNum) {
 };
 
 prototype.printComponentHook = function(morphNum, templateId) {
-  this.hooks.component = true;
-  
-  var path = this.stack.pop();
-  var hash = this.stack.pop();
-
-  var options = [];
-
-  options.push('morph: morph' + morphNum);
-
-  if (templateId !== null) {
-    options.push('template: child' + templateId);
-  }
-
-  var args = ['morph' + morphNum, path, 'context', hash, quoteHash(options), 'env'];
-  this.source.push(this.indent+'  component(' + args.join(', ') + ');\n');
+  this.printHook('component', [
+    'morph' + morphNum,
+    'context',
+    this.stack.pop(), // path
+    this.stack.pop(), // attrs
+    templateId === null ? 'null' : 'child' + templateId,
+    'env'
+  ]);
 };
 
 prototype.printAttributeHook = function(elementNum, quoted) {
