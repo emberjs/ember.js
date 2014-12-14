@@ -46,12 +46,12 @@ export function attribute(domElement, name, value) {
   }
 }
 
-export function subexpr(helperName, context, params, hash, options, env) {
+export function subexpr(context, helperName, params, hash, env) {
   var helper = lookupHelper(context, helperName, env);
   if (helper) {
-    return helper.call(context, params, hash, options, env);
+    return helper.call(context, params, hash, {}, env);
   } else {
-    return get(context, helperName, options);
+    return get(context, helperName);
   }
 }
 

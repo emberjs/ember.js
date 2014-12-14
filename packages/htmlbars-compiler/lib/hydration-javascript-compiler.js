@@ -83,23 +83,34 @@ prototype.pushLiteral = function(value) {
   }
 };
 
+prototype.pushHook = function(name, args) {
+  this.hooks[name] = true;
+  this.stack.push(name + '(' + args.join(', ') + ')');
+};
+
 prototype.pushGetHook = function(path) {
-  this.hooks.get = true;
-  this.stack.push('get(context, ' + string(path) + ', env)');
+  this.pushHook('get', [
+    'context',
+    string(path),
+    'env'
+  ]);
 };
 
 prototype.pushSexprHook = function() {
-  this.hooks.subexpr = true;
-  var path = this.stack.pop();
-  var params = this.stack.pop();
-  var hash = this.stack.pop();
-  this.stack.push('subexpr(' + path + ', context, ' + params + ', ' + hash + ', {}, env)');
+  this.pushHook('subexpr', [
+    'context',
+    this.stack.pop(), // path
+    this.stack.pop(), // params
+    this.stack.pop(), // hash
+    'env'
+  ]);
 };
 
 prototype.pushConcatHook = function() {
-  this.hooks.concat = true;
-  var parts = this.stack.pop();
-  this.stack.push('concat(' + parts + ', env)');
+  this.pushHook('concat', [
+    this.stack.pop(), // parts
+    'env'
+  ]);
 };
 
 prototype.printHook = function(name, args) {
@@ -108,8 +119,12 @@ prototype.printHook = function(name, args) {
 };
 
 prototype.printSetHook = function(name, index) {
-  this.hooks.set = true;
-  this.source.push(this.indent + '  set(context, ' + string(name) +', blockArguments[' + index + ']);\n');
+  this.printHook('set', [
+    'context',
+    string(name),
+    'blockArguments[' + index + ']',
+    'env'
+  ]);
 };
 
 prototype.printBlockHook = function(morphNum, templateId, inverseId) {
