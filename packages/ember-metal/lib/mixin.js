@@ -44,6 +44,7 @@ import {
   addListener,
   removeListener
 } from "ember-metal/events";
+import { isStream } from "ember-metal/streams/utils";
 
 var REQUIRED;
 var a_slice = [].slice;
@@ -356,7 +357,7 @@ function connectBindings(obj, m) {
       binding = bindings[key];
       if (binding) {
         to = key.slice(0, -7); // strip Binding off end
-        if (binding.isStream) {
+        if (isStream(binding)) {
           connectStreamBinding(obj, to, binding);
           continue;
         } else if (binding instanceof Binding) {

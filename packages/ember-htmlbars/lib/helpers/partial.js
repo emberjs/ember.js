@@ -2,6 +2,7 @@ import Ember from "ember-metal/core"; // Ember.assert
 
 import isNone from 'ember-metal/is_none';
 import { bind } from "./binding";
+import { isStream } from "ember-metal/streams/utils";
 
 /**
 @module ember
@@ -53,7 +54,7 @@ export function partialHelper(params, hash, options, env) {
 
   var name = params[0];
 
-  if (name && name.isStream) {
+  if (isStream(name)) {
     options.template = createPartialTemplate(name);
     bind.call(this, name, hash, options, env, true, exists);
   } else {

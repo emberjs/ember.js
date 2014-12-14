@@ -9,6 +9,7 @@ import View from "ember-views/views/view";
 import Component from "ember-views/views/component";
 import makeViewHelper from "ember-htmlbars/system/make-view-helper";
 import makeBoundHelper from "ember-htmlbars/compat/make-bound-helper";
+import { isStream } from "ember-metal/streams/utils";
 
 var slice = [].slice;
 
@@ -30,7 +31,7 @@ function HandlebarsCompatibleHelper(fn) {
     for (var prop in hash) {
       param = hash[prop];
 
-      if (param.isStream) {
+      if (isStream(param)) {
         handlebarsOptions.hash[prop] = param._label;
       } else {
         handlebarsOptions.hash[prop] = param;
@@ -41,7 +42,7 @@ function HandlebarsCompatibleHelper(fn) {
     for (var i = 0, l = params.length; i < l; i++) {
       param = params[i];
 
-      if (param.isStream) {
+      if (isStream(param)) {
         args[i] = param._label;
       } else {
         args[i] = param;

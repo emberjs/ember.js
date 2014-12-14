@@ -12,7 +12,8 @@ import {
   readArray,
   scanArray,
   scanHash,
-  readHash
+  readHash,
+  isStream
 } from "ember-metal/streams/utils";
 
 /**
@@ -67,7 +68,7 @@ export default function makeBoundHelper(fn, compatMode) {
       for (var i = 0, l = params.length; i < l; i++) {
         param = params[i];
 
-        if (param.isStream) {
+        if (isStream(param)) {
           properties[i] = param._label;
         } else {
           properties[i] = param;
@@ -92,14 +93,14 @@ export default function makeBoundHelper(fn, compatMode) {
 
       for (i = 0; i < numParams; i++) {
         param = params[i];
-        if (param && param.isStream) {
+        if (isStream(param)) {
           param.subscribe(lazyValue.notify, lazyValue);
         }
       }
 
       for (prop in hash) {
         param = hash[prop];
-        if (param && param.isStream) {
+        if (isStream(param)) {
           param.subscribe(lazyValue.notify, lazyValue);
         }
       }
@@ -108,7 +109,7 @@ export default function makeBoundHelper(fn, compatMode) {
         var firstParam = params[0];
         // Only bother with subscriptions if the first argument
         // is a stream itself, and not a primitive.
-        if (firstParam && firstParam.isStream) {
+        if (isStream(firstParam)) {
           var onDependentKeyNotify = function onDependentKeyNotify(stream) {
             stream.value();
             lazyValue.notify();
