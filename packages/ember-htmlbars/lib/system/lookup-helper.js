@@ -28,8 +28,9 @@ export var ISNT_HELPER_CACHE = new Cache(1000, function(key) {
   @return {Handlebars Helper}
 */
 export default function lookupHelper(name, view, env) {
-  if (env.helpers[name]) {
-    return env.helpers[name];
+  var helper = env.helpers[name];
+  if (helper) {
+    return helper;
   }
 
   var container = view.container;
@@ -39,7 +40,7 @@ export default function lookupHelper(name, view, env) {
   }
 
   var helperName = 'helper:' + name;
-  var helper = container.lookup(helperName);
+  helper = container.lookup(helperName);
   if (!helper) {
     var componentLookup = container.lookup('component-lookup:main');
     Ember.assert("Could not find 'component-lookup:main' on the provided container," +
