@@ -191,7 +191,7 @@ HydrationOpcodeCompiler.prototype.attribute = function(attr) {
     this.element = null;
   }
 
-  this.opcode('printAttributeHook', this.elementNum, value.type === 'ConcatStatement');
+  this.opcode('printAttributeHook', this.elementNum);
 };
 
 HydrationOpcodeCompiler.prototype.elementHelper = function(sexpr) {
