@@ -8,6 +8,7 @@ import run from "ember-metal/run_loop";
 import { get } from "ember-metal/property_get";
 import SimpleStream from "ember-metal/streams/simple";
 import BoundView from "ember-views/views/bound_view";
+import { isStream } from "ember-metal/streams/utils";
 
 function exists(value) {
   return !isNone(value);
@@ -16,7 +17,7 @@ function exists(value) {
 // Binds a property into the DOM. This will create a hook in DOM that the
 // KVO system will look for and update if the property changes.
 function bind(property, hash, options, env, preserveContext, shouldDisplay, valueNormalizer, childProperties, _viewClass) {
-  var valueStream = property.isStream ? property : this.getStream(property);
+  var valueStream = isStream(property) ? property : this.getStream(property);
   var lazyValue;
 
   if (childProperties) {

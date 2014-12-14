@@ -11,6 +11,7 @@ import run from "ember-metal/run_loop";
 import { readUnwrappedModel } from "ember-views/streams/utils";
 import { isSimpleClick } from "ember-views/system/utils";
 import ActionManager from "ember-views/system/action_manager";
+import { isStream } from "ember-metal/streams/utils";
 
 function actionArgs(parameters, actionName) {
   var ret, i;
@@ -105,7 +106,7 @@ ActionHelper.registerAction = function(actionNameOrStream, options, allowedKeys)
 
       var actionName;
 
-      if (actionNameOrStream.isStream) {
+      if (isStream(actionNameOrStream)) {
         actionName = actionNameOrStream.value();
 
         Ember.assert("You specified a quoteless path to the {{action}} helper " +

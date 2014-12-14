@@ -51,6 +51,7 @@ import jQuery from "ember-views/system/jquery";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 
 import CoreView from "ember-views/views/core_view";
+import { isStream } from "ember-metal/streams/utils";
 
 function K() { return this; }
 
@@ -2063,7 +2064,7 @@ var View = CoreView.extend({
     }
 
     var path = pathOrStream;
-    if (pathOrStream.isStream) {
+    if (isStream(pathOrStream)) {
       path = pathOrStream._label;
 
       if (!path) {
