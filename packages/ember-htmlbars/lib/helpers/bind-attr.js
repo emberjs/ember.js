@@ -218,14 +218,14 @@ function streamifyClassBindings(view, classBindingsString) {
     parsedPath = View._parsePropertyPath(classBindings[i]);
 
     if (parsedPath.path === '') {
-      streamified.push(classStringForParsedPath(parsedPath, true) + " ");
+      streamified.push(classStringForParsedPath(parsedPath, true));
     } else {
       (function(){
         var lazyValue = view.getStream(parsedPath.path);
         var _parsedPath = parsedPath;
         var classNameBound = new Stream(function(){
           var value = lazyValue.value();
-          return classStringForParsedPath(_parsedPath, value) + " ";
+          return classStringForParsedPath(_parsedPath, value);
         });
         lazyValue.subscribe(classNameBound.notify, classNameBound);
         streamified.push(classNameBound);
@@ -233,7 +233,7 @@ function streamifyClassBindings(view, classBindingsString) {
     }
   }
 
-  return concat(streamified);
+  return concat(streamified, {joinWith: ' '});
 }
 
 function classStringForParsedPath(parsedPath, value) {
