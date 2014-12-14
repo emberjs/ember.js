@@ -169,7 +169,7 @@ test("attribute mustache", function() {
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "printAttributeHook", [ 0, true ] ]
+    [ "printAttributeHook", [ 0 ] ]
   ]);
 });
 
@@ -188,6 +188,6 @@ test("attribute helper", function() {
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "printAttributeHook", [ 0, true ] ]
+    [ "printAttributeHook", [ 0 ] ]
   ]);
 });

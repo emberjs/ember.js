@@ -156,13 +156,13 @@ prototype.printComponentHook = function(morphNum, templateId) {
   ]);
 };
 
-prototype.printAttributeHook = function(elementNum, quoted) {
-  this.hooks.attribute = true;
-
-  var name = this.stack.pop();
-  var value = this.stack.pop();
-
-  this.source.push(this.indent + '  attribute(element' + elementNum + ', ' + name + ', ' + quoted + ', context, ' + value + ', {}, env);\n');
+prototype.printAttributeHook = function(elementNum) {
+  this.printHook('attribute', [
+    'element' + elementNum,
+    this.stack.pop(), // name
+    this.stack.pop(), // value
+    'env'
+  ]);
 };
 
 prototype.printElementHook = function(elementNum) {

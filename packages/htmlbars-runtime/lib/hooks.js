@@ -38,7 +38,7 @@ export function element(domElement, helperName, context, params, hash, options, 
   }
 }
 
-export function attribute(domElement, name, quoted, context, value) {
+export function attribute(domElement, name, value) {
   if (value === null) {
     domElement.removeAttribute(name);
   } else {
