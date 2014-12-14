@@ -11,13 +11,23 @@ export function block(morph, context, path, params, hash, template, inverse, env
   morph.update(value);
 }
 
-export function content(morph, path, context, params, hash, options, env) {
-  var value, helper = lookupHelper(context, path, env);
+export function inline(morph, context, path, params, hash, env) {
+  var helper = lookupHelper(context, path, env);
+  var value = helper.call(context, params, hash, { morph: morph }, env);
+
+  morph.update(value);
+}
+
+export function content(morph, context, path, env) {
+  var helper = lookupHelper(context, path, env);
+
+  var value;
   if (helper) {
-    value = helper.call(context, params, hash, options, env);
+    value = helper.call(context, [], {}, { morph: morph }, env);
   } else {
     value = get(context, path);
   }
+
   morph.update(value);
 }
 
@@ -100,6 +110,7 @@ function lookupHelper(context, helperName, env) {
 export default {
   content: content,
   block: block,
+  inline: inline,
   component: component,
   element: element,
   attribute: attribute,

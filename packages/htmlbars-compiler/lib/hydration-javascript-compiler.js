@@ -125,31 +125,24 @@ prototype.printBlockHook = function(morphNum, templateId, inverseId) {
   ]);
 };
 
-prototype.printContentHookForInlineHelper = function(morphNum) {
-  var path = this.stack.pop();
-  var params = this.stack.pop();
-  var hash = this.stack.pop();
-
-  var options = [];
-  options.push('morph: morph' + morphNum);
-
-  this.printContentHook(morphNum, path, params, hash, options);
+prototype.printInlineHook = function(morphNum) {
+  this.printHook('inline', [
+    'morph' + morphNum,
+    'context',
+    this.stack.pop(), // path
+    this.stack.pop(), // params
+    this.stack.pop(), // hash
+    'env'
+  ]);
 };
 
-prototype.printContentHookForAmbiguous = function(morphNum) {
-  var path = this.stack.pop();
-
-  var options = [];
-  options.push('morph: morph' + morphNum);
-
-  this.printContentHook(morphNum, path, '[]', '{}', options);
-};
-
-prototype.printContentHook = function(morphNum, path, params, hash, pairs) {
-  this.hooks.content = true;
-
-  var args = ['morph' + morphNum, path, 'context', params, hash, quoteHash(pairs), 'env'];
-  this.source.push(this.indent+'  content(' + args.join(', ') + ');\n');
+prototype.printContentHook = function(morphNum) {
+  this.printHook('content', [
+    'morph' + morphNum,
+    'context',
+    this.stack.pop(), // path
+    'env'
+  ]);
 };
 
 prototype.printComponentHook = function(morphNum, templateId) {

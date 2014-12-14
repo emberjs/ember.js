@@ -218,10 +218,10 @@ HydrationOpcodeCompiler.prototype.mustache = function(mustache, childIndex, chil
 
   if (isHelper(sexpr)) {
     prepareSexpr(this, sexpr);
-    this.opcode('printContentHookForInlineHelper', morphNum);
+    this.opcode('printInlineHook', morphNum);
   } else {
     preparePath(this, sexpr.path);
-    this.opcode('printContentHookForAmbiguous', morphNum);
+    this.opcode('printContentHook', morphNum);
   }
 };
 
