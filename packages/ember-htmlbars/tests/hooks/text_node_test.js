@@ -8,7 +8,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 var view;
 
 if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
-  QUnit.module("ember-htmlbars: basic/text_node_test", {
+  QUnit.module("ember-htmlbars: hooks/text_node_test", {
     teardown: function(){
       runDestroy(view);
     }

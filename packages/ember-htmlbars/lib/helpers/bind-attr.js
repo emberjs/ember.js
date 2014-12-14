@@ -9,10 +9,14 @@ import { fmt } from "ember-runtime/system/string";
 import QuotedClassAttrNode from "ember-htmlbars/attr_nodes/quoted_class";
 import LegacyBindAttrNode from "ember-htmlbars/attr_nodes/legacy_bind";
 import View from "ember-views/views/view";
-import Stream from "ember-metal/streams/stream";
 import keys from "ember-metal/keys";
 import helpers from "ember-htmlbars/helpers";
-import concat from "ember-htmlbars/hooks/concat";
+import {
+  read,
+  isStream,
+  concat,
+  chainStream
+} from "ember-metal/streams/utils";
 
 /**
   `bind-attr` allows you to create a binding between DOM element attributes and
@@ -145,10 +149,14 @@ function bindAttrHelper(params, hash, options, env) {
   var view = this;
 
   // Handle classes differently, as we can bind multiple classes
-  var classBindings = hash['class'];
-  if (classBindings != null) {
-    var attrValue = streamifyClassBindings(view, classBindings);
-    new QuotedClassAttrNode(element, 'class', attrValue, env.dom);
+  var classNameBindings = hash['class'];
+  if (classNameBindings !== null && classNameBindings !== undefined) {
+    if (isStream(classNameBindings)) {
+      new QuotedClassAttrNode(element, 'class', classNameBindings, env.dom);
+    } else {
+      var classNameBindingsStream = applyClassNameBindings(classNameBindings, view);
+      new QuotedClassAttrNode(element, 'class', classNameBindingsStream, env.dom);
+    }
     delete hash['class'];
   }
 
@@ -158,7 +166,7 @@ function bindAttrHelper(params, hash, options, env) {
   for (var i=0, l=attrKeys.length;i<l;i++) {
     attr = attrKeys[i];
     path = hash[attr];
-    if (path.isStream) {
+    if (isStream(path)) {
       lazyValue = path;
     } else {
       Ember.assert(
@@ -170,6 +178,13 @@ function bindAttrHelper(params, hash, options, env) {
     }
     new LegacyBindAttrNode(element, attr, lazyValue, env.dom);
   }
+}
+
+function applyClassNameBindings(classNameBindings, view) {
+  var arrayOfClassNameBindings = classNameBindings.split(' ');
+  var boundClassNameBindings = steamifyClassNameBindings(view, arrayOfClassNameBindings);
+  var concatenatedClassNames = concat(boundClassNameBindings, ' ');
+  return concatenatedClassNames;
 }
 
 /**
@@ -209,31 +224,26 @@ function bindAttrHelperDeprecated() {
     element to update
   @return {Array} An array of class names to add
 */
-function streamifyClassBindings(view, classBindingsString) {
-  var classBindings = classBindingsString.split(' ');
+function steamifyClassNameBindings(view, classNameBindings) {
   var streamified = [];
-
-  var parsedPath;
-  for (var i=0, l=classBindings.length;i<l;i++) {
-    parsedPath = View._parsePropertyPath(classBindings[i]);
-
-    if (parsedPath.path === '') {
-      streamified.push(classStringForParsedPath(parsedPath, true) + " ");
-    } else {
-      (function(){
-        var lazyValue = view.getStream(parsedPath.path);
-        var _parsedPath = parsedPath;
-        var classNameBound = new Stream(function(){
-          var value = lazyValue.value();
-          return classStringForParsedPath(_parsedPath, value) + " ";
-        });
-        lazyValue.subscribe(classNameBound.notify, classNameBound);
-        streamified.push(classNameBound);
-      })(); // jshint ignore:line
-    }
+  var boundClassName;
+  for (var i=0, l=classNameBindings.length;i<l;i++) {
+    boundClassName = streamifyClassNameBinding(view, classNameBindings[i]);
+    streamified.push(boundClassName);
   }
+  return streamified;
+}
 
-  return concat(streamified);
+function streamifyClassNameBinding(view, classNameBinding){
+  var parsedPath = View._parsePropertyPath(classNameBinding);
+  if (parsedPath.path === '') {
+    return classStringForParsedPath(parsedPath, true);
+  } else {
+    var pathValue = view.getStream(parsedPath.path);
+    return chainStream(pathValue, function(){
+      return classStringForParsedPath(parsedPath, read(pathValue));
+    });
+  }
 }
 
 function classStringForParsedPath(parsedPath, value) {
