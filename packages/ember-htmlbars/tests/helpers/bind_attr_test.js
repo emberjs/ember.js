@@ -486,6 +486,16 @@ test("should teardown observers from bind-attr on rerender", function() {
   equal(observersFor(view, 'foo').length, 1);
 });
 
+test("should keep class in the order it appears in", function() {
+  view = EmberView.create({
+    template: compile('<span {{bind-attr class=":foo :baz"}}></span>'),
+  });
+
+  runAppend(view);
+
+  equal(view.element.firstChild.className, 'foo baz', 'classes are in expected order');
+});
+
 test('should allow either quoted or unquoted values', function() {
   view = EmberView.create({
     value: 'Test',
