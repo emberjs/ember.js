@@ -29,7 +29,7 @@ test("simple block", function() {
     [ "prepareObject", [ 0 ] ],
     [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHookForBlockHelper", [ 0, 0, null, 0 ] ]
+    [ "printBlockHook", [ 0, 0, null ] ]
   ]);
 });
 
@@ -40,7 +40,7 @@ test("simple block with block params", function() {
     [ "prepareObject", [ 0 ] ],
     [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHookForBlockHelper", [ 0, 0, null, 2 ] ]
+    [ "printBlockHook", [ 0, 0, null ] ]
   ]);
 });
 

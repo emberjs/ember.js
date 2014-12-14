@@ -102,29 +102,27 @@ prototype.pushConcatHook = function() {
   this.stack.push('concat(' + parts + ', env)');
 };
 
+prototype.printHook = function(name, args) {
+  this.hooks[name] = true;
+  this.source.push(this.indent + '  ' + name + '(' + args.join(', ') + ');\n');
+};
+
 prototype.printSetHook = function(name, index) {
   this.hooks.set = true;
   this.source.push(this.indent + '  set(context, ' + string(name) +', blockArguments[' + index + ']);\n');
 };
 
-prototype.printContentHookForBlockHelper = function(morphNum, templateId, inverseId) {
-  var path = this.stack.pop();
-  var params = this.stack.pop();
-  var hash = this.stack.pop();
-
-  var options = [];
-
-  options.push('morph: morph' + morphNum);
-
-  if (templateId !== null) {
-    options.push('template: child' + templateId);
-  }
-
-  if (inverseId !== null) {
-    options.push('inverse: child' + inverseId);
-  }
-
-  this.printContentHook(morphNum, path, params, hash, options);
+prototype.printBlockHook = function(morphNum, templateId, inverseId) {
+  this.printHook('block', [
+    'morph' + morphNum,
+    'context',
+    this.stack.pop(), // path
+    this.stack.pop(), // params
+    this.stack.pop(), // hash
+    templateId === null ? 'null' : 'child' + templateId,
+    inverseId === null ? 'null' : 'child' + inverseId,
+    'env'
+  ]);
 };
 
 prototype.printContentHookForInlineHelper = function(morphNum) {

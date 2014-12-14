@@ -1,3 +1,16 @@
+export function block(morph, context, path, params, hash, template, inverse, env) {
+  var options = {
+    morph: morph,
+    template: template,
+    inverse: inverse
+  };
+
+  var helper = lookupHelper(context, path, env);
+  var value = helper.call(context, params, hash, options, env);
+
+  morph.update(value);
+}
+
 export function content(morph, path, context, params, hash, options, env) {
   var value, helper = lookupHelper(context, path, env);
   if (helper) {
@@ -86,6 +99,7 @@ function lookupHelper(context, helperName, env) {
 
 export default {
   content: content,
+  block: block,
   component: component,
   element: element,
   attribute: attribute,
