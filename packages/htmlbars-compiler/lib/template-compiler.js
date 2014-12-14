@@ -94,15 +94,24 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     indent+'  return {\n' +
     indent+'    isHTMLBars: true,\n' +
     indent+'    cachedFragment: null,\n' +
+    indent+'    hasRendered: false,\n' +
     indent+'    build: ' + fragmentProgram + ',\n' +
     indent+'    render: function render(' + templateSignature + ') {\n' +
     indent+'      var dom = env.dom;\n' +
     this.getHydrationHooks(indent + '      ', this.hydrationCompiler.hooks) +
     indent+'      dom.detectNamespace(contextualElement);\n' +
+    indent+'      var fragment;\n' +
     indent+'      if (this.cachedFragment === null) {\n' +
-    indent+'        this.cachedFragment = this.build(dom);\n' +
+    indent+'        fragment = this.build(dom);\n' +
+    indent+'        if (this.hasRendered) {\n' +
+    indent+'          this.cachedFragment = fragment;\n' +
+    indent+'        } else {\n' +
+    indent+'          this.hasRendered = true;\n' +
+    indent+'        }\n' +
     indent+'      }\n' +
-    indent+'      var fragment = dom.cloneNode(this.cachedFragment, true);\n' +
+    indent+'      if (this.cachedFragment) {\n' +
+    indent+'        fragment = dom.cloneNode(this.cachedFragment, true);\n' +
+    indent+'      }\n' +
     hydrationProgram +
     indent+'      return fragment;\n' +
     indent+'    }\n' +
