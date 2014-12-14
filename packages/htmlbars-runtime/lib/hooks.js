@@ -31,10 +31,10 @@ export function content(morph, context, path, env) {
   morph.update(value);
 }
 
-export function element(domElement, helperName, context, params, hash, options, env) {
-  var helper = lookupHelper(context, helperName, env);
+export function element(domElement, context, path, params, hash, env) {
+  var helper = lookupHelper(context, path, env);
   if (helper) {
-    helper.call(context, params, hash, options, env);
+    helper.call(context, params, hash, { element: domElement }, env);
   }
 }
 

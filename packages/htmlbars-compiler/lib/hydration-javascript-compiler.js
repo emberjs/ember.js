@@ -1,5 +1,5 @@
 import { processOpcodes } from "./utils";
-import { string, hash as quoteHash, array } from "../htmlbars-util/quoting";
+import { string, array } from "../htmlbars-util/quoting";
 
 function HydrationJavaScriptCompiler() {
   this.stack = [];
@@ -166,17 +166,14 @@ prototype.printAttributeHook = function(elementNum) {
 };
 
 prototype.printElementHook = function(elementNum) {
-  this.hooks.element = true;
-
-  var path = this.stack.pop();
-  var params = this.stack.pop();
-  var hash = this.stack.pop();
-
-  var options = [];
-  options.push('element: element' + elementNum);
-
-  var args = ['element' + elementNum, path, 'context', params, hash, quoteHash(options), 'env'];
-  this.source.push(this.indent+'  element(' + args.join(', ') + ');\n');
+  this.printHook('element', [
+    'element' + elementNum,
+    'context',
+    this.stack.pop(), // path
+    this.stack.pop(), // params
+    this.stack.pop(), // hash
+    'env'
+  ]);
 };
 
 prototype.createMorph = function(morphNum, parentPath, startIndex, endIndex, escaped) {
