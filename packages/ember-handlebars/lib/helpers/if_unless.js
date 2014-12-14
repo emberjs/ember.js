@@ -103,6 +103,7 @@ function ifHelper(context, options) {
   options.helperName = options.helperName || ('if ' + context);
 
   if (options.data.isUnbound) {
+    options.data.isUnbound = false;
     return helpers.unboundIf.call(options.contexts[0], context, options);
   } else {
     return helpers.boundIf.call(options.contexts[0], context, options);
@@ -134,6 +135,7 @@ function unlessHelper(context, options) {
   options.helperName = options.helperName || helperName;
 
   if (options.data.isUnbound) {
+    options.data.isUnbound = false;
     return helpers.unboundIf.call(options.contexts[0], context, options);
   } else {
     return helpers.boundIf.call(options.contexts[0], context, options);

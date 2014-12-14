@@ -254,6 +254,34 @@ test("should be able to render an unbound helper invocation with bound hash opti
   }
 });
 
+test("should be able to render bound form of a helper inside unbound form of same helper", function() {
+  view = EmberView.create({
+    template: compile(
+      ["{{#unbound if foo}}",
+        "{{#if bar}}true{{/if}}",
+        "{{#unless bar}}false{{/unless}}",
+        "{{/unbound}}",
+        "{{#unbound unless notfoo}}",
+        "{{#if bar}}true{{/if}}",
+        "{{#unless bar}}false{{/unless}}",
+        "{{/unbound}}"].join("")),
+    context: EmberObject.create({
+      foo: true,
+      notfoo: false,
+      bar: true
+    })
+  });
+  runAppend(view);
+
+  equal(view.$().text(), "truetrue", "first render is correct");
+
+  run(function() {
+    set(view, 'context.bar', false);
+  });
+
+  equal(view.$().text(), "falsefalse", "bound if and unless inside unbound if/unless are updated");
+});
+
 QUnit.module("ember-htmlbars: {{#unbound}} helper -- Container Lookup", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
