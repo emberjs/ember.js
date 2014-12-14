@@ -3,11 +3,13 @@
 @submodule ember-htmlbars
 */
 
+import { create as o_create } from "ember-metal/platform";
+
 /**
  @private
  @property helpers
 */
-var helpers = { };
+var helpers = o_create(null);
 
 /**
 @module ember
