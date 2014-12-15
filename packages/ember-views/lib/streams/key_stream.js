@@ -9,7 +9,7 @@ import {
   removeObserver
 } from "ember-metal/observer";
 import Stream from "ember-metal/streams/stream";
-import { read } from "ember-metal/streams/utils";
+import { read, isStream } from "ember-metal/streams/utils";
 
 function KeyStream(source, key) {
   Ember.assert("KeyStream error: key must be a non-empty string", typeof key === 'string' && key.length > 0);
@@ -20,7 +20,7 @@ function KeyStream(source, key) {
   this.obj = undefined;
   this.key = key;
 
-  if (source && source.isStream) {
+  if (isStream(source)) {
     source.subscribe(this._didChange, this);
   }
 }
@@ -61,11 +61,11 @@ merge(KeyStream.prototype, {
     var prevSource = this.source;
 
     if (nextSource !== prevSource) {
-      if (prevSource && prevSource.isStream) {
+      if (isStream(prevSource)) {
         prevSource.unsubscribe(this._didChange, this);
       }
 
-      if (nextSource && nextSource.isStream) {
+      if (isStream(nextSource)) {
         nextSource.subscribe(this._didChange, this);
       }
 
@@ -82,7 +82,7 @@ merge(KeyStream.prototype, {
 
   destroy: function() {
     if (this._super$destroy()) {
-      if (this.source && this.source.isStream) {
+      if (isStream(this.source)) {
         this.source.unsubscribe(this._didChange, this);
       }
 

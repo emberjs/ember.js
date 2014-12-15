@@ -2,7 +2,7 @@ import Ember from "ember-metal/core";
 import { get } from "ember-metal/property_get";
 import { isGlobal } from "ember-metal/path_cache";
 import { fmt } from "ember-runtime/system/string";
-import { read } from "ember-metal/streams/utils";
+import { read, isStream } from "ember-metal/streams/utils";
 import View from "ember-views/views/view";
 import ControllerMixin from "ember-runtime/mixins/controller";
 
@@ -28,7 +28,7 @@ export function readViewFactory(object, container) {
 }
 
 export function readUnwrappedModel(object) {
-  if (object && object.isStream) {
+  if (isStream(object)) {
     var result = object.value();
 
     // If the path is exactly `controller` then we don't unwrap it.
