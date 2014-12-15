@@ -111,3 +111,14 @@ for a detailed explanation.
   to perform the lookup instead.  Replaces the need for `needs` in controllers.
 
   Added in [#5162](https://github.com/emberjs/ember.js/pull/5162).
+
+* `ember-routing-transitioning-classes`
+
+  Disables eager URL updates during slow transitions in favor of new CSS
+  classes added to `link-to`s (in addition to `active` class):
+
+  - `transitioning-in`: link-to is not currently active, but will be
+    when the current underway (slow) transition completes.
+  - `transitioning-out`: link-to is currently active, but will no longer
+    be active when the current underway (slow) transition completes.
+
