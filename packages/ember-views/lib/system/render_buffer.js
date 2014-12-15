@@ -303,15 +303,15 @@ _RenderBuffer.prototype = {
     @chainable
   */
   push: function(content) {
-    if (content.nodeType) {
-      Ember.assert("A fragment cannot be pushed into a buffer that contains content", !this.buffer);
-      this.buffer = content;
-    } else {
+    if (typeof content === 'string') {
       if (this.buffer === null) {
         this.buffer = '';
       }
       Ember.assert("A string cannot be pushed into the buffer after a fragment", !this.buffer.nodeType);
       this.buffer += content;
+    } else {
+      Ember.assert("A fragment cannot be pushed into a buffer that contains content", !this.buffer);
+      this.buffer = content;
     }
     return this;
   },
