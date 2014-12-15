@@ -459,7 +459,6 @@ _RenderBuffer.prototype = {
     }
 
     var element = this.dom.createElement(tagString, this.outerContextualElement());
-    var $element = jQuery(element);
 
     if (id) {
       this.dom.setAttribute(element, 'id', id);
@@ -473,9 +472,7 @@ _RenderBuffer.prototype = {
 
     if (style) {
       for (prop in style) {
-        if (style.hasOwnProperty(prop)) {
-          styleBuffer += (prop + ':' + style[prop] + ';');
-        }
+        styleBuffer += (prop + ':' + style[prop] + ';');
       }
 
       this.dom.setAttribute(element, 'style', styleBuffer);
@@ -485,9 +482,7 @@ _RenderBuffer.prototype = {
 
     if (attrs) {
       for (attr in attrs) {
-        if (attrs.hasOwnProperty(attr)) {
-          this.dom.setAttribute(element, attr, attrs[attr]);
-        }
+        this.dom.setAttribute(element, attr, attrs[attr]);
       }
 
       this.elementAttributes = null;
@@ -495,9 +490,7 @@ _RenderBuffer.prototype = {
 
     if (props) {
       for (prop in props) {
-        if (props.hasOwnProperty(prop)) {
-          $element.prop(prop, props[prop]);
-        }
+        this.dom.setProperty(element, prop, props[prop]);
       }
 
       this.elementProperties = null;
