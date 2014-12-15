@@ -165,6 +165,7 @@ import isEmpty from 'ember-metal/is_empty';
 import isBlank from 'ember-metal/is_blank';
 import isPresent from 'ember-metal/is_present';
 import keys from 'ember-metal/keys';
+import Backburner from 'backburner';
 
 // END IMPORTS
 
@@ -308,6 +309,13 @@ Ember.Binding = Binding;
 Ember.isGlobalPath = isGlobalPath;
 
 Ember.run = run;
+
+/**
+ * @class Backburner
+ * @for Ember
+ * @private
+*/
+Ember.Backburner = Backburner;
 
 Ember.libraries = new Libraries();
 Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
