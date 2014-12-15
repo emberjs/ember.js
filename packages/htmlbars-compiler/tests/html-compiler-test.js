@@ -351,7 +351,7 @@ test("The compiler passes along the hash arguments", function() {
 test("Simple data binding using text nodes", function() {
   var callback;
 
-  hooks.content = function(morph, path, context) {
+  hooks.content = function(env, morph, context, path) {
     callback = function() {
       morph.update(context[path]);
     };
@@ -375,7 +375,7 @@ test("Simple data binding using text nodes", function() {
 test("Simple data binding on fragments", function() {
   var callback;
 
-  hooks.content = function(morph, path, context) {
+  hooks.content = function(env, morph, context, path) {
     morph.escaped = false;
     callback = function() {
       morph.update(context[path]);
@@ -400,7 +400,7 @@ test("Simple data binding on fragments", function() {
 test("morph receives escaping information", function() {
   expect(3);
 
-  hooks.content = function(morph, path) {
+  hooks.content = function(env, morph, context, path) {
     if (path === 'escaped') {
       equal(morph.escaped, true);
     } else if (path === 'unescaped') {
@@ -629,114 +629,47 @@ test("Attribute runs can contain helpers", function() {
 });
 */
 test("A simple block helper can return the default document fragment", function() {
-
-  hooks.content = function(morph, path, context, params, hash, options, env) {
-    morph.update(options.template.render(context, env));
-  };
+  registerHelper('testing', function(params, hash, options, env) {
+    return options.template.render(this, env);
+  });
 
   compilesTo('{{#testing}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
 });
 
 test("A simple block helper can return text", function() {
-  hooks.content = function(morph, path, context, params, hash, options, env) {
-    morph.update(options.template.render(context, env));
-  };
+  registerHelper('testing', function(params, hash, options, env) {
+    return options.template.render(this, env);
+  });
 
   compilesTo('{{#testing}}test{{else}}not shown{{/testing}}', 'test');
 });
 
 test("A block helper can have an else block", function() {
-  hooks.content = function(morph, path, context, params, hash, options, env) {
-    morph.update(options.inverse.render(context, env));
-  };
+  registerHelper('testing', function(params, hash, options, env) {
+    return options.inverse.render(this, env);
+  });
 
   compilesTo('{{#testing}}Nope{{else}}<div id="test">123</div>{{/testing}}', '<div id="test">123</div>');
 });
 
 test("A block helper can pass a context to be used in the child", function() {
-  var originalContent = hooks.content;
-  hooks.content = function(morph, path, context, params, hash, options, env) {
-    if (path === 'testing') {
-      morph.update(options.template.render({ title: 'Rails is omakase' }, env));
-    } else {
-      originalContent.apply(this, arguments);
-    }
-  };
+  registerHelper('testing', function(params, hash, options, env) {
+    var context = { title: 'Rails is omakase' };
+    return options.template.render(context, env);
+  });
 
   compilesTo('{{#testing}}<div id="test">{{title}}</div>{{/testing}}', '<div id="test">Rails is omakase</div>');
 });
 
 test("Block helpers receive hash arguments", function() {
-  hooks.content = function(morph, path, context, params, hash, options, env) {
+  registerHelper('testing', function(params, hash, options, env) {
     if (hash.truth) {
-      options.hooks = this;
-      morph.update(options.template.render(context, env));
+      return options.template.render(this, env);
     }
-  };
+  });
 
   compilesTo('{{#testing truth=true}}<p>Yep!</p>{{/testing}}{{#testing truth=false}}<p>Nope!</p>{{/testing}}', '<p>Yep!</p>');
 });
-/*
-
-test("Data-bound block helpers", function() {
-  var callback;
-
-  registerHelper('testing', function(path, options) {
-    var context = this, firstElement, lastElement;
-
-    var frag = buildFrag();
-
-    function buildFrag() {
-      var frag;
-
-      var value = context[path];
-
-      if (value) {
-        frag = options.template.render(context);
-      } else {
-        frag = document.createDocumentFragment();
-      }
-
-      if (!frag.firstChild) {
-        firstElement = lastElement = document.createTextNode('');
-        frag.appendChild(firstElement);
-      } else {
-        firstElement = frag.firstChild;
-        lastElement = frag.lastChild;
-      }
-
-      return frag;
-    }
-
-    callback = function() {
-      var range = document.createRange();
-      range.setStartBefore(firstElement);
-      range.setEndAfter(lastElement);
-
-      var frag = buildFrag();
-
-      range.deleteContents();
-      range.insertNode(frag);
-    };
-
-    return frag;
-  });
-
-  var object = { shouldRender: false };
-  var template = '<p>hi</p> content {{#testing shouldRender}}<p>Appears!</p>{{/testing}} more <em>content</em> here';
-  var fragment = compilesTo(template, '<p>hi</p> content  more <em>content</em> here', object);
-
-  object.shouldRender = true;
-  callback();
-
-  equalTokens(fragment, '<p>hi</p> content <p>Appears!</p> more <em>content</em> here');
-
-  object.shouldRender = false;
-  callback();
-
-  equalTokens(fragment, '<p>hi</p> content  more <em>content</em> here');
-});
-*/
 
 test("Node helpers can modify the node", function() {
   registerHelper('testing', function(params, hash, options) {
@@ -880,17 +813,14 @@ test("Block params", function() {
 test("Block params - Helper should know how many block params it was called with", function() {
   expect(4);
 
-  registerHelper('without-block-params', function(params, hash, options) {
-    ok(!('blockParams' in options), 'Helpers should not be passed a blockParams option if not called with block params.');
-  });
-  registerHelper('with-block-params', function(params, hash, options) {
-    equal(options.blockParams, this.count, 'Helpers should receive the correct number of block params in options.blockParams.');
+  registerHelper('count-block-params', function(params, hash, options) {
+    equal(options.template.blockParams, this.count, 'Helpers should receive the correct number of block params in options.template.blockParams.');
   });
 
-  compile('{{#without-block-params}}{{/without-block-params}}').render({}, env, document.body);
-  compile('{{#with-block-params as |x|}}{{/with-block-params}}').render({ count: 1 }, env, document.body);
-  compile('{{#with-block-params as |x y|}}{{/with-block-params}}').render({ count: 2 }, env, document.body);
-  compile('{{#with-block-params as |x y z|}}{{/with-block-params}}').render({ count: 3 }, env, document.body);
+  compile('{{#count-block-params}}{{/count-block-params}}').render({ count: 0 }, env, document.body);
+  compile('{{#count-block-params as |x|}}{{/count-block-params}}').render({ count: 1 }, env, document.body);
+  compile('{{#count-block-params as |x y|}}{{/count-block-params}}').render({ count: 2 }, env, document.body);
+  compile('{{#count-block-params as |x y z|}}{{/count-block-params}}').render({ count: 3 }, env, document.body);
 });
 
 test('Block params in HTML syntax', function () {
@@ -943,17 +873,14 @@ test('Block params in HTML syntax - Ignores whitespace', function () {
 test('Block params in HTML syntax - Helper should know how many block params it was called with', function () {
   expect(4);
 
-  registerHelper('without-block-params', function(params, hash, options) {
-    ok(!('blockParams' in options), 'Helpers should not be passed a blockParams option if not called with block params.');
-  });
-  registerHelper('with-block-params', function(params, hash, options) {
-    equal(options.blockParams, this.count, 'Helpers should receive the correct number of block params in options.blockParams.');
+  registerHelper('count-block-params', function(params, hash, options) {
+    equal(options.template.blockParams, this.count, 'Helpers should receive the correct number of block params in options.template.blockParams.');
   });
 
-  compile('<without-block-params></without-block-params>').render({}, env, document.body);
-  compile('<with-block-params as |x|></with-block-params>').render({ count: 1 }, env, document.body);
-  compile('<with-block-params as |x y|></with-block-params>').render({ count: 2 }, env, document.body);
-  compile('<with-block-params as |x y z|></with-block-params>').render({ count: 3 }, env, document.body);
+  compile('<count-block-params></count-block-params>').render({ count: 0 }, env, document.body);
+  compile('<count-block-params as |x|></count-block-params>').render({ count: 1 }, env, document.body);
+  compile('<count-block-params as |x y|></count-block-params>').render({ count: 2 }, env, document.body);
+  compile('<count-block-params as |x y z|></count-block-params>').render({ count: 3 }, env, document.body);
 });
 
 test("Block params in HTML syntax - Throws an error on invalid block params syntax", function() {
@@ -1125,13 +1052,16 @@ test("root svg can take some hydration", function() {
 
 test("Block helper allows interior namespace", function() {
   var isTrue = true;
-  hooks.content = function(morph, path, context, params, hash, options, env) {
+
+  registerHelper('testing', function(params, hash, options, env) {
+    var morph = options.morph;
     if (isTrue) {
-      morph.update(options.template.render(context, env, morph.contextualElement));
+      return options.template.render(this, env, morph.contextualElement);
     } else {
-     morph.update(options.inverse.render(context, env, morph.contextualElement));
+      return options.inverse.render(this, env, morph.contextualElement);
     }
-  };
+  });
+
   var template = compile('{{#testing}}<svg></svg>{{else}}<div><svg></svg></div>{{/testing}}');
 
   var fragment = template.render({ isTrue: true }, env, document.body);
@@ -1150,9 +1080,10 @@ test("Block helper allows interior namespace", function() {
 });
 
 test("Block helper allows namespace to bleed through", function() {
-  hooks.content = function(morph, path, context, params, hash, options, env) {
-    morph.update(options.template.render(context, env, morph.contextualElement));
-  };
+  registerHelper('testing', function(params, hash, options, env) {
+    var morph = options.morph;
+    return options.template.render(this, env, morph.contextualElement);
+  });
 
   var template = compile('<div><svg>{{#testing}}<circle />{{/testing}}</svg></div>');
 
@@ -1164,9 +1095,10 @@ test("Block helper allows namespace to bleed through", function() {
 });
 
 test("Block helper with root svg allows namespace to bleed through", function() {
-  hooks.content = function(morph, path, context, params, hash, options, env) {
-    morph.update(options.template.render(context, env, morph.contextualElement));
-  };
+  registerHelper('testing', function(params, hash, options, env) {
+    var morph = options.morph;
+    return options.template.render(this, env, morph.contextualElement);
+  });
 
   var template = compile('<svg>{{#testing}}<circle />{{/testing}}</svg>');
 
@@ -1178,9 +1110,10 @@ test("Block helper with root svg allows namespace to bleed through", function() 
 });
 
 test("Block helper with root foreignObject allows namespace to bleed through", function() {
-  hooks.content = function(morph, path, context, params, hash, options, env) {
-    morph.update(options.template.render(context, env, morph.contextualElement));
-  };
+  registerHelper('testing', function(params, hash, options, env) {
+    var morph = options.morph;
+    return options.template.render(this, env, morph.contextualElement);
+  });
 
   var template = compile('<foreignObject>{{#testing}}<div></div>{{/testing}}</foreignObject>');
 

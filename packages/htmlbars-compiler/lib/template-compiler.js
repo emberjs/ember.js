@@ -93,6 +93,7 @@ TemplateCompiler.prototype.endProgram = function(program, programDepth) {
     this.getChildTemplateVars(indent + '  ') +
     indent+'  return {\n' +
     indent+'    isHTMLBars: true,\n' +
+    indent+'    blockParams: ' + blockParams.length + ',\n' +
     indent+'    cachedFragment: null,\n' +
     indent+'    hasRendered: false,\n' +
     indent+'    build: ' + fragmentProgram + ',\n' +

@@ -1,5 +1,5 @@
 import { processOpcodes } from "./utils";
-import { string, hash as quoteHash, array } from "../htmlbars-util/quoting";
+import { string, array } from "../htmlbars-util/quoting";
 
 function HydrationJavaScriptCompiler() {
   this.stack = [];
@@ -83,124 +83,112 @@ prototype.pushLiteral = function(value) {
   }
 };
 
+prototype.pushHook = function(name, args) {
+  this.hooks[name] = true;
+  this.stack.push(name + '(' + args.join(', ') + ')');
+};
+
 prototype.pushGetHook = function(path) {
-  this.hooks.get = true;
-  this.stack.push('get(context, ' + string(path) + ', env)');
+  this.pushHook('get', [
+    'env',
+    'context',
+    string(path)
+  ]);
 };
 
 prototype.pushSexprHook = function() {
-  this.hooks.subexpr = true;
-  var path = this.stack.pop();
-  var params = this.stack.pop();
-  var hash = this.stack.pop();
-  this.stack.push('subexpr(' + path + ', context, ' + params + ', ' + hash + ', {}, env)');
+  this.pushHook('subexpr', [
+    'env',
+    'context',
+    this.stack.pop(), // path
+    this.stack.pop(), // params
+    this.stack.pop() // hash
+  ]);
 };
 
 prototype.pushConcatHook = function() {
-  this.hooks.concat = true;
-  var parts = this.stack.pop();
-  this.stack.push('concat(' + parts + ', env)');
+  this.pushHook('concat', [
+    'env',
+    this.stack.pop() // parts
+  ]);
+};
+
+prototype.printHook = function(name, args) {
+  this.hooks[name] = true;
+  this.source.push(this.indent + '  ' + name + '(' + args.join(', ') + ');\n');
 };
 
 prototype.printSetHook = function(name, index) {
-  this.hooks.set = true;
-  this.source.push(this.indent + '  set(context, ' + string(name) +', blockArguments[' + index + ']);\n');
+  this.printHook('set', [
+    'env',
+    'context',
+    string(name),
+    'blockArguments[' + index + ']'
+  ]);
 };
 
-prototype.printContentHookForBlockHelper = function(morphNum, templateId, inverseId, blockParamsLength) {
-  var path = this.stack.pop();
-  var params = this.stack.pop();
-  var hash = this.stack.pop();
-
-  var options = [];
-
-  options.push('morph: morph' + morphNum);
-
-  if (templateId !== null) {
-    options.push('template: child' + templateId);
-  }
-
-  if (inverseId !== null) {
-    options.push('inverse: child' + inverseId);
-  }
-
-  if (blockParamsLength) {
-    options.push('blockParams: ' + blockParamsLength);
-  }
-
-  this.printContentHook(morphNum, path, params, hash, options);
+prototype.printBlockHook = function(morphNum, templateId, inverseId) {
+  this.printHook('block', [
+    'env',
+    'morph' + morphNum,
+    'context',
+    this.stack.pop(), // path
+    this.stack.pop(), // params
+    this.stack.pop(), // hash
+    templateId === null ? 'null' : 'child' + templateId,
+    inverseId === null ? 'null' : 'child' + inverseId
+  ]);
 };
 
-prototype.printContentHookForInlineHelper = function(morphNum) {
-  var path = this.stack.pop();
-  var params = this.stack.pop();
-  var hash = this.stack.pop();
-
-  var options = [];
-  options.push('morph: morph' + morphNum);
-
-  this.printContentHook(morphNum, path, params, hash, options);
+prototype.printInlineHook = function(morphNum) {
+  this.printHook('inline', [
+    'env',
+    'morph' + morphNum,
+    'context',
+    this.stack.pop(), // path
+    this.stack.pop(), // params
+    this.stack.pop() // hash
+  ]);
 };
 
-prototype.printContentHookForAmbiguous = function(morphNum) {
-  var path = this.stack.pop();
-
-  var options = [];
-  options.push('morph: morph' + morphNum);
-
-  this.printContentHook(morphNum, path, '[]', '{}', options);
+prototype.printContentHook = function(morphNum) {
+  this.printHook('content', [
+    'env',
+    'morph' + morphNum,
+    'context',
+    this.stack.pop() // path
+  ]);
 };
 
-prototype.printContentHook = function(morphNum, path, params, hash, pairs) {
-  this.hooks.content = true;
-
-  var args = ['morph' + morphNum, path, 'context', params, hash, quoteHash(pairs), 'env'];
-  this.source.push(this.indent+'  content(' + args.join(', ') + ');\n');
+prototype.printComponentHook = function(morphNum, templateId) {
+  this.printHook('component', [
+    'env',
+    'morph' + morphNum,
+    'context',
+    this.stack.pop(), // path
+    this.stack.pop(), // attrs
+    templateId === null ? 'null' : 'child' + templateId
+  ]);
 };
 
-prototype.printComponentHook = function(morphNum, templateId, blockParamsLength) {
-  this.hooks.component = true;
-  
-  var path = this.stack.pop();
-  var hash = this.stack.pop();
-
-  var options = [];
-
-  options.push('morph: morph' + morphNum);
-
-  if (templateId !== null) {
-    options.push('template: child' + templateId);
-  }
-
-  if (blockParamsLength) {
-    options.push('blockParams: ' + blockParamsLength);
-  }
-
-  var args = ['morph' + morphNum, path, 'context', hash, quoteHash(options), 'env'];
-  this.source.push(this.indent+'  component(' + args.join(', ') + ');\n');
-};
-
-prototype.printAttributeHook = function(elementNum, quoted) {
-  this.hooks.attribute = true;
-
-  var name = this.stack.pop();
-  var value = this.stack.pop();
-
-  this.source.push(this.indent + '  attribute(element' + elementNum + ', ' + name + ', ' + quoted + ', context, ' + value + ', {}, env);\n');
+prototype.printAttributeHook = function(elementNum) {
+  this.printHook('attribute', [
+    'env',
+    'element' + elementNum,
+    this.stack.pop(), // name
+    this.stack.pop() // value
+  ]);
 };
 
 prototype.printElementHook = function(elementNum) {
-  this.hooks.element = true;
-
-  var path = this.stack.pop();
-  var params = this.stack.pop();
-  var hash = this.stack.pop();
-
-  var options = [];
-  options.push('element: element' + elementNum);
-
-  var args = ['element' + elementNum, path, 'context', params, hash, quoteHash(options), 'env'];
-  this.source.push(this.indent+'  element(' + args.join(', ') + ');\n');
+  this.printHook('element', [
+    'env',
+    'element' + elementNum,
+    'context',
+    this.stack.pop(), // path
+    this.stack.pop(), // params
+    this.stack.pop() // hash
+  ]);
 };
 
 prototype.createMorph = function(morphNum, parentPath, startIndex, endIndex, escaped) {

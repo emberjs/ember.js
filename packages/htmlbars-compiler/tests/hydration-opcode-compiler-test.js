@@ -16,9 +16,9 @@ test("simple example", function() {
     [ "createMorph", [ 0, [ 0 ], -1, 0, true ] ],
     [ "createMorph", [ 1, [ 0 ], 0, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHookForAmbiguous", [ 0 ] ],
+    [ "printContentHook", [ 0 ] ],
     [ "pushLiteral", [ "baz" ] ],
-    [ "printContentHookForAmbiguous", [ 1 ] ],
+    [ "printContentHook", [ 1 ] ],
   ]);
 });
 
@@ -29,7 +29,7 @@ test("simple block", function() {
     [ "prepareObject", [ 0 ] ],
     [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHookForBlockHelper", [ 0, 0, null, 0 ] ]
+    [ "printBlockHook", [ 0, 0, null ] ]
   ]);
 });
 
@@ -40,7 +40,7 @@ test("simple block with block params", function() {
     [ "prepareObject", [ 0 ] ],
     [ "prepareArray", [ 0 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHookForBlockHelper", [ 0, 0, null, 2 ] ]
+    [ "printBlockHook", [ 0, 0, null ] ]
   ]);
 });
 
@@ -49,7 +49,7 @@ test("element with a sole mustache child", function() {
   deepEqual(opcodes, [
     [ "createMorph", [ 0, [ 0 ], -1, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHookForAmbiguous", [ 0 ] ],
+    [ "printContentHook", [ 0 ] ],
   ]);
 });
 
@@ -58,7 +58,7 @@ test("element with a mustache between two text nodes", function() {
   deepEqual(opcodes, [
     [ "createMorph", [ 0, [ 0 ], 0, 1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHookForAmbiguous", [ 0 ] ],
+    [ "printContentHook", [ 0 ] ],
   ]);
 });
 
@@ -68,7 +68,7 @@ test("mustache two elements deep", function() {
     [ "consumeParent", [ 0 ] ],
     [ "createMorph", [ 0, [ 0, 0 ], -1, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHookForAmbiguous", [ 0 ] ],
+    [ "printContentHook", [ 0 ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -79,12 +79,12 @@ test("two sibling elements with mustaches", function() {
     [ "consumeParent", [ 0 ] ],
     [ "createMorph", [ 0, [ 0 ], -1, -1, true ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHookForAmbiguous", [ 0 ] ],
+    [ "printContentHook", [ 0 ] ],
     [ "popParent", [] ],
     [ "consumeParent", [ 1 ] ],
     [ "createMorph", [ 1, [ 1 ], -1, -1, true ] ],
     [ "pushLiteral", [ "bar" ] ],
-    [ "printContentHookForAmbiguous", [ 1 ] ],
+    [ "printContentHook", [ 1 ] ],
     [ "popParent", [] ]
   ]);
 });
@@ -96,9 +96,9 @@ test("mustaches at the root", function() {
     [ "createMorph", [ 1, [ ], 1, 2, true ] ],
     [ "repairClonedNode", [ [ 0, 2 ] ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHookForAmbiguous", [ 0 ] ],
+    [ "printContentHook", [ 0 ] ],
     [ "pushLiteral", [ "bar" ] ],
-    [ "printContentHookForAmbiguous", [ 1 ] ],
+    [ "printContentHook", [ 1 ] ],
   ]);
 });
 
@@ -111,13 +111,13 @@ test("back to back mustaches should have a text node inserted between them", fun
     [ "createMorph", [ 3, [0], 2, -1, true] ],
     [ "repairClonedNode", [ [ 0, 1 ], false ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHookForAmbiguous", [ 0 ] ],
+    [ "printContentHook", [ 0 ] ],
     [ "pushLiteral", [ "bar" ] ],
-    [ "printContentHookForAmbiguous", [ 1 ] ],
+    [ "printContentHook", [ 1 ] ],
     [ "pushLiteral", [ "baz" ] ],
-    [ "printContentHookForAmbiguous", [ 2 ] ],
+    [ "printContentHook", [ 2 ] ],
     [ "pushLiteral", [ "qux" ] ],
-    [ "printContentHookForAmbiguous", [ 3 ] ],
+    [ "printContentHook", [ 3 ] ],
   ]);
 });
 
@@ -132,7 +132,7 @@ test("helper usage", function() {
     [ "pushLiteral", [ "bar" ] ],
     [ "prepareArray", [ 4 ] ],
     [ "pushLiteral", [ "foo" ] ],
-    [ "printContentHookForInlineHelper", [ 0 ] ]
+    [ "printInlineHook", [ 0 ] ]
   ]);
 });
 
@@ -169,7 +169,7 @@ test("attribute mustache", function() {
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "printAttributeHook", [ 0, true ] ]
+    [ "printAttributeHook", [ 0 ] ]
   ]);
 });
 
@@ -188,6 +188,6 @@ test("attribute helper", function() {
     [ "pushConcatHook", [ ] ],
     [ "pushLiteral", [ "class" ] ],
     [ "shareElement", [ 0 ] ],
-    [ "printAttributeHook", [ 0, true ] ]
+    [ "printAttributeHook", [ 0 ] ]
   ]);
 });

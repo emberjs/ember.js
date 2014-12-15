@@ -82,21 +82,22 @@ test('hydrates a fragment with morph mustaches', function () {
   var hydrate = hydratorFor(ast);
 
   var contentResolves = [];
+  function pushArgs(env, morph, context, path, params, hash) {
+    contentResolves.push({
+      morph: morph,
+      context: context,
+      path: path,
+      params: params,
+      hash: hash
+    });
+  }
   var context = { blah: "BLAH", baz: "BAZ" };
   var env = {
     dom: new DOMHelper(),
     hooks: {
       get: get,
-      content: function(morph, path, context, params, hash, options) {
-        contentResolves.push({
-          morph: morph,
-          context: context,
-          path: path,
-          params: params,
-          hash: hash,
-          options: options
-        });
-      }
+      inline: pushArgs,
+      content: pushArgs
     }
   };
 
@@ -105,19 +106,18 @@ test('hydrates a fragment with morph mustaches', function () {
   equal(contentResolves.length, 2);
 
   var foo = contentResolves[0];
-  equal(foo.morph.escaped, true);
-  equal(foo.morph.parent(), fragment);
-  equal(foo.context, context);
-  equal(foo.path, 'foo');
-  deepEqual(foo.params, ["bar",3,"BLAH", true]);
-  deepEqual(foo.hash, {ack:"syn",bar:"BAZ"});
+  equal(foo.morph.escaped, true, 'morph escaped');
+  equal(foo.morph.parent(), fragment, 'morph parent');
+  equal(foo.context, context, 'context');
+  equal(foo.path, 'foo', 'path');
+  deepEqual(foo.params, ["bar",3,"BLAH", true], 'params');
+  deepEqual(foo.hash, {ack:"syn",bar:"BAZ"}, 'hash');
 
   var baz = contentResolves[1];
-  equal(baz.morph.escaped, true);
-  equal(baz.morph.parent(), fragment);
-  equal(baz.context, context);
-  equal(baz.path, 'baz');
-  equal(baz.params.length, 0);
+  equal(baz.morph.escaped, true, 'morph escaped');
+  equal(baz.morph.parent(), fragment, 'morph parent');
+  equal(baz.context, context, 'context');
+  equal(baz.path, 'baz', 'path');
 
   foo.morph.update('A');
   baz.morph.update('B');
@@ -140,20 +140,23 @@ test('test auto insertion of text nodes for needed edges a fragment with morph m
   };
 
   var contentResolves = [];
+  function pushArgs(env, morph, context, path, params, hash) {
+    contentResolves.push({
+      morph: morph,
+      context: context,
+      path: path,
+      params: params,
+      hash: hash
+    });
+  }
+
   var context = {};
   var env = {
     dom: fakeMorphDOM,
     hooks: {
       get: get,
-      content: function(morph, path, context, params, options) {
-        contentResolves.push({
-          morph: morph,
-          context: context,
-          path: path,
-          params: params,
-          options: options
-        });
-      }
+      inline: pushArgs,
+      content: pushArgs
     }
   };
 
