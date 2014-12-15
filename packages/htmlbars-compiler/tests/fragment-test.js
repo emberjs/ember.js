@@ -82,7 +82,7 @@ test('hydrates a fragment with morph mustaches', function () {
   var hydrate = hydratorFor(ast);
 
   var contentResolves = [];
-  function pushArgs(morph, context, path, params, hash) {
+  function pushArgs(env, morph, context, path, params, hash) {
     contentResolves.push({
       morph: morph,
       context: context,
@@ -140,7 +140,7 @@ test('test auto insertion of text nodes for needed edges a fragment with morph m
   };
 
   var contentResolves = [];
-  function pushArgs(morph, context, path, params, hash) {
+  function pushArgs(env, morph, context, path, params, hash) {
     contentResolves.push({
       morph: morph,
       context: context,
