@@ -4,6 +4,7 @@ import { observersFor } from "ember-metal/observer";
 import { changeProperties } from "ember-metal/property_events";
 
 import EmberView from "ember-views/views/view";
+import EmberHandlebars from "ember-handlebars-compiler";
 
 var originalLookup = Ember.lookup;
 var lookup, view;
@@ -300,4 +301,23 @@ test("asserts if an attributeBinding is setup on class", function() {
   expectAssertion(function() {
     appendView();
   }, 'You cannot use class as an attributeBinding, use classNameBindings instead.');
+});
+
+test("blacklists href bindings based on protocol", function() {
+  /* jshint scripturl:true */
+
+  view = EmberView.create({
+    attributeBindings: ['href'],
+    href: "javascript:alert('foo')"
+  });
+
+  appendView();
+
+  equal(view.$().attr('href'), "unsafe:javascript:alert('foo')", "value property sanitized");
+
+  run(function() {
+    view.set('href', new EmberHandlebars.SafeString(view.get('href')));
+  });
+
+  equal(view.$().attr('href'), "javascript:alert('foo')", "value is not defined");
 });

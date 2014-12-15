@@ -464,3 +464,52 @@ test("should teardown observers from bind-attr on rerender", function() {
 
   equal(observersFor(view, 'foo').length, 1);
 });
+
+test("XSS - should not bind unsafe href values", function() {
+  /* jshint scripturl:true */
+
+  view = EmberView.create({
+    template: EmberHandlebars.compile('<a {{bind-attr href=view.badValue}}>wat</a>'),
+    badValue: "javascript:(function() { window.bar = 'NOOOOOOOOO!!!!!!!';})();"
+  });
+
+  appendView();
+
+  var element = view.$('a')[0];
+
+  notEqual(element.protocol, 'javascript:');
+});
+
+test("XSS - should not bind unsafe href values on rerender", function() {
+  /* jshint scripturl:true */
+
+  view = EmberView.create({
+    template: EmberHandlebars.compile('<a {{bind-attr href=view.badValue}}>wat</a>'),
+    badValue: "/sunshine/and/rainbows"
+  });
+
+  appendView();
+
+  var element = view.$('a')[0];
+
+  notEqual(element.protocol, 'javascript:', 'precond - badValue is normal');
+
+  run(view, 'set', 'badValue', 'javascript:alert("XSS")');
+
+  notEqual(element.protocol, 'javascript:');
+});
+
+test("should bind unsafe href values if they are SafeString", function() {
+  /* jshint scripturl:true */
+
+  view = EmberView.create({
+    template: EmberHandlebars.compile('<a {{bind-attr href=view.badValue}}>wat</a>'),
+    badValue: new EmberHandlebars.SafeString("javascript:(function() { window.bar = 'NOOOOOOOOO!!!!!!!';})();")
+  });
+
+  appendView();
+
+  var element = view.$('a')[0];
+
+  equal(element.protocol, 'javascript:');
+});
