@@ -6,6 +6,7 @@
 import QuotedAttrNode from "ember-htmlbars/attr_nodes/quoted";
 import UnquotedAttrNode from "ember-htmlbars/attr_nodes/unquoted";
 import UnquotedNonpropertyAttrNode from "ember-htmlbars/attr_nodes/unquoted_nonproperty";
+import HrefAttrNode from "ember-htmlbars/attr_nodes/href";
 import { create as o_create } from "ember-metal/platform";
 import { normalizeProperty } from "ember-htmlbars/attr_nodes/utils";
 
@@ -13,8 +14,10 @@ var svgNamespaceURI = 'http://www.w3.org/2000/svg';
 
 var unquotedAttrNodeTypes = o_create(null);
 unquotedAttrNodeTypes['class'] = UnquotedNonpropertyAttrNode;
+unquotedAttrNodeTypes['href'] = HrefAttrNode;
 
 var quotedAttrNodeTypes = o_create(null);
+quotedAttrNodeTypes['href'] = HrefAttrNode;
 
 export default function attrNodeTypeFor(attrName, element, quoted) {
   var result;

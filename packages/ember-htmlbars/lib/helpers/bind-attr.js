@@ -8,6 +8,7 @@ import Ember from "ember-metal/core"; // Ember.assert
 import { fmt } from "ember-runtime/system/string";
 import QuotedAttrNode from "ember-htmlbars/attr_nodes/quoted";
 import LegacyBindAttrNode from "ember-htmlbars/attr_nodes/legacy_bind";
+import HrefAttrNode from "ember-htmlbars/attr_nodes/href";
 import keys from "ember-metal/keys";
 import helpers from "ember-htmlbars/helpers";
 import { map } from 'ember-metal/enumerable_utils';
@@ -177,7 +178,11 @@ function bindAttrHelper(params, hash, options, env) {
       );
       lazyValue = view.getStream(path);
     }
-    new LegacyBindAttrNode(element, attr, lazyValue, env.dom);
+    if (attr === 'href') {
+      new HrefAttrNode(element, attr, lazyValue, env.dom);
+    } else {
+      new LegacyBindAttrNode(element, attr, lazyValue, env.dom);
+    }
   }
 }
 
