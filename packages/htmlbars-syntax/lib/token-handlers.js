@@ -78,39 +78,38 @@ var tokenHandlers = {
   },
 
   MustacheStatement: function(mustache) {
-    var state = this.tokenizer.state;
-    var token = this.tokenizer.token;
+    var tokenizer = this.tokenizer;
 
-    switch(state) {
+    switch(tokenizer.state) {
       // Tag helpers
       case "tagName":
-        token.addTagHelper(mustache.sexpr);
-        this.tokenizer.state = "beforeAttributeName";
+        tokenizer.addTagHelper(mustache.sexpr);
+        tokenizer.state = "beforeAttributeName";
         return;
       case "beforeAttributeName":
-        token.addTagHelper(mustache.sexpr);
+        tokenizer.addTagHelper(mustache.sexpr);
         return;
       case "attributeName":
       case "afterAttributeName":
-        this.tokenizer.finalizeAttributeValue();
-        token.addTagHelper(mustache.sexpr);
-        this.tokenizer.state = "beforeAttributeName";
+        tokenizer.finalizeAttributeValue();
+        tokenizer.addTagHelper(mustache.sexpr);
+        tokenizer.state = "beforeAttributeName";
         return;
       case "afterAttributeValueQuoted":
-        token.addTagHelper(mustache.sexpr);
-        this.tokenizer.state = "beforeAttributeName";
+        tokenizer.addTagHelper(mustache.sexpr);
+        tokenizer.state = "beforeAttributeName";
         return;
 
       // Attribute values
       case "beforeAttributeValue":
-        token.markAttributeQuoted(false);
-        token.addToAttributeValue(mustache);
-        this.tokenizer.state = 'attributeValueUnquoted';
+        tokenizer.markAttributeQuoted(false);
+        tokenizer.addToAttributeValue(mustache);
+        tokenizer.state = 'attributeValueUnquoted';
         return;
       case "attributeValueDoubleQuoted":
       case "attributeValueSingleQuoted":
       case "attributeValueUnquoted":
-        token.addToAttributeValue(mustache);
+        tokenizer.addToAttributeValue(mustache);
         return;
 
       // TODO: Only append child when the tokenizer state makes

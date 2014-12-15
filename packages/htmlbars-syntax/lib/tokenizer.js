@@ -1,21 +1,22 @@
-import { Chars, StartTag, EndTag } from "../simple-html-tokenizer";
+import { Tokenizer } from "../simple-html-tokenizer";
 import { isHelper } from "./utils";
 import builders from "./builders";
 
-StartTag.prototype.startAttribute = function(char) {
+Tokenizer.prototype.createAttribute = function(char) {
   this.currentAttribute = builders.attr(char.toLowerCase(), [], null);
-  this.attributes.push(this.currentAttribute);
+  this.token.attributes.push(this.currentAttribute);
+  this.state = 'attributeName';
 };
 
-StartTag.prototype.markAttributeQuoted = function(value) {
+Tokenizer.prototype.markAttributeQuoted = function(value) {
   this.currentAttribute.quoted = value;
 };
 
-StartTag.prototype.addToAttributeName = function(char) {
+Tokenizer.prototype.addToAttributeName = function(char) {
   this.currentAttribute.name += char;
 };
 
-StartTag.prototype.addToAttributeValue = function(char) {
+Tokenizer.prototype.addToAttributeValue = function(char) {
   var value = this.currentAttribute.value;
 
   if (!this.currentAttribute.quoted && value.length > 0 &&
@@ -41,12 +42,7 @@ StartTag.prototype.addToAttributeValue = function(char) {
   }
 };
 
-StartTag.prototype.finalize = function() {
-  this.finalizeAttributeValue();
-  return this;
-};
-
-StartTag.prototype.finalizeAttributeValue = function() {
+Tokenizer.prototype.finalizeAttributeValue = function() {
   if (this.currentAttribute) {
     this.currentAttribute.value = prepareAttributeValue(this.currentAttribute);
     delete this.currentAttribute.quoted;
@@ -54,8 +50,8 @@ StartTag.prototype.finalizeAttributeValue = function() {
   }
 };
 
-StartTag.prototype.addTagHelper = function(helper) {
-  var helpers = this.helpers = this.helpers || [];
+Tokenizer.prototype.addTagHelper = function(helper) {
+  var helpers = this.token.helpers = this.token.helpers || [];
   helpers.push(helper);
 };
 
@@ -89,4 +85,4 @@ export function unwrapMustache(mustache) {
   }
 }
 
-export { Chars, StartTag, EndTag };
+export { Tokenizer };
