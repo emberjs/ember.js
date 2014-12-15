@@ -7,8 +7,7 @@ import Ember from "ember-metal/core";
 import { compile } from "htmlbars-compiler/compiler";
 import template from "ember-htmlbars/system/template";
 
-import TransformEachInToHash from "ember-htmlbars/plugins/transform-each-in-to-hash";
-import TransformWithAsToHash from "ember-htmlbars/plugins/transform-with-as-to-hash";
+import plugins from "ember-htmlbars/plugins";
 
 var disableComponentGeneration = true;
 if (Ember.FEATURES.isEnabled('ember-htmlbars-component-generation')) {
@@ -28,12 +27,7 @@ export default function(templateString) {
   var templateSpec = compile(templateString, {
     disableComponentGeneration: disableComponentGeneration,
 
-    plugins: {
-      ast: [
-        TransformEachInToHash,
-        TransformWithAsToHash
-      ]
-    }
+    plugins: plugins
   });
 
   return template(templateSpec);
