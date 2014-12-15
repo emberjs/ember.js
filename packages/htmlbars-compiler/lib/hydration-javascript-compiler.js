@@ -90,26 +90,26 @@ prototype.pushHook = function(name, args) {
 
 prototype.pushGetHook = function(path) {
   this.pushHook('get', [
+    'env',
     'context',
-    string(path),
-    'env'
+    string(path)
   ]);
 };
 
 prototype.pushSexprHook = function() {
   this.pushHook('subexpr', [
+    'env',
     'context',
     this.stack.pop(), // path
     this.stack.pop(), // params
-    this.stack.pop(), // hash
-    'env'
+    this.stack.pop() // hash
   ]);
 };
 
 prototype.pushConcatHook = function() {
   this.pushHook('concat', [
-    this.stack.pop(), // parts
-    'env'
+    'env',
+    this.stack.pop() // parts
   ]);
 };
 
@@ -120,74 +120,74 @@ prototype.printHook = function(name, args) {
 
 prototype.printSetHook = function(name, index) {
   this.printHook('set', [
+    'env',
     'context',
     string(name),
-    'blockArguments[' + index + ']',
-    'env'
+    'blockArguments[' + index + ']'
   ]);
 };
 
 prototype.printBlockHook = function(morphNum, templateId, inverseId) {
   this.printHook('block', [
+    'env',
     'morph' + morphNum,
     'context',
     this.stack.pop(), // path
     this.stack.pop(), // params
     this.stack.pop(), // hash
     templateId === null ? 'null' : 'child' + templateId,
-    inverseId === null ? 'null' : 'child' + inverseId,
-    'env'
+    inverseId === null ? 'null' : 'child' + inverseId
   ]);
 };
 
 prototype.printInlineHook = function(morphNum) {
   this.printHook('inline', [
+    'env',
     'morph' + morphNum,
     'context',
     this.stack.pop(), // path
     this.stack.pop(), // params
-    this.stack.pop(), // hash
-    'env'
+    this.stack.pop() // hash
   ]);
 };
 
 prototype.printContentHook = function(morphNum) {
   this.printHook('content', [
+    'env',
     'morph' + morphNum,
     'context',
-    this.stack.pop(), // path
-    'env'
+    this.stack.pop() // path
   ]);
 };
 
 prototype.printComponentHook = function(morphNum, templateId) {
   this.printHook('component', [
+    'env',
     'morph' + morphNum,
     'context',
     this.stack.pop(), // path
     this.stack.pop(), // attrs
-    templateId === null ? 'null' : 'child' + templateId,
-    'env'
+    templateId === null ? 'null' : 'child' + templateId
   ]);
 };
 
 prototype.printAttributeHook = function(elementNum) {
   this.printHook('attribute', [
+    'env',
     'element' + elementNum,
     this.stack.pop(), // name
-    this.stack.pop(), // value
-    'env'
+    this.stack.pop() // value
   ]);
 };
 
 prototype.printElementHook = function(elementNum) {
   this.printHook('element', [
+    'env',
     'element' + elementNum,
     'context',
     this.stack.pop(), // path
     this.stack.pop(), // params
-    this.stack.pop(), // hash
-    'env'
+    this.stack.pop() // hash
   ]);
 };
 
