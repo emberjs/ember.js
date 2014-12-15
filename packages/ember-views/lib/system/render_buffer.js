@@ -528,7 +528,10 @@ _RenderBuffer.prototype = {
         this._element.appendChild(nodes[0]);
       }
     }
-    this.hydrateMorphs(contextualElement);
+    // This should only happen with legacy string buffers
+    if (this.childViews.length > 0) {
+      this.hydrateMorphs(contextualElement);
+    }
 
     return this._element;
   },
