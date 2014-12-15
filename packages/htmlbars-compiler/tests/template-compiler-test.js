@@ -20,11 +20,11 @@ test("it works", function testFunction() {
   dom = new DOMHelper();
   hooks = merge({}, defaultHooks);
   helpers = merge({}, defaultHelpers);
-  
+
   var env = {
     dom: dom,
     hooks: hooks,
-    helpers: helpers 
+    helpers: helpers
   };
 
   env.helpers['if'] = function(params, hash, options) {

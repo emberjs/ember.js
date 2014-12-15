@@ -1,4 +1,3 @@
-/* global window:false */
 import Morph from "../morph/morph";
 import {
   buildHTMLDOM,
@@ -108,7 +107,10 @@ function buildSVGDOM(html, dom){
  * @param {HTMLDocument} _document The document DOM methods are proxied to
  */
 function DOMHelper(_document){
-  this.document = _document || window.document;
+  this.document = _document || document;
+  if (!this.document) {
+    throw new Error("A document object must be passed to the DOMHelper, or available on the global scope");
+  }
   this.namespace = null;
 }
 
