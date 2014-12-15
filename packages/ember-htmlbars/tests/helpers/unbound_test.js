@@ -69,6 +69,36 @@ test('it should throw the helper missing error if multiple properties are provid
   }, EmberError);
 });
 
+test('should property escape unsafe hrefs', function() {
+  /* jshint scripturl:true */
+
+  expect(3);
+
+  runDestroy(view);
+
+  view = EmberView.create({
+    template: compile('<ul>{{#each person in view.people}}<a href="{{unbound person.url}}">{{person.name}}</a>{{/each}}</ul>'),
+    people: A([{
+      name: 'Bob',
+      url: 'javascript:bob-is-cool'
+    }, {
+      name: 'James',
+      url: 'vbscript:james-is-cool'
+    }, {
+      name: 'Richard',
+      url: 'javascript:richard-is-cool'
+    }])
+  });
+
+  runAppend(view);
+
+  var links = view.$('a');
+  for (var i = 0, l = links.length; i < l; i++) {
+    var link = links[i];
+    equal(link.protocol, 'unsafe:', 'properly escaped');
+  }
+});
+
 QUnit.module("ember-htmlbars: {{#unbound boundHelper arg1 arg2... argN}} form: render unbound helper invocations", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
