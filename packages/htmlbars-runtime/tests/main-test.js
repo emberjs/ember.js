@@ -15,6 +15,8 @@ function keys(obj) {
 test("hooks are present", function () {
   var hookNames = [
     "content",
+    "inline",
+    "block",
     "component",
     "element",
     "attribute",

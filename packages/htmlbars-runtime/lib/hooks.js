@@ -1,21 +1,44 @@
-export function content(morph, path, context, params, hash, options, env) {
-  var value, helper = lookupHelper(context, path, env);
-  if (helper) {
-    value = helper.call(context, params, hash, options, env);
-  } else {
-    value = get(context, path);
-  }
+export function block(env, morph, context, path, params, hash, template, inverse) {
+  var options = {
+    morph: morph,
+    template: template,
+    inverse: inverse
+  };
+
+  var helper = lookupHelper(env, context, path);
+  var value = helper.call(context, params, hash, options, env);
+
   morph.update(value);
 }
 
-export function element(domElement, helperName, context, params, hash, options, env) {
-  var helper = lookupHelper(context, helperName, env);
+export function inline(env, morph, context, path, params, hash) {
+  var helper = lookupHelper(env, context, path);
+  var value = helper.call(context, params, hash, { morph: morph }, env);
+
+  morph.update(value);
+}
+
+export function content(env, morph, context, path) {
+  var helper = lookupHelper(env, context, path);
+
+  var value;
   if (helper) {
-    helper.call(context, params, hash, options, env);
+    value = helper.call(context, [], {}, { morph: morph }, env);
+  } else {
+    value = get(env, context, path);
+  }
+
+  morph.update(value);
+}
+
+export function element(env, domElement, context, path, params, hash) {
+  var helper = lookupHelper(env, context, path);
+  if (helper) {
+    helper.call(context, params, hash, { element: domElement }, env);
   }
 }
 
-export function attribute(domElement, name, quoted, context, value) {
+export function attribute(env, domElement, name, value) {
   if (value === null) {
     domElement.removeAttribute(name);
   } else {
@@ -23,16 +46,16 @@ export function attribute(domElement, name, quoted, context, value) {
   }
 }
 
-export function subexpr(helperName, context, params, hash, options, env) {
-  var helper = lookupHelper(context, helperName, env);
+export function subexpr(env, context, helperName, params, hash) {
+  var helper = lookupHelper(env, context, helperName);
   if (helper) {
-    return helper.call(context, params, hash, options, env);
+    return helper.call(context, params, hash, {}, env);
   } else {
-    return get(context, helperName, options);
+    return get(env, context, helperName);
   }
 }
 
-export function get(context, path) {
+export function get(env, context, path) {
   if (path === '') {
     return context;
   }
@@ -49,21 +72,29 @@ export function get(context, path) {
   return value;
 }
 
-export function set(context, name, value) {
+export function set(env, context, name, value) {
   context[name] = value;
 }
 
-export function component(morph, tagName, context, hash, options, env) {
-  var value, helper = lookupHelper(context, tagName, env);
+export function component(env, morph, context, tagName, attrs, template) {
+  var helper = lookupHelper(env, context, tagName);
+
+  var value;
   if (helper) {
-    value = helper.call(context, null, hash, options, env);
+    var options = {
+      morph: morph,
+      template: template
+    };
+
+    value = helper.call(context, [], attrs, options, env);
   } else {
-    value = componentFallback(morph, tagName, context, hash, options, env);
+    value = componentFallback(env, morph, context, tagName, attrs, template);
   }
+
   morph.update(value);
 }
 
-export function concat(params) {
+export function concat(env, params) {
   var value = "";
   for (var i = 0, l = params.length; i < l; i++) {
     value += params[i];
@@ -71,21 +102,23 @@ export function concat(params) {
   return value;
 }
 
-function componentFallback(morph, tagName, context, hash, options, env) {
+function componentFallback(env, morph, context, tagName, attrs, template) {
   var element = env.dom.createElement(tagName);
-  for (var name in hash) {
-    element.setAttribute(name, hash[name]);
+  for (var name in attrs) {
+    element.setAttribute(name, attrs[name]);
   }
-  element.appendChild(options.template.render(context, env, morph.contextualElement));
+  element.appendChild(template.render(context, env, morph.contextualElement));
   return element;
 }
 
-function lookupHelper(context, helperName, env) {
+function lookupHelper(env, context, helperName) {
   return env.helpers[helperName];
 }
 
 export default {
   content: content,
+  block: block,
+  inline: inline,
   component: component,
   element: element,
   attribute: attribute,
