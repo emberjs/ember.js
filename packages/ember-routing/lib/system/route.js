@@ -1110,7 +1110,7 @@ var Route = EmberObject.extend(ActionHandler, {
             // convert the reject into a resolve and the
             // transition would continue. To propagate the
             // error so that it'd be handled by the `error`
-            // hook, you would have to either
+            // hook, you would have to
             return Ember.RSVP.reject(e);
           });
         }
