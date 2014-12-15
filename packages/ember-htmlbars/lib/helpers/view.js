@@ -7,12 +7,17 @@ import Ember from "ember-metal/core"; // Ember.warn, Ember.assert
 
 import EmberObject from "ember-runtime/system/object";
 import { get } from "ember-metal/property_get";
+import SimpleStream from "ember-metal/streams/simple";
 import keys from "ember-metal/keys";
 import { IS_BINDING } from "ember-metal/mixin";
 import { read, isStream } from "ember-metal/streams/utils";
 import { readViewFactory } from "ember-views/streams/utils";
 import View from "ember-views/views/view";
-import SimpleStream from "ember-metal/streams/simple";
+
+import { map } from 'ember-metal/enumerable_utils';
+import {
+  streamifyClassNameBinding
+} from "ember-views/streams/class_name_binding";
 
 function makeBindings(hash, options, view) {
   for (var prop in hash) {
@@ -102,17 +107,17 @@ export var ViewHelper = EmberObject.create({
       }
     }
 
-    var classNameBindings = extensions.classNameBindings;
-    if (classNameBindings) {
-      for (var j = 0; j < classNameBindings.length; j++) {
-        var parsedPath = View._parsePropertyPath(classNameBindings[j]);
-        if (parsedPath.path === '') {
-          parsedPath.stream = new SimpleStream(true);
+    if (extensions.classNameBindings) {
+      extensions.classNameBindings = map(extensions.classNameBindings, function(classNameBinding){
+        var binding = streamifyClassNameBinding(view, classNameBinding);
+        if (isStream(binding)) {
+          return binding;
         } else {
-          parsedPath.stream = view.getStream(parsedPath.path);
+          // returning a stream informs the classNameBindings logic
+          // in views/view that this value is already processed.
+          return new SimpleStream(binding);
         }
-        classNameBindings[j] = parsedPath;
-      }
+      });
     }
 
     return extensions;

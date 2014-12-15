@@ -8,15 +8,16 @@ import Ember from "ember-metal/core"; // Ember.assert
 import { fmt } from "ember-runtime/system/string";
 import QuotedAttrNode from "ember-htmlbars/attr_nodes/quoted";
 import LegacyBindAttrNode from "ember-htmlbars/attr_nodes/legacy_bind";
-import View from "ember-views/views/view";
 import keys from "ember-metal/keys";
 import helpers from "ember-htmlbars/helpers";
+import { map } from 'ember-metal/enumerable_utils';
 import {
-  read,
   isStream,
-  concat,
-  chainStream
+  concat
 } from "ember-metal/streams/utils";
+import {
+  streamifyClassNameBinding
+} from "ember-views/streams/class_name_binding";
 
 /**
   `bind-attr` allows you to create a binding between DOM element attributes and
@@ -182,7 +183,9 @@ function bindAttrHelper(params, hash, options, env) {
 
 function applyClassNameBindings(classNameBindings, view) {
   var arrayOfClassNameBindings = classNameBindings.split(' ');
-  var boundClassNameBindings = steamifyClassNameBindings(view, arrayOfClassNameBindings);
+  var boundClassNameBindings = map(arrayOfClassNameBindings, function(classNameBinding) {
+    return streamifyClassNameBinding(view, classNameBinding);
+  });
   var concatenatedClassNames = concat(boundClassNameBindings, ' ');
   return concatenatedClassNames;
 }
@@ -201,53 +204,6 @@ function bindAttrHelperDeprecated() {
   Ember.deprecate("The 'bindAttr' view helper is deprecated in favor of 'bind-attr'");
 
   return helpers['bind-attr'].apply(this, arguments);
-}
-
-/**
-  Helper that, given a space-separated string of property paths and a context,
-  returns an array of class names. Calling this method also has the side
-  effect of setting up observers at those property paths, such that if they
-  change, the correct class name will be reapplied to the DOM element.
-
-  For example, if you pass the string "fooBar", it will first look up the
-  "fooBar" value of the context. If that value is true, it will add the
-  "foo-bar" class to the current element (i.e., the dasherized form of
-  "fooBar"). If the value is a string, it will add that string as the class.
-  Otherwise, it will not add any new class name.
-
-  @private
-  @method bindClasses
-  @for Ember.Handlebars
-  @param {String} classBindings A string, space-separated, of class bindings
-    to use
-  @param {View} view The view in which observers should look for the
-    element to update
-  @return {Array} An array of class names to add
-*/
-function steamifyClassNameBindings(view, classNameBindings) {
-  var streamified = [];
-  var boundClassName;
-  for (var i=0, l=classNameBindings.length;i<l;i++) {
-    boundClassName = streamifyClassNameBinding(view, classNameBindings[i]);
-    streamified.push(boundClassName);
-  }
-  return streamified;
-}
-
-function streamifyClassNameBinding(view, classNameBinding){
-  var parsedPath = View._parsePropertyPath(classNameBinding);
-  if (parsedPath.path === '') {
-    return classStringForParsedPath(parsedPath, true);
-  } else {
-    var pathValue = view.getStream(parsedPath.path);
-    return chainStream(pathValue, function(){
-      return classStringForParsedPath(parsedPath, read(pathValue));
-    });
-  }
-}
-
-function classStringForParsedPath(parsedPath, value) {
-  return View._classStringForValue(parsedPath.path, value, parsedPath.className, parsedPath.falsyClassName);
 }
 
 export default bindAttrHelper;

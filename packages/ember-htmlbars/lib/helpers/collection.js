@@ -7,11 +7,13 @@ import Ember from "ember-metal/core"; // Ember.assert, Ember.deprecate
 import { IS_BINDING } from "ember-metal/mixin";
 import { fmt } from "ember-runtime/system/string";
 import { get } from "ember-metal/property_get";
-import SimpleStream from "ember-metal/streams/simple";
 import { ViewHelper } from "ember-htmlbars/helpers/view";
-import View from "ember-views/views/view";
 import CollectionView from "ember-views/views/collection_view";
 import { readViewFactory } from "ember-views/streams/utils";
+import { map } from 'ember-metal/enumerable_utils';
+import {
+  streamifyClassNameBinding
+} from "ember-views/streams/class_name_binding";
 
 /**
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
@@ -238,18 +240,9 @@ export function collectionHelper(params, hash, options, env) {
 
   if (hash.itemClassBinding) {
     var itemClassBindings = hash.itemClassBinding.split(' ');
-
-    for (var i = 0; i < itemClassBindings.length; i++) {
-      var parsedPath = View._parsePropertyPath(itemClassBindings[i]);
-      if (parsedPath.path === '') {
-        parsedPath.stream = new SimpleStream(true);
-      } else {
-        parsedPath.stream = view.getStream(parsedPath.path);
-      }
-      itemClassBindings[i] = parsedPath;
-    }
-
-    viewOptions.classNameBindings = itemClassBindings;
+    viewOptions.classNameBindings = map(itemClassBindings, function(classBinding){
+      return streamifyClassNameBinding(view, classBinding);
+    });
   }
 
   hash.itemViewClass = itemViewClass;

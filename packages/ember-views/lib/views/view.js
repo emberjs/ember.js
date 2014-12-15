@@ -22,16 +22,15 @@ import KeyStream from "ember-views/streams/key_stream";
 import StreamBinding from "ember-metal/streams/stream_binding";
 import ContextStream from "ember-views/streams/context_stream";
 
-import {
-  typeOf,
-  isArray
-} from "ember-metal/utils";
+import { typeOf } from "ember-metal/utils";
 import isNone from 'ember-metal/is_none';
 import { Mixin } from 'ember-metal/mixin';
 import { deprecateProperty } from "ember-metal/deprecate_property";
 import { A as emberA } from "ember-runtime/system/native_array";
 
-import { dasherize } from "ember-runtime/system/string";
+import {
+  streamifyClassNameBinding
+} from "ember-views/streams/class_name_binding";
 
 // ES6TODO: functions on EnumerableUtils should get their own export
 import {
@@ -51,7 +50,11 @@ import jQuery from "ember-views/system/jquery";
 import "ember-views/system/ext";  // for the side effect of extending Ember.run.queues
 
 import CoreView from "ember-views/views/core_view";
-import { isStream } from "ember-metal/streams/utils";
+import {
+  subscribe,
+  read,
+  isStream
+} from "ember-metal/streams/utils";
 
 function K() { return this; }
 
@@ -1150,18 +1153,11 @@ var View = CoreView.extend({
     // ('content.isUrgent')
     forEach(classBindings, function(binding) {
 
-      var parsedPath;
-
-      if (typeof binding === 'string') {
-        Ember.assert("classNameBindings must not have spaces in them. Multiple class name bindings can be provided as elements of an array, e.g. ['foo', ':bar']", binding.indexOf(' ') === -1);
-        parsedPath = View._parsePropertyPath(binding);
-        if (parsedPath.path === '') {
-          parsedPath.stream = new SimpleStream(true);
-        } else {
-          parsedPath.stream = this.getStream('_view.' + parsedPath.path);
-        }
+      var boundBinding;
+      if (isStream(binding)) {
+        boundBinding = binding;
       } else {
-        parsedPath = binding;
+        boundBinding = streamifyClassNameBinding(this, binding, '_view.');
       }
 
       // Variable in which the old class value is saved. The observer function
@@ -1173,8 +1169,8 @@ var View = CoreView.extend({
       // class name.
       var observer = this._wrapAsScheduled(function() {
         // Get the current value of the property
-        newClass = this._classStringForProperty(parsedPath);
         elem = this.$();
+        newClass = read(boundBinding);
 
         // If we had previously added a class to the element, remove it.
         if (oldClass) {
@@ -1195,7 +1191,7 @@ var View = CoreView.extend({
       });
 
       // Get the class name for the property at its current value
-      dasherizedClass = this._classStringForProperty(parsedPath);
+      dasherizedClass = read(boundBinding);
 
       if (dasherizedClass) {
         // Ensure that it gets into the classNames array
@@ -1208,7 +1204,7 @@ var View = CoreView.extend({
         oldClass = dasherizedClass;
       }
 
-      parsedPath.stream.subscribe(observer, this);
+      subscribe(boundBinding, observer, this);
       // Remove className so when the view is rerendered,
       // the className is added based on binding reevaluation
       this.one('willClearRender', function() {
@@ -1403,7 +1399,7 @@ var View = CoreView.extend({
   /**
     Replaces the content of the specified parent element with this view's
     element. If the view does not have an HTML representation yet,
-    `createElement()` will be called automatically.
+    the element will be generated automatically.
 
     Note that this method just schedules the view to be appended; the DOM
     element will not be appended to the given element until all bindings have
@@ -1426,8 +1422,8 @@ var View = CoreView.extend({
 
   /**
     Appends the view's element to the document body. If the view does
-    not have an HTML representation yet, `createElement()` will be called
-    automatically.
+    not have an HTML representation yet
+    the element will be generated automatically.
 
     If your application uses the `rootElement` property, you must append
     the view within that element. Rendering views outside of the `rootElement`
@@ -2150,115 +2146,6 @@ deprecateProperty(View.prototype, 'states', '_states');
 
   // once the view has been inserted into the DOM, legal manipulations
   // are done on the DOM element.
-
-View.reopenClass({
-
-  /**
-    Parse a path and return an object which holds the parsed properties.
-
-    For example a path like "content.isEnabled:enabled:disabled" will return the
-    following object:
-
-    ```javascript
-    {
-      path: "content.isEnabled",
-      className: "enabled",
-      falsyClassName: "disabled",
-      classNames: ":enabled:disabled"
-    }
-    ```
-
-    @method _parsePropertyPath
-    @static
-    @private
-  */
-  _parsePropertyPath: function(path) {
-    var split = path.split(':');
-    var propertyPath = split[0];
-    var classNames = "";
-    var className, falsyClassName;
-
-    // check if the property is defined as prop:class or prop:trueClass:falseClass
-    if (split.length > 1) {
-      className = split[1];
-      if (split.length === 3) { falsyClassName = split[2]; }
-
-      classNames = ':' + className;
-      if (falsyClassName) { classNames += ":" + falsyClassName; }
-    }
-
-    return {
-      stream: undefined,
-      path: propertyPath,
-      classNames: classNames,
-      className: (className === '') ? undefined : className,
-      falsyClassName: falsyClassName
-    };
-  },
-
-  /**
-    Get the class name for a given value, based on the path, optional
-    `className` and optional `falsyClassName`.
-
-    - if a `className` or `falsyClassName` has been specified:
-      - if the value is truthy and `className` has been specified,
-        `className` is returned
-      - if the value is falsy and `falsyClassName` has been specified,
-        `falsyClassName` is returned
-      - otherwise `null` is returned
-    - if the value is `true`, the dasherized last part of the supplied path
-      is returned
-    - if the value is not `false`, `undefined` or `null`, the `value`
-      is returned
-    - if none of the above rules apply, `null` is returned
-
-    @method _classStringForValue
-    @param path
-    @param val
-    @param className
-    @param falsyClassName
-    @static
-    @private
-  */
-  _classStringForValue: function(path, val, className, falsyClassName) {
-    if(isArray(val)) {
-      val = get(val, 'length') !== 0;
-    }
-
-    // When using the colon syntax, evaluate the truthiness or falsiness
-    // of the value to determine which className to return
-    if (className || falsyClassName) {
-      if (className && !!val) {
-        return className;
-
-      } else if (falsyClassName && !val) {
-        return falsyClassName;
-
-      } else {
-        return null;
-      }
-
-    // If value is a Boolean and true, return the dasherized property
-    // name.
-    } else if (val === true) {
-      // Normalize property path to be suitable for use
-      // as a class name. For exaple, content.foo.barBaz
-      // becomes bar-baz.
-      var parts = path.split('.');
-      return dasherize(parts[parts.length-1]);
-
-    // If the value is not false, undefined, or null, return the current
-    // value of the property.
-    } else if (val !== false && val != null) {
-      return val;
-
-    // Nothing to display. Return null so that the old class is removed
-    // but no new class is added.
-    } else {
-      return null;
-    }
-  }
-});
 
 var mutation = EmberObject.extend(Evented).create();
 // TODO MOVE TO RENDERER HOOKS
