@@ -6,7 +6,7 @@ var distPath = path.join(__dirname, '../../dist');
 QUnit.module("App boot");
 
 QUnit.test("App is created without throwing an exception", function() {
-  var Ember = require(path.join(distPath, 'ember.debug'));
+  var Ember = require(path.join(distPath, 'ember.debug.cjs'));
 
   var App = Ember.Application.create({
   });
