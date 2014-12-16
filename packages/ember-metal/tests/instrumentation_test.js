@@ -89,6 +89,68 @@ test("returning a value from the before callback passes it to the after callback
   instrument("render", null, function() {});
 });
 
+test("instrument with 2 args (name, callback) no payload", function() {
+  expect(1);
+
+  subscribe("render", {
+    before: function(name, timestamp, payload) {
+      deepEqual(payload, {});
+    },
+    after: function() {}
+  });
+
+  instrument("render", function() {});
+});
+
+test("instrument with 3 args (name, callback, binding) no payload", function() {
+  expect(2);
+
+  var binding = {};
+  subscribe("render", {
+    before: function(name, timestamp, payload) {
+      deepEqual(payload, {});
+    },
+    after: function() {}
+  });
+
+  instrument("render", function() {
+    deepEqual(this, binding);
+  }, binding);
+});
+
+
+test("instrument with 3 args (name, payload, callback) with payload", function() {
+  expect(1);
+
+  var expectedPayload = { hi: 1};
+  subscribe("render", {
+    before: function(name, timestamp, payload) {
+      deepEqual(payload, expectedPayload);
+    },
+    after: function() {}
+  });
+
+  instrument("render", expectedPayload, function() {});
+});
+
+test("instrument with 4 args (name, payload, callback, binding) with payload", function() {
+  expect(2);
+
+  var expectedPayload = { hi: 1 };
+  var binding = {};
+  subscribe("render", {
+    before: function(name, timestamp, payload) {
+      deepEqual(payload, expectedPayload);
+    },
+    after: function() {}
+  });
+
+  instrument("render", expectedPayload, function() {
+    deepEqual(this, binding);
+  }, binding);
+});
+
+
 test("raising an exception in the instrumentation attaches it to the payload", function() {
   expect(2);
 
