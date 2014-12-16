@@ -77,8 +77,8 @@ export default CollectionView.extend(_Metamorph, {
   itemViewClass: _MetamorphView,
   emptyViewClass: _MetamorphView,
 
-  createChildView: function(view, attrs) {
-    view = this._super(view, attrs);
+  createChildView: function(_view, attrs) {
+    var view = this._super(_view, attrs);
 
     var content = get(view, 'content');
     var keyword = get(this, 'keyword');

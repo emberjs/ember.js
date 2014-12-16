@@ -401,8 +401,8 @@ var CollectionView = ContainerView.extend({
     @param {Hash} [attrs] Attributes to add
     @return {Ember.View} new instance
   */
-  createChildView: function(view, attrs) {
-    view = this._super(view, attrs);
+  createChildView: function(_view, attrs) {
+    var view = this._super(_view, attrs);
 
     var itemTagName = get(view, 'tagName');
 
