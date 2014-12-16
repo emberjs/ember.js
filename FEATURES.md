@@ -5,6 +5,32 @@ for a detailed explanation.
 
 ## Feature Flags
 
+* `ember-metal-warn-on-undefined-get`
+
+  When `Ember.ENV.WARN_ON_UNDEFINED_GET` is true:
+
+  Warn when an undefined property is accessed via `Ember.get`. This
+  feature is meant to expose typos in variable names sooner rather than
+  later.
+
+  Access to properties that are defined with an inital `null` value won't
+  raise.
+
+  For example:
+
+  ```js
+  Ember.ENV.WARN_ON_UNDEFINED_GET = true;
+
+  var obj = Ember.Object.create({
+    foo: null
+  });
+
+  obj.get("foo"); // => null
+  obj.get("bar"); // => raises
+  obj.get("foo.bar"); // => raises
+  ```
+  Added in [#9950](https://github.com/emberjs/ember.js/issues/9950).
+
 * `ember-routing-named-substates`
 
   Add named substates; e.g. when resolving a `loading` or `error`
@@ -89,7 +115,7 @@ for a detailed explanation.
 
 * `ember-htmlbars-inline-if-helper`
 
-  Enables the use of the if helper in inline form. The truthy 
+  Enables the use of the if helper in inline form. The truthy
   and falsy values are passed as params, instead of using the block form.
 
   Added in [#9718](https://github.com/emberjs/ember.js/pull/9718).

@@ -20,7 +20,8 @@
     "ember-htmlbars-block-params": true,
     "ember-htmlbars-component-generation": null,
     "ember-htmlbars-inline-if-helper": null,
-    "ember-htmlbars-attribute-syntax": null
+    "ember-htmlbars-attribute-syntax": null,
+    "ember-metal-warn-on-undefined-get": null
   },
   "debugStatements": [
     "Ember.warn",

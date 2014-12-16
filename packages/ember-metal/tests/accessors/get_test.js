@@ -172,3 +172,28 @@ test('(regression) watched properties on unmodified inherited objects should sti
   equal(getWithDefault(theRealObject, 'someProperty', "fail"), 'foo', 'should return the set value, not false');
 });
 
+if (Ember.FEATURES.isEnabled("ember-metal-warn-on-undefined-get")) {
+  var warn;
+  QUnit.module("Ember.get: Ember.ENV.WARN_ON_UNDEFINED_GET", {
+    setup: function() {
+      warn = Ember.ENV.WARN_ON_UNDEFINED_GET;
+    }, teardown: function() {
+      Ember.ENV.WARN_ON_UNDEFINED_GET = warn;
+    }
+  });
+
+  test("warn on attempts to get an undefined property", function() {
+    Ember.ENV.WARN_ON_UNDEFINED_GET = true;
+
+    var nullProperty = get({ foo: null }, "foo");
+    equal(nullProperty, null, "retrieving a null property returns null");
+
+    expectAssertion(function() {
+      get({}, "bar");
+    }, /Called get for undefined property 'bar'/);
+
+    expectAssertion(function() {
+      get({ foo: null }, "foo.bar");
+    }, /Called get for undefined property 'foo.bar'/);
+  });
+}
