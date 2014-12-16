@@ -1,5 +1,5 @@
 import ComponentLookup from "ember-views/component_lookup";
-import Container from "container";
+import Container from "container/container";
 import EmberView from "ember-views/views/view";
 import compile from "ember-htmlbars/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";

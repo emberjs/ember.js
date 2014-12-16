@@ -2,7 +2,8 @@ import {
   factory
 } from 'container/tests/container_helper';
 
-import Container from 'container';
+import Container from 'container/container';
+import Registry from 'container/registry';
 
 var originalModelInjections;
 
@@ -16,10 +17,11 @@ QUnit.module("Container", {
 });
 
 test("A registered factory returns the same instance each time", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
 
-  container.register('controller:post', PostController);
+  registry.register('controller:post', PostController);
 
   var postController = container.lookup('controller:post');
 
@@ -29,10 +31,11 @@ test("A registered factory returns the same instance each time", function() {
 });
 
 test("A registered factory is returned from lookupFactory", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
 
-  container.register('controller:post', PostController);
+  registry.register('controller:post', PostController);
 
   var PostControllerFactory = container.lookupFactory('controller:post');
 
@@ -41,19 +44,21 @@ test("A registered factory is returned from lookupFactory", function() {
 });
 
 test("A registered factory is returned from lookupFactory is the same factory each time", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
 
-  container.register('controller:post', PostController);
+  registry.register('controller:post', PostController);
 
   deepEqual(container.lookupFactory('controller:post'), container.lookupFactory('controller:post'), 'The return of lookupFactory is always the same');
 });
 
 test("A factory returned from lookupFactory has a debugkey", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
 
-  container.register('controller:post', PostController);
+  registry.register('controller:post', PostController);
   var PostFactory = container.lookupFactory('controller:post');
 
   ok(!PostFactory.container, 'factory instance receives a container');
@@ -61,15 +66,16 @@ test("A factory returned from lookupFactory has a debugkey", function() {
 });
 
 test("fallback for to create time injections if factory has no extend", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var AppleController = factory();
   var PostController = factory();
 
   PostController.extend = undefined; // remove extend
 
-  container.register('controller:apple', AppleController);
-  container.register('controller:post', PostController);
-  container.injection('controller:post', 'apple', 'controller:apple');
+  registry.register('controller:apple', AppleController);
+  registry.register('controller:post', PostController);
+  registry.injection('controller:post', 'apple', 'controller:apple');
 
   var postController = container.lookup('controller:post');
 
@@ -80,11 +86,12 @@ test("fallback for to create time injections if factory has no extend", function
 });
 
 test("The descendants of a factory returned from lookupFactory have a container and debugkey", function(){
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
   var instance;
 
-  container.register('controller:post', PostController);
+  registry.register('controller:post', PostController);
   instance = container.lookupFactory('controller:post').create();
 
   ok(instance.container, 'factory instance receives a container');
@@ -94,10 +101,11 @@ test("The descendants of a factory returned from lookupFactory have a container 
 });
 
 test("A registered factory returns a fresh instance if singleton: false is passed as an option", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
 
-  container.register('controller:post', PostController);
+  registry.register('controller:post', PostController);
 
   var postController1 = container.lookup('controller:post');
   var postController2 = container.lookup('controller:post', { singleton: false });
@@ -115,70 +123,53 @@ test("A registered factory returns a fresh instance if singleton: false is passe
   ok(postController4 instanceof PostController, "All instances are instances of the registered factory");
 });
 
-test("A registered factory returns true for `has` if an item is registered", function() {
-  var container = new Container();
-  var PostController = factory();
-
-  container.register('controller:post', PostController);
-
-  equal(container.has('controller:post'), true, "The `has` method returned true for registered factories");
-  equal(container.has('controller:posts'), false, "The `has` method returned false for unregistered factories");
-});
-
-test("A Registered factory can be unregistered, and all cached instances are removed", function() {
-  var container = new Container();
-  var PostController = factory();
-
-  container.register('controller:post', PostController);
-
-  equal(container.has('controller:post'), true, "container is aware of the PostController");
-
-  ok(container.lookup('controller:post') instanceof PostController, "lookup is correct instance");
-
-  container.unregister("controller:post");
-
-  equal(container.has('controller:post'), false, "container is no-longer aware of the PostController");
-  equal(container.lookup('controller:post'), undefined, "lookup no longer returns a controller");
-
-  // re-registration continues to work
-  container.register('controller:post', PostController);
-
-  equal(container.has('controller:post'), true, "container is aware of the PostController");
-
-  ok(container.lookup('controller:post') instanceof PostController, "lookup is correct instance");
-});
+// TODO - no longer possible with the Registry/Container split without adding events
+//
+// test("A Registered factory can be unregistered, and all cached instances are removed", function() {
+//   var container = new Container();
+//   var PostController = factory();
+//
+//   container.register('controller:post', PostController);
+//
+//   equal(container.has('controller:post'), true, "container is aware of the PostController");
+//
+//   ok(container.lookup('controller:post') instanceof PostController, "lookup is correct instance");
+//
+//   container.unregister("controller:post");
+//
+//   equal(container.has('controller:post'), false, "container is no-longer aware of the PostController");
+//   equal(container.lookup('controller:post'), undefined, "lookup no longer returns a controller");
+//
+//   // re-registration continues to work
+//   container.register('controller:post', PostController);
+//
+//   equal(container.has('controller:post'), true, "container is aware of the PostController");
+//
+//   ok(container.lookup('controller:post') instanceof PostController, "lookup is correct instance");
+// });
 
 test("A container lookup has access to the container", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
 
-  container.register('controller:post', PostController);
+  registry.register('controller:post', PostController);
 
   var postController = container.lookup('controller:post');
 
   equal(postController.container, container);
 });
 
-test("Throw exception when trying to inject `type:thing` on all type(s)", function(){
-  var container = new Container();
-  var PostController = factory();
-
-  container.register('controller:post', PostController);
-
-  throws(function(){
-    container.typeInjection('controller', 'injected', 'controller:post');
-  }, 'Cannot inject a `controller:post` on other controller(s). Register the `controller:post` as a different type and perform the typeInjection.');
-});
-
 test("A factory type with a registered injection's instances receive that injection", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
   var Store = factory();
 
-  container.register('controller:post', PostController);
-  container.register('store:main', Store);
+  registry.register('controller:post', PostController);
+  registry.register('store:main', Store);
 
-  container.typeInjection('controller', 'store', 'store:main');
+  registry.typeInjection('controller', 'store', 'store:main');
 
   var postController = container.lookup('controller:post');
   var store = container.lookup('store:main');
@@ -187,14 +178,15 @@ test("A factory type with a registered injection's instances receive that inject
 });
 
 test("An individual factory with a registered injection receives the injection", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
   var Store = factory();
 
-  container.register('controller:post', PostController);
-  container.register('store:main', Store);
+  registry.register('controller:post', PostController);
+  registry.register('store:main', Store);
 
-  container.injection('controller:post', 'store', 'store:main');
+  registry.injection('controller:post', 'store', 'store:main');
 
   var postController = container.lookup('controller:post');
   var store = container.lookup('store:main');
@@ -208,17 +200,18 @@ test("An individual factory with a registered injection receives the injection",
 });
 
 test("A factory with both type and individual injections", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
   var Store = factory();
   var Router = factory();
 
-  container.register('controller:post', PostController);
-  container.register('store:main', Store);
-  container.register('router:main', Router);
+  registry.register('controller:post', PostController);
+  registry.register('store:main', Store);
+  registry.register('router:main', Router);
 
-  container.injection('controller:post', 'store', 'store:main');
-  container.typeInjection('controller', 'router', 'router:main');
+  registry.injection('controller:post', 'store', 'store:main');
+  registry.typeInjection('controller', 'router', 'router:main');
 
   var postController = container.lookup('controller:post');
   var store = container.lookup('store:main');
@@ -229,17 +222,18 @@ test("A factory with both type and individual injections", function() {
 });
 
 test("A factory with both type and individual factoryInjections", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
   var Store = factory();
   var Router = factory();
 
-  container.register('controller:post', PostController);
-  container.register('store:main', Store);
-  container.register('router:main', Router);
+  registry.register('controller:post', PostController);
+  registry.register('store:main', Store);
+  registry.register('router:main', Router);
 
-  container.factoryInjection('controller:post', 'store', 'store:main');
-  container.factoryTypeInjection('controller', 'router', 'router:main');
+  registry.factoryInjection('controller:post', 'store', 'store:main');
+  registry.factoryTypeInjection('controller', 'router', 'router:main');
 
   var PostControllerFactory = container.lookupFactory('controller:post');
   var store = container.lookup('store:main');
@@ -250,10 +244,11 @@ test("A factory with both type and individual factoryInjections", function() {
 });
 
 test("A non-singleton instance is never cached", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostView = factory();
 
-  container.register('view:post', PostView, { singleton: false });
+  registry.register('view:post', PostView, { singleton: false });
 
   var postView1 = container.lookup('view:post');
   var postView2 = container.lookup('view:post');
@@ -262,23 +257,26 @@ test("A non-singleton instance is never cached", function() {
 });
 
 test("A non-instantiated property is not instantiated", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
 
   var template = function() {};
-  container.register('template:foo', template, { instantiate: false });
+  registry.register('template:foo', template, { instantiate: false });
   equal(container.lookup('template:foo'), template);
 });
 
 test("A failed lookup returns undefined", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
 
   equal(container.lookup('doesnot:exist'), undefined);
 });
 
 test("An invalid factory throws an error", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
 
-  container.register('controller:foo', {});
+  registry.register('controller:foo', {});
 
   throws(function() {
     container.lookup('controller:foo');
@@ -288,7 +286,8 @@ test("An invalid factory throws an error", function() {
 test("Injecting a failed lookup raises an error", function() {
   Ember.MODEL_FACTORY_INJECTIONS = true;
 
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
 
   var fooInstance = {};
   var fooFactory  = {};
@@ -298,8 +297,8 @@ test("Injecting a failed lookup raises an error", function() {
     extend: function(args) { return fooFactory;  }
   };
 
-  container.register('model:foo', Foo);
-  container.injection('model:foo', 'store', 'store:main');
+  registry.register('model:foo', Foo);
+  registry.injection('model:foo', 'store', 'store:main');
 
   throws(function() {
     container.lookup('model:foo');
@@ -307,27 +306,29 @@ test("Injecting a failed lookup raises an error", function() {
 });
 
 test("Injecting a falsy value does not raise an error", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var ApplicationController = factory();
 
-  container.register('controller:application', ApplicationController);
-  container.register('user:current', null, { instantiate: false });
-  container.injection('controller:application', 'currentUser', 'user:current');
+  registry.register('controller:application', ApplicationController);
+  registry.register('user:current', null, { instantiate: false });
+  registry.injection('controller:application', 'currentUser', 'user:current');
 
   equal(container.lookup('controller:application').currentUser, null);
 });
 
 test("Destroying the container destroys any cached singletons", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
   var PostView = factory();
   var template = function() {};
 
-  container.register('controller:post', PostController);
-  container.register('view:post', PostView, { singleton: false });
-  container.register('template:post', template, { instantiate: false });
+  registry.register('controller:post', PostController);
+  registry.register('view:post', PostView, { singleton: false });
+  registry.register('template:post', template, { instantiate: false });
 
-  container.injection('controller:post', 'postView', 'view:post');
+  registry.injection('controller:post', 'postView', 'view:post');
 
   var postController = container.lookup('controller:post');
   var postView = postController.postView;
@@ -340,11 +341,12 @@ test("Destroying the container destroys any cached singletons", function() {
   ok(!postView.isDestroyed, "Non-singletons are not destroyed");
 });
 
-test("The container can take a hook to resolve factories lazily", function() {
-  var container = new Container();
+test("The container can use a registry hook to resolve factories lazily", function() {
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
 
-  container.resolver = function(fullName) {
+  registry.resolver = function(fullName) {
     if (fullName === 'controller:post') {
       return PostController;
     }
@@ -355,136 +357,70 @@ test("The container can take a hook to resolve factories lazily", function() {
   ok(postController instanceof PostController, "The correct factory was provided");
 });
 
-test("The container respect the resolver hook for `has`", function() {
-  var container = new Container();
-  var PostController = factory();
-
-  container.resolver = function(fullName) {
-    if (fullName === 'controller:post') {
-      return PostController;
-    }
-  };
-
-  ok(container.has('controller:post'), "the `has` method uses the resolver hook");
-});
-
 test("The container normalizes names before resolving", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
 
-  container.normalize = function(fullName) {
+  registry.normalizeFullName = function(fullName) {
     return 'controller:post';
   };
 
-  container.register('controller:post', PostController);
+  registry.register('controller:post', PostController);
   var postController = container.lookup('controller:normalized');
 
   ok(postController instanceof PostController, "Normalizes the name before resolving");
 });
 
-test("The container normalizes names when unregistering", function() {
-  var container = new Container();
-  var PostController = factory();
-
-  container.normalize = function(fullName) {
-    return 'controller:post';
-  };
-
-  container.register('controller:post', PostController);
-  var postController = container.lookup('controller:normalized');
-
-  ok(postController instanceof PostController, "Normalizes the name before resolving");
-
-  container.unregister('controller:post');
-  postController = container.lookup('controller:normalized');
-
-  equal(postController, undefined);
-});
-
-test("The container normalizes names when resolving", function() {
-  var container = new Container();
-  var PostController = factory();
-
-  container.normalize = function(fullName) {
-    return 'controller:post';
-  };
-
-  container.register('controller:post', PostController);
-  var type = container.resolve('controller:normalized');
-
-  equal(type === PostController, true, "Normalizes the name when resolving");
-});
+// TODO: When registry.unregister is called, is it important for containers to clear their caches of that item?
+//
+// test("The container normalizes names when unregistering", function() {
+//   var registry = new Registry();
+//   var container = new Container({registry: registry});
+//   var PostController = factory();
+//
+//   registry.normalizeFullName = function(fullName) {
+//     return 'controller:post';
+//   };
+//
+//   registry.register('controller:post', PostController);
+//   var postController = container.lookup('controller:normalized');
+//
+//   ok(postController instanceof PostController, "Normalizes the name before resolving");
+//
+//   registry.unregister('controller:post');
+//   postController = container.lookup('controller:normalized');
+//
+//   equal(postController, undefined);
+// });
 
 test("The container normalizes names when looking factory up", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
 
-  container.normalize = function(fullName) {
+  registry.normalizeFullName = function(fullName) {
     return 'controller:post';
   };
 
-  container.register('controller:post', PostController);
+  registry.register('controller:post', PostController);
   var fact = container.lookupFactory('controller:normalized');
 
   equal(fact.toString() === PostController.extend().toString(), true, "Normalizes the name when looking factory up");
 });
 
-test("The container normalizes names when checking if the factory or instance is present", function() {
-  var container = new Container();
-  var PostController = factory();
-
-  container.normalize = function(fullName) {
-    return 'controller:post';
-  };
-
-  container.register('controller:post', PostController);
-  var isPresent = container.has('controller:normalized');
-
-  equal(isPresent, true, "Normalizes the name when checking if the factory or instance is present");
-});
-
-test("validateFullName throws an error if name is incorrect", function() {
-  var container = new Container();
-  var PostController = factory();
-
-  container.normalize = function(fullName) {
-    return 'controller:post';
-  };
-
-  container.register('controller:post', PostController);
-  throws(function() {
-    container.lookupFactory('post');
-  }, 'TypeError: Invalid Fullname, expected: `type:name` got: post');
-});
-
-test("The container normalizes names when injecting", function() {
-  var container = new Container();
-  var PostController = factory();
-  var user = { name: 'Stef' };
-
-  container.normalize = function(fullName) {
-    return 'controller:post';
-  };
-
-  container.register('controller:post', PostController);
-  container.register('user:post', user, { instantiate: false });
-  container.injection('controller:post', 'user', 'controller:normalized');
-
-  deepEqual(container.lookup('controller:post'), user, "Normalizes the name when injecting");
-});
-
-test("The container can get options that should be applied to a given factory", function(){
-  var container = new Container();
-
+test("The container can get options that should be applied to a given factory", function() {
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostView = factory();
 
-  container.resolver = function(fullName) {
+  registry.resolver = function(fullName) {
     if (fullName === 'view:post') {
       return PostView;
     }
   };
 
-  container.options('view:post', {instantiate: true, singleton: false});
+  registry.options('view:post', {instantiate: true, singleton: false});
 
   var postView1 = container.lookup('view:post');
   var postView2 = container.lookup('view:post');
@@ -496,16 +432,17 @@ test("The container can get options that should be applied to a given factory", 
 });
 
 test("The container can get options that should be applied to all factories for a given type", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostView = factory();
 
-  container.resolver = function(fullName) {
+  registry.resolver = function(fullName) {
     if (fullName === 'view:post') {
       return PostView;
     }
   };
 
-  container.optionsForType('view', { singleton: false });
+  registry.optionsForType('view', { singleton: false });
 
   var postView1 = container.lookup('view:post');
   var postView2 = container.lookup('view:post');
@@ -516,113 +453,62 @@ test("The container can get options that should be applied to all factories for 
   ok(postView1 !== postView2, "The two lookups are different");
 });
 
-test("cannot register an `undefined` factory", function(){
-  var container = new Container();
-
-  throws(function(){
-    container.register('controller:apple', undefined);
-  }, '');
-});
-
-test("can re-register a factory", function(){
-  var container = new Container();
-  var FirstApple = factory('first');
-  var SecondApple = factory('second');
-
-  container.register('controller:apple', FirstApple);
-  container.register('controller:apple', SecondApple);
-
-  ok(container.lookup('controller:apple') instanceof SecondApple);
-});
-
-test("cannot re-register a factory if has been looked up", function(){
-  var container = new Container();
-  var FirstApple = factory('first');
-  var SecondApple = factory('second');
-
-  container.register('controller:apple', FirstApple);
-  ok(container.lookup('controller:apple') instanceof FirstApple);
-
-  throws(function(){
-    container.register('controller:apple', SecondApple);
-  }, 'Cannot re-register: `controller:apple`, as it has already been looked up.');
-
-  ok(container.lookup('controller:apple') instanceof FirstApple);
-});
-
-
-test('container.has should not accidentally cause injections on that factory to be run. (Mitigate merely on observing)', function(){
-  expect(1);
-
-  var container = new Container();
-  var FirstApple = factory('first');
-  var SecondApple = factory('second');
-
-  SecondApple.extend = function(a,b,c) {
-    ok(false, 'should not extend or touch the injected model, merely to inspect existence of another');
-  };
-
-  container.register('controller:apple', FirstApple);
-  container.register('controller:second-apple', SecondApple);
-  container.injection('controller:apple', 'badApple', 'controller:second-apple');
-
-  ok(container.has('controller:apple'));
-});
-
-test('once resolved, always return the same result', function() {
-  expect(1);
-
-  var container = new Container();
-
-  container.resolver = function() {
-    return 'bar';
-  };
-
-  var Bar = container.resolve('models:bar');
-
-  container.resolver = function() {
-    return 'not bar';
-  };
-
-  equal(container.resolve('models:bar'), Bar);
-});
-
-test('once looked up, assert if an injection is registered for the entry', function() {
-  expect(1);
-
-  var container = new Container();
-  var Apple = factory();
-  var Worm = factory();
-
-  container.register('apple:main', Apple);
-  container.register('worm:main', Worm);
-  container.lookup('apple:main');
-  throws(function() {
-    container.injection('apple:main', 'worm', 'worm:main');
-  }, "Attempted to register an injection for a type that has already been looked up. ('apple:main', 'worm', 'worm:main')");
-});
-
-test("Once looked up, assert if a factoryInjection is registered for the factory", function() {
-  expect(1);
-
-  var container = new Container();
-  var Apple = factory();
-  var Worm = factory();
-
-  container.register('apple:main', Apple);
-  container.register('worm:main', Worm);
-
-  container.lookupFactory('apple:main');
-  throws(function() {
-    container.factoryInjection('apple:main', 'worm', 'worm:main');
-  }, "Attempted to register a factoryInjection for a type that has already been looked up. ('apple:main', 'worm', 'worm:main')");
-});
+// TODO - Do we need the restriction on re-registering a factory for a key that's already been looked up?
+//
+// test("cannot re-register a factory if has been looked up", function(){
+//   var container = new Container();
+//   var FirstApple = factory('first');
+//   var SecondApple = factory('second');
+//
+//   container.register('controller:apple', FirstApple);
+//   ok(container.lookup('controller:apple') instanceof FirstApple);
+//
+//   throws(function(){
+//     container.register('controller:apple', SecondApple);
+//   }, 'Cannot re-register: `controller:apple`, as it has already been looked up.');
+//
+//   ok(container.lookup('controller:apple') instanceof FirstApple);
+// });
+//
+// TODO?
+//
+// test('once looked up, assert if an injection is registered for the entry', function() {
+//   expect(1);
+//
+//   var container = new Container();
+//   var Apple = factory();
+//   var Worm = factory();
+//
+//   container.register('apple:main', Apple);
+//   container.register('worm:main', Worm);
+//   container.lookup('apple:main');
+//   throws(function() {
+//     container.injection('apple:main', 'worm', 'worm:main');
+//   }, "Attempted to register an injection for a type that has already been looked up. ('apple:main', 'worm', 'worm:main')");
+// });
+//
+// test("Once looked up, assert if a factoryInjection is registered for the factory", function() {
+//   expect(1);
+//
+//   var container = new Container();
+//   var Apple = factory();
+//   var Worm = factory();
+//
+//   container.register('apple:main', Apple);
+//   container.register('worm:main', Worm);
+//
+//   container.lookupFactory('apple:main');
+//   throws(function() {
+//     container.factoryInjection('apple:main', 'worm', 'worm:main');
+//   }, "Attempted to register a factoryInjection for a type that has already been looked up. ('apple:main', 'worm', 'worm:main')");
+// });
 
 test("factory resolves are cached", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
   var resolveWasCalled = [];
-  container.resolve = function(fullName) {
+  registry.resolve = function(fullName) {
     resolveWasCalled.push(fullName);
     return PostController;
   };
@@ -636,10 +522,11 @@ test("factory resolves are cached", function() {
 });
 
 test("factory for non extendables (MODEL) resolves are cached", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = factory();
   var resolveWasCalled = [];
-  container.resolve = function(fullName) {
+  registry.resolve = function(fullName) {
     resolveWasCalled.push(fullName);
     return PostController;
   };
@@ -653,10 +540,12 @@ test("factory for non extendables (MODEL) resolves are cached", function() {
 });
 
 test("factory for non extendables resolves are cached", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var PostController = {};
   var resolveWasCalled = [];
-  container.resolve = function(fullName) {
+
+  registry.resolve = function(fullName) {
     resolveWasCalled.push(fullName);
     return PostController;
   };
@@ -690,7 +579,8 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   });
 
   test("A factory's lazy injections are validated when first instantiated", function() {
-    var container = new Container();
+    var registry = new Registry();
+    var container = new Container({registry: registry});
     var Apple = factory();
     var Orange = factory();
 
@@ -700,8 +590,8 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
       }
     });
 
-    container.register('apple:main', Apple);
-    container.register('orange:main', Orange);
+    registry.register('apple:main', Apple);
+    registry.register('orange:main', Orange);
 
     throws(function() {
       container.lookup('apple:main');
