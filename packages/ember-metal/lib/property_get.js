@@ -93,9 +93,18 @@ var get = function get(obj, keyName) {
       return obj.unknownProperty(keyName);
     }
 
+    if (warnOnUndefined()) {
+      Ember.assert("Called get for undefined property '" + keyName + "'", ret !== undefined);
+    }
+
     return ret;
   }
 };
+
+function warnOnUndefined() {
+  return Ember.FEATURES.isEnabled("ember-metal-warn-on-undefined-get") &&
+         Ember.ENV.WARN_ON_UNDEFINED_GET;
+}
 
 /**
   Normalizes a target/path pair to reflect that actual target/path that should
@@ -159,6 +168,9 @@ function _getPath(root, path) {
   len = parts.length;
   for (idx = 0; root != null && idx < len; idx++) {
     root = get(root, parts[idx], true);
+    if (warnOnUndefined()) {
+      Ember.assert("Called get for undefined property '" + path + "'", root !== null && parts.length > 1);
+    }
     if (root && root.isDestroyed) { return undefined; }
   }
   return root;
