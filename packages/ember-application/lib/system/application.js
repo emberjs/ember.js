@@ -31,16 +31,10 @@ import AutoLocation from "ember-routing/location/auto_location";
 import NoneLocation from "ember-routing/location/none_location";
 import BucketCache from "ember-routing/system/cache";
 
-// this is technically incorrect (per @wycats)
-// it should work properly with:
-// `import ContainerDebugAdapter from 'ember-extension-support/container_debug_adapter';` but
-// es6-module-transpiler 0.4.0 eagerly grabs the module (which is undefined)
-
 import ContainerDebugAdapter from "ember-extension-support/container_debug_adapter";
 
-import {
-  K
-} from 'ember-metal/core';
+import { K } from 'ember-metal/core';
+import environment from 'ember-metal/environment';
 
 function props(obj) {
   var properties = [];
@@ -276,7 +270,10 @@ var Application = Namespace.extend(DeferredMixin, {
 
     if (!librariesRegistered) {
       librariesRegistered = true;
-      Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
+
+      if (environment.hasDOM) {
+        Ember.libraries.registerCoreLibrary('jQuery', jQuery().jquery);
+      }
     }
 
     if (Ember.LOG_VERSION) {
@@ -695,7 +692,10 @@ var Application = Namespace.extend(DeferredMixin, {
     @method didBecomeReady
   */
   didBecomeReady: function() {
-    this.setupEventDispatcher();
+    if (environment.hasDOM) {
+      this.setupEventDispatcher();
+    }
+
     this.ready(); // user hook
     this.startRouting();
 

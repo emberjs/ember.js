@@ -7,6 +7,7 @@ import jQuery from "ember-views/system/jquery";
 import { DOMHelper } from "morph";
 import Ember from "ember-metal/core";
 import { create } from "ember-metal/platform";
+import environment from "ember-metal/environment";
 
 // The HTML spec allows for "omitted start tags". These tags are optional
 // when their intended child is the first thing in the parent tag. For
@@ -35,14 +36,15 @@ import { create } from "ember-metal/platform";
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/tables.html#the-tbody-element
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/tables.html#the-colgroup-element
 //
-var omittedStartTagChildren = {
-  tr: document.createElement('tbody'),
-  col: document.createElement('colgroup')
-};
-
+var omittedStartTagChildren;
 var omittedStartTagChildTest = /(?:<script)*.*?<([\w:]+)/i;
 
 function detectOmittedStartTag(string, contextualElement){
+  omittedStartTagChildren = omittedStartTagChildren || {
+    tr: document.createElement('tbody'),
+    col: document.createElement('colgroup')
+  };
+
   // Omitted start tags are only inside table tags.
   if (contextualElement.tagName === 'TABLE') {
     var omittedStartTagChildMatch = omittedStartTagChildTest.exec(string);
@@ -111,6 +113,8 @@ function escapeAttribute(value) {
 // From http://msdn.microsoft.com/en-us/library/ie/ms536389(v=vs.85).aspx:
 // "To include the NAME attribute at run time on objects created with the createElement method, use the eTag."
 var canSetNameOnInputs = (function() {
+  if (!environment.hasDOM) { return false; }
+
   var div = document.createElement('div');
   var el = document.createElement('input');
 
@@ -142,7 +146,7 @@ function _RenderBuffer(tagName, contextualElement) {
   this._outerContextualElement = contextualElement;
   this.buffer = null;
   this.childViews = [];
-  this.dom = new DOMHelper();
+  this.dom = environment.hasDOM ? new DOMHelper() : null;
 }
 
 _RenderBuffer.prototype = {

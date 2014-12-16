@@ -395,7 +395,7 @@ EmberApplication.reopen({
     @default window
     @since 1.2.0
   */
-  helperContainer: window,
+  helperContainer: null,
 
   /**
     This injects the test helpers into the `helperContainer` object. If an object is provided
@@ -415,7 +415,11 @@ EmberApplication.reopen({
     @method injectTestHelpers
   */
   injectTestHelpers: function(helperContainer) {
-    if (helperContainer) { this.helperContainer = helperContainer; }
+    if (helperContainer) {
+      this.helperContainer = helperContainer;
+    } else {
+      this.helperContainer = window;
+    }
 
     this.testHelpers = {};
     for (var name in helpers) {
@@ -443,6 +447,8 @@ EmberApplication.reopen({
     @method removeTestHelpers
   */
   removeTestHelpers: function() {
+    if (!this.helperContainer) { return; }
+
     for (var name in helpers) {
       this.helperContainer[name] = this.originalMethods[name];
       delete this.testHelpers[name];
