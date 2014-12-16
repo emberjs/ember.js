@@ -1879,35 +1879,37 @@ var View = CoreView.extend({
     @param {Hash} [attrs] Attributes to add
     @return {Ember.View} new instance
   */
-  createChildView: function(view, attrs) {
-    if (!view) {
+  createChildView: function(maybeViewClass, _attrs) {
+    if (!maybeViewClass) {
       throw new TypeError("createChildViews first argument must exist");
     }
 
-    if (view.isView && view._parentView === this && view.container === this.container) {
-      return view;
+    if (maybeViewClass.isView && maybeViewClass._parentView === this && maybeViewClass.container === this.container) {
+      return maybeViewClass;
     }
 
-    attrs = attrs || {};
+    var attrs = _attrs || {};
+    var view;
     attrs._parentView = this;
 
-    if (CoreView.detect(view)) {
+    if (CoreView.detect(maybeViewClass)) {
       attrs.container = this.container;
-      view = view.create(attrs);
+      view = maybeViewClass.create(attrs);
 
       // don't set the property on a virtual view, as they are invisible to
       // consumers of the view API
       if (view.viewName) {
         set(get(this, 'concreteView'), view.viewName, view);
       }
-    } else if ('string' === typeof view) {
-      var fullName = 'view:' + view;
+    } else if ('string' === typeof maybeViewClass) {
+      var fullName = 'view:' + maybeViewClass;
       var ViewKlass = this.container.lookupFactory(fullName);
 
       Ember.assert("Could not find view: '" + fullName + "'", !!ViewKlass);
 
       view = ViewKlass.create(attrs);
     } else {
+      view = maybeViewClass;
       Ember.assert('You must pass instance or subclass of View', view.isView);
 
       attrs.container = this.container;
