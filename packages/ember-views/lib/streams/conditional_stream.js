@@ -1,6 +1,9 @@
 import Stream from "ember-metal/streams/stream";
-import { read } from "ember-metal/streams/utils";
-import { subscribe, unsubscribe } from "ember-metal/streams/utils";
+import {
+  read,
+  subscribe,
+  unsubscribe
+} from "ember-metal/streams/utils";
 import { create } from "ember-metal/platform";
 
 function ConditionalStream(test, consequent, alternate) {
