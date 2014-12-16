@@ -84,6 +84,11 @@ var time = (function() {
   @param {Object} binding Context that instrument function is called with.
 */
 export function instrument(name, _payload, callback, binding) {
+  if (arguments.length <= 3 && typeof _payload === 'function') {
+    binding = callback;
+    callback = _payload;
+    _payload = undefined;
+  }
   if (subscribers.length === 0) {
     return callback.call(binding);
   }
