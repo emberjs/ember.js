@@ -696,21 +696,11 @@ function buildRuntimeTree() {
 }
 
 function buildCJSTree() {
-  var compiledSource = concatES6(devSourceTrees, {
-    es3Safe: env !== 'development',
-    derequire: env !== 'development',
-    includeLoader: true,
-    bootstrapModule: 'ember',
-    vendorTrees: vendorTrees,
-    inputFiles: ['**/*.js'],
-    destFile: '/ember.debug.cjs.js'
-  });
-
   var exportsTree = writeFile('export-ember', ';module.exports = Ember;\n');
 
   return concat(mergeTrees([compiledSource, exportsTree]), {
     wrapInEval: false,
-    inputFiles: ['ember.debug.cjs.js', 'export-ember'],
+    inputFiles: ['ember.debug.js', 'export-ember'],
     outputFile: '/ember.debug.cjs.js'
   });
 }
