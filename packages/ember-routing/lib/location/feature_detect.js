@@ -1,4 +1,4 @@
-/**
+/*
   `documentMode` only exist in Internet Explorer, and it's tested because IE8 running in
   IE7 compatibility mode claims to support `onhashchange` but actually does not.
 
@@ -11,7 +11,7 @@ export function supportsHashChange(documentMode, global) {
   return ('onhashchange' in global) && (documentMode === undefined || documentMode > 7);
 }
 
-/**
+/*
   `userAgent` is a user agent string. We use user agent testing here, because
   the stock Android browser in Gingerbread has a buggy versions of this API,
   Before feature detecting, we blacklist a browser identifying as both Android 2
@@ -20,6 +20,7 @@ export function supportsHashChange(documentMode, global) {
   @private
   @function supportsHistory
 */
+
 export function supportsHistory(userAgent, history) {
   // Boosted from Modernizr: https://github.com/Modernizr/Modernizr/blob/master/feature-detects/history.js
   // The stock browser on Android 2.2 & 2.3 returns positive on history support
