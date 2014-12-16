@@ -650,6 +650,7 @@ var deprecatedDebugFile = replace(compiledSource, {
     { match: /var runningNonEmberDebugJS = false;/, replacement: 'var runningNonEmberDebugJS = true;'}
   ]
 });
+
 deprecatedDebugFile = concat(deprecatedDebugFile, {
   inputFiles: [ 'ember.debug.js' ],
   outputFile: '/ember.js'
@@ -691,6 +692,16 @@ function buildRuntimeTree() {
     wrapInEval: false,
     inputFiles: ['ember-runtime.js', 'export-ember'],
     outputFile: '/ember-runtime.js'
+  });
+}
+
+function buildCJSTree() {
+  var exportsTree = writeFile('export-ember', ';module.exports = Ember;\n');
+
+  return concat(mergeTrees([compiledSource, exportsTree]), {
+    wrapInEval: false,
+    inputFiles: ['ember.debug.js', 'export-ember'],
+    outputFile: '/ember.debug.cjs.js'
   });
 }
 
@@ -767,6 +778,7 @@ if (env !== 'development') {
     distTrees.push(minCompiledSource);
   }
   distTrees.push(buildRuntimeTree());
+  distTrees.push(buildCJSTree());
 }
 
 // merge distTrees and sub out version placeholders for distribution

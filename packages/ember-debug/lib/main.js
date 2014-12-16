@@ -4,6 +4,8 @@ import Ember from "ember-metal/core";
 import EmberError from "ember-metal/error";
 import Logger from "ember-metal/logger";
 
+import environment from "ember-metal/environment";
+
 /**
 Ember Debug
 
@@ -218,7 +220,7 @@ if (!Ember.testing) {
 
   // Inform the developer about the Ember Inspector if not installed.
   var isFirefox = typeof InstallTrigger !== 'undefined';
-  var isChrome = !!window.chrome && !window.opera;
+  var isChrome = environment.isChrome;
 
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
     window.addEventListener("load", function() {

@@ -127,7 +127,7 @@ test("base URL is preserved when moving around", function() {
     location.initState();
     location.setURL('/one/two');
 
-    equal(FakeHistory.state.path, '/base/one/two');
+    equal(location._historyState.path, '/base/one/two');
 });
 
 test("setURL continues to set even with a null state (iframes may set this)", function() {
@@ -139,7 +139,7 @@ test("setURL continues to set even with a null state (iframes may set this)", fu
     FakeHistory.pushState(null);
     location.setURL('/three/four');
 
-    equal(FakeHistory.state && FakeHistory.state.path, '/three/four');
+    equal(location._historyState.path, '/three/four');
 });
 
 test("replaceURL continues to set even with a null state (iframes may set this)", function() {
@@ -151,7 +151,7 @@ test("replaceURL continues to set even with a null state (iframes may set this)"
     FakeHistory.pushState(null);
     location.replaceURL('/three/four');
 
-    equal(FakeHistory.state && FakeHistory.state.path, '/three/four');
+    equal(location._historyState.path, '/three/four');
 });
 
 test("HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL", function() {

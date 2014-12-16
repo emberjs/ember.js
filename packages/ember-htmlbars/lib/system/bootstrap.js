@@ -11,6 +11,7 @@ import jQuery from "ember-views/system/jquery";
 import EmberError from "ember-metal/error";
 import { onLoad } from "ember-runtime/system/lazy_load";
 import htmlbarsCompile from "ember-htmlbars/system/compile";
+import environment from "ember-metal/environment";
 
 /**
 @module ember
@@ -87,7 +88,7 @@ onLoad('Ember.Application', function(Application) {
 
   Application.initializer({
     name: 'domTemplates',
-    initialize: _bootstrap
+    initialize: environment.hasDOM ? _bootstrap : function() { }
   });
 
   Application.initializer({

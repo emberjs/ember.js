@@ -47,6 +47,8 @@ import { registerASTPlugin } from "ember-htmlbars/plugins";
 import TransformEachInToHash from "ember-htmlbars/plugins/transform-each-in-to-hash";
 import TransformWithAsToHash from "ember-htmlbars/plugins/transform-with-as-to-hash";
 
+import environment from "ember-metal/environment";
+
 // importing adds template bootstrapping
 // initializer to enable embedded templates
 import "ember-htmlbars/system/bootstrap";
@@ -95,8 +97,10 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
 
 }
 
+var domHelper = environment.hasDOM ? new DOMHelper() : null;
+
 export var defaultEnv = {
-  dom: new DOMHelper(),
+  dom: domHelper,
 
   hooks: {
     get: get,

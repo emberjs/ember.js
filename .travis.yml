@@ -39,3 +39,4 @@ env:
     - TEST_SUITE=built-tests
     - TEST_SUITE=old-jquery
     - TEST_SUITE=extend-prototypes
+    - TEST_SUITE=node

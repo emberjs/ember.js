@@ -1,4 +1,7 @@
 import { DOMHelper } from "morph";
+import environment from "ember-metal/environment";
+
+var domHelper = environment.hasDOM ? new DOMHelper() : null;
 
 function Renderer() {
   this._uuid = 0;
@@ -7,7 +10,7 @@ function Renderer() {
   this._parents = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
   this._elements = new Array(17);
   this._inserts = {};
-  this._dom = new DOMHelper();
+  this._dom = domHelper;
 }
 
 function Renderer_renderTree(_view, _parentView, _insertAt) {
