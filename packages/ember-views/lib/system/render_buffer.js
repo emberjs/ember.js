@@ -307,15 +307,15 @@ _RenderBuffer.prototype = {
     @chainable
   */
   push: function(content) {
-    if (content.nodeType) {
-      Ember.assert("A fragment cannot be pushed into a buffer that contains content", !this.buffer);
-      this.buffer = content;
-    } else {
+    if (typeof content === 'string') {
       if (this.buffer === null) {
         this.buffer = '';
       }
       Ember.assert("A string cannot be pushed into the buffer after a fragment", !this.buffer.nodeType);
       this.buffer += content;
+    } else {
+      Ember.assert("A fragment cannot be pushed into a buffer that contains content", !this.buffer);
+      this.buffer = content;
     }
     return this;
   },
@@ -463,7 +463,6 @@ _RenderBuffer.prototype = {
     }
 
     var element = this.dom.createElement(tagString, this.outerContextualElement());
-    var $element = jQuery(element);
 
     if (id) {
       this.dom.setAttribute(element, 'id', id);
@@ -477,9 +476,7 @@ _RenderBuffer.prototype = {
 
     if (style) {
       for (prop in style) {
-        if (style.hasOwnProperty(prop)) {
-          styleBuffer += (prop + ':' + style[prop] + ';');
-        }
+        styleBuffer += (prop + ':' + style[prop] + ';');
       }
 
       this.dom.setAttribute(element, 'style', styleBuffer);
@@ -489,9 +486,7 @@ _RenderBuffer.prototype = {
 
     if (attrs) {
       for (attr in attrs) {
-        if (attrs.hasOwnProperty(attr)) {
-          this.dom.setAttribute(element, attr, attrs[attr]);
-        }
+        this.dom.setAttribute(element, attr, attrs[attr]);
       }
 
       this.elementAttributes = null;
@@ -499,9 +494,7 @@ _RenderBuffer.prototype = {
 
     if (props) {
       for (prop in props) {
-        if (props.hasOwnProperty(prop)) {
-          $element.prop(prop, props[prop]);
-        }
+        this.dom.setProperty(element, prop, props[prop]);
       }
 
       this.elementProperties = null;
@@ -539,7 +532,10 @@ _RenderBuffer.prototype = {
         this._element.appendChild(nodes[0]);
       }
     }
-    this.hydrateMorphs(contextualElement);
+    // This should only happen with legacy string buffers
+    if (this.childViews.length > 0) {
+      this.hydrateMorphs(contextualElement);
+    }
 
     return this._element;
   },
