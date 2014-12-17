@@ -30,8 +30,8 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   EmberHandlebars.template = template;
   EmberHandlebars.makeViewHelper = makeViewHelper;
 
+  EmberHandlebars.SafeString = SafeString;
   EmberHandlebars.Utils =  {
-    SafeString: SafeString,
     escapeExpression: escapeExpression
   };
 }
