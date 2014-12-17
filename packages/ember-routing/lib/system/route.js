@@ -1781,7 +1781,7 @@ var Route = EmberObject.extend(ActionHandler, {
     }
 
     if (!view && !template) {
-      Ember.assert("Could not find \"" + name + "\" template or view.", Ember.isEmpty(arguments[0]));
+      Ember.assert("Could not find \"" + name + "\" template or view.", Ember.isEmpty(arguments.length > 0 ? arguments[0] : undefined));
       if (get(this.router, 'namespace.LOG_VIEW_LOOKUPS')) {
         Ember.Logger.info("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
       }
