@@ -1120,7 +1120,6 @@ var Route = EmberObject.extend(ActionHandler, {
 
     @method beforeModel
     @param {Transition} transition
-    @param {Object} queryParams the active query params for this route
     @return {Promise} if the value returned from this hook is
       a promise, the transition will pause until the transition
       resolves. Otherwise, non-promise return values are not
@@ -1154,7 +1153,6 @@ var Route = EmberObject.extend(ActionHandler, {
     @param {Object} resolvedModel the value returned from `model`,
       or its resolved value if it was a promise
     @param {Transition} transition
-    @param {Object} queryParams the active query params for this handler
     @return {Promise} if the value returned from this hook is
       a promise, the transition will pause until the transition
       resolves. Otherwise, non-promise return values are not
@@ -1259,7 +1257,6 @@ var Route = EmberObject.extend(ActionHandler, {
     @method model
     @param {Object} params the parameters extracted from the URL
     @param {Transition} transition
-    @param {Object} queryParams the query params for this route
     @return {Object|Promise} the model for this route. If
       a promise is returned, the transition will pause until
       the promise resolves, and the resolved value of the promise
