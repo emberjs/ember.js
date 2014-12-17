@@ -44,7 +44,7 @@ import EmberObject from "ember-runtime/system/object";
 
   @class ContainerDebugAdapter
   @namespace Ember
-  @extends EmberObject
+  @extends Ember.Object
   @since 1.5.0
 */
 export default EmberObject.extend({
