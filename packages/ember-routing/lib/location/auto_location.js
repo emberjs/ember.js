@@ -29,6 +29,26 @@ import { supportsHashChange, supportsHistory } from "ember-routing/location/feat
   @static
 */
 export default {
+  /**
+    @private
+
+    Attached for mocking in tests
+
+    @property location
+    @default environment.location
+  */
+  _location: environment.location,
+
+  /**
+    @private
+
+    Attached for mocking in tests
+
+    @since 1.5.1
+    @property _history
+    @default environment.history
+  */
+  _history: environment.history,
 
   /**
     @private
