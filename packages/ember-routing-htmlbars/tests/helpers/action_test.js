@@ -4,7 +4,7 @@ import run from "ember-metal/run_loop";
 import EventDispatcher from "ember-views/system/event_dispatcher";
 import ActionManager from "ember-views/system/action_manager";
 
-import Container from "ember-runtime/system/container";
+import { Registry, Container } from "ember-runtime/system/container";
 import EmberObject from "ember-runtime/system/object";
 import { default as EmberController } from "ember-runtime/controllers/controller";
 import EmberObjectController from "ember-runtime/controllers/object_controller";
@@ -186,7 +186,8 @@ test("should target the with-controller inside an {{#with controller='person'}} 
   };
 
   var PersonController = EmberObjectController.extend();
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var parentController = EmberObject.create({
     container: container
   });
@@ -198,7 +199,7 @@ test("should target the with-controller inside an {{#with controller='person'}} 
     controller: parentController
   });
 
-  container.register('controller:person', PersonController);
+  registry.register('controller:person', PersonController);
 
   expectDeprecation(function() {
     runAppend(view);
@@ -220,7 +221,8 @@ test("should target the with-controller inside an {{each}} in a {{#with controll
     }
   });
 
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var parentController = EmberObject.create({
     container: container,
     people: Ember.A([
@@ -235,7 +237,7 @@ test("should target the with-controller inside an {{each}} in a {{#with controll
     controller: parentController
   });
 
-  container.register('controller:people', PeopleController);
+  registry.register('controller:people', PeopleController);
 
   runAppend(view);
 

@@ -3,26 +3,27 @@ import EmberObject from "ember-runtime/system/object";
 import run from "ember-metal/run_loop";
 import _MetamorphView from 'ember-views/views/metamorph_view';
 import compile from "ember-htmlbars/system/compile";
-import Container from "ember-runtime/system/container";
+import { Registry, Container } from "ember-runtime/system/container";
 import ObjectController from "ember-runtime/controllers/object_controller";
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var view, container;
+var view, registry, container;
 
 QUnit.module("ember-htmlbars: {{bind}} helper", {
   setup: function() {
-    container = new Container();
-    container.optionsForType('template', { instantiate: false });
-    container.register('view:default', _MetamorphView);
-    container.register('view:toplevel', EmberView.extend());
+    registry = new Registry();
+    container = new Container({registry: registry});
+    registry.optionsForType('template', { instantiate: false });
+    registry.register('view:default', _MetamorphView);
+    registry.register('view:toplevel', EmberView.extend());
   },
   teardown: function() {
     runDestroy(container);
     runDestroy(view);
-    container = view = null;
+    registry = container = view = null;
   }
 });
 
@@ -83,13 +84,14 @@ test("it should render the current value of a string path on the context", funct
 
 QUnit.module("ember-htmlbars: {{bind}} with a container, block forms", {
   setup: function() {
-    container = new Container();
-    container.optionsForType('template', { instantiate: false });
+    registry = new Registry();
+    container = new Container({registry: registry});
+    registry.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
     runDestroy(container);
     runDestroy(view);
-    container = view = null;
+    registry = container = view = null;
   }
 });
 
@@ -99,7 +101,7 @@ test("should not update when a property is removed from the view", function() {
   }
   var template = compile(
     '<h1 id="first">{{#bind view.content}}{{#bind foo}}{{bind baz}}{{/bind}}{{/bind}}</h1>' );
-  container.register('template:foo', template);
+  registry.register('template:foo', template);
 
   view = EmberView.create({
     container: container,
@@ -145,7 +147,7 @@ test("Handlebars templates update properties if a content object changes", funct
   }
   var template = compile(
     '<h1>Today\'s Menu</h1>{{#bind view.coffee}}<h2>{{color}} coffee</h2><span id="price">{{bind price}}</span>{{/bind}}');
-  container.register('template:menu', template);
+  registry.register('template:menu', template);
 
   run(function() {
     view = EmberView.create({
@@ -195,7 +197,7 @@ test("Handlebars templates update properties if a content object changes", funct
 
 test("Template updates correctly if a path is passed to the bind helper", function() {
   var template = compile('<h1>{{bind view.coffee.price}}</h1>');
-  container.register('template:menu', template);
+  registry.register('template:menu', template);
 
   view = EmberView.create({
     container: container,
@@ -225,7 +227,7 @@ test("Template updates correctly if a path is passed to the bind helper", functi
 
 test("Template updates correctly if a path is passed to the bind helper and the context object is an ObjectController", function() {
   var template = compile('<h1>{{bind view.coffee.price}}</h1>');
-  container.register('template:menu', template);
+  registry.register('template:menu', template);
 
   var controller = ObjectController.create();
 
@@ -260,7 +262,7 @@ test("Template updates correctly if a path is passed to the bind helper and the 
 });
 
 test('View should update when a property changes and the bind helper is used', function() {
-  container.register('template:foo', compile('<h1 id="first">{{#with view.content as thing}}{{bind "thing.wham"}}{{/with}}</h1>'));
+  registry.register('template:foo', compile('<h1 id="first">{{#with view.content as thing}}{{bind "thing.wham"}}{{/with}}</h1>'));
 
   view = EmberView.create({
     container: container,

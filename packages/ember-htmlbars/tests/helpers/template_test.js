@@ -3,28 +3,31 @@ import EmberObject from "ember-runtime/system/object";
 import jQuery from "ember-views/system/jquery";
 var trim = jQuery.trim;
 
-import Container from "ember-runtime/system/container";
+import { Registry, Container } from "ember-runtime/system/container";
 import compile from "ember-htmlbars/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var MyApp, lookup, view, container;
+var MyApp, lookup, view, registry, container;
 var originalLookup = Ember.lookup;
 
 QUnit.module("Support for {{template}} helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
     MyApp = lookup.MyApp = EmberObject.create({});
-    container = new Container();
-    container.optionsForType('template', { instantiate: false });
+    registry = new Registry();
+    container = new Container({registry: registry});
+    registry.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
     runDestroy(view);
+    runDestroy(container);
+    registry = container = view = null;
     Ember.lookup = originalLookup;
   }
 });
 
 test("should render other templates via the container (DEPRECATED)", function() {
-  container.register('template:sub_template_from_container', compile('sub-template'));
+  registry.register('template:sub_template_from_container', compile('sub-template'));
 
   view = EmberView.create({
     container: container,
@@ -39,7 +42,7 @@ test("should render other templates via the container (DEPRECATED)", function() 
 });
 
 test("should use the current view's context (DEPRECATED)", function() {
-  container.register('template:person_name', compile("{{firstName}} {{lastName}}"));
+  registry.register('template:person_name', compile("{{firstName}} {{lastName}}"));
 
   view = EmberView.create({
     container: container,

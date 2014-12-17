@@ -242,7 +242,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
 
     fullName = 'controller:' + controllerClass;
 
-    if (!container.has(fullName)) {
+    if (!container.registry.has(fullName)) {
       throw new EmberError('Could not resolve itemController: "' + controllerClass + '"');
     }
 

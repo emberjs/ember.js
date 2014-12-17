@@ -1,11 +1,12 @@
 import run from "ember-metal/run_loop";
-import Container from 'container/container';
+import Registry from "container/registry";
+import Container from "container/container";
 import Service from "ember-runtime/system/service";
 import EmberObject from "ember-runtime/system/object";
 import EmberRoute from "ember-routing/system/route";
 import inject from "ember-runtime/inject";
 
-var route, routeOne, routeTwo, container, lookupHash;
+var route, routeOne, routeTwo, lookupHash;
 
 function createRoute(){
   route = EmberRoute.create();
@@ -34,7 +35,7 @@ test("default store utilizes the container to acquire the model factory", functi
     }
   });
 
-  container = {
+  var container = {
     has: function() { return true; },
     lookupFactory: lookupFactory
   };
@@ -57,7 +58,8 @@ test("'store' can be injected by data persistence frameworks", function() {
   expect(8);
   run(route, 'destroy');
 
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var post = {
     id: 1
   };
@@ -71,10 +73,10 @@ test("'store' can be injected by data persistence frameworks", function() {
     }
   });
 
-  container.register('route:index',  EmberRoute);
-  container.register('store:main', Store);
+  registry.register('route:index',  EmberRoute);
+  registry.register('store:main', Store);
 
-  container.injection('route', 'store', 'store:main');
+  registry.injection('route', 'store', 'store:main');
 
   route = container.lookup('route:index');
 
@@ -86,11 +88,12 @@ test("assert if 'store.find' method is not found", function() {
   expect(1);
   run(route, 'destroy');
 
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   var Post = EmberObject.extend();
 
-  container.register('route:index', EmberRoute);
-  container.register('model:post',  Post);
+  registry.register('route:index', EmberRoute);
+  registry.register('model:post',  Post);
 
   route = container.lookup('route:index');
 
@@ -103,8 +106,9 @@ test("asserts if model class is not found", function() {
   expect(1);
   run(route, 'destroy');
 
-  var container = new Container();
-  container.register('route:index', EmberRoute);
+  var registry = new Registry();
+  var container = new Container({registry: registry});
+  registry.register('route:index', EmberRoute);
 
   route = container.lookup('route:index');
 
@@ -118,8 +122,10 @@ test("'store' does not need to be injected", function() {
 
   run(route, 'destroy');
 
-  var container = new Container();
-  container.register('route:index',  EmberRoute);
+  var registry = new Registry();
+  var container = new Container({registry: registry});
+
+  registry.register('route:index',  EmberRoute);
 
   route = container.lookup('route:index');
 
@@ -131,7 +137,8 @@ test("'store' does not need to be injected", function() {
 });
 
 test("modelFor doesn't require the router", function() {
-  var container = new Container();
+  var registry = new Registry();
+  var container = new Container({registry: registry});
   route.container = container;
 
   var foo = { name: 'foo' };
@@ -141,7 +148,7 @@ test("modelFor doesn't require the router", function() {
     currentModel: foo
   });
 
-  container.register('route:foo', fooRoute);
+  registry.register('route:foo', fooRoute);
 
   equal(route.modelFor('foo'), foo);
 });
@@ -194,7 +201,7 @@ test("returns undefined if model is not set", function(){
 
 QUnit.module("Ember.Route interaction", {
   setup: function() {
-    container = {
+    var container = {
       lookup: function(fullName) {
         return lookupHash[fullName];
       }
@@ -230,13 +237,14 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   QUnit.module('Route injected properties');
 
   test("services can be injected into routes", function() {
-    var container = new Container();
+    var registry = new Registry();
+    var container = new Container({registry: registry});
 
-    container.register('route:application', EmberRoute.extend({
+    registry.register('route:application', EmberRoute.extend({
       authService: inject.service('auth')
     }));
 
-    container.register('service:auth', Service.extend());
+    registry.register('service:auth', Service.extend());
 
     var appRoute = container.lookup('route:application'),
       authService = container.lookup('service:auth');

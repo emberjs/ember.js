@@ -3,7 +3,8 @@ import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 
-import Container from 'container/container';
+import Registry from "container/registry";
+import Container from "container/container";
 import Namespace from "ember-runtime/system/namespace";
 import {
   decamelize,
@@ -28,25 +29,29 @@ import { registerHelper } from "ember-htmlbars/helpers";
 import helpers from "ember-htmlbars/helpers";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var buildContainer = function(namespace) {
-  var container = new Container();
+var buildRegistry = function(namespace) {
+  var registry = new Registry();
 
-  container.set = set;
-  container.resolver = resolverFor(namespace);
-  container.optionsForType('view', { singleton: false });
-  container.optionsForType('template', { instantiate: false });
-  container.register('application:main', namespace, { instantiate: false });
-  container.injection('router:main', 'namespace', 'application:main');
+  registry.set = set;
+  registry.resolver = resolverFor(namespace);
+  registry.optionsForType('view', { singleton: false });
+  registry.optionsForType('template', { instantiate: false });
+  registry.register('application:main', namespace, { instantiate: false });
+  registry.injection('router:main', 'namespace', 'application:main');
 
-  container.register('location:hash', HashLocation);
+  registry.register('location:hash', HashLocation);
 
-  container.register('controller:basic', Controller, { instantiate: false });
-  container.register('controller:object', ObjectController, { instantiate: false });
-  container.register('controller:array', ArrayController, { instantiate: false });
+  registry.register('controller:basic', Controller, { instantiate: false });
+  registry.register('controller:object', ObjectController, { instantiate: false });
+  registry.register('controller:array', ArrayController, { instantiate: false });
 
-  container.typeInjection('route', 'router', 'router:main');
+  registry.typeInjection('route', 'router', 'router:main');
 
-  return container;
+  return registry;
+};
+
+var buildContainer = function(registry) {
+  return new Container({registry: registry});
 };
 
 function resolverFor(namespace) {
@@ -71,7 +76,7 @@ function resolverFor(namespace) {
 
 var trim = jQuery.trim;
 
-var view, container, originalOutletHelper;
+var view, registry, container, originalOutletHelper;
 
 QUnit.module("ember-routing-htmlbars: {{outlet}} helper", {
 
@@ -80,9 +85,10 @@ QUnit.module("ember-routing-htmlbars: {{outlet}} helper", {
     registerHelper('outlet', outletHelper);
 
     var namespace = Namespace.create();
-    container = buildContainer(namespace);
-    container.register('view:default', _MetamorphView);
-    container.register('router:main', EmberRouter.extend());
+    registry = buildRegistry(namespace);
+    container = buildContainer(registry);
+    registry.register('view:default', _MetamorphView);
+    registry.register('router:main', EmberRouter.extend());
   },
   teardown: function() {
     delete helpers['outlet'];
@@ -90,6 +96,7 @@ QUnit.module("ember-routing-htmlbars: {{outlet}} helper", {
 
     runDestroy(container);
     runDestroy(view);
+    registry = container = view = null;
   }
 });
 
@@ -157,7 +164,7 @@ test("outlet should correctly lookup a view", function() {
 
   ContainerView = EmberContainerView.extend();
 
-  container.register("view:containerView", ContainerView);
+  registry.register("view:containerView", ContainerView);
 
   template = "<h1>HI</h1>{{outlet view='containerView'}}";
 

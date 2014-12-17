@@ -57,7 +57,7 @@ test("with a custom resolver", function() {
     });
   });
 
-  App.__container__.register('model:peter', EmberObject.extend());
+  App.__registry__.register('model:peter', EmberObject.extend());
 
   var peter = App.__container__.lookup('model:peter');
   var guid = guidFor(peter);

@@ -7,7 +7,7 @@ import Router from "ember-routing/system/router";
 import View from "ember-views/views/view";
 import Controller from "ember-runtime/controllers/controller";
 import jQuery from "ember-views/system/jquery";
-import Container from 'container/container';
+import Registry from 'container/registry';
 
 var application;
 var EmberApplication = Application;
@@ -102,8 +102,8 @@ test("When an application is reset, the eventDispatcher is destroyed and recreat
   };
 
   // this is pretty awful. We should make this less Global-ly.
-  var originalRegister = Container.prototype.register;
-  Container.prototype.register = function(name, type, options){
+  var originalRegister = Registry.prototype.register;
+  Registry.prototype.register = function(name, type, options){
     if (name === "event_dispatcher:main") {
       return mock_event_dispatcher;
     } else {
@@ -126,9 +126,9 @@ test("When an application is reset, the eventDispatcher is destroyed and recreat
 
     equal(eventDispatcherWasDestroyed, 1);
     equal(eventDispatcherWasSetup, 2, "setup called after reset");
-  } catch (error) { Container.prototype.register = originalRegister; }
+  } catch (error) { Registry.prototype.register = originalRegister; }
 
-  Container.prototype.register = originalRegister;
+  Registry.prototype.register = originalRegister;
 });
 
 test("When an application is reset, the ApplicationView is torn down", function() {
@@ -244,10 +244,11 @@ test("With ember-data like initializer and constant", function() {
 
   Application.initializer({
     name: "store",
-    initialize: function(container, application) {
-      application.register('store:main', application.Store);
+    initialize: function(registry, application) {
+      registry.register('store:main', application.Store);
 
-      container.lookup('store:main');
+      // TODO-dgeb - container lookups should not be performed in the intializer
+      application.__container__.lookup('store:main');
     }
   });
 

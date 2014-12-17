@@ -161,7 +161,7 @@ function resolveHelper(container, name) {
     var Component = componentLookup.lookupFactory(name, container);
     if (Component) {
       helper = EmberHandlebars.makeViewHelper(Component);
-      container.register('helper:' + name, helper);
+      registry.register('helper:' + name, helper);
     }
   }
   return helper;

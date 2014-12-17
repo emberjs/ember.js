@@ -120,8 +120,8 @@ var EmberRouter = EmberObject.extend(Evented, {
 
     this._setupRouter(router, location);
 
-    container.register('view:default', _MetamorphView);
-    container.register('view:toplevel', EmberView.extend());
+    container.registry.register('view:default', _MetamorphView);
+    container.registry.register('view:toplevel', EmberView.extend());
 
     location.onUpdateURL(function(url) {
       self.handleURL(url);
@@ -293,8 +293,8 @@ var EmberRouter = EmberObject.extend(Evented, {
     var location = get(this, 'location');
     var rootURL = get(this, 'rootURL');
 
-    if (rootURL && this.container && !this.container.has('-location-setting:root-url')) {
-      this.container.register('-location-setting:root-url', rootURL, {
+    if (rootURL && this.container && !this.container.registry.has('-location-setting:root-url')) {
+      this.container.registry.register('-location-setting:root-url', rootURL, {
         instantiate: false
       });
     }
@@ -344,7 +344,7 @@ var EmberRouter = EmberObject.extend(Evented, {
       seen[name] = true;
 
       if (!handler) {
-        container.register(routeName, DefaultRoute.extend());
+        container.registry.register(routeName, DefaultRoute.extend());
         handler = container.lookup(routeName);
 
         if (get(self, 'namespace.LOG_ACTIVE_GENERATION')) {
@@ -703,7 +703,7 @@ function findChildRouteName(parentRoute, originatingChildRoute, name) {
 function routeHasBeenDefined(router, name) {
   var container = router.container;
   return router.hasRoute(name) &&
-         (container.has('template:' + name) || container.has('route:' + name));
+         (container.registry.has('template:' + name) || container.registry.has('route:' + name));
 }
 
 function triggerEvent(handlerInfos, ignoreFailure, args) {

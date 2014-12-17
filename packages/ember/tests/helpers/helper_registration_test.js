@@ -7,7 +7,7 @@ compile = EmberHandlebars.compile;
 helpers = EmberHandlebars.helpers;
 makeBoundHelper = EmberHandlebars.makeBoundHelper;
 
-var App, container;
+var App, registry, container;
 
 function reverseHelper(value) {
   return arguments.length > 1 ? value.split('').reverse().join('') : "--";
@@ -37,6 +37,7 @@ var boot = function(callback) {
       location: 'none'
     });
 
+    registry = App.__registry__;
     container = App.__container__;
 
     if (callback) { callback(); }
@@ -55,7 +56,7 @@ test("Unbound dashed helpers registered on the container can be late-invoked", f
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-borf}} {{x-borf YES}}</div>");
 
   boot(function() {
-    container.register('helper:x-borf', function(val) {
+    registry.register('helper:x-borf', function(val) {
       return arguments.length > 1 ? val : "BORF";
     });
   });
@@ -69,10 +70,10 @@ test("Bound helpers registered on the container can be late-invoked", function()
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{x-reverse}} {{x-reverse foo}}</div>");
 
   boot(function() {
-    container.register('controller:application', Ember.Controller.extend({
+    registry.register('controller:application', Ember.Controller.extend({
       foo: "alex"
     }));
-    container.register('helper:x-reverse', makeBoundHelper(reverseHelper));
+    registry.register('helper:x-reverse', makeBoundHelper(reverseHelper));
   });
 
   equal(Ember.$('#wrapper').text(), "-- xela", "The bound helper was invoked from the container");
@@ -97,10 +98,10 @@ test("Undashed helpers registered on the container can not (presently) be invoke
   Ember.TEMPLATES.application = compile("<div id='wrapper'>{{omg}}|{{omg 'GRRR'}}|{{yorp}}|{{yorp 'ahh'}}</div>");
 
   boot(function() {
-    container.register('helper:omg', function() {
+    registry.register('helper:omg', function() {
       return "OMG";
     });
-    container.register('helper:yorp', makeBoundHelper(function() {
+    registry.register('helper:yorp', makeBoundHelper(function() {
       return "YORP";
     }));
   });

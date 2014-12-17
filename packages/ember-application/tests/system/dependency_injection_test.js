@@ -49,11 +49,11 @@ test('container lookup is normalized', function() {
 });
 
 test('registered entities can be looked up later', function() {
-  equal(locator.resolve('model:person'), application.Person);
-  equal(locator.resolve('model:user'), application.User);
-  equal(locator.resolve('fruit:favorite'), application.Orange);
-  equal(locator.resolve('communication:main'), application.Email);
-  equal(locator.resolve('controller:postIndex'), application.PostIndexController);
+  equal(locator.registry.resolve('model:person'), application.Person);
+  equal(locator.registry.resolve('model:user'), application.User);
+  equal(locator.registry.resolve('fruit:favorite'), application.Orange);
+  equal(locator.registry.resolve('communication:main'), application.Email);
+  equal(locator.registry.resolve('controller:postIndex'), application.PostIndexController);
 
   equal(locator.lookup('fruit:favorite'), locator.lookup('fruit:favorite'), 'singleton lookup worked');
   ok(locator.lookup('model:user') !== locator.lookup('model:user'), 'non-singleton lookup worked');

@@ -8,7 +8,7 @@ import EmberHandlebars from "ember-htmlbars/compat";
 
 var compile = EmberHandlebars.compile;
 
-var Router, App, router, container, originalLoggerError;
+var Router, App, router, registry, container, originalLoggerError;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -66,6 +66,7 @@ QUnit.module("Basic Routing", {
       App.LoadingRoute = Ember.Route.extend({
       });
 
+      registry = App.__registry__;
       container = App.__container__;
 
       Ember.TEMPLATES.application = compile("{{outlet}}");
@@ -527,7 +528,7 @@ test("The route controller is still set when overriding the setupController hook
     }
   });
 
-  container.register('controller:home', Ember.Controller.extend());
+  registry.register('controller:home', Ember.Controller.extend());
 
   bootApplication();
 
@@ -547,7 +548,7 @@ test("The route controller can be specified via controllerName", function() {
     controllerName: 'myController'
   });
 
-  container.register('controller:myController', Ember.Controller.extend({
+  registry.register('controller:myController', Ember.Controller.extend({
     myValue: "foo"
   }));
 
@@ -573,7 +574,7 @@ test("The route controller specified via controllerName is used in render", func
     }
   });
 
-  container.register('controller:myController', Ember.Controller.extend({
+  registry.register('controller:myController', Ember.Controller.extend({
     myValue: "foo"
   }));
 
@@ -596,11 +597,11 @@ test("The route controller specified via controllerName is used in render even w
     controllerName: 'myController'
   });
 
-  container.register('controller:home', Ember.Controller.extend({
+  registry.register('controller:home', Ember.Controller.extend({
     myValue: "home"
   }));
 
-  container.register('controller:myController', Ember.Controller.extend({
+  registry.register('controller:myController', Ember.Controller.extend({
     myValue: "myController"
   }));
 
@@ -712,7 +713,7 @@ test("The Specials Page getting its controller context by deserializing the para
 
   bootApplication();
 
-  container.register('controller:special', Ember.Controller.extend());
+  registry.register('controller:special', Ember.Controller.extend());
 
   handleURL("/specials/1");
 
@@ -746,7 +747,7 @@ test("The Specials Page defaults to looking models up via `find`", function() {
 
   bootApplication();
 
-  container.register('controller:special', Ember.Controller.extend());
+  registry.register('controller:special', Ember.Controller.extend());
 
   handleURL("/specials/1");
 
@@ -792,7 +793,7 @@ test("The Special Page returning a promise puts the app into a loading state unt
 
   bootApplication();
 
-  container.register('controller:special', Ember.Controller.extend());
+  registry.register('controller:special', Ember.Controller.extend());
 
   handleURL("/specials/1");
 
@@ -840,7 +841,7 @@ test("The loading state doesn't get entered for promises that resolve on the sam
 
   bootApplication();
 
-  container.register('controller:special', Ember.Controller.extend());
+  registry.register('controller:special', Ember.Controller.extend());
 
   handleURL("/specials/1");
 
@@ -1004,7 +1005,7 @@ asyncTest("Moving from one page to another triggers the correct callbacks", func
 
   bootApplication();
 
-  container.register('controller:special', Ember.Controller.extend());
+  registry.register('controller:special', Ember.Controller.extend());
 
   var transition = handleURL('/');
 
@@ -1100,7 +1101,7 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
 
   bootApplication();
 
-  container.register('controller:special', Ember.Controller.extend());
+  registry.register('controller:special', Ember.Controller.extend());
 
   equal(Ember.$('h3', '#qunit-fixture').text(), "Home", "The app is now in the initial state");
   equal(rootSetup, 1, "The root setup was triggered");
@@ -1166,7 +1167,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
     }
   });
 
-  container.register('controller:home', controller);
+  registry.register('controller:home', controller);
 
   bootApplication();
 
@@ -1394,7 +1395,7 @@ asyncTest("Actions are not triggered on the controller if a matching action name
     }
   });
 
-  container.register('controller:home', controller);
+  registry.register('controller:home', controller);
 
   bootApplication();
 
@@ -2117,7 +2118,7 @@ test("Router accounts for rootURL on page load when using history location", fun
   });
 
 
-  container.register('location:historyTest', HistoryTestLocation);
+  registry.register('location:historyTest', HistoryTestLocation);
 
   Router.reopen({
     location: 'historyTest',
@@ -2152,7 +2153,7 @@ test("The rootURL is passed properly to the location implementation", function()
     }
   });
 
-  container.register('location:history-test', HistoryTestLocation);
+  registry.register('location:history-test', HistoryTestLocation);
 
   Router.reopen({
     location: 'history-test',

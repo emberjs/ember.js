@@ -1,19 +1,11 @@
 import ComponentLookup from "ember-views/component_lookup";
+import Registry from "container/registry";
 import Container from "container/container";
 import EmberView from "ember-views/views/view";
 import compile from "ember-htmlbars/system/compile";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var view, container;
-
-function generateContainer() {
-  var container = new Container();
-
-  container.optionsForType('template', { instantiate: false });
-  container.register('component-lookup:main', ComponentLookup);
-
-  return container;
-}
+var view, registry, container;
 
 // this is working around a bug in defeatureify that prevents nested flags
 // from being stripped
@@ -26,16 +18,22 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars')) {
   if (componentGenerationEnabled) {
     QUnit.module("ember-htmlbars: component hook", {
       setup: function() {
-        container = generateContainer();
+        registry = new Registry();
+        container = new Container({registry: registry});
+
+        registry.optionsForType('template', { instantiate: false });
+        registry.register('component-lookup:main', ComponentLookup);
       },
 
       teardown: function(){
         runDestroy(view);
+        runDestroy(container);
+        registry = container = view = null;
       }
     });
 
     test("component is looked up from the container", function() {
-      container.register('template:components/foo-bar', compile('yippie!'));
+      registry.register('template:components/foo-bar', compile('yippie!'));
 
       view = EmberView.create({
         container: container,

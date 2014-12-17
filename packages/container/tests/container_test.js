@@ -131,7 +131,7 @@ test("A registered factory returns a fresh instance if singleton: false is passe
 //
 //   container.register('controller:post', PostController);
 //
-//   equal(container.has('controller:post'), true, "container is aware of the PostController");
+//   equal(container.registry.has('controller:post'), true, "container is aware of the PostController");
 //
 //   ok(container.lookup('controller:post') instanceof PostController, "lookup is correct instance");
 //
@@ -562,7 +562,8 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   test("The `_onLookup` hook is called on factories when looked up the first time", function() {
     expect(2);
 
-    var container = new Container();
+    var registry = new Registry();
+    var container = new Container({registry: registry});
     var Apple = factory();
 
     Apple.reopenClass({
@@ -572,7 +573,7 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
       }
     });
 
-    container.register('apple:main', Apple);
+    registry.register('apple:main', Apple);
 
     container.lookupFactory('apple:main');
     container.lookupFactory('apple:main');
@@ -601,7 +602,8 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   test("Lazy injection validations are cached", function() {
     expect(1);
 
-    var container = new Container();
+    var registry = new Registry();
+    var container = new Container({registry: registry});
     var Apple = factory();
     var Orange = factory();
 
@@ -612,8 +614,8 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
       }
     });
 
-    container.register('apple:main', Apple);
-    container.register('orange:main', Orange);
+    registry.register('apple:main', Apple);
+    registry.register('orange:main', Orange);
 
     container.lookup('apple:main');
     container.lookup('apple:main');

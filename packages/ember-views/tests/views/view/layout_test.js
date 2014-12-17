@@ -1,19 +1,24 @@
-import Container from "container";
+import Registry from "container/registry";
+import Container from "container/container";
 import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 import EmberView from "ember-views/views/view";
 
-var container, view;
+var registry, container, view;
 
 QUnit.module("EmberView - Layout Functionality", {
   setup: function() {
-    container = new Container();
-    container.optionsForType('template', { instantiate: false });
+    registry = new Registry();
+    container = new Container({registry: registry});
+    registry.optionsForType('template', { instantiate: false });
   },
+
   teardown: function() {
     run(function() {
       view.destroy();
+      container.destroy();
     });
+    registry = container = view = null;
   }
 });
 
@@ -32,8 +37,8 @@ test("should call the function of the associated layout", function() {
   var templateCalled = 0;
   var layoutCalled = 0;
 
-  container.register('template:template', function() { templateCalled++; });
-  container.register('template:layout', function() { layoutCalled++; });
+  registry.register('template:template', function() { templateCalled++; });
+  registry.register('template:layout', function() { layoutCalled++; });
 
   view = EmberView.create({
     container: container,
@@ -50,7 +55,7 @@ test("should call the function of the associated layout", function() {
 });
 
 test("should call the function of the associated template with itself as the context", function() {
-  container.register('template:testTemplate', function(dataSource) {
+  registry.register('template:testTemplate', function(dataSource) {
     return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
   });
 

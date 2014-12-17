@@ -9,13 +9,14 @@ import {
   registerHelper
 } from "ember-htmlbars/helpers";
 
-var locator, application, originalLookup, originalLoggerInfo;
+var registry, locator, application, originalLookup, originalLoggerInfo;
 
 QUnit.module("Ember.Application Depedency Injection", {
   setup: function() {
     originalLookup = Ember.lookup;
     application = run(Application, 'create');
 
+    registry = application.__registry__;
     locator = application.__container__;
     originalLoggerInfo = Logger.info;
   },
@@ -65,7 +66,7 @@ function detectEqual(first, second, message) {
 test('the default resolver looks up arbitrary types on the namespace', function() {
   application.FooManager = EmberObject.extend({});
 
-  detectEqual(application.FooManager, locator.resolver('manager:foo'),"looks up FooManager on application");
+  detectEqual(application.FooManager, registry.resolver('manager:foo'), "looks up FooManager on application");
 });
 
 test("the default resolver resolves models on the namespace", function() {
@@ -110,14 +111,14 @@ test("the default resolver resolves container-registered helpers", function(){
 });
 
 test("the default resolver throws an error if the fullName to resolve is invalid", function(){
-  raises(function(){ locator.resolve(undefined);}, TypeError, /Invalid fullName/ );
-  raises(function(){ locator.resolve(null);     }, TypeError, /Invalid fullName/ );
-  raises(function(){ locator.resolve('');       }, TypeError, /Invalid fullName/ );
-  raises(function(){ locator.resolve('');       }, TypeError, /Invalid fullName/ );
-  raises(function(){ locator.resolve(':');      }, TypeError, /Invalid fullName/ );
-  raises(function(){ locator.resolve('model');  }, TypeError, /Invalid fullName/ );
-  raises(function(){ locator.resolve('model:'); }, TypeError, /Invalid fullName/ );
-  raises(function(){ locator.resolve(':type');  }, TypeError, /Invalid fullName/ );
+  raises(function(){ registry.resolve(undefined);}, TypeError, /Invalid fullName/ );
+  raises(function(){ registry.resolve(null);     }, TypeError, /Invalid fullName/ );
+  raises(function(){ registry.resolve('');       }, TypeError, /Invalid fullName/ );
+  raises(function(){ registry.resolve('');       }, TypeError, /Invalid fullName/ );
+  raises(function(){ registry.resolve(':');      }, TypeError, /Invalid fullName/ );
+  raises(function(){ registry.resolve('model');  }, TypeError, /Invalid fullName/ );
+  raises(function(){ registry.resolve('model:'); }, TypeError, /Invalid fullName/ );
+  raises(function(){ registry.resolve(':type');  }, TypeError, /Invalid fullName/ );
 });
 
 test("the default resolver logs hits if `LOG_RESOLVER` is set", function() {
@@ -133,7 +134,7 @@ test("the default resolver logs hits if `LOG_RESOLVER` is set", function() {
     equal(lookupDescription, 'App.ScoobyDoo');
   };
 
-  locator.resolve('doo:scooby');
+  registry.resolve('doo:scooby');
 });
 
 test("the default resolver logs misses if `LOG_RESOLVER` is set", function() {
@@ -148,7 +149,7 @@ test("the default resolver logs misses if `LOG_RESOLVER` is set", function() {
     equal(lookupDescription, 'App.ScoobyDoo');
   };
 
-  locator.resolve('doo:scooby');
+  registry.resolve('doo:scooby');
 });
 
 test("doesn't log without LOG_RESOLVER", function(){
@@ -160,7 +161,7 @@ test("doesn't log without LOG_RESOLVER", function(){
     infoCount = infoCount + 1;
   };
 
-  locator.resolve('doo:scooby');
-  locator.resolve('doo:scrappy');
+  registry.resolve('doo:scooby');
+  registry.resolve('doo:scrappy');
   equal(infoCount, 0, 'Logger.info should not be called if LOG_RESOLVER is not set');
 });

@@ -2,7 +2,7 @@ import { set } from "ember-metal/property_set";
 import run from "ember-metal/run_loop";
 import EmberObject from "ember-runtime/system/object";
 import Service from "ember-runtime/system/service";
-import Container from "ember-runtime/system/container";
+import { Registry, Container } from "ember-runtime/system/container";
 import inject from "ember-runtime/inject";
 import { get } from "ember-metal/property_get";
 
@@ -194,13 +194,14 @@ if (Ember.FEATURES.isEnabled('ember-metal-injected-properties')) {
   QUnit.module('Ember.Component - injected properties');
 
   test("services can be injected into components", function() {
-    var container = new Container();
+    var registry = new Registry();
+    var container = new Container({registry: registry});
 
-    container.register('component:application', Component.extend({
+    registry.register('component:application', Component.extend({
       profilerService: inject.service('profiler')
     }));
 
-    container.register('service:profiler', Service.extend());
+    registry.register('service:profiler', Service.extend());
 
     var appComponent = container.lookup('component:application'),
     profilerService = container.lookup('service:profiler');
@@ -224,7 +225,7 @@ test('something', function() {
   }).create();
 
   appComponent.send('foo', 'bar');
- 
+
   throws(function() {
     appComponent.send('baz', 'bar');
   }, /had no action handler for: baz/, 'asdf');

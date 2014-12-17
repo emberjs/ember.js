@@ -233,18 +233,18 @@ test("factory for non extendables (MODEL) resolves are cached", function() {
 });
 
 test("factory for non extendables resolves are cached", function() {
-  var container = new Registry();
+  var registry = new Registry();
   var PostController = {};
   var resolveWasCalled = [];
-  container.resolver = function(fullName) {
+  registry.resolver = function(fullName) {
     resolveWasCalled.push(fullName);
     return PostController;
   };
 
   deepEqual(resolveWasCalled, []);
-  container.resolve('foo:post');
+  registry.resolve('foo:post');
   deepEqual(resolveWasCalled, ['foo:post']);
 
-  container.resolve('foo:post');
+  registry.resolve('foo:post');
   deepEqual(resolveWasCalled, ['foo:post']);
 });

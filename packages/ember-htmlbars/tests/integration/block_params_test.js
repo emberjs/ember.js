@@ -1,4 +1,5 @@
-import Container from 'container/container';
+import Registry from "container/registry";
+import Container from "container/container";
 import run from "ember-metal/run_loop";
 import ComponentLookup from 'ember-views/component_lookup';
 import View from "ember-views/views/view";
@@ -7,7 +8,7 @@ import helpers from "ember-htmlbars/helpers";
 import { registerHelper } from "ember-htmlbars/helpers";
 import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
-var container, view;
+var registry, container, view;
 
 function aliasHelper(params, hash, options, env) {
   this.appendChild(View, {
@@ -24,18 +25,22 @@ QUnit.module("ember-htmlbars: block params", {
   setup: function() {
     registerHelper('alias', aliasHelper);
 
-    container = new Container();
-    container.optionsForType('component', { singleton: false });
-    container.optionsForType('view', { singleton: false });
-    container.optionsForType('template', { instantiate: false });
-    container.optionsForType('helper', { instantiate: false });
-    container.register('component-lookup:main', ComponentLookup);
+    registry = new Registry();
+    container = new Container({registry: registry});
+    registry.optionsForType('component', { singleton: false });
+    registry.optionsForType('view', { singleton: false });
+    registry.optionsForType('template', { instantiate: false });
+    registry.optionsForType('helper', { instantiate: false });
+    registry.register('component-lookup:main', ComponentLookup);
   },
+
   teardown: function() {
     delete helpers.alias;
 
     runDestroy(container);
     runDestroy(view);
+
+    registry = container = view = null;
   }
 });
 
@@ -88,7 +93,7 @@ test("nested block params shadow correctly", function() {
 });
 
 test("components can yield values", function() {
-  container.register('template:components/x-alias', compile('{{yield param.name}}'));
+  registry.register('template:components/x-alias', compile('{{yield param.name}}'));
 
   view = View.create({
     container: container,

@@ -4,7 +4,7 @@ import EmberHandlebars from "ember-htmlbars/compat";
 
 var compile = EmberHandlebars.compile;
 
-var Router, App, AppView, router, container;
+var Router, App, AppView, router, registry, container;
 var set = Ember.set;
 
 function bootApplication() {
@@ -56,6 +56,7 @@ function sharedSetup() {
   });
 
   Router = App.Router;
+  registry = App.__registry__;
   container = App.__container__;
 }
 
@@ -79,8 +80,8 @@ QUnit.module("The {{link-to}} helper", {
         templateName: 'app'
       });
 
-      container.register('view:app', AppView);
-      container.register('router:main', Router);
+      registry.register('view:app', AppView);
+      registry.register('router:main', Router);
     });
   },
 
@@ -1300,7 +1301,7 @@ QUnit.module("The {{link-to}} helper: invoking with query params", {
         bat: 'borf'
       });
 
-      container.register('router:main', Router);
+      registry.register('router:main', Router);
     });
   },
 
@@ -1649,7 +1650,7 @@ QUnit.module("The {{link-to}} helper: eager URL updating", {
     Ember.run(function() {
       sharedSetup();
 
-      container.register('router:main', Router);
+      registry.register('router:main', Router);
 
       Router.map(function() {
         this.route('about');
@@ -1705,7 +1706,7 @@ test("when link-to eagerly updates url, the path it provides does NOT include th
     }
   });
 
-  container.register('location:historyTest', HistoryTestLocation);
+  registry.register('location:historyTest', HistoryTestLocation);
 
   Router.reopen({
     location: 'historyTest',

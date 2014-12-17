@@ -9,7 +9,7 @@ import ArrayController from "ember-runtime/controllers/array_controller";
 import { A } from "ember-runtime/system/native_array";
 import { default as EmberController } from "ember-runtime/controllers/controller";
 import ObjectController from "ember-runtime/controllers/object_controller";
-import Container from "ember-runtime/system/container";
+import { Registry, Container } from "ember-runtime/system/container";
 
 import { get } from "ember-metal/property_get";
 import { set } from "ember-metal/property_set";
@@ -17,7 +17,7 @@ import { runAppend, runDestroy } from "ember-runtime/tests/utils";
 
 import compile from "ember-htmlbars/system/compile";
 
-var people, view, container;
+var people, view, registry, container;
 var template, templateMyView, MyView;
 
 // This function lets us write {{#EACH|people|p}} {{p}} {{/each}}
@@ -82,9 +82,11 @@ QUnit.module("the #each helper [DEPRECATED]", {
     template = templateFor("{{#each view.people}}{{name}}{{/each}}");
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
-    container = new Container();
-    container.register('view:default', _MetamorphView);
-    container.register('view:toplevel', EmberView.extend());
+    registry = new Registry();
+    container = new Container({registry: registry});
+
+    registry.register('view:default', _MetamorphView);
+    registry.register('view:toplevel', EmberView.extend());
 
     view = EmberView.create({
       container: container,
@@ -105,7 +107,7 @@ QUnit.module("the #each helper [DEPRECATED]", {
   teardown: function() {
     runDestroy(container);
     runDestroy(view);
-    container = view = null;
+    registry = container = view = null;
 
     Ember.lookup = originalLookup;
   }
@@ -326,7 +328,7 @@ test("it supports itemController", function() {
     container: container
   };
 
-  container.register('controller:array', ArrayController.extend());
+  registry.register('controller:array', ArrayController.extend());
 
   view = EmberView.create({
     container: container,
@@ -335,7 +337,7 @@ test("it supports itemController", function() {
     controller: parentController
   });
 
-  container.register('controller:person', Controller);
+  registry.register('controller:person', Controller);
 
   runAppend(view);
 
@@ -375,7 +377,7 @@ test("itemController specified in template gets a parentController property", fu
         company: 'Yapp'
       };
 
-  container.register('controller:array', ArrayController.extend());
+  registry.register('controller:array', ArrayController.extend());
   runDestroy(view);
 
   view = EmberView.create({
@@ -385,7 +387,7 @@ test("itemController specified in template gets a parentController property", fu
     controller: parentController
   });
 
-  container.register('controller:person', Controller);
+  registry.register('controller:person', Controller);
 
   runAppend(view);
 
@@ -404,8 +406,8 @@ test("itemController specified in ArrayController gets a parentController proper
         company: 'Yapp'
       });
 
-  container.register('controller:people', PeopleController);
-  container.register('controller:person', PersonController);
+  registry.register('controller:people', PeopleController);
+  registry.register('controller:person', PersonController);
   runDestroy(view);
 
   view = EmberView.create({
@@ -436,9 +438,9 @@ test("itemController's parentController property, when the ArrayController has a
       });
    var CompanyController = EmberController.extend();
 
-  container.register('controller:company', CompanyController);
-  container.register('controller:people', PeopleController);
-  container.register('controller:person', PersonController);
+  registry.register('controller:company', CompanyController);
+  registry.register('controller:people', PeopleController);
+  registry.register('controller:person', PersonController);
 
   runDestroy(view);
   view = EmberView.create({
@@ -460,7 +462,7 @@ test("it supports itemController when using a custom keyword", function() {
     })
   });
 
-  container.register('controller:array', ArrayController.extend());
+  registry.register('controller:array', ArrayController.extend());
 
   runDestroy(view);
   view = EmberView.create({
@@ -472,7 +474,7 @@ test("it supports itemController when using a custom keyword", function() {
     }
   });
 
-  container.register('controller:person', Controller);
+  registry.register('controller:person', Controller);
 
   runAppend(view);
 
@@ -499,7 +501,7 @@ test("it supports {{itemView=}}", function() {
     }
   });
 
-  container.register('view:anItemView', itemView);
+  registry.register('view:anItemView', itemView);
 
   runAppend(view);
 
@@ -521,10 +523,10 @@ test("it defers all normalization of itemView names to the resolver", function()
     }
   });
 
-  container.register('view:an-item-view', itemView);
-  container.resolve = function(fullname) {
+  registry.register('view:an-item-view', itemView);
+  registry.resolve = function(fullname) {
     equal(fullname, "view:an-item-view", "leaves fullname untouched");
-    return Container.prototype.resolve.call(this, fullname);
+    return Registry.prototype.resolve.call(this, fullname);
   };
   runAppend(view);
 
@@ -694,9 +696,11 @@ test("single-arg each will iterate over controller if present [DEPRECATED]", fun
 function testEachWithItem(moduleName, useBlockParams) {
   QUnit.module(moduleName, {
     setup: function() {
-      container = new Container();
-      container.register('view:default', _MetamorphView);
-      container.register('view:toplevel', EmberView.extend());
+      registry = new Registry();
+      container = new Container({registry: registry});
+
+      registry.register('view:default', _MetamorphView);
+      registry.register('view:toplevel', EmberView.extend());
     },
     teardown: function() {
       runDestroy(container);
@@ -814,7 +818,8 @@ function testEachWithItem(moduleName, useBlockParams) {
       })
     });
 
-    var container = new Container();
+    registry = new Registry();
+    container = new Container({registry: registry});
 
     people = A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
@@ -824,7 +829,7 @@ function testEachWithItem(moduleName, useBlockParams) {
       controllerName: 'controller:parentController'
     };
 
-    container.register('controller:array', ArrayController.extend());
+    registry.register('controller:array', ArrayController.extend());
 
     view = EmberView.create({
       container: container,
@@ -832,7 +837,7 @@ function testEachWithItem(moduleName, useBlockParams) {
       controller: parentController
     });
 
-    container.register('controller:person', Controller);
+    registry.register('controller:person', Controller);
 
     runAppend(view);
 
@@ -867,10 +872,11 @@ function testEachWithItem(moduleName, useBlockParams) {
           company: 'Yapp',
           controllerName: 'controller:people'
         });
-    var container = new Container();
+    registry = new Registry();
+    container = new Container({registry: registry});
 
-    container.register('controller:people', PeopleController);
-    container.register('controller:person', PersonController);
+    registry.register('controller:people', PeopleController);
+    registry.register('controller:person', PersonController);
 
     view = EmberView.create({
       container: container,

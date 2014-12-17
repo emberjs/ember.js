@@ -68,8 +68,8 @@ function _bootstrap() {
   bootstrap( jQuery(document) );
 }
 
-function registerComponentLookup(container) {
-  container.register('component-lookup:main', ComponentLookup);
+function registerComponentLookup(registry) {
+  registry.register('component-lookup:main', ComponentLookup);
 }
 
 /*
