@@ -42,6 +42,17 @@ export default {
   /**
     @private
 
+    Attached for mocking in tests
+
+    @since 1.5.1
+    @property _history
+    @default environment.history
+  */
+  _history: environment.history,
+
+  /**
+    @private
+
     This property is used by router:main to know whether to cancel the routing
     setup process, which is needed while we redirect the browser.
 
