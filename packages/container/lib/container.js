@@ -1,7 +1,6 @@
 import Ember from 'ember-metal/core'; // Ember.assert
 import emberKeys from "ember-metal/keys";
 import dictionary from 'ember-metal/dictionary';
-import Registry from 'container/registry';
 
 /*
  TODO: Questions to resolve due to Registry / Container split:
@@ -14,9 +13,9 @@ import Registry from 'container/registry';
 // Public api for the container is still in flux.
 // The public api, specified on the application namespace should be considered the stable api.
 function Container(options) {
-  options = options || {};
+  Ember.assert("A Registry instance must be passed as an option when constructing a Container.", options && options.registry);
 
-  this.registry       = options.registry || new Registry();
+  this.registry       = options.registry;
   this.cache          = dictionary(options.cache || null);
   this.factoryCache   = dictionary(options.factoryCache || null);
 
