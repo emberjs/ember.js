@@ -40,6 +40,7 @@ var slice = [].slice;
   @class Router
   @namespace Ember
   @extends Ember.Object
+  @uses Ember.Evented
 */
 var EmberRouter = EmberObject.extend(Evented, {
   /**
