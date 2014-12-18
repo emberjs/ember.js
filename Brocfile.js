@@ -70,7 +70,7 @@ function defeatureifyConfig(opts) {
 
   for (var flag in features) {
     if (features[flag] === 'development-only') {
-      features[flag] = options.environment !== 'production';
+      features[flag] = options.environment !== 'production' && null;
     }
   }
 

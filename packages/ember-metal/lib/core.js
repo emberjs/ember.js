@@ -123,6 +123,9 @@ Ember.FEATURES.isEnabled = function(feature) {
 
   if (Ember.ENV.ENABLE_ALL_FEATURES) {
     return true;
+  } else if (feature === 'mandatory-setter') {
+    // mandatory-setter feature is unique in that it is *enabled* by default
+    return featureValue !== false;
   } else if (featureValue === true || featureValue === false || featureValue === undefined) {
     return featureValue;
   } else if (Ember.ENV.ENABLE_OPTIONAL_FEATURES) {
