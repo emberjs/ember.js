@@ -1,4 +1,4 @@
-# Status [![Build Status](https://travis-ci.org/tildeio/htmlbars.png)](https://travis-ci.org/tildeio/htmlbars)
+# Status [![Build Status](https://travis-ci.org/tildeio/htmlbars.png)](https://travis-ci.org/tildeio/htmlbars) [![Sauce Test Status](https://saucelabs.com/buildstatus/htmlbars-ci)](https://saucelabs.com/u/htmlbars-ci)
 
 HTMLBars is a layer built on top of the Handlebars template compiler.
 
