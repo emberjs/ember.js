@@ -74,6 +74,14 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
   rel: null,
 
   /**
+    Sets the `tabindex` attribute of the `LinkView`'s HTML element.
+
+    @property tabindex
+    @default null
+  **/
+  tabindex: null,
+
+  /**
     Sets the `target` attribute of the `LinkView`'s HTML element.
 
     @property target
@@ -129,7 +137,7 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
 
     @property attributeBindings
     @type Array | String
-    @default ['href', 'title', 'rel', 'target']
+    @default ['href', 'title', 'rel', 'tabindex', 'target']
    **/
   attributeBindings: ['href', 'title', 'rel', 'tabindex', 'target'],
 
