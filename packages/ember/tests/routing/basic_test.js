@@ -2820,65 +2820,63 @@ test("`didTransition` can be reopened", function() {
   bootApplication();
 });
 
-if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
-  test("`activate` event fires on the route", function() {
-    expect(2);
+test("`activate` event fires on the route", function() {
+  expect(2);
 
-    var eventFired = 0;
+  var eventFired = 0;
 
-    Router.map(function(){
-      this.route("nork");
-    });
-
-    App.NorkRoute = Ember.Route.extend({
-      init: function() {
-        this._super();
-
-        this.on("activate", function() {
-          equal(++eventFired, 1, "activate event is fired once");
-        });
-      },
-
-      activate: function() {
-        ok(true, "activate hook is called");
-      }
-    });
-
-    bootApplication();
-
-    Ember.run(router, 'transitionTo', 'nork');
+  Router.map(function(){
+    this.route("nork");
   });
 
-  test("`deactivate` event fires on the route", function() {
-    expect(2);
+  App.NorkRoute = Ember.Route.extend({
+    init: function() {
+      this._super();
 
-    var eventFired = 0;
+      this.on("activate", function() {
+        equal(++eventFired, 1, "activate event is fired once");
+      });
+    },
 
-    Router.map(function(){
-      this.route("nork");
-      this.route("dork");
-    });
-
-    App.NorkRoute = Ember.Route.extend({
-      init: function() {
-        this._super();
-
-        this.on("deactivate", function() {
-          equal(++eventFired, 1, "deactivate event is fired once");
-        });
-      },
-
-      deactivate: function() {
-        ok(true, "deactivate hook is called");
-      }
-    });
-
-    bootApplication();
-
-    Ember.run(router, 'transitionTo', 'nork');
-    Ember.run(router, 'transitionTo', 'dork');
+    activate: function() {
+      ok(true, "activate hook is called");
+    }
   });
-}
+
+  bootApplication();
+
+  Ember.run(router, 'transitionTo', 'nork');
+});
+
+test("`deactivate` event fires on the route", function() {
+  expect(2);
+
+  var eventFired = 0;
+
+  Router.map(function(){
+    this.route("nork");
+    this.route("dork");
+  });
+
+  App.NorkRoute = Ember.Route.extend({
+    init: function() {
+      this._super();
+
+      this.on("deactivate", function() {
+        equal(++eventFired, 1, "deactivate event is fired once");
+      });
+    },
+
+    deactivate: function() {
+      ok(true, "deactivate hook is called");
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(router, 'transitionTo', 'nork');
+  Ember.run(router, 'transitionTo', 'dork');
+});
 
 test("Actions can be handled by inherited action handlers", function() {
 

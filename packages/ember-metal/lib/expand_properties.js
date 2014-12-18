@@ -6,7 +6,6 @@ import { forEach } from 'ember-metal/enumerable_utils';
   @module ember-metal
   */
 
-var BRACE_EXPANSION = /^((?:[^\.]*\.)*)\{(.*)\}$/;
 var SPLIT_REGEX = /\{|\}/;
 
 /**
@@ -41,29 +40,6 @@ export default function expandProperties(pattern, callback) {
       'e.g. `user.{firstName, lastName}` should be `user.{firstName,lastName}`');
   }
 
-  if (Ember.FEATURES.isEnabled('property-brace-expansion-improvement')) {
-    return newExpandProperties(pattern, callback);
-  } else {
-    return oldExpandProperties(pattern, callback);
-  }
-}
-
-function oldExpandProperties(pattern, callback) {
-  var match, prefix, list;
-
-  if (match = BRACE_EXPANSION.exec(pattern)) {
-    prefix = match[1];
-    list = match[2];
-
-    forEach(list.split(','), function (suffix) {
-        callback(prefix + suffix);
-    });
-  } else {
-    callback(pattern);
-  }
-}
-
-function newExpandProperties(pattern, callback) {
   if ('string' === Ember.typeOf(pattern)) {
     var parts = pattern.split(SPLIT_REGEX);
     var properties = [parts];

@@ -43,8 +43,9 @@ function K() { return this; }
   @namespace Ember
   @extends Ember.Object
   @uses Ember.ActionHandler
+  @uses Ember.Evented
 */
-var Route = EmberObject.extend(ActionHandler, {
+var Route = EmberObject.extend(ActionHandler, Evented, {
   /**
     Configuration hash for this route's queryParams. The possible
     configuration options and their defaults are as follows
@@ -354,9 +355,7 @@ var Route = EmberObject.extend(ActionHandler, {
   */
   exit: function() {
     this.deactivate();
-    if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
-      this.trigger('deactivate');
-    }
+    this.trigger('deactivate');
     this.teardownViews();
   },
 
@@ -381,9 +380,7 @@ var Route = EmberObject.extend(ActionHandler, {
   */
   enter: function() {
     this.activate();
-    if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
-      this.trigger('activate');
-    }
+    this.trigger('activate');
   },
 
   /**
@@ -1886,12 +1883,6 @@ var Route = EmberObject.extend(ActionHandler, {
     delete this.lastRenderedTemplate;
   }
 });
-
-if (Ember.FEATURES.isEnabled("ember-routing-fire-activate-deactivate-events")) {
-  // TODO add mixin directly to `Route` class definition above, once this
-  // feature is merged:
-  Route.reopen(Evented);
-}
 
 var defaultQPMeta = {
   qps: [],

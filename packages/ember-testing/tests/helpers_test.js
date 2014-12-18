@@ -540,37 +540,34 @@ test("`triggerEvent accepts an optional options hash and context", function(){
   });
 });
 
-if (Ember.FEATURES.isEnabled("ember-testing-pause-test")) {
-  QUnit.module("ember-testing debugging helpers", {
-    setup: function(){
-      setupApp();
+QUnit.module("ember-testing debugging helpers", {
+  setup: function(){
+    setupApp();
 
-      run(function() {
-        App.Router = EmberRouter.extend({
-          location: 'none'
-        });
+    run(function() {
+      App.Router = EmberRouter.extend({
+        location: 'none'
       });
+    });
 
-      run(App, 'advanceReadiness');
-    },
+    run(App, 'advanceReadiness');
+  },
 
-    teardown: function(){
-      cleanup();
-    }
-  });
+  teardown: function(){
+    cleanup();
+  }
+});
 
-  test("pauseTest pauses", function() {
-    expect(1);
-    function fakeAdapterAsyncStart() {
-      ok(true, 'Async start should be called');
-    }
+test("pauseTest pauses", function() {
+  expect(1);
+  function fakeAdapterAsyncStart() {
+    ok(true, 'Async start should be called');
+  }
 
-    Test.adapter.asyncStart = fakeAdapterAsyncStart;
+  Test.adapter.asyncStart = fakeAdapterAsyncStart;
 
-    App.testHelpers.pauseTest();
-  });
-
-}
+  App.testHelpers.pauseTest();
+});
 
 QUnit.module("ember-testing routing helpers", {
   setup: function(){

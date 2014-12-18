@@ -202,61 +202,32 @@ test("AutoLocation.create() should transform the URL for hashchange-only browser
   equal(get(location, 'cancelRouterSetup'), true, 'cancelRouterSetup should be set so the router knows.');
 });
 
-if (Ember.FEATURES.isEnabled('ember-routing-auto-location-uses-replace-state-for-history')) {
-  test("AutoLocation.create() should replace the URL for pushState-supported browsers viewing a HashLocation-formatted url", function() {
-    expect(2);
+test("AutoLocation.create() should replace the URL for pushState-supported browsers viewing a HashLocation-formatted url", function() {
+  expect(2);
 
-    mockBrowserLocation({
-      hash: '#/test',
-      hostname: 'test.com',
-      href: 'http://test.com/#/test',
-      pathname: '/',
-      protocol: 'http:',
-      port: '',
-      search: ''
-    });
-
-    mockBrowserHistory({
-      replaceState: function (state, title, path) {
-        equal(path, '/test', 'history.replaceState should be called with normalized HistoryLocation url');
-      }
-    });
-
-    createLocation({
-      history: true,
-      hashChange: true
-    });
-
-    equal(get(location, 'implementation'), 'history');
+  mockBrowserLocation({
+    hash: '#/test',
+    hostname: 'test.com',
+    href: 'http://test.com/#/test',
+    pathname: '/',
+    protocol: 'http:',
+    port: '',
+    search: ''
   });
-} else {
-  test("AutoLocation.create() should transform the URL for pushState-supported browsers viewing a HashLocation-formatted url", function() {
-    expect(4);
 
-    mockBrowserLocation({
-      hash: '#/test',
-      hostname: 'test.com',
-      href: 'http://test.com/#/test',
-      pathname: '/',
-      protocol: 'http:',
-      port: '',
-      search: '',
-
-      replace: function (path) {
-        equal(path, 'http://test.com/test', 'location.replace should be called with normalized HistoryLocation url');
-      }
-    });
-
-    createLocation({
-      history: true,
-      hashChange: true
-    });
-
-    equal(get(location, 'implementation'), 'none', 'NoneLocation should be returned while we attempt to location.replace()');
-    equal(location instanceof FakeNoneLocation, true, 'NoneLocation should be returned while we attempt to location.replace()');
-    equal(get(location, 'cancelRouterSetup'), true, 'cancelRouterSetup should be set so the router knows.');
+  mockBrowserHistory({
+    replaceState: function (state, title, path) {
+      equal(path, '/test', 'history.replaceState should be called with normalized HistoryLocation url');
+    }
   });
-}
+
+  createLocation({
+    history: true,
+    hashChange: true
+  });
+
+  equal(get(location, 'implementation'), 'history');
+});
 
 test("Feature-Detecting onhashchange", function() {
   mockBrowserLocation();
