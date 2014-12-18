@@ -3,9 +3,19 @@ import dictionary from 'ember-metal/dictionary';
 
 var VALID_FULL_NAME_REGEXP = /^[^:]+.+:[^:]+$/;
 
-// A lightweight registry that helps to assemble and decouple components.
-// Public api for the registry is still in flux.
-// The public api, specified on the application namespace should be considered the stable api.
+/**
+ A lightweight registry used to store factory and option information keyed
+ by type.
+
+ A `Registry` stores the factory and option information needed by a
+ `Container` to instantiate and cache objects.
+
+ The public API for `Registry` is still in flux and should not be considered
+ stable.
+
+ @private
+ @class Registry
+*/
 function Registry(options) {
   options = options || {};
 
@@ -260,6 +270,7 @@ Registry.prototype = {
 
    ```javascript
    var registry = new Registry();
+   var container = new Container({registry: registry});
 
    // if all of type `connection` must not be singletons
    registry.optionsForType('connection', { singleton: false });
@@ -267,13 +278,13 @@ Registry.prototype = {
    registry.register('connection:twitter', TwitterConnection);
    registry.register('connection:facebook', FacebookConnection);
 
-   var twitter = registry.lookup('connection:twitter');
-   var twitter2 = registry.lookup('connection:twitter');
+   var twitter = container.lookup('connection:twitter');
+   var twitter2 = container.lookup('connection:twitter');
 
    twitter === twitter2; // => false
 
-   var facebook = registry.lookup('connection:facebook');
-   var facebook2 = registry.lookup('connection:facebook');
+   var facebook = container.lookup('connection:facebook');
+   var facebook2 = container.lookup('connection:facebook');
 
    facebook === facebook2; // => false
    ```
@@ -338,6 +349,7 @@ Registry.prototype = {
 
    ```javascript
    var registry = new Registry();
+   var container = new Container({registry: registry});
 
    registry.register('router:main', Router);
    registry.register('controller:user', UserController);
@@ -345,8 +357,8 @@ Registry.prototype = {
 
    registry.typeInjection('controller', 'router', 'router:main');
 
-   var user = registry.lookup('controller:user');
-   var post = registry.lookup('controller:post');
+   var user = container.lookup('controller:user');
+   var post = container.lookup('controller:post');
 
    user.router instanceof Router; //=> true
    post.router instanceof Router; //=> true
@@ -363,8 +375,6 @@ Registry.prototype = {
    */
   typeInjection: function(type, property, fullName) {
     Ember.assert('fullName must be a proper full name', this.validateFullName(fullName));
-
-    // if (this.parent) { illegalChildOperation('typeInjection'); }
 
     var fullNameType = fullName.split(':')[0];
     if (fullNameType === type) {
@@ -392,6 +402,7 @@ Registry.prototype = {
 
    ```javascript
    var registry = new Registry();
+   var container = new Container({registry: registry});
 
    registry.register('source:main', Source);
    registry.register('model:user', User);
@@ -404,8 +415,8 @@ Registry.prototype = {
    // injecting one fullName on another type
    registry.injection('model', 'source', 'source:main');
 
-   var user = registry.lookup('model:user');
-   var post = registry.lookup('model:post');
+   var user = container.lookup('model:user');
+   var post = container.lookup('model:post');
 
    user.source instanceof Source; //=> true
    post.source instanceof Source; //=> true
@@ -422,8 +433,6 @@ Registry.prototype = {
    @param {String} injectionName
    */
   injection: function(fullName, property, injectionName) {
-    // if (this.parent) { illegalChildOperation('injection'); }
-
     this.validateFullName(injectionName);
     var normalizedInjectionName = this.normalize(injectionName);
 
@@ -489,6 +498,7 @@ Registry.prototype = {
 
    ```javascript
    var registry = new Registry();
+   var container = new Container({registry: registry});
 
    registry.register('store:main', Store);
    registry.register('store:secondary', OtherStore);
@@ -501,9 +511,9 @@ Registry.prototype = {
    // injecting one fullName on another fullName
    registry.factoryInjection('model:post', 'secondaryStore', 'store:secondary');
 
-   var UserFactory = registry.lookupFactory('model:user');
-   var PostFactory = registry.lookupFactory('model:post');
-   var store = registry.lookup('store:main');
+   var UserFactory = container.lookupFactory('model:user');
+   var PostFactory = container.lookupFactory('model:post');
+   var store = container.lookup('store:main');
 
    UserFactory.store instanceof Store; //=> true
    UserFactory.secondaryStore instanceof OtherStore; //=> false

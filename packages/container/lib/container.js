@@ -2,9 +2,19 @@ import Ember from 'ember-metal/core'; // Ember.assert
 import emberKeys from "ember-metal/keys";
 import dictionary from 'ember-metal/dictionary';
 
-// A lightweight container that helps to assemble and decouple components.
-// Public api for the container is still in flux.
-// The public api, specified on the application namespace should be considered the stable api.
+/**
+ A lightweight container used to instantiate and cache objects.
+
+ Every `Container` must be associated with a `Registry`, which is referenced
+ to determine the factory and options that should be used to instantiate
+ objects.
+
+ The public API for `Container` is still in flux and should not be considered
+ stable.
+
+ @private
+ @class Container
+ */
 function Container(options) {
   Ember.assert("A Registry instance must be passed as an option when constructing a Container.", options && options.registry);
 
