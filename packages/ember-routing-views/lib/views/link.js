@@ -74,6 +74,14 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
   rel: null,
 
   /**
+    Sets the `target` attribute of the `LinkView`'s HTML element.
+
+    @property target
+    @default null
+  **/
+  target: null,
+
+  /**
     The CSS class to apply to `LinkView`'s element when its `active`
     property is `true`.
 
@@ -121,9 +129,9 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
 
     @property attributeBindings
     @type Array | String
-    @default ['href', 'title', 'rel']
+    @default ['href', 'title', 'rel', 'target']
    **/
-  attributeBindings: ['href', 'title', 'rel', 'tabindex'],
+  attributeBindings: ['href', 'title', 'rel', 'tabindex', 'target'],
 
   /**
     By default the `{{link-to}}` helper will bind to the `active`, `loading`, and
@@ -317,15 +325,9 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
       return isActive;
     }
 
-    if (Ember.FEATURES.isEnabled("ember-routing-multi-current-when")) {
-      currentWhen = currentWhen.split(' ');
-      for (var i = 0, len = currentWhen.length; i < len; i++) {
-        if (isActiveForRoute(currentWhen[i])) {
-          return get(this, 'activeClass');
-        }
-      }
-    } else {
-      if (isActiveForRoute(currentWhen)) {
+    currentWhen = currentWhen.split(' ');
+    for (var i = 0, len = currentWhen.length; i < len; i++) {
+      if (isActiveForRoute(currentWhen[i])) {
         return get(this, 'activeClass');
       }
     }
@@ -370,12 +372,8 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     if (!isSimpleClick(event)) { return true; }
 
     if (this.preventDefault !== false) {
-      if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
-        var targetAttribute = get(this, 'target');
-        if (!targetAttribute || targetAttribute === '_self') {
-          event.preventDefault();
-        }
-      } else {
+      var targetAttribute = get(this, 'target');
+      if (!targetAttribute || targetAttribute === '_self') {
         event.preventDefault();
       }
     }
@@ -389,11 +387,9 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
       return false;
     }
 
-    if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
-      var targetAttribute2 = get(this, 'target');
-      if (targetAttribute2 && targetAttribute2 !== '_self') {
-        return false;
-      }
+    var targetAttribute2 = get(this, 'target');
+    if (targetAttribute2 && targetAttribute2 !== '_self') {
+      return false;
     }
 
     var router = get(this, 'router');
@@ -561,20 +557,6 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
 });
 
 LinkView.toString = function() { return "LinkView"; };
-
-if (Ember.FEATURES.isEnabled("ember-routing-linkto-target-attribute")) {
-  LinkView.reopen({
-    attributeBindings: ['target'],
-
-    /**
-      Sets the `target` attribute of the `LinkView`'s anchor element.
-
-      @property target
-      @default null
-    **/
-    target: null
-  });
-}
 
 function getResolvedQueryParams(linkView, targetRouteName) {
   var queryParamsObject = linkView.queryParamsObject;

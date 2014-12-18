@@ -334,42 +334,40 @@ test("The {{link-to}} helper does not disregard current-when when it is given ex
   equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, "The link is active when current-when is given for explicitly for a resource");
 });
 
-if (Ember.FEATURES.isEnabled("ember-routing-multi-current-when")) {
-  test("The {{link-to}} helper supports multiple current-when routes", function() {
-    Router.map(function(match) {
-      this.resource("index", { path: "/" }, function() {
-        this.route("about");
-      });
-      this.route("item");
-      this.route("foo");
+test("The {{link-to}} helper supports multiple current-when routes", function() {
+  Router.map(function(match) {
+    this.resource("index", { path: "/" }, function() {
+      this.route("about");
     });
-
-    Ember.TEMPLATES.index = compile("<h3>Home</h3>{{outlet}}");
-    Ember.TEMPLATES['index/about'] = compile("{{#link-to 'item' id='link1' current-when='item index'}}ITEM{{/link-to}}");
-    Ember.TEMPLATES['item'] = compile("{{#link-to 'item' id='link2' current-when='item index'}}ITEM{{/link-to}}");
-    Ember.TEMPLATES['foo'] = compile("{{#link-to 'item' id='link3' current-when='item index'}}ITEM{{/link-to}}");
-
-    bootApplication();
-
-    Ember.run(function() {
-      router.handleURL("/about");
-    });
-
-    equal(Ember.$('#link1.active', '#qunit-fixture').length, 1, "The link is active since current-when contains the parent route");
-
-    Ember.run(function() {
-      router.handleURL("/item");
-    });
-
-    equal(Ember.$('#link2.active', '#qunit-fixture').length, 1, "The link is active since you are on the active route");
-
-    Ember.run(function() {
-      router.handleURL("/foo");
-    });
-
-    equal(Ember.$('#link3.active', '#qunit-fixture').length, 0, "The link is not active since current-when does not contain the active route");
+    this.route("item");
+    this.route("foo");
   });
-}
+
+  Ember.TEMPLATES.index = compile("<h3>Home</h3>{{outlet}}");
+  Ember.TEMPLATES['index/about'] = compile("{{#link-to 'item' id='link1' current-when='item index'}}ITEM{{/link-to}}");
+  Ember.TEMPLATES['item'] = compile("{{#link-to 'item' id='link2' current-when='item index'}}ITEM{{/link-to}}");
+  Ember.TEMPLATES['foo'] = compile("{{#link-to 'item' id='link3' current-when='item index'}}ITEM{{/link-to}}");
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/about");
+  });
+
+  equal(Ember.$('#link1.active', '#qunit-fixture').length, 1, "The link is active since current-when contains the parent route");
+
+  Ember.run(function() {
+    router.handleURL("/item");
+  });
+
+  equal(Ember.$('#link2.active', '#qunit-fixture').length, 1, "The link is active since you are on the active route");
+
+  Ember.run(function() {
+    router.handleURL("/foo");
+  });
+
+  equal(Ember.$('#link3.active', '#qunit-fixture').length, 0, "The link is not active since current-when does not contain the active route");
+});
 
 test("The {{link-to}} helper defaults to bubbling", function() {
   Ember.TEMPLATES.about = compile("<div {{action 'hide'}}>{{#link-to 'about.contact' id='about-contact'}}About{{/link-to}}</div>{{outlet}}");
@@ -510,67 +508,65 @@ test("The {{link-to}} helper binds some anchor html tag common attributes", func
   equal(link.attr('tabindex'), '-1', "The self-link contains tabindex attribute");
 });
 
-if(Ember.FEATURES.isEnabled('ember-routing-linkto-target-attribute')) {
-  test("The {{link-to}} helper supports `target` attribute", function() {
-    Ember.TEMPLATES.index = compile("<h3>Home</h3>{{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}");
-    bootApplication();
+test("The {{link-to}} helper supports `target` attribute", function() {
+  Ember.TEMPLATES.index = compile("<h3>Home</h3>{{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}");
+  bootApplication();
 
-    Ember.run(function() {
-      router.handleURL("/");
-    });
-
-    var link = Ember.$('#self-link', '#qunit-fixture');
-    equal(link.attr('target'), '_blank', "The self-link contains `target` attribute");
+  Ember.run(function() {
+    router.handleURL("/");
   });
 
-  test("The {{link-to}} helper does not call preventDefault if `target` attribute is provided", function() {
-    Ember.TEMPLATES.index = compile("<h3>Home</h3>{{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}");
-    bootApplication();
+  var link = Ember.$('#self-link', '#qunit-fixture');
+  equal(link.attr('target'), '_blank', "The self-link contains `target` attribute");
+});
 
-    Ember.run(function() {
-      router.handleURL("/");
-    });
+test("The {{link-to}} helper does not call preventDefault if `target` attribute is provided", function() {
+  Ember.TEMPLATES.index = compile("<h3>Home</h3>{{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}");
+  bootApplication();
 
-    var event = Ember.$.Event("click");
-    Ember.$('#self-link', '#qunit-fixture').trigger(event);
-
-    equal(event.isDefaultPrevented(), false, "should not preventDefault when target attribute is specified");
+  Ember.run(function() {
+    router.handleURL("/");
   });
 
-  test("The {{link-to}} helper should preventDefault when `target = _self`", function() {
-    Ember.TEMPLATES.index = compile("<h3>Home</h3>{{#link-to 'index' id='self-link' target='_self'}}Self{{/link-to}}");
-    bootApplication();
+  var event = Ember.$.Event("click");
+  Ember.$('#self-link', '#qunit-fixture').trigger(event);
 
-    Ember.run(function() {
-      router.handleURL("/");
-    });
+  equal(event.isDefaultPrevented(), false, "should not preventDefault when target attribute is specified");
+});
 
-    var event = Ember.$.Event("click");
-    Ember.$('#self-link', '#qunit-fixture').trigger(event);
+test("The {{link-to}} helper should preventDefault when `target = _self`", function() {
+  Ember.TEMPLATES.index = compile("<h3>Home</h3>{{#link-to 'index' id='self-link' target='_self'}}Self{{/link-to}}");
+  bootApplication();
 
-    equal(event.isDefaultPrevented(), true, "should preventDefault when target attribute is `_self`");
+  Ember.run(function() {
+    router.handleURL("/");
   });
 
-  test("The {{link-to}} helper should not transition if target is not equal to _self or empty", function() {
-    Ember.TEMPLATES.index = compile("{{#link-to 'about' id='about-link' replace=true target='_blank'}}About{{/link-to}}");
+  var event = Ember.$.Event("click");
+  Ember.$('#self-link', '#qunit-fixture').trigger(event);
 
-    Router.map(function() {
-      this.route("about");
-    });
+  equal(event.isDefaultPrevented(), true, "should preventDefault when target attribute is `_self`");
+});
 
-    bootApplication();
+test("The {{link-to}} helper should not transition if target is not equal to _self or empty", function() {
+  Ember.TEMPLATES.index = compile("{{#link-to 'about' id='about-link' replace=true target='_blank'}}About{{/link-to}}");
 
-    Ember.run(function() {
-      router.handleURL("/");
-    });
-
-    Ember.run(function() {
-      Ember.$('#about-link', '#qunit-fixture').click();
-    });
-
-    notEqual(container.lookup('controller:application').get('currentRouteName'), 'about', 'link-to should not transition if target is not equal to _self or empty');
+  Router.map(function() {
+    this.route("about");
   });
-}
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  Ember.run(function() {
+    Ember.$('#about-link', '#qunit-fixture').click();
+  });
+
+  notEqual(container.lookup('controller:application').get('currentRouteName'), 'about', 'link-to should not transition if target is not equal to _self or empty');
+});
 
 test("The {{link-to}} helper accepts string/numeric arguments", function() {
   Router.map(function() {

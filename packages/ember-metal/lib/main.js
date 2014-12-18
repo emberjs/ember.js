@@ -323,10 +323,7 @@ Ember.libraries.registerCoreLibrary('Ember', Ember.VERSION);
 Ember.isNone = isNone;
 Ember.isEmpty = isEmpty;
 Ember.isBlank = isBlank;
-
-if (Ember.FEATURES.isEnabled('ember-metal-is-present')) {
-  Ember.isPresent = isPresent;
-}
+Ember.isPresent = isPresent;
 
 Ember.merge = merge;
 
