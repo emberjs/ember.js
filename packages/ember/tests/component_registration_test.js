@@ -136,28 +136,6 @@ test("Component-like invocations are treated as bound paths if neither template 
   equal(Ember.$('#wrapper').text(), "machty hello  world", "The component is composed correctly");
 });
 
-// TODO-dgeb - Is this test still relevant?
-//
-//test("Component lookups should take place on components' subcontainers", function() {
-//  expect(1);
-//
-//  Ember.TEMPLATES.application = compile("<div id='wrapper'>{{#sally-rutherford}}{{mach-ty}}{{/sally-rutherford}}</div>");
-//
-//  boot(function() {
-//    registry.register('component:sally-rutherford', Ember.Component.extend({
-//      init: function() {
-//        this._super();
-//        this.container = new Ember.Container(this.container);
-//        this.registry.register('component:mach-ty', Ember.Component.extend({
-//          didInsertElement: function() {
-//            ok(true, "mach-ty was rendered");
-//          }
-//        }));
-//      }
-//    }));
-//  });
-//});
-
 test("Assigning templateName to a component should setup the template as a layout (DEPRECATED)", function(){
   expect(2);
 

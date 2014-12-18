@@ -247,7 +247,6 @@ test("With ember-data like initializer and constant", function() {
     initialize: function(registry, application) {
       registry.register('store:main', application.Store);
 
-      // TODO-dgeb - container lookups should not be performed in the intializer
       application.__container__.lookup('store:main');
     }
   });

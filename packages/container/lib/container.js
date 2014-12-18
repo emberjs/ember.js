@@ -2,13 +2,6 @@ import Ember from 'ember-metal/core'; // Ember.assert
 import emberKeys from "ember-metal/keys";
 import dictionary from 'ember-metal/dictionary';
 
-/*
- TODO: Questions to resolve due to Registry / Container split:
-
- * When registry.unregister is called, is it important for containers to clear their caches of that item?
- * Do we need the restriction on re-registering a factory for a key that's already been looked up?
- */
-
 // A lightweight container that helps to assemble and decouple components.
 // Public api for the container is still in flux.
 // The public api, specified on the application namespace should be considered the stable api.

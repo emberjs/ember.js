@@ -123,31 +123,6 @@ test("A registered factory returns a fresh instance if singleton: false is passe
   ok(postController4 instanceof PostController, "All instances are instances of the registered factory");
 });
 
-// TODO - no longer possible with the Registry/Container split without adding events
-//
-// test("A Registered factory can be unregistered, and all cached instances are removed", function() {
-//   var container = new Container();
-//   var PostController = factory();
-//
-//   container.register('controller:post', PostController);
-//
-//   equal(container.registry.has('controller:post'), true, "container is aware of the PostController");
-//
-//   ok(container.lookup('controller:post') instanceof PostController, "lookup is correct instance");
-//
-//   container.unregister("controller:post");
-//
-//   equal(container.has('controller:post'), false, "container is no-longer aware of the PostController");
-//   equal(container.lookup('controller:post'), undefined, "lookup no longer returns a controller");
-//
-//   // re-registration continues to work
-//   container.register('controller:post', PostController);
-//
-//   equal(container.has('controller:post'), true, "container is aware of the PostController");
-//
-//   ok(container.lookup('controller:post') instanceof PostController, "lookup is correct instance");
-// });
-
 test("A container lookup has access to the container", function() {
   var registry = new Registry();
   var container = new Container({registry: registry});
@@ -372,28 +347,6 @@ test("The container normalizes names before resolving", function() {
   ok(postController instanceof PostController, "Normalizes the name before resolving");
 });
 
-// TODO: When registry.unregister is called, is it important for containers to clear their caches of that item?
-//
-// test("The container normalizes names when unregistering", function() {
-//   var registry = new Registry();
-//   var container = new Container({registry: registry});
-//   var PostController = factory();
-//
-//   registry.normalizeFullName = function(fullName) {
-//     return 'controller:post';
-//   };
-//
-//   registry.register('controller:post', PostController);
-//   var postController = container.lookup('controller:normalized');
-//
-//   ok(postController instanceof PostController, "Normalizes the name before resolving");
-//
-//   registry.unregister('controller:post');
-//   postController = container.lookup('controller:normalized');
-//
-//   equal(postController, undefined);
-// });
-
 test("The container normalizes names when looking factory up", function() {
   var registry = new Registry();
   var container = new Container({registry: registry});
@@ -452,56 +405,6 @@ test("The container can get options that should be applied to all factories for 
 
   ok(postView1 !== postView2, "The two lookups are different");
 });
-
-// TODO - Do we need the restriction on re-registering a factory for a key that's already been looked up?
-//
-// test("cannot re-register a factory if has been looked up", function(){
-//   var container = new Container();
-//   var FirstApple = factory('first');
-//   var SecondApple = factory('second');
-//
-//   container.register('controller:apple', FirstApple);
-//   ok(container.lookup('controller:apple') instanceof FirstApple);
-//
-//   throws(function(){
-//     container.register('controller:apple', SecondApple);
-//   }, 'Cannot re-register: `controller:apple`, as it has already been looked up.');
-//
-//   ok(container.lookup('controller:apple') instanceof FirstApple);
-// });
-//
-// TODO?
-//
-// test('once looked up, assert if an injection is registered for the entry', function() {
-//   expect(1);
-//
-//   var container = new Container();
-//   var Apple = factory();
-//   var Worm = factory();
-//
-//   container.register('apple:main', Apple);
-//   container.register('worm:main', Worm);
-//   container.lookup('apple:main');
-//   throws(function() {
-//     container.injection('apple:main', 'worm', 'worm:main');
-//   }, "Attempted to register an injection for a type that has already been looked up. ('apple:main', 'worm', 'worm:main')");
-// });
-//
-// test("Once looked up, assert if a factoryInjection is registered for the factory", function() {
-//   expect(1);
-//
-//   var container = new Container();
-//   var Apple = factory();
-//   var Worm = factory();
-//
-//   container.register('apple:main', Apple);
-//   container.register('worm:main', Worm);
-//
-//   container.lookupFactory('apple:main');
-//   throws(function() {
-//     container.factoryInjection('apple:main', 'worm', 'worm:main');
-//   }, "Attempted to register a factoryInjection for a type that has already been looked up. ('apple:main', 'worm', 'worm:main')");
-// });
 
 test("factory resolves are cached", function() {
   var registry = new Registry();
