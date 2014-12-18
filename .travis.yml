@@ -6,8 +6,8 @@ addons:
   sauce_connect: true
 env:
   global:
-  - secure: dnGQkR2XPLxja47KJJMVrROTteV4xd2pQ6NF572TrjDipQ7URh5eEzWYLSkonMQnAWeuaLvWaKNy9H4aGda/6YiO8ZVt15x6ItSxAccFKGs026WkcHu1Euiso0hL8BawlFFs1gx89gm/yDXmhRwFgeYYrBQVjVDDyErf+5lzHWo=
-  - secure: dKxnKmqGmoXLc2Qlbn75uiW9uVWdwiW+LqEWSk63TvmLz74MJhbSCiJF+Da9JSvKXmQvcXbPhXqX+oogqO0cGNvFjWEK+0CAQ0kpgDd1a7aDWmbAPqxlkBmKwggP8THV3zsn74pcFib+Xf5oEZpfBrnO7+Jp6dn3Ger2HArH4o4=
+  - SAUCE_USERNAME=htmlbars-ci
+  - SAUCE_ACCESS_KEY=71947947-f373-4e9c-9166-23038df7ddf2
   matrix:
   - TEST_NODE=1 TEST_BROWSERS=PhantomJS,SL_Chrome_Current,SL_Chrome_Last,SL_Firefox_Current,SL_Firefox_Last,SL_Safari_Current,SL_Safari_Last,SL_IE_8
   - TEST_BROWSERS=SL_IE_11,SL_IE_10,SL_IE_9
