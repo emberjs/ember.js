@@ -108,7 +108,7 @@ function ifHelper(params, hash, options, env) {
       var condition = params[0];
       var truthy = params[1];
       var falsy = params[2];
-      return new ConditionalStream(condition, truthy, falsy);
+      return new ConditionalStream(shouldDisplayIfHelperContent, condition, truthy, falsy);
     }
   }
 

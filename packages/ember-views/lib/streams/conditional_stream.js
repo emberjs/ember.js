@@ -6,11 +6,12 @@ import {
 } from "ember-metal/streams/utils";
 import { create } from "ember-metal/platform";
 
-function ConditionalStream(test, consequent, alternate) {
+function ConditionalStream(testFunc, testStream, consequent, alternate) {
   this.init();
 
   this.oldTestResult = undefined;
-  this.test = test;
+  this.testFunc = testFunc;
+  this.testStream = testStream;
   this.consequent = consequent;
   this.alternate = alternate;
 }
@@ -19,13 +20,13 @@ ConditionalStream.prototype = create(Stream.prototype);
 
 ConditionalStream.prototype.valueFn = function() {
   var oldTestResult = this.oldTestResult;
-  var newTestResult = !!read(this.test);
+  var newTestResult = !!this.testFunc(read(this.testStream));
 
   if (newTestResult !== oldTestResult) {
     switch (oldTestResult) {
       case true: unsubscribe(this.consequent, this.notify, this); break;
       case false: unsubscribe(this.alternate, this.notify, this); break;
-      case undefined: subscribe(this.test, this.notify, this);
+      case undefined: subscribe(this.testStream, this.notify, this);
     }
 
     switch (newTestResult) {
