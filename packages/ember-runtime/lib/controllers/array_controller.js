@@ -224,7 +224,7 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
   controllerAt: function(idx, object, controllerClass) {
     var container = get(this, 'container');
     var subControllers = this._subControllers;
-    var fullName, subController, subControllerFactory, parentController, options;
+    var fullName, subController, parentController;
 
     if (subControllers.length > idx) {
       subController = subControllers[idx];
@@ -240,40 +240,17 @@ export default ArrayProxy.extend(ControllerMixin, SortableMixin, {
       parentController = this;
     }
 
-    if (Ember.FEATURES.isEnabled("ember-runtime-item-controller-inline-class")) {
-      options = {
-        target: parentController,
-        parentController: parentController,
-        model: object
-      };
+    fullName = 'controller:' + controllerClass;
 
-      if (typeof controllerClass === 'string') {
-        fullName = 'controller:' + controllerClass;
-
-        if (!container.has(fullName)) {
-          throw new EmberError('Could not resolve itemController: "' + controllerClass + '"');
-        }
-
-        subControllerFactory = container.lookupFactory(fullName);
-      } else {
-        subControllerFactory = controllerClass;
-        options.container = container;
-      }
-
-      subController = subControllerFactory.create(options);
-    } else {
-      fullName = 'controller:' + controllerClass;
-
-      if (!container.has(fullName)) {
-        throw new EmberError('Could not resolve itemController: "' + controllerClass + '"');
-      }
-
-      subController = container.lookupFactory(fullName).create({
-        target: parentController,
-        parentController: parentController,
-        model: object
-      });
+    if (!container.has(fullName)) {
+      throw new EmberError('Could not resolve itemController: "' + controllerClass + '"');
     }
+
+    subController = container.lookupFactory(fullName).create({
+      target: parentController,
+      parentController: parentController,
+      model: object
+    });
 
     subControllers[idx] = subController;
 
