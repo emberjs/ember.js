@@ -3170,76 +3170,34 @@ test("rejecting the model hooks promise with a string shows a good error", funct
   Ember.Logger.error = originalLoggerError;
 });
 
-if (Ember.FEATURES.isEnabled("ember-routing-will-change-hooks")) {
-  test("willLeave, willChangeModel actions fire on routes", function() {
-    expect(2);
+test("willLeave, willChangeContext, willChangeModel actions don't fire unless feature flag enabled", function() {
+  expect(1);
 
-    App.Router.map(function() {
-      this.route('user', { path: '/user/:id' });
-    });
-
-    function shouldNotFire() {
-      ok(false, "this action shouldn't have been received");
-    }
-
-    var willChangeFired = false, willLeaveFired = false;
-    App.IndexRoute = Ember.Route.extend({
-      actions: {
-        willChangeModel: shouldNotFire,
-        willChangeContext: shouldNotFire,
-        willLeave: function() {
-          willLeaveFired = true;
-        }
-      }
-    });
-
-    App.UserRoute = Ember.Route.extend({
-      actions: {
-        willChangeModel: function() {
-          willChangeFired = true;
-        },
-        willChangeContext: shouldNotFire,
-        willLeave: shouldNotFire
-      }
-    });
-
-    bootApplication();
-
-    Ember.run(router, 'transitionTo', 'user', { id: 'wat' });
-    ok(willLeaveFired, "#actions.willLeaveFired");
-    Ember.run(router, 'transitionTo', 'user', { id: 'lol' });
-    ok(willChangeFired, "user#actions.willChangeModel");
+  App.Router.map(function() {
+    this.route('about');
   });
-} else {
-  test("willLeave, willChangeContext, willChangeModel actions don't fire unless feature flag enabled", function() {
-    expect(1);
 
-    App.Router.map(function() {
-      this.route('about');
-    });
+  function shouldNotFire() {
+    ok(false, "this action shouldn't have been received");
+  }
 
-    function shouldNotFire() {
-      ok(false, "this action shouldn't have been received");
+  App.IndexRoute = Ember.Route.extend({
+    actions: {
+      willChangeModel: shouldNotFire,
+      willChangeContext: shouldNotFire,
+      willLeave: shouldNotFire
     }
-
-    App.IndexRoute = Ember.Route.extend({
-      actions: {
-        willChangeModel: shouldNotFire,
-        willChangeContext: shouldNotFire,
-        willLeave: shouldNotFire
-      }
-    });
-
-    App.AboutRoute = Ember.Route.extend({
-      setupController: function() {
-        ok(true, "about route was entered");
-      }
-    });
-
-    bootApplication();
-    Ember.run(router, 'transitionTo', 'about');
   });
-}
+
+  App.AboutRoute = Ember.Route.extend({
+    setupController: function() {
+      ok(true, "about route was entered");
+    }
+  });
+
+  bootApplication();
+  Ember.run(router, 'transitionTo', 'about');
+});
 
 test("Errors in transitionTo within redirect hook are logged", function() {
   expect(3);

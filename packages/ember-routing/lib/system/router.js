@@ -808,12 +808,8 @@ EmberRouter.reopenClass({
     if (!router) {
       router = new Router();
 
-      if (Ember.FEATURES.isEnabled("ember-routing-will-change-hooks")) {
-        router._willChangeContextEvent = 'willChangeModel';
-      } else {
-        router._triggerWillChangeContext = K;
-        router._triggerWillLeave = K;
-      }
+      router._triggerWillChangeContext = K;
+      router._triggerWillLeave = K;
 
       router.callbacks = [];
       router.triggerEvent = triggerEvent;
