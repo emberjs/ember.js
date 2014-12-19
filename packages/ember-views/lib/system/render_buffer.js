@@ -490,7 +490,7 @@ _RenderBuffer.prototype = {
 
     if (props) {
       for (prop in props) {
-        this.dom.setProperty(element, prop, props[prop]);
+        this.dom.setPropertyStrict(element, prop, props[prop]);
       }
 
       this.elementProperties = null;

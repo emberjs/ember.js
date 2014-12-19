@@ -103,7 +103,7 @@ function _inlineIfAssertion(params) {
 function ifHelper(params, hash, options, env) {
   Ember.assert("If helper in block form expect exactly one argument", !options.template || params.length === 1);
   if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
-    if (!options.template) {
+    if (!options.isBlock) {
       _inlineIfAssertion(params);
       var condition = params[0];
       var truthy = params[1];

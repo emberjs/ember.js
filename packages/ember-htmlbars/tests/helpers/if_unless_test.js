@@ -78,12 +78,12 @@ test("The `if` helper does not error on undefined", function() {
 test("The `unless` helper does not error on undefined", function() {
   view = EmberView.create({
     undefinedValue: undefined,
-    template: compile('{{#unless view.undefinedValue}}Yep{{/unless}}{{#unbound unless view.undefinedValue}}Yep{{/unbound}}')
+    template: compile('{{#unless view.undefinedValue}}YepBound{{/unless}}{{#unbound unless view.undefinedValue}}YepUnbound{{/unbound}}')
   });
 
   runAppend(view);
 
-  equal(view.$().text(), 'YepYep');
+  equal(view.$().text(), 'YepBoundYepUnbound');
 });
 
 test("The `if` helper does not print the contents for an object proxy without content", function() {
@@ -304,29 +304,6 @@ test('properties within an if statement should not fail on re-render', function(
   equal(view.$().text(), '');
 });
 
-test('views within an if statement should be sane on re-render', function() {
-  view = EmberView.create({
-    template: compile('{{#if view.display}}{{input}}{{/if}}'),
-    display: false
-  });
-
-  runAppend(view);
-
-  equal(view.$('input').length, 0);
-
-  run(function() {
-    // Setting twice will trigger the observer twice, this is intentional
-    view.set('display', true);
-    view.set('display', 'yes');
-  });
-
-  var textfield = view.$('input');
-  equal(textfield.length, 1);
-
-  // Make sure the view is still registered in View.views
-  ok(EmberView.views[textfield.attr('id')]);
-});
-
 test('should update the block when object passed to #if helper changes', function() {
   container.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
 
@@ -490,29 +467,6 @@ test('properties within an if statement should not fail on re-render', function(
   equal(view.$().text(), '');
 });
 
-test('views within an if statement should be sane on re-render', function() {
-  view = EmberView.create({
-    template: compile('{{#if view.display}}{{input}}{{/if}}'),
-    display: false
-  });
-
-  runAppend(view);
-
-  equal(view.$('input').length, 0);
-
-  run(function() {
-    // Setting twice will trigger the observer twice, this is intentional
-    view.set('display', true);
-    view.set('display', 'yes');
-  });
-
-  var textfield = view.$('input');
-  equal(textfield.length, 1);
-
-  // Make sure the view is still registered in View.views
-  ok(EmberView.views[textfield.attr('id')]);
-});
-
 test('should update the block when object passed to #if helper changes', function() {
   container.register('template:menu', compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
 
@@ -578,29 +532,6 @@ test('should update the block when object passed to #if helper changes and an in
 
     equal(view.$('h1').text(), 'BOOOOOOOONG doodoodoodoodooodoodoodoo', 'precond - renders block when conditional is true');
   });
-});
-
-test('views within an if statement should be sane on re-render', function() {
-  view = EmberView.create({
-    template: compile('{{#if view.display}}{{input}}{{/if}}'),
-    display: false
-  });
-
-  runAppend(view);
-
-  equal(view.$('input').length, 0);
-
-  run(function() {
-    // Setting twice will trigger the observer twice, this is intentional
-    view.set('display', true);
-    view.set('display', 'yes');
-  });
-
-  var textfield = view.$('input');
-  equal(textfield.length, 1);
-
-  // Make sure the view is still registered in View.views
-  ok(EmberView.views[textfield.attr('id')]);
 });
 
 test('the {{this}} helper should not fail on removal', function() {

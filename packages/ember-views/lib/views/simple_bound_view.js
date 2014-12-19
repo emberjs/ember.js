@@ -91,7 +91,7 @@ SimpleBoundView.prototype = {
     // doesn't diff SafeString instances
     if (value !== this._lastNormalizedValue) {
       this._lastNormalizedValue = value;
-      this._morph.update(value);
+      this._morph.setContent(value);
     }
   },
 

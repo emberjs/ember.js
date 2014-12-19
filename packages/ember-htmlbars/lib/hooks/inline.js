@@ -7,19 +7,12 @@ import { appendSimpleBoundView } from "ember-views/views/simple_bound_view";
 import { isStream } from "ember-metal/streams/utils";
 import lookupHelper from "ember-htmlbars/system/lookup-helper";
 
-export default function content(env, morph, view, path) {
+export default function inline(env, morph, view, path, params, hash) {
   var helper = lookupHelper(path, view, env);
-  var result;
 
-  if (helper) {
-    var options = {
-      morph: morph,
-      isInline: true
-    };
-    result = helper.helperFunction.call(view, [], {}, options, env);
-  } else {
-    result = view.getStream(path);
-  }
+  Ember.assert("A helper named '"+path+"' could not be found", helper);
+
+  var result = helper.helperFunction.call(view, params, hash, {morph: morph}, env);
 
   if (isStream(result)) {
     appendSimpleBoundView(view, morph, result);
