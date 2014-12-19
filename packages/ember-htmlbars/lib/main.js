@@ -7,8 +7,10 @@ import {
   registerPlugin
 } from "ember-template-compiler";
 
+import inline from "ember-htmlbars/hooks/inline";
 import content from "ember-htmlbars/hooks/content";
 import component from "ember-htmlbars/hooks/component";
+import block from "ember-htmlbars/hooks/block";
 import element from "ember-htmlbars/hooks/element";
 import subexpr from "ember-htmlbars/hooks/subexpr";
 import attribute from "ember-htmlbars/hooks/attribute";
@@ -98,7 +100,9 @@ export var defaultEnv = {
   hooks: {
     get: get,
     set: set,
+    inline: inline,
     content: content,
+    block: block,
     element: element,
     subexpr: subexpr,
     component: component,

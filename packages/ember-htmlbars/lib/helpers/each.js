@@ -166,7 +166,7 @@ function eachHelper(params, hash, options, env) {
     params.length <= 1
   );
 
-  if (options.blockParams) {
+  if (options.template && options.template.blockParams) {
     hash.keyword = true;
   }
 

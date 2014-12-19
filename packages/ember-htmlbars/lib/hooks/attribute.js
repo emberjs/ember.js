@@ -3,7 +3,7 @@
 @submodule ember-htmlbars
 */
 
-import attrNodeTypeFor from "ember-htmlbars/attr_nodes";
+import AttrNode from "ember-views/attr_nodes/attr_node";
 import EmberError from "ember-metal/error";
 import { isStream } from "ember-metal/streams/utils";
 import sanitizeAttributeValue from "ember-views/system/sanitize_attribute_value";
@@ -14,16 +14,17 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
   boundAttributesEnabled = true;
 }
 
-export default function attribute(element, attrName, quoted, view, attrValue, options, env) {
+export default function attribute(env, morph, element, attrName, attrValue) {
   if (boundAttributesEnabled) {
-    var AttrNode = attrNodeTypeFor(attrName, element, quoted);
-    new AttrNode(element, attrName, attrValue, env.dom);
+    var attrNode = new AttrNode(attrName, attrValue);
+    attrNode._morph = morph;
+    env.data.view.appendChild(attrNode);
   } else {
     if (isStream(attrValue)) {
       throw new EmberError('Bound attributes are not yet supported in Ember.js');
     } else {
       var sanitizedValue = sanitizeAttributeValue(element, attrName, attrValue);
-      env.dom.setAttribute(element, attrName, sanitizedValue);
+      env.dom.setProperty(element, attrName, sanitizedValue);
     }
   }
 }
