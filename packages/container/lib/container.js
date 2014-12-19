@@ -133,10 +133,13 @@ Container.prototype = {
   },
 
   /**
+   Clear either the entire cache or just the cache for a particular key.
+
    @method reset
+   @param {String} fullName optional key to reset; if missing, resets everything
    */
   reset: function(fullName) {
-    if (fullName) {
+    if (arguments.length > 0) {
       resetMember(this, this._registry.normalize(fullName));
     } else {
       resetCache(this);
