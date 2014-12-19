@@ -622,7 +622,12 @@ test("Issue 4201 - Shorthand for route.index shouldn't throw errors about contex
 });
 
 test("The {{link-to}} helper unwraps controllers", function() {
-  expect(5);
+
+  if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
+    expect(4);
+  } else {
+    expect(5);
+  }
 
   Router.map(function() {
     this.route('filter', { path: '/filters/:filter' });
@@ -1637,6 +1642,8 @@ function basicEagerURLUpdateTest(setTagName) {
 }
 
 var aboutDefer;
+
+if (!Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
 QUnit.module("The {{link-to}} helper: eager URL updating", {
   setup: function() {
     Ember.run(function() {
@@ -1752,4 +1759,67 @@ test("invoking a link-to whose transition gets aborted in will transition doesn'
   equal(updateCount, 0);
   equal(router.get('location.path'), '', 'url was not updated');
 });
+
+}
+
+if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
+
+  QUnit.module("The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes", {
+    setup: function() {
+      Ember.run(function() {
+        sharedSetup();
+
+        container.register('router:main', Router);
+
+        Router.map(function() {
+          this.route('about');
+          this.route('other');
+        });
+
+        App.AboutRoute = Ember.Route.extend({
+          model: function() {
+            aboutDefer = Ember.RSVP.defer();
+            return aboutDefer.promise;
+          }
+        });
+
+        Ember.TEMPLATES.application = compile("{{outlet}}{{link-to 'Index' 'index' id='index-link'}}{{link-to 'About' 'about' id='about-link'}}{{link-to 'Other' 'other' id='other-link'}}");
+      });
+    },
+
+    teardown: function() {
+      sharedTeardown();
+      aboutDefer = null;
+    }
+  });
+
+  test("while a transition is underway", function() {
+    expect(18);
+    bootApplication();
+
+    function assertHasClass(className) {
+      var i = 1;
+      while (i < arguments.length) {
+        var $a = arguments[i];
+        var shouldHaveClass = arguments[i+1];
+        equal($a.hasClass(className), shouldHaveClass, $a.attr('id') + " should " + (shouldHaveClass ? '' : "not ") + "have class " + className);
+        i +=2;
+      }
+    }
+
+    var $index = Ember.$('#index-link'), $about = Ember.$('#about-link'), $other = Ember.$('#other-link');
+
+    Ember.run($about, 'click');
+
+    assertHasClass('active', $index, true, $about, false, $other, false);
+    assertHasClass('transitioning-in',  $index, false, $about, true, $other, false);
+    assertHasClass('transitioning-out', $index, true, $about, false, $other, false);
+
+    Ember.run(aboutDefer, 'resolve');
+
+    assertHasClass('active', $index, false, $about, true, $other, false);
+    assertHasClass('transitioning-in',  $index, false, $about, false, $other, false);
+    assertHasClass('transitioning-out', $index, false, $about, false, $other, false);
+  });
+}
 

@@ -21,6 +21,8 @@ import {
 } from "ember-routing/utils";
 import { create } from "ember-metal/platform";
 
+import RouterState from "./router_state";
+
 /**
 @module ember
 @submodule ember-routing
@@ -147,9 +149,10 @@ var EmberRouter = EmberObject.extend(Evented, {
   didTransition: function(infos) {
     updatePaths(this);
 
-    this._cancelLoadingEvent();
+    this._cancelSlowTransitionTimer();
 
     this.notifyPropertyChange('url');
+    this.set('currentState', this.targetState);
 
     // Put this in the runloop so url will be accurate. Seems
     // less surprising than didTransition being out of sync.
@@ -169,7 +172,7 @@ var EmberRouter = EmberObject.extend(Evented, {
 
   _doURLTransition: function(routerJsMethod, url) {
     var transition = this.router[routerJsMethod](url || '/');
-    listenForTransitionErrors(transition);
+    didBeginTransition(transition, this);
     return transition;
   },
 
@@ -237,8 +240,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     @since 1.7.0
   */
   isActiveIntent: function(routeName, models, queryParams) {
-    var router = this.router;
-    return router.isActive.apply(router, arguments);
+    return this.currentState.isActiveIntent(routeName, models, queryParams);
   },
 
   send: function(name, context) {
@@ -441,7 +443,7 @@ var EmberRouter = EmberObject.extend(Evented, {
     var transitionArgs = routeArgs(targetRouteName, models, queryParams);
     var transitionPromise = this.router.transitionTo.apply(this.router, transitionArgs);
 
-    listenForTransitionErrors(transitionPromise);
+    didBeginTransition(transitionPromise, this);
 
     return transitionPromise;
   },
@@ -539,25 +541,34 @@ var EmberRouter = EmberObject.extend(Evented, {
   },
 
   _scheduleLoadingEvent: function(transition, originRoute) {
-    this._cancelLoadingEvent();
-    this._loadingStateTimer = run.scheduleOnce('routerTransitions', this, '_fireLoadingEvent', transition, originRoute);
+    this._cancelSlowTransitionTimer();
+    this._slowTransitionTimer = run.scheduleOnce('routerTransitions', this, '_handleSlowTransition', transition, originRoute);
   },
 
-  _fireLoadingEvent: function(transition, originRoute) {
+  currentState: null,
+  targetState: null,
+
+  _handleSlowTransition: function(transition, originRoute) {
     if (!this.router.activeTransition) {
       // Don't fire an event if we've since moved on from
       // the transition that put us in a loading state.
       return;
     }
 
+    this.set('targetState', RouterState.create({
+      emberRouter: this,
+      routerJs: this.router,
+      routerJsState: this.router.activeTransition.state
+    }));
+
     transition.trigger(true, 'loading', transition, originRoute);
   },
 
-  _cancelLoadingEvent: function () {
-    if (this._loadingStateTimer) {
-      run.cancel(this._loadingStateTimer);
+  _cancelSlowTransitionTimer: function () {
+    if (this._slowTransitionTimer) {
+      run.cancel(this._slowTransitionTimer);
     }
-    this._loadingStateTimer = null;
+    this._slowTransitionTimer = null;
   }
 });
 
@@ -859,7 +870,18 @@ EmberRouter.reopenClass({
   }
 });
 
-function listenForTransitionErrors(transition) {
+function didBeginTransition(transition, router) {
+  var routerState = RouterState.create({
+    emberRouter: router,
+    routerJs: router.router,
+    routerJsState: transition.state
+  });
+
+  if (!router.currentState) {
+    router.set('currentState', routerState);
+  }
+  router.set('targetState', routerState);
+
   transition.then(null, function(error) {
     if (!error || !error.name) { return; }
 
