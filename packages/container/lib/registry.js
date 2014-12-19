@@ -105,13 +105,47 @@ Registry.prototype = {
   _typeOptions: null,
 
   /**
+   The first container created for this registry.
+
+   This allows deprecated access to `lookup` and `lookupFactory` to avoid
+   breaking compatibility for Ember 1.x initializers.
+
+   @private
+   @property _defaultContainer
+   @type Container
+   */
+   _defaultContainer: null,
+
+  /**
    Creates a container based on this registry.
 
    @method container
    @param {Object} options
+   @return {Container} created container
    */
   container: function(options) {
-    return new Container(this, options);
+    var container = new Container(this, options);
+
+    // Allow deprecated access to the first child container's `lookup` and
+    // `lookupFactory` methods to avoid breaking compatibility for Ember 1.x
+    // initializers.
+    if (!this._defaultContainer) {
+      this._defaultContainer = container;
+    }
+
+    return container;
+  },
+
+  lookup: function(fullName, options) {
+    Ember.assert('Create a container on the registry (with `registry.container()`) before calling `lookup`.', this._defaultContainer);
+    Ember.deprecate('`lookup` should not be called on a Registry. Call `lookup` directly on an associated Container instead.');
+    return this._defaultContainer.lookup(fullName, options);
+  },
+
+  lookupFactory: function(fullName) {
+    Ember.assert('Create a container on the registry (with `registry.container()`) before calling `lookupFactory`.', this._defaultContainer);
+    Ember.deprecate('`lookupFactory` should not be called on a Registry. Call `lookupFactory` directly on an associated Container instead.');
+    return this._defaultContainer.lookupFactory(fullName);
   },
 
   /**
