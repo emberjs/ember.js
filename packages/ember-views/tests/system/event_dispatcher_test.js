@@ -1,4 +1,3 @@
-import Ember from 'ember-metal/core'; // A, FEATURES, assert
 import { get } from "ember-metal/property_get";
 import run from "ember-metal/run_loop";
 
@@ -286,52 +285,6 @@ test("event handlers should be wrapped in a run loop", function() {
 
   jQuery('#test-view').trigger('mousedown');
 });
-
-if (Ember.FEATURES.isEnabled("event-dispatcher-can-disable-event-manager")) {
-
-  test("should not dispatch events to view event Manager when canDispatchToEventManager is false", function () {
-
-    var eventManagerCounter=0;
-    var viewCounter=0;
-
-    run(function() {
-      dispatcher.destroy();
-    });
-
-    run(function() {
-      dispatcher = EventDispatcher.create({
-        canDispatchToEventManager: false
-      });
-      dispatcher.setup();
-    });
-
-    view = ContainerView.create({
-      render: function(buffer) {
-        buffer.push('<input id="is-done" type="checkbox">');
-      },
-
-      eventManager: EmberObject.create({
-        mouseDown: function() {
-          eventManagerCounter++;
-        }
-      }),
-
-      mouseDown: function() {
-        viewCounter++;
-      }
-    });
-
-    run(function() {
-      view.append();
-    });
-
-    jQuery('#is-done').trigger('mousedown');
-    equal(viewCounter, 1, "event should go to view");
-    equal(eventManagerCounter, 0, "event should not go to manager");
-
-  });
-
-}
 
 QUnit.module("EventDispatcher#setup", {
   setup: function() {

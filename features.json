@@ -2,7 +2,6 @@
   "features": {
     "features-stripped-test": null,
     "ember-routing-named-substates": null,
-    "event-dispatcher-can-disable-event-manager": null,
     "ember-metal-injected-properties": true,
     "mandatory-setter": "development-only",
     "ember-htmlbars": true,
