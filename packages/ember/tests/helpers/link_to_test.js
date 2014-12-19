@@ -1812,14 +1812,14 @@ if (Ember.FEATURES.isEnabled('ember-routing-transitioning-classes')) {
     Ember.run($about, 'click');
 
     assertHasClass('active', $index, true, $about, false, $other, false);
-    assertHasClass('transitioning-in',  $index, false, $about, true, $other, false);
-    assertHasClass('transitioning-out', $index, true, $about, false, $other, false);
+    assertHasClass('ember-transitioning-in',  $index, false, $about, true, $other, false);
+    assertHasClass('ember-transitioning-out', $index, true, $about, false, $other, false);
 
     Ember.run(aboutDefer, 'resolve');
 
     assertHasClass('active', $index, false, $about, true, $other, false);
-    assertHasClass('transitioning-in',  $index, false, $about, false, $other, false);
-    assertHasClass('transitioning-out', $index, false, $about, false, $other, false);
+    assertHasClass('ember-transitioning-in',  $index, false, $about, false, $other, false);
+    assertHasClass('ember-transitioning-out', $index, false, $about, false, $other, false);
   });
 }
 
