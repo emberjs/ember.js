@@ -840,4 +840,29 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-inline-if-helper')) {
 
     equal(view.$().text(), 'innerOk');
   });
+
+  test("`if` helper with inline form: uses same truthy semantics as normal if", function() {
+    view = EmberView.create({
+      conditional: [],
+      template: compile('{{if view.conditional "truthy" "falsy"}}')
+    });
+
+    runAppend(view);
+
+    equal(view.$().text(), 'falsy');
+
+    run(function() {
+      view.set('conditional', Ember.Object.create({isTruthy: false}));
+    });
+
+    equal(view.$().text(), 'falsy');
+
+    run(function() {
+      view.set('conditional', Ember.Object.create({isTruthy: true}));
+    });
+
+    equal(view.$().text(), 'truthy');
+
+  });
+
 }
