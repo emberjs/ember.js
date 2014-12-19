@@ -15,7 +15,7 @@ if (Ember.FEATURES.isEnabled('ember-htmlbars-attribute-syntax')) {
 
 export default function attribute(element, attrName, quoted, view, attrValue, options, env) {
   if (boundAttributesEnabled) {
-    var AttrNode = attrNodeTypeFor(attrName, element, quoted);
+    var AttrNode = attrNodeTypeFor(attrName, element);
     new AttrNode(element, attrName, attrValue, env.dom);
   } else {
     if (isStream(attrValue)) {
