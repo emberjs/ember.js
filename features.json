@@ -9,7 +9,7 @@
     "ember-htmlbars-component-generation": null,
     "ember-htmlbars-inline-if-helper": null,
     "ember-htmlbars-attribute-syntax": null,
-    "ember-routing-transitioning-classes": null
+    "ember-routing-transitioning-classes": true
   },
   "debugStatements": [
     "Ember.warn",

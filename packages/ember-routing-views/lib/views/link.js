@@ -312,14 +312,14 @@ var LinkView = Ember.LinkView = EmberComponent.extend({
     var willBeActive = get(this, 'willBeActive');
     if (typeof willBeActive === 'undefined') { return false; }
 
-    return !get(this, 'active') && willBeActive;
+    return !get(this, 'active') && willBeActive && 'ember-transitioning-in';
   }),
 
   transitioningOut: computed('active', 'willBeActive', function() {
     var willBeActive = get(this, 'willBeActive');
     if (typeof willBeActive === 'undefined') { return false; }
 
-    return get(this, 'active') && !willBeActive;
+    return get(this, 'active') && !willBeActive && 'ember-transitioning-out';
   }),
 
   /**
