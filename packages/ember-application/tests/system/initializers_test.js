@@ -39,7 +39,7 @@ test("initializers can be registered in a specified order", function() {
   MyApplication.initializer({
     name: 'fourth',
     after: 'third',
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('fourth');
     }
   });
@@ -48,7 +48,7 @@ test("initializers can be registered in a specified order", function() {
     name: 'second',
     after: 'first',
     before: 'third',
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('second');
     }
   });
@@ -57,7 +57,7 @@ test("initializers can be registered in a specified order", function() {
     name: 'fifth',
     after: 'fourth',
     before: 'sixth',
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('fifth');
     }
   });
@@ -65,21 +65,21 @@ test("initializers can be registered in a specified order", function() {
   MyApplication.initializer({
     name: 'first',
     before: 'second',
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('first');
     }
   });
 
   MyApplication.initializer({
     name: 'third',
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('third');
     }
   });
 
   MyApplication.initializer({
     name: 'sixth',
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('sixth');
     }
   });
@@ -99,34 +99,34 @@ test("initializers can have multiple dependencies", function () {
   var a = {
     name: "a",
     before: "b",
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('a');
     }
   };
   var b = {
     name: "b",
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('b');
     }
   };
   var c = {
     name: "c",
     after: "b",
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push('c');
     }
   };
   var afterB = {
     name: "after b",
     after: "b",
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push("after b");
     }
   };
   var afterC = {
     name: "after c",
     after: "c",
-    initialize: function(container) {
+    initialize: function(registry) {
       order.push("after c");
     }
   };
@@ -156,14 +156,14 @@ test("initializers set on Application subclasses should not be shared between ap
   var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'first',
-    initialize: function(container) {
+    initialize: function(registry) {
       firstInitializerRunCount++;
     }
   });
   var SecondApp = Application.extend();
   SecondApp.initializer({
     name: 'second',
-    initialize: function(container) {
+    initialize: function(registry) {
       secondInitializerRunCount++;
     }
   });
@@ -192,7 +192,7 @@ test("initializers are concatenated", function(){
   var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'first',
-    initialize: function(container) {
+    initialize: function(registry) {
       firstInitializerRunCount++;
     }
   });
@@ -200,7 +200,7 @@ test("initializers are concatenated", function(){
   var SecondApp = FirstApp.extend();
   SecondApp.initializer({
     name: 'second',
-    initialize: function(container) {
+    initialize: function(registry) {
       secondInitializerRunCount++;
     }
   });
@@ -230,12 +230,12 @@ test("initializers are per-app", function(){
   var FirstApp = Application.extend();
   FirstApp.initializer({
     name: 'shouldNotCollide',
-    initialize: function(container) {}
+    initialize: function(registry) {}
   });
 
   var SecondApp = Application.extend();
   SecondApp.initializer({
     name: 'shouldNotCollide',
-    initialize: function(container) {}
+    initialize: function(registry) {}
   });
 });
